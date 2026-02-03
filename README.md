@@ -1,5 +1,8 @@
 # xeRAbora
 
+[![Tests](https://github.com/hacan359/xerabora/actions/workflows/test.yml/badge.svg)](https://github.com/hacan359/xerabora/actions/workflows/test.yml)
+[![codecov](https://codecov.io/gh/hacan359/xerabora/graph/badge.svg)](https://codecov.io/gh/hacan359/xerabora)
+
 Local game collections manager with sharing capabilities.
 
 ## About
@@ -34,7 +37,7 @@ Create personal game collections, track your progress, and share libraries with 
 ## Installation
 
 ```bash
-git clone https://github.com/your-username/xerabora.git
+git clone https://github.com/hacan359/xerabora.git
 cd xerabora
 flutter pub get
 flutter run -d windows
