@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../shared/models/game.dart';
 import '../../shared/models/platform.dart';
 
 /// Провайдер для IGDB API клиента.
@@ -204,6 +205,180 @@ class IgdbApi {
 
       throw IgdbApiException(message, statusCode: statusCode);
     }
+  }
+
+  /// Поля игры для запросов к IGDB.
+  static const String _gameFields = '''
+    fields id, name, summary, rating, rating_count, first_release_date,
+           cover.image_id, genres.name, platforms;
+  ''';
+
+  /// Ищет игры по названию.
+  ///
+  /// [query] — строка поиска.
+  /// [platformIds] — опциональный фильтр по платформам (несколько).
+  /// [limit] — максимальное количество результатов (по умолчанию 20).
+  ///
+  /// Возвращает список найденных игр.
+  /// Throws [IgdbApiException] при ошибке запроса.
+  Future<List<Game>> searchGames({
+    required String query,
+    List<int>? platformIds,
+    int limit = 20,
+  }) async {
+    _ensureCredentials();
+
+    if (query.trim().isEmpty) {
+      return <Game>[];
+    }
+
+    try {
+      // Экранируем кавычки в запросе
+      final String escapedQuery = query.replaceAll('"', '\\"');
+
+      String body = '$_gameFields search "$escapedQuery"; limit $limit;';
+
+      // Добавляем фильтр по платформам, если указаны
+      if (platformIds != null && platformIds.isNotEmpty) {
+        body += ' where platforms = (${platformIds.join(",")});';
+      }
+
+      final Response<dynamic> response = await _dio.post<dynamic>(
+        '$_igdbBaseUrl/games',
+        options: Options(
+          headers: <String, dynamic>{
+            'Client-ID': _clientId,
+            'Authorization': 'Bearer $_accessToken',
+          },
+        ),
+        data: body,
+      );
+
+      if (response.statusCode != 200 || response.data == null) {
+        throw IgdbApiException(
+          'Failed to search games',
+          statusCode: response.statusCode,
+        );
+      }
+
+      final List<dynamic> data = response.data as List<dynamic>;
+      return data
+          .map((dynamic item) => Game.fromJson(item as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'Failed to search games');
+    }
+  }
+
+  /// Получает игру по ID.
+  ///
+  /// Возвращает игру или null, если не найдена.
+  /// Throws [IgdbApiException] при ошибке запроса.
+  Future<Game?> getGameById(int gameId) async {
+    _ensureCredentials();
+
+    try {
+      final Response<dynamic> response = await _dio.post<dynamic>(
+        '$_igdbBaseUrl/games',
+        options: Options(
+          headers: <String, dynamic>{
+            'Client-ID': _clientId,
+            'Authorization': 'Bearer $_accessToken',
+          },
+        ),
+        data: '$_gameFields where id = $gameId;',
+      );
+
+      if (response.statusCode != 200 || response.data == null) {
+        throw IgdbApiException(
+          'Failed to fetch game',
+          statusCode: response.statusCode,
+        );
+      }
+
+      final List<dynamic> data = response.data as List<dynamic>;
+      if (data.isEmpty) return null;
+
+      return Game.fromJson(data.first as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'Failed to fetch game');
+    }
+  }
+
+  /// Получает несколько игр по списку ID.
+  ///
+  /// [gameIds] — список ID игр для загрузки.
+  ///
+  /// Возвращает список найденных игр (может быть меньше запрошенного).
+  /// Throws [IgdbApiException] при ошибке запроса.
+  Future<List<Game>> getGamesByIds(List<int> gameIds) async {
+    _ensureCredentials();
+
+    if (gameIds.isEmpty) {
+      return <Game>[];
+    }
+
+    try {
+      // IGDB ограничивает запрос 500 записями
+      final List<Game> allGames = <Game>[];
+
+      for (int i = 0; i < gameIds.length; i += 500) {
+        final List<int> batch = gameIds.sublist(
+          i,
+          i + 500 > gameIds.length ? gameIds.length : i + 500,
+        );
+
+        final String idsString = batch.join(',');
+
+        final Response<dynamic> response = await _dio.post<dynamic>(
+          '$_igdbBaseUrl/games',
+          options: Options(
+            headers: <String, dynamic>{
+              'Client-ID': _clientId,
+              'Authorization': 'Bearer $_accessToken',
+            },
+          ),
+          data: '$_gameFields where id = ($idsString); limit 500;',
+        );
+
+        if (response.statusCode != 200 || response.data == null) {
+          throw IgdbApiException(
+            'Failed to fetch games',
+            statusCode: response.statusCode,
+          );
+        }
+
+        final List<dynamic> data = response.data as List<dynamic>;
+        final List<Game> games = data
+            .map((dynamic item) => Game.fromJson(item as Map<String, dynamic>))
+            .toList();
+
+        allGames.addAll(games);
+      }
+
+      return allGames;
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'Failed to fetch games');
+    }
+  }
+
+  /// Обрабатывает DioException и возвращает IgdbApiException.
+  IgdbApiException _handleDioException(DioException e, String defaultMessage) {
+    final int? statusCode = e.response?.statusCode;
+    String message = defaultMessage;
+
+    if (statusCode == 401) {
+      message = 'Invalid or expired access token';
+    } else if (statusCode == 429) {
+      message = 'Rate limit exceeded. Please try again later';
+    } else if (e.type == DioExceptionType.connectionTimeout ||
+        e.type == DioExceptionType.receiveTimeout) {
+      message = 'Connection timeout';
+    } else if (e.type == DioExceptionType.connectionError) {
+      message = 'No internet connection';
+    }
+
+    return IgdbApiException(message, statusCode: statusCode);
   }
 
   void _ensureCredentials() {
