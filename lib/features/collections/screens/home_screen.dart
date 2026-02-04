@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../search/screens/search_screen.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../../settings/screens/settings_screen.dart';
 
@@ -19,6 +20,19 @@ class HomeScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('xeRAbora'),
         actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.search),
+            tooltip: 'Search Games',
+            onPressed: settings.isApiReady
+                ? () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (BuildContext context) => const SearchScreen(),
+                      ),
+                    );
+                  }
+                : null,
+          ),
           IconButton(
             icon: const Icon(Icons.settings),
             tooltip: 'Settings',
@@ -81,6 +95,19 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ),
             ),
+            const SizedBox(height: 24),
+            if (settings.isApiReady)
+              FilledButton.icon(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (BuildContext context) => const SearchScreen(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.search),
+                label: const Text('Search Games'),
+              ),
           ],
         ),
       ),
