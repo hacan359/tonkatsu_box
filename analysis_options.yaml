@@ -10,13 +10,16 @@ analyzer:
     strict-raw-types: true    # Запрет raw generic типов
 
   errors:
-    # Превратить warnings в errors
+    # Превратить warnings и infos в errors для консистентности с CI
+    # CI использует --fatal-infos --fatal-warnings
     missing_return: error
     missing_required_param: error
     must_be_immutable: error
-    dead_code: warning
-    unused_import: warning
-    unused_local_variable: warning
+    dead_code: error
+    unused_import: error
+    unused_local_variable: error
+    prefer_const_declarations: error
+    unrelated_type_equality_checks: error
 
   exclude:
     - "**/*.g.dart"
