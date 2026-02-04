@@ -91,6 +91,7 @@ class HomeScreen extends ConsumerWidget {
                   collection: c,
                   onTap: () => _navigateToCollection(context, c),
                   onLongPress: () => _showCollectionOptions(context, ref, c),
+                  onDelete: () => _deleteCollection(context, ref, c),
                 )),
           ],
 
@@ -104,6 +105,7 @@ class HomeScreen extends ConsumerWidget {
                   collection: c,
                   onTap: () => _navigateToCollection(context, c),
                   onLongPress: () => _showCollectionOptions(context, ref, c),
+                  onDelete: () => _deleteCollection(context, ref, c),
                 )),
           ],
 
@@ -117,6 +119,7 @@ class HomeScreen extends ConsumerWidget {
                   collection: c,
                   onTap: () => _navigateToCollection(context, c),
                   onLongPress: () => _showCollectionOptions(context, ref, c),
+                  onDelete: () => _deleteCollection(context, ref, c),
                 )),
           ],
         ],

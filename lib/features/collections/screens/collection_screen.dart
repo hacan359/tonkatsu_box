@@ -338,78 +338,19 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   }
 
   Future<void> _addGame(BuildContext context) async {
-    final Game? selectedGame = await Navigator.of(context).push(
-      MaterialPageRoute<Game>(
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
         builder: (BuildContext context) => SearchScreen(
-          onGameSelected: (Game game) => Navigator.of(context).pop(game),
+          collectionId: widget.collectionId,
         ),
       ),
     );
-
-    if (selectedGame == null || !mounted) return;
-
-    // Показываем диалог выбора платформы
-    final int? platformId = await _showPlatformSelectionDialog(selectedGame);
-
-    if (platformId == null || !mounted) return;
-
-    // Добавляем игру
-    final bool success = await ref
-        .read(collectionGamesNotifierProvider(widget.collectionId).notifier)
-        .addGame(
-          igdbId: selectedGame.id,
-          platformId: platformId,
-        );
-
+    // Обновляем список игр после возврата из SearchScreen
     if (mounted) {
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${selectedGame.name} added')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Game already in collection'),
-          ),
-        );
-      }
+      ref
+          .read(collectionGamesNotifierProvider(widget.collectionId).notifier)
+          .refresh();
     }
-  }
-
-  Future<int?> _showPlatformSelectionDialog(Game game) async {
-    final List<int>? platformIds = game.platformIds;
-
-    if (platformIds == null || platformIds.isEmpty) {
-      // Если нет платформ, используем заглушку
-      return 0;
-    }
-
-    if (platformIds.length == 1) {
-      return platformIds.first;
-    }
-
-    // TODO: Загрузить названия платформ из базы данных
-    return showDialog<int>(
-      context: context,
-      builder: (BuildContext context) => AlertDialog(
-        title: const Text('Select Platform'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: platformIds
-              .map((int id) => ListTile(
-                    title: Text('Platform $id'), // TODO: Отобразить название
-                    onTap: () => Navigator.of(context).pop(id),
-                  ))
-              .toList(),
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-        ],
-      ),
-    );
   }
 
   Future<void> _updateStatus(int id, GameStatus status) async {
@@ -458,10 +399,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       context: context,
       isScrollControlled: true,
       builder: (BuildContext context) => _GameDetailSheet(
-        game: game,
+        gameId: game.id,
+        collectionId: widget.collectionId,
         isEditable: _collection!.isEditable,
-        onStatusChanged: (GameStatus status) =>
-            _updateStatus(game.id, status),
       ),
     );
   }
@@ -469,10 +409,14 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   Future<void> _renameCollection(BuildContext context) async {
     if (_collection == null) return;
 
+    // Сохраняем ScaffoldMessenger и colorScheme до async операции
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    final Color errorColor = Theme.of(context).colorScheme.error;
+
     final String? newName =
         await RenameCollectionDialog.show(context, _collection!.name);
 
-    if (newName == null || newName == _collection!.name) return;
+    if (newName == null || newName == _collection!.name || !mounted) return;
 
     try {
       await ref
@@ -484,16 +428,16 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           const SnackBar(content: Text('Collection renamed')),
         );
       }
     } on Exception catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
             content: Text('Failed to rename: $e'),
-            backgroundColor: Theme.of(context).colorScheme.error,
+            backgroundColor: errorColor,
           ),
         );
       }
@@ -740,21 +684,57 @@ class _CollectionGameTile extends StatelessWidget {
 }
 
 /// Bottom sheet с деталями игры в коллекции.
-class _GameDetailSheet extends StatelessWidget {
+class _GameDetailSheet extends ConsumerWidget {
   const _GameDetailSheet({
-    required this.game,
+    required this.gameId,
+    required this.collectionId,
     required this.isEditable,
-    required this.onStatusChanged,
   });
 
-  final CollectionGame game;
+  final int gameId;
+  final int collectionId;
   final bool isEditable;
-  final void Function(GameStatus) onStatusChanged;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
+
+    // Получаем актуальное состояние игры из провайдера
+    final AsyncValue<List<CollectionGame>> gamesAsync =
+        ref.watch(collectionGamesNotifierProvider(collectionId));
+
+    return gamesAsync.when(
+      data: (List<CollectionGame> games) {
+        // Находим игру по ID
+        CollectionGame? game;
+        for (final CollectionGame g in games) {
+          if (g.id == gameId) {
+            game = g;
+            break;
+          }
+        }
+
+        if (game == null) {
+          return const Center(child: Text('Game not found'));
+        }
+
+        return _buildContent(context, ref, theme, colorScheme, game);
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (Object error, StackTrace stack) => Center(
+        child: Text('Error: $error'),
+      ),
+    );
+  }
+
+  Widget _buildContent(
+    BuildContext context,
+    WidgetRef ref,
+    ThemeData theme,
+    ColorScheme colorScheme,
+    CollectionGame game,
+  ) {
     final Game? gameData = game.game;
 
     return DraggableScrollableSheet(
@@ -811,7 +791,12 @@ class _GameDetailSheet extends StatelessWidget {
                   ),
                   StatusDropdown(
                     status: game.status,
-                    onChanged: onStatusChanged,
+                    onChanged: (GameStatus status) {
+                      ref
+                          .read(collectionGamesNotifierProvider(collectionId)
+                              .notifier)
+                          .updateStatus(game.id, status);
+                    },
                   ),
                 ],
               ),

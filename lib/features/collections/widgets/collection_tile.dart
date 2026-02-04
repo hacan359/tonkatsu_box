@@ -12,6 +12,7 @@ class CollectionTile extends ConsumerWidget {
     required this.collection,
     this.onTap,
     this.onLongPress,
+    this.onDelete,
     super.key,
   });
 
@@ -23,6 +24,9 @@ class CollectionTile extends ConsumerWidget {
 
   /// Callback при долгом нажатии.
   final VoidCallback? onLongPress;
+
+  /// Callback при удалении.
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -83,6 +87,17 @@ class CollectionTile extends ConsumerWidget {
                   ],
                 ),
               ),
+
+              // Иконка удаления
+              if (onDelete != null)
+                IconButton(
+                  icon: Icon(
+                    Icons.delete_outline,
+                    color: colorScheme.error,
+                  ),
+                  tooltip: 'Delete',
+                  onPressed: onDelete,
+                ),
 
               // Стрелка
               Icon(

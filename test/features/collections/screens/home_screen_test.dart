@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/data/repositories/collection_repository.dart';
-import 'package:xerabora/features/collections/providers/collections_provider.dart';
 import 'package:xerabora/features/collections/screens/home_screen.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/shared/models/collection.dart';
