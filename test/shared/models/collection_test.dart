@@ -283,6 +283,7 @@ void main() {
 
       test('должен быть не равен объекту другого типа', () {
         final Collection collection = createTestCollection();
+        // ignore: unrelated_type_equality_checks
         expect(collection == 'string', false);
       });
     });

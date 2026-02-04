@@ -92,8 +92,8 @@ void main() {
       });
 
       test('должен создавать экземпляр с опциональными полями', () {
-        final Game game = const Game(id: 100, name: 'Test Game');
-        final Platform platform = const Platform(id: 18, name: 'NES');
+        const Game game = Game(id: 100, name: 'Test Game');
+        const Platform platform = Platform(id: 18, name: 'NES');
 
         final CollectionGame cg = createTestGame(
           authorComment: 'Great game!',
@@ -370,6 +370,7 @@ void main() {
 
       test('должен быть не равен объекту другого типа', () {
         final CollectionGame cg = createTestGame();
+        // ignore: unrelated_type_equality_checks
         expect(cg == 'string', false);
       });
     });
