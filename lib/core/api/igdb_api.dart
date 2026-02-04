@@ -236,12 +236,16 @@ class IgdbApi {
       // Экранируем кавычки в запросе
       final String escapedQuery = query.replaceAll('"', '\\"');
 
-      String body = '$_gameFields search "$escapedQuery"; limit $limit;';
+      // Формируем IGDB query в правильном порядке:
+      // fields -> where -> search -> limit
+      final StringBuffer body = StringBuffer(_gameFields);
 
       // Добавляем фильтр по платформам, если указаны
       if (platformIds != null && platformIds.isNotEmpty) {
-        body += ' where platforms = (${platformIds.join(",")});';
+        body.write(' where platforms = (${platformIds.join(",")});');
       }
+
+      body.write(' search "$escapedQuery"; limit $limit;');
 
       final Response<dynamic> response = await _dio.post<dynamic>(
         '$_igdbBaseUrl/games',
@@ -251,7 +255,7 @@ class IgdbApi {
             'Authorization': 'Bearer $_accessToken',
           },
         ),
-        data: body,
+        data: body.toString(),
       );
 
       if (response.statusCode != 200 || response.data == null) {

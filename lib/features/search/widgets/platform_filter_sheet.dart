@@ -39,6 +39,10 @@ class _PlatformFilterSheetState extends State<PlatformFilterSheet> {
   void initState() {
     super.initState();
     _selectedIds = List<int>.from(widget.selectedIds);
+    // Автофокус на поле поиска
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _searchFocus.requestFocus();
+    });
   }
 
   @override

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/database_service.dart';
 import '../../../shared/models/game.dart';
 import '../../../shared/models/platform.dart';
+import '../../collections/providers/collections_provider.dart';
 import '../providers/game_search_provider.dart';
 import '../widgets/game_card.dart';
 import '../widgets/platform_filter_sheet.dart';
@@ -15,11 +16,18 @@ class SearchScreen extends ConsumerStatefulWidget {
   /// Создаёт [SearchScreen].
   const SearchScreen({
     this.onGameSelected,
+    this.collectionId,
     super.key,
   });
 
-  /// Callback при выборе игры.
+  /// Callback при выборе игры (устаревший режим).
   final void Function(Game game)? onGameSelected;
+
+  /// ID коллекции для добавления игр (новый режим).
+  ///
+  /// Если задан, при выборе игры она добавляется в коллекцию
+  /// и пользователь остаётся на экране поиска.
+  final int? collectionId;
 
   @override
   ConsumerState<SearchScreen> createState() => _SearchScreenState();
@@ -107,9 +115,80 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   void _onGameTap(Game game) {
     if (widget.onGameSelected != null) {
       widget.onGameSelected!(game);
+    } else if (widget.collectionId != null) {
+      _addGameToCollection(game);
     } else {
       _showGameDetails(game);
     }
+  }
+
+  Future<void> _addGameToCollection(Game game) async {
+    // Сохраняем ScaffoldMessenger до async операций
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    final String gameName = game.name;
+
+    final int? platformId = await _showPlatformSelectionDialog(game);
+    if (platformId == null || !mounted) return;
+
+    final bool success = await ref
+        .read(collectionGamesNotifierProvider(widget.collectionId!).notifier)
+        .addGame(
+          igdbId: game.id,
+          platformId: platformId,
+        );
+
+    if (mounted) {
+      if (success) {
+        messenger.showSnackBar(
+          SnackBar(content: Text('$gameName added to collection')),
+        );
+      } else {
+        messenger.showSnackBar(
+          const SnackBar(content: Text('Game already in collection')),
+        );
+      }
+    }
+  }
+
+  Future<int?> _showPlatformSelectionDialog(Game game) async {
+    final List<int>? platformIds = game.platformIds;
+
+    if (platformIds == null || platformIds.isEmpty) {
+      // Возвращаем -1 как placeholder для игр без информации о платформах
+      return -1;
+    }
+
+    if (platformIds.length == 1) {
+      return platformIds.first;
+    }
+
+    return showDialog<int>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Select Platform'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: platformIds.map((int id) {
+              final Platform? platform = _platformMap[id];
+              final String platformName =
+                  platform?.displayName ?? 'Platform $id';
+              return ListTile(
+                leading: const Icon(Icons.videogame_asset),
+                title: Text(platformName),
+                onTap: () => Navigator.of(context).pop(id),
+              );
+            }).toList(),
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showGameDetails(Game game) {
@@ -225,9 +304,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     );
   }
 
-  /// Максимальное количество платформ для отображения в карточке.
-  static const int _maxPlatformsToShow = 3;
-
   List<String> _getPlatformNames(List<int>? platformIds) {
     if (platformIds == null || platformIds.isEmpty) {
       return <String>[];
@@ -235,7 +311,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     return platformIds
         .map((int id) => _platformMap[id]?.displayName)
         .whereType<String>()
-        .take(_maxPlatformsToShow)
         .toList();
   }
 

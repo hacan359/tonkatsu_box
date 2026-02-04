@@ -8,6 +8,16 @@
 - Dart 3.10+
 - Windows desktop приложение
 
+## Среда выполнения
+**ВАЖНО:** Flutter SDK установлен только на Windows, не в WSL!
+
+Для запуска Flutter команд используй PowerShell:
+```bash
+powershell.exe -Command "cd D:\CODE\xerabora; flutter analyze"
+powershell.exe -Command "cd D:\CODE\xerabora; flutter test"
+powershell.exe -Command "cd D:\CODE\xerabora; flutter run -d windows"
+```
+
 ## Строгая типизация Dart
 
 ### ОБЯЗАТЕЛЬНО:
