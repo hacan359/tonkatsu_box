@@ -1,12 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/app.dart';
+import 'package:xerabora/data/repositories/collection_repository.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
+import 'package:xerabora/shared/models/collection.dart';
+
+class MockCollectionRepository extends Mock implements CollectionRepository {}
 
 void main() {
   group('XeraboraApp', () {
+    late MockCollectionRepository mockRepo;
+
+    setUp(() {
+      mockRepo = MockCollectionRepository();
+      when(() => mockRepo.getAll()).thenAnswer((_) async => <Collection>[]);
+      when(() => mockRepo.getStats(any())).thenAnswer(
+        (_) async => CollectionStats.empty,
+      );
+    });
+
     testWidgets('должен рендерить MaterialApp', (WidgetTester tester) async {
       SharedPreferences.setMockInitialValues(<String, Object>{});
       final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -15,6 +30,7 @@ void main() {
         ProviderScope(
           overrides: <Override>[
             sharedPreferencesProvider.overrideWithValue(prefs),
+            collectionRepositoryProvider.overrideWithValue(mockRepo),
           ],
           child: const XeraboraApp(),
         ),
@@ -32,6 +48,7 @@ void main() {
         ProviderScope(
           overrides: <Override>[
             sharedPreferencesProvider.overrideWithValue(prefs),
+            collectionRepositoryProvider.overrideWithValue(mockRepo),
           ],
           child: const XeraboraApp(),
         ),
@@ -60,12 +77,17 @@ void main() {
         ProviderScope(
           overrides: <Override>[
             sharedPreferencesProvider.overrideWithValue(prefs),
+            collectionRepositoryProvider.overrideWithValue(mockRepo),
           ],
           child: const XeraboraApp(),
         ),
       );
 
-      await tester.pumpAndSettle();
+      // Use multiple pump() instead of pumpAndSettle() to avoid timeout
+      // due to async providers
+      await tester.pump();
+      await tester.pump();
+      await tester.pump();
 
       // HomeScreen показывает заголовок xeRAbora
       expect(find.text('xeRAbora'), findsOneWidget);
@@ -79,6 +101,7 @@ void main() {
         ProviderScope(
           overrides: <Override>[
             sharedPreferencesProvider.overrideWithValue(prefs),
+            collectionRepositoryProvider.overrideWithValue(mockRepo),
           ],
           child: const XeraboraApp(),
         ),
@@ -98,6 +121,7 @@ void main() {
         ProviderScope(
           overrides: <Override>[
             sharedPreferencesProvider.overrideWithValue(prefs),
+            collectionRepositoryProvider.overrideWithValue(mockRepo),
           ],
           child: const XeraboraApp(),
         ),

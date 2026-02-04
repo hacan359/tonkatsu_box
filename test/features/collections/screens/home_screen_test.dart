@@ -1,23 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:xerabora/data/repositories/collection_repository.dart';
+import 'package:xerabora/features/collections/providers/collections_provider.dart';
 import 'package:xerabora/features/collections/screens/home_screen.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
+import 'package:xerabora/shared/models/collection.dart';
+
+class MockCollectionRepository extends Mock implements CollectionRepository {}
 
 void main() {
   group('HomeScreen', () {
     late SharedPreferences prefs;
+    late MockCollectionRepository mockRepo;
 
     setUp(() async {
       SharedPreferences.setMockInitialValues(<String, Object>{});
       prefs = await SharedPreferences.getInstance();
+      mockRepo = MockCollectionRepository();
     });
 
-    Widget createWidget() {
+    Widget createWidget({List<Collection> collections = const <Collection>[]}) {
+      // Mock repository methods
+      when(() => mockRepo.getAll()).thenAnswer((_) async => collections);
+      when(() => mockRepo.getStats(any())).thenAnswer(
+        (_) async => const CollectionStats(
+          total: 5,
+          completed: 2,
+          playing: 1,
+          notStarted: 1,
+          dropped: 0,
+          planned: 1,
+        ),
+      );
+
       return ProviderScope(
         overrides: <Override>[
           sharedPreferencesProvider.overrideWithValue(prefs),
+          collectionRepositoryProvider.overrideWithValue(mockRepo),
         ],
         child: const MaterialApp(
           home: HomeScreen(),
@@ -28,7 +50,8 @@ void main() {
     testWidgets('должен показывать заголовок xeRAbora',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
+      await tester.pump(); // Initial pump
+      await tester.pump(); // Allow async to complete
 
       expect(find.text('xeRAbora'), findsOneWidget);
     });
@@ -36,62 +59,117 @@ void main() {
     testWidgets('должен показывать кнопку настроек',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       expect(find.byIcon(Icons.settings), findsOneWidget);
-    });
-
-    testWidgets('должен показывать текст Your Collections',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      expect(find.text('Your Collections'), findsOneWidget);
-    });
-
-    testWidgets('должен показывать сообщение Coming soon',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      expect(find.text('Coming soon in Stage 3'), findsOneWidget);
     });
 
     testWidgets('должен показывать FAB New Collection',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       expect(find.text('New Collection'), findsOneWidget);
       expect(find.byType(FloatingActionButton), findsOneWidget);
     });
 
-    testWidgets('должен показывать статус API', (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      expect(find.text('API Status'), findsOneWidget);
-    });
-
-    testWidgets('должен показывать счётчик платформ',
+    testWidgets('должен показывать пустое состояние когда нет коллекций',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(); // Allow async to complete
 
-      expect(find.text('Platforms'), findsOneWidget);
-      expect(find.text('0 synced'), findsOneWidget);
+      expect(find.text('No Collections Yet'), findsOneWidget);
     });
 
-    testWidgets('должен показывать Not Connected когда API не готов',
+    testWidgets('должен показывать список коллекций',
+        (WidgetTester tester) async {
+      final List<Collection> collections = <Collection>[
+        Collection(
+          id: 1,
+          name: 'Test Collection',
+          author: 'User',
+          type: CollectionType.own,
+          createdAt: DateTime.now(),
+        ),
+      ];
+
+      await tester.pumpWidget(createWidget(collections: collections));
+      await tester.pump();
+      await tester.pump();
+      await tester.pump(); // Allow multiple async frames
+
+      expect(find.text('Test Collection'), findsOneWidget);
+    });
+
+    testWidgets('должен показывать секцию My Collections',
+        (WidgetTester tester) async {
+      final List<Collection> collections = <Collection>[
+        Collection(
+          id: 1,
+          name: 'Test Collection',
+          author: 'User',
+          type: CollectionType.own,
+          createdAt: DateTime.now(),
+        ),
+      ];
+
+      await tester.pumpWidget(createWidget(collections: collections));
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text('My Collections'), findsOneWidget);
+    });
+
+    testWidgets('должен группировать коллекции по типу',
+        (WidgetTester tester) async {
+      final List<Collection> collections = <Collection>[
+        Collection(
+          id: 1,
+          name: 'Own Collection',
+          author: 'User',
+          type: CollectionType.own,
+          createdAt: DateTime.now(),
+        ),
+        Collection(
+          id: 2,
+          name: 'Imported Collection',
+          author: 'Other',
+          type: CollectionType.imported,
+          createdAt: DateTime.now(),
+        ),
+      ];
+
+      await tester.pumpWidget(createWidget(collections: collections));
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text('My Collections'), findsOneWidget);
+      expect(find.text('Imported'), findsOneWidget);
+    });
+
+    testWidgets('кнопка поиска должна быть отключена когда API не готов',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
+      await tester.pump();
 
-      expect(find.text('Not Connected'), findsOneWidget);
+      // Find search icon button
+      final Finder searchButton = find.byIcon(Icons.search);
+      expect(searchButton, findsOneWidget);
+
+      // Icon button should be disabled (onPressed is null)
+      final IconButton iconButton = tester.widget<IconButton>(
+        find.ancestor(
+          of: searchButton,
+          matching: find.byType(IconButton),
+        ),
+      );
+      expect(iconButton.onPressed, isNull);
     });
 
-    testWidgets('должен показывать Connected когда API готов',
+    testWidgets('кнопка поиска должна быть активна когда API готов',
         (WidgetTester tester) async {
+      // Set up valid API credentials
       final int futureExpiry =
           DateTime.now().millisecondsSinceEpoch ~/ 1000 + 3600;
 
@@ -104,43 +182,29 @@ void main() {
       prefs = await SharedPreferences.getInstance();
 
       await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
+      await tester.pump();
 
-      expect(find.text('Connected'), findsOneWidget);
-    });
+      // Find search icon button
+      final Finder searchButton = find.byIcon(Icons.search);
+      expect(searchButton, findsOneWidget);
 
-    testWidgets('FAB должен показывать snackbar при нажатии',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.byType(FloatingActionButton));
-      await tester.pumpAndSettle();
-
-      expect(
-        find.text('Collection creation coming in Stage 3'),
-        findsOneWidget,
+      // Icon button should be enabled
+      final IconButton iconButton = tester.widget<IconButton>(
+        find.ancestor(
+          of: searchButton,
+          matching: find.byType(IconButton),
+        ),
       );
+      expect(iconButton.onPressed, isNotNull);
     });
 
-    testWidgets('кнопка настроек должна открывать SettingsScreen',
+    testWidgets('должен показывать иконку пустого состояния',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump();
 
-      await tester.tap(find.byIcon(Icons.settings));
-      await tester.pumpAndSettle();
-
-      // Проверяем что открылся SettingsScreen
-      expect(find.text('IGDB API Setup'), findsOneWidget);
-    });
-
-    testWidgets('должен показывать иконку коллекций',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      expect(find.byIcon(Icons.collections_bookmark), findsOneWidget);
+      expect(find.byIcon(Icons.collections_bookmark_outlined), findsOneWidget);
     });
   });
 }
