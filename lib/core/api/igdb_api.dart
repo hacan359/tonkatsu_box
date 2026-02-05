@@ -168,7 +168,7 @@ class IgdbApi {
               'Authorization': 'Bearer $_accessToken',
             },
           ),
-          data: 'fields id,name,abbreviation; limit $limit; offset $offset;',
+          data: 'fields id,name,abbreviation,platform_logo.image_id; limit $limit; offset $offset;',
         );
 
         if (response.statusCode != 200 || response.data == null) {

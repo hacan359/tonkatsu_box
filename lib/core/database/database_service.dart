@@ -43,7 +43,7 @@ class DatabaseService {
     return databaseFactoryFfi.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 3,
+        version: 4,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -67,6 +67,7 @@ class DatabaseService {
         id INTEGER PRIMARY KEY,
         name TEXT NOT NULL,
         abbreviation TEXT,
+        logo_image_id TEXT,
         synced_at INTEGER
       )
     ''');
@@ -143,6 +144,10 @@ class DatabaseService {
     if (oldVersion < 3) {
       await _createCollectionsTable(db);
       await _createCollectionGamesTable(db);
+    }
+    if (oldVersion < 4) {
+      // Добавляем колонку logo_image_id для хранения логотипов платформ
+      await db.execute('ALTER TABLE platforms ADD COLUMN logo_image_id TEXT');
     }
   }
 

@@ -1,7 +1,11 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/database/database_service.dart';
+import '../../../core/services/image_cache_service.dart';
+import '../../../shared/models/platform.dart';
 import '../providers/settings_provider.dart';
 
 /// URL для получения API ключей IGDB.
@@ -87,6 +91,52 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     if (success && mounted) {
       _showSnackBar('Platforms synced successfully!', isError: false);
+
+      // Скачиваем логотипы если включено кэширование
+      await _downloadLogosIfEnabled();
+    }
+  }
+
+  Future<void> _downloadLogosIfEnabled() async {
+    final ImageCacheService cacheService =
+        ref.read(imageCacheServiceProvider);
+
+    final bool enabled = await cacheService.isCacheEnabled();
+    if (!enabled) return;
+
+    // Получаем платформы из БД
+    final DatabaseService dbService = ref.read(databaseServiceProvider);
+    final List<Platform> platforms = await dbService.getAllPlatforms();
+
+    if (!mounted) return;
+
+    // Показываем прогресс
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    messenger.showSnackBar(
+      const SnackBar(
+        content: Text('Downloading platform logos...'),
+        duration: Duration(seconds: 60),
+      ),
+    );
+
+    // Формируем задачи для скачивания
+    final List<ImageDownloadTask> tasks = platforms
+        .where((Platform p) => p.logoImageId != null && p.logoUrl != null)
+        .map((Platform p) => ImageDownloadTask(
+              imageId: p.logoImageId!,
+              remoteUrl: p.logoUrl!,
+            ))
+        .toList();
+
+    final int downloaded = await cacheService.downloadImages(
+      type: ImageType.platformLogo,
+      tasks: tasks,
+    );
+
+    messenger.hideCurrentSnackBar();
+    if (mounted) {
+      _showSnackBar('Downloaded $downloaded logos', isError: false);
+      setState(() {}); // Обновить статистику кэша
     }
   }
 
@@ -124,6 +174,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             _buildStatusSection(settings),
             const SizedBox(height: 24),
             _buildActionsSection(settings),
+            const SizedBox(height: 24),
+            _buildCacheSection(),
             if (settings.errorMessage != null) ...<Widget>[
               const SizedBox(height: 16),
               _buildErrorSection(settings.errorMessage!),
@@ -357,6 +409,147 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
       ],
     );
+  }
+
+  Widget _buildCacheSection() {
+    final ImageCacheService cacheService =
+        ref.read(imageCacheServiceProvider);
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+              children: <Widget>[
+                Icon(Icons.folder, color: Theme.of(context).colorScheme.primary),
+                const SizedBox(width: 8),
+                Text(
+                  'Image Cache',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Галка включения кэширования
+            FutureBuilder<bool>(
+              future: cacheService.isCacheEnabled(),
+              builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+                final bool enabled = snapshot.data ?? false;
+                return SwitchListTile(
+                  title: const Text('Offline mode'),
+                  subtitle: const Text(
+                    'Save images locally for offline use',
+                  ),
+                  value: enabled,
+                  onChanged: (bool value) async {
+                    await cacheService.setCacheEnabled(value);
+                    setState(() {});
+                  },
+                  contentPadding: EdgeInsets.zero,
+                );
+              },
+            ),
+
+            const Divider(),
+
+            // Путь к кэшу
+            FutureBuilder<String>(
+              future: cacheService.getBaseCachePath(),
+              builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                final String path = snapshot.data ?? 'Loading...';
+                return ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Cache folder'),
+                  subtitle: Text(
+                    path,
+                    style: const TextStyle(fontSize: 12),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.folder_open),
+                    onPressed: () => _selectCacheFolder(cacheService),
+                    tooltip: 'Select folder',
+                  ),
+                );
+              },
+            ),
+
+            // Статистика кэша
+            FutureBuilder<List<dynamic>>(
+              future: Future.wait(<Future<dynamic>>[
+                cacheService.getCachedCount(),
+                cacheService.getCacheSize(),
+              ]),
+              builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
+                final int count = (snapshot.data?[0] as int?) ?? 0;
+                final int size = (snapshot.data?[1] as int?) ?? 0;
+                return ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Cache size'),
+                  subtitle: Text('$count files, ${cacheService.formatSize(size)}'),
+                  trailing: TextButton.icon(
+                    icon: const Icon(Icons.delete_outline, size: 18),
+                    label: const Text('Clear'),
+                    onPressed: count > 0
+                        ? () => _clearCache(cacheService)
+                        : null,
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _selectCacheFolder(ImageCacheService cacheService) async {
+    final String? selectedDirectory = await FilePicker.platform.getDirectoryPath(
+      dialogTitle: 'Select cache folder for images',
+    );
+
+    if (selectedDirectory != null) {
+      await cacheService.setCachePath(selectedDirectory);
+      setState(() {});
+      if (mounted) {
+        _showSnackBar('Cache folder updated', isError: false);
+      }
+    }
+  }
+
+  Future<void> _clearCache(ImageCacheService cacheService) async {
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Clear cache?'),
+        content: const Text(
+          'This will delete all locally saved images. '
+          'They will be downloaded again during the next sync.',
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Clear'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      await cacheService.clearCache();
+      setState(() {});
+      if (mounted) {
+        _showSnackBar('Cache cleared', isError: false);
+      }
+    }
   }
 
   Widget _buildErrorSection(String errorMessage) {

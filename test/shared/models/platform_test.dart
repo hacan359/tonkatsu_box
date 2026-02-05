@@ -6,6 +6,7 @@ void main() {
     const int testId = 1;
     const String testName = 'Super Nintendo Entertainment System';
     const String testAbbreviation = 'SNES';
+    const String testLogoImageId = 'pl6b';
     const int testSyncedAt = 1700000000;
 
     group('constructor', () {
@@ -26,12 +27,14 @@ void main() {
           id: testId,
           name: testName,
           abbreviation: testAbbreviation,
+          logoImageId: testLogoImageId,
           syncedAt: testSyncedAt,
         );
 
         expect(platform.id, equals(testId));
         expect(platform.name, equals(testName));
         expect(platform.abbreviation, equals(testAbbreviation));
+        expect(platform.logoImageId, equals(testLogoImageId));
         expect(platform.syncedAt, equals(testSyncedAt));
       });
     });
@@ -65,6 +68,59 @@ void main() {
         expect(platform.name, equals(testName));
         expect(platform.abbreviation, isNull);
       });
+
+      test('должен парсить platform_logo с image_id', () {
+        final Map<String, dynamic> json = <String, dynamic>{
+          'id': testId,
+          'name': testName,
+          'platform_logo': <String, dynamic>{
+            'id': 123,
+            'image_id': testLogoImageId,
+          },
+        };
+
+        final Platform platform = Platform.fromJson(json);
+
+        expect(platform.logoImageId, equals(testLogoImageId));
+      });
+
+      test('должен установить null logoImageId когда platform_logo отсутствует', () {
+        final Map<String, dynamic> json = <String, dynamic>{
+          'id': testId,
+          'name': testName,
+        };
+
+        final Platform platform = Platform.fromJson(json);
+
+        expect(platform.logoImageId, isNull);
+      });
+
+      test('должен установить null logoImageId когда platform_logo не Map', () {
+        final Map<String, dynamic> json = <String, dynamic>{
+          'id': testId,
+          'name': testName,
+          'platform_logo': 123, // просто ID, не объект
+        };
+
+        final Platform platform = Platform.fromJson(json);
+
+        expect(platform.logoImageId, isNull);
+      });
+
+      test('должен установить null logoImageId когда image_id отсутствует в platform_logo', () {
+        final Map<String, dynamic> json = <String, dynamic>{
+          'id': testId,
+          'name': testName,
+          'platform_logo': <String, dynamic>{
+            'id': 123,
+            // image_id отсутствует
+          },
+        };
+
+        final Platform platform = Platform.fromJson(json);
+
+        expect(platform.logoImageId, isNull);
+      });
     });
 
     group('fromDb', () {
@@ -73,6 +129,7 @@ void main() {
           'id': testId,
           'name': testName,
           'abbreviation': testAbbreviation,
+          'logo_image_id': testLogoImageId,
           'synced_at': testSyncedAt,
         };
 
@@ -81,6 +138,7 @@ void main() {
         expect(platform.id, equals(testId));
         expect(platform.name, equals(testName));
         expect(platform.abbreviation, equals(testAbbreviation));
+        expect(platform.logoImageId, equals(testLogoImageId));
         expect(platform.syncedAt, equals(testSyncedAt));
       });
 
@@ -89,6 +147,7 @@ void main() {
           'id': testId,
           'name': testName,
           'abbreviation': null,
+          'logo_image_id': null,
           'synced_at': null,
         };
 
@@ -97,6 +156,7 @@ void main() {
         expect(platform.id, equals(testId));
         expect(platform.name, equals(testName));
         expect(platform.abbreviation, isNull);
+        expect(platform.logoImageId, isNull);
         expect(platform.syncedAt, isNull);
       });
     });
@@ -107,6 +167,7 @@ void main() {
           id: testId,
           name: testName,
           abbreviation: testAbbreviation,
+          logoImageId: testLogoImageId,
           syncedAt: testSyncedAt,
         );
 
@@ -115,6 +176,7 @@ void main() {
         expect(result['id'], equals(testId));
         expect(result['name'], equals(testName));
         expect(result['abbreviation'], equals(testAbbreviation));
+        expect(result['logo_image_id'], equals(testLogoImageId));
         expect(result['synced_at'], equals(testSyncedAt));
       });
 
@@ -127,6 +189,7 @@ void main() {
         final Map<String, dynamic> result = platform.toDb();
 
         expect(result['abbreviation'], isNull);
+        expect(result['logo_image_id'], isNull);
         expect(result['synced_at'], isNull);
       });
     });
@@ -145,6 +208,30 @@ void main() {
         expect(result['name'], equals(testName));
         expect(result['abbreviation'], equals(testAbbreviation));
         expect(result.containsKey('synced_at'), isFalse);
+      });
+    });
+
+    group('logoUrl', () {
+      test('должен вернуть URL когда logoImageId есть', () {
+        const Platform platform = Platform(
+          id: testId,
+          name: testName,
+          logoImageId: testLogoImageId,
+        );
+
+        expect(
+          platform.logoUrl,
+          equals('https://images.igdb.com/igdb/image/upload/t_cover_big/$testLogoImageId.png'),
+        );
+      });
+
+      test('должен вернуть null когда logoImageId отсутствует', () {
+        const Platform platform = Platform(
+          id: testId,
+          name: testName,
+        );
+
+        expect(platform.logoUrl, isNull);
       });
     });
 
@@ -257,11 +344,20 @@ void main() {
         expect(copy.syncedAt, equals(9999));
       });
 
+      test('должен создать копию с изменённым logoImageId', () {
+        const Platform original = Platform(id: testId, name: testName);
+
+        final Platform copy = original.copyWith(logoImageId: 'newlogo');
+
+        expect(copy.logoImageId, equals('newlogo'));
+      });
+
       test('должен сохранить все поля при пустом copyWith', () {
         const Platform original = Platform(
           id: testId,
           name: testName,
           abbreviation: testAbbreviation,
+          logoImageId: testLogoImageId,
           syncedAt: testSyncedAt,
         );
 
@@ -270,6 +366,7 @@ void main() {
         expect(copy.id, equals(original.id));
         expect(copy.name, equals(original.name));
         expect(copy.abbreviation, equals(original.abbreviation));
+        expect(copy.logoImageId, equals(original.logoImageId));
         expect(copy.syncedAt, equals(original.syncedAt));
       });
     });
