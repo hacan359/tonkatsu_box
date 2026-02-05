@@ -10,6 +10,7 @@ import '../../search/screens/search_screen.dart';
 import '../providers/collections_provider.dart';
 import '../widgets/create_collection_dialog.dart';
 import '../widgets/status_dropdown.dart';
+import 'game_detail_screen.dart';
 
 /// Экран детального просмотра коллекции.
 class CollectionScreen extends ConsumerStatefulWidget {
@@ -395,13 +396,13 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   }
 
   void _showGameDetails(CollectionGame game) {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      builder: (BuildContext context) => _GameDetailSheet(
-        gameId: game.id,
-        collectionId: widget.collectionId,
-        isEditable: _collection!.isEditable,
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => GameDetailScreen(
+          collectionId: widget.collectionId,
+          gameId: game.id,
+          isEditable: _collection!.isEditable,
+        ),
       ),
     );
   }
@@ -683,219 +684,3 @@ class _CollectionGameTile extends StatelessWidget {
   }
 }
 
-/// Bottom sheet с деталями игры в коллекции.
-class _GameDetailSheet extends ConsumerWidget {
-  const _GameDetailSheet({
-    required this.gameId,
-    required this.collectionId,
-    required this.isEditable,
-  });
-
-  final int gameId;
-  final int collectionId;
-  final bool isEditable;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-
-    // Получаем актуальное состояние игры из провайдера
-    final AsyncValue<List<CollectionGame>> gamesAsync =
-        ref.watch(collectionGamesNotifierProvider(collectionId));
-
-    return gamesAsync.when(
-      data: (List<CollectionGame> games) {
-        // Находим игру по ID
-        CollectionGame? game;
-        for (final CollectionGame g in games) {
-          if (g.id == gameId) {
-            game = g;
-            break;
-          }
-        }
-
-        if (game == null) {
-          return const Center(child: Text('Game not found'));
-        }
-
-        return _buildContent(context, ref, theme, colorScheme, game);
-      },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (Object error, StackTrace stack) => Center(
-        child: Text('Error: $error'),
-      ),
-    );
-  }
-
-  Widget _buildContent(
-    BuildContext context,
-    WidgetRef ref,
-    ThemeData theme,
-    ColorScheme colorScheme,
-    CollectionGame game,
-  ) {
-    final Game? gameData = game.game;
-
-    return DraggableScrollableSheet(
-      initialChildSize: 0.6,
-      minChildSize: 0.4,
-      maxChildSize: 0.9,
-      expand: false,
-      builder: (BuildContext context, ScrollController scrollController) {
-        return SingleChildScrollView(
-          controller: scrollController,
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              // Handle
-              Center(
-                child: Container(
-                  width: 32,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Название
-              Text(
-                game.gameName,
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              const SizedBox(height: 8),
-
-              // Платформа
-              Text(
-                game.platformName,
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // Статус
-              Row(
-                children: <Widget>[
-                  Text(
-                    'Status: ',
-                    style: theme.textTheme.titleSmall,
-                  ),
-                  StatusDropdown(
-                    status: game.status,
-                    onChanged: (GameStatus status) {
-                      ref
-                          .read(collectionGamesNotifierProvider(collectionId)
-                              .notifier)
-                          .updateStatus(game.id, status);
-                    },
-                  ),
-                ],
-              ),
-
-              // Описание
-              if (gameData?.summary != null) ...<Widget>[
-                const SizedBox(height: 24),
-                Text(
-                  'Description',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  gameData!.summary!,
-                  style: theme.textTheme.bodyMedium,
-                ),
-              ],
-
-              // Комментарий автора
-              if (game.hasAuthorComment) ...<Widget>[
-                const SizedBox(height: 24),
-                Text(
-                  "Author's Comment",
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: colorScheme.tertiaryContainer.withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Icon(
-                        Icons.format_quote,
-                        color: colorScheme.tertiary,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          game.authorComment!,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-
-              // Личная заметка
-              if (game.hasUserComment) ...<Widget>[
-                const SizedBox(height: 24),
-                Text(
-                  'My Notes',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: colorScheme.primaryContainer.withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Icon(
-                        Icons.note,
-                        color: colorScheme.primary,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          game.userComment!,
-                          style: theme.textTheme.bodyMedium,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-
-              const SizedBox(height: 32),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
