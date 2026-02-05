@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/database_service.dart';
+import '../../../core/services/image_cache_service.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/game.dart';
 import '../../../shared/models/platform.dart';
+import '../../../shared/widgets/cached_image.dart' as app_cached;
 import '../../collections/providers/collections_provider.dart';
 import '../providers/game_search_provider.dart';
 import '../widgets/game_card.dart';
@@ -276,7 +278,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               final String platformName =
                   platform?.displayName ?? 'Platform $id';
               return ListTile(
-                leading: const Icon(Icons.videogame_asset),
+                leading: _buildPlatformLogo(platform),
                 title: Text(platformName),
                 onTap: () => Navigator.of(context).pop(id),
               );
@@ -291,6 +293,22 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildPlatformLogo(Platform? platform) {
+    if (platform?.logoUrl != null && platform?.logoImageId != null) {
+      return app_cached.CachedImage(
+        imageType: ImageType.platformLogo,
+        imageId: platform!.logoImageId!,
+        remoteUrl: platform.logoUrl!,
+        width: 32,
+        height: 32,
+        fit: BoxFit.contain,
+        placeholder: const Icon(Icons.videogame_asset, size: 24),
+        errorWidget: const Icon(Icons.videogame_asset, size: 24),
+      );
+    }
+    return const Icon(Icons.videogame_asset, size: 24);
   }
 
   void _showGameDetails(Game game) {

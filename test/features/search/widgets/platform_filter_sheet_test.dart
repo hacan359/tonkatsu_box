@@ -92,11 +92,11 @@ void main() {
 
         expect(find.text('PC Windows'), findsOneWidget);
         // Проверяем что subtitle отсутствует (нет Text с abbreviation)
-        final Finder tile = find.byType(CheckboxListTile);
+        final Finder tile = find.byType(ListTile);
         expect(tile, findsOneWidget);
 
-        final CheckboxListTile checkboxTile = tester.widget<CheckboxListTile>(tile);
-        expect(checkboxTile.subtitle, isNull);
+        final ListTile listTile = tester.widget<ListTile>(tile);
+        expect(listTile.subtitle, isNull);
       });
 
       testWidgets('должен показывать кнопки Cancel и Apply', (WidgetTester tester) async {
@@ -271,30 +271,18 @@ void main() {
         expect(find.text('2 selected'), findsOneWidget);
 
         // Проверяем что чекбоксы отмечены
-        final Finder checkboxes = find.byType(CheckboxListTile);
-        final CheckboxListTile ps5Tile = tester.widget<CheckboxListTile>(
-          find.ancestor(
-            of: find.text('PlayStation 5'),
-            matching: checkboxes,
-          ),
-        );
-        expect(ps5Tile.value, isTrue);
+        // Находим ListTile для каждой платформы и проверяем trailing Checkbox
+        final List<Checkbox> checkboxWidgets = tester.widgetList<Checkbox>(
+          find.byType(Checkbox),
+        ).toList();
 
-        final CheckboxListTile switchTile = tester.widget<CheckboxListTile>(
-          find.ancestor(
-            of: find.text('Nintendo Switch'),
-            matching: checkboxes,
-          ),
-        );
-        expect(switchTile.value, isTrue);
-
-        final CheckboxListTile xboxTile = tester.widget<CheckboxListTile>(
-          find.ancestor(
-            of: find.text('Xbox Series X'),
-            matching: checkboxes,
-          ),
-        );
-        expect(xboxTile.value, isFalse);
+        // Порядок: PS5 (id:1), Xbox (id:2), Switch (id:3)
+        // PS5 (index 0) - выбран
+        expect(checkboxWidgets[0].value, isTrue);
+        // Xbox (index 1) - не выбран
+        expect(checkboxWidgets[1].value, isFalse);
+        // Switch (index 2) - выбран
+        expect(checkboxWidgets[2].value, isTrue);
       });
     });
 

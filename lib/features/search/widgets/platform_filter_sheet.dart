@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/services/image_cache_service.dart';
 import '../../../shared/models/platform.dart';
+import '../../../shared/widgets/cached_image.dart' as app_cached;
 
 /// BottomSheet для выбора платформ с поиском.
 ///
 /// Позволяет фильтровать список платформ по названию
 /// и выбирать несколько платформ через чекбоксы.
-class PlatformFilterSheet extends StatefulWidget {
+class PlatformFilterSheet extends ConsumerStatefulWidget {
   /// Создаёт [PlatformFilterSheet].
   const PlatformFilterSheet({
     required this.platforms,
@@ -25,10 +28,10 @@ class PlatformFilterSheet extends StatefulWidget {
   final void Function(List<int> selectedIds) onApply;
 
   @override
-  State<PlatformFilterSheet> createState() => _PlatformFilterSheetState();
+  ConsumerState<PlatformFilterSheet> createState() => _PlatformFilterSheetState();
 }
 
-class _PlatformFilterSheetState extends State<PlatformFilterSheet> {
+class _PlatformFilterSheetState extends ConsumerState<PlatformFilterSheet> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocus = FocusNode();
 
@@ -204,15 +207,18 @@ class _PlatformFilterSheetState extends State<PlatformFilterSheet> {
                         final bool isSelected =
                             _selectedIds.contains(platform.id);
 
-                        return CheckboxListTile(
-                          value: isSelected,
-                          onChanged: (_) => _togglePlatform(platform.id),
+                        return ListTile(
+                          leading: _buildPlatformLogo(platform),
                           title: Text(platform.name),
                           subtitle: platform.abbreviation != null
                               ? Text(platform.abbreviation!)
                               : null,
+                          trailing: Checkbox(
+                            value: isSelected,
+                            onChanged: (_) => _togglePlatform(platform.id),
+                          ),
                           dense: true,
-                          controlAffinity: ListTileControlAffinity.leading,
+                          onTap: () => _togglePlatform(platform.id),
                         );
                       },
                     ),
@@ -257,6 +263,22 @@ class _PlatformFilterSheetState extends State<PlatformFilterSheet> {
         );
       },
     );
+  }
+
+  Widget _buildPlatformLogo(Platform platform) {
+    if (platform.logoUrl != null && platform.logoImageId != null) {
+      return app_cached.CachedImage(
+        imageType: ImageType.platformLogo,
+        imageId: platform.logoImageId!,
+        remoteUrl: platform.logoUrl!,
+        width: 32,
+        height: 32,
+        fit: BoxFit.contain,
+        placeholder: const Icon(Icons.devices, size: 24),
+        errorWidget: const Icon(Icons.devices, size: 24),
+      );
+    }
+    return const Icon(Icons.devices, size: 24);
   }
 
   Widget _buildEmptyState(ThemeData theme, ColorScheme colorScheme) {

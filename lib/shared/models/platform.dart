@@ -7,15 +7,24 @@ class Platform {
     required this.id,
     required this.name,
     this.abbreviation,
+    this.logoImageId,
     this.syncedAt,
   });
 
   /// Создаёт [Platform] из JSON ответа IGDB API.
   factory Platform.fromJson(Map<String, dynamic> json) {
+    // platform_logo может быть объектом с image_id при использовании field expansion
+    String? logoImageId;
+    final dynamic platformLogo = json['platform_logo'];
+    if (platformLogo is Map<String, dynamic>) {
+      logoImageId = platformLogo['image_id'] as String?;
+    }
+
     return Platform(
       id: json['id'] as int,
       name: json['name'] as String,
       abbreviation: json['abbreviation'] as String?,
+      logoImageId: logoImageId,
       syncedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
     );
   }
@@ -26,6 +35,7 @@ class Platform {
       id: row['id'] as int,
       name: row['name'] as String,
       abbreviation: row['abbreviation'] as String?,
+      logoImageId: row['logo_image_id'] as String?,
       syncedAt: row['synced_at'] as int?,
     );
   }
@@ -39,8 +49,16 @@ class Platform {
   /// Сокращённое название (например, "SNES", "PS1").
   final String? abbreviation;
 
+  /// ID изображения логотипа в IGDB.
+  final String? logoImageId;
+
   /// Время последней синхронизации с IGDB (Unix timestamp).
   final int? syncedAt;
+
+  /// URL логотипа платформы (размер cover_big: 227x320).
+  String? get logoUrl => logoImageId != null
+      ? 'https://images.igdb.com/igdb/image/upload/t_cover_big/$logoImageId.png'
+      : null;
 
   /// Возвращает отображаемое имя (сокращение или полное название).
   String get displayName => abbreviation ?? name;
@@ -63,6 +81,7 @@ class Platform {
       'id': id,
       'name': name,
       'abbreviation': abbreviation,
+      'logo_image_id': logoImageId,
       'synced_at': syncedAt,
     };
   }
@@ -81,12 +100,14 @@ class Platform {
     int? id,
     String? name,
     String? abbreviation,
+    String? logoImageId,
     int? syncedAt,
   }) {
     return Platform(
       id: id ?? this.id,
       name: name ?? this.name,
       abbreviation: abbreviation ?? this.abbreviation,
+      logoImageId: logoImageId ?? this.logoImageId,
       syncedAt: syncedAt ?? this.syncedAt,
     );
   }

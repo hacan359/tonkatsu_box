@@ -64,7 +64,9 @@
 | Stage 2 | stage-2-game-search | #2 | Merged |
 | Stage 3 | feature/stage-3-collections | #3 | Merged |
 | Stage 4 | feature/stage-4-progress-tracking | #6 | Merged |
-| Stage 5 | feature/stage-5-export-import | TBD | In Progress |
+| Stage 5 | feature/stage-5-export-import | #7 | Merged |
+| Fix Revert + Search | fix/revert-and-search | TBD | In Progress |
+| Platform Logos | feature/platform-logos | TBD | Planned |
 
 ---
 
@@ -116,3 +118,58 @@
 **Решение:** При невалидном формате даты используется `DateTime.now()` вместо выброса исключения.
 
 **Причина:** Graceful degradation - пользователь может импортировать файл с битой датой, это не критично для функциональности
+
+---
+
+## Доработка: Логотипы платформ и оффлайн режим (2026-02-05)
+
+### Описание
+
+Загрузка и отображение логотипов платформ из IGDB API с поддержкой оффлайн режима.
+
+### Изменения
+
+1. **IGDB API запрос** — добавлено поле `platform_logo.image_id` через field expansion
+2. **Модель Platform** — добавлено поле `logoImageId` и getter `logoUrl`
+3. **База данных** — миграция v4 для добавления колонки `logo_image_id`
+4. **UI** — отображение логотипов в PlatformFilterSheet и диалоге выбора платформы
+5. **Оффлайн кэш** — сервис для локального хранения изображений
+
+### Технические детали
+
+- URL формат IGDB: `https://images.igdb.com/igdb/image/upload/t_cover_big/{image_id}.png`
+- Используется размер `cover_big` (227x320) — качественные логотипы
+- Fallback на иконку если логотип недоступен
+
+### Оффлайн режим (Image Cache)
+
+**Файлы:**
+- `lib/core/services/image_cache_service.dart` — сервис кэширования
+- `lib/shared/widgets/cached_image.dart` — виджет для отображения
+
+**Настройки (Settings → Image Cache):**
+- **Галка "Offline mode"** — включает локальное сохранение изображений (по умолчанию выключено)
+- **Cache folder** — путь к папке кэша, можно изменить через file picker
+- **Clear** — очистка всего кэша
+
+**Логика работы:**
+1. **Галка выключена:** изображения загружаются из сети (IGDB CDN)
+2. **Галка включена:**
+   - При синхронизации платформ изображения скачиваются локально
+   - Показываются только локальные файлы
+   - Если файл отсутствует — показывается ошибка "Offline" (кэш повреждён)
+
+**Структура кэша:**
+```
+{cache_folder}/
+├── platform_logos/
+│   ├── {image_id}.png
+│   └── ...
+└── game_covers/
+    ├── {image_id}.png
+    └── ...
+```
+
+**Типы изображений (ImageType):**
+- `platformLogo` — логотипы платформ
+- `gameCover` — обложки игр (подготовлено для будущего использования)
