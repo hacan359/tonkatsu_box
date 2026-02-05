@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/database_service.dart';
+import '../../../shared/models/collection.dart';
 import '../../../shared/models/game.dart';
 import '../../../shared/models/platform.dart';
 import '../../collections/providers/collections_provider.dart';
@@ -150,6 +151,107 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     }
   }
 
+  Future<void> _addGameToAnyCollection(Game game) async {
+    // Сохраняем ссылки до async операций
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    final String gameName = game.name;
+
+    // Получаем список коллекций
+    final AsyncValue<List<Collection>> collectionsAsync =
+        ref.read(collectionsProvider);
+
+    final List<Collection>? collections = collectionsAsync.valueOrNull;
+    if (collections == null || collections.isEmpty) {
+      if (mounted) {
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text('No collections available. Create one first.'),
+          ),
+        );
+      }
+      return;
+    }
+
+    // Фильтруем только редактируемые коллекции
+    final List<Collection> editableCollections =
+        collections.where((Collection c) => c.isEditable).toList();
+
+    if (editableCollections.isEmpty) {
+      if (mounted) {
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text('No editable collections. Create your own first.'),
+          ),
+        );
+      }
+      return;
+    }
+
+    // Показываем диалог выбора коллекции
+    final Collection? selectedCollection = await showDialog<Collection>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Add to Collection'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: editableCollections.length,
+            itemBuilder: (BuildContext context, int index) {
+              final Collection collection = editableCollections[index];
+              return ListTile(
+                leading: Icon(
+                  collection.type == CollectionType.own
+                      ? Icons.folder
+                      : Icons.fork_right,
+                ),
+                title: Text(collection.name),
+                subtitle: Text(collection.author),
+                onTap: () => Navigator.of(context).pop(collection),
+              );
+            },
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+
+    if (selectedCollection == null || !mounted) return;
+
+    // Выбираем платформу
+    final int? platformId = await _showPlatformSelectionDialog(game);
+    if (platformId == null || !mounted) return;
+
+    // Добавляем игру
+    final bool success = await ref
+        .read(collectionGamesNotifierProvider(selectedCollection.id).notifier)
+        .addGame(
+          igdbId: game.id,
+          platformId: platformId,
+        );
+
+    if (mounted) {
+      if (success) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('$gameName added to ${selectedCollection.name}'),
+          ),
+        );
+      } else {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('$gameName already in ${selectedCollection.name}'),
+          ),
+        );
+      }
+    }
+  }
+
   Future<int?> _showPlatformSelectionDialog(Game game) async {
     final List<int>? platformIds = game.platformIds;
 
@@ -195,7 +297,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (BuildContext context) => _GameDetailsSheet(game: game),
+      builder: (BuildContext context) => _GameDetailsSheet(
+        game: game,
+        onAddToCollection: () => _addGameToAnyCollection(game),
+      ),
     );
   }
 
@@ -349,18 +454,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             game: game,
             onTap: () => _onGameTap(game),
             platformNames: _getPlatformNames(game.platformIds),
-            trailing: IconButton(
-              icon: const Icon(Icons.add_circle_outline),
-              tooltip: 'Add to collection',
-              onPressed: () {
-                // TODO: Implement in Stage 3
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Add to collection coming in Stage 3'),
-                  ),
-                );
-              },
-            ),
+            trailing: widget.collectionId == null
+                ? IconButton(
+                    icon: const Icon(Icons.add_circle_outline),
+                    tooltip: 'Add to collection',
+                    onPressed: () => _addGameToAnyCollection(game),
+                  )
+                : null,
           ),
         );
       },
@@ -478,9 +578,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
 /// Bottom sheet с деталями игры.
 class _GameDetailsSheet extends StatelessWidget {
-  const _GameDetailsSheet({required this.game});
+  const _GameDetailsSheet({
+    required this.game,
+    required this.onAddToCollection,
+  });
 
   final Game game;
+  final VoidCallback onAddToCollection;
 
   @override
   Widget build(BuildContext context) {
@@ -578,11 +682,7 @@ class _GameDetailsSheet extends StatelessWidget {
                 child: FilledButton.icon(
                   onPressed: () {
                     Navigator.of(context).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Add to collection coming in Stage 3'),
-                      ),
-                    );
+                    onAddToCollection();
                   },
                   icon: const Icon(Icons.add),
                   label: const Text('Add to Collection'),

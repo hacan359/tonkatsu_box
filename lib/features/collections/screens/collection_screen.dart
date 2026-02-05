@@ -487,22 +487,33 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
 
     if (confirmed != true || !mounted) return;
 
+    // Сохраняем ссылки до async операций
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    final Color errorColor = Theme.of(context).colorScheme.error;
+
     try {
       await ref
           .read(collectionsProvider.notifier)
           .revertToOriginal(widget.collectionId);
 
+      // Обновляем список игр после revert
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        await ref
+            .read(collectionGamesNotifierProvider(widget.collectionId).notifier)
+            .refresh();
+      }
+
+      if (mounted) {
+        messenger.showSnackBar(
           const SnackBar(content: Text('Reverted to original')),
         );
       }
     } on Exception catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
             content: Text('Failed to revert: $e'),
-            backgroundColor: Theme.of(context).colorScheme.error,
+            backgroundColor: errorColor,
           ),
         );
       }
