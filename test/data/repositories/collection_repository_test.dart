@@ -10,7 +10,7 @@ class MockDatabaseService extends Mock implements DatabaseService {}
 void main() {
   group('CollectionStats', () {
     group('constructor', () {
-      test('должен создавать экземпляр с обязательными полями', () {
+      test('должен создавать экземпляр с обязательными полями 2', () {
         const CollectionStats stats = CollectionStats(
           total: 10,
           completed: 3,
