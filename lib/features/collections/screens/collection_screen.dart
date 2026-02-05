@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/services/export_service.dart';
 import '../../../data/repositories/collection_repository.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_game.dart';
@@ -79,6 +80,11 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
               tooltip: 'Rename',
               onPressed: () => _renameCollection(context),
             ),
+          IconButton(
+            icon: const Icon(Icons.file_upload_outlined),
+            tooltip: 'Export',
+            onPressed: () => _exportCollection(),
+          ),
           PopupMenuButton<String>(
             onSelected: (String value) => _handleMenuAction(value),
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
@@ -529,6 +535,72 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           ),
         );
       }
+    }
+  }
+
+  Future<void> _exportCollection() async {
+    if (_collection == null) return;
+
+    // Получаем список игр
+    final AsyncValue<List<CollectionGame>> gamesAsync =
+        ref.read(collectionGamesNotifierProvider(widget.collectionId));
+
+    final List<CollectionGame>? games = gamesAsync.valueOrNull;
+    if (games == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Games not loaded yet')),
+        );
+      }
+      return;
+    }
+
+    // Показываем индикатор
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Row(
+            children: <Widget>[
+              SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              SizedBox(width: 12),
+              Text('Preparing export...'),
+            ],
+          ),
+          duration: Duration(seconds: 1),
+        ),
+      );
+    }
+
+    final ExportService exportService = ref.read(exportServiceProvider);
+    final ExportResult result =
+        await exportService.exportToFile(_collection!, games);
+
+    if (!mounted) return;
+
+    // Скрываем предыдущий snackbar
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+    if (result.success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Exported to ${result.filePath}'),
+          action: SnackBarAction(
+            label: 'OK',
+            onPressed: () {},
+          ),
+        ),
+      );
+    } else if (!result.isCancelled) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result.error ?? 'Export failed'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
     }
   }
 }

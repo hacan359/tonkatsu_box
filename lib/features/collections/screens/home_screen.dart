@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/services/import_service.dart';
 import '../../../shared/models/collection.dart';
 import '../../search/screens/search_screen.dart';
 import '../../settings/providers/settings_provider.dart';
@@ -32,6 +33,13 @@ class HomeScreen extends ConsumerWidget {
             tooltip: 'Search Games',
             onPressed: settings.isApiReady
                 ? () => _navigateToSearch(context)
+                : null,
+          ),
+          IconButton(
+            icon: const Icon(Icons.file_download_outlined),
+            tooltip: 'Import Collection',
+            onPressed: settings.isApiReady
+                ? () => _importCollection(context, ref)
                 : null,
           ),
           IconButton(
@@ -403,5 +411,142 @@ class HomeScreen extends ConsumerWidget {
         );
       }
     }
+  }
+
+  Future<void> _importCollection(BuildContext context, WidgetRef ref) async {
+    final ImportService importService = ref.read(importServiceProvider);
+
+    // Показываем диалог прогресса
+    final ValueNotifier<ImportProgress?> progressNotifier =
+        ValueNotifier<ImportProgress?>(null);
+
+    ImportResult? importResult;
+
+    // Запускаем импорт
+    final Future<ImportResult> importFuture = importService.importFromFile(
+      onProgress: (ImportProgress progress) {
+        progressNotifier.value = progress;
+      },
+    ).then((ImportResult result) {
+      importResult = result;
+      return result;
+    });
+
+    // Показываем диалог с прогрессом
+    final bool? dialogResult = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) => _ImportProgressDialog(
+        progressNotifier: progressNotifier,
+        importFuture: importFuture,
+      ),
+    );
+
+    // Очищаем ValueNotifier
+    progressNotifier.dispose();
+
+    // Если диалог был закрыт до завершения импорта или результат не получен
+    if (dialogResult == null || importResult == null) return;
+
+    final ImportResult result = importResult!;
+
+    if (!context.mounted) return;
+
+    if (result.success && result.collection != null) {
+      // Обновляем список коллекций
+      ref.invalidate(collectionsProvider);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Imported "${result.collection!.name}" with ${result.gamesImported} games',
+          ),
+        ),
+      );
+
+      // Переходим к импортированной коллекции
+      _navigateToCollection(context, result.collection!);
+    } else if (!result.isCancelled && result.error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result.error!),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
+  }
+}
+
+/// Диалог прогресса импорта.
+class _ImportProgressDialog extends StatelessWidget {
+  const _ImportProgressDialog({
+    required this.progressNotifier,
+    required this.importFuture,
+  });
+
+  final ValueNotifier<ImportProgress?> progressNotifier;
+  final Future<ImportResult> importFuture;
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Importing Collection'),
+      content: ValueListenableBuilder<ImportProgress?>(
+        valueListenable: progressNotifier,
+        builder: (BuildContext context, ImportProgress? progress, Widget? child) {
+          if (progress == null) {
+            return const SizedBox(
+              height: 100,
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                progress.stage.description,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              if (progress.message != null) ...<Widget>[
+                const SizedBox(height: 4),
+                Text(
+                  progress.message!,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                ),
+              ],
+              const SizedBox(height: 16),
+              LinearProgressIndicator(
+                value: progress.total > 0 ? progress.progress : null,
+              ),
+              if (progress.total > 0) ...<Widget>[
+                const SizedBox(height: 8),
+                Text(
+                  '${progress.current} / ${progress.total}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ],
+          );
+        },
+      ),
+      actions: <Widget>[
+        FutureBuilder<ImportResult>(
+          future: importFuture,
+          builder: (BuildContext context, AsyncSnapshot<ImportResult> snapshot) {
+            if (snapshot.connectionState == ConnectionState.done) {
+              return FilledButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Done'),
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
+      ],
+    );
   }
 }
