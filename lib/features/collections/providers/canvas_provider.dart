@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/repositories/canvas_repository.dart';
+import '../../../shared/models/canvas_connection.dart';
 import '../../../shared/models/canvas_item.dart';
 import '../../../shared/models/canvas_viewport.dart';
 import '../../../shared/models/collection_game.dart';
@@ -13,14 +14,19 @@ class CanvasState {
   /// Создаёт экземпляр [CanvasState].
   const CanvasState({
     this.items = const <CanvasItem>[],
+    this.connections = const <CanvasConnection>[],
     this.viewport = CanvasViewport.defaultValue,
     this.isLoading = true,
     this.isInitialized = false,
+    this.connectingFromId,
     this.error,
   });
 
   /// Элементы на канвасе.
   final List<CanvasItem> items;
+
+  /// Связи между элементами.
+  final List<CanvasConnection> connections;
 
   /// Состояние viewport (зум, позиция камеры).
   final CanvasViewport viewport;
@@ -31,22 +37,32 @@ class CanvasState {
   /// Инициализирован ли канвас (данные загружены).
   final bool isInitialized;
 
+  /// ID элемента, от которого создаётся связь (null = не в режиме создания).
+  final int? connectingFromId;
+
   /// Ошибка при загрузке.
   final String? error;
 
   /// Создаёт копию с изменёнными полями.
   CanvasState copyWith({
     List<CanvasItem>? items,
+    List<CanvasConnection>? connections,
     CanvasViewport? viewport,
     bool? isLoading,
     bool? isInitialized,
+    int? connectingFromId,
+    bool clearConnectingFromId = false,
     String? error,
   }) {
     return CanvasState(
       items: items ?? this.items,
+      connections: connections ?? this.connections,
       viewport: viewport ?? this.viewport,
       isLoading: isLoading ?? this.isLoading,
       isInitialized: isInitialized ?? this.isInitialized,
+      connectingFromId: clearConnectingFromId
+          ? null
+          : (connectingFromId ?? this.connectingFromId),
       error: error,
     );
   }
@@ -105,13 +121,20 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int> {
         // Синхронизация: удаляем сиротские элементы канваса
         await _syncCanvasWithGames();
 
-        // Загружаем элементы и viewport параллельно
-        final (List<CanvasItem> items, CanvasViewport? viewport) =
-            await (_repository.getItemsWithData(_collectionId),
-                _repository.getViewport(_collectionId)).wait;
+        // Загружаем элементы, viewport и связи параллельно
+        final (
+          List<CanvasItem> items,
+          CanvasViewport? viewport,
+          List<CanvasConnection> connections,
+        ) = await (
+          _repository.getItemsWithData(_collectionId),
+          _repository.getViewport(_collectionId),
+          _repository.getConnections(_collectionId),
+        ).wait;
 
         state = state.copyWith(
           items: items,
+          connections: connections,
           viewport: viewport ??
               CanvasViewport(collectionId: _collectionId),
           isLoading: false,
@@ -385,11 +408,18 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int> {
   }
 
   /// Удаляет элемент с канваса.
+  ///
+  /// Связи удаляются каскадно в БД (FK CASCADE).
+  /// В state фильтруем connections с участием удалённого элемента.
   Future<void> deleteItem(int itemId) async {
     await _repository.deleteItem(itemId);
     state = state.copyWith(
       items: state.items
           .where((CanvasItem item) => item.id != itemId)
+          .toList(),
+      connections: state.connections
+          .where((CanvasConnection conn) =>
+              conn.fromItemId != itemId && conn.toItemId != itemId)
           .toList(),
     );
   }
@@ -565,5 +595,84 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int> {
         return item;
       }).toList(),
     );
+  }
+
+  // ==================== Connections ====================
+
+  /// Начинает создание связи от указанного элемента.
+  ///
+  /// Устанавливает режим создания связи. При следующем клике
+  /// на элемент вызывается [completeConnection].
+  void startConnection(int fromItemId) {
+    state = state.copyWith(connectingFromId: fromItemId);
+  }
+
+  /// Завершает создание связи к указанному элементу.
+  ///
+  /// Создаёт новую связь между [connectingFromId] и [toItemId],
+  /// сохраняет в БД и обновляет state.
+  Future<void> completeConnection(int toItemId) async {
+    final int? fromItemId = state.connectingFromId;
+    if (fromItemId == null || fromItemId == toItemId) {
+      cancelConnection();
+      return;
+    }
+
+    final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    final CanvasConnection conn = CanvasConnection(
+      id: 0,
+      collectionId: _collectionId,
+      fromItemId: fromItemId,
+      toItemId: toItemId,
+      createdAt: DateTime.fromMillisecondsSinceEpoch(now * 1000),
+    );
+
+    final CanvasConnection created = await _repository.createConnection(conn);
+    state = state.copyWith(
+      connections: <CanvasConnection>[...state.connections, created],
+      clearConnectingFromId: true,
+    );
+  }
+
+  /// Отменяет режим создания связи.
+  void cancelConnection() {
+    state = state.copyWith(clearConnectingFromId: true);
+  }
+
+  /// Удаляет связь.
+  Future<void> deleteConnection(int connectionId) async {
+    await _repository.deleteConnection(connectionId);
+    state = state.copyWith(
+      connections: state.connections
+          .where((CanvasConnection conn) => conn.id != connectionId)
+          .toList(),
+    );
+  }
+
+  /// Обновляет свойства связи (label, color, style).
+  Future<void> updateConnection(
+    int connectionId, {
+    String? label,
+    String? color,
+    ConnectionStyle? style,
+  }) async {
+    final int index = state.connections.indexWhere(
+      (CanvasConnection conn) => conn.id == connectionId,
+    );
+    if (index == -1) return;
+
+    final CanvasConnection updated = state.connections[index].copyWith(
+      label: label,
+      clearLabel: label == null,
+      color: color,
+      style: style,
+    );
+
+    await _repository.updateConnection(updated);
+
+    final List<CanvasConnection> newConnections =
+        List<CanvasConnection>.from(state.connections);
+    newConnections[index] = updated;
+    state = state.copyWith(connections: newConnections);
   }
 }

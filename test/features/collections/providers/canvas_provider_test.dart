@@ -6,6 +6,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:xerabora/data/repositories/canvas_repository.dart';
 import 'package:xerabora/features/collections/providers/canvas_provider.dart';
 import 'package:xerabora/features/collections/providers/collections_provider.dart';
+import 'package:xerabora/shared/models/canvas_connection.dart';
 import 'package:xerabora/shared/models/canvas_item.dart';
 import 'package:xerabora/shared/models/canvas_viewport.dart';
 import 'package:xerabora/shared/models/collection_game.dart';
@@ -296,6 +297,8 @@ void main() {
           .thenAnswer((_) async => viewport);
       when(() => mockRepository.deleteItem(any()))
           .thenAnswer((_) async {});
+      when(() => mockRepository.getConnections(collectionId))
+          .thenAnswer((_) async => const <CanvasConnection>[]);
     }
 
     // Вспомогательный метод: настроить репо для инициализации нового канваса

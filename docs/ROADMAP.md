@@ -17,7 +17,7 @@
 
 - [x] Stage 7: Basic Canvas — visual canvas with zoom, pan, drag-and-drop, grid layout, List/Canvas toggle, bidirectional collection sync
 - [x] Stage 8: Canvas Elements — context menu, text blocks, images, links, resize, z-index
-- [ ] Stage 9: Connections — visual connections between canvas elements
+- [x] Stage 9: Connections — visual connections (solid/dashed/arrow) between canvas elements with labels, colors, edit/delete, auto-cleanup
 - [ ] Stage 10: SteamGridDB Widget — side panel for adding SteamGridDB images to canvas
 - [ ] Stage 12: Export Full — extended .rcoll-full format with canvas layout and images
 

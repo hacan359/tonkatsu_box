@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/repositories/canvas_repository.dart';
+import '../../../shared/models/canvas_connection.dart';
 import '../../../shared/models/canvas_item.dart';
 import '../providers/canvas_provider.dart';
+import 'canvas_connection_painter.dart';
 import 'canvas_context_menu.dart';
 import 'canvas_game_card.dart';
 import 'canvas_image_item.dart';
@@ -13,6 +16,7 @@ import 'canvas_text_item.dart';
 import 'dialogs/add_image_dialog.dart';
 import 'dialogs/add_link_dialog.dart';
 import 'dialogs/add_text_dialog.dart';
+import 'dialogs/edit_connection_dialog.dart';
 
 // Виджет канваса для визуального размещения элементов коллекции.
 //
@@ -41,6 +45,8 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
   final TransformationController _transformationController =
       TransformationController();
 
+  final FocusNode _focusNode = FocusNode();
+
   /// Минимальный зум.
   static const double _minScale = 0.3;
 
@@ -59,13 +65,34 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
   /// Флаг: элемент перетаскивается (блокирует пан InteractiveViewer).
   bool _isItemDragging = false;
 
+  /// Позиция мыши на канвасе (для временной линии связи).
+  Offset? _mouseCanvasPosition;
+
   void _onItemDragStateChanged({required bool isDragging}) {
     setState(() => _isItemDragging = isDragging);
+  }
+
+  /// Обработчик клавиши Escape для отмены создания связи.
+  KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
+    if (event is KeyDownEvent &&
+        event.logicalKey == LogicalKeyboardKey.escape) {
+      final CanvasState canvasState =
+          ref.read(canvasNotifierProvider(widget.collectionId));
+      if (canvasState.connectingFromId != null) {
+        ref
+            .read(canvasNotifierProvider(widget.collectionId).notifier)
+            .cancelConnection();
+        setState(() => _mouseCanvasPosition = null);
+        return KeyEventResult.handled;
+      }
+    }
+    return KeyEventResult.ignored;
   }
 
   @override
   void dispose() {
     _transformationController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -139,6 +166,10 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
       onDelete: () => notifier.deleteItem(item.id),
       onBringToFront: () => notifier.bringToFront(item.id),
       onSendToBack: () => notifier.sendToBack(item.id),
+      onConnect: () {
+        notifier.startConnection(item.id);
+        _focusNode.requestFocus();
+      },
     );
   }
 
@@ -243,6 +274,85 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
         .updateItemData(item.id, result);
   }
 
+  /// Обрабатывает ПКМ на пустом месте с проверкой hit-test на связи.
+  void _onCanvasSecondaryTapWithConnections(
+    Offset globalPosition,
+    Offset localPosition,
+    CanvasState canvasState,
+  ) {
+    // Сначала проверяем, не попали ли мы по связи
+    final CanvasConnectionPainter painter = CanvasConnectionPainter(
+      connections: canvasState.connections,
+      items: canvasState.items,
+    );
+
+    final int? connectionId = painter.hitTestConnection(localPosition);
+    if (connectionId != null) {
+      _showConnectionContextMenu(globalPosition, connectionId, canvasState);
+      return;
+    }
+
+    // Иначе показываем стандартное меню канваса
+    _onCanvasSecondaryTap(globalPosition, localPosition);
+  }
+
+  /// Показывает контекстное меню связи.
+  void _showConnectionContextMenu(
+    Offset globalPosition,
+    int connectionId,
+    CanvasState canvasState,
+  ) {
+    CanvasContextMenu.showConnectionMenu(
+      context,
+      position: globalPosition,
+      onEdit: () => _handleEditConnection(connectionId, canvasState),
+      onDelete: () {
+        ref
+            .read(canvasNotifierProvider(widget.collectionId).notifier)
+            .deleteConnection(connectionId);
+      },
+    );
+  }
+
+  /// Открывает диалог редактирования связи.
+  Future<void> _handleEditConnection(
+    int connectionId,
+    CanvasState canvasState,
+  ) async {
+    final CanvasConnection? conn = canvasState.connections
+        .where((CanvasConnection c) => c.id == connectionId)
+        .firstOrNull;
+    if (conn == null) return;
+
+    final Map<String, dynamic>? result = await EditConnectionDialog.show(
+      context,
+      initialLabel: conn.label,
+      initialColor: conn.color,
+      initialStyle: conn.style,
+    );
+    if (result == null) return;
+    if (!mounted) return;
+
+    ref
+        .read(canvasNotifierProvider(widget.collectionId).notifier)
+        .updateConnection(
+          connectionId,
+          label: result['label'] as String?,
+          color: result['color'] as String?,
+          style: result['style'] != null
+              ? ConnectionStyle.fromString(result['style'] as String)
+              : null,
+        );
+  }
+
+  /// Обрабатывает клик в режиме создания связи.
+  void _handleConnectionModeClick(CanvasItem item) {
+    ref
+        .read(canvasNotifierProvider(widget.collectionId).notifier)
+        .completeConnection(item.id);
+    setState(() => _mouseCanvasPosition = null);
+  }
+
   @override
   Widget build(BuildContext context) {
     final CanvasState canvasState =
@@ -332,6 +442,14 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
       if (bottom > canvasHeight) canvasHeight = bottom;
     }
 
+    final bool isConnecting = canvasState.connectingFromId != null;
+    final CanvasItem? connectingFromItem = isConnecting
+        ? canvasState.items
+            .where(
+                (CanvasItem i) => i.id == canvasState.connectingFromId)
+            .firstOrNull
+        : null;
+
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         final double viewportWidth = constraints.maxWidth;
@@ -349,43 +467,75 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
           });
         }
 
-        return Stack(
-          children: <Widget>[
-            // Канвас с зумом и панорамированием
-            InteractiveViewer(
-              transformationController: _transformationController,
-              constrained: false,
-              panEnabled: !_isItemDragging,
-              minScale: _minScale,
-              maxScale: _maxScale,
-              child: GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onSecondaryTapUp: widget.isEditable
-                    ? (TapUpDetails details) {
-                        _onCanvasSecondaryTap(
-                          details.globalPosition,
-                          details.localPosition,
-                        );
-                      }
-                    : null,
-                child: SizedBox(
-                  width: canvasWidth,
-                  height: canvasHeight,
-                  child: CustomPaint(
-                    painter: _CanvasGridPainter(
-                      color: colorScheme.outlineVariant.withAlpha(60),
-                    ),
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: <Widget>[
-                        for (final CanvasItem item in sortedItems)
-                          _buildCanvasItem(item),
-                      ],
+        return Focus(
+          focusNode: _focusNode,
+          onKeyEvent: _handleKeyEvent,
+          child: Stack(
+            children: <Widget>[
+              // Канвас с зумом и панорамированием
+              InteractiveViewer(
+                transformationController: _transformationController,
+                constrained: false,
+                panEnabled: !_isItemDragging,
+                minScale: _minScale,
+                maxScale: _maxScale,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onSecondaryTapUp: widget.isEditable
+                      ? (TapUpDetails details) {
+                          _onCanvasSecondaryTapWithConnections(
+                            details.globalPosition,
+                            details.localPosition,
+                            canvasState,
+                          );
+                        }
+                      : null,
+                  child: MouseRegion(
+                    cursor: isConnecting
+                        ? SystemMouseCursors.cell
+                        : MouseCursor.defer,
+                    onHover: isConnecting
+                        ? (PointerEvent event) {
+                            setState(() {
+                              _mouseCanvasPosition = event.localPosition;
+                            });
+                          }
+                        : null,
+                    child: SizedBox(
+                      width: canvasWidth,
+                      height: canvasHeight,
+                      child: CustomPaint(
+                        painter: _CanvasGridPainter(
+                          color: colorScheme.outlineVariant.withAlpha(60),
+                        ),
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: <Widget>[
+                            // Связи рисуются под элементами
+                            if (canvasState.connections.isNotEmpty ||
+                                isConnecting)
+                              Positioned.fill(
+                                child: CustomPaint(
+                                  painter: CanvasConnectionPainter(
+                                    connections: canvasState.connections,
+                                    items: canvasState.items,
+                                    connectingFrom: connectingFromItem,
+                                    mousePosition: _mouseCanvasPosition,
+                                    labelBackgroundColor:
+                                        colorScheme.surfaceContainerLow
+                                            .withAlpha(220),
+                                  ),
+                                ),
+                              ),
+                            for (final CanvasItem item in sortedItems)
+                              _buildCanvasItem(item, isConnecting),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
             // Кнопки управления (поверх канваса, фиксированы)
             Positioned(
               right: 16,
@@ -434,61 +584,92 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
                 ],
               ),
             ),
+            // Индикатор режима создания связи
+            if (isConnecting)
+              Positioned(
+                left: 0,
+                right: 0,
+                top: 0,
+                child: Material(
+                  color: colorScheme.primaryContainer.withAlpha(230),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    child: Row(
+                      children: <Widget>[
+                        Icon(
+                          Icons.timeline,
+                          size: 18,
+                          color: colorScheme.onPrimaryContainer,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Click on an element to create a connection. '
+                            'Press Escape to cancel.',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onPrimaryContainer,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            Icons.close,
+                            size: 18,
+                            color: colorScheme.onPrimaryContainer,
+                          ),
+                          onPressed: () {
+                            ref
+                                .read(canvasNotifierProvider(
+                                        widget.collectionId)
+                                    .notifier)
+                                .cancelConnection();
+                            setState(
+                                () => _mouseCanvasPosition = null);
+                          },
+                          constraints: const BoxConstraints(),
+                          padding: EdgeInsets.zero,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
           ],
+          ),
         );
       },
     );
   }
 
-  Widget _buildCanvasItem(CanvasItem item) {
+  Widget _buildCanvasItem(CanvasItem item, bool isConnecting) {
+    final Widget child;
     switch (item.itemType) {
       case CanvasItemType.game:
-        return _DraggableCanvasItem(
-          key: ValueKey<int>(item.id),
-          item: item,
-          isEditable: widget.isEditable,
-          collectionId: widget.collectionId,
-          transformationController: _transformationController,
-          onDragStateChanged: _onItemDragStateChanged,
-          onSecondaryTap: widget.isEditable ? _onItemSecondaryTap : null,
-          child: CanvasGameCard(
-            item: item,
-          ),
-        );
+        child = CanvasGameCard(item: item);
       case CanvasItemType.text:
-        return _DraggableCanvasItem(
-          key: ValueKey<int>(item.id),
-          item: item,
-          isEditable: widget.isEditable,
-          collectionId: widget.collectionId,
-          transformationController: _transformationController,
-          onDragStateChanged: _onItemDragStateChanged,
-          onSecondaryTap: widget.isEditable ? _onItemSecondaryTap : null,
-          child: CanvasTextItem(item: item),
-        );
+        child = CanvasTextItem(item: item);
       case CanvasItemType.image:
-        return _DraggableCanvasItem(
-          key: ValueKey<int>(item.id),
-          item: item,
-          isEditable: widget.isEditable,
-          collectionId: widget.collectionId,
-          transformationController: _transformationController,
-          onDragStateChanged: _onItemDragStateChanged,
-          onSecondaryTap: widget.isEditable ? _onItemSecondaryTap : null,
-          child: CanvasImageItem(item: item),
-        );
+        child = CanvasImageItem(item: item);
       case CanvasItemType.link:
-        return _DraggableCanvasItem(
-          key: ValueKey<int>(item.id),
-          item: item,
-          isEditable: widget.isEditable,
-          collectionId: widget.collectionId,
-          transformationController: _transformationController,
-          onDragStateChanged: _onItemDragStateChanged,
-          onSecondaryTap: widget.isEditable ? _onItemSecondaryTap : null,
-          child: CanvasLinkItem(item: item),
-        );
+        child = CanvasLinkItem(item: item);
     }
+
+    return _DraggableCanvasItem(
+      key: ValueKey<int>(item.id),
+      item: item,
+      isEditable: widget.isEditable,
+      collectionId: widget.collectionId,
+      transformationController: _transformationController,
+      onDragStateChanged: _onItemDragStateChanged,
+      onSecondaryTap: widget.isEditable ? _onItemSecondaryTap : null,
+      onTap: isConnecting
+          ? () => _handleConnectionModeClick(item)
+          : null,
+      child: child,
+    );
   }
 }
 
@@ -510,6 +691,7 @@ class _DraggableCanvasItem extends ConsumerStatefulWidget {
     required this.onDragStateChanged,
     required this.child,
     this.onSecondaryTap,
+    this.onTap,
     super.key,
   });
 
@@ -523,6 +705,9 @@ class _DraggableCanvasItem extends ConsumerStatefulWidget {
 
   /// Callback для ПКМ на элементе.
   final void Function(Offset globalPosition, CanvasItem item)? onSecondaryTap;
+
+  /// Callback для клика (используется в режиме создания связи).
+  final VoidCallback? onTap;
 
   final Widget child;
 
@@ -699,14 +884,18 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
       width: currentWidth,
       height: currentHeight,
       child: MouseRegion(
-        cursor: _isDragging
-            ? SystemMouseCursors.grabbing
-            : SystemMouseCursors.grab,
+        cursor: widget.onTap != null
+            ? SystemMouseCursors.cell
+            : _isDragging
+                ? SystemMouseCursors.grabbing
+                : SystemMouseCursors.grab,
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onPanStart: _onPanStart,
-          onPanUpdate: _onPanUpdate,
-          onPanEnd: _onPanEnd,
+          // В режиме создания связи — onTap вместо drag.
+          onTap: widget.onTap,
+          onPanStart: widget.onTap == null ? _onPanStart : null,
+          onPanUpdate: widget.onTap == null ? _onPanUpdate : null,
+          onPanEnd: widget.onTap == null ? _onPanEnd : null,
           onSecondaryTapUp: widget.onSecondaryTap != null
               ? (TapUpDetails details) {
                   widget.onSecondaryTap!(
