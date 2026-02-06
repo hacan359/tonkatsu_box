@@ -53,13 +53,19 @@ Found a collection you like? Fork it:
 
 Visualize your collection on a free-form canvas:
 - **Infinite canvas** with zoom (0.3x – 3.0x) and pan
-- **Drag-and-drop** game cards with precise cursor tracking
+- **Drag-and-drop** all elements with real-time visual feedback
 - **Dot grid background** for visual alignment
 - **Auto-layout** — new canvas initializes games in a 5-column grid
 - **Auto-sync** — adding or removing games in the collection automatically updates the canvas
 - **Persistent viewport** — zoom level and position are saved and restored
 - **Center view** and **Reset positions** controls
 - **List/Canvas toggle** — switch between traditional list and visual canvas via SegmentedButton
+- **Context menu** (right-click) — Add Text/Image/Link on empty space; Edit/Delete/Bring to Front/Send to Back on elements
+- **Text blocks** — add custom text with configurable font size (Small 12/Medium 16/Large 24/Title 32), transparent background
+- **Images** — add images from URL or local file (base64 encoded)
+- **Links** — add clickable links with custom labels (double-click to open in browser)
+- **Resize** — drag the bottom-right handle to resize any element with real-time preview (min 50x50, max 2000x2000)
+- **Z-index management** — Bring to Front / Send to Back via context menu
 
 ## SteamGridDB Integration
 

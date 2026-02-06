@@ -1447,6 +1447,477 @@ void main() {
       );
     });
 
+    group('addTextItem()', () {
+      test(
+        'должен создать текстовый элемент с правильным типом, данными и размерами',
+        () async {
+          setupExistingCanvas();
+          when(() => mockRepository.createItem(any()))
+              .thenAnswer((Invocation invocation) async {
+            final CanvasItem item =
+                invocation.positionalArguments[0] as CanvasItem;
+            return item.copyWith(id: 100);
+          });
+
+          final ProviderContainer container = createContainer();
+          addTearDown(container.dispose);
+
+          container.read(canvasNotifierProvider(collectionId));
+          await Future<void>.delayed(Duration.zero);
+
+          final CanvasNotifier notifier = container
+              .read(canvasNotifierProvider(collectionId).notifier);
+          final CanvasItem created =
+              await notifier.addTextItem(150.0, 250.0, 'Hello', 16.0);
+
+          expect(created.id, 100);
+          expect(created.itemType, CanvasItemType.text);
+          expect(created.x, 150.0);
+          expect(created.y, 250.0);
+          expect(created.width, 200);
+          expect(created.height, isNull);
+          expect(created.data, isNotNull);
+          expect(created.data!['content'], 'Hello');
+          expect(created.data!['fontSize'], 16.0);
+          expect(created.collectionId, collectionId);
+
+          final CanvasState state =
+              container.read(canvasNotifierProvider(collectionId));
+          expect(state.items.length, 4);
+          expect(
+            state.items.any((CanvasItem item) => item.id == 100),
+            true,
+          );
+        },
+      );
+
+      test(
+        'должен установить zIndex в maxZ+1 когда есть существующие элементы',
+        () async {
+          setupExistingCanvas(); // 3 items с zIndex 0, 1, 2
+          late CanvasItem capturedItem;
+          when(() => mockRepository.createItem(any()))
+              .thenAnswer((Invocation invocation) async {
+            capturedItem =
+                invocation.positionalArguments[0] as CanvasItem;
+            return capturedItem.copyWith(id: 100);
+          });
+
+          final ProviderContainer container = createContainer();
+          addTearDown(container.dispose);
+
+          container.read(canvasNotifierProvider(collectionId));
+          await Future<void>.delayed(Duration.zero);
+
+          final CanvasNotifier notifier = container
+              .read(canvasNotifierProvider(collectionId).notifier);
+          await notifier.addTextItem(0.0, 0.0, 'Test', 14.0);
+
+          // maxZ = 2, поэтому zIndex нового элемента = 3
+          expect(capturedItem.zIndex, 3);
+        },
+      );
+
+      test(
+        'должен установить zIndex в 0 когда список элементов пуст',
+        () async {
+          setupExistingCanvas(items: <CanvasItem>[]);
+          late CanvasItem capturedItem;
+          when(() => mockRepository.createItem(any()))
+              .thenAnswer((Invocation invocation) async {
+            capturedItem =
+                invocation.positionalArguments[0] as CanvasItem;
+            return capturedItem.copyWith(id: 100);
+          });
+
+          final ProviderContainer container = createContainer();
+          addTearDown(container.dispose);
+
+          container.read(canvasNotifierProvider(collectionId));
+          await Future<void>.delayed(Duration.zero);
+
+          final CanvasNotifier notifier = container
+              .read(canvasNotifierProvider(collectionId).notifier);
+          await notifier.addTextItem(0.0, 0.0, 'Test', 14.0);
+
+          expect(capturedItem.zIndex, 0);
+        },
+      );
+    });
+
+    group('addImageItem()', () {
+      test(
+        'должен создать элемент изображения с правильным типом и размерами 200x200',
+        () async {
+          setupExistingCanvas();
+          when(() => mockRepository.createItem(any()))
+              .thenAnswer((Invocation invocation) async {
+            final CanvasItem item =
+                invocation.positionalArguments[0] as CanvasItem;
+            return item.copyWith(id: 101);
+          });
+
+          final ProviderContainer container = createContainer();
+          addTearDown(container.dispose);
+
+          container.read(canvasNotifierProvider(collectionId));
+          await Future<void>.delayed(Duration.zero);
+
+          final CanvasNotifier notifier = container
+              .read(canvasNotifierProvider(collectionId).notifier);
+          final Map<String, dynamic> imageData = <String, dynamic>{
+            'url': 'https://example.com/image.png',
+            'source': 'steamgriddb',
+          };
+          final CanvasItem created =
+              await notifier.addImageItem(300.0, 400.0, imageData);
+
+          expect(created.id, 101);
+          expect(created.itemType, CanvasItemType.image);
+          expect(created.x, 300.0);
+          expect(created.y, 400.0);
+          expect(created.width, 200);
+          expect(created.height, 200);
+          expect(created.collectionId, collectionId);
+
+          final CanvasState state =
+              container.read(canvasNotifierProvider(collectionId));
+          expect(state.items.length, 4);
+        },
+      );
+
+      test(
+        'должен передать imageData в поле data элемента',
+        () async {
+          setupExistingCanvas();
+          late CanvasItem capturedItem;
+          when(() => mockRepository.createItem(any()))
+              .thenAnswer((Invocation invocation) async {
+            capturedItem =
+                invocation.positionalArguments[0] as CanvasItem;
+            return capturedItem.copyWith(id: 101);
+          });
+
+          final ProviderContainer container = createContainer();
+          addTearDown(container.dispose);
+
+          container.read(canvasNotifierProvider(collectionId));
+          await Future<void>.delayed(Duration.zero);
+
+          final CanvasNotifier notifier = container
+              .read(canvasNotifierProvider(collectionId).notifier);
+          final Map<String, dynamic> imageData = <String, dynamic>{
+            'url': 'https://example.com/img.jpg',
+            'width': 640,
+            'height': 480,
+          };
+          await notifier.addImageItem(100.0, 100.0, imageData);
+
+          expect(capturedItem.data, isNotNull);
+          expect(capturedItem.data!['url'], 'https://example.com/img.jpg');
+          expect(capturedItem.data!['width'], 640);
+          expect(capturedItem.data!['height'], 480);
+        },
+      );
+    });
+
+    group('addLinkItem()', () {
+      test(
+        'должен создать элемент ссылки с правильным типом и размерами 200x48',
+        () async {
+          setupExistingCanvas();
+          when(() => mockRepository.createItem(any()))
+              .thenAnswer((Invocation invocation) async {
+            final CanvasItem item =
+                invocation.positionalArguments[0] as CanvasItem;
+            return item.copyWith(id: 102);
+          });
+
+          final ProviderContainer container = createContainer();
+          addTearDown(container.dispose);
+
+          container.read(canvasNotifierProvider(collectionId));
+          await Future<void>.delayed(Duration.zero);
+
+          final CanvasNotifier notifier = container
+              .read(canvasNotifierProvider(collectionId).notifier);
+          final CanvasItem created = await notifier.addLinkItem(
+            500.0,
+            600.0,
+            'https://example.com',
+            'Example',
+          );
+
+          expect(created.id, 102);
+          expect(created.itemType, CanvasItemType.link);
+          expect(created.x, 500.0);
+          expect(created.y, 600.0);
+          expect(created.width, 200);
+          expect(created.height, 48);
+          expect(created.collectionId, collectionId);
+
+          final CanvasState state =
+              container.read(canvasNotifierProvider(collectionId));
+          expect(state.items.length, 4);
+        },
+      );
+
+      test(
+        'должен установить url и label в поле data элемента',
+        () async {
+          setupExistingCanvas();
+          late CanvasItem capturedItem;
+          when(() => mockRepository.createItem(any()))
+              .thenAnswer((Invocation invocation) async {
+            capturedItem =
+                invocation.positionalArguments[0] as CanvasItem;
+            return capturedItem.copyWith(id: 102);
+          });
+
+          final ProviderContainer container = createContainer();
+          addTearDown(container.dispose);
+
+          container.read(canvasNotifierProvider(collectionId));
+          await Future<void>.delayed(Duration.zero);
+
+          final CanvasNotifier notifier = container
+              .read(canvasNotifierProvider(collectionId).notifier);
+          await notifier.addLinkItem(
+            0.0,
+            0.0,
+            'https://igdb.com/games/123',
+            'IGDB Page',
+          );
+
+          expect(capturedItem.data, isNotNull);
+          expect(capturedItem.data!['url'], 'https://igdb.com/games/123');
+          expect(capturedItem.data!['label'], 'IGDB Page');
+        },
+      );
+    });
+
+    group('updateItemData()', () {
+      test(
+        'должен обновить data в state для указанного itemId',
+        () async {
+          setupExistingCanvas();
+          when(() => mockRepository.updateItemData(any(), any()))
+              .thenAnswer((_) async {});
+
+          final ProviderContainer container = createContainer();
+          addTearDown(container.dispose);
+
+          container.read(canvasNotifierProvider(collectionId));
+          await Future<void>.delayed(Duration.zero);
+
+          final CanvasNotifier notifier = container
+              .read(canvasNotifierProvider(collectionId).notifier);
+          final Map<String, dynamic> newData = <String, dynamic>{
+            'content': 'Updated text',
+            'fontSize': 20.0,
+          };
+          await notifier.updateItemData(1, newData);
+
+          final CanvasState state =
+              container.read(canvasNotifierProvider(collectionId));
+          final CanvasItem updatedItem = state.items.firstWhere(
+            (CanvasItem item) => item.id == 1,
+          );
+          expect(updatedItem.data, isNotNull);
+          expect(updatedItem.data!['content'], 'Updated text');
+          expect(updatedItem.data!['fontSize'], 20.0);
+        },
+      );
+
+      test(
+        'должен вызвать repository.updateItemData с правильными параметрами',
+        () async {
+          setupExistingCanvas();
+          when(() => mockRepository.updateItemData(any(), any()))
+              .thenAnswer((_) async {});
+
+          final ProviderContainer container = createContainer();
+          addTearDown(container.dispose);
+
+          container.read(canvasNotifierProvider(collectionId));
+          await Future<void>.delayed(Duration.zero);
+
+          final CanvasNotifier notifier = container
+              .read(canvasNotifierProvider(collectionId).notifier);
+          final Map<String, dynamic> newData = <String, dynamic>{
+            'url': 'https://updated.com',
+          };
+          await notifier.updateItemData(2, newData);
+
+          verify(
+            () => mockRepository.updateItemData(2, newData),
+          ).called(1);
+        },
+      );
+
+      test(
+        'должен не менять другие элементы когда обновляется data одного элемента',
+        () async {
+          setupExistingCanvas();
+          when(() => mockRepository.updateItemData(any(), any()))
+              .thenAnswer((_) async {});
+
+          final ProviderContainer container = createContainer();
+          addTearDown(container.dispose);
+
+          container.read(canvasNotifierProvider(collectionId));
+          await Future<void>.delayed(Duration.zero);
+
+          // Запоминаем исходное состояние элементов 2 и 3
+          final CanvasState stateBefore =
+              container.read(canvasNotifierProvider(collectionId));
+          final CanvasItem item2Before = stateBefore.items.firstWhere(
+            (CanvasItem item) => item.id == 2,
+          );
+          final CanvasItem item3Before = stateBefore.items.firstWhere(
+            (CanvasItem item) => item.id == 3,
+          );
+
+          final CanvasNotifier notifier = container
+              .read(canvasNotifierProvider(collectionId).notifier);
+          await notifier.updateItemData(
+            1,
+            <String, dynamic>{'content': 'New'},
+          );
+
+          final CanvasState stateAfter =
+              container.read(canvasNotifierProvider(collectionId));
+          final CanvasItem item2After = stateAfter.items.firstWhere(
+            (CanvasItem item) => item.id == 2,
+          );
+          final CanvasItem item3After = stateAfter.items.firstWhere(
+            (CanvasItem item) => item.id == 3,
+          );
+
+          expect(item2After.x, item2Before.x);
+          expect(item2After.y, item2Before.y);
+          expect(item2After.data, item2Before.data);
+          expect(item3After.x, item3Before.x);
+          expect(item3After.y, item3Before.y);
+          expect(item3After.data, item3Before.data);
+        },
+      );
+    });
+
+    group('updateItemSize()', () {
+      test(
+        'должен обновить width и height в state для указанного элемента',
+        () async {
+          setupExistingCanvas();
+          when(
+            () => mockRepository.updateItemSize(
+              any(),
+              width: any(named: 'width'),
+              height: any(named: 'height'),
+            ),
+          ).thenAnswer((_) async {});
+
+          final ProviderContainer container = createContainer();
+          addTearDown(container.dispose);
+
+          container.read(canvasNotifierProvider(collectionId));
+          await Future<void>.delayed(Duration.zero);
+
+          final CanvasNotifier notifier = container
+              .read(canvasNotifierProvider(collectionId).notifier);
+          await notifier.updateItemSize(1, width: 300.0, height: 400.0);
+
+          final CanvasState state =
+              container.read(canvasNotifierProvider(collectionId));
+          final CanvasItem updatedItem = state.items.firstWhere(
+            (CanvasItem item) => item.id == 1,
+          );
+          expect(updatedItem.width, 300.0);
+          expect(updatedItem.height, 400.0);
+        },
+      );
+
+      test(
+        'должен вызвать repository.updateItemSize с правильными параметрами',
+        () async {
+          setupExistingCanvas();
+          when(
+            () => mockRepository.updateItemSize(
+              any(),
+              width: any(named: 'width'),
+              height: any(named: 'height'),
+            ),
+          ).thenAnswer((_) async {});
+
+          final ProviderContainer container = createContainer();
+          addTearDown(container.dispose);
+
+          container.read(canvasNotifierProvider(collectionId));
+          await Future<void>.delayed(Duration.zero);
+
+          final CanvasNotifier notifier = container
+              .read(canvasNotifierProvider(collectionId).notifier);
+          await notifier.updateItemSize(2, width: 500.0, height: 600.0);
+
+          verify(
+            () => mockRepository.updateItemSize(
+              2,
+              width: 500.0,
+              height: 600.0,
+            ),
+          ).called(1);
+        },
+      );
+
+      test(
+        'должен не менять другие элементы когда обновляется размер одного элемента',
+        () async {
+          setupExistingCanvas();
+          when(
+            () => mockRepository.updateItemSize(
+              any(),
+              width: any(named: 'width'),
+              height: any(named: 'height'),
+            ),
+          ).thenAnswer((_) async {});
+
+          final ProviderContainer container = createContainer();
+          addTearDown(container.dispose);
+
+          container.read(canvasNotifierProvider(collectionId));
+          await Future<void>.delayed(Duration.zero);
+
+          // Запоминаем исходное состояние элементов 2 и 3
+          final CanvasState stateBefore =
+              container.read(canvasNotifierProvider(collectionId));
+          final CanvasItem item2Before = stateBefore.items.firstWhere(
+            (CanvasItem item) => item.id == 2,
+          );
+          final CanvasItem item3Before = stateBefore.items.firstWhere(
+            (CanvasItem item) => item.id == 3,
+          );
+
+          final CanvasNotifier notifier = container
+              .read(canvasNotifierProvider(collectionId).notifier);
+          await notifier.updateItemSize(1, width: 999.0, height: 888.0);
+
+          final CanvasState stateAfter =
+              container.read(canvasNotifierProvider(collectionId));
+          final CanvasItem item2After = stateAfter.items.firstWhere(
+            (CanvasItem item) => item.id == 2,
+          );
+          final CanvasItem item3After = stateAfter.items.firstWhere(
+            (CanvasItem item) => item.id == 3,
+          );
+
+          expect(item2After.width, item2Before.width);
+          expect(item2After.height, item2Before.height);
+          expect(item3After.width, item3Before.width);
+          expect(item3After.height, item3Before.height);
+        },
+      );
+    });
+
     group('addItem() и deleteItem() вместе', () {
       test(
         'должен корректно добавить и затем удалить элемент',

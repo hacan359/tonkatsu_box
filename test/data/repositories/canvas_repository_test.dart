@@ -367,6 +367,37 @@ void main() {
       });
     });
 
+    group('updateItemData', () {
+      test('should encode data as JSON and update database', () async {
+        when(() => mockDb.updateCanvasItem(5, any()))
+            .thenAnswer((_) async {});
+
+        await repository.updateItemData(
+          5,
+          <String, dynamic>{'content': 'Hello', 'fontSize': 16.0},
+        );
+
+        final Map<String, dynamic> captured =
+            verify(() => mockDb.updateCanvasItem(5, captureAny()))
+                .captured
+                .first as Map<String, dynamic>;
+        expect(captured['data'], '{"content":"Hello","fontSize":16.0}');
+      });
+
+      test('should set data to null when data is null', () async {
+        when(() => mockDb.updateCanvasItem(5, any()))
+            .thenAnswer((_) async {});
+
+        await repository.updateItemData(5, null);
+
+        final Map<String, dynamic> captured =
+            verify(() => mockDb.updateCanvasItem(5, captureAny()))
+                .captured
+                .first as Map<String, dynamic>;
+        expect(captured['data'], isNull);
+      });
+    });
+
     group('updateItemZIndex', () {
       test('should update z_index in database', () async {
         when(() => mockDb.updateCanvasItem(5, any()))
