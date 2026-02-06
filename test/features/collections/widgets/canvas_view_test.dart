@@ -444,7 +444,7 @@ void main() {
       );
 
       testWidgets(
-        'должен создавать SizedBox.shrink для элемента типа image',
+        'должен отображать элемент типа image как Card',
         (WidgetTester tester) async {
           final CanvasState normalState = CanvasState(
             isLoading: false,
@@ -462,12 +462,13 @@ void main() {
           await tester.pump();
 
           expect(find.byType(InteractiveViewer), findsOneWidget);
-          expect(find.byType(Card), findsNothing);
+          // CanvasImageItem содержит Card
+          expect(find.byType(Card), findsOneWidget);
         },
       );
 
       testWidgets(
-        'должен создавать SizedBox.shrink для элемента типа link',
+        'должен отображать элемент типа link как Card',
         (WidgetTester tester) async {
           final CanvasState normalState = CanvasState(
             isLoading: false,
@@ -485,12 +486,13 @@ void main() {
           await tester.pump();
 
           expect(find.byType(InteractiveViewer), findsOneWidget);
-          expect(find.byType(Card), findsNothing);
+          // CanvasLinkItem содержит Card
+          expect(find.byType(Card), findsOneWidget);
         },
       );
 
       testWidgets(
-        'должен показывать смешанные типы — только game отображает карточку',
+        'должен показывать смешанные типы — все типы отображаются',
         (WidgetTester tester) async {
           final CanvasState normalState = CanvasState(
             isLoading: false,
@@ -522,10 +524,9 @@ void main() {
           await tester.pumpWidget(buildTestWidget(canvasState: normalState));
           await tester.pump();
 
-          // Только одна карточка для game
           expect(find.text('Zelda'), findsOneWidget);
-          // Один Card от CanvasGameCard
-          expect(find.byType(Card), findsOneWidget);
+          // 2 Card: один от CanvasGameCard, один от CanvasImageItem
+          expect(find.byType(Card), findsNWidgets(2));
         },
       );
     });
@@ -676,6 +677,84 @@ void main() {
           await tester.pump();
 
           expect(find.byType(LayoutBuilder), findsOneWidget);
+        },
+      );
+    });
+
+    group('resize handle', () {
+      testWidgets(
+        'должен показывать resize handle когда isEditable=true',
+        (WidgetTester tester) async {
+          final CanvasState normalState = CanvasState(
+            isLoading: false,
+            isInitialized: true,
+            items: <CanvasItem>[
+              createTestItem(
+                id: 1,
+                game: const Game(id: 100, name: 'Test Game'),
+              ),
+            ],
+          );
+
+          await tester.pumpWidget(
+            buildTestWidget(canvasState: normalState, isEditable: true),
+          );
+          await tester.pump();
+
+          // Resize handle содержит иконку drag_handle
+          expect(find.byIcon(Icons.drag_handle), findsOneWidget);
+        },
+      );
+
+      testWidgets(
+        'не должен показывать resize handle когда isEditable=false',
+        (WidgetTester tester) async {
+          final CanvasState normalState = CanvasState(
+            isLoading: false,
+            isInitialized: true,
+            items: <CanvasItem>[
+              createTestItem(
+                id: 1,
+                game: const Game(id: 100, name: 'Test Game'),
+              ),
+            ],
+          );
+
+          await tester.pumpWidget(
+            buildTestWidget(canvasState: normalState, isEditable: false),
+          );
+          await tester.pump();
+
+          // Resize handle НЕ рендерится
+          expect(find.byIcon(Icons.drag_handle), findsNothing);
+        },
+      );
+
+      testWidgets(
+        'должен оборачивать дочерний виджет в SizedBox.expand',
+        (WidgetTester tester) async {
+          final CanvasState normalState = CanvasState(
+            isLoading: false,
+            isInitialized: true,
+            items: <CanvasItem>[
+              createTestItem(
+                id: 1,
+                game: const Game(id: 100, name: 'Test Game'),
+              ),
+            ],
+          );
+
+          await tester.pumpWidget(buildTestWidget(canvasState: normalState));
+          await tester.pump();
+
+          // SizedBox.expand имеет width=infinity, height=infinity
+          final Finder expandedBoxes = find.byWidgetPredicate(
+            (Widget widget) =>
+                widget is SizedBox &&
+                widget.width == double.infinity &&
+                widget.height == double.infinity,
+          );
+          expect(expandedBoxes, findsWidgets);
         },
       );
     });

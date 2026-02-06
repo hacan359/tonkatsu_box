@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/database/database_service.dart';
@@ -111,6 +113,13 @@ class CanvasRepository {
     if (data.isNotEmpty) {
       await _db.updateCanvasItem(id, data);
     }
+  }
+
+  /// Обновляет дополнительные данные элемента (JSON).
+  Future<void> updateItemData(int id, Map<String, dynamic>? data) async {
+    await _db.updateCanvasItem(id, <String, dynamic>{
+      'data': data != null ? json.encode(data) : null,
+    });
   }
 
   /// Обновляет z-index элемента.

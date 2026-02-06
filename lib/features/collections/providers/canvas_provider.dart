@@ -394,6 +394,139 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int> {
     );
   }
 
+  /// Добавляет текстовый блок на канвас.
+  Future<CanvasItem> addTextItem(
+    double x,
+    double y,
+    String content,
+    double fontSize,
+  ) async {
+    final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    final int maxZ = state.items.isEmpty
+        ? 0
+        : state.items
+              .map((CanvasItem item) => item.zIndex)
+              .reduce((int a, int b) => a > b ? a : b) +
+          1;
+
+    final CanvasItem item = CanvasItem(
+      id: 0,
+      collectionId: _collectionId,
+      itemType: CanvasItemType.text,
+      x: x,
+      y: y,
+      width: 200,
+      height: null,
+      zIndex: maxZ,
+      data: <String, dynamic>{
+        'content': content,
+        'fontSize': fontSize,
+      },
+      createdAt: DateTime.fromMillisecondsSinceEpoch(now * 1000),
+    );
+
+    return addItem(item);
+  }
+
+  /// Добавляет изображение на канвас.
+  Future<CanvasItem> addImageItem(
+    double x,
+    double y,
+    Map<String, dynamic> imageData,
+  ) async {
+    final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    final int maxZ = state.items.isEmpty
+        ? 0
+        : state.items
+              .map((CanvasItem item) => item.zIndex)
+              .reduce((int a, int b) => a > b ? a : b) +
+          1;
+
+    final CanvasItem item = CanvasItem(
+      id: 0,
+      collectionId: _collectionId,
+      itemType: CanvasItemType.image,
+      x: x,
+      y: y,
+      width: 200,
+      height: 200,
+      zIndex: maxZ,
+      data: imageData,
+      createdAt: DateTime.fromMillisecondsSinceEpoch(now * 1000),
+    );
+
+    return addItem(item);
+  }
+
+  /// Добавляет ссылку на канвас.
+  Future<CanvasItem> addLinkItem(
+    double x,
+    double y,
+    String url,
+    String label,
+  ) async {
+    final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    final int maxZ = state.items.isEmpty
+        ? 0
+        : state.items
+              .map((CanvasItem item) => item.zIndex)
+              .reduce((int a, int b) => a > b ? a : b) +
+          1;
+
+    final CanvasItem item = CanvasItem(
+      id: 0,
+      collectionId: _collectionId,
+      itemType: CanvasItemType.link,
+      x: x,
+      y: y,
+      width: 200,
+      height: 48,
+      zIndex: maxZ,
+      data: <String, dynamic>{
+        'url': url,
+        'label': label,
+      },
+      createdAt: DateTime.fromMillisecondsSinceEpoch(now * 1000),
+    );
+
+    return addItem(item);
+  }
+
+  /// Обновляет дополнительные данные элемента.
+  Future<void> updateItemData(
+    int itemId,
+    Map<String, dynamic> data,
+  ) async {
+    await _repository.updateItemData(itemId, data);
+    state = state.copyWith(
+      items: state.items.map((CanvasItem item) {
+        if (item.id == itemId) {
+          return item.copyWith(data: data);
+        }
+        return item;
+      }).toList(),
+    );
+  }
+
+  /// Обновляет размеры элемента.
+  ///
+  /// Обновляет state мгновенно, сохраняет в БД.
+  Future<void> updateItemSize(
+    int itemId, {
+    required double width,
+    required double height,
+  }) async {
+    state = state.copyWith(
+      items: state.items.map((CanvasItem item) {
+        if (item.id == itemId) {
+          return item.copyWith(width: width, height: height);
+        }
+        return item;
+      }).toList(),
+    );
+    await _repository.updateItemSize(itemId, width: width, height: height);
+  }
+
   /// Перемещает элемент на передний план (максимальный z-index).
   Future<void> bringToFront(int itemId) async {
     if (state.items.isEmpty) return;

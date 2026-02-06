@@ -52,6 +52,9 @@ dependencies:
   # File Operations
   file_picker: ^6.1.1
 
+  # URL
+  url_launcher: ^6.2.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -5,7 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/repositories/canvas_repository.dart';
 import '../../../shared/models/canvas_item.dart';
 import '../providers/canvas_provider.dart';
+import 'canvas_context_menu.dart';
 import 'canvas_game_card.dart';
+import 'canvas_image_item.dart';
+import 'canvas_link_item.dart';
+import 'canvas_text_item.dart';
+import 'dialogs/add_image_dialog.dart';
+import 'dialogs/add_link_dialog.dart';
+import 'dialogs/add_text_dialog.dart';
 
 // Виджет канваса для визуального размещения элементов коллекции.
 //
@@ -96,6 +103,144 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
         0.0,
         1.0,
       );
+  }
+
+  /// Обрабатывает ПКМ на пустом месте канваса.
+  void _onCanvasSecondaryTap(
+    Offset globalPosition,
+    Offset localPosition,
+  ) {
+    // localPosition уже в координатах канваса (внутри InteractiveViewer)
+    final double canvasX = localPosition.dx;
+    final double canvasY = localPosition.dy;
+
+    CanvasContextMenu.showCanvasMenu(
+      context,
+      position: globalPosition,
+      onAddText: () => _handleAddText(canvasX, canvasY),
+      onAddImage: () => _handleAddImage(canvasX, canvasY),
+      onAddLink: () => _handleAddLink(canvasX, canvasY),
+    );
+  }
+
+  /// Обрабатывает ПКМ на элементе канваса.
+  void _onItemSecondaryTap(
+    Offset globalPosition,
+    CanvasItem item,
+  ) {
+    final CanvasNotifier notifier = ref
+        .read(canvasNotifierProvider(widget.collectionId).notifier);
+
+    CanvasContextMenu.showItemMenu(
+      context,
+      position: globalPosition,
+      itemType: item.itemType,
+      onEdit: () => _handleEditItem(item),
+      onDelete: () => notifier.deleteItem(item.id),
+      onBringToFront: () => notifier.bringToFront(item.id),
+      onSendToBack: () => notifier.sendToBack(item.id),
+    );
+  }
+
+  /// Добавляет текстовый блок на канвас.
+  Future<void> _handleAddText(double x, double y) async {
+    final Map<String, dynamic>? result = await AddTextDialog.show(context);
+    if (result == null) return;
+    if (!mounted) return;
+
+    ref
+        .read(canvasNotifierProvider(widget.collectionId).notifier)
+        .addTextItem(
+          x,
+          y,
+          result['content'] as String,
+          (result['fontSize'] as num).toDouble(),
+        );
+  }
+
+  /// Добавляет изображение на канвас.
+  Future<void> _handleAddImage(double x, double y) async {
+    final Map<String, dynamic>? result = await AddImageDialog.show(context);
+    if (result == null) return;
+    if (!mounted) return;
+
+    ref
+        .read(canvasNotifierProvider(widget.collectionId).notifier)
+        .addImageItem(x, y, result);
+  }
+
+  /// Добавляет ссылку на канвас.
+  Future<void> _handleAddLink(double x, double y) async {
+    final Map<String, dynamic>? result = await AddLinkDialog.show(context);
+    if (result == null) return;
+    if (!mounted) return;
+
+    ref
+        .read(canvasNotifierProvider(widget.collectionId).notifier)
+        .addLinkItem(
+          x,
+          y,
+          result['url'] as String,
+          result['label'] as String,
+        );
+  }
+
+  /// Редактирует элемент через соответствующий диалог.
+  Future<void> _handleEditItem(CanvasItem item) async {
+    switch (item.itemType) {
+      case CanvasItemType.text:
+        await _editTextItem(item);
+      case CanvasItemType.image:
+        await _editImageItem(item);
+      case CanvasItemType.link:
+        await _editLinkItem(item);
+      case CanvasItemType.game:
+        break; // Игры не редактируются через контекстное меню
+    }
+  }
+
+  /// Редактирует текстовый блок.
+  Future<void> _editTextItem(CanvasItem item) async {
+    final Map<String, dynamic>? result = await AddTextDialog.show(
+      context,
+      initialContent: item.data?['content'] as String?,
+      initialFontSize: (item.data?['fontSize'] as num?)?.toDouble(),
+    );
+    if (result == null) return;
+    if (!mounted) return;
+
+    ref
+        .read(canvasNotifierProvider(widget.collectionId).notifier)
+        .updateItemData(item.id, result);
+  }
+
+  /// Редактирует изображение.
+  Future<void> _editImageItem(CanvasItem item) async {
+    final Map<String, dynamic>? result = await AddImageDialog.show(
+      context,
+      initialUrl: item.data?['url'] as String?,
+    );
+    if (result == null) return;
+    if (!mounted) return;
+
+    ref
+        .read(canvasNotifierProvider(widget.collectionId).notifier)
+        .updateItemData(item.id, result);
+  }
+
+  /// Редактирует ссылку.
+  Future<void> _editLinkItem(CanvasItem item) async {
+    final Map<String, dynamic>? result = await AddLinkDialog.show(
+      context,
+      initialUrl: item.data?['url'] as String?,
+      initialLabel: item.data?['label'] as String?,
+    );
+    if (result == null) return;
+    if (!mounted) return;
+
+    ref
+        .read(canvasNotifierProvider(widget.collectionId).notifier)
+        .updateItemData(item.id, result);
   }
 
   @override
@@ -213,19 +358,30 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
               panEnabled: !_isItemDragging,
               minScale: _minScale,
               maxScale: _maxScale,
-              child: SizedBox(
-                width: canvasWidth,
-                height: canvasHeight,
-                child: CustomPaint(
-                  painter: _CanvasGridPainter(
-                    color: colorScheme.outlineVariant.withAlpha(60),
-                  ),
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: <Widget>[
-                      for (final CanvasItem item in sortedItems)
-                        _buildCanvasItem(item),
-                    ],
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onSecondaryTapUp: widget.isEditable
+                    ? (TapUpDetails details) {
+                        _onCanvasSecondaryTap(
+                          details.globalPosition,
+                          details.localPosition,
+                        );
+                      }
+                    : null,
+                child: SizedBox(
+                  width: canvasWidth,
+                  height: canvasHeight,
+                  child: CustomPaint(
+                    painter: _CanvasGridPainter(
+                      color: colorScheme.outlineVariant.withAlpha(60),
+                    ),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: <Widget>[
+                        for (final CanvasItem item in sortedItems)
+                          _buildCanvasItem(item),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -294,24 +450,52 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
           collectionId: widget.collectionId,
           transformationController: _transformationController,
           onDragStateChanged: _onItemDragStateChanged,
+          onSecondaryTap: widget.isEditable ? _onItemSecondaryTap : null,
           child: CanvasGameCard(
             item: item,
           ),
         );
-      // Остальные типы будут в Stage 8
       case CanvasItemType.text:
+        return _DraggableCanvasItem(
+          key: ValueKey<int>(item.id),
+          item: item,
+          isEditable: widget.isEditable,
+          collectionId: widget.collectionId,
+          transformationController: _transformationController,
+          onDragStateChanged: _onItemDragStateChanged,
+          onSecondaryTap: widget.isEditable ? _onItemSecondaryTap : null,
+          child: CanvasTextItem(item: item),
+        );
       case CanvasItemType.image:
+        return _DraggableCanvasItem(
+          key: ValueKey<int>(item.id),
+          item: item,
+          isEditable: widget.isEditable,
+          collectionId: widget.collectionId,
+          transformationController: _transformationController,
+          onDragStateChanged: _onItemDragStateChanged,
+          onSecondaryTap: widget.isEditable ? _onItemSecondaryTap : null,
+          child: CanvasImageItem(item: item),
+        );
       case CanvasItemType.link:
-        return const SizedBox.shrink();
+        return _DraggableCanvasItem(
+          key: ValueKey<int>(item.id),
+          item: item,
+          isEditable: widget.isEditable,
+          collectionId: widget.collectionId,
+          transformationController: _transformationController,
+          onDragStateChanged: _onItemDragStateChanged,
+          onSecondaryTap: widget.isEditable ? _onItemSecondaryTap : null,
+          child: CanvasLinkItem(item: item),
+        );
     }
   }
 }
 
 /// Обёртка для перетаскиваемых элементов канваса.
 ///
-/// Во время drag позиция обновляется через [ValueNotifier] —
-/// пересобирается только [Transform.translate], а дочерний виджет
-/// полностью кэшируется через `child` параметр [ListenableBuilder].
+/// Позиция и размер обновляются через [setState] напрямую в [Positioned],
+/// обеспечивая визуальную обратную связь в реальном времени при drag и resize.
 ///
 /// Используется абсолютное отслеживание позиции (globalPosition)
 /// вместо накопления инкрементальных дельт. При старте drag
@@ -325,6 +509,7 @@ class _DraggableCanvasItem extends ConsumerStatefulWidget {
     required this.transformationController,
     required this.onDragStateChanged,
     required this.child,
+    this.onSecondaryTap,
     super.key,
   });
 
@@ -336,6 +521,9 @@ class _DraggableCanvasItem extends ConsumerStatefulWidget {
   /// Callback для уведомления родителя о начале/конце drag.
   final void Function({required bool isDragging}) onDragStateChanged;
 
+  /// Callback для ПКМ на элементе.
+  final void Function(Offset globalPosition, CanvasItem item)? onSecondaryTap;
+
   final Widget child;
 
   @override
@@ -344,72 +532,172 @@ class _DraggableCanvasItem extends ConsumerStatefulWidget {
 }
 
 class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
-  final ValueNotifier<Offset> _dragDelta =
-      ValueNotifier<Offset>(Offset.zero);
+  Offset _dragDelta = Offset.zero;
   bool _isDragging = false;
 
   /// Глобальная позиция указателя при старте перетаскивания.
   Offset _panStartGlobal = Offset.zero;
 
-  double get _itemWidth =>
-      widget.item.width ?? CanvasRepository.defaultCardWidth;
-  double get _itemHeight =>
-      widget.item.height ?? CanvasRepository.defaultCardHeight;
+  /// Флаг: элемент ресайзится.
+  bool _isResizing = false;
 
-  @override
-  void dispose() {
-    _dragDelta.dispose();
-    super.dispose();
+  /// Стартовые размеры при ресайзе.
+  double _resizeStartWidth = 0;
+  double _resizeStartHeight = 0;
+
+  /// Текущие дельты ресайза.
+  Offset _resizeDelta = Offset.zero;
+
+  /// Минимальный размер элемента.
+  static const double _minItemSize = 50;
+
+  /// Максимальный размер элемента.
+  static const double _maxItemSize = 2000;
+
+  /// Размер resize handle.
+  static const double _handleSize = 14;
+
+  double get _itemWidth {
+    if (widget.item.width != null) return widget.item.width!;
+    return switch (widget.item.itemType) {
+      CanvasItemType.game => CanvasRepository.defaultCardWidth,
+      CanvasItemType.text => 200,
+      CanvasItemType.image => 200,
+      CanvasItemType.link => 200,
+    };
   }
+
+  double get _itemHeight {
+    if (widget.item.height != null) return widget.item.height!;
+    return switch (widget.item.itemType) {
+      CanvasItemType.game => CanvasRepository.defaultCardHeight,
+      CanvasItemType.text => 100,
+      CanvasItemType.image => 200,
+      CanvasItemType.link => 48,
+    };
+  }
+
+  // ==================== Drag ====================
 
   void _onPanStart(DragStartDetails details) {
     if (!widget.isEditable) return;
     _panStartGlobal = details.globalPosition;
-    _dragDelta.value = Offset.zero;
-    setState(() => _isDragging = true);
+    setState(() {
+      _dragDelta = Offset.zero;
+      _isDragging = true;
+    });
     widget.onDragStateChanged(isDragging: true);
   }
 
   void _onPanUpdate(DragUpdateDetails details) {
     if (!_isDragging) return;
 
-    // Вычисляем полное смещение от стартовой позиции (в экранных координатах),
-    // затем делим на масштаб для перевода в координаты канваса.
     final double scale =
         widget.transformationController.value.getMaxScaleOnAxis();
     final Offset totalGlobalDelta =
         details.globalPosition - _panStartGlobal;
-    _dragDelta.value = Offset(
-      totalGlobalDelta.dx / scale,
-      totalGlobalDelta.dy / scale,
-    );
+    setState(() {
+      _dragDelta = Offset(
+        totalGlobalDelta.dx / scale,
+        totalGlobalDelta.dy / scale,
+      );
+    });
   }
 
   void _onPanEnd(DragEndDetails details) {
     if (!_isDragging) return;
 
-    final double newX = widget.item.x + _dragDelta.value.dx;
-    final double newY = widget.item.y + _dragDelta.value.dy;
+    final double newX = widget.item.x + _dragDelta.dx;
+    final double newY = widget.item.y + _dragDelta.dy;
 
     ref
         .read(canvasNotifierProvider(widget.collectionId).notifier)
         .moveItem(widget.item.id, newX, newY);
 
-    _dragDelta.value = Offset.zero;
-    setState(() => _isDragging = false);
+    setState(() {
+      _dragDelta = Offset.zero;
+      _isDragging = false;
+    });
+    widget.onDragStateChanged(isDragging: false);
+  }
+
+  // ==================== Resize ====================
+
+  void _onResizeStart(DragStartDetails details) {
+    _panStartGlobal = details.globalPosition;
+    _resizeStartWidth = _itemWidth;
+    _resizeStartHeight = _itemHeight;
+    setState(() {
+      _resizeDelta = Offset.zero;
+      _isResizing = true;
+    });
+    widget.onDragStateChanged(isDragging: true);
+  }
+
+  void _onResizeUpdate(DragUpdateDetails details) {
+    if (!_isResizing) return;
+
+    final double scale =
+        widget.transformationController.value.getMaxScaleOnAxis();
+    final Offset totalGlobalDelta =
+        details.globalPosition - _panStartGlobal;
+    setState(() {
+      _resizeDelta = Offset(
+        totalGlobalDelta.dx / scale,
+        totalGlobalDelta.dy / scale,
+      );
+    });
+  }
+
+  void _onResizeEnd(DragEndDetails details) {
+    if (!_isResizing) return;
+
+    final double newWidth =
+        (_resizeStartWidth + _resizeDelta.dx).clamp(_minItemSize, _maxItemSize);
+    final double newHeight =
+        (_resizeStartHeight + _resizeDelta.dy).clamp(_minItemSize, _maxItemSize);
+
+    ref
+        .read(canvasNotifierProvider(widget.collectionId).notifier)
+        .updateItemSize(
+          widget.item.id,
+          width: newWidth,
+          height: newHeight,
+        );
+
+    setState(() {
+      _resizeDelta = Offset.zero;
+      _isResizing = false;
+    });
     widget.onDragStateChanged(isDragging: false);
   }
 
   @override
   Widget build(BuildContext context) {
-    final Color shadowColor =
-        Theme.of(context).colorScheme.shadow.withAlpha(80);
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final Color shadowColor = colorScheme.shadow.withAlpha(80);
+
+    // Позиция обновляется в реальном времени при перетаскивании.
+    final double left =
+        widget.item.x + (_isDragging ? _dragDelta.dx : 0);
+    final double top =
+        widget.item.y + (_isDragging ? _dragDelta.dy : 0);
+
+    // Размер обновляется в реальном времени при ресайзе.
+    final double currentWidth = _isResizing
+        ? (_resizeStartWidth + _resizeDelta.dx)
+            .clamp(_minItemSize, _maxItemSize)
+        : _itemWidth;
+    final double currentHeight = _isResizing
+        ? (_resizeStartHeight + _resizeDelta.dy)
+            .clamp(_minItemSize, _maxItemSize)
+        : _itemHeight;
 
     return Positioned(
-      left: widget.item.x,
-      top: widget.item.y,
-      width: _itemWidth,
-      height: _itemHeight,
+      left: left,
+      top: top,
+      width: currentWidth,
+      height: currentHeight,
       child: MouseRegion(
         cursor: _isDragging
             ? SystemMouseCursors.grabbing
@@ -419,33 +707,71 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
           onPanStart: _onPanStart,
           onPanUpdate: _onPanUpdate,
           onPanEnd: _onPanEnd,
-          child: ListenableBuilder(
-            listenable: _dragDelta,
-            builder: (BuildContext context, Widget? child) {
-              return Transform.translate(
-                offset: _dragDelta.value,
-                child: child,
-              );
-            },
-            child: RepaintBoundary(
-              child: AnimatedOpacity(
-                opacity: _isDragging ? 0.8 : 1.0,
-                duration: const Duration(milliseconds: 150),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 150),
-                  decoration: BoxDecoration(
-                    boxShadow: _isDragging
-                        ? <BoxShadow>[
-                            BoxShadow(
-                              color: shadowColor,
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ]
-                        : null,
+          onSecondaryTapUp: widget.onSecondaryTap != null
+              ? (TapUpDetails details) {
+                  widget.onSecondaryTap!(
+                    details.globalPosition,
+                    widget.item,
+                  );
+                }
+              : null,
+          child: RepaintBoundary(
+            child: AnimatedOpacity(
+              opacity: _isDragging ? 0.8 : 1.0,
+              duration: const Duration(milliseconds: 150),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: <Widget>[
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    decoration: BoxDecoration(
+                      boxShadow: _isDragging
+                          ? <BoxShadow>[
+                              BoxShadow(
+                                color: shadowColor,
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: SizedBox.expand(child: widget.child),
                   ),
-                  child: widget.child,
-                ),
+                  // Resize handle (правый нижний угол)
+                  if (widget.isEditable)
+                    Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: MouseRegion(
+                        cursor: SystemMouseCursors.resizeDownRight,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onPanStart: _onResizeStart,
+                          onPanUpdate: _onResizeUpdate,
+                          onPanEnd: _onResizeEnd,
+                          child: Container(
+                            width: _handleSize,
+                            height: _handleSize,
+                            decoration: BoxDecoration(
+                              color: colorScheme.primaryContainer,
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(4),
+                              ),
+                              border: Border.all(
+                                color: colorScheme.primary,
+                                width: 0.5,
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.drag_handle,
+                              size: 10,
+                              color: colorScheme.primary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
           ),
