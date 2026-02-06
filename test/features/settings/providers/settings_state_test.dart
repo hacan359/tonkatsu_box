@@ -9,6 +9,10 @@ void main() {
       expect(SettingsKeys.accessToken, equals('igdb_access_token'));
       expect(SettingsKeys.tokenExpires, equals('igdb_token_expires'));
       expect(SettingsKeys.lastSync, equals('igdb_last_sync'));
+      expect(
+        SettingsKeys.steamGridDbApiKey,
+        equals('steamgriddb_api_key'),
+      );
     });
   });
 
@@ -40,6 +44,7 @@ void main() {
         expect(state.connectionStatus, equals(ConnectionStatus.unknown));
         expect(state.errorMessage, isNull);
         expect(state.isLoading, isFalse);
+        expect(state.steamGridDbApiKey, isNull);
       });
 
       test('должен создать со всеми полями', () {
@@ -53,6 +58,7 @@ void main() {
           connectionStatus: ConnectionStatus.connected,
           errorMessage: 'Test error',
           isLoading: true,
+          steamGridDbApiKey: 'sgdb_key_123',
         );
 
         expect(state.clientId, equals(testClientId));
@@ -64,6 +70,7 @@ void main() {
         expect(state.connectionStatus, equals(ConnectionStatus.connected));
         expect(state.errorMessage, equals('Test error'));
         expect(state.isLoading, isTrue);
+        expect(state.steamGridDbApiKey, equals('sgdb_key_123'));
       });
     });
 
@@ -154,6 +161,30 @@ void main() {
         );
 
         expect(state.hasValidToken, isFalse);
+      });
+    });
+
+    group('hasSteamGridDbKey', () {
+      test('должен вернуть true когда ключ не пустой', () {
+        const SettingsState state = SettingsState(
+          steamGridDbApiKey: 'sgdb_key_123',
+        );
+
+        expect(state.hasSteamGridDbKey, isTrue);
+      });
+
+      test('должен вернуть false когда ключ null', () {
+        const SettingsState state = SettingsState();
+
+        expect(state.hasSteamGridDbKey, isFalse);
+      });
+
+      test('должен вернуть false когда ключ пустой', () {
+        const SettingsState state = SettingsState(
+          steamGridDbApiKey: '',
+        );
+
+        expect(state.hasSteamGridDbKey, isFalse);
       });
     });
 
@@ -262,6 +293,14 @@ void main() {
         expect(copy.isLoading, isTrue);
       });
 
+      test('должен копировать с изменением steamGridDbApiKey', () {
+        const SettingsState original = SettingsState();
+        final SettingsState copy =
+            original.copyWith(steamGridDbApiKey: 'new_key');
+
+        expect(copy.steamGridDbApiKey, equals('new_key'));
+      });
+
       test('должен очистить errorMessage при clearError: true', () {
         const SettingsState original = SettingsState(errorMessage: 'Error');
         final SettingsState copy = original.copyWith(clearError: true);
@@ -287,6 +326,7 @@ void main() {
           connectionStatus: ConnectionStatus.connected,
           errorMessage: 'Error',
           isLoading: true,
+          steamGridDbApiKey: 'sgdb_key',
         );
 
         final SettingsState copy = original.copyWith();
@@ -300,6 +340,7 @@ void main() {
         expect(copy.connectionStatus, equals(original.connectionStatus));
         expect(copy.errorMessage, equals(original.errorMessage));
         expect(copy.isLoading, equals(original.isLoading));
+        expect(copy.steamGridDbApiKey, equals(original.steamGridDbApiKey));
       });
     });
   });

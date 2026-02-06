@@ -9,7 +9,7 @@ xeRAbora — Windows desktop приложение на Flutter для управ
 | UI | Flutter (Material 3) |
 | State | Riverpod |
 | Database | SQLite (sqflite_ffi) |
-| API | IGDB через Twitch OAuth |
+| API | IGDB через Twitch OAuth, SteamGridDB (Bearer token) |
 | Platform | Windows Desktop |
 
 ---
@@ -44,6 +44,7 @@ lib/
 | Файл | Назначение |
 |------|------------|
 | `lib/core/api/igdb_api.dart` | **IGDB API клиент**. OAuth через Twitch, поиск игр, загрузка платформ. Методы: `getAccessToken()`, `searchGames()`, `fetchPlatforms()` |
+| `lib/core/api/steamgriddb_api.dart` | **SteamGridDB API клиент**. Bearer token авторизация. Методы: `searchGames()`, `getGrids()`, `getHeroes()`, `getLogos()`, `getIcons()` |
 | `lib/core/database/database_service.dart` | **SQLite сервис**. Создание таблиц, миграции, CRUD для всех сущностей. Таблицы: `platforms`, `games`, `collections`, `collection_games` |
 
 ---
@@ -56,6 +57,8 @@ lib/
 | `lib/shared/models/platform.dart` | **Модель платформы**. Поля: id, name, abbreviation. Свойство `displayName` возвращает сокращение или полное имя |
 | `lib/shared/models/collection.dart` | **Модель коллекции**. Типы: `own`, `imported`, `fork`. Поля для форков: `originalSnapshot`, `forkedFromAuthor` |
 | `lib/shared/models/collection_game.dart` | **Игра в коллекции**. Связь коллекции с игрой. Статусы: `notStarted`, `playing`, `completed`, `dropped`, `planned`. Комментарии автора и пользователя |
+| `lib/shared/models/steamgriddb_game.dart` | **Модель SteamGridDB игры**. Поля: id, name, types, verified. Метод: `fromJson()` |
+| `lib/shared/models/steamgriddb_image.dart` | **Модель SteamGridDB изображения**. Поля: id, score, style, url, thumb, width, height, mime, author. Свойство `dimensions` |
 
 ---
 
@@ -111,8 +114,9 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/features/settings/screens/settings_screen.dart` | **Экран настроек**. Ввод Client ID/Secret, кнопки Verify/Refresh Platforms |
-| `lib/features/settings/providers/settings_provider.dart` | **State настроек**. Хранение credentials в SharedPreferences, валидация токена, синхронизация платформ |
+| `lib/features/settings/screens/settings_screen.dart` | **Экран настроек**. Ввод IGDB Client ID/Secret, SteamGridDB API key, кнопки Verify/Refresh Platforms, ссылка на Debug Panel (только в debug) |
+| `lib/features/settings/screens/steamgriddb_debug_screen.dart` | **Debug-экран SteamGridDB**. 5 табов: Search, Grids, Heroes, Logos, Icons. Тестирование всех API эндпоинтов |
+| `lib/features/settings/providers/settings_provider.dart` | **State настроек**. Хранение IGDB и SteamGridDB credentials в SharedPreferences, валидация токена, синхронизация платформ |
 
 ---
 
@@ -241,6 +245,7 @@ CREATE TABLE collection_games (
 |-----------|-----|------------|
 | `databaseServiceProvider` | Provider | Синглтон DatabaseService |
 | `igdbApiProvider` | Provider | Синглтон IgdbApi |
+| `steamGridDbApiProvider` | Provider | Синглтон SteamGridDbApi |
 | `sharedPreferencesProvider` | Provider | SharedPreferences (override в main) |
 | `settingsNotifierProvider` | NotifierProvider | Настройки IGDB, токены |
 | `hasValidApiKeyProvider` | Provider | bool — готов ли API |
@@ -272,6 +277,9 @@ CREATE TABLE collection_games (
                             │
                             └→ SettingsScreen()
                                 [настройки]
+                                │
+                                └→ SteamGridDbDebugScreen()
+                                    [debug, только в debug сборке]
 ```
 
 ---
