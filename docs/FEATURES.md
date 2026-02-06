@@ -49,6 +49,18 @@ Found a collection you like? Fork it:
 - Add or remove games
 - Revert to original anytime
 
+## Canvas View
+
+Visualize your collection on a free-form canvas:
+- **Infinite canvas** with zoom (0.3x – 3.0x) and pan
+- **Drag-and-drop** game cards with precise cursor tracking
+- **Dot grid background** for visual alignment
+- **Auto-layout** — new canvas initializes games in a 5-column grid
+- **Auto-sync** — adding or removing games in the collection automatically updates the canvas
+- **Persistent viewport** — zoom level and position are saved and restored
+- **Center view** and **Reset positions** controls
+- **List/Canvas toggle** — switch between traditional list and visual canvas via SegmentedButton
+
 ## SteamGridDB Integration
 
 Access high-quality game artwork from SteamGridDB:

@@ -8,7 +8,9 @@ import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_game.dart';
 import '../../../shared/models/game.dart';
 import '../../search/screens/search_screen.dart';
+import '../providers/canvas_provider.dart';
 import '../providers/collections_provider.dart';
+import '../widgets/canvas_view.dart';
 import '../widgets/create_collection_dialog.dart';
 import '../widgets/status_dropdown.dart';
 import 'game_detail_screen.dart';
@@ -31,6 +33,7 @@ class CollectionScreen extends ConsumerStatefulWidget {
 class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   Collection? _collection;
   bool _collectionLoading = true;
+  bool _isCanvasMode = false;
 
   @override
   void initState() {
@@ -73,6 +76,32 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_collection!.name),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(48),
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: SegmentedButton<bool>(
+              segments: const <ButtonSegment<bool>>[
+                ButtonSegment<bool>(
+                  value: false,
+                  label: Text('List'),
+                  icon: Icon(Icons.list),
+                ),
+                ButtonSegment<bool>(
+                  value: true,
+                  label: Text('Canvas'),
+                  icon: Icon(Icons.dashboard),
+                ),
+              ],
+              selected: <bool>{_isCanvasMode},
+              onSelectionChanged: (Set<bool> selection) {
+                setState(() {
+                  _isCanvasMode = selection.first;
+                });
+              },
+            ),
+          ),
+        ),
         actions: <Widget>[
           if (_collection!.isEditable)
             IconButton(
@@ -109,24 +138,30 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: <Widget>[
-          // Заголовок со статистикой
-          _buildHeader(statsAsync),
+      body: _isCanvasMode
+          ? CanvasView(
+              collectionId: widget.collectionId,
+              isEditable: _collection!.isEditable,
+            )
+          : Column(
+              children: <Widget>[
+                // Заголовок со статистикой
+                _buildHeader(statsAsync),
 
-          // Список игр
-          Expanded(
-            child: gamesAsync.when(
-              data: (List<CollectionGame> games) =>
-                  _buildGamesList(context, games),
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (Object error, StackTrace stack) =>
-                  _buildErrorState(context, error),
+                // Список игр
+                Expanded(
+                  child: gamesAsync.when(
+                    data: (List<CollectionGame> games) =>
+                        _buildGamesList(context, games),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (Object error, StackTrace stack) =>
+                        _buildErrorState(context, error),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
-      floatingActionButton: _collection!.isEditable
+      floatingActionButton: _collection!.isEditable && !_isCanvasMode
           ? FloatingActionButton.extended(
               onPressed: () => _addGame(context),
               icon: const Icon(Icons.add),
@@ -393,6 +428,11 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     await ref
         .read(collectionGamesNotifierProvider(widget.collectionId).notifier)
         .removeGame(game.id);
+
+    // Синхронизация канваса — удалить элемент удалённой игры
+    ref
+        .read(canvasNotifierProvider(widget.collectionId).notifier)
+        .removeGameItem(game.igdbId);
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
