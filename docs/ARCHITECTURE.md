@@ -45,7 +45,7 @@ lib/
 |------|------------|
 | `lib/core/api/igdb_api.dart` | **IGDB API клиент**. OAuth через Twitch, поиск игр, загрузка платформ. Методы: `getAccessToken()`, `searchGames()`, `fetchPlatforms()` |
 | `lib/core/api/steamgriddb_api.dart` | **SteamGridDB API клиент**. Bearer token авторизация. Методы: `searchGames()`, `getGrids()`, `getHeroes()`, `getLogos()`, `getIcons()` |
-| `lib/core/database/database_service.dart` | **SQLite сервис**. Создание таблиц, миграции, CRUD для всех сущностей. Таблицы: `platforms`, `games`, `collections`, `collection_games` |
+| `lib/core/database/database_service.dart` | **SQLite сервис**. Создание таблиц, миграции (версия 5), CRUD для всех сущностей. Таблицы: `platforms`, `games`, `collections`, `collection_games`, `canvas_items`, `canvas_viewport` |
 
 ---
 
@@ -59,6 +59,8 @@ lib/
 | `lib/shared/models/collection_game.dart` | **Игра в коллекции**. Связь коллекции с игрой. Статусы: `notStarted`, `playing`, `completed`, `dropped`, `planned`. Комментарии автора и пользователя |
 | `lib/shared/models/steamgriddb_game.dart` | **Модель SteamGridDB игры**. Поля: id, name, types, verified. Метод: `fromJson()` |
 | `lib/shared/models/steamgriddb_image.dart` | **Модель SteamGridDB изображения**. Поля: id, score, style, url, thumb, width, height, mime, author. Свойство `dimensions` |
+| `lib/shared/models/canvas_item.dart` | **Модель элемента канваса**. Enum `CanvasItemType` (game/text/image/link). Поля: id, collectionId, itemType, itemRefId, x, y, width, height, zIndex, data (JSON). Joined поле `game: Game?` |
+| `lib/shared/models/canvas_viewport.dart` | **Модель viewport канваса**. Поля: collectionId, scale, offsetX, offsetY. Хранит зум и позицию камеры |
 
 ---
 
@@ -78,12 +80,15 @@ lib/
 | `lib/features/collections/widgets/collection_tile.dart` | **Плитка коллекции**. Показывает имя, автора, тип, количество игр. Иконка удаления |
 | `lib/features/collections/widgets/create_collection_dialog.dart` | **Диалоги**. Создание, переименование, удаление коллекции |
 | `lib/features/collections/widgets/status_dropdown.dart` | **Выпадающий список статусов**. Компактный и полный режим |
+| `lib/features/collections/widgets/canvas_view.dart` | **Canvas View**. InteractiveViewer с зумом 0.3–3.0x, панорамированием, drag-and-drop (абсолютное отслеживание позиции). Фоновая сетка (CustomPainter), автоцентрирование |
+| `lib/features/collections/widgets/canvas_game_card.dart` | **Карточка игры на канвасе**. Компактная карточка 160x220px с обложкой и названием. RepaintBoundary для оптимизации |
 
 #### Провайдеры
 
 | Файл | Назначение |
 |------|------------|
 | `lib/features/collections/providers/collections_provider.dart` | **State management коллекций**. `collectionsProvider` — список. `collectionGamesNotifierProvider` — игры в коллекции с CRUD |
+| `lib/features/collections/providers/canvas_provider.dart` | **State management канваса**. `canvasNotifierProvider` — NotifierProvider.family по collectionId. Методы: moveItem, updateViewport, addItem, deleteItem, bringToFront, sendToBack, removeGameItem. Debounced save (300ms position, 500ms viewport). Двусторонняя синхронизация с коллекцией через `ref.listen` |
 
 ---
 
@@ -126,6 +131,7 @@ lib/
 |------|------------|
 | `lib/data/repositories/collection_repository.dart` | **Репозиторий коллекций**. CRUD коллекций и игр. Форки с snapshot. Статистика (CollectionStats) |
 | `lib/data/repositories/game_repository.dart` | **Репозиторий игр**. Поиск через API + кеширование в SQLite |
+| `lib/data/repositories/canvas_repository.dart` | **Репозиторий канваса**. CRUD для canvas_items и viewport. Методы: getItems, getItemsWithData (с joined Game), createItem, updateItem, updateItemPosition, updateItemSize, updateItemZIndex, deleteItem, hasCanvasItems, initializeCanvas (раскладка сеткой) |
 
 ---
 
@@ -167,7 +173,27 @@ DatabaseService.addGameToCollection()
 SnackBar "Game added to collection"
 ```
 
-### 3. Изменение статуса
+### 3. Canvas (визуальный холст)
+
+```
+Переключение List → Canvas
+       ↓
+CanvasView (ConsumerStatefulWidget)
+       ↓
+canvasNotifierProvider(collectionId).build()
+       ↓
+CanvasRepository.getItemsWithData()  [items + joined Game]
+CanvasRepository.getViewport()       [zoom + offset]
+       ↓
+Если пусто → initializeCanvas() [раскладка игр сеткой]
+       ↓
+InteractiveViewer (zoom 0.3–3.0x, pan)
+       ↓
+Drag карточки → moveItem() [debounce 300ms → updateItemPosition]
+Zoom/Pan → updateViewport() [debounce 500ms → saveViewport]
+```
+
+### 4. Изменение статуса
 
 ```
 Тап на StatusDropdown
@@ -235,6 +261,31 @@ CREATE TABLE collection_games (
   FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE,
   UNIQUE(collection_id, igdb_id, platform_id)
 );
+
+-- Элементы канваса (Stage 7)
+CREATE TABLE canvas_items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  collection_id INTEGER NOT NULL,
+  item_type TEXT NOT NULL DEFAULT 'game',
+  item_ref_id INTEGER,
+  x REAL NOT NULL DEFAULT 0.0,
+  y REAL NOT NULL DEFAULT 0.0,
+  width REAL,
+  height REAL,
+  z_index INTEGER NOT NULL DEFAULT 0,
+  data TEXT,
+  created_at INTEGER NOT NULL,
+  FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE
+);
+
+-- Viewport канваса (Stage 7)
+CREATE TABLE canvas_viewport (
+  collection_id INTEGER PRIMARY KEY,
+  scale REAL NOT NULL DEFAULT 1.0,
+  offset_x REAL NOT NULL DEFAULT 0.0,
+  offset_y REAL NOT NULL DEFAULT 0.0,
+  FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE
+);
 ```
 
 ---
@@ -255,6 +306,8 @@ CREATE TABLE collection_games (
 | `gameSearchProvider` | NotifierProvider | Состояние поиска |
 | `gameRepositoryProvider` | Provider | Репозиторий игр |
 | `collectionRepositoryProvider` | Provider | Репозиторий коллекций |
+| `canvasRepositoryProvider` | Provider | Репозиторий канваса |
+| `canvasNotifierProvider` | NotifierProvider.family | Состояние канваса (по collectionId) |
 
 ---
 
