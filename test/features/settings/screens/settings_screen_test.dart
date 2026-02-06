@@ -139,8 +139,8 @@ void main() {
       TextField textField = tester.widget<TextField>(secretField);
       expect(textField.obscureText, isTrue);
 
-      // Нажимаем на иконку видимости
-      await tester.tap(find.byIcon(Icons.visibility));
+      // Нажимаем на первую иконку видимости (Client Secret)
+      await tester.tap(find.byIcon(Icons.visibility).first);
       await tester.pumpAndSettle();
 
       // Теперь пароль виден

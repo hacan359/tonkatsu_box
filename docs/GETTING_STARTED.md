@@ -20,13 +20,23 @@ xeRAbora uses IGDB to fetch game metadata. You need free API credentials:
 5. Click **Create**
 6. Copy your **Client ID** and generate a **Client Secret**
 
+## Getting SteamGridDB API Key (Optional)
+
+For high-quality game artwork (grids, heroes, logos, icons):
+
+1. Go to [steamgriddb.com](https://www.steamgriddb.com)
+2. Create an account or log in
+3. Go to **Preferences** → **API**
+4. Copy your **API Key**
+
 ## First Launch
 
 1. Start xeRAbora
 2. Enter your IGDB Client ID and Client Secret
 3. Click **Verify Connection**
 4. Platforms will sync automatically
-5. You're ready to create collections!
+5. (Optional) Enter your SteamGridDB API Key in the **SteamGridDB API** section
+6. You're ready to create collections!
 
 ## Quick Start
 

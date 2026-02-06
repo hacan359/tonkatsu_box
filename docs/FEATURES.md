@@ -49,6 +49,15 @@ Found a collection you like? Fork it:
 - Add or remove games
 - Revert to original anytime
 
+## SteamGridDB Integration
+
+Access high-quality game artwork from SteamGridDB:
+- Search games by name
+- Browse grid images (box art)
+- Browse hero images (banners)
+- Browse logos and icons
+- Debug panel for testing API endpoints (dev builds only)
+
 ## Offline Mode
 
 After initial setup, most features work offline:

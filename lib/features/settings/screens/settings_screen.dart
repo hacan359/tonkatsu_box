@@ -1,4 +1,5 @@
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +8,7 @@ import '../../../core/database/database_service.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../shared/models/platform.dart';
 import '../providers/settings_provider.dart';
+import 'steamgriddb_debug_screen.dart';
 
 /// URL для получения API ключей IGDB.
 const String _twitchConsoleUrl = 'https://dev.twitch.tv/console/apps';
@@ -35,10 +37,13 @@ class SettingsScreen extends ConsumerStatefulWidget {
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final TextEditingController _clientIdController = TextEditingController();
   final TextEditingController _clientSecretController = TextEditingController();
+  final TextEditingController _steamGridDbKeyController =
+      TextEditingController();
   final FocusNode _clientIdFocus = FocusNode();
   final FocusNode _clientSecretFocus = FocusNode();
 
   bool _obscureSecret = true;
+  bool _obscureSteamGridDbKey = true;
 
   @override
   void initState() {
@@ -50,12 +55,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final SettingsState settings = ref.read(settingsNotifierProvider);
     _clientIdController.text = settings.clientId ?? '';
     _clientSecretController.text = settings.clientSecret ?? '';
+    _steamGridDbKeyController.text = settings.steamGridDbApiKey ?? '';
   }
 
   @override
   void dispose() {
     _clientIdController.dispose();
     _clientSecretController.dispose();
+    _steamGridDbKeyController.dispose();
     _clientIdFocus.dispose();
     _clientSecretFocus.dispose();
     super.dispose();
@@ -176,6 +183,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             _buildActionsSection(settings),
             const SizedBox(height: 24),
             _buildCacheSection(),
+            const SizedBox(height: 24),
+            _buildSteamGridDbSection(settings),
+            if (kDebugMode) ...<Widget>[
+              const SizedBox(height: 24),
+              _buildDeveloperToolsSection(settings),
+            ],
             if (settings.errorMessage != null) ...<Widget>[
               const SizedBox(height: 16),
               _buildErrorSection(settings.errorMessage!),
@@ -550,6 +563,143 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         _showSnackBar('Cache cleared', isError: false);
       }
     }
+  }
+
+  Widget _buildSteamGridDbSection(SettingsState settings) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+              children: <Widget>[
+                Icon(Icons.grid_view,
+                    color: Theme.of(context).colorScheme.primary),
+                const SizedBox(width: 8),
+                Text(
+                  'SteamGridDB API',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _steamGridDbKeyController,
+              decoration: InputDecoration(
+                labelText: 'API Key',
+                hintText: 'Enter your SteamGridDB API key',
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.vpn_key),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureSteamGridDbKey
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscureSteamGridDbKey = !_obscureSteamGridDbKey;
+                    });
+                  },
+                ),
+              ),
+              obscureText: _obscureSteamGridDbKey,
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) => _saveSteamGridDbKey(),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: <Widget>[
+                Icon(
+                  settings.hasSteamGridDbKey
+                      ? Icons.check_circle
+                      : Icons.help_outline,
+                  color: settings.hasSteamGridDbKey ? Colors.green : Colors.grey,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  settings.hasSteamGridDbKey ? 'API key saved' : 'No API key',
+                  style: TextStyle(
+                    color:
+                        settings.hasSteamGridDbKey ? Colors.green : Colors.grey,
+                  ),
+                ),
+                const Spacer(),
+                SizedBox(
+                  width: 80,
+                  height: 40,
+                  child: FilledButton(
+                    onPressed: _saveSteamGridDbKey,
+                    child: const Text('Save'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _saveSteamGridDbKey() async {
+    final String apiKey = _steamGridDbKeyController.text.trim();
+    final SettingsNotifier notifier =
+        ref.read(settingsNotifierProvider.notifier);
+    await notifier.setSteamGridDbApiKey(apiKey);
+
+    if (mounted) {
+      _showSnackBar(
+        apiKey.isEmpty ? 'API key cleared' : 'API key saved',
+        isError: false,
+      );
+    }
+  }
+
+  Widget _buildDeveloperToolsSection(SettingsState settings) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+              children: <Widget>[
+                Icon(Icons.bug_report,
+                    color: Theme.of(context).colorScheme.primary),
+                const SizedBox(width: 8),
+                Text(
+                  'Developer Tools',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.grid_view),
+              title: const Text('SteamGridDB Debug Panel'),
+              subtitle: Text(
+                settings.hasSteamGridDbKey
+                    ? 'Test API endpoints'
+                    : 'Set API key first',
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              enabled: settings.hasSteamGridDbKey,
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (BuildContext context) =>
+                        const SteamGridDbDebugScreen(),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildErrorSection(String errorMessage) {

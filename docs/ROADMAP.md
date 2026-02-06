@@ -3,12 +3,15 @@
 ## Current Version (v1.0)
 
 - [x] Project setup
-- [ ] IGDB integration
-- [ ] Collection management
-- [ ] Progress tracking
-- [ ] Import/Export (.rcoll)
-- [ ] Forking collections
-- [ ] Comments system
+- [x] IGDB integration
+- [x] Collection management
+- [x] Progress tracking
+- [x] Import/Export (.rcoll)
+- [x] Forking collections
+- [x] Comments system
+- [x] SteamGridDB integration (API client, debug panel)
+- [x] Offline image caching
+- [x] Platform logos
 
 ## Future Plans
 
