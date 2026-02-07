@@ -152,8 +152,9 @@ class CollectionGamesNotifier
   /// Обновляет список игр.
   Future<void> refresh() async {
     await _loadGames();
-    // Инвалидируем статистику
+    // Инвалидируем статистику и универсальный провайдер элементов
     ref.invalidate(collectionStatsProvider(_collectionId));
+    ref.invalidate(collectionItemsNotifierProvider(_collectionId));
   }
 
   /// Добавляет игру в коллекцию.
@@ -278,6 +279,7 @@ class CollectionItemsNotifier
   Future<void> refresh() async {
     await _loadItems();
     ref.invalidate(collectionStatsProvider(_collectionId));
+    ref.invalidate(collectionGamesNotifierProvider(_collectionId));
   }
 
   /// Добавляет элемент в коллекцию.
