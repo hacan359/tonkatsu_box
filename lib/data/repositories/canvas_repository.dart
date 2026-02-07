@@ -6,7 +6,7 @@ import '../../core/database/database_service.dart';
 import '../../shared/models/canvas_connection.dart';
 import '../../shared/models/canvas_item.dart';
 import '../../shared/models/canvas_viewport.dart';
-import '../../shared/models/collection_game.dart';
+import '../../shared/models/collection_item.dart';
 import '../../shared/models/game.dart';
 
 /// Провайдер для репозитория канваса.
@@ -200,29 +200,32 @@ class CanvasRepository {
   ///
   /// Вызывается при первом открытии Canvas View.
   /// Сетка центрируется вокруг [initialCenterX], [initialCenterY].
+  /// Инициализирует канвас для коллекции, размещая элементы сеткой по центру.
+  ///
+  /// Принимает [List<CollectionItem>] — обычно отфильтрованные по mediaType=game.
   Future<List<CanvasItem>> initializeCanvas(
     int collectionId,
-    List<CollectionGame> games,
+    List<CollectionItem> items,
   ) async {
     final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     final List<CanvasItem> createdItems = <CanvasItem>[];
 
-    if (games.isEmpty) {
+    if (items.isEmpty) {
       await saveViewport(CanvasViewport(collectionId: collectionId));
       return createdItems;
     }
 
     // Рассчитываем размеры сетки для центрирования
     final int cols =
-        games.length < gridColumns ? games.length : gridColumns;
-    final int rowCount = (games.length + cols - 1) ~/ cols;
+        items.length < gridColumns ? items.length : gridColumns;
+    final int rowCount = (items.length + cols - 1) ~/ cols;
     final double gridWidth = cols * (defaultCardWidth + gridGap) - gridGap;
     final double gridHeight =
         rowCount * (defaultCardHeight + gridGap) - gridGap;
     final double startX = initialCenterX - gridWidth / 2;
     final double startY = initialCenterY - gridHeight / 2;
 
-    for (int i = 0; i < games.length; i++) {
+    for (int i = 0; i < items.length; i++) {
       final int col = i % cols;
       final int row = i ~/ cols;
       final double x = startX + col * (defaultCardWidth + gridGap);
@@ -232,7 +235,7 @@ class CanvasRepository {
         id: 0,
         collectionId: collectionId,
         itemType: CanvasItemType.game,
-        itemRefId: games[i].igdbId,
+        itemRefId: items[i].externalId,
         x: x,
         y: y,
         width: defaultCardWidth,
@@ -242,7 +245,7 @@ class CanvasRepository {
       );
 
       final CanvasItem created = await createItem(item);
-      createdItems.add(created.copyWith(game: games[i].game));
+      createdItems.add(created.copyWith(game: items[i].game));
     }
 
     // Создаём viewport по умолчанию

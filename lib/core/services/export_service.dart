@@ -4,7 +4,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../shared/models/collection.dart';
-import '../../shared/models/collection_game.dart';
+import '../../shared/models/collection_item.dart';
+import '../../shared/models/media_type.dart';
 import 'rcoll_file.dart';
 
 /// Провайдер для сервиса экспорта.
@@ -56,12 +57,18 @@ class ExportResult {
 /// Сервис для экспорта коллекций в .rcoll формат.
 class ExportService {
   /// Создаёт .rcoll файл из коллекции.
-  RcollFile createRcollFile(Collection collection, List<CollectionGame> games) {
-    final List<RcollGame> rcollGames = games
-        .map((CollectionGame g) => RcollGame(
-              igdbId: g.igdbId,
-              platformId: g.platformId,
-              comment: g.authorComment,
+  ///
+  /// Фильтрует только игры (mediaType=game) для формата v1.
+  RcollFile createRcollFile(
+    Collection collection,
+    List<CollectionItem> items,
+  ) {
+    final List<RcollGame> rcollGames = items
+        .where((CollectionItem i) => i.mediaType == MediaType.game)
+        .map((CollectionItem i) => RcollGame(
+              igdbId: i.externalId,
+              platformId: i.platformId ?? 0,
+              comment: i.authorComment,
             ))
         .toList();
 
@@ -75,8 +82,8 @@ class ExportService {
   }
 
   /// Экспортирует коллекцию в JSON строку.
-  String exportToJson(Collection collection, List<CollectionGame> games) {
-    final RcollFile rcoll = createRcollFile(collection, games);
+  String exportToJson(Collection collection, List<CollectionItem> items) {
+    final RcollFile rcoll = createRcollFile(collection, items);
     return rcoll.toJsonString();
   }
 
@@ -86,10 +93,10 @@ class ExportService {
   /// Возвращает [ExportResult] с результатом операции.
   Future<ExportResult> exportToFile(
     Collection collection,
-    List<CollectionGame> games,
+    List<CollectionItem> items,
   ) async {
     try {
-      final String json = exportToJson(collection, games);
+      final String json = exportToJson(collection, items);
       final String suggestedName = _sanitizeFileName(collection.name);
 
       final String? outputPath = await FilePicker.platform.saveFile(

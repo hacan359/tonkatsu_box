@@ -9,6 +9,7 @@ import 'package:xerabora/core/services/rcoll_file.dart';
 import 'package:xerabora/data/repositories/collection_repository.dart';
 import 'package:xerabora/shared/models/collection.dart';
 import 'package:xerabora/shared/models/game.dart';
+import 'package:xerabora/shared/models/media_type.dart';
 
 class MockCollectionRepository extends Mock implements CollectionRepository {}
 
@@ -22,6 +23,7 @@ void main() {
   setUpAll(() {
     registerFallbackValue(const Game(id: 0, name: 'fallback'));
     registerFallbackValue(CollectionType.own);
+    registerFallbackValue(MediaType.game);
   });
 
   group('ImportResult', () {
@@ -254,9 +256,10 @@ void main() {
               author: any(named: 'author'),
               type: any(named: 'type'),
             )).thenAnswer((_) async => createdCollection);
-        when(() => mockRepo.addGame(
+        when(() => mockRepo.addItem(
               collectionId: any(named: 'collectionId'),
-              igdbId: any(named: 'igdbId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
             )).thenAnswer((_) async => 1);
@@ -268,15 +271,17 @@ void main() {
 
         verify(() => mockApi.getGamesByIds(<int>[100, 200])).called(1);
         verify(() => mockDb.upsertGame(any())).called(2);
-        verify(() => mockRepo.addGame(
+        verify(() => mockRepo.addItem(
               collectionId: 5,
-              igdbId: 100,
+              mediaType: MediaType.game,
+              externalId: 100,
               platformId: 18,
               authorComment: 'Great',
             )).called(1);
-        verify(() => mockRepo.addGame(
+        verify(() => mockRepo.addItem(
               collectionId: 5,
-              igdbId: 200,
+              mediaType: MediaType.game,
+              externalId: 200,
               platformId: 19,
               authorComment: null,
             )).called(1);
@@ -333,9 +338,10 @@ void main() {
               author: any(named: 'author'),
               type: any(named: 'type'),
             )).thenAnswer((_) async => createdCollection);
-        when(() => mockRepo.addGame(
+        when(() => mockRepo.addItem(
               collectionId: any(named: 'collectionId'),
-              igdbId: any(named: 'igdbId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
             )).thenAnswer((_) async => 1);
@@ -387,9 +393,10 @@ void main() {
 
         // Первая игра добавлена успешно, вторая - дубликат (возвращает null)
         int callCount = 0;
-        when(() => mockRepo.addGame(
+        when(() => mockRepo.addItem(
               collectionId: any(named: 'collectionId'),
-              igdbId: any(named: 'igdbId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
             )).thenAnswer((_) async {

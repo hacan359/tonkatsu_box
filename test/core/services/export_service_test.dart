@@ -5,6 +5,7 @@ import 'package:xerabora/core/services/export_service.dart';
 import 'package:xerabora/core/services/rcoll_file.dart';
 import 'package:xerabora/shared/models/collection.dart';
 import 'package:xerabora/shared/models/collection_game.dart';
+import 'package:xerabora/shared/models/collection_item.dart';
 
 void main() {
   final DateTime testDate = DateTime(2024, 1, 15, 12, 0, 0);
@@ -91,9 +92,9 @@ void main() {
     group('createRcollFile', () {
       test('должен создать RcollFile из коллекции без игр', () {
         final Collection collection = createTestCollection();
-        final List<CollectionGame> games = <CollectionGame>[];
+        final List<CollectionItem> items = <CollectionItem>[];
 
-        final RcollFile rcoll = sut.createRcollFile(collection, games);
+        final RcollFile rcoll = sut.createRcollFile(collection, items);
 
         expect(rcoll.version, equals(rcollFormatVersion));
         expect(rcoll.name, equals('Test Collection'));
@@ -104,12 +105,12 @@ void main() {
 
       test('должен создать RcollFile с играми', () {
         final Collection collection = createTestCollection();
-        final List<CollectionGame> games = <CollectionGame>[
+        final List<CollectionItem> items = <CollectionGame>[
           createTestGame(igdbId: 100, platformId: 18, authorComment: 'Comment 1'),
           createTestGame(id: 2, igdbId: 200, platformId: 19),
-        ];
+        ].map((CollectionGame g) => g.toCollectionItem()).toList();
 
-        final RcollFile rcoll = sut.createRcollFile(collection, games);
+        final RcollFile rcoll = sut.createRcollFile(collection, items);
 
         expect(rcoll.games.length, equals(2));
         expect(rcoll.games[0].igdbId, equals(100));
@@ -132,7 +133,10 @@ void main() {
           addedAt: testDate,
         );
 
-        final RcollFile rcoll = sut.createRcollFile(collection, <CollectionGame>[game]);
+        final RcollFile rcoll = sut.createRcollFile(
+          collection,
+          <CollectionGame>[game].map((CollectionGame g) => g.toCollectionItem()).toList(),
+        );
 
         expect(rcoll.games[0].comment, equals('Author says'));
       });
@@ -141,11 +145,11 @@ void main() {
     group('exportToJson', () {
       test('должен вернуть валидный JSON', () {
         final Collection collection = createTestCollection(name: 'JSON Export');
-        final List<CollectionGame> games = <CollectionGame>[
+        final List<CollectionItem> items = <CollectionGame>[
           createTestGame(igdbId: 500, platformId: 20),
-        ];
+        ].map((CollectionGame g) => g.toCollectionItem()).toList();
 
-        final String json = sut.exportToJson(collection, games);
+        final String json = sut.exportToJson(collection, items);
 
         // Проверяем что это валидный JSON
         final Map<String, dynamic> parsed =
@@ -158,9 +162,9 @@ void main() {
 
       test('должен создать форматированный JSON с отступами', () {
         final Collection collection = createTestCollection();
-        final List<CollectionGame> games = <CollectionGame>[];
+        final List<CollectionItem> items = <CollectionItem>[];
 
-        final String json = sut.exportToJson(collection, games);
+        final String json = sut.exportToJson(collection, items);
 
         // Проверяем наличие отступов
         expect(json, contains('\n'));
@@ -169,9 +173,9 @@ void main() {
 
       test('должен корректно экспортировать пустую коллекцию', () {
         final Collection collection = createTestCollection(name: 'Empty');
-        final List<CollectionGame> games = <CollectionGame>[];
+        final List<CollectionItem> items = <CollectionItem>[];
 
-        final String json = sut.exportToJson(collection, games);
+        final String json = sut.exportToJson(collection, items);
         final RcollFile restored = RcollFile.fromJsonString(json);
 
         expect(restored.name, equals('Empty'));
@@ -180,15 +184,15 @@ void main() {
 
       test('должен сохранять все данные игр при round-trip', () {
         final Collection collection = createTestCollection();
-        final List<CollectionGame> games = <CollectionGame>[
+        final List<CollectionItem> items = <CollectionGame>[
           createTestGame(
             igdbId: 111,
             platformId: 22,
             authorComment: 'Fantastic game',
           ),
-        ];
+        ].map((CollectionGame g) => g.toCollectionItem()).toList();
 
-        final String json = sut.exportToJson(collection, games);
+        final String json = sut.exportToJson(collection, items);
         final RcollFile restored = RcollFile.fromJsonString(json);
 
         expect(restored.games[0].igdbId, equals(111));

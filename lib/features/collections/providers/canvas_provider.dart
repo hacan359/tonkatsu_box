@@ -6,7 +6,8 @@ import '../../../data/repositories/canvas_repository.dart';
 import '../../../shared/models/canvas_connection.dart';
 import '../../../shared/models/canvas_item.dart';
 import '../../../shared/models/canvas_viewport.dart';
-import '../../../shared/models/collection_game.dart';
+import '../../../shared/models/collection_item.dart';
+import '../../../shared/models/media_type.dart';
 import 'collections_provider.dart';
 
 /// Состояние канваса для коллекции.
@@ -92,12 +93,12 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int> {
       _positionSaveTimer?.cancel();
     });
 
-    // Реактивная синхронизация: при изменении списка игр коллекции
+    // Реактивная синхронизация: при изменении элементов коллекции
     // автоматически добавляем/удаляем элементы канваса
-    ref.listen<AsyncValue<List<CollectionGame>>>(
-      collectionGamesNotifierProvider(_collectionId),
-      (AsyncValue<List<CollectionGame>>? previous,
-          AsyncValue<List<CollectionGame>> next) {
+    ref.listen<AsyncValue<List<CollectionItem>>>(
+      collectionItemsNotifierProvider(_collectionId),
+      (AsyncValue<List<CollectionItem>>? previous,
+          AsyncValue<List<CollectionItem>> next) {
         if (state.isInitialized && !state.isLoading && next.hasValue) {
           _syncAndReload();
         }
@@ -151,13 +152,17 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int> {
 
   Future<void> _initializeFromGames() async {
     try {
-      final AsyncValue<List<CollectionGame>> gamesAsync =
-          ref.read(collectionGamesNotifierProvider(_collectionId));
-      final List<CollectionGame> games =
-          gamesAsync.valueOrNull ?? <CollectionGame>[];
+      final AsyncValue<List<CollectionItem>> itemsAsync =
+          ref.read(collectionItemsNotifierProvider(_collectionId));
+      final List<CollectionItem> allItems =
+          itemsAsync.valueOrNull ?? <CollectionItem>[];
+      // Пока канвас поддерживает только игры
+      final List<CollectionItem> gameItems = allItems
+          .where((CollectionItem i) => i.mediaType == MediaType.game)
+          .toList();
 
       final List<CanvasItem> items =
-          await _repository.initializeCanvas(_collectionId, games);
+          await _repository.initializeCanvas(_collectionId, gameItems);
 
       state = state.copyWith(
         items: items,
@@ -194,15 +199,20 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int> {
   /// - Удаляет элементы канваса для игр, удалённых из коллекции
   /// - Создаёт элементы канваса для новых игр в коллекции
   Future<void> _syncCanvasWithGames() async {
-    final AsyncValue<List<CollectionGame>> gamesAsync =
-        ref.read(collectionGamesNotifierProvider(_collectionId));
-    final List<CollectionGame>? games = gamesAsync.valueOrNull;
+    final AsyncValue<List<CollectionItem>> itemsAsync =
+        ref.read(collectionItemsNotifierProvider(_collectionId));
+    final List<CollectionItem>? allItems = itemsAsync.valueOrNull;
 
-    // Если игры ещё не загружены — пропускаем синхронизацию
-    if (games == null) return;
+    // Если элементы ещё не загружены — пропускаем синхронизацию
+    if (allItems == null) return;
+
+    // Фильтруем только игры — пока канвас поддерживает только их
+    final List<CollectionItem> games = allItems
+        .where((CollectionItem i) => i.mediaType == MediaType.game)
+        .toList();
 
     final Set<int> currentIgdbIds =
-        games.map((CollectionGame g) => g.igdbId).toSet();
+        games.map((CollectionItem g) => g.externalId).toSet();
 
     final List<CanvasItem> canvasItems =
         await _repository.getItems(_collectionId);
@@ -223,8 +233,8 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int> {
         .map((CanvasItem item) => item.itemRefId!)
         .toSet();
 
-    final List<CollectionGame> missingGames = games
-        .where((CollectionGame g) => !canvasIgdbIds.contains(g.igdbId))
+    final List<CollectionItem> missingGames = games
+        .where((CollectionItem g) => !canvasIgdbIds.contains(g.externalId))
         .toList();
 
     if (missingGames.isEmpty) return;
@@ -271,7 +281,7 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int> {
         id: 0,
         collectionId: _collectionId,
         itemType: CanvasItemType.game,
-        itemRefId: missingGames[i].igdbId,
+        itemRefId: missingGames[i].externalId,
         x: x,
         y: y,
         width: CanvasRepository.defaultCardWidth,
