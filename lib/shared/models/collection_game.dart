@@ -1,4 +1,7 @@
+import 'collection_item.dart';
 import 'game.dart';
+import 'item_status.dart';
+import 'media_type.dart';
 import 'platform.dart';
 
 /// Статус прохождения игры.
@@ -39,6 +42,41 @@ enum GameStatus {
 
   /// Возвращает отображаемый текст с иконкой.
   String get displayText => '$icon $label';
+
+  /// Конвертирует в универсальный [ItemStatus].
+  ItemStatus toItemStatus() {
+    switch (this) {
+      case GameStatus.notStarted:
+        return ItemStatus.notStarted;
+      case GameStatus.playing:
+        return ItemStatus.inProgress;
+      case GameStatus.completed:
+        return ItemStatus.completed;
+      case GameStatus.dropped:
+        return ItemStatus.dropped;
+      case GameStatus.planned:
+        return ItemStatus.planned;
+    }
+  }
+
+  /// Создаёт [GameStatus] из [ItemStatus].
+  static GameStatus fromItemStatus(ItemStatus itemStatus) {
+    switch (itemStatus) {
+      case ItemStatus.notStarted:
+        return GameStatus.notStarted;
+      case ItemStatus.inProgress:
+        return GameStatus.playing;
+      case ItemStatus.completed:
+        return GameStatus.completed;
+      case ItemStatus.dropped:
+        return GameStatus.dropped;
+      case ItemStatus.planned:
+        return GameStatus.planned;
+      case ItemStatus.onHold:
+        // onHold не существует в GameStatus — маппим на dropped
+        return GameStatus.dropped;
+    }
+  }
 }
 
 /// Модель игры в коллекции.
@@ -73,6 +111,25 @@ class CollectionGame {
       addedAt: DateTime.fromMillisecondsSinceEpoch(
         (row['added_at'] as int) * 1000,
       ),
+    );
+  }
+
+  /// Создаёт [CollectionGame] из [CollectionItem] (адаптер).
+  ///
+  /// Используется для обратной совместимости UI до Stage 18.
+  /// Работает только с элементами типа [MediaType.game].
+  factory CollectionGame.fromCollectionItem(CollectionItem item) {
+    return CollectionGame(
+      id: item.id,
+      collectionId: item.collectionId,
+      igdbId: item.externalId,
+      platformId: item.platformId ?? 0,
+      authorComment: item.authorComment,
+      userComment: item.userComment,
+      status: GameStatus.fromItemStatus(item.status),
+      addedAt: item.addedAt,
+      game: item.game,
+      platform: item.platform,
     );
   }
 
@@ -143,6 +200,23 @@ class CollectionGame {
 
   /// Возвращает true, если игра пройдена.
   bool get isCompleted => status == GameStatus.completed;
+
+  /// Конвертирует в универсальный [CollectionItem].
+  CollectionItem toCollectionItem() {
+    return CollectionItem(
+      id: id,
+      collectionId: collectionId,
+      mediaType: MediaType.game,
+      externalId: igdbId,
+      platformId: platformId,
+      status: status.toItemStatus(),
+      authorComment: authorComment,
+      userComment: userComment,
+      addedAt: addedAt,
+      game: game,
+      platform: platform,
+    );
+  }
 
   /// Преобразует в Map для сохранения в базу данных.
   Map<String, dynamic> toDb() {

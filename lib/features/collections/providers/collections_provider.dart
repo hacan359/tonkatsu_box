@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/repositories/collection_repository.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_game.dart';
+import '../../../shared/models/collection_item.dart';
+import '../../../shared/models/item_status.dart';
+import '../../../shared/models/media_type.dart';
 
 /// Провайдер для списка коллекций.
 final AsyncNotifierProvider<CollectionsNotifier, List<Collection>>
@@ -232,6 +235,158 @@ class CollectionGamesNotifier
             return g.copyWith(userComment: comment);
           }
           return g;
+        }).toList(),
+      );
+    }
+  }
+}
+
+// ==================== Collection Items ====================
+
+/// Провайдер для управления элементами в конкретной коллекции.
+final NotifierProviderFamily<CollectionItemsNotifier,
+        AsyncValue<List<CollectionItem>>, int>
+    collectionItemsNotifierProvider = NotifierProvider.family<
+        CollectionItemsNotifier, AsyncValue<List<CollectionItem>>, int>(
+  CollectionItemsNotifier.new,
+);
+
+/// Notifier для управления элементами коллекции (универсальный).
+class CollectionItemsNotifier
+    extends FamilyNotifier<AsyncValue<List<CollectionItem>>, int> {
+  late CollectionRepository _repository;
+  late int _collectionId;
+
+  @override
+  AsyncValue<List<CollectionItem>> build(int arg) {
+    _collectionId = arg;
+    _repository = ref.watch(collectionRepositoryProvider);
+
+    _loadItems();
+
+    return const AsyncLoading<List<CollectionItem>>();
+  }
+
+  Future<void> _loadItems() async {
+    state = const AsyncLoading<List<CollectionItem>>();
+    state = await AsyncValue.guard(
+      () => _repository.getItemsWithData(_collectionId),
+    );
+  }
+
+  /// Обновляет список элементов.
+  Future<void> refresh() async {
+    await _loadItems();
+    ref.invalidate(collectionStatsProvider(_collectionId));
+  }
+
+  /// Добавляет элемент в коллекцию.
+  ///
+  /// Возвращает true при успехе, false если элемент уже в коллекции.
+  Future<bool> addItem({
+    required MediaType mediaType,
+    required int externalId,
+    int? platformId,
+    String? authorComment,
+  }) async {
+    final int? id = await _repository.addItem(
+      collectionId: _collectionId,
+      mediaType: mediaType,
+      externalId: externalId,
+      platformId: platformId,
+      authorComment: authorComment,
+    );
+
+    if (id == null) return false;
+
+    await refresh();
+    return true;
+  }
+
+  /// Удаляет элемент из коллекции.
+  Future<void> removeItem(int id) async {
+    await _repository.removeItem(id);
+    await refresh();
+  }
+
+  /// Обновляет статус элемента.
+  Future<void> updateStatus(int id, ItemStatus status, MediaType mediaType) async {
+    await _repository.updateItemStatus(id, status, mediaType: mediaType);
+
+    // Локальное обновление
+    final List<CollectionItem>? items = state.valueOrNull;
+    if (items != null) {
+      state = AsyncData<List<CollectionItem>>(
+        items.map((CollectionItem i) {
+          if (i.id == id) {
+            return i.copyWith(status: status);
+          }
+          return i;
+        }).toList(),
+      );
+    }
+
+    ref.invalidate(collectionStatsProvider(_collectionId));
+  }
+
+  /// Обновляет прогресс просмотра сериала.
+  Future<void> updateProgress(
+    int id, {
+    int? currentSeason,
+    int? currentEpisode,
+  }) async {
+    await _repository.updateItemProgress(
+      id,
+      currentSeason: currentSeason,
+      currentEpisode: currentEpisode,
+    );
+
+    // Локальное обновление
+    final List<CollectionItem>? items = state.valueOrNull;
+    if (items != null) {
+      state = AsyncData<List<CollectionItem>>(
+        items.map((CollectionItem i) {
+          if (i.id == id) {
+            return i.copyWith(
+              currentSeason: currentSeason ?? i.currentSeason,
+              currentEpisode: currentEpisode ?? i.currentEpisode,
+            );
+          }
+          return i;
+        }).toList(),
+      );
+    }
+  }
+
+  /// Обновляет комментарий автора.
+  Future<void> updateAuthorComment(int id, String? comment) async {
+    await _repository.updateItemAuthorComment(id, comment);
+
+    final List<CollectionItem>? items = state.valueOrNull;
+    if (items != null) {
+      state = AsyncData<List<CollectionItem>>(
+        items.map((CollectionItem i) {
+          if (i.id == id) {
+            return i.copyWith(authorComment: comment);
+          }
+          return i;
+        }).toList(),
+      );
+    }
+  }
+
+  /// Обновляет личный комментарий.
+  Future<void> updateUserComment(int id, String? comment) async {
+    await _repository.updateItemUserComment(id, comment);
+
+    final List<CollectionItem>? items = state.valueOrNull;
+    if (items != null) {
+      state = AsyncData<List<CollectionItem>>(
+        items.map((CollectionItem i) {
+          if (i.id == id) {
+            return i.copyWith(userComment: comment);
+          }
+          return i;
         }).toList(),
       );
     }

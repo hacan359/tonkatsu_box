@@ -5,6 +5,7 @@ import 'package:xerabora/data/repositories/canvas_repository.dart';
 import 'package:xerabora/shared/models/canvas_item.dart';
 import 'package:xerabora/shared/models/canvas_viewport.dart';
 import 'package:xerabora/shared/models/collection_game.dart';
+import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/game.dart';
 
 class MockDatabaseService extends Mock implements DatabaseService {}
@@ -542,7 +543,8 @@ void main() {
             )).thenAnswer((_) async {});
 
         final List<CanvasItem> result =
-            await repository.initializeCanvas(10, games);
+            await repository.initializeCanvas(
+                10, games.map((CollectionGame g) => g.toCollectionItem()).toList());
 
         expect(result.length, 2);
         expect(result[0].id, 1);
@@ -591,7 +593,8 @@ void main() {
             )).thenAnswer((_) async {});
 
         final List<CanvasItem> result =
-            await repository.initializeCanvas(10, games);
+            await repository.initializeCanvas(
+                10, games.map((CollectionGame g) => g.toCollectionItem()).toList());
 
         expect(result.length, 6);
         // 6 games → cols=5, gridWidth=896, startX=2500-448=2052
@@ -610,7 +613,7 @@ void main() {
             )).thenAnswer((_) async {});
 
         final List<CanvasItem> result =
-            await repository.initializeCanvas(10, <CollectionGame>[]);
+            await repository.initializeCanvas(10, <CollectionItem>[]);
 
         expect(result, isEmpty);
         verifyNever(() => mockDb.insertCanvasItem(any()));

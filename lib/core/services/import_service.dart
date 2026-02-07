@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/repositories/collection_repository.dart';
 import '../../shared/models/collection.dart';
 import '../../shared/models/game.dart';
+import '../../shared/models/media_type.dart';
 import '../api/igdb_api.dart';
 import '../database/database_service.dart';
 import 'rcoll_file.dart';
@@ -282,9 +283,10 @@ class ImportService {
           total: rcoll.games.length,
         ));
 
-        final int? gameId = await _repository.addGame(
+        final int? gameId = await _repository.addItem(
           collectionId: collection.id,
-          igdbId: rcollGame.igdbId,
+          mediaType: MediaType.game,
+          externalId: rcollGame.igdbId,
           platformId: rcollGame.platformId,
           authorComment: rcollGame.comment,
         );

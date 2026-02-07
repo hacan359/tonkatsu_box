@@ -1,6 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/shared/models/collection_game.dart';
+import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/game.dart';
+import 'package:xerabora/shared/models/item_status.dart';
+import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/platform.dart';
 
 void main() {
@@ -385,6 +388,149 @@ void main() {
 
         expect(cg.toString(), 'CollectionGame(id: 5, igdbId: 123, status: playing)');
       });
+    });
+
+    group('toCollectionItem', () {
+      test('должен конвертировать в CollectionItem', () {
+        const Game game = Game(id: 100, name: 'Test Game');
+        const Platform platform = Platform(id: 18, name: 'NES');
+
+        final CollectionGame cg = createTestGame(
+          id: 5,
+          collectionId: 10,
+          igdbId: 100,
+          platformId: 18,
+          status: GameStatus.playing,
+          authorComment: 'Auth',
+          userComment: 'User',
+          game: game,
+          platform: platform,
+        );
+
+        final CollectionItem item = cg.toCollectionItem();
+
+        expect(item.id, 5);
+        expect(item.collectionId, 10);
+        expect(item.mediaType, MediaType.game);
+        expect(item.externalId, 100);
+        expect(item.platformId, 18);
+        expect(item.status, ItemStatus.inProgress);
+        expect(item.authorComment, 'Auth');
+        expect(item.userComment, 'User');
+        expect(item.game, game);
+        expect(item.platform, platform);
+        expect(item.currentSeason, 0);
+        expect(item.currentEpisode, 0);
+      });
+    });
+
+    group('fromCollectionItem', () {
+      test('должен создать CollectionGame из CollectionItem', () {
+        const Game game = Game(id: 100, name: 'Test Game');
+        const Platform platform = Platform(id: 18, name: 'NES');
+
+        final CollectionItem item = CollectionItem(
+          id: 5,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 100,
+          platformId: 18,
+          status: ItemStatus.inProgress,
+          authorComment: 'Auth',
+          userComment: 'User',
+          addedAt: testDate,
+          game: game,
+          platform: platform,
+        );
+
+        final CollectionGame cg = CollectionGame.fromCollectionItem(item);
+
+        expect(cg.id, 5);
+        expect(cg.collectionId, 10);
+        expect(cg.igdbId, 100);
+        expect(cg.platformId, 18);
+        expect(cg.status, GameStatus.playing);
+        expect(cg.authorComment, 'Auth');
+        expect(cg.userComment, 'User');
+        expect(cg.game, game);
+        expect(cg.platform, platform);
+      });
+
+      test('должен использовать 0 для null platformId', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.notStarted,
+          addedAt: testDate,
+        );
+
+        final CollectionGame cg = CollectionGame.fromCollectionItem(item);
+        expect(cg.platformId, 0);
+      });
+    });
+
+    group('round-trip CollectionGame ↔ CollectionItem', () {
+      test('должен сохранить данные при конвертации туда и обратно', () {
+        const Game game = Game(id: 100, name: 'Zelda');
+        const Platform platform = Platform(id: 18, name: 'NES');
+
+        final CollectionGame original = createTestGame(
+          id: 7,
+          collectionId: 20,
+          igdbId: 100,
+          platformId: 18,
+          status: GameStatus.completed,
+          authorComment: 'Best game ever',
+          userComment: 'My notes',
+          game: game,
+          platform: platform,
+        );
+
+        final CollectionItem item = original.toCollectionItem();
+        final CollectionGame restored = CollectionGame.fromCollectionItem(item);
+
+        expect(restored.id, original.id);
+        expect(restored.collectionId, original.collectionId);
+        expect(restored.igdbId, original.igdbId);
+        expect(restored.platformId, original.platformId);
+        expect(restored.status, original.status);
+        expect(restored.authorComment, original.authorComment);
+        expect(restored.userComment, original.userComment);
+        expect(restored.game, original.game);
+        expect(restored.platform, original.platform);
+      });
+    });
+  });
+
+  group('GameStatus ↔ ItemStatus converters', () {
+    test('toItemStatus должен конвертировать все статусы', () {
+      expect(GameStatus.notStarted.toItemStatus(), ItemStatus.notStarted);
+      expect(GameStatus.playing.toItemStatus(), ItemStatus.inProgress);
+      expect(GameStatus.completed.toItemStatus(), ItemStatus.completed);
+      expect(GameStatus.dropped.toItemStatus(), ItemStatus.dropped);
+      expect(GameStatus.planned.toItemStatus(), ItemStatus.planned);
+    });
+
+    test('fromItemStatus должен конвертировать все статусы', () {
+      expect(GameStatus.fromItemStatus(ItemStatus.notStarted), GameStatus.notStarted);
+      expect(GameStatus.fromItemStatus(ItemStatus.inProgress), GameStatus.playing);
+      expect(GameStatus.fromItemStatus(ItemStatus.completed), GameStatus.completed);
+      expect(GameStatus.fromItemStatus(ItemStatus.dropped), GameStatus.dropped);
+      expect(GameStatus.fromItemStatus(ItemStatus.planned), GameStatus.planned);
+    });
+
+    test('onHold должен маппиться на dropped', () {
+      expect(GameStatus.fromItemStatus(ItemStatus.onHold), GameStatus.dropped);
+    });
+
+    test('round-trip должен сохранить значение', () {
+      for (final GameStatus status in GameStatus.values) {
+        final ItemStatus itemStatus = status.toItemStatus();
+        final GameStatus restored = GameStatus.fromItemStatus(itemStatus);
+        expect(restored, status);
+      }
     });
   });
 }

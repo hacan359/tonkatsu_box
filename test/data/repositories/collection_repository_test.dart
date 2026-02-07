@@ -4,10 +4,18 @@ import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/data/repositories/collection_repository.dart';
 import 'package:xerabora/shared/models/collection.dart';
 import 'package:xerabora/shared/models/collection_game.dart';
+import 'package:xerabora/shared/models/collection_item.dart';
+import 'package:xerabora/shared/models/item_status.dart';
+import 'package:xerabora/shared/models/media_type.dart';
 
 class MockDatabaseService extends Mock implements DatabaseService {}
 
 void main() {
+  setUpAll(() {
+    registerFallbackValue(MediaType.game);
+    registerFallbackValue(ItemStatus.notStarted);
+  });
+
   group('CollectionStats', () {
     group('constructor', () {
       test('должен создавать экземпляр с обязательными полями 2', () {
@@ -463,14 +471,19 @@ void main() {
 
     group('getStats', () {
       test('должен возвращать статистику коллекции', () async {
-        when(() => mockDb.getCollectionStats(1)).thenAnswer(
+        when(() => mockDb.getCollectionItemStats(1)).thenAnswer(
           (_) async => <String, int>{
             'total': 10,
             'completed': 5,
             'playing': 2,
+            'inProgress': 0,
             'notStarted': 2,
             'dropped': 1,
             'planned': 0,
+            'onHold': 0,
+            'gameCount': 8,
+            'movieCount': 1,
+            'tvShowCount': 1,
           },
         );
 
@@ -485,7 +498,7 @@ void main() {
       });
 
       test('должен обрабатывать пустую статистику', () async {
-        when(() => mockDb.getCollectionStats(1)).thenAnswer(
+        when(() => mockDb.getCollectionItemStats(1)).thenAnswer(
           (_) async => <String, int>{},
         );
 
@@ -503,12 +516,15 @@ void main() {
           name: 'Original',
           author: 'Original Author',
         );
-        final List<CollectionGame> games = <CollectionGame>[
-          createTestCollectionGame(
+        final List<CollectionItem> items = <CollectionItem>[
+          CollectionItem(
             id: 1,
             collectionId: 1,
-            igdbId: 100,
+            mediaType: MediaType.game,
+            externalId: 100,
             platformId: 18,
+            status: ItemStatus.notStarted,
+            addedAt: testDate,
             authorComment: 'Comment',
           ),
         ];
@@ -524,8 +540,8 @@ void main() {
 
         when(() => mockDb.getCollectionById(1))
             .thenAnswer((_) async => original);
-        when(() => mockDb.getCollectionGames(1))
-            .thenAnswer((_) async => games);
+        when(() => mockDb.getCollectionItems(1, mediaType: any(named: 'mediaType')))
+            .thenAnswer((_) async => items);
         when(() => mockDb.createCollection(
               name: any(named: 'name'),
               author: any(named: 'author'),
@@ -534,20 +550,23 @@ void main() {
               forkedFromAuthor: any(named: 'forkedFromAuthor'),
               forkedFromName: any(named: 'forkedFromName'),
             )).thenAnswer((_) async => forked);
-        when(() => mockDb.addGameToCollection(
+        when(() => mockDb.addItemToCollection(
               collectionId: any(named: 'collectionId'),
-              igdbId: any(named: 'igdbId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
             )).thenAnswer((_) async => 10);
 
         final Collection result = await repository.fork(1, 'New Author');
 
         expect(result.type, CollectionType.fork);
         expect(result.name, 'Original (copy)');
-        verify(() => mockDb.addGameToCollection(
+        verify(() => mockDb.addItemToCollection(
               collectionId: 2,
-              igdbId: 100,
+              mediaType: MediaType.game,
+              externalId: 100,
               platformId: 18,
               authorComment: 'Comment',
             )).called(1);
@@ -577,7 +596,7 @@ void main() {
         );
 
         when(() => mockDb.getCollectionById(2)).thenAnswer((_) async => fork);
-        when(() => mockDb.clearCollectionGames(2)).thenAnswer((_) async {});
+        when(() => mockDb.clearCollectionItems(2)).thenAnswer((_) async {});
         when(() => mockDb.addGameToCollection(
               collectionId: any(named: 'collectionId'),
               igdbId: any(named: 'igdbId'),
@@ -587,7 +606,7 @@ void main() {
 
         await repository.revertToOriginal(2);
 
-        verify(() => mockDb.clearCollectionGames(2)).called(1);
+        verify(() => mockDb.clearCollectionItems(2)).called(1);
         verify(() => mockDb.addGameToCollection(
               collectionId: 2,
               igdbId: 100,

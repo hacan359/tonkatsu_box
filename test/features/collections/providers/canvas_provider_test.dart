@@ -10,6 +10,9 @@ import 'package:xerabora/shared/models/canvas_connection.dart';
 import 'package:xerabora/shared/models/canvas_item.dart';
 import 'package:xerabora/shared/models/canvas_viewport.dart';
 import 'package:xerabora/shared/models/collection_game.dart';
+import 'package:xerabora/shared/models/collection_item.dart';
+import 'package:xerabora/shared/models/item_status.dart';
+import 'package:xerabora/shared/models/media_type.dart';
 
 // Моки
 class MockCanvasRepository extends Mock implements CanvasRepository {}
@@ -25,6 +28,21 @@ class MockCollectionGamesNotifier extends CollectionGamesNotifier {
   }
 
   void emitState(AsyncValue<List<CollectionGame>> newState) {
+    state = newState;
+  }
+}
+
+class MockCollectionItemsNotifier extends CollectionItemsNotifier {
+  MockCollectionItemsNotifier(this._initialState);
+
+  final AsyncValue<List<CollectionItem>> _initialState;
+
+  @override
+  AsyncValue<List<CollectionItem>> build(int arg) {
+    return _initialState;
+  }
+
+  void emitState(AsyncValue<List<CollectionItem>> newState) {
     state = newState;
   }
 }
@@ -194,6 +212,7 @@ void main() {
     // Вспомогательные данные для тестов
     late List<CanvasItem> testItems;
     late List<CollectionGame> testGames;
+    late List<CollectionItem> testCollectionItems;
 
     setUp(() {
       mockRepository = MockCanvasRepository();
@@ -263,20 +282,55 @@ void main() {
           addedAt: testDate,
         ),
       ];
+
+      testCollectionItems = <CollectionItem>[
+        CollectionItem(
+          id: 1,
+          collectionId: collectionId,
+          mediaType: MediaType.game,
+          externalId: 100,
+          platformId: 6,
+          status: ItemStatus.notStarted,
+          addedAt: testDate,
+        ),
+        CollectionItem(
+          id: 2,
+          collectionId: collectionId,
+          mediaType: MediaType.game,
+          externalId: 200,
+          platformId: 6,
+          status: ItemStatus.inProgress,
+          addedAt: testDate,
+        ),
+        CollectionItem(
+          id: 3,
+          collectionId: collectionId,
+          mediaType: MediaType.game,
+          externalId: 300,
+          platformId: 48,
+          status: ItemStatus.completed,
+          addedAt: testDate,
+        ),
+      ];
     });
 
     // Вспомогательный метод для создания ProviderContainer
     ProviderContainer createContainer({
       AsyncValue<List<CollectionGame>>? gamesState,
+      AsyncValue<List<CollectionItem>>? itemsState,
     }) {
       final AsyncValue<List<CollectionGame>> initialGamesState = gamesState ??
           AsyncData<List<CollectionGame>>(testGames);
+      final AsyncValue<List<CollectionItem>> initialItemsState = itemsState ??
+          AsyncData<List<CollectionItem>>(testCollectionItems);
 
       return ProviderContainer(
         overrides: <Override>[
           canvasRepositoryProvider.overrideWithValue(mockRepository),
           collectionGamesNotifierProvider
               .overrideWith(() => MockCollectionGamesNotifier(initialGamesState)),
+          collectionItemsNotifierProvider
+              .overrideWith(() => MockCollectionItemsNotifier(initialItemsState)),
         ],
       );
     }
@@ -302,20 +356,20 @@ void main() {
     }
 
     // Вспомогательный метод: настроить репо для инициализации нового канваса
-    void setupNewCanvas({List<CollectionGame>? games}) {
-      final List<CollectionGame> effectiveGames = games ?? testGames;
+    void setupNewCanvas({List<CollectionItem>? items}) {
+      final List<CollectionItem> effectiveItems = items ?? testCollectionItems;
       when(() => mockRepository.hasCanvasItems(collectionId))
           .thenAnswer((_) async => false);
       when(() => mockRepository.initializeCanvas(collectionId, any()))
           .thenAnswer((_) async {
         final List<CanvasItem> created = <CanvasItem>[];
-        for (int i = 0; i < effectiveGames.length; i++) {
+        for (int i = 0; i < effectiveItems.length; i++) {
           created.add(
             CanvasItem(
               id: i + 1,
               collectionId: collectionId,
               itemType: CanvasItemType.game,
-              itemRefId: effectiveGames[i].igdbId,
+              itemRefId: effectiveItems[i].externalId,
               x: 100.0 + i * 184.0,
               y: 100.0,
               width: 160,
@@ -463,6 +517,8 @@ void main() {
           final ProviderContainer container = createContainer(
             gamesState:
                 const AsyncLoading<List<CollectionGame>>(),
+            itemsState:
+                const AsyncLoading<List<CollectionItem>>(),
           );
           addTearDown(container.dispose);
 
@@ -478,7 +534,7 @@ void main() {
           verify(
             () => mockRepository.initializeCanvas(
               collectionId,
-              <CollectionGame>[],
+              <CollectionItem>[],
             ),
           ).called(1);
         },
@@ -494,10 +550,15 @@ void main() {
             testGames[0],
             testGames[1],
           ];
+          final List<CollectionItem> twoItems = <CollectionItem>[
+            testCollectionItems[0],
+            testCollectionItems[1],
+          ];
           setupExistingCanvas();
 
           final ProviderContainer container = createContainer(
             gamesState: AsyncData<List<CollectionGame>>(twoGames),
+            itemsState: AsyncData<List<CollectionItem>>(twoItems),
           );
           addTearDown(container.dispose);
 
@@ -513,7 +574,7 @@ void main() {
         'должен добавить недостающие элементы канваса когда игры добавлены в коллекцию',
         () async {
           // В канвасе 2 элемента, но в коллекции 3 игры (добавлена igdbId=400)
-          final List<CanvasItem> twoItems = <CanvasItem>[
+          final List<CanvasItem> twoCanvasItems = <CanvasItem>[
             testItems[0],
             testItems[1],
           ];
@@ -528,15 +589,29 @@ void main() {
               addedAt: testDate,
             ),
           ];
+          final List<CollectionItem> threeCollectionItems = <CollectionItem>[
+            ...testCollectionItems.sublist(0, 2),
+            CollectionItem(
+              id: 4,
+              collectionId: collectionId,
+              mediaType: MediaType.game,
+              externalId: 400,
+              platformId: 6,
+              status: ItemStatus.planned,
+              addedAt: testDate,
+            ),
+          ];
 
           when(() => mockRepository.hasCanvasItems(collectionId))
               .thenAnswer((_) async => true);
           when(() => mockRepository.getItems(collectionId))
-              .thenAnswer((_) async => twoItems);
+              .thenAnswer((_) async => twoCanvasItems);
           when(() => mockRepository.getItemsWithData(collectionId))
-              .thenAnswer((_) async => twoItems);
+              .thenAnswer((_) async => twoCanvasItems);
           when(() => mockRepository.getViewport(collectionId))
               .thenAnswer((_) async => null);
+          when(() => mockRepository.getConnections(collectionId))
+              .thenAnswer((_) async => const <CanvasConnection>[]);
           when(() => mockRepository.createItem(any()))
               .thenAnswer((Invocation invocation) async {
             final CanvasItem item =
@@ -546,6 +621,7 @@ void main() {
 
           final ProviderContainer container = createContainer(
             gamesState: AsyncData<List<CollectionGame>>(threeGames),
+            itemsState: AsyncData<List<CollectionItem>>(threeCollectionItems),
           );
           addTearDown(container.dispose);
 
@@ -567,10 +643,14 @@ void main() {
               .thenAnswer((_) async => testItems);
           when(() => mockRepository.getViewport(collectionId))
               .thenAnswer((_) async => null);
+          when(() => mockRepository.getConnections(collectionId))
+              .thenAnswer((_) async => const <CanvasConnection>[]);
 
           final ProviderContainer container = createContainer(
             gamesState:
                 const AsyncLoading<List<CollectionGame>>(),
+            itemsState:
+                const AsyncLoading<List<CollectionItem>>(),
           );
           addTearDown(container.dispose);
 
@@ -1984,6 +2064,9 @@ void main() {
           final List<CollectionGame> singleGame = <CollectionGame>[
             testGames[0],
           ];
+          final List<CollectionItem> singleCollectionItem = <CollectionItem>[
+            testCollectionItems[0],
+          ];
           setupExistingCanvas(items: singleItem);
           when(
             () => mockRepository.updateItemPosition(
@@ -1995,6 +2078,7 @@ void main() {
 
           final ProviderContainer container = createContainer(
             gamesState: AsyncData<List<CollectionGame>>(singleGame),
+            itemsState: AsyncData<List<CollectionItem>>(singleCollectionItem),
           );
           addTearDown(container.dispose);
 

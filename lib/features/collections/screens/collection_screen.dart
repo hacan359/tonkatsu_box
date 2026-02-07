@@ -6,6 +6,7 @@ import '../../../core/services/export_service.dart';
 import '../../../data/repositories/collection_repository.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_game.dart';
+import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/game.dart';
 import '../../search/screens/search_screen.dart';
 import '../../../data/repositories/canvas_repository.dart';
@@ -776,8 +777,10 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     }
 
     final ExportService exportService = ref.read(exportServiceProvider);
+    final List<CollectionItem> items =
+        games.map((CollectionGame g) => g.toCollectionItem()).toList();
     final ExportResult result =
-        await exportService.exportToFile(_collection!, games);
+        await exportService.exportToFile(_collection!, items);
 
     if (!mounted) return;
 
