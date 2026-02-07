@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/collections/providers/canvas_provider.dart';
+import 'package:xerabora/features/collections/providers/steamgriddb_panel_provider.dart';
 import 'package:xerabora/features/collections/widgets/canvas_view.dart';
 import 'package:xerabora/shared/models/canvas_item.dart';
 import 'package:xerabora/shared/models/game.dart';
@@ -68,6 +69,8 @@ void main() {
       overrides: <Override>[
         canvasNotifierProvider
             .overrideWith(() => TestCanvasNotifier(canvasState)),
+        steamGridDbPanelProvider
+            .overrideWith(() => _TestSteamGridDbPanelNotifier()),
       ],
       child: MaterialApp(
         home: Scaffold(
@@ -346,7 +349,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показывать два FloatingActionButton когда есть элементы',
+        'должен показывать три FloatingActionButton когда isEditable=true',
         (WidgetTester tester) async {
           final CanvasState normalState = CanvasState(
             isLoading: false,
@@ -359,10 +362,84 @@ void main() {
             ],
           );
 
-          await tester.pumpWidget(buildTestWidget(canvasState: normalState));
+          await tester.pumpWidget(
+            buildTestWidget(canvasState: normalState, isEditable: true),
+          );
           await tester.pump();
 
+          // 3 FAB: SteamGridDB + Center view + Reset positions
+          expect(find.byType(FloatingActionButton), findsNWidgets(3));
+        },
+      );
+
+      testWidgets(
+        'должен показывать два FloatingActionButton когда isEditable=false',
+        (WidgetTester tester) async {
+          final CanvasState normalState = CanvasState(
+            isLoading: false,
+            isInitialized: true,
+            items: <CanvasItem>[
+              createTestItem(
+                id: 1,
+                game: const Game(id: 100, name: 'Test Game'),
+              ),
+            ],
+          );
+
+          await tester.pumpWidget(
+            buildTestWidget(canvasState: normalState, isEditable: false),
+          );
+          await tester.pump();
+
+          // 2 FAB: Center view + Reset positions (без SteamGridDB)
           expect(find.byType(FloatingActionButton), findsNWidgets(2));
+        },
+      );
+
+      testWidgets(
+        'должен показывать FAB SteamGridDB Images когда isEditable=true',
+        (WidgetTester tester) async {
+          final CanvasState normalState = CanvasState(
+            isLoading: false,
+            isInitialized: true,
+            items: <CanvasItem>[
+              createTestItem(
+                id: 1,
+                game: const Game(id: 100, name: 'Test Game'),
+              ),
+            ],
+          );
+
+          await tester.pumpWidget(
+            buildTestWidget(canvasState: normalState, isEditable: true),
+          );
+          await tester.pump();
+
+          expect(find.byIcon(Icons.image_search), findsOneWidget);
+          expect(find.byTooltip('SteamGridDB Images'), findsOneWidget);
+        },
+      );
+
+      testWidgets(
+        'не должен показывать FAB SteamGridDB когда isEditable=false',
+        (WidgetTester tester) async {
+          final CanvasState normalState = CanvasState(
+            isLoading: false,
+            isInitialized: true,
+            items: <CanvasItem>[
+              createTestItem(
+                id: 1,
+                game: const Game(id: 100, name: 'Test Game'),
+              ),
+            ],
+          );
+
+          await tester.pumpWidget(
+            buildTestWidget(canvasState: normalState, isEditable: false),
+          );
+          await tester.pump();
+
+          expect(find.byIcon(Icons.image_search), findsNothing);
         },
       );
 
@@ -803,4 +880,12 @@ void main() {
       );
     });
   });
+}
+
+/// Тестовый notifier для SteamGridDB панели (не делает ничего).
+class _TestSteamGridDbPanelNotifier extends SteamGridDbPanelNotifier {
+  @override
+  SteamGridDbPanelState build(int arg) {
+    return const SteamGridDbPanelState();
+  }
 }

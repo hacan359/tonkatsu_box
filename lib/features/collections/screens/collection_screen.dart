@@ -8,10 +8,14 @@ import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_game.dart';
 import '../../../shared/models/game.dart';
 import '../../search/screens/search_screen.dart';
+import '../../../data/repositories/canvas_repository.dart';
+import '../../../shared/models/steamgriddb_image.dart';
 import '../providers/canvas_provider.dart';
 import '../providers/collections_provider.dart';
+import '../providers/steamgriddb_panel_provider.dart';
 import '../widgets/canvas_view.dart';
 import '../widgets/create_collection_dialog.dart';
+import '../widgets/steamgriddb_panel.dart';
 import '../widgets/status_dropdown.dart';
 import 'game_detail_screen.dart';
 
@@ -139,9 +143,50 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         ],
       ),
       body: _isCanvasMode
-          ? CanvasView(
-              collectionId: widget.collectionId,
-              isEditable: _collection!.isEditable,
+          ? Row(
+              children: <Widget>[
+                Expanded(
+                  child: CanvasView(
+                    collectionId: widget.collectionId,
+                    isEditable: _collection!.isEditable,
+                  ),
+                ),
+                // Боковая панель SteamGridDB
+                Consumer(
+                  builder:
+                      (BuildContext context, WidgetRef ref, Widget? child) {
+                    final bool isPanelOpen = ref.watch(
+                      steamGridDbPanelProvider(widget.collectionId)
+                          .select(
+                              (SteamGridDbPanelState s) => s.isOpen),
+                    );
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      width: isPanelOpen ? 320 : 0,
+                      curve: Curves.easeInOut,
+                      clipBehavior: Clip.hardEdge,
+                      decoration: BoxDecoration(
+                        border: isPanelOpen
+                            ? Border(
+                                left: BorderSide(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .outlineVariant,
+                                ),
+                              )
+                            : null,
+                      ),
+                      child: isPanelOpen
+                          ? SteamGridDbPanel(
+                              collectionId: widget.collectionId,
+                              collectionName: _collection!.name,
+                              onAddImage: _addSteamGridDbImage,
+                            )
+                          : const SizedBox.shrink(),
+                    );
+                  },
+                ),
+              ],
             )
           : Column(
               children: <Widget>[
@@ -586,6 +631,38 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           ),
         );
       }
+    }
+  }
+
+  void _addSteamGridDbImage(SteamGridDbImage image) {
+    // Масштабируем до max 300px по ширине, сохраняя пропорции
+    const double maxWidth = 300;
+    final double aspectRatio = image.width / image.height;
+    final double targetWidth =
+        image.width.toDouble() > maxWidth ? maxWidth : image.width.toDouble();
+    final double targetHeight = targetWidth / aspectRatio;
+
+    // Добавляем в центр канваса
+    final double centerX =
+        CanvasRepository.initialCenterX - targetWidth / 2;
+    final double centerY =
+        CanvasRepository.initialCenterY - targetHeight / 2;
+
+    ref
+        .read(canvasNotifierProvider(widget.collectionId).notifier)
+        .addImageItem(
+          centerX,
+          centerY,
+          <String, dynamic>{'url': image.url},
+        );
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Image added to canvas'),
+          duration: Duration(seconds: 2),
+        ),
+      );
     }
   }
 

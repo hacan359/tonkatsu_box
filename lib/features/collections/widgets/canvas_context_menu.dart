@@ -21,6 +21,7 @@ class CanvasContextMenu {
     required VoidCallback onAddText,
     required VoidCallback onAddImage,
     required VoidCallback onAddLink,
+    VoidCallback? onFindImages,
   }) async {
     final String? value = await showMenu<String>(
       context: context,
@@ -61,6 +62,19 @@ class CanvasContextMenu {
             ],
           ),
         ),
+        if (onFindImages != null) ...<PopupMenuEntry<String>>[
+          const PopupMenuDivider(),
+          const PopupMenuItem<String>(
+            value: 'find_images',
+            child: Row(
+              children: <Widget>[
+                Icon(Icons.image_search, size: 20),
+                SizedBox(width: 12),
+                Text('Find images...'),
+              ],
+            ),
+          ),
+        ],
       ],
     );
 
@@ -72,6 +86,8 @@ class CanvasContextMenu {
         onAddImage();
       case 'add_link':
         onAddLink();
+      case 'find_images':
+        onFindImages?.call();
     }
   }
 
