@@ -13,9 +13,11 @@ import '../../../shared/models/steamgriddb_image.dart';
 import '../providers/canvas_provider.dart';
 import '../providers/collections_provider.dart';
 import '../providers/steamgriddb_panel_provider.dart';
+import '../providers/vgmaps_panel_provider.dart';
 import '../widgets/canvas_view.dart';
 import '../widgets/create_collection_dialog.dart';
 import '../widgets/steamgriddb_panel.dart';
+import '../widgets/vgmaps_panel.dart';
 import '../widgets/status_dropdown.dart';
 import 'game_detail_screen.dart';
 
@@ -181,6 +183,39 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                               collectionId: widget.collectionId,
                               collectionName: _collection!.name,
                               onAddImage: _addSteamGridDbImage,
+                            )
+                          : const SizedBox.shrink(),
+                    );
+                  },
+                ),
+                // Боковая панель VGMaps Browser
+                Consumer(
+                  builder:
+                      (BuildContext context, WidgetRef ref, Widget? child) {
+                    final bool isPanelOpen = ref.watch(
+                      vgMapsPanelProvider(widget.collectionId)
+                          .select((VgMapsPanelState s) => s.isOpen),
+                    );
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      width: isPanelOpen ? 500 : 0,
+                      curve: Curves.easeInOut,
+                      clipBehavior: Clip.hardEdge,
+                      decoration: BoxDecoration(
+                        border: isPanelOpen
+                            ? Border(
+                                left: BorderSide(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .outlineVariant,
+                                ),
+                              )
+                            : null,
+                      ),
+                      child: isPanelOpen
+                          ? VgMapsPanel(
+                              collectionId: widget.collectionId,
+                              onAddImage: _addVgMapsImage,
                             )
                           : const SizedBox.shrink(),
                     );
@@ -660,6 +695,43 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Image added to canvas'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  void _addVgMapsImage(String url, int? width, int? height) {
+    // Масштабируем до max 400px по ширине (карты больше обычных изображений)
+    const double maxWidth = 400;
+    double targetWidth = maxWidth;
+    double targetHeight = maxWidth;
+
+    if (width != null && height != null && width > 0 && height > 0) {
+      final double aspectRatio = width / height;
+      targetWidth =
+          width.toDouble() > maxWidth ? maxWidth : width.toDouble();
+      targetHeight = targetWidth / aspectRatio;
+    }
+
+    // Добавляем в центр канваса
+    final double centerX =
+        CanvasRepository.initialCenterX - targetWidth / 2;
+    final double centerY =
+        CanvasRepository.initialCenterY - targetHeight / 2;
+
+    ref
+        .read(canvasNotifierProvider(widget.collectionId).notifier)
+        .addImageItem(
+          centerX,
+          centerY,
+          <String, dynamic>{'url': url},
+        );
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Map added to canvas'),
           duration: Duration(seconds: 2),
         ),
       );
