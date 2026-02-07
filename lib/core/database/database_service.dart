@@ -43,7 +43,7 @@ class DatabaseService {
     return databaseFactoryFfi.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 5,
+        version: 6,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -61,6 +61,7 @@ class DatabaseService {
     await _createCollectionGamesTable(db);
     await _createCanvasItemsTable(db);
     await _createCanvasViewportTable(db);
+    await _createCanvasConnectionsTable(db);
   }
 
   Future<void> _createPlatformsTable(Database db) async {
@@ -155,6 +156,9 @@ class DatabaseService {
       await _createCanvasItemsTable(db);
       await _createCanvasViewportTable(db);
     }
+    if (oldVersion < 6) {
+      await _createCanvasConnectionsTable(db);
+    }
   }
 
   Future<void> _createCanvasItemsTable(Database db) async {
@@ -190,6 +194,29 @@ class DatabaseService {
         offset_y REAL DEFAULT 0.0,
         FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE
       )
+    ''');
+  }
+
+  Future<void> _createCanvasConnectionsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE canvas_connections (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        collection_id INTEGER NOT NULL,
+        from_item_id INTEGER NOT NULL,
+        to_item_id INTEGER NOT NULL,
+        label TEXT,
+        color TEXT DEFAULT '#666666',
+        style TEXT DEFAULT 'solid',
+        created_at INTEGER NOT NULL,
+        FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE,
+        FOREIGN KEY (from_item_id) REFERENCES canvas_items(id) ON DELETE CASCADE,
+        FOREIGN KEY (to_item_id) REFERENCES canvas_items(id) ON DELETE CASCADE
+      )
+    ''');
+
+    await db.execute('''
+      CREATE INDEX idx_canvas_connections_collection
+      ON canvas_connections(collection_id)
     ''');
   }
 
@@ -806,6 +833,60 @@ class DatabaseService {
         'offset_y': offsetY,
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  // ==================== Canvas Connections ====================
+
+  /// Возвращает все связи канваса для коллекции.
+  Future<List<Map<String, dynamic>>> getCanvasConnections(
+    int collectionId,
+  ) async {
+    final Database db = await database;
+    return db.query(
+      'canvas_connections',
+      where: 'collection_id = ?',
+      whereArgs: <Object?>[collectionId],
+    );
+  }
+
+  /// Вставляет связь канваса и возвращает её ID.
+  Future<int> insertCanvasConnection(Map<String, dynamic> data) async {
+    final Database db = await database;
+    return db.insert('canvas_connections', data);
+  }
+
+  /// Обновляет связь канваса по ID.
+  Future<void> updateCanvasConnection(
+    int id,
+    Map<String, dynamic> data,
+  ) async {
+    final Database db = await database;
+    await db.update(
+      'canvas_connections',
+      data,
+      where: 'id = ?',
+      whereArgs: <Object?>[id],
+    );
+  }
+
+  /// Удаляет связь канваса по ID.
+  Future<void> deleteCanvasConnection(int id) async {
+    final Database db = await database;
+    await db.delete(
+      'canvas_connections',
+      where: 'id = ?',
+      whereArgs: <Object?>[id],
+    );
+  }
+
+  /// Удаляет все связи канваса для коллекции.
+  Future<void> deleteCanvasConnectionsByCollection(int collectionId) async {
+    final Database db = await database;
+    await db.delete(
+      'canvas_connections',
+      where: 'collection_id = ?',
+      whereArgs: <Object?>[collectionId],
     );
   }
 

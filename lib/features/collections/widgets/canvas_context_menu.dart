@@ -87,6 +87,7 @@ class CanvasContextMenu {
     required VoidCallback onDelete,
     required VoidCallback onBringToFront,
     required VoidCallback onSendToBack,
+    VoidCallback? onConnect,
   }) async {
     final bool showEdit = itemType != CanvasItemType.game;
 
@@ -122,6 +123,17 @@ class CanvasContextMenu {
         ),
         const PopupMenuDivider(),
         const PopupMenuItem<String>(
+          value: 'connect',
+          child: Row(
+            children: <Widget>[
+              Icon(Icons.timeline, size: 20),
+              SizedBox(width: 12),
+              Text('Connect'),
+            ],
+          ),
+        ),
+        const PopupMenuDivider(),
+        const PopupMenuItem<String>(
           value: 'bring_to_front',
           child: Row(
             children: <Widget>[
@@ -151,10 +163,61 @@ class CanvasContextMenu {
       case 'delete':
         if (!context.mounted) return;
         _showDeleteConfirmation(context, onDelete);
+      case 'connect':
+        onConnect?.call();
       case 'bring_to_front':
         onBringToFront();
       case 'send_to_back':
         onSendToBack();
+    }
+  }
+
+  /// Отображает контекстное меню связи.
+  static Future<void> showConnectionMenu(
+    BuildContext context, {
+    required Offset position,
+    required VoidCallback onEdit,
+    required VoidCallback onDelete,
+  }) async {
+    final String? value = await showMenu<String>(
+      context: context,
+      position: RelativeRect.fromLTRB(
+        position.dx,
+        position.dy,
+        position.dx,
+        position.dy,
+      ),
+      items: const <PopupMenuEntry<String>>[
+        PopupMenuItem<String>(
+          value: 'edit',
+          child: Row(
+            children: <Widget>[
+              Icon(Icons.edit_outlined, size: 20),
+              SizedBox(width: 12),
+              Text('Edit Connection'),
+            ],
+          ),
+        ),
+        PopupMenuItem<String>(
+          value: 'delete',
+          child: Row(
+            children: <Widget>[
+              Icon(Icons.delete_outlined, size: 20),
+              SizedBox(width: 12),
+              Text('Delete Connection'),
+            ],
+          ),
+        ),
+      ],
+    );
+
+    if (value == null) return;
+    switch (value) {
+      case 'edit':
+        onEdit();
+      case 'delete':
+        if (!context.mounted) return;
+        _showDeleteConfirmation(context, onDelete);
     }
   }
 

@@ -66,6 +66,14 @@ Visualize your collection on a free-form canvas:
 - **Links** — add clickable links with custom labels (double-click to open in browser)
 - **Resize** — drag the bottom-right handle to resize any element with real-time preview (min 50x50, max 2000x2000)
 - **Z-index management** — Bring to Front / Send to Back via context menu
+- **Connections** — draw visual lines between any two canvas elements
+  - Three line styles: solid, dashed, arrow
+  - 8 color choices (gray, red, orange, yellow, green, blue, purple, black)
+  - Optional text labels displayed at the midpoint of the line
+  - Create via right-click → Connect, then click the target element
+  - Edit/Delete connections via right-click on the line
+  - Connections auto-delete when a connected element is removed
+  - Temporary dashed preview line while creating a connection
 
 ## SteamGridDB Integration
 

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/database/database_service.dart';
+import '../../shared/models/canvas_connection.dart';
 import '../../shared/models/canvas_item.dart';
 import '../../shared/models/canvas_viewport.dart';
 import '../../shared/models/collection_game.dart';
@@ -161,6 +162,36 @@ class CanvasRepository {
       offsetX: viewport.offsetX,
       offsetY: viewport.offsetY,
     );
+  }
+
+  // ==================== Canvas Connections ====================
+
+  /// Возвращает все связи канваса для коллекции.
+  Future<List<CanvasConnection>> getConnections(int collectionId) async {
+    final List<Map<String, dynamic>> rows =
+        await _db.getCanvasConnections(collectionId);
+    return rows.map(CanvasConnection.fromDb).toList();
+  }
+
+  /// Создаёт связь и возвращает её с присвоенным ID.
+  Future<CanvasConnection> createConnection(CanvasConnection conn) async {
+    final int id = await _db.insertCanvasConnection(conn.toDb());
+    return conn.copyWith(id: id);
+  }
+
+  /// Обновляет свойства связи (label, color, style).
+  Future<void> updateConnection(CanvasConnection conn) async {
+    final Map<String, dynamic> data = <String, dynamic>{
+      'label': conn.label,
+      'color': conn.color,
+      'style': conn.style.value,
+    };
+    await _db.updateCanvasConnection(conn.id, data);
+  }
+
+  /// Удаляет связь.
+  Future<void> deleteConnection(int id) async {
+    await _db.deleteCanvasConnection(id);
   }
 
   // ==================== Initialization ====================

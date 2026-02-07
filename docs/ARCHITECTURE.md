@@ -45,7 +45,7 @@ lib/
 |------|------------|
 | `lib/core/api/igdb_api.dart` | **IGDB API клиент**. OAuth через Twitch, поиск игр, загрузка платформ. Методы: `getAccessToken()`, `searchGames()`, `fetchPlatforms()` |
 | `lib/core/api/steamgriddb_api.dart` | **SteamGridDB API клиент**. Bearer token авторизация. Методы: `searchGames()`, `getGrids()`, `getHeroes()`, `getLogos()`, `getIcons()` |
-| `lib/core/database/database_service.dart` | **SQLite сервис**. Создание таблиц, миграции (версия 5), CRUD для всех сущностей. Таблицы: `platforms`, `games`, `collections`, `collection_games`, `canvas_items`, `canvas_viewport` |
+| `lib/core/database/database_service.dart` | **SQLite сервис**. Создание таблиц, миграции (версия 6), CRUD для всех сущностей. Таблицы: `platforms`, `games`, `collections`, `collection_games`, `canvas_items`, `canvas_viewport`, `canvas_connections` |
 
 ---
 
@@ -61,6 +61,7 @@ lib/
 | `lib/shared/models/steamgriddb_image.dart` | **Модель SteamGridDB изображения**. Поля: id, score, style, url, thumb, width, height, mime, author. Свойство `dimensions` |
 | `lib/shared/models/canvas_item.dart` | **Модель элемента канваса**. Enum `CanvasItemType` (game/text/image/link). Поля: id, collectionId, itemType, itemRefId, x, y, width, height, zIndex, data (JSON). Joined поле `game: Game?` |
 | `lib/shared/models/canvas_viewport.dart` | **Модель viewport канваса**. Поля: collectionId, scale, offsetX, offsetY. Хранит зум и позицию камеры |
+| `lib/shared/models/canvas_connection.dart` | **Модель связи канваса**. Enum `ConnectionStyle` (solid/dashed/arrow). Поля: id, collectionId, fromItemId, toItemId, label, color (hex), style, createdAt |
 
 ---
 
@@ -82,7 +83,8 @@ lib/
 | `lib/features/collections/widgets/status_dropdown.dart` | **Выпадающий список статусов**. Компактный и полный режим |
 | `lib/features/collections/widgets/canvas_view.dart` | **Canvas View**. InteractiveViewer с зумом 0.3–3.0x, панорамированием, drag-and-drop (абсолютное отслеживание позиции). Фоновая сетка (CustomPainter), автоцентрирование |
 | `lib/features/collections/widgets/canvas_game_card.dart` | **Карточка игры на канвасе**. Компактная карточка 160x220px с обложкой и названием. RepaintBoundary для оптимизации |
-| `lib/features/collections/widgets/canvas_context_menu.dart` | **Контекстное меню канваса**. ПКМ на пустом месте: Add Text/Image/Link. ПКМ на элементе: Edit/Delete/Bring to Front/Send to Back. Delete с диалогом подтверждения |
+| `lib/features/collections/widgets/canvas_context_menu.dart` | **Контекстное меню канваса**. ПКМ на пустом месте: Add Text/Image/Link. ПКМ на элементе: Edit/Delete/Bring to Front/Send to Back/Connect. ПКМ на связи: Edit/Delete. Delete с диалогом подтверждения |
+| `lib/features/collections/widgets/canvas_connection_painter.dart` | **CustomPainter для связей**. Рисует solid/dashed/arrow линии между центрами элементов. Лейблы с фоном в середине линии. Hit-test для определения клика на линии. Временная пунктирная линия при создании связи |
 | `lib/features/collections/widgets/canvas_text_item.dart` | **Текстовый блок на канвасе**. Настраиваемый fontSize (12/16/24/32). Container с padding, фоном surfaceContainerLow |
 | `lib/features/collections/widgets/canvas_image_item.dart` | **Изображение на канвасе**. URL (CachedNetworkImage) или base64 (Image.memory). Card с Clip.antiAlias, размер по умолчанию 200x200 |
 | `lib/features/collections/widgets/canvas_link_item.dart` | **Ссылка на канвасе**. Card с иконкой и подчёркнутым текстом. Double-tap → url_launcher. Размер по умолчанию 200x48 |
@@ -94,13 +96,14 @@ lib/
 | `lib/features/collections/widgets/dialogs/add_text_dialog.dart` | **Диалог текста**. TextField (multiline) + DropdownButtonFormField (Small/Medium/Large/Title). Возвращает {content, fontSize} |
 | `lib/features/collections/widgets/dialogs/add_image_dialog.dart` | **Диалог изображения**. SegmentedButton (URL/File). URL: TextField + CachedNetworkImage preview. File: FilePicker + base64. Возвращает {url} или {base64, mimeType} |
 | `lib/features/collections/widgets/dialogs/add_link_dialog.dart` | **Диалог ссылки**. TextField URL (валидация http/https) + Label (optional). Возвращает {url, label} |
+| `lib/features/collections/widgets/dialogs/edit_connection_dialog.dart` | **Диалог редактирования связи**. TextField для label, Wrap из 8 цветных кнопок (серый, красный, оранжевый, жёлтый, зелёный, синий, фиолетовый, чёрный), SegmentedButton для стиля (Solid/Dashed/Arrow). Возвращает {label, color, style} |
 
 #### Провайдеры
 
 | Файл | Назначение |
 |------|------------|
 | `lib/features/collections/providers/collections_provider.dart` | **State management коллекций**. `collectionsProvider` — список. `collectionGamesNotifierProvider` — игры в коллекции с CRUD |
-| `lib/features/collections/providers/canvas_provider.dart` | **State management канваса**. `canvasNotifierProvider` — NotifierProvider.family по collectionId. Методы: moveItem, updateViewport, addItem, deleteItem, bringToFront, sendToBack, removeGameItem, addTextItem, addImageItem, addLinkItem, updateItemData, updateItemSize. Debounced save (300ms position, 500ms viewport). Двусторонняя синхронизация с коллекцией через `ref.listen` |
+| `lib/features/collections/providers/canvas_provider.dart` | **State management канваса**. `canvasNotifierProvider` — NotifierProvider.family по collectionId. Методы: moveItem, updateViewport, addItem, deleteItem, bringToFront, sendToBack, removeGameItem, addTextItem, addImageItem, addLinkItem, updateItemData, updateItemSize, startConnection, completeConnection, cancelConnection, deleteConnection, updateConnection. Debounced save (300ms position, 500ms viewport). Двусторонняя синхронизация с коллекцией через `ref.listen`. Параллельная загрузка items, viewport и connections через `Future.wait` |
 
 ---
 
@@ -143,7 +146,7 @@ lib/
 |------|------------|
 | `lib/data/repositories/collection_repository.dart` | **Репозиторий коллекций**. CRUD коллекций и игр. Форки с snapshot. Статистика (CollectionStats) |
 | `lib/data/repositories/game_repository.dart` | **Репозиторий игр**. Поиск через API + кеширование в SQLite |
-| `lib/data/repositories/canvas_repository.dart` | **Репозиторий канваса**. CRUD для canvas_items и viewport. Методы: getItems, getItemsWithData (с joined Game), createItem, updateItem, updateItemPosition, updateItemSize, updateItemData, updateItemZIndex, deleteItem, hasCanvasItems, initializeCanvas (раскладка сеткой) |
+| `lib/data/repositories/canvas_repository.dart` | **Репозиторий канваса**. CRUD для canvas_items, viewport и connections. Методы: getItems, getItemsWithData (с joined Game), createItem, updateItem, updateItemPosition, updateItemSize, updateItemData, updateItemZIndex, deleteItem, hasCanvasItems, initializeCanvas (раскладка сеткой), getConnections, createConnection, updateConnection, deleteConnection |
 
 ---
 
@@ -205,7 +208,25 @@ Drag карточки → moveItem() [debounce 300ms → updateItemPosition]
 Zoom/Pan → updateViewport() [debounce 500ms → saveViewport]
 ```
 
-### 4. Изменение статуса
+### 4. Создание связи на канвасе
+
+```
+ПКМ на элементе → Connect
+       ↓
+CanvasNotifier.startConnection(fromItemId)
+       ↓
+Курсор → cell, временная пунктирная линия к курсору
+       ↓
+Клик на другой элемент → completeConnection(toItemId)
+       ↓
+CanvasRepository.createConnection()
+       ↓
+DatabaseService.insertCanvasConnection()
+       ↓
+State обновляется, связь рисуется CanvasConnectionPainter
+```
+
+### 5. Изменение статуса
 
 ```
 Тап на StatusDropdown
@@ -297,6 +318,21 @@ CREATE TABLE canvas_viewport (
   offset_x REAL NOT NULL DEFAULT 0.0,
   offset_y REAL NOT NULL DEFAULT 0.0,
   FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE
+);
+
+-- Связи канваса (Stage 9)
+CREATE TABLE canvas_connections (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  collection_id INTEGER NOT NULL,
+  from_item_id INTEGER NOT NULL,
+  to_item_id INTEGER NOT NULL,
+  label TEXT,
+  color TEXT DEFAULT '#666666',
+  style TEXT DEFAULT 'solid',
+  created_at INTEGER NOT NULL,
+  FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE,
+  FOREIGN KEY (from_item_id) REFERENCES canvas_items(id) ON DELETE CASCADE,
+  FOREIGN KEY (to_item_id) REFERENCES canvas_items(id) ON DELETE CASCADE
 );
 ```
 
