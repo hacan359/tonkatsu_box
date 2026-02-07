@@ -129,6 +129,18 @@ class Movie {
   /// Время кеширования (Unix timestamp).
   final int? cachedAt;
 
+  /// URL маленького постера (w154) для thumbnail-ов.
+  String? get posterThumbUrl {
+    if (posterUrl == null) return null;
+    return posterUrl!.replaceFirst('/w500', '/w154');
+  }
+
+  /// URL среднего бэкдропа (w300) для экранов деталей.
+  String? get backdropSmallUrl {
+    if (backdropUrl == null) return null;
+    return backdropUrl!.replaceFirst('/w780', '/w300');
+  }
+
   /// Возвращает отформатированный рейтинг.
   String? get formattedRating {
     if (rating == null) return null;

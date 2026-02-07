@@ -60,14 +60,17 @@ class TvShowCard extends StatelessWidget {
     const double posterWidth = 60;
     const double posterHeight = 80;
 
-    if (tvShow.posterUrl != null) {
+    final String? thumbUrl = tvShow.posterThumbUrl;
+    if (thumbUrl != null) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(4),
         child: CachedNetworkImage(
-          imageUrl: tvShow.posterUrl!,
+          imageUrl: thumbUrl,
           width: posterWidth,
           height: posterHeight,
           fit: BoxFit.cover,
+          memCacheWidth: 120,
+          memCacheHeight: 160,
           placeholder: (BuildContext context, String url) => Container(
             width: posterWidth,
             height: posterHeight,

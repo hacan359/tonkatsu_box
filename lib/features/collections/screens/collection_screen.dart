@@ -5,9 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/export_service.dart';
 import '../../../data/repositories/collection_repository.dart';
 import '../../../shared/models/collection.dart';
-import '../../../shared/models/collection_game.dart';
 import '../../../shared/models/collection_item.dart';
-import '../../../shared/models/game.dart';
+import '../../../shared/models/item_status.dart';
+import '../../../shared/models/media_type.dart';
 import '../../search/screens/search_screen.dart';
 import '../../../data/repositories/canvas_repository.dart';
 import '../../../shared/models/steamgriddb_image.dart';
@@ -17,10 +17,12 @@ import '../providers/steamgriddb_panel_provider.dart';
 import '../providers/vgmaps_panel_provider.dart';
 import '../widgets/canvas_view.dart';
 import '../widgets/create_collection_dialog.dart';
+import '../widgets/item_status_dropdown.dart';
 import '../widgets/steamgriddb_panel.dart';
 import '../widgets/vgmaps_panel.dart';
-import '../widgets/status_dropdown.dart';
 import 'game_detail_screen.dart';
+import 'movie_detail_screen.dart';
+import 'tv_show_detail_screen.dart';
 
 /// Экран детального просмотра коллекции.
 class CollectionScreen extends ConsumerStatefulWidget {
@@ -75,8 +77,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       );
     }
 
-    final AsyncValue<List<CollectionGame>> gamesAsync =
-        ref.watch(collectionGamesNotifierProvider(widget.collectionId));
+    final AsyncValue<List<CollectionItem>> itemsAsync =
+        ref.watch(collectionItemsNotifierProvider(widget.collectionId));
     final AsyncValue<CollectionStats> statsAsync =
         ref.watch(collectionStatsProvider(widget.collectionId));
 
@@ -229,11 +231,11 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                 // Заголовок со статистикой
                 _buildHeader(statsAsync),
 
-                // Список игр
+                // Список элементов
                 Expanded(
-                  child: gamesAsync.when(
-                    data: (List<CollectionGame> games) =>
-                        _buildGamesList(context, games),
+                  child: itemsAsync.when(
+                    data: (List<CollectionItem> items) =>
+                        _buildItemsList(context, items),
                     loading: () =>
                         const Center(child: CircularProgressIndicator()),
                     error: (Object error, StackTrace stack) =>
@@ -244,7 +246,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             ),
       floatingActionButton: _collection!.isEditable && !_isCanvasMode
           ? FloatingActionButton.extended(
-              onPressed: () => _addGame(context),
+              onPressed: () => _addItems(context),
               icon: const Icon(Icons.add),
               label: const Text('Add Items'),
             )
@@ -315,7 +317,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       children: <Widget>[
         // Основная статистика
         Text(
-          '${stats.total} game${stats.total != 1 ? 's' : ''} • ${stats.completed} completed',
+          '${stats.total} item${stats.total != 1 ? 's' : ''} \u2022 ${stats.completed} completed',
           style: theme.textTheme.bodyMedium?.copyWith(
             color: colorScheme.onSurfaceVariant,
           ),
@@ -352,29 +354,29 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     );
   }
 
-  Widget _buildGamesList(BuildContext context, List<CollectionGame> games) {
-    if (games.isEmpty) {
+  Widget _buildItemsList(BuildContext context, List<CollectionItem> items) {
+    if (items.isEmpty) {
       return _buildEmptyState();
     }
 
     return RefreshIndicator(
       onRefresh: () => ref
-          .read(collectionGamesNotifierProvider(widget.collectionId).notifier)
+          .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
           .refresh(),
       child: ListView.builder(
         padding: const EdgeInsets.symmetric(vertical: 8),
-        itemCount: games.length,
+        itemCount: items.length,
         itemBuilder: (BuildContext context, int index) {
-          final CollectionGame collectionGame = games[index];
-          return _CollectionGameTile(
-            collectionGame: collectionGame,
+          final CollectionItem item = items[index];
+          return _CollectionItemTile(
+            item: item,
             isEditable: _collection!.isEditable,
-            onStatusChanged: (GameStatus status) =>
-                _updateStatus(collectionGame.id, status),
+            onStatusChanged: (ItemStatus status) =>
+                _updateStatus(item.id, status, item.mediaType),
             onRemove: _collection!.isEditable
-                ? () => _removeGame(collectionGame)
+                ? () => _removeItem(item)
                 : null,
-            onTap: () => _showGameDetails(collectionGame),
+            onTap: () => _showItemDetails(item),
           );
         },
       ),
@@ -391,7 +393,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Icon(
-              Icons.videogame_asset_outlined,
+              Icons.collections_bookmark_outlined,
               size: 64,
               color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
             ),
@@ -434,7 +436,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Failed to load games',
+              'Failed to load items',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: colorScheme.error,
                   ),
@@ -448,7 +450,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             const SizedBox(height: 24),
             FilledButton.icon(
               onPressed: () => ref
-                  .read(collectionGamesNotifierProvider(widget.collectionId)
+                  .read(collectionItemsNotifierProvider(widget.collectionId)
                       .notifier)
                   .refresh(),
               icon: const Icon(Icons.refresh),
@@ -460,7 +462,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     );
   }
 
-  Future<void> _addGame(BuildContext context) async {
+  Future<void> _addItems(BuildContext context) async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (BuildContext context) => SearchScreen(
@@ -468,26 +470,30 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         ),
       ),
     );
-    // Обновляем список игр после возврата из SearchScreen
+    // Обновляем список элементов после возврата из SearchScreen
     if (mounted) {
       ref
-          .read(collectionGamesNotifierProvider(widget.collectionId).notifier)
+          .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
           .refresh();
     }
   }
 
-  Future<void> _updateStatus(int id, GameStatus status) async {
+  Future<void> _updateStatus(
+    int id,
+    ItemStatus status,
+    MediaType mediaType,
+  ) async {
     await ref
-        .read(collectionGamesNotifierProvider(widget.collectionId).notifier)
-        .updateStatus(id, status);
+        .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
+        .updateStatus(id, status, mediaType);
   }
 
-  Future<void> _removeGame(CollectionGame game) async {
+  Future<void> _removeItem(CollectionItem item) async {
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
-        title: const Text('Remove Game?'),
-        content: Text('Remove ${game.gameName} from this collection?'),
+        title: const Text('Remove Item?'),
+        content: Text('Remove ${item.itemName} from this collection?'),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -507,31 +513,54 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     if (confirmed != true || !mounted) return;
 
     await ref
-        .read(collectionGamesNotifierProvider(widget.collectionId).notifier)
-        .removeGame(game.id);
+        .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
+        .removeItem(item.id);
 
-    // Синхронизация канваса — удалить элемент удалённой игры
+    // Синхронизация канваса — удалить элемент
     ref
         .read(canvasNotifierProvider(widget.collectionId).notifier)
-        .removeGameItem(game.igdbId);
+        .removeMediaItem(item.mediaType, item.externalId);
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${game.gameName} removed')),
+        SnackBar(content: Text('${item.itemName} removed')),
       );
     }
   }
 
-  void _showGameDetails(CollectionGame game) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (BuildContext context) => GameDetailScreen(
-          collectionId: widget.collectionId,
-          gameId: game.id,
-          isEditable: _collection!.isEditable,
-        ),
-      ),
-    );
+  void _showItemDetails(CollectionItem item) {
+    switch (item.mediaType) {
+      case MediaType.game:
+        Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (BuildContext context) => GameDetailScreen(
+              collectionId: widget.collectionId,
+              gameId: item.id,
+              isEditable: _collection!.isEditable,
+            ),
+          ),
+        );
+      case MediaType.movie:
+        Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (BuildContext context) => MovieDetailScreen(
+              collectionId: widget.collectionId,
+              itemId: item.id,
+              isEditable: _collection!.isEditable,
+            ),
+          ),
+        );
+      case MediaType.tvShow:
+        Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (BuildContext context) => TvShowDetailScreen(
+              collectionId: widget.collectionId,
+              itemId: item.id,
+              isEditable: _collection!.isEditable,
+            ),
+          ),
+        );
+    }
   }
 
   Future<void> _renameCollection(BuildContext context) async {
@@ -617,10 +646,10 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           .read(collectionsProvider.notifier)
           .revertToOriginal(widget.collectionId);
 
-      // Обновляем список игр после revert
+      // Обновляем список элементов после revert
       if (mounted) {
         await ref
-            .read(collectionGamesNotifierProvider(widget.collectionId).notifier)
+            .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
             .refresh();
       }
 
@@ -742,15 +771,15 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   Future<void> _exportCollection() async {
     if (_collection == null) return;
 
-    // Получаем список игр
-    final AsyncValue<List<CollectionGame>> gamesAsync =
-        ref.read(collectionGamesNotifierProvider(widget.collectionId));
+    // Получаем список элементов
+    final AsyncValue<List<CollectionItem>> itemsAsync =
+        ref.read(collectionItemsNotifierProvider(widget.collectionId));
 
-    final List<CollectionGame>? games = gamesAsync.valueOrNull;
-    if (games == null) {
+    final List<CollectionItem>? items = itemsAsync.valueOrNull;
+    if (items == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Games not loaded yet')),
+          const SnackBar(content: Text('Items not loaded yet')),
         );
       }
       return;
@@ -777,8 +806,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     }
 
     final ExportService exportService = ref.read(exportServiceProvider);
-    final List<CollectionItem> items =
-        games.map((CollectionGame g) => g.toCollectionItem()).toList();
     final ExportResult result =
         await exportService.exportToFile(_collection!, items);
 
@@ -808,25 +835,24 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   }
 }
 
-/// Плитка игры в коллекции.
-class _CollectionGameTile extends StatelessWidget {
-  const _CollectionGameTile({
-    required this.collectionGame,
+/// Плитка элемента в коллекции.
+class _CollectionItemTile extends StatelessWidget {
+  const _CollectionItemTile({
+    required this.item,
     required this.isEditable,
     required this.onStatusChanged,
     this.onRemove,
     this.onTap,
   });
 
-  final CollectionGame collectionGame;
+  final CollectionItem item;
   final bool isEditable;
-  final void Function(GameStatus) onStatusChanged;
+  final void Function(ItemStatus) onStatusChanged;
   final VoidCallback? onRemove;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    final Game? game = collectionGame.game;
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
 
@@ -839,8 +865,8 @@ class _CollectionGameTile extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           child: Row(
             children: <Widget>[
-              // Обложка
-              _buildCover(game?.coverUrl, colorScheme),
+              // Обложка с иконкой типа
+              _buildCover(colorScheme),
               const SizedBox(width: 12),
 
               // Информация
@@ -850,7 +876,7 @@ class _CollectionGameTile extends StatelessWidget {
                   children: <Widget>[
                     // Название
                     Text(
-                      collectionGame.gameName,
+                      item.itemName,
                       style: theme.textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
@@ -860,16 +886,16 @@ class _CollectionGameTile extends StatelessWidget {
 
                     const SizedBox(height: 4),
 
-                    // Платформа
+                    // Подзаголовок (зависит от типа медиа)
                     Text(
-                      collectionGame.platformName,
+                      _getSubtitle(),
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colorScheme.onSurfaceVariant,
                       ),
                     ),
 
                     // Комментарий автора
-                    if (collectionGame.hasAuthorComment) ...<Widget>[
+                    if (item.hasAuthorComment) ...<Widget>[
                       const SizedBox(height: 4),
                       Row(
                         children: <Widget>[
@@ -881,7 +907,7 @@ class _CollectionGameTile extends StatelessWidget {
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
-                              collectionGame.authorComment!,
+                              item.authorComment!,
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: colorScheme.tertiary,
                                 fontStyle: FontStyle.italic,
@@ -900,8 +926,9 @@ class _CollectionGameTile extends StatelessWidget {
               const SizedBox(width: 8),
 
               // Статус
-              StatusDropdown(
-                status: collectionGame.status,
+              ItemStatusDropdown(
+                status: item.status,
+                mediaType: item.mediaType,
                 onChanged: onStatusChanged,
                 compact: true,
               ),
@@ -923,16 +950,67 @@ class _CollectionGameTile extends StatelessWidget {
     );
   }
 
-  Widget _buildCover(String? coverUrl, ColorScheme colorScheme) {
+  String _getSubtitle() {
+    switch (item.mediaType) {
+      case MediaType.game:
+        return item.platformName;
+      case MediaType.movie:
+        final List<String> parts = <String>[];
+        if (item.movie?.releaseYear != null) {
+          parts.add(item.movie!.releaseYear.toString());
+        }
+        if (item.movie?.runtime != null) {
+          final int hours = item.movie!.runtime! ~/ 60;
+          final int mins = item.movie!.runtime! % 60;
+          if (hours > 0 && mins > 0) {
+            parts.add('${hours}h ${mins}m');
+          } else if (hours > 0) {
+            parts.add('${hours}h');
+          } else {
+            parts.add('${mins}m');
+          }
+        }
+        return parts.isNotEmpty ? parts.join(' \u2022 ') : 'Movie';
+      case MediaType.tvShow:
+        final List<String> parts = <String>[];
+        if (item.tvShow?.firstAirYear != null) {
+          parts.add(item.tvShow!.firstAirYear.toString());
+        }
+        if (item.tvShow?.totalSeasons != null) {
+          parts.add(
+            '${item.tvShow!.totalSeasons} season${item.tvShow!.totalSeasons != 1 ? 's' : ''}',
+          );
+        }
+        return parts.isNotEmpty ? parts.join(' \u2022 ') : 'TV Show';
+    }
+  }
+
+  IconData _getMediaTypeIcon() {
+    switch (item.mediaType) {
+      case MediaType.game:
+        return Icons.videogame_asset;
+      case MediaType.movie:
+        return Icons.movie_outlined;
+      case MediaType.tvShow:
+        return Icons.tv_outlined;
+    }
+  }
+
+  Widget _buildCover(ColorScheme colorScheme) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: SizedBox(
         width: 48,
         height: 64,
-        child: coverUrl != null
-            ? CachedNetworkImage(
-                imageUrl: coverUrl,
+        child: Stack(
+          fit: StackFit.expand,
+          children: <Widget>[
+            if (item.thumbnailUrl != null)
+              CachedNetworkImage(
+                imageUrl: item.thumbnailUrl!,
                 fit: BoxFit.cover,
+                memCacheWidth: 96,
+                memCacheHeight: 128,
                 placeholder: (BuildContext context, String url) => Container(
                   color: colorScheme.surfaceContainerHighest,
                   child: const Center(
@@ -943,7 +1021,27 @@ class _CollectionGameTile extends StatelessWidget {
                     (BuildContext context, String url, Object error) =>
                         _buildPlaceholder(colorScheme),
               )
-            : _buildPlaceholder(colorScheme),
+            else
+              _buildPlaceholder(colorScheme),
+            // Бейдж типа медиа
+            Positioned(
+              right: 2,
+              bottom: 2,
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  color: colorScheme.surface.withValues(alpha: 0.8),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Icon(
+                  _getMediaTypeIcon(),
+                  size: 12,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -952,10 +1050,9 @@ class _CollectionGameTile extends StatelessWidget {
     return Container(
       color: colorScheme.surfaceContainerHighest,
       child: Icon(
-        Icons.videogame_asset,
+        _getMediaTypeIcon(),
         color: colorScheme.onSurfaceVariant,
       ),
     );
   }
 }
-

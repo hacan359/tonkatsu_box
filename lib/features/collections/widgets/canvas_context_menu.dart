@@ -120,7 +120,7 @@ class CanvasContextMenu {
     required VoidCallback onSendToBack,
     VoidCallback? onConnect,
   }) async {
-    final bool showEdit = itemType != CanvasItemType.game;
+    final bool showEdit = !itemType.isMediaItem;
 
     final String? value = await showMenu<String>(
       context: context,

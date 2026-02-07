@@ -11,6 +11,7 @@ import 'canvas_connection_painter.dart';
 import 'canvas_context_menu.dart';
 import 'canvas_game_card.dart';
 import 'canvas_image_item.dart';
+import 'canvas_media_card.dart';
 import 'canvas_link_item.dart';
 import 'canvas_text_item.dart';
 import 'dialogs/add_image_dialog.dart';
@@ -250,7 +251,9 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
       case CanvasItemType.link:
         await _editLinkItem(item);
       case CanvasItemType.game:
-        break; // Игры не редактируются через контекстное меню
+      case CanvasItemType.movie:
+      case CanvasItemType.tvShow:
+        break; // Медиа-элементы не редактируются через контекстное меню
     }
   }
 
@@ -719,6 +722,9 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
     switch (item.itemType) {
       case CanvasItemType.game:
         child = CanvasGameCard(item: item);
+      case CanvasItemType.movie:
+      case CanvasItemType.tvShow:
+        child = CanvasMediaCard(item: item);
       case CanvasItemType.text:
         child = CanvasTextItem(item: item);
       case CanvasItemType.image:
@@ -816,6 +822,8 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
     if (widget.item.width != null) return widget.item.width!;
     return switch (widget.item.itemType) {
       CanvasItemType.game => CanvasRepository.defaultCardWidth,
+      CanvasItemType.movie => CanvasRepository.defaultCardWidth,
+      CanvasItemType.tvShow => CanvasRepository.defaultCardWidth,
       CanvasItemType.text => 200,
       CanvasItemType.image => 200,
       CanvasItemType.link => 200,
@@ -826,6 +834,8 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
     if (widget.item.height != null) return widget.item.height!;
     return switch (widget.item.itemType) {
       CanvasItemType.game => CanvasRepository.defaultCardHeight,
+      CanvasItemType.movie => CanvasRepository.defaultCardHeight,
+      CanvasItemType.tvShow => CanvasRepository.defaultCardHeight,
       CanvasItemType.text => 100,
       CanvasItemType.image => 200,
       CanvasItemType.link => 48,

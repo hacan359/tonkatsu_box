@@ -23,6 +23,7 @@
 - [x] Stage 15: TMDB Integration — API client for movies/TV shows, models (Movie, TvShow, TvSeason), DB cache tables, settings UI
 - [x] Stage 16: Universal Collections — CollectionItem model with MediaType (game/movie/tvShow), ItemStatus, DB migration, backward-compatible adapters
 - [x] Stage 17: Universal Search — tabbed search (Games/Movies/TV Shows), MediaSearchProvider, MovieCard, TvShowCard, add movies/TV shows to collections
+- [x] Stage 18: Media Display — movie/TV show detail screens, ItemStatusDropdown, CanvasMediaCard, CollectionScreen switched to CollectionItem, canvas support for all media types
 - [ ] Stage 13: Export Full — extended .rcoll-full format with canvas layout and images
 
 ## Future Plans

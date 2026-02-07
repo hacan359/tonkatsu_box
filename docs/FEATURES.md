@@ -32,21 +32,51 @@ Search across multiple media types via tabbed interface:
 
 ## Progress Tracking
 
-Track your play status for each game:
+Track status for each item in your collection with context-aware labels:
 
-| Status | Description |
-|--------|-------------|
-| ⬜ Not Started | Haven't played yet |
-| 🎮 Playing | Currently playing |
-| ✅ Completed | Finished the game |
-| ⏸️ Dropped | Stopped playing |
-| 📋 Planned | Want to play |
+| Status | Games | Movies/TV Shows |
+|--------|-------|-----------------|
+| ⬜ Not Started | Not Started | Not Started |
+| 🎮/📺 In Progress | Playing | Watching |
+| ✅ Completed | Completed | Completed |
+| ⏸️ On Hold | — | On Hold (TV shows only) |
+| ❌ Dropped | Dropped | Dropped |
+| 📋 Planned | Planned | Planned |
 
 View statistics per collection — see your completion rate at a glance.
 
+### TV Show Progress
+
+Track your viewing progress for TV shows:
+- Current season / total seasons
+- Current episode / total episodes
+- Increment/decrement with +/- buttons
+- Format: "S2/5 • E15/50"
+
+## Detail Screens
+
+Tap any item in a collection to see its full details:
+
+### Game Details
+- Cover image with parallax header
+- Release year, genres, rating, platforms
+- Status dropdown, author comment, personal notes
+
+### Movie Details
+- Backdrop/poster with parallax header
+- Release year, runtime (formatted as "2h 10m"), genres, rating
+- Description/overview
+- Status dropdown (with "Watching" label), author comment, personal notes
+
+### TV Show Details
+- Backdrop/poster with parallax header
+- First air date, seasons/episodes count, genres, rating, show status (Returning/Ended/Canceled)
+- Viewing progress section (current season and episode with +/- controls)
+- Status dropdown (includes "On Hold"), author comment, personal notes
+
 ## Comments
 
-Add personal notes to any game:
+Add personal notes to any item:
 - **Author comments** — Visible to everyone who imports your collection
 - **Personal comments** — Private notes only you can see
 
@@ -70,8 +100,9 @@ Visualize your collection on a free-form canvas:
 - **Infinite canvas** with zoom (0.3x – 3.0x) and pan
 - **Drag-and-drop** all elements with real-time visual feedback
 - **Dot grid background** for visual alignment
-- **Auto-layout** — new canvas initializes games in a 5-column grid
-- **Auto-sync** — adding or removing games in the collection automatically updates the canvas
+- **Auto-layout** — new canvas initializes all items (games, movies, TV shows) in a 5-column grid
+- **Auto-sync** — adding or removing items in the collection automatically updates the canvas
+- **Media cards** — games, movies and TV shows display as compact cards with poster/cover and title
 - **Persistent viewport** — zoom level and position are saved and restored
 - **Center view** and **Reset positions** controls
 - **List/Canvas toggle** — switch between traditional list and visual canvas via SegmentedButton

@@ -8,6 +8,8 @@ import '../../shared/models/canvas_item.dart';
 import '../../shared/models/canvas_viewport.dart';
 import '../../shared/models/collection_item.dart';
 import '../../shared/models/game.dart';
+import '../../shared/models/movie.dart';
+import '../../shared/models/tv_show.dart';
 
 /// Провайдер для репозитория канваса.
 final Provider<CanvasRepository> canvasRepositoryProvider =
@@ -53,30 +55,67 @@ class CanvasRepository {
     return rows.map(CanvasItem.fromDb).toList();
   }
 
-  /// Возвращает элементы канваса с подгруженными данными игр.
+  /// Возвращает элементы канваса с подгруженными данными медиа.
   Future<List<CanvasItem>> getItemsWithData(int collectionId) async {
     final List<CanvasItem> items = await getItems(collectionId);
     if (items.isEmpty) return items;
 
-    // Собираем ID игр для подгрузки
+    // Собираем ID по типам медиа
     final List<int> gameIds = items
         .where((CanvasItem item) =>
             item.itemType == CanvasItemType.game && item.itemRefId != null)
         .map((CanvasItem item) => item.itemRefId!)
         .toList();
 
-    if (gameIds.isEmpty) return items;
+    final List<int> movieTmdbIds = items
+        .where((CanvasItem item) =>
+            item.itemType == CanvasItemType.movie && item.itemRefId != null)
+        .map((CanvasItem item) => item.itemRefId!)
+        .toList();
 
-    final List<Game> games = await _db.getGamesByIds(gameIds);
+    final List<int> tvShowTmdbIds = items
+        .where((CanvasItem item) =>
+            item.itemType == CanvasItemType.tvShow && item.itemRefId != null)
+        .map((CanvasItem item) => item.itemRefId!)
+        .toList();
+
+    // Загружаем данные параллельно
+    final List<Object> results = await Future.wait(<Future<Object>>[
+      gameIds.isNotEmpty
+          ? _db.getGamesByIds(gameIds)
+          : Future<List<Game>>.value(<Game>[]),
+      movieTmdbIds.isNotEmpty
+          ? _db.getMoviesByTmdbIds(movieTmdbIds)
+          : Future<List<Movie>>.value(<Movie>[]),
+      tvShowTmdbIds.isNotEmpty
+          ? _db.getTvShowsByTmdbIds(tvShowTmdbIds)
+          : Future<List<TvShow>>.value(<TvShow>[]),
+    ]);
+
     final Map<int, Game> gamesMap = <int, Game>{
-      for (final Game g in games) g.id: g,
+      for (final Game g in results[0] as List<Game>) g.id: g,
+    };
+    final Map<int, Movie> moviesMap = <int, Movie>{
+      for (final Movie m in results[1] as List<Movie>) m.tmdbId: m,
+    };
+    final Map<int, TvShow> tvShowsMap = <int, TvShow>{
+      for (final TvShow t in results[2] as List<TvShow>) t.tmdbId: t,
     };
 
     return items.map((CanvasItem item) {
-      if (item.itemType == CanvasItemType.game && item.itemRefId != null) {
-        return item.copyWith(game: gamesMap[item.itemRefId]);
+      if (item.itemRefId == null) return item;
+      switch (item.itemType) {
+        case CanvasItemType.game:
+          return item.copyWith(game: gamesMap[item.itemRefId]);
+        case CanvasItemType.movie:
+          return item.copyWith(movie: moviesMap[item.itemRefId]);
+        case CanvasItemType.tvShow:
+          return item.copyWith(tvShow: tvShowsMap[item.itemRefId]);
+        case CanvasItemType.text:
+        case CanvasItemType.image:
+        case CanvasItemType.link:
+          return item;
       }
-      return item;
     }).toList();
   }
 
@@ -135,7 +174,16 @@ class CanvasRepository {
 
   /// Удаляет элемент канваса, связанный с игрой (по igdbId).
   Future<void> deleteGameItem(int collectionId, int igdbId) async {
-    await _db.deleteCanvasItemByRef(collectionId, igdbId);
+    await _db.deleteCanvasItemByRef(collectionId, 'game', igdbId);
+  }
+
+  /// Удаляет элемент канваса по типу и ID связанного объекта.
+  Future<void> deleteMediaItem(
+    int collectionId,
+    CanvasItemType itemType,
+    int refId,
+  ) async {
+    await _db.deleteCanvasItemByRef(collectionId, itemType.value, refId);
   }
 
   /// Проверяет, есть ли элементы канваса для коллекции.
@@ -196,13 +244,10 @@ class CanvasRepository {
 
   // ==================== Initialization ====================
 
-  /// Инициализирует канвас для коллекции, размещая игры сеткой по центру.
+  /// Инициализирует канвас для коллекции, размещая элементы сеткой по центру.
   ///
   /// Вызывается при первом открытии Canvas View.
   /// Сетка центрируется вокруг [initialCenterX], [initialCenterY].
-  /// Инициализирует канвас для коллекции, размещая элементы сеткой по центру.
-  ///
-  /// Принимает [List<CollectionItem>] — обычно отфильтрованные по mediaType=game.
   Future<List<CanvasItem>> initializeCanvas(
     int collectionId,
     List<CollectionItem> items,
@@ -231,10 +276,13 @@ class CanvasRepository {
       final double x = startX + col * (defaultCardWidth + gridGap);
       final double y = startY + row * (defaultCardHeight + gridGap);
 
+      final CanvasItemType canvasType =
+          CanvasItemType.fromMediaType(items[i].mediaType);
+
       final CanvasItem item = CanvasItem(
         id: 0,
         collectionId: collectionId,
-        itemType: CanvasItemType.game,
+        itemType: canvasType,
         itemRefId: items[i].externalId,
         x: x,
         y: y,
@@ -245,7 +293,11 @@ class CanvasRepository {
       );
 
       final CanvasItem created = await createItem(item);
-      createdItems.add(created.copyWith(game: items[i].game));
+      createdItems.add(created.copyWith(
+        game: items[i].game,
+        movie: items[i].movie,
+        tvShow: items[i].tvShow,
+      ));
     }
 
     // Создаём viewport по умолчанию
