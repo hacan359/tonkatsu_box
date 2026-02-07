@@ -8,7 +8,10 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import '../../shared/models/collection.dart';
 import '../../shared/models/collection_game.dart';
 import '../../shared/models/game.dart';
+import '../../shared/models/movie.dart';
 import '../../shared/models/platform.dart';
+import '../../shared/models/tv_season.dart';
+import '../../shared/models/tv_show.dart';
 
 /// Провайдер для доступа к сервису базы данных.
 final Provider<DatabaseService> databaseServiceProvider =
@@ -43,7 +46,7 @@ class DatabaseService {
     return databaseFactoryFfi.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 6,
+        version: 7,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -62,6 +65,9 @@ class DatabaseService {
     await _createCanvasItemsTable(db);
     await _createCanvasViewportTable(db);
     await _createCanvasConnectionsTable(db);
+    await _createMoviesCacheTable(db);
+    await _createTvShowsCacheTable(db);
+    await _createTvSeasonsCacheTable(db);
   }
 
   Future<void> _createPlatformsTable(Database db) async {
@@ -159,6 +165,11 @@ class DatabaseService {
     if (oldVersion < 6) {
       await _createCanvasConnectionsTable(db);
     }
+    if (oldVersion < 7) {
+      await _createMoviesCacheTable(db);
+      await _createTvShowsCacheTable(db);
+      await _createTvSeasonsCacheTable(db);
+    }
   }
 
   Future<void> _createCanvasItemsTable(Database db) async {
@@ -217,6 +228,59 @@ class DatabaseService {
     await db.execute('''
       CREATE INDEX idx_canvas_connections_collection
       ON canvas_connections(collection_id)
+    ''');
+  }
+
+  Future<void> _createMoviesCacheTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE movies_cache (
+        tmdb_id INTEGER PRIMARY KEY,
+        title TEXT NOT NULL,
+        original_title TEXT,
+        poster_url TEXT,
+        backdrop_url TEXT,
+        overview TEXT,
+        genres TEXT,
+        release_year INTEGER,
+        rating REAL,
+        runtime INTEGER,
+        cached_at INTEGER
+      )
+    ''');
+  }
+
+  Future<void> _createTvShowsCacheTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE tv_shows_cache (
+        tmdb_id INTEGER PRIMARY KEY,
+        title TEXT NOT NULL,
+        original_title TEXT,
+        poster_url TEXT,
+        backdrop_url TEXT,
+        overview TEXT,
+        genres TEXT,
+        first_air_year INTEGER,
+        total_seasons INTEGER,
+        total_episodes INTEGER,
+        rating REAL,
+        status TEXT,
+        cached_at INTEGER
+      )
+    ''');
+  }
+
+  Future<void> _createTvSeasonsCacheTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE tv_seasons_cache (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tmdb_show_id INTEGER NOT NULL,
+        season_number INTEGER NOT NULL,
+        name TEXT,
+        episode_count INTEGER,
+        poster_url TEXT,
+        air_date TEXT,
+        UNIQUE(tmdb_show_id, season_number)
+      )
     ''');
   }
 
@@ -401,6 +465,142 @@ class DatabaseService {
       where: 'cached_at < ?',
       whereArgs: <Object?>[threshold],
     );
+  }
+
+  // ==================== Movies Cache ====================
+
+  /// Возвращает фильм по TMDB ID или null, если не найден.
+  Future<Movie?> getMovieByTmdbId(int tmdbId) async {
+    final Database db = await database;
+    final List<Map<String, dynamic>> rows = await db.query(
+      'movies_cache',
+      where: 'tmdb_id = ?',
+      whereArgs: <Object?>[tmdbId],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return Movie.fromDb(rows.first);
+  }
+
+  /// Сохраняет или обновляет фильм в кеше.
+  Future<void> upsertMovie(Movie movie) async {
+    final Database db = await database;
+    await db.insert(
+      'movies_cache',
+      movie.toDb(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  /// Сохраняет список фильмов пакетно.
+  Future<void> upsertMovies(List<Movie> movies) async {
+    if (movies.isEmpty) return;
+
+    final Database db = await database;
+    await db.transaction((Transaction txn) async {
+      final Batch batch = txn.batch();
+      for (final Movie movie in movies) {
+        batch.insert(
+          'movies_cache',
+          movie.toDb(),
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
+      await batch.commit(noResult: true);
+    });
+  }
+
+  /// Удаляет все фильмы из кеша.
+  Future<void> clearMovies() async {
+    final Database db = await database;
+    await db.delete('movies_cache');
+  }
+
+  // ==================== TV Shows Cache ====================
+
+  /// Возвращает сериал по TMDB ID или null, если не найден.
+  Future<TvShow?> getTvShowByTmdbId(int tmdbId) async {
+    final Database db = await database;
+    final List<Map<String, dynamic>> rows = await db.query(
+      'tv_shows_cache',
+      where: 'tmdb_id = ?',
+      whereArgs: <Object?>[tmdbId],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return TvShow.fromDb(rows.first);
+  }
+
+  /// Сохраняет или обновляет сериал в кеше.
+  Future<void> upsertTvShow(TvShow tvShow) async {
+    final Database db = await database;
+    await db.insert(
+      'tv_shows_cache',
+      tvShow.toDb(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  /// Сохраняет список сериалов пакетно.
+  Future<void> upsertTvShows(List<TvShow> tvShows) async {
+    if (tvShows.isEmpty) return;
+
+    final Database db = await database;
+    await db.transaction((Transaction txn) async {
+      final Batch batch = txn.batch();
+      for (final TvShow tvShow in tvShows) {
+        batch.insert(
+          'tv_shows_cache',
+          tvShow.toDb(),
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
+      await batch.commit(noResult: true);
+    });
+  }
+
+  /// Удаляет все сериалы из кеша.
+  Future<void> clearTvShows() async {
+    final Database db = await database;
+    await db.delete('tv_shows_cache');
+  }
+
+  // ==================== TV Seasons Cache ====================
+
+  /// Возвращает сезоны сериала.
+  Future<List<TvSeason>> getTvSeasonsByShowId(int tmdbShowId) async {
+    final Database db = await database;
+    final List<Map<String, dynamic>> rows = await db.query(
+      'tv_seasons_cache',
+      where: 'tmdb_show_id = ?',
+      whereArgs: <Object?>[tmdbShowId],
+      orderBy: 'season_number ASC',
+    );
+    return rows.map(TvSeason.fromDb).toList();
+  }
+
+  /// Сохраняет сезоны сериала пакетно.
+  Future<void> upsertTvSeasons(List<TvSeason> seasons) async {
+    if (seasons.isEmpty) return;
+
+    final Database db = await database;
+    await db.transaction((Transaction txn) async {
+      final Batch batch = txn.batch();
+      for (final TvSeason season in seasons) {
+        batch.insert(
+          'tv_seasons_cache',
+          season.toDb(),
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
+      await batch.commit(noResult: true);
+    });
+  }
+
+  /// Удаляет все сезоны из кеша.
+  Future<void> clearTvSeasons() async {
+    final Database db = await database;
+    await db.delete('tv_seasons_cache');
   }
 
   // ==================== Collections ====================

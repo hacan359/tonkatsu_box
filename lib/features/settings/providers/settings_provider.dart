@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/api/igdb_api.dart';
 import '../../../core/api/steamgriddb_api.dart';
+import '../../../core/api/tmdb_api.dart';
 import '../../../core/database/database_service.dart';
 import '../../../shared/models/platform.dart';
 
@@ -16,6 +17,9 @@ abstract class SettingsKeys {
 
   /// API ключ для SteamGridDB.
   static const String steamGridDbApiKey = 'steamgriddb_api_key';
+
+  /// API ключ для TMDB.
+  static const String tmdbApiKey = 'tmdb_api_key';
 }
 
 /// Состояние настроек IGDB.
@@ -32,6 +36,7 @@ class SettingsState {
     this.errorMessage,
     this.isLoading = false,
     this.steamGridDbApiKey,
+    this.tmdbApiKey,
   });
 
   /// Client ID для IGDB API.
@@ -63,6 +68,12 @@ class SettingsState {
 
   /// API ключ для SteamGridDB.
   final String? steamGridDbApiKey;
+
+  /// API ключ для TMDB.
+  final String? tmdbApiKey;
+
+  /// Проверяет наличие API ключа TMDB.
+  bool get hasTmdbKey => tmdbApiKey != null && tmdbApiKey!.isNotEmpty;
 
   /// Проверяет наличие API ключа SteamGridDB.
   bool get hasSteamGridDbKey =>
@@ -98,6 +109,7 @@ class SettingsState {
     bool? isLoading,
     bool clearError = false,
     String? steamGridDbApiKey,
+    String? tmdbApiKey,
   }) {
     return SettingsState(
       clientId: clientId ?? this.clientId,
@@ -110,6 +122,7 @@ class SettingsState {
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       isLoading: isLoading ?? this.isLoading,
       steamGridDbApiKey: steamGridDbApiKey ?? this.steamGridDbApiKey,
+      tmdbApiKey: tmdbApiKey ?? this.tmdbApiKey,
     );
   }
 }
@@ -150,6 +163,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
   late SharedPreferences _prefs;
   late IgdbApi _igdbApi;
   late SteamGridDbApi _steamGridDbApi;
+  late TmdbApi _tmdbApi;
   late DatabaseService _dbService;
 
   @override
@@ -157,6 +171,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     _prefs = ref.watch(sharedPreferencesProvider);
     _igdbApi = ref.watch(igdbApiProvider);
     _steamGridDbApi = ref.watch(steamGridDbApiProvider);
+    _tmdbApi = ref.watch(tmdbApiProvider);
     _dbService = ref.watch(databaseServiceProvider);
 
     return _loadFromPrefs();
@@ -170,6 +185,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     final int? lastSync = _prefs.getInt(SettingsKeys.lastSync);
     final String? steamGridDbApiKey =
         _prefs.getString(SettingsKeys.steamGridDbApiKey);
+    final String? tmdbApiKey = _prefs.getString(SettingsKeys.tmdbApiKey);
 
     final SettingsState loadedState = SettingsState(
       clientId: clientId,
@@ -178,6 +194,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
       tokenExpires: tokenExpires,
       lastSync: lastSync,
       steamGridDbApiKey: steamGridDbApiKey,
+      tmdbApiKey: tmdbApiKey,
     );
 
     // Устанавливаем credentials в API, если они есть
@@ -188,6 +205,11 @@ class SettingsNotifier extends Notifier<SettingsState> {
     // Устанавливаем SteamGridDB API ключ, если есть
     if (steamGridDbApiKey != null && steamGridDbApiKey.isNotEmpty) {
       _steamGridDbApi.setApiKey(steamGridDbApiKey);
+    }
+
+    // Устанавливаем TMDB API ключ, если есть
+    if (tmdbApiKey != null && tmdbApiKey.isNotEmpty) {
+      _tmdbApi.setApiKey(tmdbApiKey);
     }
 
     // Загружаем количество платформ асинхронно
@@ -319,6 +341,19 @@ class SettingsNotifier extends Notifier<SettingsState> {
     state = state.copyWith(steamGridDbApiKey: apiKey);
   }
 
+  /// Сохраняет API ключ TMDB.
+  Future<void> setTmdbApiKey(String apiKey) async {
+    if (apiKey.isNotEmpty) {
+      await _prefs.setString(SettingsKeys.tmdbApiKey, apiKey);
+      _tmdbApi.setApiKey(apiKey);
+    } else {
+      await _prefs.remove(SettingsKeys.tmdbApiKey);
+      _tmdbApi.clearApiKey();
+    }
+
+    state = state.copyWith(tmdbApiKey: apiKey);
+  }
+
   /// Очищает все настройки.
   Future<void> clearSettings() async {
     await _prefs.remove(SettingsKeys.clientId);
@@ -327,9 +362,11 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await _prefs.remove(SettingsKeys.tokenExpires);
     await _prefs.remove(SettingsKeys.lastSync);
     await _prefs.remove(SettingsKeys.steamGridDbApiKey);
+    await _prefs.remove(SettingsKeys.tmdbApiKey);
 
     _igdbApi.clearCredentials();
     _steamGridDbApi.clearApiKey();
+    _tmdbApi.clearApiKey();
     await _dbService.clearPlatforms();
 
     state = const SettingsState();
