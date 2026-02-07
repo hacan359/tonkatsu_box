@@ -2,14 +2,14 @@
 
 ## Обзор
 
-xeRAbora — Windows desktop приложение на Flutter для управления коллекциями ретро-игр с интеграцией IGDB API.
+xeRAbora — Windows desktop приложение на Flutter для управления коллекциями ретро-игр, фильмов и сериалов с интеграцией IGDB, TMDB и SteamGridDB API.
 
 | Слой | Технология |
 |------|------------|
 | UI | Flutter (Material 3) |
 | State | Riverpod |
 | Database | SQLite (sqflite_ffi) |
-| API | IGDB через Twitch OAuth, SteamGridDB (Bearer token) |
+| API | IGDB (Twitch OAuth), TMDB (Bearer token), SteamGridDB (Bearer token) |
 | Platform | Windows Desktop |
 
 ---
@@ -45,7 +45,8 @@ lib/
 |------|------------|
 | `lib/core/api/igdb_api.dart` | **IGDB API клиент**. OAuth через Twitch, поиск игр, загрузка платформ. Методы: `getAccessToken()`, `searchGames()`, `fetchPlatforms()` |
 | `lib/core/api/steamgriddb_api.dart` | **SteamGridDB API клиент**. Bearer token авторизация. Методы: `searchGames()`, `getGrids()`, `getHeroes()`, `getLogos()`, `getIcons()` |
-| `lib/core/database/database_service.dart` | **SQLite сервис**. Создание таблиц, миграции (версия 6), CRUD для всех сущностей. Таблицы: `platforms`, `games`, `collections`, `collection_games`, `canvas_items`, `canvas_viewport`, `canvas_connections` |
+| `lib/core/api/tmdb_api.dart` | **TMDB API клиент**. Bearer token авторизация. Методы: `searchMovies()`, `searchTvShows()`, `multiSearch()`, `getMovieDetails()`, `getTvShowDetails()`, `getPopularMovies()`, `getPopularTvShows()`, `getMovieGenres()`, `getTvGenres()` |
+| `lib/core/database/database_service.dart` | **SQLite сервис**. Создание таблиц, миграции (версия 8), CRUD для всех сущностей. Таблицы: `platforms`, `games`, `collections`, `collection_games`, `collection_items`, `canvas_items`, `canvas_viewport`, `canvas_connections`, `movies_cache`, `tv_shows_cache`, `tv_seasons_cache` |
 
 ---
 
@@ -59,6 +60,12 @@ lib/
 | `lib/shared/models/collection_game.dart` | **Игра в коллекции**. Связь коллекции с игрой. Статусы: `notStarted`, `playing`, `completed`, `dropped`, `planned`. Комментарии автора и пользователя |
 | `lib/shared/models/steamgriddb_game.dart` | **Модель SteamGridDB игры**. Поля: id, name, types, verified. Метод: `fromJson()` |
 | `lib/shared/models/steamgriddb_image.dart` | **Модель SteamGridDB изображения**. Поля: id, score, style, url, thumb, width, height, mime, author. Свойство `dimensions` |
+| `lib/shared/models/collection_item.dart` | **Модель универсального элемента коллекции**. Поля: id, collectionId, mediaType, externalId, platformId, status, authorComment, userComment, addedAt. Методы: `fromDb()`, `toDb()`, `copyWith()`. Заменяет привязку только к играм |
+| `lib/shared/models/media_type.dart` | **Enum типа медиа**. Значения: `game`, `movie`, `tvShow`. Свойства: `label`, `icon`. Методы: `fromString()` |
+| `lib/shared/models/item_status.dart` | **Enum статуса элемента**. Значения: `notStarted`, `inProgress`, `completed`, `dropped`, `planned`. Свойства: `label`, `emoji`, `color`. Методы: `fromString()` |
+| `lib/shared/models/movie.dart` | **Модель фильма**. Поля: id, title, overview, posterPath, releaseDate, rating, genres, runtime и др. Свойства: `posterUrl`, `releaseYear`, `ratingString`, `genresString`. Методы: `fromJson()`, `fromDb()`, `toDb()`, `copyWith()` |
+| `lib/shared/models/tv_show.dart` | **Модель сериала**. Поля: id, title, overview, posterPath, firstAirDate, rating, genres, seasons, episodes, status. Свойства: `posterUrl`, `releaseYear`, `ratingString`, `genresString`. Методы: `fromJson()`, `fromDb()`, `toDb()`, `copyWith()` |
+| `lib/shared/models/tv_season.dart` | **Модель сезона сериала**. Поля: id, tvShowId, seasonNumber, name, overview, posterPath, airDate, episodeCount. Методы: `fromJson()`, `fromDb()`, `toDb()`, `copyWith()` |
 | `lib/shared/models/canvas_item.dart` | **Модель элемента канваса**. Enum `CanvasItemType` (game/text/image/link). Поля: id, collectionId, itemType, itemRefId, x, y, width, height, zIndex, data (JSON). Joined поле `game: Game?` |
 | `lib/shared/models/canvas_viewport.dart` | **Модель viewport канваса**. Поля: collectionId, scale, offsetX, offsetY. Хранит зум и позицию камеры |
 | `lib/shared/models/canvas_connection.dart` | **Модель связи канваса**. Enum `ConnectionStyle` (solid/dashed/arrow). Поля: id, collectionId, fromItemId, toItemId, label, color (hex), style, createdAt |
@@ -72,7 +79,7 @@ lib/
 | Файл | Назначение |
 |------|------------|
 | `lib/features/collections/screens/home_screen.dart` | **Главный экран**. Список коллекций с группировкой (My/Forked/Imported). FAB для создания. Меню: rename, fork, delete |
-| `lib/features/collections/screens/collection_screen.dart` | **Экран коллекции**. Заголовок со статистикой (прогресс-бар), список игр. Кнопка "Add Game" открывает SearchScreen |
+| `lib/features/collections/screens/collection_screen.dart` | **Экран коллекции**. Заголовок со статистикой (прогресс-бар), список элементов. Кнопка "Add Items" открывает SearchScreen. Поддержка игр, фильмов и сериалов |
 
 #### Виджеты
 
@@ -104,7 +111,7 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/features/collections/providers/collections_provider.dart` | **State management коллекций**. `collectionsProvider` — список. `collectionGamesNotifierProvider` — игры в коллекции с CRUD |
+| `lib/features/collections/providers/collections_provider.dart` | **State management коллекций**. `collectionsProvider` — список. `collectionGamesNotifierProvider` — игры в коллекции с CRUD (legacy). `collectionItemsNotifierProvider` — универсальные элементы коллекции (games/movies/tvShows) с CRUD. Двусторонняя синхронизация между games и items провайдерами |
 | `lib/features/collections/providers/steamgriddb_panel_provider.dart` | **State management панели SteamGridDB**. `steamGridDbPanelProvider` — NotifierProvider.family по collectionId. Enum `SteamGridDbImageType` (grids/heroes/logos/icons). State: isOpen, searchTerm, searchResults, selectedGame, selectedImageType, images, isSearching, isLoadingImages, searchError, imageError, imageCache. Методы: togglePanel, openPanel, closePanel, searchGames, selectGame, clearGameSelection, selectImageType. In-memory кэш по ключу `gameId:imageType` |
 | `lib/features/collections/providers/vgmaps_panel_provider.dart` | **State management панели VGMaps**. `vgMapsPanelProvider` — NotifierProvider.family по collectionId. State: isOpen, currentUrl, canGoBack, canGoForward, isLoading, capturedImageUrl/Width/Height, error. Методы: togglePanel, openPanel, closePanel, setCurrentUrl, setNavigationState, setLoading, captureImage, clearCapturedImage, setError, clearError |
 | `lib/features/collections/providers/canvas_provider.dart` | **State management канваса**. `canvasNotifierProvider` — NotifierProvider.family по collectionId. Методы: moveItem, updateViewport, addItem, deleteItem, bringToFront, sendToBack, removeGameItem, addTextItem, addImageItem, addLinkItem, updateItemData, updateItemSize, startConnection, completeConnection, cancelConnection, deleteConnection, updateConnection. Debounced save (300ms position, 500ms viewport). Двусторонняя синхронизация с коллекцией через `ref.listen`. Параллельная загрузка items, viewport и connections через `Future.wait` |
@@ -117,20 +124,23 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/features/search/screens/search_screen.dart` | **Экран поиска**. Поле ввода с debounce, фильтр платформ, результаты. При `collectionId` — добавляет игры в коллекцию |
+| `lib/features/search/screens/search_screen.dart` | **Экран поиска**. TabBar с 3 табами: Games / Movies / TV Shows. Общее поле ввода с debounce, фильтр платформ (только Games). При `collectionId` — добавляет игры/фильмы/сериалы в коллекцию через `collectionItemsNotifierProvider`. Bottom sheet с деталями фильма/сериала |
 
 #### Виджеты
 
 | Файл | Назначение |
 |------|------------|
 | `lib/features/search/widgets/game_card.dart` | **Карточка игры**. Обложка (CachedNetworkImage), название, год, рейтинг, жанры, платформы |
+| `lib/features/search/widgets/movie_card.dart` | **Карточка фильма**. Постер 60x80 (CachedNetworkImage), название, год, рейтинг, runtime, жанры. Placeholder: Icons.movie |
+| `lib/features/search/widgets/tv_show_card.dart` | **Карточка сериала**. Постер 60x80, название, год, рейтинг, жанры, сезоны/эпизоды, статус. Placeholder: Icons.tv |
 | `lib/features/search/widgets/platform_filter_sheet.dart` | **Bottom sheet фильтра**. Мультивыбор платформ с поиском. Кнопки Clear All / Apply |
 
 #### Провайдеры
 
 | Файл | Назначение |
 |------|------------|
-| `lib/features/search/providers/game_search_provider.dart` | **State поиска**. Debounce 400ms, минимум 2 символа. Фильтр по платформам. Состояние: query, results, isLoading, error |
+| `lib/features/search/providers/game_search_provider.dart` | **State поиска игр**. Debounce 400ms, минимум 2 символа. Фильтр по платформам. Состояние: query, results, isLoading, error |
+| `lib/features/search/providers/media_search_provider.dart` | **State поиска фильмов/сериалов**. Debounce 400ms через TMDB API. Enum `MediaSearchTab` (movies, tvShows). Состояние: query, movieResults, tvShowResults, isLoading, error, activeTab. Кэширование через `upsertMovies()`/`upsertTvShows()` |
 
 ---
 
@@ -177,7 +187,7 @@ UI обновляется через ref.watch()
 ### 2. Добавление игры в коллекцию
 
 ```
-Тап на игру в SearchScreen
+Тап на игру в SearchScreen (таб Games)
        ↓
 _addGameToCollection()
        ↓
@@ -190,6 +200,41 @@ CollectionRepository.addGame()
 DatabaseService.addGameToCollection()
        ↓
 SnackBar "Game added to collection"
+```
+
+### 2a. Поиск фильмов/сериалов
+
+```
+Пользователь вводит текст (таб Movies или TV Shows)
+       ↓
+SearchScreen._onSearchChanged()
+       ↓
+mediaSearchProvider.search() [debounce 400ms]
+       ↓
+TmdbApi.searchMovies() / searchTvShows() → API запрос
+       ↓
+Результаты кешируются через upsertMovies() / upsertTvShows()
+       ↓
+UI обновляется через ref.watch()
+```
+
+### 2b. Добавление фильма/сериала в коллекцию
+
+```
+Тап на фильм/сериал в SearchScreen
+       ↓
+_showCollectionSelectionDialog() [если нет collectionId]
+       ↓
+collectionItemsNotifierProvider.addItem(
+  mediaType: MediaType.movie / .tvShow,
+  externalId: tmdbId
+)
+       ↓
+CollectionRepository.addItem()
+       ↓
+DatabaseService.insertCollectionItem()
+       ↓
+SnackBar "Movie/TV show added to collection"
 ```
 
 ### 3. Canvas (визуальный холст)
@@ -325,6 +370,65 @@ CREATE TABLE collection_games (
   UNIQUE(collection_id, igdb_id, platform_id)
 );
 
+-- Универсальные элементы коллекций (Stage 16)
+CREATE TABLE collection_items (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  collection_id INTEGER NOT NULL,
+  media_type TEXT NOT NULL DEFAULT 'game',  -- game/movie/tvShow
+  external_id INTEGER NOT NULL,
+  platform_id INTEGER,
+  status TEXT DEFAULT 'not_started',
+  author_comment TEXT,
+  user_comment TEXT,
+  added_at INTEGER NOT NULL,
+  FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE,
+  UNIQUE(collection_id, media_type, external_id, platform_id)
+);
+
+-- Кэш фильмов из TMDB (Stage 15)
+CREATE TABLE movies_cache (
+  id INTEGER PRIMARY KEY,      -- TMDB ID
+  title TEXT NOT NULL,
+  overview TEXT,
+  poster_path TEXT,
+  release_date TEXT,
+  rating REAL,
+  rating_count INTEGER,
+  genres TEXT,                  -- pipe-separated
+  runtime INTEGER,
+  cached_at INTEGER
+);
+
+-- Кэш сериалов из TMDB (Stage 15)
+CREATE TABLE tv_shows_cache (
+  id INTEGER PRIMARY KEY,      -- TMDB ID
+  title TEXT NOT NULL,
+  overview TEXT,
+  poster_path TEXT,
+  first_air_date TEXT,
+  rating REAL,
+  rating_count INTEGER,
+  genres TEXT,                  -- pipe-separated
+  number_of_seasons INTEGER,
+  number_of_episodes INTEGER,
+  status TEXT,
+  cached_at INTEGER
+);
+
+-- Кэш сезонов сериалов из TMDB (Stage 15)
+CREATE TABLE tv_seasons_cache (
+  id INTEGER PRIMARY KEY,
+  tv_show_id INTEGER NOT NULL,
+  season_number INTEGER NOT NULL,
+  name TEXT,
+  overview TEXT,
+  poster_path TEXT,
+  air_date TEXT,
+  episode_count INTEGER,
+  cached_at INTEGER,
+  FOREIGN KEY (tv_show_id) REFERENCES tv_shows_cache(id) ON DELETE CASCADE
+);
+
 -- Элементы канваса (Stage 7)
 CREATE TABLE canvas_items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -381,7 +485,10 @@ CREATE TABLE canvas_connections (
 | `collectionsProvider` | AsyncNotifierProvider | Список коллекций |
 | `collectionGamesNotifierProvider` | NotifierProvider.family | Игры в коллекции (по collectionId) |
 | `collectionStatsProvider` | FutureProvider.family | Статистика коллекции |
-| `gameSearchProvider` | NotifierProvider | Состояние поиска |
+| `tmdbApiProvider` | Provider | Синглтон TmdbApi |
+| `gameSearchProvider` | NotifierProvider | Состояние поиска игр |
+| `mediaSearchProvider` | NotifierProvider | Состояние поиска фильмов/сериалов |
+| `collectionItemsNotifierProvider` | NotifierProvider.family | Универсальные элементы коллекции (по collectionId) |
 | `gameRepositoryProvider` | Provider | Репозиторий игр |
 | `collectionRepositoryProvider` | Provider | Репозиторий коллекций |
 | `canvasRepositoryProvider` | Provider | Репозиторий канваса |

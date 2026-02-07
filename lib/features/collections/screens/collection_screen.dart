@@ -246,7 +246,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           ? FloatingActionButton.extended(
               onPressed: () => _addGame(context),
               icon: const Icon(Icons.add),
-              label: const Text('Add Game'),
+              label: const Text('Add Items'),
             )
           : null,
     );
@@ -397,7 +397,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'No Games Yet',
+              'No Items Yet',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),
@@ -405,7 +405,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             const SizedBox(height: 8),
             Text(
               _collection!.isEditable
-                  ? 'Add games to start building your collection.'
+                  ? 'Add items to start building your collection.'
                   : 'This collection is empty.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
