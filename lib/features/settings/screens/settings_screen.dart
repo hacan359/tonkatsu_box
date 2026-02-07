@@ -39,11 +39,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final TextEditingController _clientSecretController = TextEditingController();
   final TextEditingController _steamGridDbKeyController =
       TextEditingController();
+  final TextEditingController _tmdbKeyController = TextEditingController();
   final FocusNode _clientIdFocus = FocusNode();
   final FocusNode _clientSecretFocus = FocusNode();
 
   bool _obscureSecret = true;
   bool _obscureSteamGridDbKey = true;
+  bool _obscureTmdbKey = true;
 
   @override
   void initState() {
@@ -56,6 +58,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _clientIdController.text = settings.clientId ?? '';
     _clientSecretController.text = settings.clientSecret ?? '';
     _steamGridDbKeyController.text = settings.steamGridDbApiKey ?? '';
+    _tmdbKeyController.text = settings.tmdbApiKey ?? '';
   }
 
   @override
@@ -63,6 +66,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _clientIdController.dispose();
     _clientSecretController.dispose();
     _steamGridDbKeyController.dispose();
+    _tmdbKeyController.dispose();
     _clientIdFocus.dispose();
     _clientSecretFocus.dispose();
     super.dispose();
@@ -185,6 +189,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             _buildCacheSection(),
             const SizedBox(height: 24),
             _buildSteamGridDbSection(settings),
+            const SizedBox(height: 24),
+            _buildTmdbSection(settings),
             if (kDebugMode) ...<Widget>[
               const SizedBox(height: 24),
               _buildDeveloperToolsSection(settings),
@@ -652,6 +658,98 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (mounted) {
       _showSnackBar(
         apiKey.isEmpty ? 'API key cleared' : 'API key saved',
+        isError: false,
+      );
+    }
+  }
+
+  Widget _buildTmdbSection(SettingsState settings) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+              children: <Widget>[
+                Icon(Icons.movie,
+                    color: Theme.of(context).colorScheme.primary),
+                const SizedBox(width: 8),
+                Text(
+                  'TMDB API (Movies & TV)',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _tmdbKeyController,
+              decoration: InputDecoration(
+                labelText: 'API Key',
+                hintText: 'Enter your TMDB API key (v3)',
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.vpn_key),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureTmdbKey
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscureTmdbKey = !_obscureTmdbKey;
+                    });
+                  },
+                ),
+              ),
+              obscureText: _obscureTmdbKey,
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) => _saveTmdbKey(),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: <Widget>[
+                Icon(
+                  settings.hasTmdbKey
+                      ? Icons.check_circle
+                      : Icons.help_outline,
+                  color: settings.hasTmdbKey ? Colors.green : Colors.grey,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  settings.hasTmdbKey ? 'API key saved' : 'No API key',
+                  style: TextStyle(
+                    color:
+                        settings.hasTmdbKey ? Colors.green : Colors.grey,
+                  ),
+                ),
+                const Spacer(),
+                SizedBox(
+                  width: 80,
+                  height: 40,
+                  child: FilledButton(
+                    onPressed: _saveTmdbKey,
+                    child: const Text('Save'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _saveTmdbKey() async {
+    final String apiKey = _tmdbKeyController.text.trim();
+    final SettingsNotifier notifier =
+        ref.read(settingsNotifierProvider.notifier);
+    await notifier.setTmdbApiKey(apiKey);
+
+    if (mounted) {
+      _showSnackBar(
+        apiKey.isEmpty ? 'TMDB API key cleared' : 'TMDB API key saved',
         isError: false,
       );
     }

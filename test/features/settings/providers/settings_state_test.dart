@@ -13,6 +13,10 @@ void main() {
         SettingsKeys.steamGridDbApiKey,
         equals('steamgriddb_api_key'),
       );
+      expect(
+        SettingsKeys.tmdbApiKey,
+        equals('tmdb_api_key'),
+      );
     });
   });
 
@@ -45,6 +49,7 @@ void main() {
         expect(state.errorMessage, isNull);
         expect(state.isLoading, isFalse);
         expect(state.steamGridDbApiKey, isNull);
+        expect(state.tmdbApiKey, isNull);
       });
 
       test('должен создать со всеми полями', () {
@@ -59,6 +64,7 @@ void main() {
           errorMessage: 'Test error',
           isLoading: true,
           steamGridDbApiKey: 'sgdb_key_123',
+          tmdbApiKey: 'tmdb_key_456',
         );
 
         expect(state.clientId, equals(testClientId));
@@ -71,6 +77,7 @@ void main() {
         expect(state.errorMessage, equals('Test error'));
         expect(state.isLoading, isTrue);
         expect(state.steamGridDbApiKey, equals('sgdb_key_123'));
+        expect(state.tmdbApiKey, equals('tmdb_key_456'));
       });
     });
 
@@ -188,6 +195,30 @@ void main() {
       });
     });
 
+    group('hasTmdbKey', () {
+      test('должен вернуть true когда ключ не пустой', () {
+        const SettingsState state = SettingsState(
+          tmdbApiKey: 'tmdb_key_123',
+        );
+
+        expect(state.hasTmdbKey, isTrue);
+      });
+
+      test('должен вернуть false когда ключ null', () {
+        const SettingsState state = SettingsState();
+
+        expect(state.hasTmdbKey, isFalse);
+      });
+
+      test('должен вернуть false когда ключ пустой', () {
+        const SettingsState state = SettingsState(
+          tmdbApiKey: '',
+        );
+
+        expect(state.hasTmdbKey, isFalse);
+      });
+    });
+
     group('isApiReady', () {
       test('должен вернуть true когда есть credentials и валидный токен', () {
         final int futureExpiry =
@@ -301,6 +332,14 @@ void main() {
         expect(copy.steamGridDbApiKey, equals('new_key'));
       });
 
+      test('должен копировать с изменением tmdbApiKey', () {
+        const SettingsState original = SettingsState();
+        final SettingsState copy =
+            original.copyWith(tmdbApiKey: 'new_tmdb_key');
+
+        expect(copy.tmdbApiKey, equals('new_tmdb_key'));
+      });
+
       test('должен очистить errorMessage при clearError: true', () {
         const SettingsState original = SettingsState(errorMessage: 'Error');
         final SettingsState copy = original.copyWith(clearError: true);
@@ -327,6 +366,7 @@ void main() {
           errorMessage: 'Error',
           isLoading: true,
           steamGridDbApiKey: 'sgdb_key',
+          tmdbApiKey: 'tmdb_key',
         );
 
         final SettingsState copy = original.copyWith();
@@ -341,6 +381,7 @@ void main() {
         expect(copy.errorMessage, equals(original.errorMessage));
         expect(copy.isLoading, equals(original.isLoading));
         expect(copy.steamGridDbApiKey, equals(original.steamGridDbApiKey));
+        expect(copy.tmdbApiKey, equals(original.tmdbApiKey));
       });
     });
   });
