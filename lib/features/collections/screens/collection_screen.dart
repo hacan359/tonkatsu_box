@@ -182,10 +182,14 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                             : null,
                       ),
                       child: isPanelOpen
-                          ? SteamGridDbPanel(
-                              collectionId: widget.collectionId,
-                              collectionName: _collection!.name,
-                              onAddImage: _addSteamGridDbImage,
+                          ? OverflowBox(
+                              maxWidth: 320,
+                              alignment: Alignment.centerLeft,
+                              child: SteamGridDbPanel(
+                                collectionId: widget.collectionId,
+                                collectionName: _collection!.name,
+                                onAddImage: _addSteamGridDbImage,
+                              ),
                             )
                           : const SizedBox.shrink(),
                     );
@@ -216,9 +220,13 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                             : null,
                       ),
                       child: isPanelOpen
-                          ? VgMapsPanel(
-                              collectionId: widget.collectionId,
-                              onAddImage: _addVgMapsImage,
+                          ? OverflowBox(
+                              maxWidth: 500,
+                              alignment: Alignment.centerLeft,
+                              child: VgMapsPanel(
+                                collectionId: widget.collectionId,
+                                onAddImage: _addVgMapsImage,
+                              ),
                             )
                           : const SizedBox.shrink(),
                     );
