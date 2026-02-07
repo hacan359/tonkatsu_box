@@ -733,6 +733,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           centerX,
           centerY,
           <String, dynamic>{'url': image.url},
+          width: targetWidth,
+          height: targetHeight,
         );
 
     if (mounted) {
@@ -770,6 +772,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           centerX,
           centerY,
           <String, dynamic>{'url': url},
+          width: targetWidth,
+          height: targetHeight,
         );
 
     if (mounted) {

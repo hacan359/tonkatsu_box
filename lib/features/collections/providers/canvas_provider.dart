@@ -480,11 +480,16 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int> {
   }
 
   /// Добавляет изображение на канвас.
+  ///
+  /// [width] и [height] задают размер элемента на канвасе.
+  /// Если не указаны, используется 200x200.
   Future<CanvasItem> addImageItem(
     double x,
     double y,
-    Map<String, dynamic> imageData,
-  ) async {
+    Map<String, dynamic> imageData, {
+    double width = 200,
+    double height = 200,
+  }) async {
     final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     final int maxZ = state.items.isEmpty
         ? 0
@@ -499,8 +504,8 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int> {
       itemType: CanvasItemType.image,
       x: x,
       y: y,
-      width: 200,
-      height: 200,
+      width: width,
+      height: height,
       zIndex: maxZ,
       data: imageData,
       createdAt: DateTime.fromMillisecondsSinceEpoch(now * 1000),
