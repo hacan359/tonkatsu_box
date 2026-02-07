@@ -18,6 +18,7 @@ import 'dialogs/add_link_dialog.dart';
 import 'dialogs/add_text_dialog.dart';
 import 'dialogs/edit_connection_dialog.dart';
 import '../providers/steamgriddb_panel_provider.dart';
+import '../providers/vgmaps_panel_provider.dart';
 
 // Виджет канваса для визуального размещения элементов коллекции.
 //
@@ -149,10 +150,26 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
       onAddImage: () => _handleAddImage(canvasX, canvasY),
       onAddLink: () => _handleAddLink(canvasX, canvasY),
       onFindImages: widget.isEditable
-          ? () => ref
-              .read(
-                  steamGridDbPanelProvider(widget.collectionId).notifier)
-              .openPanel()
+          ? () {
+              ref
+                  .read(vgMapsPanelProvider(widget.collectionId).notifier)
+                  .closePanel();
+              ref
+                  .read(
+                      steamGridDbPanelProvider(widget.collectionId).notifier)
+                  .openPanel();
+            }
+          : null,
+      onBrowseMaps: widget.isEditable
+          ? () {
+              ref
+                  .read(
+                      steamGridDbPanelProvider(widget.collectionId).notifier)
+                  .closePanel();
+              ref
+                  .read(vgMapsPanelProvider(widget.collectionId).notifier)
+                  .openPanel();
+            }
           : null,
     );
   }
@@ -550,6 +567,29 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
+                  // VGMaps Browser
+                  if (widget.isEditable)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: FloatingActionButton.small(
+                        heroTag: 'canvas_vgmaps',
+                        onPressed: () {
+                          // Закрываем SteamGridDB панель при открытии VGMaps
+                          ref
+                              .read(steamGridDbPanelProvider(
+                                      widget.collectionId)
+                                  .notifier)
+                              .closePanel();
+                          ref
+                              .read(vgMapsPanelProvider(
+                                      widget.collectionId)
+                                  .notifier)
+                              .togglePanel();
+                        },
+                        tooltip: 'VGMaps Browser',
+                        child: const Icon(Icons.map),
+                      ),
+                    ),
                   // Поиск изображений SteamGridDB
                   if (widget.isEditable)
                     Padding(
@@ -557,6 +597,12 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
                       child: FloatingActionButton.small(
                         heroTag: 'canvas_steamgriddb',
                         onPressed: () {
+                          // Закрываем VGMaps панель при открытии SteamGridDB
+                          ref
+                              .read(vgMapsPanelProvider(
+                                      widget.collectionId)
+                                  .notifier)
+                              .closePanel();
                           ref
                               .read(steamGridDbPanelProvider(
                                       widget.collectionId)

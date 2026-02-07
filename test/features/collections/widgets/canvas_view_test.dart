@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/collections/providers/canvas_provider.dart';
 import 'package:xerabora/features/collections/providers/steamgriddb_panel_provider.dart';
+import 'package:xerabora/features/collections/providers/vgmaps_panel_provider.dart';
 import 'package:xerabora/features/collections/widgets/canvas_view.dart';
 import 'package:xerabora/shared/models/canvas_item.dart';
 import 'package:xerabora/shared/models/game.dart';
@@ -71,6 +72,8 @@ void main() {
             .overrideWith(() => TestCanvasNotifier(canvasState)),
         steamGridDbPanelProvider
             .overrideWith(() => _TestSteamGridDbPanelNotifier()),
+        vgMapsPanelProvider
+            .overrideWith(() => _TestVgMapsPanelNotifier()),
       ],
       child: MaterialApp(
         home: Scaffold(
@@ -367,8 +370,8 @@ void main() {
           );
           await tester.pump();
 
-          // 3 FAB: SteamGridDB + Center view + Reset positions
-          expect(find.byType(FloatingActionButton), findsNWidgets(3));
+          // 4 FAB: VGMaps + SteamGridDB + Center view + Reset positions
+          expect(find.byType(FloatingActionButton), findsNWidgets(4));
         },
       );
 
@@ -417,6 +420,53 @@ void main() {
 
           expect(find.byIcon(Icons.image_search), findsOneWidget);
           expect(find.byTooltip('SteamGridDB Images'), findsOneWidget);
+        },
+      );
+
+      testWidgets(
+        'должен показывать FAB VGMaps Browser когда isEditable=true',
+        (WidgetTester tester) async {
+          final CanvasState normalState = CanvasState(
+            isLoading: false,
+            isInitialized: true,
+            items: <CanvasItem>[
+              createTestItem(
+                id: 1,
+                game: const Game(id: 100, name: 'Test Game'),
+              ),
+            ],
+          );
+
+          await tester.pumpWidget(
+            buildTestWidget(canvasState: normalState, isEditable: true),
+          );
+          await tester.pump();
+
+          expect(find.byIcon(Icons.map), findsOneWidget);
+          expect(find.byTooltip('VGMaps Browser'), findsOneWidget);
+        },
+      );
+
+      testWidgets(
+        'не должен показывать FAB VGMaps когда isEditable=false',
+        (WidgetTester tester) async {
+          final CanvasState normalState = CanvasState(
+            isLoading: false,
+            isInitialized: true,
+            items: <CanvasItem>[
+              createTestItem(
+                id: 1,
+                game: const Game(id: 100, name: 'Test Game'),
+              ),
+            ],
+          );
+
+          await tester.pumpWidget(
+            buildTestWidget(canvasState: normalState, isEditable: false),
+          );
+          await tester.pump();
+
+          expect(find.byIcon(Icons.map), findsNothing);
         },
       );
 
@@ -887,5 +937,13 @@ class _TestSteamGridDbPanelNotifier extends SteamGridDbPanelNotifier {
   @override
   SteamGridDbPanelState build(int arg) {
     return const SteamGridDbPanelState();
+  }
+}
+
+/// Тестовый notifier для VGMaps панели (не делает ничего).
+class _TestVgMapsPanelNotifier extends VgMapsPanelNotifier {
+  @override
+  VgMapsPanelState build(int arg) {
+    return const VgMapsPanelState();
   }
 }

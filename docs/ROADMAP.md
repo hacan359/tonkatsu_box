@@ -19,7 +19,8 @@
 - [x] Stage 8: Canvas Elements — context menu, text blocks, images, links, resize, z-index
 - [x] Stage 9: Connections — visual connections (solid/dashed/arrow) between canvas elements with labels, colors, edit/delete, auto-cleanup
 - [x] Stage 10: SteamGridDB Widget — side panel for adding SteamGridDB images to canvas
-- [ ] Stage 12: Export Full — extended .rcoll-full format with canvas layout and images
+- [x] Stage 12: VGMaps Browser — side panel with embedded WebView2 for browsing and adding vgmaps.com level maps to canvas
+- [ ] Stage 13: Export Full — extended .rcoll-full format with canvas layout and images
 
 ## Future Plans
 
