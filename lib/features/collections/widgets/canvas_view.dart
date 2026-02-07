@@ -68,11 +68,25 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
   /// Флаг: элемент перетаскивается (блокирует пан InteractiveViewer).
   bool _isItemDragging = false;
 
+  /// Текущие drag-смещения элементов для обновления связей в реальном времени.
+  Map<int, Offset> _dragOffsets = const <int, Offset>{};
+
   /// Позиция мыши на канвасе (для временной линии связи).
   Offset? _mouseCanvasPosition;
 
   void _onItemDragStateChanged({required bool isDragging}) {
-    setState(() => _isItemDragging = isDragging);
+    setState(() {
+      _isItemDragging = isDragging;
+      if (!isDragging) {
+        _dragOffsets = const <int, Offset>{};
+      }
+    });
+  }
+
+  void _onItemDragUpdate(int itemId, Offset delta) {
+    setState(() {
+      _dragOffsets = <int, Offset>{..._dragOffsets, itemId: delta};
+    });
   }
 
   /// Обработчик клавиши Escape для отмены создания связи.
@@ -551,6 +565,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
                                     labelBackgroundColor:
                                         colorScheme.surfaceContainerLow
                                             .withAlpha(220),
+                                    dragOffsets: _dragOffsets,
                                   ),
                                 ),
                               ),
@@ -740,6 +755,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
       collectionId: widget.collectionId,
       transformationController: _transformationController,
       onDragStateChanged: _onItemDragStateChanged,
+      onDragUpdate: _onItemDragUpdate,
       onSecondaryTap: widget.isEditable ? _onItemSecondaryTap : null,
       onTap: isConnecting
           ? () => _handleConnectionModeClick(item)
@@ -765,6 +781,7 @@ class _DraggableCanvasItem extends ConsumerStatefulWidget {
     required this.collectionId,
     required this.transformationController,
     required this.onDragStateChanged,
+    required this.onDragUpdate,
     required this.child,
     this.onSecondaryTap,
     this.onTap,
@@ -778,6 +795,9 @@ class _DraggableCanvasItem extends ConsumerStatefulWidget {
 
   /// Callback для уведомления родителя о начале/конце drag.
   final void Function({required bool isDragging}) onDragStateChanged;
+
+  /// Callback для обновления drag-смещения (для связей).
+  final void Function(int itemId, Offset delta) onDragUpdate;
 
   /// Callback для ПКМ на элементе.
   final void Function(Offset globalPosition, CanvasItem item)? onSecondaryTap;
@@ -861,12 +881,14 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
         widget.transformationController.value.getMaxScaleOnAxis();
     final Offset totalGlobalDelta =
         details.globalPosition - _panStartGlobal;
+    final Offset newDelta = Offset(
+      totalGlobalDelta.dx / scale,
+      totalGlobalDelta.dy / scale,
+    );
     setState(() {
-      _dragDelta = Offset(
-        totalGlobalDelta.dx / scale,
-        totalGlobalDelta.dy / scale,
-      );
+      _dragDelta = newDelta;
     });
+    widget.onDragUpdate(widget.item.id, newDelta);
   }
 
   void _onPanEnd(DragEndDetails details) {
