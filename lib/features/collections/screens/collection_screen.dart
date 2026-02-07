@@ -710,10 +710,16 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   void _addSteamGridDbImage(SteamGridDbImage image) {
     // Масштабируем до max 300px по ширине, сохраняя пропорции
     const double maxWidth = 300;
-    final double aspectRatio = image.width / image.height;
-    final double targetWidth =
-        image.width.toDouble() > maxWidth ? maxWidth : image.width.toDouble();
-    final double targetHeight = targetWidth / aspectRatio;
+    const double defaultSize = 200;
+    double targetWidth = defaultSize;
+    double targetHeight = defaultSize;
+
+    if (image.width > 0 && image.height > 0) {
+      final double aspectRatio = image.width / image.height;
+      targetWidth =
+          image.width.toDouble() > maxWidth ? maxWidth : image.width.toDouble();
+      targetHeight = targetWidth / aspectRatio;
+    }
 
     // Добавляем в центр канваса
     final double centerX =
