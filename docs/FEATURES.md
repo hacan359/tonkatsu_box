@@ -2,18 +2,33 @@
 
 ## Collections
 
-Create unlimited game collections organized however you want:
+Create unlimited collections organized however you want:
 - By platform (SNES, PlayStation, PC...)
 - By genre (RPGs, Platformers...)
 - By theme (Couch co-op, Hidden gems...)
 - Personal lists (Backlog, Completed, Favorites...)
+- Mix games, movies and TV shows in a single collection
 
-## Game Search
+## Universal Search
 
-Search across 200,000+ games from the IGDB database:
-- All platforms from Atari to PS5
+Search across multiple media types via tabbed interface:
+
+### Games (IGDB)
+- 200,000+ games from Atari to PS5
 - Covers, genres, descriptions
 - Release dates and ratings
+- Platform filter for targeted search
+
+### Movies (TMDB)
+- Posters, genres, runtime
+- Release dates and ratings
+- Add to any collection with one tap
+
+### TV Shows (TMDB)
+- Posters, genres, seasons/episodes
+- Show status (Returning, Ended, Cancelled)
+- Release dates and ratings
+- Add to any collection with one tap
 
 ## Progress Tracking
 
@@ -89,6 +104,14 @@ Visualize your collection on a free-form canvas:
   - Click "Add to Canvas" to place the map image on the canvas (scaled to max 400px width)
   - Toggle via FAB button or right-click "Browse maps..."
   - Mutually exclusive with SteamGridDB panel (opening one closes the other)
+
+## TMDB Integration
+
+Access movie and TV show data from The Movie Database:
+- Search movies and TV shows by name
+- View details: poster, genres, rating, runtime/seasons
+- Cache results locally in SQLite for offline access
+- Add movies and TV shows to any collection
 
 ## SteamGridDB Integration
 

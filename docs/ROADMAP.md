@@ -20,6 +20,9 @@
 - [x] Stage 9: Connections — visual connections (solid/dashed/arrow) between canvas elements with labels, colors, edit/delete, auto-cleanup
 - [x] Stage 10: SteamGridDB Widget — side panel for adding SteamGridDB images to canvas
 - [x] Stage 12: VGMaps Browser — side panel with embedded WebView2 for browsing and adding vgmaps.com level maps to canvas
+- [x] Stage 15: TMDB Integration — API client for movies/TV shows, models (Movie, TvShow, TvSeason), DB cache tables, settings UI
+- [x] Stage 16: Universal Collections — CollectionItem model with MediaType (game/movie/tvShow), ItemStatus, DB migration, backward-compatible adapters
+- [x] Stage 17: Universal Search — tabbed search (Games/Movies/TV Shows), MediaSearchProvider, MovieCard, TvShowCard, add movies/TV shows to collections
 - [ ] Stage 13: Export Full — extended .rcoll-full format with canvas layout and images
 
 ## Future Plans

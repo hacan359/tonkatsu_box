@@ -5,61 +5,112 @@ import '../../../core/database/database_service.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/game.dart';
+import '../../../shared/models/media_type.dart';
+import '../../../shared/models/movie.dart';
 import '../../../shared/models/platform.dart';
+import '../../../shared/models/tv_show.dart';
 import '../../../shared/widgets/cached_image.dart' as app_cached;
 import '../../collections/providers/collections_provider.dart';
 import '../providers/game_search_provider.dart';
+import '../providers/media_search_provider.dart';
 import '../widgets/game_card.dart';
+import '../widgets/movie_card.dart';
 import '../widgets/platform_filter_sheet.dart';
+import '../widgets/tv_show_card.dart';
 
-/// Экран поиска игр.
+/// Экран поиска игр, фильмов и сериалов.
 ///
-/// Позволяет искать игры в базе IGDB с фильтрацией по платформе.
+/// Позволяет искать контент через IGDB (игры) и TMDB (фильмы, сериалы)
+/// с возможностью добавления в коллекцию.
 class SearchScreen extends ConsumerStatefulWidget {
   /// Создаёт [SearchScreen].
   const SearchScreen({
     this.onGameSelected,
     this.collectionId,
+    this.initialTabIndex,
     super.key,
   });
 
   /// Callback при выборе игры (устаревший режим).
   final void Function(Game game)? onGameSelected;
 
-  /// ID коллекции для добавления игр (новый режим).
+  /// ID коллекции для добавления элементов.
   ///
-  /// Если задан, при выборе игры она добавляется в коллекцию
+  /// Если задан, при выборе элемента он добавляется в коллекцию
   /// и пользователь остаётся на экране поиска.
   final int? collectionId;
+
+  /// Начальный индекс таба (0=Games, 1=Movies, 2=TV Shows).
+  final int? initialTabIndex;
 
   @override
   ConsumerState<SearchScreen> createState() => _SearchScreenState();
 }
 
-class _SearchScreenState extends ConsumerState<SearchScreen> {
+class _SearchScreenState extends ConsumerState<SearchScreen>
+    with SingleTickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocus = FocusNode();
+  late TabController _tabController;
 
   List<Platform> _platforms = <Platform>[];
   Map<int, Platform> _platformMap = <int, Platform>{};
   bool _platformsLoading = true;
 
+  /// Индекс активного таба.
+  int _activeTabIndex = 0;
+
   @override
   void initState() {
     super.initState();
+    _activeTabIndex = widget.initialTabIndex ?? 0;
+    _tabController = TabController(
+      length: 3,
+      vsync: this,
+      initialIndex: _activeTabIndex,
+    );
+    _tabController.addListener(_onTabChanged);
     _loadPlatforms();
-    // Обновляем UI при изменении текста (для иконки clear)
     _searchController.addListener(_onControllerChanged);
-    // Автофокус на поле поиска
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _searchFocus.requestFocus();
     });
   }
 
   void _onControllerChanged() {
-    // Вызываем setState для обновления suffixIcon
     if (mounted) {
       setState(() {});
+    }
+  }
+
+  void _onTabChanged() {
+    if (!_tabController.indexIsChanging) {
+      final int newIndex = _tabController.index;
+      if (_activeTabIndex == newIndex) return;
+      setState(() {
+        _activeTabIndex = newIndex;
+      });
+
+      // Синхронизируем таб в mediaSearchProvider
+      if (newIndex == 1) {
+        ref
+            .read(mediaSearchProvider.notifier)
+            .switchTab(MediaSearchTab.movies);
+      } else if (newIndex == 2) {
+        ref
+            .read(mediaSearchProvider.notifier)
+            .switchTab(MediaSearchTab.tvShows);
+      }
+
+      // Если есть запрос и переходим на Games — повторяем поиск игр
+      if (newIndex == 0 && _searchController.text.length >= 2) {
+        final GameSearchState gameState = ref.read(gameSearchProvider);
+        if (gameState.query != _searchController.text) {
+          ref
+              .read(gameSearchProvider.notifier)
+              .searchImmediate(_searchController.text);
+        }
+      }
     }
   }
 
@@ -79,6 +130,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   @override
   void dispose() {
+    _tabController.removeListener(_onTabChanged);
+    _tabController.dispose();
     _searchController.removeListener(_onControllerChanged);
     _searchController.dispose();
     _searchFocus.dispose();
@@ -86,12 +139,17 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   }
 
   void _onSearchChanged(String query) {
-    ref.read(gameSearchProvider.notifier).search(query);
+    if (_activeTabIndex == 0) {
+      ref.read(gameSearchProvider.notifier).search(query);
+    } else {
+      ref.read(mediaSearchProvider.notifier).search(query);
+    }
   }
 
   void _onClearSearch() {
     _searchController.clear();
     ref.read(gameSearchProvider.notifier).clear();
+    ref.read(mediaSearchProvider.notifier).clear();
     _searchFocus.requestFocus();
   }
 
@@ -115,6 +173,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     ref.read(gameSearchProvider.notifier).removePlatformFilter(platformId);
   }
 
+  // ==================== Game actions ====================
+
   void _onGameTap(Game game) {
     if (widget.onGameSelected != null) {
       widget.onGameSelected!(game);
@@ -126,7 +186,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   }
 
   Future<void> _addGameToCollection(Game game) async {
-    // Сохраняем ScaffoldMessenger до async операций
     final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
     final String gameName = game.name;
 
@@ -154,43 +213,207 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   }
 
   Future<void> _addGameToAnyCollection(Game game) async {
-    // Сохраняем ссылки до async операций
     final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
     final String gameName = game.name;
 
-    // Получаем список коллекций
+    final Collection? selectedCollection =
+        await _showCollectionSelectionDialog();
+    if (selectedCollection == null || !mounted) return;
+
+    final int? platformId = await _showPlatformSelectionDialog(game);
+    if (platformId == null || !mounted) return;
+
+    final bool success = await ref
+        .read(collectionGamesNotifierProvider(selectedCollection.id).notifier)
+        .addGame(
+          igdbId: game.id,
+          platformId: platformId,
+        );
+
+    if (mounted) {
+      if (success) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('$gameName added to ${selectedCollection.name}'),
+          ),
+        );
+      } else {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('$gameName already in ${selectedCollection.name}'),
+          ),
+        );
+      }
+    }
+  }
+
+  // ==================== Movie actions ====================
+
+  void _onMovieTap(Movie movie) {
+    if (widget.collectionId != null) {
+      _addMovieToCollection(movie);
+    } else {
+      _showMovieDetails(movie);
+    }
+  }
+
+  Future<void> _addMovieToCollection(Movie movie) async {
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    final String title = movie.title;
+
+    final bool success = await ref
+        .read(
+            collectionItemsNotifierProvider(widget.collectionId!).notifier)
+        .addItem(
+          mediaType: MediaType.movie,
+          externalId: movie.tmdbId,
+        );
+
+    if (mounted) {
+      if (success) {
+        messenger.showSnackBar(
+          SnackBar(content: Text('$title added to collection')),
+        );
+      } else {
+        messenger.showSnackBar(
+          const SnackBar(content: Text('Movie already in collection')),
+        );
+      }
+    }
+  }
+
+  Future<void> _addMovieToAnyCollection(Movie movie) async {
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    final String title = movie.title;
+
+    final Collection? selectedCollection =
+        await _showCollectionSelectionDialog();
+    if (selectedCollection == null || !mounted) return;
+
+    final bool success = await ref
+        .read(collectionItemsNotifierProvider(selectedCollection.id).notifier)
+        .addItem(
+          mediaType: MediaType.movie,
+          externalId: movie.tmdbId,
+        );
+
+    if (mounted) {
+      if (success) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('$title added to ${selectedCollection.name}'),
+          ),
+        );
+      } else {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('$title already in ${selectedCollection.name}'),
+          ),
+        );
+      }
+    }
+  }
+
+  // ==================== TV Show actions ====================
+
+  void _onTvShowTap(TvShow tvShow) {
+    if (widget.collectionId != null) {
+      _addTvShowToCollection(tvShow);
+    } else {
+      _showTvShowDetails(tvShow);
+    }
+  }
+
+  Future<void> _addTvShowToCollection(TvShow tvShow) async {
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    final String title = tvShow.title;
+
+    final bool success = await ref
+        .read(
+            collectionItemsNotifierProvider(widget.collectionId!).notifier)
+        .addItem(
+          mediaType: MediaType.tvShow,
+          externalId: tvShow.tmdbId,
+        );
+
+    if (mounted) {
+      if (success) {
+        messenger.showSnackBar(
+          SnackBar(content: Text('$title added to collection')),
+        );
+      } else {
+        messenger.showSnackBar(
+          const SnackBar(content: Text('TV show already in collection')),
+        );
+      }
+    }
+  }
+
+  Future<void> _addTvShowToAnyCollection(TvShow tvShow) async {
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    final String title = tvShow.title;
+
+    final Collection? selectedCollection =
+        await _showCollectionSelectionDialog();
+    if (selectedCollection == null || !mounted) return;
+
+    final bool success = await ref
+        .read(collectionItemsNotifierProvider(selectedCollection.id).notifier)
+        .addItem(
+          mediaType: MediaType.tvShow,
+          externalId: tvShow.tmdbId,
+        );
+
+    if (mounted) {
+      if (success) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('$title added to ${selectedCollection.name}'),
+          ),
+        );
+      } else {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('$title already in ${selectedCollection.name}'),
+          ),
+        );
+      }
+    }
+  }
+
+  // ==================== Shared dialogs ====================
+
+  Future<Collection?> _showCollectionSelectionDialog() async {
     final AsyncValue<List<Collection>> collectionsAsync =
         ref.read(collectionsProvider);
 
     final List<Collection>? collections = collectionsAsync.valueOrNull;
     if (collections == null || collections.isEmpty) {
       if (mounted) {
-        messenger.showSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('No collections available. Create one first.'),
           ),
         );
       }
-      return;
+      return null;
     }
 
-    // Фильтруем только редактируемые коллекции
     final List<Collection> editableCollections =
         collections.where((Collection c) => c.isEditable).toList();
 
     if (editableCollections.isEmpty) {
       if (mounted) {
-        messenger.showSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('No editable collections. Create your own first.'),
           ),
         );
       }
-      return;
+      return null;
     }
 
-    // Показываем диалог выбора коллекции
-    final Collection? selectedCollection = await showDialog<Collection>(
+    return showDialog<Collection>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
         title: const Text('Add to Collection'),
@@ -222,43 +445,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         ],
       ),
     );
-
-    if (selectedCollection == null || !mounted) return;
-
-    // Выбираем платформу
-    final int? platformId = await _showPlatformSelectionDialog(game);
-    if (platformId == null || !mounted) return;
-
-    // Добавляем игру
-    final bool success = await ref
-        .read(collectionGamesNotifierProvider(selectedCollection.id).notifier)
-        .addGame(
-          igdbId: game.id,
-          platformId: platformId,
-        );
-
-    if (mounted) {
-      if (success) {
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text('$gameName added to ${selectedCollection.name}'),
-          ),
-        );
-      } else {
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text('$gameName already in ${selectedCollection.name}'),
-          ),
-        );
-      }
-    }
   }
 
   Future<int?> _showPlatformSelectionDialog(Game game) async {
     final List<int>? platformIds = game.platformIds;
 
     if (platformIds == null || platformIds.isEmpty) {
-      // Возвращаем -1 как placeholder для игр без информации о платформах
       return -1;
     }
 
@@ -311,6 +503,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     return const Icon(Icons.videogame_asset, size: 24);
   }
 
+  // ==================== Detail sheets ====================
+
   void _showGameDetails(Game game) {
     showModalBottomSheet<void>(
       context: context,
@@ -322,13 +516,55 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     );
   }
 
+  void _showMovieDetails(Movie movie) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) => _MediaDetailsSheet(
+        title: movie.title,
+        overview: movie.overview,
+        year: movie.releaseYear,
+        rating: movie.formattedRating,
+        genres: movie.genres,
+        icon: Icons.movie,
+        extraInfo: movie.runtime != null ? '${movie.runtime} min' : null,
+        onAddToCollection: () => _addMovieToAnyCollection(movie),
+      ),
+    );
+  }
+
+  void _showTvShowDetails(TvShow tvShow) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) => _MediaDetailsSheet(
+        title: tvShow.title,
+        overview: tvShow.overview,
+        year: tvShow.firstAirYear,
+        rating: tvShow.formattedRating,
+        genres: tvShow.genres,
+        icon: Icons.tv,
+        extraInfo: tvShow.status,
+        onAddToCollection: () => _addTvShowToAnyCollection(tvShow),
+      ),
+    );
+  }
+
+  // ==================== Build ====================
+
   @override
   Widget build(BuildContext context) {
-    final GameSearchState searchState = ref.watch(gameSearchProvider);
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Search Games'),
+        title: const Text('Search'),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const <Widget>[
+            Tab(icon: Icon(Icons.videogame_asset), text: 'Games'),
+            Tab(icon: Icon(Icons.movie), text: 'Movies'),
+            Tab(icon: Icon(Icons.tv), text: 'TV Shows'),
+          ],
+        ),
       ),
       body: Column(
         children: <Widget>[
@@ -341,7 +577,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   controller: _searchController,
                   focusNode: _searchFocus,
                   decoration: InputDecoration(
-                    hintText: 'Search for games...',
+                    hintText: _searchHint,
                     prefixIcon: const Icon(Icons.search),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
@@ -354,24 +590,67 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   onChanged: _onSearchChanged,
                   textInputAction: TextInputAction.search,
                   onSubmitted: (String query) {
-                    ref.read(gameSearchProvider.notifier).searchImmediate(query);
+                    if (_activeTabIndex == 0) {
+                      ref
+                          .read(gameSearchProvider.notifier)
+                          .searchImmediate(query);
+                    } else {
+                      ref
+                          .read(mediaSearchProvider.notifier)
+                          .searchImmediate(query);
+                    }
                   },
                 ),
-
-                const SizedBox(height: 12),
-
-                // Фильтр по платформе
-                _buildPlatformFilter(searchState),
               ],
             ),
           ),
 
-          // Результаты
+          // Контент табов
           Expanded(
-            child: _buildResults(searchState),
+            child: TabBarView(
+              controller: _tabController,
+              children: <Widget>[
+                _buildGamesTab(),
+                _buildMoviesTab(),
+                _buildTvShowsTab(),
+              ],
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  String get _searchHint {
+    switch (_activeTabIndex) {
+      case 0:
+        return 'Search for games...';
+      case 1:
+        return 'Search for movies...';
+      case 2:
+        return 'Search for TV shows...';
+      default:
+        return 'Search...';
+    }
+  }
+
+  // ==================== Games tab ====================
+
+  Widget _buildGamesTab() {
+    final GameSearchState searchState = ref.watch(gameSearchProvider);
+
+    return Column(
+      children: <Widget>[
+        // Фильтр по платформе (только для игр)
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: _buildPlatformFilter(searchState),
+        ),
+
+        Expanded(
+          child: _buildGameResults(searchState),
+        ),
+      ],
     );
   }
 
@@ -407,6 +686,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           const SizedBox(height: 8),
           _buildSelectedPlatformChips(searchState.selectedPlatformIds),
         ],
+        const SizedBox(height: 8),
       ],
     );
   }
@@ -437,30 +717,27 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         .toList();
   }
 
-  Widget _buildResults(GameSearchState searchState) {
-    // Ошибка
+  Widget _buildGameResults(GameSearchState searchState) {
     if (searchState.error != null) {
-      return _buildErrorState(searchState.error!);
+      return _buildErrorState(searchState.error!, onRetry: () {
+        ref
+            .read(gameSearchProvider.notifier)
+            .searchImmediate(_searchController.text);
+      });
     }
 
-    // Загрузка
     if (searchState.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
-    // Пустое состояние
     if (searchState.isEmpty) {
-      return _buildEmptyState();
+      return _buildEmptyState('Search for games', Icons.videogame_asset);
     }
 
-    // Нет результатов
     if (!searchState.hasResults && searchState.query.isNotEmpty) {
       return _buildNoResults(searchState.query);
     }
 
-    // Результаты
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       itemCount: searchState.results.length,
@@ -485,7 +762,105 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     );
   }
 
-  Widget _buildEmptyState() {
+  // ==================== Movies tab ====================
+
+  Widget _buildMoviesTab() {
+    final MediaSearchState searchState = ref.watch(mediaSearchProvider);
+
+    if (searchState.error != null && searchState.activeTab == MediaSearchTab.movies) {
+      return _buildErrorState(searchState.error!, onRetry: () {
+        ref
+            .read(mediaSearchProvider.notifier)
+            .searchImmediate(_searchController.text);
+      });
+    }
+
+    if (searchState.isLoading && searchState.activeTab == MediaSearchTab.movies) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (searchState.query.isEmpty && searchState.movieResults.isEmpty) {
+      return _buildEmptyState('Search for movies', Icons.movie);
+    }
+
+    if (searchState.movieResults.isEmpty && searchState.query.isNotEmpty) {
+      return _buildNoResults(searchState.query);
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: searchState.movieResults.length,
+      itemBuilder: (BuildContext context, int index) {
+        final Movie movie = searchState.movieResults[index];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: MovieCard(
+            movie: movie,
+            onTap: () => _onMovieTap(movie),
+            trailing: widget.collectionId == null
+                ? IconButton(
+                    icon: const Icon(Icons.add_circle_outline),
+                    tooltip: 'Add to collection',
+                    onPressed: () => _addMovieToAnyCollection(movie),
+                  )
+                : null,
+          ),
+        );
+      },
+    );
+  }
+
+  // ==================== TV Shows tab ====================
+
+  Widget _buildTvShowsTab() {
+    final MediaSearchState searchState = ref.watch(mediaSearchProvider);
+
+    if (searchState.error != null && searchState.activeTab == MediaSearchTab.tvShows) {
+      return _buildErrorState(searchState.error!, onRetry: () {
+        ref
+            .read(mediaSearchProvider.notifier)
+            .searchImmediate(_searchController.text);
+      });
+    }
+
+    if (searchState.isLoading && searchState.activeTab == MediaSearchTab.tvShows) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (searchState.query.isEmpty && searchState.tvShowResults.isEmpty) {
+      return _buildEmptyState('Search for TV shows', Icons.tv);
+    }
+
+    if (searchState.tvShowResults.isEmpty && searchState.query.isNotEmpty) {
+      return _buildNoResults(searchState.query);
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: searchState.tvShowResults.length,
+      itemBuilder: (BuildContext context, int index) {
+        final TvShow tvShow = searchState.tvShowResults[index];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: TvShowCard(
+            tvShow: tvShow,
+            onTap: () => _onTvShowTap(tvShow),
+            trailing: widget.collectionId == null
+                ? IconButton(
+                    icon: const Icon(Icons.add_circle_outline),
+                    tooltip: 'Add to collection',
+                    onPressed: () => _addTvShowToAnyCollection(tvShow),
+                  )
+                : null,
+          ),
+        );
+      },
+    );
+  }
+
+  // ==================== Shared UI states ====================
+
+  Widget _buildEmptyState(String message, IconData icon) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
 
     return Center(
@@ -493,13 +868,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Icon(
-            Icons.search,
+            icon,
             size: 64,
             color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 16),
           Text(
-            'Search for games',
+            message,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                 ),
@@ -537,7 +912,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'No games found for "$query"',
+            'Nothing found for "$query"',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
                 ),
@@ -548,7 +923,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     );
   }
 
-  Widget _buildErrorState(String error) {
+  Widget _buildErrorState(String error, {required VoidCallback onRetry}) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
 
     return Center(
@@ -579,11 +954,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             ),
             const SizedBox(height: 24),
             FilledButton.icon(
-              onPressed: () {
-                ref
-                    .read(gameSearchProvider.notifier)
-                    .searchImmediate(_searchController.text);
-              },
+              onPressed: onRetry,
               icon: const Icon(Icons.refresh),
               label: const Text('Retry'),
             ),
@@ -621,7 +992,6 @@ class _GameDetailsSheet extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              // Handle
               Center(
                 child: Container(
                   width: 32,
@@ -634,7 +1004,6 @@ class _GameDetailsSheet extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
-              // Название
               Text(
                 game.name,
                 style: theme.textTheme.headlineSmall?.copyWith(
@@ -644,7 +1013,6 @@ class _GameDetailsSheet extends StatelessWidget {
 
               const SizedBox(height: 16),
 
-              // Метаданные
               Wrap(
                 spacing: 16,
                 runSpacing: 8,
@@ -664,7 +1032,6 @@ class _GameDetailsSheet extends StatelessWidget {
                 ],
               ),
 
-              // Жанры
               if (game.genres != null && game.genres!.isNotEmpty) ...<Widget>[
                 const SizedBox(height: 16),
                 Wrap(
@@ -676,7 +1043,6 @@ class _GameDetailsSheet extends StatelessWidget {
                 ),
               ],
 
-              // Описание
               if (game.summary != null) ...<Widget>[
                 const SizedBox(height: 24),
                 Text(
@@ -694,7 +1060,141 @@ class _GameDetailsSheet extends StatelessWidget {
 
               const SizedBox(height: 32),
 
-              // Кнопка добавления
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    onAddToCollection();
+                  },
+                  icon: const Icon(Icons.add),
+                  label: const Text('Add to Collection'),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildChip(IconData icon, String label, ColorScheme colorScheme) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Icon(icon, size: 16, color: colorScheme.primary),
+        const SizedBox(width: 4),
+        Text(label),
+      ],
+    );
+  }
+}
+
+/// Bottom sheet с деталями фильма или сериала.
+class _MediaDetailsSheet extends StatelessWidget {
+  const _MediaDetailsSheet({
+    required this.title,
+    required this.icon,
+    required this.onAddToCollection,
+    this.overview,
+    this.year,
+    this.rating,
+    this.genres,
+    this.extraInfo,
+  });
+
+  final String title;
+  final String? overview;
+  final int? year;
+  final String? rating;
+  final List<String>? genres;
+  final IconData icon;
+  final String? extraInfo;
+  final VoidCallback onAddToCollection;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.7,
+      minChildSize: 0.5,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (BuildContext context, ScrollController scrollController) {
+        return SingleChildScrollView(
+          controller: scrollController,
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Center(
+                child: Container(
+                  width: 32,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              Text(
+                title,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              Wrap(
+                spacing: 16,
+                runSpacing: 8,
+                children: <Widget>[
+                  if (year != null)
+                    _buildChip(
+                      Icons.calendar_today,
+                      year.toString(),
+                      colorScheme,
+                    ),
+                  if (rating != null)
+                    _buildChip(Icons.star, rating!, colorScheme),
+                  if (extraInfo != null)
+                    _buildChip(icon, extraInfo!, colorScheme),
+                ],
+              ),
+
+              if (genres != null && genres!.isNotEmpty) ...<Widget>[
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: genres!
+                      .map((String genre) => Chip(label: Text(genre)))
+                      .toList(),
+                ),
+              ],
+
+              if (overview != null) ...<Widget>[
+                const SizedBox(height: 24),
+                Text(
+                  'Description',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  overview!,
+                  style: theme.textTheme.bodyMedium,
+                ),
+              ],
+
+              const SizedBox(height: 32),
+
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(

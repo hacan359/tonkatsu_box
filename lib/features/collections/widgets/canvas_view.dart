@@ -437,7 +437,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Add games to the collection first',
+              'Add items to the collection first',
               style: theme.textTheme.bodyMedium?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),

@@ -199,7 +199,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показывать подсказку "Add games to the collection first" когда пусто',
+        'должен показывать подсказку "Add items to the collection first" когда пусто',
         (WidgetTester tester) async {
           const CanvasState emptyState = CanvasState(
             isLoading: false,
@@ -210,7 +210,7 @@ void main() {
           await tester.pumpWidget(buildTestWidget(canvasState: emptyState));
 
           expect(
-            find.text('Add games to the collection first'),
+            find.text('Add items to the collection first'),
             findsOneWidget,
           );
         },

@@ -3,8 +3,9 @@
 ## Requirements
 
 - Windows 10 or 11
-- Internet connection (for initial setup and game search)
-- IGDB API credentials
+- Internet connection (for initial setup and search)
+- IGDB API credentials (for game search)
+- TMDB API key (optional, for movie/TV show search)
 
 ## Getting IGDB API Keys
 
@@ -19,6 +20,16 @@ xeRAbora uses IGDB to fetch game metadata. You need free API credentials:
    - Category: `Application Integration`
 5. Click **Create**
 6. Copy your **Client ID** and generate a **Client Secret**
+
+## Getting TMDB API Key (Optional)
+
+For searching movies and TV shows:
+
+1. Go to [themoviedb.org](https://www.themoviedb.org)
+2. Create an account or log in
+3. Go to **Settings** → **API**
+4. Request an API key (choose "Developer" type)
+5. Copy your **API Key (v3 auth)**
 
 ## Getting SteamGridDB API Key (Optional)
 
@@ -35,8 +46,9 @@ For high-quality game artwork (grids, heroes, logos, icons):
 2. Enter your IGDB Client ID and Client Secret
 3. Click **Verify Connection**
 4. Platforms will sync automatically
-5. (Optional) Enter your SteamGridDB API Key in the **SteamGridDB API** section
-6. You're ready to create collections!
+5. (Optional) Enter your TMDB API Key in the **TMDB API** section for movie/TV show search
+6. (Optional) Enter your SteamGridDB API Key in the **SteamGridDB API** section
+7. You're ready to create collections!
 
 ## Quick Start
 
@@ -44,9 +56,9 @@ For high-quality game artwork (grids, heroes, logos, icons):
 
 1. Click **+ New Collection**
 2. Enter a name
-3. Click **Add Game**
-4. Search for a game
-5. Select platform
+3. Click **Add Items**
+4. Search for a game, movie or TV show
+5. Select platform (for games) or tap to add (for movies/TV shows)
 6. Done!
 
 ### Import a Collection
