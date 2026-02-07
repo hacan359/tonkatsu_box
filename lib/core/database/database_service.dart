@@ -1264,16 +1264,17 @@ class DatabaseService {
     );
   }
 
-  /// Удаляет элемент канваса по ссылке на игру (igdbId).
+  /// Удаляет элемент канваса по типу и ID связанного объекта.
   Future<void> deleteCanvasItemByRef(
     int collectionId,
+    String itemType,
     int itemRefId,
   ) async {
     final Database db = await database;
     await db.delete(
       'canvas_items',
       where: 'collection_id = ? AND item_type = ? AND item_ref_id = ?',
-      whereArgs: <Object?>[collectionId, 'game', itemRefId],
+      whereArgs: <Object?>[collectionId, itemType, itemRefId],
     );
   }
 

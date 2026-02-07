@@ -1,11 +1,20 @@
 import 'dart:convert';
 
 import 'game.dart';
+import 'media_type.dart';
+import 'movie.dart';
+import 'tv_show.dart';
 
 /// Тип элемента на канвасе.
 enum CanvasItemType {
   /// Карточка игры.
   game('game'),
+
+  /// Карточка фильма.
+  movie('movie'),
+
+  /// Карточка сериала.
+  tvShow('tv_show'),
 
   /// Текстовый блок.
   text('text'),
@@ -28,6 +37,22 @@ enum CanvasItemType {
       orElse: () => CanvasItemType.game,
     );
   }
+
+  /// Создаёт [CanvasItemType] из [MediaType].
+  static CanvasItemType fromMediaType(MediaType mediaType) {
+    switch (mediaType) {
+      case MediaType.game:
+        return CanvasItemType.game;
+      case MediaType.movie:
+        return CanvasItemType.movie;
+      case MediaType.tvShow:
+        return CanvasItemType.tvShow;
+    }
+  }
+
+  /// Является ли тип медиа-элементом (game, movie, tvShow).
+  bool get isMediaItem =>
+      this == game || this == movie || this == tvShow;
 }
 
 /// Модель элемента на канвасе коллекции.
@@ -49,6 +74,8 @@ class CanvasItem {
     this.zIndex = 0,
     this.data,
     this.game,
+    this.movie,
+    this.tvShow,
   });
 
   /// Создаёт [CanvasItem] из записи базы данных.
@@ -107,7 +134,7 @@ class CanvasItem {
   /// Тип элемента.
   final CanvasItemType itemType;
 
-  /// ID связанного объекта (igdb_id для game, null для остальных).
+  /// ID связанного объекта (igdb_id для game, tmdb_id для movie/tvShow).
   final int? itemRefId;
 
   /// Позиция X на канвасе.
@@ -133,6 +160,12 @@ class CanvasItem {
 
   /// Данные игры (joined, не сохраняются в БД).
   final Game? game;
+
+  /// Данные фильма (joined, не сохраняются в БД).
+  final Movie? movie;
+
+  /// Данные сериала (joined, не сохраняются в БД).
+  final TvShow? tvShow;
 
   /// Преобразует в Map для сохранения в базу данных.
   Map<String, dynamic> toDb() {
@@ -181,6 +214,8 @@ class CanvasItem {
     Map<String, dynamic>? data,
     DateTime? createdAt,
     Game? game,
+    Movie? movie,
+    TvShow? tvShow,
   }) {
     return CanvasItem(
       id: id ?? this.id,
@@ -195,6 +230,8 @@ class CanvasItem {
       data: data ?? this.data,
       createdAt: createdAt ?? this.createdAt,
       game: game ?? this.game,
+      movie: movie ?? this.movie,
+      tvShow: tvShow ?? this.tvShow,
     );
   }
 

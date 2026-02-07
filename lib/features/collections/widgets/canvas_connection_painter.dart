@@ -22,6 +22,7 @@ class CanvasConnectionPainter extends CustomPainter {
     this.mousePosition,
     this.labelStyle,
     this.labelBackgroundColor,
+    this.dragOffsets = const <int, Offset>{},
   });
 
   /// Список связей для отрисовки.
@@ -41,6 +42,9 @@ class CanvasConnectionPainter extends CustomPainter {
 
   /// Цвет фона лейблов.
   final Color? labelBackgroundColor;
+
+  /// Текущие смещения перетаскиваемых элементов (itemId → delta).
+  final Map<int, Offset> dragOffsets;
 
   /// Ширина линии.
   static const double _lineWidth = 2.0;
@@ -201,13 +205,17 @@ class CanvasConnectionPainter extends CustomPainter {
     painter.paint(canvas, mid);
   }
 
-  /// Вычисляет центр элемента канваса.
+  /// Вычисляет центр элемента канваса с учётом drag offset.
   Offset _getItemCenter(CanvasItem item) {
     final double width =
         item.width ?? CanvasRepository.defaultCardWidth;
     final double height =
         item.height ?? CanvasRepository.defaultCardHeight;
-    return Offset(item.x + width / 2, item.y + height / 2);
+    final Offset offset = dragOffsets[item.id] ?? Offset.zero;
+    return Offset(
+      item.x + offset.dx + width / 2,
+      item.y + offset.dy + height / 2,
+    );
   }
 
   /// Парсит hex-строку цвета.
@@ -273,6 +281,7 @@ class CanvasConnectionPainter extends CustomPainter {
     return connections != oldDelegate.connections ||
         items != oldDelegate.items ||
         connectingFrom != oldDelegate.connectingFrom ||
-        mousePosition != oldDelegate.mousePosition;
+        mousePosition != oldDelegate.mousePosition ||
+        dragOffsets != oldDelegate.dragOffsets;
   }
 }

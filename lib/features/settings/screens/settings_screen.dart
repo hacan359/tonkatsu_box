@@ -8,6 +8,7 @@ import '../../../core/database/database_service.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../shared/models/platform.dart';
 import '../providers/settings_provider.dart';
+import 'image_debug_screen.dart';
 import 'steamgriddb_debug_screen.dart';
 
 /// URL для получения API ключей IGDB.
@@ -790,6 +791,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   MaterialPageRoute<void>(
                     builder: (BuildContext context) =>
                         const SteamGridDbDebugScreen(),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.image_search),
+              title: const Text('Image Debug Panel'),
+              subtitle: const Text('Check poster URLs and loading'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (BuildContext context) =>
+                        const ImageDebugScreen(),
                   ),
                 );
               },

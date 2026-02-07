@@ -673,7 +673,8 @@ void main() {
         () async {
           setupExistingCanvas();
           when(
-            () => mockRepository.deleteGameItem(collectionId, any<int>()),
+            () => mockRepository.deleteMediaItem(
+                collectionId, CanvasItemType.game, any<int>()),
           ).thenAnswer((_) async {});
 
           final ProviderContainer container = createContainer();
@@ -696,7 +697,8 @@ void main() {
           );
 
           verify(
-            () => mockRepository.deleteGameItem(collectionId, 200),
+            () => mockRepository.deleteMediaItem(
+                collectionId, CanvasItemType.game, 200),
           ).called(1);
         },
       );
@@ -706,7 +708,8 @@ void main() {
         () async {
           setupExistingCanvas();
           when(
-            () => mockRepository.deleteGameItem(collectionId, any<int>()),
+            () => mockRepository.deleteMediaItem(
+                collectionId, CanvasItemType.game, any<int>()),
           ).thenAnswer((_) async {});
 
           final ProviderContainer container = createContainer();

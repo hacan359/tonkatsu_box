@@ -116,11 +116,11 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int> {
       final bool hasItems = await _repository.hasCanvasItems(_collectionId);
 
       if (!hasItems) {
-        // Первый запуск — инициализируем канвас из игр коллекции
-        await _initializeFromGames();
+        // Первый запуск — инициализируем канвас из элементов коллекции
+        await _initializeFromItems();
       } else {
         // Синхронизация: удаляем сиротские элементы канваса
-        await _syncCanvasWithGames();
+        await _syncCanvasWithItems();
 
         // Загружаем элементы, viewport и связи параллельно
         final (
@@ -150,19 +150,15 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int> {
     }
   }
 
-  Future<void> _initializeFromGames() async {
+  Future<void> _initializeFromItems() async {
     try {
       final AsyncValue<List<CollectionItem>> itemsAsync =
           ref.read(collectionItemsNotifierProvider(_collectionId));
       final List<CollectionItem> allItems =
           itemsAsync.valueOrNull ?? <CollectionItem>[];
-      // Пока канвас поддерживает только игры
-      final List<CollectionItem> gameItems = allItems
-          .where((CollectionItem i) => i.mediaType == MediaType.game)
-          .toList();
 
       final List<CanvasItem> items =
-          await _repository.initializeCanvas(_collectionId, gameItems);
+          await _repository.initializeCanvas(_collectionId, allItems);
 
       state = state.copyWith(
         items: items,
@@ -178,12 +174,12 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int> {
     }
   }
 
-  /// Синхронизирует канвас с играми и перезагружает элементы.
+  /// Синхронизирует канвас с элементами коллекции и перезагружает.
   ///
-  /// Вызывается реактивно при изменении списка игр коллекции.
+  /// Вызывается реактивно при изменении элементов коллекции.
   Future<void> _syncAndReload() async {
     try {
-      await _syncCanvasWithGames();
+      await _syncCanvasWithItems();
       final List<CanvasItem> items =
           await _repository.getItemsWithData(_collectionId);
       state = state.copyWith(items: items);
@@ -193,12 +189,12 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int> {
     }
   }
 
-  /// Синхронизирует элементы канваса с текущими играми коллекции.
+  /// Синхронизирует элементы канваса с текущими элементами коллекции.
   ///
   /// Двусторонняя синхронизация:
-  /// - Удаляет элементы канваса для игр, удалённых из коллекции
-  /// - Создаёт элементы канваса для новых игр в коллекции
-  Future<void> _syncCanvasWithGames() async {
+  /// - Удаляет элементы канваса для удалённых из коллекции
+  /// - Создаёт элементы канваса для новых элементов в коллекции
+  Future<void> _syncCanvasWithItems() async {
     final AsyncValue<List<CollectionItem>> itemsAsync =
         ref.read(collectionItemsNotifierProvider(_collectionId));
     final List<CollectionItem>? allItems = itemsAsync.valueOrNull;
@@ -206,38 +202,41 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int> {
     // Если элементы ещё не загружены — пропускаем синхронизацию
     if (allItems == null) return;
 
-    // Фильтруем только игры — пока канвас поддерживает только их
-    final List<CollectionItem> games = allItems
-        .where((CollectionItem i) => i.mediaType == MediaType.game)
-        .toList();
-
-    final Set<int> currentIgdbIds =
-        games.map((CollectionItem g) => g.externalId).toSet();
+    // Строим множество ключей "тип:id" для текущих элементов коллекции
+    final Set<String> currentItemKeys = allItems
+        .map((CollectionItem i) =>
+            '${CanvasItemType.fromMediaType(i.mediaType).value}:${i.externalId}')
+        .toSet();
 
     final List<CanvasItem> canvasItems =
         await _repository.getItems(_collectionId);
 
-    // Удаляем сиротские элементы (игра удалена из коллекции)
+    // Удаляем сиротские медиа-элементы (удалены из коллекции)
     for (final CanvasItem item in canvasItems) {
-      if (item.itemType == CanvasItemType.game &&
+      if (item.itemType.isMediaItem &&
           item.itemRefId != null &&
-          !currentIgdbIds.contains(item.itemRefId)) {
+          !currentItemKeys.contains('${item.itemType.value}:${item.itemRefId}')) {
         await _repository.deleteItem(item.id);
       }
     }
 
-    // Добавляем недостающие элементы (игра добавлена в коллекцию)
-    final Set<int> canvasIgdbIds = canvasItems
-        .where((CanvasItem item) =>
-            item.itemType == CanvasItemType.game && item.itemRefId != null)
-        .map((CanvasItem item) => item.itemRefId!)
+    // Строим множество ключей для существующих медиа-элементов на канвасе
+    final Set<String> canvasItemKeys = canvasItems
+        .where(
+            (CanvasItem item) => item.itemType.isMediaItem && item.itemRefId != null)
+        .map((CanvasItem item) => '${item.itemType.value}:${item.itemRefId}')
         .toSet();
 
-    final List<CollectionItem> missingGames = games
-        .where((CollectionItem g) => !canvasIgdbIds.contains(g.externalId))
+    // Находим недостающие элементы
+    final List<CollectionItem> missingItems = allItems
+        .where((CollectionItem i) {
+          final String key =
+              '${CanvasItemType.fromMediaType(i.mediaType).value}:${i.externalId}';
+          return !canvasItemKeys.contains(key);
+        })
         .toList();
 
-    if (missingGames.isEmpty) return;
+    if (missingItems.isEmpty) return;
 
     // Позиция для новых элементов: ниже существующих
     double maxY = CanvasRepository.initialCenterY;
@@ -252,8 +251,8 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int> {
             CanvasRepository.defaultCardHeight / 2
         : maxY + CanvasRepository.gridGap;
 
-    final int cols = missingGames.length < CanvasRepository.gridColumns
-        ? missingGames.length
+    final int cols = missingItems.length < CanvasRepository.gridColumns
+        ? missingItems.length
         : CanvasRepository.gridColumns;
     final double gridWidth =
         cols * (CanvasRepository.defaultCardWidth + CanvasRepository.gridGap) -
@@ -268,7 +267,7 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int> {
                 .reduce((int a, int b) => a > b ? a : b) +
             1;
 
-    for (int i = 0; i < missingGames.length; i++) {
+    for (int i = 0; i < missingItems.length; i++) {
       final int col = i % cols;
       final int row = i ~/ cols;
       final double x = startX +
@@ -277,11 +276,14 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int> {
           row *
               (CanvasRepository.defaultCardHeight + CanvasRepository.gridGap);
 
+      final CanvasItemType canvasType =
+          CanvasItemType.fromMediaType(missingItems[i].mediaType);
+
       final CanvasItem item = CanvasItem(
         id: 0,
         collectionId: _collectionId,
-        itemType: CanvasItemType.game,
-        itemRefId: missingGames[i].externalId,
+        itemType: canvasType,
+        itemRefId: missingItems[i].externalId,
         x: x,
         y: y,
         width: CanvasRepository.defaultCardWidth,
@@ -294,18 +296,27 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int> {
     }
   }
 
+  /// Удаляет медиа-элемент с канваса по типу и ID.
+  ///
+  /// Обновляет state мгновенно и удаляет из БД.
+  void removeMediaItem(MediaType mediaType, int externalId) {
+    final CanvasItemType canvasType =
+        CanvasItemType.fromMediaType(mediaType);
+    state = state.copyWith(
+      items: state.items
+          .where((CanvasItem item) =>
+              !(item.itemType == canvasType &&
+                  item.itemRefId == externalId))
+          .toList(),
+    );
+    _repository.deleteMediaItem(_collectionId, canvasType, externalId);
+  }
+
   /// Удаляет элемент игры с канваса по igdbId.
   ///
   /// Обновляет state мгновенно и удаляет из БД.
   void removeGameItem(int igdbId) {
-    state = state.copyWith(
-      items: state.items
-          .where((CanvasItem item) =>
-              !(item.itemType == CanvasItemType.game &&
-                  item.itemRefId == igdbId))
-          .toList(),
-    );
-    _repository.deleteGameItem(_collectionId, igdbId);
+    removeMediaItem(MediaType.game, igdbId);
   }
 
   /// Обновляет канвас (перезагрузка из БД).
@@ -469,11 +480,16 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int> {
   }
 
   /// Добавляет изображение на канвас.
+  ///
+  /// [width] и [height] задают размер элемента на канвасе.
+  /// Если не указаны, используется 200x200.
   Future<CanvasItem> addImageItem(
     double x,
     double y,
-    Map<String, dynamic> imageData,
-  ) async {
+    Map<String, dynamic> imageData, {
+    double width = 200,
+    double height = 200,
+  }) async {
     final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     final int maxZ = state.items.isEmpty
         ? 0
@@ -488,8 +504,8 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int> {
       itemType: CanvasItemType.image,
       x: x,
       y: y,
-      width: 200,
-      height: 200,
+      width: width,
+      height: height,
       zIndex: maxZ,
       data: imageData,
       createdAt: DateTime.fromMillisecondsSinceEpoch(now * 1000),

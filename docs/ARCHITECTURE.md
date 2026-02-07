@@ -66,7 +66,7 @@ lib/
 | `lib/shared/models/movie.dart` | **Модель фильма**. Поля: id, title, overview, posterPath, releaseDate, rating, genres, runtime и др. Свойства: `posterUrl`, `releaseYear`, `ratingString`, `genresString`. Методы: `fromJson()`, `fromDb()`, `toDb()`, `copyWith()` |
 | `lib/shared/models/tv_show.dart` | **Модель сериала**. Поля: id, title, overview, posterPath, firstAirDate, rating, genres, seasons, episodes, status. Свойства: `posterUrl`, `releaseYear`, `ratingString`, `genresString`. Методы: `fromJson()`, `fromDb()`, `toDb()`, `copyWith()` |
 | `lib/shared/models/tv_season.dart` | **Модель сезона сериала**. Поля: id, tvShowId, seasonNumber, name, overview, posterPath, airDate, episodeCount. Методы: `fromJson()`, `fromDb()`, `toDb()`, `copyWith()` |
-| `lib/shared/models/canvas_item.dart` | **Модель элемента канваса**. Enum `CanvasItemType` (game/text/image/link). Поля: id, collectionId, itemType, itemRefId, x, y, width, height, zIndex, data (JSON). Joined поле `game: Game?` |
+| `lib/shared/models/canvas_item.dart` | **Модель элемента канваса**. Enum `CanvasItemType` (game/movie/tvShow/text/image/link). Поля: id, collectionId, itemType, itemRefId, x, y, width, height, zIndex, data (JSON). Joined поля: `game: Game?`, `movie: Movie?`, `tvShow: TvShow?`. Статический метод `CanvasItemType.fromMediaType()`, геттер `isMediaItem` |
 | `lib/shared/models/canvas_viewport.dart` | **Модель viewport канваса**. Поля: collectionId, scale, offsetX, offsetY. Хранит зум и позицию камеры |
 | `lib/shared/models/canvas_connection.dart` | **Модель связи канваса**. Enum `ConnectionStyle` (solid/dashed/arrow). Поля: id, collectionId, fromItemId, toItemId, label, color (hex), style, createdAt |
 
@@ -79,7 +79,9 @@ lib/
 | Файл | Назначение |
 |------|------------|
 | `lib/features/collections/screens/home_screen.dart` | **Главный экран**. Список коллекций с группировкой (My/Forked/Imported). FAB для создания. Меню: rename, fork, delete |
-| `lib/features/collections/screens/collection_screen.dart` | **Экран коллекции**. Заголовок со статистикой (прогресс-бар), список элементов. Кнопка "Add Items" открывает SearchScreen. Поддержка игр, фильмов и сериалов |
+| `lib/features/collections/screens/collection_screen.dart` | **Экран коллекции**. Заголовок со статистикой (прогресс-бар), список элементов. Кнопка "Add Items" открывает SearchScreen. Поддержка игр, фильмов и сериалов через `CollectionItem`/`collectionItemsNotifierProvider`. Навигация к `GameDetailScreen`/`MovieDetailScreen`/`TvShowDetailScreen` по типу |
+| `lib/features/collections/screens/movie_detail_screen.dart` | **Экран деталей фильма**. SliverAppBar с backdrop/постером, info chips (год, runtime, жанры, рейтинг), описание, `ItemStatusDropdown`, комментарии автора и личные заметки |
+| `lib/features/collections/screens/tv_show_detail_screen.dart` | **Экран деталей сериала**. SliverAppBar с backdrop/постером, info chips (год, сезоны, эпизоды, жанры, рейтинг, статус шоу), секция прогресса (текущий сезон/эпизод с +/-), `ItemStatusDropdown` с `onHold`, комментарии |
 
 #### Виджеты
 
@@ -87,7 +89,9 @@ lib/
 |------|------------|
 | `lib/features/collections/widgets/collection_tile.dart` | **Плитка коллекции**. Показывает имя, автора, тип, количество игр. Иконка удаления |
 | `lib/features/collections/widgets/create_collection_dialog.dart` | **Диалоги**. Создание, переименование, удаление коллекции |
-| `lib/features/collections/widgets/status_dropdown.dart` | **Выпадающий список статусов**. Компактный и полный режим |
+| `lib/features/collections/widgets/status_dropdown.dart` | **Выпадающий список статусов** (legacy, для GameDetailScreen). Компактный и полный режим |
+| `lib/features/collections/widgets/item_status_dropdown.dart` | **Универсальный dropdown статуса**. Контекстные лейблы по `MediaType` ("Playing"/"Watching"). `ItemStatusChip` для read-only. Полный/компактный режим. `onHold` только для сериалов |
+| `lib/features/collections/widgets/canvas_media_card.dart` | **Карточка фильма/сериала на канвасе**. Постер (CachedNetworkImage), название, placeholder icon (movie/tv). По паттерну CanvasGameCard |
 | `lib/features/collections/widgets/canvas_view.dart` | **Canvas View**. InteractiveViewer с зумом 0.3–3.0x, панорамированием, drag-and-drop (абсолютное отслеживание позиции). Фоновая сетка (CustomPainter), автоцентрирование |
 | `lib/features/collections/widgets/canvas_game_card.dart` | **Карточка игры на канвасе**. Компактная карточка 160x220px с обложкой и названием. RepaintBoundary для оптимизации |
 | `lib/features/collections/widgets/canvas_context_menu.dart` | **Контекстное меню канваса**. ПКМ на пустом месте: Add Text/Image/Link. ПКМ на элементе: Edit/Delete/Bring to Front/Send to Back/Connect. ПКМ на связи: Edit/Delete. Delete с диалогом подтверждения |
@@ -114,7 +118,7 @@ lib/
 | `lib/features/collections/providers/collections_provider.dart` | **State management коллекций**. `collectionsProvider` — список. `collectionGamesNotifierProvider` — игры в коллекции с CRUD (legacy). `collectionItemsNotifierProvider` — универсальные элементы коллекции (games/movies/tvShows) с CRUD. Двусторонняя синхронизация между games и items провайдерами |
 | `lib/features/collections/providers/steamgriddb_panel_provider.dart` | **State management панели SteamGridDB**. `steamGridDbPanelProvider` — NotifierProvider.family по collectionId. Enum `SteamGridDbImageType` (grids/heroes/logos/icons). State: isOpen, searchTerm, searchResults, selectedGame, selectedImageType, images, isSearching, isLoadingImages, searchError, imageError, imageCache. Методы: togglePanel, openPanel, closePanel, searchGames, selectGame, clearGameSelection, selectImageType. In-memory кэш по ключу `gameId:imageType` |
 | `lib/features/collections/providers/vgmaps_panel_provider.dart` | **State management панели VGMaps**. `vgMapsPanelProvider` — NotifierProvider.family по collectionId. State: isOpen, currentUrl, canGoBack, canGoForward, isLoading, capturedImageUrl/Width/Height, error. Методы: togglePanel, openPanel, closePanel, setCurrentUrl, setNavigationState, setLoading, captureImage, clearCapturedImage, setError, clearError |
-| `lib/features/collections/providers/canvas_provider.dart` | **State management канваса**. `canvasNotifierProvider` — NotifierProvider.family по collectionId. Методы: moveItem, updateViewport, addItem, deleteItem, bringToFront, sendToBack, removeGameItem, addTextItem, addImageItem, addLinkItem, updateItemData, updateItemSize, startConnection, completeConnection, cancelConnection, deleteConnection, updateConnection. Debounced save (300ms position, 500ms viewport). Двусторонняя синхронизация с коллекцией через `ref.listen`. Параллельная загрузка items, viewport и connections через `Future.wait` |
+| `lib/features/collections/providers/canvas_provider.dart` | **State management канваса**. `canvasNotifierProvider` — NotifierProvider.family по collectionId. Методы: moveItem, updateViewport, addItem, deleteItem, bringToFront, sendToBack, removeMediaItem (generic по MediaType), removeGameItem (delegates to removeMediaItem), addTextItem, addImageItem, addLinkItem, updateItemData, updateItemSize, startConnection, completeConnection, cancelConnection, deleteConnection, updateConnection. Debounced save (300ms position, 500ms viewport). Двусторонняя синхронизация с коллекцией (все типы медиа) через `ref.listen`. Параллельная загрузка items, viewport и connections через `Future.wait` |
 
 ---
 
@@ -160,7 +164,7 @@ lib/
 |------|------------|
 | `lib/data/repositories/collection_repository.dart` | **Репозиторий коллекций**. CRUD коллекций и игр. Форки с snapshot. Статистика (CollectionStats) |
 | `lib/data/repositories/game_repository.dart` | **Репозиторий игр**. Поиск через API + кеширование в SQLite |
-| `lib/data/repositories/canvas_repository.dart` | **Репозиторий канваса**. CRUD для canvas_items, viewport и connections. Методы: getItems, getItemsWithData (с joined Game), createItem, updateItem, updateItemPosition, updateItemSize, updateItemData, updateItemZIndex, deleteItem, hasCanvasItems, initializeCanvas (раскладка сеткой), getConnections, createConnection, updateConnection, deleteConnection |
+| `lib/data/repositories/canvas_repository.dart` | **Репозиторий канваса**. CRUD для canvas_items, viewport и connections. Методы: getItems, getItemsWithData (с joined Game/Movie/TvShow), createItem, updateItem, updateItemPosition, updateItemSize, updateItemData, updateItemZIndex, deleteItem, deleteMediaItem (generic по CanvasItemType), hasCanvasItems, initializeCanvas (раскладка сеткой для всех типов медиа), getConnections, createConnection, updateConnection, deleteConnection |
 
 ---
 
@@ -508,8 +512,12 @@ CREATE TABLE canvas_connections (
                             │
                             ├→ CollectionScreen(collectionId)
                             │  │
+                            │  ├→ GameDetailScreen(collectionId, itemId)
+                            │  ├→ MovieDetailScreen(collectionId, itemId)
+                            │  ├→ TvShowDetailScreen(collectionId, itemId)
+                            │  │
                             │  └→ SearchScreen(collectionId)
-                            │      [добавление игры]
+                            │      [добавление игр/фильмов/сериалов]
                             │
                             ├→ SearchScreen()
                             │   [просмотр игр]

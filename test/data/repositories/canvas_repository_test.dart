@@ -426,12 +426,41 @@ void main() {
 
     group('deleteGameItem', () {
       test('should delete game item by collection and igdb id', () async {
-        when(() => mockDb.deleteCanvasItemByRef(10, 100))
+        when(() => mockDb.deleteCanvasItemByRef(10, 'game', 100))
             .thenAnswer((_) async {});
 
         await repository.deleteGameItem(10, 100);
 
-        verify(() => mockDb.deleteCanvasItemByRef(10, 100)).called(1);
+        verify(() => mockDb.deleteCanvasItemByRef(10, 'game', 100)).called(1);
+      });
+    });
+
+    group('deleteMediaItem', () {
+      test('should delete movie item by type and ref id', () async {
+        when(() => mockDb.deleteCanvasItemByRef(10, 'movie', 200))
+            .thenAnswer((_) async {});
+
+        await repository.deleteMediaItem(
+          10,
+          CanvasItemType.movie,
+          200,
+        );
+
+        verify(() => mockDb.deleteCanvasItemByRef(10, 'movie', 200)).called(1);
+      });
+
+      test('should delete tv_show item by type and ref id', () async {
+        when(() => mockDb.deleteCanvasItemByRef(10, 'tv_show', 300))
+            .thenAnswer((_) async {});
+
+        await repository.deleteMediaItem(
+          10,
+          CanvasItemType.tvShow,
+          300,
+        );
+
+        verify(() => mockDb.deleteCanvasItemByRef(10, 'tv_show', 300))
+            .called(1);
       });
     });
 

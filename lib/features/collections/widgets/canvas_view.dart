@@ -11,6 +11,7 @@ import 'canvas_connection_painter.dart';
 import 'canvas_context_menu.dart';
 import 'canvas_game_card.dart';
 import 'canvas_image_item.dart';
+import 'canvas_media_card.dart';
 import 'canvas_link_item.dart';
 import 'canvas_text_item.dart';
 import 'dialogs/add_image_dialog.dart';
@@ -67,11 +68,25 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
   /// Флаг: элемент перетаскивается (блокирует пан InteractiveViewer).
   bool _isItemDragging = false;
 
+  /// Текущие drag-смещения элементов для обновления связей в реальном времени.
+  Map<int, Offset> _dragOffsets = const <int, Offset>{};
+
   /// Позиция мыши на канвасе (для временной линии связи).
   Offset? _mouseCanvasPosition;
 
   void _onItemDragStateChanged({required bool isDragging}) {
-    setState(() => _isItemDragging = isDragging);
+    setState(() {
+      _isItemDragging = isDragging;
+      if (!isDragging) {
+        _dragOffsets = const <int, Offset>{};
+      }
+    });
+  }
+
+  void _onItemDragUpdate(int itemId, Offset delta) {
+    setState(() {
+      _dragOffsets = <int, Offset>{..._dragOffsets, itemId: delta};
+    });
   }
 
   /// Обработчик клавиши Escape для отмены создания связи.
@@ -250,7 +265,9 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
       case CanvasItemType.link:
         await _editLinkItem(item);
       case CanvasItemType.game:
-        break; // Игры не редактируются через контекстное меню
+      case CanvasItemType.movie:
+      case CanvasItemType.tvShow:
+        break; // Медиа-элементы не редактируются через контекстное меню
     }
   }
 
@@ -548,6 +565,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
                                     labelBackgroundColor:
                                         colorScheme.surfaceContainerLow
                                             .withAlpha(220),
+                                    dragOffsets: _dragOffsets,
                                   ),
                                 ),
                               ),
@@ -719,6 +737,9 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
     switch (item.itemType) {
       case CanvasItemType.game:
         child = CanvasGameCard(item: item);
+      case CanvasItemType.movie:
+      case CanvasItemType.tvShow:
+        child = CanvasMediaCard(item: item);
       case CanvasItemType.text:
         child = CanvasTextItem(item: item);
       case CanvasItemType.image:
@@ -734,6 +755,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
       collectionId: widget.collectionId,
       transformationController: _transformationController,
       onDragStateChanged: _onItemDragStateChanged,
+      onDragUpdate: _onItemDragUpdate,
       onSecondaryTap: widget.isEditable ? _onItemSecondaryTap : null,
       onTap: isConnecting
           ? () => _handleConnectionModeClick(item)
@@ -759,6 +781,7 @@ class _DraggableCanvasItem extends ConsumerStatefulWidget {
     required this.collectionId,
     required this.transformationController,
     required this.onDragStateChanged,
+    required this.onDragUpdate,
     required this.child,
     this.onSecondaryTap,
     this.onTap,
@@ -772,6 +795,9 @@ class _DraggableCanvasItem extends ConsumerStatefulWidget {
 
   /// Callback для уведомления родителя о начале/конце drag.
   final void Function({required bool isDragging}) onDragStateChanged;
+
+  /// Callback для обновления drag-смещения (для связей).
+  final void Function(int itemId, Offset delta) onDragUpdate;
 
   /// Callback для ПКМ на элементе.
   final void Function(Offset globalPosition, CanvasItem item)? onSecondaryTap;
@@ -816,6 +842,8 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
     if (widget.item.width != null) return widget.item.width!;
     return switch (widget.item.itemType) {
       CanvasItemType.game => CanvasRepository.defaultCardWidth,
+      CanvasItemType.movie => CanvasRepository.defaultCardWidth,
+      CanvasItemType.tvShow => CanvasRepository.defaultCardWidth,
       CanvasItemType.text => 200,
       CanvasItemType.image => 200,
       CanvasItemType.link => 200,
@@ -826,6 +854,8 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
     if (widget.item.height != null) return widget.item.height!;
     return switch (widget.item.itemType) {
       CanvasItemType.game => CanvasRepository.defaultCardHeight,
+      CanvasItemType.movie => CanvasRepository.defaultCardHeight,
+      CanvasItemType.tvShow => CanvasRepository.defaultCardHeight,
       CanvasItemType.text => 100,
       CanvasItemType.image => 200,
       CanvasItemType.link => 48,
@@ -851,12 +881,14 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
         widget.transformationController.value.getMaxScaleOnAxis();
     final Offset totalGlobalDelta =
         details.globalPosition - _panStartGlobal;
+    final Offset newDelta = Offset(
+      totalGlobalDelta.dx / scale,
+      totalGlobalDelta.dy / scale,
+    );
     setState(() {
-      _dragDelta = Offset(
-        totalGlobalDelta.dx / scale,
-        totalGlobalDelta.dy / scale,
-      );
+      _dragDelta = newDelta;
     });
+    widget.onDragUpdate(widget.item.id, newDelta);
   }
 
   void _onPanEnd(DragEndDetails details) {

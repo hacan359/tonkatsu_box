@@ -155,7 +155,7 @@ class CollectionItem {
   /// Завершён ли элемент.
   bool get isCompleted => status == ItemStatus.completed;
 
-  /// URL постера/обложки.
+  /// URL постера/обложки (полный размер).
   String? get coverUrl {
     switch (mediaType) {
       case MediaType.game:
@@ -164,6 +164,18 @@ class CollectionItem {
         return movie?.posterUrl;
       case MediaType.tvShow:
         return tvShow?.posterUrl;
+    }
+  }
+
+  /// URL маленького постера/обложки для thumbnail-ов.
+  String? get thumbnailUrl {
+    switch (mediaType) {
+      case MediaType.game:
+        return game?.coverUrl;
+      case MediaType.movie:
+        return movie?.posterThumbUrl;
+      case MediaType.tvShow:
+        return tvShow?.posterThumbUrl;
     }
   }
 
