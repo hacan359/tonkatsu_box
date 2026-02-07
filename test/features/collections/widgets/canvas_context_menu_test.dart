@@ -141,6 +141,99 @@ void main() {
       );
 
       testWidgets(
+        'должен показать пункт Find images когда onFindImages передан',
+        (WidgetTester tester) async {
+          await tester.pumpWidget(buildTestApp(
+            child: Builder(
+              builder: (BuildContext context) {
+                return ElevatedButton(
+                  onPressed: () {
+                    CanvasContextMenu.showCanvasMenu(
+                      context,
+                      position: const Offset(100, 100),
+                      onAddText: () {},
+                      onAddImage: () {},
+                      onAddLink: () {},
+                      onFindImages: () {},
+                    );
+                  },
+                  child: const Text('Open Menu'),
+                );
+              },
+            ),
+          ));
+
+          await tester.tap(find.text('Open Menu'));
+          await tester.pumpAndSettle();
+
+          expect(find.text('Find images...'), findsOneWidget);
+        },
+      );
+
+      testWidgets(
+        'не должен показывать Find images когда onFindImages не передан',
+        (WidgetTester tester) async {
+          await tester.pumpWidget(buildTestApp(
+            child: Builder(
+              builder: (BuildContext context) {
+                return ElevatedButton(
+                  onPressed: () {
+                    CanvasContextMenu.showCanvasMenu(
+                      context,
+                      position: const Offset(100, 100),
+                      onAddText: () {},
+                      onAddImage: () {},
+                      onAddLink: () {},
+                    );
+                  },
+                  child: const Text('Open Menu'),
+                );
+              },
+            ),
+          ));
+
+          await tester.tap(find.text('Open Menu'));
+          await tester.pumpAndSettle();
+
+          expect(find.text('Find images...'), findsNothing);
+        },
+      );
+
+      testWidgets(
+        'должен вызвать onFindImages при выборе Find images',
+        (WidgetTester tester) async {
+          bool called = false;
+
+          await tester.pumpWidget(buildTestApp(
+            child: Builder(
+              builder: (BuildContext context) {
+                return ElevatedButton(
+                  onPressed: () {
+                    CanvasContextMenu.showCanvasMenu(
+                      context,
+                      position: const Offset(100, 100),
+                      onAddText: () {},
+                      onAddImage: () {},
+                      onAddLink: () {},
+                      onFindImages: () => called = true,
+                    );
+                  },
+                  child: const Text('Open Menu'),
+                );
+              },
+            ),
+          ));
+
+          await tester.tap(find.text('Open Menu'));
+          await tester.pumpAndSettle();
+          await tester.tap(find.text('Find images...'));
+          await tester.pumpAndSettle();
+
+          expect(called, true);
+        },
+      );
+
+      testWidgets(
         'должен ничего не делать при закрытии меню без выбора',
         (WidgetTester tester) async {
           bool textCalled = false;

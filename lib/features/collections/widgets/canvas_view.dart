@@ -17,6 +17,7 @@ import 'dialogs/add_image_dialog.dart';
 import 'dialogs/add_link_dialog.dart';
 import 'dialogs/add_text_dialog.dart';
 import 'dialogs/edit_connection_dialog.dart';
+import '../providers/steamgriddb_panel_provider.dart';
 
 // Виджет канваса для визуального размещения элементов коллекции.
 //
@@ -147,6 +148,12 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
       onAddText: () => _handleAddText(canvasX, canvasY),
       onAddImage: () => _handleAddImage(canvasX, canvasY),
       onAddLink: () => _handleAddLink(canvasX, canvasY),
+      onFindImages: widget.isEditable
+          ? () => ref
+              .read(
+                  steamGridDbPanelProvider(widget.collectionId).notifier)
+              .openPanel()
+          : null,
     );
   }
 
@@ -543,6 +550,23 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
+                  // Поиск изображений SteamGridDB
+                  if (widget.isEditable)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: FloatingActionButton.small(
+                        heroTag: 'canvas_steamgriddb',
+                        onPressed: () {
+                          ref
+                              .read(steamGridDbPanelProvider(
+                                      widget.collectionId)
+                                  .notifier)
+                              .togglePanel();
+                        },
+                        tooltip: 'SteamGridDB Images',
+                        child: const Icon(Icons.image_search),
+                      ),
+                    ),
                   // Центрировать вид на элементах
                   FloatingActionButton.small(
                     heroTag: 'canvas_reset_view',

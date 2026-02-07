@@ -74,6 +74,13 @@ Visualize your collection on a free-form canvas:
   - Edit/Delete connections via right-click on the line
   - Connections auto-delete when a connected element is removed
   - Temporary dashed preview line while creating a connection
+- **SteamGridDB Image Panel** — side panel for browsing and adding SteamGridDB images to canvas
+  - Search games by name (auto-fills from collection name)
+  - Browse 4 image types: Grids (box art), Heroes (banners), Logos, Icons
+  - Click any thumbnail to add it to the canvas center (scaled to max 300px width)
+  - In-memory cache for API results (no re-fetching on tab switch)
+  - Toggle via FAB button or right-click "Find images..."
+  - Warning when SteamGridDB API key is not configured
 
 ## SteamGridDB Integration
 
@@ -82,6 +89,7 @@ Access high-quality game artwork from SteamGridDB:
 - Browse grid images (box art)
 - Browse hero images (banners)
 - Browse logos and icons
+- Add images directly to canvas from the side panel
 - Debug panel for testing API endpoints (dev builds only)
 
 ## Offline Mode

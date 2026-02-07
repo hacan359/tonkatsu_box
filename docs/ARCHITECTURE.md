@@ -88,6 +88,7 @@ lib/
 | `lib/features/collections/widgets/canvas_text_item.dart` | **Текстовый блок на канвасе**. Настраиваемый fontSize (12/16/24/32). Container с padding, фоном surfaceContainerLow |
 | `lib/features/collections/widgets/canvas_image_item.dart` | **Изображение на канвасе**. URL (CachedNetworkImage) или base64 (Image.memory). Card с Clip.antiAlias, размер по умолчанию 200x200 |
 | `lib/features/collections/widgets/canvas_link_item.dart` | **Ссылка на канвасе**. Card с иконкой и подчёркнутым текстом. Double-tap → url_launcher. Размер по умолчанию 200x48 |
+| `lib/features/collections/widgets/steamgriddb_panel.dart` | **Боковая панель SteamGridDB**. Поиск игр, выбор типа изображений (SegmentedButton), сетка thumbnail-ов (GridView.builder + CachedNetworkImage). Автозаполнение поиска из названия коллекции. Клик на изображение → добавление на канвас |
 
 #### Диалоги
 
@@ -103,6 +104,7 @@ lib/
 | Файл | Назначение |
 |------|------------|
 | `lib/features/collections/providers/collections_provider.dart` | **State management коллекций**. `collectionsProvider` — список. `collectionGamesNotifierProvider` — игры в коллекции с CRUD |
+| `lib/features/collections/providers/steamgriddb_panel_provider.dart` | **State management панели SteamGridDB**. `steamGridDbPanelProvider` — NotifierProvider.family по collectionId. Enum `SteamGridDbImageType` (grids/heroes/logos/icons). State: isOpen, searchTerm, searchResults, selectedGame, selectedImageType, images, isSearching, isLoadingImages, searchError, imageError, imageCache. Методы: togglePanel, openPanel, closePanel, searchGames, selectGame, clearGameSelection, selectImageType. In-memory кэш по ключу `gameId:imageType` |
 | `lib/features/collections/providers/canvas_provider.dart` | **State management канваса**. `canvasNotifierProvider` — NotifierProvider.family по collectionId. Методы: moveItem, updateViewport, addItem, deleteItem, bringToFront, sendToBack, removeGameItem, addTextItem, addImageItem, addLinkItem, updateItemData, updateItemSize, startConnection, completeConnection, cancelConnection, deleteConnection, updateConnection. Debounced save (300ms position, 500ms viewport). Двусторонняя синхронизация с коллекцией через `ref.listen`. Параллельная загрузка items, viewport и connections через `Future.wait` |
 
 ---
@@ -226,7 +228,33 @@ DatabaseService.insertCanvasConnection()
 State обновляется, связь рисуется CanvasConnectionPainter
 ```
 
-### 5. Изменение статуса
+### 5. Добавление SteamGridDB-изображения на канвас
+
+```
+Клик FAB SteamGridDB / ПКМ → Find images...
+       ↓
+SteamGridDbPanelNotifier.togglePanel() / openPanel()
+       ↓
+Ввод запроса → searchGames(term)
+       ↓
+SteamGridDbApi.searchGames() → список SteamGridDbGame
+       ↓
+Клик на игру → selectGame(game)
+       ↓
+_loadImages() → api.getGrids(gameId) [кэш по gameId:imageType]
+       ↓
+GridView.builder с CachedNetworkImage thumbnails
+       ↓
+Клик на thumbnail → onAddImage(SteamGridDbImage)
+       ↓
+CollectionScreen._addSteamGridDbImage()
+       ↓
+canvasNotifierProvider.addImageItem(centerX, centerY, {url})
+       ↓
+SnackBar "Image added to canvas"
+```
+
+### 6. Изменение статуса
 
 ```
 Тап на StatusDropdown
@@ -356,6 +384,7 @@ CREATE TABLE canvas_connections (
 | `collectionRepositoryProvider` | Provider | Репозиторий коллекций |
 | `canvasRepositoryProvider` | Provider | Репозиторий канваса |
 | `canvasNotifierProvider` | NotifierProvider.family | Состояние канваса (по collectionId) |
+| `steamGridDbPanelProvider` | NotifierProvider.family | Состояние панели SteamGridDB (по collectionId) |
 
 ---
 
