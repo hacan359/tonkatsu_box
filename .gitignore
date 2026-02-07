@@ -46,6 +46,4 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
-dev.md
-/canvas-dev.md
-/vgmaps-dev.md
+/dev/
