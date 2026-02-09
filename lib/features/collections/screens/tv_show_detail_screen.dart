@@ -3,16 +3,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/api/tmdb_api.dart';
+import '../../../core/database/database_service.dart';
 import '../../../data/repositories/canvas_repository.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/steamgriddb_image.dart';
+import '../../../shared/models/tv_episode.dart';
+import '../../../shared/models/tv_season.dart';
 import '../../../shared/models/tv_show.dart';
 import '../../../shared/widgets/media_detail_view.dart';
 import '../../../shared/widgets/source_badge.dart';
 import '../providers/canvas_provider.dart';
 import '../providers/collections_provider.dart';
+import '../providers/episode_tracker_provider.dart';
 import '../providers/steamgriddb_panel_provider.dart';
 import '../providers/vgmaps_panel_provider.dart';
 import '../widgets/canvas_view.dart';
@@ -140,7 +145,7 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
                   _updateStatus(item.id, status),
             ),
             extraSections: <Widget>[
-              _buildProgressSection(context, item, tvShow),
+              _buildSeasonsSection(context, item, tvShow),
             ],
             authorComment: item.authorComment,
             userComment: item.userComment,
@@ -202,150 +207,67 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
     return chips;
   }
 
-  Widget _buildProgressSection(
+  Widget _buildSeasonsSection(
     BuildContext context,
     CollectionItem item,
     TvShow? tvShow,
   ) {
+    final int tmdbShowId = item.externalId;
+    final ({int collectionId, int showId}) trackerArg =
+        (collectionId: widget.collectionId, showId: tmdbShowId);
+
+    final EpisodeTrackerState trackerState =
+        ref.watch(episodeTrackerNotifierProvider(trackerArg));
+
+    final int totalEpisodes = tvShow?.totalEpisodes ?? 0;
+    final int watchedCount = trackerState.totalWatchedCount;
+
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
-
-    final int totalSeasons = tvShow?.totalSeasons ?? 0;
-    final int totalEpisodes = tvShow?.totalEpisodes ?? 0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Text(
-          'Progress',
-          style: theme.textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 8),
+        // Заголовок и общий прогресс
         Row(
           children: <Widget>[
-            Expanded(
-              child: _buildProgressField(
-                context,
-                label: 'Season',
-                value: item.currentSeason,
-                total: totalSeasons,
-                onChanged: (int value) => _updateProgress(
-                  item.id,
-                  currentSeason: value,
-                ),
+            Icon(Icons.playlist_add_check, size: 20, color: colorScheme.primary),
+            const SizedBox(width: 8),
+            Text(
+              'Episode Progress',
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildProgressField(
-                context,
-                label: 'Episode',
-                value: item.currentEpisode,
-                total: totalEpisodes,
-                onChanged: (int value) => _updateProgress(
-                  item.id,
-                  currentEpisode: value,
-                ),
+            const Spacer(),
+            Text(
+              totalEpisodes > 0
+                  ? '$watchedCount/$totalEpisodes watched'
+                  : '$watchedCount watched',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
           ],
         ),
-        if (totalSeasons > 0 || totalEpisodes > 0) ...<Widget>[
-          const SizedBox(height: 6),
-          Text(
-            _buildProgressText(item, totalSeasons, totalEpisodes),
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: colorScheme.onSurfaceVariant,
+        if (totalEpisodes > 0) ...<Widget>[
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: watchedCount / totalEpisodes,
+              minHeight: 6,
+              backgroundColor: colorScheme.surfaceContainerHighest,
             ),
           ),
         ],
-      ],
-    );
-  }
-
-  String _buildProgressText(
-    CollectionItem item,
-    int totalSeasons,
-    int totalEpisodes,
-  ) {
-    final List<String> parts = <String>[];
-    if (totalSeasons > 0) {
-      parts.add('S${item.currentSeason}/$totalSeasons');
-    }
-    if (totalEpisodes > 0) {
-      parts.add('E${item.currentEpisode}/$totalEpisodes');
-    }
-    return parts.join(' \u2022 ');
-  }
-
-  Widget _buildProgressField(
-    BuildContext context, {
-    required String label,
-    required int value,
-    required int total,
-    required void Function(int) onChanged,
-  }) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: colorScheme.outlineVariant,
+        const SizedBox(height: 12),
+        // Список сезонов
+        _SeasonsListWidget(
+          tmdbShowId: tmdbShowId,
+          collectionId: widget.collectionId,
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            label,
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Row(
-            children: <Widget>[
-              IconButton(
-                icon: const Icon(Icons.remove, size: 18),
-                onPressed: value > 0
-                    ? () => onChanged(value - 1)
-                    : null,
-                constraints: const BoxConstraints(),
-                padding: EdgeInsets.zero,
-                visualDensity: VisualDensity.compact,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                value.toString(),
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              if (total > 0)
-                Text(
-                  '/$total',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              const SizedBox(width: 8),
-              IconButton(
-                icon: const Icon(Icons.add, size: 18),
-                onPressed: () => onChanged(value + 1),
-                constraints: const BoxConstraints(),
-                padding: EdgeInsets.zero,
-                visualDensity: VisualDensity.compact,
-              ),
-            ],
-          ),
-        ],
-      ),
+      ],
     );
   }
 
@@ -524,20 +446,6 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
         .updateStatus(id, status, MediaType.tvShow);
   }
 
-  Future<void> _updateProgress(
-    int id, {
-    int? currentSeason,
-    int? currentEpisode,
-  }) async {
-    await ref
-        .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
-        .updateProgress(
-          id,
-          currentSeason: currentSeason,
-          currentEpisode: currentEpisode,
-        );
-  }
-
   Future<void> _saveAuthorComment(int id, String? text) async {
     await ref
         .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
@@ -548,5 +456,364 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
     await ref
         .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
         .updateUserComment(id, text);
+  }
+}
+
+/// Виджет списка сезонов с ExpansionTile.
+class _SeasonsListWidget extends ConsumerStatefulWidget {
+  const _SeasonsListWidget({
+    required this.tmdbShowId,
+    required this.collectionId,
+  });
+
+  final int tmdbShowId;
+  final int collectionId;
+
+  @override
+  ConsumerState<_SeasonsListWidget> createState() => _SeasonsListWidgetState();
+}
+
+class _SeasonsListWidgetState extends ConsumerState<_SeasonsListWidget> {
+  List<TvSeason> _seasons = <TvSeason>[];
+  bool _loading = true;
+  bool _refreshing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSeasons();
+  }
+
+  Future<void> _loadSeasons() async {
+    final DatabaseService db = ref.read(databaseServiceProvider);
+    List<TvSeason> seasons =
+        await db.getTvSeasonsByShowId(widget.tmdbShowId);
+
+    // Если в кэше пусто — загружаем из TMDB API и кэшируем
+    if (seasons.isEmpty) {
+      try {
+        final TmdbApi tmdbApi = ref.read(tmdbApiProvider);
+        seasons = await tmdbApi.getTvSeasons(widget.tmdbShowId);
+        if (seasons.isNotEmpty) {
+          await db.upsertTvSeasons(seasons);
+        }
+      } on Exception catch (_) {
+        // Если API недоступен — покажем пустой список
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _seasons = seasons;
+        _loading = false;
+      });
+    }
+  }
+
+  /// Принудительно обновляет список сезонов и загруженные эпизоды из API.
+  /// Добавляет новые сезоны/эпизоды, обновляет метаданные,
+  /// не трогает watched-статусы.
+  Future<void> _refreshSeasons() async {
+    if (_refreshing) return;
+    setState(() => _refreshing = true);
+
+    try {
+      final DatabaseService db = ref.read(databaseServiceProvider);
+      final TmdbApi tmdbApi = ref.read(tmdbApiProvider);
+
+      // Обновляем список сезонов
+      final List<TvSeason> seasons =
+          await tmdbApi.getTvSeasons(widget.tmdbShowId);
+      if (seasons.isNotEmpty) {
+        await db.upsertTvSeasons(seasons);
+      }
+
+      // Обновляем эпизоды для каждого уже раскрытого сезона
+      final EpisodeTrackerNotifier tracker = ref.read(
+        episodeTrackerNotifierProvider(_trackerArg).notifier,
+      );
+      final EpisodeTrackerState trackerState = ref.read(
+        episodeTrackerNotifierProvider(_trackerArg),
+      );
+      for (final int seasonNum in trackerState.episodesBySeason.keys) {
+        await tracker.refreshSeason(seasonNum);
+      }
+
+      if (mounted) {
+        setState(() {
+          _seasons = seasons;
+          _refreshing = false;
+        });
+      }
+    } on Exception catch (_) {
+      if (mounted) {
+        setState(() => _refreshing = false);
+      }
+    }
+  }
+
+  ({int collectionId, int showId}) get _trackerArg => (
+        collectionId: widget.collectionId,
+        showId: widget.tmdbShowId,
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      );
+    }
+
+    if (_seasons.isEmpty) {
+      return Row(
+        children: <Widget>[
+          Expanded(
+            child: Text(
+              'No season data available',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh, size: 18),
+            tooltip: 'Refresh from TMDB',
+            onPressed: _refreshing ? null : _refreshSeasons,
+            constraints: const BoxConstraints(),
+            padding: const EdgeInsets.all(4),
+            visualDensity: VisualDensity.compact,
+          ),
+        ],
+      );
+    }
+
+    final EpisodeTrackerState trackerState =
+        ref.watch(episodeTrackerNotifierProvider(_trackerArg));
+
+    return Column(
+      children: <Widget>[
+        // Кнопка обновления данных из TMDB
+        Align(
+          alignment: Alignment.centerRight,
+          child: _refreshing
+              ? const Padding(
+                  padding: EdgeInsets.all(4),
+                  child: SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                )
+              : IconButton(
+                  icon: const Icon(Icons.refresh, size: 18),
+                  tooltip: 'Refresh from TMDB',
+                  onPressed: _refreshSeasons,
+                  constraints: const BoxConstraints(),
+                  padding: const EdgeInsets.all(4),
+                  visualDensity: VisualDensity.compact,
+                ),
+        ),
+        for (final TvSeason season in _seasons)
+          if (season.seasonNumber > 0) // Пропускаем Specials (сезон 0)
+            _SeasonExpansionTile(
+              season: season,
+              trackerState: trackerState,
+              trackerArg: _trackerArg,
+            ),
+      ],
+    );
+  }
+}
+
+/// ExpansionTile для одного сезона с эпизодами.
+class _SeasonExpansionTile extends ConsumerWidget {
+  const _SeasonExpansionTile({
+    required this.season,
+    required this.trackerState,
+    required this.trackerArg,
+  });
+
+  final TvSeason season;
+  final EpisodeTrackerState trackerState;
+  final ({int collectionId, int showId}) trackerArg;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
+
+    final int seasonNum = season.seasonNumber;
+    final int episodeCount = season.episodeCount ?? 0;
+    final int watchedCount = trackerState.watchedCountForSeason(seasonNum);
+    final bool allWatched = episodeCount > 0 && watchedCount >= episodeCount;
+    final bool isLoading = trackerState.loadingSeasons[seasonNum] == true;
+    final List<TvEpisode>? episodes =
+        trackerState.episodesBySeason[seasonNum];
+
+    final String seasonTitle =
+        season.name ?? 'Season $seasonNum';
+    final String subtitle = episodeCount > 0
+        ? '$watchedCount/$episodeCount episodes'
+        : '$watchedCount watched';
+
+    return ExpansionTile(
+      tilePadding: const EdgeInsets.symmetric(horizontal: 4),
+      childrenPadding: const EdgeInsets.only(bottom: 8),
+      leading: Icon(
+        allWatched ? Icons.check_circle : Icons.circle_outlined,
+        color: allWatched ? colorScheme.primary : colorScheme.outlineVariant,
+        size: 20,
+      ),
+      title: Text(
+        seasonTitle,
+        style: theme.textTheme.bodyMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: colorScheme.onSurfaceVariant,
+        ),
+      ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          // Кнопка Mark all / Unmark all
+          IconButton(
+            icon: Icon(
+              allWatched
+                  ? Icons.remove_done
+                  : Icons.done_all,
+              size: 18,
+            ),
+            tooltip: allWatched ? 'Unmark all' : 'Mark all watched',
+            onPressed: () {
+              // Если эпизоды ещё не загружены, сначала загрузим
+              if (episodes == null || episodes.isEmpty) {
+                ref
+                    .read(episodeTrackerNotifierProvider(trackerArg).notifier)
+                    .loadSeason(seasonNum)
+                    .then((_) {
+                  ref
+                      .read(
+                          episodeTrackerNotifierProvider(trackerArg).notifier)
+                      .toggleSeason(seasonNum);
+                });
+              } else {
+                ref
+                    .read(episodeTrackerNotifierProvider(trackerArg).notifier)
+                    .toggleSeason(seasonNum);
+              }
+            },
+            constraints: const BoxConstraints(),
+            padding: const EdgeInsets.all(4),
+            visualDensity: VisualDensity.compact,
+          ),
+          const Icon(Icons.expand_more, size: 20),
+        ],
+      ),
+      onExpansionChanged: (bool expanded) {
+        if (expanded) {
+          ref
+              .read(episodeTrackerNotifierProvider(trackerArg).notifier)
+              .loadSeason(seasonNum);
+        }
+      },
+      children: <Widget>[
+        if (isLoading)
+          const Padding(
+            padding: EdgeInsets.all(16),
+            child: Center(
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          )
+        else if (episodes != null && episodes.isNotEmpty)
+          ...episodes.map((TvEpisode episode) => _EpisodeTile(
+                episode: episode,
+                isWatched: trackerState.isEpisodeWatched(
+                  seasonNum,
+                  episode.episodeNumber,
+                ),
+                trackerArg: trackerArg,
+              ))
+        else if (episodes != null && episodes.isEmpty)
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              'No episodes found',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// Тайл одного эпизода с чекбоксом.
+class _EpisodeTile extends ConsumerWidget {
+  const _EpisodeTile({
+    required this.episode,
+    required this.isWatched,
+    required this.trackerArg,
+  });
+
+  final TvEpisode episode;
+  final bool isWatched;
+  final ({int collectionId, int showId}) trackerArg;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
+
+    final String title =
+        'E${episode.episodeNumber}: ${episode.name}';
+    final List<String> subtitleParts = <String>[];
+    if (episode.airDate != null) {
+      subtitleParts.add(episode.airDate!);
+    }
+    if (episode.runtime != null) {
+      subtitleParts.add('${episode.runtime} min');
+    }
+
+    return CheckboxListTile(
+      value: isWatched,
+      onChanged: (_) {
+        ref
+            .read(episodeTrackerNotifierProvider(trackerArg).notifier)
+            .toggleEpisode(
+              episode.seasonNumber,
+              episode.episodeNumber,
+            );
+      },
+      title: Text(
+        title,
+        style: theme.textTheme.bodySmall?.copyWith(
+          decoration: isWatched ? TextDecoration.lineThrough : null,
+          color: isWatched
+              ? colorScheme.onSurfaceVariant
+              : colorScheme.onSurface,
+        ),
+      ),
+      subtitle: subtitleParts.isNotEmpty
+          ? Text(
+              subtitleParts.join(' \u2022 '),
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            )
+          : null,
+      dense: true,
+      controlAffinity: ListTileControlAffinity.leading,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+      visualDensity: VisualDensity.compact,
+    );
   }
 }

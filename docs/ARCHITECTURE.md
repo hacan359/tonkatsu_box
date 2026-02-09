@@ -45,8 +45,8 @@ lib/
 |------|------------|
 | `lib/core/api/igdb_api.dart` | **IGDB API клиент**. OAuth через Twitch, поиск игр, загрузка платформ. Методы: `getAccessToken()`, `searchGames()`, `fetchPlatforms()` |
 | `lib/core/api/steamgriddb_api.dart` | **SteamGridDB API клиент**. Bearer token авторизация. Методы: `searchGames()`, `getGrids()`, `getHeroes()`, `getLogos()`, `getIcons()` |
-| `lib/core/api/tmdb_api.dart` | **TMDB API клиент**. Bearer token авторизация. Методы: `searchMovies(query, {year})`, `searchTvShows(query, {firstAirDateYear})`, `multiSearch()`, `getMovieDetails()`, `getTvShowDetails()`, `getPopularMovies()`, `getPopularTvShows()`, `getMovieGenres()`, `getTvGenres()` |
-| `lib/core/database/database_service.dart` | **SQLite сервис**. Создание таблиц, миграции (версия 9), CRUD для всех сущностей. Таблицы: `platforms`, `games`, `collections`, `collection_games`, `collection_items`, `canvas_items`, `canvas_viewport`, `canvas_connections`, `game_canvas_viewport`, `movies_cache`, `tv_shows_cache`, `tv_seasons_cache`. Методы per-item canvas: `getGameCanvasItems`, `getGameCanvasConnections`, `getGameCanvasViewport`, `upsertGameCanvasViewport`. Изоляция данных: коллекционные методы фильтруют `collection_item_id IS NULL` |
+| `lib/core/api/tmdb_api.dart` | **TMDB API клиент**. Bearer token авторизация. Методы: `searchMovies(query, {year})`, `searchTvShows(query, {firstAirDateYear})`, `multiSearch()`, `getMovieDetails()`, `getTvShowDetails()`, `getPopularMovies()`, `getPopularTvShows()`, `getMovieGenres()`, `getTvGenres()`, `getSeasonEpisodes(tmdbShowId, seasonNumber)` |
+| `lib/core/database/database_service.dart` | **SQLite сервис**. Создание таблиц, миграции (версия 10), CRUD для всех сущностей. Таблицы: `platforms`, `games`, `collections`, `collection_games`, `collection_items`, `canvas_items`, `canvas_viewport`, `canvas_connections`, `game_canvas_viewport`, `movies_cache`, `tv_shows_cache`, `tv_seasons_cache`, `tv_episodes_cache`, `watched_episodes`. Методы per-item canvas: `getGameCanvasItems`, `getGameCanvasConnections`, `getGameCanvasViewport`, `upsertGameCanvasViewport`. Методы эпизодов: `getEpisodesByShowAndSeason`, `upsertEpisodes`, `clearEpisodesByShow`, `getWatchedEpisodes`, `markEpisodeWatched`, `markEpisodeUnwatched`, `getWatchedEpisodeCount`, `markSeasonWatched`, `unmarkSeasonWatched`. Изоляция данных: коллекционные методы фильтруют `collection_item_id IS NULL` |
 
 ---
 
@@ -66,6 +66,7 @@ lib/
 | `lib/shared/models/movie.dart` | **Модель фильма**. Поля: id, title, overview, posterPath, releaseDate, rating, genres, runtime и др. Свойства: `posterUrl`, `releaseYear`, `ratingString`, `genresString`. Методы: `fromJson()`, `fromDb()`, `toDb()`, `copyWith()` |
 | `lib/shared/models/tv_show.dart` | **Модель сериала**. Поля: id, title, overview, posterPath, firstAirDate, rating, genres, seasons, episodes, status. Свойства: `posterUrl`, `releaseYear`, `ratingString`, `genresString`. Методы: `fromJson()`, `fromDb()`, `toDb()`, `copyWith()` |
 | `lib/shared/models/tv_season.dart` | **Модель сезона сериала**. Поля: id, tvShowId, seasonNumber, name, overview, posterPath, airDate, episodeCount. Методы: `fromJson()`, `fromDb()`, `toDb()`, `copyWith()` |
+| `lib/shared/models/tv_episode.dart` | **Модель эпизода сериала**. Поля: tmdbShowId, seasonNumber, episodeNumber, name, overview, airDate, stillUrl, runtime. Equality по (tmdbShowId, seasonNumber, episodeNumber). Методы: `fromJson()`, `fromDb()`, `toDb()`, `copyWith()` |
 | `lib/shared/models/canvas_item.dart` | **Модель элемента канваса**. Enum `CanvasItemType` (game/movie/tvShow/text/image/link). Поля: id, collectionId, collectionItemId (null для коллекционного canvas, int для per-item), itemType, itemRefId, x, y, width, height, zIndex, data (JSON). Joined поля: `game: Game?`, `movie: Movie?`, `tvShow: TvShow?`. Статический метод `CanvasItemType.fromMediaType()`, геттер `isMediaItem` |
 | `lib/shared/models/canvas_viewport.dart` | **Модель viewport канваса**. Поля: collectionId, scale, offsetX, offsetY. Хранит зум и позицию камеры |
 | `lib/shared/models/canvas_connection.dart` | **Модель связи канваса**. Enum `ConnectionStyle` (solid/dashed/arrow). Поля: id, collectionId, collectionItemId (null для коллекционного canvas, int для per-item), fromItemId, toItemId, label, color (hex), style, createdAt |
@@ -82,7 +83,7 @@ lib/
 | `lib/features/collections/screens/collection_screen.dart` | **Экран коллекции**. Заголовок со статистикой (прогресс-бар), список элементов. Кнопка "Add Items" открывает SearchScreen. Поддержка игр, фильмов и сериалов через `CollectionItem`/`collectionItemsNotifierProvider`. Навигация к `GameDetailScreen`/`MovieDetailScreen`/`TvShowDetailScreen` по типу |
 | `lib/features/collections/screens/game_detail_screen.dart` | **Экран деталей игры**. TabBar с 2 вкладками: Details (`MediaDetailView(embedded: true)` с info chips, StatusDropdown) и Canvas (CanvasView + боковые панели SteamGridDB/VGMaps). Использует `gameCanvasNotifierProvider` для per-item canvas |
 | `lib/features/collections/screens/movie_detail_screen.dart` | **Экран деталей фильма**. TabBar с 2 вкладками: Details (`MediaDetailView(embedded: true)` с info chips, ItemStatusDropdown) и Canvas (CanvasView + боковые панели SteamGridDB/VGMaps). Использует `gameCanvasNotifierProvider` для per-item canvas |
-| `lib/features/collections/screens/tv_show_detail_screen.dart` | **Экран деталей сериала**. TabBar с 2 вкладками: Details (`MediaDetailView(embedded: true)` с info chips, секция прогресса, ItemStatusDropdown) и Canvas (CanvasView + боковые панели SteamGridDB/VGMaps). Использует `gameCanvasNotifierProvider` для per-item canvas |
+| `lib/features/collections/screens/tv_show_detail_screen.dart` | **Экран деталей сериала**. TabBar с 2 вкладками: Details (`MediaDetailView(embedded: true)` с info chips, Episode Progress с трекером эпизодов по сезонам, ItemStatusDropdown) и Canvas (CanvasView + боковые панели SteamGridDB/VGMaps). Виджеты `_SeasonsListWidget`, `_SeasonExpansionTile`, `_EpisodeTile` — ExpansionTile по сезонам с lazy-loading эпизодов и чекбоксами просмотра. Использует `episodeTrackerNotifierProvider` и `gameCanvasNotifierProvider` для per-item canvas |
 
 #### Виджеты
 
@@ -119,6 +120,7 @@ lib/
 | `lib/features/collections/providers/collections_provider.dart` | **State management коллекций**. `collectionsProvider` — список. `collectionGamesNotifierProvider` — игры в коллекции с CRUD (legacy). `collectionItemsNotifierProvider` — универсальные элементы коллекции (games/movies/tvShows) с CRUD. Двусторонняя синхронизация между games и items провайдерами |
 | `lib/features/collections/providers/steamgriddb_panel_provider.dart` | **State management панели SteamGridDB**. `steamGridDbPanelProvider` — NotifierProvider.family по collectionId. Enum `SteamGridDbImageType` (grids/heroes/logos/icons). State: isOpen, searchTerm, searchResults, selectedGame, selectedImageType, images, isSearching, isLoadingImages, searchError, imageError, imageCache. Методы: togglePanel, openPanel, closePanel, searchGames, selectGame, clearGameSelection, selectImageType. In-memory кэш по ключу `gameId:imageType` |
 | `lib/features/collections/providers/vgmaps_panel_provider.dart` | **State management панели VGMaps**. `vgMapsPanelProvider` — NotifierProvider.family по collectionId. State: isOpen, currentUrl, canGoBack, canGoForward, isLoading, capturedImageUrl/Width/Height, error. Методы: togglePanel, openPanel, closePanel, setCurrentUrl, setNavigationState, setLoading, captureImage, clearCapturedImage, setError, clearError |
+| `lib/features/collections/providers/episode_tracker_provider.dart` | **State management трекера эпизодов**. `episodeTrackerNotifierProvider` — NotifierProvider.family по `({collectionId, showId})`. State: episodesBySeason (Map<int, List<TvEpisode>>), watchedEpisodes (Set<(int,int)>), loadingSeasons, error. Методы: loadSeason (cache-first: DB → API → DB), toggleEpisode, toggleSeason, isEpisodeWatched, watchedCountForSeason, totalWatchedCount. Автоматический переход в Completed при просмотре всех эпизодов (сравнение с tvShow.totalEpisodes) |
 | `lib/features/collections/providers/canvas_provider.dart` | **State management канваса**. `canvasNotifierProvider` — NotifierProvider.family по collectionId (коллекционный canvas). `gameCanvasNotifierProvider` — NotifierProvider.family по `({collectionId, collectionItemId})` (per-item canvas). Оба реализуют общий интерфейс методов: moveItem, updateViewport, addItem, deleteItem, bringToFront, sendToBack, removeMediaItem, addTextItem, addImageItem, addLinkItem, updateItemData, updateItemSize, startConnection, completeConnection, cancelConnection, deleteConnection, updateConnection. Debounced save (300ms position, 500ms viewport). Коллекционный canvas синхронизируется с коллекцией через `ref.listen`. Per-item canvas автоинициализируется одним медиа-элементом |
 
 ---
@@ -456,6 +458,33 @@ CREATE TABLE tv_seasons_cache (
   FOREIGN KEY (tv_show_id) REFERENCES tv_shows_cache(id) ON DELETE CASCADE
 );
 
+-- Кэш эпизодов сериалов из TMDB (Task #11)
+CREATE TABLE tv_episodes_cache (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  tmdb_show_id INTEGER NOT NULL,
+  season_number INTEGER NOT NULL,
+  episode_number INTEGER NOT NULL,
+  name TEXT,
+  overview TEXT,
+  air_date TEXT,
+  still_url TEXT,
+  runtime INTEGER,
+  cached_at INTEGER,
+  UNIQUE(tmdb_show_id, season_number, episode_number)
+);
+
+-- Просмотренные эпизоды (Task #12)
+CREATE TABLE watched_episodes (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  collection_id INTEGER NOT NULL,
+  show_id INTEGER NOT NULL,
+  season_number INTEGER NOT NULL,
+  episode_number INTEGER NOT NULL,
+  watched_at INTEGER,
+  FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE,
+  UNIQUE(collection_id, show_id, season_number, episode_number)
+);
+
 -- Элементы канваса (Stage 7, updated Stage 9+)
 CREATE TABLE canvas_items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -531,6 +560,7 @@ CREATE TABLE game_canvas_viewport (
 | `canvasRepositoryProvider` | Provider | Репозиторий канваса |
 | `canvasNotifierProvider` | NotifierProvider.family | Состояние коллекционного канваса (по collectionId) |
 | `gameCanvasNotifierProvider` | NotifierProvider.family | Состояние per-item канваса (по `({collectionId, collectionItemId})`) |
+| `episodeTrackerNotifierProvider` | NotifierProvider.family | Трекер просмотренных эпизодов (по `({collectionId, showId})`) |
 | `steamGridDbPanelProvider` | NotifierProvider.family | Состояние панели SteamGridDB (по collectionId) |
 | `movieGenresProvider` | FutureProvider | Список жанров фильмов из TMDB |
 | `tvGenresProvider` | FutureProvider | Список жанров сериалов из TMDB |

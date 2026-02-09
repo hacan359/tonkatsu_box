@@ -14,6 +14,7 @@ import '../../shared/models/item_status.dart';
 import '../../shared/models/media_type.dart';
 import '../../shared/models/movie.dart';
 import '../../shared/models/platform.dart';
+import '../../shared/models/tv_episode.dart';
 import '../../shared/models/tv_season.dart';
 import '../../shared/models/tv_show.dart';
 
@@ -50,7 +51,7 @@ class DatabaseService {
     return databaseFactoryFfi.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 9,
+        version: 10,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -74,6 +75,8 @@ class DatabaseService {
     await _createTvShowsCacheTable(db);
     await _createTvSeasonsCacheTable(db);
     await _createCollectionItemsTable(db);
+    await _createTvEpisodesCacheTable(db);
+    await _createWatchedEpisodesTable(db);
   }
 
   Future<void> _createPlatformsTable(Database db) async {
@@ -183,6 +186,10 @@ class DatabaseService {
     if (oldVersion < 9) {
       await _migrateGameCanvas(db);
     }
+    if (oldVersion < 10) {
+      await _createTvEpisodesCacheTable(db);
+      await _createWatchedEpisodesTable(db);
+    }
   }
 
   Future<void> _migrateGameCanvas(Database db) async {
@@ -207,6 +214,40 @@ class DatabaseService {
 
     // Создаём таблицу viewport для per-game canvas
     await _createGameCanvasViewportTable(db);
+  }
+
+  Future<void> _createTvEpisodesCacheTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS tv_episodes_cache (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tmdb_show_id INTEGER NOT NULL,
+        season_number INTEGER NOT NULL,
+        episode_number INTEGER NOT NULL,
+        name TEXT,
+        overview TEXT,
+        air_date TEXT,
+        still_url TEXT,
+        runtime INTEGER,
+        cached_at INTEGER,
+        UNIQUE(tmdb_show_id, season_number, episode_number)
+      )
+    ''');
+  }
+
+  Future<void> _createWatchedEpisodesTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS watched_episodes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        collection_id INTEGER NOT NULL,
+        show_id INTEGER NOT NULL,
+        season_number INTEGER NOT NULL,
+        episode_number INTEGER NOT NULL,
+        watched_at INTEGER,
+        FOREIGN KEY (collection_id) REFERENCES collections(id)
+          ON DELETE CASCADE,
+        UNIQUE(collection_id, show_id, season_number, episode_number)
+      )
+    ''');
   }
 
   Future<void> _createCanvasItemsTable(Database db) async {
@@ -721,6 +762,172 @@ class DatabaseService {
   Future<void> clearTvSeasons() async {
     final Database db = await database;
     await db.delete('tv_seasons_cache');
+  }
+
+  // ==================== TV Episodes Cache ====================
+
+  /// Возвращает эпизоды сезона сериала из кеша.
+  Future<List<TvEpisode>> getEpisodesByShowAndSeason(
+    int showId,
+    int seasonNumber,
+  ) async {
+    final Database db = await database;
+    final List<Map<String, dynamic>> rows = await db.query(
+      'tv_episodes_cache',
+      where: 'tmdb_show_id = ? AND season_number = ?',
+      whereArgs: <Object?>[showId, seasonNumber],
+      orderBy: 'episode_number ASC',
+    );
+    return rows.map(TvEpisode.fromDb).toList();
+  }
+
+  /// Сохраняет список эпизодов пакетно (INSERT OR REPLACE).
+  Future<void> upsertEpisodes(List<TvEpisode> episodes) async {
+    if (episodes.isEmpty) return;
+
+    final Database db = await database;
+    await db.transaction((Transaction txn) async {
+      final Batch batch = txn.batch();
+      for (final TvEpisode episode in episodes) {
+        batch.insert(
+          'tv_episodes_cache',
+          episode.toDb(),
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
+      await batch.commit(noResult: true);
+    });
+  }
+
+  /// Удаляет кешированные эпизоды сериала.
+  Future<void> clearEpisodesByShow(int showId) async {
+    final Database db = await database;
+    await db.delete(
+      'tv_episodes_cache',
+      where: 'tmdb_show_id = ?',
+      whereArgs: <Object?>[showId],
+    );
+  }
+
+  // ==================== Watched Episodes ====================
+
+  /// Возвращает множество просмотренных эпизодов для сериала в коллекции.
+  ///
+  /// Возвращает Set записей (seasonNumber, episodeNumber).
+  Future<Set<(int, int)>> getWatchedEpisodes(
+    int collectionId,
+    int showId,
+  ) async {
+    final Database db = await database;
+    final List<Map<String, dynamic>> rows = await db.query(
+      'watched_episodes',
+      columns: <String>['season_number', 'episode_number'],
+      where: 'collection_id = ? AND show_id = ?',
+      whereArgs: <Object?>[collectionId, showId],
+    );
+    final Set<(int, int)> result = <(int, int)>{};
+    for (final Map<String, dynamic> row in rows) {
+      result.add((
+        row['season_number'] as int,
+        row['episode_number'] as int,
+      ));
+    }
+    return result;
+  }
+
+  /// Отмечает эпизод как просмотренный.
+  Future<void> markEpisodeWatched(
+    int collectionId,
+    int showId,
+    int seasonNumber,
+    int episodeNumber,
+  ) async {
+    final Database db = await database;
+    await db.insert(
+      'watched_episodes',
+      <String, dynamic>{
+        'collection_id': collectionId,
+        'show_id': showId,
+        'season_number': seasonNumber,
+        'episode_number': episodeNumber,
+        'watched_at': DateTime.now().millisecondsSinceEpoch,
+      },
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
+  }
+
+  /// Снимает отметку просмотра с эпизода.
+  Future<void> markEpisodeUnwatched(
+    int collectionId,
+    int showId,
+    int seasonNumber,
+    int episodeNumber,
+  ) async {
+    final Database db = await database;
+    await db.delete(
+      'watched_episodes',
+      where: 'collection_id = ? AND show_id = ? '
+          'AND season_number = ? AND episode_number = ?',
+      whereArgs: <Object?>[collectionId, showId, seasonNumber, episodeNumber],
+    );
+  }
+
+  /// Возвращает количество просмотренных эпизодов для сериала в коллекции.
+  Future<int> getWatchedEpisodeCount(
+    int collectionId,
+    int showId,
+  ) async {
+    final Database db = await database;
+    final List<Map<String, dynamic>> result = await db.rawQuery(
+      'SELECT COUNT(*) as cnt FROM watched_episodes '
+      'WHERE collection_id = ? AND show_id = ?',
+      <Object?>[collectionId, showId],
+    );
+    return result.first['cnt'] as int;
+  }
+
+  /// Отмечает все эпизоды сезона как просмотренные.
+  Future<void> markSeasonWatched(
+    int collectionId,
+    int showId,
+    int seasonNumber,
+    List<int> episodeNumbers,
+  ) async {
+    if (episodeNumbers.isEmpty) return;
+
+    final Database db = await database;
+    final int now = DateTime.now().millisecondsSinceEpoch;
+    await db.transaction((Transaction txn) async {
+      final Batch batch = txn.batch();
+      for (final int ep in episodeNumbers) {
+        batch.insert(
+          'watched_episodes',
+          <String, dynamic>{
+            'collection_id': collectionId,
+            'show_id': showId,
+            'season_number': seasonNumber,
+            'episode_number': ep,
+            'watched_at': now,
+          },
+          conflictAlgorithm: ConflictAlgorithm.ignore,
+        );
+      }
+      await batch.commit(noResult: true);
+    });
+  }
+
+  /// Снимает отметку просмотра со всех эпизодов сезона.
+  Future<void> unmarkSeasonWatched(
+    int collectionId,
+    int showId,
+    int seasonNumber,
+  ) async {
+    final Database db = await database;
+    await db.delete(
+      'watched_episodes',
+      where: 'collection_id = ? AND show_id = ? AND season_number = ?',
+      whereArgs: <Object?>[collectionId, showId, seasonNumber],
+    );
   }
 
   // ==================== Collections ====================

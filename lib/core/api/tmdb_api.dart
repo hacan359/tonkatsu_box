@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../shared/models/movie.dart';
+import '../../shared/models/tv_episode.dart';
 import '../../shared/models/tv_season.dart';
 import '../../shared/models/tv_show.dart';
 
@@ -369,6 +370,52 @@ class TmdbApi {
           .toList();
     } on DioException catch (e) {
       throw _handleDioException(e, 'Failed to fetch TV show seasons');
+    }
+  }
+
+  /// Получает эпизоды конкретного сезона сериала.
+  ///
+  /// [tmdbShowId] — ID сериала в TMDB.
+  /// [seasonNumber] — номер сезона.
+  ///
+  /// Возвращает список эпизодов сезона.
+  /// Throws [TmdbApiException] при ошибке запроса.
+  Future<List<TvEpisode>> getSeasonEpisodes(
+    int tmdbShowId,
+    int seasonNumber,
+  ) async {
+    _ensureApiKey();
+
+    try {
+      final Response<dynamic> response = await _dio.get<dynamic>(
+        '$_baseUrl/tv/$tmdbShowId/season/$seasonNumber',
+        queryParameters: <String, dynamic>{
+          'api_key': _apiKey,
+          'language': language,
+        },
+      );
+
+      if (response.statusCode != 200 || response.data == null) {
+        throw TmdbApiException(
+          'Failed to fetch season episodes',
+          statusCode: response.statusCode,
+        );
+      }
+
+      final Map<String, dynamic> data =
+          response.data as Map<String, dynamic>;
+      final List<dynamic> episodes =
+          data['episodes'] as List<dynamic>? ?? <dynamic>[];
+
+      return episodes
+          .map((dynamic item) => TvEpisode.fromJson(
+                item as Map<String, dynamic>,
+                showId: tmdbShowId,
+                season: seasonNumber,
+              ))
+          .toList();
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'Failed to fetch season episodes');
     }
   }
 
