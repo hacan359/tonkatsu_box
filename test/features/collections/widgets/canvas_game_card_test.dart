@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/collections/widgets/canvas_game_card.dart';
+import 'package:xerabora/shared/constants/media_type_theme.dart';
 import 'package:xerabora/shared/models/canvas_item.dart';
 import 'package:xerabora/shared/models/game.dart';
 
@@ -105,6 +106,19 @@ void main() {
       await tester.pumpWidget(buildTestWidget(item));
 
       expect(find.text('Unknown Game'), findsOneWidget);
+    });
+
+    testWidgets('should have blue border with MediaTypeTheme.gameColor',
+        (WidgetTester tester) async {
+      final CanvasItem item = createGameItem();
+
+      await tester.pumpWidget(buildTestWidget(item));
+
+      final Card card = tester.widget<Card>(find.byType(Card));
+      final RoundedRectangleBorder shape =
+          card.shape! as RoundedRectangleBorder;
+      expect(shape.side.color, MediaTypeTheme.gameColor);
+      expect(shape.side.width, 2);
     });
   });
 }

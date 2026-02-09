@@ -12,6 +12,7 @@ import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
+import 'package:xerabora/shared/widgets/source_badge.dart';
 
 class MockCollectionRepository extends Mock implements CollectionRepository {}
 
@@ -970,6 +971,25 @@ void main() {
         expect(find.text('Edit My Notes'), findsOneWidget);
         expect(find.text('Cancel'), findsOneWidget);
         expect(find.text('Save'), findsOneWidget);
+      });
+    });
+
+    group('SourceBadge', () {
+      testWidgets('должен отображать SourceBadge TMDB',
+          (WidgetTester tester) async {
+        final TvShow tvShow = createTestTvShow(title: 'Breaking Bad');
+        final CollectionItem item = createTestCollectionItem(tvShow: tvShow);
+
+        await tester.pumpWidget(createTestWidget(
+          collectionId: 1,
+          itemId: 1,
+          isEditable: true,
+          items: <CollectionItem>[item],
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(SourceBadge), findsOneWidget);
+        expect(find.text('TMDB'), findsOneWidget);
       });
     });
   });

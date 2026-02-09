@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/export_service.dart';
 import '../../../data/repositories/collection_repository.dart';
+import '../../../shared/constants/media_type_theme.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/item_status.dart';
@@ -1048,13 +1049,13 @@ class _CollectionItemTile extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(2),
                 decoration: BoxDecoration(
-                  color: colorScheme.surface.withValues(alpha: 0.8),
+                  color: MediaTypeTheme.colorFor(item.mediaType),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Icon(
                   _getMediaTypeIcon(),
                   size: 12,
-                  color: colorScheme.onSurfaceVariant,
+                  color: Colors.white,
                 ),
               ),
             ),

@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
+import '../../../shared/constants/media_type_theme.dart';
 import '../../../shared/models/canvas_item.dart';
 
 /// Карточка игры на канвасе.
@@ -26,6 +27,13 @@ class CanvasGameCard extends StatelessWidget {
     return Card(
       clipBehavior: Clip.antiAlias,
       elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(
+          color: MediaTypeTheme.gameColor,
+          width: 2,
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[

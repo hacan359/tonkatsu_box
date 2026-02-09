@@ -36,6 +36,10 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# Flutter auto-generated plugin registrations
+windows/flutter/generated_plugin_registrant.cc
+windows/flutter/generated_plugins.cmake
+
 # Symbolication related
 app.*.symbols
 

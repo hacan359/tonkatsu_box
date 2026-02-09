@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/database_service.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../shared/models/platform.dart';
+import '../../../shared/widgets/source_badge.dart';
 import '../providers/settings_provider.dart';
 import 'image_debug_screen.dart';
 import 'steamgriddb_debug_screen.dart';
@@ -259,9 +260,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text(
-              'API Credentials',
-              style: Theme.of(context).textTheme.titleMedium,
+            Row(
+              children: <Widget>[
+                const SourceBadge(
+                  source: DataSource.igdb,
+                  size: SourceBadgeSize.large,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'IGDB API Credentials',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ],
             ),
             const SizedBox(height: 16),
             TextField(
@@ -581,8 +591,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           children: <Widget>[
             Row(
               children: <Widget>[
-                Icon(Icons.grid_view,
-                    color: Theme.of(context).colorScheme.primary),
+                const SourceBadge(
+                  source: DataSource.steamGridDb,
+                  size: SourceBadgeSize.large,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   'SteamGridDB API',
@@ -673,8 +685,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           children: <Widget>[
             Row(
               children: <Widget>[
-                Icon(Icons.movie,
-                    color: Theme.of(context).colorScheme.primary),
+                const SourceBadge(
+                  source: DataSource.tmdb,
+                  size: SourceBadgeSize.large,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   'TMDB API (Movies & TV)',

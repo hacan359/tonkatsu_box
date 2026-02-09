@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/collections/widgets/canvas_media_card.dart';
+import 'package:xerabora/shared/constants/media_type_theme.dart';
 import 'package:xerabora/shared/models/canvas_item.dart';
 import 'package:xerabora/shared/models/movie.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
@@ -339,6 +340,38 @@ void main() {
           expect(find.text('No Poster Show'), findsOneWidget);
           expect(find.byIcon(Icons.tv_outlined), findsOneWidget);
           expect(find.byType(CachedNetworkImage), findsNothing);
+        },
+      );
+    });
+
+    group('Цветные бордеры', () {
+      testWidgets(
+        'должен отображать красный бордер для фильмов (movieColor)',
+        (WidgetTester tester) async {
+          final CanvasItem item = createMovieItem();
+
+          await tester.pumpWidget(buildTestWidget(item));
+
+          final Card card = tester.widget<Card>(find.byType(Card));
+          final RoundedRectangleBorder shape =
+              card.shape! as RoundedRectangleBorder;
+          expect(shape.side.color, MediaTypeTheme.movieColor);
+          expect(shape.side.width, 2);
+        },
+      );
+
+      testWidgets(
+        'должен отображать зелёный бордер для сериалов (tvShowColor)',
+        (WidgetTester tester) async {
+          final CanvasItem item = createTvShowItem();
+
+          await tester.pumpWidget(buildTestWidget(item));
+
+          final Card card = tester.widget<Card>(find.byType(Card));
+          final RoundedRectangleBorder shape =
+              card.shape! as RoundedRectangleBorder;
+          expect(shape.side.color, MediaTypeTheme.tvShowColor);
+          expect(shape.side.width, 2);
         },
       );
     });

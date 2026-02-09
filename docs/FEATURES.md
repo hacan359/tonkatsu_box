@@ -30,6 +30,21 @@ Search across multiple media types via tabbed interface:
 - Release dates and ratings
 - Add to any collection with one tap
 
+## Visual Identity
+
+### Source Badges
+Each item shows its data source via a colored badge:
+- **IGDB** — purple badge on game cards and detail screens
+- **TMDB** — teal badge on movie/TV show cards and detail screens
+- Source logos displayed next to API key fields in Settings
+
+### Media Type Colors
+Color-coded visual distinction between media types:
+- Games — blue accent
+- Movies — red accent
+- TV Shows — green accent
+- Applied to canvas card borders and type badges
+
 ## Progress Tracking
 
 Track status for each item in your collection with context-aware labels:
@@ -55,24 +70,28 @@ Track your viewing progress for TV shows:
 
 ## Detail Screens
 
-Tap any item in a collection to see its full details:
-
-### Game Details
-- Cover image with parallax header
-- Release year, genres, rating, platforms
+Tap any item in a collection to see its full details. All detail screens share a unified layout via `MediaDetailView`:
+- Compact poster (80x120) with source badge (IGDB/TMDB)
+- Type icon and label
+- Info chips (year, rating, genres, etc.)
+- Inline description (max 4 lines)
 - Status dropdown, author comment, personal notes
 
+### Game Details
+- Source: IGDB
+- Info chips: release year, rating, genres
+- Status dropdown with game-specific labels
+
 ### Movie Details
-- Backdrop/poster with parallax header
-- Release year, runtime (formatted as "2h 10m"), genres, rating
-- Description/overview
-- Status dropdown (with "Watching" label), author comment, personal notes
+- Source: TMDB
+- Info chips: release year, runtime (formatted as "2h 10m"), rating, genres
+- Status dropdown with "Watching" label
 
 ### TV Show Details
-- Backdrop/poster with parallax header
-- First air date, seasons/episodes count, genres, rating, show status (Returning/Ended/Canceled)
+- Source: TMDB
+- Info chips: first air date, seasons/episodes count, rating, show status (Returning/Ended/Canceled), genres
 - Viewing progress section (current season and episode with +/- controls)
-- Status dropdown (includes "On Hold"), author comment, personal notes
+- Status dropdown (includes "On Hold")
 
 ## Comments
 

@@ -80,8 +80,9 @@ lib/
 |------|------------|
 | `lib/features/collections/screens/home_screen.dart` | **Главный экран**. Список коллекций с группировкой (My/Forked/Imported). FAB для создания. Меню: rename, fork, delete |
 | `lib/features/collections/screens/collection_screen.dart` | **Экран коллекции**. Заголовок со статистикой (прогресс-бар), список элементов. Кнопка "Add Items" открывает SearchScreen. Поддержка игр, фильмов и сериалов через `CollectionItem`/`collectionItemsNotifierProvider`. Навигация к `GameDetailScreen`/`MovieDetailScreen`/`TvShowDetailScreen` по типу |
-| `lib/features/collections/screens/movie_detail_screen.dart` | **Экран деталей фильма**. SliverAppBar с backdrop/постером, info chips (год, runtime, жанры, рейтинг), описание, `ItemStatusDropdown`, комментарии автора и личные заметки |
-| `lib/features/collections/screens/tv_show_detail_screen.dart` | **Экран деталей сериала**. SliverAppBar с backdrop/постером, info chips (год, сезоны, эпизоды, жанры, рейтинг, статус шоу), секция прогресса (текущий сезон/эпизод с +/-), `ItemStatusDropdown` с `onHold`, комментарии |
+| `lib/features/collections/screens/game_detail_screen.dart` | **Экран деталей игры**. Тонкая обёртка над `MediaDetailView`: маппинг CollectionGame на параметры виджета, info chips (год, рейтинг, жанры), `StatusDropdown` |
+| `lib/features/collections/screens/movie_detail_screen.dart` | **Экран деталей фильма**. Тонкая обёртка над `MediaDetailView`: маппинг CollectionItem+Movie на параметры виджета, info chips (год, runtime, жанры, рейтинг), `ItemStatusDropdown` |
+| `lib/features/collections/screens/tv_show_detail_screen.dart` | **Экран деталей сериала**. Тонкая обёртка над `MediaDetailView`: маппинг CollectionItem+TvShow на параметры виджета, info chips (год, сезоны, эпизоды, жанры, рейтинг, статус шоу), секция прогресса через `extraSections` |
 
 #### Виджеты
 
@@ -134,9 +135,9 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/features/search/widgets/game_card.dart` | **Карточка игры**. Обложка (CachedNetworkImage), название, год, рейтинг, жанры, платформы |
-| `lib/features/search/widgets/movie_card.dart` | **Карточка фильма**. Постер 60x80 (CachedNetworkImage), название, год, рейтинг, runtime, жанры. Placeholder: Icons.movie |
-| `lib/features/search/widgets/tv_show_card.dart` | **Карточка сериала**. Постер 60x80, название, год, рейтинг, жанры, сезоны/эпизоды, статус. Placeholder: Icons.tv |
+| `lib/features/search/widgets/game_card.dart` | **Карточка игры**. Тонкая обёртка над `MediaCard`: маппинг Game на параметры виджета, SourceBadge IGDB, subtitle (год, рейтинг), metadata (жанры, платформы) |
+| `lib/features/search/widgets/movie_card.dart` | **Карточка фильма**. Тонкая обёртка над `MediaCard`: маппинг Movie на параметры виджета, SourceBadge TMDB, subtitle (год, рейтинг, runtime), metadata (жанры) |
+| `lib/features/search/widgets/tv_show_card.dart` | **Карточка сериала**. Тонкая обёртка над `MediaCard`: маппинг TvShow на параметры виджета, SourceBadge TMDB, subtitle (год, рейтинг, сезоны), metadata (жанры, статус) |
 | `lib/features/search/widgets/platform_filter_sheet.dart` | **Bottom sheet фильтра**. Мультивыбор платформ с поиском. Кнопки Clear All / Apply |
 
 #### Провайдеры
@@ -145,6 +146,25 @@ lib/
 |------|------------|
 | `lib/features/search/providers/game_search_provider.dart` | **State поиска игр**. Debounce 400ms, минимум 2 символа. Фильтр по платформам. Состояние: query, results, isLoading, error |
 | `lib/features/search/providers/media_search_provider.dart` | **State поиска фильмов/сериалов**. Debounce 400ms через TMDB API. Enum `MediaSearchTab` (movies, tvShows). Состояние: query, movieResults, tvShowResults, isLoading, error, activeTab. Кэширование через `upsertMovies()`/`upsertTvShows()` |
+
+---
+
+### Shared (Общие виджеты и константы)
+
+#### Виджеты
+
+| Файл | Назначение |
+|------|------------|
+| `lib/shared/widgets/media_card.dart` | **Базовый виджет карточки поиска**. Постер 60x80 (CachedNetworkImage), название, subtitle, metadata, trailing. `GameCard`, `MovieCard`, `TvShowCard` являются тонкими обёртками |
+| `lib/shared/widgets/media_detail_view.dart` | **Базовый виджет экрана деталей**. Постер 80x120, SourceBadge, info chips (`MediaDetailChip`), описание inline, секция статуса, дополнительные секции (`extraSections`), комментарии автора, личные заметки, диалог редактирования. `GameDetailScreen`, `MovieDetailScreen`, `TvShowDetailScreen` являются тонкими обёртками |
+| `lib/shared/widgets/source_badge.dart` | **Бейдж источника данных**. Enum `DataSource` (igdb, tmdb, steamGridDb, vgMaps). Размеры: small, medium, large. Цветовая маркировка и текстовая метка |
+| `lib/shared/widgets/media_type_badge.dart` | **Бейдж типа медиа**. Цветная иконка по `MediaType`: синий (игры), красный (фильмы), зелёный (сериалы) |
+
+#### Константы
+
+| Файл | Назначение |
+|------|------------|
+| `lib/shared/constants/media_type_theme.dart` | **Тема типов медиа**. Цвета и иконки для визуального разделения: `colorFor(MediaType)`, `iconFor(MediaType)`. Статические константы `gameColor`, `movieColor`, `tvShowColor` |
 
 ---
 
