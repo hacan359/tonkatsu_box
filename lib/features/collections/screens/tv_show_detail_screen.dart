@@ -1,6 +1,5 @@
 // Экран детального просмотра сериала в коллекции.
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,6 +7,8 @@ import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/tv_show.dart';
+import '../../../shared/widgets/media_detail_view.dart';
+import '../../../shared/widgets/source_badge.dart';
 import '../providers/collections_provider.dart';
 import '../widgets/item_status_dropdown.dart';
 
@@ -54,7 +55,7 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen> {
             body: const Center(child: Text('TV Show not found')),
           );
         }
-        return _buildContent(context, item);
+        return _buildContent(item);
       },
       loading: () => Scaffold(
         appBar: AppBar(),
@@ -76,214 +77,78 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen> {
     return null;
   }
 
-  Widget _buildContent(BuildContext context, CollectionItem item) {
+  Widget _buildContent(CollectionItem item) {
     final TvShow? tvShow = item.tvShow;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(item.itemName),
+    return MediaDetailView(
+      title: item.itemName,
+      coverUrl: tvShow?.posterThumbUrl,
+      placeholderIcon: Icons.tv_outlined,
+      source: DataSource.tmdb,
+      typeIcon: Icons.tv_outlined,
+      typeLabel: 'TV Show',
+      infoChips: _buildInfoChips(tvShow),
+      description: tvShow?.overview,
+      statusWidget: ItemStatusDropdown(
+        status: item.status,
+        mediaType: MediaType.tvShow,
+        onChanged: (ItemStatus status) => _updateStatus(item.id, status),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: <Widget>[
-          _buildHeader(context, item, tvShow),
-          const SizedBox(height: 16),
-          _buildStatusSection(context, item),
-          const SizedBox(height: 16),
-          _buildProgressSection(context, item, tvShow),
-          const SizedBox(height: 16),
-          _buildAuthorCommentSection(context, item),
-          const SizedBox(height: 16),
-          _buildUserNotesSection(context, item),
-          const SizedBox(height: 24),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeader(
-    BuildContext context,
-    CollectionItem item,
-    TvShow? tvShow,
-  ) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-    final String? posterUrl = tvShow?.posterThumbUrl;
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        // Постер
-        ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: SizedBox(
-            width: 80,
-            height: 120,
-            child: posterUrl != null
-                ? CachedNetworkImage(
-                    imageUrl: posterUrl,
-                    fit: BoxFit.cover,
-                    memCacheWidth: 120,
-                    memCacheHeight: 180,
-                    placeholder: (BuildContext ctx, String url) => Container(
-                      color: colorScheme.surfaceContainerHighest,
-                      child: const Center(
-                        child: SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      ),
-                    ),
-                    errorWidget:
-                        (BuildContext ctx, String url, Object error) =>
-                            _buildPlaceholder(colorScheme),
-                  )
-                : _buildPlaceholder(colorScheme),
-          ),
-        ),
-        const SizedBox(width: 12),
-        // Инфо
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Row(
-                children: <Widget>[
-                  Icon(
-                    Icons.tv_outlined,
-                    size: 16,
-                    color: colorScheme.primary,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    'TV Show',
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: colorScheme.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 6,
-                runSpacing: 4,
-                children: <Widget>[
-                  if (tvShow?.firstAirYear != null)
-                    _buildInfoChip(
-                      Icons.calendar_today_outlined,
-                      tvShow!.firstAirYear.toString(),
-                      colorScheme,
-                    ),
-                  if (tvShow?.totalSeasons != null)
-                    _buildInfoChip(
-                      Icons.video_library_outlined,
-                      '${tvShow!.totalSeasons} season${tvShow.totalSeasons != 1 ? 's' : ''}',
-                      colorScheme,
-                    ),
-                  if (tvShow?.totalEpisodes != null)
-                    _buildInfoChip(
-                      Icons.playlist_play,
-                      '${tvShow!.totalEpisodes} ep',
-                      colorScheme,
-                    ),
-                  if (tvShow?.formattedRating != null)
-                    _buildInfoChip(
-                      Icons.star_outline,
-                      '${tvShow!.formattedRating}/10',
-                      colorScheme,
-                    ),
-                  if (tvShow?.status != null)
-                    _buildInfoChip(
-                      Icons.info_outline,
-                      tvShow!.status!,
-                      colorScheme,
-                    ),
-                  if (tvShow?.genresString != null)
-                    _buildInfoChip(
-                      Icons.category_outlined,
-                      tvShow!.genresString!,
-                      colorScheme,
-                    ),
-                ],
-              ),
-              if (tvShow?.overview != null &&
-                  tvShow!.overview!.isNotEmpty) ...<Widget>[
-                const SizedBox(height: 8),
-                Text(
-                  tvShow.overview!,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                    height: 1.4,
-                  ),
-                  maxLines: 4,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ],
-          ),
-        ),
+      extraSections: <Widget>[
+        _buildProgressSection(context, item, tvShow),
       ],
+      authorComment: item.authorComment,
+      userComment: item.userComment,
+      hasAuthorComment: item.hasAuthorComment,
+      hasUserComment: item.hasUserComment,
+      isEditable: widget.isEditable,
+      onAuthorCommentSave: (String? text) =>
+          _saveAuthorComment(item.id, text),
+      onUserCommentSave: (String? text) =>
+          _saveUserComment(item.id, text),
     );
   }
 
-  Widget _buildPlaceholder(ColorScheme colorScheme) {
-    return Container(
-      color: colorScheme.surfaceContainerHighest,
-      child: Icon(
-        Icons.tv_outlined,
-        size: 32,
-        color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-      ),
-    );
-  }
-
-  Widget _buildInfoChip(IconData icon, String text, ColorScheme colorScheme) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Icon(icon, size: 12, color: colorScheme.onSurfaceVariant),
-          const SizedBox(width: 4),
-          Text(
-            text,
-            style: TextStyle(
-              fontSize: 11,
-              color: colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatusSection(BuildContext context, CollectionItem item) {
-    final ThemeData theme = Theme.of(context);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text(
-          'Status',
-          style: theme.textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 6),
-        ItemStatusDropdown(
-          status: item.status,
-          mediaType: MediaType.tvShow,
-          onChanged: (ItemStatus status) =>
-              _updateStatus(item.id, status),
-        ),
-      ],
-    );
+  List<MediaDetailChip> _buildInfoChips(TvShow? tvShow) {
+    final List<MediaDetailChip> chips = <MediaDetailChip>[];
+    if (tvShow?.firstAirYear != null) {
+      chips.add(MediaDetailChip(
+        icon: Icons.calendar_today_outlined,
+        text: tvShow!.firstAirYear.toString(),
+      ));
+    }
+    if (tvShow?.totalSeasons != null) {
+      chips.add(MediaDetailChip(
+        icon: Icons.video_library_outlined,
+        text:
+            '${tvShow!.totalSeasons} season${tvShow.totalSeasons != 1 ? 's' : ''}',
+      ));
+    }
+    if (tvShow?.totalEpisodes != null) {
+      chips.add(MediaDetailChip(
+        icon: Icons.playlist_play,
+        text: '${tvShow!.totalEpisodes} ep',
+      ));
+    }
+    if (tvShow?.formattedRating != null) {
+      chips.add(MediaDetailChip(
+        icon: Icons.star_outline,
+        text: '${tvShow!.formattedRating}/10',
+      ));
+    }
+    if (tvShow?.status != null) {
+      chips.add(MediaDetailChip(
+        icon: Icons.info_outline,
+        text: tvShow!.status!,
+      ));
+    }
+    if (tvShow?.genresString != null) {
+      chips.add(MediaDetailChip(
+        icon: Icons.category_outlined,
+        text: tvShow!.genresString!,
+      ));
+    }
+    return chips;
   }
 
   Widget _buildProgressSection(
@@ -433,141 +298,6 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen> {
     );
   }
 
-  Widget _buildAuthorCommentSection(
-    BuildContext context,
-    CollectionItem item,
-  ) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Row(
-              children: <Widget>[
-                Icon(
-                  Icons.format_quote,
-                  size: 18,
-                  color: colorScheme.tertiary,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  "Author's Comment",
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-            if (widget.isEditable)
-              TextButton.icon(
-                onPressed: () => _editAuthorComment(item),
-                icon: const Icon(Icons.edit, size: 14),
-                label: const Text('Edit'),
-              ),
-          ],
-        ),
-        const SizedBox(height: 6),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: colorScheme.tertiaryContainer.withValues(alpha: 0.3),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: colorScheme.tertiaryContainer,
-            ),
-          ),
-          child: item.hasAuthorComment
-              ? Text(
-                  item.authorComment!,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontStyle: FontStyle.italic,
-                    height: 1.5,
-                  ),
-                )
-              : Text(
-                  widget.isEditable
-                      ? 'No comment yet. Tap Edit to add one.'
-                      : 'No comment from the author.',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color:
-                        colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildUserNotesSection(BuildContext context, CollectionItem item) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Row(
-              children: <Widget>[
-                Icon(
-                  Icons.note_alt_outlined,
-                  size: 18,
-                  color: colorScheme.primary,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  'My Notes',
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-            TextButton.icon(
-              onPressed: () => _editUserNotes(item),
-              icon: const Icon(Icons.edit, size: 14),
-              label: const Text('Edit'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 6),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: colorScheme.primaryContainer.withValues(alpha: 0.3),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: colorScheme.primaryContainer,
-            ),
-          ),
-          child: item.hasUserComment
-              ? Text(
-                  item.userComment!,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    height: 1.5,
-                  ),
-                )
-              : Text(
-                  'No notes yet. Tap Edit to add your personal notes.',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color:
-                        colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-        ),
-      ],
-    );
-  }
-
   Future<void> _updateStatus(int id, ItemStatus status) async {
     await ref
         .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
@@ -588,66 +318,15 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen> {
         );
   }
 
-  Future<void> _editAuthorComment(CollectionItem item) async {
-    final String? result = await _showCommentDialog(
-      title: "Edit Author's Comment",
-      hint: 'Write a comment about this TV show...',
-      initialValue: item.authorComment,
-    );
-
-    if (result == null) return;
-
+  Future<void> _saveAuthorComment(int id, String? text) async {
     await ref
         .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
-        .updateAuthorComment(item.id, result.isEmpty ? null : result);
+        .updateAuthorComment(id, text);
   }
 
-  Future<void> _editUserNotes(CollectionItem item) async {
-    final String? result = await _showCommentDialog(
-      title: 'Edit My Notes',
-      hint: 'Write your personal notes...',
-      initialValue: item.userComment,
-    );
-
-    if (result == null) return;
-
+  Future<void> _saveUserComment(int id, String? text) async {
     await ref
         .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
-        .updateUserComment(item.id, result.isEmpty ? null : result);
-  }
-
-  Future<String?> _showCommentDialog({
-    required String title,
-    required String hint,
-    String? initialValue,
-  }) async {
-    final TextEditingController controller =
-        TextEditingController(text: initialValue);
-
-    return showDialog<String>(
-      context: context,
-      builder: (BuildContext context) => AlertDialog(
-        title: Text(title),
-        content: TextField(
-          controller: controller,
-          maxLines: 5,
-          decoration: InputDecoration(
-            hintText: hint,
-            border: const OutlineInputBorder(),
-          ),
-          autofocus: true,
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(controller.text),
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
+        .updateUserComment(id, text);
   }
 }

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/search/widgets/game_card.dart';
 import 'package:xerabora/shared/models/game.dart';
+import 'package:xerabora/shared/widgets/media_type_badge.dart';
+import 'package:xerabora/shared/widgets/source_badge.dart';
 
 void main() {
   const Game testGame = Game(
@@ -64,7 +66,8 @@ void main() {
       testWidgets('должен показывать placeholder при отсутствии обложки', (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget());
 
-        expect(find.byIcon(Icons.videogame_asset), findsOneWidget);
+        // placeholder (size 24) + MediaTypeBadge (size 12)
+        expect(find.byIcon(Icons.videogame_asset), findsWidgets);
       });
 
       testWidgets('должен показывать trailing widget', (WidgetTester tester) async {
@@ -188,6 +191,23 @@ void main() {
         );
         expect(platformText.overflow, TextOverflow.ellipsis);
         expect(platformText.maxLines, 1);
+      });
+    });
+
+    group('source и mediaType', () {
+      testWidgets('должен передавать source IGDB в MediaCard',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget());
+
+        expect(find.text('IGDB'), findsOneWidget);
+        expect(find.byType(SourceBadge), findsOneWidget);
+      });
+
+      testWidgets('должен передавать mediaType game в MediaCard',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget());
+
+        expect(find.byType(MediaTypeBadge), findsOneWidget);
       });
     });
   });

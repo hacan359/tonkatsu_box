@@ -2,10 +2,14 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../../shared/models/game.dart';
+import '../../../shared/models/media_type.dart';
+import '../../../shared/widgets/media_card.dart';
+import '../../../shared/widgets/source_badge.dart';
 
 /// Карточка игры для отображения в списке.
 ///
 /// Показывает обложку, название, год релиза, рейтинг, жанры и платформы.
+/// Построена на основе [MediaCard].
 class GameCard extends StatelessWidget {
   /// Создаёт [GameCard].
   const GameCard({
@@ -30,164 +34,38 @@ class GameCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return MediaCard(
+      title: game.name,
+      imageUrl: game.coverUrl,
+      placeholderIcon: Icons.videogame_asset,
+      mediaType: MediaType.game,
+      source: DataSource.igdb,
+      year: game.releaseYear,
+      rating: game.formattedRating,
+      genres: game.genresString,
+      onTap: onTap,
+      trailing: trailing,
+      memCacheWidth: 120,
+      memCacheHeight: 160,
+      additionalInfo: _buildPlatforms(context),
+    );
+  }
+
+  Widget? _buildPlatforms(BuildContext context) {
+    if (platformNames == null || platformNames!.isEmpty) {
+      return null;
+    }
+
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              // Обложка
-              _buildCover(colorScheme),
-              const SizedBox(width: 12),
-
-              // Информация
-              Expanded(
-                child: _buildInfo(theme, colorScheme),
-              ),
-
-              // Trailing widget
-              if (trailing != null) ...<Widget>[
-                const SizedBox(width: 8),
-                trailing!,
-              ],
-            ],
-          ),
-        ),
+    return Text(
+      platformNames!.join(' \u2022 '),
+      style: theme.textTheme.bodySmall?.copyWith(
+        color: colorScheme.primary,
       ),
-    );
-  }
-
-  Widget _buildCover(ColorScheme colorScheme) {
-    const double coverWidth = 60;
-    const double coverHeight = 80;
-
-    if (game.coverUrl != null) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(4),
-        child: CachedNetworkImage(
-          imageUrl: game.coverUrl!,
-          width: coverWidth,
-          height: coverHeight,
-          fit: BoxFit.cover,
-          placeholder: (BuildContext context, String url) => Container(
-            width: coverWidth,
-            height: coverHeight,
-            color: colorScheme.surfaceContainerHighest,
-            child: const Center(
-              child: SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            ),
-          ),
-          errorWidget: (BuildContext context, String url, Object error) =>
-              _buildPlaceholder(colorScheme, coverWidth, coverHeight),
-        ),
-      );
-    }
-
-    return _buildPlaceholder(colorScheme, coverWidth, coverHeight);
-  }
-
-  Widget _buildPlaceholder(
-    ColorScheme colorScheme,
-    double width,
-    double height,
-  ) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Icon(
-        Icons.videogame_asset,
-        color: colorScheme.onSurfaceVariant,
-        size: 24,
-      ),
-    );
-  }
-
-  Widget _buildInfo(ThemeData theme, ColorScheme colorScheme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        // Название
-        Text(
-          game.name,
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-
-        const SizedBox(height: 4),
-
-        // Год и рейтинг
-        Row(
-          children: <Widget>[
-            if (game.releaseYear != null) ...<Widget>[
-              Text(
-                game.releaseYear.toString(),
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(width: 12),
-            ],
-            if (game.formattedRating != null) ...<Widget>[
-              Icon(
-                Icons.star,
-                size: 14,
-                color: Colors.amber.shade600,
-              ),
-              const SizedBox(width: 2),
-              Text(
-                game.formattedRating!,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ],
-        ),
-
-        // Жанры
-        if (game.genresString != null) ...<Widget>[
-          const SizedBox(height: 4),
-          Text(
-            game.genresString!,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-
-        // Платформы
-        if (platformNames != null && platformNames!.isNotEmpty) ...<Widget>[
-          const SizedBox(height: 4),
-          Text(
-            platformNames!.join(' • '),
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: colorScheme.primary,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ],
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
     );
   }
 }
@@ -258,21 +136,25 @@ class GameGridCard extends StatelessWidget {
 
   Widget _buildCover(ColorScheme colorScheme) {
     if (game.coverUrl != null) {
-      return CachedNetworkImage(
-        imageUrl: game.coverUrl!,
-        fit: BoxFit.cover,
-        placeholder: (BuildContext context, String url) => Container(
-          color: colorScheme.surfaceContainerHighest,
-          child: const Center(
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
-        ),
-        errorWidget: (BuildContext context, String url, Object error) =>
-            _buildPlaceholder(colorScheme),
-      );
+      return _buildCoverImage(colorScheme);
     }
 
     return _buildPlaceholder(colorScheme);
+  }
+
+  Widget _buildCoverImage(ColorScheme colorScheme) {
+    return CachedNetworkImage(
+      imageUrl: game.coverUrl!,
+      fit: BoxFit.cover,
+      placeholder: (BuildContext context, String url) => Container(
+        color: colorScheme.surfaceContainerHighest,
+        child: const Center(
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      ),
+      errorWidget: (BuildContext context, String url, Object error) =>
+          _buildPlaceholder(colorScheme),
+    );
   }
 
   Widget _buildPlaceholder(ColorScheme colorScheme) {

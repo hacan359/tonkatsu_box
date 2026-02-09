@@ -10,6 +10,7 @@ import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/movie.dart';
+import 'package:xerabora/shared/widgets/source_badge.dart';
 
 // Mock-нотифайер для подмены collectionItemsNotifierProvider в тестах.
 class MockCollectionItemsNotifier extends CollectionItemsNotifier {
@@ -913,6 +914,25 @@ void main() {
 
         // itemName для movie == null возвращает 'Unknown Movie'
         expect(find.text('Unknown Movie'), findsWidgets);
+      });
+    });
+
+    group('SourceBadge', () {
+      testWidgets('должен отображать SourceBadge TMDB',
+          (WidgetTester tester) async {
+        final Movie movie = createTestMovie(title: 'Test Movie');
+        final CollectionItem item = createTestItem(movie: movie);
+
+        await tester.pumpWidget(createTestWidget(
+          collectionId: 1,
+          itemId: 1,
+          isEditable: true,
+          items: <CollectionItem>[item],
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(SourceBadge), findsOneWidget);
+        expect(find.text('TMDB'), findsOneWidget);
       });
     });
   });

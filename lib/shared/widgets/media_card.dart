@@ -1,0 +1,255 @@
+// Базовая карточка для отображения медиа-элементов в списке.
+
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+
+import '../constants/media_type_theme.dart';
+import '../models/media_type.dart';
+import 'media_type_badge.dart';
+import 'source_badge.dart';
+
+/// Единая карточка для отображения игр, фильмов и сериалов в списке.
+///
+/// Обеспечивает единый стиль: изображение → название → метаданные → кнопки.
+/// Тип-специфичная информация передаётся через [additionalInfo].
+class MediaCard extends StatelessWidget {
+  /// Создаёт [MediaCard].
+  const MediaCard({
+    required this.title,
+    required this.placeholderIcon,
+    this.mediaType,
+    this.source,
+    this.imageUrl,
+    this.year,
+    this.rating,
+    this.genres,
+    this.additionalInfo,
+    this.trailing,
+    this.onTap,
+    this.memCacheWidth,
+    this.memCacheHeight,
+    super.key,
+  });
+
+  /// Название элемента.
+  final String title;
+
+  /// Иконка-заглушка при отсутствии изображения.
+  final IconData placeholderIcon;
+
+  /// Тип медиа для цветового бейджа. Если null — бейдж не показывается.
+  final MediaType? mediaType;
+
+  /// Источник данных (IGDB, TMDB и т.д.). Если null — бейдж не показывается.
+  final DataSource? source;
+
+  /// URL изображения (обложка, постер).
+  final String? imageUrl;
+
+  /// Год выпуска / премьеры.
+  final int? year;
+
+  /// Отформатированный рейтинг (например, "8.5").
+  final String? rating;
+
+  /// Жанры одной строкой (например, "Action, RPG").
+  final String? genres;
+
+  /// Виджет с дополнительной информацией (платформы, длительность, сезоны).
+  final Widget? additionalInfo;
+
+  /// Виджет справа (например, кнопка добавления).
+  final Widget? trailing;
+
+  /// Обработчик нажатия на карточку.
+  final VoidCallback? onTap;
+
+  /// Ширина кэша изображения в памяти.
+  final int? memCacheWidth;
+
+  /// Высота кэша изображения в памяти.
+  final int? memCacheHeight;
+
+  /// Ширина постера/обложки.
+  static const double posterWidth = 60;
+
+  /// Высота постера/обложки.
+  static const double posterHeight = 80;
+
+  /// Радиус скругления постера.
+  static const double posterBorderRadius = 4;
+
+  /// Отступ внутри карточки.
+  static const double cardPadding = 12;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
+
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(cardPadding),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              _buildImage(colorScheme),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildInfo(theme, colorScheme),
+              ),
+              if (trailing != null) ...<Widget>[
+                const SizedBox(width: 8),
+                trailing!,
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImage(ColorScheme colorScheme) {
+    final Widget image = imageUrl != null
+        ? ClipRRect(
+            borderRadius: BorderRadius.circular(posterBorderRadius),
+            child: CachedNetworkImage(
+              imageUrl: imageUrl!,
+              width: posterWidth,
+              height: posterHeight,
+              fit: BoxFit.cover,
+              memCacheWidth: memCacheWidth,
+              memCacheHeight: memCacheHeight,
+              placeholder: (BuildContext context, String url) => Container(
+                width: posterWidth,
+                height: posterHeight,
+                color: colorScheme.surfaceContainerHighest,
+                child: const Center(
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+              ),
+              errorWidget: (BuildContext context, String url, Object error) =>
+                  _buildPlaceholder(colorScheme),
+            ),
+          )
+        : _buildPlaceholder(colorScheme);
+
+    if (mediaType == null) {
+      return image;
+    }
+
+    final Color typeColor = MediaTypeTheme.colorFor(mediaType!);
+
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: typeColor, width: 2),
+        borderRadius: BorderRadius.circular(posterBorderRadius + 1),
+      ),
+      child: Stack(
+        children: <Widget>[
+          image,
+          Positioned(
+            right: 0,
+            bottom: 0,
+            child: MediaTypeBadge(mediaType: mediaType!),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPlaceholder(ColorScheme colorScheme) {
+    return Container(
+      width: posterWidth,
+      height: posterHeight,
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(posterBorderRadius),
+      ),
+      child: Icon(
+        placeholderIcon,
+        color: colorScheme.onSurfaceVariant,
+        size: 24,
+      ),
+    );
+  }
+
+  Widget _buildInfo(ThemeData theme, ColorScheme colorScheme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        // Название
+        Text(
+          title,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+
+        const SizedBox(height: 4),
+
+        // Год, рейтинг и источник
+        Row(
+          children: <Widget>[
+            if (source != null) ...<Widget>[
+              SourceBadge(source: source!),
+              const SizedBox(width: 8),
+            ],
+            if (year != null) ...<Widget>[
+              Text(
+                year.toString(),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(width: 12),
+            ],
+            if (rating != null) ...<Widget>[
+              Icon(
+                Icons.star,
+                size: 14,
+                color: Colors.amber.shade600,
+              ),
+              const SizedBox(width: 2),
+              Text(
+                rating!,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ],
+        ),
+
+        // Жанры
+        if (genres != null) ...<Widget>[
+          const SizedBox(height: 4),
+          Text(
+            genres!,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+
+        // Дополнительная информация (платформы, длительность, сезоны)
+        if (additionalInfo != null) ...<Widget>[
+          const SizedBox(height: 4),
+          additionalInfo!,
+        ],
+      ],
+    );
+  }
+}

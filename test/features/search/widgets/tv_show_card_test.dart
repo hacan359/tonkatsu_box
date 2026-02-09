@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/search/widgets/tv_show_card.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
+import 'package:xerabora/shared/widgets/media_type_badge.dart';
+import 'package:xerabora/shared/widgets/source_badge.dart';
 
 void main() {
   const TvShow testTvShow = TvShow(
@@ -83,7 +85,8 @@ void main() {
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget());
 
-        expect(find.byIcon(Icons.tv), findsOneWidget);
+        // placeholder (size 24) + MediaTypeBadge (size 12)
+        expect(find.byIcon(Icons.tv), findsWidgets);
       });
 
       testWidgets('should show trailing widget', (WidgetTester tester) async {
@@ -270,12 +273,30 @@ void main() {
       });
     });
 
+    group('source и mediaType', () {
+      testWidgets('should pass source TMDB to MediaCard',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget());
+
+        expect(find.text('TMDB'), findsOneWidget);
+        expect(find.byType(SourceBadge), findsOneWidget);
+      });
+
+      testWidgets('should pass mediaType tvShow to MediaCard',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget());
+
+        expect(find.byType(MediaTypeBadge), findsOneWidget);
+      });
+    });
+
     group('poster', () {
       testWidgets('should show placeholder icon when posterUrl is null',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(tvShow: tvShowMinimal));
 
-        expect(find.byIcon(Icons.tv), findsOneWidget);
+        // placeholder (size 24) + MediaTypeBadge (size 12)
+        expect(find.byIcon(Icons.tv), findsWidgets);
       });
 
       testWidgets('should show CachedNetworkImage when posterUrl is set',

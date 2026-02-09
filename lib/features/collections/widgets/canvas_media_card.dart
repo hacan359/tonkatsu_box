@@ -3,7 +3,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
+import '../../../shared/constants/media_type_theme.dart';
 import '../../../shared/models/canvas_item.dart';
+import '../../../shared/models/media_type.dart';
 
 /// Карточка фильма или сериала на канвасе.
 ///
@@ -29,9 +31,18 @@ class CanvasMediaCard extends StatelessWidget {
     final String title = _getTitle();
     final IconData placeholderIcon = _getPlaceholderIcon();
 
+    final Color borderColor = _getBorderColor();
+
     return Card(
       clipBehavior: Clip.antiAlias,
       elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: borderColor,
+          width: 2,
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
@@ -75,6 +86,20 @@ class CanvasMediaCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Color _getBorderColor() {
+    switch (item.itemType) {
+      case CanvasItemType.movie:
+        return MediaTypeTheme.colorFor(MediaType.movie);
+      case CanvasItemType.tvShow:
+        return MediaTypeTheme.colorFor(MediaType.tvShow);
+      case CanvasItemType.game:
+      case CanvasItemType.text:
+      case CanvasItemType.image:
+      case CanvasItemType.link:
+        return MediaTypeTheme.colorFor(MediaType.game);
+    }
   }
 
   String? _getPosterUrl() {

@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/features/settings/screens/settings_screen.dart';
+import 'package:xerabora/shared/widgets/source_badge.dart';
 
 void main() {
   group('SettingsScreen', () {
@@ -213,6 +214,65 @@ void main() {
           find.widgetWithText(TextField, 'Client Secret');
       final TextField textField = tester.widget<TextField>(secretField);
       expect(textField.controller?.text, equals('existing_secret'));
+    });
+
+    group('SourceBadges в секциях API', () {
+      testWidgets('должен отображать SourceBadge IGDB в секции IGDB',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        expect(find.text('IGDB'), findsOneWidget);
+      });
+
+      testWidgets('должен отображать SourceBadge SGDB в секции SteamGridDB',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        // Прокручиваем вниз к SteamGridDB секции
+        await tester.scrollUntilVisible(
+          find.text('SGDB'),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('SGDB'), findsOneWidget);
+      });
+
+      testWidgets('должен отображать SourceBadge TMDB в секции TMDB',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        // Прокручиваем вниз к TMDB секции
+        await tester.scrollUntilVisible(
+          find.text('TMDB'),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('TMDB'), findsOneWidget);
+      });
+
+      testWidgets('должен использовать все три SourceBadge виджета',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        // Прокручиваем до конца
+        await tester.scrollUntilVisible(
+          find.text('TMDB API (Movies & TV)'),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.pumpAndSettle();
+
+        // Все 3 бейджа должны быть видны
+        expect(find.byType(SourceBadge), findsNWidgets(3));
+      });
     });
   });
 }

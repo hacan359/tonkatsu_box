@@ -7,6 +7,7 @@ import 'package:xerabora/features/collections/screens/game_detail_screen.dart';
 import 'package:xerabora/shared/models/collection_game.dart';
 import 'package:xerabora/shared/models/game.dart';
 import 'package:xerabora/shared/models/platform.dart';
+import 'package:xerabora/shared/widgets/source_badge.dart';
 
 class MockCollectionRepository extends Mock implements CollectionRepository {}
 
@@ -151,7 +152,8 @@ void main() {
       expect(find.textContaining('Playing'), findsOneWidget);
     });
 
-    testWidgets('должен отображать описание игры', (WidgetTester tester) async {
+    testWidgets('должен отображать описание игры inline в header',
+        (WidgetTester tester) async {
       final Game game = createTestGame(
         summary: 'A group of adventurers travel through time.',
       );
@@ -169,8 +171,10 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.text('Description'), findsOneWidget);
-      expect(find.text('A group of adventurers travel through time.'), findsOneWidget);
+      expect(
+        find.text('A group of adventurers travel through time.'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('должен отображать комментарий автора', (WidgetTester tester) async {
@@ -425,6 +429,27 @@ void main() {
 
       // Проверяем что диалог закрылся
       expect(find.text("Edit Author's Comment"), findsNothing);
+    });
+
+    testWidgets('должен отображать SourceBadge IGDB',
+        (WidgetTester tester) async {
+      const Game game = Game(id: 100, name: 'Test Game');
+      const Platform platform = Platform(id: 18, name: 'SNES');
+      final CollectionGame collectionGame = createTestCollectionGame(
+        game: game,
+        platform: platform,
+      );
+
+      await tester.pumpWidget(createTestWidget(
+        collectionId: 1,
+        gameId: 1,
+        isEditable: true,
+        games: <CollectionGame>[collectionGame],
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SourceBadge), findsOneWidget);
+      expect(find.text('IGDB'), findsOneWidget);
     });
   });
 }

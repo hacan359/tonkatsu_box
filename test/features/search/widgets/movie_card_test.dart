@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/search/widgets/movie_card.dart';
 import 'package:xerabora/shared/models/movie.dart';
+import 'package:xerabora/shared/widgets/media_type_badge.dart';
+import 'package:xerabora/shared/widgets/source_badge.dart';
 
 void main() {
   const Movie testMovie = Movie(
@@ -74,7 +76,8 @@ void main() {
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget());
 
-        expect(find.byIcon(Icons.movie), findsOneWidget);
+        // placeholder (size 24) + MediaTypeBadge (size 12)
+        expect(find.byIcon(Icons.movie), findsWidgets);
       });
 
       testWidgets('should show trailing widget', (WidgetTester tester) async {
@@ -195,12 +198,30 @@ void main() {
       });
     });
 
+    group('source и mediaType', () {
+      testWidgets('should pass source TMDB to MediaCard',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget());
+
+        expect(find.text('TMDB'), findsOneWidget);
+        expect(find.byType(SourceBadge), findsOneWidget);
+      });
+
+      testWidgets('should pass mediaType movie to MediaCard',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget());
+
+        expect(find.byType(MediaTypeBadge), findsOneWidget);
+      });
+    });
+
     group('poster', () {
       testWidgets('should show placeholder icon when posterUrl is null',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(movie: movieMinimal));
 
-        expect(find.byIcon(Icons.movie), findsOneWidget);
+        // placeholder (size 24) + MediaTypeBadge (size 12)
+        expect(find.byIcon(Icons.movie), findsWidgets);
       });
 
       testWidgets(
