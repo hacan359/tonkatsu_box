@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/database_service.dart';
 import '../../../core/services/image_cache_service.dart';
+import '../../../shared/models/collected_item_info.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/game.dart';
 import '../../../shared/models/media_type.dart';
@@ -108,7 +109,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         if (gameState.query != _searchController.text) {
           ref
               .read(gameSearchProvider.notifier)
-              .searchImmediate(_searchController.text);
+              .search(_searchController.text);
         }
       }
     }
@@ -138,7 +139,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     super.dispose();
   }
 
-  void _onSearchChanged(String query) {
+  void _onSearchSubmit() {
+    final String query = _searchController.text;
+    if (query.length < 2) return;
+
     if (_activeTabIndex == 0) {
       ref.read(gameSearchProvider.notifier).search(query);
     } else {
@@ -381,6 +385,146 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     }
   }
 
+  // ==================== Remove from collection ====================
+
+  Widget _buildMediaTrailing({
+    required String title,
+    required List<CollectedItemInfo>? infos,
+    required MediaType mediaType,
+    required VoidCallback onAdd,
+  }) {
+    if (infos != null && infos.isNotEmpty) {
+      return IconButton(
+        icon: Icon(Icons.remove_circle_outline,
+            color: Theme.of(context).colorScheme.error),
+        tooltip: 'Remove from collection',
+        onPressed: () => _removeItemFromCollection(title, infos, mediaType),
+      );
+    }
+    return IconButton(
+      icon: const Icon(Icons.add_circle_outline),
+      tooltip: 'Add to collection',
+      onPressed: onAdd,
+    );
+  }
+
+  Future<void> _removeGameFromCollection(
+    Game game,
+    List<CollectedItemInfo> infos,
+  ) async {
+    final CollectedItemInfo? selected =
+        await _selectCollectionForRemoval(game.name, infos);
+    if (selected == null || !mounted) return;
+
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+
+    await ref
+        .read(collectionGamesNotifierProvider(selected.collectionId).notifier)
+        .removeGame(selected.recordId);
+
+    if (mounted) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            '${game.name} removed from ${selected.collectionName}',
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _removeItemFromCollection(
+    String title,
+    List<CollectedItemInfo> infos,
+    MediaType mediaType,
+  ) async {
+    final CollectedItemInfo? selected =
+        await _selectCollectionForRemoval(title, infos);
+    if (selected == null || !mounted) return;
+
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+
+    await ref
+        .read(
+            collectionItemsNotifierProvider(selected.collectionId).notifier)
+        .removeItem(selected.recordId, mediaType: mediaType);
+
+    if (mounted) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            '$title removed from ${selected.collectionName}',
+          ),
+        ),
+      );
+    }
+  }
+
+  /// Выбирает коллекцию для удаления (с подтверждением).
+  ///
+  /// Если элемент в одной коллекции — показывает диалог подтверждения.
+  /// Если в нескольких — показывает список для выбора.
+  Future<CollectedItemInfo?> _selectCollectionForRemoval(
+    String itemName,
+    List<CollectedItemInfo> infos,
+  ) async {
+    if (infos.length == 1) {
+      final CollectedItemInfo info = infos.first;
+      final bool? confirmed = await showDialog<bool>(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: const Text('Remove from collection'),
+          content: Text(
+            'Remove "$itemName" from "${info.collectionName}"?',
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.error,
+              ),
+              child: const Text('Remove'),
+            ),
+          ],
+        ),
+      );
+      return (confirmed == true) ? info : null;
+    }
+
+    // Несколько коллекций — показываем выбор
+    return showDialog<CollectedItemInfo>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Remove from collection'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: infos.length,
+            itemBuilder: (BuildContext context, int index) {
+              final CollectedItemInfo info = infos[index];
+              return ListTile(
+                leading: const Icon(Icons.folder),
+                title: Text(info.collectionName),
+                onTap: () => Navigator.of(context).pop(info),
+              );
+            },
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
+
   // ==================== Shared dialogs ====================
 
   Future<Collection?> _showCollectionSelectionDialog() async {
@@ -571,35 +715,37 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           // Поле поиска
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Column(
+            child: Row(
               children: <Widget>[
-                TextField(
-                  controller: _searchController,
-                  focusNode: _searchFocus,
-                  decoration: InputDecoration(
-                    hintText: _searchHint,
-                    prefixIcon: const Icon(Icons.search),
-                    suffixIcon: _searchController.text.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear),
-                            onPressed: _onClearSearch,
-                          )
-                        : null,
-                    border: const OutlineInputBorder(),
+                Expanded(
+                  child: TextField(
+                    controller: _searchController,
+                    focusNode: _searchFocus,
+                    decoration: InputDecoration(
+                      hintText: _searchHint,
+                      prefixIcon: const Icon(Icons.search),
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: _onClearSearch,
+                            )
+                          : null,
+                      border: const OutlineInputBorder(),
+                    ),
+                    textInputAction: TextInputAction.search,
+                    onSubmitted: (_) => _onSearchSubmit(),
                   ),
-                  onChanged: _onSearchChanged,
-                  textInputAction: TextInputAction.search,
-                  onSubmitted: (String query) {
-                    if (_activeTabIndex == 0) {
-                      ref
-                          .read(gameSearchProvider.notifier)
-                          .searchImmediate(query);
-                    } else {
-                      ref
-                          .read(mediaSearchProvider.notifier)
-                          .searchImmediate(query);
-                    }
-                  },
+                ),
+                const SizedBox(width: 8),
+                FilledButton(
+                  onPressed: _searchController.text.length >= 2
+                      ? _onSearchSubmit
+                      : null,
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(48, 48),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                  ),
+                  child: const Text('Search'),
                 ),
               ],
             ),
@@ -722,7 +868,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       return _buildErrorState(searchState.error!, onRetry: () {
         ref
             .read(gameSearchProvider.notifier)
-            .searchImmediate(_searchController.text);
+            .search(_searchController.text);
       });
     }
 
@@ -738,27 +884,46 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       return _buildNoResults(searchState.query);
     }
 
+    final Map<int, List<CollectedItemInfo>> collectedGameInfos =
+        ref.watch(collectedGameIdsProvider).valueOrNull ??
+            <int, List<CollectedItemInfo>>{};
+
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       itemCount: searchState.results.length,
       itemBuilder: (BuildContext context, int index) {
         final Game game = searchState.results[index];
+        final List<CollectedItemInfo>? infos = collectedGameInfos[game.id];
+        final String? collectionName = infos != null && infos.isNotEmpty ? infos.first.collectionName : null;
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: GameCard(
             game: game,
             onTap: () => _onGameTap(game),
             platformNames: _getPlatformNames(game.platformIds),
+            collectionName: collectionName,
             trailing: widget.collectionId == null
-                ? IconButton(
-                    icon: const Icon(Icons.add_circle_outline),
-                    tooltip: 'Add to collection',
-                    onPressed: () => _addGameToAnyCollection(game),
-                  )
+                ? _buildGameTrailing(game, infos)
                 : null,
           ),
         );
       },
+    );
+  }
+
+  Widget _buildGameTrailing(Game game, List<CollectedItemInfo>? infos) {
+    if (infos != null && infos.isNotEmpty) {
+      return IconButton(
+        icon: Icon(Icons.remove_circle_outline,
+            color: Theme.of(context).colorScheme.error),
+        tooltip: 'Remove from collection',
+        onPressed: () => _removeGameFromCollection(game, infos),
+      );
+    }
+    return IconButton(
+      icon: const Icon(Icons.add_circle_outline),
+      tooltip: 'Add to collection',
+      onPressed: () => _addGameToAnyCollection(game),
     );
   }
 
@@ -771,7 +936,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       return _buildErrorState(searchState.error!, onRetry: () {
         ref
             .read(mediaSearchProvider.notifier)
-            .searchImmediate(_searchController.text);
+            .search(_searchController.text);
       });
     }
 
@@ -787,21 +952,30 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       return _buildNoResults(searchState.query);
     }
 
+    final Map<int, List<CollectedItemInfo>> collectedMovieInfos =
+        ref.watch(collectedMovieIdsProvider).valueOrNull ??
+            <int, List<CollectedItemInfo>>{};
+
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       itemCount: searchState.movieResults.length,
       itemBuilder: (BuildContext context, int index) {
         final Movie movie = searchState.movieResults[index];
+        final List<CollectedItemInfo>? infos =
+            collectedMovieInfos[movie.tmdbId];
+        final String? collectionName = infos != null && infos.isNotEmpty ? infos.first.collectionName : null;
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: MovieCard(
             movie: movie,
             onTap: () => _onMovieTap(movie),
+            collectionName: collectionName,
             trailing: widget.collectionId == null
-                ? IconButton(
-                    icon: const Icon(Icons.add_circle_outline),
-                    tooltip: 'Add to collection',
-                    onPressed: () => _addMovieToAnyCollection(movie),
+                ? _buildMediaTrailing(
+                    title: movie.title,
+                    infos: infos,
+                    mediaType: MediaType.movie,
+                    onAdd: () => _addMovieToAnyCollection(movie),
                   )
                 : null,
           ),
@@ -819,7 +993,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       return _buildErrorState(searchState.error!, onRetry: () {
         ref
             .read(mediaSearchProvider.notifier)
-            .searchImmediate(_searchController.text);
+            .search(_searchController.text);
       });
     }
 
@@ -835,21 +1009,30 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       return _buildNoResults(searchState.query);
     }
 
+    final Map<int, List<CollectedItemInfo>> collectedTvShowInfos =
+        ref.watch(collectedTvShowIdsProvider).valueOrNull ??
+            <int, List<CollectedItemInfo>>{};
+
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       itemCount: searchState.tvShowResults.length,
       itemBuilder: (BuildContext context, int index) {
         final TvShow tvShow = searchState.tvShowResults[index];
+        final List<CollectedItemInfo>? infos =
+            collectedTvShowInfos[tvShow.tmdbId];
+        final String? collectionName = infos != null && infos.isNotEmpty ? infos.first.collectionName : null;
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: TvShowCard(
             tvShow: tvShow,
             onTap: () => _onTvShowTap(tvShow),
+            collectionName: collectionName,
             trailing: widget.collectionId == null
-                ? IconButton(
-                    icon: const Icon(Icons.add_circle_outline),
-                    tooltip: 'Add to collection',
-                    onPressed: () => _addTvShowToAnyCollection(tvShow),
+                ? _buildMediaTrailing(
+                    title: tvShow.title,
+                    infos: infos,
+                    mediaType: MediaType.tvShow,
+                    onAdd: () => _addTvShowToAnyCollection(tvShow),
                   )
                 : null,
           ),

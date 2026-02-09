@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/database/database_service.dart';
 import '../../../data/repositories/collection_repository.dart';
+import '../../../shared/models/collected_item_info.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_game.dart';
 import '../../../shared/models/collection_item.dart';
@@ -175,6 +177,7 @@ class CollectionGamesNotifier
     if (id == null) return false;
 
     await refresh();
+    ref.invalidate(collectedGameIdsProvider);
     return true;
   }
 
@@ -182,6 +185,7 @@ class CollectionGamesNotifier
   Future<void> removeGame(int id) async {
     await _repository.removeGame(id);
     await refresh();
+    ref.invalidate(collectedGameIdsProvider);
   }
 
   /// Обновляет статус игры.
@@ -302,13 +306,28 @@ class CollectionItemsNotifier
     if (id == null) return false;
 
     await refresh();
+    _invalidateCollectedIds(mediaType);
     return true;
   }
 
   /// Удаляет элемент из коллекции.
-  Future<void> removeItem(int id) async {
+  Future<void> removeItem(int id, {MediaType? mediaType}) async {
     await _repository.removeItem(id);
     await refresh();
+    if (mediaType != null) {
+      _invalidateCollectedIds(mediaType);
+    }
+  }
+
+  void _invalidateCollectedIds(MediaType mediaType) {
+    switch (mediaType) {
+      case MediaType.game:
+        ref.invalidate(collectedGameIdsProvider);
+      case MediaType.movie:
+        ref.invalidate(collectedMovieIdsProvider);
+      case MediaType.tvShow:
+        ref.invalidate(collectedTvShowIdsProvider);
+    }
   }
 
   /// Обновляет статус элемента.
@@ -394,6 +413,38 @@ class CollectionItemsNotifier
     }
   }
 }
+
+// ==================== Collected IDs ====================
+
+/// Провайдер для информации о нахождении игр в коллекциях.
+///
+/// Возвращает `Map` igdb_id -> список записей в коллекциях.
+final FutureProvider<Map<int, List<CollectedItemInfo>>>
+    collectedGameIdsProvider =
+    FutureProvider<Map<int, List<CollectedItemInfo>>>((Ref ref) async {
+  final DatabaseService db = ref.watch(databaseServiceProvider);
+  return db.getCollectedItemInfos(MediaType.game);
+});
+
+/// Провайдер для информации о нахождении фильмов в коллекциях.
+///
+/// Возвращает `Map` tmdb_id -> список записей в коллекциях.
+final FutureProvider<Map<int, List<CollectedItemInfo>>>
+    collectedMovieIdsProvider =
+    FutureProvider<Map<int, List<CollectedItemInfo>>>((Ref ref) async {
+  final DatabaseService db = ref.watch(databaseServiceProvider);
+  return db.getCollectedItemInfos(MediaType.movie);
+});
+
+/// Провайдер для информации о нахождении сериалов в коллекциях.
+///
+/// Возвращает `Map` tmdb_id -> список записей в коллекциях.
+final FutureProvider<Map<int, List<CollectedItemInfo>>>
+    collectedTvShowIdsProvider =
+    FutureProvider<Map<int, List<CollectedItemInfo>>>((Ref ref) async {
+  final DatabaseService db = ref.watch(databaseServiceProvider);
+  return db.getCollectedItemInfos(MediaType.tvShow);
+});
 
 /// Провайдер для собственных коллекций.
 final Provider<List<Collection>> ownCollectionsProvider =

@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -90,10 +88,6 @@ final NotifierProvider<GameSearchNotifier, GameSearchState>
 /// Notifier для управления поиском игр.
 class GameSearchNotifier extends Notifier<GameSearchState> {
   late GameRepository _repository;
-  Timer? _debounceTimer;
-
-  /// Время задержки перед поиском (debounce).
-  static const Duration debounceDelay = Duration(milliseconds: 400);
 
   /// Минимальная длина запроса для поиска.
   static const int minQueryLength = 2;
@@ -101,39 +95,13 @@ class GameSearchNotifier extends Notifier<GameSearchState> {
   @override
   GameSearchState build() {
     _repository = ref.watch(gameRepositoryProvider);
-
-    // Отменяем таймер при dispose
-    ref.onDispose(() {
-      _debounceTimer?.cancel();
-    });
-
     return const GameSearchState();
   }
 
-  /// Выполняет поиск с debounce.
+  /// Выполняет поиск игр.
   ///
   /// [query] — строка поиска.
-  void search(String query) {
-    _debounceTimer?.cancel();
-
-    state = state.copyWith(query: query, clearError: true);
-
-    if (query.length < minQueryLength) {
-      state = state.copyWith(results: <Game>[], isLoading: false);
-      return;
-    }
-
-    state = state.copyWith(isLoading: true);
-
-    _debounceTimer = Timer(debounceDelay, () {
-      _performSearch(query);
-    });
-  }
-
-  /// Выполняет немедленный поиск без debounce.
-  Future<void> searchImmediate(String query) async {
-    _debounceTimer?.cancel();
-
+  Future<void> search(String query) async {
     state = state.copyWith(query: query, clearError: true);
 
     if (query.length < minQueryLength) {
@@ -205,7 +173,6 @@ class GameSearchNotifier extends Notifier<GameSearchState> {
 
   /// Очищает результаты поиска.
   void clear() {
-    _debounceTimer?.cancel();
     state = const GameSearchState();
   }
 }

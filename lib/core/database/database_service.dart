@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
+import '../../shared/models/collected_item_info.dart';
 import '../../shared/models/collection.dart';
 import '../../shared/models/collection_game.dart';
 import '../../shared/models/collection_item.dart';
@@ -1385,6 +1386,35 @@ class DatabaseService {
       where: 'collection_id = ?',
       whereArgs: <Object?>[collectionId],
     );
+  }
+
+  /// Возвращает информацию о нахождении элементов заданного типа в коллекциях.
+  ///
+  /// Результат: `Map` external_id -> список записей в коллекциях.
+  Future<Map<int, List<CollectedItemInfo>>> getCollectedItemInfos(
+    MediaType mediaType,
+  ) async {
+    final Database db = await database;
+    final List<Map<String, dynamic>> rows = await db.rawQuery('''
+      SELECT ci.id, ci.external_id, ci.collection_id, c.name
+      FROM collection_items ci
+      JOIN collections c ON c.id = ci.collection_id
+      WHERE ci.media_type = ?
+      ORDER BY ci.added_at ASC
+    ''', <Object?>[mediaType.value]);
+
+    final Map<int, List<CollectedItemInfo>> result =
+        <int, List<CollectedItemInfo>>{};
+    for (final Map<String, dynamic> row in rows) {
+      final int externalId = row['external_id'] as int;
+      final CollectedItemInfo info = CollectedItemInfo(
+        recordId: row['id'] as int,
+        collectionId: row['collection_id'] as int,
+        collectionName: row['name'] as String,
+      );
+      result.putIfAbsent(externalId, () => <CollectedItemInfo>[]).add(info);
+    }
+    return result;
   }
 
   /// Закрывает соединение с базой данных.
