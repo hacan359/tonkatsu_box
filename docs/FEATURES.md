@@ -73,13 +73,15 @@ Track status for each item in your collection with context-aware labels:
 
 View statistics per collection — see your completion rate at a glance.
 
-### TV Show Progress
+### Episode Tracker (TV Shows)
 
-Track your viewing progress for TV shows:
-- Current season / total seasons
-- Current episode / total episodes
-- Increment/decrement with +/- buttons
-- Format: "S2/5 • E15/50"
+Track your viewing progress for TV shows at the episode level:
+- **Episode Progress bar** — shows overall watched/total count with a LinearProgressIndicator
+- **Season sections** — ExpansionTile for each season with watched count badge
+- **Lazy loading** — episodes are fetched from TMDB API only when a season is expanded (cached in SQLite for offline access)
+- **Per-episode checkboxes** — mark individual episodes as watched/unwatched with CheckboxListTile
+- **Bulk actions** — "Mark all" / "Unmark all" button per season to toggle all episodes at once
+- **Auto-complete** — when all episodes are watched, the show's status is automatically set to Completed (compares against total episode count from show metadata)
 
 ## Detail Screens
 
@@ -107,7 +109,7 @@ Tap any item in a collection to see its full details. All detail screens have tw
 ### TV Show Details
 - Source: TMDB
 - Info chips: first air date, seasons/episodes count, rating, show status (Returning/Ended/Canceled), genres
-- Viewing progress section (current season and episode with +/- controls)
+- Episode tracker section: progress bar, expandable seasons with per-episode checkboxes, bulk mark/unmark, auto-complete
 - Status dropdown (includes "On Hold")
 
 ## Comments

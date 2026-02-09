@@ -6,21 +6,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:xerabora/core/api/tmdb_api.dart';
+import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/data/repositories/collection_repository.dart';
 import 'package:xerabora/features/collections/screens/tv_show_detail_screen.dart';
 import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
+import 'package:xerabora/shared/models/tv_season.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
 import 'package:xerabora/shared/widgets/media_detail_view.dart';
 import 'package:xerabora/shared/widgets/source_badge.dart';
 
 class MockCollectionRepository extends Mock implements CollectionRepository {}
 
+class MockDatabaseService extends Mock implements DatabaseService {}
+
+class MockTmdbApi extends Mock implements TmdbApi {}
+
 void main() {
   final DateTime testDate = DateTime(2024, 6, 10, 12, 0, 0);
 
   late MockCollectionRepository mockRepo;
+  late MockDatabaseService mockDb;
+  late MockTmdbApi mockTmdbApi;
 
   CollectionItem createTestCollectionItem({
     int id = 1,
@@ -78,6 +87,18 @@ void main() {
 
   setUp(() {
     mockRepo = MockCollectionRepository();
+    mockDb = MockDatabaseService();
+    mockTmdbApi = MockTmdbApi();
+
+    // Мокаем методы DatabaseService для загрузки сезонов
+    when(() => mockDb.getTvSeasonsByShowId(any()))
+        .thenAnswer((_) async => <TvSeason>[]);
+    when(() => mockDb.getWatchedEpisodes(any(), any()))
+        .thenAnswer((_) async => <(int, int)>{});
+
+    // Мокаем TmdbApi — возвращаем пустой список сезонов (fallback)
+    when(() => mockTmdbApi.getTvSeasons(any()))
+        .thenAnswer((_) async => <TvSeason>[]);
 
     // Регистрируем fallback-значения для mocktail
     registerFallbackValue(ItemStatus.notStarted);
@@ -98,6 +119,8 @@ void main() {
     return ProviderScope(
       overrides: <Override>[
         collectionRepositoryProvider.overrideWithValue(mockRepo),
+        databaseServiceProvider.overrideWithValue(mockDb),
+        tmdbApiProvider.overrideWithValue(mockTmdbApi),
       ],
       child: MaterialApp(
         home: TvShowDetailScreen(
@@ -403,18 +426,14 @@ void main() {
       });
     });
 
-    group('секция прогресса', () {
-      testWidgets('должен отображать секцию Progress с полями Season и Episode',
+    group('секция прогресса эпизодов', () {
+      testWidgets('должен отображать заголовок Episode Progress',
           (WidgetTester tester) async {
         final TvShow tvShow = createTestTvShow(
           totalSeasons: 5,
           totalEpisodes: 62,
         );
-        final CollectionItem item = createTestCollectionItem(
-          tvShow: tvShow,
-          currentSeason: 3,
-          currentEpisode: 7,
-        );
+        final CollectionItem item = createTestCollectionItem(tvShow: tvShow);
 
         await tester.pumpWidget(createTestWidget(
           collectionId: 1,
@@ -424,24 +443,16 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        expect(find.text('Progress'), findsOneWidget);
-        expect(find.text('Season'), findsOneWidget);
-        expect(find.text('Episode'), findsOneWidget);
-        expect(find.text('3'), findsOneWidget);
-        expect(find.text('7'), findsOneWidget);
+        expect(find.text('Episode Progress'), findsOneWidget);
       });
 
-      testWidgets('должен отображать total рядом с текущим значением',
+      testWidgets('должен отображать счётчик watched',
           (WidgetTester tester) async {
         final TvShow tvShow = createTestTvShow(
           totalSeasons: 5,
           totalEpisodes: 62,
         );
-        final CollectionItem item = createTestCollectionItem(
-          tvShow: tvShow,
-          currentSeason: 2,
-          currentEpisode: 15,
-        );
+        final CollectionItem item = createTestCollectionItem(tvShow: tvShow);
 
         await tester.pumpWidget(createTestWidget(
           collectionId: 1,
@@ -451,21 +462,16 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        expect(find.text('/5'), findsOneWidget);
-        expect(find.text('/62'), findsOneWidget);
+        expect(find.textContaining('0/62 watched'), findsOneWidget);
       });
 
-      testWidgets('должен отображать текст прогресса S/E',
+      testWidgets('должен показывать LinearProgressIndicator при наличии эпизодов',
           (WidgetTester tester) async {
         final TvShow tvShow = createTestTvShow(
-          totalSeasons: 5,
-          totalEpisodes: 62,
+          totalSeasons: 2,
+          totalEpisodes: 20,
         );
-        final CollectionItem item = createTestCollectionItem(
-          tvShow: tvShow,
-          currentSeason: 3,
-          currentEpisode: 7,
-        );
+        final CollectionItem item = createTestCollectionItem(tvShow: tvShow);
 
         await tester.pumpWidget(createTestWidget(
           collectionId: 1,
@@ -475,47 +481,16 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Формат: S3/5 • E7/62
-        expect(find.textContaining('S3/5'), findsOneWidget);
-        expect(find.textContaining('E7/62'), findsOneWidget);
+        expect(find.byType(LinearProgressIndicator), findsOneWidget);
       });
 
-      testWidgets('должен иметь кнопки + и - для изменения прогресса',
-          (WidgetTester tester) async {
-        final TvShow tvShow = createTestTvShow(
-          totalSeasons: 5,
-          totalEpisodes: 62,
-        );
-        final CollectionItem item = createTestCollectionItem(
-          tvShow: tvShow,
-          currentSeason: 1,
-          currentEpisode: 5,
-        );
-
-        await tester.pumpWidget(createTestWidget(
-          collectionId: 1,
-          itemId: 1,
-          isEditable: true,
-          items: <CollectionItem>[item],
-        ));
-        await tester.pumpAndSettle();
-
-        // 2 кнопки - (для season и episode) и 2 кнопки + (для season и episode)
-        expect(find.byIcon(Icons.remove), findsNWidgets(2));
-        expect(find.byIcon(Icons.add), findsNWidgets(2));
-      });
-
-      testWidgets('не должен показывать total когда значение 0',
+      testWidgets('должен показывать "No season data available" когда нет сезонов',
           (WidgetTester tester) async {
         final TvShow tvShow = createTestTvShow(
           totalSeasons: null,
           totalEpisodes: null,
         );
-        final CollectionItem item = createTestCollectionItem(
-          tvShow: tvShow,
-          currentSeason: 2,
-          currentEpisode: 10,
-        );
+        final CollectionItem item = createTestCollectionItem(tvShow: tvShow);
 
         await tester.pumpWidget(createTestWidget(
           collectionId: 1,
@@ -525,8 +500,44 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Не должно быть /0 в тексте
-        expect(find.text('/0'), findsNothing);
+        expect(find.text('No season data available'), findsOneWidget);
+      });
+
+      testWidgets('должен показывать ExpansionTile при наличии сезонов',
+          (WidgetTester tester) async {
+        final TvShow tvShow = createTestTvShow(
+          totalSeasons: 2,
+          totalEpisodes: 20,
+        );
+        final CollectionItem item = createTestCollectionItem(tvShow: tvShow);
+
+        when(() => mockDb.getTvSeasonsByShowId(200))
+            .thenAnswer((_) async => <TvSeason>[
+                  const TvSeason(
+                    tmdbShowId: 200,
+                    seasonNumber: 1,
+                    name: 'Season 1',
+                    episodeCount: 10,
+                  ),
+                  const TvSeason(
+                    tmdbShowId: 200,
+                    seasonNumber: 2,
+                    name: 'Season 2',
+                    episodeCount: 10,
+                  ),
+                ]);
+
+        await tester.pumpWidget(createTestWidget(
+          collectionId: 1,
+          itemId: 1,
+          isEditable: true,
+          items: <CollectionItem>[item],
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Season 1'), findsOneWidget);
+        expect(find.text('Season 2'), findsOneWidget);
+        expect(find.byType(ExpansionTile), findsNWidgets(2));
       });
     });
 
@@ -769,9 +780,9 @@ void main() {
 
         // Должен показать itemName как "Unknown TV Show"
         expect(find.text('Unknown TV Show'), findsWidgets);
-        // Секции Status и Progress должны быть
+        // Секции Status и Episode Progress должны быть
         expect(find.text('Status'), findsOneWidget);
-        expect(find.text('Progress'), findsOneWidget);
+        expect(find.text('Episode Progress'), findsOneWidget);
       });
 
       testWidgets(
@@ -851,6 +862,7 @@ void main() {
           ProviderScope(
             overrides: <Override>[
               collectionRepositoryProvider.overrideWithValue(mockRepo),
+              databaseServiceProvider.overrideWithValue(mockDb),
             ],
             child: const MaterialApp(
               home: TvShowDetailScreen(
@@ -881,6 +893,7 @@ void main() {
           ProviderScope(
             overrides: <Override>[
               collectionRepositoryProvider.overrideWithValue(mockRepo),
+              databaseServiceProvider.overrideWithValue(mockDb),
             ],
             child: const MaterialApp(
               home: TvShowDetailScreen(

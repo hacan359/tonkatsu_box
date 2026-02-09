@@ -28,6 +28,8 @@
 - [x] Search Sorting: Sort results by relevance, date, or rating with toggleable direction
 - [x] TMDB Filters: Filter movies/TV shows by release year and genres
 - [x] Per-Item Canvas: Personal canvas for each game/movie/TV show with TabBar detail screens, SteamGridDB and VGMaps panels, data isolation
+- [x] Task #11: Season Details — TMDB API season episodes, TvEpisode model, SQLite cache (tv_episodes_cache), lazy-loading per season
+- [x] Task #12: Episode Tracker — per-episode checkboxes, season bulk toggle, watched_episodes DB table, auto-complete to Completed status
 - [ ] Stage 13: Export Full — extended .rcoll-full format with canvas layout and images
 
 ## Future Plans

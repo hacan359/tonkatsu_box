@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:xerabora/core/api/tmdb_api.dart';
 import 'package:xerabora/shared/models/movie.dart';
+import 'package:xerabora/shared/models/tv_episode.dart';
 import 'package:xerabora/shared/models/tv_season.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
 
@@ -94,6 +95,24 @@ void main() {
       'episode_count': episodeCount,
       'poster_path': posterPath,
       'air_date': airDate,
+    };
+  }
+
+  Map<String, dynamic> createEpisodeJson({
+    int episodeNumber = 1,
+    String? name = 'Пилот',
+    String? overview = 'Описание эпизода',
+    String? airDate = '2008-01-20',
+    String? stillPath = '/9074lJh4G2RBXhyR6F5mGDPXPCF.jpg',
+    int? runtime = 45,
+  }) {
+    return <String, dynamic>{
+      'episode_number': episodeNumber,
+      'name': name,
+      'overview': overview,
+      'air_date': airDate,
+      'still_path': stillPath,
+      'runtime': runtime,
     };
   }
 
@@ -1126,6 +1145,140 @@ void main() {
         expect(
           () => sut.getTvSeasons(1396),
           throwsA(isA<TmdbApiException>()),
+        );
+      });
+    });
+
+    // ----- getSeasonEpisodes -----
+
+    group('getSeasonEpisodes', () {
+      setUp(() {
+        sut.setApiKey(testApiKey);
+      });
+
+      test('должен вернуть список эпизодов при успешном ответе', () async {
+        final Map<String, dynamic> episode1 = createEpisodeJson();
+        final Map<String, dynamic> episode2 = createEpisodeJson(
+          episodeNumber: 2,
+          name: 'Кот в мешке',
+          overview: 'Описание второго эпизода',
+          airDate: '2008-01-27',
+          runtime: 48,
+        );
+
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'episodes': <Map<String, dynamic>>[episode1, episode2],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<TvEpisode> result = await sut.getSeasonEpisodes(1396, 1);
+
+        expect(result, hasLength(2));
+        expect(result[0].tmdbShowId, equals(1396));
+        expect(result[0].seasonNumber, equals(1));
+        expect(result[0].episodeNumber, equals(1));
+        expect(result[0].name, equals('Пилот'));
+        expect(result[0].overview, equals('Описание эпизода'));
+        expect(result[0].airDate, equals('2008-01-20'));
+        expect(result[0].runtime, equals(45));
+        expect(result[0].stillUrl, contains('/9074lJh4G2RBXhyR6F5mGDPXPCF.jpg'));
+        expect(result[1].episodeNumber, equals(2));
+        expect(result[1].name, equals('Кот в мешке'));
+        expect(result[1].runtime, equals(48));
+      });
+
+      test('должен вернуть пустой список если нет эпизодов', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'id': 1234,
+                'season_number': 1,
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<TvEpisode> result = await sut.getSeasonEpisodes(1396, 1);
+
+        expect(result, isEmpty);
+      });
+
+      test('должен вернуть пустой список при пустом массиве', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'episodes': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<TvEpisode> result = await sut.getSeasonEpisodes(1396, 1);
+
+        expect(result, isEmpty);
+      });
+
+      test('должен выбросить TmdbApiException при DioException 401', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenThrow(DioException(
+          response: Response<dynamic>(
+            statusCode: 401,
+            requestOptions: RequestOptions(),
+          ),
+          requestOptions: RequestOptions(),
+        ));
+
+        expect(
+          () => sut.getSeasonEpisodes(1396, 1),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'Invalid API key',
+          )),
+        );
+      });
+
+      test('должен выбросить TmdbApiException при DioException таймаут', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenThrow(DioException(
+          type: DioExceptionType.connectionTimeout,
+          requestOptions: RequestOptions(),
+        ));
+
+        expect(
+          () => sut.getSeasonEpisodes(1396, 1),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'Connection timeout',
+          )),
+        );
+      });
+
+      test('должен выбросить TmdbApiException если нет API ключа', () {
+        sut.clearApiKey();
+
+        expect(
+          () => sut.getSeasonEpisodes(1396, 1),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'API key not set',
+          )),
         );
       });
     });
