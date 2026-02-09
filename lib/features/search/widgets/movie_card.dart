@@ -17,6 +17,7 @@ class MovieCard extends StatelessWidget {
     required this.movie,
     this.onTap,
     this.trailing,
+    this.collectionName,
     super.key,
   });
 
@@ -28,6 +29,9 @@ class MovieCard extends StatelessWidget {
 
   /// Виджет справа (например, кнопка добавления).
   final Widget? trailing;
+
+  /// Название коллекции, в которой фильм находится.
+  final String? collectionName;
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +49,7 @@ class MovieCard extends StatelessWidget {
       memCacheWidth: 120,
       memCacheHeight: 160,
       additionalInfo: _buildRuntime(context),
+      collectionName: collectionName,
     );
   }
 

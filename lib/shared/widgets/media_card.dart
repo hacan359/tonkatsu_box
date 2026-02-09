@@ -28,6 +28,7 @@ class MediaCard extends StatelessWidget {
     this.onTap,
     this.memCacheWidth,
     this.memCacheHeight,
+    this.collectionName,
     super.key,
   });
 
@@ -69,6 +70,11 @@ class MediaCard extends StatelessWidget {
 
   /// Высота кэша изображения в памяти.
   final int? memCacheHeight;
+
+  /// Название коллекции, в которой элемент находится.
+  ///
+  /// Если не null — показывает маркировку "In: name" с галочкой.
+  final String? collectionName;
 
   /// Ширина постера/обложки.
   static const double posterWidth = 60;
@@ -248,6 +254,32 @@ class MediaCard extends StatelessWidget {
         if (additionalInfo != null) ...<Widget>[
           const SizedBox(height: 4),
           additionalInfo!,
+        ],
+
+        // Маркировка коллекции
+        if (collectionName != null) ...<Widget>[
+          const SizedBox(height: 4),
+          Row(
+            children: <Widget>[
+              Icon(
+                Icons.check_circle,
+                size: 14,
+                color: colorScheme.primary,
+              ),
+              const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  'In: $collectionName',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colorScheme.primary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
         ],
       ],
     );

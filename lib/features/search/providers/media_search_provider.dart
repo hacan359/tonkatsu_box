@@ -1,7 +1,5 @@
 // Провайдер для поиска фильмов и сериалов через TMDB.
 
-import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -116,10 +114,6 @@ final NotifierProvider<MediaSearchNotifier, MediaSearchState>
 class MediaSearchNotifier extends Notifier<MediaSearchState> {
   late TmdbApi _tmdbApi;
   late DatabaseService _db;
-  Timer? _debounceTimer;
-
-  /// Время задержки перед поиском (debounce).
-  static const Duration debounceDelay = Duration(milliseconds: 400);
 
   /// Минимальная длина запроса для поиска.
   static const int minQueryLength = 2;
@@ -128,40 +122,13 @@ class MediaSearchNotifier extends Notifier<MediaSearchState> {
   MediaSearchState build() {
     _tmdbApi = ref.watch(tmdbApiProvider);
     _db = ref.watch(databaseServiceProvider);
-
-    ref.onDispose(() {
-      _debounceTimer?.cancel();
-    });
-
     return const MediaSearchState();
   }
 
-  /// Выполняет поиск с debounce.
-  void search(String query) {
-    _debounceTimer?.cancel();
-
-    state = state.copyWith(query: query, clearError: true);
-
-    if (query.length < minQueryLength) {
-      state = state.copyWith(
-        movieResults: <Movie>[],
-        tvShowResults: <TvShow>[],
-        isLoading: false,
-      );
-      return;
-    }
-
-    state = state.copyWith(isLoading: true);
-
-    _debounceTimer = Timer(debounceDelay, () {
-      _performSearch(query);
-    });
-  }
-
-  /// Выполняет немедленный поиск без debounce.
-  Future<void> searchImmediate(String query) async {
-    _debounceTimer?.cancel();
-
+  /// Выполняет поиск фильмов или сериалов.
+  ///
+  /// [query] — строка поиска.
+  Future<void> search(String query) async {
     state = state.copyWith(query: query, clearError: true);
 
     if (query.length < minQueryLength) {
@@ -230,7 +197,6 @@ class MediaSearchNotifier extends Notifier<MediaSearchState> {
 
   /// Очищает результаты поиска.
   void clear() {
-    _debounceTimer?.cancel();
     state = MediaSearchState(activeTab: state.activeTab);
   }
 }

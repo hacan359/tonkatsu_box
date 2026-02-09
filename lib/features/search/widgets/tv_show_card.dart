@@ -17,6 +17,7 @@ class TvShowCard extends StatelessWidget {
     required this.tvShow,
     this.onTap,
     this.trailing,
+    this.collectionName,
     super.key,
   });
 
@@ -28,6 +29,9 @@ class TvShowCard extends StatelessWidget {
 
   /// Виджет справа (например, кнопка добавления).
   final Widget? trailing;
+
+  /// Название коллекции, в которой сериал находится.
+  final String? collectionName;
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +49,7 @@ class TvShowCard extends StatelessWidget {
       memCacheWidth: 120,
       memCacheHeight: 160,
       additionalInfo: _buildSeasonsAndStatus(context),
+      collectionName: collectionName,
     );
   }
 

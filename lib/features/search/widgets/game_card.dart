@@ -17,6 +17,7 @@ class GameCard extends StatelessWidget {
     this.onTap,
     this.trailing,
     this.platformNames,
+    this.collectionName,
     super.key,
   });
 
@@ -31,6 +32,9 @@ class GameCard extends StatelessWidget {
 
   /// Названия платформ для отображения.
   final List<String>? platformNames;
+
+  /// Название коллекции, в которой игра находится.
+  final String? collectionName;
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +52,7 @@ class GameCard extends StatelessWidget {
       memCacheWidth: 120,
       memCacheHeight: 160,
       additionalInfo: _buildPlatforms(context),
+      collectionName: collectionName,
     );
   }
 
