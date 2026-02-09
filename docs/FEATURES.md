@@ -22,13 +22,26 @@ Search across multiple media types via tabbed interface:
 ### Movies (TMDB)
 - Posters, genres, runtime
 - Release dates and ratings
+- Filter by release year and genres
 - Add to any collection with one tap
 
 ### TV Shows (TMDB)
 - Posters, genres, seasons/episodes
 - Show status (Returning, Ended, Cancelled)
 - Release dates and ratings
+- Filter by first air year and genres
 - Add to any collection with one tap
+
+### Sorting
+- Sort results by relevance, date, or rating
+- Toggle ascending/descending order
+- Relevance scoring: exact match > starts with > contains
+
+### Filtering (Movies & TV Shows)
+- Filter by release year (1900–2100)
+- Filter by genres (multi-select from TMDB genre list)
+- Active filter chips displayed below the search bar
+- "Clear All" to reset filters
 
 ## Visual Identity
 
@@ -70,12 +83,16 @@ Track your viewing progress for TV shows:
 
 ## Detail Screens
 
-Tap any item in a collection to see its full details. All detail screens share a unified layout via `MediaDetailView`:
+Tap any item in a collection to see its full details. All detail screens have two tabs:
+
+**Details tab** — unified layout via `MediaDetailView`:
 - Compact poster (80x120) with source badge (IGDB/TMDB)
 - Type icon and label
 - Info chips (year, rating, genres, etc.)
 - Inline description (max 4 lines)
 - Status dropdown, author comment, personal notes
+
+**Canvas tab** — personal canvas for the item with full canvas functionality (see Per-Item Canvas above)
 
 ### Game Details
 - Source: IGDB
@@ -115,7 +132,7 @@ Found a collection you like? Fork it:
 
 ## Canvas View
 
-Visualize your collection on a free-form canvas:
+Visualize your collection on a free-form canvas, or create a personal canvas for each item:
 - **Infinite canvas** with zoom (0.3x – 3.0x) and pan
 - **Drag-and-drop** all elements with real-time visual feedback
 - **Dot grid background** for visual alignment
@@ -154,6 +171,14 @@ Visualize your collection on a free-form canvas:
   - Click "Add to Canvas" to place the map image on the canvas (scaled to max 400px width)
   - Toggle via FAB button or right-click "Browse maps..."
   - Mutually exclusive with SteamGridDB panel (opening one closes the other)
+
+### Per-Item Canvas
+Each game, movie, or TV show in a collection has its own personal canvas:
+- Access via the **Canvas** tab on any detail screen (game/movie/TV show)
+- Auto-initialized with the item's media card (game cover, movie poster, etc.)
+- Full canvas functionality: text, images, links, connections, SteamGridDB and VGMaps panels
+- Completely isolated from the collection canvas — items don't leak between canvases
+- Separate viewport (zoom/position) saved per item
 
 ## TMDB Integration
 

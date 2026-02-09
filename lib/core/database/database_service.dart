@@ -50,7 +50,7 @@ class DatabaseService {
     return databaseFactoryFfi.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 8,
+        version: 9,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -69,6 +69,7 @@ class DatabaseService {
     await _createCanvasItemsTable(db);
     await _createCanvasViewportTable(db);
     await _createCanvasConnectionsTable(db);
+    await _createGameCanvasViewportTable(db);
     await _createMoviesCacheTable(db);
     await _createTvShowsCacheTable(db);
     await _createTvSeasonsCacheTable(db);
@@ -179,6 +180,33 @@ class DatabaseService {
       await _createCollectionItemsTable(db);
       await _migrateCollectionGamesToItems(db);
     }
+    if (oldVersion < 9) {
+      await _migrateGameCanvas(db);
+    }
+  }
+
+  Future<void> _migrateGameCanvas(Database db) async {
+    // Добавляем collection_item_id в canvas_items
+    await db.execute(
+      'ALTER TABLE canvas_items ADD COLUMN collection_item_id INTEGER',
+    );
+    await db.execute('''
+      CREATE INDEX idx_canvas_items_collection_item
+      ON canvas_items(collection_item_id)
+    ''');
+
+    // Добавляем collection_item_id в canvas_connections
+    await db.execute(
+      'ALTER TABLE canvas_connections '
+      'ADD COLUMN collection_item_id INTEGER',
+    );
+    await db.execute('''
+      CREATE INDEX idx_canvas_connections_collection_item
+      ON canvas_connections(collection_item_id)
+    ''');
+
+    // Создаём таблицу viewport для per-game canvas
+    await _createGameCanvasViewportTable(db);
   }
 
   Future<void> _createCanvasItemsTable(Database db) async {
@@ -213,6 +241,17 @@ class DatabaseService {
         offset_x REAL DEFAULT 0.0,
         offset_y REAL DEFAULT 0.0,
         FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE
+      )
+    ''');
+  }
+
+  Future<void> _createGameCanvasViewportTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS game_canvas_viewport (
+        collection_item_id INTEGER PRIMARY KEY,
+        scale REAL NOT NULL DEFAULT 1.0,
+        offset_x REAL NOT NULL DEFAULT 0.0,
+        offset_y REAL NOT NULL DEFAULT 0.0
       )
     ''');
   }
@@ -1232,7 +1271,7 @@ class DatabaseService {
     final Database db = await database;
     return db.query(
       'canvas_items',
-      where: 'collection_id = ?',
+      where: 'collection_id = ? AND collection_item_id IS NULL',
       whereArgs: <Object?>[collectionId],
       orderBy: 'z_index ASC',
     );
@@ -1274,17 +1313,18 @@ class DatabaseService {
     final Database db = await database;
     await db.delete(
       'canvas_items',
-      where: 'collection_id = ? AND item_type = ? AND item_ref_id = ?',
+      where: 'collection_id = ? AND item_type = ? AND item_ref_id = ?'
+          ' AND collection_item_id IS NULL',
       whereArgs: <Object?>[collectionId, itemType, itemRefId],
     );
   }
 
-  /// Удаляет все элементы канваса для коллекции.
+  /// Удаляет все элементы канваса коллекции (без per-item элементов).
   Future<void> deleteCanvasItemsByCollection(int collectionId) async {
     final Database db = await database;
     await db.delete(
       'canvas_items',
-      where: 'collection_id = ?',
+      where: 'collection_id = ? AND collection_item_id IS NULL',
       whereArgs: <Object?>[collectionId],
     );
   }
@@ -1293,7 +1333,8 @@ class DatabaseService {
   Future<int> getCanvasItemCount(int collectionId) async {
     final Database db = await database;
     final List<Map<String, dynamic>> result = await db.rawQuery(
-      'SELECT COUNT(*) as count FROM canvas_items WHERE collection_id = ?',
+      'SELECT COUNT(*) as count FROM canvas_items'
+          ' WHERE collection_id = ? AND collection_item_id IS NULL',
       <Object?>[collectionId],
     );
     return result.first['count'] as int;
@@ -1336,14 +1377,14 @@ class DatabaseService {
 
   // ==================== Canvas Connections ====================
 
-  /// Возвращает все связи канваса для коллекции.
+  /// Возвращает связи канваса коллекции (без per-item связей).
   Future<List<Map<String, dynamic>>> getCanvasConnections(
     int collectionId,
   ) async {
     final Database db = await database;
     return db.query(
       'canvas_connections',
-      where: 'collection_id = ?',
+      where: 'collection_id = ? AND collection_item_id IS NULL',
       whereArgs: <Object?>[collectionId],
     );
   }
@@ -1378,13 +1419,110 @@ class DatabaseService {
     );
   }
 
-  /// Удаляет все связи канваса для коллекции.
+  /// Удаляет связи канваса коллекции (без per-item связей).
   Future<void> deleteCanvasConnectionsByCollection(int collectionId) async {
     final Database db = await database;
     await db.delete(
       'canvas_connections',
-      where: 'collection_id = ?',
+      where: 'collection_id = ? AND collection_item_id IS NULL',
       whereArgs: <Object?>[collectionId],
+    );
+  }
+
+  // ==================== Game Canvas ====================
+
+  /// Возвращает элементы game canvas по ID элемента коллекции.
+  Future<List<Map<String, dynamic>>> getGameCanvasItems(
+    int collectionItemId,
+  ) async {
+    final Database db = await database;
+    return db.query(
+      'canvas_items',
+      where: 'collection_item_id = ?',
+      whereArgs: <Object?>[collectionItemId],
+    );
+  }
+
+  /// Возвращает количество элементов game canvas.
+  Future<int> getGameCanvasItemCount(int collectionItemId) async {
+    final Database db = await database;
+    final List<Map<String, dynamic>> result = await db.rawQuery(
+      'SELECT COUNT(*) as cnt FROM canvas_items '
+      'WHERE collection_item_id = ?',
+      <Object?>[collectionItemId],
+    );
+    return result.first['cnt'] as int;
+  }
+
+  /// Возвращает связи game canvas.
+  Future<List<Map<String, dynamic>>> getGameCanvasConnections(
+    int collectionItemId,
+  ) async {
+    final Database db = await database;
+    return db.query(
+      'canvas_connections',
+      where: 'collection_item_id = ?',
+      whereArgs: <Object?>[collectionItemId],
+    );
+  }
+
+  /// Возвращает viewport для game canvas.
+  Future<Map<String, dynamic>?> getGameCanvasViewport(
+    int collectionItemId,
+  ) async {
+    final Database db = await database;
+    final List<Map<String, dynamic>> rows = await db.query(
+      'game_canvas_viewport',
+      where: 'collection_item_id = ?',
+      whereArgs: <Object?>[collectionItemId],
+    );
+    if (rows.isEmpty) return null;
+    return rows.first;
+  }
+
+  /// Сохраняет или обновляет viewport для game canvas.
+  Future<void> upsertGameCanvasViewport({
+    required int collectionItemId,
+    required double scale,
+    required double offsetX,
+    required double offsetY,
+  }) async {
+    final Database db = await database;
+    await db.execute(
+      'INSERT OR REPLACE INTO game_canvas_viewport '
+      '(collection_item_id, scale, offset_x, offset_y) '
+      'VALUES (?, ?, ?, ?)',
+      <Object?>[collectionItemId, scale, offsetX, offsetY],
+    );
+  }
+
+  /// Удаляет все элементы game canvas по collection_item_id.
+  Future<void> deleteGameCanvasItems(int collectionItemId) async {
+    final Database db = await database;
+    await db.delete(
+      'canvas_items',
+      where: 'collection_item_id = ?',
+      whereArgs: <Object?>[collectionItemId],
+    );
+  }
+
+  /// Удаляет все связи game canvas по collection_item_id.
+  Future<void> deleteGameCanvasConnections(int collectionItemId) async {
+    final Database db = await database;
+    await db.delete(
+      'canvas_connections',
+      where: 'collection_item_id = ?',
+      whereArgs: <Object?>[collectionItemId],
+    );
+  }
+
+  /// Удаляет viewport game canvas.
+  Future<void> deleteGameCanvasViewport(int collectionItemId) async {
+    final Database db = await database;
+    await db.delete(
+      'game_canvas_viewport',
+      where: 'collection_item_id = ?',
+      whereArgs: <Object?>[collectionItemId],
     );
   }
 

@@ -3,20 +3,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../data/repositories/canvas_repository.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
+import '../../../shared/models/steamgriddb_image.dart';
 import '../../../shared/models/tv_show.dart';
 import '../../../shared/widgets/media_detail_view.dart';
 import '../../../shared/widgets/source_badge.dart';
+import '../providers/canvas_provider.dart';
 import '../providers/collections_provider.dart';
+import '../providers/steamgriddb_panel_provider.dart';
+import '../providers/vgmaps_panel_provider.dart';
+import '../widgets/canvas_view.dart';
 import '../widgets/item_status_dropdown.dart';
+import '../widgets/steamgriddb_panel.dart';
+import '../widgets/vgmaps_panel.dart';
 
 /// Экран детального просмотра сериала в коллекции.
 ///
-/// Позволяет просматривать полную информацию о сериале,
-/// отслеживать прогресс (сезон/эпизод), изменять статус
-/// и редактировать комментарии.
+/// Содержит две вкладки: Details (информация о сериале с прогрессом) и Canvas
+/// (персональный холст для заметок, скриншотов и ссылок).
 class TvShowDetailScreen extends ConsumerStatefulWidget {
   /// Создаёт [TvShowDetailScreen].
   const TvShowDetailScreen({
@@ -40,7 +47,22 @@ class TvShowDetailScreen extends ConsumerStatefulWidget {
       _TvShowDetailScreenState();
 }
 
-class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen> {
+class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final AsyncValue<List<CollectionItem>> itemsAsync =
@@ -79,33 +101,62 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen> {
 
   Widget _buildContent(CollectionItem item) {
     final TvShow? tvShow = item.tvShow;
+    _currentItemName = item.itemName;
 
-    return MediaDetailView(
-      title: item.itemName,
-      coverUrl: tvShow?.posterThumbUrl,
-      placeholderIcon: Icons.tv_outlined,
-      source: DataSource.tmdb,
-      typeIcon: Icons.tv_outlined,
-      typeLabel: 'TV Show',
-      infoChips: _buildInfoChips(tvShow),
-      description: tvShow?.overview,
-      statusWidget: ItemStatusDropdown(
-        status: item.status,
-        mediaType: MediaType.tvShow,
-        onChanged: (ItemStatus status) => _updateStatus(item.id, status),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(item.itemName),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const <Tab>[
+            Tab(
+              icon: Icon(Icons.info_outline),
+              text: 'Details',
+            ),
+            Tab(
+              icon: Icon(Icons.dashboard_outlined),
+              text: 'Canvas',
+            ),
+          ],
+        ),
       ),
-      extraSections: <Widget>[
-        _buildProgressSection(context, item, tvShow),
-      ],
-      authorComment: item.authorComment,
-      userComment: item.userComment,
-      hasAuthorComment: item.hasAuthorComment,
-      hasUserComment: item.hasUserComment,
-      isEditable: widget.isEditable,
-      onAuthorCommentSave: (String? text) =>
-          _saveAuthorComment(item.id, text),
-      onUserCommentSave: (String? text) =>
-          _saveUserComment(item.id, text),
+      body: TabBarView(
+        controller: _tabController,
+        children: <Widget>[
+          // Вкладка Details
+          MediaDetailView(
+            title: item.itemName,
+            coverUrl: tvShow?.posterThumbUrl,
+            placeholderIcon: Icons.tv_outlined,
+            source: DataSource.tmdb,
+            typeIcon: Icons.tv_outlined,
+            typeLabel: 'TV Show',
+            infoChips: _buildInfoChips(tvShow),
+            description: tvShow?.overview,
+            statusWidget: ItemStatusDropdown(
+              status: item.status,
+              mediaType: MediaType.tvShow,
+              onChanged: (ItemStatus status) =>
+                  _updateStatus(item.id, status),
+            ),
+            extraSections: <Widget>[
+              _buildProgressSection(context, item, tvShow),
+            ],
+            authorComment: item.authorComment,
+            userComment: item.userComment,
+            hasAuthorComment: item.hasAuthorComment,
+            hasUserComment: item.hasUserComment,
+            isEditable: widget.isEditable,
+            onAuthorCommentSave: (String? text) =>
+                _saveAuthorComment(item.id, text),
+            onUserCommentSave: (String? text) =>
+                _saveUserComment(item.id, text),
+            embedded: true,
+          ),
+          // Вкладка Canvas с боковыми панелями
+          _buildCanvasTab(),
+        ],
+      ),
     );
   }
 
@@ -296,6 +347,175 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen> {
         ],
       ),
     );
+  }
+
+  ({int collectionId, int collectionItemId}) get _canvasArg => (
+        collectionId: widget.collectionId,
+        collectionItemId: widget.itemId,
+      );
+
+  Widget _buildCanvasTab() {
+    return Row(
+      children: <Widget>[
+        Expanded(
+          child: CanvasView(
+            collectionId: widget.collectionId,
+            isEditable: widget.isEditable,
+            collectionItemId: widget.itemId,
+          ),
+        ),
+        Consumer(
+          builder:
+              (BuildContext context, WidgetRef ref, Widget? child) {
+            final bool isPanelOpen = ref.watch(
+              steamGridDbPanelProvider(widget.collectionId)
+                  .select((SteamGridDbPanelState s) => s.isOpen),
+            );
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: isPanelOpen ? 320 : 0,
+              curve: Curves.easeInOut,
+              clipBehavior: Clip.hardEdge,
+              decoration: BoxDecoration(
+                border: isPanelOpen
+                    ? Border(
+                        left: BorderSide(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .outlineVariant,
+                        ),
+                      )
+                    : null,
+              ),
+              child: isPanelOpen
+                  ? OverflowBox(
+                      maxWidth: 320,
+                      alignment: Alignment.centerLeft,
+                      child: SteamGridDbPanel(
+                        collectionId: widget.collectionId,
+                        collectionName: _currentItemName ?? '',
+                        onAddImage: _addSteamGridDbImage,
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+            );
+          },
+        ),
+        Consumer(
+          builder:
+              (BuildContext context, WidgetRef ref, Widget? child) {
+            final bool isPanelOpen = ref.watch(
+              vgMapsPanelProvider(widget.collectionId)
+                  .select((VgMapsPanelState s) => s.isOpen),
+            );
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: isPanelOpen ? 500 : 0,
+              curve: Curves.easeInOut,
+              clipBehavior: Clip.hardEdge,
+              decoration: BoxDecoration(
+                border: isPanelOpen
+                    ? Border(
+                        left: BorderSide(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .outlineVariant,
+                        ),
+                      )
+                    : null,
+              ),
+              child: isPanelOpen
+                  ? OverflowBox(
+                      maxWidth: 500,
+                      alignment: Alignment.centerLeft,
+                      child: VgMapsPanel(
+                        collectionId: widget.collectionId,
+                        onAddImage: _addVgMapsImage,
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  String? _currentItemName;
+
+  void _addSteamGridDbImage(SteamGridDbImage image) {
+    const double maxWidth = 300;
+    const double defaultSize = 200;
+    double targetWidth = defaultSize;
+    double targetHeight = defaultSize;
+
+    if (image.width > 0 && image.height > 0) {
+      final double aspectRatio = image.width / image.height;
+      targetWidth =
+          image.width.toDouble() > maxWidth ? maxWidth : image.width.toDouble();
+      targetHeight = targetWidth / aspectRatio;
+    }
+
+    final double centerX =
+        CanvasRepository.initialCenterX - targetWidth / 2;
+    final double centerY =
+        CanvasRepository.initialCenterY - targetHeight / 2;
+
+    ref
+        .read(gameCanvasNotifierProvider(_canvasArg).notifier)
+        .addImageItem(
+          centerX,
+          centerY,
+          <String, dynamic>{'url': image.url},
+          width: targetWidth,
+          height: targetHeight,
+        );
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Image added to canvas'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  void _addVgMapsImage(String url, int? width, int? height) {
+    const double maxWidth = 400;
+    double targetWidth = maxWidth;
+    double targetHeight = maxWidth;
+
+    if (width != null && height != null && width > 0 && height > 0) {
+      final double aspectRatio = width / height;
+      targetWidth =
+          width.toDouble() > maxWidth ? maxWidth : width.toDouble();
+      targetHeight = targetWidth / aspectRatio;
+    }
+
+    final double centerX =
+        CanvasRepository.initialCenterX - targetWidth / 2;
+    final double centerY =
+        CanvasRepository.initialCenterY - targetHeight / 2;
+
+    ref
+        .read(gameCanvasNotifierProvider(_canvasArg).notifier)
+        .addImageItem(
+          centerX,
+          centerY,
+          <String, dynamic>{'url': url},
+          width: targetWidth,
+          height: targetHeight,
+        );
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Map added to canvas'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   Future<void> _updateStatus(int id, ItemStatus status) async {

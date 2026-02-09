@@ -68,6 +68,7 @@ class CanvasItem {
     required this.x,
     required this.y,
     required this.createdAt,
+    this.collectionItemId,
     this.itemRefId,
     this.width,
     this.height,
@@ -90,6 +91,7 @@ class CanvasItem {
     return CanvasItem(
       id: row['id'] as int,
       collectionId: row['collection_id'] as int,
+      collectionItemId: row['collection_item_id'] as int?,
       itemType: CanvasItemType.fromString(row['item_type'] as String),
       itemRefId: row['item_ref_id'] as int?,
       x: (row['x'] as num).toDouble(),
@@ -109,6 +111,7 @@ class CanvasItem {
     return CanvasItem(
       id: json['id'] as int? ?? 0,
       collectionId: json['collection_id'] as int? ?? 0,
+      collectionItemId: json['collection_item_id'] as int?,
       itemType: CanvasItemType.fromString(json['type'] as String? ?? 'game'),
       itemRefId: json['refId'] as int?,
       x: (json['x'] as num).toDouble(),
@@ -130,6 +133,9 @@ class CanvasItem {
 
   /// ID коллекции.
   final int collectionId;
+
+  /// ID элемента коллекции (для per-game canvas, null для коллекционного).
+  final int? collectionItemId;
 
   /// Тип элемента.
   final CanvasItemType itemType;
@@ -172,6 +178,7 @@ class CanvasItem {
     return <String, dynamic>{
       if (id != 0) 'id': id,
       'collection_id': collectionId,
+      'collection_item_id': collectionItemId,
       'item_type': itemType.value,
       'item_ref_id': itemRefId,
       'x': x,
@@ -188,6 +195,7 @@ class CanvasItem {
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'id': id,
+      'collection_item_id': collectionItemId,
       'type': itemType.value,
       'refId': itemRefId,
       'x': x,
@@ -204,6 +212,7 @@ class CanvasItem {
   CanvasItem copyWith({
     int? id,
     int? collectionId,
+    int? collectionItemId,
     CanvasItemType? itemType,
     int? itemRefId,
     double? x,
@@ -220,6 +229,7 @@ class CanvasItem {
     return CanvasItem(
       id: id ?? this.id,
       collectionId: collectionId ?? this.collectionId,
+      collectionItemId: collectionItemId ?? this.collectionItemId,
       itemType: itemType ?? this.itemType,
       itemRefId: itemRefId ?? this.itemRefId,
       x: x ?? this.x,

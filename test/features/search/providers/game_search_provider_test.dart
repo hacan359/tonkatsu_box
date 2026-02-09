@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/search/providers/game_search_provider.dart';
 import 'package:xerabora/shared/models/game.dart';
+import 'package:xerabora/shared/models/search_sort.dart';
 
 void main() {
   group('GameSearchState', () {
@@ -13,6 +14,7 @@ void main() {
       expect(state.isLoading, isFalse);
       expect(state.error, isNull);
       expect(state.selectedPlatformIds, isEmpty);
+      expect(state.currentSort, const SearchSort());
     });
 
     test('hasResults returns true when results is not empty', () {
@@ -162,6 +164,29 @@ void main() {
 
         expect(updated.selectedPlatformIds, isEmpty);
       });
+
+      test('updates currentSort', () {
+        const GameSearchState original = GameSearchState();
+        const SearchSort newSort = SearchSort(
+          field: SearchSortField.rating,
+          order: SearchSortOrder.ascending,
+        );
+
+        final GameSearchState updated =
+            original.copyWith(currentSort: newSort);
+
+        expect(updated.currentSort.field, SearchSortField.rating);
+        expect(updated.currentSort.order, SearchSortOrder.ascending);
+      });
+
+      test('preserves currentSort when not specified', () {
+        const SearchSort sort = SearchSort(field: SearchSortField.date);
+        const GameSearchState original = GameSearchState(currentSort: sort);
+
+        final GameSearchState updated = original.copyWith(query: 'test');
+
+        expect(updated.currentSort, sort);
+      });
     });
 
     group('equality', () {
@@ -203,6 +228,29 @@ void main() {
         // listEquals compares order too
         expect(listEquals(state1.selectedPlatformIds, state2.selectedPlatformIds), isFalse);
         expect(state1, isNot(equals(state2)));
+      });
+
+      test('states with different currentSort are not equal', () {
+        const GameSearchState state1 = GameSearchState(
+          currentSort: SearchSort(field: SearchSortField.date),
+        );
+        const GameSearchState state2 = GameSearchState(
+          currentSort: SearchSort(field: SearchSortField.rating),
+        );
+
+        expect(state1, isNot(equals(state2)));
+      });
+
+      test('states with same currentSort are equal', () {
+        const GameSearchState state1 = GameSearchState(
+          currentSort: SearchSort(field: SearchSortField.date),
+        );
+        const GameSearchState state2 = GameSearchState(
+          currentSort: SearchSort(field: SearchSortField.date),
+        );
+
+        expect(state1, equals(state2));
+        expect(state1.hashCode, equals(state2.hashCode));
       });
     });
   });

@@ -42,6 +42,7 @@ class MediaDetailView extends StatelessWidget {
     this.userComment,
     this.hasAuthorComment = false,
     this.hasUserComment = false,
+    this.embedded = false,
     super.key,
   });
 
@@ -90,6 +91,13 @@ class MediaDetailView extends StatelessWidget {
   /// Можно ли редактировать комментарий автора.
   final bool isEditable;
 
+  /// Встраиваемый режим (без Scaffold и AppBar).
+  ///
+  /// Если true, виджет возвращает только контент без обёртки в Scaffold.
+  /// Используется когда MediaDetailView встроен в другой экран (например,
+  /// в TabBarView на GameDetailScreen).
+  final bool embedded;
+
   /// Колбэк сохранения комментария автора.
   final ValueChanged<String?> onAuthorCommentSave;
 
@@ -98,30 +106,34 @@ class MediaDetailView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Widget content = ListView(
+      padding: const EdgeInsets.all(16),
+      children: <Widget>[
+        _buildHeader(context),
+        if (statusWidget != null) ...<Widget>[
+          const SizedBox(height: 16),
+          _buildStatusSection(context),
+        ],
+        if (extraSections != null)
+          for (final Widget section in extraSections!) ...<Widget>[
+            const SizedBox(height: 16),
+            section,
+          ],
+        const SizedBox(height: 16),
+        _buildAuthorCommentSection(context),
+        const SizedBox(height: 16),
+        _buildUserNotesSection(context),
+        const SizedBox(height: 24),
+      ],
+    );
+
+    if (embedded) return content;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(title),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: <Widget>[
-          _buildHeader(context),
-          if (statusWidget != null) ...<Widget>[
-            const SizedBox(height: 16),
-            _buildStatusSection(context),
-          ],
-          if (extraSections != null)
-            for (final Widget section in extraSections!) ...<Widget>[
-              const SizedBox(height: 16),
-              section,
-            ],
-          const SizedBox(height: 16),
-          _buildAuthorCommentSection(context),
-          const SizedBox(height: 16),
-          _buildUserNotesSection(context),
-          const SizedBox(height: 24),
-        ],
-      ),
+      body: content,
     );
   }
 

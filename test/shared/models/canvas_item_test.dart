@@ -32,6 +32,7 @@ void main() {
     CanvasItem createTestItem({
       int id = 1,
       int collectionId = 10,
+      int? collectionItemId,
       CanvasItemType itemType = CanvasItemType.game,
       int? itemRefId = 100,
       double x = 50.0,
@@ -44,6 +45,7 @@ void main() {
       return CanvasItem(
         id: id,
         collectionId: collectionId,
+        collectionItemId: collectionItemId,
         itemType: itemType,
         itemRefId: itemRefId,
         x: x,
@@ -83,6 +85,14 @@ void main() {
       expect(item.data, isNotNull);
       expect(item.data!['content'], 'Hello');
       expect(item.data!['fontSize'], 16);
+    });
+
+    test('should create with collectionItemId', () {
+      final CanvasItem item = createTestItem(collectionItemId: 42);
+
+      expect(item.collectionItemId, 42);
+      expect(item.id, 1);
+      expect(item.collectionId, 10);
     });
 
     group('fromDb', () {
@@ -184,6 +194,48 @@ void main() {
         expect(item.x, 50.0);
         expect(item.y, 100.0);
       });
+
+      test('should parse collectionItemId from database row', () {
+        final Map<String, dynamic> row = <String, dynamic>{
+          'id': 1,
+          'collection_id': 10,
+          'collection_item_id': 42,
+          'item_type': 'game',
+          'item_ref_id': 100,
+          'x': 50.0,
+          'y': 100.0,
+          'width': 160.0,
+          'height': 220.0,
+          'z_index': 0,
+          'data': null,
+          'created_at': testTimestamp,
+        };
+
+        final CanvasItem item = CanvasItem.fromDb(row);
+
+        expect(item.collectionItemId, 42);
+      });
+
+      test('should handle null collectionItemId', () {
+        final Map<String, dynamic> row = <String, dynamic>{
+          'id': 1,
+          'collection_id': 10,
+          'collection_item_id': null,
+          'item_type': 'game',
+          'item_ref_id': 100,
+          'x': 50.0,
+          'y': 100.0,
+          'width': null,
+          'height': null,
+          'z_index': 0,
+          'data': null,
+          'created_at': testTimestamp,
+        };
+
+        final CanvasItem item = CanvasItem.fromDb(row);
+
+        expect(item.collectionItemId, isNull);
+      });
     });
 
     group('toDb', () {
@@ -223,6 +275,21 @@ void main() {
 
         expect(db.containsKey('id'), false);
       });
+
+      test('should serialize collectionItemId to database map', () {
+        final CanvasItem item = createTestItem(collectionItemId: 42);
+        final Map<String, dynamic> db = item.toDb();
+
+        expect(db['collection_item_id'], 42);
+      });
+
+      test('should serialize null collectionItemId', () {
+        final CanvasItem item = createTestItem();
+        final Map<String, dynamic> db = item.toDb();
+
+        expect(db.containsKey('collection_item_id'), true);
+        expect(db['collection_item_id'], isNull);
+      });
     });
 
     group('toJson', () {
@@ -250,6 +317,13 @@ void main() {
 
         expect(jsonMap['data'], isA<Map<String, dynamic>>());
         expect((jsonMap['data'] as Map<String, dynamic>)['content'], 'Test');
+      });
+
+      test('should include collectionItemId in export', () {
+        final CanvasItem item = createTestItem(collectionItemId: 42);
+        final Map<String, dynamic> jsonMap = item.toJson();
+
+        expect(jsonMap['collection_item_id'], 42);
       });
     });
 
@@ -307,6 +381,21 @@ void main() {
           DateTime.fromMillisecondsSinceEpoch(timestamp * 1000),
         );
       });
+
+      test('should parse collectionItemId from JSON', () {
+        final Map<String, dynamic> jsonMap = <String, dynamic>{
+          'id': 5,
+          'collection_id': 10,
+          'collection_item_id': 42,
+          'type': 'game',
+          'x': 50,
+          'y': 100,
+        };
+
+        final CanvasItem item = CanvasItem.fromJson(jsonMap);
+
+        expect(item.collectionItemId, 42);
+      });
     });
 
     group('copyWith', () {
@@ -334,6 +423,14 @@ void main() {
         expect(copy.x, original.x);
         expect(copy.y, original.y);
         expect(copy.zIndex, original.zIndex);
+      });
+
+      test('should copy with changed collectionItemId', () {
+        final CanvasItem original = createTestItem(collectionItemId: 10);
+        final CanvasItem copy = original.copyWith(collectionItemId: 99);
+
+        expect(copy.collectionItemId, 99);
+        expect(original.collectionItemId, 10);
       });
     });
 

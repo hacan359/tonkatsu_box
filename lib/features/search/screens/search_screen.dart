@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/api/tmdb_api.dart';
 import '../../../core/database/database_service.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../shared/models/collected_item_info.dart';
+import '../../../shared/models/search_sort.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/game.dart';
 import '../../../shared/models/media_type.dart';
@@ -13,10 +15,13 @@ import '../../../shared/models/tv_show.dart';
 import '../../../shared/widgets/cached_image.dart' as app_cached;
 import '../../collections/providers/collections_provider.dart';
 import '../providers/game_search_provider.dart';
+import '../providers/genre_provider.dart';
 import '../providers/media_search_provider.dart';
 import '../widgets/game_card.dart';
+import '../widgets/media_filter_sheet.dart';
 import '../widgets/movie_card.dart';
 import '../widgets/platform_filter_sheet.dart';
+import '../widgets/sort_selector.dart';
 import '../widgets/tv_show_card.dart';
 
 /// Экран поиска игр, фильмов и сериалов.
@@ -175,6 +180,102 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
   void _removePlatformFilter(int platformId) {
     ref.read(gameSearchProvider.notifier).removePlatformFilter(platformId);
+  }
+
+  void _showMediaFilterSheet() {
+    final MediaSearchState searchState = ref.read(mediaSearchProvider);
+    final bool isMovies = searchState.activeTab == MediaSearchTab.movies;
+
+    final AsyncValue<List<TmdbGenre>> genresAsync = isMovies
+        ? ref.read(movieGenresProvider)
+        : ref.read(tvGenresProvider);
+
+    final List<TmdbGenre> genres = genresAsync.valueOrNull ?? <TmdbGenre>[];
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) => MediaFilterSheet(
+        genres: genres,
+        selectedYear: searchState.selectedYear,
+        selectedGenreIds: searchState.selectedGenreIds,
+        onApply: ({int? year, required List<int> genreIds}) {
+          ref
+              .read(mediaSearchProvider.notifier)
+              .applyFilters(year: year, genreIds: genreIds);
+          Navigator.of(context).pop();
+        },
+      ),
+    );
+  }
+
+  Widget _buildMediaFilterBar(MediaSearchState searchState) {
+    final int filterCount = (searchState.selectedYear != null ? 1 : 0) +
+        searchState.selectedGenreIds.length;
+    final String buttonLabel = filterCount == 0
+        ? 'Filters'
+        : '$filterCount filter${filterCount > 1 ? 's' : ''} active';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: _showMediaFilterSheet,
+            icon: const Icon(Icons.filter_list),
+            label: Text(buttonLabel),
+          ),
+        ),
+        if (searchState.hasFilters) ...<Widget>[
+          const SizedBox(height: 8),
+          _buildMediaFilterChips(searchState),
+        ],
+        const SizedBox(height: 8),
+      ],
+    );
+  }
+
+  Widget _buildMediaFilterChips(MediaSearchState searchState) {
+    final bool isMovies = searchState.activeTab == MediaSearchTab.movies;
+    final AsyncValue<List<TmdbGenre>> genresAsync = isMovies
+        ? ref.watch(movieGenresProvider)
+        : ref.watch(tvGenresProvider);
+    final List<TmdbGenre> allGenres =
+        genresAsync.valueOrNull ?? <TmdbGenre>[];
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 4,
+      children: <Widget>[
+        if (searchState.selectedYear != null)
+          Chip(
+            label: Text('Year: ${searchState.selectedYear}'),
+            onDeleted: () {
+              ref.read(mediaSearchProvider.notifier).setYearFilter(null);
+            },
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            visualDensity: VisualDensity.compact,
+          ),
+        ...searchState.selectedGenreIds.map((int id) {
+          final String name = allGenres
+              .where((TmdbGenre g) => g.id == id)
+              .map((TmdbGenre g) => g.name)
+              .firstOrNull ?? 'Genre $id';
+          return Chip(
+            label: Text(name),
+            onDeleted: () {
+              final List<int> updated = List<int>.from(
+                searchState.selectedGenreIds,
+              )..remove(id);
+              ref.read(mediaSearchProvider.notifier).setGenreFilter(updated);
+            },
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            visualDensity: VisualDensity.compact,
+          );
+        }),
+      ],
+    );
   }
 
   // ==================== Game actions ====================
@@ -793,6 +894,18 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           child: _buildPlatformFilter(searchState),
         ),
 
+        // Сортировка (только когда есть результаты)
+        if (searchState.hasResults)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: SortSelector(
+              currentSort: searchState.currentSort,
+              onChanged: (SearchSort sort) {
+                ref.read(gameSearchProvider.notifier).setSort(sort);
+              },
+            ),
+          ),
+
         Expanded(
           child: _buildGameResults(searchState),
         ),
@@ -956,31 +1069,55 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         ref.watch(collectedMovieIdsProvider).valueOrNull ??
             <int, List<CollectedItemInfo>>{};
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: searchState.movieResults.length,
-      itemBuilder: (BuildContext context, int index) {
-        final Movie movie = searchState.movieResults[index];
-        final List<CollectedItemInfo>? infos =
-            collectedMovieInfos[movie.tmdbId];
-        final String? collectionName = infos != null && infos.isNotEmpty ? infos.first.collectionName : null;
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: MovieCard(
-            movie: movie,
-            onTap: () => _onMovieTap(movie),
-            collectionName: collectionName,
-            trailing: widget.collectionId == null
-                ? _buildMediaTrailing(
-                    title: movie.title,
-                    infos: infos,
-                    mediaType: MediaType.movie,
-                    onAdd: () => _addMovieToAnyCollection(movie),
-                  )
-                : null,
+    return Column(
+      children: <Widget>[
+        // Фильтры медиа
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: _buildMediaFilterBar(searchState),
+        ),
+
+        // Сортировка (только когда есть результаты)
+        if (searchState.movieResults.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: SortSelector(
+              currentSort: searchState.currentSort,
+              onChanged: (SearchSort sort) {
+                ref.read(mediaSearchProvider.notifier).setSort(sort);
+              },
+            ),
           ),
-        );
-      },
+
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: searchState.movieResults.length,
+            itemBuilder: (BuildContext context, int index) {
+              final Movie movie = searchState.movieResults[index];
+              final List<CollectedItemInfo>? infos =
+                  collectedMovieInfos[movie.tmdbId];
+              final String? collectionName = infos != null && infos.isNotEmpty ? infos.first.collectionName : null;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: MovieCard(
+                  movie: movie,
+                  onTap: () => _onMovieTap(movie),
+                  collectionName: collectionName,
+                  trailing: widget.collectionId == null
+                      ? _buildMediaTrailing(
+                          title: movie.title,
+                          infos: infos,
+                          mediaType: MediaType.movie,
+                          onAdd: () => _addMovieToAnyCollection(movie),
+                        )
+                      : null,
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -1013,31 +1150,55 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         ref.watch(collectedTvShowIdsProvider).valueOrNull ??
             <int, List<CollectedItemInfo>>{};
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: searchState.tvShowResults.length,
-      itemBuilder: (BuildContext context, int index) {
-        final TvShow tvShow = searchState.tvShowResults[index];
-        final List<CollectedItemInfo>? infos =
-            collectedTvShowInfos[tvShow.tmdbId];
-        final String? collectionName = infos != null && infos.isNotEmpty ? infos.first.collectionName : null;
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: TvShowCard(
-            tvShow: tvShow,
-            onTap: () => _onTvShowTap(tvShow),
-            collectionName: collectionName,
-            trailing: widget.collectionId == null
-                ? _buildMediaTrailing(
-                    title: tvShow.title,
-                    infos: infos,
-                    mediaType: MediaType.tvShow,
-                    onAdd: () => _addTvShowToAnyCollection(tvShow),
-                  )
-                : null,
+    return Column(
+      children: <Widget>[
+        // Фильтры медиа
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: _buildMediaFilterBar(searchState),
+        ),
+
+        // Сортировка (только когда есть результаты)
+        if (searchState.tvShowResults.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: SortSelector(
+              currentSort: searchState.currentSort,
+              onChanged: (SearchSort sort) {
+                ref.read(mediaSearchProvider.notifier).setSort(sort);
+              },
+            ),
           ),
-        );
-      },
+
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: searchState.tvShowResults.length,
+            itemBuilder: (BuildContext context, int index) {
+              final TvShow tvShow = searchState.tvShowResults[index];
+              final List<CollectedItemInfo>? infos =
+                  collectedTvShowInfos[tvShow.tmdbId];
+              final String? collectionName = infos != null && infos.isNotEmpty ? infos.first.collectionName : null;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: TvShowCard(
+                  tvShow: tvShow,
+                  onTap: () => _onTvShowTap(tvShow),
+                  collectionName: collectionName,
+                  trailing: widget.collectionId == null
+                      ? _buildMediaTrailing(
+                          title: tvShow.title,
+                          infos: infos,
+                          mediaType: MediaType.tvShow,
+                          onAdd: () => _addTvShowToAnyCollection(tvShow),
+                        )
+                      : null,
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 

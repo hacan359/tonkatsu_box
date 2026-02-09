@@ -543,6 +543,56 @@ void main() {
           throwsA(isA<TmdbApiException>()),
         );
       });
+
+      test('должен передать year в queryParameters когда указан', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.searchMovies('test', year: 2024);
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: captureAny(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final Map<String, dynamic> params =
+            verification.captured.first as Map<String, dynamic>;
+        expect(params['year'], equals(2024));
+      });
+
+      test('не должен передавать year когда не указан', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.searchMovies('test');
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: captureAny(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final Map<String, dynamic> params =
+            verification.captured.first as Map<String, dynamic>;
+        expect(params.containsKey('year'), isFalse);
+      });
     });
 
     // ----- getMovie -----
@@ -830,6 +880,56 @@ void main() {
           () => sut.searchTvShows('test'),
           throwsA(isA<TmdbApiException>()),
         );
+      });
+
+      test('должен передать first_air_date_year в queryParameters', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.searchTvShows('test', firstAirDateYear: 2023);
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: captureAny(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final Map<String, dynamic> params =
+            verification.captured.first as Map<String, dynamic>;
+        expect(params['first_air_date_year'], equals(2023));
+      });
+
+      test('не должен передавать first_air_date_year когда не указан', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.searchTvShows('test');
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: captureAny(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final Map<String, dynamic> params =
+            verification.captured.first as Map<String, dynamic>;
+        expect(params.containsKey('first_air_date_year'), isFalse);
       });
     });
 

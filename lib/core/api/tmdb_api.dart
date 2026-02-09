@@ -125,10 +125,15 @@ class TmdbApi {
   ///
   /// [query] — строка поиска.
   /// [page] — номер страницы (по умолчанию 1).
+  /// [year] — фильтр по году релиза (опционально).
   ///
   /// Возвращает список найденных фильмов.
   /// Throws [TmdbApiException] при ошибке запроса.
-  Future<List<Movie>> searchMovies(String query, {int page = 1}) async {
+  Future<List<Movie>> searchMovies(
+    String query, {
+    int page = 1,
+    int? year,
+  }) async {
     _ensureApiKey();
 
     if (query.trim().isEmpty) {
@@ -136,14 +141,18 @@ class TmdbApi {
     }
 
     try {
+      final Map<String, dynamic> params = <String, dynamic>{
+        'api_key': _apiKey,
+        'language': language,
+        'query': query.trim(),
+        'page': page,
+      };
+      if (year != null) {
+        params['year'] = year;
+      }
       final Response<dynamic> response = await _dio.get<dynamic>(
         '$_baseUrl/search/movie',
-        queryParameters: <String, dynamic>{
-          'api_key': _apiKey,
-          'language': language,
-          'query': query.trim(),
-          'page': page,
-        },
+        queryParameters: params,
       );
 
       if (response.statusCode != 200 || response.data == null) {
@@ -243,10 +252,15 @@ class TmdbApi {
   ///
   /// [query] — строка поиска.
   /// [page] — номер страницы (по умолчанию 1).
+  /// [firstAirDateYear] — фильтр по году первого показа (опционально).
   ///
   /// Возвращает список найденных сериалов.
   /// Throws [TmdbApiException] при ошибке запроса.
-  Future<List<TvShow>> searchTvShows(String query, {int page = 1}) async {
+  Future<List<TvShow>> searchTvShows(
+    String query, {
+    int page = 1,
+    int? firstAirDateYear,
+  }) async {
     _ensureApiKey();
 
     if (query.trim().isEmpty) {
@@ -254,14 +268,18 @@ class TmdbApi {
     }
 
     try {
+      final Map<String, dynamic> params = <String, dynamic>{
+        'api_key': _apiKey,
+        'language': language,
+        'query': query.trim(),
+        'page': page,
+      };
+      if (firstAirDateYear != null) {
+        params['first_air_date_year'] = firstAirDateYear;
+      }
       final Response<dynamic> response = await _dio.get<dynamic>(
         '$_baseUrl/search/tv',
-        queryParameters: <String, dynamic>{
-          'api_key': _apiKey,
-          'language': language,
-          'query': query.trim(),
-          'page': page,
-        },
+        queryParameters: params,
       );
 
       if (response.statusCode != 200 || response.data == null) {
