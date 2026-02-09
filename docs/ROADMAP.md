@@ -25,6 +25,9 @@
 - [x] Stage 17: Universal Search — tabbed search (Games/Movies/TV Shows), MediaSearchProvider, MovieCard, TvShowCard, add movies/TV shows to collections
 - [x] Stage 18: Media Display — movie/TV show detail screens, ItemStatusDropdown, CanvasMediaCard, CollectionScreen switched to CollectionItem, canvas support for all media types
 - [x] UI Cards: Source badges (IGDB/TMDB), unified MediaCard for search, unified MediaDetailView for detail screens, media type color coding, canvas card type borders
+- [x] Search Sorting: Sort results by relevance, date, or rating with toggleable direction
+- [x] TMDB Filters: Filter movies/TV shows by release year and genres
+- [x] Per-Item Canvas: Personal canvas for each game/movie/TV show with TabBar detail screens, SteamGridDB and VGMaps panels, data isolation
 - [ ] Stage 13: Export Full — extended .rcoll-full format with canvas layout and images
 
 ## Future Plans

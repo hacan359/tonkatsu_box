@@ -31,6 +31,7 @@ class CanvasView extends ConsumerStatefulWidget {
   const CanvasView({
     required this.collectionId,
     required this.isEditable,
+    this.collectionItemId,
     super.key,
   });
 
@@ -39,6 +40,12 @@ class CanvasView extends ConsumerStatefulWidget {
 
   /// Можно ли редактировать (перемещать элементы).
   final bool isEditable;
+
+  /// ID элемента коллекции для per-game canvas.
+  ///
+  /// Если задан, используется [gameCanvasNotifierProvider] вместо
+  /// [canvasNotifierProvider]. Game canvas независим от коллекционного.
+  final int? collectionItemId;
 
   @override
   ConsumerState<CanvasView> createState() => _CanvasViewState();
@@ -49,6 +56,35 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
       TransformationController();
 
   final FocusNode _focusNode = FocusNode();
+
+  /// Является ли это per-game canvas.
+  bool get _isGameCanvas => widget.collectionItemId != null;
+
+  /// Аргумент для [gameCanvasNotifierProvider].
+  ({int collectionId, int collectionItemId}) get _gameCanvasArg => (
+        collectionId: widget.collectionId,
+        collectionItemId: widget.collectionItemId!,
+      );
+
+  /// Смотрит за состоянием нужного canvas.
+  CanvasState _watchCanvasState() {
+    if (_isGameCanvas) {
+      return ref.watch(gameCanvasNotifierProvider(_gameCanvasArg));
+    }
+    return ref.watch(canvasNotifierProvider(widget.collectionId));
+  }
+
+  /// Читает нотификатор нужного canvas.
+  BaseCanvasController _readNotifier() {
+    if (_isGameCanvas) {
+      return ref.read(
+        gameCanvasNotifierProvider(_gameCanvasArg).notifier,
+      );
+    }
+    return ref.read(
+      canvasNotifierProvider(widget.collectionId).notifier,
+    );
+  }
 
   /// Минимальный зум.
   static const double _minScale = 0.3;
@@ -93,12 +129,9 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
   KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
     if (event is KeyDownEvent &&
         event.logicalKey == LogicalKeyboardKey.escape) {
-      final CanvasState canvasState =
-          ref.read(canvasNotifierProvider(widget.collectionId));
+      final CanvasState canvasState = _watchCanvasState();
       if (canvasState.connectingFromId != null) {
-        ref
-            .read(canvasNotifierProvider(widget.collectionId).notifier)
-            .cancelConnection();
+        _readNotifier().cancelConnection();
         setState(() => _mouseCanvasPosition = null);
         return KeyEventResult.handled;
       }
@@ -194,8 +227,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
     Offset globalPosition,
     CanvasItem item,
   ) {
-    final CanvasNotifier notifier = ref
-        .read(canvasNotifierProvider(widget.collectionId).notifier);
+    final BaseCanvasController notifier = _readNotifier();
 
     CanvasContextMenu.showItemMenu(
       context,
@@ -218,14 +250,12 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
     if (result == null) return;
     if (!mounted) return;
 
-    ref
-        .read(canvasNotifierProvider(widget.collectionId).notifier)
-        .addTextItem(
-          x,
-          y,
-          result['content'] as String,
-          (result['fontSize'] as num).toDouble(),
-        );
+    _readNotifier().addTextItem(
+      x,
+      y,
+      result['content'] as String,
+      (result['fontSize'] as num).toDouble(),
+    );
   }
 
   /// Добавляет изображение на канвас.
@@ -234,9 +264,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
     if (result == null) return;
     if (!mounted) return;
 
-    ref
-        .read(canvasNotifierProvider(widget.collectionId).notifier)
-        .addImageItem(x, y, result);
+    _readNotifier().addImageItem(x, y, result);
   }
 
   /// Добавляет ссылку на канвас.
@@ -245,14 +273,12 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
     if (result == null) return;
     if (!mounted) return;
 
-    ref
-        .read(canvasNotifierProvider(widget.collectionId).notifier)
-        .addLinkItem(
-          x,
-          y,
-          result['url'] as String,
-          result['label'] as String,
-        );
+    _readNotifier().addLinkItem(
+      x,
+      y,
+      result['url'] as String,
+      result['label'] as String,
+    );
   }
 
   /// Редактирует элемент через соответствующий диалог.
@@ -281,9 +307,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
     if (result == null) return;
     if (!mounted) return;
 
-    ref
-        .read(canvasNotifierProvider(widget.collectionId).notifier)
-        .updateItemData(item.id, result);
+    _readNotifier().updateItemData(item.id, result);
   }
 
   /// Редактирует изображение.
@@ -295,9 +319,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
     if (result == null) return;
     if (!mounted) return;
 
-    ref
-        .read(canvasNotifierProvider(widget.collectionId).notifier)
-        .updateItemData(item.id, result);
+    _readNotifier().updateItemData(item.id, result);
   }
 
   /// Редактирует ссылку.
@@ -310,9 +332,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
     if (result == null) return;
     if (!mounted) return;
 
-    ref
-        .read(canvasNotifierProvider(widget.collectionId).notifier)
-        .updateItemData(item.id, result);
+    _readNotifier().updateItemData(item.id, result);
   }
 
   /// Обрабатывает ПКМ на пустом месте с проверкой hit-test на связи.
@@ -348,9 +368,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
       position: globalPosition,
       onEdit: () => _handleEditConnection(connectionId, canvasState),
       onDelete: () {
-        ref
-            .read(canvasNotifierProvider(widget.collectionId).notifier)
-            .deleteConnection(connectionId);
+        _readNotifier().deleteConnection(connectionId);
       },
     );
   }
@@ -374,10 +392,8 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
     if (result == null) return;
     if (!mounted) return;
 
-    ref
-        .read(canvasNotifierProvider(widget.collectionId).notifier)
-        .updateConnection(
-          connectionId,
+    _readNotifier().updateConnection(
+      connectionId,
           label: result['label'] as String?,
           color: result['color'] as String?,
           style: result['style'] != null
@@ -388,16 +404,13 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
 
   /// Обрабатывает клик в режиме создания связи.
   void _handleConnectionModeClick(CanvasItem item) {
-    ref
-        .read(canvasNotifierProvider(widget.collectionId).notifier)
-        .completeConnection(item.id);
+    _readNotifier().completeConnection(item.id);
     setState(() => _mouseCanvasPosition = null);
   }
 
   @override
   Widget build(BuildContext context) {
-    final CanvasState canvasState =
-        ref.watch(canvasNotifierProvider(widget.collectionId));
+    final CanvasState canvasState = _watchCanvasState();
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
 
@@ -423,10 +436,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
             const SizedBox(height: 8),
             TextButton(
               onPressed: () {
-                ref
-                    .read(
-                        canvasNotifierProvider(widget.collectionId).notifier)
-                    .refresh();
+                _readNotifier().refresh();
               },
               child: const Text('Retry'),
             ),
@@ -436,7 +446,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
     }
 
     if (canvasState.items.isEmpty) {
-      return Center(
+      final Widget emptyContent = Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
@@ -462,6 +472,22 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
           ],
         ),
       );
+
+      // Позволяем добавлять элементы через ПКМ даже на пустом canvas
+      if (widget.isEditable) {
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onSecondaryTapUp: (TapUpDetails details) {
+            _onCanvasSecondaryTap(
+              details.globalPosition,
+              details.localPosition,
+            );
+          },
+          child: emptyContent,
+        );
+      }
+
+      return emptyContent;
     }
 
     final List<CanvasItem> sortedItems =
@@ -649,16 +675,11 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
                   FloatingActionButton.small(
                     heroTag: 'canvas_reset_positions',
                     onPressed: () {
-                      ref
-                          .read(canvasNotifierProvider(widget.collectionId)
-                              .notifier)
-                          .resetPositions(viewportWidth);
+                      _readNotifier().resetPositions(viewportWidth);
                       // Центрируем вид после сброса
                       SchedulerBinding.instance.addPostFrameCallback((_) {
-                        final List<CanvasItem> items = ref
-                            .read(
-                                canvasNotifierProvider(widget.collectionId))
-                            .items;
+                        final List<CanvasItem> items =
+                            _watchCanvasState().items;
                         _centerViewOnItems(
                           viewportWidth,
                           viewportHeight,
@@ -709,11 +730,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
                             color: colorScheme.onPrimaryContainer,
                           ),
                           onPressed: () {
-                            ref
-                                .read(canvasNotifierProvider(
-                                        widget.collectionId)
-                                    .notifier)
-                                .cancelConnection();
+                            _readNotifier().cancelConnection();
                             setState(
                                 () => _mouseCanvasPosition = null);
                           },
@@ -753,6 +770,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
       item: item,
       isEditable: widget.isEditable,
       collectionId: widget.collectionId,
+      collectionItemId: widget.collectionItemId,
       transformationController: _transformationController,
       onDragStateChanged: _onItemDragStateChanged,
       onDragUpdate: _onItemDragUpdate,
@@ -783,6 +801,7 @@ class _DraggableCanvasItem extends ConsumerStatefulWidget {
     required this.onDragStateChanged,
     required this.onDragUpdate,
     required this.child,
+    this.collectionItemId,
     this.onSecondaryTap,
     this.onTap,
     super.key,
@@ -791,6 +810,7 @@ class _DraggableCanvasItem extends ConsumerStatefulWidget {
   final CanvasItem item;
   final bool isEditable;
   final int collectionId;
+  final int? collectionItemId;
   final TransformationController transformationController;
 
   /// Callback для уведомления родителя о начале/конце drag.
@@ -813,6 +833,20 @@ class _DraggableCanvasItem extends ConsumerStatefulWidget {
 }
 
 class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
+  BaseCanvasController _readNotifier() {
+    if (widget.collectionItemId != null) {
+      return ref.read(
+        gameCanvasNotifierProvider((
+          collectionId: widget.collectionId,
+          collectionItemId: widget.collectionItemId!,
+        )).notifier,
+      );
+    }
+    return ref.read(
+      canvasNotifierProvider(widget.collectionId).notifier,
+    );
+  }
+
   Offset _dragDelta = Offset.zero;
   bool _isDragging = false;
 
@@ -897,9 +931,7 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
     final double newX = widget.item.x + _dragDelta.dx;
     final double newY = widget.item.y + _dragDelta.dy;
 
-    ref
-        .read(canvasNotifierProvider(widget.collectionId).notifier)
-        .moveItem(widget.item.id, newX, newY);
+    _readNotifier().moveItem(widget.item.id, newX, newY);
 
     setState(() {
       _dragDelta = Offset.zero;
@@ -944,13 +976,11 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
     final double newHeight =
         (_resizeStartHeight + _resizeDelta.dy).clamp(_minItemSize, _maxItemSize);
 
-    ref
-        .read(canvasNotifierProvider(widget.collectionId).notifier)
-        .updateItemSize(
-          widget.item.id,
-          width: newWidth,
-          height: newHeight,
-        );
+    _readNotifier().updateItemSize(
+      widget.item.id,
+      width: newWidth,
+      height: newHeight,
+    );
 
     setState(() {
       _resizeDelta = Offset.zero;

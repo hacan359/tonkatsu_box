@@ -451,5 +451,72 @@ void main() {
       expect(find.byType(SourceBadge), findsOneWidget);
       expect(find.text('IGDB'), findsOneWidget);
     });
+
+    testWidgets('должен отображать TabBar с двумя вкладками',
+        (WidgetTester tester) async {
+      const Game game = Game(id: 100, name: 'Test Game');
+      const Platform platform = Platform(id: 18, name: 'SNES');
+      final CollectionGame collectionGame = createTestCollectionGame(
+        game: game,
+        platform: platform,
+      );
+
+      await tester.pumpWidget(createTestWidget(
+        collectionId: 1,
+        gameId: 1,
+        isEditable: true,
+        games: <CollectionGame>[collectionGame],
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(TabBar), findsOneWidget);
+      expect(find.byType(Tab), findsNWidgets(2));
+      expect(find.text('Details'), findsOneWidget);
+      expect(find.text('Canvas'), findsOneWidget);
+    });
+
+    testWidgets('должен отображать иконки вкладок',
+        (WidgetTester tester) async {
+      const Game game = Game(id: 100, name: 'Test Game');
+      const Platform platform = Platform(id: 18, name: 'SNES');
+      final CollectionGame collectionGame = createTestCollectionGame(
+        game: game,
+        platform: platform,
+      );
+
+      await tester.pumpWidget(createTestWidget(
+        collectionId: 1,
+        gameId: 1,
+        isEditable: true,
+        games: <CollectionGame>[collectionGame],
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.info_outline), findsOneWidget);
+      expect(find.byIcon(Icons.dashboard_outlined), findsOneWidget);
+    });
+
+    testWidgets('должен начинать с вкладки Details',
+        (WidgetTester tester) async {
+      const Game game = Game(id: 100, name: 'Test Game');
+      const Platform platform = Platform(id: 18, name: 'SNES');
+      final CollectionGame collectionGame = createTestCollectionGame(
+        game: game,
+        platform: platform,
+        authorComment: 'Test author comment',
+      );
+
+      await tester.pumpWidget(createTestWidget(
+        collectionId: 1,
+        gameId: 1,
+        isEditable: true,
+        games: <CollectionGame>[collectionGame],
+      ));
+      await tester.pumpAndSettle();
+
+      // Содержимое вкладки Details должно быть видимым по умолчанию
+      expect(find.text("Author's Comment"), findsOneWidget);
+      expect(find.text('Test author comment'), findsOneWidget);
+    });
   });
 }

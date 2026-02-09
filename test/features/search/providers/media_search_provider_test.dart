@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/search/providers/media_search_provider.dart';
 import 'package:xerabora/shared/models/movie.dart';
+import 'package:xerabora/shared/models/search_sort.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
 
 void main() {
@@ -23,6 +24,36 @@ void main() {
       expect(state.isLoading, isFalse);
       expect(state.error, isNull);
       expect(state.activeTab, MediaSearchTab.movies);
+      expect(state.currentSort, const SearchSort());
+      expect(state.selectedYear, isNull);
+      expect(state.selectedGenreIds, isEmpty);
+    });
+
+    group('hasFilters', () {
+      test('returns false for default state', () {
+        const MediaSearchState state = MediaSearchState();
+        expect(state.hasFilters, isFalse);
+      });
+
+      test('returns true when year is set', () {
+        const MediaSearchState state = MediaSearchState(selectedYear: 2024);
+        expect(state.hasFilters, isTrue);
+      });
+
+      test('returns true when genres are set', () {
+        const MediaSearchState state = MediaSearchState(
+          selectedGenreIds: <int>[28, 12],
+        );
+        expect(state.hasFilters, isTrue);
+      });
+
+      test('returns true when both year and genres are set', () {
+        const MediaSearchState state = MediaSearchState(
+          selectedYear: 2024,
+          selectedGenreIds: <int>[28],
+        );
+        expect(state.hasFilters, isTrue);
+      });
     });
 
     group('hasResults', () {
@@ -218,6 +249,88 @@ void main() {
 
         expect(updated.activeTab, MediaSearchTab.tvShows);
       });
+
+      test('updates currentSort', () {
+        const MediaSearchState original = MediaSearchState();
+        const SearchSort newSort = SearchSort(
+          field: SearchSortField.rating,
+          order: SearchSortOrder.ascending,
+        );
+
+        final MediaSearchState updated =
+            original.copyWith(currentSort: newSort);
+
+        expect(updated.currentSort.field, SearchSortField.rating);
+        expect(updated.currentSort.order, SearchSortOrder.ascending);
+      });
+
+      test('preserves currentSort when not specified', () {
+        const SearchSort sort = SearchSort(field: SearchSortField.date);
+        const MediaSearchState original = MediaSearchState(currentSort: sort);
+
+        final MediaSearchState updated = original.copyWith(query: 'test');
+
+        expect(updated.currentSort, sort);
+      });
+
+      test('updates selectedYear', () {
+        const MediaSearchState original = MediaSearchState();
+
+        final MediaSearchState updated =
+            original.copyWith(selectedYear: 2024);
+
+        expect(updated.selectedYear, 2024);
+      });
+
+      test('clears selectedYear with clearYear', () {
+        const MediaSearchState original = MediaSearchState(
+          selectedYear: 2024,
+        );
+
+        final MediaSearchState updated = original.copyWith(clearYear: true);
+
+        expect(updated.selectedYear, isNull);
+      });
+
+      test('preserves selectedYear when not specified', () {
+        const MediaSearchState original = MediaSearchState(
+          selectedYear: 2023,
+        );
+
+        final MediaSearchState updated = original.copyWith(query: 'test');
+
+        expect(updated.selectedYear, 2023);
+      });
+
+      test('updates selectedGenreIds', () {
+        const MediaSearchState original = MediaSearchState();
+
+        final MediaSearchState updated =
+            original.copyWith(selectedGenreIds: <int>[28, 12]);
+
+        expect(updated.selectedGenreIds, <int>[28, 12]);
+      });
+
+      test('clears selectedGenreIds with empty list', () {
+        const MediaSearchState original = MediaSearchState(
+          selectedGenreIds: <int>[28, 12],
+        );
+
+        final MediaSearchState updated =
+            original.copyWith(selectedGenreIds: <int>[]);
+
+        expect(updated.selectedGenreIds, isEmpty);
+      });
+
+      test('preserves selectedGenreIds when not specified', () {
+        const MediaSearchState original = MediaSearchState(
+          selectedGenreIds: <int>[28],
+        );
+
+        final MediaSearchState updated = original.copyWith(query: 'test');
+
+        expect(updated.selectedGenreIds, <int>[28]);
+      });
     });
 
     group('equality', () {
@@ -332,6 +445,75 @@ void main() {
           isFalse,
         );
         expect(state1, isNot(equals(state2)));
+      });
+
+      test('states with different currentSort are not equal', () {
+        const MediaSearchState state1 = MediaSearchState(
+          currentSort: SearchSort(field: SearchSortField.date),
+        );
+        const MediaSearchState state2 = MediaSearchState(
+          currentSort: SearchSort(field: SearchSortField.rating),
+        );
+
+        expect(state1, isNot(equals(state2)));
+      });
+
+      test('states with same currentSort are equal', () {
+        const MediaSearchState state1 = MediaSearchState(
+          currentSort: SearchSort(field: SearchSortField.date),
+        );
+        const MediaSearchState state2 = MediaSearchState(
+          currentSort: SearchSort(field: SearchSortField.date),
+        );
+
+        expect(state1, equals(state2));
+        expect(state1.hashCode, equals(state2.hashCode));
+      });
+
+      test('states with different selectedYear are not equal', () {
+        const MediaSearchState state1 = MediaSearchState(
+          selectedYear: 2024,
+        );
+        const MediaSearchState state2 = MediaSearchState(
+          selectedYear: 2023,
+        );
+
+        expect(state1, isNot(equals(state2)));
+      });
+
+      test('states with same selectedYear are equal', () {
+        const MediaSearchState state1 = MediaSearchState(
+          selectedYear: 2024,
+        );
+        const MediaSearchState state2 = MediaSearchState(
+          selectedYear: 2024,
+        );
+
+        expect(state1, equals(state2));
+        expect(state1.hashCode, equals(state2.hashCode));
+      });
+
+      test('states with different selectedGenreIds are not equal', () {
+        const MediaSearchState state1 = MediaSearchState(
+          selectedGenreIds: <int>[28],
+        );
+        const MediaSearchState state2 = MediaSearchState(
+          selectedGenreIds: <int>[12],
+        );
+
+        expect(state1, isNot(equals(state2)));
+      });
+
+      test('states with same selectedGenreIds are equal', () {
+        const MediaSearchState state1 = MediaSearchState(
+          selectedGenreIds: <int>[28, 12],
+        );
+        const MediaSearchState state2 = MediaSearchState(
+          selectedGenreIds: <int>[28, 12],
+        );
+
+        expect(state1, equals(state2));
+        expect(state1.hashCode, equals(state2.hashCode));
       });
     });
   });

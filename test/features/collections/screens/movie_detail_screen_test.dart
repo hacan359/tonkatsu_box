@@ -10,6 +10,7 @@ import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/movie.dart';
+import 'package:xerabora/shared/widgets/media_detail_view.dart';
 import 'package:xerabora/shared/widgets/source_badge.dart';
 
 // Mock-нотифайер для подмены collectionItemsNotifierProvider в тестах.
@@ -739,7 +740,11 @@ void main() {
 
         // Прокручиваем до секции My Notes, чтобы кнопка Edit была видна
         final Finder myNotesEdit = find.text('Edit').last;
-        await tester.scrollUntilVisible(myNotesEdit, 200);
+        await tester.scrollUntilVisible(
+          myNotesEdit,
+          200,
+          scrollable: find.byType(Scrollable).at(1),
+        );
         await tester.pumpAndSettle();
 
         // Нажимаем последнюю кнопку Edit (My Notes)
@@ -933,6 +938,58 @@ void main() {
 
         expect(find.byType(SourceBadge), findsOneWidget);
         expect(find.text('TMDB'), findsOneWidget);
+      });
+    });
+
+    group('TabBar', () {
+      testWidgets('должен отображать TabBar с двумя вкладками',
+          (WidgetTester tester) async {
+        final Movie movie = createTestMovie();
+        final CollectionItem item = createTestItem(movie: movie);
+
+        await tester.pumpWidget(createTestWidget(
+          collectionId: 1,
+          itemId: 1,
+          isEditable: true,
+          items: <CollectionItem>[item],
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(TabBar), findsOneWidget);
+        expect(find.byType(Tab), findsNWidgets(2));
+      });
+
+      testWidgets('должен отображать иконки вкладок',
+          (WidgetTester tester) async {
+        final Movie movie = createTestMovie();
+        final CollectionItem item = createTestItem(movie: movie);
+
+        await tester.pumpWidget(createTestWidget(
+          collectionId: 1,
+          itemId: 1,
+          isEditable: true,
+          items: <CollectionItem>[item],
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.byIcon(Icons.info_outline), findsOneWidget);
+        expect(find.byIcon(Icons.dashboard_outlined), findsOneWidget);
+      });
+
+      testWidgets('должен начинать с вкладки Details',
+          (WidgetTester tester) async {
+        final Movie movie = createTestMovie();
+        final CollectionItem item = createTestItem(movie: movie);
+
+        await tester.pumpWidget(createTestWidget(
+          collectionId: 1,
+          itemId: 1,
+          isEditable: true,
+          items: <CollectionItem>[item],
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(MediaDetailView), findsOneWidget);
       });
     });
   });

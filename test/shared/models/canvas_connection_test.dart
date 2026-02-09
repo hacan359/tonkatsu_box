@@ -28,6 +28,7 @@ void main() {
     CanvasConnection createTestConnection({
       int id = 1,
       int collectionId = 10,
+      int? collectionItemId,
       int fromItemId = 100,
       int toItemId = 200,
       String? label,
@@ -37,6 +38,7 @@ void main() {
       return CanvasConnection(
         id: id,
         collectionId: collectionId,
+        collectionItemId: collectionItemId,
         fromItemId: fromItemId,
         toItemId: toItemId,
         label: label,
@@ -69,6 +71,13 @@ void main() {
       expect(conn.color, '#666666');
       expect(conn.style, ConnectionStyle.solid);
       expect(conn.label, isNull);
+    });
+
+    test('should create with collectionItemId', () {
+      final CanvasConnection conn = createTestConnection(
+        collectionItemId: 42,
+      );
+      expect(conn.collectionItemId, 42);
     });
 
     group('fromDb', () {
@@ -128,6 +137,40 @@ void main() {
         final CanvasConnection conn = CanvasConnection.fromDb(row);
         expect(conn.style, ConnectionStyle.dashed);
       });
+
+      test('should parse collectionItemId from database row', () {
+        final Map<String, dynamic> row = <String, dynamic>{
+          'id': 3,
+          'collection_id': 10,
+          'collection_item_id': 55,
+          'from_item_id': 100,
+          'to_item_id': 200,
+          'label': null,
+          'color': '#FF0000',
+          'style': 'solid',
+          'created_at': testTimestamp,
+        };
+
+        final CanvasConnection conn = CanvasConnection.fromDb(row);
+        expect(conn.collectionItemId, 55);
+      });
+
+      test('should handle null collectionItemId', () {
+        final Map<String, dynamic> row = <String, dynamic>{
+          'id': 4,
+          'collection_id': 10,
+          'collection_item_id': null,
+          'from_item_id': 100,
+          'to_item_id': 200,
+          'label': null,
+          'color': '#FF0000',
+          'style': 'solid',
+          'created_at': testTimestamp,
+        };
+
+        final CanvasConnection conn = CanvasConnection.fromDb(row);
+        expect(conn.collectionItemId, isNull);
+      });
     });
 
     group('fromJson', () {
@@ -180,6 +223,23 @@ void main() {
           lessThan(2),
         );
       });
+
+      test('should parse collectionItemId from JSON', () {
+        final Map<String, dynamic> json = <String, dynamic>{
+          'id': 5,
+          'collection_id': 10,
+          'collection_item_id': 33,
+          'from_item_id': 100,
+          'to_item_id': 200,
+          'label': null,
+          'color': '#FF0000',
+          'style': 'solid',
+          'created_at': testTimestamp,
+        };
+
+        final CanvasConnection conn = CanvasConnection.fromJson(json);
+        expect(conn.collectionItemId, 33);
+      });
     });
 
     group('toDb', () {
@@ -210,6 +270,14 @@ void main() {
         final Map<String, dynamic> db = conn.toDb();
         expect(db['label'], isNull);
       });
+
+      test('should serialize collectionItemId to database map', () {
+        final CanvasConnection conn = createTestConnection(
+          collectionItemId: 77,
+        );
+        final Map<String, dynamic> db = conn.toDb();
+        expect(db['collection_item_id'], 77);
+      });
     });
 
     group('toJson', () {
@@ -233,6 +301,14 @@ void main() {
         final CanvasConnection conn = createTestConnection();
         final Map<String, dynamic> json = conn.toJson();
         expect(json.containsKey('collection_id'), isFalse);
+      });
+
+      test('should include collectionItemId in export when set', () {
+        final CanvasConnection conn = createTestConnection(
+          collectionItemId: 88,
+        );
+        final Map<String, dynamic> json = conn.toJson();
+        expect(json['collection_item_id'], 88);
       });
     });
 
@@ -315,6 +391,18 @@ void main() {
         expect(copy.color, '#000000');
         expect(copy.style, ConnectionStyle.arrow);
         expect(copy.createdAt, newDate);
+      });
+
+      test('should copy with changed collectionItemId', () {
+        final CanvasConnection original = createTestConnection(
+          collectionItemId: 10,
+        );
+        final CanvasConnection copy = original.copyWith(
+          collectionItemId: 99,
+        );
+        expect(copy.collectionItemId, 99);
+        expect(copy.id, original.id);
+        expect(copy.collectionId, original.collectionId);
       });
     });
 

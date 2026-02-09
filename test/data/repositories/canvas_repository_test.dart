@@ -2,11 +2,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/data/repositories/canvas_repository.dart';
+import 'package:xerabora/shared/models/canvas_connection.dart';
 import 'package:xerabora/shared/models/canvas_item.dart';
 import 'package:xerabora/shared/models/canvas_viewport.dart';
 import 'package:xerabora/shared/models/collection_game.dart';
 import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/game.dart';
+import 'package:xerabora/shared/models/movie.dart';
+import 'package:xerabora/shared/models/tv_show.dart';
 
 class MockDatabaseService extends Mock implements DatabaseService {}
 
@@ -653,6 +656,396 @@ void main() {
               offsetX: 0.0,
               offsetY: 0.0,
             )).called(1);
+      });
+    });
+  });
+
+  group('CanvasRepository Game Canvas', () {
+    late MockDatabaseService mockDb;
+    late CanvasRepository repository;
+
+    final DateTime testDate = DateTime(2024, 6, 15, 12, 0, 0);
+    final int testTimestamp = testDate.millisecondsSinceEpoch ~/ 1000;
+
+    setUp(() {
+      mockDb = MockDatabaseService();
+      repository = CanvasRepository(db: mockDb);
+    });
+
+    group('getGameCanvasItems', () {
+      test('should call db.getGameCanvasItems and return parsed items',
+          () async {
+        final List<Map<String, dynamic>> rows = <Map<String, dynamic>>[
+          <String, dynamic>{
+            'id': 1,
+            'collection_id': 10,
+            'collection_item_id': 42,
+            'item_type': 'text',
+            'item_ref_id': null,
+            'x': 100.0,
+            'y': 200.0,
+            'width': 300.0,
+            'height': 150.0,
+            'z_index': 0,
+            'data': '{"content":"Note"}',
+            'created_at': testTimestamp,
+          },
+          <String, dynamic>{
+            'id': 2,
+            'collection_id': 10,
+            'collection_item_id': 42,
+            'item_type': 'image',
+            'item_ref_id': null,
+            'x': 400.0,
+            'y': 500.0,
+            'width': 640.0,
+            'height': 480.0,
+            'z_index': 1,
+            'data': '{"url":"https://example.com/img.png"}',
+            'created_at': testTimestamp,
+          },
+        ];
+
+        when(() => mockDb.getGameCanvasItems(42))
+            .thenAnswer((_) async => rows);
+
+        final List<CanvasItem> result =
+            await repository.getGameCanvasItems(42);
+
+        expect(result.length, 2);
+        expect(result[0].id, 1);
+        expect(result[0].itemType, CanvasItemType.text);
+        expect(result[0].collectionItemId, 42);
+        expect(result[0].x, 100.0);
+        expect(result[0].y, 200.0);
+        expect(result[1].id, 2);
+        expect(result[1].itemType, CanvasItemType.image);
+        expect(result[1].collectionItemId, 42);
+        verify(() => mockDb.getGameCanvasItems(42)).called(1);
+      });
+
+      test('should return empty list when no items', () async {
+        when(() => mockDb.getGameCanvasItems(42))
+            .thenAnswer((_) async => <Map<String, dynamic>>[]);
+
+        final List<CanvasItem> result =
+            await repository.getGameCanvasItems(42);
+
+        expect(result, isEmpty);
+        verify(() => mockDb.getGameCanvasItems(42)).called(1);
+      });
+    });
+
+    group('getGameCanvasItemsWithData', () {
+      test('should not enrich text-only items', () async {
+        final List<Map<String, dynamic>> rows = <Map<String, dynamic>>[
+          <String, dynamic>{
+            'id': 1,
+            'collection_id': 10,
+            'collection_item_id': 42,
+            'item_type': 'text',
+            'item_ref_id': null,
+            'x': 100.0,
+            'y': 200.0,
+            'width': 300.0,
+            'height': 150.0,
+            'z_index': 0,
+            'data': '{"content":"Note"}',
+            'created_at': testTimestamp,
+          },
+        ];
+
+        when(() => mockDb.getGameCanvasItems(42))
+            .thenAnswer((_) async => rows);
+
+        final List<CanvasItem> result =
+            await repository.getGameCanvasItemsWithData(42);
+
+        expect(result.length, 1);
+        expect(result[0].id, 1);
+        expect(result[0].itemType, CanvasItemType.text);
+        verify(() => mockDb.getGameCanvasItems(42)).called(1);
+        verifyNever(() => mockDb.getGamesByIds(any()));
+      });
+
+      test('should enrich game canvas items with game data', () async {
+        final List<Map<String, dynamic>> rows = <Map<String, dynamic>>[
+          <String, dynamic>{
+            'id': 1,
+            'collection_id': 10,
+            'collection_item_id': 42,
+            'item_type': 'game',
+            'item_ref_id': 999,
+            'x': 100.0,
+            'y': 200.0,
+            'width': 160.0,
+            'height': 220.0,
+            'z_index': 0,
+            'data': null,
+            'created_at': testTimestamp,
+          },
+        ];
+
+        const Game testGame = Game(
+          id: 999,
+          name: 'Test Game',
+        );
+
+        when(() => mockDb.getGameCanvasItems(42))
+            .thenAnswer((_) async => rows);
+        when(() => mockDb.getGamesByIds(<int>[999]))
+            .thenAnswer((_) async => <Game>[testGame]);
+
+        final List<CanvasItem> result =
+            await repository.getGameCanvasItemsWithData(42);
+
+        expect(result.length, 1);
+        expect(result[0].game, isNotNull);
+        expect(result[0].game!.name, 'Test Game');
+        verify(() => mockDb.getGamesByIds(<int>[999])).called(1);
+      });
+
+      test('should enrich game canvas items with movie data', () async {
+        final List<Map<String, dynamic>> rows = <Map<String, dynamic>>[
+          <String, dynamic>{
+            'id': 2,
+            'collection_id': 10,
+            'collection_item_id': 42,
+            'item_type': 'movie',
+            'item_ref_id': 555,
+            'x': 300.0,
+            'y': 200.0,
+            'width': 160.0,
+            'height': 220.0,
+            'z_index': 0,
+            'data': null,
+            'created_at': testTimestamp,
+          },
+        ];
+
+        const Movie testMovie = Movie(
+          tmdbId: 555,
+          title: 'Test Movie',
+        );
+
+        when(() => mockDb.getGameCanvasItems(42))
+            .thenAnswer((_) async => rows);
+        when(() => mockDb.getMoviesByTmdbIds(<int>[555]))
+            .thenAnswer((_) async => <Movie>[testMovie]);
+
+        final List<CanvasItem> result =
+            await repository.getGameCanvasItemsWithData(42);
+
+        expect(result.length, 1);
+        expect(result[0].movie, isNotNull);
+        expect(result[0].movie!.title, 'Test Movie');
+        verify(() => mockDb.getMoviesByTmdbIds(<int>[555])).called(1);
+      });
+
+      test('should enrich game canvas items with tvShow data', () async {
+        final List<Map<String, dynamic>> rows = <Map<String, dynamic>>[
+          <String, dynamic>{
+            'id': 3,
+            'collection_id': 10,
+            'collection_item_id': 42,
+            'item_type': 'tv_show',
+            'item_ref_id': 777,
+            'x': 500.0,
+            'y': 200.0,
+            'width': 160.0,
+            'height': 220.0,
+            'z_index': 0,
+            'data': null,
+            'created_at': testTimestamp,
+          },
+        ];
+
+        const TvShow testTvShow = TvShow(
+          tmdbId: 777,
+          title: 'Test Show',
+        );
+
+        when(() => mockDb.getGameCanvasItems(42))
+            .thenAnswer((_) async => rows);
+        when(() => mockDb.getTvShowsByTmdbIds(<int>[777]))
+            .thenAnswer((_) async => <TvShow>[testTvShow]);
+
+        final List<CanvasItem> result =
+            await repository.getGameCanvasItemsWithData(42);
+
+        expect(result.length, 1);
+        expect(result[0].tvShow, isNotNull);
+        expect(result[0].tvShow!.title, 'Test Show');
+        verify(() => mockDb.getTvShowsByTmdbIds(<int>[777])).called(1);
+      });
+    });
+
+    group('hasGameCanvasItems', () {
+      test('should return true when items exist', () async {
+        when(() => mockDb.getGameCanvasItemCount(42))
+            .thenAnswer((_) async => 3);
+
+        final bool result = await repository.hasGameCanvasItems(42);
+
+        expect(result, true);
+        verify(() => mockDb.getGameCanvasItemCount(42)).called(1);
+      });
+
+      test('should return false when no items', () async {
+        when(() => mockDb.getGameCanvasItemCount(42))
+            .thenAnswer((_) async => 0);
+
+        final bool result = await repository.hasGameCanvasItems(42);
+
+        expect(result, false);
+        verify(() => mockDb.getGameCanvasItemCount(42)).called(1);
+      });
+    });
+
+    group('getGameCanvasViewport', () {
+      test('should return null when no viewport saved', () async {
+        when(() => mockDb.getGameCanvasViewport(42))
+            .thenAnswer((_) async => null);
+
+        final CanvasViewport? result =
+            await repository.getGameCanvasViewport(42);
+
+        expect(result, isNull);
+        verify(() => mockDb.getGameCanvasViewport(42)).called(1);
+      });
+
+      test('should return CanvasViewport from db row', () async {
+        final Map<String, dynamic> row = <String, dynamic>{
+          'collection_item_id': 42,
+          'scale': 1.5,
+          'offset_x': -100.0,
+          'offset_y': -200.0,
+        };
+
+        when(() => mockDb.getGameCanvasViewport(42))
+            .thenAnswer((_) async => row);
+
+        final CanvasViewport? result =
+            await repository.getGameCanvasViewport(42);
+
+        expect(result, isNotNull);
+        expect(result!.collectionId, 42);
+        expect(result.scale, 1.5);
+        expect(result.offsetX, -100.0);
+        expect(result.offsetY, -200.0);
+        verify(() => mockDb.getGameCanvasViewport(42)).called(1);
+      });
+
+      test('should use default values for missing scale/offset fields',
+          () async {
+        final Map<String, dynamic> row = <String, dynamic>{
+          'collection_item_id': 42,
+          'scale': null,
+          'offset_x': null,
+          'offset_y': null,
+        };
+
+        when(() => mockDb.getGameCanvasViewport(42))
+            .thenAnswer((_) async => row);
+
+        final CanvasViewport? result =
+            await repository.getGameCanvasViewport(42);
+
+        expect(result, isNotNull);
+        expect(result!.collectionId, 42);
+        expect(result.scale, 1.0);
+        expect(result.offsetX, 0.0);
+        expect(result.offsetY, 0.0);
+      });
+    });
+
+    group('saveGameCanvasViewport', () {
+      test('should call db.upsertGameCanvasViewport with correct params',
+          () async {
+        const CanvasViewport viewport = CanvasViewport(
+          collectionId: 42,
+          scale: 2.0,
+          offsetX: -50.0,
+          offsetY: -75.0,
+        );
+
+        when(() => mockDb.upsertGameCanvasViewport(
+              collectionItemId: 42,
+              scale: 2.0,
+              offsetX: -50.0,
+              offsetY: -75.0,
+            )).thenAnswer((_) async {});
+
+        await repository.saveGameCanvasViewport(42, viewport);
+
+        verify(() => mockDb.upsertGameCanvasViewport(
+              collectionItemId: 42,
+              scale: 2.0,
+              offsetX: -50.0,
+              offsetY: -75.0,
+            )).called(1);
+      });
+    });
+
+    group('getGameCanvasConnections', () {
+      test('should call db.getGameCanvasConnections and return parsed connections',
+          () async {
+        final List<Map<String, dynamic>> rows = <Map<String, dynamic>>[
+          <String, dynamic>{
+            'id': 1,
+            'collection_id': 10,
+            'collection_item_id': 42,
+            'from_item_id': 100,
+            'to_item_id': 200,
+            'label': 'related',
+            'color': '#FF0000',
+            'style': 'dashed',
+            'created_at': testTimestamp,
+          },
+          <String, dynamic>{
+            'id': 2,
+            'collection_id': 10,
+            'collection_item_id': 42,
+            'from_item_id': 200,
+            'to_item_id': 300,
+            'label': null,
+            'color': '#666666',
+            'style': 'solid',
+            'created_at': testTimestamp,
+          },
+        ];
+
+        when(() => mockDb.getGameCanvasConnections(42))
+            .thenAnswer((_) async => rows);
+
+        final List<CanvasConnection> result =
+            await repository.getGameCanvasConnections(42);
+
+        expect(result.length, 2);
+        expect(result[0].id, 1);
+        expect(result[0].fromItemId, 100);
+        expect(result[0].toItemId, 200);
+        expect(result[0].label, 'related');
+        expect(result[0].color, '#FF0000');
+        expect(result[0].style, ConnectionStyle.dashed);
+        expect(result[0].collectionItemId, 42);
+        expect(result[1].id, 2);
+        expect(result[1].fromItemId, 200);
+        expect(result[1].toItemId, 300);
+        expect(result[1].label, isNull);
+        expect(result[1].style, ConnectionStyle.solid);
+        verify(() => mockDb.getGameCanvasConnections(42)).called(1);
+      });
+
+      test('should return empty list when no connections', () async {
+        when(() => mockDb.getGameCanvasConnections(42))
+            .thenAnswer((_) async => <Map<String, dynamic>>[]);
+
+        final List<CanvasConnection> result =
+            await repository.getGameCanvasConnections(42);
+
+        expect(result, isEmpty);
+        verify(() => mockDb.getGameCanvasConnections(42)).called(1);
       });
     });
   });

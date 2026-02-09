@@ -37,6 +37,7 @@ class CanvasConnection {
     required this.fromItemId,
     required this.toItemId,
     required this.createdAt,
+    this.collectionItemId,
     this.label,
     this.color = '#666666',
     this.style = ConnectionStyle.solid,
@@ -47,6 +48,7 @@ class CanvasConnection {
     return CanvasConnection(
       id: row['id'] as int,
       collectionId: row['collection_id'] as int,
+      collectionItemId: row['collection_item_id'] as int?,
       fromItemId: row['from_item_id'] as int,
       toItemId: row['to_item_id'] as int,
       label: row['label'] as String?,
@@ -63,6 +65,7 @@ class CanvasConnection {
     return CanvasConnection(
       id: json['id'] as int? ?? 0,
       collectionId: json['collection_id'] as int? ?? 0,
+      collectionItemId: json['collection_item_id'] as int?,
       fromItemId: json['from_item_id'] as int,
       toItemId: json['to_item_id'] as int,
       label: json['label'] as String?,
@@ -81,6 +84,9 @@ class CanvasConnection {
 
   /// ID коллекции.
   final int collectionId;
+
+  /// ID элемента коллекции (для per-game canvas, null для коллекционного).
+  final int? collectionItemId;
 
   /// ID элемента-источника.
   final int fromItemId;
@@ -105,6 +111,7 @@ class CanvasConnection {
     return <String, dynamic>{
       if (id != 0) 'id': id,
       'collection_id': collectionId,
+      'collection_item_id': collectionItemId,
       'from_item_id': fromItemId,
       'to_item_id': toItemId,
       'label': label,
@@ -118,6 +125,7 @@ class CanvasConnection {
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'id': id,
+      'collection_item_id': collectionItemId,
       'from_item_id': fromItemId,
       'to_item_id': toItemId,
       'label': label,
@@ -134,6 +142,7 @@ class CanvasConnection {
   CanvasConnection copyWith({
     int? id,
     int? collectionId,
+    int? collectionItemId,
     int? fromItemId,
     int? toItemId,
     String? label,
@@ -145,6 +154,7 @@ class CanvasConnection {
     return CanvasConnection(
       id: id ?? this.id,
       collectionId: collectionId ?? this.collectionId,
+      collectionItemId: collectionItemId ?? this.collectionItemId,
       fromItemId: fromItemId ?? this.fromItemId,
       toItemId: toItemId ?? this.toItemId,
       label: clearLabel ? null : (label ?? this.label),

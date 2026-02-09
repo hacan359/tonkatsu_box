@@ -12,6 +12,7 @@ import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
+import 'package:xerabora/shared/widgets/media_detail_view.dart';
 import 'package:xerabora/shared/widgets/source_badge.dart';
 
 class MockCollectionRepository extends Mock implements CollectionRepository {}
@@ -354,7 +355,9 @@ void main() {
         expect(find.byIcon(Icons.playlist_play), findsNothing);
         expect(find.byIcon(Icons.category_outlined), findsNothing);
         expect(find.byIcon(Icons.star_outline), findsNothing);
-        expect(find.byIcon(Icons.info_outline), findsNothing);
+        // Icons.info_outline appears in TabBar, so check chip absence by count
+        // TabBar has 1 info_outline icon (Details tab), chips should add 0 more
+        expect(find.byIcon(Icons.info_outline), findsOneWidget);
       });
     });
 
@@ -819,9 +822,11 @@ void main() {
         expect(find.text('Completed'), findsOneWidget);
 
         // Author's comment & user notes — скролл к нижней части
+        // Указываем scrollable MediaDetailView (второй после TabBarView)
         await tester.scrollUntilVisible(
           find.text('Rewatched twice'),
           200,
+          scrollable: find.byType(Scrollable).at(1),
         );
         await tester.pumpAndSettle();
         expect(find.text('Best series ever'), findsOneWidget);
@@ -990,6 +995,60 @@ void main() {
 
         expect(find.byType(SourceBadge), findsOneWidget);
         expect(find.text('TMDB'), findsOneWidget);
+      });
+    });
+
+    group('TabBar', () {
+      testWidgets('должен отображать TabBar с двумя вкладками',
+          (WidgetTester tester) async {
+        final TvShow tvShow = createTestTvShow();
+        final CollectionItem item = createTestCollectionItem(tvShow: tvShow);
+
+        await tester.pumpWidget(createTestWidget(
+          collectionId: 1,
+          itemId: 1,
+          isEditable: true,
+          items: <CollectionItem>[item],
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(TabBar), findsOneWidget);
+        expect(find.byType(Tab), findsNWidgets(2));
+      });
+
+      testWidgets('должен отображать иконки вкладок',
+          (WidgetTester tester) async {
+        final TvShow tvShow = createTestTvShow();
+        final CollectionItem item = createTestCollectionItem(tvShow: tvShow);
+
+        await tester.pumpWidget(createTestWidget(
+          collectionId: 1,
+          itemId: 1,
+          isEditable: true,
+          items: <CollectionItem>[item],
+        ));
+        await tester.pumpAndSettle();
+
+        // info_outline appears both in TabBar and as status chip icon,
+        // so we check at least one exists for tab icon
+        expect(find.byIcon(Icons.info_outline), findsWidgets);
+        expect(find.byIcon(Icons.dashboard_outlined), findsOneWidget);
+      });
+
+      testWidgets('должен начинать с вкладки Details',
+          (WidgetTester tester) async {
+        final TvShow tvShow = createTestTvShow();
+        final CollectionItem item = createTestCollectionItem(tvShow: tvShow);
+
+        await tester.pumpWidget(createTestWidget(
+          collectionId: 1,
+          itemId: 1,
+          isEditable: true,
+          items: <CollectionItem>[item],
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(MediaDetailView), findsOneWidget);
       });
     });
   });
