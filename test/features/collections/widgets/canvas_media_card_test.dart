@@ -1,15 +1,39 @@
 // Виджет-тесты для CanvasMediaCard.
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:xerabora/core/services/image_cache_service.dart';
 import 'package:xerabora/features/collections/widgets/canvas_media_card.dart';
 import 'package:xerabora/shared/constants/media_type_theme.dart';
 import 'package:xerabora/shared/models/canvas_item.dart';
 import 'package:xerabora/shared/models/movie.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
+import 'package:xerabora/shared/widgets/cached_image.dart';
+
+class MockImageCacheService extends Mock implements ImageCacheService {}
 
 void main() {
+  late MockImageCacheService mockCacheService;
+
+  setUpAll(() {
+    registerFallbackValue(ImageType.gameCover);
+  });
+
+  setUp(() {
+    mockCacheService = MockImageCacheService();
+    when(() => mockCacheService.getImageUri(
+          type: any(named: 'type'),
+          imageId: any(named: 'imageId'),
+          remoteUrl: any(named: 'remoteUrl'),
+        )).thenAnswer((_) async => const ImageResult(
+          uri: 'https://image.tmdb.org/t/p/w154/poster.jpg',
+          isLocal: false,
+          isMissing: false,
+        ));
+  });
+
   group('CanvasMediaCard', () {
     final DateTime testDate = DateTime(2024, 6, 15);
 
@@ -50,12 +74,17 @@ void main() {
     }
 
     Widget buildTestWidget(CanvasItem item) {
-      return MaterialApp(
-        home: Scaffold(
-          body: SizedBox(
-            width: 160,
-            height: 220,
-            child: CanvasMediaCard(item: item),
+      return ProviderScope(
+        overrides: <Override>[
+          imageCacheServiceProvider.overrideWithValue(mockCacheService),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              width: 160,
+              height: 220,
+              child: CanvasMediaCard(item: item),
+            ),
           ),
         ),
       );
@@ -74,13 +103,14 @@ void main() {
           );
 
           await tester.pumpWidget(buildTestWidget(item));
+          await tester.pump();
 
           expect(find.text('Inception'), findsOneWidget);
         },
       );
 
       testWidgets(
-        'использует CachedNetworkImage когда posterUrl задан',
+        'использует CachedImage когда posterUrl задан',
         (WidgetTester tester) async {
           final CanvasItem item = createMovieItem(
             movie: const Movie(
@@ -91,8 +121,9 @@ void main() {
           );
 
           await tester.pumpWidget(buildTestWidget(item));
+          await tester.pump();
 
-          expect(find.byType(CachedNetworkImage), findsOneWidget);
+          expect(find.byType(CachedImage), findsOneWidget);
         },
       );
 
@@ -109,7 +140,7 @@ void main() {
           await tester.pumpWidget(buildTestWidget(item));
 
           expect(find.byIcon(Icons.movie_outlined), findsOneWidget);
-          expect(find.byType(CachedNetworkImage), findsNothing);
+          expect(find.byType(CachedImage), findsNothing);
         },
       );
 
@@ -149,13 +180,14 @@ void main() {
           );
 
           await tester.pumpWidget(buildTestWidget(item));
+          await tester.pump();
 
           expect(find.text('Breaking Bad'), findsOneWidget);
         },
       );
 
       testWidgets(
-        'использует CachedNetworkImage когда posterUrl задан',
+        'использует CachedImage когда posterUrl задан',
         (WidgetTester tester) async {
           final CanvasItem item = createTvShowItem(
             tvShow: const TvShow(
@@ -166,8 +198,9 @@ void main() {
           );
 
           await tester.pumpWidget(buildTestWidget(item));
+          await tester.pump();
 
-          expect(find.byType(CachedNetworkImage), findsOneWidget);
+          expect(find.byType(CachedImage), findsOneWidget);
         },
       );
 
@@ -184,7 +217,7 @@ void main() {
           await tester.pumpWidget(buildTestWidget(item));
 
           expect(find.byIcon(Icons.tv_outlined), findsOneWidget);
-          expect(find.byType(CachedNetworkImage), findsNothing);
+          expect(find.byType(CachedImage), findsNothing);
         },
       );
 
@@ -288,7 +321,7 @@ void main() {
 
           expect(find.text('Unknown Movie'), findsOneWidget);
           expect(find.byIcon(Icons.movie_outlined), findsOneWidget);
-          expect(find.byType(CachedNetworkImage), findsNothing);
+          expect(find.byType(CachedImage), findsNothing);
         },
       );
 
@@ -301,7 +334,7 @@ void main() {
 
           expect(find.text('Unknown TV Show'), findsOneWidget);
           expect(find.byIcon(Icons.tv_outlined), findsOneWidget);
-          expect(find.byType(CachedNetworkImage), findsNothing);
+          expect(find.byType(CachedImage), findsNothing);
         },
       );
 
@@ -320,7 +353,7 @@ void main() {
 
           expect(find.text('No Poster Movie'), findsOneWidget);
           expect(find.byIcon(Icons.movie_outlined), findsOneWidget);
-          expect(find.byType(CachedNetworkImage), findsNothing);
+          expect(find.byType(CachedImage), findsNothing);
         },
       );
 
@@ -339,7 +372,7 @@ void main() {
 
           expect(find.text('No Poster Show'), findsOneWidget);
           expect(find.byIcon(Icons.tv_outlined), findsOneWidget);
-          expect(find.byType(CachedNetworkImage), findsNothing);
+          expect(find.byType(CachedImage), findsNothing);
         },
       );
     });

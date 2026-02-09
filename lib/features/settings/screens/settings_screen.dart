@@ -5,7 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/database_service.dart';
+import '../../../core/services/config_service.dart';
 import '../../../core/services/image_cache_service.dart';
+import '../../collections/providers/collections_provider.dart';
 import '../../../shared/models/platform.dart';
 import '../../../shared/widgets/source_badge.dart';
 import '../providers/settings_provider.dart';
@@ -193,6 +195,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             _buildSteamGridDbSection(settings),
             const SizedBox(height: 24),
             _buildTmdbSection(settings),
+            const SizedBox(height: 24),
+            _buildConfigSection(),
+            const SizedBox(height: 24),
+            _buildDangerZoneSection(),
             if (kDebugMode) ...<Widget>[
               const SizedBox(height: 24),
               _buildDeveloperToolsSection(settings),
@@ -509,14 +515,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
 
             // Статистика кэша
-            FutureBuilder<List<dynamic>>(
-              future: Future.wait(<Future<dynamic>>[
-                cacheService.getCachedCount(),
-                cacheService.getCacheSize(),
-              ]),
-              builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
-                final int count = (snapshot.data?[0] as int?) ?? 0;
-                final int size = (snapshot.data?[1] as int?) ?? 0;
+            FutureBuilder<(int, int)>(
+              future: _getCacheStats(cacheService),
+              builder: (BuildContext context, AsyncSnapshot<(int, int)> snapshot) {
+                final int count = snapshot.data?.$1 ?? 0;
+                final int size = snapshot.data?.$2 ?? 0;
                 return ListTile(
                   contentPadding: EdgeInsets.zero,
                   title: const Text('Cache size'),
@@ -535,6 +538,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
       ),
     );
+  }
+
+  Future<(int, int)> _getCacheStats(ImageCacheService cacheService) async {
+    final int count = await cacheService.getCachedCount();
+    final int size = await cacheService.getCacheSize();
+    return (count, size);
   }
 
   Future<void> _selectCacheFolder(ImageCacheService cacheService) async {
@@ -767,6 +776,182 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         apiKey.isEmpty ? 'TMDB API key cleared' : 'TMDB API key saved',
         isError: false,
       );
+    }
+  }
+
+  Widget _buildConfigSection() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+              children: <Widget>[
+                Icon(Icons.settings_backup_restore,
+                    color: Theme.of(context).colorScheme.primary),
+                const SizedBox(width: 8),
+                Text(
+                  'Configuration',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Export or import your API keys and settings.',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: <Widget>[
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _exportConfig,
+                    icon: const Icon(Icons.upload, size: 18),
+                    label: const Text('Export Config'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _importConfig,
+                    icon: const Icon(Icons.download, size: 18),
+                    label: const Text('Import Config'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _exportConfig() async {
+    final SettingsNotifier notifier =
+        ref.read(settingsNotifierProvider.notifier);
+    final ConfigResult result = await notifier.exportConfig();
+
+    if (!mounted) return;
+
+    if (result.success) {
+      _showSnackBar('Config exported to ${result.filePath}', isError: false);
+    } else if (result.error != null) {
+      _showSnackBar(result.error!);
+    }
+  }
+
+  Future<void> _importConfig() async {
+    final SettingsNotifier notifier =
+        ref.read(settingsNotifierProvider.notifier);
+    final ConfigResult result = await notifier.importConfig();
+
+    if (!mounted) return;
+
+    if (result.success) {
+      // Обновляем текстовые поля из нового state
+      final SettingsState settings = ref.read(settingsNotifierProvider);
+      _clientIdController.text = settings.clientId ?? '';
+      _clientSecretController.text = settings.clientSecret ?? '';
+      _steamGridDbKeyController.text = settings.steamGridDbApiKey ?? '';
+      _tmdbKeyController.text = settings.tmdbApiKey ?? '';
+      _showSnackBar('Config imported successfully', isError: false);
+    } else if (result.error != null) {
+      _showSnackBar(result.error!);
+    }
+  }
+
+  Widget _buildDangerZoneSection() {
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+              children: <Widget>[
+                Icon(Icons.warning_amber, color: colorScheme.error),
+                const SizedBox(width: 8),
+                Text(
+                  'Danger Zone',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(color: colorScheme.error),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Clears all collections, games, movies, TV shows and canvas data. '
+              'Settings and API keys will be preserved.',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _resetDatabase,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: colorScheme.error,
+                  side: BorderSide(color: colorScheme.error),
+                ),
+                icon: const Icon(Icons.delete_forever, size: 18),
+                label: const Text('Reset Database'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _resetDatabase() async {
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Reset Database?'),
+        content: const Text(
+          'This will permanently delete all your collections, games, '
+          'movies, TV shows, episode progress, and canvas data.\n\n'
+          'Your API keys and settings will be preserved.\n\n'
+          'This action cannot be undone.',
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: const Text('Reset'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      final SettingsNotifier notifier =
+          ref.read(settingsNotifierProvider.notifier);
+      await notifier.flushDatabase();
+
+      if (mounted) {
+        // Инвалидируем провайдер коллекций — HomeScreen перечитает пустой список
+        ref.invalidate(collectionsProvider);
+
+        _showSnackBar('Database has been reset', isError: false);
+
+        // Возвращаемся на HomeScreen
+        if (mounted) {
+          Navigator.of(context).popUntil((Route<dynamic> route) => route.isFirst);
+        }
+      }
     }
   }
 

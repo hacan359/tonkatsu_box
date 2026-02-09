@@ -200,6 +200,21 @@ Access high-quality game artwork from SteamGridDB:
 - Add images directly to canvas from the side panel
 - Debug panel for testing API endpoints (dev builds only)
 
+## Configuration Management
+
+### Export / Import Config
+Export your API keys and settings to a JSON file and import them on another machine:
+- **Export Config** — saves all 7 settings keys (IGDB, SteamGridDB, TMDB) to a `.json` file via file dialog
+- **Import Config** — loads settings from a `.json` file, validates format and version, updates API clients immediately
+- Config file includes a version marker for forward compatibility
+
+### Reset Database
+Clear all application data while preserving your API keys and settings:
+- **Reset Database** button in the Danger Zone section of Settings
+- Confirmation dialog prevents accidental data loss
+- Clears all 14 SQLite tables (collections, games, movies, TV shows, canvas, episodes) in a single transaction
+- SharedPreferences (API keys, tokens) are preserved
+
 ## Offline Mode
 
 After initial setup, most features work offline:
@@ -208,3 +223,14 @@ After initial setup, most features work offline:
 - Add comments
 
 Only searching for new games requires internet.
+
+### Image Caching
+
+When enabled in Settings, media images (game covers, movie posters, TV show posters) are downloaded locally for offline access:
+- **Toggle** — enable/disable image caching in Settings → Image Cache
+- **Auto-download** — images are automatically saved to local storage when viewed with caching enabled
+- **Fallback** — if cache is cleared or a file is missing, images load from the network and re-download in the background
+- **Custom folder** — choose where cached images are stored via file picker
+- **Cache stats** — view file count and total size in Settings
+- **Clear cache** — delete all locally saved images with one tap
+- Covers collection thumbnails, detail screens, and canvas cards

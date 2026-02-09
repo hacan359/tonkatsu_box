@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/services/image_cache_service.dart';
 import '../../../data/repositories/canvas_repository.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/item_status.dart';
@@ -132,6 +133,8 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
             typeLabel: 'Movie',
             infoChips: _buildInfoChips(movie),
             description: movie?.overview,
+            cacheImageType: ImageType.moviePoster,
+            cacheImageId: item.externalId.toString(),
             statusWidget: ItemStatusDropdown(
               status: item.status,
               mediaType: MediaType.movie,

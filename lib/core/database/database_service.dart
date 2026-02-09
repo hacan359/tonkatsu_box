@@ -1762,6 +1762,33 @@ class DatabaseService {
     return result;
   }
 
+  /// Очищает все данные из базы данных.
+  ///
+  /// Удаляет содержимое всех 14 таблиц в одной транзакции.
+  /// Сначала зависимые таблицы (FK), затем основные.
+  /// Настройки (SharedPreferences) не затрагиваются.
+  Future<void> clearAllData() async {
+    final Database db = await database;
+    await db.transaction((Transaction txn) async {
+      // Зависимые таблицы (FK CASCADE)
+      await txn.delete('watched_episodes');
+      await txn.delete('canvas_connections');
+      await txn.delete('canvas_items');
+      await txn.delete('canvas_viewport');
+      await txn.delete('game_canvas_viewport');
+      await txn.delete('collection_items');
+      await txn.delete('collection_games');
+      // Основные таблицы
+      await txn.delete('collections');
+      await txn.delete('tv_episodes_cache');
+      await txn.delete('tv_seasons_cache');
+      await txn.delete('tv_shows_cache');
+      await txn.delete('movies_cache');
+      await txn.delete('games');
+      await txn.delete('platforms');
+    });
+  }
+
   /// Закрывает соединение с базой данных.
   Future<void> close() async {
     final Database? db = _database;

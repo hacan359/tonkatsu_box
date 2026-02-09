@@ -1,3 +1,5 @@
+// Виджет для отображения кэшированных изображений.
+
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -10,8 +12,9 @@ import '../../core/services/image_cache_service.dart';
 ///
 /// Автоматически определяет источник изображения:
 /// - Если кэширование выключено: загружает из сети
-/// - Если кэширование включено: показывает локальный файл
-/// - Если файл отсутствует при включённом кэше: показывает ошибку
+/// - Если кэширование включено и файл есть: показывает локальный файл
+/// - Если кэширование включено, но файл отсутствует: загружает из сети
+///   и скачивает в кэш в фоне (при [autoDownload] = true)
 class CachedImage extends ConsumerWidget {
   /// Создаёт [CachedImage].
   const CachedImage({
@@ -21,13 +24,15 @@ class CachedImage extends ConsumerWidget {
     this.width,
     this.height,
     this.fit = BoxFit.contain,
+    this.memCacheWidth,
+    this.memCacheHeight,
     this.placeholder,
     this.errorWidget,
-    this.onMissingCache,
+    this.autoDownload = true,
     super.key,
   });
 
-  /// Тип изображения (платформа или обложка).
+  /// Тип изображения (платформа, обложка, постер).
   final ImageType imageType;
 
   /// ID изображения для кэша.
@@ -45,14 +50,20 @@ class CachedImage extends ConsumerWidget {
   /// Способ масштабирования.
   final BoxFit fit;
 
+  /// Ширина кэша изображения в памяти.
+  final int? memCacheWidth;
+
+  /// Высота кэша изображения в памяти.
+  final int? memCacheHeight;
+
   /// Виджет-заглушка при загрузке.
   final Widget? placeholder;
 
   /// Виджет при ошибке.
   final Widget? errorWidget;
 
-  /// Callback при отсутствии локального файла (кэш повреждён).
-  final VoidCallback? onMissingCache;
+  /// Автоматически скачивать в локальный кэш при отсутствии файла.
+  final bool autoDownload;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -74,12 +85,18 @@ class CachedImage extends ConsumerWidget {
           return _buildError(context);
         }
 
-        // Кэш повреждён - показываем ошибку и уведомляем
+        // Кэш включён, но файл отсутствует — показать из сети + скачать
         if (result.isMissing) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            onMissingCache?.call();
-          });
-          return _buildMissingCacheError(context);
+          if (autoDownload && result.uri != null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              cacheService.downloadImage(
+                type: imageType,
+                imageId: imageId,
+                remoteUrl: remoteUrl,
+              );
+            });
+          }
+          return _buildNetworkImage(result.uri!, context);
         }
 
         // Локальный файл
@@ -89,27 +106,34 @@ class CachedImage extends ConsumerWidget {
             width: width,
             height: height,
             fit: fit,
-            errorBuilder: (BuildContext ctx, Object error, StackTrace? stack) {
+            errorBuilder:
+                (BuildContext ctx, Object error, StackTrace? stack) {
               return _buildError(context);
             },
           );
         }
 
-        // Удалённый URL
+        // Удалённый URL (кэш выключен)
         if (result.uri != null) {
-          return CachedNetworkImage(
-            imageUrl: result.uri!,
-            width: width,
-            height: height,
-            fit: fit,
-            placeholder: (BuildContext ctx, String url) => _buildPlaceholder(),
-            errorWidget: (BuildContext ctx, String url, Object error) =>
-                _buildError(context),
-          );
+          return _buildNetworkImage(result.uri!, context);
         }
 
         return _buildError(context);
       },
+    );
+  }
+
+  Widget _buildNetworkImage(String imageUrl, BuildContext context) {
+    return CachedNetworkImage(
+      imageUrl: imageUrl,
+      width: width,
+      height: height,
+      fit: fit,
+      memCacheWidth: memCacheWidth,
+      memCacheHeight: memCacheHeight,
+      placeholder: (BuildContext ctx, String url) => _buildPlaceholder(),
+      errorWidget: (BuildContext ctx, String url, Object error) =>
+          _buildError(context),
     );
   }
 
@@ -137,18 +161,6 @@ class CachedImage extends ConsumerWidget {
       height: height,
       child: Icon(
         Icons.broken_image,
-        color: Theme.of(context).colorScheme.error,
-        size: 24,
-      ),
-    );
-  }
-
-  Widget _buildMissingCacheError(BuildContext context) {
-    return SizedBox(
-      width: width,
-      height: height,
-      child: Icon(
-        Icons.cloud_off,
         color: Theme.of(context).colorScheme.error,
         size: 24,
       ),

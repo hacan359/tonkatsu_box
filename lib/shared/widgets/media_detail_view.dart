@@ -3,6 +3,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/services/image_cache_service.dart';
+import 'cached_image.dart';
 import 'source_badge.dart';
 
 /// Чип с иконкой и текстом для отображения метаинформации.
@@ -43,6 +45,8 @@ class MediaDetailView extends StatelessWidget {
     this.hasAuthorComment = false,
     this.hasUserComment = false,
     this.embedded = false,
+    this.cacheImageType,
+    this.cacheImageId,
     super.key,
   });
 
@@ -98,6 +102,15 @@ class MediaDetailView extends StatelessWidget {
   /// в TabBarView на GameDetailScreen).
   final bool embedded;
 
+  /// Тип изображения для локального кэширования.
+  ///
+  /// Если задан вместе с [cacheImageId], используется [CachedImage]
+  /// вместо [CachedNetworkImage] для поддержки оффлайн-режима.
+  final ImageType? cacheImageType;
+
+  /// ID изображения для локального кэширования.
+  final String? cacheImageId;
+
   /// Колбэк сохранения комментария автора.
   final ValueChanged<String?> onAuthorCommentSave;
 
@@ -150,27 +163,7 @@ class MediaDetailView extends StatelessWidget {
           child: SizedBox(
             width: 80,
             height: 120,
-            child: coverUrl != null
-                ? CachedNetworkImage(
-                    imageUrl: coverUrl!,
-                    fit: BoxFit.cover,
-                    memCacheWidth: 120,
-                    memCacheHeight: 180,
-                    placeholder: (BuildContext ctx, String url) => Container(
-                      color: colorScheme.surfaceContainerHighest,
-                      child: const Center(
-                        child: SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      ),
-                    ),
-                    errorWidget:
-                        (BuildContext ctx, String url, Object error) =>
-                            _buildPlaceholder(colorScheme),
-                  )
-                : _buildPlaceholder(colorScheme),
+            child: _buildCoverImage(colorScheme),
           ),
         ),
         const SizedBox(width: 12),
@@ -233,6 +226,50 @@ class MediaDetailView extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildCoverImage(ColorScheme colorScheme) {
+    if (coverUrl == null) return _buildPlaceholder(colorScheme);
+
+    final bool useLocalCache =
+        cacheImageType != null && cacheImageId != null;
+
+    if (useLocalCache) {
+      return CachedImage(
+        imageType: cacheImageType!,
+        imageId: cacheImageId!,
+        remoteUrl: coverUrl!,
+        fit: BoxFit.cover,
+        memCacheWidth: 120,
+        memCacheHeight: 180,
+        placeholder: _buildLoadingPlaceholder(colorScheme),
+        errorWidget: _buildPlaceholder(colorScheme),
+      );
+    }
+
+    return CachedNetworkImage(
+      imageUrl: coverUrl!,
+      fit: BoxFit.cover,
+      memCacheWidth: 120,
+      memCacheHeight: 180,
+      placeholder: (BuildContext ctx, String url) =>
+          _buildLoadingPlaceholder(colorScheme),
+      errorWidget: (BuildContext ctx, String url, Object error) =>
+          _buildPlaceholder(colorScheme),
+    );
+  }
+
+  Widget _buildLoadingPlaceholder(ColorScheme colorScheme) {
+    return Container(
+      color: colorScheme.surfaceContainerHighest,
+      child: const Center(
+        child: SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      ),
     );
   }
 

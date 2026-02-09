@@ -1,8 +1,9 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/export_service.dart';
+import '../../../core/services/image_cache_service.dart';
+import '../../../shared/widgets/cached_image.dart';
 import '../../../data/repositories/collection_repository.dart';
 import '../../../shared/constants/media_type_theme.dart';
 import '../../../shared/models/collection.dart';
@@ -1015,6 +1016,17 @@ class _CollectionItemTile extends StatelessWidget {
     }
   }
 
+  ImageType _getImageTypeForCache() {
+    switch (item.mediaType) {
+      case MediaType.game:
+        return ImageType.gameCover;
+      case MediaType.movie:
+        return ImageType.moviePoster;
+      case MediaType.tvShow:
+        return ImageType.tvShowPoster;
+    }
+  }
+
   Widget _buildCover(ColorScheme colorScheme) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
@@ -1025,20 +1037,20 @@ class _CollectionItemTile extends StatelessWidget {
           fit: StackFit.expand,
           children: <Widget>[
             if (item.thumbnailUrl != null)
-              CachedNetworkImage(
-                imageUrl: item.thumbnailUrl!,
+              CachedImage(
+                imageType: _getImageTypeForCache(),
+                imageId: item.externalId.toString(),
+                remoteUrl: item.thumbnailUrl!,
                 fit: BoxFit.cover,
                 memCacheWidth: 96,
                 memCacheHeight: 128,
-                placeholder: (BuildContext context, String url) => Container(
+                placeholder: Container(
                   color: colorScheme.surfaceContainerHighest,
                   child: const Center(
                     child: CircularProgressIndicator(strokeWidth: 2),
                   ),
                 ),
-                errorWidget:
-                    (BuildContext context, String url, Object error) =>
-                        _buildPlaceholder(colorScheme),
+                errorWidget: _buildPlaceholder(colorScheme),
               )
             else
               _buildPlaceholder(colorScheme),

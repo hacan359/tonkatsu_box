@@ -18,7 +18,13 @@ enum ImageType {
   platformLogo('platform_logos'),
 
   /// Обложки игр.
-  gameCover('game_covers');
+  gameCover('game_covers'),
+
+  /// Постеры фильмов.
+  moviePoster('movie_posters'),
+
+  /// Постеры сериалов.
+  tvShowPoster('tv_show_posters');
 
   const ImageType(this.folder);
 
@@ -101,7 +107,8 @@ class ImageCacheService {
   /// Логика:
   /// - Кэширование выключено: возвращает удалённый URL
   /// - Кэширование включено + файл есть: возвращает локальный путь
-  /// - Кэширование включено + файла нет: isMissing = true (ресурс повреждён)
+  /// - Кэширование включено + файла нет: возвращает удалённый URL
+  ///   с isMissing = true для фоновой загрузки
   Future<ImageResult> getImageUri({
     required ImageType type,
     required String imageId,
@@ -118,12 +125,12 @@ class ImageCacheService {
     final String localPath = await getLocalImagePath(type, imageId);
     final File file = File(localPath);
 
-    if (file.existsSync()) {
+    if (file.existsSync() && file.lengthSync() > 0) {
       return ImageResult(uri: localPath, isLocal: true, isMissing: false);
     }
 
-    // Файл отсутствует - ресурс повреждён
-    return const ImageResult(uri: null, isLocal: true, isMissing: true);
+    // Файл отсутствует — показать из сети, пометить как отсутствующий в кэше
+    return ImageResult(uri: remoteUrl, isLocal: false, isMissing: true);
   }
 
   /// Скачивает изображение в кэш.
@@ -144,8 +151,21 @@ class ImageCacheService {
 
       // Скачиваем файл
       await _dio.download(remoteUrl, localPath);
+
+      // Проверяем что файл не пустой (битое скачивание)
+      if (file.existsSync() && file.lengthSync() == 0) {
+        await file.delete();
+        return false;
+      }
+
       return true;
     } catch (e) {
+      // Удаляем частично скачанный файл при ошибке
+      final String localPath = await getLocalImagePath(type, imageId);
+      final File partial = File(localPath);
+      if (partial.existsSync() && partial.lengthSync() == 0) {
+        await partial.delete();
+      }
       return false;
     }
   }
@@ -242,7 +262,6 @@ class ImageResult {
   });
 
   /// URI изображения (локальный путь или удалённый URL).
-  /// null если изображение отсутствует.
   final String? uri;
 
   /// true если используется локальный файл.

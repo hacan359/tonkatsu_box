@@ -1,12 +1,36 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:xerabora/core/services/image_cache_service.dart';
 import 'package:xerabora/features/collections/widgets/canvas_game_card.dart';
 import 'package:xerabora/shared/constants/media_type_theme.dart';
 import 'package:xerabora/shared/models/canvas_item.dart';
 import 'package:xerabora/shared/models/game.dart';
+import 'package:xerabora/shared/widgets/cached_image.dart';
+
+class MockImageCacheService extends Mock implements ImageCacheService {}
 
 void main() {
+  late MockImageCacheService mockCacheService;
+
+  setUpAll(() {
+    registerFallbackValue(ImageType.gameCover);
+  });
+
+  setUp(() {
+    mockCacheService = MockImageCacheService();
+    when(() => mockCacheService.getImageUri(
+          type: any(named: 'type'),
+          imageId: any(named: 'imageId'),
+          remoteUrl: any(named: 'remoteUrl'),
+        )).thenAnswer((_) async => const ImageResult(
+          uri: 'https://images.igdb.com/test.jpg',
+          isLocal: false,
+          isMissing: false,
+        ));
+  });
+
   group('CanvasGameCard', () {
     final DateTime testDate = DateTime(2024, 6, 15);
 
@@ -29,12 +53,17 @@ void main() {
     }
 
     Widget buildTestWidget(CanvasItem item) {
-      return MaterialApp(
-        home: Scaffold(
-          body: SizedBox(
-            width: 160,
-            height: 220,
-            child: CanvasGameCard(item: item),
+      return ProviderScope(
+        overrides: <Override>[
+          imageCacheServiceProvider.overrideWithValue(mockCacheService),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              width: 160,
+              height: 220,
+              child: CanvasGameCard(item: item),
+            ),
           ),
         ),
       );
@@ -51,6 +80,7 @@ void main() {
       );
 
       await tester.pumpWidget(buildTestWidget(item));
+      await tester.pump();
 
       expect(find.text('Super Mario Bros.'), findsOneWidget);
     });
@@ -75,7 +105,7 @@ void main() {
       expect(find.byIcon(Icons.videogame_asset), findsOneWidget);
     });
 
-    testWidgets('should use CachedNetworkImage when cover URL exists',
+    testWidgets('should use CachedImage when cover URL exists',
         (WidgetTester tester) async {
       final CanvasItem item = createGameItem(
         game: const Game(
@@ -86,8 +116,9 @@ void main() {
       );
 
       await tester.pumpWidget(buildTestWidget(item));
+      await tester.pump();
 
-      expect(find.byType(CachedNetworkImage), findsOneWidget);
+      expect(find.byType(CachedImage), findsOneWidget);
     });
 
     testWidgets('should contain a Card widget', (WidgetTester tester) async {

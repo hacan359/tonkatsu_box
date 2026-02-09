@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/services/image_cache_service.dart';
 import '../../../data/repositories/canvas_repository.dart';
 import '../../../shared/models/collection_game.dart';
 import '../../../shared/models/game.dart';
@@ -128,6 +129,8 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
             typeLabel: collectionGame.platformName,
             infoChips: _buildInfoChips(game),
             description: game?.summary,
+            cacheImageType: ImageType.gameCover,
+            cacheImageId: widget.gameId.toString(),
             statusWidget: StatusDropdown(
               status: collectionGame.status,
               onChanged: (GameStatus status) =>

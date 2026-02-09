@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/tmdb_api.dart';
+import '../../../core/services/image_cache_service.dart';
 import '../../../core/database/database_service.dart';
 import '../../../data/repositories/canvas_repository.dart';
 import '../../../shared/models/collection_item.dart';
@@ -138,6 +139,8 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
             typeLabel: 'TV Show',
             infoChips: _buildInfoChips(tvShow),
             description: tvShow?.overview,
+            cacheImageType: ImageType.tvShowPoster,
+            cacheImageId: item.externalId.toString(),
             statusWidget: ItemStatusDropdown(
               status: item.status,
               mediaType: MediaType.tvShow,

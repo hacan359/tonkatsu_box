@@ -5,6 +5,7 @@ import '../../../core/api/igdb_api.dart';
 import '../../../core/api/steamgriddb_api.dart';
 import '../../../core/api/tmdb_api.dart';
 import '../../../core/database/database_service.dart';
+import '../../../core/services/config_service.dart';
 import '../../../shared/models/platform.dart';
 
 /// Ключи для SharedPreferences.
@@ -352,6 +353,36 @@ class SettingsNotifier extends Notifier<SettingsState> {
     }
 
     state = state.copyWith(tmdbApiKey: apiKey);
+  }
+
+  /// Экспортирует конфигурацию в файл.
+  Future<ConfigResult> exportConfig() async {
+    final ConfigService configService = ref.read(configServiceProvider);
+    return configService.exportToFile();
+  }
+
+  /// Импортирует конфигурацию из файла.
+  ///
+  /// После импорта перезагружает настройки и обновляет API клиенты.
+  Future<ConfigResult> importConfig() async {
+    final ConfigService configService = ref.read(configServiceProvider);
+    final ConfigResult result = await configService.importFromFile();
+
+    if (result.success) {
+      state = _loadFromPrefs();
+      await _loadPlatformCount();
+    }
+
+    return result;
+  }
+
+  /// Очищает все данные из базы данных.
+  ///
+  /// Удаляет все коллекции, игры, фильмы, сериалы и данные канваса.
+  /// Настройки и API ключи сохраняются.
+  Future<void> flushDatabase() async {
+    await _dbService.clearAllData();
+    state = state.copyWith(platformCount: 0);
   }
 
   /// Очищает все настройки.

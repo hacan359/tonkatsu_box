@@ -46,7 +46,9 @@ lib/
 | `lib/core/api/igdb_api.dart` | **IGDB API клиент**. OAuth через Twitch, поиск игр, загрузка платформ. Методы: `getAccessToken()`, `searchGames()`, `fetchPlatforms()` |
 | `lib/core/api/steamgriddb_api.dart` | **SteamGridDB API клиент**. Bearer token авторизация. Методы: `searchGames()`, `getGrids()`, `getHeroes()`, `getLogos()`, `getIcons()` |
 | `lib/core/api/tmdb_api.dart` | **TMDB API клиент**. Bearer token авторизация. Методы: `searchMovies(query, {year})`, `searchTvShows(query, {firstAirDateYear})`, `multiSearch()`, `getMovieDetails()`, `getTvShowDetails()`, `getPopularMovies()`, `getPopularTvShows()`, `getMovieGenres()`, `getTvGenres()`, `getSeasonEpisodes(tmdbShowId, seasonNumber)` |
-| `lib/core/database/database_service.dart` | **SQLite сервис**. Создание таблиц, миграции (версия 10), CRUD для всех сущностей. Таблицы: `platforms`, `games`, `collections`, `collection_games`, `collection_items`, `canvas_items`, `canvas_viewport`, `canvas_connections`, `game_canvas_viewport`, `movies_cache`, `tv_shows_cache`, `tv_seasons_cache`, `tv_episodes_cache`, `watched_episodes`. Методы per-item canvas: `getGameCanvasItems`, `getGameCanvasConnections`, `getGameCanvasViewport`, `upsertGameCanvasViewport`. Методы эпизодов: `getEpisodesByShowAndSeason`, `upsertEpisodes`, `clearEpisodesByShow`, `getWatchedEpisodes`, `markEpisodeWatched`, `markEpisodeUnwatched`, `getWatchedEpisodeCount`, `markSeasonWatched`, `unmarkSeasonWatched`. Изоляция данных: коллекционные методы фильтруют `collection_item_id IS NULL` |
+| `lib/core/database/database_service.dart` | **SQLite сервис**. Создание таблиц, миграции (версия 10), CRUD для всех сущностей. Таблицы: `platforms`, `games`, `collections`, `collection_games`, `collection_items`, `canvas_items`, `canvas_viewport`, `canvas_connections`, `game_canvas_viewport`, `movies_cache`, `tv_shows_cache`, `tv_seasons_cache`, `tv_episodes_cache`, `watched_episodes`. Методы per-item canvas: `getGameCanvasItems`, `getGameCanvasConnections`, `getGameCanvasViewport`, `upsertGameCanvasViewport`. Методы эпизодов: `getEpisodesByShowAndSeason`, `upsertEpisodes`, `clearEpisodesByShow`, `getWatchedEpisodes`, `markEpisodeWatched`, `markEpisodeUnwatched`, `getWatchedEpisodeCount`, `markSeasonWatched`, `unmarkSeasonWatched`. Изоляция данных: коллекционные методы фильтруют `collection_item_id IS NULL`. Метод `clearAllData()` — очистка всех 14 таблиц в транзакции |
+| `lib/core/services/config_service.dart` | **Сервис конфигурации**. Экспорт/импорт 7 ключей SharedPreferences в JSON файл. Класс `ConfigResult` (success/failure/cancelled). Методы: `collectSettings()`, `applySettings()`, `exportToFile()`, `importFromFile()` |
+| `lib/core/services/image_cache_service.dart` | **Сервис кэширования изображений**. Enum `ImageType` (platformLogo, gameCover, moviePoster, tvShowPoster). Локальное хранение изображений в папках по типу. SharedPreferences для enable/disable и custom path. Методы: `getImageUri()` (cache-first с fallback на remoteUrl), `downloadImage()`, `downloadImages()`, `clearCache()`, `getCacheSize()`, `getCachedCount()`. Провайдер `imageCacheServiceProvider` |
 
 ---
 
@@ -93,9 +95,9 @@ lib/
 | `lib/features/collections/widgets/create_collection_dialog.dart` | **Диалоги**. Создание, переименование, удаление коллекции |
 | `lib/features/collections/widgets/status_dropdown.dart` | **Выпадающий список статусов** (legacy, для GameDetailScreen). Компактный и полный режим |
 | `lib/features/collections/widgets/item_status_dropdown.dart` | **Универсальный dropdown статуса**. Контекстные лейблы по `MediaType` ("Playing"/"Watching"). `ItemStatusChip` для read-only. Полный/компактный режим. `onHold` только для сериалов |
-| `lib/features/collections/widgets/canvas_media_card.dart` | **Карточка фильма/сериала на канвасе**. Постер (CachedNetworkImage), название, placeholder icon (movie/tv). По паттерну CanvasGameCard |
+| `lib/features/collections/widgets/canvas_media_card.dart` | **Карточка фильма/сериала на канвасе**. ConsumerWidget. Постер через CachedImage (moviePoster/tvShowPoster), название, placeholder icon (movie/tv). По паттерну CanvasGameCard |
 | `lib/features/collections/widgets/canvas_view.dart` | **Canvas View**. InteractiveViewer с зумом 0.3–3.0x, панорамированием, drag-and-drop (абсолютное отслеживание позиции). Фоновая сетка (CustomPainter), автоцентрирование |
-| `lib/features/collections/widgets/canvas_game_card.dart` | **Карточка игры на канвасе**. Компактная карточка 160x220px с обложкой и названием. RepaintBoundary для оптимизации |
+| `lib/features/collections/widgets/canvas_game_card.dart` | **Карточка игры на канвасе**. ConsumerWidget. Компактная карточка 160x220px с обложкой через CachedImage (gameCover) и названием |
 | `lib/features/collections/widgets/canvas_context_menu.dart` | **Контекстное меню канваса**. ПКМ на пустом месте: Add Text/Image/Link. ПКМ на элементе: Edit/Delete/Bring to Front/Send to Back/Connect. ПКМ на связи: Edit/Delete. Delete с диалогом подтверждения |
 | `lib/features/collections/widgets/canvas_connection_painter.dart` | **CustomPainter для связей**. Рисует solid/dashed/arrow линии между центрами элементов. Лейблы с фоном в середине линии. Hit-test для определения клика на линии. Временная пунктирная линия при создании связи |
 | `lib/features/collections/widgets/canvas_text_item.dart` | **Текстовый блок на канвасе**. Настраиваемый fontSize (12/16/24/32). Container с padding, фоном surfaceContainerLow |
@@ -160,8 +162,9 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/shared/widgets/media_card.dart` | **Базовый виджет карточки поиска**. Постер 60x80 (CachedNetworkImage), название, subtitle, metadata, trailing. `GameCard`, `MovieCard`, `TvShowCard` являются тонкими обёртками |
-| `lib/shared/widgets/media_detail_view.dart` | **Базовый виджет экрана деталей**. Постер 80x120, SourceBadge, info chips (`MediaDetailChip`), описание inline, секция статуса, дополнительные секции (`extraSections`), комментарии автора, личные заметки, диалог редактирования. `GameDetailScreen`, `MovieDetailScreen`, `TvShowDetailScreen` являются тонкими обёртками |
+| `lib/shared/widgets/cached_image.dart` | **Виджет кэшированного изображения**. ConsumerWidget с FutureBuilder. Логика: cache disabled → CachedNetworkImage, cache enabled + file → Image.file, cache enabled + no file → CachedNetworkImage + фоновый download через addPostFrameCallback. Параметры: imageType, imageId, remoteUrl, memCacheWidth/Height, autoDownload, placeholder, errorWidget |
+| `lib/shared/widgets/media_card.dart` | **Базовый виджет карточки поиска**. Постер 60x80 (CachedNetworkImage или CachedImage при заданных cacheImageType/cacheImageId), название, subtitle, metadata, trailing. `GameCard`, `MovieCard`, `TvShowCard` являются тонкими обёртками |
+| `lib/shared/widgets/media_detail_view.dart` | **Базовый виджет экрана деталей**. Постер 80x120 (CachedNetworkImage или CachedImage при заданных cacheImageType/cacheImageId), SourceBadge, info chips (`MediaDetailChip`), описание inline, секция статуса, дополнительные секции (`extraSections`), комментарии автора, личные заметки, диалог редактирования. `GameDetailScreen`, `MovieDetailScreen`, `TvShowDetailScreen` являются тонкими обёртками |
 | `lib/shared/widgets/source_badge.dart` | **Бейдж источника данных**. Enum `DataSource` (igdb, tmdb, steamGridDb, vgMaps). Размеры: small, medium, large. Цветовая маркировка и текстовая метка |
 | `lib/shared/widgets/media_type_badge.dart` | **Бейдж типа медиа**. Цветная иконка по `MediaType`: синий (игры), красный (фильмы), зелёный (сериалы) |
 
@@ -177,9 +180,9 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/features/settings/screens/settings_screen.dart` | **Экран настроек**. Ввод IGDB Client ID/Secret, SteamGridDB API key, кнопки Verify/Refresh Platforms, ссылка на Debug Panel (только в debug) |
+| `lib/features/settings/screens/settings_screen.dart` | **Экран настроек**. Ввод IGDB Client ID/Secret, SteamGridDB API key, TMDB API key. Кнопки Verify/Refresh Platforms. Секция Configuration (Export/Import Config). Секция Danger Zone (Reset Database с диалогом подтверждения). Debug Panel (только в debug) |
 | `lib/features/settings/screens/steamgriddb_debug_screen.dart` | **Debug-экран SteamGridDB**. 5 табов: Search, Grids, Heroes, Logos, Icons. Тестирование всех API эндпоинтов |
-| `lib/features/settings/providers/settings_provider.dart` | **State настроек**. Хранение IGDB и SteamGridDB credentials в SharedPreferences, валидация токена, синхронизация платформ |
+| `lib/features/settings/providers/settings_provider.dart` | **State настроек**. Хранение IGDB, SteamGridDB, TMDB credentials в SharedPreferences, валидация токена, синхронизация платформ. Методы: `exportConfig()`, `importConfig()`, `flushDatabase()` |
 
 ---
 
@@ -545,6 +548,7 @@ CREATE TABLE game_canvas_viewport (
 | `databaseServiceProvider` | Provider | Синглтон DatabaseService |
 | `igdbApiProvider` | Provider | Синглтон IgdbApi |
 | `steamGridDbApiProvider` | Provider | Синглтон SteamGridDbApi |
+| `imageCacheServiceProvider` | Provider | Синглтон ImageCacheService |
 | `sharedPreferencesProvider` | Provider | SharedPreferences (override в main) |
 | `settingsNotifierProvider` | NotifierProvider | Настройки IGDB, токены |
 | `hasValidApiKeyProvider` | Provider | bool — готов ли API |

@@ -3,8 +3,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/services/image_cache_service.dart';
 import '../constants/media_type_theme.dart';
 import '../models/media_type.dart';
+import 'cached_image.dart';
 import 'media_type_badge.dart';
 import 'source_badge.dart';
 
@@ -29,6 +31,8 @@ class MediaCard extends StatelessWidget {
     this.memCacheWidth,
     this.memCacheHeight,
     this.collectionName,
+    this.cacheImageType,
+    this.cacheImageId,
     super.key,
   });
 
@@ -76,6 +80,15 @@ class MediaCard extends StatelessWidget {
   /// Если не null — показывает маркировку "In: name" с галочкой.
   final String? collectionName;
 
+  /// Тип изображения для локального кэширования.
+  ///
+  /// Если задан вместе с [cacheImageId], используется [CachedImage]
+  /// вместо [CachedNetworkImage] для поддержки оффлайн-режима.
+  final ImageType? cacheImageType;
+
+  /// ID изображения для локального кэширования.
+  final String? cacheImageId;
+
   /// Ширина постера/обложки.
   static const double posterWidth = 60;
 
@@ -119,31 +132,38 @@ class MediaCard extends StatelessWidget {
   }
 
   Widget _buildImage(ColorScheme colorScheme) {
+    final bool useLocalCache =
+        cacheImageType != null && cacheImageId != null && imageUrl != null;
+
     final Widget image = imageUrl != null
         ? ClipRRect(
             borderRadius: BorderRadius.circular(posterBorderRadius),
-            child: CachedNetworkImage(
-              imageUrl: imageUrl!,
-              width: posterWidth,
-              height: posterHeight,
-              fit: BoxFit.cover,
-              memCacheWidth: memCacheWidth,
-              memCacheHeight: memCacheHeight,
-              placeholder: (BuildContext context, String url) => Container(
-                width: posterWidth,
-                height: posterHeight,
-                color: colorScheme.surfaceContainerHighest,
-                child: const Center(
-                  child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+            child: useLocalCache
+                ? CachedImage(
+                    imageType: cacheImageType!,
+                    imageId: cacheImageId!,
+                    remoteUrl: imageUrl!,
+                    width: posterWidth,
+                    height: posterHeight,
+                    fit: BoxFit.cover,
+                    memCacheWidth: memCacheWidth,
+                    memCacheHeight: memCacheHeight,
+                    placeholder: _buildLoadingPlaceholder(colorScheme),
+                    errorWidget: _buildPlaceholder(colorScheme),
+                  )
+                : CachedNetworkImage(
+                    imageUrl: imageUrl!,
+                    width: posterWidth,
+                    height: posterHeight,
+                    fit: BoxFit.cover,
+                    memCacheWidth: memCacheWidth,
+                    memCacheHeight: memCacheHeight,
+                    placeholder: (BuildContext context, String url) =>
+                        _buildLoadingPlaceholder(colorScheme),
+                    errorWidget:
+                        (BuildContext context, String url, Object error) =>
+                            _buildPlaceholder(colorScheme),
                   ),
-                ),
-              ),
-              errorWidget: (BuildContext context, String url, Object error) =>
-                  _buildPlaceholder(colorScheme),
-            ),
           )
         : _buildPlaceholder(colorScheme);
 
@@ -167,6 +187,21 @@ class MediaCard extends StatelessWidget {
             child: MediaTypeBadge(mediaType: mediaType!),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingPlaceholder(ColorScheme colorScheme) {
+    return Container(
+      width: posterWidth,
+      height: posterHeight,
+      color: colorScheme.surfaceContainerHighest,
+      child: const Center(
+        child: SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
       ),
     );
   }

@@ -1,18 +1,20 @@
 // Карточка фильма/сериала на канвасе.
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/services/image_cache_service.dart';
 import '../../../shared/constants/media_type_theme.dart';
 import '../../../shared/models/canvas_item.dart';
 import '../../../shared/models/media_type.dart';
+import '../../../shared/widgets/cached_image.dart';
 
 /// Карточка фильма или сериала на канвасе.
 ///
 /// Отображает постер, название в компактном виде.
 /// Аналог [CanvasGameCard] для типов [CanvasItemType.movie]
 /// и [CanvasItemType.tvShow].
-class CanvasMediaCard extends StatelessWidget {
+class CanvasMediaCard extends ConsumerWidget {
   /// Создаёт [CanvasMediaCard].
   const CanvasMediaCard({
     required this.item,
@@ -23,7 +25,7 @@ class CanvasMediaCard extends StatelessWidget {
   final CanvasItem item;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
 
@@ -49,22 +51,15 @@ class CanvasMediaCard extends StatelessWidget {
           // Постер
           Expanded(
             child: posterUrl != null
-                ? CachedNetworkImage(
-                    imageUrl: posterUrl,
+                ? CachedImage(
+                    imageType: _getImageType(),
+                    imageId: _getImageId(),
+                    remoteUrl: posterUrl,
                     fit: BoxFit.cover,
-                    placeholder: (BuildContext ctx, String url) => Container(
-                      color: colorScheme.surfaceContainerHighest,
-                      child: const Center(
-                        child: SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      ),
-                    ),
+                    placeholder:
+                        _buildPlaceholder(colorScheme, placeholderIcon),
                     errorWidget:
-                        (BuildContext ctx, String url, Object error) =>
-                            _buildPlaceholder(colorScheme, placeholderIcon),
+                        _buildPlaceholder(colorScheme, placeholderIcon),
                   )
                 : _buildPlaceholder(colorScheme, placeholderIcon),
           ),
@@ -86,6 +81,34 @@ class CanvasMediaCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  ImageType _getImageType() {
+    switch (item.itemType) {
+      case CanvasItemType.movie:
+        return ImageType.moviePoster;
+      case CanvasItemType.tvShow:
+        return ImageType.tvShowPoster;
+      case CanvasItemType.game:
+      case CanvasItemType.text:
+      case CanvasItemType.image:
+      case CanvasItemType.link:
+        return ImageType.gameCover;
+    }
+  }
+
+  String _getImageId() {
+    switch (item.itemType) {
+      case CanvasItemType.movie:
+        return (item.movie?.tmdbId ?? 0).toString();
+      case CanvasItemType.tvShow:
+        return (item.tvShow?.tmdbId ?? 0).toString();
+      case CanvasItemType.game:
+      case CanvasItemType.text:
+      case CanvasItemType.image:
+      case CanvasItemType.link:
+        return '0';
+    }
   }
 
   Color _getBorderColor() {
