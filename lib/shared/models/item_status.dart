@@ -97,4 +97,24 @@ enum ItemStatus {
 
   /// Отображаемый текст с иконкой.
   String displayText(MediaType mediaType) => '$icon ${displayLabel(mediaType)}';
+
+  /// Приоритет для сортировки по статусу (меньше = выше в списке).
+  ///
+  /// Активные элементы показываются первыми, завершённые — последними.
+  int get statusSortPriority {
+    switch (this) {
+      case ItemStatus.inProgress:
+        return 0;
+      case ItemStatus.planned:
+        return 1;
+      case ItemStatus.notStarted:
+        return 2;
+      case ItemStatus.onHold:
+        return 3;
+      case ItemStatus.completed:
+        return 4;
+      case ItemStatus.dropped:
+        return 5;
+    }
+  }
 }

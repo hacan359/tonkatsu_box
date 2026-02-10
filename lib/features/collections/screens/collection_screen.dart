@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -9,6 +11,7 @@ import '../../../data/repositories/collection_repository.dart';
 import '../../../shared/constants/media_type_theme.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
+import '../../../shared/models/collection_sort_mode.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
 import '../../search/screens/search_screen.dart';
@@ -242,6 +245,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                 // Заголовок со статистикой
                 _buildHeader(statsAsync),
 
+                // Селектор сортировки
+                _buildSortSelector(),
+
                 // Список элементов
                 Expanded(
                   child: itemsAsync.when(
@@ -365,9 +371,101 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     );
   }
 
+  Widget _buildSortSelector() {
+    final CollectionSortMode currentSort =
+        ref.watch(collectionSortProvider(widget.collectionId));
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Row(
+        children: <Widget>[
+          Icon(
+            Icons.sort,
+            size: 16,
+            color: colorScheme.onSurfaceVariant,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            currentSort.displayLabel,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+          ),
+          const SizedBox(width: 2),
+          PopupMenuButton<CollectionSortMode>(
+            icon: Icon(
+              Icons.arrow_drop_down,
+              size: 20,
+              color: colorScheme.onSurfaceVariant,
+            ),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            style: const ButtonStyle(
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              visualDensity: VisualDensity.compact,
+            ),
+            tooltip: 'Sort mode',
+            onSelected: (CollectionSortMode mode) {
+              ref
+                  .read(collectionSortProvider(widget.collectionId).notifier)
+                  .setSortMode(mode);
+            },
+            itemBuilder: (BuildContext context) {
+              return CollectionSortMode.values
+                  .map(
+                    (CollectionSortMode mode) =>
+                        PopupMenuItem<CollectionSortMode>(
+                      value: mode,
+                      child: Row(
+                        children: <Widget>[
+                          if (mode == currentSort)
+                            Icon(
+                              Icons.check,
+                              size: 18,
+                              color: colorScheme.primary,
+                            )
+                          else
+                            const SizedBox(width: 18),
+                          const SizedBox(width: 8),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Text(mode.displayLabel),
+                              Text(
+                                mode.description,
+                                style:
+                                    Theme.of(context).textTheme.bodySmall?.copyWith(
+                                          color: colorScheme.onSurfaceVariant,
+                                        ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                  .toList();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildItemsList(BuildContext context, List<CollectionItem> items) {
     if (items.isEmpty) {
       return _buildEmptyState();
+    }
+
+    final CollectionSortMode sortMode =
+        ref.watch(collectionSortProvider(widget.collectionId));
+    final bool isManualSort =
+        sortMode == CollectionSortMode.manual && _collection!.isEditable;
+
+    if (isManualSort) {
+      return _buildReorderableList(items);
     }
 
     return RefreshIndicator(
@@ -380,6 +478,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         itemBuilder: (BuildContext context, int index) {
           final CollectionItem item = items[index];
           return _CollectionItemTile(
+            key: ValueKey<int>(item.id),
             item: item,
             isEditable: _collection!.isEditable,
             onStatusChanged: (ItemStatus status) =>
@@ -391,6 +490,55 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           );
         },
       ),
+    );
+  }
+
+  Widget _buildReorderableList(List<CollectionItem> items) {
+    return ReorderableListView.builder(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      buildDefaultDragHandles: false,
+      itemCount: items.length,
+      proxyDecorator:
+          (Widget child, int index, Animation<double> animation) {
+        return AnimatedBuilder(
+          animation: animation,
+          builder: (BuildContext context, Widget? child) {
+            final double elevation = lerpDouble(0, 6, animation.value) ?? 0;
+            return Material(
+              elevation: elevation,
+              color: Colors.transparent,
+              shadowColor: Colors.black26,
+              child: child,
+            );
+          },
+          child: child,
+        );
+      },
+      onReorder: (int oldIndex, int newIndex) {
+        // ReorderableListView даёт newIndex ПОСЛЕ удаления элемента
+        if (newIndex > oldIndex) {
+          newIndex -= 1;
+        }
+        ref
+            .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
+            .reorderItem(oldIndex, newIndex);
+      },
+      itemBuilder: (BuildContext context, int index) {
+        final CollectionItem item = items[index];
+        return _CollectionItemTile(
+          key: ValueKey<int>(item.id),
+          item: item,
+          isEditable: _collection!.isEditable,
+          showDragHandle: true,
+          dragIndex: index,
+          onStatusChanged: (ItemStatus status) =>
+              _updateStatus(item.id, status, item.mediaType),
+          onRemove: _collection!.isEditable
+              ? () => _removeItem(item)
+              : null,
+          onTap: () => _showItemDetails(item),
+        );
+      },
     );
   }
 
@@ -912,9 +1060,12 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
 /// Плитка элемента в коллекции.
 class _CollectionItemTile extends StatelessWidget {
   const _CollectionItemTile({
+    super.key,
     required this.item,
     required this.isEditable,
     required this.onStatusChanged,
+    this.showDragHandle = false,
+    this.dragIndex = 0,
     this.onRemove,
     this.onTap,
   });
@@ -922,6 +1073,8 @@ class _CollectionItemTile extends StatelessWidget {
   final CollectionItem item;
   final bool isEditable;
   final void Function(ItemStatus) onStatusChanged;
+  final bool showDragHandle;
+  final int dragIndex;
   final VoidCallback? onRemove;
   final VoidCallback? onTap;
 
@@ -932,94 +1085,129 @@ class _CollectionItemTile extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: <Widget>[
-              // Обложка с иконкой типа
-              _buildCover(colorScheme),
-              const SizedBox(width: 12),
-
-              // Информация
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    // Название
-                    Text(
-                      item.itemName,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        children: <Widget>[
+          // Фоновая иконка типа медиа (наклонённая, обрезается Card)
+          Positioned.fill(
+            child: Align(
+              alignment: const Alignment(0.0, -7.2),
+              child: Transform.rotate(
+                angle: -0.3,
+                child: Icon(
+                  MediaTypeTheme.iconFor(item.mediaType),
+                  size: 200,
+                  color: MediaTypeTheme.colorFor(item.mediaType)
+                      .withValues(alpha: 0.06),
+                ),
+              ),
+            ),
+          ),
+          // Основное содержимое
+          InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: <Widget>[
+                  // Drag handle (только в manual sort mode)
+                  if (showDragHandle)
+                    ReorderableDragStartListener(
+                      index: dragIndex,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: Icon(
+                          Icons.drag_handle,
+                          size: 20,
+                          color: colorScheme.onSurfaceVariant
+                              .withValues(alpha: 0.5),
+                        ),
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
+                  // Обложка
+                  _buildCover(colorScheme),
+                  const SizedBox(width: 12),
 
-                    const SizedBox(height: 4),
-
-                    // Подзаголовок (зависит от типа медиа)
-                    Text(
-                      _getSubtitle(),
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-
-                    // Комментарий автора
-                    if (item.hasAuthorComment) ...<Widget>[
-                      const SizedBox(height: 4),
-                      Row(
-                        children: <Widget>[
-                          Icon(
-                            Icons.format_quote,
-                            size: 14,
-                            color: colorScheme.tertiary,
+                  // Информация
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        // Название
+                        Text(
+                          item.itemName,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
                           ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              item.authorComment!,
-                              style: theme.textTheme.bodySmall?.copyWith(
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+
+                        const SizedBox(height: 4),
+
+                        // Подзаголовок (зависит от типа медиа)
+                        Text(
+                          _getSubtitle(),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+
+                        // Комментарий автора
+                        if (item.hasAuthorComment) ...<Widget>[
+                          const SizedBox(height: 4),
+                          Row(
+                            children: <Widget>[
+                              Icon(
+                                Icons.format_quote,
+                                size: 14,
                                 color: colorScheme.tertiary,
-                                fontStyle: FontStyle.italic,
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  item.authorComment!,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: colorScheme.tertiary,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-
-              const SizedBox(width: 8),
-
-              // Статус
-              ItemStatusDropdown(
-                status: item.status,
-                mediaType: item.mediaType,
-                onChanged: onStatusChanged,
-                compact: true,
-              ),
-
-              // Удалить (если редактируемый)
-              if (onRemove != null)
-                IconButton(
-                  icon: Icon(
-                    Icons.remove_circle_outline,
-                    color: colorScheme.error,
+                      ],
+                    ),
                   ),
-                  tooltip: 'Remove',
-                  onPressed: onRemove,
-                ),
-            ],
+
+                  const SizedBox(width: 8),
+
+                  // Статус
+                  ItemStatusDropdown(
+                    status: item.status,
+                    mediaType: item.mediaType,
+                    onChanged: onStatusChanged,
+                    compact: true,
+                  ),
+
+                  // Удалить (если редактируемый)
+                  if (onRemove != null)
+                    IconButton(
+                      icon: Icon(
+                        Icons.remove_circle_outline,
+                        color: colorScheme.error,
+                      ),
+                      tooltip: 'Remove',
+                      onPressed: onRemove,
+                    ),
+                ],
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -1087,11 +1275,8 @@ class _CollectionItemTile extends StatelessWidget {
       child: SizedBox(
         width: 48,
         height: 64,
-        child: Stack(
-          fit: StackFit.expand,
-          children: <Widget>[
-            if (item.thumbnailUrl != null)
-              CachedImage(
+        child: item.thumbnailUrl != null
+            ? CachedImage(
                 imageType: _getImageTypeForCache(),
                 imageId: item.externalId.toString(),
                 remoteUrl: item.thumbnailUrl!,
@@ -1106,27 +1291,7 @@ class _CollectionItemTile extends StatelessWidget {
                 ),
                 errorWidget: _buildPlaceholder(colorScheme),
               )
-            else
-              _buildPlaceholder(colorScheme),
-            // Бейдж типа медиа
-            Positioned(
-              right: 2,
-              bottom: 2,
-              child: Container(
-                padding: const EdgeInsets.all(2),
-                decoration: BoxDecoration(
-                  color: MediaTypeTheme.colorFor(item.mediaType),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Icon(
-                  _getMediaTypeIcon(),
-                  size: 12,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
-        ),
+            : _buildPlaceholder(colorScheme),
       ),
     );
   }

@@ -5,13 +5,22 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:xerabora/core/api/tmdb_api.dart';
 import 'package:xerabora/core/database/database_service.dart';
+import 'package:xerabora/features/collections/providers/collections_provider.dart';
 import 'package:xerabora/features/collections/providers/episode_tracker_provider.dart';
+import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/tv_episode.dart';
 
 // Моки
 class MockDatabaseService extends Mock implements DatabaseService {}
 
 class MockTmdbApi extends Mock implements TmdbApi {}
+
+class MockCollectionItemsNotifier extends CollectionItemsNotifier {
+  @override
+  AsyncValue<List<CollectionItem>> build(int arg) {
+    return const AsyncValue<List<CollectionItem>>.data(<CollectionItem>[]);
+  }
+}
 
 // Тестовые данные
 const int testCollectionId = 1;
@@ -91,6 +100,9 @@ void main() {
       overrides: <Override>[
         databaseServiceProvider.overrideWithValue(mockDb),
         tmdbApiProvider.overrideWithValue(mockTmdbApi),
+        collectionItemsNotifierProvider.overrideWith(
+          MockCollectionItemsNotifier.new,
+        ),
       ],
     );
     addTearDown(container.dispose);

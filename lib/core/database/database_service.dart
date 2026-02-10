@@ -51,7 +51,7 @@ class DatabaseService {
     return databaseFactoryFfi.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 10,
+        version: 11,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -189,6 +189,21 @@ class DatabaseService {
     if (oldVersion < 10) {
       await _createTvEpisodesCacheTable(db);
       await _createWatchedEpisodesTable(db);
+    }
+    if (oldVersion < 11) {
+      // sort_order для ручной сортировки элементов коллекции
+      await db.execute(
+        'ALTER TABLE collection_items '
+        'ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0',
+      );
+      // Присвоить начальные значения по текущему порядку added_at DESC
+      await db.execute('''
+        UPDATE collection_items SET sort_order = (
+          SELECT COUNT(*) FROM collection_items AS ci2
+          WHERE ci2.collection_id = collection_items.collection_id
+            AND ci2.added_at > collection_items.added_at
+        )
+      ''');
     }
   }
 
@@ -387,6 +402,7 @@ class DatabaseService {
         author_comment TEXT,
         user_comment TEXT,
         added_at INTEGER NOT NULL,
+        sort_order INTEGER NOT NULL DEFAULT 0,
         FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE,
         UNIQUE(collection_id, media_type, external_id)
       )
@@ -1054,7 +1070,7 @@ class DatabaseService {
       'collection_items',
       where: where,
       whereArgs: whereArgs,
-      orderBy: 'added_at DESC',
+      orderBy: 'sort_order ASC',
     );
     return rows.map(CollectionItem.fromDb).toList();
   }
@@ -1179,6 +1195,7 @@ class DatabaseService {
     final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
     try {
+      final int sortOrder = await getNextSortOrder(collectionId);
       final int id = await db.insert(
         'collection_items',
         <String, dynamic>{
@@ -1189,6 +1206,7 @@ class DatabaseService {
           'status': status.dbValue(mediaType),
           'author_comment': authorComment,
           'added_at': now,
+          'sort_order': sortOrder,
         },
       );
       return id;
@@ -1198,6 +1216,38 @@ class DatabaseService {
       }
       rethrow;
     }
+  }
+
+  /// Возвращает следующий sort_order для коллекции.
+  Future<int> getNextSortOrder(int collectionId) async {
+    final Database db = await database;
+    final List<Map<String, dynamic>> result = await db.rawQuery(
+      'SELECT MAX(sort_order) AS max_sort FROM collection_items '
+      'WHERE collection_id = ?',
+      <Object?>[collectionId],
+    );
+    final int maxSort = (result.first['max_sort'] as int?) ?? -1;
+    return maxSort + 1;
+  }
+
+  /// Пересортировывает элементы коллекции после drag-and-drop.
+  ///
+  /// Обновляет sort_order всех элементов в транзакции.
+  Future<void> reorderItems(
+    int collectionId,
+    List<int> orderedItemIds,
+  ) async {
+    final Database db = await database;
+    await db.transaction((Transaction txn) async {
+      for (int i = 0; i < orderedItemIds.length; i++) {
+        await txn.update(
+          'collection_items',
+          <String, dynamic>{'sort_order': i},
+          where: 'id = ?',
+          whereArgs: <Object?>[orderedItemIds[i]],
+        );
+      }
+    });
   }
 
   /// Удаляет элемент из коллекции.
