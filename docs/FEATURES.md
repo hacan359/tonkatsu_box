@@ -56,7 +56,8 @@ Color-coded visual distinction between media types:
 - Games — blue accent
 - Movies — red accent
 - TV Shows — green accent
-- Applied to canvas card borders and type badges
+- Applied to canvas card borders and collection item card backgrounds
+- Large semi-transparent background icon (80px, 6% opacity) on each collection item card for quick visual identification
 
 ## Progress Tracking
 

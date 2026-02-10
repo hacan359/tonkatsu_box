@@ -932,94 +932,115 @@ class _CollectionItemTile extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: <Widget>[
-              // Обложка с иконкой типа
-              _buildCover(colorScheme),
-              const SizedBox(width: 12),
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        children: <Widget>[
+          // Фоновая иконка типа медиа (наклонённая, обрезается Card)
+          Positioned.fill(
+            child: Align(
+              alignment: const Alignment(0.0, -7.2),
+              child: Transform.rotate(
+                angle: -0.3,
+                child: Icon(
+                  MediaTypeTheme.iconFor(item.mediaType),
+                  size: 200,
+                  color: MediaTypeTheme.colorFor(item.mediaType)
+                      .withValues(alpha: 0.06),
+                ),
+              ),
+            ),
+          ),
+          // Основное содержимое
+          InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: <Widget>[
+                  // Обложка
+                  _buildCover(colorScheme),
+                  const SizedBox(width: 12),
 
-              // Информация
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    // Название
-                    Text(
-                      item.itemName,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-
-                    const SizedBox(height: 4),
-
-                    // Подзаголовок (зависит от типа медиа)
-                    Text(
-                      _getSubtitle(),
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-
-                    // Комментарий автора
-                    if (item.hasAuthorComment) ...<Widget>[
-                      const SizedBox(height: 4),
-                      Row(
-                        children: <Widget>[
-                          Icon(
-                            Icons.format_quote,
-                            size: 14,
-                            color: colorScheme.tertiary,
+                  // Информация
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        // Название
+                        Text(
+                          item.itemName,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
                           ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              item.authorComment!,
-                              style: theme.textTheme.bodySmall?.copyWith(
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+
+                        const SizedBox(height: 4),
+
+                        // Подзаголовок (зависит от типа медиа)
+                        Text(
+                          _getSubtitle(),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+
+                        // Комментарий автора
+                        if (item.hasAuthorComment) ...<Widget>[
+                          const SizedBox(height: 4),
+                          Row(
+                            children: <Widget>[
+                              Icon(
+                                Icons.format_quote,
+                                size: 14,
                                 color: colorScheme.tertiary,
-                                fontStyle: FontStyle.italic,
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  item.authorComment!,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: colorScheme.tertiary,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-
-              const SizedBox(width: 8),
-
-              // Статус
-              ItemStatusDropdown(
-                status: item.status,
-                mediaType: item.mediaType,
-                onChanged: onStatusChanged,
-                compact: true,
-              ),
-
-              // Удалить (если редактируемый)
-              if (onRemove != null)
-                IconButton(
-                  icon: Icon(
-                    Icons.remove_circle_outline,
-                    color: colorScheme.error,
+                      ],
+                    ),
                   ),
-                  tooltip: 'Remove',
-                  onPressed: onRemove,
-                ),
-            ],
+
+                  const SizedBox(width: 8),
+
+                  // Статус
+                  ItemStatusDropdown(
+                    status: item.status,
+                    mediaType: item.mediaType,
+                    onChanged: onStatusChanged,
+                    compact: true,
+                  ),
+
+                  // Удалить (если редактируемый)
+                  if (onRemove != null)
+                    IconButton(
+                      icon: Icon(
+                        Icons.remove_circle_outline,
+                        color: colorScheme.error,
+                      ),
+                      tooltip: 'Remove',
+                      onPressed: onRemove,
+                    ),
+                ],
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -1087,11 +1108,8 @@ class _CollectionItemTile extends StatelessWidget {
       child: SizedBox(
         width: 48,
         height: 64,
-        child: Stack(
-          fit: StackFit.expand,
-          children: <Widget>[
-            if (item.thumbnailUrl != null)
-              CachedImage(
+        child: item.thumbnailUrl != null
+            ? CachedImage(
                 imageType: _getImageTypeForCache(),
                 imageId: item.externalId.toString(),
                 remoteUrl: item.thumbnailUrl!,
@@ -1106,27 +1124,7 @@ class _CollectionItemTile extends StatelessWidget {
                 ),
                 errorWidget: _buildPlaceholder(colorScheme),
               )
-            else
-              _buildPlaceholder(colorScheme),
-            // Бейдж типа медиа
-            Positioned(
-              right: 2,
-              bottom: 2,
-              child: Container(
-                padding: const EdgeInsets.all(2),
-                decoration: BoxDecoration(
-                  color: MediaTypeTheme.colorFor(item.mediaType),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Icon(
-                  _getMediaTypeIcon(),
-                  size: 12,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
-        ),
+            : _buildPlaceholder(colorScheme),
       ),
     );
   }
