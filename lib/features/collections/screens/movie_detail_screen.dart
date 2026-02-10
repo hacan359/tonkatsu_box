@@ -17,6 +17,7 @@ import '../providers/canvas_provider.dart';
 import '../providers/collections_provider.dart';
 import '../providers/steamgriddb_panel_provider.dart';
 import '../providers/vgmaps_panel_provider.dart';
+import '../widgets/activity_dates_section.dart';
 import '../widgets/canvas_view.dart';
 import '../widgets/item_status_dropdown.dart';
 import '../widgets/steamgriddb_panel.dart';
@@ -146,6 +147,17 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
               onChanged: (ItemStatus status) =>
                   _updateStatus(item.id, status),
             ),
+            extraSections: <Widget>[
+              ActivityDatesSection(
+                addedAt: item.addedAt,
+                startedAt: item.startedAt,
+                completedAt: item.completedAt,
+                lastActivityAt: item.lastActivityAt,
+                isEditable: widget.isEditable,
+                onDateChanged: (String type, DateTime date) =>
+                    _updateActivityDate(item.id, type, date),
+              ),
+            ],
             authorComment: item.authorComment,
             userComment: item.userComment,
             hasAuthorComment: item.hasAuthorComment,
@@ -377,6 +389,24 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
     await ref
         .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
         .updateStatus(id, status, MediaType.movie);
+  }
+
+  Future<void> _updateActivityDate(int id, String type, DateTime date) async {
+    final CollectionItemsNotifier notifier =
+        ref.read(collectionItemsNotifierProvider(widget.collectionId).notifier);
+    if (type == 'started') {
+      await notifier.updateActivityDates(
+        id,
+        startedAt: date,
+        lastActivityAt: DateTime.now(),
+      );
+    } else {
+      await notifier.updateActivityDates(
+        id,
+        completedAt: date,
+        lastActivityAt: DateTime.now(),
+      );
+    }
   }
 
   Future<void> _saveAuthorComment(int id, String? text) async {

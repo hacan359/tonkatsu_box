@@ -92,6 +92,9 @@ class CollectionGame {
     required this.platformId,
     required this.status,
     required this.addedAt,
+    this.startedAt,
+    this.completedAt,
+    this.lastActivityAt,
     this.authorComment,
     this.userComment,
     this.game,
@@ -128,6 +131,9 @@ class CollectionGame {
       userComment: item.userComment,
       status: GameStatus.fromItemStatus(item.status),
       addedAt: item.addedAt,
+      startedAt: item.startedAt,
+      completedAt: item.completedAt,
+      lastActivityAt: item.lastActivityAt,
       game: item.game,
       platform: item.platform,
     );
@@ -179,6 +185,15 @@ class CollectionGame {
   /// Дата добавления в коллекцию.
   final DateTime addedAt;
 
+  /// Дата начала (начал играть).
+  final DateTime? startedAt;
+
+  /// Дата завершения.
+  final DateTime? completedAt;
+
+  /// Дата последней активности.
+  final DateTime? lastActivityAt;
+
   /// Данные игры (joined).
   final Game? game;
 
@@ -213,6 +228,9 @@ class CollectionGame {
       authorComment: authorComment,
       userComment: userComment,
       addedAt: addedAt,
+      startedAt: startedAt,
+      completedAt: completedAt,
+      lastActivityAt: lastActivityAt,
       game: game,
       platform: platform,
     );
@@ -251,6 +269,9 @@ class CollectionGame {
     String? userComment,
     GameStatus? status,
     DateTime? addedAt,
+    DateTime? startedAt,
+    DateTime? completedAt,
+    DateTime? lastActivityAt,
     Game? game,
     Platform? platform,
   }) {
@@ -263,6 +284,9 @@ class CollectionGame {
       userComment: userComment ?? this.userComment,
       status: status ?? this.status,
       addedAt: addedAt ?? this.addedAt,
+      startedAt: startedAt ?? this.startedAt,
+      completedAt: completedAt ?? this.completedAt,
+      lastActivityAt: lastActivityAt ?? this.lastActivityAt,
       game: game ?? this.game,
       platform: platform ?? this.platform,
     );

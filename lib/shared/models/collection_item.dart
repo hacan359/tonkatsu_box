@@ -22,6 +22,9 @@ class CollectionItem with Exportable {
     required this.externalId,
     required this.status,
     required this.addedAt,
+    this.startedAt,
+    this.completedAt,
+    this.lastActivityAt,
     this.platformId,
     this.currentSeason = 0,
     this.currentEpisode = 0,
@@ -51,6 +54,21 @@ class CollectionItem with Exportable {
       addedAt: DateTime.fromMillisecondsSinceEpoch(
         (row['added_at'] as int) * 1000,
       ),
+      startedAt: row['started_at'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(
+              (row['started_at'] as int) * 1000,
+            )
+          : null,
+      completedAt: row['completed_at'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(
+              (row['completed_at'] as int) * 1000,
+            )
+          : null,
+      lastActivityAt: row['last_activity_at'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(
+              (row['last_activity_at'] as int) * 1000,
+            )
+          : null,
     );
   }
 
@@ -77,6 +95,21 @@ class CollectionItem with Exportable {
       addedAt: DateTime.fromMillisecondsSinceEpoch(
         (row['added_at'] as int) * 1000,
       ),
+      startedAt: row['started_at'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(
+              (row['started_at'] as int) * 1000,
+            )
+          : null,
+      completedAt: row['completed_at'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(
+              (row['completed_at'] as int) * 1000,
+            )
+          : null,
+      lastActivityAt: row['last_activity_at'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(
+              (row['last_activity_at'] as int) * 1000,
+            )
+          : null,
       game: game,
       movie: movie,
       tvShow: tvShow,
@@ -140,6 +173,15 @@ class CollectionItem with Exportable {
 
   /// Дата добавления в коллекцию.
   final DateTime addedAt;
+
+  /// Дата начала (начал играть/смотреть).
+  final DateTime? startedAt;
+
+  /// Дата завершения.
+  final DateTime? completedAt;
+
+  /// Дата последней активности.
+  final DateTime? lastActivityAt;
 
   /// Данные игры (joined).
   final Game? game;
@@ -211,7 +253,10 @@ class CollectionItem with Exportable {
 
   @override
   Set<String> get internalDbFields =>
-      const <String>{'id', 'collection_id', 'user_comment', 'added_at', 'sort_order'};
+      const <String>{
+        'id', 'collection_id', 'user_comment', 'added_at', 'sort_order',
+        'started_at', 'completed_at', 'last_activity_at',
+      };
 
   @override
   Map<String, String> get dbToExportKeyMapping =>
@@ -233,6 +278,15 @@ class CollectionItem with Exportable {
       'user_comment': userComment,
       'added_at': addedAt.millisecondsSinceEpoch ~/ 1000,
       'sort_order': sortOrder,
+      'started_at': startedAt != null
+          ? startedAt!.millisecondsSinceEpoch ~/ 1000
+          : null,
+      'completed_at': completedAt != null
+          ? completedAt!.millisecondsSinceEpoch ~/ 1000
+          : null,
+      'last_activity_at': lastActivityAt != null
+          ? lastActivityAt!.millisecondsSinceEpoch ~/ 1000
+          : null,
     };
   }
 
@@ -264,6 +318,9 @@ class CollectionItem with Exportable {
     String? authorComment,
     String? userComment,
     DateTime? addedAt,
+    DateTime? startedAt,
+    DateTime? completedAt,
+    DateTime? lastActivityAt,
     Game? game,
     Movie? movie,
     TvShow? tvShow,
@@ -282,6 +339,9 @@ class CollectionItem with Exportable {
       authorComment: authorComment ?? this.authorComment,
       userComment: userComment ?? this.userComment,
       addedAt: addedAt ?? this.addedAt,
+      startedAt: startedAt ?? this.startedAt,
+      completedAt: completedAt ?? this.completedAt,
+      lastActivityAt: lastActivityAt ?? this.lastActivityAt,
       game: game ?? this.game,
       movie: movie ?? this.movie,
       tvShow: tvShow ?? this.tvShow,

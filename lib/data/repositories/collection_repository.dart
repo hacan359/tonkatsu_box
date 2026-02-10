@@ -216,6 +216,21 @@ class CollectionRepository {
     await _db.updateItemUserComment(id, comment);
   }
 
+  /// Обновляет даты активности элемента.
+  Future<void> updateItemActivityDates(
+    int id, {
+    DateTime? startedAt,
+    DateTime? completedAt,
+    DateTime? lastActivityAt,
+  }) async {
+    await _db.updateItemActivityDates(
+      id,
+      startedAt: startedAt,
+      completedAt: completedAt,
+      lastActivityAt: lastActivityAt,
+    );
+  }
+
   // ==================== Collection Games (Legacy) ====================
 
   /// Возвращает все игры в коллекции.

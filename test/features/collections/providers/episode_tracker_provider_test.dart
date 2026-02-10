@@ -123,7 +123,7 @@ void main() {
       final Map<int, List<TvEpisode>> episodes = <int, List<TvEpisode>>{
         1: <TvEpisode>[testEpisode1, testEpisode2],
       };
-      final Set<(int, int)> watched = <(int, int)>{(1, 1)};
+      final Map<(int, int), DateTime?> watched = <(int, int), DateTime?>{(1, 1): null};
       final Map<int, bool> loading = <int, bool>{1: false};
 
       final EpisodeTrackerState state = EpisodeTrackerState(
@@ -136,7 +136,7 @@ void main() {
       expect(state.episodesBySeason.length, 1);
       expect(state.episodesBySeason[1]?.length, 2);
       expect(state.watchedEpisodes.length, 1);
-      expect(state.watchedEpisodes.contains((1, 1)), true);
+      expect(state.watchedEpisodes.containsKey((1, 1)), true);
       expect(state.loadingSeasons[1], false);
       expect(state.error, 'Test error');
     });
@@ -158,7 +158,7 @@ void main() {
 
       test('должен копировать с изменёнными watchedEpisodes', () {
         const EpisodeTrackerState original = EpisodeTrackerState();
-        final Set<(int, int)> newWatched = <(int, int)>{(1, 1)};
+        final Map<(int, int), DateTime?> newWatched = <(int, int), DateTime?>{(1, 1): null};
 
         final EpisodeTrackerState copy =
             original.copyWith(watchedEpisodes: newWatched);
@@ -191,7 +191,7 @@ void main() {
     group('isEpisodeWatched', () {
       test('должен возвращать true для просмотренного эпизода', () {
         const EpisodeTrackerState state = EpisodeTrackerState(
-          watchedEpisodes: <(int, int)>{(1, 1), (1, 2)},
+          watchedEpisodes: <(int, int), DateTime?>{(1, 1): null, (1, 2): null},
         );
 
         expect(state.isEpisodeWatched(1, 1), true);
@@ -200,7 +200,7 @@ void main() {
 
       test('должен возвращать false для непросмотренного эпизода', () {
         const EpisodeTrackerState state = EpisodeTrackerState(
-          watchedEpisodes: <(int, int)>{(1, 1)},
+          watchedEpisodes: <(int, int), DateTime?>{(1, 1): null},
         );
 
         expect(state.isEpisodeWatched(1, 2), false);
@@ -211,7 +211,7 @@ void main() {
     group('watchedCountForSeason', () {
       test('должен возвращать количество просмотренных эпизодов в сезоне', () {
         const EpisodeTrackerState state = EpisodeTrackerState(
-          watchedEpisodes: <(int, int)>{(1, 1), (1, 2), (2, 1)},
+          watchedEpisodes: <(int, int), DateTime?>{(1, 1): null, (1, 2): null, (2, 1): null},
         );
 
         expect(state.watchedCountForSeason(1), 2);
@@ -223,7 +223,7 @@ void main() {
     group('totalWatchedCount', () {
       test('должен возвращать общее количество просмотренных эпизодов', () {
         const EpisodeTrackerState state = EpisodeTrackerState(
-          watchedEpisodes: <(int, int)>{(1, 1), (1, 2), (2, 1)},
+          watchedEpisodes: <(int, int), DateTime?>{(1, 1): null, (1, 2): null, (2, 1): null},
         );
 
         expect(state.totalWatchedCount, 3);
@@ -260,7 +260,7 @@ void main() {
     group('build', () {
       test('должен инициализироваться с пустым состоянием', () {
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
-            .thenAnswer((_) async => <(int, int)>{});
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
 
         final ProviderContainer container = createContainer();
         final EpisodeTrackerState state =
@@ -273,10 +273,10 @@ void main() {
       });
 
       test('должен загружать просмотренные эпизоды из БД', () async {
-        final Set<(int, int)> watchedEpisodes = <(int, int)>{
-          (1, 1),
-          (1, 2),
-          (2, 1),
+        final Map<(int, int), DateTime?> watchedEpisodes = <(int, int), DateTime?>{
+          (1, 1): null,
+          (1, 2): null,
+          (2, 1): null,
         };
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
             .thenAnswer((_) async => watchedEpisodes);
@@ -317,7 +317,7 @@ void main() {
     group('loadSeason', () {
       test('должен загружать эпизоды из кеша БД', () async {
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
-            .thenAnswer((_) async => <(int, int)>{});
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
         final List<TvEpisode> cachedEpisodes = <TvEpisode>[
           testEpisode1,
           testEpisode2,
@@ -348,7 +348,7 @@ void main() {
 
       test('должен загружать эпизоды из API если кеш пуст', () async {
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
-            .thenAnswer((_) async => <(int, int)>{});
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
         when(() => mockDb.getEpisodesByShowAndSeason(testShowId, 1))
             .thenAnswer((_) async => <TvEpisode>[]);
         final List<TvEpisode> apiEpisodes = <TvEpisode>[
@@ -384,7 +384,7 @@ void main() {
 
       test('должен кешировать результаты API в БД', () async {
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
-            .thenAnswer((_) async => <(int, int)>{});
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
         when(() => mockDb.getEpisodesByShowAndSeason(testShowId, 1))
             .thenAnswer((_) async => <TvEpisode>[]);
         final List<TvEpisode> apiEpisodes = <TvEpisode>[
@@ -410,7 +410,7 @@ void main() {
 
       test('не должен кешировать пустой список из API', () async {
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
-            .thenAnswer((_) async => <(int, int)>{});
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
         when(() => mockDb.getEpisodesByShowAndSeason(testShowId, 1))
             .thenAnswer((_) async => <TvEpisode>[]);
         when(() => mockTmdbApi.getSeasonEpisodes(testShowId, 1))
@@ -434,7 +434,7 @@ void main() {
 
       test('должен обрабатывать ошибку загрузки из API', () async {
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
-            .thenAnswer((_) async => <(int, int)>{});
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
         when(() => mockDb.getEpisodesByShowAndSeason(testShowId, 1))
             .thenAnswer((_) async => <TvEpisode>[]);
         when(() => mockTmdbApi.getSeasonEpisodes(testShowId, 1))
@@ -460,7 +460,7 @@ void main() {
 
       test('не должен загружать уже загруженный сезон', () async {
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
-            .thenAnswer((_) async => <(int, int)>{});
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
         final List<TvEpisode> cachedEpisodes = <TvEpisode>[testEpisode1];
         when(() => mockDb.getEpisodesByShowAndSeason(testShowId, 1))
             .thenAnswer((_) async => cachedEpisodes);
@@ -482,7 +482,7 @@ void main() {
 
       test('не должен загружать сезон, который уже загружается', () async {
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
-            .thenAnswer((_) async => <(int, int)>{});
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
         when(() => mockDb.getEpisodesByShowAndSeason(testShowId, 1))
             .thenAnswer((_) async {
           // Имитируем долгую загрузку
@@ -510,7 +510,7 @@ void main() {
 
       test('должен устанавливать loading flag во время загрузки', () async {
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
-            .thenAnswer((_) async => <(int, int)>{});
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
         when(() => mockDb.getEpisodesByShowAndSeason(testShowId, 1))
             .thenAnswer((_) async {
           await Future<void>.delayed(const Duration(milliseconds: 50));
@@ -543,7 +543,7 @@ void main() {
     group('toggleEpisode', () {
       test('должен отмечать эпизод как просмотренный', () async {
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
-            .thenAnswer((_) async => <(int, int)>{});
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
         when(() =>
                 mockDb.markEpisodeWatched(testCollectionId, testShowId, 1, 1))
             .thenAnswer((_) async {});
@@ -567,7 +567,7 @@ void main() {
       });
 
       test('должен снимать отметку просмотра с эпизода', () async {
-        final Set<(int, int)> watchedEpisodes = <(int, int)>{(1, 1)};
+        final Map<(int, int), DateTime?> watchedEpisodes = <(int, int), DateTime?>{(1, 1): null};
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
             .thenAnswer((_) async => watchedEpisodes);
         when(
@@ -594,7 +594,7 @@ void main() {
 
       test('должен обновлять состояние после отметки просмотра', () async {
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
-            .thenAnswer((_) async => <(int, int)>{});
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
         when(() =>
                 mockDb.markEpisodeWatched(testCollectionId, testShowId, 1, 1))
             .thenAnswer((_) async {});
@@ -624,7 +624,7 @@ void main() {
     group('refreshSeason', () {
       test('должен принудительно загружать эпизоды из API', () async {
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
-            .thenAnswer((_) async => <(int, int)>{});
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
         final List<TvEpisode> cachedEpisodes = <TvEpisode>[testEpisode1];
         when(() => mockDb.getEpisodesByShowAndSeason(testShowId, 1))
             .thenAnswer((_) async => cachedEpisodes);
@@ -661,7 +661,7 @@ void main() {
       test('должен обновлять эпизоды даже если сезон ещё не загружен',
           () async {
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
-            .thenAnswer((_) async => <(int, int)>{});
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
         final List<TvEpisode> apiEpisodes = <TvEpisode>[testEpisode1];
         when(() => mockTmdbApi.getSeasonEpisodes(testShowId, 1))
             .thenAnswer((_) async => apiEpisodes);
@@ -684,7 +684,7 @@ void main() {
 
       test('должен обрабатывать ошибку API при обновлении', () async {
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
-            .thenAnswer((_) async => <(int, int)>{});
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
         when(() => mockTmdbApi.getSeasonEpisodes(testShowId, 1))
             .thenThrow(Exception('API unavailable'));
 
@@ -704,7 +704,7 @@ void main() {
 
       test('не должен кешировать пустой результат API', () async {
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
-            .thenAnswer((_) async => <(int, int)>{});
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
         when(() => mockTmdbApi.getSeasonEpisodes(testShowId, 1))
             .thenAnswer((_) async => <TvEpisode>[]);
 
@@ -723,7 +723,7 @@ void main() {
     group('toggleSeason', () {
       test('должен отмечать все эпизоды сезона как просмотренные', () async {
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
-            .thenAnswer((_) async => <(int, int)>{});
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
         when(() => mockDb.getEpisodesByShowAndSeason(testShowId, 1))
             .thenAnswer(
           (_) async => <TvEpisode>[testEpisode1, testEpisode2, testEpisode3],
@@ -766,10 +766,10 @@ void main() {
 
       test('должен снимать отметку просмотра со всех эпизодов сезона',
           () async {
-        final Set<(int, int)> watchedEpisodes = <(int, int)>{
-          (1, 1),
-          (1, 2),
-          (1, 3),
+        final Map<(int, int), DateTime?> watchedEpisodes = <(int, int), DateTime?>{
+          (1, 1): null,
+          (1, 2): null,
+          (1, 3): null,
         };
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
             .thenAnswer((_) async => watchedEpisodes);
@@ -803,7 +803,7 @@ void main() {
 
       test('должен отмечать частично просмотренный сезон как полностью просмотренный',
           () async {
-        final Set<(int, int)> watchedEpisodes = <(int, int)>{(1, 1)};
+        final Map<(int, int), DateTime?> watchedEpisodes = <(int, int), DateTime?>{(1, 1): null};
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
             .thenAnswer((_) async => watchedEpisodes);
         when(() => mockDb.getEpisodesByShowAndSeason(testShowId, 1))
@@ -845,7 +845,7 @@ void main() {
 
       test('не должен делать ничего если сезон не загружен', () async {
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
-            .thenAnswer((_) async => <(int, int)>{});
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
 
         final ProviderContainer container = createContainer();
         final EpisodeTrackerNotifier notifier =
@@ -864,7 +864,7 @@ void main() {
 
       test('не должен делать ничего если сезон пустой', () async {
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
-            .thenAnswer((_) async => <(int, int)>{});
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
         when(() => mockDb.getEpisodesByShowAndSeason(testShowId, 1))
             .thenAnswer((_) async => <TvEpisode>[]);
         when(() => mockTmdbApi.getSeasonEpisodes(testShowId, 1))

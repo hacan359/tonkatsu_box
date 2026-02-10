@@ -191,24 +191,77 @@ class CollectionGamesNotifier
   }
 
   /// Обновляет статус игры.
+  ///
+  /// Автоматически обновляет даты активности в локальном state.
   Future<void> updateStatus(int id, GameStatus status) async {
     await _repository.updateGameStatus(id, status);
 
-    // Локальное обновление для быстрого UI
+    // Локальное обновление с датами
     final List<CollectionGame>? games = state.valueOrNull;
     if (games != null) {
+      final DateTime now = DateTime.now();
       state = AsyncData<List<CollectionGame>>(
         games.map((CollectionGame g) {
           if (g.id == id) {
-            return g.copyWith(status: status);
+            DateTime? newStartedAt = g.startedAt;
+            DateTime? newCompletedAt = g.completedAt;
+            if (status == GameStatus.playing && g.startedAt == null) {
+              newStartedAt = now;
+            }
+            if (status == GameStatus.completed) {
+              newCompletedAt = now;
+              newStartedAt ??= now;
+            }
+            return g.copyWith(
+              status: status,
+              startedAt: newStartedAt,
+              completedAt: newCompletedAt,
+              lastActivityAt: now,
+            );
           }
           return g;
         }).toList(),
       );
     }
 
-    // Обновляем статистику
+    // Обновляем статистику и синхронизируем универсальный провайдер
     ref.invalidate(collectionStatsProvider(_collectionId));
+    ref.invalidate(collectionItemsNotifierProvider(_collectionId));
+  }
+
+  /// Обновляет даты активности игры вручную.
+  Future<void> updateActivityDates(
+    int id, {
+    DateTime? startedAt,
+    DateTime? completedAt,
+    DateTime? lastActivityAt,
+  }) async {
+    await _repository.updateItemActivityDates(
+      id,
+      startedAt: startedAt,
+      completedAt: completedAt,
+      lastActivityAt: lastActivityAt,
+    );
+
+    // Локальное обновление
+    final List<CollectionGame>? games = state.valueOrNull;
+    if (games != null) {
+      state = AsyncData<List<CollectionGame>>(
+        games.map((CollectionGame g) {
+          if (g.id == id) {
+            return g.copyWith(
+              startedAt: startedAt ?? g.startedAt,
+              completedAt: completedAt ?? g.completedAt,
+              lastActivityAt: lastActivityAt ?? g.lastActivityAt,
+            );
+          }
+          return g;
+        }).toList(),
+      );
+    }
+
+    // Синхронизируем универсальный провайдер
+    ref.invalidate(collectionItemsNotifierProvider(_collectionId));
   }
 
   /// Обновляет комментарий автора.
@@ -227,6 +280,9 @@ class CollectionGamesNotifier
         }).toList(),
       );
     }
+
+    // Синхронизируем универсальный провайдер
+    ref.invalidate(collectionItemsNotifierProvider(_collectionId));
   }
 
   /// Обновляет личный комментарий.
@@ -245,6 +301,9 @@ class CollectionGamesNotifier
         }).toList(),
       );
     }
+
+    // Синхронизируем универсальный провайдер
+    ref.invalidate(collectionItemsNotifierProvider(_collectionId));
   }
 }
 
@@ -440,16 +499,34 @@ class CollectionItemsNotifier
   }
 
   /// Обновляет статус элемента.
+  ///
+  /// Автоматически обновляет даты активности в локальном state:
+  /// last_activity_at, started_at (при inProgress), completed_at (при completed).
   Future<void> updateStatus(int id, ItemStatus status, MediaType mediaType) async {
     await _repository.updateItemStatus(id, status, mediaType: mediaType);
 
-    // Локальное обновление
+    // Локальное обновление с датами
     final List<CollectionItem>? items = state.valueOrNull;
     if (items != null) {
+      final DateTime now = DateTime.now();
       state = AsyncData<List<CollectionItem>>(
         items.map((CollectionItem i) {
           if (i.id == id) {
-            return i.copyWith(status: status);
+            DateTime? newStartedAt = i.startedAt;
+            DateTime? newCompletedAt = i.completedAt;
+            if (status == ItemStatus.inProgress && i.startedAt == null) {
+              newStartedAt = now;
+            }
+            if (status == ItemStatus.completed) {
+              newCompletedAt = now;
+              newStartedAt ??= now;
+            }
+            return i.copyWith(
+              status: status,
+              startedAt: newStartedAt,
+              completedAt: newCompletedAt,
+              lastActivityAt: now,
+            );
           }
           return i;
         }).toList(),
@@ -457,6 +534,38 @@ class CollectionItemsNotifier
     }
 
     ref.invalidate(collectionStatsProvider(_collectionId));
+  }
+
+  /// Обновляет даты активности элемента вручную.
+  Future<void> updateActivityDates(
+    int id, {
+    DateTime? startedAt,
+    DateTime? completedAt,
+    DateTime? lastActivityAt,
+  }) async {
+    await _repository.updateItemActivityDates(
+      id,
+      startedAt: startedAt,
+      completedAt: completedAt,
+      lastActivityAt: lastActivityAt,
+    );
+
+    // Локальное обновление
+    final List<CollectionItem>? items = state.valueOrNull;
+    if (items != null) {
+      state = AsyncData<List<CollectionItem>>(
+        items.map((CollectionItem i) {
+          if (i.id == id) {
+            return i.copyWith(
+              startedAt: startedAt ?? i.startedAt,
+              completedAt: completedAt ?? i.completedAt,
+              lastActivityAt: lastActivityAt ?? i.lastActivityAt,
+            );
+          }
+          return i;
+        }).toList(),
+      );
+    }
   }
 
   /// Обновляет прогресс просмотра сериала.

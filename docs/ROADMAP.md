@@ -34,6 +34,10 @@
 - [x] Config Export/Import — ConfigService with JSON export/import of 7 SharedPreferences keys, file picker dialogs
 - [x] Task #13: Image Caching — local caching of game covers, movie posters, TV show posters with auto-download, fallback to network, toggle in Settings
 - [x] Export v2 — Exportable mixin, XcollFile model (v1/v2), .xcoll (light) and .xcollx (full with canvas + images). Embedded cover images as base64 for offline import. Canvas URL image caching via ImageType.canvasImage
+- [x] Collection sorting — sort by Date Added, Status, Name, or Manual (drag-and-drop). Per-collection persistence via SharedPreferences
+- [x] Media type watermark — large tilted semi-transparent background icon on each collection item card
+- [x] Android Lite — collections, search, details, episode tracker, export/import (no Canvas). Platform feature flags
+- [x] Activity Dates — started_at, completed_at, last_activity_at for all collection items. Auto-set on status change. DatePicker for manual editing. Watched dates in episode tracker
 
 ## Future Plans
 

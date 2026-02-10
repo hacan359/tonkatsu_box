@@ -215,6 +215,10 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
+      // Скролл вниз мимо ActivityDatesSection
+      await tester.drag(find.byType(Scrollable).at(1), const Offset(0, -300));
+      await tester.pumpAndSettle();
+
       expect(find.text('My Notes'), findsOneWidget);
       expect(find.text('Finished on 2024-01-15'), findsOneWidget);
     });
@@ -234,6 +238,10 @@ void main() {
         isEditable: true,
         games: <CollectionGame>[collectionGame],
       ));
+      await tester.pumpAndSettle();
+
+      // Скролл вниз мимо ActivityDatesSection
+      await tester.drag(find.byType(Scrollable).at(1), const Offset(0, -300));
       await tester.pumpAndSettle();
 
       // Должно быть 2 кнопки Edit: для комментария автора и личных заметок
