@@ -12,6 +12,7 @@ import '../../../shared/models/movie.dart';
 import '../../../shared/models/steamgriddb_image.dart';
 import '../../../shared/widgets/media_detail_view.dart';
 import '../../../shared/widgets/source_badge.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../providers/canvas_provider.dart';
 import '../providers/collections_provider.dart';
 import '../providers/steamgriddb_panel_provider.dart';
@@ -54,7 +55,10 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(
+      length: kCanvasEnabled ? 2 : 1,
+      vsync: this,
+    );
   }
 
   @override
@@ -108,22 +112,23 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
         title: Text(item.itemName),
         bottom: TabBar(
           controller: _tabController,
-          tabs: const <Tab>[
-            Tab(
+          tabs: <Tab>[
+            const Tab(
               icon: Icon(Icons.info_outline),
               text: 'Details',
             ),
-            Tab(
-              icon: Icon(Icons.dashboard_outlined),
-              text: 'Canvas',
-            ),
+            if (kCanvasEnabled)
+              const Tab(
+                icon: Icon(Icons.dashboard_outlined),
+                text: 'Canvas',
+              ),
           ],
         ),
       ),
       body: TabBarView(
         controller: _tabController,
         children: <Widget>[
-          // Вкладка Details
+          // Details tab
           MediaDetailView(
             title: item.itemName,
             coverUrl: movie?.posterThumbUrl,
@@ -152,8 +157,8 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
                 _saveUserComment(item.id, text),
             embedded: true,
           ),
-          // Вкладка Canvas с боковыми панелями
-          _buildCanvasTab(),
+          // Canvas tab (только desktop)
+          if (kCanvasEnabled) _buildCanvasTab(),
         ],
       ),
     );

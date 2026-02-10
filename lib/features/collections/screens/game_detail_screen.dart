@@ -12,6 +12,7 @@ import '../providers/canvas_provider.dart';
 import '../providers/collections_provider.dart';
 import '../providers/steamgriddb_panel_provider.dart';
 import '../providers/vgmaps_panel_provider.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../widgets/canvas_view.dart';
 import '../widgets/steamgriddb_panel.dart';
 import '../widgets/status_dropdown.dart';
@@ -50,7 +51,10 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(
+      length: kCanvasEnabled ? 2 : 1,
+      vsync: this,
+    );
   }
 
   @override
@@ -104,22 +108,23 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
         title: Text(collectionGame.gameName),
         bottom: TabBar(
           controller: _tabController,
-          tabs: const <Tab>[
-            Tab(
+          tabs: <Tab>[
+            const Tab(
               icon: Icon(Icons.info_outline),
               text: 'Details',
             ),
-            Tab(
-              icon: Icon(Icons.dashboard_outlined),
-              text: 'Canvas',
-            ),
+            if (kCanvasEnabled)
+              const Tab(
+                icon: Icon(Icons.dashboard_outlined),
+                text: 'Canvas',
+              ),
           ],
         ),
       ),
       body: TabBarView(
         controller: _tabController,
         children: <Widget>[
-          // Вкладка Details
+          // Details tab
           MediaDetailView(
             title: collectionGame.gameName,
             coverUrl: game?.coverUrl,
@@ -147,8 +152,8 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                 _saveUserComment(collectionGame.id, text),
             embedded: true,
           ),
-          // Вкладка Canvas с боковыми панелями
-          _buildCanvasTab(),
+          // Canvas tab (только desktop)
+          if (kCanvasEnabled) _buildCanvasTab(),
         ],
       ),
     );

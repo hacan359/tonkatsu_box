@@ -48,7 +48,7 @@ class DatabaseService {
       await dir.create(recursive: true);
     }
 
-    return databaseFactoryFfi.openDatabase(
+    return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
         version: 11,

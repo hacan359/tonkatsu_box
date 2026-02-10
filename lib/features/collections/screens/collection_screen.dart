@@ -16,6 +16,7 @@ import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
 import '../../search/screens/search_screen.dart';
 import '../../../data/repositories/canvas_repository.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/models/steamgriddb_image.dart';
 import '../providers/canvas_provider.dart';
 import '../providers/collections_provider.dart';
@@ -91,32 +92,34 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_collection!.name),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: SegmentedButton<bool>(
-              segments: const <ButtonSegment<bool>>[
-                ButtonSegment<bool>(
-                  value: false,
-                  label: Text('List'),
-                  icon: Icon(Icons.list),
+        bottom: kCanvasEnabled
+            ? PreferredSize(
+                preferredSize: const Size.fromHeight(48),
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: SegmentedButton<bool>(
+                    segments: const <ButtonSegment<bool>>[
+                      ButtonSegment<bool>(
+                        value: false,
+                        label: Text('List'),
+                        icon: Icon(Icons.list),
+                      ),
+                      ButtonSegment<bool>(
+                        value: true,
+                        label: Text('Canvas'),
+                        icon: Icon(Icons.dashboard),
+                      ),
+                    ],
+                    selected: <bool>{_isCanvasMode},
+                    onSelectionChanged: (Set<bool> selection) {
+                      setState(() {
+                        _isCanvasMode = selection.first;
+                      });
+                    },
+                  ),
                 ),
-                ButtonSegment<bool>(
-                  value: true,
-                  label: Text('Canvas'),
-                  icon: Icon(Icons.dashboard),
-                ),
-              ],
-              selected: <bool>{_isCanvasMode},
-              onSelectionChanged: (Set<bool> selection) {
-                setState(() {
-                  _isCanvasMode = selection.first;
-                });
-              },
-            ),
-          ),
-        ),
+              )
+            : null,
         actions: <Widget>[
           if (_collection!.isEditable)
             IconButton(
