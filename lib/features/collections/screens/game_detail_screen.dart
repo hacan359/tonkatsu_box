@@ -15,6 +15,7 @@ import '../providers/vgmaps_panel_provider.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../widgets/canvas_view.dart';
 import '../widgets/steamgriddb_panel.dart';
+import '../widgets/activity_dates_section.dart';
 import '../widgets/status_dropdown.dart';
 import '../widgets/vgmaps_panel.dart';
 
@@ -141,6 +142,17 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
               onChanged: (GameStatus status) =>
                   _updateStatus(collectionGame.id, status),
             ),
+            extraSections: <Widget>[
+              ActivityDatesSection(
+                addedAt: collectionGame.addedAt,
+                startedAt: collectionGame.startedAt,
+                completedAt: collectionGame.completedAt,
+                lastActivityAt: collectionGame.lastActivityAt,
+                isEditable: widget.isEditable,
+                onDateChanged: (String type, DateTime date) =>
+                    _updateActivityDate(collectionGame.id, type, date),
+              ),
+            ],
             authorComment: collectionGame.authorComment,
             userComment: collectionGame.userComment,
             hasAuthorComment: collectionGame.hasAuthorComment,
@@ -358,6 +370,24 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
     await ref
         .read(collectionGamesNotifierProvider(widget.collectionId).notifier)
         .updateStatus(id, status);
+  }
+
+  Future<void> _updateActivityDate(int id, String type, DateTime date) async {
+    final CollectionGamesNotifier notifier =
+        ref.read(collectionGamesNotifierProvider(widget.collectionId).notifier);
+    if (type == 'started') {
+      await notifier.updateActivityDates(
+        id,
+        startedAt: date,
+        lastActivityAt: DateTime.now(),
+      );
+    } else {
+      await notifier.updateActivityDates(
+        id,
+        completedAt: date,
+        lastActivityAt: DateTime.now(),
+      );
+    }
   }
 
   Future<void> _saveAuthorComment(int id, String? text) async {

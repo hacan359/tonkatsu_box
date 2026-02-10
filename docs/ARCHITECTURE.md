@@ -47,7 +47,7 @@ lib/
 | `lib/core/api/steamgriddb_api.dart` | **SteamGridDB API клиент**. Bearer token авторизация. Методы: `searchGames()`, `getGrids()`, `getHeroes()`, `getLogos()`, `getIcons()` |
 | `lib/core/api/tmdb_api.dart` | **TMDB API клиент**. Bearer token авторизация. Методы: `searchMovies(query, {year})`, `searchTvShows(query, {firstAirDateYear})`, `multiSearch()`, `getMovieDetails()`, `getTvShowDetails()`, `getPopularMovies()`, `getPopularTvShows()`, `getMovieGenres()`, `getTvGenres()`, `getSeasonEpisodes(tmdbShowId, seasonNumber)` |
 | `lib/shared/constants/platform_features.dart` | **Флаги платформы**. `kCanvasEnabled` (false на Android/iOS), `kVgMapsEnabled` (только Windows), `kScreenshotEnabled` (только Windows). Используются для условного скрытия Canvas UI на мобильных |
-| `lib/core/database/database_service.dart` | **SQLite сервис**. Создание таблиц, миграции (версия 11), CRUD для всех сущностей. Использует `databaseFactory.openDatabase()` — кроссплатформенный вызов (FFI на desktop, нативный плагин на Android). Таблицы: `platforms`, `games`, `collections`, `collection_games`, `collection_items`, `canvas_items`, `canvas_viewport`, `canvas_connections`, `game_canvas_viewport`, `movies_cache`, `tv_shows_cache`, `tv_seasons_cache`, `tv_episodes_cache`, `watched_episodes`. Методы per-item canvas: `getGameCanvasItems`, `getGameCanvasConnections`, `getGameCanvasViewport`, `upsertGameCanvasViewport`. Методы эпизодов: `getEpisodesByShowAndSeason`, `upsertEpisodes`, `clearEpisodesByShow`, `getWatchedEpisodes`, `markEpisodeWatched`, `markEpisodeUnwatched`, `getWatchedEpisodeCount`, `markSeasonWatched`, `unmarkSeasonWatched`. Изоляция данных: коллекционные методы фильтруют `collection_item_id IS NULL`. Метод `clearAllData()` — очистка всех 14 таблиц в транзакции |
+| `lib/core/database/database_service.dart` | **SQLite сервис**. Создание таблиц, миграции (версия 12), CRUD для всех сущностей. Использует `databaseFactory.openDatabase()` — кроссплатформенный вызов (FFI на desktop, нативный плагин на Android). Таблицы: `platforms`, `games`, `collections`, `collection_games`, `collection_items`, `canvas_items`, `canvas_viewport`, `canvas_connections`, `game_canvas_viewport`, `movies_cache`, `tv_shows_cache`, `tv_seasons_cache`, `tv_episodes_cache`, `watched_episodes`. Миграция v12: колонки `started_at`, `completed_at`, `last_activity_at` в `collection_items`. `updateItemStatus` автоматически устанавливает даты активности при смене статуса. `updateItemActivityDates` для ручного обновления дат. Методы per-item canvas: `getGameCanvasItems`, `getGameCanvasConnections`, `getGameCanvasViewport`, `upsertGameCanvasViewport`. Методы эпизодов: `getEpisodesByShowAndSeason`, `upsertEpisodes`, `clearEpisodesByShow`, `getWatchedEpisodes` (возвращает `Map<(int, int), DateTime?>` с датами просмотра), `markEpisodeWatched`, `markEpisodeUnwatched`, `getWatchedEpisodeCount`, `markSeasonWatched`, `unmarkSeasonWatched`. Изоляция данных: коллекционные методы фильтруют `collection_item_id IS NULL`. Метод `clearAllData()` — очистка всех 14 таблиц в транзакции |
 | `lib/core/services/config_service.dart` | **Сервис конфигурации**. Экспорт/импорт 7 ключей SharedPreferences в JSON файл. Класс `ConfigResult` (success/failure/cancelled). Методы: `collectSettings()`, `applySettings()`, `exportToFile()`, `importFromFile()` |
 | `lib/core/services/image_cache_service.dart` | **Сервис кэширования изображений**. Enum `ImageType` (platformLogo, gameCover, moviePoster, tvShowPoster, canvasImage). Локальное хранение изображений в папках по типу. SharedPreferences для enable/disable и custom path. Методы: `getImageUri()` (cache-first с fallback на remoteUrl), `downloadImage()`, `downloadImages()`, `readImageBytes()`, `saveImageBytes()`, `clearCache()`, `getCacheSize()`, `getCachedCount()`. Провайдер `imageCacheServiceProvider` |
 | `lib/core/services/xcoll_file.dart` | **Модель файла экспорта/импорта**. Поддерживает v1 (.rcoll, legacy games) и v2 (.xcoll/.xcollx, items + canvas + images). Классы: `XcollFile`, `ExportFormat` (light/full), `ExportCanvas`, `RcollGame`. Автоопределение версии при парсинге |
@@ -63,10 +63,10 @@ lib/
 | `lib/shared/models/game.dart` | **Модель игры**. Поля: id, name, summary, coverUrl, releaseDate, rating, genres, platformIds. Методы: `fromJson()`, `fromDb()`, `toDb()` |
 | `lib/shared/models/platform.dart` | **Модель платформы**. Поля: id, name, abbreviation. Свойство `displayName` возвращает сокращение или полное имя |
 | `lib/shared/models/collection.dart` | **Модель коллекции**. Типы: `own`, `imported`, `fork`. Поля для форков: `originalSnapshot`, `forkedFromAuthor` |
-| `lib/shared/models/collection_game.dart` | **Игра в коллекции**. Связь коллекции с игрой. Статусы: `notStarted`, `playing`, `completed`, `dropped`, `planned`. Комментарии автора и пользователя |
+| `lib/shared/models/collection_game.dart` | **Игра в коллекции**. Связь коллекции с игрой. Статусы: `notStarted`, `playing`, `completed`, `dropped`, `planned`. Поля: startedAt, completedAt, lastActivityAt. Комментарии автора и пользователя. Адаптеры: `fromCollectionItem()`, `toCollectionItem()` |
 | `lib/shared/models/steamgriddb_game.dart` | **Модель SteamGridDB игры**. Поля: id, name, types, verified. Метод: `fromJson()` |
 | `lib/shared/models/steamgriddb_image.dart` | **Модель SteamGridDB изображения**. Поля: id, score, style, url, thumb, width, height, mime, author. Свойство `dimensions` |
-| `lib/shared/models/collection_item.dart` | **Модель универсального элемента коллекции**. Поля: id, collectionId, mediaType, externalId, platformId, sortOrder, status, authorComment, userComment, addedAt. Методы: `fromDb()`, `toDb()`, `copyWith()`. `sortOrder` используется для ручной сортировки drag-and-drop |
+| `lib/shared/models/collection_item.dart` | **Модель универсального элемента коллекции**. Поля: id, collectionId, mediaType, externalId, platformId, sortOrder, status, authorComment, userComment, addedAt, startedAt, completedAt, lastActivityAt. Методы: `fromDb()`, `toDb()`, `copyWith()`. `sortOrder` используется для ручной сортировки drag-and-drop. Даты хранятся как Unix seconds |
 | `lib/shared/models/media_type.dart` | **Enum типа медиа**. Значения: `game`, `movie`, `tvShow`. Свойства: `label`, `icon`. Методы: `fromString()` |
 | `lib/shared/models/item_status.dart` | **Enum статуса элемента**. Значения: `notStarted`, `inProgress`, `completed`, `dropped`, `planned`, `onHold`. Свойства: `label`, `emoji`, `color`, `statusSortPriority`. Методы: `fromString()`, `dbValue()`, `displayLabel()` |
 | `lib/shared/models/collection_sort_mode.dart` | **Enum режима сортировки коллекции**. Значения: `manual`, `addedDate`, `status`, `name`. Свойства: `value`, `displayLabel`, `description`. Метод: `fromString()`. Хранится в SharedPreferences per collection |
@@ -96,6 +96,7 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
+| `lib/features/collections/widgets/activity_dates_section.dart` | **Секция дат активности**. StatelessWidget: Added (readonly), Started (editable), Completed (editable), Last Activity (readonly). DatePicker для ручного редактирования. `_DateRow` — приватный виджет строки с иконкой, меткой и датой. `OnDateChanged` typedef для callback |
 | `lib/features/collections/widgets/collection_tile.dart` | **Плитка коллекции**. Показывает имя, автора, тип, количество игр. Иконка удаления |
 | `lib/features/collections/widgets/create_collection_dialog.dart` | **Диалоги**. Создание, переименование, удаление коллекции |
 | `lib/features/collections/widgets/status_dropdown.dart` | **Выпадающий список статусов** (legacy, для GameDetailScreen). Компактный и полный режим |
@@ -124,10 +125,10 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/features/collections/providers/collections_provider.dart` | **State management коллекций**. `collectionsProvider` — список. `collectionGamesNotifierProvider` — игры в коллекции с CRUD (legacy). `collectionItemsNotifierProvider` — универсальные элементы коллекции (games/movies/tvShows) с CRUD и реактивной сортировкой. `collectionSortProvider` — режим сортировки per collection (SharedPreferences). Двусторонняя синхронизация между games и items провайдерами |
+| `lib/features/collections/providers/collections_provider.dart` | **State management коллекций**. `collectionsProvider` — список. `collectionGamesNotifierProvider` — игры в коллекции с CRUD (legacy), инвалидирует `collectionItemsNotifierProvider` при любых мутациях. `collectionItemsNotifierProvider` — универсальные элементы коллекции (games/movies/tvShows) с CRUD, реактивной сортировкой и оптимистичным обновлением дат активности. `collectionSortProvider` — режим сортировки per collection (SharedPreferences). Двусторонняя синхронизация между games и items провайдерами |
 | `lib/features/collections/providers/steamgriddb_panel_provider.dart` | **State management панели SteamGridDB**. `steamGridDbPanelProvider` — NotifierProvider.family по collectionId. Enum `SteamGridDbImageType` (grids/heroes/logos/icons). State: isOpen, searchTerm, searchResults, selectedGame, selectedImageType, images, isSearching, isLoadingImages, searchError, imageError, imageCache. Методы: togglePanel, openPanel, closePanel, searchGames, selectGame, clearGameSelection, selectImageType. In-memory кэш по ключу `gameId:imageType` |
 | `lib/features/collections/providers/vgmaps_panel_provider.dart` | **State management панели VGMaps**. `vgMapsPanelProvider` — NotifierProvider.family по collectionId. State: isOpen, currentUrl, canGoBack, canGoForward, isLoading, capturedImageUrl/Width/Height, error. Методы: togglePanel, openPanel, closePanel, setCurrentUrl, setNavigationState, setLoading, captureImage, clearCapturedImage, setError, clearError |
-| `lib/features/collections/providers/episode_tracker_provider.dart` | **State management трекера эпизодов**. `episodeTrackerNotifierProvider` — NotifierProvider.family по `({collectionId, showId})`. State: episodesBySeason (Map<int, List<TvEpisode>>), watchedEpisodes (Set<(int,int)>), loadingSeasons, error. Методы: loadSeason (cache-first: DB → API → DB), toggleEpisode, toggleSeason, isEpisodeWatched, watchedCountForSeason, totalWatchedCount. Автоматический переход в Completed при просмотре всех эпизодов (сравнение с tvShow.totalEpisodes) |
+| `lib/features/collections/providers/episode_tracker_provider.dart` | **State management трекера эпизодов**. `episodeTrackerNotifierProvider` — NotifierProvider.family по `({collectionId, showId})`. State: episodesBySeason (Map<int, List<TvEpisode>>), watchedEpisodes (Map<(int,int), DateTime?>), loadingSeasons, error. Методы: loadSeason (cache-first: DB → API → DB), toggleEpisode, toggleSeason, isEpisodeWatched, watchedCountForSeason, totalWatchedCount, getWatchedAt. Автоматический переход в Completed при просмотре всех эпизодов (сравнение с tvShow.totalEpisodes) |
 | `lib/features/collections/providers/canvas_provider.dart` | **State management канваса**. `canvasNotifierProvider` — NotifierProvider.family по collectionId (коллекционный canvas). `gameCanvasNotifierProvider` — NotifierProvider.family по `({collectionId, collectionItemId})` (per-item canvas). Оба реализуют общий интерфейс методов: moveItem, updateViewport, addItem, deleteItem, bringToFront, sendToBack, removeMediaItem, addTextItem, addImageItem, addLinkItem, updateItemData, updateItemSize, startConnection, completeConnection, cancelConnection, deleteConnection, updateConnection. Debounced save (300ms position, 500ms viewport). Коллекционный canvas синхронизируется с коллекцией через `ref.listen`. Per-item canvas автоинициализируется одним медиа-элементом |
 
 ---
@@ -341,15 +342,20 @@ SnackBar "Image added to canvas"
 ### 6. Изменение статуса
 
 ```
-Тап на StatusDropdown
+Тап на StatusDropdown / ItemStatusDropdown
        ↓
-collectionGamesNotifierProvider.updateStatus()
+collectionGamesNotifierProvider.updateStatus()  [игры]
+collectionItemsNotifierProvider.updateStatus()  [фильмы/сериалы]
        ↓
-Локальное обновление state (мгновенный UI)
+DatabaseService.updateItemStatus()
+  → last_activity_at = now (всегда)
+  → started_at = now (при inProgress, если null)
+  → completed_at = now (при completed)
        ↓
-DatabaseService.updateGameStatus()
+Оптимистичное обновление state (с датами)
        ↓
 Инвалидация collectionStatsProvider
+Инвалидация collectionItemsNotifierProvider [только для games]
 ```
 
 ---
@@ -407,17 +413,23 @@ CREATE TABLE collection_games (
   UNIQUE(collection_id, igdb_id, platform_id)
 );
 
--- Универсальные элементы коллекций (Stage 16)
+-- Универсальные элементы коллекций (Stage 16, updated v12)
 CREATE TABLE collection_items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   collection_id INTEGER NOT NULL,
   media_type TEXT NOT NULL DEFAULT 'game',  -- game/movie/tvShow
   external_id INTEGER NOT NULL,
   platform_id INTEGER,
+  current_season INTEGER DEFAULT 0,
+  current_episode INTEGER DEFAULT 0,
   status TEXT DEFAULT 'not_started',
   author_comment TEXT,
   user_comment TEXT,
   added_at INTEGER NOT NULL,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  started_at INTEGER,            -- auto-set on inProgress, editable
+  completed_at INTEGER,          -- auto-set on completed, editable
+  last_activity_at INTEGER,      -- auto-set on any status change
   FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE,
   UNIQUE(collection_id, media_type, external_id, platform_id)
 );

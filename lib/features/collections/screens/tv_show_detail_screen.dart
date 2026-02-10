@@ -22,6 +22,7 @@ import '../providers/collections_provider.dart';
 import '../providers/episode_tracker_provider.dart';
 import '../providers/steamgriddb_panel_provider.dart';
 import '../providers/vgmaps_panel_provider.dart';
+import '../widgets/activity_dates_section.dart';
 import '../widgets/canvas_view.dart';
 import '../widgets/item_status_dropdown.dart';
 import '../widgets/steamgriddb_panel.dart';
@@ -153,6 +154,15 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
                   _updateStatus(item.id, status),
             ),
             extraSections: <Widget>[
+              ActivityDatesSection(
+                addedAt: item.addedAt,
+                startedAt: item.startedAt,
+                completedAt: item.completedAt,
+                lastActivityAt: item.lastActivityAt,
+                isEditable: widget.isEditable,
+                onDateChanged: (String type, DateTime date) =>
+                    _updateActivityDate(item.id, type, date),
+              ),
               _buildSeasonsSection(context, item, tvShow),
             ],
             authorComment: item.authorComment,
@@ -454,6 +464,24 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
         .updateStatus(id, status, MediaType.tvShow);
   }
 
+  Future<void> _updateActivityDate(int id, String type, DateTime date) async {
+    final CollectionItemsNotifier notifier =
+        ref.read(collectionItemsNotifierProvider(widget.collectionId).notifier);
+    if (type == 'started') {
+      await notifier.updateActivityDates(
+        id,
+        startedAt: date,
+        lastActivityAt: DateTime.now(),
+      );
+    } else {
+      await notifier.updateActivityDates(
+        id,
+        completedAt: date,
+        lastActivityAt: DateTime.now(),
+      );
+    }
+  }
+
   Future<void> _saveAuthorComment(int id, String? text) async {
     await ref
         .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
@@ -747,6 +775,10 @@ class _SeasonExpansionTile extends ConsumerWidget {
                   seasonNum,
                   episode.episodeNumber,
                 ),
+                watchedAt: trackerState.getWatchedAt(
+                  seasonNum,
+                  episode.episodeNumber,
+                ),
                 trackerArg: trackerArg,
               ))
         else if (episodes != null && episodes.isEmpty)
@@ -770,11 +802,18 @@ class _EpisodeTile extends ConsumerWidget {
     required this.episode,
     required this.isWatched,
     required this.trackerArg,
+    this.watchedAt,
   });
 
   final TvEpisode episode;
   final bool isWatched;
+  final DateTime? watchedAt;
   final ({int collectionId, int showId}) trackerArg;
+
+  static const List<String> _months = <String>[
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  ];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -789,6 +828,11 @@ class _EpisodeTile extends ConsumerWidget {
     }
     if (episode.runtime != null) {
       subtitleParts.add('${episode.runtime} min');
+    }
+    if (isWatched && watchedAt != null) {
+      subtitleParts.add(
+        'watched ${_months[watchedAt!.month - 1]} ${watchedAt!.day}',
+      );
     }
 
     return CheckboxListTile(

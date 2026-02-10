@@ -79,6 +79,16 @@ Track status for each item in your collection with context-aware labels:
 
 View statistics per collection — see your completion rate at a glance.
 
+### Activity Dates
+
+Track when you started, finished, and last interacted with each item:
+- **Added** — auto-set when item is added to collection (read-only)
+- **Started** — auto-set when status changes to In Progress/Playing/Watching (if not already set); editable via DatePicker
+- **Completed** — auto-set when status changes to Completed; editable via DatePicker
+- **Last Activity** — auto-updated on any status change (read-only)
+
+Displayed in the `ActivityDatesSection` widget on all detail screens (game, movie, TV show). Dates persist in SQLite and survive export/import.
+
 ## Collection Sorting
 
 Sort items within a collection using different modes:
@@ -95,7 +105,7 @@ Track your viewing progress for TV shows at the episode level:
 - **Episode Progress bar** — shows overall watched/total count with a LinearProgressIndicator
 - **Season sections** — ExpansionTile for each season with watched count badge
 - **Lazy loading** — episodes are fetched from TMDB API only when a season is expanded (cached in SQLite for offline access)
-- **Per-episode checkboxes** — mark individual episodes as watched/unwatched with CheckboxListTile
+- **Per-episode checkboxes** — mark individual episodes as watched/unwatched with CheckboxListTile; watched date displayed in subtitle
 - **Bulk actions** — "Mark all" / "Unmark all" button per season to toggle all episodes at once
 - **Auto-complete** — when all episodes are watched, the show's status is automatically set to Completed (compares against total episode count from show metadata)
 

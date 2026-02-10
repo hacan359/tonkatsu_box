@@ -15,7 +15,7 @@ class EpisodeTrackerState {
   /// Создаёт [EpisodeTrackerState].
   const EpisodeTrackerState({
     this.episodesBySeason = const <int, List<TvEpisode>>{},
-    this.watchedEpisodes = const <(int, int)>{},
+    this.watchedEpisodes = const <(int, int), DateTime?>{},
     this.loadingSeasons = const <int, bool>{},
     this.error,
   });
@@ -23,8 +23,8 @@ class EpisodeTrackerState {
   /// Эпизоды по сезонам (ключ — номер сезона).
   final Map<int, List<TvEpisode>> episodesBySeason;
 
-  /// Множество просмотренных эпизодов (seasonNumber, episodeNumber).
-  final Set<(int, int)> watchedEpisodes;
+  /// Просмотренные эпизоды: (seasonNumber, episodeNumber) → дата просмотра.
+  final Map<(int, int), DateTime?> watchedEpisodes;
 
   /// Флаги загрузки по сезонам.
   final Map<int, bool> loadingSeasons;
@@ -35,7 +35,7 @@ class EpisodeTrackerState {
   /// Создаёт копию с изменёнными полями.
   EpisodeTrackerState copyWith({
     Map<int, List<TvEpisode>>? episodesBySeason,
-    Set<(int, int)>? watchedEpisodes,
+    Map<(int, int), DateTime?>? watchedEpisodes,
     Map<int, bool>? loadingSeasons,
     String? error,
   }) {
@@ -49,13 +49,18 @@ class EpisodeTrackerState {
 
   /// Проверяет, просмотрен ли эпизод.
   bool isEpisodeWatched(int season, int episode) {
-    return watchedEpisodes.contains((season, episode));
+    return watchedEpisodes.containsKey((season, episode));
+  }
+
+  /// Возвращает дату просмотра эпизода (или null).
+  DateTime? getWatchedAt(int season, int episode) {
+    return watchedEpisodes[(season, episode)];
   }
 
   /// Возвращает количество просмотренных эпизодов в сезоне.
   int watchedCountForSeason(int season) {
     int count = 0;
-    for (final (int s, int _) in watchedEpisodes) {
+    for (final (int s, int _) in watchedEpisodes.keys) {
       if (s == season) count++;
     }
     return count;
@@ -106,7 +111,7 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
 
   Future<void> _loadWatchedEpisodes() async {
     try {
-      final Set<(int, int)> watched =
+      final Map<(int, int), DateTime?> watched =
           await _db.getWatchedEpisodes(_collectionId, _showId);
       state = state.copyWith(watchedEpisodes: watched);
     } on Exception catch (e) {
@@ -213,14 +218,16 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
     if (isWatched) {
       await _db.markEpisodeUnwatched(
           _collectionId, _showId, season, episode);
-      final Set<(int, int)> updated = Set<(int, int)>.of(state.watchedEpisodes)
-        ..remove((season, episode));
+      final Map<(int, int), DateTime?> updated =
+          Map<(int, int), DateTime?>.of(state.watchedEpisodes)
+            ..remove((season, episode));
       state = state.copyWith(watchedEpisodes: updated);
     } else {
       await _db.markEpisodeWatched(
           _collectionId, _showId, season, episode);
-      final Set<(int, int)> updated = Set<(int, int)>.of(state.watchedEpisodes)
-        ..add((season, episode));
+      final Map<(int, int), DateTime?> updated =
+          Map<(int, int), DateTime?>.of(state.watchedEpisodes)
+            ..[(season, episode)] = DateTime.now();
       state = state.copyWith(watchedEpisodes: updated);
     }
 
@@ -238,8 +245,8 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
     if (allWatched) {
       // Снимаем все отметки сезона
       await _db.unmarkSeasonWatched(_collectionId, _showId, season);
-      final Set<(int, int)> updated =
-          Set<(int, int)>.of(state.watchedEpisodes);
+      final Map<(int, int), DateTime?> updated =
+          Map<(int, int), DateTime?>.of(state.watchedEpisodes);
       for (final TvEpisode ep in episodes) {
         updated.remove((season, ep.episodeNumber));
       }
@@ -250,10 +257,11 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
           episodes.map((TvEpisode ep) => ep.episodeNumber).toList();
       await _db.markSeasonWatched(
           _collectionId, _showId, season, episodeNumbers);
-      final Set<(int, int)> updated =
-          Set<(int, int)>.of(state.watchedEpisodes);
+      final DateTime now = DateTime.now();
+      final Map<(int, int), DateTime?> updated =
+          Map<(int, int), DateTime?>.of(state.watchedEpisodes);
       for (final int ep in episodeNumbers) {
-        updated.add((season, ep));
+        updated[(season, ep)] = now;
       }
       state = state.copyWith(watchedEpisodes: updated);
     }

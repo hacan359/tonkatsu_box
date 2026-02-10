@@ -94,7 +94,7 @@ void main() {
     when(() => mockDb.getTvSeasonsByShowId(any()))
         .thenAnswer((_) async => <TvSeason>[]);
     when(() => mockDb.getWatchedEpisodes(any(), any()))
-        .thenAnswer((_) async => <(int, int)>{});
+        .thenAnswer((_) async => <(int, int), DateTime?>{});
 
     // Мокаем TmdbApi — возвращаем пустой список сезонов (fallback)
     when(() => mockTmdbApi.getTvSeasons(any()))
@@ -680,7 +680,9 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // 2 кнопки Edit: Author's Comment и My Notes
+        // 2 кнопки Edit: Author's Comment и My Notes (скролл вниз мимо ActivityDates)
+        await tester.drag(find.byType(Scrollable).at(1), const Offset(0, -300));
+        await tester.pumpAndSettle();
         expect(find.text('Edit'), findsNWidgets(2));
       });
 
@@ -698,7 +700,9 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Только 1 кнопка Edit: для My Notes
+        // Только 1 кнопка Edit: для My Notes (скролл вниз мимо ActivityDates)
+        await tester.drag(find.byType(Scrollable).at(1), const Offset(0, -300));
+        await tester.pumpAndSettle();
         expect(find.text('Edit'), findsOneWidget);
       });
     });
@@ -718,6 +722,14 @@ void main() {
           isEditable: true,
           items: <CollectionItem>[item],
         ));
+        await tester.pumpAndSettle();
+
+        // Скролл к секции My Notes
+        await tester.scrollUntilVisible(
+          find.text('My Notes'),
+          200,
+          scrollable: find.byType(Scrollable).at(1),
+        );
         await tester.pumpAndSettle();
 
         expect(find.text('My Notes'), findsOneWidget);
@@ -742,6 +754,14 @@ void main() {
           isEditable: true,
           items: <CollectionItem>[item],
         ));
+        await tester.pumpAndSettle();
+
+        // Скролл к секции заметок
+        await tester.scrollUntilVisible(
+          find.text('No notes yet. Tap Edit to add your personal notes.'),
+          200,
+          scrollable: find.byType(Scrollable).at(1),
+        );
         await tester.pumpAndSettle();
 
         expect(
@@ -829,8 +849,8 @@ void main() {
           findsOneWidget,
         );
 
-        // Status
-        expect(find.text('Completed'), findsOneWidget);
+        // Status (может быть 2: один в dropdown, один в ActivityDatesSection)
+        expect(find.text('Completed'), findsWidgets);
 
         // Author's comment & user notes — скролл к нижней части
         // Указываем scrollable MediaDetailView (второй после TabBarView)
@@ -978,8 +998,8 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Прокручиваем до секции My Notes
-        await tester.ensureVisible(find.text('My Notes'));
+        // Прокручиваем до секции My Notes (мимо ActivityDatesSection)
+        await tester.drag(find.byType(Scrollable).at(1), const Offset(0, -300));
         await tester.pumpAndSettle();
 
         // isEditable=false значит есть только 1 кнопка Edit (для My Notes)

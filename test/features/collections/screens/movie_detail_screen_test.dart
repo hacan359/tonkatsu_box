@@ -609,6 +609,10 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
+        // Скролл вниз мимо ActivityDatesSection
+        await tester.drag(find.byType(Scrollable).at(1), const Offset(0, -300));
+        await tester.pumpAndSettle();
+
         // 2 кнопки Edit: для Author's Comment и My Notes
         expect(find.text('Edit'), findsNWidgets(2));
       });
@@ -649,6 +653,10 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
+        // Скролл вниз мимо ActivityDatesSection
+        await tester.drag(find.byType(Scrollable).at(1), const Offset(0, -300));
+        await tester.pumpAndSettle();
+
         expect(find.text('My Notes'), findsOneWidget);
         expect(find.text('Watched on 2024-01-15'), findsOneWidget);
       });
@@ -668,6 +676,10 @@ void main() {
           isEditable: true,
           items: <CollectionItem>[item],
         ));
+        await tester.pumpAndSettle();
+
+        // Скролл вниз мимо ActivityDatesSection
+        await tester.drag(find.byType(Scrollable).at(1), const Offset(0, -300));
         await tester.pumpAndSettle();
 
         expect(
@@ -846,6 +858,10 @@ void main() {
         // Секция Status всё ещё отображается
         expect(find.text('Status'), findsOneWidget);
 
+        // Скролл вниз мимо ActivityDatesSection
+        await tester.drag(find.byType(Scrollable).at(1), const Offset(0, -300));
+        await tester.pumpAndSettle();
+
         // Секции комментариев отображаются
         expect(find.text("Author's Comment"), findsOneWidget);
         expect(find.text('My Notes'), findsOneWidget);
@@ -894,14 +910,18 @@ void main() {
           findsOneWidget,
         );
 
+        // Скролл вниз мимо ActivityDatesSection
+        await tester.drag(find.byType(Scrollable).at(1), const Offset(0, -300));
+        await tester.pumpAndSettle();
+
         // Комментарий автора
         expect(find.text('Great comedy-drama!'), findsOneWidget);
 
         // Личные заметки
         expect(find.text('Enjoyed it a lot.'), findsOneWidget);
 
-        // Статус
-        expect(find.text('Completed'), findsOneWidget);
+        // Статус (может быть 2: один в dropdown, один в ActivityDatesSection)
+        expect(find.text('Completed'), findsWidgets);
       });
 
       testWidgets(

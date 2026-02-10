@@ -51,7 +51,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 11,
+        version: 12,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -204,6 +204,22 @@ class DatabaseService {
             AND ci2.added_at > collection_items.added_at
         )
       ''');
+    }
+    if (oldVersion < 12) {
+      // Даты активности элементов коллекции
+      await db.execute(
+        'ALTER TABLE collection_items ADD COLUMN started_at INTEGER',
+      );
+      await db.execute(
+        'ALTER TABLE collection_items ADD COLUMN completed_at INTEGER',
+      );
+      await db.execute(
+        'ALTER TABLE collection_items ADD COLUMN last_activity_at INTEGER',
+      );
+      // Инициализируем last_activity_at из added_at для существующих записей
+      await db.execute(
+        'UPDATE collection_items SET last_activity_at = added_at',
+      );
     }
   }
 
@@ -403,6 +419,9 @@ class DatabaseService {
         user_comment TEXT,
         added_at INTEGER NOT NULL,
         sort_order INTEGER NOT NULL DEFAULT 0,
+        started_at INTEGER,
+        completed_at INTEGER,
+        last_activity_at INTEGER,
         FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE,
         UNIQUE(collection_id, media_type, external_id)
       )
@@ -830,23 +849,26 @@ class DatabaseService {
   /// Возвращает множество просмотренных эпизодов для сериала в коллекции.
   ///
   /// Возвращает Set записей (seasonNumber, episodeNumber).
-  Future<Set<(int, int)>> getWatchedEpisodes(
+  Future<Map<(int, int), DateTime?>> getWatchedEpisodes(
     int collectionId,
     int showId,
   ) async {
     final Database db = await database;
     final List<Map<String, dynamic>> rows = await db.query(
       'watched_episodes',
-      columns: <String>['season_number', 'episode_number'],
+      columns: <String>['season_number', 'episode_number', 'watched_at'],
       where: 'collection_id = ? AND show_id = ?',
       whereArgs: <Object?>[collectionId, showId],
     );
-    final Set<(int, int)> result = <(int, int)>{};
+    final Map<(int, int), DateTime?> result = <(int, int), DateTime?>{};
     for (final Map<String, dynamic> row in rows) {
-      result.add((
+      final int? watchedAtMs = row['watched_at'] as int?;
+      result[(
         row['season_number'] as int,
         row['episode_number'] as int,
-      ));
+      )] = watchedAtMs != null
+          ? DateTime.fromMillisecondsSinceEpoch(watchedAtMs)
+          : null;
     }
     return result;
   }
@@ -1261,15 +1283,77 @@ class DatabaseService {
   }
 
   /// Обновляет статус элемента коллекции.
+  ///
+  /// Автоматически устанавливает даты активности:
+  /// - `last_activity_at` обновляется всегда
+  /// - `started_at` устанавливается при переходе в inProgress (если null)
+  /// - `completed_at` устанавливается при переходе в completed
   Future<void> updateItemStatus(
     int id,
     ItemStatus status, {
     required MediaType mediaType,
   }) async {
     final Database db = await database;
+    final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
+    final Map<String, dynamic> updateData = <String, dynamic>{
+      'status': status.dbValue(mediaType),
+      'last_activity_at': now,
+    };
+
+    // Получаем текущий элемент для проверки дат
+    final List<Map<String, dynamic>> rows = await db.query(
+      'collection_items',
+      columns: <String>['started_at'],
+      where: 'id = ?',
+      whereArgs: <Object?>[id],
+      limit: 1,
+    );
+
+    final bool hasStartedAt =
+        rows.isNotEmpty && rows.first['started_at'] != null;
+
+    if (status == ItemStatus.inProgress && !hasStartedAt) {
+      updateData['started_at'] = now;
+    }
+    if (status == ItemStatus.completed) {
+      updateData['completed_at'] = now;
+      if (!hasStartedAt) {
+        updateData['started_at'] = now;
+      }
+    }
+
     await db.update(
       'collection_items',
-      <String, dynamic>{'status': status.dbValue(mediaType)},
+      updateData,
+      where: 'id = ?',
+      whereArgs: <Object?>[id],
+    );
+  }
+
+  /// Обновляет даты активности элемента коллекции вручную.
+  Future<void> updateItemActivityDates(
+    int id, {
+    DateTime? startedAt,
+    DateTime? completedAt,
+    DateTime? lastActivityAt,
+  }) async {
+    final Database db = await database;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    if (startedAt != null) {
+      data['started_at'] = startedAt.millisecondsSinceEpoch ~/ 1000;
+    }
+    if (completedAt != null) {
+      data['completed_at'] = completedAt.millisecondsSinceEpoch ~/ 1000;
+    }
+    if (lastActivityAt != null) {
+      data['last_activity_at'] =
+          lastActivityAt.millisecondsSinceEpoch ~/ 1000;
+    }
+    if (data.isEmpty) return;
+    await db.update(
+      'collection_items',
+      data,
       where: 'id = ?',
       whereArgs: <Object?>[id],
     );
