@@ -25,6 +25,7 @@ class CollectionItem with Exportable {
     this.platformId,
     this.currentSeason = 0,
     this.currentEpisode = 0,
+    this.sortOrder = 0,
     this.authorComment,
     this.userComment,
     this.game,
@@ -43,6 +44,7 @@ class CollectionItem with Exportable {
       platformId: row['platform_id'] as int?,
       currentSeason: (row['current_season'] as int?) ?? 0,
       currentEpisode: (row['current_episode'] as int?) ?? 0,
+      sortOrder: (row['sort_order'] as int?) ?? 0,
       status: ItemStatus.fromString(row['status'] as String),
       authorComment: row['author_comment'] as String?,
       userComment: row['user_comment'] as String?,
@@ -68,6 +70,7 @@ class CollectionItem with Exportable {
       platformId: row['platform_id'] as int?,
       currentSeason: (row['current_season'] as int?) ?? 0,
       currentEpisode: (row['current_episode'] as int?) ?? 0,
+      sortOrder: (row['sort_order'] as int?) ?? 0,
       status: ItemStatus.fromString(row['status'] as String),
       authorComment: row['author_comment'] as String?,
       userComment: row['user_comment'] as String?,
@@ -122,6 +125,9 @@ class CollectionItem with Exportable {
 
   /// Текущий эпизод (для сериалов).
   final int currentEpisode;
+
+  /// Порядок сортировки (для ручной сортировки drag-and-drop).
+  final int sortOrder;
 
   /// Статус прохождения/просмотра.
   final ItemStatus status;
@@ -205,7 +211,7 @@ class CollectionItem with Exportable {
 
   @override
   Set<String> get internalDbFields =>
-      const <String>{'id', 'collection_id', 'user_comment', 'added_at'};
+      const <String>{'id', 'collection_id', 'user_comment', 'added_at', 'sort_order'};
 
   @override
   Map<String, String> get dbToExportKeyMapping =>
@@ -226,6 +232,7 @@ class CollectionItem with Exportable {
       'author_comment': authorComment,
       'user_comment': userComment,
       'added_at': addedAt.millisecondsSinceEpoch ~/ 1000,
+      'sort_order': sortOrder,
     };
   }
 
@@ -252,6 +259,7 @@ class CollectionItem with Exportable {
     int? platformId,
     int? currentSeason,
     int? currentEpisode,
+    int? sortOrder,
     ItemStatus? status,
     String? authorComment,
     String? userComment,
@@ -269,6 +277,7 @@ class CollectionItem with Exportable {
       platformId: platformId ?? this.platformId,
       currentSeason: currentSeason ?? this.currentSeason,
       currentEpisode: currentEpisode ?? this.currentEpisode,
+      sortOrder: sortOrder ?? this.sortOrder,
       status: status ?? this.status,
       authorComment: authorComment ?? this.authorComment,
       userComment: userComment ?? this.userComment,

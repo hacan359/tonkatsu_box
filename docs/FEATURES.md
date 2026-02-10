@@ -57,7 +57,7 @@ Color-coded visual distinction between media types:
 - Movies — red accent
 - TV Shows — green accent
 - Applied to canvas card borders and collection item card backgrounds
-- Large semi-transparent background icon (80px, 6% opacity) on each collection item card for quick visual identification
+- Large tilted semi-transparent background icon (200px, 6% opacity, rotated -17°) on each collection item card as a watermark for quick visual identification
 
 ## Progress Tracking
 
@@ -73,6 +73,16 @@ Track status for each item in your collection with context-aware labels:
 | 📋 Planned | Planned | Planned |
 
 View statistics per collection — see your completion rate at a glance.
+
+## Collection Sorting
+
+Sort items within a collection using different modes:
+- **Date Added** (default) — newest items first
+- **Status** — active items first: In Progress → Planned → Not Started → On Hold → Completed → Dropped
+- **Name** — alphabetical A to Z
+- **Manual** — custom drag-and-drop order with drag handle icon
+
+Sort mode is saved per collection and persists between sessions. A compact sort selector is displayed between the collection stats and the item list. In Manual mode, a drag handle appears on each item card for reordering via drag-and-drop.
 
 ### Episode Tracker (TV Shows)
 

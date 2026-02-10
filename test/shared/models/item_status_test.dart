@@ -249,6 +249,84 @@ void main() {
       });
     });
 
+    group('statusSortPriority', () {
+      test('inProgress должен иметь приоритет 0', () {
+        expect(ItemStatus.inProgress.statusSortPriority, 0);
+      });
+
+      test('planned должен иметь приоритет 1', () {
+        expect(ItemStatus.planned.statusSortPriority, 1);
+      });
+
+      test('notStarted должен иметь приоритет 2', () {
+        expect(ItemStatus.notStarted.statusSortPriority, 2);
+      });
+
+      test('onHold должен иметь приоритет 3', () {
+        expect(ItemStatus.onHold.statusSortPriority, 3);
+      });
+
+      test('completed должен иметь приоритет 4', () {
+        expect(ItemStatus.completed.statusSortPriority, 4);
+      });
+
+      test('dropped должен иметь приоритет 5', () {
+        expect(ItemStatus.dropped.statusSortPriority, 5);
+      });
+
+      test('inProgress должен иметь наименьший приоритет (первый в списке)', () {
+        final int minPriority = ItemStatus.values
+            .map((ItemStatus s) => s.statusSortPriority)
+            .reduce((int a, int b) => a < b ? a : b);
+
+        expect(ItemStatus.inProgress.statusSortPriority, minPriority);
+      });
+
+      test('dropped должен иметь наибольший приоритет (последний в списке)', () {
+        final int maxPriority = ItemStatus.values
+            .map((ItemStatus s) => s.statusSortPriority)
+            .reduce((int a, int b) => a > b ? a : b);
+
+        expect(ItemStatus.dropped.statusSortPriority, maxPriority);
+      });
+
+      test('сортировка по приоритету должна давать правильный порядок', () {
+        final List<ItemStatus> sorted = List<ItemStatus>.from(ItemStatus.values)
+          ..sort(
+            (ItemStatus a, ItemStatus b) =>
+                a.statusSortPriority.compareTo(b.statusSortPriority),
+          );
+
+        expect(sorted, <ItemStatus>[
+          ItemStatus.inProgress,
+          ItemStatus.planned,
+          ItemStatus.notStarted,
+          ItemStatus.onHold,
+          ItemStatus.completed,
+          ItemStatus.dropped,
+        ]);
+      });
+
+      test('все приоритеты должны быть уникальными', () {
+        final List<int> allPriorities = ItemStatus.values
+            .map((ItemStatus s) => s.statusSortPriority)
+            .toList();
+        final Set<int> uniquePriorities = allPriorities.toSet();
+
+        expect(uniquePriorities.length, allPriorities.length);
+      });
+
+      test('все приоритеты должны быть неотрицательными', () {
+        for (final ItemStatus status in ItemStatus.values) {
+          expect(
+            status.statusSortPriority >= 0,
+            isTrue,
+            reason: '${status.name} приоритет должен быть >= 0',
+          );
+        }
+      });
+    });
+
     group('displayText', () {
       test('должен содержать иконку и метку для game inProgress', () {
         final String result =

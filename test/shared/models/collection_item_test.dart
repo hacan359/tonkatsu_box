@@ -1012,5 +1012,132 @@ void main() {
         expect(restored.status, ItemStatus.inProgress);
       });
     });
+
+    group('sortOrder', () {
+      test('должен иметь sortOrder по умолчанию 0', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        expect(item.sortOrder, 0);
+      });
+
+      test('должен создаваться с кастомным sortOrder', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 100,
+          sortOrder: 5,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        expect(item.sortOrder, 5);
+      });
+
+      test('fromDb должен читать sort_order', () {
+        final Map<String, dynamic> row = <String, dynamic>{
+          'id': 1,
+          'collection_id': 10,
+          'media_type': 'game',
+          'external_id': 100,
+          'platform_id': null,
+          'current_season': null,
+          'current_episode': null,
+          'sort_order': 3,
+          'status': 'not_started',
+          'author_comment': null,
+          'user_comment': null,
+          'added_at': testAddedAtUnix,
+        };
+
+        final CollectionItem item = CollectionItem.fromDb(row);
+        expect(item.sortOrder, 3);
+      });
+
+      test('fromDb должен использовать 0 при отсутствии sort_order', () {
+        final Map<String, dynamic> row = <String, dynamic>{
+          'id': 1,
+          'collection_id': 10,
+          'media_type': 'game',
+          'external_id': 100,
+          'platform_id': null,
+          'current_season': null,
+          'current_episode': null,
+          'status': 'not_started',
+          'author_comment': null,
+          'user_comment': null,
+          'added_at': testAddedAtUnix,
+        };
+
+        final CollectionItem item = CollectionItem.fromDb(row);
+        expect(item.sortOrder, 0);
+      });
+
+      test('toDb должен включать sort_order', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 100,
+          sortOrder: 7,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        final Map<String, dynamic> db = item.toDb();
+        expect(db['sort_order'], 7);
+      });
+
+      test('copyWith должен изменять sortOrder', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 100,
+          sortOrder: 2,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        final CollectionItem copy = item.copyWith(sortOrder: 8);
+        expect(copy.sortOrder, 8);
+        expect(item.sortOrder, 2); // Оригинал не изменился
+      });
+
+      test('sort_order должен быть в internalDbFields', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        expect(item.internalDbFields, contains('sort_order'));
+      });
+
+      test('toExport не должен содержать sort_order', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 100,
+          sortOrder: 5,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        final Map<String, dynamic> exported = item.toExport();
+        expect(exported.containsKey('sort_order'), false);
+      });
+    });
   });
 }

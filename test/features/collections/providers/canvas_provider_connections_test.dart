@@ -8,6 +8,7 @@ import 'package:xerabora/shared/models/canvas_connection.dart';
 import 'package:xerabora/shared/models/canvas_item.dart';
 import 'package:xerabora/shared/models/canvas_viewport.dart';
 import 'package:xerabora/shared/models/collection_game.dart';
+import 'package:xerabora/shared/models/collection_item.dart';
 
 class MockCanvasRepository extends Mock implements CanvasRepository {}
 
@@ -19,6 +20,13 @@ class MockCollectionGamesNotifier extends CollectionGamesNotifier {
   @override
   AsyncValue<List<CollectionGame>> build(int arg) {
     return _initialState;
+  }
+}
+
+class MockCollectionItemsNotifier extends CollectionItemsNotifier {
+  @override
+  AsyncValue<List<CollectionItem>> build(int arg) {
+    return const AsyncValue<List<CollectionItem>>.data(<CollectionItem>[]);
   }
 }
 
@@ -212,6 +220,9 @@ void main() {
             () => MockCollectionGamesNotifier(
               const AsyncValue<List<CollectionGame>>.data(<CollectionGame>[]),
             ),
+          ),
+          collectionItemsNotifierProvider.overrideWith(
+            MockCollectionItemsNotifier.new,
           ),
         ],
       );

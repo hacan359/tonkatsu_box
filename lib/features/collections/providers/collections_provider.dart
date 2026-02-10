@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/database/database_service.dart';
 import '../../../data/repositories/collection_repository.dart';
@@ -6,6 +7,7 @@ import '../../../shared/models/collected_item_info.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_game.dart';
 import '../../../shared/models/collection_item.dart';
+import '../../../shared/models/collection_sort_mode.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
 
@@ -246,6 +248,46 @@ class CollectionGamesNotifier
   }
 }
 
+// ==================== Collection Sort ====================
+
+/// Ключ SharedPreferences для режима сортировки коллекции.
+String _sortModeKey(int collectionId) =>
+    'collection_sort_mode_$collectionId';
+
+/// Провайдер режима сортировки для конкретной коллекции.
+final NotifierProviderFamily<CollectionSortNotifier, CollectionSortMode, int>
+    collectionSortProvider =
+    NotifierProvider.family<CollectionSortNotifier, CollectionSortMode, int>(
+  CollectionSortNotifier.new,
+);
+
+/// Notifier для режима сортировки коллекции.
+class CollectionSortNotifier extends FamilyNotifier<CollectionSortMode, int> {
+  @override
+  CollectionSortMode build(int arg) {
+    _loadFromPrefs(arg);
+    return CollectionSortMode.addedDate;
+  }
+
+  Future<void> _loadFromPrefs(int collectionId) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? value = prefs.getString(_sortModeKey(collectionId));
+    if (value != null) {
+      state = CollectionSortMode.fromString(value);
+    }
+  }
+
+  /// Устанавливает режим сортировки и сохраняет в SharedPreferences.
+  ///
+  /// Пересортировка происходит автоматически: `CollectionItemsNotifier`
+  /// подписан на этот провайдер через `ref.watch`.
+  Future<void> setSortMode(CollectionSortMode mode) async {
+    state = mode;
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_sortModeKey(arg), mode.value);
+  }
+}
+
 // ==================== Collection Items ====================
 
 /// Провайдер для управления элементами в конкретной коллекции.
@@ -267,23 +309,90 @@ class CollectionItemsNotifier
     _collectionId = arg;
     _repository = ref.watch(collectionRepositoryProvider);
 
-    _loadItems();
+    // Подписываемся на режим сортировки
+    final CollectionSortMode sortMode =
+        ref.watch(collectionSortProvider(_collectionId));
+
+    _loadItems(sortMode);
 
     return const AsyncLoading<List<CollectionItem>>();
   }
 
-  Future<void> _loadItems() async {
+  Future<void> _loadItems(CollectionSortMode sortMode) async {
     state = const AsyncLoading<List<CollectionItem>>();
-    state = await AsyncValue.guard(
-      () => _repository.getItemsWithData(_collectionId),
-    );
+    state = await AsyncValue.guard(() async {
+      final List<CollectionItem> items =
+          await _repository.getItemsWithData(_collectionId);
+      return _applySortMode(items, sortMode);
+    });
+  }
+
+  /// Применяет режим сортировки к списку элементов.
+  List<CollectionItem> _applySortMode(
+    List<CollectionItem> items,
+    CollectionSortMode sortMode,
+  ) {
+    final List<CollectionItem> sorted = List<CollectionItem>.of(items);
+    switch (sortMode) {
+      case CollectionSortMode.manual:
+        sorted.sort(
+          (CollectionItem a, CollectionItem b) =>
+              a.sortOrder.compareTo(b.sortOrder),
+        );
+      case CollectionSortMode.addedDate:
+        sorted.sort(
+          (CollectionItem a, CollectionItem b) =>
+              b.addedAt.compareTo(a.addedAt),
+        );
+      case CollectionSortMode.status:
+        sorted.sort((CollectionItem a, CollectionItem b) {
+          final int cmp =
+              a.status.statusSortPriority.compareTo(b.status.statusSortPriority);
+          if (cmp != 0) return cmp;
+          return a.itemName.toLowerCase().compareTo(b.itemName.toLowerCase());
+        });
+      case CollectionSortMode.name:
+        sorted.sort(
+          (CollectionItem a, CollectionItem b) =>
+              a.itemName.toLowerCase().compareTo(b.itemName.toLowerCase()),
+        );
+    }
+    return sorted;
   }
 
   /// Обновляет список элементов.
   Future<void> refresh() async {
-    await _loadItems();
+    final CollectionSortMode sortMode =
+        ref.read(collectionSortProvider(_collectionId));
+    await _loadItems(sortMode);
     ref.invalidate(collectionStatsProvider(_collectionId));
     ref.invalidate(collectionGamesNotifierProvider(_collectionId));
+  }
+
+  /// Перемещает элемент с позиции [oldIndex] на [newIndex].
+  ///
+  /// Оптимистичное обновление UI + batch update sort_order в БД.
+  Future<void> reorderItem(int oldIndex, int newIndex) async {
+    final List<CollectionItem>? items = state.valueOrNull;
+    if (items == null) return;
+
+    // Оптимистичное обновление: переставляем в списке
+    final List<CollectionItem> reordered = List<CollectionItem>.of(items);
+    final CollectionItem moved = reordered.removeAt(oldIndex);
+    reordered.insert(newIndex, moved);
+
+    // Обновляем sortOrder
+    final List<CollectionItem> updated = <CollectionItem>[];
+    for (int i = 0; i < reordered.length; i++) {
+      updated.add(reordered[i].copyWith(sortOrder: i));
+    }
+    state = AsyncData<List<CollectionItem>>(updated);
+
+    // Сохраняем в БД
+    final DatabaseService db = ref.read(databaseServiceProvider);
+    final List<int> orderedIds =
+        updated.map((CollectionItem item) => item.id).toList();
+    await db.reorderItems(_collectionId, orderedIds);
   }
 
   /// Добавляет элемент в коллекцию.
