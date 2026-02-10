@@ -81,7 +81,7 @@ void main() {
       });
     });
 
-    group('fromJson', () {
+    group('fromExport', () {
       test('should parse from export JSON', () {
         final Map<String, dynamic> jsonMap = <String, dynamic>{
           'scale': 1.5,
@@ -90,7 +90,7 @@ void main() {
         };
 
         final CanvasViewport viewport =
-            CanvasViewport.fromJson(jsonMap, collectionId: 7);
+            CanvasViewport.fromExport(jsonMap, collectionId: 7);
 
         expect(viewport.collectionId, 7);
         expect(viewport.scale, 1.5);
@@ -100,7 +100,7 @@ void main() {
 
       test('should use defaults for missing fields', () {
         final CanvasViewport viewport =
-            CanvasViewport.fromJson(<String, dynamic>{});
+            CanvasViewport.fromExport(<String, dynamic>{});
 
         expect(viewport.collectionId, 0);
         expect(viewport.scale, 1.0);
@@ -127,7 +127,7 @@ void main() {
       });
     });
 
-    group('toJson', () {
+    group('toExport', () {
       test('should serialize for export', () {
         const CanvasViewport viewport = CanvasViewport(
           collectionId: 3,
@@ -136,7 +136,7 @@ void main() {
           offsetY: -200.0,
         );
 
-        final Map<String, dynamic> jsonMap = viewport.toJson();
+        final Map<String, dynamic> jsonMap = viewport.toExport();
 
         expect(jsonMap['scale'], 1.5);
         expect(jsonMap['offsetX'], -100.0);

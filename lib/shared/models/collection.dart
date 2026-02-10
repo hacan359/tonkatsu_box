@@ -1,3 +1,5 @@
+import 'exportable.dart';
+
 /// Тип коллекции.
 enum CollectionType {
   /// Собственная коллекция пользователя.
@@ -26,7 +28,7 @@ enum CollectionType {
 /// Модель коллекции игр.
 ///
 /// Представляет коллекцию игр пользователя с метаданными.
-class Collection {
+class Collection with Exportable {
   /// Создаёт экземпляр [Collection].
   const Collection({
     required this.id,
@@ -52,6 +54,21 @@ class Collection {
       originalSnapshot: row['original_snapshot'] as String?,
       forkedFromAuthor: row['forked_from_author'] as String?,
       forkedFromName: row['forked_from_name'] as String?,
+    );
+  }
+
+  /// Создаёт [Collection] из экспортных данных.
+  factory Collection.fromExport(
+    Map<String, dynamic> json, {
+    int id = 0,
+    CollectionType type = CollectionType.imported,
+  }) {
+    return Collection(
+      id: id,
+      name: json['name'] as String,
+      author: json['author'] as String,
+      type: type,
+      createdAt: DateTime.parse(json['created'] as String),
     );
   }
 
@@ -88,7 +105,23 @@ class Collection {
   /// Возвращает true, если коллекция импортирована.
   bool get isImported => type == CollectionType.imported;
 
+  // -- Exportable контракт --
+
+  @override
+  Set<String> get internalDbFields => const <String>{
+        'id',
+        'type',
+        'original_snapshot',
+        'forked_from_author',
+        'forked_from_name',
+      };
+
+  @override
+  Map<String, String> get dbToExportKeyMapping =>
+      const <String, String>{'created_at': 'created'};
+
   /// Преобразует в Map для сохранения в базу данных.
+  @override
   Map<String, dynamic> toDb() {
     return <String, dynamic>{
       'id': id,
@@ -102,8 +135,9 @@ class Collection {
     };
   }
 
-  /// Преобразует в JSON для экспорта.
-  Map<String, dynamic> toJson() {
+  /// Преобразует в Map для экспорта.
+  @override
+  Map<String, dynamic> toExport() {
     return <String, dynamic>{
       'name': name,
       'author': author,

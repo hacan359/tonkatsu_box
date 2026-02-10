@@ -120,10 +120,23 @@ Add personal notes to any item:
 
 ## Sharing
 
-Export any collection as a `.rcoll` file:
-- Tiny file size (~500 bytes per 100 games)
+Export collections in three formats:
+
+### Light Export (`.xcoll`)
+- Metadata + element IDs for all media types (games, movies, TV shows)
+- Tiny file size, fast export
+- Recipients fetch full data from APIs on import
+
+### Full Export (`.xcollx`)
+- Everything from light export, plus:
+- Canvas data (viewport, items, connections) including per-item canvases
+- Base64-encoded cover images for offline import
+- Self-contained — recipients don't need internet for covers
+
+### Legacy Export (`.rcoll`)
+- v1 format with game IDs only
+- Supported for import (backward compatibility)
 - Share via Discord, Telegram, Reddit, email
-- Recipients import and get the full collection with covers
 
 ## Forking
 
@@ -226,11 +239,12 @@ Only searching for new games requires internet.
 
 ### Image Caching
 
-When enabled in Settings, media images (game covers, movie posters, TV show posters) are downloaded locally for offline access:
+When enabled in Settings, media images (game covers, movie posters, TV show posters, canvas URL images) are downloaded locally for offline access:
 - **Toggle** — enable/disable image caching in Settings → Image Cache
 - **Auto-download** — images are automatically saved to local storage when viewed with caching enabled
 - **Fallback** — if cache is cleared or a file is missing, images load from the network and re-download in the background
+- **Canvas images** — URL images added to canvases are also cached to disk (using FNV-1a hash of URL as cache key)
 - **Custom folder** — choose where cached images are stored via file picker
 - **Cache stats** — view file count and total size in Settings
 - **Clear cache** — delete all locally saved images with one tap
-- Covers collection thumbnails, detail screens, and canvas cards
+- Covers collection thumbnails, detail screens, canvas cards, and canvas URL images

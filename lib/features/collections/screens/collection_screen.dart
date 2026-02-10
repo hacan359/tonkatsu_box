@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/export_service.dart';
 import '../../../core/services/image_cache_service.dart';
+import '../../../core/services/xcoll_file.dart';
 import '../../../shared/widgets/cached_image.dart';
 import '../../../data/repositories/collection_repository.dart';
 import '../../../shared/constants/media_type_theme.dart';
@@ -805,29 +806,44 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       return;
     }
 
+    // Проверяем наличие canvas данных для выбора формата
+    final CanvasRepository canvasRepo = ref.read(canvasRepositoryProvider);
+    final bool hasCanvas =
+        await canvasRepo.hasCanvasItems(widget.collectionId);
+
+    ExportFormat format = ExportFormat.light;
+
+    if (hasCanvas && mounted) {
+      final ExportFormat? chosen = await _showExportFormatDialog();
+      if (chosen == null) return; // Отмена
+      format = chosen;
+    }
+
     // Показываем индикатор
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Row(
             children: <Widget>[
-              SizedBox(
+              const SizedBox(
                 width: 16,
                 height: 16,
                 child: CircularProgressIndicator(strokeWidth: 2),
               ),
-              SizedBox(width: 12),
-              Text('Preparing export...'),
+              const SizedBox(width: 12),
+              Text(format == ExportFormat.full
+                  ? 'Preparing full export...'
+                  : 'Preparing export...'),
             ],
           ),
-          duration: Duration(seconds: 1),
+          duration: const Duration(seconds: 1),
         ),
       );
     }
 
     final ExportService exportService = ref.read(exportServiceProvider);
     final ExportResult result =
-        await exportService.exportToFile(_collection!, items);
+        await exportService.exportToFile(_collection!, items, format: format);
 
     if (!mounted) return;
 
@@ -852,6 +868,44 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         ),
       );
     }
+  }
+
+  Future<ExportFormat?> _showExportFormatDialog() {
+    return showDialog<ExportFormat>(
+      context: context,
+      builder: (BuildContext dialogContext) => AlertDialog(
+        title: const Text('Export Format'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            const Text(
+              'This collection has canvas data. Choose export format:',
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.description_outlined),
+              title: const Text('Light (.xcoll)'),
+              subtitle: const Text('Items only, smaller file'),
+              onTap: () =>
+                  Navigator.of(dialogContext).pop(ExportFormat.light),
+            ),
+            ListTile(
+              leading: const Icon(Icons.folder_zip_outlined),
+              title: const Text('Full (.xcollx)'),
+              subtitle: const Text('Items + canvas + images'),
+              onTap: () =>
+                  Navigator.of(dialogContext).pop(ExportFormat.full),
+            ),
+          ],
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
   }
 }
 

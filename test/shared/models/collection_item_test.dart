@@ -342,7 +342,7 @@ void main() {
       });
     });
 
-    group('toJson', () {
+    group('toExport', () {
       test('должен конвертировать game элемент в JSON', () {
         final CollectionItem item = CollectionItem(
           id: 1,
@@ -355,15 +355,15 @@ void main() {
           addedAt: testAddedAt,
         );
 
-        final Map<String, dynamic> json = item.toJson();
+        final Map<String, dynamic> json = item.toExport();
 
         expect(json['media_type'], 'game');
         expect(json['external_id'], 1942);
         expect(json['status'], 'completed');
         expect(json['platform_id'], 48);
         expect(json['comment'], 'Шедевр');
-        expect(json.containsKey('current_season'), isFalse);
-        expect(json.containsKey('current_episode'), isFalse);
+        expect(json['current_season'], 0);
+        expect(json['current_episode'], 0);
       });
 
       test('должен конвертировать movie элемент в JSON', () {
@@ -376,15 +376,15 @@ void main() {
           addedAt: testAddedAt,
         );
 
-        final Map<String, dynamic> json = item.toJson();
+        final Map<String, dynamic> json = item.toExport();
 
         expect(json['media_type'], 'movie');
         expect(json['external_id'], 550);
         expect(json['status'], 'not_started');
-        expect(json.containsKey('platform_id'), isFalse);
-        expect(json.containsKey('comment'), isFalse);
-        expect(json.containsKey('current_season'), isFalse);
-        expect(json.containsKey('current_episode'), isFalse);
+        expect(json['platform_id'], isNull);
+        expect(json['comment'], isNull);
+        expect(json['current_season'], 0);
+        expect(json['current_episode'], 0);
       });
 
       test('должен конвертировать tvShow элемент с season/episode в JSON', () {
@@ -399,7 +399,7 @@ void main() {
           addedAt: testAddedAt,
         );
 
-        final Map<String, dynamic> json = item.toJson();
+        final Map<String, dynamic> json = item.toExport();
 
         expect(json['media_type'], 'tv_show');
         expect(json['external_id'], 1399);
@@ -408,7 +408,7 @@ void main() {
         expect(json['current_episode'], 5);
       });
 
-      test('не должен включать platform_id если null', () {
+      test('должен включать platform_id как null если не задан', () {
         final CollectionItem item = CollectionItem(
           id: 4,
           collectionId: 10,
@@ -418,12 +418,13 @@ void main() {
           addedAt: testAddedAt,
         );
 
-        final Map<String, dynamic> json = item.toJson();
+        final Map<String, dynamic> json = item.toExport();
 
-        expect(json.containsKey('platform_id'), isFalse);
+        expect(json.containsKey('platform_id'), isTrue);
+        expect(json['platform_id'], isNull);
       });
 
-      test('не должен включать comment если authorComment null', () {
+      test('должен включать comment как null если authorComment null', () {
         final CollectionItem item = CollectionItem(
           id: 5,
           collectionId: 10,
@@ -433,9 +434,10 @@ void main() {
           addedAt: testAddedAt,
         );
 
-        final Map<String, dynamic> json = item.toJson();
+        final Map<String, dynamic> json = item.toExport();
 
-        expect(json.containsKey('comment'), isFalse);
+        expect(json.containsKey('comment'), isTrue);
+        expect(json['comment'], isNull);
       });
     });
 

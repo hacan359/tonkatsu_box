@@ -1,5 +1,6 @@
 // Универсальный элемент коллекции (игра, фильм или сериал).
 
+import 'exportable.dart';
 import 'game.dart';
 import 'item_status.dart';
 import 'media_type.dart';
@@ -12,7 +13,7 @@ import 'tv_show.dart';
 /// Заменяет [CollectionGame] для поддержки игр, фильмов и сериалов
 /// в одной коллекции. Обратная совместимость обеспечивается адаптерами
 /// в [CollectionGame].
-class CollectionItem {
+class CollectionItem with Exportable {
   /// Создаёт экземпляр [CollectionItem].
   const CollectionItem({
     required this.id,
@@ -77,6 +78,27 @@ class CollectionItem {
       movie: movie,
       tvShow: tvShow,
       platform: platform,
+    );
+  }
+
+  /// Создаёт [CollectionItem] из экспортных данных.
+  factory CollectionItem.fromExport(
+    Map<String, dynamic> json, {
+    int id = 0,
+    int collectionId = 0,
+    DateTime? addedAt,
+  }) {
+    return CollectionItem(
+      id: id,
+      collectionId: collectionId,
+      mediaType: MediaType.fromString(json['media_type'] as String),
+      externalId: json['external_id'] as int,
+      platformId: json['platform_id'] as int?,
+      currentSeason: (json['current_season'] as int?) ?? 0,
+      currentEpisode: (json['current_episode'] as int?) ?? 0,
+      status: ItemStatus.fromString(json['status'] as String),
+      authorComment: json['comment'] as String?,
+      addedAt: addedAt ?? DateTime.now(),
     );
   }
 
@@ -179,7 +201,18 @@ class CollectionItem {
     }
   }
 
+  // -- Exportable контракт --
+
+  @override
+  Set<String> get internalDbFields =>
+      const <String>{'id', 'collection_id', 'user_comment', 'added_at'};
+
+  @override
+  Map<String, String> get dbToExportKeyMapping =>
+      const <String, String>{'author_comment': 'comment'};
+
   /// Преобразует в Map для сохранения в базу данных.
+  @override
   Map<String, dynamic> toDb() {
     return <String, dynamic>{
       'id': id,
@@ -196,24 +229,18 @@ class CollectionItem {
     };
   }
 
-  /// Преобразует в JSON для экспорта.
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> json = <String, dynamic>{
+  /// Преобразует в Map для экспорта.
+  @override
+  Map<String, dynamic> toExport() {
+    return <String, dynamic>{
       'media_type': mediaType.value,
       'external_id': externalId,
+      'platform_id': platformId,
+      'current_season': currentSeason,
+      'current_episode': currentEpisode,
       'status': status.value,
+      'comment': authorComment,
     };
-    if (platformId != null) {
-      json['platform_id'] = platformId;
-    }
-    if (authorComment != null) {
-      json['comment'] = authorComment;
-    }
-    if (mediaType == MediaType.tvShow) {
-      json['current_season'] = currentSeason;
-      json['current_episode'] = currentEpisode;
-    }
-    return json;
   }
 
   /// Создаёт копию с изменёнными полями.

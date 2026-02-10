@@ -459,7 +459,7 @@ class HomeScreen extends ConsumerWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Imported "${result.collection!.name}" with ${result.gamesImported} games',
+            'Imported "${result.collection!.name}" with ${result.itemsImported} items',
           ),
         ),
       );

@@ -1,8 +1,10 @@
+import 'exportable.dart';
+
 /// Модель состояния viewport канваса.
 ///
 /// Хранит позицию камеры и уровень масштабирования
 /// для восстановления при повторном открытии канваса.
-class CanvasViewport {
+class CanvasViewport with Exportable {
   /// Создаёт экземпляр [CanvasViewport].
   const CanvasViewport({
     required this.collectionId,
@@ -21,8 +23,8 @@ class CanvasViewport {
     );
   }
 
-  /// Создаёт [CanvasViewport] из JSON (для импорта).
-  factory CanvasViewport.fromJson(
+  /// Создаёт [CanvasViewport] из экспортных данных.
+  factory CanvasViewport.fromExport(
     Map<String, dynamic> json, {
     int collectionId = 0,
   }) {
@@ -51,7 +53,17 @@ class CanvasViewport {
     collectionId: 0,
   );
 
+  // -- Exportable контракт --
+
+  @override
+  Set<String> get internalDbFields => const <String>{'collection_id'};
+
+  @override
+  Map<String, String> get dbToExportKeyMapping =>
+      const <String, String>{'offset_x': 'offsetX', 'offset_y': 'offsetY'};
+
   /// Преобразует в Map для сохранения в базу данных.
+  @override
   Map<String, dynamic> toDb() {
     return <String, dynamic>{
       'collection_id': collectionId,
@@ -61,8 +73,9 @@ class CanvasViewport {
     };
   }
 
-  /// Преобразует в JSON для экспорта.
-  Map<String, dynamic> toJson() {
+  /// Преобразует в Map для экспорта.
+  @override
+  Map<String, dynamic> toExport() {
     return <String, dynamic>{
       'scale': scale,
       'offsetX': offsetX,

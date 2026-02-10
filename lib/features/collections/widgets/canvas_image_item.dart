@@ -1,19 +1,34 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/services/image_cache_service.dart';
 import '../../../shared/models/canvas_item.dart';
+import '../../../shared/widgets/cached_image.dart';
 
 // Виджет изображения на канвасе.
 //
 // Поддерживает два формата данных:
-// - {url: String} — сетевое изображение через CachedNetworkImage
+// - {url: String} — сетевое изображение через CachedImage (с диск-кэшем)
 // - {base64: String, mimeType: String} — локальное изображение
 
+/// Вычисляет стабильный хэш строки для использования как imageId.
+///
+/// Используется FNV-1a 32-bit алгоритм — детерминированный,
+/// не зависит от версии Dart или платформы.
+String urlToImageId(String url) {
+  int hash = 0x811c9dc5;
+  for (int i = 0; i < url.length; i++) {
+    hash ^= url.codeUnitAt(i);
+    hash = (hash * 0x01000193) & 0xFFFFFFFF;
+  }
+  return hash.toRadixString(16).padLeft(8, '0');
+}
+
 /// Изображение на канвасе.
-class CanvasImageItem extends StatelessWidget {
+class CanvasImageItem extends ConsumerWidget {
   /// Создаёт [CanvasImageItem].
   const CanvasImageItem({required this.item, super.key});
 
@@ -21,7 +36,7 @@ class CanvasImageItem extends StatelessWidget {
   final CanvasItem item;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final Map<String, dynamic>? data = item.data;
     final String? url = data?['url'] as String?;
     final String? base64Data = data?['base64'] as String?;
@@ -30,18 +45,19 @@ class CanvasImageItem extends StatelessWidget {
     Widget imageWidget;
 
     if (url != null && url.isNotEmpty) {
-      imageWidget = CachedNetworkImage(
-        imageUrl: url,
+      imageWidget = CachedImage(
+        imageType: ImageType.canvasImage,
+        imageId: urlToImageId(url),
+        remoteUrl: url,
         fit: BoxFit.cover,
-        placeholder: (BuildContext context, String url) => Center(
+        placeholder: Center(
           child: Icon(
             Icons.image_outlined,
             size: 32,
             color: colorScheme.onSurfaceVariant,
           ),
         ),
-        errorWidget:
-            (BuildContext context, String url, Object error) => Center(
+        errorWidget: Center(
           child: Icon(
             Icons.broken_image_outlined,
             size: 32,

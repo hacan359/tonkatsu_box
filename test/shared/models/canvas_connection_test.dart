@@ -173,7 +173,7 @@ void main() {
       });
     });
 
-    group('fromJson', () {
+    group('fromExport', () {
       test('should parse all fields correctly', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'id': 1,
@@ -186,7 +186,8 @@ void main() {
           'created_at': testTimestamp,
         };
 
-        final CanvasConnection conn = CanvasConnection.fromJson(json);
+        final CanvasConnection conn =
+            CanvasConnection.fromExport(json, collectionId: 10);
         expect(conn.id, 1);
         expect(conn.collectionId, 10);
         expect(conn.fromItemId, 100);
@@ -202,7 +203,7 @@ void main() {
           'to_item_id': 200,
         };
 
-        final CanvasConnection conn = CanvasConnection.fromJson(json);
+        final CanvasConnection conn = CanvasConnection.fromExport(json);
         expect(conn.id, 0);
         expect(conn.collectionId, 0);
         expect(conn.label, isNull);
@@ -216,7 +217,7 @@ void main() {
           'to_item_id': 200,
           'created_at': null,
         };
-        final CanvasConnection conn = CanvasConnection.fromJson(json);
+        final CanvasConnection conn = CanvasConnection.fromExport(json);
         // Should be close to now
         expect(
           conn.createdAt.difference(DateTime.now()).inSeconds.abs(),
@@ -237,7 +238,7 @@ void main() {
           'created_at': testTimestamp,
         };
 
-        final CanvasConnection conn = CanvasConnection.fromJson(json);
+        final CanvasConnection conn = CanvasConnection.fromExport(json);
         expect(conn.collectionItemId, 33);
       });
     });
@@ -280,14 +281,14 @@ void main() {
       });
     });
 
-    group('toJson', () {
+    group('toExport', () {
       test('should convert all fields', () {
         final CanvasConnection conn = createTestConnection(
           label: 'json test',
           style: ConnectionStyle.arrow,
         );
 
-        final Map<String, dynamic> json = conn.toJson();
+        final Map<String, dynamic> json = conn.toExport();
         expect(json['id'], 1);
         expect(json['from_item_id'], 100);
         expect(json['to_item_id'], 200);
@@ -299,7 +300,7 @@ void main() {
 
       test('should not contain collection_id', () {
         final CanvasConnection conn = createTestConnection();
-        final Map<String, dynamic> json = conn.toJson();
+        final Map<String, dynamic> json = conn.toExport();
         expect(json.containsKey('collection_id'), isFalse);
       });
 
@@ -307,7 +308,7 @@ void main() {
         final CanvasConnection conn = createTestConnection(
           collectionItemId: 88,
         );
-        final Map<String, dynamic> json = conn.toJson();
+        final Map<String, dynamic> json = conn.toExport();
         expect(json['collection_item_id'], 88);
       });
     });
