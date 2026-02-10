@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'exportable.dart';
 import 'game.dart';
 import 'media_type.dart';
 import 'movie.dart';
@@ -59,7 +60,7 @@ enum CanvasItemType {
 ///
 /// Представляет любой объект, размещённый на канвасе:
 /// игровую карточку, текст, изображение или ссылку.
-class CanvasItem {
+class CanvasItem with Exportable {
   /// Создаёт экземпляр [CanvasItem].
   const CanvasItem({
     required this.id,
@@ -106,11 +107,14 @@ class CanvasItem {
     );
   }
 
-  /// Создаёт [CanvasItem] из JSON (для импорта).
-  factory CanvasItem.fromJson(Map<String, dynamic> json) {
+  /// Создаёт [CanvasItem] из экспортных данных.
+  factory CanvasItem.fromExport(
+    Map<String, dynamic> json, {
+    int collectionId = 0,
+  }) {
     return CanvasItem(
       id: json['id'] as int? ?? 0,
-      collectionId: json['collection_id'] as int? ?? 0,
+      collectionId: collectionId,
       collectionItemId: json['collection_item_id'] as int?,
       itemType: CanvasItemType.fromString(json['type'] as String? ?? 'game'),
       itemRefId: json['refId'] as int?,
@@ -173,7 +177,17 @@ class CanvasItem {
   /// Данные сериала (joined, не сохраняются в БД).
   final TvShow? tvShow;
 
+  // -- Exportable контракт --
+
+  @override
+  Set<String> get internalDbFields => const <String>{'collection_id'};
+
+  @override
+  Map<String, String> get dbToExportKeyMapping =>
+      const <String, String>{'item_type': 'type', 'item_ref_id': 'refId'};
+
   /// Преобразует в Map для сохранения в базу данных.
+  @override
   Map<String, dynamic> toDb() {
     return <String, dynamic>{
       if (id != 0) 'id': id,
@@ -191,8 +205,9 @@ class CanvasItem {
     };
   }
 
-  /// Преобразует в JSON для экспорта.
-  Map<String, dynamic> toJson() {
+  /// Преобразует в Map для экспорта.
+  @override
+  Map<String, dynamic> toExport() {
     return <String, dynamic>{
       'id': id,
       'collection_item_id': collectionItemId,

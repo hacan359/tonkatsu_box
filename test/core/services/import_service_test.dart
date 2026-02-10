@@ -1,29 +1,67 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:xerabora/core/api/igdb_api.dart';
+import 'package:xerabora/core/api/tmdb_api.dart';
 import 'package:xerabora/core/database/database_service.dart';
+import 'package:xerabora/core/services/image_cache_service.dart';
 import 'package:xerabora/core/services/import_service.dart';
-import 'package:xerabora/core/services/rcoll_file.dart';
+import 'package:xerabora/core/services/xcoll_file.dart';
+import 'package:xerabora/data/repositories/canvas_repository.dart';
 import 'package:xerabora/data/repositories/collection_repository.dart';
+import 'package:xerabora/shared/models/canvas_connection.dart';
+import 'package:xerabora/shared/models/canvas_item.dart';
+import 'package:xerabora/shared/models/canvas_viewport.dart';
 import 'package:xerabora/shared/models/collection.dart';
 import 'package:xerabora/shared/models/game.dart';
+import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
+import 'package:xerabora/shared/models/movie.dart';
+import 'package:xerabora/shared/models/tv_show.dart';
 
 class MockCollectionRepository extends Mock implements CollectionRepository {}
 
 class MockIgdbApi extends Mock implements IgdbApi {}
 
+class MockTmdbApi extends Mock implements TmdbApi {}
+
 class MockDatabaseService extends Mock implements DatabaseService {}
+
+class MockCanvasRepository extends Mock implements CanvasRepository {}
+
+class MockImageCacheService extends Mock implements ImageCacheService {}
 
 void main() {
   final DateTime testDate = DateTime(2024, 1, 15, 12, 0, 0);
 
   setUpAll(() {
     registerFallbackValue(const Game(id: 0, name: 'fallback'));
+    registerFallbackValue(const Movie(tmdbId: 0, title: 'fallback'));
+    registerFallbackValue(const TvShow(tmdbId: 0, title: 'fallback'));
     registerFallbackValue(CollectionType.own);
     registerFallbackValue(MediaType.game);
+    registerFallbackValue(ItemStatus.notStarted);
+    registerFallbackValue(const CanvasViewport(collectionId: 0));
+    registerFallbackValue(CanvasItem(
+      id: 0,
+      collectionId: 0,
+      itemType: CanvasItemType.game,
+      x: 0,
+      y: 0,
+      createdAt: DateTime.now(),
+    ));
+    registerFallbackValue(CanvasConnection(
+      id: 0,
+      collectionId: 0,
+      fromItemId: 0,
+      toItemId: 0,
+      createdAt: DateTime.now(),
+    ));
+    registerFallbackValue(Uint8List(0));
+    registerFallbackValue(ImageType.gameCover);
   });
 
   group('ImportResult', () {
@@ -40,7 +78,7 @@ void main() {
 
       expect(result.success, isTrue);
       expect(result.collection, equals(collection));
-      expect(result.gamesImported, equals(10));
+      expect(result.itemsImported, equals(10));
       expect(result.error, isNull);
       expect(result.isCancelled, isFalse);
     });
@@ -50,7 +88,7 @@ void main() {
 
       expect(result.success, isFalse);
       expect(result.collection, isNull);
-      expect(result.gamesImported, isNull);
+      expect(result.itemsImported, isNull);
       expect(result.error, equals('Error occurred'));
       expect(result.isCancelled, isFalse);
     });
@@ -60,7 +98,7 @@ void main() {
 
       expect(result.success, isFalse);
       expect(result.collection, isNull);
-      expect(result.gamesImported, isNull);
+      expect(result.itemsImported, isNull);
       expect(result.error, isNull);
       expect(result.isCancelled, isTrue);
     });
@@ -101,12 +139,18 @@ void main() {
 
   group('ImportStage', () {
     test('должен иметь description для каждого этапа', () {
-      expect(ImportStage.reading.description, isNotEmpty);
-      expect(ImportStage.fetchingGames.description, isNotEmpty);
-      expect(ImportStage.cachingGames.description, isNotEmpty);
-      expect(ImportStage.creatingCollection.description, isNotEmpty);
-      expect(ImportStage.addingGames.description, isNotEmpty);
-      expect(ImportStage.completed.description, isNotEmpty);
+      for (final ImportStage stage in ImportStage.values) {
+        expect(stage.description, isNotEmpty, reason: 'Stage $stage');
+      }
+    });
+
+    test('должен иметь все новые v2 этапы', () {
+      expect(ImportStage.values, contains(ImportStage.fetchingMovies));
+      expect(ImportStage.values, contains(ImportStage.fetchingTvShows));
+      expect(ImportStage.values, contains(ImportStage.cachingMedia));
+      expect(ImportStage.values, contains(ImportStage.addingItems));
+      expect(ImportStage.values, contains(ImportStage.importingCanvas));
+      expect(ImportStage.values, contains(ImportStage.importingImages));
     });
   });
 
@@ -114,12 +158,16 @@ void main() {
     late ImportService sut;
     late MockCollectionRepository mockRepo;
     late MockIgdbApi mockApi;
+    late MockTmdbApi mockTmdb;
     late MockDatabaseService mockDb;
+    late MockCanvasRepository mockCanvas;
 
     setUp(() {
       mockRepo = MockCollectionRepository();
       mockApi = MockIgdbApi();
+      mockTmdb = MockTmdbApi();
       mockDb = MockDatabaseService();
+      mockCanvas = MockCanvasRepository();
       sut = ImportService(
         repository: mockRepo,
         igdbApi: mockApi,
@@ -129,7 +177,8 @@ void main() {
 
     group('parseFile', () {
       test('должен парсить валидный .rcoll файл', () async {
-        final Directory tempDir = Directory.systemTemp.createTempSync('rcoll_test');
+        final Directory tempDir =
+            Directory.systemTemp.createTempSync('rcoll_test');
         final File testFile = File('${tempDir.path}/test.rcoll');
         await testFile.writeAsString('''
 {
@@ -144,12 +193,41 @@ void main() {
 ''');
 
         try {
-          final RcollFile result = await sut.parseFile(testFile);
+          final XcollFile result = await sut.parseFile(testFile);
 
           expect(result.name, equals('Test Collection'));
           expect(result.author, equals('Author'));
-          expect(result.games.length, equals(1));
-          expect(result.games[0].igdbId, equals(100));
+          expect(result.legacyGames.length, equals(1));
+          expect(result.legacyGames[0].igdbId, equals(100));
+        } finally {
+          await testFile.delete();
+          await tempDir.delete();
+        }
+      });
+
+      test('должен парсить валидный .xcoll файл (v2)', () async {
+        final Directory tempDir =
+            Directory.systemTemp.createTempSync('xcoll_test');
+        final File testFile = File('${tempDir.path}/test.xcoll');
+        await testFile.writeAsString('''
+{
+  "version": 2,
+  "format": "light",
+  "name": "V2 Collection",
+  "author": "Author",
+  "created": "2024-01-15T12:00:00.000Z",
+  "items": [
+    {"media_type": "game", "external_id": 100, "status": "completed"}
+  ]
+}
+''');
+
+        try {
+          final XcollFile result = await sut.parseFile(testFile);
+
+          expect(result.name, equals('V2 Collection'));
+          expect(result.isV2, isTrue);
+          expect(result.items.length, equals(1));
         } finally {
           await testFile.delete();
           await tempDir.delete();
@@ -170,7 +248,8 @@ void main() {
       });
 
       test('должен выбросить исключение при невалидном JSON', () async {
-        final Directory tempDir = Directory.systemTemp.createTempSync('rcoll_test');
+        final Directory tempDir =
+            Directory.systemTemp.createTempSync('rcoll_test');
         final File testFile = File('${tempDir.path}/invalid.rcoll');
         await testFile.writeAsString('not valid json');
 
@@ -186,14 +265,16 @@ void main() {
       });
     });
 
-    group('importFromRcoll', () {
+    // ==================== v1 Legacy Import ====================
+
+    group('importFromXcoll (v1 legacy)', () {
       test('должен успешно импортировать коллекцию без игр', () async {
-        final RcollFile rcoll = RcollFile(
+        final XcollFile rcoll = XcollFile(
           version: 1,
           name: 'Empty Collection',
           author: 'Author',
           created: testDate,
-          games: const <RcollGame>[],
+          legacyGames: const <RcollGame>[],
         );
 
         final Collection createdCollection = Collection(
@@ -210,11 +291,11 @@ void main() {
               type: any(named: 'type'),
             )).thenAnswer((_) async => createdCollection);
 
-        final ImportResult result = await sut.importFromRcoll(rcoll);
+        final ImportResult result = await sut.importFromXcoll(rcoll);
 
         expect(result.success, isTrue);
         expect(result.collection?.name, equals('Empty Collection'));
-        expect(result.gamesImported, equals(0));
+        expect(result.itemsImported, equals(0));
 
         verify(() => mockRepo.create(
               name: 'Empty Collection',
@@ -224,12 +305,12 @@ void main() {
       });
 
       test('должен успешно импортировать коллекцию с играми', () async {
-        final RcollFile rcoll = RcollFile(
+        final XcollFile rcoll = XcollFile(
           version: 1,
           name: 'Game Collection',
           author: 'Gamer',
           created: testDate,
-          games: const <RcollGame>[
+          legacyGames: const <RcollGame>[
             RcollGame(igdbId: 100, platformId: 18, comment: 'Great'),
             RcollGame(igdbId: 200, platformId: 19),
           ],
@@ -264,10 +345,10 @@ void main() {
               authorComment: any(named: 'authorComment'),
             )).thenAnswer((_) async => 1);
 
-        final ImportResult result = await sut.importFromRcoll(rcoll);
+        final ImportResult result = await sut.importFromXcoll(rcoll);
 
         expect(result.success, isTrue);
-        expect(result.gamesImported, equals(2));
+        expect(result.itemsImported, equals(2));
 
         verify(() => mockApi.getGamesByIds(<int>[100, 200])).called(1);
         verify(() => mockDb.upsertGame(any())).called(2);
@@ -288,12 +369,12 @@ void main() {
       });
 
       test('должен вернуть ошибку при сбое IGDB API', () async {
-        final RcollFile rcoll = RcollFile(
+        final XcollFile rcoll = XcollFile(
           version: 1,
           name: 'Test',
           author: 'Author',
           created: testDate,
-          games: const <RcollGame>[
+          legacyGames: const <RcollGame>[
             RcollGame(igdbId: 100, platformId: 18),
           ],
         );
@@ -301,19 +382,19 @@ void main() {
         when(() => mockApi.getGamesByIds(any()))
             .thenThrow(const IgdbApiException('API Error'));
 
-        final ImportResult result = await sut.importFromRcoll(rcoll);
+        final ImportResult result = await sut.importFromXcoll(rcoll);
 
         expect(result.success, isFalse);
         expect(result.error, contains('Failed to fetch games from IGDB'));
       });
 
-      test('должен отслеживать прогресс', () async {
-        final RcollFile rcoll = RcollFile(
+      test('должен отслеживать прогресс v1', () async {
+        final XcollFile rcoll = XcollFile(
           version: 1,
           name: 'Progress Test',
           author: 'Author',
           created: testDate,
-          games: const <RcollGame>[
+          legacyGames: const <RcollGame>[
             RcollGame(igdbId: 100, platformId: 18),
           ],
         );
@@ -347,14 +428,13 @@ void main() {
             )).thenAnswer((_) async => 1);
 
         final List<ImportStage> stages = <ImportStage>[];
-        await sut.importFromRcoll(
+        await sut.importFromXcoll(
           rcoll,
           onProgress: (ImportProgress progress) {
             stages.add(progress.stage);
           },
         );
 
-        // Проверяем что все этапы были пройдены
         expect(stages, contains(ImportStage.fetchingGames));
         expect(stages, contains(ImportStage.cachingGames));
         expect(stages, contains(ImportStage.creatingCollection));
@@ -362,13 +442,14 @@ void main() {
         expect(stages, contains(ImportStage.completed));
       });
 
-      test('должен корректно считать добавленные игры при дубликатах', () async {
-        final RcollFile rcoll = RcollFile(
+      test('должен корректно считать добавленные игры при дубликатах',
+          () async {
+        final XcollFile rcoll = XcollFile(
           version: 1,
           name: 'Dup Test',
           author: 'Author',
           created: testDate,
-          games: const <RcollGame>[
+          legacyGames: const <RcollGame>[
             RcollGame(igdbId: 100, platformId: 18),
             RcollGame(igdbId: 200, platformId: 19),
           ],
@@ -391,7 +472,6 @@ void main() {
               type: any(named: 'type'),
             )).thenAnswer((_) async => createdCollection);
 
-        // Первая игра добавлена успешно, вторая - дубликат (возвращает null)
         int callCount = 0;
         when(() => mockRepo.addItem(
               collectionId: any(named: 'collectionId'),
@@ -401,12 +481,1801 @@ void main() {
               authorComment: any(named: 'authorComment'),
             )).thenAnswer((_) async {
           callCount++;
-          return callCount == 1 ? 1 : null; // Первый вызов успешен, второй - дубликат
+          return callCount == 1 ? 1 : null;
         });
 
-        final ImportResult result = await sut.importFromRcoll(rcoll);
+        final ImportResult result = await sut.importFromXcoll(rcoll);
 
-        expect(result.gamesImported, equals(1)); // Только одна игра добавлена
+        expect(result.itemsImported, equals(1));
+      });
+    });
+
+    // ==================== v2 Light Import (.xcoll) ====================
+
+    group('importFromXcoll (v2 light)', () {
+      late ImportService sutV2;
+
+      setUp(() {
+        sutV2 = ImportService(
+          repository: mockRepo,
+          igdbApi: mockApi,
+          tmdbApi: mockTmdb,
+          database: mockDb,
+          canvasRepository: mockCanvas,
+        );
+      });
+
+      test('должен успешно импортировать v2 с играми', () async {
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.light,
+          name: 'V2 Games',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'game',
+              'external_id': 100,
+              'status': 'completed',
+              'platform_id': 48,
+              'comment': 'Great game',
+            },
+            <String, dynamic>{
+              'media_type': 'game',
+              'external_id': 200,
+              'status': 'in_progress',
+            },
+          ],
+        );
+
+        final Collection createdCollection = Collection(
+          id: 10,
+          name: 'V2 Games',
+          author: 'Author',
+          type: CollectionType.imported,
+          createdAt: testDate,
+        );
+
+        const List<Game> fetchedGames = <Game>[
+          Game(id: 100, name: 'Game 1'),
+          Game(id: 200, name: 'Game 2'),
+        ];
+
+        when(() => mockApi.getGamesByIds(any()))
+            .thenAnswer((_) async => fetchedGames);
+        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockRepo.create(
+              name: any(named: 'name'),
+              author: any(named: 'author'),
+              type: any(named: 'type'),
+            )).thenAnswer((_) async => createdCollection);
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => 1);
+
+        final ImportResult result = await sutV2.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        expect(result.itemsImported, equals(2));
+        expect(result.collection?.name, equals('V2 Games'));
+
+        verify(() => mockApi.getGamesByIds(<int>[100, 200])).called(1);
+        verify(() => mockDb.upsertGame(any())).called(2);
+        verify(() => mockRepo.addItem(
+              collectionId: 10,
+              mediaType: MediaType.game,
+              externalId: 100,
+              platformId: 48,
+              authorComment: 'Great game',
+              status: ItemStatus.completed,
+            )).called(1);
+        verify(() => mockRepo.addItem(
+              collectionId: 10,
+              mediaType: MediaType.game,
+              externalId: 200,
+              platformId: null,
+              authorComment: null,
+              status: ItemStatus.inProgress,
+            )).called(1);
+      });
+
+      test('должен успешно импортировать v2 с фильмами', () async {
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.light,
+          name: 'V2 Movies',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'movie',
+              'external_id': 550,
+              'status': 'completed',
+            },
+          ],
+        );
+
+        final Collection createdCollection = Collection(
+          id: 11,
+          name: 'V2 Movies',
+          author: 'Author',
+          type: CollectionType.imported,
+          createdAt: testDate,
+        );
+
+        const Movie fetchedMovie = Movie(tmdbId: 550, title: 'Fight Club');
+
+        when(() => mockTmdb.getMovie(550))
+            .thenAnswer((_) async => fetchedMovie);
+        when(() => mockDb.upsertMovies(any())).thenAnswer((_) async {});
+        when(() => mockRepo.create(
+              name: any(named: 'name'),
+              author: any(named: 'author'),
+              type: any(named: 'type'),
+            )).thenAnswer((_) async => createdCollection);
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => 1);
+
+        final ImportResult result = await sutV2.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        expect(result.itemsImported, equals(1));
+
+        verify(() => mockTmdb.getMovie(550)).called(1);
+        verify(() => mockDb.upsertMovies(any())).called(1);
+      });
+
+      test('должен успешно импортировать v2 с сериалами', () async {
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.light,
+          name: 'V2 TV Shows',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'tv_show',
+              'external_id': 1399,
+              'status': 'in_progress',
+              'current_season': 3,
+              'current_episode': 5,
+            },
+          ],
+        );
+
+        final Collection createdCollection = Collection(
+          id: 12,
+          name: 'V2 TV Shows',
+          author: 'Author',
+          type: CollectionType.imported,
+          createdAt: testDate,
+        );
+
+        const TvShow fetchedTvShow =
+            TvShow(tmdbId: 1399, title: 'Breaking Bad');
+
+        when(() => mockTmdb.getTvShow(1399))
+            .thenAnswer((_) async => fetchedTvShow);
+        when(() => mockDb.upsertTvShows(any())).thenAnswer((_) async {});
+        when(() => mockRepo.create(
+              name: any(named: 'name'),
+              author: any(named: 'author'),
+              type: any(named: 'type'),
+            )).thenAnswer((_) async => createdCollection);
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => 1);
+
+        final ImportResult result = await sutV2.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        expect(result.itemsImported, equals(1));
+
+        verify(() => mockTmdb.getTvShow(1399)).called(1);
+        verify(() => mockDb.upsertTvShows(any())).called(1);
+      });
+
+      test('должен импортировать смешанные типы медиа', () async {
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.light,
+          name: 'Mixed Collection',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'game',
+              'external_id': 100,
+              'status': 'completed',
+            },
+            <String, dynamic>{
+              'media_type': 'movie',
+              'external_id': 550,
+              'status': 'completed',
+            },
+            <String, dynamic>{
+              'media_type': 'tv_show',
+              'external_id': 1399,
+              'status': 'in_progress',
+            },
+          ],
+        );
+
+        final Collection createdCollection = Collection(
+          id: 15,
+          name: 'Mixed Collection',
+          author: 'Author',
+          type: CollectionType.imported,
+          createdAt: testDate,
+        );
+
+        when(() => mockApi.getGamesByIds(any()))
+            .thenAnswer((_) async => const <Game>[Game(id: 100, name: 'G1')]);
+        when(() => mockTmdb.getMovie(550))
+            .thenAnswer((_) async => const Movie(tmdbId: 550, title: 'M1'));
+        when(() => mockTmdb.getTvShow(1399))
+            .thenAnswer((_) async => const TvShow(tmdbId: 1399, title: 'T1'));
+        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockDb.upsertMovies(any())).thenAnswer((_) async {});
+        when(() => mockDb.upsertTvShows(any())).thenAnswer((_) async {});
+        when(() => mockRepo.create(
+              name: any(named: 'name'),
+              author: any(named: 'author'),
+              type: any(named: 'type'),
+            )).thenAnswer((_) async => createdCollection);
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => 1);
+
+        final ImportResult result = await sutV2.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        expect(result.itemsImported, equals(3));
+
+        verify(() => mockApi.getGamesByIds(<int>[100])).called(1);
+        verify(() => mockTmdb.getMovie(550)).called(1);
+        verify(() => mockTmdb.getTvShow(1399)).called(1);
+      });
+
+      test('должен пропускать недоступные фильмы из TMDB', () async {
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.light,
+          name: 'TMDB Error',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'movie',
+              'external_id': 550,
+              'status': 'completed',
+            },
+            <String, dynamic>{
+              'media_type': 'movie',
+              'external_id': 999,
+              'status': 'not_started',
+            },
+          ],
+        );
+
+        final Collection createdCollection = Collection(
+          id: 16,
+          name: 'TMDB Error',
+          author: 'Author',
+          type: CollectionType.imported,
+          createdAt: testDate,
+        );
+
+        when(() => mockTmdb.getMovie(550))
+            .thenAnswer((_) async => const Movie(tmdbId: 550, title: 'M1'));
+        when(() => mockTmdb.getMovie(999))
+            .thenThrow(const TmdbApiException('Not found', statusCode: 404));
+        when(() => mockDb.upsertMovies(any())).thenAnswer((_) async {});
+        when(() => mockRepo.create(
+              name: any(named: 'name'),
+              author: any(named: 'author'),
+              type: any(named: 'type'),
+            )).thenAnswer((_) async => createdCollection);
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => 1);
+
+        final ImportResult result = await sutV2.importFromXcoll(xcoll);
+
+        // Импорт не падает, просто пропускает недоступный фильм
+        expect(result.success, isTrue);
+        expect(result.itemsImported, equals(2));
+      });
+
+      test('должен пропускать недоступные сериалы из TMDB', () async {
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.light,
+          name: 'TV Error',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'tv_show',
+              'external_id': 1399,
+              'status': 'in_progress',
+            },
+          ],
+        );
+
+        final Collection createdCollection = Collection(
+          id: 17,
+          name: 'TV Error',
+          author: 'Author',
+          type: CollectionType.imported,
+          createdAt: testDate,
+        );
+
+        when(() => mockTmdb.getTvShow(1399))
+            .thenThrow(const TmdbApiException('Error'));
+        when(() => mockRepo.create(
+              name: any(named: 'name'),
+              author: any(named: 'author'),
+              type: any(named: 'type'),
+            )).thenAnswer((_) async => createdCollection);
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => 1);
+
+        final ImportResult result = await sutV2.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        expect(result.itemsImported, equals(1));
+      });
+
+      test('должен вернуть ошибку при сбое IGDB API в v2', () async {
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.light,
+          name: 'IGDB Error',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'game',
+              'external_id': 100,
+              'status': 'completed',
+            },
+          ],
+        );
+
+        when(() => mockApi.getGamesByIds(any()))
+            .thenThrow(const IgdbApiException('API Error'));
+
+        final ImportResult result = await sutV2.importFromXcoll(xcoll);
+
+        expect(result.success, isFalse);
+        expect(result.error, contains('Failed to fetch games from IGDB'));
+      });
+
+      test('должен импортировать v2 без TMDB API (tmdbApi = null)', () async {
+        // Сервис без tmdbApi — фильмы/сериалы не фетчатся, но элементы добавляются
+        final ImportService sutNoTmdb = ImportService(
+          repository: mockRepo,
+          igdbApi: mockApi,
+          database: mockDb,
+        );
+
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.light,
+          name: 'No TMDB',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'movie',
+              'external_id': 550,
+              'status': 'completed',
+            },
+          ],
+        );
+
+        final Collection createdCollection = Collection(
+          id: 20,
+          name: 'No TMDB',
+          author: 'Author',
+          type: CollectionType.imported,
+          createdAt: testDate,
+        );
+
+        when(() => mockRepo.create(
+              name: any(named: 'name'),
+              author: any(named: 'author'),
+              type: any(named: 'type'),
+            )).thenAnswer((_) async => createdCollection);
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => 1);
+
+        final ImportResult result = await sutNoTmdb.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        expect(result.itemsImported, equals(1));
+        // TMDB не вызывается
+        verifyNever(() => mockTmdb.getMovie(any()));
+      });
+
+      test('должен импортировать пустую v2 коллекцию', () async {
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.light,
+          name: 'Empty V2',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[],
+        );
+
+        final Collection createdCollection = Collection(
+          id: 21,
+          name: 'Empty V2',
+          author: 'Author',
+          type: CollectionType.imported,
+          createdAt: testDate,
+        );
+
+        when(() => mockRepo.create(
+              name: any(named: 'name'),
+              author: any(named: 'author'),
+              type: any(named: 'type'),
+            )).thenAnswer((_) async => createdCollection);
+
+        final ImportResult result = await sutV2.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        expect(result.itemsImported, equals(0));
+      });
+
+      test('должен отслеживать прогресс v2', () async {
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.light,
+          name: 'Progress V2',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'game',
+              'external_id': 100,
+              'status': 'completed',
+            },
+            <String, dynamic>{
+              'media_type': 'movie',
+              'external_id': 550,
+              'status': 'completed',
+            },
+          ],
+        );
+
+        final Collection createdCollection = Collection(
+          id: 22,
+          name: 'Progress V2',
+          author: 'Author',
+          type: CollectionType.imported,
+          createdAt: testDate,
+        );
+
+        when(() => mockApi.getGamesByIds(any()))
+            .thenAnswer((_) async => const <Game>[Game(id: 100, name: 'G1')]);
+        when(() => mockTmdb.getMovie(550))
+            .thenAnswer((_) async => const Movie(tmdbId: 550, title: 'M1'));
+        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockDb.upsertMovies(any())).thenAnswer((_) async {});
+        when(() => mockRepo.create(
+              name: any(named: 'name'),
+              author: any(named: 'author'),
+              type: any(named: 'type'),
+            )).thenAnswer((_) async => createdCollection);
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => 1);
+
+        final List<ImportStage> stages = <ImportStage>[];
+        await sutV2.importFromXcoll(
+          xcoll,
+          onProgress: (ImportProgress progress) {
+            stages.add(progress.stage);
+          },
+        );
+
+        expect(stages, contains(ImportStage.fetchingGames));
+        expect(stages, contains(ImportStage.fetchingMovies));
+        expect(stages, contains(ImportStage.cachingMedia));
+        expect(stages, contains(ImportStage.creatingCollection));
+        expect(stages, contains(ImportStage.addingItems));
+        expect(stages, contains(ImportStage.completed));
+      });
+
+      test('должен корректно считать дубликаты в v2', () async {
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.light,
+          name: 'V2 Dup',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'game',
+              'external_id': 100,
+              'status': 'completed',
+            },
+            <String, dynamic>{
+              'media_type': 'game',
+              'external_id': 200,
+              'status': 'completed',
+            },
+          ],
+        );
+
+        final Collection createdCollection = Collection(
+          id: 23,
+          name: 'V2 Dup',
+          author: 'Author',
+          type: CollectionType.imported,
+          createdAt: testDate,
+        );
+
+        when(() => mockApi.getGamesByIds(any()))
+            .thenAnswer((_) async => const <Game>[]);
+        when(() => mockRepo.create(
+              name: any(named: 'name'),
+              author: any(named: 'author'),
+              type: any(named: 'type'),
+            )).thenAnswer((_) async => createdCollection);
+
+        int callCount = 0;
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async {
+          callCount++;
+          return callCount == 1 ? 1 : null;
+        });
+
+        final ImportResult result = await sutV2.importFromXcoll(xcoll);
+
+        expect(result.itemsImported, equals(1));
+      });
+    });
+
+    // ==================== v2 Full Import (.xcollx) ====================
+
+    group('importFromXcoll (v2 full с canvas)', () {
+      late ImportService sutFull;
+
+      setUp(() {
+        sutFull = ImportService(
+          repository: mockRepo,
+          igdbApi: mockApi,
+          tmdbApi: mockTmdb,
+          database: mockDb,
+          canvasRepository: mockCanvas,
+        );
+      });
+
+      test('должен импортировать canvas с viewport', () async {
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.full,
+          name: 'Canvas Test',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[],
+          canvas: const ExportCanvas(
+            viewport: <String, dynamic>{
+              'scale': 0.8,
+              'offsetX': -100.0,
+              'offsetY': -50.0,
+            },
+            items: <Map<String, dynamic>>[],
+            connections: <Map<String, dynamic>>[],
+          ),
+        );
+
+        final Collection createdCollection = Collection(
+          id: 30,
+          name: 'Canvas Test',
+          author: 'Author',
+          type: CollectionType.imported,
+          createdAt: testDate,
+        );
+
+        when(() => mockRepo.create(
+              name: any(named: 'name'),
+              author: any(named: 'author'),
+              type: any(named: 'type'),
+            )).thenAnswer((_) async => createdCollection);
+        when(() => mockCanvas.saveViewport(any())).thenAnswer((_) async {});
+
+        final ImportResult result = await sutFull.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        verify(() => mockCanvas.saveViewport(any())).called(1);
+      });
+
+      test('должен импортировать canvas items с ID-ремаппингом', () async {
+        // created_at — Unix timestamp в секундах (int)
+        final int canvasTs = DateTime(2024, 3, 1).millisecondsSinceEpoch ~/ 1000;
+
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.full,
+          name: 'Canvas Items',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[],
+          canvas: ExportCanvas(
+            items: <Map<String, dynamic>>[
+              <String, dynamic>{
+                'id': 10,
+                'type': 'game',
+                'x': 100.0,
+                'y': 200.0,
+                'created_at': canvasTs,
+              },
+              <String, dynamic>{
+                'id': 20,
+                'type': 'note',
+                'x': 300.0,
+                'y': 400.0,
+                'created_at': canvasTs,
+              },
+            ],
+            connections: const <Map<String, dynamic>>[],
+          ),
+        );
+
+        final Collection createdCollection = Collection(
+          id: 31,
+          name: 'Canvas Items',
+          author: 'Author',
+          type: CollectionType.imported,
+          createdAt: testDate,
+        );
+
+        when(() => mockRepo.create(
+              name: any(named: 'name'),
+              author: any(named: 'author'),
+              type: any(named: 'type'),
+            )).thenAnswer((_) async => createdCollection);
+
+        // Мокаем createItem — возвращаем с новыми ID
+        int nextId = 100;
+        when(() => mockCanvas.createItem(any())).thenAnswer((Invocation inv) async {
+          final CanvasItem inputItem =
+              inv.positionalArguments[0] as CanvasItem;
+          nextId++;
+          return inputItem.copyWith(id: nextId);
+        });
+
+        final ImportResult result = await sutFull.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        verify(() => mockCanvas.createItem(any())).called(2);
+      });
+
+      test('должен импортировать connections с ID-ремаппингом', () async {
+        final int canvasTs = DateTime(2024, 3, 1).millisecondsSinceEpoch ~/ 1000;
+
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.full,
+          name: 'Canvas Connections',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[],
+          canvas: ExportCanvas(
+            items: <Map<String, dynamic>>[
+              <String, dynamic>{
+                'id': 10,
+                'type': 'game',
+                'x': 100.0,
+                'y': 200.0,
+                'created_at': canvasTs,
+              },
+              <String, dynamic>{
+                'id': 20,
+                'type': 'note',
+                'x': 300.0,
+                'y': 400.0,
+                'created_at': canvasTs,
+              },
+            ],
+            connections: <Map<String, dynamic>>[
+              <String, dynamic>{
+                'id': 1,
+                'from_item_id': 10,
+                'to_item_id': 20,
+                'created_at': canvasTs,
+              },
+            ],
+          ),
+        );
+
+        final Collection createdCollection = Collection(
+          id: 32,
+          name: 'Canvas Connections',
+          author: 'Author',
+          type: CollectionType.imported,
+          createdAt: testDate,
+        );
+
+        when(() => mockRepo.create(
+              name: any(named: 'name'),
+              author: any(named: 'author'),
+              type: any(named: 'type'),
+            )).thenAnswer((_) async => createdCollection);
+
+        // createItem: export ID 10 → new ID 101, export ID 20 → new ID 102
+        final Map<int, int> exportToNewId = <int, int>{};
+        int nextItemId = 100;
+        when(() => mockCanvas.createItem(any())).thenAnswer((Invocation inv) async {
+          final CanvasItem inputItem =
+              inv.positionalArguments[0] as CanvasItem;
+          nextItemId++;
+          // Через x мы определяем исходный export ID
+          if (inputItem.x == 100.0) {
+            exportToNewId[10] = nextItemId;
+          } else {
+            exportToNewId[20] = nextItemId;
+          }
+          return inputItem.copyWith(id: nextItemId);
+        });
+
+        when(() => mockCanvas.createConnection(any()))
+            .thenAnswer((Invocation inv) async {
+          final CanvasConnection inputConn =
+              inv.positionalArguments[0] as CanvasConnection;
+          return inputConn.copyWith(id: 1);
+        });
+
+        final ImportResult result = await sutFull.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        verify(() => mockCanvas.createItem(any())).called(2);
+
+        // Проверяем что connection был создан с ремаппленными ID
+        final CanvasConnection captured = verify(
+          () => mockCanvas.createConnection(captureAny()),
+        ).captured.first as CanvasConnection;
+
+        expect(captured.fromItemId, equals(exportToNewId[10]));
+        expect(captured.toItemId, equals(exportToNewId[20]));
+        expect(captured.id, equals(0)); // ID сброшен для автоинкремента
+      });
+
+      test('должен пропускать connections с неремаппленными ID', () async {
+        final int canvasTs = DateTime(2024, 3, 1).millisecondsSinceEpoch ~/ 1000;
+
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.full,
+          name: 'Skip Connection',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[],
+          canvas: ExportCanvas(
+            items: <Map<String, dynamic>>[
+              <String, dynamic>{
+                'id': 10,
+                'type': 'game',
+                'x': 100.0,
+                'y': 200.0,
+                'created_at': canvasTs,
+              },
+            ],
+            connections: <Map<String, dynamic>>[
+              // Connection ссылается на несуществующий ID 999
+              <String, dynamic>{
+                'id': 1,
+                'from_item_id': 10,
+                'to_item_id': 999,
+                'created_at': canvasTs,
+              },
+            ],
+          ),
+        );
+
+        final Collection createdCollection = Collection(
+          id: 33,
+          name: 'Skip Connection',
+          author: 'Author',
+          type: CollectionType.imported,
+          createdAt: testDate,
+        );
+
+        when(() => mockRepo.create(
+              name: any(named: 'name'),
+              author: any(named: 'author'),
+              type: any(named: 'type'),
+            )).thenAnswer((_) async => createdCollection);
+
+        when(() => mockCanvas.createItem(any())).thenAnswer((Invocation inv) async {
+          final CanvasItem inputItem =
+              inv.positionalArguments[0] as CanvasItem;
+          return inputItem.copyWith(id: 101);
+        });
+
+        final ImportResult result = await sutFull.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        // Connection пропущен, т.к. to_item_id 999 не ремаплится
+        verifyNever(() => mockCanvas.createConnection(any()));
+      });
+
+      test('должен не импортировать canvas если canvas == null', () async {
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.full,
+          name: 'No Canvas',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[],
+          canvas: null,
+        );
+
+        final Collection createdCollection = Collection(
+          id: 34,
+          name: 'No Canvas',
+          author: 'Author',
+          type: CollectionType.imported,
+          createdAt: testDate,
+        );
+
+        when(() => mockRepo.create(
+              name: any(named: 'name'),
+              author: any(named: 'author'),
+              type: any(named: 'type'),
+            )).thenAnswer((_) async => createdCollection);
+
+        final ImportResult result = await sutFull.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        verifyNever(() => mockCanvas.saveViewport(any()));
+        verifyNever(() => mockCanvas.createItem(any()));
+        verifyNever(() => mockCanvas.createConnection(any()));
+      });
+
+      test('должен не импортировать canvas в light mode', () async {
+        // light format → isFull = false → canvas не импортируется
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.light,
+          name: 'Light No Canvas',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[],
+          canvas: const ExportCanvas(
+            viewport: <String, dynamic>{
+              'scale': 1.0,
+              'offsetX': 0.0,
+              'offsetY': 0.0,
+            },
+          ),
+        );
+
+        final Collection createdCollection = Collection(
+          id: 35,
+          name: 'Light No Canvas',
+          author: 'Author',
+          type: CollectionType.imported,
+          createdAt: testDate,
+        );
+
+        when(() => mockRepo.create(
+              name: any(named: 'name'),
+              author: any(named: 'author'),
+              type: any(named: 'type'),
+            )).thenAnswer((_) async => createdCollection);
+
+        final ImportResult result = await sutFull.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        verifyNever(() => mockCanvas.saveViewport(any()));
+        verifyNever(() => mockCanvas.createItem(any()));
+      });
+
+      test('должен отслеживать прогресс canvas импорта', () async {
+        final int canvasTs = DateTime(2024, 3, 1).millisecondsSinceEpoch ~/ 1000;
+
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.full,
+          name: 'Canvas Progress',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[],
+          canvas: ExportCanvas(
+            viewport: const <String, dynamic>{
+              'scale': 1.0,
+              'offsetX': 0.0,
+              'offsetY': 0.0,
+            },
+            items: <Map<String, dynamic>>[
+              <String, dynamic>{
+                'id': 1,
+                'type': 'game',
+                'x': 0.0,
+                'y': 0.0,
+                'created_at': canvasTs,
+              },
+            ],
+            connections: const <Map<String, dynamic>>[],
+          ),
+        );
+
+        final Collection createdCollection = Collection(
+          id: 36,
+          name: 'Canvas Progress',
+          author: 'Author',
+          type: CollectionType.imported,
+          createdAt: testDate,
+        );
+
+        when(() => mockRepo.create(
+              name: any(named: 'name'),
+              author: any(named: 'author'),
+              type: any(named: 'type'),
+            )).thenAnswer((_) async => createdCollection);
+        when(() => mockCanvas.saveViewport(any())).thenAnswer((_) async {});
+        when(() => mockCanvas.createItem(any())).thenAnswer((Invocation inv) async {
+          final CanvasItem inputItem =
+              inv.positionalArguments[0] as CanvasItem;
+          return inputItem.copyWith(id: 1);
+        });
+
+        final List<ImportStage> stages = <ImportStage>[];
+        await sutFull.importFromXcoll(
+          xcoll,
+          onProgress: (ImportProgress progress) {
+            stages.add(progress.stage);
+          },
+        );
+
+        expect(stages, contains(ImportStage.importingCanvas));
+        expect(stages, contains(ImportStage.completed));
+      });
+
+      // ==================== Per-item canvas ====================
+
+      test('должен импортировать per-item canvas viewport', () async {
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.full,
+          name: 'Per-Item Viewport',
+          author: 'Author',
+          created: testDate,
+          items: <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'game',
+              'external_id': 100,
+              'status': 'completed',
+              '_canvas': <String, dynamic>{
+                'viewport': <String, dynamic>{
+                  'scale': 0.5,
+                  'offsetX': -200.0,
+                  'offsetY': -100.0,
+                },
+                'items': <Map<String, dynamic>>[],
+                'connections': <Map<String, dynamic>>[],
+              },
+            },
+          ],
+        );
+
+        final Collection createdCollection = Collection(
+          id: 40,
+          name: 'Per-Item Viewport',
+          author: 'Author',
+          type: CollectionType.imported,
+          createdAt: testDate,
+        );
+
+        const List<Game> fetchedGames = <Game>[
+          Game(id: 100, name: 'Game 1'),
+        ];
+
+        when(() => mockApi.getGamesByIds(any()))
+            .thenAnswer((_) async => fetchedGames);
+        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockRepo.create(
+              name: any(named: 'name'),
+              author: any(named: 'author'),
+              type: any(named: 'type'),
+            )).thenAnswer((_) async => createdCollection);
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => 50); // collectionItemId = 50
+        when(() => mockCanvas.saveGameCanvasViewport(any(), any()))
+            .thenAnswer((_) async {});
+
+        final ImportResult result = await sutFull.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        expect(result.itemsImported, equals(1));
+
+        // Проверяем что saveGameCanvasViewport был вызван
+        final List<dynamic> captured = verify(
+          () => mockCanvas.saveGameCanvasViewport(captureAny(), captureAny()),
+        ).captured;
+
+        expect(captured[0], equals(50)); // collectionItemId
+        final CanvasViewport savedViewport = captured[1] as CanvasViewport;
+        expect(savedViewport.scale, equals(0.5));
+        expect(savedViewport.offsetX, equals(-200.0));
+        expect(savedViewport.offsetY, equals(-100.0));
+      });
+
+      test('должен импортировать per-item canvas items с ID-ремаппингом',
+          () async {
+        final int canvasTs = DateTime(2024, 3, 1).millisecondsSinceEpoch ~/ 1000;
+
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.full,
+          name: 'Per-Item Canvas Items',
+          author: 'Author',
+          created: testDate,
+          items: <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'game',
+              'external_id': 100,
+              'status': 'completed',
+              '_canvas': <String, dynamic>{
+                'items': <Map<String, dynamic>>[
+                  <String, dynamic>{
+                    'id': 5,
+                    'type': 'image',
+                    'x': 100.0,
+                    'y': 200.0,
+                    'created_at': canvasTs,
+                    'data': <String, dynamic>{
+                      'base64': 'iVBORw0KGgo=',
+                      'mimeType': 'image/png',
+                    },
+                  },
+                  <String, dynamic>{
+                    'id': 6,
+                    'type': 'text',
+                    'x': 300.0,
+                    'y': 400.0,
+                    'created_at': canvasTs,
+                    'data': <String, dynamic>{'text': 'My note'},
+                  },
+                ],
+                'connections': <Map<String, dynamic>>[],
+              },
+            },
+          ],
+        );
+
+        final Collection createdCollection = Collection(
+          id: 41,
+          name: 'Per-Item Canvas Items',
+          author: 'Author',
+          type: CollectionType.imported,
+          createdAt: testDate,
+        );
+
+        const List<Game> fetchedGames = <Game>[
+          Game(id: 100, name: 'Game 1'),
+        ];
+
+        when(() => mockApi.getGamesByIds(any()))
+            .thenAnswer((_) async => fetchedGames);
+        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockRepo.create(
+              name: any(named: 'name'),
+              author: any(named: 'author'),
+              type: any(named: 'type'),
+            )).thenAnswer((_) async => createdCollection);
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => 51);
+
+        int nextCanvasId = 200;
+        when(() => mockCanvas.createItem(any())).thenAnswer((Invocation inv) async {
+          final CanvasItem inputItem =
+              inv.positionalArguments[0] as CanvasItem;
+          nextCanvasId++;
+          return inputItem.copyWith(id: nextCanvasId);
+        });
+
+        final ImportResult result = await sutFull.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+
+        // Проверяем createItem вызван 2 раза с collectionItemId = 51
+        final List<dynamic> captured = verify(
+          () => mockCanvas.createItem(captureAny()),
+        ).captured;
+
+        expect(captured.length, equals(2));
+        final CanvasItem first = captured[0] as CanvasItem;
+        final CanvasItem second = captured[1] as CanvasItem;
+
+        expect(first.collectionItemId, equals(51));
+        expect(first.id, equals(0)); // Сброшен для автоинкремента
+        expect(first.itemType, equals(CanvasItemType.image));
+        expect(first.collectionId, equals(41));
+        expect(first.data, isNotNull);
+        expect(first.data!['base64'], equals('iVBORw0KGgo='));
+
+        expect(second.collectionItemId, equals(51));
+        expect(second.id, equals(0));
+        expect(second.itemType, equals(CanvasItemType.text));
+      });
+
+      test('должен импортировать per-item canvas connections с ID-ремаппингом',
+          () async {
+        final int canvasTs = DateTime(2024, 3, 1).millisecondsSinceEpoch ~/ 1000;
+
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.full,
+          name: 'Per-Item Connections',
+          author: 'Author',
+          created: testDate,
+          items: <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'game',
+              'external_id': 100,
+              'status': 'completed',
+              '_canvas': <String, dynamic>{
+                'items': <Map<String, dynamic>>[
+                  <String, dynamic>{
+                    'id': 10,
+                    'type': 'text',
+                    'x': 100.0,
+                    'y': 200.0,
+                    'created_at': canvasTs,
+                  },
+                  <String, dynamic>{
+                    'id': 20,
+                    'type': 'image',
+                    'x': 300.0,
+                    'y': 400.0,
+                    'created_at': canvasTs,
+                  },
+                ],
+                'connections': <Map<String, dynamic>>[
+                  <String, dynamic>{
+                    'id': 1,
+                    'from_item_id': 10,
+                    'to_item_id': 20,
+                    'created_at': canvasTs,
+                  },
+                ],
+              },
+            },
+          ],
+        );
+
+        final Collection createdCollection = Collection(
+          id: 42,
+          name: 'Per-Item Connections',
+          author: 'Author',
+          type: CollectionType.imported,
+          createdAt: testDate,
+        );
+
+        const List<Game> fetchedGames = <Game>[
+          Game(id: 100, name: 'Game 1'),
+        ];
+
+        when(() => mockApi.getGamesByIds(any()))
+            .thenAnswer((_) async => fetchedGames);
+        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockRepo.create(
+              name: any(named: 'name'),
+              author: any(named: 'author'),
+              type: any(named: 'type'),
+            )).thenAnswer((_) async => createdCollection);
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => 52);
+
+        // createItem: export ID 10 → new ID 301, export ID 20 → new ID 302
+        int nextId = 300;
+        when(() => mockCanvas.createItem(any())).thenAnswer((Invocation inv) async {
+          final CanvasItem inputItem =
+              inv.positionalArguments[0] as CanvasItem;
+          nextId++;
+          return inputItem.copyWith(id: nextId);
+        });
+
+        when(() => mockCanvas.createConnection(any()))
+            .thenAnswer((Invocation inv) async {
+          final CanvasConnection inputConn =
+              inv.positionalArguments[0] as CanvasConnection;
+          return inputConn.copyWith(id: 1);
+        });
+
+        final ImportResult result = await sutFull.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        verify(() => mockCanvas.createItem(any())).called(2);
+
+        // Проверяем connection создан с ремаппленными ID и collectionItemId
+        final CanvasConnection captured = verify(
+          () => mockCanvas.createConnection(captureAny()),
+        ).captured.first as CanvasConnection;
+
+        expect(captured.fromItemId, equals(301)); // remapped from 10
+        expect(captured.toItemId, equals(302)); // remapped from 20
+        expect(captured.collectionItemId, equals(52));
+        expect(captured.collectionId, equals(42));
+        expect(captured.id, equals(0)); // Сброшен для автоинкремента
+      });
+
+      test('должен пропускать per-item canvas при null _canvasRepository',
+          () async {
+        // Сервис без canvasRepository
+        final ImportService sutNoCanvas = ImportService(
+          repository: mockRepo,
+          igdbApi: mockApi,
+          tmdbApi: mockTmdb,
+          database: mockDb,
+        );
+
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.full,
+          name: 'No Canvas Repo',
+          author: 'Author',
+          created: testDate,
+          items: <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'game',
+              'external_id': 100,
+              'status': 'completed',
+              '_canvas': <String, dynamic>{
+                'viewport': <String, dynamic>{
+                  'scale': 0.5,
+                  'offsetX': 0.0,
+                  'offsetY': 0.0,
+                },
+                'items': <Map<String, dynamic>>[],
+                'connections': <Map<String, dynamic>>[],
+              },
+            },
+          ],
+        );
+
+        final Collection createdCollection = Collection(
+          id: 43,
+          name: 'No Canvas Repo',
+          author: 'Author',
+          type: CollectionType.imported,
+          createdAt: testDate,
+        );
+
+        const List<Game> fetchedGames = <Game>[
+          Game(id: 100, name: 'Game 1'),
+        ];
+
+        when(() => mockApi.getGamesByIds(any()))
+            .thenAnswer((_) async => fetchedGames);
+        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockRepo.create(
+              name: any(named: 'name'),
+              author: any(named: 'author'),
+              type: any(named: 'type'),
+            )).thenAnswer((_) async => createdCollection);
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => 1);
+
+        final ImportResult result = await sutNoCanvas.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        expect(result.itemsImported, equals(1));
+        // Canvas методы не должны вызываться
+        verifyNever(() => mockCanvas.saveGameCanvasViewport(any(), any()));
+        verifyNever(() => mockCanvas.createItem(any()));
+        verifyNever(() => mockCanvas.createConnection(any()));
+      });
+
+      test('должен импортировать per-item canvas с изображениями (base64 data)',
+          () async {
+        final int canvasTs = DateTime(2024, 3, 1).millisecondsSinceEpoch ~/ 1000;
+
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.full,
+          name: 'Per-Item Images',
+          author: 'Author',
+          created: testDate,
+          items: <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'game',
+              'external_id': 100,
+              'status': 'completed',
+              '_canvas': <String, dynamic>{
+                'items': <Map<String, dynamic>>[
+                  <String, dynamic>{
+                    'id': 1,
+                    'type': 'image',
+                    'x': 50.0,
+                    'y': 75.0,
+                    'width': 320.0,
+                    'height': 240.0,
+                    'created_at': canvasTs,
+                    'data': <String, dynamic>{
+                      'base64': 'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAA',
+                      'mimeType': 'image/gif',
+                    },
+                  },
+                ],
+                'connections': <Map<String, dynamic>>[],
+              },
+            },
+          ],
+        );
+
+        final Collection createdCollection = Collection(
+          id: 44,
+          name: 'Per-Item Images',
+          author: 'Author',
+          type: CollectionType.imported,
+          createdAt: testDate,
+        );
+
+        const List<Game> fetchedGames = <Game>[
+          Game(id: 100, name: 'Game 1'),
+        ];
+
+        when(() => mockApi.getGamesByIds(any()))
+            .thenAnswer((_) async => fetchedGames);
+        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockRepo.create(
+              name: any(named: 'name'),
+              author: any(named: 'author'),
+              type: any(named: 'type'),
+            )).thenAnswer((_) async => createdCollection);
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => 53);
+
+        when(() => mockCanvas.createItem(any())).thenAnswer((Invocation inv) async {
+          final CanvasItem inputItem =
+              inv.positionalArguments[0] as CanvasItem;
+          return inputItem.copyWith(id: 501);
+        });
+
+        final ImportResult result = await sutFull.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+
+        // Проверяем что изображение с base64 данными сохранено
+        final CanvasItem captured = verify(
+          () => mockCanvas.createItem(captureAny()),
+        ).captured.first as CanvasItem;
+
+        expect(captured.itemType, equals(CanvasItemType.image));
+        expect(captured.collectionItemId, equals(53));
+        expect(captured.data, isNotNull);
+        expect(captured.data!['base64'],
+            equals('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAA'));
+        expect(captured.data!['mimeType'], equals('image/gif'));
+        expect(captured.x, equals(50.0));
+        expect(captured.y, equals(75.0));
+        expect(captured.width, equals(320.0));
+        expect(captured.height, equals(240.0));
+      });
+    });
+
+    // ==================== v1/v2 Dispatch ====================
+
+    group('v1/v2 dispatch', () {
+      test('isV1 файл должен использовать v1 пайплайн', () async {
+        final XcollFile v1 = XcollFile(
+          version: 1,
+          name: 'V1',
+          author: 'Author',
+          created: testDate,
+          legacyGames: const <RcollGame>[],
+        );
+
+        expect(v1.isV1, isTrue);
+
+        final Collection createdCollection = Collection(
+          id: 1,
+          name: 'V1',
+          author: 'Author',
+          type: CollectionType.imported,
+          createdAt: testDate,
+        );
+
+        when(() => mockRepo.create(
+              name: any(named: 'name'),
+              author: any(named: 'author'),
+              type: any(named: 'type'),
+            )).thenAnswer((_) async => createdCollection);
+
+        final ImportResult result = await sut.importFromXcoll(v1);
+
+        expect(result.success, isTrue);
+        // v1 не вызывает TMDB
+        verifyNever(() => mockTmdb.getMovie(any()));
+        verifyNever(() => mockTmdb.getTvShow(any()));
+      });
+
+      test('isV2 файл должен использовать v2 пайплайн', () async {
+        final XcollFile v2 = XcollFile(
+          version: 2,
+          format: ExportFormat.light,
+          name: 'V2',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[],
+        );
+
+        expect(v2.isV2, isTrue);
+
+        final ImportService sutV2 = ImportService(
+          repository: mockRepo,
+          igdbApi: mockApi,
+          tmdbApi: mockTmdb,
+          database: mockDb,
+        );
+
+        final Collection createdCollection = Collection(
+          id: 2,
+          name: 'V2',
+          author: 'Author',
+          type: CollectionType.imported,
+          createdAt: testDate,
+        );
+
+        when(() => mockRepo.create(
+              name: any(named: 'name'),
+              author: any(named: 'author'),
+              type: any(named: 'type'),
+            )).thenAnswer((_) async => createdCollection);
+
+        final ImportResult result = await sutV2.importFromXcoll(v2);
+
+        expect(result.success, isTrue);
+      });
+    });
+
+    // ==================== v2 Full Import Images ====================
+
+    group('importFromXcoll (v2 full с images)', () {
+      late MockImageCacheService mockImageCache;
+      late ImportService sutImages;
+
+      setUp(() {
+        mockImageCache = MockImageCacheService();
+        sutImages = ImportService(
+          repository: mockRepo,
+          igdbApi: mockApi,
+          tmdbApi: mockTmdb,
+          database: mockDb,
+          canvasRepository: mockCanvas,
+          imageCacheService: mockImageCache,
+        );
+      });
+
+      /// Хелпер: создаёт XcollFile full с images и одним game item.
+      XcollFile createFullXcollWithImages(Map<String, String> images) {
+        return XcollFile(
+          version: 2,
+          format: ExportFormat.full,
+          name: 'Images Test',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'game',
+              'external_id': 100,
+              'platform_id': 18,
+              'status': 'not_started',
+            },
+          ],
+          images: images,
+        );
+      }
+
+      /// Настраивает общие моки для успешного импорта v2.
+      void setupDefaultMocks() {
+        final Collection createdCollection = Collection(
+          id: 50,
+          name: 'Images Test',
+          author: 'Author',
+          type: CollectionType.imported,
+          createdAt: testDate,
+        );
+
+        when(() => mockApi.getGamesByIds(any()))
+            .thenAnswer((_) async => <Game>[
+                  const Game(id: 100, name: 'Test Game'),
+                ]);
+        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockRepo.create(
+              name: any(named: 'name'),
+              author: any(named: 'author'),
+              type: any(named: 'type'),
+            )).thenAnswer((_) async => createdCollection);
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => 10);
+        when(() => mockCanvas.getGameCanvasItems(any()))
+            .thenAnswer((_) async => <CanvasItem>[]);
+      }
+
+      test('должен восстановить game_covers изображение в кэш', () async {
+        setupDefaultMocks();
+        final Uint8List testBytes =
+            Uint8List.fromList(<int>[137, 80, 78, 71, 13, 10, 26, 10]);
+        final String base64Data = base64Encode(testBytes);
+
+        when(() => mockImageCache.saveImageBytes(any(), any(), any()))
+            .thenAnswer((_) async => true);
+
+        final XcollFile xcoll = createFullXcollWithImages(
+          <String, String>{'game_covers/100': base64Data},
+        );
+
+        final ImportResult result = await sutImages.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        final VerificationResult captured = verify(
+          () => mockImageCache.saveImageBytes(
+            captureAny(),
+            captureAny(),
+            captureAny(),
+          ),
+        );
+        expect(captured.callCount, equals(1));
+
+        final List<dynamic> capturedArgs = captured.captured;
+        expect(capturedArgs[0], equals(ImageType.gameCover));
+        expect(capturedArgs[1], equals('100'));
+        expect(capturedArgs[2], equals(testBytes));
+      });
+
+      test('должен восстановить movie_posters изображение', () async {
+        setupDefaultMocks();
+        final Uint8List testBytes =
+            Uint8List.fromList(<int>[0xFF, 0xD8, 0xFF, 0xE0]);
+        final String base64Data = base64Encode(testBytes);
+
+        when(() => mockImageCache.saveImageBytes(any(), any(), any()))
+            .thenAnswer((_) async => true);
+
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.full,
+          name: 'Movie Images',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'game',
+              'external_id': 100,
+              'platform_id': 18,
+              'status': 'not_started',
+            },
+          ],
+          images: <String, String>{'movie_posters/550': base64Data},
+        );
+
+        await sutImages.importFromXcoll(xcoll);
+
+        final VerificationResult captured = verify(
+          () => mockImageCache.saveImageBytes(
+            captureAny(),
+            captureAny(),
+            captureAny(),
+          ),
+        );
+        final List<dynamic> capturedArgs = captured.captured;
+        expect(capturedArgs[0], equals(ImageType.moviePoster));
+        expect(capturedArgs[1], equals('550'));
+        expect(capturedArgs[2], equals(testBytes));
+      });
+
+      test('должен пропустить невалидный ключ', () async {
+        setupDefaultMocks();
+        final String base64Data = base64Encode(<int>[1, 2, 3]);
+
+        when(() => mockImageCache.saveImageBytes(any(), any(), any()))
+            .thenAnswer((_) async => true);
+
+        final XcollFile xcoll = createFullXcollWithImages(
+          <String, String>{'invalid_key_no_slash': base64Data},
+        );
+
+        final ImportResult result = await sutImages.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        verifyNever(
+          () => mockImageCache.saveImageBytes(any(), any(), any()),
+        );
+      });
+
+      test('должен пропустить невалидный base64', () async {
+        setupDefaultMocks();
+
+        when(() => mockImageCache.saveImageBytes(any(), any(), any()))
+            .thenAnswer((_) async => true);
+
+        final XcollFile xcoll = createFullXcollWithImages(
+          <String, String>{'game_covers/100': '!!!not-valid-base64!!!'},
+        );
+
+        // Не должен упасть
+        final ImportResult result = await sutImages.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        verifyNever(
+          () => mockImageCache.saveImageBytes(any(), any(), any()),
+        );
+      });
+
+      test('без imageCacheService не должен вызывать saveImageBytes',
+          () async {
+        setupDefaultMocks();
+        final String base64Data = base64Encode(<int>[1, 2, 3]);
+
+        // sut без imageCacheService
+        final ImportService sutNoCache = ImportService(
+          repository: mockRepo,
+          igdbApi: mockApi,
+          tmdbApi: mockTmdb,
+          database: mockDb,
+          canvasRepository: mockCanvas,
+        );
+
+        final XcollFile xcoll = createFullXcollWithImages(
+          <String, String>{'game_covers/100': base64Data},
+        );
+
+        final ImportResult result = await sutNoCache.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        verifyNever(
+          () => mockImageCache.saveImageBytes(any(), any(), any()),
+        );
+      });
+
+      test('должен пропустить images при format light', () async {
+        setupDefaultMocks();
+        final String base64Data = base64Encode(<int>[1, 2, 3]);
+
+        when(() => mockImageCache.saveImageBytes(any(), any(), any()))
+            .thenAnswer((_) async => true);
+
+        // Light формат с images — images не должны восстанавливаться
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.light,
+          name: 'Light',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'game',
+              'external_id': 100,
+              'platform_id': 18,
+              'status': 'not_started',
+            },
+          ],
+          images: <String, String>{'game_covers/100': base64Data},
+        );
+
+        final ImportResult result = await sutImages.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        verifyNever(
+          () => mockImageCache.saveImageBytes(any(), any(), any()),
+        );
+      });
+
+      test('должен отслеживать прогресс importingImages', () async {
+        setupDefaultMocks();
+        final String base64Data = base64Encode(<int>[1, 2, 3]);
+
+        when(() => mockImageCache.saveImageBytes(any(), any(), any()))
+            .thenAnswer((_) async => true);
+
+        final XcollFile xcoll = createFullXcollWithImages(
+          <String, String>{'game_covers/100': base64Data},
+        );
+
+        final List<ImportStage> stages = <ImportStage>[];
+        await sutImages.importFromXcoll(
+          xcoll,
+          onProgress: (ImportProgress progress) {
+            if (!stages.contains(progress.stage)) {
+              stages.add(progress.stage);
+            }
+          },
+        );
+
+        expect(stages, contains(ImportStage.importingImages));
       });
     });
   });

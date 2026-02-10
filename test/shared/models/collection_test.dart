@@ -203,10 +203,10 @@ void main() {
       });
     });
 
-    group('toJson', () {
+    group('toExport', () {
       test('должен возвращать корректный JSON для экспорта', () {
         final Collection collection = createTestCollection();
-        final Map<String, dynamic> json = collection.toJson();
+        final Map<String, dynamic> json = collection.toExport();
 
         expect(json['name'], 'Test Collection');
         expect(json['author'], 'Test Author');

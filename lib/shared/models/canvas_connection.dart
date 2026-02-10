@@ -1,5 +1,7 @@
 // Модель связи между элементами канваса.
 
+import 'exportable.dart';
+
 /// Стиль линии связи.
 enum ConnectionStyle {
   /// Сплошная линия.
@@ -29,7 +31,7 @@ enum ConnectionStyle {
 ///
 /// Представляет визуальную линию от одного элемента к другому
 /// с настраиваемым стилем, цветом и лейблом.
-class CanvasConnection {
+class CanvasConnection with Exportable {
   /// Создаёт экземпляр [CanvasConnection].
   const CanvasConnection({
     required this.id,
@@ -60,11 +62,14 @@ class CanvasConnection {
     );
   }
 
-  /// Создаёт [CanvasConnection] из JSON (для импорта).
-  factory CanvasConnection.fromJson(Map<String, dynamic> json) {
+  /// Создаёт [CanvasConnection] из экспортных данных.
+  factory CanvasConnection.fromExport(
+    Map<String, dynamic> json, {
+    int collectionId = 0,
+  }) {
     return CanvasConnection(
       id: json['id'] as int? ?? 0,
-      collectionId: json['collection_id'] as int? ?? 0,
+      collectionId: collectionId,
       collectionItemId: json['collection_item_id'] as int?,
       fromItemId: json['from_item_id'] as int,
       toItemId: json['to_item_id'] as int,
@@ -106,7 +111,13 @@ class CanvasConnection {
   /// Дата создания.
   final DateTime createdAt;
 
+  // -- Exportable контракт --
+
+  @override
+  Set<String> get internalDbFields => const <String>{'collection_id'};
+
   /// Преобразует в Map для сохранения в базу данных.
+  @override
   Map<String, dynamic> toDb() {
     return <String, dynamic>{
       if (id != 0) 'id': id,
@@ -121,8 +132,9 @@ class CanvasConnection {
     };
   }
 
-  /// Преобразует в JSON для экспорта.
-  Map<String, dynamic> toJson() {
+  /// Преобразует в Map для экспорта.
+  @override
+  Map<String, dynamic> toExport() {
     return <String, dynamic>{
       'id': id,
       'collection_item_id': collectionItemId,

@@ -33,7 +33,7 @@
 - [x] Task #14: Reset Database — clearAllData() for all 14 SQLite tables, confirmation dialog, settings preserved
 - [x] Config Export/Import — ConfigService with JSON export/import of 7 SharedPreferences keys, file picker dialogs
 - [x] Task #13: Image Caching — local caching of game covers, movie posters, TV show posters with auto-download, fallback to network, toggle in Settings
-- [ ] Stage 13: Export Full — extended .rcoll-full format with canvas layout and images
+- [x] Export v2 — Exportable mixin, XcollFile model (v1/v2), .xcoll (light) and .xcollx (full with canvas + images). Embedded cover images as base64 for offline import. Canvas URL image caching via ImageType.canvasImage
 
 ## Future Plans
 

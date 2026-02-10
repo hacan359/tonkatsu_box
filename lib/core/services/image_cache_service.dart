@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,7 +25,10 @@ enum ImageType {
   moviePoster('movie_posters'),
 
   /// Постеры сериалов.
-  tvShowPoster('tv_show_posters');
+  tvShowPoster('tv_show_posters'),
+
+  /// Изображения с канваса (URL).
+  canvasImage('canvas_images');
 
   const ImageType(this.folder);
 
@@ -94,6 +98,41 @@ class ImageCacheService {
   Future<String> getLocalImagePath(ImageType type, String imageId) async {
     final String cachePath = await getCachePath(type);
     return p.join(cachePath, '$imageId.png');
+  }
+
+  /// Читает байты изображения из кэша.
+  ///
+  /// Возвращает null, если файл не существует или пуст.
+  Future<Uint8List?> readImageBytes(ImageType type, String imageId) async {
+    final String path = await getLocalImagePath(type, imageId);
+    final File file = File(path);
+    if (!file.existsSync() || file.lengthSync() == 0) {
+      return null;
+    }
+    return file.readAsBytes();
+  }
+
+  /// Сохраняет байты изображения в кэш.
+  ///
+  /// Создаёт директорию при необходимости.
+  /// Возвращает true при успехе.
+  Future<bool> saveImageBytes(
+    ImageType type,
+    String imageId,
+    Uint8List bytes,
+  ) async {
+    try {
+      final String path = await getLocalImagePath(type, imageId);
+      final File file = File(path);
+      final Directory dir = file.parent;
+      if (!dir.existsSync()) {
+        await dir.create(recursive: true);
+      }
+      await file.writeAsBytes(bytes);
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   /// Проверяет есть ли изображение в кэше.

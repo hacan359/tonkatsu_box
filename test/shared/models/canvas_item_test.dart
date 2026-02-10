@@ -292,10 +292,10 @@ void main() {
       });
     });
 
-    group('toJson', () {
+    group('toExport', () {
       test('should serialize for export', () {
         final CanvasItem item = createTestItem();
-        final Map<String, dynamic> jsonMap = item.toJson();
+        final Map<String, dynamic> jsonMap = item.toExport();
 
         expect(jsonMap['id'], 1);
         expect(jsonMap['type'], 'game');
@@ -313,7 +313,7 @@ void main() {
         final CanvasItem item = createTestItem(
           data: <String, dynamic>{'content': 'Test'},
         );
-        final Map<String, dynamic> jsonMap = item.toJson();
+        final Map<String, dynamic> jsonMap = item.toExport();
 
         expect(jsonMap['data'], isA<Map<String, dynamic>>());
         expect((jsonMap['data'] as Map<String, dynamic>)['content'], 'Test');
@@ -321,13 +321,13 @@ void main() {
 
       test('should include collectionItemId in export', () {
         final CanvasItem item = createTestItem(collectionItemId: 42);
-        final Map<String, dynamic> jsonMap = item.toJson();
+        final Map<String, dynamic> jsonMap = item.toExport();
 
         expect(jsonMap['collection_item_id'], 42);
       });
     });
 
-    group('fromJson', () {
+    group('fromExport', () {
       test('should parse from export JSON', () {
         final Map<String, dynamic> jsonMap = <String, dynamic>{
           'id': 5,
@@ -342,7 +342,7 @@ void main() {
           },
         };
 
-        final CanvasItem item = CanvasItem.fromJson(jsonMap);
+        final CanvasItem item = CanvasItem.fromExport(jsonMap);
 
         expect(item.id, 5);
         expect(item.itemType, CanvasItemType.image);
@@ -358,7 +358,7 @@ void main() {
           'y': 0,
         };
 
-        final CanvasItem item = CanvasItem.fromJson(jsonMap);
+        final CanvasItem item = CanvasItem.fromExport(jsonMap);
 
         expect(item.id, 0);
         expect(item.collectionId, 0);
@@ -374,7 +374,7 @@ void main() {
           'created_at': timestamp,
         };
 
-        final CanvasItem item = CanvasItem.fromJson(jsonMap);
+        final CanvasItem item = CanvasItem.fromExport(jsonMap);
 
         expect(
           item.createdAt,
@@ -392,7 +392,7 @@ void main() {
           'y': 100,
         };
 
-        final CanvasItem item = CanvasItem.fromJson(jsonMap);
+        final CanvasItem item = CanvasItem.fromExport(jsonMap);
 
         expect(item.collectionItemId, 42);
       });
