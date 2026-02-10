@@ -1,5 +1,10 @@
 # Features
 
+## Platforms
+
+- **Windows** — full version with Canvas, VGMaps Browser, all features
+- **Android** — Lite version: collections, search, details, episode tracker, export/import (no Canvas)
+
 ## Collections
 
 Create unlimited collections organized however you want:

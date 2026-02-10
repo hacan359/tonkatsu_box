@@ -2,15 +2,15 @@
 
 ## Обзор
 
-xeRAbora — Windows desktop приложение на Flutter для управления коллекциями ретро-игр, фильмов и сериалов с интеграцией IGDB, TMDB и SteamGridDB API.
+xeRAbora — кроссплатформенное приложение на Flutter для управления коллекциями ретро-игр, фильмов и сериалов с интеграцией IGDB, TMDB и SteamGridDB API.
 
 | Слой | Технология |
 |------|------------|
 | UI | Flutter (Material 3) |
 | State | Riverpod |
-| Database | SQLite (sqflite_ffi) |
+| Database | SQLite (sqflite_ffi на desktop, sqflite на Android) |
 | API | IGDB (Twitch OAuth), TMDB (Bearer token), SteamGridDB (Bearer token) |
-| Platform | Windows Desktop |
+| Platform | Windows Desktop, Android (Lite — без Canvas) |
 
 ---
 
@@ -46,7 +46,8 @@ lib/
 | `lib/core/api/igdb_api.dart` | **IGDB API клиент**. OAuth через Twitch, поиск игр, загрузка платформ. Методы: `getAccessToken()`, `searchGames()`, `fetchPlatforms()` |
 | `lib/core/api/steamgriddb_api.dart` | **SteamGridDB API клиент**. Bearer token авторизация. Методы: `searchGames()`, `getGrids()`, `getHeroes()`, `getLogos()`, `getIcons()` |
 | `lib/core/api/tmdb_api.dart` | **TMDB API клиент**. Bearer token авторизация. Методы: `searchMovies(query, {year})`, `searchTvShows(query, {firstAirDateYear})`, `multiSearch()`, `getMovieDetails()`, `getTvShowDetails()`, `getPopularMovies()`, `getPopularTvShows()`, `getMovieGenres()`, `getTvGenres()`, `getSeasonEpisodes(tmdbShowId, seasonNumber)` |
-| `lib/core/database/database_service.dart` | **SQLite сервис**. Создание таблиц, миграции (версия 10), CRUD для всех сущностей. Таблицы: `platforms`, `games`, `collections`, `collection_games`, `collection_items`, `canvas_items`, `canvas_viewport`, `canvas_connections`, `game_canvas_viewport`, `movies_cache`, `tv_shows_cache`, `tv_seasons_cache`, `tv_episodes_cache`, `watched_episodes`. Методы per-item canvas: `getGameCanvasItems`, `getGameCanvasConnections`, `getGameCanvasViewport`, `upsertGameCanvasViewport`. Методы эпизодов: `getEpisodesByShowAndSeason`, `upsertEpisodes`, `clearEpisodesByShow`, `getWatchedEpisodes`, `markEpisodeWatched`, `markEpisodeUnwatched`, `getWatchedEpisodeCount`, `markSeasonWatched`, `unmarkSeasonWatched`. Изоляция данных: коллекционные методы фильтруют `collection_item_id IS NULL`. Метод `clearAllData()` — очистка всех 14 таблиц в транзакции |
+| `lib/shared/constants/platform_features.dart` | **Флаги платформы**. `kCanvasEnabled` (false на Android/iOS), `kVgMapsEnabled` (только Windows), `kScreenshotEnabled` (только Windows). Используются для условного скрытия Canvas UI на мобильных |
+| `lib/core/database/database_service.dart` | **SQLite сервис**. Создание таблиц, миграции (версия 11), CRUD для всех сущностей. Использует `databaseFactory.openDatabase()` — кроссплатформенный вызов (FFI на desktop, нативный плагин на Android). Таблицы: `platforms`, `games`, `collections`, `collection_games`, `collection_items`, `canvas_items`, `canvas_viewport`, `canvas_connections`, `game_canvas_viewport`, `movies_cache`, `tv_shows_cache`, `tv_seasons_cache`, `tv_episodes_cache`, `watched_episodes`. Методы per-item canvas: `getGameCanvasItems`, `getGameCanvasConnections`, `getGameCanvasViewport`, `upsertGameCanvasViewport`. Методы эпизодов: `getEpisodesByShowAndSeason`, `upsertEpisodes`, `clearEpisodesByShow`, `getWatchedEpisodes`, `markEpisodeWatched`, `markEpisodeUnwatched`, `getWatchedEpisodeCount`, `markSeasonWatched`, `unmarkSeasonWatched`. Изоляция данных: коллекционные методы фильтруют `collection_item_id IS NULL`. Метод `clearAllData()` — очистка всех 14 таблиц в транзакции |
 | `lib/core/services/config_service.dart` | **Сервис конфигурации**. Экспорт/импорт 7 ключей SharedPreferences в JSON файл. Класс `ConfigResult` (success/failure/cancelled). Методы: `collectSettings()`, `applySettings()`, `exportToFile()`, `importFromFile()` |
 | `lib/core/services/image_cache_service.dart` | **Сервис кэширования изображений**. Enum `ImageType` (platformLogo, gameCover, moviePoster, tvShowPoster, canvasImage). Локальное хранение изображений в папках по типу. SharedPreferences для enable/disable и custom path. Методы: `getImageUri()` (cache-first с fallback на remoteUrl), `downloadImage()`, `downloadImages()`, `readImageBytes()`, `saveImageBytes()`, `clearCache()`, `getCacheSize()`, `getCachedCount()`. Провайдер `imageCacheServiceProvider` |
 | `lib/core/services/xcoll_file.dart` | **Модель файла экспорта/импорта**. Поддерживает v1 (.rcoll, legacy games) и v2 (.xcoll/.xcollx, items + canvas + images). Классы: `XcollFile`, `ExportFormat` (light/full), `ExportCanvas`, `RcollGame`. Автоопределение версии при парсинге |

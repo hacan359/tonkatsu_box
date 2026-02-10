@@ -50,8 +50,9 @@ Connect your ROM library with RetroAchievements:
 - Collection ratings and reviews
 
 ### Additional Platforms
-- macOS support
-- Linux support
+- [x] Android support (Lite — collections, search, details, no Canvas)
+- [ ] macOS support
+- [ ] Linux support
 
 ## Contributing
 
