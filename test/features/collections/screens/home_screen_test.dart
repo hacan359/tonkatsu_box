@@ -46,13 +46,13 @@ void main() {
       );
     }
 
-    testWidgets('должен показывать заголовок xeRAbora',
+    testWidgets('должен показывать заголовок Collections',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pump(); // Initial pump
       await tester.pump(); // Allow async to complete
 
-      expect(find.text('xeRAbora'), findsOneWidget);
+      expect(find.text('Collections'), findsOneWidget);
     });
 
     testWidgets('должен показывать FAB New Collection',
@@ -109,7 +109,7 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      expect(find.text('My Collections'), findsOneWidget);
+      expect(find.textContaining('My Collections'), findsOneWidget);
     });
 
     testWidgets('должен группировать коллекции по типу',
@@ -135,8 +135,8 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      expect(find.text('My Collections'), findsOneWidget);
-      expect(find.text('Imported'), findsOneWidget);
+      expect(find.textContaining('My Collections ('), findsOneWidget);
+      expect(find.textContaining('Imported ('), findsOneWidget);
     });
 
     testWidgets('должен показывать иконку пустого состояния',

@@ -89,8 +89,8 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      // HomeScreen показывает заголовок xeRAbora
-      expect(find.text('xeRAbora'), findsOneWidget);
+      // HomeScreen показывает заголовок Collections
+      expect(find.text('Collections'), findsOneWidget);
     });
 
     testWidgets('должен использовать Material 3', (WidgetTester tester) async {

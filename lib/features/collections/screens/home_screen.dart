@@ -3,6 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/import_service.dart';
 import '../../../shared/models/collection.dart';
+import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/section_header.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../providers/collections_provider.dart';
 import '../widgets/collection_tile.dart';
@@ -23,11 +27,15 @@ class HomeScreen extends ConsumerWidget {
         ref.watch(collectionsProvider);
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('xeRAbora'),
+        backgroundColor: AppColors.background,
+        surfaceTintColor: Colors.transparent,
+        title: const Text('Collections', style: AppTypography.h1),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.file_download_outlined),
+            color: AppColors.textSecondary,
             tooltip: 'Import Collection',
             onPressed: settings.isApiReady
                 ? () => _importCollection(context, ref)
@@ -44,6 +52,8 @@ class HomeScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _createCollection(context, ref),
+        backgroundColor: AppColors.gameAccent,
+        foregroundColor: AppColors.background,
         icon: const Icon(Icons.add),
         label: const Text('New Collection'),
       ),
@@ -73,47 +83,63 @@ class HomeScreen extends ConsumerWidget {
     return RefreshIndicator(
       onRefresh: () => ref.read(collectionsProvider.notifier).refresh(),
       child: ListView(
-        padding: const EdgeInsets.only(bottom: 80),
+        padding: const EdgeInsets.only(
+          left: AppSpacing.md,
+          right: AppSpacing.md,
+          bottom: 80,
+        ),
         children: <Widget>[
           // Собственные коллекции
           if (ownCollections.isNotEmpty) ...<Widget>[
-            CollectionSectionHeader(
-              title: 'My Collections',
-              count: ownCollections.length,
+            Padding(
+              padding: const EdgeInsets.only(
+                top: AppSpacing.md,
+                bottom: AppSpacing.sm,
+              ),
+              child: SectionHeader(
+                title: 'My Collections (${ownCollections.length})',
+              ),
             ),
             ...ownCollections.map((Collection c) => CollectionTile(
                   collection: c,
                   onTap: () => _navigateToCollection(context, c),
                   onLongPress: () => _showCollectionOptions(context, ref, c),
-                  onDelete: () => _deleteCollection(context, ref, c),
                 )),
           ],
 
           // Форки
           if (forkCollections.isNotEmpty) ...<Widget>[
-            CollectionSectionHeader(
-              title: 'Forked Collections',
-              count: forkCollections.length,
+            Padding(
+              padding: const EdgeInsets.only(
+                top: AppSpacing.lg,
+                bottom: AppSpacing.sm,
+              ),
+              child: SectionHeader(
+                title: 'Forked (${forkCollections.length})',
+              ),
             ),
             ...forkCollections.map((Collection c) => CollectionTile(
                   collection: c,
                   onTap: () => _navigateToCollection(context, c),
                   onLongPress: () => _showCollectionOptions(context, ref, c),
-                  onDelete: () => _deleteCollection(context, ref, c),
                 )),
           ],
 
           // Импортированные
           if (importedCollections.isNotEmpty) ...<Widget>[
-            CollectionSectionHeader(
-              title: 'Imported',
-              count: importedCollections.length,
+            Padding(
+              padding: const EdgeInsets.only(
+                top: AppSpacing.lg,
+                bottom: AppSpacing.sm,
+              ),
+              child: SectionHeader(
+                title: 'Imported (${importedCollections.length})',
+              ),
             ),
             ...importedCollections.map((Collection c) => CollectionTile(
                   collection: c,
                   onTap: () => _navigateToCollection(context, c),
                   onLongPress: () => _showCollectionOptions(context, ref, c),
-                  onDelete: () => _deleteCollection(context, ref, c),
                 )),
           ],
         ],
@@ -122,33 +148,26 @@ class HomeScreen extends ConsumerWidget {
   }
 
   Widget _buildEmptyState(BuildContext context) {
-    final ColorScheme colorScheme = Theme.of(context).colorScheme;
-
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32.0),
+        padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Icon(
               Icons.collections_bookmark_outlined,
               size: 80,
-              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+              color: AppColors.textTertiary.withAlpha(120),
             ),
-            const SizedBox(height: 24),
-            Text(
-              'No Collections Yet',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-            ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.lg),
+            const Text('No Collections Yet', style: AppTypography.h2),
+            const SizedBox(height: AppSpacing.sm),
             Text(
               'Create your first collection to start tracking\nyour gaming journey.',
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-                  ),
+              style: AppTypography.body.copyWith(
+                color: AppColors.textSecondary,
+              ),
             ),
           ],
         ),
@@ -157,35 +176,29 @@ class HomeScreen extends ConsumerWidget {
   }
 
   Widget _buildErrorState(BuildContext context, WidgetRef ref, Object error) {
-    final ColorScheme colorScheme = Theme.of(context).colorScheme;
-
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32.0),
+        padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Icon(
+            const Icon(
               Icons.error_outline,
               size: 64,
-              color: colorScheme.error,
+              color: AppColors.error,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             Text(
               'Failed to load collections',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: colorScheme.error,
-                  ),
+              style: AppTypography.h3.copyWith(color: AppColors.error),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Text(
               error.toString(),
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+              style: AppTypography.bodySmall,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.lg),
             FilledButton.icon(
               onPressed: () => ref.invalidate(collectionsProvider),
               icon: const Icon(Icons.refresh),
