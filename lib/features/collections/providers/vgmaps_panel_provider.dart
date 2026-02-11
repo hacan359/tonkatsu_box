@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-// Домашний URL VGMaps.
-const String vgMapsHomeUrl = 'https://www.vgmaps.com/';
+// Домашний URL VGMaps (Better VGMaps).
+const String vgMapsHomeUrl = 'https://vgmaps.de/';
 
 /// Состояние боковой панели VGMaps Browser.
 class VgMapsPanelState {

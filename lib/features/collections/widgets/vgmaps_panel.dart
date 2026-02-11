@@ -1,26 +1,39 @@
 import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:webview_windows/webview_windows.dart';
 
 import '../providers/vgmaps_panel_provider.dart';
 
-/// JS-скрипт для перехвата ПКМ на изображениях.
-const String _imageContextMenuScript = '''
-document.addEventListener('contextmenu', function(e) {
-  var target = e.target;
-  if (target.tagName === 'IMG') {
-    e.preventDefault();
+/// JS-скрипт для захвата изображения карты со страницы vgmaps.de.
+///
+/// Ищет `<img id="MapViewerImage">` на странице view.php.
+/// Если не найден — ищет первый крупный `<img>` (> 200px).
+/// Возвращает JSON с src, width, height через postMessage.
+const String _captureMapScript = '''
+(function() {
+  var img = document.getElementById('MapViewerImage');
+  if (!img) {
+    var imgs = document.querySelectorAll('img');
+    for (var i = 0; i < imgs.length; i++) {
+      if (imgs[i].naturalWidth > 200 && imgs[i].naturalHeight > 200) {
+        img = imgs[i];
+        break;
+      }
+    }
+  }
+  if (img) {
     window.chrome.webview.postMessage(JSON.stringify({
       type: 'image_context_menu',
-      src: target.src,
-      width: target.naturalWidth,
-      height: target.naturalHeight
+      src: img.src,
+      width: img.naturalWidth,
+      height: img.naturalHeight
     }));
   }
-});
+})();
 ''';
 
 /// Тип колбэка для добавления изображения на канвас.
@@ -101,11 +114,6 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
         final VgMapsPanelNotifier notifier =
             ref.read(vgMapsPanelProvider(widget.collectionId).notifier);
         notifier.setLoading(isLoading: loadingState == LoadingState.loading);
-
-        // Внедряем JS после загрузки страницы
-        if (loadingState == LoadingState.navigationCompleted) {
-          _controller.executeScript(_imageContextMenuScript);
-        }
       }));
 
       _subscriptions
@@ -179,8 +187,131 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
     final String term = _searchController.text.trim();
     if (term.isEmpty) return;
     final String encoded = Uri.encodeComponent(term);
-    _controller
-        .loadUrl('https://www.vgmaps.com/Atlas/Index.php?search=$encoded');
+    _controller.loadUrl('https://vgmaps.de/maps/?search=$encoded');
+  }
+
+  /// Захватывает изображение карты с текущей страницы.
+  ///
+  /// Три стратегии по приоритету:
+  /// 1. JS `executeScript` с прямым return (без postMessage)
+  /// 2. HTTP fetch текущей страницы + парсинг HTML из Dart
+  /// 3. Fallback: postMessage через JS injection
+  Future<void> _captureMapImage() async {
+    if (!_isWebViewReady) return;
+
+    final VgMapsPanelNotifier notifier =
+        ref.read(vgMapsPanelProvider(widget.collectionId).notifier);
+
+    // Стратегия 1: прямой return из executeScript
+    try {
+      final Object? rawResult = await _controller.executeScript(
+        'document.getElementById("MapViewerImage")?.getAttribute("src") ?? ""',
+      );
+      final String? result = rawResult?.toString();
+      if (result != null && result.isNotEmpty) {
+        // WebView2 возвращает JSON-encoded строку: "/files/..."
+        String src = result;
+        if (src.startsWith('"') && src.endsWith('"')) {
+          src = src.substring(1, src.length - 1);
+        }
+        if (src.isNotEmpty && src != 'null') {
+          if (src.startsWith('/')) {
+            src = 'https://vgmaps.de$src';
+          }
+          if (mounted) {
+            notifier.captureImage(src);
+          }
+          return;
+        }
+      }
+    } on Object {
+      // executeScript не сработал — пробуем fallback
+    }
+
+    // Стратегия 2: HTTP fetch + парсинг HTML
+    final String? httpResult = await _fetchMapImageFromHtml();
+    if (httpResult != null && mounted) {
+      notifier.captureImage(httpResult);
+      return;
+    }
+
+    // Стратегия 3: postMessage через JS injection
+    _controller.executeScript(_captureMapScript);
+  }
+
+  /// Загружает HTML текущей страницы через HTTP и ищет MapViewerImage.
+  ///
+  /// Полностью обходит JS-выполнение в WebView — работает даже если
+  /// Cloudflare блокирует скрипты.
+  Future<String?> _fetchMapImageFromHtml() async {
+    try {
+      final VgMapsPanelState panelState =
+          ref.read(vgMapsPanelProvider(widget.collectionId));
+      final String currentUrl = panelState.currentUrl;
+
+      // Работает только на страницах vgmaps.de
+      if (!currentUrl.contains('vgmaps.de')) return null;
+
+      final Dio dio = Dio();
+      final Response<String> response = await dio.get<String>(
+        currentUrl,
+        options: Options(
+          responseType: ResponseType.plain,
+          receiveTimeout: const Duration(seconds: 10),
+        ),
+      );
+
+      final String? html = response.data;
+      if (html == null || html.isEmpty) return null;
+
+      // Ищем <img id="MapViewerImage" src="...">
+      final RegExp imgRegex = RegExp(
+        r'<img\s[^>]*id\s*=\s*"MapViewerImage"[^>]*src\s*=\s*"([^"]+)"',
+        caseSensitive: false,
+      );
+      final RegExpMatch? match = imgRegex.firstMatch(html);
+
+      // Если не нашли по id, пробуем обратный порядок атрибутов
+      if (match == null) {
+        final RegExp altRegex = RegExp(
+          r'<img\s[^>]*src\s*=\s*"([^"]+)"[^>]*id\s*=\s*"MapViewerImage"',
+          caseSensitive: false,
+        );
+        final RegExpMatch? altMatch = altRegex.firstMatch(html);
+        if (altMatch != null) {
+          return _resolveVgMapsUrl(altMatch.group(1)!);
+        }
+      }
+
+      if (match != null) {
+        return _resolveVgMapsUrl(match.group(1)!);
+      }
+
+      // Fallback: ищем любую картинку в /files/ директории
+      final RegExp filesRegex = RegExp(
+        r'src\s*=\s*"(/files/[^"]+)"',
+        caseSensitive: false,
+      );
+      final RegExpMatch? filesMatch = filesRegex.firstMatch(html);
+      if (filesMatch != null) {
+        return _resolveVgMapsUrl(filesMatch.group(1)!);
+      }
+
+      return null;
+    } on Object {
+      return null;
+    }
+  }
+
+  /// Преобразует относительный путь в полный URL vgmaps.de.
+  String _resolveVgMapsUrl(String src) {
+    if (src.startsWith('/')) {
+      return 'https://vgmaps.de$src';
+    }
+    if (src.startsWith('http')) {
+      return src;
+    }
+    return 'https://vgmaps.de/$src';
   }
 
   void _handleAddToCanvas() {
@@ -301,6 +432,13 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
             tooltip: 'Reload',
             onPressed: _reload,
             visualDensity: VisualDensity.compact,
+          ),
+          IconButton(
+            icon: const Icon(Icons.download, size: 20),
+            tooltip: 'Capture map image',
+            onPressed: _isWebViewReady ? _captureMapImage : null,
+            visualDensity: VisualDensity.compact,
+            color: colorScheme.primary,
           ),
           const SizedBox(width: 4),
           Expanded(
@@ -463,6 +601,7 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
             style: FilledButton.styleFrom(
               visualDensity: VisualDensity.compact,
               padding: const EdgeInsets.symmetric(horizontal: 12),
+              minimumSize: const Size(0, 36),
             ),
           ),
           const SizedBox(width: 4),

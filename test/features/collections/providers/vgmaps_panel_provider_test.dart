@@ -396,8 +396,8 @@ void main() {
   });
 
   group('vgMapsHomeUrl', () {
-    test('should be vgmaps.com', () {
-      expect(vgMapsHomeUrl, 'https://www.vgmaps.com/');
+    test('should be vgmaps.de', () {
+      expect(vgMapsHomeUrl, 'https://vgmaps.de/');
     });
   });
 }
