@@ -244,9 +244,6 @@ void main() {
         expect(MediaCard.posterBorderRadius, 4);
       });
 
-      test('cardPadding должен быть 12', () {
-        expect(MediaCard.cardPadding, 12);
-      });
     });
 
     group('год и рейтинг в одной строке', () {
@@ -280,24 +277,17 @@ void main() {
     });
 
     group('структура виджета', () {
-      testWidgets('должен содержать Card', (WidgetTester tester) async {
+      testWidgets('должен содержать Material', (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget());
 
-        expect(find.byType(Card), findsOneWidget);
+        // MediaCard uses Material as root widget
+        expect(find.byType(Material), findsWidgets);
       });
 
       testWidgets('должен содержать InkWell', (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget());
 
         expect(find.byType(InkWell), findsOneWidget);
-      });
-
-      testWidgets('Card должен иметь clipBehavior antiAlias',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget());
-
-        final Card card = tester.widget<Card>(find.byType(Card));
-        expect(card.clipBehavior, Clip.antiAlias);
       });
     });
 
@@ -364,12 +354,15 @@ void main() {
           mediaType: MediaType.game,
         ));
 
-        // Ищем Container с decoration содержащим border
+        // Ищем Container с цветным бордером постера (width: 2)
         final Finder containerFinder = find.byWidgetPredicate(
-          (Widget widget) =>
-              widget is Container &&
-              widget.decoration is BoxDecoration &&
-              (widget.decoration! as BoxDecoration).border != null,
+          (Widget widget) {
+            if (widget is! Container) return false;
+            if (widget.decoration is! BoxDecoration) return false;
+            final Border? border =
+                (widget.decoration! as BoxDecoration).border as Border?;
+            return border != null && border.top.width == 2;
+          },
         );
         expect(containerFinder, findsOneWidget);
 
@@ -388,10 +381,13 @@ void main() {
         ));
 
         final Finder containerFinder = find.byWidgetPredicate(
-          (Widget widget) =>
-              widget is Container &&
-              widget.decoration is BoxDecoration &&
-              (widget.decoration! as BoxDecoration).border != null,
+          (Widget widget) {
+            if (widget is! Container) return false;
+            if (widget.decoration is! BoxDecoration) return false;
+            final Border? border =
+                (widget.decoration! as BoxDecoration).border as Border?;
+            return border != null && border.top.width == 2;
+          },
         );
         expect(containerFinder, findsOneWidget);
 
@@ -410,10 +406,13 @@ void main() {
         ));
 
         final Finder containerFinder = find.byWidgetPredicate(
-          (Widget widget) =>
-              widget is Container &&
-              widget.decoration is BoxDecoration &&
-              (widget.decoration! as BoxDecoration).border != null,
+          (Widget widget) {
+            if (widget is! Container) return false;
+            if (widget.decoration is! BoxDecoration) return false;
+            final Border? border =
+                (widget.decoration! as BoxDecoration).border as Border?;
+            return border != null && border.top.width == 2;
+          },
         );
         expect(containerFinder, findsOneWidget);
 

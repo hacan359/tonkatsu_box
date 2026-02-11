@@ -2,6 +2,10 @@
 
 import 'package:flutter/material.dart';
 
+import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/theme/app_typography.dart';
+
 /// Форматирует [DateTime] в читаемую строку (например, "Jan 15, 2025").
 String _formatDate(DateTime date) {
   const List<String> months = <String>[
@@ -53,25 +57,20 @@ class ActivityDatesSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Row(
+        const Row(
           children: <Widget>[
             Icon(
               Icons.calendar_month_outlined,
               size: 20,
-              color: colorScheme.primary,
+              color: AppColors.gameAccent,
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: AppSpacing.sm),
             Text(
               'Activity Dates',
-              style: theme.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style: AppTypography.h3,
             ),
           ],
         ),
@@ -151,35 +150,32 @@ class _DateRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-
     final Widget content = Row(
       children: <Widget>[
-        Icon(icon, size: 16, color: colorScheme.onSurfaceVariant),
-        const SizedBox(width: 8),
+        Icon(icon, size: 16, color: AppColors.textSecondary),
+        const SizedBox(width: AppSpacing.sm),
         Text(
           label,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: colorScheme.onSurfaceVariant,
+          style: AppTypography.body.copyWith(
+            color: AppColors.textSecondary,
           ),
         ),
         const Spacer(),
         Text(
           date != null ? _formatDate(date!) : '\u2014',
-          style: theme.textTheme.bodyMedium?.copyWith(
+          style: AppTypography.body.copyWith(
             fontWeight: date != null ? FontWeight.w500 : FontWeight.w400,
             color: date != null
-                ? colorScheme.onSurface
-                : colorScheme.onSurfaceVariant,
+                ? AppColors.textPrimary
+                : AppColors.textSecondary,
           ),
         ),
         if (editable) ...<Widget>[
-          const SizedBox(width: 4),
-          Icon(
+          const SizedBox(width: AppSpacing.xs),
+          const Icon(
             Icons.edit_outlined,
             size: 14,
-            color: colorScheme.primary,
+            color: AppColors.gameAccent,
           ),
         ],
       ],
@@ -188,16 +184,22 @@ class _DateRow extends StatelessWidget {
     if (editable && onTap != null) {
       return InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+          padding: const EdgeInsets.symmetric(
+            vertical: AppSpacing.xs,
+            horizontal: AppSpacing.sm,
+          ),
           child: content,
         ),
       );
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+      padding: const EdgeInsets.symmetric(
+        vertical: AppSpacing.xs,
+        horizontal: AppSpacing.sm,
+      ),
       child: content,
     );
   }

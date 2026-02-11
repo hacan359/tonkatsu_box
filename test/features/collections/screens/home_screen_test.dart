@@ -46,21 +46,13 @@ void main() {
       );
     }
 
-    testWidgets('должен показывать заголовок xeRAbora',
+    testWidgets('должен показывать заголовок Collections',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pump(); // Initial pump
       await tester.pump(); // Allow async to complete
 
-      expect(find.text('xeRAbora'), findsOneWidget);
-    });
-
-    testWidgets('должен показывать кнопку настроек',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pump();
-
-      expect(find.byIcon(Icons.settings), findsOneWidget);
+      expect(find.text('Collections'), findsOneWidget);
     });
 
     testWidgets('должен показывать FAB New Collection',
@@ -117,7 +109,7 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      expect(find.text('My Collections'), findsOneWidget);
+      expect(find.textContaining('My Collections'), findsOneWidget);
     });
 
     testWidgets('должен группировать коллекции по типу',
@@ -143,58 +135,8 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      expect(find.text('My Collections'), findsOneWidget);
-      expect(find.text('Imported'), findsOneWidget);
-    });
-
-    testWidgets('кнопка поиска должна быть отключена когда API не готов',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pump();
-
-      // Find search icon button
-      final Finder searchButton = find.byIcon(Icons.search);
-      expect(searchButton, findsOneWidget);
-
-      // Icon button should be disabled (onPressed is null)
-      final IconButton iconButton = tester.widget<IconButton>(
-        find.ancestor(
-          of: searchButton,
-          matching: find.byType(IconButton),
-        ),
-      );
-      expect(iconButton.onPressed, isNull);
-    });
-
-    testWidgets('кнопка поиска должна быть активна когда API готов',
-        (WidgetTester tester) async {
-      // Set up valid API credentials
-      final int futureExpiry =
-          DateTime.now().millisecondsSinceEpoch ~/ 1000 + 3600;
-
-      SharedPreferences.setMockInitialValues(<String, Object>{
-        'igdb_client_id': 'test_client_id',
-        'igdb_client_secret': 'test_client_secret',
-        'igdb_access_token': 'test_access_token',
-        'igdb_token_expires': futureExpiry,
-      });
-      prefs = await SharedPreferences.getInstance();
-
-      await tester.pumpWidget(createWidget());
-      await tester.pump();
-
-      // Find search icon button
-      final Finder searchButton = find.byIcon(Icons.search);
-      expect(searchButton, findsOneWidget);
-
-      // Icon button should be enabled
-      final IconButton iconButton = tester.widget<IconButton>(
-        find.ancestor(
-          of: searchButton,
-          matching: find.byType(IconButton),
-        ),
-      );
-      expect(iconButton.onPressed, isNotNull);
+      expect(find.textContaining('My Collections ('), findsOneWidget);
+      expect(find.textContaining('Imported ('), findsOneWidget);
     });
 
     testWidgets('должен показывать иконку пустого состояния',

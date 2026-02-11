@@ -31,7 +31,6 @@ void main() {
     required Collection collection,
     VoidCallback? onTap,
     VoidCallback? onLongPress,
-    VoidCallback? onDelete,
     required CollectionStats stats,
   }) {
     return ProviderScope(
@@ -45,7 +44,6 @@ void main() {
             collection: collection,
             onTap: onTap,
             onLongPress: onLongPress,
-            onDelete: onDelete,
           ),
         ),
       ),
@@ -132,11 +130,11 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('10 games'), findsOneWidget);
+      expect(find.textContaining('10 items'), findsOneWidget);
       expect(find.textContaining('50%'), findsOneWidget);
     });
 
-    testWidgets('должен отображать "game" в единственном числе',
+    testWidgets('должен отображать "item" в единственном числе',
         (WidgetTester tester) async {
       final Collection collection = createTestCollection();
       const CollectionStats stats = CollectionStats(
@@ -154,7 +152,7 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('1 game'), findsOneWidget);
+      expect(find.textContaining('1 item'), findsOneWidget);
     });
 
     testWidgets('не должен показывать процент для imported коллекции',
@@ -175,7 +173,7 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('10 games'), findsOneWidget);
+      expect(find.textContaining('10 items'), findsOneWidget);
       // Для imported не должно быть процента
       expect(find.textContaining('completed'), findsNothing);
     });
@@ -215,55 +213,6 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(longPressed, isTrue);
-    });
-
-    testWidgets('должен показывать кнопку удаления когда onDelete передан',
-        (WidgetTester tester) async {
-      final Collection collection = createTestCollection();
-      const CollectionStats stats = CollectionStats.empty;
-
-      await tester.pumpWidget(createTestWidget(
-        collection: collection,
-        stats: stats,
-        onDelete: () {},
-      ));
-      await tester.pumpAndSettle();
-
-      expect(find.byIcon(Icons.delete_outline), findsOneWidget);
-    });
-
-    testWidgets('не должен показывать кнопку удаления когда onDelete null',
-        (WidgetTester tester) async {
-      final Collection collection = createTestCollection();
-      const CollectionStats stats = CollectionStats.empty;
-
-      await tester.pumpWidget(createTestWidget(
-        collection: collection,
-        stats: stats,
-        onDelete: null,
-      ));
-      await tester.pumpAndSettle();
-
-      expect(find.byIcon(Icons.delete_outline), findsNothing);
-    });
-
-    testWidgets('должен вызывать onDelete при нажатии на кнопку удаления',
-        (WidgetTester tester) async {
-      bool deleted = false;
-      final Collection collection = createTestCollection();
-      const CollectionStats stats = CollectionStats.empty;
-
-      await tester.pumpWidget(createTestWidget(
-        collection: collection,
-        stats: stats,
-        onDelete: () => deleted = true,
-      ));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.byIcon(Icons.delete_outline));
-      await tester.pumpAndSettle();
-
-      expect(deleted, isTrue);
     });
 
     testWidgets('должен отображать стрелку навигации',

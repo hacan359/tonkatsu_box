@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/theme/app_typography.dart';
+
 /// Результат диалога создания коллекции.
 class CreateCollectionResult {
   /// Создаёт [CreateCollectionResult].
@@ -108,7 +112,7 @@ class _CreateCollectionDialogState extends State<CreateCollectionDialog> {
                 return null;
               },
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             TextFormField(
               controller: _authorController,
               decoration: const InputDecoration(
@@ -262,13 +266,11 @@ class DeleteCollectionDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ColorScheme colorScheme = Theme.of(context).colorScheme;
-
     return AlertDialog(
       title: const Text('Delete Collection?'),
       content: RichText(
         text: TextSpan(
-          style: Theme.of(context).textTheme.bodyMedium,
+          style: AppTypography.body,
           children: <TextSpan>[
             const TextSpan(text: 'Are you sure you want to delete '),
             TextSpan(
@@ -289,8 +291,8 @@ class DeleteCollectionDialog extends StatelessWidget {
         FilledButton(
           onPressed: () => Navigator.of(context).pop(true),
           style: FilledButton.styleFrom(
-            backgroundColor: colorScheme.error,
-            foregroundColor: colorScheme.onError,
+            backgroundColor: AppColors.error,
+            foregroundColor: Colors.white,
           ),
           child: const Text('Delete'),
         ),

@@ -211,12 +211,56 @@ class SettingsNotifier extends Notifier<SettingsState> {
     // Устанавливаем TMDB API ключ, если есть
     if (tmdbApiKey != null && tmdbApiKey.isNotEmpty) {
       _tmdbApi.setApiKey(tmdbApiKey);
+      // Предзагружаем жанры из TMDB в БД-кэш
+      _preloadTmdbGenres();
     }
 
     // Загружаем количество платформ асинхронно
     _loadPlatformCount();
 
     return loadedState;
+  }
+
+  /// Предзагружает списки жанров TMDB в БД-кэш.
+  ///
+  /// Запускается асинхронно при установке TMDB API ключа.
+  /// Ошибки игнорируются — жанры загрузятся при первом поиске.
+  Future<void> _preloadTmdbGenres() async {
+    try {
+      final Map<String, String> movieGenres =
+          await _dbService.getTmdbGenreMap('movie');
+      final Map<String, String> tvGenres =
+          await _dbService.getTmdbGenreMap('tv');
+
+      // Загружаем из API только если кэш пуст
+      if (movieGenres.isEmpty) {
+        final List<TmdbGenre> genres = await _tmdbApi.getMovieGenres();
+        if (genres.isNotEmpty) {
+          await _dbService.cacheTmdbGenres(
+            'movie',
+            genres
+                .map((TmdbGenre g) =>
+                    <String, dynamic>{'id': g.id, 'name': g.name})
+                .toList(),
+          );
+        }
+      }
+      if (tvGenres.isEmpty) {
+        final List<TmdbGenre> genres = await _tmdbApi.getTvGenres();
+        if (genres.isNotEmpty) {
+          await _dbService.cacheTmdbGenres(
+            'tv',
+            genres
+                .map((TmdbGenre g) =>
+                    <String, dynamic>{'id': g.id, 'name': g.name})
+                .toList(),
+          );
+        }
+      }
+      // ignore: avoid_catches_without_on_clauses
+    } catch (_) {
+      // Ошибки игнорируются — жанры загрузятся при первом поиске
+    }
   }
 
   Future<void> _loadPlatformCount() async {
@@ -347,6 +391,8 @@ class SettingsNotifier extends Notifier<SettingsState> {
     if (apiKey.isNotEmpty) {
       await _prefs.setString(SettingsKeys.tmdbApiKey, apiKey);
       _tmdbApi.setApiKey(apiKey);
+      // Предзагружаем жанры при смене ключа
+      _preloadTmdbGenres();
     } else {
       await _prefs.remove(SettingsKeys.tmdbApiKey);
       _tmdbApi.clearApiKey();

@@ -6,6 +6,9 @@ import 'package:flutter/material.dart';
 import '../../core/services/image_cache_service.dart';
 import '../constants/media_type_theme.dart';
 import '../models/media_type.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_typography.dart';
 import 'cached_image.dart';
 import 'media_type_badge.dart';
 import 'source_badge.dart';
@@ -98,30 +101,30 @@ class MediaCard extends StatelessWidget {
   /// Радиус скругления постера.
   static const double posterBorderRadius = 4;
 
-  /// Отступ внутри карточки.
-  static const double cardPadding = 12;
-
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-
-    return Card(
-      clipBehavior: Clip.antiAlias,
+    return Material(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
       child: InkWell(
         onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(cardPadding),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+            border: Border.all(color: AppColors.surfaceBorder),
+          ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              _buildImage(colorScheme),
-              const SizedBox(width: 12),
+              _buildImage(),
+              const SizedBox(width: AppSpacing.md),
               Expanded(
-                child: _buildInfo(theme, colorScheme),
+                child: _buildInfo(),
               ),
               if (trailing != null) ...<Widget>[
-                const SizedBox(width: 8),
+                const SizedBox(width: AppSpacing.sm),
                 trailing!,
               ],
             ],
@@ -131,7 +134,7 @@ class MediaCard extends StatelessWidget {
     );
   }
 
-  Widget _buildImage(ColorScheme colorScheme) {
+  Widget _buildImage() {
     final bool useLocalCache =
         cacheImageType != null && cacheImageId != null && imageUrl != null;
 
@@ -148,8 +151,8 @@ class MediaCard extends StatelessWidget {
                     fit: BoxFit.cover,
                     memCacheWidth: memCacheWidth,
                     memCacheHeight: memCacheHeight,
-                    placeholder: _buildLoadingPlaceholder(colorScheme),
-                    errorWidget: _buildPlaceholder(colorScheme),
+                    placeholder: _buildLoadingPlaceholder(),
+                    errorWidget: _buildPlaceholder(),
                   )
                 : CachedNetworkImage(
                     imageUrl: imageUrl!,
@@ -159,13 +162,13 @@ class MediaCard extends StatelessWidget {
                     memCacheWidth: memCacheWidth,
                     memCacheHeight: memCacheHeight,
                     placeholder: (BuildContext context, String url) =>
-                        _buildLoadingPlaceholder(colorScheme),
+                        _buildLoadingPlaceholder(),
                     errorWidget:
                         (BuildContext context, String url, Object error) =>
-                            _buildPlaceholder(colorScheme),
+                            _buildPlaceholder(),
                   ),
           )
-        : _buildPlaceholder(colorScheme);
+        : _buildPlaceholder();
 
     if (mediaType == null) {
       return image;
@@ -191,11 +194,11 @@ class MediaCard extends StatelessWidget {
     );
   }
 
-  Widget _buildLoadingPlaceholder(ColorScheme colorScheme) {
+  Widget _buildLoadingPlaceholder() {
     return Container(
       width: posterWidth,
       height: posterHeight,
-      color: colorScheme.surfaceContainerHighest,
+      color: AppColors.surfaceLight,
       child: const Center(
         child: SizedBox(
           width: 20,
@@ -206,53 +209,51 @@ class MediaCard extends StatelessWidget {
     );
   }
 
-  Widget _buildPlaceholder(ColorScheme colorScheme) {
+  Widget _buildPlaceholder() {
     return Container(
       width: posterWidth,
       height: posterHeight,
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest,
+        color: AppColors.surfaceLight,
         borderRadius: BorderRadius.circular(posterBorderRadius),
       ),
       child: Icon(
         placeholderIcon,
-        color: colorScheme.onSurfaceVariant,
+        color: AppColors.textSecondary,
         size: 24,
       ),
     );
   }
 
-  Widget _buildInfo(ThemeData theme, ColorScheme colorScheme) {
+  Widget _buildInfo() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         // Название
         Text(
           title,
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTypography.h3,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
 
-        const SizedBox(height: 4),
+        const SizedBox(height: AppSpacing.xs),
 
         // Год, рейтинг и источник
         Row(
           children: <Widget>[
             if (source != null) ...<Widget>[
               SourceBadge(source: source!),
-              const SizedBox(width: 8),
+              const SizedBox(width: AppSpacing.sm),
             ],
             if (year != null) ...<Widget>[
               Text(
                 year.toString(),
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.md),
             ],
             if (rating != null) ...<Widget>[
               Icon(
@@ -263,8 +264,8 @@ class MediaCard extends StatelessWidget {
               const SizedBox(width: 2),
               Text(
                 rating!,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -273,12 +274,12 @@ class MediaCard extends StatelessWidget {
         ),
 
         // Жанры
-        if (genres != null) ...<Widget>[
-          const SizedBox(height: 4),
+        if (genres != null && genres!.isNotEmpty) ...<Widget>[
+          const SizedBox(height: AppSpacing.xs),
           Text(
             genres!,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: colorScheme.onSurfaceVariant,
+            style: AppTypography.bodySmall.copyWith(
+              color: AppColors.textSecondary,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -287,26 +288,26 @@ class MediaCard extends StatelessWidget {
 
         // Дополнительная информация (платформы, длительность, сезоны)
         if (additionalInfo != null) ...<Widget>[
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpacing.xs),
           additionalInfo!,
         ],
 
         // Маркировка коллекции
         if (collectionName != null) ...<Widget>[
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpacing.xs),
           Row(
             children: <Widget>[
-              Icon(
+              const Icon(
                 Icons.check_circle,
                 size: 14,
-                color: colorScheme.primary,
+                color: AppColors.gameAccent,
               ),
-              const SizedBox(width: 4),
+              const SizedBox(width: AppSpacing.xs),
               Flexible(
                 child: Text(
                   'In: $collectionName',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colorScheme.primary,
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.gameAccent,
                     fontWeight: FontWeight.w500,
                   ),
                   maxLines: 1,

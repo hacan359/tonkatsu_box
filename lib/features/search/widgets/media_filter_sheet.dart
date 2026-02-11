@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../core/api/tmdb_api.dart';
+import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/theme/app_typography.dart';
 
 /// BottomSheet для фильтров поиска медиа (год + жанры).
 ///
@@ -87,9 +90,6 @@ class _MediaFilterSheetState extends State<MediaFilterSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-
     return DraggableScrollableSheet(
       initialChildSize: 0.7,
       minChildSize: 0.5,
@@ -100,12 +100,12 @@ class _MediaFilterSheetState extends State<MediaFilterSheet> {
           children: <Widget>[
             // Handle
             Padding(
-              padding: const EdgeInsets.only(top: 12, bottom: 8),
+              padding: const EdgeInsets.only(top: 12, bottom: AppSpacing.sm),
               child: Container(
                 width: 32,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                  color: AppColors.textSecondary.withAlpha(102),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -113,12 +113,12 @@ class _MediaFilterSheetState extends State<MediaFilterSheet> {
 
             // Header
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
               child: Row(
                 children: <Widget>[
-                  Text(
+                  const Text(
                     'Filters',
-                    style: theme.textTheme.titleLarge,
+                    style: AppTypography.h2,
                   ),
                   const Spacer(),
                   if (_selectedGenreIds.isNotEmpty ||
@@ -131,22 +131,22 @@ class _MediaFilterSheetState extends State<MediaFilterSheet> {
               ),
             ),
 
-            const Divider(height: 16),
+            const Divider(height: AppSpacing.md),
 
             // Content
             Expanded(
               child: ListView(
                 controller: scrollController,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                 children: <Widget>[
                   // Year section
                   Text(
                     'Release Year',
-                    style: theme.textTheme.titleSmall?.copyWith(
+                    style: AppTypography.h3.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   SizedBox(
                     width: 120,
                     child: TextField(
@@ -168,31 +168,31 @@ class _MediaFilterSheetState extends State<MediaFilterSheet> {
                     ),
                   ),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.lg),
 
                   // Genres section
                   Text(
                     'Genres',
-                    style: theme.textTheme.titleSmall?.copyWith(
+                    style: AppTypography.h3.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
 
                   if (widget.genres.isEmpty)
                     Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(AppSpacing.md),
                       child: Text(
                         'No genres available',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
+                        style: AppTypography.body.copyWith(
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     )
                   else
                     Wrap(
-                      spacing: 8,
-                      runSpacing: 4,
+                      spacing: AppSpacing.sm,
+                      runSpacing: AppSpacing.xs,
                       children: widget.genres.map((TmdbGenre genre) {
                         final bool isSelected =
                             _selectedGenreIds.contains(genre.id);
@@ -205,19 +205,19 @@ class _MediaFilterSheetState extends State<MediaFilterSheet> {
                       }).toList(),
                     ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.md),
                 ],
               ),
             ),
 
             // Bottom actions
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                color: colorScheme.surface,
+                color: AppColors.surface,
                 boxShadow: <BoxShadow>[
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
+                    color: Colors.black.withAlpha(26),
                     blurRadius: 4,
                     offset: const Offset(0, -2),
                   ),

@@ -8,6 +8,7 @@ import '../../../core/database/database_service.dart';
 import '../../../shared/models/movie.dart';
 import '../../../shared/models/search_sort.dart';
 import '../../../shared/models/tv_show.dart';
+import 'genre_provider.dart';
 
 /// Активный таб поиска медиа.
 enum MediaSearchTab {
@@ -183,16 +184,19 @@ class MediaSearchNotifier extends Notifier<MediaSearchState> {
             year: state.selectedYear,
           );
           if (state.query == query) {
-            // Кэшируем результаты
-            if (results.isNotEmpty) {
-              await _db.upsertMovies(results);
-            }
+            // Фильтруем по жанрам (по ID, до резолвинга)
             final List<Movie> filtered = _filterMoviesByGenre(
               results,
               state.selectedGenreIds,
             );
+            // Резолвим genre_ids в имена
+            final List<Movie> resolved = await _resolveMovieGenres(filtered);
+            // Кэшируем с резолвленными жанрами
+            if (resolved.isNotEmpty) {
+              await _db.upsertMovies(resolved);
+            }
             final List<Movie> sorted = _applySortToMovies(
-              filtered,
+              resolved,
               state.currentSort,
               query,
             );
@@ -204,16 +208,19 @@ class MediaSearchNotifier extends Notifier<MediaSearchState> {
             firstAirDateYear: state.selectedYear,
           );
           if (state.query == query) {
-            // Кэшируем результаты
-            if (results.isNotEmpty) {
-              await _db.upsertTvShows(results);
-            }
+            // Фильтруем по жанрам (по ID, до резолвинга)
             final List<TvShow> filtered = _filterTvShowsByGenre(
               results,
               state.selectedGenreIds,
             );
+            // Резолвим genre_ids в имена
+            final List<TvShow> resolved = await _resolveTvShowGenres(filtered);
+            // Кэшируем с резолвленными жанрами
+            if (resolved.isNotEmpty) {
+              await _db.upsertTvShows(resolved);
+            }
             final List<TvShow> sorted = _applySortToTvShows(
-              filtered,
+              resolved,
               state.currentSort,
               query,
             );
@@ -234,6 +241,50 @@ class MediaSearchNotifier extends Notifier<MediaSearchState> {
           isLoading: false,
         );
       }
+    }
+  }
+
+  /// Резолвит числовые genre_ids в имена жанров для фильмов.
+  ///
+  /// Использует БД-кэш жанров. При ошибке возвращает исходный список.
+  Future<List<Movie>> _resolveMovieGenres(List<Movie> movies) async {
+    try {
+      final Map<String, String> genreMap =
+          await ref.read(movieGenreMapProvider.future);
+      if (genreMap.isEmpty) return movies;
+
+      return movies.map((Movie movie) {
+        if (movie.genres == null || movie.genres!.isEmpty) return movie;
+
+        final List<String> resolved = movie.genres!
+            .map((String g) => genreMap[g] ?? g)
+            .toList();
+        return movie.copyWith(genres: resolved);
+      }).toList();
+    } on Exception {
+      return movies;
+    }
+  }
+
+  /// Резолвит числовые genre_ids в имена жанров для сериалов.
+  ///
+  /// Использует БД-кэш жанров. При ошибке возвращает исходный список.
+  Future<List<TvShow>> _resolveTvShowGenres(List<TvShow> tvShows) async {
+    try {
+      final Map<String, String> genreMap =
+          await ref.read(tvGenreMapProvider.future);
+      if (genreMap.isEmpty) return tvShows;
+
+      return tvShows.map((TvShow tvShow) {
+        if (tvShow.genres == null || tvShow.genres!.isEmpty) return tvShow;
+
+        final List<String> resolved = tvShow.genres!
+            .map((String g) => genreMap[g] ?? g)
+            .toList();
+        return tvShow.copyWith(genres: resolved);
+      }).toList();
+    } on Exception {
+      return tvShows;
     }
   }
 

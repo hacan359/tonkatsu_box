@@ -9,6 +9,9 @@ import '../../../core/services/xcoll_file.dart';
 import '../../../shared/widgets/cached_image.dart';
 import '../../../data/repositories/collection_repository.dart';
 import '../../../shared/constants/media_type_theme.dart';
+import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/theme/app_typography.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/collection_sort_mode.dart';
@@ -72,15 +75,30 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   Widget build(BuildContext context) {
     if (_collectionLoading) {
       return Scaffold(
-        appBar: AppBar(),
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: AppColors.background,
+          surfaceTintColor: Colors.transparent,
+          foregroundColor: AppColors.textPrimary,
+        ),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     if (_collection == null) {
       return Scaffold(
-        appBar: AppBar(),
-        body: const Center(child: Text('Collection not found')),
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: AppColors.background,
+          surfaceTintColor: Colors.transparent,
+          foregroundColor: AppColors.textPrimary,
+        ),
+        body: Center(
+          child: Text(
+            'Collection not found',
+            style: AppTypography.body.copyWith(color: AppColors.textSecondary),
+          ),
+        ),
       );
     }
 
@@ -90,8 +108,12 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         ref.watch(collectionStatsProvider(widget.collectionId));
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(_collection!.name),
+        backgroundColor: AppColors.background,
+        surfaceTintColor: Colors.transparent,
+        foregroundColor: AppColors.textPrimary,
+        title: Text(_collection!.name, style: AppTypography.h2),
         bottom: kCanvasEnabled
             ? PreferredSize(
                 preferredSize: const Size.fromHeight(48),
@@ -124,15 +146,18 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           if (_collection!.isEditable)
             IconButton(
               icon: const Icon(Icons.edit),
+              color: AppColors.textSecondary,
               tooltip: 'Rename',
               onPressed: () => _renameCollection(context),
             ),
           IconButton(
             icon: const Icon(Icons.file_upload_outlined),
+            color: AppColors.textSecondary,
             tooltip: 'Export',
             onPressed: () => _exportCollection(),
           ),
           PopupMenuButton<String>(
+            iconColor: AppColors.textSecondary,
             onSelected: (String value) => _handleMenuAction(value),
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
               if (_collection!.isFork)
@@ -147,8 +172,11 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
               const PopupMenuItem<String>(
                 value: 'delete',
                 child: ListTile(
-                  leading: Icon(Icons.delete, color: Colors.red),
-                  title: Text('Delete', style: TextStyle(color: Colors.red)),
+                  leading: Icon(Icons.delete, color: AppColors.error),
+                  title: Text(
+                    'Delete',
+                    style: TextStyle(color: AppColors.error),
+                  ),
                   contentPadding: EdgeInsets.zero,
                 ),
               ),
@@ -181,11 +209,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                       clipBehavior: Clip.hardEdge,
                       decoration: BoxDecoration(
                         border: isPanelOpen
-                            ? Border(
+                            ? const Border(
                                 left: BorderSide(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .outlineVariant,
+                                  color: AppColors.surfaceBorder,
                                 ),
                               )
                             : null,
@@ -219,11 +245,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                       clipBehavior: Clip.hardEdge,
                       decoration: BoxDecoration(
                         border: isPanelOpen
-                            ? Border(
+                            ? const Border(
                                 left: BorderSide(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .outlineVariant,
+                                  color: AppColors.surfaceBorder,
                                 ),
                               )
                             : null,
@@ -267,6 +291,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       floatingActionButton: _collection!.isEditable && !_isCanvasMode
           ? FloatingActionButton.extended(
               onPressed: () => _addItems(context),
+              backgroundColor: AppColors.gameAccent,
+              foregroundColor: AppColors.background,
               icon: const Icon(Icons.add),
               label: const Text('Add Items'),
             )
@@ -275,15 +301,12 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   }
 
   Widget _buildHeader(AsyncValue<CollectionStats> statsAsync) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-
     return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
         border: Border(
-          bottom: BorderSide(color: colorScheme.outlineVariant),
+          bottom: BorderSide(color: AppColors.surfaceBorder),
         ),
       ),
       child: Column(
@@ -292,19 +315,19 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           // Информация о форке
           if (_collection!.isFork && _collection!.forkedFromAuthor != null)
             Padding(
-              padding: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
               child: Row(
                 children: <Widget>[
-                  Icon(
+                  const Icon(
                     Icons.fork_right,
                     size: 16,
-                    color: colorScheme.tertiary,
+                    color: AppColors.tvShowAccent,
                   ),
-                  const SizedBox(width: 4),
+                  const SizedBox(width: AppSpacing.xs),
                   Text(
                     'Forked from ${_collection!.forkedFromAuthor} / ${_collection!.forkedFromName}',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: colorScheme.tertiary,
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.tvShowAccent,
                     ),
                   ),
                 ],
@@ -320,7 +343,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             ),
             error: (Object error, StackTrace stack) => Text(
               'Error loading stats',
-              style: TextStyle(color: colorScheme.error),
+              style: AppTypography.bodySmall.copyWith(color: AppColors.error),
             ),
           ),
         ],
@@ -329,21 +352,16 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   }
 
   Widget _buildStatsContent(CollectionStats stats) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         // Основная статистика
         Text(
           '${stats.total} item${stats.total != 1 ? 's' : ''} \u2022 ${stats.completed} completed',
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: colorScheme.onSurfaceVariant,
-          ),
+          style: AppTypography.body.copyWith(color: AppColors.textSecondary),
         ),
 
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.sm),
 
         // Прогресс-бар
         if (stats.total > 0) ...<Widget>[
@@ -351,20 +369,23 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             children: <Widget>[
               Expanded(
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
                   child: LinearProgressIndicator(
                     value: stats.completionPercent / 100,
                     minHeight: 8,
-                    backgroundColor: colorScheme.surfaceContainerHighest,
+                    backgroundColor: AppColors.surfaceLight,
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      AppColors.gameAccent,
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.md),
               Text(
                 stats.completionPercentFormatted,
-                style: theme.textTheme.titleMedium?.copyWith(
+                style: AppTypography.h3.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: colorScheme.primary,
+                  color: AppColors.gameAccent,
                 ),
               ),
             ],
@@ -377,30 +398,30 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   Widget _buildSortSelector() {
     final CollectionSortMode currentSort =
         ref.watch(collectionSortProvider(widget.collectionId));
-    final ColorScheme colorScheme = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.xs,
+      ),
       child: Row(
         children: <Widget>[
-          Icon(
+          const Icon(
             Icons.sort,
             size: 16,
-            color: colorScheme.onSurfaceVariant,
+            color: AppColors.textSecondary,
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: AppSpacing.xs),
           Text(
             currentSort.displayLabel,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
+            style: AppTypography.bodySmall,
           ),
           const SizedBox(width: 2),
           PopupMenuButton<CollectionSortMode>(
-            icon: Icon(
+            icon: const Icon(
               Icons.arrow_drop_down,
               size: 20,
-              color: colorScheme.onSurfaceVariant,
+              color: AppColors.textSecondary,
             ),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
@@ -423,14 +444,14 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                       child: Row(
                         children: <Widget>[
                           if (mode == currentSort)
-                            Icon(
+                            const Icon(
                               Icons.check,
                               size: 18,
-                              color: colorScheme.primary,
+                              color: AppColors.gameAccent,
                             )
                           else
                             const SizedBox(width: 18),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: AppSpacing.sm),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
@@ -438,10 +459,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                               Text(mode.displayLabel),
                               Text(
                                 mode.description,
-                                style:
-                                    Theme.of(context).textTheme.bodySmall?.copyWith(
-                                          color: colorScheme.onSurfaceVariant,
-                                        ),
+                                style: AppTypography.caption,
                               ),
                             ],
                           ),
@@ -476,7 +494,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
           .refresh(),
       child: ListView.builder(
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
         itemCount: items.length,
         itemBuilder: (BuildContext context, int index) {
           final CollectionItem item = items[index];
@@ -498,7 +516,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
 
   Widget _buildReorderableList(List<CollectionItem> items) {
     return ReorderableListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
       buildDefaultDragHandles: false,
       itemCount: items.length,
       proxyDecorator:
@@ -546,35 +564,28 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   }
 
   Widget _buildEmptyState() {
-    final ColorScheme colorScheme = Theme.of(context).colorScheme;
-
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32.0),
+        padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Icon(
               Icons.collections_bookmark_outlined,
               size: 64,
-              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+              color: AppColors.textTertiary.withAlpha(120),
             ),
-            const SizedBox(height: 16),
-            Text(
-              'No Items Yet',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-            ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.md),
+            const Text('No Items Yet', style: AppTypography.h2),
+            const SizedBox(height: AppSpacing.sm),
             Text(
               _collection!.isEditable
                   ? 'Add items to start building your collection.'
                   : 'This collection is empty.',
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-                  ),
+              style: AppTypography.body.copyWith(
+                color: AppColors.textSecondary,
+              ),
             ),
           ],
         ),
@@ -583,33 +594,29 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   }
 
   Widget _buildErrorState(BuildContext context, Object error) {
-    final ColorScheme colorScheme = Theme.of(context).colorScheme;
-
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32.0),
+        padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Icon(
+            const Icon(
               Icons.error_outline,
               size: 64,
-              color: colorScheme.error,
+              color: AppColors.error,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             Text(
               'Failed to load items',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: colorScheme.error,
-                  ),
+              style: AppTypography.h3.copyWith(color: AppColors.error),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Text(
               error.toString(),
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodySmall,
+              style: AppTypography.bodySmall,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.lg),
             FilledButton.icon(
               onPressed: () => ref
                   .read(collectionItemsNotifierProvider(widget.collectionId)
@@ -1083,12 +1090,17 @@ class _CollectionItemTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.xs,
+      ),
+      color: AppColors.surface,
       clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        side: const BorderSide(color: AppColors.surfaceBorder),
+      ),
       child: Stack(
         children: <Widget>[
           // Фоновая иконка типа медиа (наклонённая, обрезается Card)
@@ -1109,9 +1121,9 @@ class _CollectionItemTile extends StatelessWidget {
           // Основное содержимое
           InkWell(
             onTap: onTap,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
             child: Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(AppSpacing.md - 4),
               child: Row(
                 children: <Widget>[
                   // Drag handle (только в manual sort mode)
@@ -1119,18 +1131,17 @@ class _CollectionItemTile extends StatelessWidget {
                     ReorderableDragStartListener(
                       index: dragIndex,
                       child: Padding(
-                        padding: const EdgeInsets.only(right: 8),
+                        padding: const EdgeInsets.only(right: AppSpacing.sm),
                         child: Icon(
                           Icons.drag_handle,
                           size: 20,
-                          color: colorScheme.onSurfaceVariant
-                              .withValues(alpha: 0.5),
+                          color: AppColors.textTertiary.withAlpha(128),
                         ),
                       ),
                     ),
                   // Обложка
-                  _buildCover(colorScheme),
-                  const SizedBox(width: 12),
+                  _buildCover(),
+                  const SizedBox(width: AppSpacing.md - 4),
 
                   // Информация
                   Expanded(
@@ -1140,39 +1151,35 @@ class _CollectionItemTile extends StatelessWidget {
                         // Название
                         Text(
                           item.itemName,
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: AppTypography.h3,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
 
-                        const SizedBox(height: 4),
+                        const SizedBox(height: AppSpacing.xs),
 
                         // Подзаголовок (зависит от типа медиа)
                         Text(
                           _getSubtitle(),
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
+                          style: AppTypography.bodySmall,
                         ),
 
                         // Комментарий автора
                         if (item.hasAuthorComment) ...<Widget>[
-                          const SizedBox(height: 4),
+                          const SizedBox(height: AppSpacing.xs),
                           Row(
                             children: <Widget>[
-                              Icon(
+                              const Icon(
                                 Icons.format_quote,
                                 size: 14,
-                                color: colorScheme.tertiary,
+                                color: AppColors.movieAccent,
                               ),
-                              const SizedBox(width: 4),
+                              const SizedBox(width: AppSpacing.xs),
                               Expanded(
                                 child: Text(
                                   item.authorComment!,
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: colorScheme.tertiary,
+                                  style: AppTypography.bodySmall.copyWith(
+                                    color: AppColors.movieAccent,
                                     fontStyle: FontStyle.italic,
                                   ),
                                   maxLines: 1,
@@ -1186,7 +1193,7 @@ class _CollectionItemTile extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(width: 8),
+                  const SizedBox(width: AppSpacing.sm),
 
                   // Статус
                   ItemStatusDropdown(
@@ -1199,9 +1206,9 @@ class _CollectionItemTile extends StatelessWidget {
                   // Удалить (если редактируемый)
                   if (onRemove != null)
                     IconButton(
-                      icon: Icon(
+                      icon: const Icon(
                         Icons.remove_circle_outline,
-                        color: colorScheme.error,
+                        color: AppColors.error,
                       ),
                       tooltip: 'Remove',
                       onPressed: onRemove,
@@ -1272,9 +1279,9 @@ class _CollectionItemTile extends StatelessWidget {
     }
   }
 
-  Widget _buildCover(ColorScheme colorScheme) {
+  Widget _buildCover() {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
       child: SizedBox(
         width: 48,
         height: 64,
@@ -1287,24 +1294,24 @@ class _CollectionItemTile extends StatelessWidget {
                 memCacheWidth: 96,
                 memCacheHeight: 128,
                 placeholder: Container(
-                  color: colorScheme.surfaceContainerHighest,
+                  color: AppColors.surfaceLight,
                   child: const Center(
                     child: CircularProgressIndicator(strokeWidth: 2),
                   ),
                 ),
-                errorWidget: _buildPlaceholder(colorScheme),
+                errorWidget: _buildPlaceholder(),
               )
-            : _buildPlaceholder(colorScheme),
+            : _buildPlaceholder(),
       ),
     );
   }
 
-  Widget _buildPlaceholder(ColorScheme colorScheme) {
+  Widget _buildPlaceholder() {
     return Container(
-      color: colorScheme.surfaceContainerHighest,
+      color: AppColors.surfaceLight,
       child: Icon(
         _getMediaTypeIcon(),
-        color: colorScheme.onSurfaceVariant,
+        color: AppColors.textSecondary,
       ),
     );
   }

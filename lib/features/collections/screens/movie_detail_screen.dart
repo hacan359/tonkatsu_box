@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/image_cache_service.dart';
+import '../../../shared/theme/app_colors.dart';
 import '../../../data/repositories/canvas_repository.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/item_status.dart';
@@ -109,7 +110,11 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
     _currentItemName = item.itemName;
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
+        backgroundColor: AppColors.background,
+        surfaceTintColor: Colors.transparent,
+        foregroundColor: AppColors.textPrimary,
         title: Text(item.itemName),
         bottom: TabBar(
           controller: _tabController,
@@ -245,11 +250,9 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
               clipBehavior: Clip.hardEdge,
               decoration: BoxDecoration(
                 border: isPanelOpen
-                    ? Border(
+                    ? const Border(
                         left: BorderSide(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .outlineVariant,
+                          color: AppColors.surfaceBorder,
                         ),
                       )
                     : null,
@@ -282,11 +285,9 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
               clipBehavior: Clip.hardEdge,
               decoration: BoxDecoration(
                 border: isPanelOpen
-                    ? Border(
+                    ? const Border(
                         left: BorderSide(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .outlineVariant,
+                          color: AppColors.surfaceBorder,
                         ),
                       )
                     : null,

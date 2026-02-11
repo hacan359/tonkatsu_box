@@ -7,6 +7,41 @@
 ## [Unreleased]
 
 ### Added
+- Добавлена дизайн-система для тёмной темы: `AppColors`, `AppSpacing`, `AppTypography` (`lib/shared/theme/`)
+- Добавлен `NavigationShell` с `NavigationRail` — боковая навигация (Home, Search, Settings)
+- Добавлены виджеты: `PosterCard` (карточка с постером для grid/list), `RatingBadge` (бейдж рейтинга), `SectionHeader` (заголовок секции с кнопкой действия)
+- Добавлена таблица `tmdb_genres` в БД (миграция v12→v13) — кэш жанров TMDB (id, type, name)
+- Добавлены методы `cacheTmdbGenres()` и `getTmdbGenreMap()` в `DatabaseService`
+- Добавлены провайдеры `movieGenreMapProvider` и `tvGenreMapProvider` для быстрого маппинга ID→имя жанров
+- Добавлена предзагрузка жанров TMDB при старте приложения (`_preloadTmdbGenres()` в `SettingsNotifier`)
+- Добавлен авторезолвинг числовых genre_ids при загрузке элементов коллекции из БД (`_resolveGenresIfNeeded<T>()`)
+- Добавлены изображения (постеры/обложки) в bottom sheets деталей фильмов и сериалов в поиске
+
+### Changed
+- Изменён `HomeScreen` — применена тёмная тема с `AppColors`, `SectionHeader`, `PosterCard` вместо `CollectionTile`
+- Изменён `CollectionScreen` — применена тёмная тема: AppBar → SliverAppBar, статистика в виде цветных чипов, `PosterCard` grid для элементов
+- Изменён `SearchScreen` — применена тёмная тема: AppBar, TabBar, SearchField, карточки результатов
+- Изменены detail screens (Game, Movie, TvShow) — применена тёмная тема: SliverAppBar, секции, чипы
+- Изменён `SettingsScreen` — применена тёмная тема: секции с бордерами, кнопки, диалоги
+- Изменён `MediaCard` — переработан с `Card` на `Material` + `Container` + `InkWell` с `AppColors`/`AppTypography`
+- Изменён `CollectionTile` — стилизация через `AppColors`
+- Изменён `CreateCollectionDialog` — стилизация через `AppColors`
+- Изменён `CachedImage` — стилизация placeholder/error через `AppColors`
+- Изменены search widgets (`GameCard`, `MovieCard`, `TvShowCard`) — стилизация через `AppColors`
+- Изменены filter/sort widgets (`PlatformFilterSheet`, `MediaFilterSheet`, `SortSelector`) — тёмная тема
+- Изменён `genre_provider.dart` — DB-first стратегия загрузки жанров (БД → API → сохранение в БД)
+- Изменён `media_search_provider.dart` — жанры резолвятся в имена ПЕРЕД сохранением в БД
+- Изменён `app.dart` — корневой виджет оборачивает в `NavigationShell`
+- Изменена версия БД: 12 → 13
+
+### Fixed
+- Исправлено отображение числовых ID вместо имён жанров в карточках фильмов и сериалов (TMDB Search API возвращает genre_ids)
+- Исправлен потенциальный `FormatException` в `genre_provider.dart` — замена `int.parse` на `int.tryParse` с фильтрацией
+- Исправлено мерцание canvas-изображений при перетаскивании (canvas_view.dart)
+
+---
+
+### Added
 - Добавлена система дат активности элементов коллекции: `started_at`, `completed_at`, `last_activity_at` — для отслеживания прогресса и истории взаимодействия с играми, фильмами и сериалами
 - Добавлена миграция БД v11→v12: три новых колонки в `collection_items`, инициализация `last_activity_at` из `added_at` для существующих записей
 - Добавлен виджет `ActivityDatesSection` (`lib/features/collections/widgets/activity_dates_section.dart`) — секция с 4 строками: Added (readonly), Started (editable), Completed (editable), Last Activity (readonly). DatePicker для ручного редактирования дат

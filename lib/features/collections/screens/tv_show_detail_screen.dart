@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/tmdb_api.dart';
+import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/theme/app_typography.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../core/database/database_service.dart';
 import '../../../data/repositories/canvas_repository.dart';
@@ -115,7 +118,11 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
     _currentItemName = item.itemName;
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
+        backgroundColor: AppColors.background,
+        surfaceTintColor: Colors.transparent,
+        foregroundColor: AppColors.textPrimary,
         title: Text(item.itemName),
         bottom: TabBar(
           controller: _tabController,
@@ -240,20 +247,17 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
     final int totalEpisodes = tvShow?.totalEpisodes ?? 0;
     final int watchedCount = trackerState.totalWatchedCount;
 
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         // Заголовок и общий прогресс
         Row(
           children: <Widget>[
-            Icon(Icons.playlist_add_check, size: 20, color: colorScheme.primary),
-            const SizedBox(width: 8),
+            const Icon(Icons.playlist_add_check, size: 20, color: AppColors.gameAccent),
+            const SizedBox(width: AppSpacing.sm),
             Text(
               'Episode Progress',
-              style: theme.textTheme.titleSmall?.copyWith(
+              style: AppTypography.h3.copyWith(
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -262,20 +266,20 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
               totalEpisodes > 0
                   ? '$watchedCount/$totalEpisodes watched'
                   : '$watchedCount watched',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: colorScheme.onSurfaceVariant,
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColors.textSecondary,
               ),
             ),
           ],
         ),
         if (totalEpisodes > 0) ...<Widget>[
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
             child: LinearProgressIndicator(
               value: watchedCount / totalEpisodes,
               minHeight: 6,
-              backgroundColor: colorScheme.surfaceContainerHighest,
+              backgroundColor: AppColors.surfaceLight,
             ),
           ),
         ],
@@ -318,11 +322,9 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
               clipBehavior: Clip.hardEdge,
               decoration: BoxDecoration(
                 border: isPanelOpen
-                    ? Border(
+                    ? const Border(
                         left: BorderSide(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .outlineVariant,
+                          color: AppColors.surfaceBorder,
                         ),
                       )
                     : null,
@@ -355,11 +357,9 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
               clipBehavior: Clip.hardEdge,
               decoration: BoxDecoration(
                 border: isPanelOpen
-                    ? Border(
+                    ? const Border(
                         left: BorderSide(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .outlineVariant,
+                          color: AppColors.surfaceBorder,
                         ),
                       )
                     : null,
@@ -610,9 +610,9 @@ class _SeasonsListWidgetState extends ConsumerState<_SeasonsListWidget> {
           Expanded(
             child: Text(
               'No season data available',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+              ),
             ),
           ),
           IconButton(
@@ -679,9 +679,6 @@ class _SeasonExpansionTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-
     final int seasonNum = season.seasonNumber;
     final int episodeCount = season.episodeCount ?? 0;
     final int watchedCount = trackerState.watchedCountForSeason(seasonNum);
@@ -697,23 +694,23 @@ class _SeasonExpansionTile extends ConsumerWidget {
         : '$watchedCount watched';
 
     return ExpansionTile(
-      tilePadding: const EdgeInsets.symmetric(horizontal: 4),
-      childrenPadding: const EdgeInsets.only(bottom: 8),
+      tilePadding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+      childrenPadding: const EdgeInsets.only(bottom: AppSpacing.sm),
       leading: Icon(
         allWatched ? Icons.check_circle : Icons.circle_outlined,
-        color: allWatched ? colorScheme.primary : colorScheme.outlineVariant,
+        color: allWatched ? AppColors.gameAccent : AppColors.surfaceBorder,
         size: 20,
       ),
       title: Text(
         seasonTitle,
-        style: theme.textTheme.bodyMedium?.copyWith(
+        style: AppTypography.body.copyWith(
           fontWeight: FontWeight.w600,
         ),
       ),
       subtitle: Text(
         subtitle,
-        style: theme.textTheme.bodySmall?.copyWith(
-          color: colorScheme.onSurfaceVariant,
+        style: AppTypography.bodySmall.copyWith(
+          color: AppColors.textSecondary,
         ),
       ),
       trailing: Row(
@@ -783,11 +780,11 @@ class _SeasonExpansionTile extends ConsumerWidget {
               ))
         else if (episodes != null && episodes.isEmpty)
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSpacing.md),
             child: Text(
               'No episodes found',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: colorScheme.onSurfaceVariant,
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColors.textSecondary,
               ),
             ),
           ),
@@ -817,9 +814,6 @@ class _EpisodeTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-
     final String title =
         'E${episode.episodeNumber}: ${episode.name}';
     final List<String> subtitleParts = <String>[];
@@ -847,24 +841,24 @@ class _EpisodeTile extends ConsumerWidget {
       },
       title: Text(
         title,
-        style: theme.textTheme.bodySmall?.copyWith(
+        style: AppTypography.bodySmall.copyWith(
           decoration: isWatched ? TextDecoration.lineThrough : null,
           color: isWatched
-              ? colorScheme.onSurfaceVariant
-              : colorScheme.onSurface,
+              ? AppColors.textSecondary
+              : AppColors.textPrimary,
         ),
       ),
       subtitle: subtitleParts.isNotEmpty
           ? Text(
               subtitleParts.join(' \u2022 '),
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: colorScheme.onSurfaceVariant,
+              style: AppTypography.caption.copyWith(
+                color: AppColors.textSecondary,
               ),
             )
           : null,
       dense: true,
       controlAffinity: ListTileControlAffinity.leading,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+      contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
       visualDensity: VisualDensity.compact,
     );
   }

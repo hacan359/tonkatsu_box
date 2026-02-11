@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/image_cache_service.dart';
 import '../../../shared/models/platform.dart';
+import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/cached_image.dart' as app_cached;
 
 /// BottomSheet для выбора платформ с поиском.
@@ -95,8 +98,6 @@ class _PlatformFilterSheetState extends ConsumerState<PlatformFilterSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
     final List<Platform> filtered = _filteredPlatforms;
 
     return DraggableScrollableSheet(
@@ -109,12 +110,12 @@ class _PlatformFilterSheetState extends ConsumerState<PlatformFilterSheet> {
           children: <Widget>[
             // Handle
             Padding(
-              padding: const EdgeInsets.only(top: 12, bottom: 8),
+              padding: const EdgeInsets.only(top: 12, bottom: AppSpacing.sm),
               child: Container(
                 width: 32,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                  color: AppColors.textSecondary.withAlpha(102),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -122,12 +123,12 @@ class _PlatformFilterSheetState extends ConsumerState<PlatformFilterSheet> {
 
             // Header
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
               child: Row(
                 children: <Widget>[
-                  Text(
+                  const Text(
                     'Select Platforms',
-                    style: theme.textTheme.titleLarge,
+                    style: AppTypography.h2,
                   ),
                   const Spacer(),
                   if (_selectedIds.isNotEmpty)
@@ -139,11 +140,11 @@ class _PlatformFilterSheetState extends ConsumerState<PlatformFilterSheet> {
               ),
             ),
 
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
 
             // Search field
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
               child: TextField(
                 controller: _searchController,
                 focusNode: _searchFocus,
@@ -161,7 +162,7 @@ class _PlatformFilterSheetState extends ConsumerState<PlatformFilterSheet> {
                       : null,
                   border: const OutlineInputBorder(),
                   contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
+                    horizontal: AppSpacing.md,
                     vertical: 12,
                   ),
                 ),
@@ -169,36 +170,36 @@ class _PlatformFilterSheetState extends ConsumerState<PlatformFilterSheet> {
               ),
             ),
 
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
 
             // Selected count
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
               child: Row(
                 children: <Widget>[
                   Text(
                     '${_selectedIds.length} selected',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
                     ),
                   ),
                   const Spacer(),
                   Text(
                     '${filtered.length} platforms',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ],
               ),
             ),
 
-            const Divider(height: 16),
+            const Divider(height: AppSpacing.md),
 
             // Platform list
             Expanded(
               child: filtered.isEmpty
-                  ? _buildEmptyState(theme, colorScheme)
+                  ? _buildEmptyState()
                   : ListView.builder(
                       controller: scrollController,
                       itemCount: filtered.length,
@@ -226,12 +227,12 @@ class _PlatformFilterSheetState extends ConsumerState<PlatformFilterSheet> {
 
             // Bottom actions
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                color: colorScheme.surface,
+                color: AppColors.surface,
                 boxShadow: <BoxShadow>[
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
+                    color: Colors.black.withAlpha(26),
                     blurRadius: 4,
                     offset: const Offset(0, -2),
                   ),
@@ -281,7 +282,7 @@ class _PlatformFilterSheetState extends ConsumerState<PlatformFilterSheet> {
     return const Icon(Icons.devices, size: 24);
   }
 
-  Widget _buildEmptyState(ThemeData theme, ColorScheme colorScheme) {
+  Widget _buildEmptyState() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -289,20 +290,20 @@ class _PlatformFilterSheetState extends ConsumerState<PlatformFilterSheet> {
           Icon(
             Icons.search_off,
             size: 48,
-            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+            color: AppColors.textSecondary.withAlpha(128),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
           Text(
             'No platforms found',
-            style: theme.textTheme.bodyLarge?.copyWith(
-              color: colorScheme.onSurfaceVariant,
+            style: AppTypography.body.copyWith(
+              color: AppColors.textSecondary,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           Text(
             'Try a different search term',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+            style: AppTypography.body.copyWith(
+              color: AppColors.textSecondary.withAlpha(179),
             ),
           ),
         ],

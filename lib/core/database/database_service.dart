@@ -51,7 +51,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 12,
+        version: 13,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -77,6 +77,7 @@ class DatabaseService {
     await _createCollectionItemsTable(db);
     await _createTvEpisodesCacheTable(db);
     await _createWatchedEpisodesTable(db);
+    await _createTmdbGenresTable(db);
   }
 
   Future<void> _createPlatformsTable(Database db) async {
@@ -220,6 +221,9 @@ class DatabaseService {
       await db.execute(
         'UPDATE collection_items SET last_activity_at = added_at',
       );
+    }
+    if (oldVersion < 13) {
+      await _createTmdbGenresTable(db);
     }
   }
 
@@ -434,6 +438,17 @@ class DatabaseService {
     await db.execute('''
       CREATE INDEX idx_collection_items_type
       ON collection_items(media_type)
+    ''');
+  }
+
+  Future<void> _createTmdbGenresTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS tmdb_genres (
+        id INTEGER NOT NULL,
+        type TEXT NOT NULL,
+        name TEXT NOT NULL,
+        PRIMARY KEY (id, type)
+      )
     ''');
   }
 
@@ -738,6 +753,54 @@ class DatabaseService {
       }
       await batch.commit(noResult: true);
     });
+  }
+
+  // ===== TMDB Жанры =====
+
+  /// Сохраняет список жанров TMDB в кэш.
+  ///
+  /// [type] — тип медиа: `'movie'` или `'tv'`.
+  Future<void> cacheTmdbGenres(
+    String type,
+    List<Map<String, dynamic>> genres,
+  ) async {
+    if (genres.isEmpty) return;
+
+    final Database db = await database;
+    await db.transaction((Transaction txn) async {
+      // Удаляем старые записи этого типа
+      await txn.delete(
+        'tmdb_genres',
+        where: 'type = ?',
+        whereArgs: <Object?>[type],
+      );
+      final Batch batch = txn.batch();
+      for (final Map<String, dynamic> genre in genres) {
+        batch.insert('tmdb_genres', <String, Object?>{
+          'id': genre['id'],
+          'type': type,
+          'name': genre['name'],
+        });
+      }
+      await batch.commit(noResult: true);
+    });
+  }
+
+  /// Возвращает маппинг ID → имя жанров из кэша.
+  ///
+  /// [type] — тип медиа: `'movie'` или `'tv'`.
+  Future<Map<String, String>> getTmdbGenreMap(String type) async {
+    final Database db = await database;
+    final List<Map<String, dynamic>> rows = await db.query(
+      'tmdb_genres',
+      where: 'type = ?',
+      whereArgs: <Object?>[type],
+    );
+
+    return <String, String>{
+      for (final Map<String, dynamic> row in rows)
+        (row['id'] as int).toString(): row['name'] as String,
+    };
   }
 
   /// Возвращает несколько сериалов по списку TMDB ID.
@@ -1160,15 +1223,29 @@ class DatabaseService {
       };
     }
 
+    // Резолвим жанры из числовых ID в имена (если есть нерезолвленные)
+    final List<Movie> resolvedMovies = await _resolveGenresIfNeeded(
+      movies,
+      'movie',
+      (Movie m) => m.genres,
+      (Movie m, List<String> g) => m.copyWith(genres: g),
+    );
+    final List<TvShow> resolvedTvShows = await _resolveGenresIfNeeded(
+      tvShows,
+      'tv',
+      (TvShow t) => t.genres,
+      (TvShow t, List<String> g) => t.copyWith(genres: g),
+    );
+
     // Создаём карты для быстрого поиска
     final Map<int, Game> gamesMap = <int, Game>{
       for (final Game g in games) g.id: g,
     };
     final Map<int, Movie> moviesMap = <int, Movie>{
-      for (final Movie m in movies) m.tmdbId: m,
+      for (final Movie m in resolvedMovies) m.tmdbId: m,
     };
     final Map<int, TvShow> tvShowsMap = <int, TvShow>{
-      for (final TvShow t in tvShows) t.tmdbId: t,
+      for (final TvShow t in resolvedTvShows) t.tmdbId: t,
     };
 
     // Собираем результат
@@ -1186,6 +1263,46 @@ class DatabaseService {
         case MediaType.tvShow:
           return item.copyWith(tvShow: tvShowsMap[item.externalId]);
       }
+    }).toList();
+  }
+
+  /// Проверяет, является ли строка числовым ID (нерезолвленный жанр).
+  static bool _isNumericGenre(String genre) {
+    return int.tryParse(genre) != null;
+  }
+
+  /// Резолвит числовые genre_ids в имена для списка медиа-элементов.
+  ///
+  /// Проверяет жанры каждого элемента: если хотя бы один жанр — числовой ID,
+  /// загружает маппинг из кэша `tmdb_genres` и заменяет ID на имена.
+  /// Если кэш пуст или нет нерезолвленных жанров, возвращает исходный список.
+  Future<List<T>> _resolveGenresIfNeeded<T>(
+    List<T> items,
+    String genreType,
+    List<String>? Function(T item) getGenres,
+    T Function(T item, List<String> genres) withGenres,
+  ) async {
+    if (items.isEmpty) return items;
+
+    // Проверяем, есть ли нерезолвленные жанры (числовые ID)
+    final bool hasUnresolved = items.any((T item) {
+      final List<String>? genres = getGenres(item);
+      return genres != null && genres.any(_isNumericGenre);
+    });
+    if (!hasUnresolved) return items;
+
+    // Загружаем маппинг из кэша
+    final Map<String, String> genreMap = await getTmdbGenreMap(genreType);
+    if (genreMap.isEmpty) return items;
+
+    return items.map((T item) {
+      final List<String>? genres = getGenres(item);
+      if (genres == null || genres.isEmpty) return item;
+      if (!genres.any(_isNumericGenre)) return item;
+
+      final List<String> resolved =
+          genres.map((String g) => genreMap[g] ?? g).toList();
+      return withGenres(item, resolved);
     }).toList();
   }
 

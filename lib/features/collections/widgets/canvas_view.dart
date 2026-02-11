@@ -105,7 +105,11 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
   bool _isItemDragging = false;
 
   /// Текущие drag-смещения элементов для обновления связей в реальном времени.
-  Map<int, Offset> _dragOffsets = const <int, Offset>{};
+  ///
+  /// Используем ValueNotifier вместо setState, чтобы при перетаскивании
+  /// перестраивался только ConnectionPainter, а не все элементы канваса.
+  final ValueNotifier<Map<int, Offset>> _dragOffsetsNotifier =
+      ValueNotifier<Map<int, Offset>>(const <int, Offset>{});
 
   /// Позиция мыши на канвасе (для временной линии связи).
   Offset? _mouseCanvasPosition;
@@ -113,16 +117,17 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
   void _onItemDragStateChanged({required bool isDragging}) {
     setState(() {
       _isItemDragging = isDragging;
-      if (!isDragging) {
-        _dragOffsets = const <int, Offset>{};
-      }
     });
+    if (!isDragging) {
+      _dragOffsetsNotifier.value = const <int, Offset>{};
+    }
   }
 
   void _onItemDragUpdate(int itemId, Offset delta) {
-    setState(() {
-      _dragOffsets = <int, Offset>{..._dragOffsets, itemId: delta};
-    });
+    _dragOffsetsNotifier.value = <int, Offset>{
+      ..._dragOffsetsNotifier.value,
+      itemId: delta,
+    };
   }
 
   /// Обработчик клавиши Escape для отмены создания связи.
@@ -141,6 +146,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
 
   @override
   void dispose() {
+    _dragOffsetsNotifier.dispose();
     _transformationController.dispose();
     _focusNode.dispose();
     super.dispose();
@@ -578,21 +584,32 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
                         child: Stack(
                           clipBehavior: Clip.none,
                           children: <Widget>[
-                            // Связи рисуются под элементами
+                            // Связи рисуются под элементами.
+                            // ValueListenableBuilder изолирует перерисовку
+                            // связей от остальных элементов канваса.
                             if (canvasState.connections.isNotEmpty ||
                                 isConnecting)
                               Positioned.fill(
-                                child: CustomPaint(
-                                  painter: CanvasConnectionPainter(
-                                    connections: canvasState.connections,
-                                    items: canvasState.items,
-                                    connectingFrom: connectingFromItem,
-                                    mousePosition: _mouseCanvasPosition,
-                                    labelBackgroundColor:
-                                        colorScheme.surfaceContainerLow
-                                            .withAlpha(220),
-                                    dragOffsets: _dragOffsets,
-                                  ),
+                                child: ValueListenableBuilder<Map<int, Offset>>(
+                                  valueListenable: _dragOffsetsNotifier,
+                                  builder: (
+                                    BuildContext context,
+                                    Map<int, Offset> dragOffsets,
+                                    Widget? child,
+                                  ) {
+                                    return CustomPaint(
+                                      painter: CanvasConnectionPainter(
+                                        connections: canvasState.connections,
+                                        items: canvasState.items,
+                                        connectingFrom: connectingFromItem,
+                                        mousePosition: _mouseCanvasPosition,
+                                        labelBackgroundColor:
+                                            colorScheme.surfaceContainerLow
+                                                .withAlpha(220),
+                                        dragOffsets: dragOffsets,
+                                      ),
+                                    );
+                                  },
                                 ),
                               ),
                             for (final CanvasItem item in sortedItems)

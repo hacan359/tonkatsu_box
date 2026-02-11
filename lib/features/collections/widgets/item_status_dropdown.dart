@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
+import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/theme/app_typography.dart';
 
 /// Выпадающий список для выбора статуса элемента коллекции.
 ///
@@ -46,17 +49,14 @@ class ItemStatusDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-
     if (compact) {
-      return _buildCompactDropdown(colorScheme);
+      return _buildCompactDropdown();
     }
 
-    return _buildFullDropdown(theme, colorScheme);
+    return _buildFullDropdown();
   }
 
-  Widget _buildCompactDropdown(ColorScheme colorScheme) {
+  Widget _buildCompactDropdown() {
     return PopupMenuButton<ItemStatus>(
       initialValue: status,
       onSelected: onChanged,
@@ -82,16 +82,16 @@ class ItemStatusDropdown extends StatelessWidget {
     );
   }
 
-  Widget _buildFullDropdown(ThemeData theme, ColorScheme colorScheme) {
-    final Color statusColor = _getStatusColor(colorScheme);
+  Widget _buildFullDropdown() {
+    final Color statusColor = _getStatusColor();
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: AppSpacing.xs),
       decoration: BoxDecoration(
-        color: statusColor.withValues(alpha: 0.1),
+        color: statusColor.withAlpha(25),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: statusColor.withValues(alpha: 0.3),
+          color: statusColor.withAlpha(76),
         ),
       ),
       child: PopupMenuButton<ItemStatus>(
@@ -102,15 +102,15 @@ class ItemStatusDropdown extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Text(status.icon, style: const TextStyle(fontSize: 16)),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppSpacing.sm),
             Text(
               status.displayLabel(mediaType),
-              style: theme.textTheme.bodyMedium?.copyWith(
+              style: AppTypography.body.copyWith(
                 color: statusColor,
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const SizedBox(width: 4),
+            const SizedBox(width: AppSpacing.xs),
             Icon(
               Icons.arrow_drop_down,
               size: 20,
@@ -137,10 +137,10 @@ class ItemStatusDropdown extends StatelessWidget {
                     ),
                   ),
                   if (isSelected)
-                    Icon(
+                    const Icon(
                       Icons.check,
                       size: 18,
-                      color: colorScheme.primary,
+                      color: AppColors.gameAccent,
                     ),
                 ],
               ),
@@ -151,20 +151,20 @@ class ItemStatusDropdown extends StatelessWidget {
     );
   }
 
-  Color _getStatusColor(ColorScheme colorScheme) {
+  Color _getStatusColor() {
     switch (status) {
       case ItemStatus.notStarted:
-        return colorScheme.onSurfaceVariant;
+        return AppColors.textSecondary;
       case ItemStatus.inProgress:
-        return colorScheme.tertiary;
+        return AppColors.statusInProgress;
       case ItemStatus.completed:
-        return colorScheme.primary;
+        return AppColors.statusCompleted;
       case ItemStatus.dropped:
-        return colorScheme.error;
+        return AppColors.statusDropped;
       case ItemStatus.planned:
-        return colorScheme.secondary;
+        return AppColors.movieAccent;
       case ItemStatus.onHold:
-        return colorScheme.outline;
+        return AppColors.statusOnHold;
     }
   }
 }
@@ -190,8 +190,7 @@ class ItemStatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ColorScheme colorScheme = Theme.of(context).colorScheme;
-    final Color color = _getStatusColor(colorScheme);
+    final Color color = _getStatusColor();
 
     if (small) {
       return Text(
@@ -201,20 +200,22 @@ class ItemStatusChip extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
+      ),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
+        color: color.withAlpha(25),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           Text(status.icon, style: const TextStyle(fontSize: 14)),
-          const SizedBox(width: 4),
+          const SizedBox(width: AppSpacing.xs),
           Text(
             status.displayLabel(mediaType),
-            style: TextStyle(
-              fontSize: 12,
+            style: AppTypography.bodySmall.copyWith(
               color: color,
               fontWeight: FontWeight.w500,
             ),
@@ -224,20 +225,20 @@ class ItemStatusChip extends StatelessWidget {
     );
   }
 
-  Color _getStatusColor(ColorScheme colorScheme) {
+  Color _getStatusColor() {
     switch (status) {
       case ItemStatus.notStarted:
-        return colorScheme.onSurfaceVariant;
+        return AppColors.textSecondary;
       case ItemStatus.inProgress:
-        return colorScheme.tertiary;
+        return AppColors.statusInProgress;
       case ItemStatus.completed:
-        return colorScheme.primary;
+        return AppColors.statusCompleted;
       case ItemStatus.dropped:
-        return colorScheme.error;
+        return AppColors.statusDropped;
       case ItemStatus.planned:
-        return colorScheme.secondary;
+        return AppColors.movieAccent;
       case ItemStatus.onHold:
-        return colorScheme.outline;
+        return AppColors.statusOnHold;
     }
   }
 }

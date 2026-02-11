@@ -3,6 +3,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../shared/models/search_sort.dart';
+import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/theme/app_typography.dart';
 
 /// Виджет выбора сортировки для результатов поиска.
 ///
@@ -25,26 +28,23 @@ class SortSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Row(
         children: <Widget>[
-          Icon(
+          const Icon(
             Icons.sort,
             size: 16,
-            color: colorScheme.onSurfaceVariant,
+            color: AppColors.textSecondary,
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppSpacing.sm),
           Text(
             'Sort:',
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: colorScheme.onSurfaceVariant,
+            style: AppTypography.bodySmall.copyWith(
+              color: AppColors.textSecondary,
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: SegmentedButton<SearchSortField>(
               segments: <ButtonSegment<SearchSortField>>[
@@ -84,11 +84,11 @@ class SortSelector extends StatelessWidget {
                   ));
                 }
               },
-              style: ButtonStyle(
+              style: const ButtonStyle(
                 visualDensity: VisualDensity.compact,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 textStyle: WidgetStatePropertyAll<TextStyle?>(
-                  theme.textTheme.labelSmall,
+                  AppTypography.caption,
                 ),
               ),
             ),

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -12,6 +13,9 @@ import '../../../shared/models/media_type.dart';
 import '../../../shared/models/movie.dart';
 import '../../../shared/models/platform.dart';
 import '../../../shared/models/tv_show.dart';
+import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/cached_image.dart' as app_cached;
 import '../../collections/providers/collections_provider.dart';
 import '../providers/game_search_provider.dart';
@@ -228,10 +232,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           ),
         ),
         if (searchState.hasFilters) ...<Widget>[
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           _buildMediaFilterChips(searchState),
         ],
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.sm),
       ],
     );
   }
@@ -245,8 +249,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         genresAsync.valueOrNull ?? <TmdbGenre>[];
 
     return Wrap(
-      spacing: 8,
-      runSpacing: 4,
+      spacing: AppSpacing.sm,
+      runSpacing: AppSpacing.xs,
       children: <Widget>[
         if (searchState.selectedYear != null)
           Chip(
@@ -496,8 +500,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   }) {
     if (infos != null && infos.isNotEmpty) {
       return IconButton(
-        icon: Icon(Icons.remove_circle_outline,
-            color: Theme.of(context).colorScheme.error),
+        icon: const Icon(Icons.remove_circle_outline,
+            color: AppColors.error),
         tooltip: 'Remove from collection',
         onPressed: () => _removeItemFromCollection(title, infos, mediaType),
       );
@@ -773,6 +777,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         genres: movie.genres,
         icon: Icons.movie,
         extraInfo: movie.runtime != null ? '${movie.runtime} min' : null,
+        posterUrl: movie.posterUrl,
         onAddToCollection: () => _addMovieToAnyCollection(movie),
       ),
     );
@@ -790,6 +795,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         genres: tvShow.genres,
         icon: Icons.tv,
         extraInfo: tvShow.status,
+        posterUrl: tvShow.posterUrl,
         onAddToCollection: () => _addTvShowToAnyCollection(tvShow),
       ),
     );
@@ -800,7 +806,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
+        backgroundColor: AppColors.background,
+        surfaceTintColor: Colors.transparent,
+        foregroundColor: AppColors.textPrimary,
         title: const Text('Search'),
         bottom: TabBar(
           controller: _tabController,
@@ -815,7 +825,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         children: <Widget>[
           // Поле поиска
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(AppSpacing.md),
             child: Row(
               children: <Widget>[
                 Expanded(
@@ -837,14 +847,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                     onSubmitted: (_) => _onSearchSubmit(),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppSpacing.sm),
                 FilledButton(
                   onPressed: _searchController.text.length >= 2
                       ? _onSearchSubmit
                       : null,
                   style: FilledButton.styleFrom(
                     minimumSize: const Size(48, 48),
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                   ),
                   child: const Text('Search'),
                 ),
@@ -890,14 +900,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       children: <Widget>[
         // Фильтр по платформе (только для игр)
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
           child: _buildPlatformFilter(searchState),
         ),
 
         // Сортировка (только когда есть результаты)
         if (searchState.hasResults)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: SortSelector(
               currentSort: searchState.currentSort,
               onChanged: (SearchSort sort) {
@@ -942,18 +952,18 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           ),
         ),
         if (searchState.selectedPlatformIds.isNotEmpty) ...<Widget>[
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           _buildSelectedPlatformChips(searchState.selectedPlatformIds),
         ],
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.sm),
       ],
     );
   }
 
   Widget _buildSelectedPlatformChips(List<int> selectedIds) {
     return Wrap(
-      spacing: 8,
-      runSpacing: 4,
+      spacing: AppSpacing.sm,
+      runSpacing: AppSpacing.xs,
       children: selectedIds.map((int id) {
         final Platform? platform = _platformMap[id];
         return Chip(
@@ -1002,14 +1012,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
             <int, List<CollectedItemInfo>>{};
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       itemCount: searchState.results.length,
       itemBuilder: (BuildContext context, int index) {
         final Game game = searchState.results[index];
         final List<CollectedItemInfo>? infos = collectedGameInfos[game.id];
         final String? collectionName = infos != null && infos.isNotEmpty ? infos.first.collectionName : null;
         return Padding(
-          padding: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.only(bottom: AppSpacing.sm),
           child: GameCard(
             game: game,
             onTap: () => _onGameTap(game),
@@ -1027,8 +1037,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   Widget _buildGameTrailing(Game game, List<CollectedItemInfo>? infos) {
     if (infos != null && infos.isNotEmpty) {
       return IconButton(
-        icon: Icon(Icons.remove_circle_outline,
-            color: Theme.of(context).colorScheme.error),
+        icon: const Icon(Icons.remove_circle_outline,
+            color: AppColors.error),
         tooltip: 'Remove from collection',
         onPressed: () => _removeGameFromCollection(game, infos),
       );
@@ -1073,14 +1083,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       children: <Widget>[
         // Фильтры медиа
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
           child: _buildMediaFilterBar(searchState),
         ),
 
         // Сортировка (только когда есть результаты)
         if (searchState.movieResults.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: SortSelector(
               currentSort: searchState.currentSort,
               onChanged: (SearchSort sort) {
@@ -1091,7 +1101,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
         Expanded(
           child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             itemCount: searchState.movieResults.length,
             itemBuilder: (BuildContext context, int index) {
               final Movie movie = searchState.movieResults[index];
@@ -1099,7 +1109,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                   collectedMovieInfos[movie.tmdbId];
               final String? collectionName = infos != null && infos.isNotEmpty ? infos.first.collectionName : null;
               return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                 child: MovieCard(
                   movie: movie,
                   onTap: () => _onMovieTap(movie),
@@ -1154,14 +1164,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       children: <Widget>[
         // Фильтры медиа
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
           child: _buildMediaFilterBar(searchState),
         ),
 
         // Сортировка (только когда есть результаты)
         if (searchState.tvShowResults.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: SortSelector(
               currentSort: searchState.currentSort,
               onChanged: (SearchSort sort) {
@@ -1172,7 +1182,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
         Expanded(
           child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             itemCount: searchState.tvShowResults.length,
             itemBuilder: (BuildContext context, int index) {
               final TvShow tvShow = searchState.tvShowResults[index];
@@ -1180,7 +1190,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                   collectedTvShowInfos[tvShow.tmdbId];
               final String? collectionName = infos != null && infos.isNotEmpty ? infos.first.collectionName : null;
               return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                 child: TvShowCard(
                   tvShow: tvShow,
                   onTap: () => _onTvShowTap(tvShow),
@@ -1205,8 +1215,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   // ==================== Shared UI states ====================
 
   Widget _buildEmptyState(String message, IconData icon) {
-    final ColorScheme colorScheme = Theme.of(context).colorScheme;
-
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -1214,20 +1222,20 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           Icon(
             icon,
             size: 64,
-            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+            color: AppColors.textSecondary.withAlpha(128),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
           Text(
             message,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
+            style: AppTypography.h3.copyWith(
+                  color: AppColors.textSecondary,
                 ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           Text(
             'Type at least 2 characters to start searching',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+            style: AppTypography.body.copyWith(
+                  color: AppColors.textSecondary.withAlpha(179),
                 ),
           ),
         ],
@@ -1236,8 +1244,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   }
 
   Widget _buildNoResults(String query) {
-    final ColorScheme colorScheme = Theme.of(context).colorScheme;
-
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -1245,20 +1251,20 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           Icon(
             Icons.search_off,
             size: 64,
-            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+            color: AppColors.textSecondary.withAlpha(128),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
           Text(
             'No results found',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
+            style: AppTypography.h3.copyWith(
+                  color: AppColors.textSecondary,
                 ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           Text(
             'Nothing found for "$query"',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+            style: AppTypography.body.copyWith(
+                  color: AppColors.textSecondary.withAlpha(179),
                 ),
             textAlign: TextAlign.center,
           ),
@@ -1268,35 +1274,33 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   }
 
   Widget _buildErrorState(String error, {required VoidCallback onRetry}) {
-    final ColorScheme colorScheme = Theme.of(context).colorScheme;
-
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32.0),
+        padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Icon(
+            const Icon(
               Icons.error_outline,
               size: 64,
-              color: colorScheme.error,
+              color: AppColors.error,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             Text(
               'Search failed',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: colorScheme.error,
+              style: AppTypography.h3.copyWith(
+                    color: AppColors.error,
                   ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Text(
               error,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
+              style: AppTypography.body.copyWith(
+                    color: AppColors.textSecondary,
                   ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.lg),
             FilledButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
@@ -1321,9 +1325,6 @@ class _GameDetailsSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-
     return DraggableScrollableSheet(
       initialChildSize: 0.7,
       minChildSize: 0.5,
@@ -1332,7 +1333,7 @@ class _GameDetailsSheet extends StatelessWidget {
       builder: (BuildContext context, ScrollController scrollController) {
         return SingleChildScrollView(
           controller: scrollController,
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
@@ -1341,68 +1342,109 @@ class _GameDetailsSheet extends StatelessWidget {
                   width: 32,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                    color: AppColors.textSecondary.withAlpha(102),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.lg),
 
-              Text(
-                game.name,
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              Wrap(
-                spacing: 16,
-                runSpacing: 8,
+              // Обложка и основная информация
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  if (game.releaseYear != null)
-                    _buildChip(
-                      Icons.calendar_today,
-                      game.releaseYear.toString(),
-                      colorScheme,
+                  if (game.coverUrl != null)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                      child: CachedNetworkImage(
+                        imageUrl: game.coverUrl!,
+                        width: 100,
+                        height: 133,
+                        fit: BoxFit.cover,
+                        placeholder:
+                            (BuildContext context, String url) => Container(
+                          width: 100,
+                          height: 133,
+                          color: AppColors.surfaceLight,
+                          child: const Center(
+                            child:
+                                CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                        errorWidget: (BuildContext context, String url,
+                                Object error) =>
+                            Container(
+                          width: 100,
+                          height: 133,
+                          color: AppColors.surfaceLight,
+                          child: const Icon(Icons.videogame_asset,
+                              color: AppColors.textSecondary, size: 32),
+                        ),
+                      ),
                     ),
-                  if (game.formattedRating != null)
-                    _buildChip(
-                      Icons.star,
-                      '${game.formattedRating} (${game.ratingCount ?? 0})',
-                      colorScheme,
+                  if (game.coverUrl != null)
+                    const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          game.name,
+                          style: AppTypography.h2.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        Wrap(
+                          spacing: AppSpacing.md,
+                          runSpacing: AppSpacing.sm,
+                          children: <Widget>[
+                            if (game.releaseYear != null)
+                              _buildChip(
+                                Icons.calendar_today,
+                                game.releaseYear.toString(),
+                              ),
+                            if (game.formattedRating != null)
+                              _buildChip(
+                                Icons.star,
+                                '${game.formattedRating} (${game.ratingCount ?? 0})',
+                              ),
+                          ],
+                        ),
+                        if (game.genres != null &&
+                            game.genres!.isNotEmpty) ...<Widget>[
+                          const SizedBox(height: AppSpacing.sm),
+                          Wrap(
+                            spacing: AppSpacing.sm,
+                            runSpacing: AppSpacing.sm,
+                            children: game.genres!
+                                .map((String genre) =>
+                                    Chip(label: Text(genre)))
+                                .toList(),
+                          ),
+                        ],
+                      ],
                     ),
+                  ),
                 ],
               ),
 
-              if (game.genres != null && game.genres!.isNotEmpty) ...<Widget>[
-                const SizedBox(height: 16),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: game.genres!
-                      .map((String genre) => Chip(label: Text(genre)))
-                      .toList(),
-                ),
-              ],
-
               if (game.summary != null) ...<Widget>[
-                const SizedBox(height: 24),
+                const SizedBox(height: AppSpacing.lg),
                 Text(
                   'Description',
-                  style: theme.textTheme.titleMedium?.copyWith(
+                  style: AppTypography.h3.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 Text(
                   game.summary!,
-                  style: theme.textTheme.bodyMedium,
+                  style: AppTypography.body,
                 ),
               ],
 
-              const SizedBox(height: 32),
+              const SizedBox(height: AppSpacing.xl),
 
               SizedBox(
                 width: double.infinity,
@@ -1422,12 +1464,12 @@ class _GameDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildChip(IconData icon, String label, ColorScheme colorScheme) {
+  Widget _buildChip(IconData icon, String label) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        Icon(icon, size: 16, color: colorScheme.primary),
-        const SizedBox(width: 4),
+        Icon(icon, size: 16, color: AppColors.gameAccent),
+        const SizedBox(width: AppSpacing.xs),
         Text(label),
       ],
     );
@@ -1445,6 +1487,7 @@ class _MediaDetailsSheet extends StatelessWidget {
     this.rating,
     this.genres,
     this.extraInfo,
+    this.posterUrl,
   });
 
   final String title;
@@ -1454,13 +1497,11 @@ class _MediaDetailsSheet extends StatelessWidget {
   final List<String>? genres;
   final IconData icon;
   final String? extraInfo;
+  final String? posterUrl;
   final VoidCallback onAddToCollection;
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-
     return DraggableScrollableSheet(
       initialChildSize: 0.7,
       minChildSize: 0.5,
@@ -1469,7 +1510,7 @@ class _MediaDetailsSheet extends StatelessWidget {
       builder: (BuildContext context, ScrollController scrollController) {
         return SingleChildScrollView(
           controller: scrollController,
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
@@ -1478,66 +1519,108 @@ class _MediaDetailsSheet extends StatelessWidget {
                   width: 32,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                    color: AppColors.textSecondary.withAlpha(102),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.lg),
 
-              Text(
-                title,
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              Wrap(
-                spacing: 16,
-                runSpacing: 8,
+              // Постер и основная информация
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  if (year != null)
-                    _buildChip(
-                      Icons.calendar_today,
-                      year.toString(),
-                      colorScheme,
+                  if (posterUrl != null)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                      child: CachedNetworkImage(
+                        imageUrl: posterUrl!,
+                        width: 100,
+                        height: 150,
+                        fit: BoxFit.cover,
+                        placeholder:
+                            (BuildContext context, String url) => Container(
+                          width: 100,
+                          height: 150,
+                          color: AppColors.surfaceLight,
+                          child: const Center(
+                            child:
+                                CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                        errorWidget: (BuildContext context, String url,
+                                Object error) =>
+                            Container(
+                          width: 100,
+                          height: 150,
+                          color: AppColors.surfaceLight,
+                          child: Icon(icon,
+                              color: AppColors.textSecondary, size: 32),
+                        ),
+                      ),
                     ),
-                  if (rating != null)
-                    _buildChip(Icons.star, rating!, colorScheme),
-                  if (extraInfo != null)
-                    _buildChip(icon, extraInfo!, colorScheme),
+                  if (posterUrl != null)
+                    const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          title,
+                          style: AppTypography.h2.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        Wrap(
+                          spacing: AppSpacing.md,
+                          runSpacing: AppSpacing.sm,
+                          children: <Widget>[
+                            if (year != null)
+                              _buildChip(
+                                Icons.calendar_today,
+                                year.toString(),
+                              ),
+                            if (rating != null)
+                              _buildChip(Icons.star, rating!),
+                            if (extraInfo != null)
+                              _buildChip(icon, extraInfo!),
+                          ],
+                        ),
+                        if (genres != null &&
+                            genres!.isNotEmpty) ...<Widget>[
+                          const SizedBox(height: AppSpacing.sm),
+                          Wrap(
+                            spacing: AppSpacing.sm,
+                            runSpacing: AppSpacing.sm,
+                            children: genres!
+                                .map((String genre) =>
+                                    Chip(label: Text(genre)))
+                                .toList(),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
                 ],
               ),
 
-              if (genres != null && genres!.isNotEmpty) ...<Widget>[
-                const SizedBox(height: 16),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: genres!
-                      .map((String genre) => Chip(label: Text(genre)))
-                      .toList(),
-                ),
-              ],
-
               if (overview != null) ...<Widget>[
-                const SizedBox(height: 24),
+                const SizedBox(height: AppSpacing.lg),
                 Text(
                   'Description',
-                  style: theme.textTheme.titleMedium?.copyWith(
+                  style: AppTypography.h3.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 Text(
                   overview!,
-                  style: theme.textTheme.bodyMedium,
+                  style: AppTypography.body,
                 ),
               ],
 
-              const SizedBox(height: 32),
+              const SizedBox(height: AppSpacing.xl),
 
               SizedBox(
                 width: double.infinity,
@@ -1557,12 +1640,12 @@ class _MediaDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildChip(IconData icon, String label, ColorScheme colorScheme) {
+  Widget _buildChip(IconData icon, String label) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        Icon(icon, size: 16, color: colorScheme.primary),
-        const SizedBox(width: 4),
+        Icon(icon, size: 16, color: AppColors.gameAccent),
+        const SizedBox(width: AppSpacing.xs),
         Text(label),
       ],
     );
