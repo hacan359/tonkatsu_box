@@ -56,6 +56,7 @@ Future<List<TmdbGenre>> _loadGenres(
   final Map<String, String> cached = await db.getTmdbGenreMap(type);
   if (cached.isNotEmpty) {
     return cached.entries
+        .where((MapEntry<String, String> e) => int.tryParse(e.key) != null)
         .map((MapEntry<String, String> e) =>
             TmdbGenre(id: int.parse(e.key), name: e.value))
         .toList();
