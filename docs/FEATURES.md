@@ -212,10 +212,10 @@ Visualize your collection on a free-form canvas, or create a personal canvas for
   - In-memory cache for API results (no re-fetching on tab switch)
   - Toggle via FAB button or right-click "Find images..."
   - Warning when SteamGridDB API key is not configured
-- **VGMaps Browser Panel** — side panel with embedded WebView2 browser for vgmaps.com
-  - Navigate vgmaps.com directly inside the app (back/forward/home/reload)
+- **VGMaps Browser Panel** — side panel with embedded WebView2 browser for vgmaps.de
+  - Navigate vgmaps.de directly inside the app (back/forward/home/reload)
   - Search games by name via built-in search field
-  - Right-click any image on vgmaps.com to capture it
+  - Right-click any image on vgmaps.de to capture it
   - Preview captured image with dimensions in the bottom bar
   - Click "Add to Canvas" to place the map image on the canvas (scaled to max 400px width)
   - Toggle via FAB button or right-click "Browse maps..."
