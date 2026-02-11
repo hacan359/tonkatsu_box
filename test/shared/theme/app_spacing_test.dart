@@ -34,14 +34,12 @@ void main() {
       test('должны быть в порядке возрастания', () {
         expect(AppSpacing.radiusXs, lessThan(AppSpacing.radiusSm));
         expect(AppSpacing.radiusSm, lessThan(AppSpacing.radiusMd));
-        expect(AppSpacing.radiusMd, lessThan(AppSpacing.radiusLg));
       });
 
       test('конкретные значения', () {
         expect(AppSpacing.radiusXs, equals(4));
         expect(AppSpacing.radiusSm, equals(8));
         expect(AppSpacing.radiusMd, equals(12));
-        expect(AppSpacing.radiusLg, equals(16));
       });
     });
   });

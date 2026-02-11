@@ -56,9 +56,6 @@ abstract final class AppColors {
 
   // ==================== Статусы ====================
 
-  /// Цвет статуса "Backlog".
-  static const Color statusBacklog = textTertiary;
-
   /// Цвет статуса "In Progress" (playing/watching).
   static const Color statusInProgress = Color(0xFF42A5F5);
 

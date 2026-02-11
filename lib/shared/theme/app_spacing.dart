@@ -32,7 +32,4 @@ abstract final class AppSpacing {
 
   /// 12px — стандартное скругление (карточки).
   static const double radiusMd = 12;
-
-  /// 16px — большое скругление (диалоги, панели).
-  static const double radiusLg = 16;
 }

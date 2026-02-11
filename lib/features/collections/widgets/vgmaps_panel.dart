@@ -143,7 +143,7 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
     }
   }
 
-  void _handleWebMessage(dynamic message) {
+  void _handleWebMessage(Object? message) {
     if (!mounted) return;
     try {
       // webview_windows автоматически декодирует JSON из postMessage,
