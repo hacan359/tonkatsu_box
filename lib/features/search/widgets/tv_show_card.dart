@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/tv_show.dart';
+import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/media_card.dart';
 import '../../../shared/widgets/source_badge.dart';
 
@@ -58,22 +61,19 @@ class TvShowCard extends StatelessWidget {
       return null;
     }
 
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-
     return Row(
       children: <Widget>[
         if (tvShow.totalSeasons != null) ...<Widget>[
-          Icon(
+          const Icon(
             Icons.video_library,
             size: 14,
-            color: colorScheme.primary,
+            color: AppColors.gameAccent,
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: AppSpacing.xs),
           Text(
             _formatSeasons(),
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: colorScheme.primary,
+            style: AppTypography.bodySmall.copyWith(
+              color: AppColors.gameAccent,
             ),
           ),
         ],
@@ -83,8 +83,8 @@ class TvShowCard extends StatelessWidget {
         if (tvShow.status != null) ...<Widget>[
           Text(
             tvShow.status!,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: colorScheme.onSurfaceVariant,
+            style: AppTypography.bodySmall.copyWith(
+              color: AppColors.textSecondary,
               fontStyle: FontStyle.italic,
             ),
           ),

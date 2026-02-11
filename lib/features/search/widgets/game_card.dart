@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 
 import '../../../shared/models/game.dart';
 import '../../../shared/models/media_type.dart';
+import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/media_card.dart';
 import '../../../shared/widgets/source_badge.dart';
 
@@ -61,13 +64,10 @@ class GameCard extends StatelessWidget {
       return null;
     }
 
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-
     return Text(
       platformNames!.join(' \u2022 '),
-      style: theme.textTheme.bodySmall?.copyWith(
-        color: colorScheme.primary,
+      style: AppTypography.bodySmall.copyWith(
+        color: AppColors.gameAccent,
       ),
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
@@ -92,9 +92,6 @@ class GameGridCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -104,18 +101,18 @@ class GameGridCard extends StatelessWidget {
           children: <Widget>[
             // Обложка
             Expanded(
-              child: _buildCover(colorScheme),
+              child: _buildCover(),
             ),
 
             // Название
             Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(AppSpacing.sm),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
                     game.name,
-                    style: theme.textTheme.bodyMedium?.copyWith(
+                    style: AppTypography.body.copyWith(
                       fontWeight: FontWeight.w500,
                     ),
                     maxLines: 2,
@@ -125,8 +122,8 @@ class GameGridCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       game.releaseYear.toString(),
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ],
@@ -139,35 +136,35 @@ class GameGridCard extends StatelessWidget {
     );
   }
 
-  Widget _buildCover(ColorScheme colorScheme) {
+  Widget _buildCover() {
     if (game.coverUrl != null) {
-      return _buildCoverImage(colorScheme);
+      return _buildCoverImage();
     }
 
-    return _buildPlaceholder(colorScheme);
+    return _buildPlaceholder();
   }
 
-  Widget _buildCoverImage(ColorScheme colorScheme) {
+  Widget _buildCoverImage() {
     return CachedNetworkImage(
       imageUrl: game.coverUrl!,
       fit: BoxFit.cover,
       placeholder: (BuildContext context, String url) => Container(
-        color: colorScheme.surfaceContainerHighest,
+        color: AppColors.surfaceLight,
         child: const Center(
           child: CircularProgressIndicator(strokeWidth: 2),
         ),
       ),
       errorWidget: (BuildContext context, String url, Object error) =>
-          _buildPlaceholder(colorScheme),
+          _buildPlaceholder(),
     );
   }
 
-  Widget _buildPlaceholder(ColorScheme colorScheme) {
+  Widget _buildPlaceholder() {
     return Container(
-      color: colorScheme.surfaceContainerHighest,
-      child: Icon(
+      color: AppColors.surfaceLight,
+      child: const Icon(
         Icons.videogame_asset,
-        color: colorScheme.onSurfaceVariant,
+        color: AppColors.textSecondary,
         size: 48,
       ),
     );

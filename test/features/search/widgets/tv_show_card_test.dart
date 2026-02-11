@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/search/widgets/tv_show_card.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
+import 'package:xerabora/shared/theme/app_colors.dart';
 import 'package:xerabora/shared/widgets/media_type_badge.dart';
 import 'package:xerabora/shared/widgets/source_badge.dart';
 
@@ -336,9 +337,7 @@ void main() {
 
         final Icon videoIcon =
             tester.widget<Icon>(find.byIcon(Icons.video_library));
-        final ThemeData theme =
-            Theme.of(tester.element(find.byIcon(Icons.video_library)));
-        expect(videoIcon.color, theme.colorScheme.primary);
+        expect(videoIcon.color, AppColors.gameAccent);
       });
 
       testWidgets('should use italic style for status text',

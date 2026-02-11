@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/movie.dart';
+import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/media_card.dart';
 import '../../../shared/widgets/source_badge.dart';
 
@@ -58,22 +60,19 @@ class MovieCard extends StatelessWidget {
       return null;
     }
 
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        Icon(
+        const Icon(
           Icons.schedule,
           size: 14,
-          color: colorScheme.onSurfaceVariant,
+          color: AppColors.textSecondary,
         ),
         const SizedBox(width: 2),
         Text(
           '${movie.runtime} min',
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: colorScheme.onSurfaceVariant,
+          style: AppTypography.bodySmall.copyWith(
+            color: AppColors.textSecondary,
           ),
         ),
       ],

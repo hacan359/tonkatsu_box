@@ -7,9 +7,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/database_service.dart';
 import '../../../core/services/config_service.dart';
 import '../../../core/services/image_cache_service.dart';
-import '../../collections/providers/collections_provider.dart';
 import '../../../shared/models/platform.dart';
+import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/source_badge.dart';
+import '../../collections/providers/collections_provider.dart';
 import '../providers/settings_provider.dart';
 import 'image_debug_screen.dart';
 import 'steamgriddb_debug_screen.dart';
@@ -157,11 +160,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   void _showSnackBar(String message, {bool isError = true}) {
     if (!mounted) return;
-    final ColorScheme colorScheme = Theme.of(context).colorScheme;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: isError ? colorScheme.error : colorScheme.primary,
+        backgroundColor: isError ? AppColors.error : AppColors.gameAccent,
       ),
     );
   }
@@ -171,40 +173,44 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final SettingsState settings = ref.watch(settingsNotifierProvider);
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
+        backgroundColor: AppColors.background,
+        surfaceTintColor: Colors.transparent,
+        foregroundColor: AppColors.textPrimary,
         title: const Text('IGDB API Setup'),
         automaticallyImplyLeading: !widget.isInitialSetup,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             if (widget.isInitialSetup) ...<Widget>[
               _buildWelcomeSection(),
-              const SizedBox(height: 32),
+              const SizedBox(height: AppSpacing.xl),
             ],
             _buildCredentialsSection(settings),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.lg),
             _buildStatusSection(settings),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.lg),
             _buildActionsSection(settings),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.lg),
             _buildCacheSection(),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.lg),
             _buildSteamGridDbSection(settings),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.lg),
             _buildTmdbSection(settings),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.lg),
             _buildConfigSection(),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.lg),
             _buildDangerZoneSection(),
             if (kDebugMode) ...<Widget>[
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.lg),
               _buildDeveloperToolsSection(settings),
             ],
             if (settings.errorMessage != null) ...<Widget>[
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.md),
               _buildErrorSection(settings.errorMessage!),
             ],
           ],
@@ -214,31 +220,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildWelcomeSection() {
-    final ColorScheme colorScheme = Theme.of(context).colorScheme;
-
     return Card(
-      color: colorScheme.primaryContainer.withValues(alpha: 0.3),
+      color: AppColors.gameAccent.withAlpha(30),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Row(
+            const Row(
               children: <Widget>[
-                Icon(Icons.waving_hand, color: colorScheme.primary),
-                const SizedBox(width: 8),
+                Icon(Icons.waving_hand, color: AppColors.gameAccent),
+                SizedBox(width: AppSpacing.sm),
                 Text(
                   'Welcome to xeRAbora!',
-                  style: Theme.of(context).textTheme.titleLarge,
+                  style: AppTypography.h2,
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             const Text(
               'To get started, you need to set up your IGDB API credentials. '
               'Get your Client ID and Client Secret from the Twitch Developer Console.',
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             TextButton.icon(
               onPressed: () {
                 // Копируем URL в буфер обмена (url_launcher будет добавлен позже)
@@ -262,24 +266,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget _buildCredentialsSection(SettingsState settings) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Row(
+            const Row(
               children: <Widget>[
-                const SourceBadge(
+                SourceBadge(
                   source: DataSource.igdb,
                   size: SourceBadgeSize.large,
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: AppSpacing.sm),
                 Text(
                   'IGDB API Credentials',
-                  style: Theme.of(context).textTheme.titleMedium,
+                  style: AppTypography.h3,
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             TextField(
               controller: _clientIdController,
               focusNode: _clientIdFocus,
@@ -293,7 +297,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               onSubmitted: (_) => _clientSecretFocus.requestFocus(),
               enabled: !settings.isLoading,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             TextField(
               controller: _clientSecretController,
               focusNode: _clientSecretFocus,
@@ -350,15 +354,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text(
+            const Text(
               'Connection Status',
-              style: Theme.of(context).textTheme.titleMedium,
+              style: AppTypography.h3,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             Row(
               children: <Widget>[
                 Icon(statusIcon, color: statusColor, size: 28),
@@ -373,14 +377,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             _buildInfoRow(
               'Platforms synced',
               settings.platformCount.toString(),
               Icons.videogame_asset,
             ),
             if (settings.lastSync != null) ...<Widget>[
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               _buildInfoRow(
                 'Last sync',
                 _formatTimestamp(settings.lastSync!),
@@ -396,15 +400,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget _buildInfoRow(String label, String value, IconData icon) {
     return Row(
       children: <Widget>[
-        Icon(icon, size: 20, color: Colors.grey.shade600),
-        const SizedBox(width: 8),
+        Icon(icon, size: 20, color: AppColors.textSecondary),
+        const SizedBox(width: AppSpacing.sm),
         Text(
           '$label: ',
-          style: TextStyle(color: Colors.grey.shade600),
+          style: AppTypography.body.copyWith(color: AppColors.textSecondary),
         ),
         Text(
           value,
-          style: const TextStyle(fontWeight: FontWeight.w500),
+          style: AppTypography.body.copyWith(fontWeight: FontWeight.w500),
         ),
       ],
     );
@@ -453,21 +457,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Row(
+            const Row(
               children: <Widget>[
-                Icon(Icons.folder, color: Theme.of(context).colorScheme.primary),
-                const SizedBox(width: 8),
+                Icon(Icons.folder, color: AppColors.gameAccent),
+                SizedBox(width: AppSpacing.sm),
                 Text(
                   'Image Cache',
-                  style: Theme.of(context).textTheme.titleMedium,
+                  style: AppTypography.h3,
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
 
             // Галка включения кэширования
             FutureBuilder<bool>(
@@ -501,7 +505,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   title: const Text('Cache folder'),
                   subtitle: Text(
                     path,
-                    style: const TextStyle(fontSize: 12),
+                    style: AppTypography.bodySmall,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -594,24 +598,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget _buildSteamGridDbSection(SettingsState settings) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Row(
+            const Row(
               children: <Widget>[
-                const SourceBadge(
+                SourceBadge(
                   source: DataSource.steamGridDb,
                   size: SourceBadgeSize.large,
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: AppSpacing.sm),
                 Text(
                   'SteamGridDB API',
-                  style: Theme.of(context).textTheme.titleMedium,
+                  style: AppTypography.h3,
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             TextField(
               controller: _steamGridDbKeyController,
               decoration: InputDecoration(
@@ -636,22 +640,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               textInputAction: TextInputAction.done,
               onSubmitted: (_) => _saveSteamGridDbKey(),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.sm),
             Row(
               children: <Widget>[
                 Icon(
                   settings.hasSteamGridDbKey
                       ? Icons.check_circle
                       : Icons.help_outline,
-                  color: settings.hasSteamGridDbKey ? Colors.green : Colors.grey,
+                  color: settings.hasSteamGridDbKey
+                      ? AppColors.success
+                      : AppColors.textTertiary,
                   size: 20,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppSpacing.sm),
                 Text(
                   settings.hasSteamGridDbKey ? 'API key saved' : 'No API key',
-                  style: TextStyle(
-                    color:
-                        settings.hasSteamGridDbKey ? Colors.green : Colors.grey,
+                  style: AppTypography.body.copyWith(
+                    color: settings.hasSteamGridDbKey
+                        ? AppColors.success
+                        : AppColors.textTertiary,
                   ),
                 ),
                 const Spacer(),
@@ -688,24 +695,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget _buildTmdbSection(SettingsState settings) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Row(
+            const Row(
               children: <Widget>[
-                const SourceBadge(
+                SourceBadge(
                   source: DataSource.tmdb,
                   size: SourceBadgeSize.large,
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: AppSpacing.sm),
                 Text(
                   'TMDB API (Movies & TV)',
-                  style: Theme.of(context).textTheme.titleMedium,
+                  style: AppTypography.h3,
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             TextField(
               controller: _tmdbKeyController,
               decoration: InputDecoration(
@@ -730,22 +737,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               textInputAction: TextInputAction.done,
               onSubmitted: (_) => _saveTmdbKey(),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.sm),
             Row(
               children: <Widget>[
                 Icon(
                   settings.hasTmdbKey
                       ? Icons.check_circle
                       : Icons.help_outline,
-                  color: settings.hasTmdbKey ? Colors.green : Colors.grey,
+                  color: settings.hasTmdbKey
+                      ? AppColors.success
+                      : AppColors.textTertiary,
                   size: 20,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppSpacing.sm),
                 Text(
                   settings.hasTmdbKey ? 'API key saved' : 'No API key',
-                  style: TextStyle(
-                    color:
-                        settings.hasTmdbKey ? Colors.green : Colors.grey,
+                  style: AppTypography.body.copyWith(
+                    color: settings.hasTmdbKey
+                        ? AppColors.success
+                        : AppColors.textTertiary,
                   ),
                 ),
                 const Spacer(),
@@ -782,27 +792,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget _buildConfigSection() {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Row(
+            const Row(
               children: <Widget>[
                 Icon(Icons.settings_backup_restore,
-                    color: Theme.of(context).colorScheme.primary),
-                const SizedBox(width: 8),
+                    color: AppColors.gameAccent),
+                SizedBox(width: AppSpacing.sm),
                 Text(
                   'Configuration',
-                  style: Theme.of(context).textTheme.titleMedium,
+                  style: AppTypography.h3,
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            Text(
+            const SizedBox(height: AppSpacing.sm),
+            const Text(
               'Export or import your API keys and settings.',
-              style: Theme.of(context).textTheme.bodySmall,
+              style: AppTypography.bodySmall,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.sm),
             Row(
               children: <Widget>[
                 Expanded(
@@ -863,41 +873,36 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildDangerZoneSection() {
-    final ColorScheme colorScheme = Theme.of(context).colorScheme;
-
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Row(
               children: <Widget>[
-                Icon(Icons.warning_amber, color: colorScheme.error),
-                const SizedBox(width: 8),
+                const Icon(Icons.warning_amber, color: AppColors.error),
+                const SizedBox(width: AppSpacing.sm),
                 Text(
                   'Danger Zone',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(color: colorScheme.error),
+                  style: AppTypography.h3.copyWith(color: AppColors.error),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            Text(
+            const SizedBox(height: AppSpacing.sm),
+            const Text(
               'Clears all collections, games, movies, TV shows and canvas data. '
               'Settings and API keys will be preserved.',
-              style: Theme.of(context).textTheme.bodySmall,
+              style: AppTypography.bodySmall,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.sm),
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
                 onPressed: _resetDatabase,
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: colorScheme.error,
-                  side: BorderSide(color: colorScheme.error),
+                  foregroundColor: AppColors.error,
+                  side: const BorderSide(color: AppColors.error),
                 ),
                 icon: const Icon(Icons.delete_forever, size: 18),
                 label: const Text('Reset Database'),
@@ -958,22 +963,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget _buildDeveloperToolsSection(SettingsState settings) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Row(
+            const Row(
               children: <Widget>[
-                Icon(Icons.bug_report,
-                    color: Theme.of(context).colorScheme.primary),
-                const SizedBox(width: 8),
+                Icon(Icons.bug_report, color: AppColors.gameAccent),
+                SizedBox(width: AppSpacing.sm),
                 Text(
                   'Developer Tools',
-                  style: Theme.of(context).textTheme.titleMedium,
+                  style: AppTypography.h3,
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.sm),
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.grid_view),
@@ -1016,20 +1020,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildErrorSection(String errorMessage) {
-    final ColorScheme colorScheme = Theme.of(context).colorScheme;
-
     return Card(
-      color: colorScheme.errorContainer,
+      color: AppColors.error.withAlpha(30),
       child: Padding(
-        padding: const EdgeInsets.all(12.0),
+        padding: const EdgeInsets.all(AppSpacing.sm),
         child: Row(
           children: <Widget>[
-            Icon(Icons.warning_amber, color: colorScheme.onErrorContainer),
-            const SizedBox(width: 12),
+            const Icon(Icons.warning_amber, color: AppColors.error),
+            const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Text(
                 errorMessage,
-                style: TextStyle(color: colorScheme.onErrorContainer),
+                style: AppTypography.body.copyWith(color: AppColors.error),
               ),
             ),
           ],

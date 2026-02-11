@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/search/widgets/game_card.dart';
 import 'package:xerabora/shared/models/game.dart';
+import 'package:xerabora/shared/theme/app_colors.dart';
 import 'package:xerabora/shared/widgets/media_type_badge.dart';
 import 'package:xerabora/shared/widgets/source_badge.dart';
 
@@ -135,8 +136,7 @@ void main() {
         expect(platformText, findsOneWidget);
 
         final Text textWidget = tester.widget<Text>(platformText);
-        final ThemeData theme = Theme.of(tester.element(platformText));
-        expect(textWidget.style?.color, theme.colorScheme.primary);
+        expect(textWidget.style?.color, AppColors.gameAccent);
       });
     });
 
