@@ -11,7 +11,7 @@ class CollectedItemInfo {
     required this.collectionName,
   });
 
-  /// ID записи в таблице (collection_games или collection_items).
+  /// ID записи в таблице collection_items.
   final int recordId;
 
   /// ID коллекции.

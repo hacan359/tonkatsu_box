@@ -47,7 +47,6 @@ dependencies:
   shared_preferences: ^2.2.2
 
   # UI
-  cupertino_icons: ^1.0.8
   cached_network_image: ^3.3.1
 
   # File Operations
@@ -67,8 +66,6 @@ dev_dependencies:
   flutter_lints: ^6.0.0
 
   # Testing
-  mockito: ^5.4.4
-  build_runner: ^2.4.8
   mocktail: ^1.0.3
 
 # For information on the generic Dart part of this file, see the

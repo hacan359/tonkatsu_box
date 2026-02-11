@@ -9,7 +9,19 @@
 ### Added
 - Добавлена дизайн-система для тёмной темы: `AppColors`, `AppSpacing`, `AppTypography` (`lib/shared/theme/`)
 - Добавлен `NavigationShell` с `NavigationRail` — боковая навигация (Home, Search, Settings)
-- Добавлены виджеты: `PosterCard` (карточка с постером для grid/list), `RatingBadge` (бейдж рейтинга), `SectionHeader` (заголовок секции с кнопкой действия)
+- Добавлены виджеты: `SectionHeader` (заголовок секции с кнопкой действия)
+
+### Removed
+- Удалён неиспользуемый виджет `RatingBadge` (`lib/shared/widgets/rating_badge.dart`) и его тесты
+- Удалён неиспользуемый виджет `PosterCard` (`lib/shared/widgets/poster_card.dart`) и его тесты
+- Удалена неиспользуемая константа `AppColors.statusBacklog`
+- Удалена неиспользуемая константа `AppSpacing.radiusLg`
+- Удалена зависимость `cupertino_icons` (не используется в Windows-приложении)
+- Удалены dev-зависимости `mockito` и `build_runner` (проект использует mocktail, генерируемых файлов нет)
+
+### Changed
+- Исправлена типизация `_handleWebMessage(dynamic)` → `_handleWebMessage(Object?)` в VGMaps панели
+- Обновлён doc-комментарий в `CollectedItemInfo` — убрана ссылка на legacy-таблицу `collection_games`
 - Добавлена таблица `tmdb_genres` в БД (миграция v12→v13) — кэш жанров TMDB (id, type, name)
 - Добавлены методы `cacheTmdbGenres()` и `getTmdbGenreMap()` в `DatabaseService`
 - Добавлены провайдеры `movieGenreMapProvider` и `tvGenreMapProvider` для быстрого маппинга ID→имя жанров

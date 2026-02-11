@@ -83,7 +83,6 @@ void main() {
 
     group('Статусы', () {
       test('все статусные цвета должны быть определены', () {
-        expect(AppColors.statusBacklog, isA<Color>());
         expect(AppColors.statusInProgress, isA<Color>());
         expect(AppColors.statusCompleted, isA<Color>());
         expect(AppColors.statusOnHold, isA<Color>());

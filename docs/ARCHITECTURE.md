@@ -182,8 +182,6 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/shared/widgets/poster_card.dart` | **PosterCard**. Карточка с постером для grid/list отображения. Поддержка CachedImage и CachedNetworkImage. Заголовок, подзаголовок, бейдж статуса |
-| `lib/shared/widgets/rating_badge.dart` | **RatingBadge**. Компактный бейдж рейтинга со звёздочкой и числовым значением |
 | `lib/shared/widgets/section_header.dart` | **SectionHeader**. Заголовок секции с опциональной кнопкой действия справа |
 | `lib/shared/widgets/cached_image.dart` | **Виджет кэшированного изображения**. ConsumerWidget с FutureBuilder. Логика: cache disabled → CachedNetworkImage, cache enabled + file → Image.file, cache enabled + no file → CachedNetworkImage + фоновый download через addPostFrameCallback. Параметры: imageType, imageId, remoteUrl, memCacheWidth/Height, autoDownload, placeholder, errorWidget |
 | `lib/shared/widgets/media_card.dart` | **Базовый виджет карточки поиска**. Постер 60x80 (CachedNetworkImage или CachedImage при заданных cacheImageType/cacheImageId), название, subtitle, metadata, trailing. `GameCard`, `MovieCard`, `TvShowCard` являются тонкими обёртками |
