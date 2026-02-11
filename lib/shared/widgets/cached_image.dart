@@ -15,7 +15,10 @@ import '../../core/services/image_cache_service.dart';
 /// - Если кэширование включено и файл есть: показывает локальный файл
 /// - Если кэширование включено, но файл отсутствует: загружает из сети
 ///   и скачивает в кэш в фоне (при [autoDownload] = true)
-class CachedImage extends ConsumerWidget {
+///
+/// Future кэшируется в State, чтобы при rebuild родителя
+/// не происходило повторной загрузки (мигания placeholder → картинка).
+class CachedImage extends ConsumerStatefulWidget {
   /// Создаёт [CachedImage].
   const CachedImage({
     required this.imageType,
@@ -66,15 +69,41 @@ class CachedImage extends ConsumerWidget {
   final bool autoDownload;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final ImageCacheService cacheService = ref.read(imageCacheServiceProvider);
+  ConsumerState<CachedImage> createState() => _CachedImageState();
+}
 
+class _CachedImageState extends ConsumerState<CachedImage> {
+  Future<ImageResult>? _imageFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _imageFuture = _fetchImage();
+  }
+
+  @override
+  void didUpdateWidget(CachedImage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.imageType != widget.imageType ||
+        oldWidget.imageId != widget.imageId ||
+        oldWidget.remoteUrl != widget.remoteUrl) {
+      _imageFuture = _fetchImage();
+    }
+  }
+
+  Future<ImageResult> _fetchImage() {
+    final ImageCacheService cacheService = ref.read(imageCacheServiceProvider);
+    return cacheService.getImageUri(
+      type: widget.imageType,
+      imageId: widget.imageId,
+      remoteUrl: widget.remoteUrl,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return FutureBuilder<ImageResult>(
-      future: cacheService.getImageUri(
-        type: imageType,
-        imageId: imageId,
-        remoteUrl: remoteUrl,
-      ),
+      future: _imageFuture,
       builder: (BuildContext context, AsyncSnapshot<ImageResult> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return _buildPlaceholder();
@@ -87,12 +116,14 @@ class CachedImage extends ConsumerWidget {
 
         // Кэш включён, но файл отсутствует — показать из сети + скачать
         if (result.isMissing) {
-          if (autoDownload && result.uri != null) {
+          if (widget.autoDownload && result.uri != null) {
+            final ImageCacheService cacheService =
+                ref.read(imageCacheServiceProvider);
             WidgetsBinding.instance.addPostFrameCallback((_) {
               cacheService.downloadImage(
-                type: imageType,
-                imageId: imageId,
-                remoteUrl: remoteUrl,
+                type: widget.imageType,
+                imageId: widget.imageId,
+                remoteUrl: widget.remoteUrl,
               );
             });
           }
@@ -103,9 +134,9 @@ class CachedImage extends ConsumerWidget {
         if (result.isLocal && result.uri != null) {
           return Image.file(
             File(result.uri!),
-            width: width,
-            height: height,
-            fit: fit,
+            width: widget.width,
+            height: widget.height,
+            fit: widget.fit,
             errorBuilder:
                 (BuildContext ctx, Object error, StackTrace? stack) {
               return _buildError(context);
@@ -126,11 +157,11 @@ class CachedImage extends ConsumerWidget {
   Widget _buildNetworkImage(String imageUrl, BuildContext context) {
     return CachedNetworkImage(
       imageUrl: imageUrl,
-      width: width,
-      height: height,
-      fit: fit,
-      memCacheWidth: memCacheWidth,
-      memCacheHeight: memCacheHeight,
+      width: widget.width,
+      height: widget.height,
+      fit: widget.fit,
+      memCacheWidth: widget.memCacheWidth,
+      memCacheHeight: widget.memCacheHeight,
       placeholder: (BuildContext ctx, String url) => _buildPlaceholder(),
       errorWidget: (BuildContext ctx, String url, Object error) =>
           _buildError(context),
@@ -138,11 +169,11 @@ class CachedImage extends ConsumerWidget {
   }
 
   Widget _buildPlaceholder() {
-    if (placeholder != null) return placeholder!;
+    if (widget.placeholder != null) return widget.placeholder!;
 
     return SizedBox(
-      width: width,
-      height: height,
+      width: widget.width,
+      height: widget.height,
       child: const Center(
         child: SizedBox(
           width: 24,
@@ -154,11 +185,11 @@ class CachedImage extends ConsumerWidget {
   }
 
   Widget _buildError(BuildContext context) {
-    if (errorWidget != null) return errorWidget!;
+    if (widget.errorWidget != null) return widget.errorWidget!;
 
     return SizedBox(
-      width: width,
-      height: height,
+      width: widget.width,
+      height: widget.height,
       child: Icon(
         Icons.broken_image,
         color: Theme.of(context).colorScheme.error,
