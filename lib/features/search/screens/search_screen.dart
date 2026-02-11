@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -776,6 +777,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         genres: movie.genres,
         icon: Icons.movie,
         extraInfo: movie.runtime != null ? '${movie.runtime} min' : null,
+        posterUrl: movie.posterUrl,
         onAddToCollection: () => _addMovieToAnyCollection(movie),
       ),
     );
@@ -793,6 +795,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         genres: tvShow.genres,
         icon: Icons.tv,
         extraInfo: tvShow.status,
+        posterUrl: tvShow.posterUrl,
         onAddToCollection: () => _addTvShowToAnyCollection(tvShow),
       ),
     );
@@ -1346,42 +1349,85 @@ class _GameDetailsSheet extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.lg),
 
-              Text(
-                game.name,
-                style: AppTypography.h2.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              const SizedBox(height: AppSpacing.md),
-
-              Wrap(
-                spacing: AppSpacing.md,
-                runSpacing: AppSpacing.sm,
+              // Обложка и основная информация
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  if (game.releaseYear != null)
-                    _buildChip(
-                      Icons.calendar_today,
-                      game.releaseYear.toString(),
+                  if (game.coverUrl != null)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                      child: CachedNetworkImage(
+                        imageUrl: game.coverUrl!,
+                        width: 100,
+                        height: 133,
+                        fit: BoxFit.cover,
+                        placeholder:
+                            (BuildContext context, String url) => Container(
+                          width: 100,
+                          height: 133,
+                          color: AppColors.surfaceLight,
+                          child: const Center(
+                            child:
+                                CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                        errorWidget: (BuildContext context, String url,
+                                Object error) =>
+                            Container(
+                          width: 100,
+                          height: 133,
+                          color: AppColors.surfaceLight,
+                          child: const Icon(Icons.videogame_asset,
+                              color: AppColors.textSecondary, size: 32),
+                        ),
+                      ),
                     ),
-                  if (game.formattedRating != null)
-                    _buildChip(
-                      Icons.star,
-                      '${game.formattedRating} (${game.ratingCount ?? 0})',
+                  if (game.coverUrl != null)
+                    const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          game.name,
+                          style: AppTypography.h2.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        Wrap(
+                          spacing: AppSpacing.md,
+                          runSpacing: AppSpacing.sm,
+                          children: <Widget>[
+                            if (game.releaseYear != null)
+                              _buildChip(
+                                Icons.calendar_today,
+                                game.releaseYear.toString(),
+                              ),
+                            if (game.formattedRating != null)
+                              _buildChip(
+                                Icons.star,
+                                '${game.formattedRating} (${game.ratingCount ?? 0})',
+                              ),
+                          ],
+                        ),
+                        if (game.genres != null &&
+                            game.genres!.isNotEmpty) ...<Widget>[
+                          const SizedBox(height: AppSpacing.sm),
+                          Wrap(
+                            spacing: AppSpacing.sm,
+                            runSpacing: AppSpacing.sm,
+                            children: game.genres!
+                                .map((String genre) =>
+                                    Chip(label: Text(genre)))
+                                .toList(),
+                          ),
+                        ],
+                      ],
                     ),
+                  ),
                 ],
               ),
-
-              if (game.genres != null && game.genres!.isNotEmpty) ...<Widget>[
-                const SizedBox(height: AppSpacing.md),
-                Wrap(
-                  spacing: AppSpacing.sm,
-                  runSpacing: AppSpacing.sm,
-                  children: game.genres!
-                      .map((String genre) => Chip(label: Text(genre)))
-                      .toList(),
-                ),
-              ],
 
               if (game.summary != null) ...<Widget>[
                 const SizedBox(height: AppSpacing.lg),
@@ -1441,6 +1487,7 @@ class _MediaDetailsSheet extends StatelessWidget {
     this.rating,
     this.genres,
     this.extraInfo,
+    this.posterUrl,
   });
 
   final String title;
@@ -1450,6 +1497,7 @@ class _MediaDetailsSheet extends StatelessWidget {
   final List<String>? genres;
   final IconData icon;
   final String? extraInfo;
+  final String? posterUrl;
   final VoidCallback onAddToCollection;
 
   @override
@@ -1478,41 +1526,84 @@ class _MediaDetailsSheet extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.lg),
 
-              Text(
-                title,
-                style: AppTypography.h2.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              const SizedBox(height: AppSpacing.md),
-
-              Wrap(
-                spacing: AppSpacing.md,
-                runSpacing: AppSpacing.sm,
+              // Постер и основная информация
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  if (year != null)
-                    _buildChip(
-                      Icons.calendar_today,
-                      year.toString(),
+                  if (posterUrl != null)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                      child: CachedNetworkImage(
+                        imageUrl: posterUrl!,
+                        width: 100,
+                        height: 150,
+                        fit: BoxFit.cover,
+                        placeholder:
+                            (BuildContext context, String url) => Container(
+                          width: 100,
+                          height: 150,
+                          color: AppColors.surfaceLight,
+                          child: const Center(
+                            child:
+                                CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                        errorWidget: (BuildContext context, String url,
+                                Object error) =>
+                            Container(
+                          width: 100,
+                          height: 150,
+                          color: AppColors.surfaceLight,
+                          child: Icon(icon,
+                              color: AppColors.textSecondary, size: 32),
+                        ),
+                      ),
                     ),
-                  if (rating != null)
-                    _buildChip(Icons.star, rating!),
-                  if (extraInfo != null)
-                    _buildChip(icon, extraInfo!),
+                  if (posterUrl != null)
+                    const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          title,
+                          style: AppTypography.h2.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        Wrap(
+                          spacing: AppSpacing.md,
+                          runSpacing: AppSpacing.sm,
+                          children: <Widget>[
+                            if (year != null)
+                              _buildChip(
+                                Icons.calendar_today,
+                                year.toString(),
+                              ),
+                            if (rating != null)
+                              _buildChip(Icons.star, rating!),
+                            if (extraInfo != null)
+                              _buildChip(icon, extraInfo!),
+                          ],
+                        ),
+                        if (genres != null &&
+                            genres!.isNotEmpty) ...<Widget>[
+                          const SizedBox(height: AppSpacing.sm),
+                          Wrap(
+                            spacing: AppSpacing.sm,
+                            runSpacing: AppSpacing.sm,
+                            children: genres!
+                                .map((String genre) =>
+                                    Chip(label: Text(genre)))
+                                .toList(),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
                 ],
               ),
-
-              if (genres != null && genres!.isNotEmpty) ...<Widget>[
-                const SizedBox(height: AppSpacing.md),
-                Wrap(
-                  spacing: AppSpacing.sm,
-                  runSpacing: AppSpacing.sm,
-                  children: genres!
-                      .map((String genre) => Chip(label: Text(genre)))
-                      .toList(),
-                ),
-              ],
 
               if (overview != null) ...<Widget>[
                 const SizedBox(height: AppSpacing.lg),
