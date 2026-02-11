@@ -47,7 +47,7 @@ lib/
 | `lib/core/api/steamgriddb_api.dart` | **SteamGridDB API клиент**. Bearer token авторизация. Методы: `searchGames()`, `getGrids()`, `getHeroes()`, `getLogos()`, `getIcons()` |
 | `lib/core/api/tmdb_api.dart` | **TMDB API клиент**. Bearer token авторизация. Методы: `searchMovies(query, {year})`, `searchTvShows(query, {firstAirDateYear})`, `multiSearch()`, `getMovieDetails()`, `getTvShowDetails()`, `getPopularMovies()`, `getPopularTvShows()`, `getMovieGenres()`, `getTvGenres()`, `getSeasonEpisodes(tmdbShowId, seasonNumber)` |
 | `lib/shared/constants/platform_features.dart` | **Флаги платформы**. `kCanvasEnabled` (false на Android/iOS), `kVgMapsEnabled` (только Windows), `kScreenshotEnabled` (только Windows). Используются для условного скрытия Canvas UI на мобильных |
-| `lib/core/database/database_service.dart` | **SQLite сервис**. Создание таблиц, миграции (версия 12), CRUD для всех сущностей. Использует `databaseFactory.openDatabase()` — кроссплатформенный вызов (FFI на desktop, нативный плагин на Android). Таблицы: `platforms`, `games`, `collections`, `collection_games`, `collection_items`, `canvas_items`, `canvas_viewport`, `canvas_connections`, `game_canvas_viewport`, `movies_cache`, `tv_shows_cache`, `tv_seasons_cache`, `tv_episodes_cache`, `watched_episodes`. Миграция v12: колонки `started_at`, `completed_at`, `last_activity_at` в `collection_items`. `updateItemStatus` автоматически устанавливает даты активности при смене статуса. `updateItemActivityDates` для ручного обновления дат. Методы per-item canvas: `getGameCanvasItems`, `getGameCanvasConnections`, `getGameCanvasViewport`, `upsertGameCanvasViewport`. Методы эпизодов: `getEpisodesByShowAndSeason`, `upsertEpisodes`, `clearEpisodesByShow`, `getWatchedEpisodes` (возвращает `Map<(int, int), DateTime?>` с датами просмотра), `markEpisodeWatched`, `markEpisodeUnwatched`, `getWatchedEpisodeCount`, `markSeasonWatched`, `unmarkSeasonWatched`. Изоляция данных: коллекционные методы фильтруют `collection_item_id IS NULL`. Метод `clearAllData()` — очистка всех 14 таблиц в транзакции |
+| `lib/core/database/database_service.dart` | **SQLite сервис**. Создание таблиц, миграции (версия 13), CRUD для всех сущностей. Использует `databaseFactory.openDatabase()` — кроссплатформенный вызов (FFI на desktop, нативный плагин на Android). Таблицы: `platforms`, `games`, `collections`, `collection_games`, `collection_items`, `canvas_items`, `canvas_viewport`, `canvas_connections`, `game_canvas_viewport`, `movies_cache`, `tv_shows_cache`, `tv_seasons_cache`, `tv_episodes_cache`, `watched_episodes`, `tmdb_genres`. Миграция v13: таблица `tmdb_genres` для кэширования жанров TMDB. Методы кэша жанров: `cacheTmdbGenres()`, `getTmdbGenreMap()`. Авторезолвинг числовых genre_ids при загрузке коллекций: `_resolveGenresIfNeeded<T>()`. Миграция v12: колонки `started_at`, `completed_at`, `last_activity_at` в `collection_items`. `updateItemStatus` автоматически устанавливает даты активности при смене статуса. `updateItemActivityDates` для ручного обновления дат. Методы per-item canvas: `getGameCanvasItems`, `getGameCanvasConnections`, `getGameCanvasViewport`, `upsertGameCanvasViewport`. Методы эпизодов: `getEpisodesByShowAndSeason`, `upsertEpisodes`, `clearEpisodesByShow`, `getWatchedEpisodes` (возвращает `Map<(int, int), DateTime?>` с датами просмотра), `markEpisodeWatched`, `markEpisodeUnwatched`, `getWatchedEpisodeCount`, `markSeasonWatched`, `unmarkSeasonWatched`. Изоляция данных: коллекционные методы фильтруют `collection_item_id IS NULL`. Метод `clearAllData()` — очистка всех 15 таблиц в транзакции |
 | `lib/core/services/config_service.dart` | **Сервис конфигурации**. Экспорт/импорт 7 ключей SharedPreferences в JSON файл. Класс `ConfigResult` (success/failure/cancelled). Методы: `collectSettings()`, `applySettings()`, `exportToFile()`, `importFromFile()` |
 | `lib/core/services/image_cache_service.dart` | **Сервис кэширования изображений**. Enum `ImageType` (platformLogo, gameCover, moviePoster, tvShowPoster, canvasImage). Локальное хранение изображений в папках по типу. SharedPreferences для enable/disable и custom path. Методы: `getImageUri()` (cache-first с fallback на remoteUrl), `downloadImage()`, `downloadImages()`, `readImageBytes()`, `saveImageBytes()`, `clearCache()`, `getCacheSize()`, `getCachedCount()`. Провайдер `imageCacheServiceProvider` |
 | `lib/core/services/xcoll_file.dart` | **Модель файла экспорта/импорта**. Поддерживает v1 (.rcoll, legacy games) и v2 (.xcoll/.xcollx, items + canvas + images). Классы: `XcollFile`, `ExportFormat` (light/full), `ExportCanvas`, `RcollGame`. Автоопределение версии при парсинге |
@@ -158,16 +158,33 @@ lib/
 |------|------------|
 | `lib/features/search/providers/game_search_provider.dart` | **State поиска игр**. Debounce 400ms, минимум 2 символа. Фильтр по платформам. Сортировка (relevance/date/rating). Состояние: query, results, isLoading, error, currentSort |
 | `lib/features/search/providers/media_search_provider.dart` | **State поиска фильмов/сериалов**. Debounce 400ms через TMDB API. Enum `MediaSearchTab` (movies, tvShows). Сортировка (relevance/date/rating), фильтры (год, жанры). Состояние: query, movieResults, tvShowResults, isLoading, error, activeTab, currentSort, selectedYear, selectedGenreIds. Кэширование через `upsertMovies()`/`upsertTvShows()` |
-| `lib/features/search/providers/genre_provider.dart` | **Провайдеры жанров**. `movieGenresProvider`, `tvGenresProvider` — FutureProvider для кэширования списков жанров из TMDB API |
+| `lib/features/search/providers/genre_provider.dart` | **Провайдеры жанров**. `movieGenresProvider`, `tvGenresProvider` — FutureProvider для кэширования списков жанров из TMDB API. `movieGenreMapProvider`, `tvGenreMapProvider` — маппинг ID→имя для быстрого резолвинга genre_ids. DB-first стратегия: загрузка из таблицы `tmdb_genres`, при пустом кэше — запрос к API и сохранение |
 
 ---
 
-### Shared (Общие виджеты и константы)
+### Shared (Общие виджеты, тема и константы)
+
+#### Тема
+
+| Файл | Назначение |
+|------|------------|
+| `lib/shared/theme/app_colors.dart` | **Цвета тёмной темы**. Статические константы: background, surface, surfaceLight, surfaceBorder, textPrimary, textSecondary, gameAccent, movieAccent, tvShowAccent. Все цвета — тёмная палитра |
+| `lib/shared/theme/app_spacing.dart` | **Отступы и радиусы**. Статические константы: xs(4), sm(8), md(12), lg(16), xl(24), xxl(32). Радиусы: radiusSm(4), radiusMd(8), radiusLg(12) |
+| `lib/shared/theme/app_typography.dart` | **Типографика**. Статические TextStyle константы: h1(24 bold), h2(20 bold), h3(16 w600), body(14), bodySmall(12), caption(10). Inter/system font |
+
+#### Навигация
+
+| Файл | Назначение |
+|------|------------|
+| `lib/shared/navigation/navigation_shell.dart` | **NavigationShell**. Обёртка с `NavigationRail` (вертикальная боковая панель): Home, Search, Settings. IndexedStack для сохранения состояния табов |
 
 #### Виджеты
 
 | Файл | Назначение |
 |------|------------|
+| `lib/shared/widgets/poster_card.dart` | **PosterCard**. Карточка с постером для grid/list отображения. Поддержка CachedImage и CachedNetworkImage. Заголовок, подзаголовок, бейдж статуса |
+| `lib/shared/widgets/rating_badge.dart` | **RatingBadge**. Компактный бейдж рейтинга со звёздочкой и числовым значением |
+| `lib/shared/widgets/section_header.dart` | **SectionHeader**. Заголовок секции с опциональной кнопкой действия справа |
 | `lib/shared/widgets/cached_image.dart` | **Виджет кэшированного изображения**. ConsumerWidget с FutureBuilder. Логика: cache disabled → CachedNetworkImage, cache enabled + file → Image.file, cache enabled + no file → CachedNetworkImage + фоновый download через addPostFrameCallback. Параметры: imageType, imageId, remoteUrl, memCacheWidth/Height, autoDownload, placeholder, errorWidget |
 | `lib/shared/widgets/media_card.dart` | **Базовый виджет карточки поиска**. Постер 60x80 (CachedNetworkImage или CachedImage при заданных cacheImageType/cacheImageId), название, subtitle, metadata, trailing. `GameCard`, `MovieCard`, `TvShowCard` являются тонкими обёртками |
 | `lib/shared/widgets/media_detail_view.dart` | **Базовый виджет экрана деталей**. Постер 80x120 (CachedNetworkImage или CachedImage при заданных cacheImageType/cacheImageId), SourceBadge, info chips (`MediaDetailChip`), описание inline, секция статуса, дополнительные секции (`extraSections`), комментарии автора, личные заметки, диалог редактирования. `GameDetailScreen`, `MovieDetailScreen`, `TvShowDetailScreen` являются тонкими обёртками |
@@ -505,6 +522,14 @@ CREATE TABLE watched_episodes (
   UNIQUE(collection_id, show_id, season_number, episode_number)
 );
 
+-- Кэш жанров TMDB (v13)
+CREATE TABLE tmdb_genres (
+  id INTEGER NOT NULL,
+  type TEXT NOT NULL,        -- 'movie' или 'tv'
+  name TEXT NOT NULL,
+  PRIMARY KEY (id, type)
+);
+
 -- Элементы канваса (Stage 7, updated Stage 9+)
 CREATE TABLE canvas_items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -583,8 +608,10 @@ CREATE TABLE game_canvas_viewport (
 | `gameCanvasNotifierProvider` | NotifierProvider.family | Состояние per-item канваса (по `({collectionId, collectionItemId})`) |
 | `episodeTrackerNotifierProvider` | NotifierProvider.family | Трекер просмотренных эпизодов (по `({collectionId, showId})`) |
 | `steamGridDbPanelProvider` | NotifierProvider.family | Состояние панели SteamGridDB (по collectionId) |
-| `movieGenresProvider` | FutureProvider | Список жанров фильмов из TMDB |
-| `tvGenresProvider` | FutureProvider | Список жанров сериалов из TMDB |
+| `movieGenresProvider` | FutureProvider | Список жанров фильмов из TMDB (DB-first cache) |
+| `tvGenresProvider` | FutureProvider | Список жанров сериалов из TMDB (DB-first cache) |
+| `movieGenreMapProvider` | FutureProvider | Маппинг ID→имя жанров фильмов |
+| `tvGenreMapProvider` | FutureProvider | Маппинг ID→имя жанров сериалов |
 
 ---
 
@@ -595,25 +622,22 @@ CREATE TABLE game_canvas_viewport (
          │
          ├─[Нет API ключа]→ SettingsScreen(isInitialSetup: true)
          │
-         └─[Есть API ключ]→ HomeScreen
-                            │
-                            ├→ CollectionScreen(collectionId)
-                            │  │
-                            │  ├→ GameDetailScreen(collectionId, itemId)
-                            │  ├→ MovieDetailScreen(collectionId, itemId)
-                            │  ├→ TvShowDetailScreen(collectionId, itemId)
-                            │  │
-                            │  └→ SearchScreen(collectionId)
-                            │      [добавление игр/фильмов/сериалов]
-                            │
-                            ├→ SearchScreen()
-                            │   [просмотр игр]
-                            │
-                            └→ SettingsScreen()
-                                [настройки]
-                                │
-                                └→ SteamGridDbDebugScreen()
-                                    [debug, только в debug сборке]
+         └─[Есть API ключ]→ NavigationShell (NavigationRail sidebar)
+                              ├─ Tab 0: HomeScreen
+                              │  ├→ CollectionScreen(collectionId)
+                              │  │  ├→ GameDetailScreen(collectionId, itemId)
+                              │  │  ├→ MovieDetailScreen(collectionId, itemId)
+                              │  │  ├→ TvShowDetailScreen(collectionId, itemId)
+                              │  │  └→ SearchScreen(collectionId)
+                              │  │      [добавление игр/фильмов/сериалов]
+                              │  │
+                              ├─ Tab 1: SearchScreen()
+                              │   [просмотр игр/фильмов/сериалов]
+                              │
+                              └─ Tab 2: SettingsScreen()
+                                  [настройки]
+                                  └→ SteamGridDbDebugScreen()
+                                      [debug, только в debug сборке]
 ```
 
 ---

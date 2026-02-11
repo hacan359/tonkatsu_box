@@ -1,5 +1,13 @@
 # Features
 
+## Dark Theme
+
+The app uses a custom dark theme with a consistent design system:
+- **AppColors** — dark palette with surface, border, and accent colors per media type
+- **AppTypography** — Inter/system font with 6 text styles (h1–caption)
+- **AppSpacing** — standardized spacing (4–32px) and border radii (4–12px)
+- **NavigationRail** — vertical sidebar with Home, Search, Settings tabs
+
 ## Platforms
 
 - **Windows** — full version with Canvas, VGMaps Browser, all features
@@ -228,6 +236,7 @@ Access movie and TV show data from The Movie Database:
 - View details: poster, genres, rating, runtime/seasons
 - Cache results locally in SQLite for offline access
 - Add movies and TV shows to any collection
+- **Genre caching** — TMDB genre lists are cached in `tmdb_genres` table (DB-first strategy: load from DB, fallback to API). Genres are preloaded on app start when TMDB API key is configured. Numeric genre IDs in search results are resolved to human-readable names before saving to DB. Old cached items with numeric IDs are auto-resolved when loaded from collections
 
 ## SteamGridDB Integration
 

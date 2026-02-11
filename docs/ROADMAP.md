@@ -39,6 +39,19 @@
 - [x] Android Lite — collections, search, details, episode tracker, export/import (no Canvas). Platform feature flags
 - [x] Activity Dates — started_at, completed_at, last_activity_at for all collection items. Auto-set on status change. DatePicker for manual editing. Watched dates in episode tracker
 
+## UI Redesign (in progress)
+
+- [x] Design system — AppColors, AppSpacing, AppTypography for consistent dark theme
+- [x] NavigationShell — NavigationRail sidebar with Home, Search, Settings tabs
+- [x] Dark theme — applied to all screens (Home, Collection, Search, Detail, Settings)
+- [x] Reusable widgets — PosterCard, RatingBadge, SectionHeader
+- [x] TMDB Genre caching — tmdb_genres DB table, DB-first loading, auto-resolve numeric IDs
+- [ ] Canvas mode restoration — Grid/Canvas toggle, CanvasView + SteamGridDB/VGMaps panels
+- [ ] Episode Tracker restoration — full episode tracker in TV Show detail screen
+- [ ] Activity Dates restoration — editable ActivityDatesSection in detail screens
+- [ ] ItemStatusDropdown restoration — context-aware status dropdown in detail screens
+- [ ] Search filters restoration — Platform Filter, Media Filter, Sort Selector
+
 ## Future Plans
 
 ### RetroAchievements Integration
