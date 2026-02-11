@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'features/collections/screens/home_screen.dart';
 import 'features/settings/providers/settings_provider.dart';
 import 'features/settings/screens/settings_screen.dart';
+import 'shared/navigation/navigation_shell.dart';
 
 /// Главный виджет приложения.
 ///
@@ -96,6 +96,6 @@ class _AppRouter extends ConsumerWidget {
       return const SettingsScreen(isInitialSetup: true);
     }
 
-    return const HomeScreen();
+    return const NavigationShell();
   }
 }

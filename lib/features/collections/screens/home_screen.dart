@@ -3,9 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/import_service.dart';
 import '../../../shared/models/collection.dart';
-import '../../search/screens/search_screen.dart';
 import '../../settings/providers/settings_provider.dart';
-import '../../settings/screens/settings_screen.dart';
 import '../providers/collections_provider.dart';
 import '../widgets/collection_tile.dart';
 import '../widgets/create_collection_dialog.dart';
@@ -29,23 +27,11 @@ class HomeScreen extends ConsumerWidget {
         title: const Text('xeRAbora'),
         actions: <Widget>[
           IconButton(
-            icon: const Icon(Icons.search),
-            tooltip: 'Search Games',
-            onPressed: settings.isApiReady
-                ? () => _navigateToSearch(context)
-                : null,
-          ),
-          IconButton(
             icon: const Icon(Icons.file_download_outlined),
             tooltip: 'Import Collection',
             onPressed: settings.isApiReady
                 ? () => _importCollection(context, ref)
                 : null,
-          ),
-          IconButton(
-            icon: const Icon(Icons.settings),
-            tooltip: 'Settings',
-            onPressed: () => _navigateToSettings(context),
           ),
         ],
       ),
@@ -207,22 +193,6 @@ class HomeScreen extends ConsumerWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  void _navigateToSearch(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (BuildContext context) => const SearchScreen(),
-      ),
-    );
-  }
-
-  void _navigateToSettings(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (BuildContext context) => const SettingsScreen(),
       ),
     );
   }
