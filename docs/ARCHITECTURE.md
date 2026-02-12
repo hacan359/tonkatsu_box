@@ -168,7 +168,7 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/shared/theme/app_colors.dart` | **Цвета тёмной темы**. Статические константы: background, surface, surfaceLight, surfaceBorder, textPrimary, textSecondary, gameAccent, movieAccent, tvShowAccent. Все цвета — тёмная палитра |
+| `lib/shared/theme/app_colors.dart` | **Цвета тёмной темы**. Статические константы: background (#0A0A0A), surface (#141414), surfaceLight, surfaceBorder, textPrimary (#FFFFFF), textSecondary, textTertiary, gameAccent, movieAccent, tvShowAccent, ratingHigh/Medium/Low, statusInProgress/Completed/OnHold/Dropped/Planned |
 | `lib/shared/theme/app_spacing.dart` | **Отступы и радиусы**. Статические константы: xs(4), sm(8), md(12), lg(16), xl(24), xxl(32). Радиусы: radiusSm(4), radiusMd(8), radiusLg(12) |
 | `lib/shared/theme/app_typography.dart` | **Типографика**. Статические TextStyle константы: h1(24 bold), h2(20 bold), h3(16 w600), body(14), bodySmall(12), caption(10). Inter/system font |
 

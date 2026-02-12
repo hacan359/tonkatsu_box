@@ -100,6 +100,55 @@ void main() {
       test('statusDropped должен совпадать с error', () {
         expect(AppColors.statusDropped, equals(AppColors.error));
       });
+
+      test('statusPlanned должен быть определён', () {
+        expect(AppColors.statusPlanned, isA<Color>());
+      });
+
+      test('statusPlanned должен отличаться от других статусов', () {
+        expect(
+          AppColors.statusPlanned,
+          isNot(equals(AppColors.statusInProgress)),
+        );
+        expect(
+          AppColors.statusPlanned,
+          isNot(equals(AppColors.statusCompleted)),
+        );
+      });
+    });
+
+    group('Рейтинги', () {
+      test('ratingHigh должен быть определён', () {
+        expect(AppColors.ratingHigh, isA<Color>());
+      });
+
+      test('ratingMedium должен быть определён', () {
+        expect(AppColors.ratingMedium, isA<Color>());
+      });
+
+      test('ratingLow должен быть определён', () {
+        expect(AppColors.ratingLow, isA<Color>());
+      });
+
+      test('все рейтинговые цвета должны быть разными', () {
+        expect(AppColors.ratingHigh, isNot(equals(AppColors.ratingMedium)));
+        expect(AppColors.ratingHigh, isNot(equals(AppColors.ratingLow)));
+        expect(AppColors.ratingMedium, isNot(equals(AppColors.ratingLow)));
+      });
+    });
+
+    group('Конкретные значения цветов', () {
+      test('background должен быть #0A0A0A', () {
+        expect(AppColors.background, equals(const Color(0xFF0A0A0A)));
+      });
+
+      test('surface должен быть #141414', () {
+        expect(AppColors.surface, equals(const Color(0xFF141414)));
+      });
+
+      test('textPrimary должен быть белым', () {
+        expect(AppColors.textPrimary, equals(const Color(0xFFFFFFFF)));
+      });
     });
   });
 }

@@ -231,9 +231,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               children: <Widget>[
                 Icon(Icons.waving_hand, color: AppColors.gameAccent),
                 SizedBox(width: AppSpacing.sm),
-                Text(
-                  'Welcome to xeRAbora!',
-                  style: AppTypography.h2,
+                Flexible(
+                  child: Text(
+                    'Welcome to xeRAbora!',
+                    style: AppTypography.h2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),
@@ -277,9 +280,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   size: SourceBadgeSize.large,
                 ),
                 SizedBox(width: AppSpacing.sm),
-                Text(
-                  'IGDB API Credentials',
-                  style: AppTypography.h3,
+                Flexible(
+                  child: Text(
+                    'IGDB API Credentials',
+                    style: AppTypography.h3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),
@@ -465,9 +471,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               children: <Widget>[
                 Icon(Icons.folder, color: AppColors.gameAccent),
                 SizedBox(width: AppSpacing.sm),
-                Text(
-                  'Image Cache',
-                  style: AppTypography.h3,
+                Flexible(
+                  child: Text(
+                    'Image Cache',
+                    style: AppTypography.h3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),
@@ -528,9 +537,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   contentPadding: EdgeInsets.zero,
                   title: const Text('Cache size'),
                   subtitle: Text('$count files, ${cacheService.formatSize(size)}'),
-                  trailing: TextButton.icon(
+                  trailing: IconButton(
                     icon: const Icon(Icons.delete_outline, size: 18),
-                    label: const Text('Clear'),
+                    tooltip: 'Clear cache',
                     onPressed: count > 0
                         ? () => _clearCache(cacheService)
                         : null,
@@ -609,9 +618,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   size: SourceBadgeSize.large,
                 ),
                 SizedBox(width: AppSpacing.sm),
-                Text(
-                  'SteamGridDB API',
-                  style: AppTypography.h3,
+                Flexible(
+                  child: Text(
+                    'SteamGridDB API',
+                    style: AppTypography.h3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),
@@ -706,9 +718,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   size: SourceBadgeSize.large,
                 ),
                 SizedBox(width: AppSpacing.sm),
-                Text(
-                  'TMDB API (Movies & TV)',
-                  style: AppTypography.h3,
+                Flexible(
+                  child: Text(
+                    'TMDB API (Movies & TV)',
+                    style: AppTypography.h3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),
@@ -801,9 +816,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 Icon(Icons.settings_backup_restore,
                     color: AppColors.gameAccent),
                 SizedBox(width: AppSpacing.sm),
-                Text(
-                  'Configuration',
-                  style: AppTypography.h3,
+                Flexible(
+                  child: Text(
+                    'Configuration',
+                    style: AppTypography.h3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),
@@ -971,9 +989,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               children: <Widget>[
                 Icon(Icons.bug_report, color: AppColors.gameAccent),
                 SizedBox(width: AppSpacing.sm),
-                Text(
-                  'Developer Tools',
-                  style: AppTypography.h3,
+                Flexible(
+                  child: Text(
+                    'Developer Tools',
+                    style: AppTypography.h3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),

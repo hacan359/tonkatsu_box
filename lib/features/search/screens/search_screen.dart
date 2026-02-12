@@ -1216,29 +1216,33 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
   Widget _buildEmptyState(String message, IconData icon) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Icon(
-            icon,
-            size: 64,
-            color: AppColors.textSecondary.withAlpha(128),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            message,
-            style: AppTypography.h3.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            'Type at least 2 characters to start searching',
-            style: AppTypography.body.copyWith(
-                  color: AppColors.textSecondary.withAlpha(179),
-                ),
-          ),
-        ],
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(
+              icon,
+              size: 64,
+              color: AppColors.textSecondary.withAlpha(128),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              message,
+              style: AppTypography.h3.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'Type at least 2 characters to start searching',
+              style: AppTypography.body.copyWith(
+                    color: AppColors.textSecondary.withAlpha(179),
+                  ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1275,10 +1279,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
   Widget _buildErrorState(String error, {required VoidCallback onRetry}) {
     return Center(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             const Icon(
               Icons.error_outline,

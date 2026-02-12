@@ -6,6 +6,19 @@
 
 ## [Unreleased]
 
+### Changed
+- Углублена тёмная палитра `AppColors`: background `#121212`→`#0A0A0A`, surface `#1E1E1E`→`#141414`, surfaceLight `#2A2A2A`→`#1E1E1E`, surfaceBorder `#3A3A3A`→`#2A2A2A`, textPrimary `#E0E0E0`→`#FFFFFF`
+- Добавлены цвета рейтинга в `AppColors`: `ratingHigh` (#22C55E), `ratingMedium` (#FBBF24), `ratingLow` (#EF4444)
+- Добавлен цвет статуса `statusPlanned` (#8B5CF6) в `AppColors`
+- Установлен минимальный размер окна 800×600 (`windows/runner/win32_window.cpp`, `WM_GETMINMAXINFO`)
+
+### Fixed
+- Исправлен overflow заголовков секций в `SettingsScreen` — текст в `Row` обёрнут в `Flexible` с `TextOverflow.ellipsis` (7 секций)
+- Исправлен overflow `ListTile` с кнопкой очистки кэша в `SettingsScreen` — `TextButton.icon` заменён на `IconButton`
+- Исправлен vertical overflow в `SearchScreen` empty/error states — `Column` заменён на `SingleChildScrollView` + `MainAxisSize.min`
+
+---
+
 ### Added
 - Добавлена дизайн-система для тёмной темы: `AppColors`, `AppSpacing`, `AppTypography` (`lib/shared/theme/`)
 - Добавлен `NavigationShell` с `NavigationRail` — боковая навигация (Home, Search, Settings)
