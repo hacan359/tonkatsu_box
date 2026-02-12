@@ -79,18 +79,33 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
         final CollectionItem? item = _findItem(items);
         if (item == null) {
           return Scaffold(
-            appBar: AppBar(),
+            backgroundColor: AppColors.background,
+            appBar: AppBar(
+              backgroundColor: AppColors.background,
+              surfaceTintColor: Colors.transparent,
+              foregroundColor: AppColors.textPrimary,
+            ),
             body: const Center(child: Text('Movie not found')),
           );
         }
         return _buildContent(item);
       },
       loading: () => Scaffold(
-        appBar: AppBar(),
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: AppColors.background,
+          surfaceTintColor: Colors.transparent,
+          foregroundColor: AppColors.textPrimary,
+        ),
         body: const Center(child: CircularProgressIndicator()),
       ),
       error: (Object error, StackTrace stack) => Scaffold(
-        appBar: AppBar(),
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: AppColors.background,
+          surfaceTintColor: Colors.transparent,
+          foregroundColor: AppColors.textPrimary,
+        ),
         body: Center(child: Text('Error: $error')),
       ),
     );
@@ -172,6 +187,7 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
                 _saveAuthorComment(item.id, text),
             onUserCommentSave: (String? text) =>
                 _saveUserComment(item.id, text),
+            accentColor: AppColors.movieAccent,
             embedded: true,
           ),
           // Canvas tab (только desktop)
