@@ -172,6 +172,16 @@ class ImageCacheService {
     return ImageResult(uri: remoteUrl, isLocal: false, isMissing: true);
   }
 
+  /// Безопасно удаляет файл, игнорируя ошибку блокировки на Windows.
+  Future<void> _tryDelete(File file) async {
+    try {
+      await file.delete();
+    } on FileSystemException {
+      // Файл может быть занят другим процессом (Windows lock).
+      // Пропускаем — файл будет перезаписан при следующем скачивании.
+    }
+  }
+
   /// Скачивает изображение в кэш.
   Future<bool> downloadImage({
     required ImageType type,
@@ -193,7 +203,7 @@ class ImageCacheService {
 
       // Проверяем что файл не пустой (битое скачивание)
       if (file.existsSync() && file.lengthSync() == 0) {
-        await file.delete();
+        await _tryDelete(file);
         return false;
       }
 
@@ -203,7 +213,7 @@ class ImageCacheService {
       final String localPath = await getLocalImagePath(type, imageId);
       final File partial = File(localPath);
       if (partial.existsSync() && partial.lengthSync() == 0) {
-        await partial.delete();
+        await _tryDelete(partial);
       }
       return false;
     }
