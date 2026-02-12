@@ -59,13 +59,13 @@ void main() {
       expect(find.text('Collections'), findsOneWidget);
     });
 
-    testWidgets('должен показывать FAB New Collection',
+    testWidgets('должен показывать кнопку New Collection в AppBar',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pump();
 
-      expect(find.text('New Collection'), findsOneWidget);
-      expect(find.byType(FloatingActionButton), findsOneWidget);
+      expect(find.byTooltip('New Collection'), findsOneWidget);
+      expect(find.byIcon(Icons.add), findsOneWidget);
     });
 
     testWidgets('должен показывать shimmer при загрузке',

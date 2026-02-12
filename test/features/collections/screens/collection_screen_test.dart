@@ -419,14 +419,14 @@ void main() {
       });
     });
 
-    group('FAB', () {
-      testWidgets('должен показывать FAB Add Items для editable',
+    group('Add Items кнопка', () {
+      testWidgets('должен показывать кнопку Add Items в AppBar для editable',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        expect(find.text('Add Items'), findsOneWidget);
-        expect(find.byType(FloatingActionButton), findsOneWidget);
+        expect(find.byTooltip('Add Items'), findsOneWidget);
+        expect(find.byIcon(Icons.add), findsOneWidget);
       });
     });
   });

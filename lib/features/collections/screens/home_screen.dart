@@ -36,6 +36,12 @@ class HomeScreen extends ConsumerWidget {
         title: const Text('Collections', style: AppTypography.h1),
         actions: <Widget>[
           IconButton(
+            icon: const Icon(Icons.add),
+            color: AppColors.textSecondary,
+            tooltip: 'New Collection',
+            onPressed: () => _createCollection(context, ref),
+          ),
+          IconButton(
             icon: const Icon(Icons.file_download_outlined),
             color: AppColors.textSecondary,
             tooltip: 'Import Collection',
@@ -51,13 +57,6 @@ class HomeScreen extends ConsumerWidget {
         loading: () => _buildLoadingState(),
         error: (Object error, StackTrace stack) =>
             _buildErrorState(context, ref, error),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _createCollection(context, ref),
-        backgroundColor: AppColors.gameAccent,
-        foregroundColor: AppColors.background,
-        icon: const Icon(Icons.add),
-        label: const Text('New Collection'),
       ),
     );
   }

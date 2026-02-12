@@ -93,6 +93,11 @@ Track status for each item in your collection with context-aware labels:
 | ❌ Dropped | Dropped | Dropped |
 | 📋 Planned | Planned | Planned |
 
+Status is displayed differently depending on context:
+- **Detail screens** — horizontal chip row (`StatusChipRow`) with all available statuses visible; tap to change
+- **List view cards** — diagonal ribbon (`StatusRibbon`) in the top-left corner; display only (change status from detail screen)
+- **Grid view cards** — emoji badge; display only
+
 View statistics per collection — see your completion rate at a glance.
 
 ### Activity Dates
@@ -134,25 +139,25 @@ Tap any item in a collection to see its full details. All detail screens have tw
 - Type icon and label
 - Info chips (year, rating, genres, etc.)
 - Inline description (max 4 lines)
-- Status dropdown, author comment, personal notes
+- Status chip row (horizontal chips for all available statuses), author comment, personal notes
 
 **Canvas tab** — personal canvas for the item with full canvas functionality (see Per-Item Canvas above)
 
 ### Game Details
 - Source: IGDB
 - Info chips: release year, rating, genres
-- Status dropdown with game-specific labels
+- Status chip row with game-specific labels ("Playing")
 
 ### Movie Details
 - Source: TMDB
 - Info chips: release year, runtime (formatted as "2h 10m"), rating, genres
-- Status dropdown with "Watching" label
+- Status chip row with "Watching" label
 
 ### TV Show Details
 - Source: TMDB
 - Info chips: first air date, seasons/episodes count, rating, show status (Returning/Ended/Canceled), genres
 - Episode tracker section: progress bar, expandable seasons with per-episode checkboxes, bulk mark/unmark, auto-complete
-- Status dropdown (includes "On Hold")
+- Status chip row (includes "On Hold" chip)
 
 ## Comments
 
@@ -218,7 +223,7 @@ Visualize your collection on a free-form canvas, or create a personal canvas for
   - Browse 4 image types: Grids (box art), Heroes (banners), Logos, Icons
   - Click any thumbnail to add it to the canvas center (scaled to max 300px width)
   - In-memory cache for API results (no re-fetching on tab switch)
-  - Toggle via FAB button or right-click "Find images..."
+  - Toggle via toolbar button or right-click "Find images..."
   - Warning when SteamGridDB API key is not configured
 - **VGMaps Browser Panel** — side panel with embedded WebView2 browser for vgmaps.de
   - Navigate vgmaps.de directly inside the app (back/forward/home/reload)
@@ -226,7 +231,7 @@ Visualize your collection on a free-form canvas, or create a personal canvas for
   - Right-click any image on vgmaps.de to capture it
   - Preview captured image with dimensions in the bottom bar
   - Click "Add to Canvas" to place the map image on the canvas (scaled to max 400px width)
-  - Toggle via FAB button or right-click "Browse maps..."
+  - Toggle via toolbar button or right-click "Browse maps..."
   - Mutually exclusive with SteamGridDB panel (opening one closes the other)
 
 ### Per-Item Canvas

@@ -86,11 +86,11 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/features/collections/screens/home_screen.dart` | **Главный экран**. Список коллекций с группировкой (My/Forked/Imported). FAB для создания. Меню: rename, fork, delete |
+| `lib/features/collections/screens/home_screen.dart` | **Главный экран**. Список коллекций с группировкой (My/Forked/Imported). AppBar с кнопкой "+" для создания и Import. Меню: rename, fork, delete |
 | `lib/features/collections/screens/collection_screen.dart` | **Экран коллекции**. Заголовок со статистикой (прогресс-бар), список элементов. Кнопка "Add Items" открывает SearchScreen. Поддержка игр, фильмов и сериалов через `CollectionItem`/`collectionItemsNotifierProvider`. Навигация к `GameDetailScreen`/`MovieDetailScreen`/`TvShowDetailScreen` по типу. `_CollectionItemTile` — карточка с большой полупрозрачной фоновой иконкой типа медиа (Stack + Positioned) |
-| `lib/features/collections/screens/game_detail_screen.dart` | **Экран деталей игры**. TabBar с 2 вкладками: Details (`MediaDetailView(embedded: true)` с info chips, StatusDropdown) и Canvas (CanvasView + боковые панели SteamGridDB/VGMaps). Использует `gameCanvasNotifierProvider` для per-item canvas |
-| `lib/features/collections/screens/movie_detail_screen.dart` | **Экран деталей фильма**. TabBar с 2 вкладками: Details (`MediaDetailView(embedded: true)` с info chips, ItemStatusDropdown) и Canvas (CanvasView + боковые панели SteamGridDB/VGMaps). Использует `gameCanvasNotifierProvider` для per-item canvas |
-| `lib/features/collections/screens/tv_show_detail_screen.dart` | **Экран деталей сериала**. TabBar с 2 вкладками: Details (`MediaDetailView(embedded: true)` с info chips, Episode Progress с трекером эпизодов по сезонам, ItemStatusDropdown) и Canvas (CanvasView + боковые панели SteamGridDB/VGMaps). Виджеты `_SeasonsListWidget`, `_SeasonExpansionTile`, `_EpisodeTile` — ExpansionTile по сезонам с lazy-loading эпизодов и чекбоксами просмотра. Использует `episodeTrackerNotifierProvider` и `gameCanvasNotifierProvider` для per-item canvas |
+| `lib/features/collections/screens/game_detail_screen.dart` | **Экран деталей игры**. TabBar с 2 вкладками: Details (`MediaDetailView(embedded: true)` с info chips, StatusChipRow) и Canvas (CanvasView + боковые панели SteamGridDB/VGMaps). Использует `gameCanvasNotifierProvider` для per-item canvas |
+| `lib/features/collections/screens/movie_detail_screen.dart` | **Экран деталей фильма**. TabBar с 2 вкладками: Details (`MediaDetailView(embedded: true)` с info chips, StatusChipRow) и Canvas (CanvasView + боковые панели SteamGridDB/VGMaps). Использует `gameCanvasNotifierProvider` для per-item canvas |
+| `lib/features/collections/screens/tv_show_detail_screen.dart` | **Экран деталей сериала**. TabBar с 2 вкладками: Details (`MediaDetailView(embedded: true)` с info chips, Episode Progress с трекером эпизодов по сезонам, StatusChipRow) и Canvas (CanvasView + боковые панели SteamGridDB/VGMaps). Виджеты `_SeasonsListWidget`, `_SeasonExpansionTile`, `_EpisodeTile` — ExpansionTile по сезонам с lazy-loading эпизодов и чекбоксами просмотра. Использует `episodeTrackerNotifierProvider` и `gameCanvasNotifierProvider` для per-item canvas |
 
 #### Виджеты
 
@@ -99,8 +99,8 @@ lib/
 | `lib/features/collections/widgets/activity_dates_section.dart` | **Секция дат активности**. StatelessWidget: Added (readonly), Started (editable), Completed (editable), Last Activity (readonly). DatePicker для ручного редактирования. `_DateRow` — приватный виджет строки с иконкой, меткой и датой. `OnDateChanged` typedef для callback |
 | `lib/features/collections/widgets/collection_tile.dart` | **Плитка коллекции**. Показывает имя, автора, тип, количество игр. Иконка удаления |
 | `lib/features/collections/widgets/create_collection_dialog.dart` | **Диалоги**. Создание, переименование, удаление коллекции |
-| `lib/features/collections/widgets/status_dropdown.dart` | **Выпадающий список статусов** (legacy, для GameDetailScreen). Компактный и полный режим |
-| `lib/features/collections/widgets/item_status_dropdown.dart` | **Универсальный dropdown статуса**. Контекстные лейблы по `MediaType` ("Playing"/"Watching"). `ItemStatusChip` для read-only. Полный/компактный режим. `onHold` только для сериалов |
+| `lib/features/collections/widgets/status_chip_row.dart` | **Ряд чипов выбора статуса**. Горизонтальный `Wrap` с кастомными chip-кнопками. Выбранный чип: цветной фон, жирный текст, цветная рамка. `onHold` только для сериалов. Используется на detail-экранах |
+| `lib/features/collections/widgets/status_ribbon.dart` | **Диагональная ленточка статуса**. Display-only `Positioned` + `Transform.rotate(-45°)` в верхнем левом углу list-карточек. Emoji + метка, цвет = `status.color`. Не показывается для `notStarted` |
 | `lib/features/collections/widgets/canvas_media_card.dart` | **Карточка фильма/сериала на канвасе**. ConsumerWidget. Постер через CachedImage (moviePoster/tvShowPoster), название, placeholder icon (movie/tv). По паттерну CanvasGameCard |
 | `lib/features/collections/widgets/canvas_view.dart` | **Canvas View**. InteractiveViewer с зумом 0.3–3.0x, панорамированием, drag-and-drop (абсолютное отслеживание позиции). Фоновая сетка (CustomPainter), автоцентрирование |
 | `lib/features/collections/widgets/canvas_game_card.dart` | **Карточка игры на канвасе**. ConsumerWidget. Компактная карточка 160x220px с обложкой через CachedImage (gameCover) и названием |
@@ -336,7 +336,7 @@ State обновляется, связь рисуется CanvasConnectionPainte
 ### 5. Добавление SteamGridDB-изображения на канвас
 
 ```
-Клик FAB SteamGridDB / ПКМ → Find images...
+Клик кнопки SteamGridDB / ПКМ → Find images...
        ↓
 SteamGridDbPanelNotifier.togglePanel() / openPanel()
        ↓
@@ -362,7 +362,7 @@ SnackBar "Image added to canvas"
 ### 6. Изменение статуса
 
 ```
-Тап на StatusDropdown / ItemStatusDropdown
+Тап на StatusChipRow (detail-экран)
        ↓
 collectionGamesNotifierProvider.updateStatus()  [игры]
 collectionItemsNotifierProvider.updateStatus()  [фильмы/сериалы]

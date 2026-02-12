@@ -385,7 +385,7 @@ void main() {
     });
 
     group('секция статуса', () {
-      testWidgets('должен отображать ItemStatusDropdown с MediaType.tvShow',
+      testWidgets('должен отображать StatusChipRow с MediaType.tvShow',
           (WidgetTester tester) async {
         final TvShow tvShow = createTestTvShow();
         final CollectionItem item = createTestCollectionItem(

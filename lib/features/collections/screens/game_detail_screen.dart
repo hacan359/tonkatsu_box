@@ -6,6 +6,8 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../data/repositories/canvas_repository.dart';
 import '../../../shared/models/collection_game.dart';
 import '../../../shared/models/game.dart';
+import '../../../shared/models/item_status.dart';
+import '../../../shared/models/media_type.dart';
 import '../../../shared/models/steamgriddb_image.dart';
 import '../../../shared/widgets/media_detail_view.dart';
 import '../../../shared/widgets/source_badge.dart';
@@ -17,7 +19,7 @@ import '../../../shared/constants/platform_features.dart';
 import '../widgets/canvas_view.dart';
 import '../widgets/steamgriddb_panel.dart';
 import '../widgets/activity_dates_section.dart';
-import '../widgets/status_dropdown.dart';
+import '../widgets/status_chip_row.dart';
 import '../widgets/vgmaps_panel.dart';
 
 /// Экран детального просмотра игры в коллекции.
@@ -157,10 +159,11 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
             description: game?.summary,
             cacheImageType: ImageType.gameCover,
             cacheImageId: widget.gameId.toString(),
-            statusWidget: StatusDropdown(
-              status: collectionGame.status,
-              onChanged: (GameStatus status) =>
-                  _updateStatus(collectionGame.id, status),
+            statusWidget: StatusChipRow(
+              status: collectionGame.status.toItemStatus(),
+              mediaType: MediaType.game,
+              onChanged: (ItemStatus status) =>
+                  _updateGameStatus(collectionGame.id, status),
             ),
             extraSections: <Widget>[
               ActivityDatesSection(
@@ -382,10 +385,29 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
     }
   }
 
-  Future<void> _updateStatus(int id, GameStatus status) async {
+  Future<void> _updateGameStatus(int id, ItemStatus status) async {
+    final GameStatus gameStatus = _toGameStatus(status);
     await ref
         .read(collectionGamesNotifierProvider(widget.collectionId).notifier)
-        .updateStatus(id, status);
+        .updateStatus(id, gameStatus);
+  }
+
+  static GameStatus _toGameStatus(ItemStatus status) {
+    switch (status) {
+      case ItemStatus.notStarted:
+        return GameStatus.notStarted;
+      case ItemStatus.inProgress:
+        return GameStatus.playing;
+      case ItemStatus.completed:
+        return GameStatus.completed;
+      case ItemStatus.dropped:
+        return GameStatus.dropped;
+      case ItemStatus.planned:
+        return GameStatus.planned;
+      case ItemStatus.onHold:
+        // Fallback: games don't have onHold, map to planned
+        return GameStatus.planned;
+    }
   }
 
   Future<void> _updateActivityDate(int id, String type, DateTime date) async {
