@@ -164,12 +164,53 @@ class ImageCacheService {
     final String localPath = await getLocalImagePath(type, imageId);
     final File file = File(localPath);
 
-    if (file.existsSync() && file.lengthSync() > 0) {
+    if (file.existsSync() && _isValidImageFile(file)) {
       return ImageResult(uri: localPath, isLocal: true, isMissing: false);
     }
 
     // Файл отсутствует — показать из сети, пометить как отсутствующий в кэше
     return ImageResult(uri: remoteUrl, isLocal: false, isMissing: true);
+  }
+
+  /// Проверяет, что файл является валидным изображением по magic bytes.
+  ///
+  /// Поддерживает JPEG (FF D8 FF), PNG (89 50 4E 47), WebP (RIFF...WEBP).
+  bool _isValidImageFile(File file) {
+    if (!file.existsSync()) return false;
+    final int length = file.lengthSync();
+    if (length < 8) return false;
+
+    final RandomAccessFile raf = file.openSync();
+    try {
+      final Uint8List header = raf.readSync(12);
+
+      // JPEG: FF D8 FF
+      if (header[0] == 0xFF && header[1] == 0xD8 && header[2] == 0xFF) {
+        return true;
+      }
+      // PNG: 89 50 4E 47
+      if (header[0] == 0x89 &&
+          header[1] == 0x50 &&
+          header[2] == 0x4E &&
+          header[3] == 0x47) {
+        return true;
+      }
+      // WebP: RIFF....WEBP
+      if (length >= 12 &&
+          header[0] == 0x52 &&
+          header[1] == 0x49 &&
+          header[2] == 0x46 &&
+          header[3] == 0x46 &&
+          header[8] == 0x57 &&
+          header[9] == 0x45 &&
+          header[10] == 0x42 &&
+          header[11] == 0x50) {
+        return true;
+      }
+      return false;
+    } finally {
+      raf.closeSync();
+    }
   }
 
   /// Безопасно удаляет файл, игнорируя ошибку блокировки на Windows.
@@ -201,18 +242,18 @@ class ImageCacheService {
       // Скачиваем файл
       await _dio.download(remoteUrl, localPath);
 
-      // Проверяем что файл не пустой (битое скачивание)
-      if (file.existsSync() && file.lengthSync() == 0) {
+      // Проверяем что файл валидный
+      if (!_isValidImageFile(file)) {
         await _tryDelete(file);
         return false;
       }
 
       return true;
     } catch (e) {
-      // Удаляем частично скачанный файл при ошибке
+      // Удаляем невалидный/частичный файл при ошибке
       final String localPath = await getLocalImagePath(type, imageId);
       final File partial = File(localPath);
-      if (partial.existsSync() && partial.lengthSync() == 0) {
+      if (partial.existsSync()) {
         await _tryDelete(partial);
       }
       return false;

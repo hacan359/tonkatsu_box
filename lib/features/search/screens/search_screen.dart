@@ -282,6 +282,20 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     );
   }
 
+  // ==================== Image caching ====================
+
+  /// Кэширует обложку элемента в фоне сразу после добавления в коллекцию.
+  void _cacheImage(ImageType type, String imageId, String? imageUrl) {
+    if (imageUrl == null || imageUrl.isEmpty) return;
+    final ImageCacheService cacheService = ref.read(imageCacheServiceProvider);
+    // Fire-and-forget: не блокируем UI, ошибки игнорируем
+    cacheService.downloadImage(
+      type: type,
+      imageId: imageId,
+      remoteUrl: imageUrl,
+    );
+  }
+
   // ==================== Game actions ====================
 
   void _onGameTap(Game game) {
@@ -310,6 +324,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
     if (mounted) {
       if (success) {
+        _cacheImage(ImageType.gameCover, game.id.toString(), game.coverUrl);
         messenger.showSnackBar(
           SnackBar(content: Text('$gameName added to collection')),
         );
@@ -341,6 +356,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
     if (mounted) {
       if (success) {
+        _cacheImage(ImageType.gameCover, game.id.toString(), game.coverUrl);
         messenger.showSnackBar(
           SnackBar(
             content: Text('$gameName added to ${selectedCollection.name}'),
@@ -380,6 +396,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
     if (mounted) {
       if (success) {
+        _cacheImage(
+          ImageType.moviePoster,
+          movie.tmdbId.toString(),
+          movie.posterUrl,
+        );
         messenger.showSnackBar(
           SnackBar(content: Text('$title added to collection')),
         );
@@ -408,6 +429,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
     if (mounted) {
       if (success) {
+        _cacheImage(
+          ImageType.moviePoster,
+          movie.tmdbId.toString(),
+          movie.posterUrl,
+        );
         messenger.showSnackBar(
           SnackBar(
             content: Text('$title added to ${selectedCollection.name}'),
@@ -447,6 +473,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
     if (mounted) {
       if (success) {
+        _cacheImage(
+          ImageType.tvShowPoster,
+          tvShow.tmdbId.toString(),
+          tvShow.posterUrl,
+        );
         messenger.showSnackBar(
           SnackBar(content: Text('$title added to collection')),
         );
@@ -475,6 +506,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
     if (mounted) {
       if (success) {
+        _cacheImage(
+          ImageType.tvShowPoster,
+          tvShow.tmdbId.toString(),
+          tvShow.posterUrl,
+        );
         messenger.showSnackBar(
           SnackBar(
             content: Text('$title added to ${selectedCollection.name}'),
@@ -902,6 +938,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         final Game game = searchState.results[index];
         final List<CollectedItemInfo>? infos = collectedGameInfos[game.id];
         return PosterCard(
+          key: ValueKey<int>(game.id),
           title: game.name,
           imageUrl: game.coverUrl ?? '',
           cacheImageType: ImageType.gameCover,
@@ -980,6 +1017,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
               final List<CollectedItemInfo>? infos =
                   collectedMovieInfos[movie.tmdbId];
               return PosterCard(
+                key: ValueKey<int>(movie.tmdbId),
                 title: movie.title,
                 imageUrl: movie.posterUrl ?? '',
                 cacheImageType: ImageType.moviePoster,
@@ -1061,6 +1099,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
               final List<CollectedItemInfo>? infos =
                   collectedTvShowInfos[tvShow.tmdbId];
               return PosterCard(
+                key: ValueKey<int>(tvShow.tmdbId),
                 title: tvShow.title,
                 imageUrl: tvShow.posterUrl ?? '',
                 cacheImageType: ImageType.tvShowPoster,
