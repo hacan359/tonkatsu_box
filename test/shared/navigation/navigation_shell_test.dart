@@ -1,5 +1,6 @@
 // Тесты для NavigationShell.
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/shared/navigation/navigation_shell.dart';
 
@@ -25,6 +26,12 @@ void main() {
       final Set<int> indices =
           NavTab.values.map((NavTab t) => t.index).toSet();
       expect(indices.length, equals(NavTab.values.length));
+    });
+  });
+
+  group('navigationBreakpoint', () {
+    test('должен быть 800', () {
+      expect(navigationBreakpoint, equals(800));
     });
   });
 }
