@@ -140,7 +140,7 @@ class _PosterCardState extends State<PosterCard>
                       // Затемнение постера
                       const Positioned.fill(
                         child: ColoredBox(
-                          color: Color(0x1A000000),
+                          color: Color(0x30000000),
                         ),
                       ),
 
