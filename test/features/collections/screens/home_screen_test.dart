@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,6 +9,8 @@ import 'package:xerabora/data/repositories/collection_repository.dart';
 import 'package:xerabora/features/collections/screens/home_screen.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/shared/models/collection.dart';
+import 'package:xerabora/shared/widgets/hero_collection_card.dart';
+import 'package:xerabora/shared/widgets/shimmer_loading.dart';
 
 class MockCollectionRepository extends Mock implements CollectionRepository {}
 
@@ -49,8 +53,8 @@ void main() {
     testWidgets('должен показывать заголовок Collections',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
-      await tester.pump(); // Initial pump
-      await tester.pump(); // Allow async to complete
+      await tester.pump();
+      await tester.pump();
 
       expect(find.text('Collections'), findsOneWidget);
     });
@@ -64,16 +68,47 @@ void main() {
       expect(find.byType(FloatingActionButton), findsOneWidget);
     });
 
+    testWidgets('должен показывать shimmer при загрузке',
+        (WidgetTester tester) async {
+      // Completer никогда не завершается — имитируем бесконечную загрузку
+      final Completer<List<Collection>> completer =
+          Completer<List<Collection>>();
+      when(() => mockRepo.getAll())
+          .thenAnswer((_) => completer.future);
+
+      await tester.pumpWidget(ProviderScope(
+        overrides: <Override>[
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          collectionRepositoryProvider.overrideWithValue(mockRepo),
+        ],
+        child: const MaterialApp(
+          home: HomeScreen(),
+        ),
+      ));
+      await tester.pump();
+
+      expect(find.byType(ShimmerListTile), findsWidgets);
+    });
+
     testWidgets('должен показывать пустое состояние когда нет коллекций',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pump();
-      await tester.pump(); // Allow async to complete
+      await tester.pump();
 
       expect(find.text('No Collections Yet'), findsOneWidget);
     });
 
-    testWidgets('должен показывать список коллекций',
+    testWidgets('должен показывать иконку пустого состояния',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.byIcon(Icons.collections_bookmark_outlined), findsOneWidget);
+    });
+
+    testWidgets('должен показывать коллекцию как HeroCollectionCard',
         (WidgetTester tester) async {
       final List<Collection> collections = <Collection>[
         Collection(
@@ -88,31 +123,13 @@ void main() {
       await tester.pumpWidget(createWidget(collections: collections));
       await tester.pump();
       await tester.pump();
-      await tester.pump(); // Allow multiple async frames
+      await tester.pump();
 
       expect(find.text('Test Collection'), findsOneWidget);
+      expect(find.byType(HeroCollectionCard), findsOneWidget);
     });
 
-    testWidgets('должен показывать секцию My Collections',
-        (WidgetTester tester) async {
-      final List<Collection> collections = <Collection>[
-        Collection(
-          id: 1,
-          name: 'Test Collection',
-          author: 'User',
-          type: CollectionType.own,
-          createdAt: DateTime.now(),
-        ),
-      ];
-
-      await tester.pumpWidget(createWidget(collections: collections));
-      await tester.pump();
-      await tester.pump();
-
-      expect(find.textContaining('My Collections'), findsOneWidget);
-    });
-
-    testWidgets('должен группировать коллекции по типу',
+    testWidgets('должен показывать секцию Imported для импортированных',
         (WidgetTester tester) async {
       final List<Collection> collections = <Collection>[
         Collection(
@@ -135,17 +152,29 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      expect(find.textContaining('My Collections ('), findsOneWidget);
       expect(find.textContaining('Imported ('), findsOneWidget);
     });
 
-    testWidgets('должен показывать иконку пустого состояния',
+    testWidgets('должен показывать секцию My Collections при > 3 own',
         (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
+      final List<Collection> collections = List<Collection>.generate(
+        5,
+        (int i) => Collection(
+          id: i + 1,
+          name: 'Collection ${i + 1}',
+          author: 'User',
+          type: CollectionType.own,
+          createdAt: DateTime.now(),
+        ),
+      );
+
+      await tester.pumpWidget(createWidget(collections: collections));
       await tester.pump();
       await tester.pump();
 
-      expect(find.byIcon(Icons.collections_bookmark_outlined), findsOneWidget);
+      // 3 Hero + секция с остальными 2
+      expect(find.byType(HeroCollectionCard), findsNWidgets(3));
+      expect(find.textContaining('My Collections (5)'), findsOneWidget);
     });
   });
 }
