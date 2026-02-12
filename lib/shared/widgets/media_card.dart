@@ -93,10 +93,10 @@ class MediaCard extends StatelessWidget {
   final String? cacheImageId;
 
   /// Ширина постера/обложки.
-  static const double posterWidth = 60;
+  static const double posterWidth = 64;
 
   /// Высота постера/обложки.
-  static const double posterHeight = 80;
+  static const double posterHeight = 96;
 
   /// Радиус скругления постера.
   static const double posterBorderRadius = 4;
