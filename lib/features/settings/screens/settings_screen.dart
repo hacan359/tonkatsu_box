@@ -831,24 +831,36 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               style: AppTypography.bodySmall,
             ),
             const SizedBox(height: AppSpacing.sm),
-            Row(
-              children: <Widget>[
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: _exportConfig,
-                    icon: const Icon(Icons.upload, size: 18),
-                    label: const Text('Export Config'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: _importConfig,
-                    icon: const Icon(Icons.download, size: 18),
-                    label: const Text('Import Config'),
-                  ),
-                ),
-              ],
+            LayoutBuilder(
+              builder: (BuildContext context, BoxConstraints constraints) {
+                final Widget exportButton = OutlinedButton.icon(
+                  onPressed: _exportConfig,
+                  icon: const Icon(Icons.upload, size: 18),
+                  label: const Text('Export Config'),
+                );
+                final Widget importButton = OutlinedButton.icon(
+                  onPressed: _importConfig,
+                  icon: const Icon(Icons.download, size: 18),
+                  label: const Text('Import Config'),
+                );
+                if (constraints.maxWidth < 400) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      exportButton,
+                      const SizedBox(height: 12),
+                      importButton,
+                    ],
+                  );
+                }
+                return Row(
+                  children: <Widget>[
+                    Expanded(child: exportButton),
+                    const SizedBox(width: 12),
+                    Expanded(child: importButton),
+                  ],
+                );
+              },
             ),
           ],
         ),
@@ -951,7 +963,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: AppColors.error,
             ),
             child: const Text('Reset'),
           ),

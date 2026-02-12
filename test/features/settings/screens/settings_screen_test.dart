@@ -216,6 +216,77 @@ void main() {
       expect(textField.controller?.text, equals('existing_secret'));
     });
 
+    group('Configuration Export/Import', () {
+      testWidgets('должен показывать кнопки Export и Import',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        await tester.scrollUntilVisible(
+          find.text('Export Config'),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Export Config'), findsOneWidget);
+        expect(find.text('Import Config'), findsOneWidget);
+      });
+
+      testWidgets(
+          'должен показывать кнопки горизонтально на широком экране (>= 400)',
+          (WidgetTester tester) async {
+        // Стандартный тестовый viewport 800×600
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        await tester.scrollUntilVisible(
+          find.text('Export Config'),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.pumpAndSettle();
+
+        // Кнопки в Row — проверяем что обе кнопки на одной строке (Y совпадает)
+        final Offset exportPos = tester.getCenter(find.text('Export Config'));
+        final Offset importPos = tester.getCenter(find.text('Import Config'));
+        expect(exportPos.dy, equals(importPos.dy));
+      });
+
+      testWidgets(
+          'должен показывать кнопки вертикально на узком экране (< 400)',
+          (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(399, 800);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        // Подавляем overflow ошибки от других Row при узком экране
+        final void Function(FlutterErrorDetails)? oldHandler = FlutterError.onError;
+        FlutterError.onError = (FlutterErrorDetails details) {
+          final String message = details.exceptionAsString();
+          if (message.contains('overflowed')) return;
+          oldHandler?.call(details);
+        };
+        addTearDown(() => FlutterError.onError = oldHandler);
+
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        await tester.scrollUntilVisible(
+          find.text('Export Config'),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.pumpAndSettle();
+
+        // Кнопки в Column — Export выше Import
+        final Offset exportPos = tester.getCenter(find.text('Export Config'));
+        final Offset importPos = tester.getCenter(find.text('Import Config'));
+        expect(exportPos.dy, lessThan(importPos.dy));
+      });
+    });
+
     group('SourceBadges в секциях API', () {
       testWidgets('должен отображать SourceBadge IGDB в секции IGDB',
           (WidgetTester tester) async {
