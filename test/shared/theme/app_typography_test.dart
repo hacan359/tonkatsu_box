@@ -7,6 +7,10 @@ import 'package:xerabora/shared/theme/app_typography.dart';
 
 void main() {
   group('AppTypography', () {
+    test('fontFamily должен быть Inter', () {
+      expect(AppTypography.fontFamily, equals('Inter'));
+    });
+
     test('h1 должен быть самым крупным', () {
       expect(AppTypography.h1.fontSize, greaterThan(AppTypography.h2.fontSize!));
     });
@@ -60,6 +64,36 @@ void main() {
       expect(AppTypography.body.height, isNotNull);
       expect(AppTypography.bodySmall.height, isNotNull);
       expect(AppTypography.caption.height, isNotNull);
+    });
+
+    test('все стили должны использовать Inter', () {
+      expect(AppTypography.h1.fontFamily, equals('Inter'));
+      expect(AppTypography.h2.fontFamily, equals('Inter'));
+      expect(AppTypography.h3.fontFamily, equals('Inter'));
+      expect(AppTypography.body.fontFamily, equals('Inter'));
+      expect(AppTypography.bodySmall.fontFamily, equals('Inter'));
+      expect(AppTypography.caption.fontFamily, equals('Inter'));
+    });
+
+    test('h1 и h2 должны иметь отрицательный letterSpacing', () {
+      expect(AppTypography.h1.letterSpacing, equals(-0.5));
+      expect(AppTypography.h2.letterSpacing, equals(-0.2));
+    });
+
+    group('Poster стили', () {
+      test('posterTitle должен быть определён', () {
+        expect(AppTypography.posterTitle.fontSize, equals(14));
+        expect(AppTypography.posterTitle.fontWeight, equals(FontWeight.w600));
+        expect(AppTypography.posterTitle.color, equals(AppColors.textPrimary));
+        expect(AppTypography.posterTitle.fontFamily, equals('Inter'));
+      });
+
+      test('posterSubtitle должен быть определён', () {
+        expect(AppTypography.posterSubtitle.fontSize, equals(11));
+        expect(AppTypography.posterSubtitle.fontWeight, equals(FontWeight.w400));
+        expect(AppTypography.posterSubtitle.color, equals(AppColors.textSecondary));
+        expect(AppTypography.posterSubtitle.fontFamily, equals('Inter'));
+      });
     });
   });
 }
