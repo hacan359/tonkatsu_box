@@ -6,11 +6,19 @@
 
 ## [Unreleased]
 
+### Added
+- Добавлен шрифт Inter (Regular, Medium, SemiBold, Bold) в `assets/fonts/`
+- Добавлен `AppTheme` (`lib/shared/theme/app_theme.dart`) — централизованная тёмная тема через `AppColors`, стилизация всех Material-компонентов
+- Добавлены стили `posterTitle` и `posterSubtitle` в `AppTypography`
+- Добавлены константы `radiusLg`, `radiusXl`, `posterAspectRatio`, `gridColumnsDesktop/Tablet/Mobile` в `AppSpacing`
+
 ### Changed
 - Углублена тёмная палитра `AppColors`: background `#121212`→`#0A0A0A`, surface `#1E1E1E`→`#141414`, surfaceLight `#2A2A2A`→`#1E1E1E`, surfaceBorder `#3A3A3A`→`#2A2A2A`, textPrimary `#E0E0E0`→`#FFFFFF`
 - Добавлены цвета рейтинга в `AppColors`: `ratingHigh` (#22C55E), `ratingMedium` (#FBBF24), `ratingLow` (#EF4444)
 - Добавлен цвет статуса `statusPlanned` (#8B5CF6) в `AppColors`
 - Установлен минимальный размер окна 800×600 (`windows/runner/win32_window.cpp`, `WM_GETMINMAXINFO`)
+- Изменён `AppTypography` — шрифт Inter (`fontFamily: 'Inter'`), `letterSpacing: -0.5` для h1, `-0.2` для h2
+- Изменён `app.dart` — принудительно тёмная тема (`ThemeMode.dark`), удалены `_lightTheme`/`_darkTheme`/`_buildTheme()`, подключён `AppTheme.darkTheme`
 
 ### Fixed
 - Исправлен overflow заголовков секций в `SettingsScreen` — текст в `Row` обёрнут в `Flexible` с `TextOverflow.ellipsis` (7 секций)

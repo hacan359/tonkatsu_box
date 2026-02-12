@@ -169,8 +169,9 @@ lib/
 | Файл | Назначение |
 |------|------------|
 | `lib/shared/theme/app_colors.dart` | **Цвета тёмной темы**. Статические константы: background (#0A0A0A), surface (#141414), surfaceLight, surfaceBorder, textPrimary (#FFFFFF), textSecondary, textTertiary, gameAccent, movieAccent, tvShowAccent, ratingHigh/Medium/Low, statusInProgress/Completed/OnHold/Dropped/Planned |
-| `lib/shared/theme/app_spacing.dart` | **Отступы и радиусы**. Статические константы: xs(4), sm(8), md(12), lg(16), xl(24), xxl(32). Радиусы: radiusSm(4), radiusMd(8), radiusLg(12) |
-| `lib/shared/theme/app_typography.dart` | **Типографика**. Статические TextStyle константы: h1(24 bold), h2(20 bold), h3(16 w600), body(14), bodySmall(12), caption(10). Inter/system font |
+| `lib/shared/theme/app_spacing.dart` | **Отступы и радиусы**. Отступы: xs(4), sm(8), md(16), lg(24), xl(32). Радиусы: radiusXs(4), radiusSm(8), radiusMd(12), radiusLg(16), radiusXl(20). Сетка: posterAspectRatio(2:3), gridColumnsDesktop(4)/Tablet(3)/Mobile(2) |
+| `lib/shared/theme/app_typography.dart` | **Типографика (Inter)**. TextStyle: h1(28 bold, -0.5ls), h2(20 w600, -0.2ls), h3(16 w600), body(14), bodySmall(12), caption(11), posterTitle(14 w600), posterSubtitle(11). fontFamily: 'Inter' |
+| `lib/shared/theme/app_theme.dart` | **Централизованная тёмная тема**. ThemeData с Brightness.dark, ColorScheme.dark из AppColors, стилизация AppBar/Card/Input/Dialog/BottomSheet/Chip/Button/NavigationRail/TabBar |
 
 #### Навигация
 
