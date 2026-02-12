@@ -2,11 +2,16 @@
 
 ## Dark Theme
 
-The app uses a custom dark theme with a consistent design system:
-- **AppColors** — dark palette with surface, border, and accent colors per media type
-- **AppTypography** — Inter/system font with 6 text styles (h1–caption)
-- **AppSpacing** — standardized spacing (4–32px) and border radii (4–12px)
-- **NavigationRail** — vertical sidebar with Home, Search, Settings tabs
+The app uses a forced dark theme (ThemeMode.dark) with a cinematic design system:
+- **AppColors** — deep dark palette (#0A0A0A background), rating colors (green/yellow/red), accent colors per media type
+- **AppTypography** — Inter font with 8 text styles (h1–caption, posterTitle, posterSubtitle), negative letter-spacing on headings
+- **AppSpacing** — standardized spacing (4–32px), border radii (4–20px), poster aspect ratio (2:3), grid column counts
+- **AppTheme** — centralized ThemeData with styled AppBar, Card, Input, Dialog, BottomSheet, Chip, Button, NavigationRail, TabBar
+- **Adaptive navigation** — NavigationRail sidebar on desktop (≥800px), BottomNavigationBar on mobile (<800px)
+- **PosterCard** — vertical 2:3 poster card with hover animation, RatingBadge overlay, collection checkmark
+- **HeroCollectionCard** — large gradient collection card with progress bar and stats
+- **RatingBadge** — color-coded rating badge (green ≥8, yellow ≥6, red <6)
+- **ShimmerLoading** — animated shimmer placeholders (ShimmerBox, ShimmerPosterCard, ShimmerListTile)
 
 ## Platforms
 
@@ -21,6 +26,9 @@ Create unlimited collections organized however you want:
 - By theme (Couch co-op, Hidden gems...)
 - Personal lists (Backlog, Completed, Favorites...)
 - Mix games, movies and TV shows in a single collection
+- **Grid mode** — toggle between list and poster grid view
+- **Type filter** — filter items by type (All/Games/Movies/TV Shows)
+- **Search** — filter items by name within a collection
 
 ## Universal Search
 
@@ -122,7 +130,7 @@ Track your viewing progress for TV shows at the episode level:
 Tap any item in a collection to see its full details. All detail screens have two tabs:
 
 **Details tab** — unified layout via `MediaDetailView`:
-- Compact poster (80x120) with source badge (IGDB/TMDB)
+- Poster (100x150) with source badge (IGDB/TMDB) and per-media accent color
 - Type icon and label
 - Info chips (year, rating, genres, etc.)
 - Inline description (max 4 lines)
@@ -277,6 +285,8 @@ Only searching for new games requires internet.
 When enabled in Settings, media images (game covers, movie posters, TV show posters, canvas URL images) are downloaded locally for offline access:
 - **Toggle** — enable/disable image caching in Settings → Image Cache
 - **Auto-download** — images are automatically saved to local storage when viewed with caching enabled
+- **Eager caching** — cover images are downloaded immediately when adding items to collections from search
+- **Validation** — downloaded files are validated by JPEG/PNG/WebP magic bytes; invalid files are deleted
 - **Fallback** — if cache is cleared or a file is missing, images load from the network and re-download in the background
 - **Canvas images** — URL images added to canvases are also cached to disk (using FNV-1a hash of URL as cache key)
 - **Custom folder** — choose where cached images are stored via file picker
