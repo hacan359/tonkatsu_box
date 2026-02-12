@@ -14,6 +14,8 @@ import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/game.dart';
 import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
+import 'package:xerabora/shared/models/movie.dart';
+import 'package:xerabora/shared/models/tv_show.dart';
 import 'package:xerabora/shared/widgets/poster_card.dart';
 
 class MockCollectionRepository extends Mock implements CollectionRepository {}
@@ -60,27 +62,31 @@ void main() {
     CollectionItem(
       id: 2,
       collectionId: 1,
-      mediaType: MediaType.game,
-      externalId: 102,
+      mediaType: MediaType.movie,
+      externalId: 201,
       status: ItemStatus.inProgress,
       addedAt: testDate,
-      game: const Game(
-        id: 102,
-        name: 'Mario',
-        coverUrl: 'https://example.com/mario.jpg',
-        rating: 85,
+      movie: const Movie(
+        tmdbId: 201,
+        title: 'Inception',
+        posterUrl: 'https://example.com/inception.jpg',
+        rating: 8.8,
+        releaseYear: 2010,
       ),
     ),
     CollectionItem(
       id: 3,
       collectionId: 1,
-      mediaType: MediaType.game,
-      externalId: 103,
+      mediaType: MediaType.tvShow,
+      externalId: 301,
       status: ItemStatus.notStarted,
       addedAt: testDate,
-      game: const Game(
-        id: 103,
-        name: 'Metroid',
+      tvShow: const TvShow(
+        tmdbId: 301,
+        title: 'Breaking Bad',
+        posterUrl: 'https://example.com/bb.jpg',
+        rating: 9.5,
+        firstAirYear: 2008,
       ),
     ),
   ];
@@ -158,8 +164,8 @@ void main() {
       await pumpScreen(tester);
 
       expect(find.text('Zelda'), findsOneWidget);
-      expect(find.text('Mario'), findsOneWidget);
-      expect(find.text('Metroid'), findsOneWidget);
+      expect(find.text('Inception'), findsOneWidget);
+      expect(find.text('Breaking Bad'), findsOneWidget);
     });
 
     group('grid/list toggle', () {
@@ -222,6 +228,167 @@ void main() {
         await pumpScreen(tester);
         expect(find.byType(GridView), findsNothing);
         expect(find.byIcon(Icons.grid_view), findsOneWidget);
+      });
+    });
+
+    group('фильтр по типу', () {
+      testWidgets('должен показывать чипы фильтра',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        expect(find.text('All'), findsOneWidget);
+        expect(find.text('Games'), findsOneWidget);
+        expect(find.text('Movies'), findsOneWidget);
+        expect(find.text('TV Shows'), findsOneWidget);
+      });
+
+      testWidgets('Games фильтр должен показывать только игры',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        await tester.tap(find.text('Games'));
+        await pumpScreen(tester);
+
+        expect(find.text('Zelda'), findsOneWidget);
+        expect(find.text('Inception'), findsNothing);
+        expect(find.text('Breaking Bad'), findsNothing);
+      });
+
+      testWidgets('Movies фильтр должен показывать только фильмы',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        await tester.tap(find.text('Movies'));
+        await pumpScreen(tester);
+
+        expect(find.text('Zelda'), findsNothing);
+        expect(find.text('Inception'), findsOneWidget);
+        expect(find.text('Breaking Bad'), findsNothing);
+      });
+
+      testWidgets('TV Shows фильтр должен показывать только сериалы',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        await tester.tap(find.text('TV Shows'));
+        await pumpScreen(tester);
+
+        expect(find.text('Zelda'), findsNothing);
+        expect(find.text('Inception'), findsNothing);
+        expect(find.text('Breaking Bad'), findsOneWidget);
+      });
+
+      testWidgets('All должен показывать все элементы',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        // Сначала выбираем Games
+        await tester.tap(find.text('Games'));
+        await pumpScreen(tester);
+        expect(find.text('Inception'), findsNothing);
+
+        // Затем All
+        await tester.tap(find.text('All'));
+        await pumpScreen(tester);
+
+        expect(find.text('Zelda'), findsOneWidget);
+        expect(find.text('Inception'), findsOneWidget);
+        expect(find.text('Breaking Bad'), findsOneWidget);
+      });
+    });
+
+    group('поиск по имени', () {
+      testWidgets('должен показывать поле поиска',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        expect(find.byType(TextField), findsOneWidget);
+      });
+
+      testWidgets('должен фильтровать по имени',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        await tester.enterText(find.byType(TextField), 'Zelda');
+        await pumpScreen(tester);
+
+        // Zelda: 2 вхождения (TextField + карточка)
+        expect(find.text('Zelda'), findsNWidgets(2));
+        // Остальные элементы отфильтрованы
+        expect(find.text('Inception'), findsNothing);
+        expect(find.text('Breaking Bad'), findsNothing);
+      });
+
+      testWidgets('поиск должен быть case-insensitive',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        await tester.enterText(find.byType(TextField), 'zelda');
+        await pumpScreen(tester);
+
+        expect(find.text('Zelda'), findsOneWidget);
+      });
+
+      testWidgets('кнопка очистки должна сбрасывать поиск',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        // Вводим текст
+        await tester.enterText(find.byType(TextField), 'Zelda');
+        await pumpScreen(tester);
+        expect(find.text('Inception'), findsNothing);
+
+        // Очищаем
+        await tester.tap(find.byIcon(Icons.close));
+        await pumpScreen(tester);
+
+        expect(find.text('Zelda'), findsOneWidget);
+        expect(find.text('Inception'), findsOneWidget);
+        expect(find.text('Breaking Bad'), findsOneWidget);
+      });
+    });
+
+    group('комбинированные фильтры', () {
+      testWidgets('фильтр типа + поиск должны работать вместе',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        // Фильтр Games + поиск "Zel"
+        await tester.tap(find.text('Games'));
+        await pumpScreen(tester);
+        await tester.enterText(find.byType(TextField), 'Zel');
+        await pumpScreen(tester);
+
+        expect(find.text('Zelda'), findsOneWidget);
+        expect(find.text('Inception'), findsNothing);
+        expect(find.text('Breaking Bad'), findsNothing);
+      });
+
+      testWidgets('фильтры должны работать в grid mode',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        // Переключаемся на grid
+        await tester.tap(find.byIcon(Icons.grid_view));
+        await pumpScreen(tester);
+
+        // Фильтр Movies
+        await tester.tap(find.text('Movies'));
+        await pumpScreen(tester);
+
+        // Должен быть 1 PosterCard (Inception)
+        expect(find.byType(PosterCard), findsOneWidget);
       });
     });
 

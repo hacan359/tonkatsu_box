@@ -56,11 +56,23 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   bool _collectionLoading = true;
   bool _isCanvasMode = false;
   bool _isGridMode = false;
+  MediaType? _filterType;
+  String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _loadCollection();
+    _searchController.addListener(() {
+      setState(() => _searchQuery = _searchController.text);
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadCollection() async {
@@ -275,6 +287,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                 // Заголовок со статистикой
                 _buildHeader(statsAsync),
 
+                // Фильтры (тип + поиск)
+                _buildFilterBar(),
+
                 // Селектор сортировки
                 _buildSortSelector(),
 
@@ -282,7 +297,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                 Expanded(
                   child: itemsAsync.when(
                     data: (List<CollectionItem> items) =>
-                        _buildItemsList(context, items),
+                        _buildItemsList(context, _applyFilters(items)),
                     loading: () =>
                         const Center(child: CircularProgressIndicator()),
                     error: (Object error, StackTrace stack) =>
@@ -395,6 +410,125 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           ),
         ],
       ],
+    );
+  }
+
+  /// Применяет фильтры по типу и поисковой строке.
+  List<CollectionItem> _applyFilters(List<CollectionItem> items) {
+    List<CollectionItem> result = items;
+
+    if (_filterType != null) {
+      result = result
+          .where((CollectionItem item) => item.mediaType == _filterType)
+          .toList();
+    }
+
+    if (_searchQuery.isNotEmpty) {
+      final String query = _searchQuery.toLowerCase();
+      result = result
+          .where(
+            (CollectionItem item) =>
+                item.itemName.toLowerCase().contains(query),
+          )
+          .toList();
+    }
+
+    return result;
+  }
+
+  Widget _buildFilterBar() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.sm,
+        AppSpacing.md,
+        0,
+      ),
+      child: Column(
+        children: <Widget>[
+          // Фильтр по типу
+          Row(
+            children: <Widget>[
+              _buildFilterChip(label: 'All', type: null),
+              const SizedBox(width: AppSpacing.sm),
+              _buildFilterChip(label: 'Games', type: MediaType.game),
+              const SizedBox(width: AppSpacing.sm),
+              _buildFilterChip(label: 'Movies', type: MediaType.movie),
+              const SizedBox(width: AppSpacing.sm),
+              _buildFilterChip(label: 'TV Shows', type: MediaType.tvShow),
+            ],
+          ),
+
+          const SizedBox(height: AppSpacing.sm),
+
+          // Поиск по имени
+          SizedBox(
+            height: 36,
+            child: TextField(
+              controller: _searchController,
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColors.textPrimary,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Search in collection...',
+                hintStyle: AppTypography.bodySmall.copyWith(
+                  color: AppColors.textTertiary,
+                ),
+                prefixIcon: const Icon(
+                  Icons.search,
+                  size: 18,
+                  color: AppColors.textTertiary,
+                ),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(
+                          Icons.close,
+                          size: 16,
+                          color: AppColors.textTertiary,
+                        ),
+                        padding: EdgeInsets.zero,
+                        onPressed: () => _searchController.clear(),
+                      )
+                    : null,
+                filled: true,
+                fillColor: AppColors.surfaceLight,
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: AppSpacing.xs,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip({
+    required String label,
+    required MediaType? type,
+  }) {
+    final bool selected = _filterType == type;
+    return ChoiceChip(
+      label: Text(
+        label,
+        style: AppTypography.bodySmall.copyWith(
+          color: selected ? AppColors.background : AppColors.textSecondary,
+        ),
+      ),
+      selected: selected,
+      selectedColor: AppColors.gameAccent,
+      backgroundColor: AppColors.surfaceLight,
+      side: BorderSide.none,
+      visualDensity: VisualDensity.compact,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+      onSelected: (bool value) {
+        setState(() => _filterType = value ? type : null);
+      },
     );
   }
 
