@@ -290,6 +290,7 @@ class DatabaseService {
       CREATE TABLE canvas_items (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         collection_id INTEGER NOT NULL,
+        collection_item_id INTEGER,
         item_type TEXT NOT NULL,
         item_ref_id INTEGER,
         x REAL NOT NULL DEFAULT 0,
@@ -306,6 +307,11 @@ class DatabaseService {
     await db.execute('''
       CREATE INDEX idx_canvas_items_collection
       ON canvas_items(collection_id)
+    ''');
+
+    await db.execute('''
+      CREATE INDEX idx_canvas_items_collection_item
+      ON canvas_items(collection_item_id)
     ''');
   }
 
@@ -337,6 +343,7 @@ class DatabaseService {
       CREATE TABLE canvas_connections (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         collection_id INTEGER NOT NULL,
+        collection_item_id INTEGER,
         from_item_id INTEGER NOT NULL,
         to_item_id INTEGER NOT NULL,
         label TEXT,
@@ -352,6 +359,11 @@ class DatabaseService {
     await db.execute('''
       CREATE INDEX idx_canvas_connections_collection
       ON canvas_connections(collection_id)
+    ''');
+
+    await db.execute('''
+      CREATE INDEX idx_canvas_connections_collection_item
+      ON canvas_connections(collection_item_id)
     ''');
   }
 

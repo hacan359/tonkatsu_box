@@ -143,11 +143,13 @@ class ConfigService {
       final Map<String, Object> config = collectSettings();
       final String json = const JsonEncoder.withIndent('  ').convert(config);
 
+      // На Android FileType.custom не поддерживает кастомные расширения.
+      final bool useAny = Platform.isAndroid;
       final String? outputPath = await FilePicker.platform.saveFile(
         dialogTitle: 'Export Configuration',
         fileName: 'xerabora-config.json',
-        type: FileType.custom,
-        allowedExtensions: <String>['json'],
+        type: useAny ? FileType.any : FileType.custom,
+        allowedExtensions: useAny ? null : <String>['json'],
       );
 
       if (outputPath == null) {
@@ -173,10 +175,12 @@ class ConfigService {
   /// Открывает диалог выбора файла и применяет настройки из JSON.
   Future<ConfigResult> importFromFile() async {
     try {
+      // На Android FileType.custom не поддерживает кастомные расширения.
+      final bool useAny = Platform.isAndroid;
       final FilePickerResult? result = await FilePicker.platform.pickFiles(
         dialogTitle: 'Import Configuration',
-        type: FileType.custom,
-        allowedExtensions: <String>['json'],
+        type: useAny ? FileType.any : FileType.custom,
+        allowedExtensions: useAny ? null : <String>['json'],
         allowMultiple: false,
       );
 

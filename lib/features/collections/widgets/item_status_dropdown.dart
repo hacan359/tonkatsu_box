@@ -83,7 +83,7 @@ class ItemStatusDropdown extends StatelessWidget {
   }
 
   Widget _buildFullDropdown() {
-    final Color statusColor = _getStatusColor();
+    final Color statusColor = status.color;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: AppSpacing.xs),
@@ -150,23 +150,6 @@ class ItemStatusDropdown extends StatelessWidget {
       ),
     );
   }
-
-  Color _getStatusColor() {
-    switch (status) {
-      case ItemStatus.notStarted:
-        return AppColors.textSecondary;
-      case ItemStatus.inProgress:
-        return AppColors.statusInProgress;
-      case ItemStatus.completed:
-        return AppColors.statusCompleted;
-      case ItemStatus.dropped:
-        return AppColors.statusDropped;
-      case ItemStatus.planned:
-        return AppColors.movieAccent;
-      case ItemStatus.onHold:
-        return AppColors.statusOnHold;
-    }
-  }
 }
 
 /// Чип для отображения статуса элемента (без возможности редактирования).
@@ -190,7 +173,7 @@ class ItemStatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color color = _getStatusColor();
+    final Color color = status.color;
 
     if (small) {
       return Text(
@@ -223,22 +206,5 @@ class ItemStatusChip extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  Color _getStatusColor() {
-    switch (status) {
-      case ItemStatus.notStarted:
-        return AppColors.textSecondary;
-      case ItemStatus.inProgress:
-        return AppColors.statusInProgress;
-      case ItemStatus.completed:
-        return AppColors.statusCompleted;
-      case ItemStatus.dropped:
-        return AppColors.statusDropped;
-      case ItemStatus.planned:
-        return AppColors.movieAccent;
-      case ItemStatus.onHold:
-        return AppColors.statusOnHold;
-    }
   }
 }

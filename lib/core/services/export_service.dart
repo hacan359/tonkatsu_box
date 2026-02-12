@@ -332,11 +332,13 @@ class ExportService {
       final String json = xcoll.toJsonString();
       final String suggestedName = _sanitizeFileName(collection.name);
 
+      // На Android FileType.custom не поддерживает кастомные расширения.
+      final bool useAny = Platform.isAndroid;
       final String? outputPath = await FilePicker.platform.saveFile(
         dialogTitle: 'Export Collection',
         fileName: '$suggestedName.$extension',
-        type: FileType.custom,
-        allowedExtensions: <String>[extension],
+        type: useAny ? FileType.any : FileType.custom,
+        allowedExtensions: useAny ? null : <String>[extension],
       );
 
       if (outputPath == null) {

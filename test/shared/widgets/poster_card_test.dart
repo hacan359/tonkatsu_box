@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:xerabora/core/services/image_cache_service.dart';
+import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/theme/app_colors.dart';
 import 'package:xerabora/shared/widgets/poster_card.dart';
 import 'package:xerabora/shared/widgets/rating_badge.dart';
@@ -217,6 +218,145 @@ void main() {
           }
         }
         expect(foundSuccessContainer, isTrue);
+      });
+    });
+
+    group('статус-бейдж', () {
+      testWidgets('должен показывать бейдж для inProgress статуса',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(
+          child: const PosterCard(
+            title: 'Test Game',
+            imageUrl: 'https://example.com/poster.jpg',
+            cacheImageType: ImageType.gameCover,
+            cacheImageId: '123',
+            status: ItemStatus.inProgress,
+          ),
+        ));
+
+        // Ищем Container с цветом статуса
+        final Finder containers = find.byType(Container);
+        bool foundStatusBadge = false;
+        for (final Element element in containers.evaluate()) {
+          final Container container = element.widget as Container;
+          final BoxDecoration? decoration =
+              container.decoration as BoxDecoration?;
+          if (decoration != null &&
+              decoration.color == AppColors.statusInProgress &&
+              decoration.shape == BoxShape.circle) {
+            foundStatusBadge = true;
+            break;
+          }
+        }
+        expect(foundStatusBadge, isTrue);
+      });
+
+      testWidgets('должен показывать бейдж для completed статуса',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(
+          child: const PosterCard(
+            title: 'Test Game',
+            imageUrl: 'https://example.com/poster.jpg',
+            cacheImageType: ImageType.gameCover,
+            cacheImageId: '123',
+            status: ItemStatus.completed,
+          ),
+        ));
+
+        final Finder containers = find.byType(Container);
+        bool foundStatusBadge = false;
+        for (final Element element in containers.evaluate()) {
+          final Container container = element.widget as Container;
+          final BoxDecoration? decoration =
+              container.decoration as BoxDecoration?;
+          if (decoration != null &&
+              decoration.color == AppColors.statusCompleted &&
+              decoration.shape == BoxShape.circle) {
+            foundStatusBadge = true;
+            break;
+          }
+        }
+        expect(foundStatusBadge, isTrue);
+      });
+
+      testWidgets('не должен показывать бейдж для notStarted',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(
+          child: const PosterCard(
+            title: 'Test Game',
+            imageUrl: 'https://example.com/poster.jpg',
+            cacheImageType: ImageType.gameCover,
+            cacheImageId: '123',
+            status: ItemStatus.notStarted,
+          ),
+        ));
+
+        // Не должно быть Container с цветом любого статуса и формой circle
+        // кроме зелёной галочки isInCollection
+        final Finder containers = find.byType(Container);
+        bool foundStatusBadge = false;
+        for (final Element element in containers.evaluate()) {
+          final Container container = element.widget as Container;
+          final BoxDecoration? decoration =
+              container.decoration as BoxDecoration?;
+          if (decoration != null &&
+              decoration.shape == BoxShape.circle &&
+              decoration.color == AppColors.textSecondary) {
+            foundStatusBadge = true;
+            break;
+          }
+        }
+        expect(foundStatusBadge, isFalse);
+      });
+
+      testWidgets('не должен показывать бейдж при status = null',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(
+          child: const PosterCard(
+            title: 'Test Game',
+            imageUrl: 'https://example.com/poster.jpg',
+            cacheImageType: ImageType.gameCover,
+            cacheImageId: '123',
+          ),
+        ));
+
+        // Не должно быть Container с формой circle и цветом статуса
+        final Finder containers = find.byType(Container);
+        bool foundStatusBadge = false;
+        final Set<Color> statusColors = <Color>{
+          AppColors.statusInProgress,
+          AppColors.statusCompleted,
+          AppColors.statusDropped,
+          AppColors.statusPlanned,
+          AppColors.statusOnHold,
+        };
+        for (final Element element in containers.evaluate()) {
+          final Container container = element.widget as Container;
+          final BoxDecoration? decoration =
+              container.decoration as BoxDecoration?;
+          if (decoration != null &&
+              decoration.shape == BoxShape.circle &&
+              statusColors.contains(decoration.color)) {
+            foundStatusBadge = true;
+            break;
+          }
+        }
+        expect(foundStatusBadge, isFalse);
+      });
+
+      testWidgets('бейдж содержит иконку статуса',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(
+          child: const PosterCard(
+            title: 'Test Game',
+            imageUrl: 'https://example.com/poster.jpg',
+            cacheImageType: ImageType.gameCover,
+            cacheImageId: '123',
+            status: ItemStatus.dropped,
+          ),
+        ));
+
+        expect(find.text(ItemStatus.dropped.icon), findsOneWidget);
       });
     });
 

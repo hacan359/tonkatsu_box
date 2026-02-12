@@ -7,6 +7,9 @@
 ## [Unreleased]
 
 ### Added
+- Добавлен геттер `ItemStatus.color` — единый маппинг статус→цвет, устранено дублирование `_getStatusColor()` в `ItemStatusDropdown` и `ItemStatusChip`
+- Добавлена цветная полоска статуса (3px) слева на карточке `_CollectionItemTile` — цвет из `ItemStatus.color`, скрыта для `notStarted`
+- Добавлен статус-бейдж (цветной кружок с эмодзи) на `PosterCard` в grid-режиме коллекции — новый параметр `ItemStatus? status`
 - Добавлен шрифт Inter (Regular, Medium, SemiBold, Bold) в `assets/fonts/`
 - Добавлен `AppTheme` (`lib/shared/theme/app_theme.dart`) — централизованная тёмная тема через `AppColors`, стилизация всех Material-компонентов
 - Добавлены стили `posterTitle` и `posterSubtitle` в `AppTypography`
@@ -41,6 +44,13 @@
 - Исправлен crash `PathAccessException` на Windows при удалении занятого файла в `ImageCacheService` (errno 32)
 - Исправлена ошибка `Invalid image data` при загрузке битых кэшированных файлов — валидация magic bytes
 - Исправлено отображение чужой обложки на карточке в сетке поиска — добавлен `ValueKey` на `PosterCard` в `GridView`
+- Исправлен критический баг миграции БД: колонка `collection_item_id` отсутствовала в `CREATE TABLE` для `canvas_items` и `canvas_connections` при свежей установке (Android). Запросы с `WHERE collection_item_id IS NULL` падали с ошибкой `no such column`
+- Исправлен overflow 47/128px в `CreateCollectionDialog` при открытии клавиатуры на Android — `Column` обёрнут в `SingleChildScrollView`
+- Исправлен overflow 1.6px в `_CollectionItemTile` на Android (text scale > 1.0) — обложка увеличена с 48×64 до 48×72
+- Исправлен overflow 38px справа в `HeroCollectionCard` на узком экране — добавлен `maxLines: 1` и `overflow: TextOverflow.ellipsis` к тексту статистики, уменьшена мозаика с 80 до 64px
+- Исправлена работа `FilePicker` на Android: `FileType.custom` заменён на `FileType.any` с ручной проверкой расширения (в `ImportService`, `ExportService`, `ConfigService`)
+- Исправлена производительность старта на Android (308 пропущенных кадров) — `_preloadTmdbGenres()` и `_loadPlatformCount()` отложены через `Future.microtask()`
+- Исправлен overflow 128px в `_buildEmptyState()` и `_buildErrorState()` на Android при открытой клавиатуре — `Padding` заменён на `SingleChildScrollView`
 
 ---
 

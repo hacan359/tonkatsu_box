@@ -58,7 +58,7 @@ class HeroCollectionCard extends ConsumerWidget {
   static const int _mosaicCount = 3;
 
   /// Размер мозаики.
-  static const double _mosaicSize = 80;
+  static const double _mosaicSize = 64;
 
   /// Максимум обложек на фоне backdrop.
   static const int _backdropMaxCovers = 4;
@@ -443,6 +443,8 @@ class HeroCollectionCard extends ConsumerWidget {
           style: AppTypography.bodySmall.copyWith(
             color: AppColors.textSecondary,
           ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         if (collection.type != CollectionType.imported && stats.total > 0)
           Padding(
