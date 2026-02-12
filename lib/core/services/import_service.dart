@@ -179,15 +179,25 @@ class ImportService {
   final CanvasRepository? _canvasRepository;
   final ImageCacheService? _imageCacheService;
 
+  /// Допустимые расширения для импорта коллекций.
+  static const List<String> _allowedExtensions = <String>[
+    'xcoll',
+    'xcollx',
+    'rcoll',
+    'json',
+  ];
+
   /// Открывает диалог выбора файла и парсит.
   ///
   /// Возвращает [XcollFile] или null если отменено.
   /// Throws [FormatException] если файл невалидный.
   Future<XcollFile?> pickAndParseFile() async {
+    // На Android FileType.custom не фильтрует кастомные расширения.
+    final bool useAny = Platform.isAndroid;
     final FilePickerResult? result = await FilePicker.platform.pickFiles(
       dialogTitle: 'Import Collection',
-      type: FileType.custom,
-      allowedExtensions: <String>['xcoll', 'xcollx', 'rcoll', 'json'],
+      type: useAny ? FileType.any : FileType.custom,
+      allowedExtensions: useAny ? null : _allowedExtensions,
       allowMultiple: false,
     );
 
@@ -198,6 +208,17 @@ class ImportService {
     final String? filePath = result.files.first.path;
     if (filePath == null) {
       throw const FormatException('Could not read file path');
+    }
+
+    // На Android проверяем расширение вручную.
+    if (useAny) {
+      final String ext = filePath.split('.').last.toLowerCase();
+      if (!_allowedExtensions.contains(ext)) {
+        throw FormatException(
+          'Unsupported file type: .$ext. '
+          'Expected: ${_allowedExtensions.join(', ')}',
+        );
+      }
     }
 
     return parseFile(File(filePath));

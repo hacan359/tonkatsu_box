@@ -90,46 +90,48 @@ class _CreateCollectionDialogState extends State<CreateCollectionDialog> {
       title: const Text('New Collection'),
       content: Form(
         key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            TextFormField(
-              controller: _nameController,
-              focusNode: _nameFocus,
-              decoration: const InputDecoration(
-                labelText: 'Collection Name',
-                hintText: 'e.g., SNES Classics',
-                border: OutlineInputBorder(),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              TextFormField(
+                controller: _nameController,
+                focusNode: _nameFocus,
+                decoration: const InputDecoration(
+                  labelText: 'Collection Name',
+                  hintText: 'e.g., SNES Classics',
+                  border: OutlineInputBorder(),
+                ),
+                textInputAction: TextInputAction.next,
+                validator: (String? value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Please enter a name';
+                  }
+                  if (value.trim().length < 2) {
+                    return 'Name must be at least 2 characters';
+                  }
+                  return null;
+                },
               ),
-              textInputAction: TextInputAction.next,
-              validator: (String? value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Please enter a name';
-                }
-                if (value.trim().length < 2) {
-                  return 'Name must be at least 2 characters';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: AppSpacing.md),
-            TextFormField(
-              controller: _authorController,
-              decoration: const InputDecoration(
-                labelText: 'Author',
-                hintText: 'Your name or username',
-                border: OutlineInputBorder(),
+              const SizedBox(height: AppSpacing.md),
+              TextFormField(
+                controller: _authorController,
+                decoration: const InputDecoration(
+                  labelText: 'Author',
+                  hintText: 'Your name or username',
+                  border: OutlineInputBorder(),
+                ),
+                textInputAction: TextInputAction.done,
+                onFieldSubmitted: (_) => _submit(),
+                validator: (String? value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Please enter an author name';
+                  }
+                  return null;
+                },
               ),
-              textInputAction: TextInputAction.done,
-              onFieldSubmitted: (_) => _submit(),
-              validator: (String? value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Please enter an author name';
-                }
-                return null;
-              },
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       actions: <Widget>[

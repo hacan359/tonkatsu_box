@@ -1,5 +1,8 @@
 // Универсальный статус элемента коллекции.
 
+import 'package:flutter/material.dart';
+
+import '../theme/app_colors.dart';
 import 'media_type.dart';
 
 /// Универсальный статус элемента коллекции.
@@ -74,6 +77,24 @@ enum ItemStatus {
         return 'Planned';
       case ItemStatus.onHold:
         return 'On Hold';
+    }
+  }
+
+  /// Цвет для визуальной индикации статуса.
+  Color get color {
+    switch (this) {
+      case ItemStatus.notStarted:
+        return AppColors.textSecondary;
+      case ItemStatus.inProgress:
+        return AppColors.statusInProgress;
+      case ItemStatus.completed:
+        return AppColors.statusCompleted;
+      case ItemStatus.dropped:
+        return AppColors.statusDropped;
+      case ItemStatus.planned:
+        return AppColors.statusPlanned;
+      case ItemStatus.onHold:
+        return AppColors.statusOnHold;
     }
   }
 

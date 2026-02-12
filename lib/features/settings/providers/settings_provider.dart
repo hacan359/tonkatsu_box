@@ -211,12 +211,13 @@ class SettingsNotifier extends Notifier<SettingsState> {
     // Устанавливаем TMDB API ключ, если есть
     if (tmdbApiKey != null && tmdbApiKey.isNotEmpty) {
       _tmdbApi.setApiKey(tmdbApiKey);
-      // Предзагружаем жанры из TMDB в БД-кэш
-      _preloadTmdbGenres();
+      // Предзагружаем жанры из TMDB в БД-кэш (отложенно, чтобы не блокировать
+      // первый frame — на Android вызывает 300+ пропущенных кадров)
+      Future<void>.microtask(_preloadTmdbGenres);
     }
 
-    // Загружаем количество платформ асинхронно
-    _loadPlatformCount();
+    // Загружаем количество платформ отложенно
+    Future<void>.microtask(_loadPlatformCount);
 
     return loadedState;
   }

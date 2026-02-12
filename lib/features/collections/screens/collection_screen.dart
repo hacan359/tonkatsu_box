@@ -704,6 +704,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             rating: _normalizedRating(item),
             year: _yearFor(item),
             subtitle: _subtitleFor(item),
+            status: item.status,
             onTap: () => _showItemDetails(item),
           );
         },
@@ -812,10 +813,10 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
 
   Widget _buildEmptyState() {
     return Center(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Icon(
               Icons.collections_bookmark_outlined,
@@ -842,10 +843,10 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
 
   Widget _buildErrorState(BuildContext context, Object error) {
     return Center(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             const Icon(
               Icons.error_outline,
@@ -1365,6 +1366,23 @@ class _CollectionItemTile extends StatelessWidget {
               ),
             ),
           ),
+          // Цветная полоска статуса (слева)
+          if (item.status != ItemStatus.notStarted)
+            Positioned(
+              left: 0,
+              top: 0,
+              bottom: 0,
+              child: Container(
+                width: 3,
+                decoration: BoxDecoration(
+                  color: item.status.color,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(AppSpacing.radiusMd),
+                    bottomLeft: Radius.circular(AppSpacing.radiusMd),
+                  ),
+                ),
+              ),
+            ),
           // Основное содержимое
           InkWell(
             onTap: onTap,
@@ -1531,7 +1549,7 @@ class _CollectionItemTile extends StatelessWidget {
       borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
       child: SizedBox(
         width: 48,
-        height: 64,
+        height: 72,
         child: item.thumbnailUrl != null
             ? CachedImage(
                 imageType: _getImageTypeForCache(),

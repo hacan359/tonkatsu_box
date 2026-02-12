@@ -3,6 +3,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
+import 'package:xerabora/shared/theme/app_colors.dart';
 
 void main() {
   group('ItemStatus', () {
@@ -208,6 +209,38 @@ void main() {
           ItemStatus.onHold.displayLabel(MediaType.tvShow),
           'On Hold',
         );
+      });
+    });
+
+    group('color', () {
+      test('notStarted должен возвращать textSecondary', () {
+        expect(ItemStatus.notStarted.color, AppColors.textSecondary);
+      });
+
+      test('inProgress должен возвращать statusInProgress', () {
+        expect(ItemStatus.inProgress.color, AppColors.statusInProgress);
+      });
+
+      test('completed должен возвращать statusCompleted', () {
+        expect(ItemStatus.completed.color, AppColors.statusCompleted);
+      });
+
+      test('dropped должен возвращать statusDropped', () {
+        expect(ItemStatus.dropped.color, AppColors.statusDropped);
+      });
+
+      test('planned должен возвращать statusPlanned', () {
+        expect(ItemStatus.planned.color, AppColors.statusPlanned);
+      });
+
+      test('onHold должен возвращать statusOnHold', () {
+        expect(ItemStatus.onHold.color, AppColors.statusOnHold);
+      });
+
+      test('каждый статус должен возвращать ненулевой цвет', () {
+        for (final ItemStatus status in ItemStatus.values) {
+          expect(status.color, isNotNull, reason: '${status.name} color');
+        }
       });
     });
 

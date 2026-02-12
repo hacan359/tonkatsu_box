@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/services/image_cache_service.dart';
+import '../models/item_status.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
@@ -25,6 +26,7 @@ class PosterCard extends StatefulWidget {
     this.year,
     this.subtitle,
     this.isInCollection = false,
+    this.status,
     this.onTap,
     this.onLongPress,
     super.key,
@@ -53,6 +55,9 @@ class PosterCard extends StatefulWidget {
 
   /// Находится ли элемент в коллекции.
   final bool isInCollection;
+
+  /// Статус элемента. Если задан и != notStarted — показывается бейдж.
+  final ItemStatus? status;
 
   /// Обработчик нажатия.
   final VoidCallback? onTap;
@@ -194,6 +199,25 @@ class _PosterCardState extends State<PosterCard>
                               Icons.check,
                               color: Colors.white,
                               size: 12,
+                            ),
+                          ),
+                        ),
+
+                      // Статус-бейдж (bottom-left)
+                      if (widget.status != null &&
+                          widget.status != ItemStatus.notStarted)
+                        Positioned(
+                          bottom: AppSpacing.xs,
+                          left: AppSpacing.xs,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: widget.status!.color,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Text(
+                              widget.status!.icon,
+                              style: const TextStyle(fontSize: 10),
                             ),
                           ),
                         ),
