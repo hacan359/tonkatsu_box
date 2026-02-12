@@ -4,6 +4,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/services/image_cache_service.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_typography.dart';
 import 'cached_image.dart';
 import 'source_badge.dart';
 
@@ -47,6 +50,7 @@ class MediaDetailView extends StatelessWidget {
     this.embedded = false,
     this.cacheImageType,
     this.cacheImageId,
+    this.accentColor = AppColors.gameAccent,
     super.key,
   });
 
@@ -111,6 +115,9 @@ class MediaDetailView extends StatelessWidget {
   /// ID изображения для локального кэширования.
   final String? cacheImageId;
 
+  /// Акцентный цвет (зависит от типа медиа).
+  final Color accentColor;
+
   /// Колбэк сохранения комментария автора.
   final ValueChanged<String?> onAuthorCommentSave;
 
@@ -120,53 +127,54 @@ class MediaDetailView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Widget content = ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.md),
       children: <Widget>[
-        _buildHeader(context),
+        _buildHeader(),
         if (statusWidget != null) ...<Widget>[
-          const SizedBox(height: 16),
-          _buildStatusSection(context),
+          const SizedBox(height: AppSpacing.md),
+          _buildStatusSection(),
         ],
         if (extraSections != null)
           for (final Widget section in extraSections!) ...<Widget>[
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             section,
           ],
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.md),
         _buildAuthorCommentSection(context),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.md),
         _buildUserNotesSection(context),
-        const SizedBox(height: 24),
+        const SizedBox(height: AppSpacing.lg),
       ],
     );
 
     if (embedded) return content;
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(title),
+        backgroundColor: AppColors.background,
+        surfaceTintColor: Colors.transparent,
+        foregroundColor: AppColors.textPrimary,
+        title: Text(title, style: AppTypography.h2),
       ),
       body: content,
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-
+  Widget _buildHeader() {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        // Обложка/постер
+        // Обложка/постер (увеличена до 100×150)
         ClipRRect(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
           child: SizedBox(
-            width: 80,
-            height: 120,
-            child: _buildCoverImage(colorScheme),
+            width: 100,
+            height: 150,
+            child: _buildCoverImage(),
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: AppSpacing.md),
         // Информация
         Expanded(
           child: Column(
@@ -182,14 +190,14 @@ class MediaDetailView extends StatelessWidget {
                   Icon(
                     typeIcon,
                     size: 16,
-                    color: colorScheme.primary,
+                    color: accentColor,
                   ),
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
                       typeLabel,
-                      style: theme.textTheme.labelLarge?.copyWith(
-                        color: colorScheme.primary,
+                      style: AppTypography.bodySmall.copyWith(
+                        color: accentColor,
                         fontWeight: FontWeight.w600,
                       ),
                       maxLines: 1,
@@ -199,23 +207,23 @@ class MediaDetailView extends StatelessWidget {
                 ],
               ),
               if (infoChips.isNotEmpty) ...<Widget>[
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 Wrap(
                   spacing: 6,
                   runSpacing: 4,
                   children: <Widget>[
                     for (final MediaDetailChip chip in infoChips)
-                      _buildInfoChip(chip.icon, chip.text, colorScheme),
+                      _buildInfoChip(chip.icon, chip.text),
                   ],
                 ),
               ],
               if (description != null &&
                   description!.isNotEmpty) ...<Widget>[
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 Text(
                   description!,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
                     height: 1.4,
                   ),
                   maxLines: 4,
@@ -229,8 +237,8 @@ class MediaDetailView extends StatelessWidget {
     );
   }
 
-  Widget _buildCoverImage(ColorScheme colorScheme) {
-    if (coverUrl == null) return _buildPlaceholder(colorScheme);
+  Widget _buildCoverImage() {
+    if (coverUrl == null) return _buildPlaceholder();
 
     final bool useLocalCache =
         cacheImageType != null && cacheImageId != null;
@@ -241,28 +249,28 @@ class MediaDetailView extends StatelessWidget {
         imageId: cacheImageId!,
         remoteUrl: coverUrl!,
         fit: BoxFit.cover,
-        memCacheWidth: 120,
-        memCacheHeight: 180,
-        placeholder: _buildLoadingPlaceholder(colorScheme),
-        errorWidget: _buildPlaceholder(colorScheme),
+        memCacheWidth: 200,
+        memCacheHeight: 300,
+        placeholder: _buildLoadingPlaceholder(),
+        errorWidget: _buildPlaceholder(),
       );
     }
 
     return CachedNetworkImage(
       imageUrl: coverUrl!,
       fit: BoxFit.cover,
-      memCacheWidth: 120,
-      memCacheHeight: 180,
+      memCacheWidth: 200,
+      memCacheHeight: 300,
       placeholder: (BuildContext ctx, String url) =>
-          _buildLoadingPlaceholder(colorScheme),
+          _buildLoadingPlaceholder(),
       errorWidget: (BuildContext ctx, String url, Object error) =>
-          _buildPlaceholder(colorScheme),
+          _buildPlaceholder(),
     );
   }
 
-  Widget _buildLoadingPlaceholder(ColorScheme colorScheme) {
+  Widget _buildLoadingPlaceholder() {
     return Container(
-      color: colorScheme.surfaceContainerHighest,
+      color: AppColors.surfaceLight,
       child: const Center(
         child: SizedBox(
           width: 20,
@@ -273,38 +281,33 @@ class MediaDetailView extends StatelessWidget {
     );
   }
 
-  Widget _buildPlaceholder(ColorScheme colorScheme) {
+  Widget _buildPlaceholder() {
     return Container(
-      color: colorScheme.surfaceContainerHighest,
+      color: AppColors.surfaceLight,
       child: Icon(
         placeholderIcon,
         size: 32,
-        color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+        color: AppColors.textTertiary,
       ),
     );
   }
 
-  Widget _buildInfoChip(
-    IconData icon,
-    String text,
-    ColorScheme colorScheme,
-  ) {
+  Widget _buildInfoChip(IconData icon, String text) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.surfaceLight,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Icon(icon, size: 12, color: colorScheme.onSurfaceVariant),
+          Icon(icon, size: 12, color: AppColors.textSecondary),
           const SizedBox(width: 4),
           Text(
             text,
-            style: TextStyle(
-              fontSize: 11,
-              color: colorScheme.onSurfaceVariant,
+            style: AppTypography.caption.copyWith(
+              color: AppColors.textSecondary,
             ),
           ),
         ],
@@ -312,17 +315,13 @@ class MediaDetailView extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusSection(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-
+  Widget _buildStatusSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(
           'Status',
-          style: theme.textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTypography.h3.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 6),
         statusWidget!,
@@ -331,9 +330,6 @@ class MediaDetailView extends StatelessWidget {
   }
 
   Widget _buildAuthorCommentSection(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -342,15 +338,15 @@ class MediaDetailView extends StatelessWidget {
           children: <Widget>[
             Row(
               children: <Widget>[
-                Icon(
+                const Icon(
                   Icons.format_quote,
                   size: 18,
-                  color: colorScheme.tertiary,
+                  color: AppColors.movieAccent,
                 ),
                 const SizedBox(width: 6),
                 Text(
                   "Author's Comment",
-                  style: theme.textTheme.titleSmall?.copyWith(
+                  style: AppTypography.h3.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -373,18 +369,18 @@ class MediaDetailView extends StatelessWidget {
         const SizedBox(height: 6),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(AppSpacing.md - 4),
           decoration: BoxDecoration(
-            color: colorScheme.tertiaryContainer.withValues(alpha: 0.3),
-            borderRadius: BorderRadius.circular(10),
+            color: AppColors.movieAccent.withAlpha(20),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
             border: Border.all(
-              color: colorScheme.tertiaryContainer,
+              color: AppColors.movieAccent.withAlpha(40),
             ),
           ),
           child: hasAuthorComment
               ? Text(
                   authorComment!,
-                  style: theme.textTheme.bodyMedium?.copyWith(
+                  style: AppTypography.body.copyWith(
                     fontStyle: FontStyle.italic,
                     height: 1.5,
                   ),
@@ -393,9 +389,8 @@ class MediaDetailView extends StatelessWidget {
                   isEditable
                       ? 'No comment yet. Tap Edit to add one.'
                       : 'No comment from the author.',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color:
-                        colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                  style: AppTypography.body.copyWith(
+                    color: AppColors.textTertiary,
                     fontStyle: FontStyle.italic,
                   ),
                 ),
@@ -405,9 +400,6 @@ class MediaDetailView extends StatelessWidget {
   }
 
   Widget _buildUserNotesSection(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -419,12 +411,12 @@ class MediaDetailView extends StatelessWidget {
                 Icon(
                   Icons.note_alt_outlined,
                   size: 18,
-                  color: colorScheme.primary,
+                  color: accentColor,
                 ),
                 const SizedBox(width: 6),
                 Text(
                   'My Notes',
-                  style: theme.textTheme.titleSmall?.copyWith(
+                  style: AppTypography.h3.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -446,26 +438,23 @@ class MediaDetailView extends StatelessWidget {
         const SizedBox(height: 6),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(AppSpacing.md - 4),
           decoration: BoxDecoration(
-            color: colorScheme.primaryContainer.withValues(alpha: 0.3),
-            borderRadius: BorderRadius.circular(10),
+            color: accentColor.withAlpha(20),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
             border: Border.all(
-              color: colorScheme.primaryContainer,
+              color: accentColor.withAlpha(40),
             ),
           ),
           child: hasUserComment
               ? Text(
                   userComment!,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    height: 1.5,
-                  ),
+                  style: AppTypography.body.copyWith(height: 1.5),
                 )
               : Text(
                   'No notes yet. Tap Edit to add your personal notes.',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color:
-                        colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                  style: AppTypography.body.copyWith(
+                    color: AppColors.textTertiary,
                     fontStyle: FontStyle.italic,
                   ),
                 ),
