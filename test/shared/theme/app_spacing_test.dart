@@ -60,9 +60,9 @@ void main() {
       });
 
       test('конкретные значения колонок', () {
-        expect(AppSpacing.gridColumnsDesktop, equals(4));
-        expect(AppSpacing.gridColumnsTablet, equals(3));
-        expect(AppSpacing.gridColumnsMobile, equals(2));
+        expect(AppSpacing.gridColumnsDesktop, equals(6));
+        expect(AppSpacing.gridColumnsTablet, equals(4));
+        expect(AppSpacing.gridColumnsMobile, equals(3));
       });
     });
   });

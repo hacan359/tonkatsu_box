@@ -7,7 +7,6 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:xerabora/core/services/image_cache_service.dart';
 import 'package:xerabora/shared/theme/app_colors.dart';
-import 'package:xerabora/shared/theme/app_spacing.dart';
 import 'package:xerabora/shared/widgets/poster_card.dart';
 import 'package:xerabora/shared/widgets/rating_badge.dart';
 
@@ -70,7 +69,7 @@ void main() {
         expect(find.text('Test Game'), findsOneWidget);
       });
 
-      testWidgets('должен содержать AspectRatio с правильным соотношением',
+      testWidgets('должен содержать Expanded для постера',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(
           child: const PosterCard(
@@ -81,10 +80,7 @@ void main() {
           ),
         ));
 
-        final AspectRatio aspectRatio = tester.widget<AspectRatio>(
-          find.byType(AspectRatio),
-        );
-        expect(aspectRatio.aspectRatio, AppSpacing.posterAspectRatio);
+        expect(find.byType(Expanded), findsOneWidget);
       });
 
       testWidgets('должен содержать ClipRRect со скруглением',
@@ -115,7 +111,7 @@ void main() {
         final Text titleText = tester.widget<Text>(
           find.text('Very Long Game Title That Should Be Truncated'),
         );
-        expect(titleText.maxLines, 2);
+        expect(titleText.maxLines, 1);
         expect(titleText.overflow, TextOverflow.ellipsis);
       });
     });
@@ -340,6 +336,107 @@ void main() {
         // Не должно бросать исключение
         await tester.tap(find.text('No Callback'));
         expect(tester.takeException(), isNull);
+      });
+    });
+
+    group('hover-эффект', () {
+      testWidgets('должен содержать MouseRegion с listeners',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(
+          child: const PosterCard(
+            title: 'Hover Test',
+            imageUrl: 'https://example.com/poster.jpg',
+            cacheImageType: ImageType.gameCover,
+            cacheImageId: '123',
+          ),
+        ));
+
+        // Наш MouseRegion имеет onEnter/onExit listeners
+        final Finder mouseRegions = find.byType(MouseRegion);
+        bool foundWithListeners = false;
+        for (final Element element in mouseRegions.evaluate()) {
+          final MouseRegion region = element.widget as MouseRegion;
+          if (region.onEnter != null && region.onExit != null) {
+            foundWithListeners = true;
+            break;
+          }
+        }
+        expect(foundWithListeners, isTrue);
+      });
+
+      testWidgets('должен содержать Transform.scale с начальным масштабом 1.0',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(
+          child: const PosterCard(
+            title: 'Scale Test',
+            imageUrl: 'https://example.com/poster.jpg',
+            cacheImageType: ImageType.gameCover,
+            cacheImageId: '123',
+          ),
+        ));
+
+        // Ищем Transform который является потомком PosterCard
+        final Finder transforms = find.descendant(
+          of: find.byType(PosterCard),
+          matching: find.byType(Transform),
+        );
+        expect(transforms, findsAtLeastNWidgets(1));
+
+        final Transform transform =
+            tester.widget<Transform>(transforms.first);
+        // Начальный масштаб = 1.0 (без hover)
+        expect(transform.transform.entry(0, 0), 1.0);
+      });
+
+      testWidgets('должен показывать click-курсор при наличии onTap',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(
+          child: PosterCard(
+            title: 'Cursor Test',
+            imageUrl: 'https://example.com/poster.jpg',
+            cacheImageType: ImageType.gameCover,
+            cacheImageId: '123',
+            onTap: () {},
+          ),
+        ));
+
+        // Ищем MouseRegion с onEnter listener (наш, а не внутренний)
+        final Finder mouseRegions = find.byType(MouseRegion);
+        MouseRegion? ourRegion;
+        for (final Element element in mouseRegions.evaluate()) {
+          final MouseRegion region = element.widget as MouseRegion;
+          if (region.onEnter != null && region.onExit != null) {
+            ourRegion = region;
+            break;
+          }
+        }
+        expect(ourRegion, isNotNull);
+        expect(ourRegion!.cursor, SystemMouseCursors.click);
+      });
+
+      testWidgets('должен показывать basic-курсор без onTap',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(
+          child: const PosterCard(
+            title: 'No Cursor Test',
+            imageUrl: 'https://example.com/poster.jpg',
+            cacheImageType: ImageType.gameCover,
+            cacheImageId: '123',
+          ),
+        ));
+
+        // Ищем MouseRegion с onEnter listener (наш, а не внутренний)
+        final Finder mouseRegions = find.byType(MouseRegion);
+        MouseRegion? ourRegion;
+        for (final Element element in mouseRegions.evaluate()) {
+          final MouseRegion region = element.widget as MouseRegion;
+          if (region.onEnter != null && region.onExit != null) {
+            ourRegion = region;
+            break;
+          }
+        }
+        expect(ourRegion, isNotNull);
+        expect(ourRegion!.cursor, SystemMouseCursors.basic);
       });
     });
 

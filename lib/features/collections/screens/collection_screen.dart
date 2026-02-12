@@ -17,6 +17,8 @@ import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/collection_sort_mode.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
+import '../../../shared/navigation/navigation_shell.dart';
+import '../../../shared/widgets/poster_card.dart';
 import '../../search/screens/search_screen.dart';
 import '../../../data/repositories/canvas_repository.dart';
 import '../../../shared/constants/platform_features.dart';
@@ -53,6 +55,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   Collection? _collection;
   bool _collectionLoading = true;
   bool _isCanvasMode = false;
+  bool _isGridMode = false;
 
   @override
   void initState() {
@@ -470,6 +473,20 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                   .toList();
             },
           ),
+          const Spacer(),
+          // Переключатель list/grid
+          IconButton(
+            icon: Icon(
+              _isGridMode ? Icons.view_list : Icons.grid_view,
+              size: 20,
+              color: AppColors.textSecondary,
+            ),
+            tooltip: _isGridMode ? 'List view' : 'Grid view',
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            visualDensity: VisualDensity.compact,
+            onPressed: () => setState(() => _isGridMode = !_isGridMode),
+          ),
         ],
       ),
     );
@@ -478,6 +495,10 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   Widget _buildItemsList(BuildContext context, List<CollectionItem> items) {
     if (items.isEmpty) {
       return _buildEmptyState();
+    }
+
+    if (_isGridMode) {
+      return _buildGridView(items);
     }
 
     final CollectionSortMode sortMode =
@@ -512,6 +533,98 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         },
       ),
     );
+  }
+
+  Widget _buildGridView(List<CollectionItem> items) {
+    final double screenWidth = MediaQuery.sizeOf(context).width;
+    final int crossAxisCount;
+    if (screenWidth >= navigationBreakpoint) {
+      crossAxisCount = AppSpacing.gridColumnsDesktop;
+    } else if (screenWidth >= 500) {
+      crossAxisCount = AppSpacing.gridColumnsTablet;
+    } else {
+      crossAxisCount = AppSpacing.gridColumnsMobile;
+    }
+
+    return RefreshIndicator(
+      onRefresh: () => ref
+          .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
+          .refresh(),
+      child: GridView.builder(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: crossAxisCount,
+          crossAxisSpacing: AppSpacing.md,
+          mainAxisSpacing: AppSpacing.lg,
+          childAspectRatio: 0.55,
+        ),
+        itemCount: items.length,
+        itemBuilder: (BuildContext context, int index) {
+          final CollectionItem item = items[index];
+          return PosterCard(
+            key: ValueKey<int>(item.id),
+            title: item.itemName,
+            imageUrl: item.thumbnailUrl ?? '',
+            cacheImageType: _imageTypeFor(item.mediaType),
+            cacheImageId: item.externalId.toString(),
+            rating: _normalizedRating(item),
+            year: _yearFor(item),
+            subtitle: _subtitleFor(item),
+            onTap: () => _showItemDetails(item),
+          );
+        },
+      ),
+    );
+  }
+
+  /// Нормализует рейтинг к 0–10 (IGDB 0-100, TMDB 0-10).
+  static double? _normalizedRating(CollectionItem item) {
+    switch (item.mediaType) {
+      case MediaType.game:
+        final double? raw = item.game?.rating;
+        if (raw == null) return null;
+        return raw / 10;
+      case MediaType.movie:
+        return item.movie?.rating;
+      case MediaType.tvShow:
+        return item.tvShow?.rating;
+    }
+  }
+
+  /// Год выпуска элемента.
+  static int? _yearFor(CollectionItem item) {
+    switch (item.mediaType) {
+      case MediaType.game:
+        return item.game?.releaseYear;
+      case MediaType.movie:
+        return item.movie?.releaseYear;
+      case MediaType.tvShow:
+        return item.tvShow?.firstAirYear;
+    }
+  }
+
+  /// Подзаголовок для grid-карточки.
+  static String? _subtitleFor(CollectionItem item) {
+    switch (item.mediaType) {
+      case MediaType.game:
+        return item.platform?.displayName;
+      case MediaType.movie:
+        return item.movie?.genresString;
+      case MediaType.tvShow:
+        return item.tvShow?.genresString;
+    }
+  }
+
+  /// ImageType для кэширования по типу медиа.
+  static ImageType _imageTypeFor(MediaType mediaType) {
+    switch (mediaType) {
+      case MediaType.game:
+        return ImageType.gameCover;
+      case MediaType.movie:
+        return ImageType.moviePoster;
+      case MediaType.tvShow:
+        return ImageType.tvShowPoster;
+    }
   }
 
   Widget _buildReorderableList(List<CollectionItem> items) {

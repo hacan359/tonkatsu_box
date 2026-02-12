@@ -44,12 +44,12 @@ abstract final class AppSpacing {
   /// Соотношение сторон постера (2:3).
   static const double posterAspectRatio = 2.0 / 3.0;
 
-  /// Количество колонок сетки на десктопе.
-  static const int gridColumnsDesktop = 4;
+  /// Количество колонок сетки на десктопе (>= 800px).
+  static const int gridColumnsDesktop = 6;
 
-  /// Количество колонок сетки на планшете.
-  static const int gridColumnsTablet = 3;
+  /// Количество колонок сетки на планшете (>= 500px).
+  static const int gridColumnsTablet = 4;
 
-  /// Количество колонок сетки на мобильном.
-  static const int gridColumnsMobile = 2;
+  /// Количество колонок сетки на мобильном (< 500px).
+  static const int gridColumnsMobile = 3;
 }
