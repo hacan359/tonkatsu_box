@@ -265,6 +265,10 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
+      // Скролл вниз мимо ActivityDatesSection
+      await tester.drag(find.byType(Scrollable).at(1), const Offset(0, -300));
+      await tester.pumpAndSettle();
+
       // Должна быть только 1 кнопка Edit: для личных заметок
       expect(find.text('Edit'), findsOneWidget);
     });

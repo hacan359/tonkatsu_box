@@ -27,4 +27,10 @@ void main() {
       expect(indices.length, equals(NavTab.values.length));
     });
   });
+
+  group('navigationBreakpoint', () {
+    test('должен быть 800', () {
+      expect(navigationBreakpoint, equals(800));
+    });
+  });
 }

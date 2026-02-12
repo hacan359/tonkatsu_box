@@ -10,21 +10,21 @@ abstract final class AppColors {
   // ==================== Фоны ====================
 
   /// Основной фон приложения.
-  static const Color background = Color(0xFF121212);
+  static const Color background = Color(0xFF0A0A0A);
 
   /// Фон поверхностей (карточки, панели).
-  static const Color surface = Color(0xFF1E1E1E);
+  static const Color surface = Color(0xFF141414);
 
   /// Фон приподнятых поверхностей (hover, выделенные элементы).
-  static const Color surfaceLight = Color(0xFF2A2A2A);
+  static const Color surfaceLight = Color(0xFF1E1E1E);
 
   /// Граница поверхностей.
-  static const Color surfaceBorder = Color(0xFF3A3A3A);
+  static const Color surfaceBorder = Color(0xFF2A2A2A);
 
   // ==================== Текст ====================
 
   /// Основной текст.
-  static const Color textPrimary = Color(0xFFE0E0E0);
+  static const Color textPrimary = Color(0xFFFFFFFF);
 
   /// Вторичный текст (подзаголовки, подписи).
   static const Color textSecondary = Color(0xFFB0B0B0);
@@ -67,4 +67,18 @@ abstract final class AppColors {
 
   /// Цвет статуса "Dropped".
   static const Color statusDropped = error;
+
+  /// Цвет статуса "Planned" (backlog, wishlist).
+  static const Color statusPlanned = Color(0xFF8B5CF6);
+
+  // ==================== Рейтинги ====================
+
+  /// Рейтинг высокий (>= 8.0).
+  static const Color ratingHigh = Color(0xFF22C55E);
+
+  /// Рейтинг средний (>= 6.0).
+  static const Color ratingMedium = Color(0xFFFBBF24);
+
+  /// Рейтинг низкий (< 6.0).
+  static const Color ratingLow = Color(0xFFEF4444);
 }

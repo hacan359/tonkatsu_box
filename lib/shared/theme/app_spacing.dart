@@ -32,4 +32,24 @@ abstract final class AppSpacing {
 
   /// 12px — стандартное скругление (карточки).
   static const double radiusMd = 12;
+
+  /// 16px — большое скругление (hero-карточки).
+  static const double radiusLg = 16;
+
+  /// 20px — очень большое скругление (модальные окна).
+  static const double radiusXl = 20;
+
+  // ==================== Сетка ====================
+
+  /// Соотношение сторон постера (2:3).
+  static const double posterAspectRatio = 2.0 / 3.0;
+
+  /// Количество колонок сетки на десктопе (>= 800px).
+  static const int gridColumnsDesktop = 6;
+
+  /// Количество колонок сетки на планшете (>= 500px).
+  static const int gridColumnsTablet = 4;
+
+  /// Количество колонок сетки на мобильном (< 500px).
+  static const int gridColumnsMobile = 3;
 }

@@ -16,17 +16,17 @@ import '../../../shared/models/tv_show.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/navigation/navigation_shell.dart';
 import '../../../shared/widgets/cached_image.dart' as app_cached;
+import '../../../shared/widgets/poster_card.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../providers/game_search_provider.dart';
 import '../providers/genre_provider.dart';
 import '../providers/media_search_provider.dart';
-import '../widgets/game_card.dart';
 import '../widgets/media_filter_sheet.dart';
-import '../widgets/movie_card.dart';
 import '../widgets/platform_filter_sheet.dart';
 import '../widgets/sort_selector.dart';
-import '../widgets/tv_show_card.dart';
 
 /// Экран поиска игр, фильмов и сериалов.
 ///
@@ -282,6 +282,20 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     );
   }
 
+  // ==================== Image caching ====================
+
+  /// Кэширует обложку элемента в фоне сразу после добавления в коллекцию.
+  void _cacheImage(ImageType type, String imageId, String? imageUrl) {
+    if (imageUrl == null || imageUrl.isEmpty) return;
+    final ImageCacheService cacheService = ref.read(imageCacheServiceProvider);
+    // Fire-and-forget: не блокируем UI, ошибки игнорируем
+    cacheService.downloadImage(
+      type: type,
+      imageId: imageId,
+      remoteUrl: imageUrl,
+    );
+  }
+
   // ==================== Game actions ====================
 
   void _onGameTap(Game game) {
@@ -310,6 +324,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
     if (mounted) {
       if (success) {
+        _cacheImage(ImageType.gameCover, game.id.toString(), game.coverUrl);
         messenger.showSnackBar(
           SnackBar(content: Text('$gameName added to collection')),
         );
@@ -341,6 +356,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
     if (mounted) {
       if (success) {
+        _cacheImage(ImageType.gameCover, game.id.toString(), game.coverUrl);
         messenger.showSnackBar(
           SnackBar(
             content: Text('$gameName added to ${selectedCollection.name}'),
@@ -380,6 +396,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
     if (mounted) {
       if (success) {
+        _cacheImage(
+          ImageType.moviePoster,
+          movie.tmdbId.toString(),
+          movie.posterUrl,
+        );
         messenger.showSnackBar(
           SnackBar(content: Text('$title added to collection')),
         );
@@ -408,6 +429,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
     if (mounted) {
       if (success) {
+        _cacheImage(
+          ImageType.moviePoster,
+          movie.tmdbId.toString(),
+          movie.posterUrl,
+        );
         messenger.showSnackBar(
           SnackBar(
             content: Text('$title added to ${selectedCollection.name}'),
@@ -447,6 +473,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
     if (mounted) {
       if (success) {
+        _cacheImage(
+          ImageType.tvShowPoster,
+          tvShow.tmdbId.toString(),
+          tvShow.posterUrl,
+        );
         messenger.showSnackBar(
           SnackBar(content: Text('$title added to collection')),
         );
@@ -475,6 +506,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
     if (mounted) {
       if (success) {
+        _cacheImage(
+          ImageType.tvShowPoster,
+          tvShow.tmdbId.toString(),
+          tvShow.posterUrl,
+        );
         messenger.showSnackBar(
           SnackBar(
             content: Text('$title added to ${selectedCollection.name}'),
@@ -488,146 +524,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         );
       }
     }
-  }
-
-  // ==================== Remove from collection ====================
-
-  Widget _buildMediaTrailing({
-    required String title,
-    required List<CollectedItemInfo>? infos,
-    required MediaType mediaType,
-    required VoidCallback onAdd,
-  }) {
-    if (infos != null && infos.isNotEmpty) {
-      return IconButton(
-        icon: const Icon(Icons.remove_circle_outline,
-            color: AppColors.error),
-        tooltip: 'Remove from collection',
-        onPressed: () => _removeItemFromCollection(title, infos, mediaType),
-      );
-    }
-    return IconButton(
-      icon: const Icon(Icons.add_circle_outline),
-      tooltip: 'Add to collection',
-      onPressed: onAdd,
-    );
-  }
-
-  Future<void> _removeGameFromCollection(
-    Game game,
-    List<CollectedItemInfo> infos,
-  ) async {
-    final CollectedItemInfo? selected =
-        await _selectCollectionForRemoval(game.name, infos);
-    if (selected == null || !mounted) return;
-
-    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
-
-    await ref
-        .read(collectionGamesNotifierProvider(selected.collectionId).notifier)
-        .removeGame(selected.recordId);
-
-    if (mounted) {
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(
-            '${game.name} removed from ${selected.collectionName}',
-          ),
-        ),
-      );
-    }
-  }
-
-  Future<void> _removeItemFromCollection(
-    String title,
-    List<CollectedItemInfo> infos,
-    MediaType mediaType,
-  ) async {
-    final CollectedItemInfo? selected =
-        await _selectCollectionForRemoval(title, infos);
-    if (selected == null || !mounted) return;
-
-    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
-
-    await ref
-        .read(
-            collectionItemsNotifierProvider(selected.collectionId).notifier)
-        .removeItem(selected.recordId, mediaType: mediaType);
-
-    if (mounted) {
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(
-            '$title removed from ${selected.collectionName}',
-          ),
-        ),
-      );
-    }
-  }
-
-  /// Выбирает коллекцию для удаления (с подтверждением).
-  ///
-  /// Если элемент в одной коллекции — показывает диалог подтверждения.
-  /// Если в нескольких — показывает список для выбора.
-  Future<CollectedItemInfo?> _selectCollectionForRemoval(
-    String itemName,
-    List<CollectedItemInfo> infos,
-  ) async {
-    if (infos.length == 1) {
-      final CollectedItemInfo info = infos.first;
-      final bool? confirmed = await showDialog<bool>(
-        context: context,
-        builder: (BuildContext context) => AlertDialog(
-          title: const Text('Remove from collection'),
-          content: Text(
-            'Remove "$itemName" from "${info.collectionName}"?',
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              style: FilledButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.error,
-              ),
-              child: const Text('Remove'),
-            ),
-          ],
-        ),
-      );
-      return (confirmed == true) ? info : null;
-    }
-
-    // Несколько коллекций — показываем выбор
-    return showDialog<CollectedItemInfo>(
-      context: context,
-      builder: (BuildContext context) => AlertDialog(
-        title: const Text('Remove from collection'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: infos.length,
-            itemBuilder: (BuildContext context, int index) {
-              final CollectedItemInfo info = infos[index];
-              return ListTile(
-                leading: const Icon(Icons.folder),
-                title: Text(info.collectionName),
-                onTap: () => Navigator.of(context).pop(info),
-              );
-            },
-          ),
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-        ],
-      ),
-    );
   }
 
   // ==================== Shared dialogs ====================
@@ -891,6 +787,34 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     }
   }
 
+  // ==================== Grid helpers ====================
+
+  int get _gridCrossAxisCount {
+    final double screenWidth = MediaQuery.sizeOf(context).width;
+    if (screenWidth >= navigationBreakpoint) {
+      return AppSpacing.gridColumnsDesktop;
+    } else if (screenWidth >= 500) {
+      return AppSpacing.gridColumnsTablet;
+    }
+    return AppSpacing.gridColumnsMobile;
+  }
+
+  Widget _buildShimmerGrid() {
+    return GridView.builder(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: _gridCrossAxisCount,
+        crossAxisSpacing: AppSpacing.md,
+        mainAxisSpacing: AppSpacing.lg,
+        childAspectRatio: 0.55,
+      ),
+      itemCount: _gridCrossAxisCount * 2,
+      itemBuilder: (BuildContext context, int index) {
+        return const ShimmerPosterCard();
+      },
+    );
+  }
+
   // ==================== Games tab ====================
 
   Widget _buildGamesTab() {
@@ -976,16 +900,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     );
   }
 
-  List<String> _getPlatformNames(List<int>? platformIds) {
-    if (platformIds == null || platformIds.isEmpty) {
-      return <String>[];
-    }
-    return platformIds
-        .map((int id) => _platformMap[id]?.displayName)
-        .whereType<String>()
-        .toList();
-  }
-
   Widget _buildGameResults(GameSearchState searchState) {
     if (searchState.error != null) {
       return _buildErrorState(searchState.error!, onRetry: () {
@@ -996,7 +910,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     }
 
     if (searchState.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return _buildShimmerGrid();
     }
 
     if (searchState.isEmpty) {
@@ -1011,42 +925,31 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         ref.watch(collectedGameIdsProvider).valueOrNull ??
             <int, List<CollectedItemInfo>>{};
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+    return GridView.builder(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: _gridCrossAxisCount,
+        crossAxisSpacing: AppSpacing.md,
+        mainAxisSpacing: AppSpacing.lg,
+        childAspectRatio: 0.55,
+      ),
       itemCount: searchState.results.length,
       itemBuilder: (BuildContext context, int index) {
         final Game game = searchState.results[index];
         final List<CollectedItemInfo>? infos = collectedGameInfos[game.id];
-        final String? collectionName = infos != null && infos.isNotEmpty ? infos.first.collectionName : null;
-        return Padding(
-          padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-          child: GameCard(
-            game: game,
-            onTap: () => _onGameTap(game),
-            platformNames: _getPlatformNames(game.platformIds),
-            collectionName: collectionName,
-            trailing: widget.collectionId == null
-                ? _buildGameTrailing(game, infos)
-                : null,
-          ),
+        return PosterCard(
+          key: ValueKey<int>(game.id),
+          title: game.name,
+          imageUrl: game.coverUrl ?? '',
+          cacheImageType: ImageType.gameCover,
+          cacheImageId: game.id.toString(),
+          rating: game.rating != null ? game.rating! / 10 : null,
+          year: game.releaseYear,
+          subtitle: game.genres?.take(2).join(', '),
+          isInCollection: infos != null && infos.isNotEmpty,
+          onTap: () => _onGameTap(game),
         );
       },
-    );
-  }
-
-  Widget _buildGameTrailing(Game game, List<CollectedItemInfo>? infos) {
-    if (infos != null && infos.isNotEmpty) {
-      return IconButton(
-        icon: const Icon(Icons.remove_circle_outline,
-            color: AppColors.error),
-        tooltip: 'Remove from collection',
-        onPressed: () => _removeGameFromCollection(game, infos),
-      );
-    }
-    return IconButton(
-      icon: const Icon(Icons.add_circle_outline),
-      tooltip: 'Add to collection',
-      onPressed: () => _addGameToAnyCollection(game),
     );
   }
 
@@ -1064,7 +967,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     }
 
     if (searchState.isLoading && searchState.activeTab == MediaSearchTab.movies) {
-      return const Center(child: CircularProgressIndicator());
+      return _buildShimmerGrid();
     }
 
     if (searchState.query.isEmpty && searchState.movieResults.isEmpty) {
@@ -1100,29 +1003,30 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           ),
 
         Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          child: GridView.builder(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: _gridCrossAxisCount,
+              crossAxisSpacing: AppSpacing.md,
+              mainAxisSpacing: AppSpacing.lg,
+              childAspectRatio: 0.55,
+            ),
             itemCount: searchState.movieResults.length,
             itemBuilder: (BuildContext context, int index) {
               final Movie movie = searchState.movieResults[index];
               final List<CollectedItemInfo>? infos =
                   collectedMovieInfos[movie.tmdbId];
-              final String? collectionName = infos != null && infos.isNotEmpty ? infos.first.collectionName : null;
-              return Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                child: MovieCard(
-                  movie: movie,
-                  onTap: () => _onMovieTap(movie),
-                  collectionName: collectionName,
-                  trailing: widget.collectionId == null
-                      ? _buildMediaTrailing(
-                          title: movie.title,
-                          infos: infos,
-                          mediaType: MediaType.movie,
-                          onAdd: () => _addMovieToAnyCollection(movie),
-                        )
-                      : null,
-                ),
+              return PosterCard(
+                key: ValueKey<int>(movie.tmdbId),
+                title: movie.title,
+                imageUrl: movie.posterUrl ?? '',
+                cacheImageType: ImageType.moviePoster,
+                cacheImageId: movie.tmdbId.toString(),
+                rating: movie.rating,
+                year: movie.releaseYear,
+                subtitle: movie.genres?.take(2).join(', '),
+                isInCollection: infos != null && infos.isNotEmpty,
+                onTap: () => _onMovieTap(movie),
               );
             },
           ),
@@ -1145,7 +1049,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     }
 
     if (searchState.isLoading && searchState.activeTab == MediaSearchTab.tvShows) {
-      return const Center(child: CircularProgressIndicator());
+      return _buildShimmerGrid();
     }
 
     if (searchState.query.isEmpty && searchState.tvShowResults.isEmpty) {
@@ -1181,29 +1085,30 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           ),
 
         Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          child: GridView.builder(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: _gridCrossAxisCount,
+              crossAxisSpacing: AppSpacing.md,
+              mainAxisSpacing: AppSpacing.lg,
+              childAspectRatio: 0.55,
+            ),
             itemCount: searchState.tvShowResults.length,
             itemBuilder: (BuildContext context, int index) {
               final TvShow tvShow = searchState.tvShowResults[index];
               final List<CollectedItemInfo>? infos =
                   collectedTvShowInfos[tvShow.tmdbId];
-              final String? collectionName = infos != null && infos.isNotEmpty ? infos.first.collectionName : null;
-              return Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                child: TvShowCard(
-                  tvShow: tvShow,
-                  onTap: () => _onTvShowTap(tvShow),
-                  collectionName: collectionName,
-                  trailing: widget.collectionId == null
-                      ? _buildMediaTrailing(
-                          title: tvShow.title,
-                          infos: infos,
-                          mediaType: MediaType.tvShow,
-                          onAdd: () => _addTvShowToAnyCollection(tvShow),
-                        )
-                      : null,
-                ),
+              return PosterCard(
+                key: ValueKey<int>(tvShow.tmdbId),
+                title: tvShow.title,
+                imageUrl: tvShow.posterUrl ?? '',
+                cacheImageType: ImageType.tvShowPoster,
+                cacheImageId: tvShow.tmdbId.toString(),
+                rating: tvShow.rating,
+                year: tvShow.firstAirYear,
+                subtitle: tvShow.genres?.take(2).join(', '),
+                isInCollection: infos != null && infos.isNotEmpty,
+                onTap: () => _onTvShowTap(tvShow),
               );
             },
           ),
@@ -1216,29 +1121,33 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
   Widget _buildEmptyState(String message, IconData icon) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Icon(
-            icon,
-            size: 64,
-            color: AppColors.textSecondary.withAlpha(128),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            message,
-            style: AppTypography.h3.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            'Type at least 2 characters to start searching',
-            style: AppTypography.body.copyWith(
-                  color: AppColors.textSecondary.withAlpha(179),
-                ),
-          ),
-        ],
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(
+              icon,
+              size: 64,
+              color: AppColors.textSecondary.withAlpha(128),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              message,
+              style: AppTypography.h3.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'Type at least 2 characters to start searching',
+              style: AppTypography.body.copyWith(
+                    color: AppColors.textSecondary.withAlpha(179),
+                  ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1275,10 +1184,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
   Widget _buildErrorState(String error, {required VoidCallback onRetry}) {
     return Center(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             const Icon(
               Icons.error_outline,

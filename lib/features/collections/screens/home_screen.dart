@@ -6,7 +6,9 @@ import '../../../shared/models/collection.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/hero_collection_card.dart';
 import '../../../shared/widgets/section_header.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../providers/collections_provider.dart';
 import '../widgets/collection_tile.dart';
@@ -46,7 +48,7 @@ class HomeScreen extends ConsumerWidget {
       body: collectionsAsync.when(
         data: (List<Collection> collections) =>
             _buildCollectionsList(context, ref, collections),
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => _buildLoadingState(),
         error: (Object error, StackTrace stack) =>
             _buildErrorState(context, ref, error),
       ),
@@ -59,6 +61,9 @@ class HomeScreen extends ConsumerWidget {
       ),
     );
   }
+
+  /// Максимальное количество Hero-карточек.
+  static const int _maxHeroCards = 3;
 
   Widget _buildCollectionsList(
     BuildContext context,
@@ -80,6 +85,12 @@ class HomeScreen extends ConsumerWidget {
         .where((Collection c) => c.type == CollectionType.imported)
         .toList();
 
+    // Первые N own коллекций как Hero, остальные как Tile
+    final List<Collection> heroCollections =
+        ownCollections.take(_maxHeroCards).toList();
+    final List<Collection> tileCollections =
+        ownCollections.skip(_maxHeroCards).toList();
+
     return RefreshIndicator(
       onRefresh: () => ref.read(collectionsProvider.notifier).refresh(),
       child: ListView(
@@ -89,18 +100,28 @@ class HomeScreen extends ConsumerWidget {
           bottom: 80,
         ),
         children: <Widget>[
-          // Собственные коллекции
-          if (ownCollections.isNotEmpty) ...<Widget>[
+          // Hero-карточки (первые 3 own коллекции)
+          if (heroCollections.isNotEmpty) ...<Widget>[
+            const SizedBox(height: AppSpacing.md),
+            ...heroCollections.map((Collection c) => HeroCollectionCard(
+                  collection: c,
+                  onTap: () => _navigateToCollection(context, c),
+                  onLongPress: () => _showCollectionOptions(context, ref, c),
+                )),
+          ],
+
+          // Остальные own коллекции
+          if (tileCollections.isNotEmpty) ...<Widget>[
             Padding(
               padding: const EdgeInsets.only(
-                top: AppSpacing.md,
+                top: AppSpacing.lg,
                 bottom: AppSpacing.sm,
               ),
               child: SectionHeader(
                 title: 'My Collections (${ownCollections.length})',
               ),
             ),
-            ...ownCollections.map((Collection c) => CollectionTile(
+            ...tileCollections.map((Collection c) => CollectionTile(
                   collection: c,
                   onTap: () => _navigateToCollection(context, c),
                   onLongPress: () => _showCollectionOptions(context, ref, c),
@@ -144,6 +165,17 @@ class HomeScreen extends ConsumerWidget {
           ],
         ],
       ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return ListView(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      children: const <Widget>[
+        ShimmerListTile(),
+        ShimmerListTile(),
+        ShimmerListTile(),
+      ],
     );
   }
 

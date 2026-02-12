@@ -75,18 +75,33 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
         final CollectionGame? collectionGame = _findGame(games);
         if (collectionGame == null) {
           return Scaffold(
-            appBar: AppBar(),
+            backgroundColor: AppColors.background,
+            appBar: AppBar(
+              backgroundColor: AppColors.background,
+              surfaceTintColor: Colors.transparent,
+              foregroundColor: AppColors.textPrimary,
+            ),
             body: const Center(child: Text('Game not found')),
           );
         }
         return _buildContent(collectionGame);
       },
       loading: () => Scaffold(
-        appBar: AppBar(),
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: AppColors.background,
+          surfaceTintColor: Colors.transparent,
+          foregroundColor: AppColors.textPrimary,
+        ),
         body: const Center(child: CircularProgressIndicator()),
       ),
       error: (Object error, StackTrace stack) => Scaffold(
-        appBar: AppBar(),
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: AppColors.background,
+          surfaceTintColor: Colors.transparent,
+          foregroundColor: AppColors.textPrimary,
+        ),
         body: Center(child: Text('Error: $error')),
       ),
     );

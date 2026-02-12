@@ -7,6 +7,44 @@
 ## [Unreleased]
 
 ### Added
+- Добавлен шрифт Inter (Regular, Medium, SemiBold, Bold) в `assets/fonts/`
+- Добавлен `AppTheme` (`lib/shared/theme/app_theme.dart`) — централизованная тёмная тема через `AppColors`, стилизация всех Material-компонентов
+- Добавлены стили `posterTitle` и `posterSubtitle` в `AppTypography`
+- Добавлены константы `radiusLg`, `radiusXl`, `posterAspectRatio`, `gridColumnsDesktop/Tablet/Mobile` в `AppSpacing`
+- Добавлен виджет `RatingBadge` (`lib/shared/widgets/rating_badge.dart`) — цветной бейдж рейтинга (зелёный ≥8, жёлтый ≥6, красный <6)
+- Добавлены виджеты shimmer-загрузки (`lib/shared/widgets/shimmer_loading.dart`) — `ShimmerBox`, `ShimmerPosterCard`, `ShimmerListTile` с анимированным градиентом
+- Добавлен виджет `PosterCard` (`lib/shared/widgets/poster_card.dart`) — вертикальная карточка 2:3 с постером, RatingBadge, hover-анимацией и отметкой коллекции
+- Добавлен виджет `HeroCollectionCard` (`lib/shared/widgets/hero_collection_card.dart`) — большая карточка коллекции с градиентным фоном, прогресс-баром и статистикой
+- Добавлена адаптивная навигация в `NavigationShell` — `BottomNavigationBar` при ширине <800px, `NavigationRail` при ≥800px
+- Добавлен режим сетки в `CollectionScreen` — переключение list/grid, `PosterCard` в `GridView.builder`
+- Добавлены фильтры в `CollectionScreen` — фильтр по типу медиа (All/Games/Movies/TV Shows) через `ChoiceChip`, поиск по имени
+
+### Changed
+- Углублена тёмная палитра `AppColors`: background `#121212`→`#0A0A0A`, surface `#1E1E1E`→`#141414`, surfaceLight `#2A2A2A`→`#1E1E1E`, surfaceBorder `#3A3A3A`→`#2A2A2A`, textPrimary `#E0E0E0`→`#FFFFFF`
+- Добавлены цвета рейтинга в `AppColors`: `ratingHigh` (#22C55E), `ratingMedium` (#FBBF24), `ratingLow` (#EF4444)
+- Добавлен цвет статуса `statusPlanned` (#8B5CF6) в `AppColors`
+- Установлен минимальный размер окна 800×600 (`windows/runner/win32_window.cpp`, `WM_GETMINMAXINFO`)
+- Изменён `AppTypography` — шрифт Inter (`fontFamily: 'Inter'`), `letterSpacing: -0.5` для h1, `-0.2` для h2
+- Изменён `app.dart` — принудительно тёмная тема (`ThemeMode.dark`), удалены `_lightTheme`/`_darkTheme`/`_buildTheme()`, подключён `AppTheme.darkTheme`
+- Изменён `HomeScreen` — `CustomScrollView` со Slivers, первые коллекции как `HeroCollectionCard`, shimmer-загрузка
+- Изменён `SearchScreen` — результаты поиска в виде сетки `PosterCard` вместо горизонтальных карточек, затемнение постеров
+- Изменён `MediaDetailView` — все цвета через `AppColors`/`AppTypography`, постер увеличен 80×120→100×150, добавлен параметр `accentColor` для per-media окрашивания
+- Изменены detail screens (Game, Movie, TvShow) — fallback AppBars стилизованы через `AppColors`, добавлены per-media `accentColor` (movieAccent, tvShowAccent)
+- Изменён `SettingsScreen` — кнопки Export/Import адаптивные (Row при ≥400px, Column при <400px), `Theme.of(context).colorScheme.error` заменён на `AppColors.error`
+- Изменён `MediaCard` — постер увеличен 60×80→64×96
+- Изменён `ImageCacheService` — eager-кэширование обложки при добавлении элемента в коллекцию из поиска, валидация magic bytes (JPEG/PNG/WebP) вместо проверки размера, безопасное удаление файлов при блокировке Windows
+
+### Fixed
+- Исправлен overflow заголовков секций в `SettingsScreen` — текст в `Row` обёрнут в `Flexible` с `TextOverflow.ellipsis` (7 секций)
+- Исправлен overflow `ListTile` с кнопкой очистки кэша в `SettingsScreen` — `TextButton.icon` заменён на `IconButton`
+- Исправлен vertical overflow в `SearchScreen` empty/error states — `Column` заменён на `SingleChildScrollView` + `MainAxisSize.min`
+- Исправлен crash `PathAccessException` на Windows при удалении занятого файла в `ImageCacheService` (errno 32)
+- Исправлена ошибка `Invalid image data` при загрузке битых кэшированных файлов — валидация magic bytes
+- Исправлено отображение чужой обложки на карточке в сетке поиска — добавлен `ValueKey` на `PosterCard` в `GridView`
+
+---
+
+### Added
 - Добавлена дизайн-система для тёмной темы: `AppColors`, `AppSpacing`, `AppTypography` (`lib/shared/theme/`)
 - Добавлен `NavigationShell` с `NavigationRail` — боковая навигация (Home, Search, Settings)
 - Добавлены виджеты: `SectionHeader` (заголовок секции с кнопкой действия)

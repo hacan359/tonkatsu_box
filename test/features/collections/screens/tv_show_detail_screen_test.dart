@@ -616,6 +616,14 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
+        // Скролл до Author's Comment (мимо ActivityDates + Episode Progress)
+        await tester.scrollUntilVisible(
+          find.text("Author's Comment"),
+          200,
+          scrollable: find.byType(Scrollable).at(1),
+        );
+        await tester.pumpAndSettle();
+
         expect(find.text("Author's Comment"), findsOneWidget);
         expect(find.text('Must watch!'), findsOneWidget);
       });
@@ -635,6 +643,14 @@ void main() {
           isEditable: true,
           items: <CollectionItem>[item],
         ));
+        await tester.pumpAndSettle();
+
+        // Скролл до Author's Comment (мимо ActivityDates + Episode Progress)
+        await tester.scrollUntilVisible(
+          find.text('No comment yet. Tap Edit to add one.'),
+          200,
+          scrollable: find.byType(Scrollable).at(1),
+        );
         await tester.pumpAndSettle();
 
         expect(
@@ -660,6 +676,14 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
+        // Скролл до Author's Comment (мимо ActivityDates + Episode Progress)
+        await tester.scrollUntilVisible(
+          find.text('No comment from the author.'),
+          200,
+          scrollable: find.byType(Scrollable).at(1),
+        );
+        await tester.pumpAndSettle();
+
         expect(
           find.text('No comment from the author.'),
           findsOneWidget,
@@ -680,9 +704,15 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // 2 кнопки Edit: Author's Comment и My Notes (скролл вниз мимо ActivityDates)
-        await tester.drag(find.byType(Scrollable).at(1), const Offset(0, -300));
+        // Скролл до секции My Notes (мимо ActivityDates + Episode Progress)
+        await tester.scrollUntilVisible(
+          find.text('My Notes'),
+          200,
+          scrollable: find.byType(Scrollable).at(1),
+        );
         await tester.pumpAndSettle();
+
+        // 2 кнопки Edit: Author's Comment и My Notes
         expect(find.text('Edit'), findsNWidgets(2));
       });
 
@@ -700,9 +730,15 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Только 1 кнопка Edit: для My Notes (скролл вниз мимо ActivityDates)
-        await tester.drag(find.byType(Scrollable).at(1), const Offset(0, -300));
+        // Скролл до секции My Notes (мимо ActivityDates + Episode Progress)
+        await tester.scrollUntilVisible(
+          find.text('My Notes'),
+          200,
+          scrollable: find.byType(Scrollable).at(1),
+        );
         await tester.pumpAndSettle();
+
+        // Только 1 кнопка Edit: для My Notes
         expect(find.text('Edit'), findsOneWidget);
       });
     });
@@ -945,8 +981,12 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Прокручиваем до секции Author's Comment
-        await tester.ensureVisible(find.text("Author's Comment"));
+        // Прокручиваем до секции Author's Comment (мимо ActivityDates + Episode Progress)
+        await tester.scrollUntilVisible(
+          find.text("Author's Comment"),
+          200,
+          scrollable: find.byType(Scrollable).at(1),
+        );
         await tester.pumpAndSettle();
 
         // Нажимаем первую кнопку Edit (для Author's Comment)
@@ -971,8 +1011,12 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Прокручиваем до секции Author's Comment
-        await tester.ensureVisible(find.text("Author's Comment"));
+        // Прокручиваем до секции Author's Comment (мимо ActivityDates + Episode Progress)
+        await tester.scrollUntilVisible(
+          find.text("Author's Comment"),
+          200,
+          scrollable: find.byType(Scrollable).at(1),
+        );
         await tester.pumpAndSettle();
 
         await tester.tap(find.text('Edit').first);

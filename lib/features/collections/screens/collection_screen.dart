@@ -17,6 +17,8 @@ import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/collection_sort_mode.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
+import '../../../shared/navigation/navigation_shell.dart';
+import '../../../shared/widgets/poster_card.dart';
 import '../../search/screens/search_screen.dart';
 import '../../../data/repositories/canvas_repository.dart';
 import '../../../shared/constants/platform_features.dart';
@@ -53,11 +55,24 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   Collection? _collection;
   bool _collectionLoading = true;
   bool _isCanvasMode = false;
+  bool _isGridMode = false;
+  MediaType? _filterType;
+  String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _loadCollection();
+    _searchController.addListener(() {
+      setState(() => _searchQuery = _searchController.text);
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadCollection() async {
@@ -272,6 +287,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                 // Заголовок со статистикой
                 _buildHeader(statsAsync),
 
+                // Фильтры (тип + поиск)
+                _buildFilterBar(),
+
                 // Селектор сортировки
                 _buildSortSelector(),
 
@@ -279,7 +297,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                 Expanded(
                   child: itemsAsync.when(
                     data: (List<CollectionItem> items) =>
-                        _buildItemsList(context, items),
+                        _buildItemsList(context, _applyFilters(items)),
                     loading: () =>
                         const Center(child: CircularProgressIndicator()),
                     error: (Object error, StackTrace stack) =>
@@ -395,6 +413,125 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     );
   }
 
+  /// Применяет фильтры по типу и поисковой строке.
+  List<CollectionItem> _applyFilters(List<CollectionItem> items) {
+    List<CollectionItem> result = items;
+
+    if (_filterType != null) {
+      result = result
+          .where((CollectionItem item) => item.mediaType == _filterType)
+          .toList();
+    }
+
+    if (_searchQuery.isNotEmpty) {
+      final String query = _searchQuery.toLowerCase();
+      result = result
+          .where(
+            (CollectionItem item) =>
+                item.itemName.toLowerCase().contains(query),
+          )
+          .toList();
+    }
+
+    return result;
+  }
+
+  Widget _buildFilterBar() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.sm,
+        AppSpacing.md,
+        0,
+      ),
+      child: Column(
+        children: <Widget>[
+          // Фильтр по типу
+          Row(
+            children: <Widget>[
+              _buildFilterChip(label: 'All', type: null),
+              const SizedBox(width: AppSpacing.sm),
+              _buildFilterChip(label: 'Games', type: MediaType.game),
+              const SizedBox(width: AppSpacing.sm),
+              _buildFilterChip(label: 'Movies', type: MediaType.movie),
+              const SizedBox(width: AppSpacing.sm),
+              _buildFilterChip(label: 'TV Shows', type: MediaType.tvShow),
+            ],
+          ),
+
+          const SizedBox(height: AppSpacing.sm),
+
+          // Поиск по имени
+          SizedBox(
+            height: 36,
+            child: TextField(
+              controller: _searchController,
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColors.textPrimary,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Search in collection...',
+                hintStyle: AppTypography.bodySmall.copyWith(
+                  color: AppColors.textTertiary,
+                ),
+                prefixIcon: const Icon(
+                  Icons.search,
+                  size: 18,
+                  color: AppColors.textTertiary,
+                ),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(
+                          Icons.close,
+                          size: 16,
+                          color: AppColors.textTertiary,
+                        ),
+                        padding: EdgeInsets.zero,
+                        onPressed: () => _searchController.clear(),
+                      )
+                    : null,
+                filled: true,
+                fillColor: AppColors.surfaceLight,
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: AppSpacing.xs,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip({
+    required String label,
+    required MediaType? type,
+  }) {
+    final bool selected = _filterType == type;
+    return ChoiceChip(
+      label: Text(
+        label,
+        style: AppTypography.bodySmall.copyWith(
+          color: selected ? AppColors.background : AppColors.textSecondary,
+        ),
+      ),
+      selected: selected,
+      selectedColor: AppColors.gameAccent,
+      backgroundColor: AppColors.surfaceLight,
+      side: BorderSide.none,
+      visualDensity: VisualDensity.compact,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+      onSelected: (bool value) {
+        setState(() => _filterType = value ? type : null);
+      },
+    );
+  }
+
   Widget _buildSortSelector() {
     final CollectionSortMode currentSort =
         ref.watch(collectionSortProvider(widget.collectionId));
@@ -470,6 +607,20 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                   .toList();
             },
           ),
+          const Spacer(),
+          // Переключатель list/grid
+          IconButton(
+            icon: Icon(
+              _isGridMode ? Icons.view_list : Icons.grid_view,
+              size: 20,
+              color: AppColors.textSecondary,
+            ),
+            tooltip: _isGridMode ? 'List view' : 'Grid view',
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            visualDensity: VisualDensity.compact,
+            onPressed: () => setState(() => _isGridMode = !_isGridMode),
+          ),
         ],
       ),
     );
@@ -478,6 +629,10 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   Widget _buildItemsList(BuildContext context, List<CollectionItem> items) {
     if (items.isEmpty) {
       return _buildEmptyState();
+    }
+
+    if (_isGridMode) {
+      return _buildGridView(items);
     }
 
     final CollectionSortMode sortMode =
@@ -512,6 +667,98 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         },
       ),
     );
+  }
+
+  Widget _buildGridView(List<CollectionItem> items) {
+    final double screenWidth = MediaQuery.sizeOf(context).width;
+    final int crossAxisCount;
+    if (screenWidth >= navigationBreakpoint) {
+      crossAxisCount = AppSpacing.gridColumnsDesktop;
+    } else if (screenWidth >= 500) {
+      crossAxisCount = AppSpacing.gridColumnsTablet;
+    } else {
+      crossAxisCount = AppSpacing.gridColumnsMobile;
+    }
+
+    return RefreshIndicator(
+      onRefresh: () => ref
+          .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
+          .refresh(),
+      child: GridView.builder(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: crossAxisCount,
+          crossAxisSpacing: AppSpacing.md,
+          mainAxisSpacing: AppSpacing.lg,
+          childAspectRatio: 0.55,
+        ),
+        itemCount: items.length,
+        itemBuilder: (BuildContext context, int index) {
+          final CollectionItem item = items[index];
+          return PosterCard(
+            key: ValueKey<int>(item.id),
+            title: item.itemName,
+            imageUrl: item.thumbnailUrl ?? '',
+            cacheImageType: _imageTypeFor(item.mediaType),
+            cacheImageId: item.externalId.toString(),
+            rating: _normalizedRating(item),
+            year: _yearFor(item),
+            subtitle: _subtitleFor(item),
+            onTap: () => _showItemDetails(item),
+          );
+        },
+      ),
+    );
+  }
+
+  /// Нормализует рейтинг к 0–10 (IGDB 0-100, TMDB 0-10).
+  static double? _normalizedRating(CollectionItem item) {
+    switch (item.mediaType) {
+      case MediaType.game:
+        final double? raw = item.game?.rating;
+        if (raw == null) return null;
+        return raw / 10;
+      case MediaType.movie:
+        return item.movie?.rating;
+      case MediaType.tvShow:
+        return item.tvShow?.rating;
+    }
+  }
+
+  /// Год выпуска элемента.
+  static int? _yearFor(CollectionItem item) {
+    switch (item.mediaType) {
+      case MediaType.game:
+        return item.game?.releaseYear;
+      case MediaType.movie:
+        return item.movie?.releaseYear;
+      case MediaType.tvShow:
+        return item.tvShow?.firstAirYear;
+    }
+  }
+
+  /// Подзаголовок для grid-карточки.
+  static String? _subtitleFor(CollectionItem item) {
+    switch (item.mediaType) {
+      case MediaType.game:
+        return item.platform?.displayName;
+      case MediaType.movie:
+        return item.movie?.genresString;
+      case MediaType.tvShow:
+        return item.tvShow?.genresString;
+    }
+  }
+
+  /// ImageType для кэширования по типу медиа.
+  static ImageType _imageTypeFor(MediaType mediaType) {
+    switch (mediaType) {
+      case MediaType.game:
+        return ImageType.gameCover;
+      case MediaType.movie:
+        return ImageType.moviePoster;
+      case MediaType.tvShow:
+        return ImageType.tvShowPoster;
+    }
   }
 
   Widget _buildReorderableList(List<CollectionItem> items) {

@@ -232,12 +232,12 @@ void main() {
     });
 
     group('константы', () {
-      test('posterWidth должен быть 60', () {
-        expect(MediaCard.posterWidth, 60);
+      test('posterWidth должен быть 64', () {
+        expect(MediaCard.posterWidth, 64);
       });
 
-      test('posterHeight должен быть 80', () {
-        expect(MediaCard.posterHeight, 80);
+      test('posterHeight должен быть 96', () {
+        expect(MediaCard.posterHeight, 96);
       });
 
       test('posterBorderRadius должен быть 4', () {
