@@ -34,12 +34,35 @@ void main() {
       test('должны быть в порядке возрастания', () {
         expect(AppSpacing.radiusXs, lessThan(AppSpacing.radiusSm));
         expect(AppSpacing.radiusSm, lessThan(AppSpacing.radiusMd));
+        expect(AppSpacing.radiusMd, lessThan(AppSpacing.radiusLg));
+        expect(AppSpacing.radiusLg, lessThan(AppSpacing.radiusXl));
       });
 
       test('конкретные значения', () {
         expect(AppSpacing.radiusXs, equals(4));
         expect(AppSpacing.radiusSm, equals(8));
         expect(AppSpacing.radiusMd, equals(12));
+        expect(AppSpacing.radiusLg, equals(16));
+        expect(AppSpacing.radiusXl, equals(20));
+      });
+    });
+
+    group('Сетка', () {
+      test('posterAspectRatio должен быть 2:3', () {
+        expect(AppSpacing.posterAspectRatio, closeTo(0.6667, 0.001));
+      });
+
+      test('колонки сетки должны убывать от desktop к mobile', () {
+        expect(AppSpacing.gridColumnsDesktop,
+            greaterThan(AppSpacing.gridColumnsTablet));
+        expect(AppSpacing.gridColumnsTablet,
+            greaterThan(AppSpacing.gridColumnsMobile));
+      });
+
+      test('конкретные значения колонок', () {
+        expect(AppSpacing.gridColumnsDesktop, equals(4));
+        expect(AppSpacing.gridColumnsTablet, equals(3));
+        expect(AppSpacing.gridColumnsMobile, equals(2));
       });
     });
   });
