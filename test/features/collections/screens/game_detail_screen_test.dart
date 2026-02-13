@@ -530,5 +530,124 @@ void main() {
       expect(find.text("Author's Comment"), findsOneWidget);
       expect(find.text('Test author comment'), findsOneWidget);
     });
+
+    group('замок канваса', () {
+      // CanvasView содержит бесконечные анимации, поэтому после переключения
+      // на вкладку Canvas используем pump() вместо pumpAndSettle().
+      Future<void> pumpFrames(WidgetTester tester) async {
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
+        await tester.pump();
+      }
+
+      testWidgets('не должен показывать замок на вкладке Details',
+          (WidgetTester tester) async {
+        const Game game = Game(id: 100, name: 'Test Game');
+        const Platform platform = Platform(id: 18, name: 'SNES');
+        final CollectionGame collectionGame = createTestCollectionGame(
+          game: game,
+          platform: platform,
+        );
+
+        await tester.pumpWidget(createTestWidget(
+          collectionId: 1,
+          gameId: 1,
+          isEditable: true,
+          games: <CollectionGame>[collectionGame],
+        ));
+        await tester.pumpAndSettle();
+
+        // На вкладке Details замок не виден
+        expect(find.byTooltip('Lock canvas'), findsNothing);
+        expect(find.byTooltip('Unlock canvas'), findsNothing);
+      });
+
+      testWidgets('должен показывать замок на вкладке Canvas (editable)',
+          (WidgetTester tester) async {
+        const Game game = Game(id: 100, name: 'Test Game');
+        const Platform platform = Platform(id: 18, name: 'SNES');
+        final CollectionGame collectionGame = createTestCollectionGame(
+          game: game,
+          platform: platform,
+        );
+
+        await tester.pumpWidget(createTestWidget(
+          collectionId: 1,
+          gameId: 1,
+          isEditable: true,
+          games: <CollectionGame>[collectionGame],
+        ));
+        await tester.pumpAndSettle();
+
+        // Переключаемся на Canvas
+        await tester.tap(find.text('Canvas'));
+        await pumpFrames(tester);
+
+        expect(find.byTooltip('Lock canvas'), findsOneWidget);
+        expect(find.byIcon(Icons.lock_open), findsOneWidget);
+      });
+
+      testWidgets('не должен показывать замок когда isEditable = false',
+          (WidgetTester tester) async {
+        const Game game = Game(id: 100, name: 'Test Game');
+        const Platform platform = Platform(id: 18, name: 'SNES');
+        final CollectionGame collectionGame = createTestCollectionGame(
+          game: game,
+          platform: platform,
+        );
+
+        await tester.pumpWidget(createTestWidget(
+          collectionId: 1,
+          gameId: 1,
+          isEditable: false,
+          games: <CollectionGame>[collectionGame],
+        ));
+        await tester.pumpAndSettle();
+
+        // Переключаемся на Canvas
+        await tester.tap(find.text('Canvas'));
+        await pumpFrames(tester);
+
+        // Замок не виден
+        expect(find.byTooltip('Lock canvas'), findsNothing);
+        expect(find.byTooltip('Unlock canvas'), findsNothing);
+      });
+
+      testWidgets('должен переключать состояние замка',
+          (WidgetTester tester) async {
+        const Game game = Game(id: 100, name: 'Test Game');
+        const Platform platform = Platform(id: 18, name: 'SNES');
+        final CollectionGame collectionGame = createTestCollectionGame(
+          game: game,
+          platform: platform,
+        );
+
+        await tester.pumpWidget(createTestWidget(
+          collectionId: 1,
+          gameId: 1,
+          isEditable: true,
+          games: <CollectionGame>[collectionGame],
+        ));
+        await tester.pumpAndSettle();
+
+        // Переключаемся на Canvas
+        await tester.tap(find.text('Canvas'));
+        await pumpFrames(tester);
+
+        // Блокируем
+        await tester.tap(find.byTooltip('Lock canvas'));
+        await pumpFrames(tester);
+
+        expect(find.byIcon(Icons.lock), findsOneWidget);
+        expect(find.byTooltip('Unlock canvas'), findsOneWidget);
+
+        // Разблокируем
+        await tester.tap(find.byTooltip('Unlock canvas'));
+        await pumpFrames(tester);
+
+        expect(find.byIcon(Icons.lock_open), findsOneWidget);
+        expect(find.byTooltip('Lock canvas'), findsOneWidget);
+      });
+    });
   });
 }

@@ -7,6 +7,10 @@
 ## [Unreleased]
 
 ### Added
+- Добавлен замок канваса (View Mode Lock) — кнопка-замок в AppBar для блокировки канваса в режим просмотра. Доступен только для собственных/fork коллекций. При блокировке боковые панели (SteamGridDB, VGMaps) закрываются автоматически. Реализован на `CollectionScreen`, `GameDetailScreen`, `MovieDetailScreen`, `TvShowDetailScreen`
+- Добавлено сохранение режима отображения коллекции (grid/list) в SharedPreferences — при переключении выбор запоминается per-collection и восстанавливается при следующем открытии. Ключ `SettingsKeys.collectionViewModePrefix` в `settings_provider.dart`
+
+### Added
 - Добавлен виджет `StatusChipRow` — горизонтальный ряд chip-кнопок для выбора статуса на detail-экранах (все статусы видны сразу, тап = выбор, AnimatedContainer для плавных переходов)
 - Добавлен виджет `StatusRibbon` — диагональная ленточка статуса в верхнем левом углу list-карточек (display only, цвет из `ItemStatus.color`, emoji + метка)
 - Добавлен геттер `ItemStatus.color` — единый маппинг статус→цвет, устранено дублирование `_getStatusColor()`

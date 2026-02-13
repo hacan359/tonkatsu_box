@@ -51,6 +51,7 @@ class GameDetailScreen extends ConsumerStatefulWidget {
 class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  bool _isViewModeLocked = false;
 
   @override
   void initState() {
@@ -59,6 +60,11 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
       length: kCanvasEnabled ? 2 : 1,
       vsync: this,
     );
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -129,6 +135,36 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
         surfaceTintColor: Colors.transparent,
         foregroundColor: AppColors.textPrimary,
         title: Text(collectionGame.gameName),
+        actions: <Widget>[
+          if (widget.isEditable &&
+              kCanvasEnabled &&
+              _tabController.index == 1)
+            IconButton(
+              icon: Icon(
+                _isViewModeLocked ? Icons.lock : Icons.lock_open,
+              ),
+              color: _isViewModeLocked
+                  ? AppColors.warning
+                  : AppColors.textSecondary,
+              tooltip:
+                  _isViewModeLocked ? 'Unlock canvas' : 'Lock canvas',
+              onPressed: () {
+                setState(() {
+                  _isViewModeLocked = !_isViewModeLocked;
+                });
+                if (_isViewModeLocked) {
+                  ref
+                      .read(steamGridDbPanelProvider(widget.collectionId)
+                          .notifier)
+                      .closePanel();
+                  ref
+                      .read(vgMapsPanelProvider(widget.collectionId)
+                          .notifier)
+                      .closePanel();
+                }
+              },
+            ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           tabs: <Tab>[
@@ -228,7 +264,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
         Expanded(
           child: CanvasView(
             collectionId: widget.collectionId,
-            isEditable: widget.isEditable,
+            isEditable: widget.isEditable && !_isViewModeLocked,
             collectionItemId: widget.gameId,
           ),
         ),

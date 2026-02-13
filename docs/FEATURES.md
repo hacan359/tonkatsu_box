@@ -26,7 +26,7 @@ Create unlimited collections organized however you want:
 - By theme (Couch co-op, Hidden gems...)
 - Personal lists (Backlog, Completed, Favorites...)
 - Mix games, movies and TV shows in a single collection
-- **Grid mode** — toggle between list and poster grid view
+- **Grid mode** — toggle between list and poster grid view; choice is saved per-collection and restored on next open
 - **Type filter** — filter items by type (All/Games/Movies/TV Shows)
 - **Search** — filter items by name within a collection
 
@@ -204,6 +204,7 @@ Visualize your collection on a free-form canvas, or create a personal canvas for
 - **Persistent viewport** — zoom level and position are saved and restored
 - **Center view** and **Reset positions** controls
 - **List/Canvas toggle** — switch between traditional list and visual canvas via SegmentedButton
+- **Canvas lock** — lock button in AppBar to freeze the canvas in view-only mode (only for own/fork collections). When locked, all editing is disabled and side panels (SteamGridDB, VGMaps) are closed. Available on collection canvas and per-item canvas (detail screens, Canvas tab only)
 - **Context menu** (right-click) — Add Text/Image/Link on empty space; Edit/Delete/Bring to Front/Send to Back on elements
 - **Text blocks** — add custom text with configurable font size (Small 12/Medium 16/Large 24/Title 32), transparent background
 - **Images** — add images from URL or local file (base64 encoded)
