@@ -4,89 +4,79 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/core/services/xcoll_file.dart';
 
 void main() {
-  group('RcollGame', () {
-    group('fromJson', () {
-      test('должен создать RcollGame из валидного JSON', () {
-        final Map<String, dynamic> json = <String, dynamic>{
-          'igdb_id': 123,
-          'platform_id': 18,
-          'comment': 'Great game!',
-        };
+  group('ExportFormat', () {
+    test('fromString должен вернуть light по умолчанию', () {
+      final ExportFormat format = ExportFormat.fromString('unknown');
 
-        final RcollGame game = RcollGame.fromJson(json);
-
-        expect(game.igdbId, equals(123));
-        expect(game.platformId, equals(18));
-        expect(game.comment, equals('Great game!'));
-      });
-
-      test('должен создать RcollGame с null comment', () {
-        final Map<String, dynamic> json = <String, dynamic>{
-          'igdb_id': 456,
-          'platform_id': 19,
-        };
-
-        final RcollGame game = RcollGame.fromJson(json);
-
-        expect(game.igdbId, equals(456));
-        expect(game.platformId, equals(19));
-        expect(game.comment, isNull);
-      });
+      expect(format, equals(ExportFormat.light));
     });
 
-    group('toJson', () {
-      test('должен сериализовать RcollGame с комментарием', () {
-        const RcollGame game = RcollGame(
-          igdbId: 100,
-          platformId: 20,
-          comment: 'Best RPG',
-        );
+    test('fromString должен распознать light', () {
+      final ExportFormat format = ExportFormat.fromString('light');
 
-        final Map<String, dynamic> json = game.toJson();
-
-        expect(json['igdb_id'], equals(100));
-        expect(json['platform_id'], equals(20));
-        expect(json['comment'], equals('Best RPG'));
-      });
-
-      test('должен исключить comment если он null', () {
-        const RcollGame game = RcollGame(
-          igdbId: 100,
-          platformId: 20,
-          comment: null,
-        );
-
-        final Map<String, dynamic> json = game.toJson();
-
-        expect(json.containsKey('comment'), isFalse);
-      });
-
-      test('должен исключить comment если он пустой', () {
-        const RcollGame game = RcollGame(
-          igdbId: 100,
-          platformId: 20,
-          comment: '',
-        );
-
-        final Map<String, dynamic> json = game.toJson();
-
-        expect(json.containsKey('comment'), isFalse);
-      });
+      expect(format, equals(ExportFormat.light));
     });
 
-    test('fromJson/toJson round-trip должен сохранять данные', () {
-      const RcollGame original = RcollGame(
-        igdbId: 999,
-        platformId: 21,
-        comment: 'Test comment',
+    test('fromString должен распознать full', () {
+      final ExportFormat format = ExportFormat.fromString('full');
+
+      expect(format, equals(ExportFormat.full));
+    });
+  });
+
+  group('ExportCanvas', () {
+    test('должен создать ExportCanvas из валидного JSON', () {
+      final Map<String, dynamic> json = <String, dynamic>{
+        'viewport': <String, dynamic>{'x': 0, 'y': 0, 'zoom': 1.0},
+        'items': <Map<String, dynamic>>[
+          <String, dynamic>{'id': '1', 'type': 'game'},
+        ],
+        'connections': <Map<String, dynamic>>[
+          <String, dynamic>{'from': '1', 'to': '2'},
+        ],
+      };
+
+      final ExportCanvas canvas = ExportCanvas.fromJson(json);
+
+      expect(canvas.viewport, isNotNull);
+      expect(canvas.items.length, equals(1));
+      expect(canvas.connections.length, equals(1));
+    });
+
+    test('должен создать ExportCanvas с пустыми значениями по умолчанию', () {
+      final Map<String, dynamic> json = <String, dynamic>{};
+
+      final ExportCanvas canvas = ExportCanvas.fromJson(json);
+
+      expect(canvas.viewport, isNull);
+      expect(canvas.items, isEmpty);
+      expect(canvas.connections, isEmpty);
+    });
+
+    test('toJson должен сериализовать ExportCanvas', () {
+      const ExportCanvas canvas = ExportCanvas(
+        viewport: <String, dynamic>{'x': 10, 'y': 20},
+        items: <Map<String, dynamic>>[
+          <String, dynamic>{'id': 'item1'},
+        ],
+        connections: <Map<String, dynamic>>[],
       );
 
-      final Map<String, dynamic> json = original.toJson();
-      final RcollGame restored = RcollGame.fromJson(json);
+      final Map<String, dynamic> json = canvas.toJson();
 
-      expect(restored.igdbId, equals(original.igdbId));
-      expect(restored.platformId, equals(original.platformId));
-      expect(restored.comment, equals(original.comment));
+      expect(json['viewport'], isNotNull);
+      expect((json['items'] as List<dynamic>).length, equals(1));
+      expect(json['connections'] as List<dynamic>, isEmpty);
+    });
+
+    test('toJson должен исключить viewport если он null', () {
+      const ExportCanvas canvas = ExportCanvas();
+
+      final Map<String, dynamic> json = canvas.toJson();
+
+      expect(json.containsKey('viewport'), isFalse);
+      expect(json['items'], isEmpty);
+      expect(json['connections'], isEmpty);
     });
   });
 
@@ -94,44 +84,97 @@ void main() {
     final DateTime testDate = DateTime.utc(2024, 1, 15, 12, 0, 0);
 
     group('fromJson', () {
-      test('должен создать XcollFile из полного JSON', () {
+      test('должен создать XcollFile из полного v2 JSON', () {
         final Map<String, dynamic> json = <String, dynamic>{
-          'version': 1,
+          'version': 2,
+          'format': 'light',
           'name': 'My Collection',
           'author': 'TestUser',
           'created': '2024-01-15T12:00:00.000Z',
           'description': 'Test description',
-          'games': <Map<String, dynamic>>[
-            <String, dynamic>{'igdb_id': 1, 'platform_id': 18},
-            <String, dynamic>{'igdb_id': 2, 'platform_id': 19, 'comment': 'Good'},
+          'items': <Map<String, dynamic>>[
+            <String, dynamic>{'id': 'item1', 'type': 'game', 'igdbId': 123},
+            <String, dynamic>{'id': 'item2', 'type': 'game', 'igdbId': 456},
           ],
         };
 
-        final XcollFile rcoll = XcollFile.fromJson(json);
+        final XcollFile xcoll = XcollFile.fromJson(json);
 
-        expect(rcoll.version, equals(1));
-        expect(rcoll.name, equals('My Collection'));
-        expect(rcoll.author, equals('TestUser'));
-        expect(rcoll.created, equals(testDate));
-        expect(rcoll.description, equals('Test description'));
-        expect(rcoll.legacyGames.length, equals(2));
-        expect(rcoll.legacyGames[0].igdbId, equals(1));
-        expect(rcoll.legacyGames[1].comment, equals('Good'));
+        expect(xcoll.version, equals(2));
+        expect(xcoll.format, equals(ExportFormat.light));
+        expect(xcoll.name, equals('My Collection'));
+        expect(xcoll.author, equals('TestUser'));
+        expect(xcoll.created, equals(testDate));
+        expect(xcoll.description, equals('Test description'));
+        expect(xcoll.items.length, equals(2));
       });
 
-      test('должен использовать значения по умолчанию', () {
-        final Map<String, dynamic> json = <String, dynamic>{};
+      test('должен создать XcollFile из full формата с canvas и images', () {
+        final Map<String, dynamic> json = <String, dynamic>{
+          'version': 2,
+          'format': 'full',
+          'name': 'Full Collection',
+          'author': 'Author',
+          'created': '2024-01-15T12:00:00.000Z',
+          'items': <Map<String, dynamic>>[],
+          'canvas': <String, dynamic>{
+            'viewport': <String, dynamic>{'x': 0, 'y': 0},
+            'items': <Map<String, dynamic>>[],
+            'connections': <Map<String, dynamic>>[],
+          },
+          'images': <String, dynamic>{
+            'game_covers/123': 'base64data',
+          },
+        };
 
-        final XcollFile rcoll = XcollFile.fromJson(json);
+        final XcollFile xcoll = XcollFile.fromJson(json);
 
-        expect(rcoll.version, equals(1));
-        expect(rcoll.name, equals('Unnamed Collection'));
-        expect(rcoll.author, equals('Unknown'));
-        expect(rcoll.description, isNull);
-        expect(rcoll.legacyGames, isEmpty);
+        expect(xcoll.format, equals(ExportFormat.full));
+        expect(xcoll.isFull, isTrue);
+        expect(xcoll.canvas, isNotNull);
+        expect(xcoll.images.length, equals(1));
+        expect(xcoll.images['game_covers/123'], equals('base64data'));
       });
 
-      test('должен выбросить исключение при неподдерживаемой версии', () {
+      test('должен использовать значения по умолчанию для v2', () {
+        final Map<String, dynamic> json = <String, dynamic>{
+          'version': 2,
+        };
+
+        final XcollFile xcoll = XcollFile.fromJson(json);
+
+        expect(xcoll.version, equals(2));
+        expect(xcoll.name, equals('Unnamed Collection'));
+        expect(xcoll.author, equals('Unknown'));
+        expect(xcoll.format, equals(ExportFormat.light));
+        expect(xcoll.description, isNull);
+        expect(xcoll.items, isEmpty);
+        expect(xcoll.canvas, isNull);
+        expect(xcoll.images, isEmpty);
+      });
+
+      test('должен выбросить FormatException для v1 формата', () {
+        final Map<String, dynamic> json = <String, dynamic>{
+          'version': 1,
+          'name': 'Old Collection',
+          'author': 'Author',
+          'created': '2024-01-15T12:00:00.000Z',
+          'games': <Map<String, dynamic>>[
+            <String, dynamic>{'igdb_id': 1, 'platform_id': 18},
+          ],
+        };
+
+        expect(
+          () => XcollFile.fromJson(json),
+          throwsA(isA<FormatException>().having(
+            (FormatException e) => e.message,
+            'message',
+            contains('Unsupported file version: 1'),
+          )),
+        );
+      });
+
+      test('должен выбросить FormatException при версии выше поддерживаемой', () {
         final Map<String, dynamic> json = <String, dynamic>{
           'version': 999,
           'name': 'Test',
@@ -147,39 +190,82 @@ void main() {
         );
       });
 
+      test('должен выбросить FormatException при отсутствии версии (default 1)', () {
+        // Если version не указан, он по умолчанию 1, что < xcollFormatVersion
+        final Map<String, dynamic> json = <String, dynamic>{};
+
+        expect(
+          () => XcollFile.fromJson(json),
+          throwsA(isA<FormatException>().having(
+            (FormatException e) => e.message,
+            'message',
+            contains('Unsupported file version: 1'),
+          )),
+        );
+      });
+
       test('должен использовать DateTime.now при невалидной дате', () {
         final DateTime before = DateTime.now();
         final Map<String, dynamic> json = <String, dynamic>{
-          'version': 1,
+          'version': 2,
           'name': 'Test',
           'created': 'invalid-date-format',
         };
 
-        final XcollFile rcoll = XcollFile.fromJson(json);
+        final XcollFile xcoll = XcollFile.fromJson(json);
         final DateTime after = DateTime.now();
 
         // Дата должна быть между before и after
-        expect(rcoll.created.isAfter(before.subtract(const Duration(seconds: 1))), isTrue);
-        expect(rcoll.created.isBefore(after.add(const Duration(seconds: 1))), isTrue);
+        expect(
+          xcoll.created.isAfter(before.subtract(const Duration(seconds: 1))),
+          isTrue,
+        );
+        expect(
+          xcoll.created.isBefore(after.add(const Duration(seconds: 1))),
+          isTrue,
+        );
+      });
+
+      test('должен использовать DateTime.now при отсутствии даты', () {
+        final DateTime before = DateTime.now();
+        final Map<String, dynamic> json = <String, dynamic>{
+          'version': 2,
+          'name': 'Test',
+        };
+
+        final XcollFile xcoll = XcollFile.fromJson(json);
+        final DateTime after = DateTime.now();
+
+        expect(
+          xcoll.created.isAfter(before.subtract(const Duration(seconds: 1))),
+          isTrue,
+        );
+        expect(
+          xcoll.created.isBefore(after.add(const Duration(seconds: 1))),
+          isTrue,
+        );
       });
     });
 
     group('fromJsonString', () {
-      test('должен парсить валидную JSON строку', () {
+      test('должен парсить валидную JSON строку v2', () {
         const String jsonString = '''
 {
-  "version": 1,
+  "version": 2,
+  "format": "light",
   "name": "Test Collection",
   "author": "Author",
   "created": "2024-01-15T12:00:00.000Z",
-  "games": []
+  "items": []
 }
 ''';
 
-        final XcollFile rcoll = XcollFile.fromJsonString(jsonString);
+        final XcollFile xcoll = XcollFile.fromJsonString(jsonString);
 
-        expect(rcoll.name, equals('Test Collection'));
-        expect(rcoll.author, equals('Author'));
+        expect(xcoll.name, equals('Test Collection'));
+        expect(xcoll.author, equals('Author'));
+        expect(xcoll.version, equals(2));
+        expect(xcoll.format, equals(ExportFormat.light));
       });
 
       test('должен выбросить FormatException при невалидном JSON', () {
@@ -196,8 +282,8 @@ void main() {
       });
 
       test('должен выбросить FormatException при некорректной структуре', () {
-        // JSON валидный, но структура неправильная (games должен быть списком)
-        const String invalidStructure = '{"games": "not a list"}';
+        // JSON валидный, но структура неправильная (items должен быть списком)
+        const String invalidStructure = '{"version": 2, "items": "not a list"}';
 
         expect(
           () => XcollFile.fromJsonString(invalidStructure),
@@ -207,54 +293,96 @@ void main() {
     });
 
     group('toJson', () {
-      test('должен сериализовать XcollFile полностью', () {
-        final XcollFile rcoll = XcollFile(
-          version: 1,
+      test('должен сериализовать XcollFile полностью (light)', () {
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.light,
           name: 'Export Test',
           author: 'Exporter',
           created: testDate,
           description: 'Desc',
-          legacyGames: const <RcollGame>[
-            RcollGame(igdbId: 10, platformId: 5),
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{'id': 'item1', 'type': 'game'},
           ],
         );
 
-        final Map<String, dynamic> json = rcoll.toJson();
+        final Map<String, dynamic> json = xcoll.toJson();
 
-        expect(json['version'], equals(1));
+        expect(json['version'], equals(2));
+        expect(json['format'], equals('light'));
         expect(json['name'], equals('Export Test'));
         expect(json['author'], equals('Exporter'));
         expect(json['created'], equals('2024-01-15T12:00:00.000Z'));
         expect(json['description'], equals('Desc'));
-        expect((json['games'] as List<dynamic>).length, equals(1));
+        expect((json['items'] as List<dynamic>).length, equals(1));
+        expect(json.containsKey('canvas'), isFalse);
+        expect(json.containsKey('images'), isFalse);
+      });
+
+      test('должен сериализовать XcollFile полностью (full)', () {
+        const ExportCanvas canvas = ExportCanvas(
+          viewport: <String, dynamic>{'x': 0, 'y': 0},
+          items: <Map<String, dynamic>>[],
+          connections: <Map<String, dynamic>>[],
+        );
+
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.full,
+          name: 'Full Export',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[],
+          canvas: canvas,
+          images: const <String, String>{
+            'game_covers/123': 'base64data',
+          },
+        );
+
+        final Map<String, dynamic> json = xcoll.toJson();
+
+        expect(json['format'], equals('full'));
+        expect(json.containsKey('canvas'), isTrue);
+        expect(json.containsKey('images'), isTrue);
       });
 
       test('должен исключить description если он null', () {
-        final XcollFile rcoll = XcollFile(
-          version: 1,
+        final XcollFile xcoll = XcollFile(
+          version: 2,
           name: 'No Desc',
           author: 'Author',
           created: testDate,
-          legacyGames: const <RcollGame>[],
         );
 
-        final Map<String, dynamic> json = rcoll.toJson();
+        final Map<String, dynamic> json = xcoll.toJson();
 
         expect(json.containsKey('description'), isFalse);
+      });
+
+      test('должен исключить images если пустой', () {
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          name: 'No Images',
+          author: 'Author',
+          created: testDate,
+        );
+
+        final Map<String, dynamic> json = xcoll.toJson();
+
+        expect(json.containsKey('images'), isFalse);
       });
     });
 
     group('toJsonString', () {
       test('должен возвращать отформатированный JSON', () {
-        final XcollFile rcoll = XcollFile(
-          version: 1,
+        final XcollFile xcoll = XcollFile(
+          version: 2,
           name: 'Formatted',
           author: 'Auth',
           created: testDate,
-          legacyGames: const <RcollGame>[],
         );
 
-        final String jsonString = rcoll.toJsonString();
+        final String jsonString = xcoll.toJsonString();
 
         // Проверяем что содержит отступы (форматирование)
         expect(jsonString, contains('  '));
@@ -265,73 +393,78 @@ void main() {
       });
     });
 
-    group('gameIds', () {
-      test('должен возвращать список ID игр', () {
-        final XcollFile rcoll = XcollFile(
-          version: 1,
-          name: 'Test',
+    group('isFull', () {
+      test('должен возвращать true для full формата', () {
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.full,
+          name: 'Full',
           author: 'Author',
           created: testDate,
-          legacyGames: const <RcollGame>[
-            RcollGame(igdbId: 100, platformId: 1),
-            RcollGame(igdbId: 200, platformId: 2),
-            RcollGame(igdbId: 300, platformId: 3),
-          ],
         );
 
-        final List<int> ids = rcoll.gameIds;
-
-        expect(ids, equals(<int>[100, 200, 300]));
+        expect(xcoll.isFull, isTrue);
       });
 
-      test('должен возвращать пустой список при отсутствии игр', () {
-        final XcollFile rcoll = XcollFile(
-          version: 1,
-          name: 'Empty',
+      test('должен возвращать false для light формата', () {
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.light,
+          name: 'Light',
           author: 'Author',
           created: testDate,
-          legacyGames: const <RcollGame>[],
         );
 
-        expect(rcoll.gameIds, isEmpty);
+        expect(xcoll.isFull, isFalse);
       });
     });
 
     test('fromJsonString/toJsonString round-trip', () {
+      const ExportCanvas canvas = ExportCanvas(
+        viewport: <String, dynamic>{'x': 5, 'y': 10, 'zoom': 1.5},
+        items: <Map<String, dynamic>>[
+          <String, dynamic>{'id': 'g1', 'type': 'game'},
+        ],
+        connections: <Map<String, dynamic>>[],
+      );
+
       final XcollFile original = XcollFile(
-        version: 1,
+        version: 2,
+        format: ExportFormat.full,
         name: 'Round Trip Test',
         author: 'Tester',
         created: testDate,
         description: 'Testing round trip',
-        legacyGames: const <RcollGame>[
-          RcollGame(igdbId: 111, platformId: 11, comment: 'Comment 1'),
-          RcollGame(igdbId: 222, platformId: 22),
+        items: const <Map<String, dynamic>>[
+          <String, dynamic>{'id': 'item1', 'igdbId': 111},
+          <String, dynamic>{'id': 'item2', 'igdbId': 222},
         ],
+        canvas: canvas,
+        images: const <String, String>{
+          'game_covers/111': 'imgdata1',
+        },
       );
 
       final String jsonString = original.toJsonString();
       final XcollFile restored = XcollFile.fromJsonString(jsonString);
 
       expect(restored.version, equals(original.version));
+      expect(restored.format, equals(original.format));
       expect(restored.name, equals(original.name));
       expect(restored.author, equals(original.author));
       expect(restored.created, equals(original.created));
       expect(restored.description, equals(original.description));
-      expect(restored.legacyGames.length, equals(original.legacyGames.length));
-      expect(restored.legacyGames[0].igdbId, equals(original.legacyGames[0].igdbId));
-      expect(restored.legacyGames[0].comment, equals(original.legacyGames[0].comment));
-      expect(restored.legacyGames[1].comment, isNull);
+      expect(restored.items.length, equals(original.items.length));
+      expect(restored.canvas, isNotNull);
+      expect(restored.canvas!.items.length, equals(1));
+      expect(restored.images.length, equals(1));
+      expect(restored.images['game_covers/111'], equals('imgdata1'));
     });
   });
 
   group('xcollFormatVersion', () {
     test('должен быть равен 2', () {
       expect(xcollFormatVersion, equals(2));
-    });
-
-    test('xcollLegacyVersion должен быть равен 1', () {
-      expect(xcollLegacyVersion, equals(1));
     });
   });
 }

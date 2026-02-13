@@ -85,12 +85,6 @@ void main() {
         expect(result, ItemStatus.onHold);
       });
 
-      test('должен маппить legacy "playing" в inProgress', () {
-        final ItemStatus result = ItemStatus.fromString('playing');
-
-        expect(result, ItemStatus.inProgress);
-      });
-
       test('должен вернуть notStarted для неизвестного значения', () {
         final ItemStatus result = ItemStatus.fromString('unknown_status');
 
@@ -101,56 +95,6 @@ void main() {
         final ItemStatus result = ItemStatus.fromString('');
 
         expect(result, ItemStatus.notStarted);
-      });
-    });
-
-    group('dbValue', () {
-      test('inProgress для game должен вернуть "playing"', () {
-        final String result = ItemStatus.inProgress.dbValue(MediaType.game);
-
-        expect(result, 'playing');
-      });
-
-      test('inProgress для movie должен вернуть "in_progress"', () {
-        final String result = ItemStatus.inProgress.dbValue(MediaType.movie);
-
-        expect(result, 'in_progress');
-      });
-
-      test('inProgress для tvShow должен вернуть "in_progress"', () {
-        final String result = ItemStatus.inProgress.dbValue(MediaType.tvShow);
-
-        expect(result, 'in_progress');
-      });
-
-      test('completed для game должен вернуть "completed"', () {
-        final String result = ItemStatus.completed.dbValue(MediaType.game);
-
-        expect(result, 'completed');
-      });
-
-      test('notStarted для movie должен вернуть "not_started"', () {
-        final String result = ItemStatus.notStarted.dbValue(MediaType.movie);
-
-        expect(result, 'not_started');
-      });
-
-      test('dropped для tvShow должен вернуть "dropped"', () {
-        final String result = ItemStatus.dropped.dbValue(MediaType.tvShow);
-
-        expect(result, 'dropped');
-      });
-
-      test('planned для game должен вернуть "planned"', () {
-        final String result = ItemStatus.planned.dbValue(MediaType.game);
-
-        expect(result, 'planned');
-      });
-
-      test('onHold для tvShow должен вернуть "on_hold"', () {
-        final String result = ItemStatus.onHold.dbValue(MediaType.tvShow);
-
-        expect(result, 'on_hold');
       });
     });
 

@@ -1002,7 +1002,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           MaterialPageRoute<void>(
             builder: (BuildContext context) => GameDetailScreen(
               collectionId: widget.collectionId,
-              gameId: item.id,
+              itemId: item.id,
               isEditable: _collection!.isEditable,
             ),
           ),

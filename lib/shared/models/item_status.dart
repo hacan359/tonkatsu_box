@@ -7,7 +7,6 @@ import 'media_type.dart';
 
 /// Универсальный статус элемента коллекции.
 ///
-/// Расширяет [GameStatus] добавлением [onHold] для сериалов.
 /// Поддерживает контекстно-зависимые метки в зависимости от [MediaType].
 enum ItemStatus {
   /// Не начат.
@@ -34,32 +33,13 @@ enum ItemStatus {
   final String value;
 
   /// Создаёт [ItemStatus] из строки.
-  ///
-  /// Поддерживает legacy-значения из [GameStatus]:
-  /// - `playing` → [inProgress]
-  /// - `not_started` → [notStarted]
   static ItemStatus fromString(String value) {
-    // Legacy mapping: GameStatus.playing → ItemStatus.inProgress
-    if (value == 'playing') {
-      return ItemStatus.inProgress;
-    }
     for (final ItemStatus status in ItemStatus.values) {
       if (status.value == value) {
         return status;
       }
     }
     return ItemStatus.notStarted;
-  }
-
-  /// Значение для БД с учётом типа медиа.
-  ///
-  /// Для игр [inProgress] пишется как `playing` (совместимость),
-  /// для остальных — как `in_progress`.
-  String dbValue(MediaType mediaType) {
-    if (this == ItemStatus.inProgress && mediaType == MediaType.game) {
-      return 'playing';
-    }
-    return value;
   }
 
   /// Отображаемая метка с учётом типа медиа.

@@ -64,7 +64,7 @@ class ExportResult {
   bool get isCancelled => !success && error == null;
 }
 
-/// Сервис для экспорта коллекций в .xcoll / .xcollx / .rcoll форматы.
+/// Сервис для экспорта коллекций в .xcoll / .xcollx форматы.
 class ExportService {
   /// Создаёт экземпляр [ExportService].
   ///
@@ -78,33 +78,6 @@ class ExportService {
 
   final CanvasRepository? _canvasRepository;
   final ImageCacheService? _imageCacheService;
-
-  // ==================== Legacy v1 (.rcoll) ====================
-
-  /// Создаёт v1 .rcoll файл из коллекции (legacy).
-  ///
-  /// Фильтрует только игры (mediaType=game) для формата v1.
-  XcollFile createXcollFile(
-    Collection collection,
-    List<CollectionItem> items,
-  ) {
-    final List<RcollGame> rcollGames = items
-        .where((CollectionItem i) => i.mediaType == MediaType.game)
-        .map((CollectionItem i) => RcollGame(
-              igdbId: i.externalId,
-              platformId: i.platformId ?? 0,
-              comment: i.authorComment,
-            ))
-        .toList();
-
-    return XcollFile(
-      version: xcollLegacyVersion,
-      name: collection.name,
-      author: collection.author,
-      created: collection.createdAt,
-      legacyGames: rcollGames,
-    );
-  }
 
   // ==================== v2 Light (.xcoll) ====================
 
@@ -295,15 +268,6 @@ class ExportService {
     final XcollFile xcoll =
         await createFullExport(collection, items, collectionId);
     return xcoll.toJsonString();
-  }
-
-  /// Экспортирует коллекцию в v1 .rcoll JSON строку (legacy).
-  String exportToLegacyJson(
-    Collection collection,
-    List<CollectionItem> items,
-  ) {
-    final XcollFile rcoll = createXcollFile(collection, items);
-    return rcoll.toJsonString();
   }
 
   /// Экспортирует коллекцию в файл.

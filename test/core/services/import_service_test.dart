@@ -107,7 +107,7 @@ void main() {
   group('ImportProgress', () {
     test('progress должен вычисляться корректно', () {
       const ImportProgress progress = ImportProgress(
-        stage: ImportStage.addingGames,
+        stage: ImportStage.addingItems,
         current: 5,
         total: 10,
       );
@@ -176,10 +176,10 @@ void main() {
     });
 
     group('parseFile', () {
-      test('должен парсить валидный .rcoll файл', () async {
+      test('должен выбросить FormatException для v1 файла', () async {
         final Directory tempDir =
-            Directory.systemTemp.createTempSync('rcoll_test');
-        final File testFile = File('${tempDir.path}/test.rcoll');
+            Directory.systemTemp.createTempSync('xcoll_test');
+        final File testFile = File('${tempDir.path}/test.xcoll');
         await testFile.writeAsString('''
 {
   "version": 1,
@@ -193,12 +193,10 @@ void main() {
 ''');
 
         try {
-          final XcollFile result = await sut.parseFile(testFile);
-
-          expect(result.name, equals('Test Collection'));
-          expect(result.author, equals('Author'));
-          expect(result.legacyGames.length, equals(1));
-          expect(result.legacyGames[0].igdbId, equals(100));
+          await expectLater(
+            () => sut.parseFile(testFile),
+            throwsA(isA<FormatException>()),
+          );
         } finally {
           await testFile.delete();
           await tempDir.delete();
@@ -226,7 +224,7 @@ void main() {
           final XcollFile result = await sut.parseFile(testFile);
 
           expect(result.name, equals('V2 Collection'));
-          expect(result.isV2, isTrue);
+          expect(result.version, equals(2));
           expect(result.items.length, equals(1));
         } finally {
           await testFile.delete();
@@ -235,7 +233,7 @@ void main() {
       });
 
       test('должен выбросить исключение если файл не существует', () async {
-        final File nonExistentFile = File('/non/existent/file.rcoll');
+        final File nonExistentFile = File('/non/existent/file.xcoll');
 
         expect(
           () => sut.parseFile(nonExistentFile),
@@ -249,8 +247,8 @@ void main() {
 
       test('должен выбросить исключение при невалидном JSON', () async {
         final Directory tempDir =
-            Directory.systemTemp.createTempSync('rcoll_test');
-        final File testFile = File('${tempDir.path}/invalid.rcoll');
+            Directory.systemTemp.createTempSync('xcoll_test');
+        final File testFile = File('${tempDir.path}/invalid.xcoll');
         await testFile.writeAsString('not valid json');
 
         try {
@@ -262,231 +260,6 @@ void main() {
           await testFile.delete();
           await tempDir.delete();
         }
-      });
-    });
-
-    // ==================== v1 Legacy Import ====================
-
-    group('importFromXcoll (v1 legacy)', () {
-      test('должен успешно импортировать коллекцию без игр', () async {
-        final XcollFile rcoll = XcollFile(
-          version: 1,
-          name: 'Empty Collection',
-          author: 'Author',
-          created: testDate,
-          legacyGames: const <RcollGame>[],
-        );
-
-        final Collection createdCollection = Collection(
-          id: 1,
-          name: 'Empty Collection',
-          author: 'Author',
-          type: CollectionType.imported,
-          createdAt: testDate,
-        );
-
-        when(() => mockRepo.create(
-              name: any(named: 'name'),
-              author: any(named: 'author'),
-              type: any(named: 'type'),
-            )).thenAnswer((_) async => createdCollection);
-
-        final ImportResult result = await sut.importFromXcoll(rcoll);
-
-        expect(result.success, isTrue);
-        expect(result.collection?.name, equals('Empty Collection'));
-        expect(result.itemsImported, equals(0));
-
-        verify(() => mockRepo.create(
-              name: 'Empty Collection',
-              author: 'Author',
-              type: CollectionType.imported,
-            )).called(1);
-      });
-
-      test('должен успешно импортировать коллекцию с играми', () async {
-        final XcollFile rcoll = XcollFile(
-          version: 1,
-          name: 'Game Collection',
-          author: 'Gamer',
-          created: testDate,
-          legacyGames: const <RcollGame>[
-            RcollGame(igdbId: 100, platformId: 18, comment: 'Great'),
-            RcollGame(igdbId: 200, platformId: 19),
-          ],
-        );
-
-        final Collection createdCollection = Collection(
-          id: 5,
-          name: 'Game Collection',
-          author: 'Gamer',
-          type: CollectionType.imported,
-          createdAt: testDate,
-        );
-
-        const List<Game> fetchedGames = <Game>[
-          Game(id: 100, name: 'Game 1'),
-          Game(id: 200, name: 'Game 2'),
-        ];
-
-        when(() => mockApi.getGamesByIds(any()))
-            .thenAnswer((_) async => fetchedGames);
-        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
-        when(() => mockRepo.create(
-              name: any(named: 'name'),
-              author: any(named: 'author'),
-              type: any(named: 'type'),
-            )).thenAnswer((_) async => createdCollection);
-        when(() => mockRepo.addItem(
-              collectionId: any(named: 'collectionId'),
-              mediaType: any(named: 'mediaType'),
-              externalId: any(named: 'externalId'),
-              platformId: any(named: 'platformId'),
-              authorComment: any(named: 'authorComment'),
-            )).thenAnswer((_) async => 1);
-
-        final ImportResult result = await sut.importFromXcoll(rcoll);
-
-        expect(result.success, isTrue);
-        expect(result.itemsImported, equals(2));
-
-        verify(() => mockApi.getGamesByIds(<int>[100, 200])).called(1);
-        verify(() => mockDb.upsertGame(any())).called(2);
-        verify(() => mockRepo.addItem(
-              collectionId: 5,
-              mediaType: MediaType.game,
-              externalId: 100,
-              platformId: 18,
-              authorComment: 'Great',
-            )).called(1);
-        verify(() => mockRepo.addItem(
-              collectionId: 5,
-              mediaType: MediaType.game,
-              externalId: 200,
-              platformId: 19,
-              authorComment: null,
-            )).called(1);
-      });
-
-      test('должен вернуть ошибку при сбое IGDB API', () async {
-        final XcollFile rcoll = XcollFile(
-          version: 1,
-          name: 'Test',
-          author: 'Author',
-          created: testDate,
-          legacyGames: const <RcollGame>[
-            RcollGame(igdbId: 100, platformId: 18),
-          ],
-        );
-
-        when(() => mockApi.getGamesByIds(any()))
-            .thenThrow(const IgdbApiException('API Error'));
-
-        final ImportResult result = await sut.importFromXcoll(rcoll);
-
-        expect(result.success, isFalse);
-        expect(result.error, contains('Failed to fetch games from IGDB'));
-      });
-
-      test('должен отслеживать прогресс v1', () async {
-        final XcollFile rcoll = XcollFile(
-          version: 1,
-          name: 'Progress Test',
-          author: 'Author',
-          created: testDate,
-          legacyGames: const <RcollGame>[
-            RcollGame(igdbId: 100, platformId: 18),
-          ],
-        );
-
-        final Collection createdCollection = Collection(
-          id: 1,
-          name: 'Progress Test',
-          author: 'Author',
-          type: CollectionType.imported,
-          createdAt: testDate,
-        );
-
-        const List<Game> fetchedGames = <Game>[
-          Game(id: 100, name: 'Game 1'),
-        ];
-
-        when(() => mockApi.getGamesByIds(any()))
-            .thenAnswer((_) async => fetchedGames);
-        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
-        when(() => mockRepo.create(
-              name: any(named: 'name'),
-              author: any(named: 'author'),
-              type: any(named: 'type'),
-            )).thenAnswer((_) async => createdCollection);
-        when(() => mockRepo.addItem(
-              collectionId: any(named: 'collectionId'),
-              mediaType: any(named: 'mediaType'),
-              externalId: any(named: 'externalId'),
-              platformId: any(named: 'platformId'),
-              authorComment: any(named: 'authorComment'),
-            )).thenAnswer((_) async => 1);
-
-        final List<ImportStage> stages = <ImportStage>[];
-        await sut.importFromXcoll(
-          rcoll,
-          onProgress: (ImportProgress progress) {
-            stages.add(progress.stage);
-          },
-        );
-
-        expect(stages, contains(ImportStage.fetchingGames));
-        expect(stages, contains(ImportStage.cachingGames));
-        expect(stages, contains(ImportStage.creatingCollection));
-        expect(stages, contains(ImportStage.addingGames));
-        expect(stages, contains(ImportStage.completed));
-      });
-
-      test('должен корректно считать добавленные игры при дубликатах',
-          () async {
-        final XcollFile rcoll = XcollFile(
-          version: 1,
-          name: 'Dup Test',
-          author: 'Author',
-          created: testDate,
-          legacyGames: const <RcollGame>[
-            RcollGame(igdbId: 100, platformId: 18),
-            RcollGame(igdbId: 200, platformId: 19),
-          ],
-        );
-
-        final Collection createdCollection = Collection(
-          id: 1,
-          name: 'Dup Test',
-          author: 'Author',
-          type: CollectionType.imported,
-          createdAt: testDate,
-        );
-
-        when(() => mockApi.getGamesByIds(any()))
-            .thenAnswer((_) async => <Game>[]);
-        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
-        when(() => mockRepo.create(
-              name: any(named: 'name'),
-              author: any(named: 'author'),
-              type: any(named: 'type'),
-            )).thenAnswer((_) async => createdCollection);
-
-        int callCount = 0;
-        when(() => mockRepo.addItem(
-              collectionId: any(named: 'collectionId'),
-              mediaType: any(named: 'mediaType'),
-              externalId: any(named: 'externalId'),
-              platformId: any(named: 'platformId'),
-              authorComment: any(named: 'authorComment'),
-            )).thenAnswer((_) async {
-          callCount++;
-          return callCount == 1 ? 1 : null;
-        });
-
-        final ImportResult result = await sut.importFromXcoll(rcoll);
-
-        expect(result.itemsImported, equals(1));
       });
     });
 
@@ -1937,81 +1710,6 @@ void main() {
         expect(captured.y, equals(75.0));
         expect(captured.width, equals(320.0));
         expect(captured.height, equals(240.0));
-      });
-    });
-
-    // ==================== v1/v2 Dispatch ====================
-
-    group('v1/v2 dispatch', () {
-      test('isV1 файл должен использовать v1 пайплайн', () async {
-        final XcollFile v1 = XcollFile(
-          version: 1,
-          name: 'V1',
-          author: 'Author',
-          created: testDate,
-          legacyGames: const <RcollGame>[],
-        );
-
-        expect(v1.isV1, isTrue);
-
-        final Collection createdCollection = Collection(
-          id: 1,
-          name: 'V1',
-          author: 'Author',
-          type: CollectionType.imported,
-          createdAt: testDate,
-        );
-
-        when(() => mockRepo.create(
-              name: any(named: 'name'),
-              author: any(named: 'author'),
-              type: any(named: 'type'),
-            )).thenAnswer((_) async => createdCollection);
-
-        final ImportResult result = await sut.importFromXcoll(v1);
-
-        expect(result.success, isTrue);
-        // v1 не вызывает TMDB
-        verifyNever(() => mockTmdb.getMovie(any()));
-        verifyNever(() => mockTmdb.getTvShow(any()));
-      });
-
-      test('isV2 файл должен использовать v2 пайплайн', () async {
-        final XcollFile v2 = XcollFile(
-          version: 2,
-          format: ExportFormat.light,
-          name: 'V2',
-          author: 'Author',
-          created: testDate,
-          items: const <Map<String, dynamic>>[],
-        );
-
-        expect(v2.isV2, isTrue);
-
-        final ImportService sutV2 = ImportService(
-          repository: mockRepo,
-          igdbApi: mockApi,
-          tmdbApi: mockTmdb,
-          database: mockDb,
-        );
-
-        final Collection createdCollection = Collection(
-          id: 2,
-          name: 'V2',
-          author: 'Author',
-          type: CollectionType.imported,
-          createdAt: testDate,
-        );
-
-        when(() => mockRepo.create(
-              name: any(named: 'name'),
-              author: any(named: 'author'),
-              type: any(named: 'type'),
-            )).thenAnswer((_) async => createdCollection);
-
-        final ImportResult result = await sutV2.importFromXcoll(v2);
-
-        expect(result.success, isTrue);
       });
     });
 

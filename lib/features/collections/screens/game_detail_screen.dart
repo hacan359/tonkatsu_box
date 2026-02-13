@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../data/repositories/canvas_repository.dart';
-import '../../../shared/models/collection_game.dart';
+import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/game.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
@@ -30,7 +30,7 @@ class GameDetailScreen extends ConsumerStatefulWidget {
   /// Создаёт [GameDetailScreen].
   const GameDetailScreen({
     required this.collectionId,
-    required this.gameId,
+    required this.itemId,
     required this.isEditable,
     super.key,
   });
@@ -38,8 +38,8 @@ class GameDetailScreen extends ConsumerStatefulWidget {
   /// ID коллекции.
   final int collectionId;
 
-  /// ID записи игры в коллекции.
-  final int gameId;
+  /// ID записи элемента в коллекции.
+  final int itemId;
 
   /// Можно ли редактировать комментарий автора.
   final bool isEditable;
@@ -75,13 +75,13 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
 
   @override
   Widget build(BuildContext context) {
-    final AsyncValue<List<CollectionGame>> gamesAsync =
-        ref.watch(collectionGamesNotifierProvider(widget.collectionId));
+    final AsyncValue<List<CollectionItem>> itemsAsync =
+        ref.watch(collectionItemsNotifierProvider(widget.collectionId));
 
-    return gamesAsync.when(
-      data: (List<CollectionGame> games) {
-        final CollectionGame? collectionGame = _findGame(games);
-        if (collectionGame == null) {
+    return itemsAsync.when(
+      data: (List<CollectionItem> items) {
+        final CollectionItem? item = _findItem(items);
+        if (item == null) {
           return Scaffold(
             backgroundColor: AppColors.background,
             appBar: AppBar(
@@ -92,7 +92,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
             body: const Center(child: Text('Game not found')),
           );
         }
-        return _buildContent(collectionGame);
+        return _buildContent(item);
       },
       loading: () => Scaffold(
         backgroundColor: AppColors.background,
@@ -115,18 +115,18 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
     );
   }
 
-  CollectionGame? _findGame(List<CollectionGame> games) {
-    for (final CollectionGame game in games) {
-      if (game.id == widget.gameId) {
-        return game;
+  CollectionItem? _findItem(List<CollectionItem> items) {
+    for (final CollectionItem item in items) {
+      if (item.id == widget.itemId) {
+        return item;
       }
     }
     return null;
   }
 
-  Widget _buildContent(CollectionGame collectionGame) {
-    final Game? game = collectionGame.game;
-    _currentItemName = collectionGame.gameName;
+  Widget _buildContent(CollectionItem collectionItem) {
+    final Game? game = collectionItem.game;
+    _currentItemName = collectionItem.itemName;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -134,7 +134,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
         backgroundColor: AppColors.background,
         surfaceTintColor: Colors.transparent,
         foregroundColor: AppColors.textPrimary,
-        title: Text(collectionGame.gameName),
+        title: Text(collectionItem.itemName),
         actions: <Widget>[
           if (widget.isEditable &&
               kCanvasEnabled &&
@@ -185,42 +185,42 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
         children: <Widget>[
           // Details tab
           MediaDetailView(
-            title: collectionGame.gameName,
+            title: collectionItem.itemName,
             coverUrl: game?.coverUrl,
             placeholderIcon: Icons.videogame_asset,
             source: DataSource.igdb,
             typeIcon: Icons.sports_esports,
-            typeLabel: collectionGame.platformName,
+            typeLabel: collectionItem.platformName,
             infoChips: _buildInfoChips(game),
             description: game?.summary,
             cacheImageType: ImageType.gameCover,
-            cacheImageId: widget.gameId.toString(),
+            cacheImageId: widget.itemId.toString(),
             statusWidget: StatusChipRow(
-              status: collectionGame.status.toItemStatus(),
+              status: collectionItem.status,
               mediaType: MediaType.game,
               onChanged: (ItemStatus status) =>
-                  _updateGameStatus(collectionGame.id, status),
+                  _updateStatus(collectionItem.id, status),
             ),
             extraSections: <Widget>[
               ActivityDatesSection(
-                addedAt: collectionGame.addedAt,
-                startedAt: collectionGame.startedAt,
-                completedAt: collectionGame.completedAt,
-                lastActivityAt: collectionGame.lastActivityAt,
+                addedAt: collectionItem.addedAt,
+                startedAt: collectionItem.startedAt,
+                completedAt: collectionItem.completedAt,
+                lastActivityAt: collectionItem.lastActivityAt,
                 isEditable: widget.isEditable,
                 onDateChanged: (String type, DateTime date) =>
-                    _updateActivityDate(collectionGame.id, type, date),
+                    _updateActivityDate(collectionItem.id, type, date),
               ),
             ],
-            authorComment: collectionGame.authorComment,
-            userComment: collectionGame.userComment,
-            hasAuthorComment: collectionGame.hasAuthorComment,
-            hasUserComment: collectionGame.hasUserComment,
+            authorComment: collectionItem.authorComment,
+            userComment: collectionItem.userComment,
+            hasAuthorComment: collectionItem.hasAuthorComment,
+            hasUserComment: collectionItem.hasUserComment,
             isEditable: widget.isEditable,
             onAuthorCommentSave: (String? text) =>
-                _saveAuthorComment(collectionGame.id, text),
+                _saveAuthorComment(collectionItem.id, text),
             onUserCommentSave: (String? text) =>
-                _saveUserComment(collectionGame.id, text),
+                _saveUserComment(collectionItem.id, text),
             embedded: true,
           ),
           // Canvas tab (только desktop)
@@ -255,7 +255,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
 
   ({int collectionId, int collectionItemId}) get _canvasArg => (
         collectionId: widget.collectionId,
-        collectionItemId: widget.gameId,
+        collectionItemId: widget.itemId,
       );
 
   Widget _buildCanvasTab() {
@@ -265,7 +265,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
           child: CanvasView(
             collectionId: widget.collectionId,
             isEditable: widget.isEditable && !_isViewModeLocked,
-            collectionItemId: widget.gameId,
+            collectionItemId: widget.itemId,
           ),
         ),
         // Боковая панель SteamGridDB
@@ -421,34 +421,15 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
     }
   }
 
-  Future<void> _updateGameStatus(int id, ItemStatus status) async {
-    final GameStatus gameStatus = _toGameStatus(status);
+  Future<void> _updateStatus(int id, ItemStatus status) async {
     await ref
-        .read(collectionGamesNotifierProvider(widget.collectionId).notifier)
-        .updateStatus(id, gameStatus);
-  }
-
-  static GameStatus _toGameStatus(ItemStatus status) {
-    switch (status) {
-      case ItemStatus.notStarted:
-        return GameStatus.notStarted;
-      case ItemStatus.inProgress:
-        return GameStatus.playing;
-      case ItemStatus.completed:
-        return GameStatus.completed;
-      case ItemStatus.dropped:
-        return GameStatus.dropped;
-      case ItemStatus.planned:
-        return GameStatus.planned;
-      case ItemStatus.onHold:
-        // Fallback: games don't have onHold, map to planned
-        return GameStatus.planned;
-    }
+        .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
+        .updateStatus(id, status, MediaType.game);
   }
 
   Future<void> _updateActivityDate(int id, String type, DateTime date) async {
-    final CollectionGamesNotifier notifier =
-        ref.read(collectionGamesNotifierProvider(widget.collectionId).notifier);
+    final CollectionItemsNotifier notifier =
+        ref.read(collectionItemsNotifierProvider(widget.collectionId).notifier);
     if (type == 'started') {
       await notifier.updateActivityDates(
         id,
@@ -466,13 +447,13 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
 
   Future<void> _saveAuthorComment(int id, String? text) async {
     await ref
-        .read(collectionGamesNotifierProvider(widget.collectionId).notifier)
+        .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
         .updateAuthorComment(id, text);
   }
 
   Future<void> _saveUserComment(int id, String? text) async {
     await ref
-        .read(collectionGamesNotifierProvider(widget.collectionId).notifier)
+        .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
         .updateUserComment(id, text);
   }
 }

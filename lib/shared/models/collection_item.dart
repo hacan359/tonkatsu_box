@@ -10,9 +10,7 @@ import 'tv_show.dart';
 
 /// Универсальный элемент коллекции.
 ///
-/// Заменяет [CollectionGame] для поддержки игр, фильмов и сериалов
-/// в одной коллекции. Обратная совместимость обеспечивается адаптерами
-/// в [CollectionGame].
+/// Поддерживает игры, фильмы, сериалы и анимацию в одной коллекции.
 class CollectionItem with Exportable {
   /// Создаёт экземпляр [CollectionItem].
   const CollectionItem({
@@ -288,7 +286,7 @@ class CollectionItem with Exportable {
       'platform_id': platformId,
       'current_season': currentSeason,
       'current_episode': currentEpisode,
-      'status': status.dbValue(mediaType),
+      'status': status.value,
       'author_comment': authorComment,
       'user_comment': userComment,
       'added_at': addedAt.millisecondsSinceEpoch ~/ 1000,

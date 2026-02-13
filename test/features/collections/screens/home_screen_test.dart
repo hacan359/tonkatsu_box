@@ -32,7 +32,7 @@ void main() {
         (_) async => const CollectionStats(
           total: 5,
           completed: 2,
-          playing: 1,
+          inProgress: 1,
           notStarted: 1,
           dropped: 0,
           planned: 1,

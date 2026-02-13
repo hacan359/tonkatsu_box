@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/database/database_service.dart';
 import '../../shared/models/collection.dart';
-import '../../shared/models/collection_game.dart';
 import '../../shared/models/collection_item.dart';
 import '../../shared/models/item_status.dart';
 import '../../shared/models/media_type.dart';
@@ -23,12 +22,11 @@ class CollectionStats {
   const CollectionStats({
     required this.total,
     required this.completed,
-    required this.playing,
+    required this.inProgress,
     required this.notStarted,
     required this.dropped,
     required this.planned,
     this.onHold = 0,
-    this.inProgress = 0,
     this.gameCount = 0,
     this.movieCount = 0,
     this.tvShowCount = 0,
@@ -41,10 +39,7 @@ class CollectionStats {
   /// Количество завершённых.
   final int completed;
 
-  /// Количество в процессе (игры: playing).
-  final int playing;
-
-  /// Количество в процессе (универсальный).
+  /// Количество в процессе.
   final int inProgress;
 
   /// Количество не начатых.
@@ -85,7 +80,7 @@ class CollectionStats {
   static const CollectionStats empty = CollectionStats(
     total: 0,
     completed: 0,
-    playing: 0,
+    inProgress: 0,
     notStarted: 0,
     dropped: 0,
     planned: 0,
@@ -235,53 +230,6 @@ class CollectionRepository {
     );
   }
 
-  // ==================== Collection Games (Legacy) ====================
-
-  /// Возвращает все игры в коллекции.
-  Future<List<CollectionGame>> getGames(int collectionId) async {
-    return _db.getCollectionGames(collectionId);
-  }
-
-  /// Возвращает игры в коллекции с подгруженными данными.
-  Future<List<CollectionGame>> getGamesWithData(int collectionId) async {
-    return _db.getCollectionGamesWithData(collectionId);
-  }
-
-  /// Добавляет игру в коллекцию.
-  Future<int?> addGame({
-    required int collectionId,
-    required int igdbId,
-    required int platformId,
-    String? authorComment,
-  }) async {
-    return _db.addGameToCollection(
-      collectionId: collectionId,
-      igdbId: igdbId,
-      platformId: platformId,
-      authorComment: authorComment,
-    );
-  }
-
-  /// Удаляет игру из коллекции.
-  Future<void> removeGame(int id) async {
-    await _db.removeGameFromCollection(id);
-  }
-
-  /// Обновляет статус игры.
-  Future<void> updateGameStatus(int id, GameStatus status) async {
-    await _db.updateGameStatus(id, status);
-  }
-
-  /// Обновляет комментарий автора.
-  Future<void> updateAuthorComment(int id, String? comment) async {
-    await _db.updateAuthorComment(id, comment);
-  }
-
-  /// Обновляет личный комментарий.
-  Future<void> updateUserComment(int id, String? comment) async {
-    await _db.updateUserComment(id, comment);
-  }
-
   // ==================== Stats ====================
 
   /// Возвращает статистику коллекции.
@@ -291,7 +239,6 @@ class CollectionRepository {
     return CollectionStats(
       total: raw['total'] ?? 0,
       completed: raw['completed'] ?? 0,
-      playing: raw['playing'] ?? 0,
       inProgress: raw['inProgress'] ?? 0,
       notStarted: raw['notStarted'] ?? 0,
       dropped: raw['dropped'] ?? 0,
@@ -321,10 +268,10 @@ class CollectionRepository {
     final String snapshot = jsonEncode(<String, dynamic>{
       'name': original.name,
       'author': original.author,
-      'games': items
-          .where((CollectionItem i) => i.mediaType == MediaType.game)
+      'items': items
           .map((CollectionItem i) => <String, dynamic>{
-                'igdb_id': i.externalId,
+                'media_type': i.mediaType.value,
+                'external_id': i.externalId,
                 'platform_id': i.platformId,
                 'author_comment': i.authorComment,
               })
@@ -371,15 +318,16 @@ class CollectionRepository {
     // Очищаем текущие элементы
     await _db.clearCollectionItems(collectionId);
 
-    // Восстанавливаем из snapshot (только игры для формата v1)
-    final List<dynamic> gamesData = snapshot['games'] as List<dynamic>;
-    for (final dynamic game in gamesData) {
-      final Map<String, dynamic> gameMap = game as Map<String, dynamic>;
-      await addGame(
+    // Восстанавливаем из snapshot
+    final List<dynamic> itemsData = snapshot['items'] as List<dynamic>;
+    for (final dynamic item in itemsData) {
+      final Map<String, dynamic> itemMap = item as Map<String, dynamic>;
+      await addItem(
         collectionId: collectionId,
-        igdbId: gameMap['igdb_id'] as int,
-        platformId: gameMap['platform_id'] as int,
-        authorComment: gameMap['author_comment'] as String?,
+        mediaType: MediaType.fromString(itemMap['media_type'] as String),
+        externalId: itemMap['external_id'] as int,
+        platformId: itemMap['platform_id'] as int?,
+        authorComment: itemMap['author_comment'] as String?,
       );
     }
   }
