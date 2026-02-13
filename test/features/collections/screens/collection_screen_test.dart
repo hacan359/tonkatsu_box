@@ -1,14 +1,16 @@
-// Тесты для CollectionScreen (grid/list mode).
+// Тесты для CollectionScreen (grid/list mode, canvas lock, view mode persistence).
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:xerabora/core/services/image_cache_service.dart';
 import 'package:xerabora/data/repositories/collection_repository.dart';
 import 'package:xerabora/features/collections/providers/collections_provider.dart';
 import 'package:xerabora/features/collections/screens/collection_screen.dart';
+import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/shared/models/collection.dart';
 import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/game.dart';
@@ -26,6 +28,7 @@ void main() {
   final DateTime testDate = DateTime(2024, 1, 15);
   late MockCollectionRepository mockRepo;
   late MockImageCacheService mockCache;
+  late SharedPreferences prefs;
 
   final Collection testCollection = Collection(
     id: 1,
@@ -97,9 +100,12 @@ void main() {
     registerFallbackValue(ItemStatus.notStarted);
   });
 
-  setUp(() {
+  setUp(() async {
     mockRepo = MockCollectionRepository();
     mockCache = MockImageCacheService();
+
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    prefs = await SharedPreferences.getInstance();
 
     when(() => mockRepo.getById(1)).thenAnswer((_) async => testCollection);
     when(() => mockRepo.getItemsWithData(
@@ -127,11 +133,15 @@ void main() {
     await tester.pump();
   }
 
-  Widget createWidget({int collectionId = 1}) {
+  Widget createWidget({
+    int collectionId = 1,
+    SharedPreferences? overridePrefs,
+  }) {
     return ProviderScope(
       overrides: <Override>[
         collectionRepositoryProvider.overrideWithValue(mockRepo),
         imageCacheServiceProvider.overrideWithValue(mockCache),
+        sharedPreferencesProvider.overrideWithValue(overridePrefs ?? prefs),
         collectionStatsProvider(collectionId)
             .overrideWith((Ref ref) async => testStats),
       ],
@@ -411,6 +421,19 @@ void main() {
       testWidgets('должен показывать сообщение об ошибке',
           (WidgetTester tester) async {
         when(() => mockRepo.getById(99)).thenAnswer((_) async => null);
+        when(() => mockRepo.getItemsWithData(
+              99,
+              mediaType: any(named: 'mediaType'),
+            )).thenAnswer((_) async => const <CollectionItem>[]);
+        when(() => mockRepo.getStats(99))
+            .thenAnswer((_) async => const CollectionStats(
+                  total: 0,
+                  completed: 0,
+                  playing: 0,
+                  notStarted: 0,
+                  dropped: 0,
+                  planned: 0,
+                ));
 
         await tester.pumpWidget(createWidget(collectionId: 99));
         await pumpScreen(tester);
@@ -427,6 +450,167 @@ void main() {
 
         expect(find.byTooltip('Add Items'), findsOneWidget);
         expect(find.byIcon(Icons.add), findsOneWidget);
+      });
+    });
+
+    group('сохранение режима отображения (grid/list)', () {
+      testWidgets('должен загрузить grid mode из SharedPreferences',
+          (WidgetTester tester) async {
+        // Сохраняем grid mode = true для коллекции 1
+        await prefs.setBool(
+          '${SettingsKeys.collectionViewModePrefix}1',
+          true,
+        );
+
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        // Grid mode загружен: иконка view_list (обратное переключение)
+        expect(find.byIcon(Icons.view_list), findsOneWidget);
+        expect(find.byIcon(Icons.grid_view), findsNothing);
+      });
+
+      testWidgets('должен загрузить list mode по умолчанию',
+          (WidgetTester tester) async {
+        // SharedPreferences пусты — default false (list mode)
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        // List mode по умолчанию: иконка grid_view
+        expect(find.byIcon(Icons.grid_view), findsOneWidget);
+      });
+
+      testWidgets('должен сохранять grid mode в SharedPreferences при toggle',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        // Переключаемся на grid
+        await tester.tap(find.byIcon(Icons.grid_view));
+        await pumpScreen(tester);
+
+        // Проверяем сохранение в SharedPreferences
+        final bool? saved = prefs.getBool(
+          '${SettingsKeys.collectionViewModePrefix}1',
+        );
+        expect(saved, isTrue);
+      });
+
+      testWidgets('должен сохранять list mode при обратном toggle',
+          (WidgetTester tester) async {
+        // Начинаем с grid mode
+        await prefs.setBool(
+          '${SettingsKeys.collectionViewModePrefix}1',
+          true,
+        );
+
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        // Переключаемся обратно на list
+        await tester.tap(find.byIcon(Icons.view_list));
+        await pumpScreen(tester);
+
+        // Проверяем сохранение в SharedPreferences
+        final bool? saved = prefs.getBool(
+          '${SettingsKeys.collectionViewModePrefix}1',
+        );
+        expect(saved, isFalse);
+      });
+
+      testWidgets('разные коллекции сохраняют режим независимо',
+          (WidgetTester tester) async {
+        // Коллекция 1 — grid, коллекция 2 — list (по умолчанию)
+        await prefs.setBool(
+          '${SettingsKeys.collectionViewModePrefix}1',
+          true,
+        );
+
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        // Коллекция 1 в grid mode
+        expect(find.byIcon(Icons.view_list), findsOneWidget);
+
+        // Проверяем что для коллекции 2 ключ не установлен
+        final bool? saved2 = prefs.getBool(
+          '${SettingsKeys.collectionViewModePrefix}2',
+        );
+        expect(saved2, isNull);
+      });
+    });
+
+    group('замок канваса', () {
+      testWidgets('не должен показывать замок в List mode',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        // В list mode замок не виден
+        expect(find.byTooltip('Lock canvas'), findsNothing);
+        expect(find.byTooltip('Unlock canvas'), findsNothing);
+      });
+
+      testWidgets('должен показывать замок при переключении на Canvas mode',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        // Переключаемся на Canvas mode
+        await tester.tap(find.text('Canvas'));
+        await pumpScreen(tester);
+
+        // Замок виден (collection.isEditable = true для own)
+        expect(find.byTooltip('Lock canvas'), findsOneWidget);
+        expect(find.byIcon(Icons.lock_open), findsOneWidget);
+      });
+
+      testWidgets('не должен показывать замок для imported коллекции',
+          (WidgetTester tester) async {
+        final Collection importedCollection = Collection(
+          id: 1,
+          name: 'Imported Collection',
+          author: 'Other',
+          type: CollectionType.imported,
+          createdAt: testDate,
+        );
+        when(() => mockRepo.getById(1))
+            .thenAnswer((_) async => importedCollection);
+
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        // Переключаемся на Canvas mode
+        await tester.tap(find.text('Canvas'));
+        await pumpScreen(tester);
+
+        // Замок не виден (imported — не editable)
+        expect(find.byTooltip('Lock canvas'), findsNothing);
+        expect(find.byTooltip('Unlock canvas'), findsNothing);
+      });
+
+      testWidgets('должен переключать состояние замка',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        // Переключаемся на Canvas mode
+        await tester.tap(find.text('Canvas'));
+        await pumpScreen(tester);
+
+        // Нажимаем замок (lock_open → lock)
+        await tester.tap(find.byTooltip('Lock canvas'));
+        await pumpScreen(tester);
+
+        expect(find.byIcon(Icons.lock), findsOneWidget);
+        expect(find.byTooltip('Unlock canvas'), findsOneWidget);
+
+        // Нажимаем замок (lock → lock_open)
+        await tester.tap(find.byTooltip('Unlock canvas'));
+        await pumpScreen(tester);
+
+        expect(find.byIcon(Icons.lock_open), findsOneWidget);
+        expect(find.byTooltip('Lock canvas'), findsOneWidget);
       });
     });
   });

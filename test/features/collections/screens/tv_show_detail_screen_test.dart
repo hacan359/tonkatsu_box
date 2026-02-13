@@ -1128,5 +1128,106 @@ void main() {
         expect(find.byType(MediaDetailView), findsOneWidget);
       });
     });
+
+    group('замок канваса', () {
+      // CanvasView содержит бесконечные анимации, поэтому после переключения
+      // на вкладку Canvas используем pump() вместо pumpAndSettle().
+      Future<void> pumpFrames(WidgetTester tester) async {
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
+        await tester.pump();
+      }
+
+      testWidgets('не должен показывать замок на вкладке Details',
+          (WidgetTester tester) async {
+        final TvShow tvShow = createTestTvShow();
+        final CollectionItem item = createTestCollectionItem(tvShow: tvShow);
+
+        await tester.pumpWidget(createTestWidget(
+          collectionId: 1,
+          itemId: 1,
+          isEditable: true,
+          items: <CollectionItem>[item],
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.byTooltip('Lock canvas'), findsNothing);
+        expect(find.byTooltip('Unlock canvas'), findsNothing);
+      });
+
+      testWidgets('должен показывать замок на вкладке Canvas (editable)',
+          (WidgetTester tester) async {
+        final TvShow tvShow = createTestTvShow();
+        final CollectionItem item = createTestCollectionItem(tvShow: tvShow);
+
+        await tester.pumpWidget(createTestWidget(
+          collectionId: 1,
+          itemId: 1,
+          isEditable: true,
+          items: <CollectionItem>[item],
+        ));
+        await tester.pumpAndSettle();
+
+        // Переключаемся на Canvas
+        await tester.tap(find.text('Canvas'));
+        await pumpFrames(tester);
+
+        expect(find.byTooltip('Lock canvas'), findsOneWidget);
+        expect(find.byIcon(Icons.lock_open), findsOneWidget);
+      });
+
+      testWidgets('не должен показывать замок когда isEditable = false',
+          (WidgetTester tester) async {
+        final TvShow tvShow = createTestTvShow();
+        final CollectionItem item = createTestCollectionItem(tvShow: tvShow);
+
+        await tester.pumpWidget(createTestWidget(
+          collectionId: 1,
+          itemId: 1,
+          isEditable: false,
+          items: <CollectionItem>[item],
+        ));
+        await tester.pumpAndSettle();
+
+        // Переключаемся на Canvas
+        await tester.tap(find.text('Canvas'));
+        await pumpFrames(tester);
+
+        expect(find.byTooltip('Lock canvas'), findsNothing);
+        expect(find.byTooltip('Unlock canvas'), findsNothing);
+      });
+
+      testWidgets('должен переключать состояние замка',
+          (WidgetTester tester) async {
+        final TvShow tvShow = createTestTvShow();
+        final CollectionItem item = createTestCollectionItem(tvShow: tvShow);
+
+        await tester.pumpWidget(createTestWidget(
+          collectionId: 1,
+          itemId: 1,
+          isEditable: true,
+          items: <CollectionItem>[item],
+        ));
+        await tester.pumpAndSettle();
+
+        // Переключаемся на Canvas
+        await tester.tap(find.text('Canvas'));
+        await pumpFrames(tester);
+
+        // Блокируем
+        await tester.tap(find.byTooltip('Lock canvas'));
+        await pumpFrames(tester);
+
+        expect(find.byIcon(Icons.lock), findsOneWidget);
+        expect(find.byTooltip('Unlock canvas'), findsOneWidget);
+
+        // Разблокируем
+        await tester.tap(find.byTooltip('Unlock canvas'));
+        await pumpFrames(tester);
+
+        expect(find.byIcon(Icons.lock_open), findsOneWidget);
+        expect(find.byTooltip('Lock canvas'), findsOneWidget);
+      });
+    });
   });
 }

@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/services/export_service.dart';
 import '../../../core/services/image_cache_service.dart';
@@ -19,6 +20,7 @@ import '../../../shared/models/media_type.dart';
 import '../../../shared/navigation/navigation_shell.dart';
 import '../../../shared/widgets/poster_card.dart';
 import '../../search/screens/search_screen.dart';
+import '../../settings/providers/settings_provider.dart';
 import '../../../data/repositories/canvas_repository.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/models/steamgriddb_image.dart';
@@ -55,9 +57,14 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   bool _collectionLoading = true;
   bool _isCanvasMode = false;
   bool _isGridMode = false;
+  bool _isViewModeLocked = false;
   MediaType? _filterType;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+
+  /// Реальная возможность редактирования с учётом режима просмотра.
+  bool get _effectiveIsEditable =>
+      _collection != null && _collection!.isEditable && !_isViewModeLocked;
 
   @override
   void initState() {
@@ -77,9 +84,16 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   Future<void> _loadCollection() async {
     final CollectionRepository repo = ref.read(collectionRepositoryProvider);
     final Collection? collection = await repo.getById(widget.collectionId);
+    // Загружаем сохранённый режим отображения
+    final SharedPreferences prefs = ref.read(sharedPreferencesProvider);
+    final bool savedGridMode = prefs.getBool(
+          '${SettingsKeys.collectionViewModePrefix}${widget.collectionId}',
+        ) ??
+        false;
     if (mounted) {
       setState(() {
         _collection = collection;
+        _isGridMode = savedGridMode;
         _collectionLoading = false;
       });
     }
@@ -177,6 +191,31 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             tooltip: 'Export',
             onPressed: () => _exportCollection(),
           ),
+          if (_collection!.isEditable && _isCanvasMode && kCanvasEnabled)
+            IconButton(
+              icon: Icon(
+                _isViewModeLocked ? Icons.lock : Icons.lock_open,
+              ),
+              color: _isViewModeLocked
+                  ? AppColors.warning
+                  : AppColors.textSecondary,
+              tooltip: _isViewModeLocked ? 'Unlock canvas' : 'Lock canvas',
+              onPressed: () {
+                setState(() {
+                  _isViewModeLocked = !_isViewModeLocked;
+                });
+                if (_isViewModeLocked) {
+                  ref
+                      .read(steamGridDbPanelProvider(widget.collectionId)
+                          .notifier)
+                      .closePanel();
+                  ref
+                      .read(
+                          vgMapsPanelProvider(widget.collectionId).notifier)
+                      .closePanel();
+                }
+              },
+            ),
           PopupMenuButton<String>(
             iconColor: AppColors.textSecondary,
             onSelected: (String value) => _handleMenuAction(value),
@@ -211,7 +250,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                 Expanded(
                   child: CanvasView(
                     collectionId: widget.collectionId,
-                    isEditable: _collection!.isEditable,
+                    isEditable: _effectiveIsEditable,
                   ),
                 ),
                 // Боковая панель SteamGridDB
@@ -616,7 +655,15 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
             visualDensity: VisualDensity.compact,
-            onPressed: () => setState(() => _isGridMode = !_isGridMode),
+            onPressed: () {
+              setState(() => _isGridMode = !_isGridMode);
+              ref
+                  .read(sharedPreferencesProvider)
+                  .setBool(
+                    '${SettingsKeys.collectionViewModePrefix}${widget.collectionId}',
+                    _isGridMode,
+                  );
+            },
           ),
         ],
       ),

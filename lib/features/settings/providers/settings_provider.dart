@@ -21,6 +21,9 @@ abstract class SettingsKeys {
 
   /// API ключ для TMDB.
   static const String tmdbApiKey = 'tmdb_api_key';
+
+  /// Префикс для сохранения режима отображения коллекции (grid/list).
+  static const String collectionViewModePrefix = 'collection_view_mode_';
 }
 
 /// Состояние настроек IGDB.

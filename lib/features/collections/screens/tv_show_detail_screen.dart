@@ -61,6 +61,7 @@ class TvShowDetailScreen extends ConsumerStatefulWidget {
 class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  bool _isViewModeLocked = false;
 
   @override
   void initState() {
@@ -69,6 +70,11 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
       length: kCanvasEnabled ? 2 : 1,
       vsync: this,
     );
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -139,6 +145,36 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
         surfaceTintColor: Colors.transparent,
         foregroundColor: AppColors.textPrimary,
         title: Text(item.itemName),
+        actions: <Widget>[
+          if (widget.isEditable &&
+              kCanvasEnabled &&
+              _tabController.index == 1)
+            IconButton(
+              icon: Icon(
+                _isViewModeLocked ? Icons.lock : Icons.lock_open,
+              ),
+              color: _isViewModeLocked
+                  ? AppColors.warning
+                  : AppColors.textSecondary,
+              tooltip:
+                  _isViewModeLocked ? 'Unlock canvas' : 'Lock canvas',
+              onPressed: () {
+                setState(() {
+                  _isViewModeLocked = !_isViewModeLocked;
+                });
+                if (_isViewModeLocked) {
+                  ref
+                      .read(steamGridDbPanelProvider(widget.collectionId)
+                          .notifier)
+                      .closePanel();
+                  ref
+                      .read(vgMapsPanelProvider(widget.collectionId)
+                          .notifier)
+                      .closePanel();
+                }
+              },
+            ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           tabs: <Tab>[
@@ -320,7 +356,7 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
         Expanded(
           child: CanvasView(
             collectionId: widget.collectionId,
-            isEditable: widget.isEditable,
+            isEditable: widget.isEditable && !_isViewModeLocked,
             collectionItemId: widget.itemId,
           ),
         ),

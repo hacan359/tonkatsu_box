@@ -55,6 +55,23 @@ void main() {
     return container;
   }
 
+  group('SettingsKeys', () {
+    test('collectionViewModePrefix должен быть корректным', () {
+      expect(
+        SettingsKeys.collectionViewModePrefix,
+        equals('collection_view_mode_'),
+      );
+    });
+
+    test('collectionViewModePrefix должен формировать ключ по collectionId',
+        () {
+      const int collectionId = 42;
+      const String key =
+          '${SettingsKeys.collectionViewModePrefix}$collectionId';
+      expect(key, equals('collection_view_mode_42'));
+    });
+  });
+
   group('SettingsNotifier', () {
     group('build / _loadFromPrefs', () {
       test('должен загрузить TMDB ключ из prefs и установить в TmdbApi',

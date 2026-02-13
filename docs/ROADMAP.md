@@ -38,6 +38,8 @@
 - [x] Media type watermark — large tilted semi-transparent background icon on each collection item card
 - [x] Android Lite — collections, search, details, episode tracker, export/import (no Canvas). Platform feature flags
 - [x] Activity Dates — started_at, completed_at, last_activity_at for all collection items. Auto-set on status change. DatePicker for manual editing. Watched dates in episode tracker
+- [x] Canvas Lock — view-only mode toggle (lock icon in AppBar) for own/fork collections. Closes side panels when locked. Available on collection and per-item canvas
+- [x] View Mode Persistence — grid/list toggle saved per-collection in SharedPreferences
 
 ## UI Redesign (completed)
 
