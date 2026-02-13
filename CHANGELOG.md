@@ -7,6 +7,30 @@
 ## [Unreleased]
 
 ### Added
+- Добавлена вкладка Animation в универсальном поиске — 4-й таб, объединяющий анимационные фильмы и анимационные сериалы из TMDB (жанр Animation, genre_id=16). Анимация фильтруется клиентски из результатов Movies и TV Shows
+- Добавлен `MediaType.animation` в enum `MediaType` с `displayLabel: 'Animation'`, `fromString('animation')`
+- Добавлен `AnimationSource` — abstract final class с константами `movie = 0`, `tvShow = 1` для дискриминации источника анимации через `collection_items.platform_id`
+- Добавлен `CanvasItemType.animation` с `fromMediaType(MediaType.animation)`, `isMediaItem` возвращает true
+- Добавлен экран `AnimeDetailScreen` (`lib/features/collections/screens/anime_detail_screen.dart`) — адаптивный: movie-like layout (runtime, без episode tracker) для `AnimationSource.movie`, tvShow-like layout (episode tracker, seasons) для `AnimationSource.tvShow`. Accent color: `AppColors.animationAccent`
+- Добавлен виджет `AnimationCard` (`lib/features/search/widgets/animation_card.dart`) — карточка анимации в поиске с бейджем "Movie"/"Series" для различения типа источника
+- Добавлен filter chip `Animation` в `CollectionScreen` для фильтрации элементов коллекции по типу
+- Добавлен цвет `animationColor = Color(0xFF9C27B0)` (фиолетовый) в `MediaTypeTheme` и `animationAccent = Color(0xFFCE93D8)` в `AppColors`
+- Добавлен провайдер `collectedAnimationIdsProvider` в `collections_provider.dart`
+- Добавлены тесты: `animation_source_test.dart`, обновлены `media_type_test.dart`, `canvas_item_test.dart`, `media_type_theme_test.dart`, `collection_item_test.dart`, `media_search_provider_test.dart`
+
+### Changed
+- Изменён `MediaSearchNotifier` — добавлен `MediaSearchTab.animation`, фильтрация по genre_id=16: Animation tab показывает только анимацию, Movies/TV Shows табы исключают анимацию
+- Изменён `SearchScreen` — `TabController(length: 4)`, 4-й таб Animation с объединённым списком animated movies + TV shows
+- Изменён `CollectionScreen` — обновлены все switch expressions (8 штук) для `MediaType.animation`: рейтинг, год, субтитры, imageType, навигация на `AnimeDetailScreen`, иконка `Icons.animation`
+- Изменён `CanvasMediaCard` — обновлены все switch expressions (6 штук) для `CanvasItemType.animation`: imageType, imageId, borderColor (фиолетовый), posterUrl, title, placeholderIcon
+- Изменён `CanvasView` — обновлены switch expressions (5 штук) для `CanvasItemType.animation`
+- Изменён `CanvasRepository._enrichItemsWithMediaData()` — animation items ищутся параллельно в movies и tvShows по refId
+- Изменён `DatabaseService._loadJoinedData()` — case `MediaType.animation` по `platformId` добавляет ID в `movieIds` или `tvShowIds`
+- Изменён `CollectionStats` — добавлено поле `animationCount`
+- Изменён `CollectionItem` — `itemName`, `coverUrl`, `thumbnailUrl` учитывают `MediaType.animation` с проверкой `platformId` для movie/tvShow
+- Изменён `HeroCollectionCard` — animation → `ImageType.moviePoster`
+- Изменён `ExportService` / `ImportService` — поддержка animation при экспорте/импорте
+
 - Добавлен замок канваса (View Mode Lock) — кнопка-замок в AppBar для блокировки канваса в режим просмотра. Доступен только для собственных/fork коллекций. При блокировке боковые панели (SteamGridDB, VGMaps) закрываются автоматически. Реализован на `CollectionScreen`, `GameDetailScreen`, `MovieDetailScreen`, `TvShowDetailScreen`
 - Добавлено сохранение режима отображения коллекции (grid/list) в SharedPreferences — при переключении выбор запоминается per-collection и восстанавливается при следующем открытии. Ключ `SettingsKeys.collectionViewModePrefix` в `settings_provider.dart`
 

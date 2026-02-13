@@ -1206,6 +1206,12 @@ class DatabaseService {
           movieIds.add(item.externalId);
         case MediaType.tvShow:
           tvShowIds.add(item.externalId);
+        case MediaType.animation:
+          if (item.platformId == AnimationSource.tvShow) {
+            tvShowIds.add(item.externalId);
+          } else {
+            movieIds.add(item.externalId);
+          }
       }
     }
 
@@ -1274,6 +1280,11 @@ class DatabaseService {
           return item.copyWith(movie: moviesMap[item.externalId]);
         case MediaType.tvShow:
           return item.copyWith(tvShow: tvShowsMap[item.externalId]);
+        case MediaType.animation:
+          if (item.platformId == AnimationSource.tvShow) {
+            return item.copyWith(tvShow: tvShowsMap[item.externalId]);
+          }
+          return item.copyWith(movie: moviesMap[item.externalId]);
       }
     }).toList();
   }
@@ -1572,6 +1583,7 @@ class DatabaseService {
       'gameCount': 0,
       'movieCount': 0,
       'tvShowCount': 0,
+      'animationCount': 0,
     };
 
     for (final Map<String, dynamic> row in result) {
@@ -1588,6 +1600,8 @@ class DatabaseService {
           stats['movieCount'] = (stats['movieCount'] ?? 0) + count;
         case 'tv_show':
           stats['tvShowCount'] = (stats['tvShowCount'] ?? 0) + count;
+        case 'animation':
+          stats['animationCount'] = (stats['animationCount'] ?? 0) + count;
       }
 
       // Подсчёт по статусам

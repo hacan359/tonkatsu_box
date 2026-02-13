@@ -27,7 +27,7 @@ Create unlimited collections organized however you want:
 - Personal lists (Backlog, Completed, Favorites...)
 - Mix games, movies and TV shows in a single collection
 - **Grid mode** — toggle between list and poster grid view; choice is saved per-collection and restored on next open
-- **Type filter** — filter items by type (All/Games/Movies/TV Shows)
+- **Type filter** — filter items by type (All/Games/Movies/TV Shows/Animation)
 - **Search** — filter items by name within a collection
 
 ## Universal Search
@@ -52,6 +52,15 @@ Search across multiple media types via tabbed interface:
 - Release dates and ratings
 - Filter by first air year and genres
 - Add to any collection with one tap
+- Animated TV shows (genre Animation) are excluded — see Animation tab
+
+### Animation (TMDB)
+- Combined tab for animated movies and animated TV shows from TMDB
+- Filters by Animation genre (ID=16) — only animated content appears here
+- Movies and TV Shows tabs exclude animated content automatically
+- Badge "Movie" or "Series" on each card to distinguish source type
+- Add to any collection with one tap (stored with `MediaType.animation` and `AnimationSource` discriminator)
+- Adaptive detail screen: movie-like layout for animated films, TV show-like layout (with episode tracker) for animated series
 
 ### Sorting
 - Sort results by relevance, date, or rating
@@ -77,6 +86,7 @@ Color-coded visual distinction between media types:
 - Games — blue accent
 - Movies — red accent
 - TV Shows — green accent
+- Animation — purple accent
 - Applied to canvas card borders and collection item card backgrounds
 - Large tilted semi-transparent background icon (200px, 6% opacity, rotated -17°) on each collection item card as a watermark for quick visual identification
 
@@ -120,9 +130,9 @@ Sort items within a collection using different modes:
 
 Sort mode is saved per collection and persists between sessions. A compact sort selector is displayed between the collection stats and the item list. In Manual mode, a drag handle appears on each item card for reordering via drag-and-drop.
 
-### Episode Tracker (TV Shows)
+### Episode Tracker (TV Shows & Animated Series)
 
-Track your viewing progress for TV shows at the episode level:
+Track your viewing progress for TV shows and animated series at the episode level:
 - **Episode Progress bar** — shows overall watched/total count with a LinearProgressIndicator
 - **Season sections** — ExpansionTile for each season with watched count badge
 - **Lazy loading** — episodes are fetched from TMDB API only when a season is expanded (cached in SQLite for offline access)
@@ -158,6 +168,14 @@ Tap any item in a collection to see its full details. All detail screens have tw
 - Info chips: first air date, seasons/episodes count, rating, show status (Returning/Ended/Canceled), genres
 - Episode tracker section: progress bar, expandable seasons with per-episode checkboxes, bulk mark/unmark, auto-complete
 - Status chip row (includes "On Hold" chip)
+
+### Animation Details
+- Source: TMDB (animated movies and animated TV shows)
+- Adaptive layout based on animation source (`AnimationSource.movie` or `AnimationSource.tvShow`):
+  - **Animated movie** — movie-like layout: runtime, rating, genres (no episode tracker)
+  - **Animated series** — TV show-like layout: seasons, episodes, episode tracker with per-episode checkboxes
+- Purple accent color (`AppColors.animationAccent`)
+- Canvas tab with SteamGridDB and VGMaps panels (desktop only)
 
 ## Comments
 

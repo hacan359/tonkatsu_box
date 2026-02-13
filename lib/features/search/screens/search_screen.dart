@@ -50,7 +50,7 @@ class SearchScreen extends ConsumerStatefulWidget {
   /// и пользователь остаётся на экране поиска.
   final int? collectionId;
 
-  /// Начальный индекс таба (0=Games, 1=Movies, 2=TV Shows).
+  /// Начальный индекс таба (0=Games, 1=Movies, 2=TV Shows, 3=Animation).
   final int? initialTabIndex;
 
   @override
@@ -75,7 +75,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     super.initState();
     _activeTabIndex = widget.initialTabIndex ?? 0;
     _tabController = TabController(
-      length: 3,
+      length: 4,
       vsync: this,
       initialIndex: _activeTabIndex,
     );
@@ -110,6 +110,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         ref
             .read(mediaSearchProvider.notifier)
             .switchTab(MediaSearchTab.tvShows);
+      } else if (newIndex == 3) {
+        ref
+            .read(mediaSearchProvider.notifier)
+            .switchTab(MediaSearchTab.animation);
       }
 
       // Если есть запрос и переходим на Games — повторяем поиск игр
@@ -710,10 +714,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         title: const Text('Search'),
         bottom: TabBar(
           controller: _tabController,
+          isScrollable: true,
+          tabAlignment: TabAlignment.start,
           tabs: const <Widget>[
             Tab(icon: Icon(Icons.videogame_asset), text: 'Games'),
             Tab(icon: Icon(Icons.movie), text: 'Movies'),
             Tab(icon: Icon(Icons.tv), text: 'TV Shows'),
+            Tab(icon: Icon(Icons.animation), text: 'Animation'),
           ],
         ),
       ),
@@ -766,6 +773,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                 _buildGamesTab(),
                 _buildMoviesTab(),
                 _buildTvShowsTab(),
+                _buildAnimationTab(),
               ],
             ),
           ),
@@ -782,6 +790,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         return 'Search for movies...';
       case 2:
         return 'Search for TV shows...';
+      case 3:
+        return 'Search for animation...';
       default:
         return 'Search...';
     }
@@ -1117,6 +1127,321 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     );
   }
 
+  // ==================== Animation tab ====================
+
+  Future<void> _addAnimationMovieToAnyCollection(Movie movie) async {
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    final String title = movie.title;
+
+    final Collection? selectedCollection =
+        await _showCollectionSelectionDialog();
+    if (selectedCollection == null || !mounted) return;
+
+    final bool success = await ref
+        .read(collectionItemsNotifierProvider(selectedCollection.id).notifier)
+        .addItem(
+          mediaType: MediaType.animation,
+          externalId: movie.tmdbId,
+          platformId: AnimationSource.movie,
+        );
+
+    if (mounted) {
+      if (success) {
+        _cacheImage(
+          ImageType.moviePoster,
+          movie.tmdbId.toString(),
+          movie.posterUrl,
+        );
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('$title added to ${selectedCollection.name}'),
+          ),
+        );
+      } else {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('$title already in ${selectedCollection.name}'),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _addAnimationTvShowToAnyCollection(TvShow tvShow) async {
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    final String title = tvShow.title;
+
+    final Collection? selectedCollection =
+        await _showCollectionSelectionDialog();
+    if (selectedCollection == null || !mounted) return;
+
+    final bool success = await ref
+        .read(collectionItemsNotifierProvider(selectedCollection.id).notifier)
+        .addItem(
+          mediaType: MediaType.animation,
+          externalId: tvShow.tmdbId,
+          platformId: AnimationSource.tvShow,
+        );
+
+    if (mounted) {
+      if (success) {
+        _cacheImage(
+          ImageType.tvShowPoster,
+          tvShow.tmdbId.toString(),
+          tvShow.posterUrl,
+        );
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('$title added to ${selectedCollection.name}'),
+          ),
+        );
+      } else {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('$title already in ${selectedCollection.name}'),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _addAnimationMovieToCollection(Movie movie) async {
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    final String title = movie.title;
+
+    final bool success = await ref
+        .read(
+            collectionItemsNotifierProvider(widget.collectionId!).notifier)
+        .addItem(
+          mediaType: MediaType.animation,
+          externalId: movie.tmdbId,
+          platformId: AnimationSource.movie,
+        );
+
+    if (mounted) {
+      if (success) {
+        _cacheImage(
+          ImageType.moviePoster,
+          movie.tmdbId.toString(),
+          movie.posterUrl,
+        );
+        messenger.showSnackBar(
+          SnackBar(content: Text('$title added to collection')),
+        );
+      } else {
+        messenger.showSnackBar(
+          const SnackBar(content: Text('Already in collection')),
+        );
+      }
+    }
+  }
+
+  Future<void> _addAnimationTvShowToCollection(TvShow tvShow) async {
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    final String title = tvShow.title;
+
+    final bool success = await ref
+        .read(
+            collectionItemsNotifierProvider(widget.collectionId!).notifier)
+        .addItem(
+          mediaType: MediaType.animation,
+          externalId: tvShow.tmdbId,
+          platformId: AnimationSource.tvShow,
+        );
+
+    if (mounted) {
+      if (success) {
+        _cacheImage(
+          ImageType.tvShowPoster,
+          tvShow.tmdbId.toString(),
+          tvShow.posterUrl,
+        );
+        messenger.showSnackBar(
+          SnackBar(content: Text('$title added to collection')),
+        );
+      } else {
+        messenger.showSnackBar(
+          const SnackBar(content: Text('Already in collection')),
+        );
+      }
+    }
+  }
+
+  void _onAnimationMovieTap(Movie movie) {
+    if (widget.collectionId != null) {
+      _addAnimationMovieToCollection(movie);
+    } else {
+      _showAnimationMovieDetails(movie);
+    }
+  }
+
+  void _onAnimationTvShowTap(TvShow tvShow) {
+    if (widget.collectionId != null) {
+      _addAnimationTvShowToCollection(tvShow);
+    } else {
+      _showAnimationTvShowDetails(tvShow);
+    }
+  }
+
+  void _showAnimationMovieDetails(Movie movie) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) => _MediaDetailsSheet(
+        title: movie.title,
+        overview: movie.overview,
+        year: movie.releaseYear,
+        rating: movie.formattedRating,
+        genres: movie.genres,
+        icon: Icons.animation,
+        extraInfo: movie.runtime != null ? '${movie.runtime} min' : null,
+        posterUrl: movie.posterUrl,
+        onAddToCollection: () => _addAnimationMovieToAnyCollection(movie),
+      ),
+    );
+  }
+
+  void _showAnimationTvShowDetails(TvShow tvShow) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) => _MediaDetailsSheet(
+        title: tvShow.title,
+        overview: tvShow.overview,
+        year: tvShow.firstAirYear,
+        rating: tvShow.formattedRating,
+        genres: tvShow.genres,
+        icon: Icons.animation,
+        extraInfo: tvShow.status,
+        posterUrl: tvShow.posterUrl,
+        onAddToCollection: () => _addAnimationTvShowToAnyCollection(tvShow),
+      ),
+    );
+  }
+
+  Widget _buildAnimationTab() {
+    final MediaSearchState searchState = ref.watch(mediaSearchProvider);
+
+    if (searchState.error != null &&
+        searchState.activeTab == MediaSearchTab.animation) {
+      return _buildErrorState(searchState.error!, onRetry: () {
+        ref
+            .read(mediaSearchProvider.notifier)
+            .search(_searchController.text);
+      });
+    }
+
+    if (searchState.isLoading &&
+        searchState.activeTab == MediaSearchTab.animation) {
+      return _buildShimmerGrid();
+    }
+
+    final bool hasAnimationResults =
+        searchState.animationMovieResults.isNotEmpty ||
+            searchState.animationTvShowResults.isNotEmpty;
+
+    if (searchState.query.isEmpty && !hasAnimationResults) {
+      return _buildEmptyState('Search for animation', Icons.animation);
+    }
+
+    if (!hasAnimationResults && searchState.query.isNotEmpty) {
+      return _buildNoResults(searchState.query);
+    }
+
+    final Map<int, List<CollectedItemInfo>> collectedAnimationInfos =
+        ref.watch(collectedAnimationIdsProvider).valueOrNull ??
+            <int, List<CollectedItemInfo>>{};
+
+    // Объединяем анимационные фильмы и сериалы в один список
+    final List<_AnimationItem> items = <_AnimationItem>[
+      ...searchState.animationMovieResults
+          .map((Movie m) => _AnimationItem(movie: m)),
+      ...searchState.animationTvShowResults
+          .map((TvShow t) => _AnimationItem(tvShow: t)),
+    ];
+
+    return Column(
+      children: <Widget>[
+        // Фильтры медиа
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          child: _buildMediaFilterBar(searchState),
+        ),
+
+        // Сортировка
+        if (hasAnimationResults)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            child: SortSelector(
+              currentSort: searchState.currentSort,
+              onChanged: (SearchSort sort) {
+                ref.read(mediaSearchProvider.notifier).setSort(sort);
+              },
+            ),
+          ),
+
+        Expanded(
+          child: GridView.builder(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: _gridCrossAxisCount,
+              crossAxisSpacing: AppSpacing.md,
+              mainAxisSpacing: AppSpacing.lg,
+              childAspectRatio: 0.55,
+            ),
+            itemCount: items.length,
+            itemBuilder: (BuildContext context, int index) {
+              final _AnimationItem item = items[index];
+              if (item.isMovie) {
+                final Movie movie = item.movie!;
+                final List<CollectedItemInfo>? infos =
+                    collectedAnimationInfos[movie.tmdbId];
+                return PosterCard(
+                  key: ValueKey<String>('anim_m_${movie.tmdbId}'),
+                  title: movie.title,
+                  imageUrl: movie.posterUrl ?? '',
+                  cacheImageType: ImageType.moviePoster,
+                  cacheImageId: movie.tmdbId.toString(),
+                  rating: movie.rating,
+                  year: movie.releaseYear,
+                  subtitle: 'Movie${_genreSuffix(movie.genres)}',
+                  isInCollection: infos != null && infos.isNotEmpty,
+                  onTap: () => _onAnimationMovieTap(movie),
+                );
+              } else {
+                final TvShow tvShow = item.tvShow!;
+                final List<CollectedItemInfo>? infos =
+                    collectedAnimationInfos[tvShow.tmdbId];
+                return PosterCard(
+                  key: ValueKey<String>('anim_t_${tvShow.tmdbId}'),
+                  title: tvShow.title,
+                  imageUrl: tvShow.posterUrl ?? '',
+                  cacheImageType: ImageType.tvShowPoster,
+                  cacheImageId: tvShow.tmdbId.toString(),
+                  rating: tvShow.rating,
+                  year: tvShow.firstAirYear,
+                  subtitle: 'Series${_genreSuffix(tvShow.genres)}',
+                  isInCollection: infos != null && infos.isNotEmpty,
+                  onTap: () => _onAnimationTvShowTap(tvShow),
+                );
+              }
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _genreSuffix(List<String>? genres) {
+    if (genres == null || genres.isEmpty) return '';
+    final List<String> filtered = genres
+        .where((String g) => g != 'Animation' && g != '16')
+        .take(1)
+        .toList();
+    if (filtered.isEmpty) return '';
+    return ' \u2022 ${filtered.first}';
+  }
+
   // ==================== Shared UI states ====================
 
   Widget _buildEmptyState(String message, IconData icon) {
@@ -1383,6 +1708,16 @@ class _GameDetailsSheet extends StatelessWidget {
       ],
     );
   }
+}
+
+/// Обёртка для элемента анимации (может быть фильмом или сериалом).
+class _AnimationItem {
+  const _AnimationItem({this.movie, this.tvShow});
+
+  final Movie? movie;
+  final TvShow? tvShow;
+
+  bool get isMovie => movie != null;
 }
 
 /// Bottom sheet с деталями фильма или сериала.

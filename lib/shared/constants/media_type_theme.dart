@@ -17,11 +17,15 @@ abstract final class MediaTypeTheme {
   /// Цвет для сериалов (зелёный).
   static const Color tvShowColor = Color(0xFF4CAF50);
 
+  /// Цвет для анимации (фиолетовый).
+  static const Color animationColor = Color(0xFF9C27B0);
+
   /// Возвращает иконку для типа медиа.
   static IconData iconFor(MediaType type) => switch (type) {
         MediaType.game => Icons.videogame_asset,
         MediaType.movie => Icons.movie,
         MediaType.tvShow => Icons.tv,
+        MediaType.animation => Icons.animation,
       };
 
   /// Возвращает цвет для типа медиа.
@@ -29,5 +33,6 @@ abstract final class MediaTypeTheme {
         MediaType.game => gameColor,
         MediaType.movie => movieColor,
         MediaType.tvShow => tvShowColor,
+        MediaType.animation => animationColor,
       };
 }

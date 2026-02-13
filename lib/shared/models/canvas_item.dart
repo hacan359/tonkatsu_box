@@ -17,6 +17,9 @@ enum CanvasItemType {
   /// Карточка сериала.
   tvShow('tv_show'),
 
+  /// Карточка анимации.
+  animation('animation'),
+
   /// Текстовый блок.
   text('text'),
 
@@ -48,12 +51,14 @@ enum CanvasItemType {
         return CanvasItemType.movie;
       case MediaType.tvShow:
         return CanvasItemType.tvShow;
+      case MediaType.animation:
+        return CanvasItemType.animation;
     }
   }
 
   /// Является ли тип медиа-элементом (game, movie, tvShow).
   bool get isMediaItem =>
-      this == game || this == movie || this == tvShow;
+      this == game || this == movie || this == tvShow || this == animation;
 }
 
 /// Модель элемента на канвасе коллекции.

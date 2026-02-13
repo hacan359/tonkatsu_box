@@ -268,6 +268,8 @@ class ExportService {
         return ImageType.moviePoster;
       case MediaType.tvShow:
         return ImageType.tvShowPoster;
+      case MediaType.animation:
+        return ImageType.moviePoster;
     }
   }
 

@@ -167,17 +167,26 @@ class CanvasRepository {
         .map((CanvasItem item) => item.itemRefId!)
         .toList();
 
+    final List<int> animationRefIds = items
+        .where((CanvasItem item) =>
+            item.itemType == CanvasItemType.animation &&
+            item.itemRefId != null)
+        .map((CanvasItem item) => item.itemRefId!)
+        .toList();
+
     final List<int> movieTmdbIds = items
         .where((CanvasItem item) =>
             item.itemType == CanvasItemType.movie && item.itemRefId != null)
         .map((CanvasItem item) => item.itemRefId!)
-        .toList();
+        .toList()
+      ..addAll(animationRefIds);
 
     final List<int> tvShowTmdbIds = items
         .where((CanvasItem item) =>
             item.itemType == CanvasItemType.tvShow && item.itemRefId != null)
         .map((CanvasItem item) => item.itemRefId!)
-        .toList();
+        .toList()
+      ..addAll(animationRefIds);
 
     // Если нет медиа-элементов, возвращаем как есть
     if (gameIds.isEmpty && movieTmdbIds.isEmpty && tvShowTmdbIds.isEmpty) {
@@ -215,6 +224,13 @@ class CanvasRepository {
         case CanvasItemType.movie:
           return item.copyWith(movie: moviesMap[item.itemRefId]);
         case CanvasItemType.tvShow:
+          return item.copyWith(tvShow: tvShowsMap[item.itemRefId]);
+        case CanvasItemType.animation:
+          // Animation может быть movie или tvShow — пробуем оба
+          final Movie? movie = moviesMap[item.itemRefId];
+          if (movie != null) {
+            return item.copyWith(movie: movie);
+          }
           return item.copyWith(tvShow: tvShowsMap[item.itemRefId]);
         case CanvasItemType.text:
         case CanvasItemType.image:

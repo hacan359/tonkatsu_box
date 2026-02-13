@@ -1,4 +1,4 @@
-// Провайдер для поиска фильмов и сериалов через TMDB.
+// Провайдер для поиска фильмов, сериалов и анимации через TMDB.
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,6 +10,12 @@ import '../../../shared/models/search_sort.dart';
 import '../../../shared/models/tv_show.dart';
 import 'genre_provider.dart';
 
+/// ID жанра Animation в TMDB (одинаковый для Movies и TV Shows).
+const int animationGenreId = 16;
+
+/// Строковое представление жанра Animation для фильтрации.
+const String _animationGenreIdStr = '16';
+
 /// Активный таб поиска медиа.
 enum MediaSearchTab {
   /// Фильмы.
@@ -17,15 +23,20 @@ enum MediaSearchTab {
 
   /// Сериалы.
   tvShows,
+
+  /// Анимация (фильмы + сериалы).
+  animation,
 }
 
-/// Состояние поиска фильмов и сериалов.
+/// Состояние поиска фильмов, сериалов и анимации.
 class MediaSearchState {
   /// Создаёт [MediaSearchState].
   const MediaSearchState({
     this.query = '',
     this.movieResults = const <Movie>[],
     this.tvShowResults = const <TvShow>[],
+    this.animationMovieResults = const <Movie>[],
+    this.animationTvShowResults = const <TvShow>[],
     this.isLoading = false,
     this.error,
     this.activeTab = MediaSearchTab.movies,
@@ -37,11 +48,17 @@ class MediaSearchState {
   /// Текущий поисковый запрос.
   final String query;
 
-  /// Результаты поиска фильмов.
+  /// Результаты поиска фильмов (без анимации).
   final List<Movie> movieResults;
 
-  /// Результаты поиска сериалов.
+  /// Результаты поиска сериалов (без анимации).
   final List<TvShow> tvShowResults;
+
+  /// Результаты поиска анимационных фильмов.
+  final List<Movie> animationMovieResults;
+
+  /// Результаты поиска анимационных сериалов.
+  final List<TvShow> animationTvShowResults;
 
   /// Флаг загрузки.
   final bool isLoading;
@@ -71,6 +88,9 @@ class MediaSearchState {
         return movieResults.isNotEmpty;
       case MediaSearchTab.tvShows:
         return tvShowResults.isNotEmpty;
+      case MediaSearchTab.animation:
+        return animationMovieResults.isNotEmpty ||
+            animationTvShowResults.isNotEmpty;
     }
   }
 
@@ -82,6 +102,8 @@ class MediaSearchState {
     String? query,
     List<Movie>? movieResults,
     List<TvShow>? tvShowResults,
+    List<Movie>? animationMovieResults,
+    List<TvShow>? animationTvShowResults,
     bool? isLoading,
     String? error,
     MediaSearchTab? activeTab,
@@ -95,6 +117,10 @@ class MediaSearchState {
       query: query ?? this.query,
       movieResults: movieResults ?? this.movieResults,
       tvShowResults: tvShowResults ?? this.tvShowResults,
+      animationMovieResults:
+          animationMovieResults ?? this.animationMovieResults,
+      animationTvShowResults:
+          animationTvShowResults ?? this.animationTvShowResults,
       isLoading: isLoading ?? this.isLoading,
       error: clearError ? null : (error ?? this.error),
       activeTab: activeTab ?? this.activeTab,
@@ -111,6 +137,8 @@ class MediaSearchState {
         other.query == query &&
         listEquals(other.movieResults, movieResults) &&
         listEquals(other.tvShowResults, tvShowResults) &&
+        listEquals(other.animationMovieResults, animationMovieResults) &&
+        listEquals(other.animationTvShowResults, animationTvShowResults) &&
         other.isLoading == isLoading &&
         other.error == error &&
         other.activeTab == activeTab &&
@@ -124,6 +152,8 @@ class MediaSearchState {
         query,
         Object.hashAll(movieResults),
         Object.hashAll(tvShowResults),
+        Object.hashAll(animationMovieResults),
+        Object.hashAll(animationTvShowResults),
         isLoading,
         error,
         activeTab,
@@ -133,14 +163,14 @@ class MediaSearchState {
       );
 }
 
-/// Провайдер для поиска фильмов и сериалов.
+/// Провайдер для поиска фильмов, сериалов и анимации.
 final NotifierProvider<MediaSearchNotifier, MediaSearchState>
     mediaSearchProvider =
     NotifierProvider<MediaSearchNotifier, MediaSearchState>(
   MediaSearchNotifier.new,
 );
 
-/// Notifier для управления поиском фильмов и сериалов.
+/// Notifier для управления поиском фильмов, сериалов и анимации.
 class MediaSearchNotifier extends Notifier<MediaSearchState> {
   late TmdbApi _tmdbApi;
   late DatabaseService _db;
@@ -155,7 +185,7 @@ class MediaSearchNotifier extends Notifier<MediaSearchState> {
     return const MediaSearchState();
   }
 
-  /// Выполняет поиск фильмов или сериалов.
+  /// Выполняет поиск фильмов, сериалов или анимации.
   ///
   /// [query] — строка поиска.
   Future<void> search(String query) async {
@@ -165,6 +195,8 @@ class MediaSearchNotifier extends Notifier<MediaSearchState> {
       state = state.copyWith(
         movieResults: <Movie>[],
         tvShowResults: <TvShow>[],
+        animationMovieResults: <Movie>[],
+        animationTvShowResults: <TvShow>[],
         isLoading: false,
       );
       return;
@@ -189,8 +221,12 @@ class MediaSearchNotifier extends Notifier<MediaSearchState> {
               results,
               state.selectedGenreIds,
             );
+            // Исключаем анимацию
+            final List<Movie> withoutAnimation =
+                _excludeAnimationMovies(filtered);
             // Резолвим genre_ids в имена
-            final List<Movie> resolved = await _resolveMovieGenres(filtered);
+            final List<Movie> resolved =
+                await _resolveMovieGenres(withoutAnimation);
             // Кэшируем с резолвленными жанрами
             if (resolved.isNotEmpty) {
               await _db.upsertMovies(resolved);
@@ -213,8 +249,12 @@ class MediaSearchNotifier extends Notifier<MediaSearchState> {
               results,
               state.selectedGenreIds,
             );
+            // Исключаем анимацию
+            final List<TvShow> withoutAnimation =
+                _excludeAnimationTvShows(filtered);
             // Резолвим genre_ids в имена
-            final List<TvShow> resolved = await _resolveTvShowGenres(filtered);
+            final List<TvShow> resolved =
+                await _resolveTvShowGenres(withoutAnimation);
             // Кэшируем с резолвленными жанрами
             if (resolved.isNotEmpty) {
               await _db.upsertTvShows(resolved);
@@ -225,6 +265,52 @@ class MediaSearchNotifier extends Notifier<MediaSearchState> {
               query,
             );
             state = state.copyWith(tvShowResults: sorted, isLoading: false);
+          }
+        case MediaSearchTab.animation:
+          // Ищем параллельно в фильмах и сериалах
+          final List<Object> results = await Future.wait(<Future<Object>>[
+            _tmdbApi.searchMovies(query, year: state.selectedYear),
+            _tmdbApi.searchTvShows(
+              query,
+              firstAirDateYear: state.selectedYear,
+            ),
+          ]);
+          if (state.query == query) {
+            final List<Movie> movieResults = results[0] as List<Movie>;
+            final List<TvShow> tvShowResults = results[1] as List<TvShow>;
+            // Оставляем только анимацию
+            final List<Movie> animMovies =
+                _filterAnimationOnlyMovies(movieResults);
+            final List<TvShow> animTvShows =
+                _filterAnimationOnlyTvShows(tvShowResults);
+            // Резолвим жанры
+            final List<Movie> resolvedMovies =
+                await _resolveMovieGenres(animMovies);
+            final List<TvShow> resolvedTvShows =
+                await _resolveTvShowGenres(animTvShows);
+            // Кэшируем
+            if (resolvedMovies.isNotEmpty) {
+              await _db.upsertMovies(resolvedMovies);
+            }
+            if (resolvedTvShows.isNotEmpty) {
+              await _db.upsertTvShows(resolvedTvShows);
+            }
+            // Сортируем
+            final List<Movie> sortedMovies = _applySortToMovies(
+              resolvedMovies,
+              state.currentSort,
+              query,
+            );
+            final List<TvShow> sortedTvShows = _applySortToTvShows(
+              resolvedTvShows,
+              state.currentSort,
+              query,
+            );
+            state = state.copyWith(
+              animationMovieResults: sortedMovies,
+              animationTvShowResults: sortedTvShows,
+              isLoading: false,
+            );
           }
       }
     } on TmdbApiException catch (e) {
@@ -242,6 +328,33 @@ class MediaSearchNotifier extends Notifier<MediaSearchState> {
         );
       }
     }
+  }
+
+  /// Проверяет наличие жанра Animation (ID=16) в списке жанров.
+  static bool _isAnimated(List<String>? genres) {
+    if (genres == null || genres.isEmpty) return false;
+    return genres.contains(_animationGenreIdStr) ||
+        genres.contains('Animation');
+  }
+
+  /// Оставляет только анимационные фильмы.
+  List<Movie> _filterAnimationOnlyMovies(List<Movie> movies) {
+    return movies.where((Movie m) => _isAnimated(m.genres)).toList();
+  }
+
+  /// Оставляет только анимационные сериалы.
+  List<TvShow> _filterAnimationOnlyTvShows(List<TvShow> tvShows) {
+    return tvShows.where((TvShow t) => _isAnimated(t.genres)).toList();
+  }
+
+  /// Исключает анимационные фильмы из результатов.
+  List<Movie> _excludeAnimationMovies(List<Movie> movies) {
+    return movies.where((Movie m) => !_isAnimated(m.genres)).toList();
+  }
+
+  /// Исключает анимационные сериалы из результатов.
+  List<TvShow> _excludeAnimationTvShows(List<TvShow> tvShows) {
+    return tvShows.where((TvShow t) => !_isAnimated(t.genres)).toList();
   }
 
   /// Резолвит числовые genre_ids в имена жанров для фильмов.
@@ -302,10 +415,22 @@ class MediaSearchNotifier extends Notifier<MediaSearchState> {
       sort,
       state.query,
     );
+    final List<Movie> sortedAnimMovies = _applySortToMovies(
+      state.animationMovieResults,
+      sort,
+      state.query,
+    );
+    final List<TvShow> sortedAnimTvShows = _applySortToTvShows(
+      state.animationTvShowResults,
+      sort,
+      state.query,
+    );
     state = state.copyWith(
       currentSort: sort,
       movieResults: sortedMovies,
       tvShowResults: sortedTvShows,
+      animationMovieResults: sortedAnimMovies,
+      animationTvShowResults: sortedAnimTvShows,
     );
   }
 

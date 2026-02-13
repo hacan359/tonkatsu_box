@@ -708,6 +708,64 @@ void main() {
 
           expect(item.itemName, 'Unknown TV Show');
         });
+
+        test('должен вернуть название фильма для анимации с источником movie', () {
+          final CollectionItem item = CollectionItem(
+            id: 4,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 550,
+            platformId: AnimationSource.movie,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            movie: testMovie,
+          );
+
+          expect(item.itemName, 'Fight Club');
+        });
+
+        test('должен вернуть название сериала для анимации с источником tvShow', () {
+          final CollectionItem item = CollectionItem(
+            id: 5,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 1399,
+            platformId: AnimationSource.tvShow,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            tvShow: testTvShow,
+          );
+
+          expect(item.itemName, 'Breaking Bad');
+        });
+
+        test('должен вернуть "Unknown Animation" когда movie null для анимации movie', () {
+          final CollectionItem item = CollectionItem(
+            id: 6,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 550,
+            platformId: AnimationSource.movie,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.itemName, 'Unknown Animation');
+        });
+
+        test('должен вернуть "Unknown Animation" когда tvShow null для анимации tvShow', () {
+          final CollectionItem item = CollectionItem(
+            id: 7,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 1399,
+            platformId: AnimationSource.tvShow,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.itemName, 'Unknown Animation');
+        });
       });
 
       group('platformName', () {
@@ -794,6 +852,96 @@ void main() {
           );
 
           expect(item.coverUrl, isNull);
+        });
+
+        test('должен вернуть posterUrl фильма для анимации с источником movie', () {
+          final CollectionItem item = CollectionItem(
+            id: 4,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 550,
+            platformId: AnimationSource.movie,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            movie: testMovie,
+          );
+
+          expect(item.coverUrl, 'https://example.com/fightclub.jpg');
+        });
+
+        test('должен вернуть posterUrl сериала для анимации с источником tvShow', () {
+          final CollectionItem item = CollectionItem(
+            id: 5,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 1399,
+            platformId: AnimationSource.tvShow,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            tvShow: testTvShow,
+          );
+
+          expect(item.coverUrl, 'https://example.com/breakingbad.jpg');
+        });
+      });
+
+      group('thumbnailUrl', () {
+        test('должен вернуть posterThumbUrl фильма для анимации с источником movie', () {
+          final CollectionItem item = CollectionItem(
+            id: 4,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 550,
+            platformId: AnimationSource.movie,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            movie: testMovie,
+          );
+
+          expect(item.thumbnailUrl, testMovie.posterThumbUrl);
+        });
+
+        test('должен вернуть posterThumbUrl сериала для анимации с источником tvShow', () {
+          final CollectionItem item = CollectionItem(
+            id: 5,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 1399,
+            platformId: AnimationSource.tvShow,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            tvShow: testTvShow,
+          );
+
+          expect(item.thumbnailUrl, testTvShow.posterThumbUrl);
+        });
+
+        test('должен вернуть null когда movie null для анимации movie', () {
+          final CollectionItem item = CollectionItem(
+            id: 6,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 550,
+            platformId: AnimationSource.movie,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.thumbnailUrl, isNull);
+        });
+
+        test('должен вернуть null когда tvShow null для анимации tvShow', () {
+          final CollectionItem item = CollectionItem(
+            id: 7,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 1399,
+            platformId: AnimationSource.tvShow,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.thumbnailUrl, isNull);
         });
       });
 

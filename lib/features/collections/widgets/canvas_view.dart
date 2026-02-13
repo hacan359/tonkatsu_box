@@ -299,6 +299,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
       case CanvasItemType.game:
       case CanvasItemType.movie:
       case CanvasItemType.tvShow:
+      case CanvasItemType.animation:
         break; // Медиа-элементы не редактируются через контекстное меню
     }
   }
@@ -773,6 +774,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
         child = CanvasGameCard(item: item);
       case CanvasItemType.movie:
       case CanvasItemType.tvShow:
+      case CanvasItemType.animation:
         child = CanvasMediaCard(item: item);
       case CanvasItemType.text:
         child = CanvasTextItem(item: item);
@@ -895,6 +897,7 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
       CanvasItemType.game => CanvasRepository.defaultCardWidth,
       CanvasItemType.movie => CanvasRepository.defaultCardWidth,
       CanvasItemType.tvShow => CanvasRepository.defaultCardWidth,
+      CanvasItemType.animation => CanvasRepository.defaultCardWidth,
       CanvasItemType.text => 200,
       CanvasItemType.image => 200,
       CanvasItemType.link => 200,
@@ -907,6 +910,7 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
       CanvasItemType.game => CanvasRepository.defaultCardHeight,
       CanvasItemType.movie => CanvasRepository.defaultCardHeight,
       CanvasItemType.tvShow => CanvasRepository.defaultCardHeight,
+      CanvasItemType.animation => CanvasRepository.defaultCardHeight,
       CanvasItemType.text => 100,
       CanvasItemType.image => 200,
       CanvasItemType.link => 48,

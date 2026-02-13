@@ -200,7 +200,7 @@ class CollectionItem with Exportable {
   /// ID в IGDB (для игр). Алиас для [externalId].
   int get igdbId => externalId;
 
-  /// Название элемента (игра, фильм или сериал).
+  /// Название элемента (игра, фильм, сериал или анимация).
   String get itemName {
     switch (mediaType) {
       case MediaType.game:
@@ -209,6 +209,11 @@ class CollectionItem with Exportable {
         return movie?.title ?? 'Unknown Movie';
       case MediaType.tvShow:
         return tvShow?.title ?? 'Unknown TV Show';
+      case MediaType.animation:
+        if (platformId == AnimationSource.tvShow) {
+          return tvShow?.title ?? 'Unknown Animation';
+        }
+        return movie?.title ?? 'Unknown Animation';
     }
   }
 
@@ -234,6 +239,11 @@ class CollectionItem with Exportable {
         return movie?.posterUrl;
       case MediaType.tvShow:
         return tvShow?.posterUrl;
+      case MediaType.animation:
+        if (platformId == AnimationSource.tvShow) {
+          return tvShow?.posterUrl;
+        }
+        return movie?.posterUrl;
     }
   }
 
@@ -246,6 +256,11 @@ class CollectionItem with Exportable {
         return movie?.posterThumbUrl;
       case MediaType.tvShow:
         return tvShow?.posterThumbUrl;
+      case MediaType.animation:
+        if (platformId == AnimationSource.tvShow) {
+          return tvShow?.posterThumbUrl;
+        }
+        return movie?.posterThumbUrl;
     }
   }
 

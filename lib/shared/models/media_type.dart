@@ -9,7 +9,10 @@ enum MediaType {
   movie('movie'),
 
   /// Сериал (TMDB).
-  tvShow('tv_show');
+  tvShow('tv_show'),
+
+  /// Анимация (TMDB) — анимационные фильмы и сериалы.
+  animation('animation');
 
   const MediaType(this.value);
 
@@ -37,6 +40,21 @@ enum MediaType {
         return 'Movie';
       case MediaType.tvShow:
         return 'TV Show';
+      case MediaType.animation:
+        return 'Animation';
     }
   }
+}
+
+/// Тип источника анимации (фильм или сериал).
+///
+/// Хранится в `collection_items.platform_id`:
+/// - [movie] = 0 → анимационный фильм
+/// - [tvShow] = 1 → анимационный сериал
+abstract final class AnimationSource {
+  /// Анимационный фильм.
+  static const int movie = 0;
+
+  /// Анимационный сериал.
+  static const int tvShow = 1;
 }
