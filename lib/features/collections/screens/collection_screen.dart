@@ -15,7 +15,6 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/collection_sort_mode.dart';
-import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/navigation/navigation_shell.dart';
 import '../../../shared/widgets/poster_card.dart';
@@ -29,7 +28,7 @@ import '../providers/steamgriddb_panel_provider.dart';
 import '../providers/vgmaps_panel_provider.dart';
 import '../widgets/canvas_view.dart';
 import '../widgets/create_collection_dialog.dart';
-import '../widgets/item_status_dropdown.dart';
+import '../widgets/status_ribbon.dart';
 import '../widgets/steamgriddb_panel.dart';
 import '../widgets/vgmaps_panel.dart';
 import 'game_detail_screen.dart';
@@ -158,6 +157,13 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
               )
             : null,
         actions: <Widget>[
+          if (_collection!.isEditable && !_isCanvasMode)
+            IconButton(
+              icon: const Icon(Icons.add),
+              color: AppColors.textSecondary,
+              tooltip: 'Add Items',
+              onPressed: () => _addItems(context),
+            ),
           if (_collection!.isEditable)
             IconButton(
               icon: const Icon(Icons.edit),
@@ -306,15 +312,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                 ),
               ],
             ),
-      floatingActionButton: _collection!.isEditable && !_isCanvasMode
-          ? FloatingActionButton.extended(
-              onPressed: () => _addItems(context),
-              backgroundColor: AppColors.gameAccent,
-              foregroundColor: AppColors.background,
-              icon: const Icon(Icons.add),
-              label: const Text('Add Items'),
-            )
-          : null,
     );
   }
 
@@ -657,8 +654,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             key: ValueKey<int>(item.id),
             item: item,
             isEditable: _collection!.isEditable,
-            onStatusChanged: (ItemStatus status) =>
-                _updateStatus(item.id, status, item.mediaType),
             onRemove: _collection!.isEditable
                 ? () => _removeItem(item)
                 : null,
@@ -800,8 +795,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           isEditable: _collection!.isEditable,
           showDragHandle: true,
           dragIndex: index,
-          onStatusChanged: (ItemStatus status) =>
-              _updateStatus(item.id, status, item.mediaType),
           onRemove: _collection!.isEditable
               ? () => _removeItem(item)
               : null,
@@ -893,16 +886,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
           .refresh();
     }
-  }
-
-  Future<void> _updateStatus(
-    int id,
-    ItemStatus status,
-    MediaType mediaType,
-  ) async {
-    await ref
-        .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
-        .updateStatus(id, status, mediaType);
   }
 
   Future<void> _removeItem(CollectionItem item) async {
@@ -1321,7 +1304,6 @@ class _CollectionItemTile extends StatelessWidget {
     super.key,
     required this.item,
     required this.isEditable,
-    required this.onStatusChanged,
     this.showDragHandle = false,
     this.dragIndex = 0,
     this.onRemove,
@@ -1330,7 +1312,6 @@ class _CollectionItemTile extends StatelessWidget {
 
   final CollectionItem item;
   final bool isEditable;
-  final void Function(ItemStatus) onStatusChanged;
   final bool showDragHandle;
   final int dragIndex;
   final VoidCallback? onRemove;
@@ -1366,23 +1347,6 @@ class _CollectionItemTile extends StatelessWidget {
               ),
             ),
           ),
-          // Цветная полоска статуса (слева)
-          if (item.status != ItemStatus.notStarted)
-            Positioned(
-              left: 0,
-              top: 0,
-              bottom: 0,
-              child: Container(
-                width: 3,
-                decoration: BoxDecoration(
-                  color: item.status.color,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(AppSpacing.radiusMd),
-                    bottomLeft: Radius.circular(AppSpacing.radiusMd),
-                  ),
-                ),
-              ),
-            ),
           // Основное содержимое
           InkWell(
             onTap: onTap,
@@ -1458,16 +1422,6 @@ class _CollectionItemTile extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(width: AppSpacing.sm),
-
-                  // Статус
-                  ItemStatusDropdown(
-                    status: item.status,
-                    mediaType: item.mediaType,
-                    onChanged: onStatusChanged,
-                    compact: true,
-                  ),
-
                   // Удалить (если редактируемый)
                   if (onRemove != null)
                     IconButton(
@@ -1481,6 +1435,11 @@ class _CollectionItemTile extends StatelessWidget {
                 ],
               ),
             ),
+          ),
+          // Диагональная ленточка статуса (верхний левый угол, поверх контента)
+          StatusRibbon(
+            status: item.status,
+            mediaType: item.mediaType,
           ),
         ],
       ),

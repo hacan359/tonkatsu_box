@@ -20,7 +20,7 @@ import '../providers/steamgriddb_panel_provider.dart';
 import '../providers/vgmaps_panel_provider.dart';
 import '../widgets/activity_dates_section.dart';
 import '../widgets/canvas_view.dart';
-import '../widgets/item_status_dropdown.dart';
+import '../widgets/status_chip_row.dart';
 import '../widgets/steamgriddb_panel.dart';
 import '../widgets/vgmaps_panel.dart';
 
@@ -161,7 +161,7 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
             description: movie?.overview,
             cacheImageType: ImageType.moviePoster,
             cacheImageId: item.externalId.toString(),
-            statusWidget: ItemStatusDropdown(
+            statusWidget: StatusChipRow(
               status: item.status,
               mediaType: MediaType.movie,
               onChanged: (ItemStatus status) =>

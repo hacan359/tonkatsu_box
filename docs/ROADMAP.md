@@ -23,7 +23,7 @@
 - [x] Stage 15: TMDB Integration — API client for movies/TV shows, models (Movie, TvShow, TvSeason), DB cache tables, settings UI
 - [x] Stage 16: Universal Collections — CollectionItem model with MediaType (game/movie/tvShow), ItemStatus, DB migration, backward-compatible adapters
 - [x] Stage 17: Universal Search — tabbed search (Games/Movies/TV Shows), MediaSearchProvider, MovieCard, TvShowCard, add movies/TV shows to collections
-- [x] Stage 18: Media Display — movie/TV show detail screens, ItemStatusDropdown, CanvasMediaCard, CollectionScreen switched to CollectionItem, canvas support for all media types
+- [x] Stage 18: Media Display — movie/TV show detail screens, StatusChipRow, CanvasMediaCard, CollectionScreen switched to CollectionItem, canvas support for all media types
 - [x] UI Cards: Source badges (IGDB/TMDB), unified MediaCard for search, unified MediaDetailView for detail screens, media type color coding, canvas card type borders
 - [x] Search Sorting: Sort results by relevance, date, or rating with toggleable direction
 - [x] TMDB Filters: Filter movies/TV shows by release year and genres
@@ -57,7 +57,7 @@
 - [ ] Canvas mode restoration — Grid/Canvas toggle, CanvasView + SteamGridDB/VGMaps panels
 - [ ] Episode Tracker restoration — full episode tracker in TV Show detail screen
 - [ ] Activity Dates restoration — editable ActivityDatesSection in detail screens
-- [ ] ItemStatusDropdown restoration — context-aware status dropdown in detail screens
+- [x] StatusChipRow + StatusRibbon — modern chip-based status selection on detail screens, diagonal ribbon on list cards
 - [ ] Search filters restoration — Platform Filter, Media Filter, Sort Selector
 
 ## Future Plans

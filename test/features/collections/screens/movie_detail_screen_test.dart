@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/collections/providers/collections_provider.dart';
 import 'package:xerabora/features/collections/screens/movie_detail_screen.dart';
-import 'package:xerabora/features/collections/widgets/item_status_dropdown.dart';
+import 'package:xerabora/features/collections/widgets/status_chip_row.dart';
 import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
@@ -428,7 +428,7 @@ void main() {
       });
     });
 
-    group('Статус (ItemStatusDropdown)', () {
+    group('Статус (StatusChipRow)', () {
       testWidgets('должен отображать секцию статуса с заголовком',
           (WidgetTester tester) async {
         final Movie movie = createTestMovie();
@@ -445,7 +445,7 @@ void main() {
         expect(find.text('Status'), findsOneWidget);
       });
 
-      testWidgets('должен содержать ItemStatusDropdown виджет',
+      testWidgets('должен содержать StatusChipRow виджет',
           (WidgetTester tester) async {
         final Movie movie = createTestMovie();
         final CollectionItem item = createTestItem(movie: movie);
@@ -458,11 +458,11 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        expect(find.byType(ItemStatusDropdown), findsOneWidget);
+        expect(find.byType(StatusChipRow), findsOneWidget);
       });
 
       testWidgets(
-          'ItemStatusDropdown должен использовать MediaType.movie',
+          'StatusChipRow должен использовать MediaType.movie',
           (WidgetTester tester) async {
         final Movie movie = createTestMovie();
         final CollectionItem item = createTestItem(
@@ -478,8 +478,8 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        final ItemStatusDropdown dropdown = tester.widget<ItemStatusDropdown>(
-          find.byType(ItemStatusDropdown),
+        final StatusChipRow dropdown = tester.widget<StatusChipRow>(
+          find.byType(StatusChipRow),
         );
         expect(dropdown.mediaType, MediaType.movie);
         expect(dropdown.status, ItemStatus.notStarted);

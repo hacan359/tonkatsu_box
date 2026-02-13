@@ -7,8 +7,9 @@
 ## [Unreleased]
 
 ### Added
-- Добавлен геттер `ItemStatus.color` — единый маппинг статус→цвет, устранено дублирование `_getStatusColor()` в `ItemStatusDropdown` и `ItemStatusChip`
-- Добавлена цветная полоска статуса (3px) слева на карточке `_CollectionItemTile` — цвет из `ItemStatus.color`, скрыта для `notStarted`
+- Добавлен виджет `StatusChipRow` — горизонтальный ряд chip-кнопок для выбора статуса на detail-экранах (все статусы видны сразу, тап = выбор, AnimatedContainer для плавных переходов)
+- Добавлен виджет `StatusRibbon` — диагональная ленточка статуса в верхнем левом углу list-карточек (display only, цвет из `ItemStatus.color`, emoji + метка)
+- Добавлен геттер `ItemStatus.color` — единый маппинг статус→цвет, устранено дублирование `_getStatusColor()`
 - Добавлен статус-бейдж (цветной кружок с эмодзи) на `PosterCard` в grid-режиме коллекции — новый параметр `ItemStatus? status`
 - Добавлен шрифт Inter (Regular, Medium, SemiBold, Bold) в `assets/fonts/`
 - Добавлен `AppTheme` (`lib/shared/theme/app_theme.dart`) — централизованная тёмная тема через `AppColors`, стилизация всех Material-компонентов
@@ -23,6 +24,11 @@
 - Добавлены фильтры в `CollectionScreen` — фильтр по типу медиа (All/Games/Movies/TV Shows) через `ChoiceChip`, поиск по имени
 
 ### Changed
+- Заменён `PopupMenuButton` dropdown на `StatusChipRow` (ряд чипов) на detail-экранах (game, movie, tv_show)
+- Заменён compact dropdown на `StatusRibbon` (диагональная ленточка) на list-карточках `_CollectionItemTile` — статус теперь display only, смена только на detail-экране
+- Перенесена кнопка "New Collection" из FAB в AppBar (IconButton "+") на `HomeScreen`
+- Перенесена кнопка "Add Items" из FAB в AppBar (IconButton "+") на `CollectionScreen`
+- Мигрирован `game_detail_screen.dart` с legacy `StatusDropdown` (GameStatus) на `StatusChipRow` (ItemStatus) с конвертацией через `toItemStatus()`/`_toGameStatus()`
 - Углублена тёмная палитра `AppColors`: background `#121212`→`#0A0A0A`, surface `#1E1E1E`→`#141414`, surfaceLight `#2A2A2A`→`#1E1E1E`, surfaceBorder `#3A3A3A`→`#2A2A2A`, textPrimary `#E0E0E0`→`#FFFFFF`
 - Добавлены цвета рейтинга в `AppColors`: `ratingHigh` (#22C55E), `ratingMedium` (#FBBF24), `ratingLow` (#EF4444)
 - Добавлен цвет статуса `statusPlanned` (#8B5CF6) в `AppColors`
@@ -60,6 +66,10 @@
 - Добавлены виджеты: `SectionHeader` (заголовок секции с кнопкой действия)
 
 ### Removed
+- Удалён виджет `ItemStatusDropdown` и `ItemStatusChip` (`item_status_dropdown.dart`) — заменены на `StatusChipRow` и `StatusRibbon`
+- Удалён legacy виджет `StatusDropdown` и `StatusChip` (`status_dropdown.dart`) — заменены на `StatusChipRow`
+- Удалены FAB-кнопки "New Collection" и "Add Items" — перенесены в AppBar
+- Удалена цветная полоска статуса (3px) на `_CollectionItemTile` — заменена на `StatusRibbon`
 - Удалён неиспользуемый виджет `RatingBadge` (`lib/shared/widgets/rating_badge.dart`) и его тесты
 - Удалён неиспользуемый виджет `PosterCard` (`lib/shared/widgets/poster_card.dart`) и его тесты
 - Удалена неиспользуемая константа `AppColors.statusBacklog`

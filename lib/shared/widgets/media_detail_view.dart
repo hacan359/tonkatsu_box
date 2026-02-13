@@ -238,7 +238,7 @@ class MediaDetailView extends StatelessWidget {
   }
 
   Widget _buildCoverImage() {
-    if (coverUrl == null) return _buildPlaceholder();
+    if (coverUrl == null || coverUrl!.isEmpty) return _buildPlaceholder();
 
     final bool useLocalCache =
         cacheImageType != null && cacheImageId != null;
@@ -304,10 +304,14 @@ class MediaDetailView extends StatelessWidget {
         children: <Widget>[
           Icon(icon, size: 12, color: AppColors.textSecondary),
           const SizedBox(width: 4),
-          Text(
-            text,
-            style: AppTypography.caption.copyWith(
-              color: AppColors.textSecondary,
+          Flexible(
+            child: Text(
+              text,
+              style: AppTypography.caption.copyWith(
+                color: AppColors.textSecondary,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
             ),
           ),
         ],
