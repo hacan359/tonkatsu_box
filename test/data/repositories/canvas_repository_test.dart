@@ -5,8 +5,9 @@ import 'package:xerabora/data/repositories/canvas_repository.dart';
 import 'package:xerabora/shared/models/canvas_connection.dart';
 import 'package:xerabora/shared/models/canvas_item.dart';
 import 'package:xerabora/shared/models/canvas_viewport.dart';
-import 'package:xerabora/shared/models/collection_game.dart';
 import 'package:xerabora/shared/models/collection_item.dart';
+import 'package:xerabora/shared/models/item_status.dart';
+import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/game.dart';
 import 'package:xerabora/shared/models/movie.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
@@ -543,21 +544,23 @@ void main() {
 
     group('initializeCanvas', () {
       test('should create canvas items in grid layout', () async {
-        final List<CollectionGame> games = <CollectionGame>[
-          CollectionGame(
+        final List<CollectionItem> items = <CollectionItem>[
+          CollectionItem(
             id: 1,
             collectionId: 10,
-            igdbId: 100,
+            mediaType: MediaType.game,
+            externalId: 100,
             platformId: 18,
-            status: GameStatus.notStarted,
+            status: ItemStatus.notStarted,
             addedAt: testDate,
           ),
-          CollectionGame(
+          CollectionItem(
             id: 2,
             collectionId: 10,
-            igdbId: 200,
+            mediaType: MediaType.game,
+            externalId: 200,
             platformId: 18,
-            status: GameStatus.notStarted,
+            status: ItemStatus.notStarted,
             addedAt: testDate,
           ),
         ];
@@ -575,8 +578,7 @@ void main() {
             )).thenAnswer((_) async {});
 
         final List<CanvasItem> result =
-            await repository.initializeCanvas(
-                10, games.map((CollectionGame g) => g.toCollectionItem()).toList());
+            await repository.initializeCanvas(10, items);
 
         expect(result.length, 2);
         expect(result[0].id, 1);
@@ -599,15 +601,16 @@ void main() {
       });
 
       test('should wrap to next row after gridColumns', () async {
-        // Create 6 games (should wrap at column 5)
-        final List<CollectionGame> games = List<CollectionGame>.generate(
+        // Create 6 items (should wrap at column 5)
+        final List<CollectionItem> items = List<CollectionItem>.generate(
           6,
-          (int i) => CollectionGame(
+          (int i) => CollectionItem(
             id: i + 1,
             collectionId: 10,
-            igdbId: (i + 1) * 100,
+            mediaType: MediaType.game,
+            externalId: (i + 1) * 100,
             platformId: 18,
-            status: GameStatus.notStarted,
+            status: ItemStatus.notStarted,
             addedAt: testDate,
           ),
         );
@@ -625,8 +628,7 @@ void main() {
             )).thenAnswer((_) async {});
 
         final List<CanvasItem> result =
-            await repository.initializeCanvas(
-                10, games.map((CollectionGame g) => g.toCollectionItem()).toList());
+            await repository.initializeCanvas(10, items);
 
         expect(result.length, 6);
         // 6 games → cols=5, gridWidth=896, startX=2500-448=2052

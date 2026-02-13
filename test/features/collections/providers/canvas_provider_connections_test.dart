@@ -7,21 +7,9 @@ import 'package:xerabora/features/collections/providers/collections_provider.dar
 import 'package:xerabora/shared/models/canvas_connection.dart';
 import 'package:xerabora/shared/models/canvas_item.dart';
 import 'package:xerabora/shared/models/canvas_viewport.dart';
-import 'package:xerabora/shared/models/collection_game.dart';
 import 'package:xerabora/shared/models/collection_item.dart';
 
 class MockCanvasRepository extends Mock implements CanvasRepository {}
-
-class MockCollectionGamesNotifier extends CollectionGamesNotifier {
-  MockCollectionGamesNotifier(this._initialState);
-
-  final AsyncValue<List<CollectionGame>> _initialState;
-
-  @override
-  AsyncValue<List<CollectionGame>> build(int arg) {
-    return _initialState;
-  }
-}
 
 class MockCollectionItemsNotifier extends CollectionItemsNotifier {
   @override
@@ -216,11 +204,6 @@ void main() {
       final ProviderContainer container = ProviderContainer(
         overrides: <Override>[
           canvasRepositoryProvider.overrideWithValue(mockRepository),
-          collectionGamesNotifierProvider.overrideWith(
-            () => MockCollectionGamesNotifier(
-              const AsyncValue<List<CollectionGame>>.data(<CollectionGame>[]),
-            ),
-          ),
           collectionItemsNotifierProvider.overrideWith(
             MockCollectionItemsNotifier.new,
           ),

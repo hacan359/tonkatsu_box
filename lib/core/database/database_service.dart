@@ -7,7 +7,6 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../shared/models/collected_item_info.dart';
 import '../../shared/models/collection.dart';
-import '../../shared/models/collection_game.dart';
 import '../../shared/models/collection_item.dart';
 import '../../shared/models/game.dart';
 import '../../shared/models/item_status.dart';
@@ -51,7 +50,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 13,
+        version: 14,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -66,7 +65,6 @@ class DatabaseService {
     await _createPlatformsTable(db);
     await _createGamesTable(db);
     await _createCollectionsTable(db);
-    await _createCollectionGamesTable(db);
     await _createCanvasItemsTable(db);
     await _createCanvasViewportTable(db);
     await _createCanvasConnectionsTable(db);
@@ -129,40 +127,36 @@ class DatabaseService {
     ''');
   }
 
-  Future<void> _createCollectionGamesTable(Database db) async {
-    await db.execute('''
-      CREATE TABLE collection_games (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        collection_id INTEGER NOT NULL,
-        igdb_id INTEGER NOT NULL,
-        platform_id INTEGER NOT NULL,
-        author_comment TEXT,
-        user_comment TEXT,
-        status TEXT DEFAULT 'not_started',
-        added_at INTEGER NOT NULL,
-        FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE,
-        UNIQUE(collection_id, igdb_id, platform_id)
-      )
-    ''');
-
-    // Индексы для быстрого поиска
-    await db.execute('''
-      CREATE INDEX idx_collection_games_collection
-      ON collection_games(collection_id)
-    ''');
-    await db.execute('''
-      CREATE INDEX idx_collection_games_igdb
-      ON collection_games(igdb_id)
-    ''');
-  }
-
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
       await _createGamesTable(db);
     }
     if (oldVersion < 3) {
       await _createCollectionsTable(db);
-      await _createCollectionGamesTable(db);
+      // Inline SQL — метод _createCollectionGamesTable удалён,
+      // но таблица нужна для миграции v8 (collection_games → collection_items)
+      await db.execute('''
+        CREATE TABLE collection_games (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          collection_id INTEGER NOT NULL,
+          igdb_id INTEGER NOT NULL,
+          platform_id INTEGER NOT NULL,
+          author_comment TEXT,
+          user_comment TEXT,
+          status TEXT DEFAULT 'not_started',
+          added_at INTEGER NOT NULL,
+          FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE,
+          UNIQUE(collection_id, igdb_id, platform_id)
+        )
+      ''');
+      await db.execute('''
+        CREATE INDEX idx_collection_games_collection
+        ON collection_games(collection_id)
+      ''');
+      await db.execute('''
+        CREATE INDEX idx_collection_games_igdb
+        ON collection_games(igdb_id)
+      ''');
     }
     if (oldVersion < 4) {
       // Добавляем колонку logo_image_id для хранения логотипов платформ
@@ -224,6 +218,13 @@ class DatabaseService {
     }
     if (oldVersion < 13) {
       await _createTmdbGenresTable(db);
+    }
+    if (oldVersion < 14) {
+      // Миграция: 'playing' → 'in_progress' для единообразия статусов
+      await db.execute(
+        "UPDATE collection_items SET status = 'in_progress' "
+        "WHERE status = 'playing'",
+      );
     }
   }
 
@@ -1365,7 +1366,7 @@ class DatabaseService {
           'media_type': mediaType.value,
           'external_id': externalId,
           'platform_id': platformId,
-          'status': status.dbValue(mediaType),
+          'status': status.value,
           'author_comment': authorComment,
           'added_at': now,
           'sort_order': sortOrder,
@@ -1437,7 +1438,7 @@ class DatabaseService {
     final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
     final Map<String, dynamic> updateData = <String, dynamic>{
-      'status': status.dbValue(mediaType),
+      'status': status.value,
       'last_activity_at': now,
     };
 
@@ -1574,7 +1575,6 @@ class DatabaseService {
     final Map<String, int> stats = <String, int>{
       'total': 0,
       'completed': 0,
-      'playing': 0,
       'inProgress': 0,
       'notStarted': 0,
       'dropped': 0,
@@ -1608,10 +1608,6 @@ class DatabaseService {
       switch (status) {
         case 'completed':
           stats['completed'] = (stats['completed'] ?? 0) + count;
-        case 'playing':
-          // Legacy: playing = inProgress для игр
-          stats['playing'] = (stats['playing'] ?? 0) + count;
-          stats['inProgress'] = (stats['inProgress'] ?? 0) + count;
         case 'in_progress':
           stats['inProgress'] = (stats['inProgress'] ?? 0) + count;
         case 'not_started':
@@ -1635,116 +1631,6 @@ class DatabaseService {
       'collection_items',
       where: 'collection_id = ?',
       whereArgs: <Object?>[collectionId],
-    );
-  }
-
-  // ==================== Collection Games (Legacy) ====================
-
-  /// Возвращает все игры в коллекции.
-  ///
-  /// Читает из collection_items с фильтром media_type='game'.
-  Future<List<CollectionGame>> getCollectionGames(int collectionId) async {
-    final List<CollectionItem> items = await getCollectionItems(
-      collectionId,
-      mediaType: MediaType.game,
-    );
-    return items
-        .map(CollectionGame.fromCollectionItem)
-        .toList();
-  }
-
-  /// Возвращает игры в коллекции с подгруженными данными.
-  Future<List<CollectionGame>> getCollectionGamesWithData(
-    int collectionId,
-  ) async {
-    final List<CollectionItem> items = await getCollectionItemsWithData(
-      collectionId,
-      mediaType: MediaType.game,
-    );
-    return items
-        .map(CollectionGame.fromCollectionItem)
-        .toList();
-  }
-
-  /// Возвращает запись игры в коллекции по ID.
-  Future<CollectionGame?> getCollectionGameById(int id) async {
-    final CollectionItem? item = await getCollectionItemById(id);
-    if (item == null) return null;
-    return CollectionGame.fromCollectionItem(item);
-  }
-
-  /// Добавляет игру в коллекцию.
-  ///
-  /// Делегирует в [addItemToCollection] с mediaType=game.
-  Future<int?> addGameToCollection({
-    required int collectionId,
-    required int igdbId,
-    required int platformId,
-    String? authorComment,
-  }) async {
-    return addItemToCollection(
-      collectionId: collectionId,
-      mediaType: MediaType.game,
-      externalId: igdbId,
-      platformId: platformId,
-      authorComment: authorComment,
-    );
-  }
-
-  /// Удаляет игру из коллекции.
-  Future<void> removeGameFromCollection(int id) async {
-    await removeItemFromCollection(id);
-  }
-
-  /// Обновляет статус игры в коллекции.
-  Future<void> updateGameStatus(int id, GameStatus status) async {
-    await updateItemStatus(
-      id,
-      status.toItemStatus(),
-      mediaType: MediaType.game,
-    );
-  }
-
-  /// Обновляет комментарий автора.
-  Future<void> updateAuthorComment(int id, String? comment) async {
-    await updateItemAuthorComment(id, comment);
-  }
-
-  /// Обновляет личный комментарий пользователя.
-  Future<void> updateUserComment(int id, String? comment) async {
-    await updateItemUserComment(id, comment);
-  }
-
-  /// Возвращает количество игр в коллекции.
-  Future<int> getCollectionGameCount(int collectionId) async {
-    return getCollectionItemCount(collectionId, mediaType: MediaType.game);
-  }
-
-  /// Возвращает количество пройденных игр в коллекции.
-  Future<int> getCompletedGameCount(int collectionId) async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> result = await db.rawQuery(
-      '''SELECT COUNT(*) as count FROM collection_items
-         WHERE collection_id = ? AND status = ?''',
-      <Object?>[collectionId, 'completed'],
-    );
-    return result.first['count'] as int;
-  }
-
-  /// Возвращает статистику по коллекции.
-  ///
-  /// Обёртка над [getCollectionItemStats] для обратной совместимости.
-  Future<Map<String, int>> getCollectionStats(int collectionId) async {
-    return getCollectionItemStats(collectionId);
-  }
-
-  /// Удаляет все игры из коллекции.
-  Future<void> clearCollectionGames(int collectionId) async {
-    final Database db = await database;
-    await db.delete(
-      'collection_items',
-      where: 'collection_id = ? AND media_type = ?',
-      whereArgs: <Object?>[collectionId, MediaType.game.value],
     );
   }
 
@@ -2054,7 +1940,6 @@ class DatabaseService {
       await txn.delete('canvas_viewport');
       await txn.delete('game_canvas_viewport');
       await txn.delete('collection_items');
-      await txn.delete('collection_games');
       // Основные таблицы
       await txn.delete('collections');
       await txn.delete('tv_episodes_cache');

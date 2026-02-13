@@ -320,9 +320,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     if (platformId == null || !mounted) return;
 
     final bool success = await ref
-        .read(collectionGamesNotifierProvider(widget.collectionId!).notifier)
-        .addGame(
-          igdbId: game.id,
+        .read(collectionItemsNotifierProvider(widget.collectionId!).notifier)
+        .addItem(
+          mediaType: MediaType.game,
+          externalId: game.id,
           platformId: platformId,
         );
 
@@ -352,9 +353,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     if (platformId == null || !mounted) return;
 
     final bool success = await ref
-        .read(collectionGamesNotifierProvider(selectedCollection.id).notifier)
-        .addGame(
-          igdbId: game.id,
+        .read(collectionItemsNotifierProvider(selectedCollection.id).notifier)
+        .addItem(
+          mediaType: MediaType.game,
+          externalId: game.id,
           platformId: platformId,
         );
 

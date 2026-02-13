@@ -6,6 +6,25 @@
 
 ## [Unreleased]
 
+### Removed
+- Удалён класс `CollectionGame` и enum `GameStatus` (`lib/shared/models/collection_game.dart`) — полностью заменены на `CollectionItem` и `ItemStatus`
+- Удалён `CollectionGamesNotifier` и провайдеры `collectionGamesProvider`, `collectionGamesNotifierProvider` из `collections_provider.dart` (~180 строк)
+- Удалён legacy-маппинг статуса `'playing'` — статус `inProgress` теперь единообразен для всех типов медиа. Миграция БД v13→v14 обновляет существующие записи
+- Удалён метод `ItemStatus.dbValue(MediaType)` — везде используется `ItemStatus.value`
+- Удалён формат v1 (.rcoll): класс `RcollGame`, константа `xcollLegacyVersion`, методы `_parseV1()`, `createXcollFile()`, `exportToLegacyJson()`, `_importV1()`. Файлы v1 при попытке импорта выбрасывают `FormatException`
+- Удалены этапы импорта `ImportStage.cachingGames` и `ImportStage.addingGames` (использовались только v1)
+- Удалены геттеры `XcollFile.isV1`, `XcollFile.isV2`, `XcollFile.gameIds`, поле `XcollFile.legacyGames`
+- Удалены legacy-методы из `DatabaseService`: `getCollectionGames()`, `getCollectionGamesWithData()`, `getCollectionGameById()`, `addGameToCollection()`, `removeGameFromCollection()`, `updateGameStatus()`, `getCollectionGameCount()`, `getCompletedGameCount()`, `getCollectionStats()`, `clearCollectionGames()` и др.
+- Удалены legacy-методы из `CollectionRepository`: `getGames()`, `getGamesWithData()`, `addGame()`, `removeGame()`, `updateGameStatus()` и др.
+- Удалено поле `CollectionStats.playing` — заменено на `inProgress`
+- Удалён файл `test/shared/models/collection_game_test.dart`
+
+### Changed
+- Изменён `GameDetailScreen` — рефакторинг с `CollectionGame`/`collectionGamesNotifierProvider` на `CollectionItem`/`collectionItemsNotifierProvider`, параметр `gameId` → `itemId`
+- Изменён `SearchScreen` — `addGame()` заменён на `addItem(mediaType: MediaType.game, ...)` через `collectionItemsNotifierProvider`
+- Изменён формат fork snapshot — ключ `'games'` заменён на `'items'` с полями `media_type`/`external_id`/`platform_id`
+- Изменена версия БД: 13 → 14
+
 ### Added
 - Добавлена вкладка Animation в универсальном поиске — 4-й таб, объединяющий анимационные фильмы и анимационные сериалы из TMDB (жанр Animation, genre_id=16). Анимация фильтруется клиентски из результатов Movies и TV Shows
 - Добавлен `MediaType.animation` в enum `MediaType` с `displayLabel: 'Animation'`, `fromString('animation')`

@@ -5,7 +5,6 @@ import '../../../core/database/database_service.dart';
 import '../../../data/repositories/collection_repository.dart';
 import '../../../shared/models/collected_item_info.dart';
 import '../../../shared/models/collection.dart';
-import '../../../shared/models/collection_game.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/collection_sort_mode.dart';
 import '../../../shared/models/item_status.dart';
@@ -78,7 +77,6 @@ class CollectionsNotifier extends AsyncNotifier<List<Collection>> {
     );
 
     // Инвалидируем связанные провайдеры
-    ref.invalidate(collectionGamesProvider(id));
     ref.invalidate(collectionStatsProvider(id));
   }
 
@@ -97,20 +95,9 @@ class CollectionsNotifier extends AsyncNotifier<List<Collection>> {
     await _repository.revertToOriginal(collectionId);
 
     // Инвалидируем связанные провайдеры
-    ref.invalidate(collectionGamesProvider(collectionId));
     ref.invalidate(collectionStatsProvider(collectionId));
   }
 }
-
-/// Провайдер для игр в коллекции.
-final FutureProviderFamily<List<CollectionGame>, int> collectionGamesProvider =
-    FutureProvider.family<List<CollectionGame>, int>(
-  (Ref ref, int collectionId) async {
-    final CollectionRepository repository =
-        ref.watch(collectionRepositoryProvider);
-    return repository.getGamesWithData(collectionId);
-  },
-);
 
 /// Провайдер для статистики коллекции.
 final FutureProviderFamily<CollectionStats, int> collectionStatsProvider =
@@ -121,191 +108,6 @@ final FutureProviderFamily<CollectionStats, int> collectionStatsProvider =
     return repository.getStats(collectionId);
   },
 );
-
-/// Провайдер для управления играми в конкретной коллекции.
-final NotifierProviderFamily<CollectionGamesNotifier, AsyncValue<List<CollectionGame>>, int>
-    collectionGamesNotifierProvider =
-    NotifierProvider.family<CollectionGamesNotifier, AsyncValue<List<CollectionGame>>, int>(
-  CollectionGamesNotifier.new,
-);
-
-/// Notifier для управления играми в коллекции.
-class CollectionGamesNotifier
-    extends FamilyNotifier<AsyncValue<List<CollectionGame>>, int> {
-  late CollectionRepository _repository;
-  late int _collectionId;
-
-  @override
-  AsyncValue<List<CollectionGame>> build(int arg) {
-    _collectionId = arg;
-    _repository = ref.watch(collectionRepositoryProvider);
-
-    // Подписываемся на изменения
-    _loadGames();
-
-    return const AsyncLoading<List<CollectionGame>>();
-  }
-
-  Future<void> _loadGames() async {
-    state = const AsyncLoading<List<CollectionGame>>();
-    state = await AsyncValue.guard(
-      () => _repository.getGamesWithData(_collectionId),
-    );
-  }
-
-  /// Обновляет список игр.
-  Future<void> refresh() async {
-    await _loadGames();
-    // Инвалидируем статистику и универсальный провайдер элементов
-    ref.invalidate(collectionStatsProvider(_collectionId));
-    ref.invalidate(collectionItemsNotifierProvider(_collectionId));
-  }
-
-  /// Добавляет игру в коллекцию.
-  ///
-  /// Возвращает true при успехе, false если игра уже в коллекции.
-  Future<bool> addGame({
-    required int igdbId,
-    required int platformId,
-    String? authorComment,
-  }) async {
-    final int? id = await _repository.addGame(
-      collectionId: _collectionId,
-      igdbId: igdbId,
-      platformId: platformId,
-      authorComment: authorComment,
-    );
-
-    if (id == null) return false;
-
-    await refresh();
-    ref.invalidate(collectedGameIdsProvider);
-    return true;
-  }
-
-  /// Удаляет игру из коллекции.
-  Future<void> removeGame(int id) async {
-    await _repository.removeGame(id);
-    await refresh();
-    ref.invalidate(collectedGameIdsProvider);
-  }
-
-  /// Обновляет статус игры.
-  ///
-  /// Автоматически обновляет даты активности в локальном state.
-  Future<void> updateStatus(int id, GameStatus status) async {
-    await _repository.updateGameStatus(id, status);
-
-    // Локальное обновление с датами
-    final List<CollectionGame>? games = state.valueOrNull;
-    if (games != null) {
-      final DateTime now = DateTime.now();
-      state = AsyncData<List<CollectionGame>>(
-        games.map((CollectionGame g) {
-          if (g.id == id) {
-            DateTime? newStartedAt = g.startedAt;
-            DateTime? newCompletedAt = g.completedAt;
-            if (status == GameStatus.playing && g.startedAt == null) {
-              newStartedAt = now;
-            }
-            if (status == GameStatus.completed) {
-              newCompletedAt = now;
-              newStartedAt ??= now;
-            }
-            return g.copyWith(
-              status: status,
-              startedAt: newStartedAt,
-              completedAt: newCompletedAt,
-              lastActivityAt: now,
-            );
-          }
-          return g;
-        }).toList(),
-      );
-    }
-
-    // Обновляем статистику и синхронизируем универсальный провайдер
-    ref.invalidate(collectionStatsProvider(_collectionId));
-    ref.invalidate(collectionItemsNotifierProvider(_collectionId));
-  }
-
-  /// Обновляет даты активности игры вручную.
-  Future<void> updateActivityDates(
-    int id, {
-    DateTime? startedAt,
-    DateTime? completedAt,
-    DateTime? lastActivityAt,
-  }) async {
-    await _repository.updateItemActivityDates(
-      id,
-      startedAt: startedAt,
-      completedAt: completedAt,
-      lastActivityAt: lastActivityAt,
-    );
-
-    // Локальное обновление
-    final List<CollectionGame>? games = state.valueOrNull;
-    if (games != null) {
-      state = AsyncData<List<CollectionGame>>(
-        games.map((CollectionGame g) {
-          if (g.id == id) {
-            return g.copyWith(
-              startedAt: startedAt ?? g.startedAt,
-              completedAt: completedAt ?? g.completedAt,
-              lastActivityAt: lastActivityAt ?? g.lastActivityAt,
-            );
-          }
-          return g;
-        }).toList(),
-      );
-    }
-
-    // Синхронизируем универсальный провайдер
-    ref.invalidate(collectionItemsNotifierProvider(_collectionId));
-  }
-
-  /// Обновляет комментарий автора.
-  Future<void> updateAuthorComment(int id, String? comment) async {
-    await _repository.updateAuthorComment(id, comment);
-
-    // Локальное обновление
-    final List<CollectionGame>? games = state.valueOrNull;
-    if (games != null) {
-      state = AsyncData<List<CollectionGame>>(
-        games.map((CollectionGame g) {
-          if (g.id == id) {
-            return g.copyWith(authorComment: comment);
-          }
-          return g;
-        }).toList(),
-      );
-    }
-
-    // Синхронизируем универсальный провайдер
-    ref.invalidate(collectionItemsNotifierProvider(_collectionId));
-  }
-
-  /// Обновляет личный комментарий.
-  Future<void> updateUserComment(int id, String? comment) async {
-    await _repository.updateUserComment(id, comment);
-
-    // Локальное обновление
-    final List<CollectionGame>? games = state.valueOrNull;
-    if (games != null) {
-      state = AsyncData<List<CollectionGame>>(
-        games.map((CollectionGame g) {
-          if (g.id == id) {
-            return g.copyWith(userComment: comment);
-          }
-          return g;
-        }).toList(),
-      );
-    }
-
-    // Синхронизируем универсальный провайдер
-    ref.invalidate(collectionItemsNotifierProvider(_collectionId));
-  }
-}
 
 // ==================== Collection Sort ====================
 
@@ -425,7 +227,6 @@ class CollectionItemsNotifier
         ref.read(collectionSortProvider(_collectionId));
     await _loadItems(sortMode);
     ref.invalidate(collectionStatsProvider(_collectionId));
-    ref.invalidate(collectionGamesNotifierProvider(_collectionId));
   }
 
   /// Перемещает элемент с позиции [oldIndex] на [newIndex].

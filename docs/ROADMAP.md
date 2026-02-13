@@ -6,7 +6,7 @@
 - [x] IGDB integration
 - [x] Collection management
 - [x] Progress tracking
-- [x] Import/Export (.rcoll)
+- [x] Import/Export (.xcoll/.xcollx)
 - [x] Forking collections
 - [x] Comments system
 - [x] SteamGridDB integration (API client, debug panel)
@@ -33,7 +33,7 @@
 - [x] Task #14: Reset Database — clearAllData() for all 14 SQLite tables, confirmation dialog, settings preserved
 - [x] Config Export/Import — ConfigService with JSON export/import of 7 SharedPreferences keys, file picker dialogs
 - [x] Task #13: Image Caching — local caching of game covers, movie posters, TV show posters with auto-download, fallback to network, toggle in Settings
-- [x] Export v2 — Exportable mixin, XcollFile model (v1/v2), .xcoll (light) and .xcollx (full with canvas + images). Embedded cover images as base64 for offline import. Canvas URL image caching via ImageType.canvasImage
+- [x] Export v2 — Exportable mixin, XcollFile model (v2 only), .xcoll (light) and .xcollx (full with canvas + images). Embedded cover images as base64 for offline import. Canvas URL image caching via ImageType.canvasImage
 - [x] Collection sorting — sort by Date Added, Status, Name, or Manual (drag-and-drop). Per-collection persistence via SharedPreferences
 - [x] Media type watermark — large tilted semi-transparent background icon on each collection item card
 - [x] Android Lite — collections, search, details, episode tracker, export/import (no Canvas). Platform feature flags
@@ -41,6 +41,7 @@
 - [x] Canvas Lock — view-only mode toggle (lock icon in AppBar) for own/fork collections. Closes side panels when locked. Available on collection and per-item canvas
 - [x] View Mode Persistence — grid/list toggle saved per-collection in SharedPreferences
 - [x] Animation Tab — 4th search tab combining animated movies and TV shows from TMDB (genre Animation, ID=16). MediaType.animation enum, AnimationSource discriminator (movie=0, tvShow=1), adaptive AnimeDetailScreen, purple accent color, filter chip in collections, canvas support
+- [x] Legacy Removal — removed CollectionGame/GameStatus, collectionGamesNotifierProvider, v1 .rcoll format, 'playing' status mapping. DB migration v14. Unified on CollectionItem/ItemStatus only
 
 ## UI Redesign (completed)
 

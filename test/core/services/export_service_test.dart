@@ -11,7 +11,6 @@ import 'package:xerabora/shared/models/canvas_connection.dart';
 import 'package:xerabora/shared/models/canvas_item.dart';
 import 'package:xerabora/shared/models/canvas_viewport.dart';
 import 'package:xerabora/shared/models/collection.dart';
-import 'package:xerabora/shared/models/collection_game.dart';
 import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
@@ -40,25 +39,6 @@ void main() {
       author: author,
       type: type,
       createdAt: testDate,
-    );
-  }
-
-  CollectionGame createTestGame({
-    int id = 1,
-    int collectionId = 1,
-    int igdbId = 100,
-    int platformId = 18,
-    String? authorComment,
-    GameStatus status = GameStatus.notStarted,
-  }) {
-    return CollectionGame(
-      id: id,
-      collectionId: collectionId,
-      igdbId: igdbId,
-      platformId: platformId,
-      authorComment: authorComment,
-      status: status,
-      addedAt: testDate,
     );
   }
 
@@ -132,82 +112,6 @@ void main() {
       sut = ExportService();
     });
 
-    group('createXcollFile (legacy v1)', () {
-      test('должен создать XcollFile v1 из коллекции без игр', () {
-        final Collection collection = createTestCollection();
-        final List<CollectionItem> items = <CollectionItem>[];
-
-        final XcollFile rcoll = sut.createXcollFile(collection, items);
-
-        expect(rcoll.version, equals(xcollLegacyVersion));
-        expect(rcoll.isV1, isTrue);
-        expect(rcoll.name, equals('Test Collection'));
-        expect(rcoll.author, equals('Test Author'));
-        expect(rcoll.created, equals(testDate));
-        expect(rcoll.legacyGames, isEmpty);
-      });
-
-      test('должен создать XcollFile v1 с играми', () {
-        final Collection collection = createTestCollection();
-        final List<CollectionItem> items = <CollectionGame>[
-          createTestGame(
-              igdbId: 100, platformId: 18, authorComment: 'Comment 1'),
-          createTestGame(id: 2, igdbId: 200, platformId: 19),
-        ].map((CollectionGame g) => g.toCollectionItem()).toList();
-
-        final XcollFile rcoll = sut.createXcollFile(collection, items);
-
-        expect(rcoll.legacyGames.length, equals(2));
-        expect(rcoll.legacyGames[0].igdbId, equals(100));
-        expect(rcoll.legacyGames[0].platformId, equals(18));
-        expect(rcoll.legacyGames[0].comment, equals('Comment 1'));
-        expect(rcoll.legacyGames[1].igdbId, equals(200));
-        expect(rcoll.legacyGames[1].comment, isNull);
-      });
-
-      test('должен использовать authorComment а не userComment', () {
-        final Collection collection = createTestCollection();
-        final CollectionGame game = CollectionGame(
-          id: 1,
-          collectionId: 1,
-          igdbId: 100,
-          platformId: 18,
-          authorComment: 'Author says',
-          userComment: 'User says',
-          status: GameStatus.notStarted,
-          addedAt: testDate,
-        );
-
-        final XcollFile rcoll = sut.createXcollFile(
-          collection,
-          <CollectionGame>[game]
-              .map((CollectionGame g) => g.toCollectionItem())
-              .toList(),
-        );
-
-        expect(rcoll.legacyGames[0].comment, equals('Author says'));
-      });
-
-      test('должен фильтровать только игры в v1', () {
-        final Collection collection = createTestCollection();
-        final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(
-              mediaType: MediaType.game, externalId: 100, platformId: 18),
-          createTestItem(
-              id: 2, mediaType: MediaType.movie, externalId: 550,
-              platformId: null),
-          createTestItem(
-              id: 3, mediaType: MediaType.tvShow, externalId: 1399,
-              platformId: null),
-        ];
-
-        final XcollFile rcoll = sut.createXcollFile(collection, items);
-
-        expect(rcoll.legacyGames.length, equals(1));
-        expect(rcoll.legacyGames[0].igdbId, equals(100));
-      });
-    });
-
     group('createLightExport (v2 light)', () {
       test('должен создать XcollFile v2 из пустой коллекции', () {
         final Collection collection = createTestCollection();
@@ -216,7 +120,6 @@ void main() {
         final XcollFile xcoll = sut.createLightExport(collection, items);
 
         expect(xcoll.version, equals(xcollFormatVersion));
-        expect(xcoll.isV2, isTrue);
         expect(xcoll.format, equals(ExportFormat.light));
         expect(xcoll.name, equals('Test Collection'));
         expect(xcoll.author, equals('Test Author'));
@@ -504,7 +407,7 @@ void main() {
         final XcollFile restored = XcollFile.fromJsonString(json);
 
         expect(restored.name, equals('Empty'));
-        expect(restored.isV2, isTrue);
+        expect(restored.version, equals(xcollFormatVersion));
         expect(restored.items, isEmpty);
       });
 
@@ -526,45 +429,6 @@ void main() {
         expect(restored.items[0]['platform_id'], equals(22));
         expect(restored.items[0]['comment'], equals('Fantastic game'));
         expect(restored.items[0]['status'], equals('completed'));
-      });
-    });
-
-    group('exportToLegacyJson', () {
-      test('должен создать v1 legacy JSON', () {
-        final Collection collection =
-            createTestCollection(name: 'Legacy Export');
-        final List<CollectionItem> items = <CollectionGame>[
-          createTestGame(igdbId: 500, platformId: 20),
-        ].map((CollectionGame g) => g.toCollectionItem()).toList();
-
-        final String json = sut.exportToLegacyJson(collection, items);
-
-        final Map<String, dynamic> parsed =
-            jsonDecode(json) as Map<String, dynamic>;
-
-        expect(parsed['name'], equals('Legacy Export'));
-        expect(parsed['version'], equals(xcollLegacyVersion));
-        expect(parsed.containsKey('games'), isTrue);
-        expect(parsed.containsKey('items'), isFalse);
-      });
-
-      test('должен сохранять данные игр при round-trip', () {
-        final Collection collection = createTestCollection();
-        final List<CollectionItem> items = <CollectionGame>[
-          createTestGame(
-            igdbId: 111,
-            platformId: 22,
-            authorComment: 'Fantastic game',
-          ),
-        ].map((CollectionGame g) => g.toCollectionItem()).toList();
-
-        final String json = sut.exportToLegacyJson(collection, items);
-        final XcollFile restored = XcollFile.fromJsonString(json);
-
-        expect(restored.isV1, isTrue);
-        expect(restored.legacyGames[0].igdbId, equals(111));
-        expect(restored.legacyGames[0].platformId, equals(22));
-        expect(restored.legacyGames[0].comment, equals('Fantastic game'));
       });
     });
 

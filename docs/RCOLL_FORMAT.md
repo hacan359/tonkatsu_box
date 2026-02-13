@@ -1,6 +1,6 @@
 # Collection File Formats
 
-xeRAbora supports three file formats for sharing collections.
+xeRAbora supports two file formats for sharing collections.
 
 ## Formats Overview
 
@@ -8,7 +8,8 @@ xeRAbora supports three file formats for sharing collections.
 |-----------|---------|-------------|
 | `.xcoll` | v2 | Light export — metadata + element IDs |
 | `.xcollx` | v2 | Full export — + canvas + base64 images |
-| `.rcoll` | v1 | Legacy format — game IDs only (import only) |
+
+> **Note:** The legacy `.rcoll` (v1) format is no longer supported. Files in v1 format will be rejected with a `FormatException`.
 
 ---
 
@@ -149,46 +150,6 @@ Values are base64-encoded PNG image data.
 
 ---
 
-## v1 Format (`.rcoll`) — Legacy
-
-```json
-{
-  "version": 1,
-  "name": "My SNES Classics",
-  "author": "username",
-  "created": "2025-02-02T12:00:00Z",
-  "description": "Best RPGs for SNES",
-  "games": [
-    {
-      "igdb_id": 1234,
-      "platform_id": 19,
-      "comment": "All-time favorite"
-    }
-  ]
-}
-```
-
-### v1 Fields
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| version | number | yes | Always `1` |
-| name | string | yes | Collection name |
-| author | string | yes | Creator name |
-| created | string | yes | ISO 8601 date |
-| description | string | no | Collection description |
-| games | array | yes | List of games |
-
-### v1 Game Object
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| igdb_id | number | yes | IGDB game ID |
-| platform_id | number | yes | IGDB platform ID |
-| comment | string | no | Author's comment |
-
----
-
 ## How Import Works
 
 ### v2 Light (`.xcoll`)
@@ -201,8 +162,3 @@ Values are base64-encoded PNG image data.
 2. Restores collection-level canvas (viewport, items, connections)
 3. Restores per-item canvases (embedded in `_canvas` field of each item)
 4. Restores cover images from base64 to local disk cache
-
-### v1 Legacy (`.rcoll`)
-1. App reads the file
-2. Fetches game metadata from IGDB using the IDs
-3. Creates collection with game items

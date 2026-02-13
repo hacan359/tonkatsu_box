@@ -1,12 +1,9 @@
-// Модель файла экспорта/импорта коллекций (.xcoll, .xcollx, .rcoll).
+// Модель файла экспорта/импорта коллекций (.xcoll, .xcollx).
 
 import 'dart:convert';
 
 /// Текущая версия формата.
 const int xcollFormatVersion = 2;
-
-/// Версия v1 (legacy .rcoll).
-const int xcollLegacyVersion = 1;
 
 /// Режим экспорта.
 enum ExportFormat {
@@ -27,45 +24,6 @@ enum ExportFormat {
       (ExportFormat f) => f.value == value,
       orElse: () => ExportFormat.light,
     );
-  }
-}
-
-/// Игра в формате v1 .rcoll файла (legacy).
-///
-/// Используется только для парсинга старых v1 файлов.
-class RcollGame {
-  /// Создаёт экземпляр [RcollGame].
-  const RcollGame({
-    required this.igdbId,
-    required this.platformId,
-    this.comment,
-  });
-
-  /// Создаёт [RcollGame] из JSON.
-  factory RcollGame.fromJson(Map<String, dynamic> json) {
-    return RcollGame(
-      igdbId: json['igdb_id'] as int,
-      platformId: json['platform_id'] as int,
-      comment: json['comment'] as String?,
-    );
-  }
-
-  /// ID игры в IGDB.
-  final int igdbId;
-
-  /// ID платформы.
-  final int platformId;
-
-  /// Комментарий автора.
-  final String? comment;
-
-  /// Преобразует в JSON.
-  Map<String, dynamic> toJson() {
-    return <String, dynamic>{
-      'igdb_id': igdbId,
-      'platform_id': platformId,
-      if (comment != null && comment!.isNotEmpty) 'comment': comment,
-    };
   }
 }
 
@@ -119,14 +77,9 @@ class ExportCanvas {
 
 /// Модель файла экспорта/импорта коллекций.
 ///
-/// Поддерживает два формата:
-/// - v1 (.rcoll): legacy с массивом `games`
-/// - v2 (.xcoll/.xcollx): универсальный с `items`, `canvas`, `images`
-///
 /// Форматы файлов:
 /// - `.xcoll` — лёгкий экспорт (метаданные + ID элементов)
 /// - `.xcollx` — полный экспорт (+ canvas + base64 images)
-/// - `.rcoll` — v1 legacy (только импорт)
 class XcollFile {
   /// Создаёт экземпляр [XcollFile].
   const XcollFile({
@@ -139,7 +92,6 @@ class XcollFile {
     this.items = const <Map<String, dynamic>>[],
     this.canvas,
     this.images = const <String, String>{},
-    this.legacyGames = const <RcollGame>[],
   });
 
   /// Создаёт [XcollFile] из JSON строки.
@@ -160,11 +112,16 @@ class XcollFile {
 
   /// Создаёт [XcollFile] из JSON Map.
   ///
-  /// Диспетчеризация по version:
-  /// - version 1 → legacy v1 парсинг (games)
-  /// - version 2+ → v2 парсинг (items, canvas, images)
+  /// Throws [FormatException] если версия файла не поддерживается.
   factory XcollFile.fromJson(Map<String, dynamic> json) {
     final int version = json['version'] as int? ?? 1;
+
+    if (version < xcollFormatVersion) {
+      throw FormatException(
+        'Unsupported file version: $version. '
+        'Minimum supported: $xcollFormatVersion',
+      );
+    }
 
     if (version > xcollFormatVersion) {
       throw FormatException(
@@ -178,35 +135,7 @@ class XcollFile {
     final String? description = json['description'] as String?;
     final DateTime created = _parseCreatedDate(json['created']);
 
-    if (version == 1) {
-      return _parseV1(json, name, author, created, description);
-    }
-
     return _parseV2(json, name, author, created, description);
-  }
-
-  /// Парсит v1 формат (legacy .rcoll).
-  static XcollFile _parseV1(
-    Map<String, dynamic> json,
-    String name,
-    String author,
-    DateTime created,
-    String? description,
-  ) {
-    final List<dynamic> gamesJson =
-        json['games'] as List<dynamic>? ?? <dynamic>[];
-    final List<RcollGame> games = gamesJson
-        .map((dynamic g) => RcollGame.fromJson(g as Map<String, dynamic>))
-        .toList();
-
-    return XcollFile(
-      version: 1,
-      name: name,
-      author: author,
-      created: created,
-      description: description,
-      legacyGames: games,
-    );
   }
 
   /// Парсит v2 формат (.xcoll / .xcollx).
@@ -301,37 +230,11 @@ class XcollFile {
   /// Значение — base64-строка изображения.
   final Map<String, String> images;
 
-  // -- v1 legacy --
-
-  /// Игры из v1 .rcoll файла.
-  final List<RcollGame> legacyGames;
-
-  /// Является ли файл v1 форматом.
-  bool get isV1 => version == 1;
-
-  /// Является ли файл v2+ форматом.
-  bool get isV2 => version >= 2;
-
   /// Является ли полным экспортом.
   bool get isFull => format == ExportFormat.full;
 
-  /// Возвращает список IGDB ID (только для v1 legacy).
-  List<int> get gameIds =>
-      legacyGames.map((RcollGame g) => g.igdbId).toList();
-
   /// Преобразует в JSON Map.
   Map<String, dynamic> toJson() {
-    if (isV1) {
-      return <String, dynamic>{
-        'version': 1,
-        'name': name,
-        'author': author,
-        'created': created.toUtc().toIso8601String(),
-        if (description != null) 'description': description,
-        'games': legacyGames.map((RcollGame g) => g.toJson()).toList(),
-      };
-    }
-
     return <String, dynamic>{
       'version': version,
       'format': format.value,

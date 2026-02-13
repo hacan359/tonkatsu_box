@@ -9,28 +9,12 @@ import 'package:xerabora/features/collections/providers/collections_provider.dar
 import 'package:xerabora/shared/models/canvas_connection.dart';
 import 'package:xerabora/shared/models/canvas_item.dart';
 import 'package:xerabora/shared/models/canvas_viewport.dart';
-import 'package:xerabora/shared/models/collection_game.dart';
 import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 
 // Моки
 class MockCanvasRepository extends Mock implements CanvasRepository {}
-
-class MockCollectionGamesNotifier extends CollectionGamesNotifier {
-  MockCollectionGamesNotifier(this._initialState);
-
-  final AsyncValue<List<CollectionGame>> _initialState;
-
-  @override
-  AsyncValue<List<CollectionGame>> build(int arg) {
-    return _initialState;
-  }
-
-  void emitState(AsyncValue<List<CollectionGame>> newState) {
-    state = newState;
-  }
-}
 
 class MockCollectionItemsNotifier extends CollectionItemsNotifier {
   MockCollectionItemsNotifier(this._initialState);
@@ -211,7 +195,6 @@ void main() {
 
     // Вспомогательные данные для тестов
     late List<CanvasItem> testItems;
-    late List<CollectionGame> testGames;
     late List<CollectionItem> testCollectionItems;
 
     setUp(() {
@@ -256,33 +239,6 @@ void main() {
         ),
       ];
 
-      testGames = <CollectionGame>[
-        CollectionGame(
-          id: 1,
-          collectionId: collectionId,
-          igdbId: 100,
-          platformId: 6,
-          status: GameStatus.notStarted,
-          addedAt: testDate,
-        ),
-        CollectionGame(
-          id: 2,
-          collectionId: collectionId,
-          igdbId: 200,
-          platformId: 6,
-          status: GameStatus.playing,
-          addedAt: testDate,
-        ),
-        CollectionGame(
-          id: 3,
-          collectionId: collectionId,
-          igdbId: 300,
-          platformId: 48,
-          status: GameStatus.completed,
-          addedAt: testDate,
-        ),
-      ];
-
       testCollectionItems = <CollectionItem>[
         CollectionItem(
           id: 1,
@@ -316,19 +272,14 @@ void main() {
 
     // Вспомогательный метод для создания ProviderContainer
     ProviderContainer createContainer({
-      AsyncValue<List<CollectionGame>>? gamesState,
       AsyncValue<List<CollectionItem>>? itemsState,
     }) {
-      final AsyncValue<List<CollectionGame>> initialGamesState = gamesState ??
-          AsyncData<List<CollectionGame>>(testGames);
       final AsyncValue<List<CollectionItem>> initialItemsState = itemsState ??
           AsyncData<List<CollectionItem>>(testCollectionItems);
 
       return ProviderContainer(
         overrides: <Override>[
           canvasRepositoryProvider.overrideWithValue(mockRepository),
-          collectionGamesNotifierProvider
-              .overrideWith(() => MockCollectionGamesNotifier(initialGamesState)),
           collectionItemsNotifierProvider
               .overrideWith(() => MockCollectionItemsNotifier(initialItemsState)),
         ],
@@ -515,8 +466,6 @@ void main() {
               .thenAnswer((_) async => <CanvasItem>[]);
 
           final ProviderContainer container = createContainer(
-            gamesState:
-                const AsyncLoading<List<CollectionGame>>(),
             itemsState:
                 const AsyncLoading<List<CollectionItem>>(),
           );
@@ -545,11 +494,7 @@ void main() {
       test(
         'должен удалить сиротские элементы канваса когда игры удалены из коллекции',
         () async {
-          // В канвасе 3 элемента, но в коллекции только 2 игры (igdbId 100 и 200)
-          final List<CollectionGame> twoGames = <CollectionGame>[
-            testGames[0],
-            testGames[1],
-          ];
+          // В канвасе 3 элемента, но в коллекции только 2 игры (externalId 100 и 200)
           final List<CollectionItem> twoItems = <CollectionItem>[
             testCollectionItems[0],
             testCollectionItems[1],
@@ -557,7 +502,6 @@ void main() {
           setupExistingCanvas();
 
           final ProviderContainer container = createContainer(
-            gamesState: AsyncData<List<CollectionGame>>(twoGames),
             itemsState: AsyncData<List<CollectionItem>>(twoItems),
           );
           addTearDown(container.dispose);
@@ -573,21 +517,10 @@ void main() {
       test(
         'должен добавить недостающие элементы канваса когда игры добавлены в коллекцию',
         () async {
-          // В канвасе 2 элемента, но в коллекции 3 игры (добавлена igdbId=400)
+          // В канвасе 2 элемента, но в коллекции 3 игры (добавлена externalId=400)
           final List<CanvasItem> twoCanvasItems = <CanvasItem>[
             testItems[0],
             testItems[1],
-          ];
-          final List<CollectionGame> threeGames = <CollectionGame>[
-            ...testGames.sublist(0, 2),
-            CollectionGame(
-              id: 4,
-              collectionId: collectionId,
-              igdbId: 400,
-              platformId: 6,
-              status: GameStatus.planned,
-              addedAt: testDate,
-            ),
           ];
           final List<CollectionItem> threeCollectionItems = <CollectionItem>[
             ...testCollectionItems.sublist(0, 2),
@@ -620,7 +553,6 @@ void main() {
           });
 
           final ProviderContainer container = createContainer(
-            gamesState: AsyncData<List<CollectionGame>>(threeGames),
             itemsState: AsyncData<List<CollectionItem>>(threeCollectionItems),
           );
           addTearDown(container.dispose);
@@ -647,8 +579,6 @@ void main() {
               .thenAnswer((_) async => const <CanvasConnection>[]);
 
           final ProviderContainer container = createContainer(
-            gamesState:
-                const AsyncLoading<List<CollectionGame>>(),
             itemsState:
                 const AsyncLoading<List<CollectionItem>>(),
           );
@@ -657,9 +587,9 @@ void main() {
           container.read(canvasNotifierProvider(collectionId));
           await Future<void>.delayed(Duration.zero);
 
-          // getItems вызывается для syncCanvasWithGames, но т.к. games == null
+          // getItems вызывается для syncCanvasWithGames, но т.к. items == null
           // синхронизация пропускается и getItems НЕ вызывается
-          // (hasCanvasItems -> true -> _syncCanvasWithGames -> games == null -> return)
+          // (hasCanvasItems -> true -> _syncCanvasWithGames -> items == null -> return)
           // Далее getItemsWithData вызывается для загрузки
           verify(() => mockRepository.getItemsWithData(collectionId)).called(1);
           verifyNever(() => mockRepository.deleteItem(any()));
@@ -669,7 +599,7 @@ void main() {
 
     group('removeGameItem()', () {
       test(
-        'должен удалить элемент игры из state и БД когда вызван с igdbId',
+        'должен удалить элемент игры из state и БД когда вызван с externalId',
         () async {
           setupExistingCanvas();
           when(
@@ -704,7 +634,7 @@ void main() {
       );
 
       test(
-        'должен не менять state когда igdbId не найден',
+        'должен не менять state когда externalId не найден',
         () async {
           setupExistingCanvas();
           when(
@@ -2064,9 +1994,6 @@ void main() {
           // Используем одну игру в коллекции, чтобы _syncCanvasWithGames
           // не пыталась добавить недостающие элементы
           final List<CanvasItem> singleItem = <CanvasItem>[testItems[0]];
-          final List<CollectionGame> singleGame = <CollectionGame>[
-            testGames[0],
-          ];
           final List<CollectionItem> singleCollectionItem = <CollectionItem>[
             testCollectionItems[0],
           ];
@@ -2080,7 +2007,6 @@ void main() {
           ).thenAnswer((_) async {});
 
           final ProviderContainer container = createContainer(
-            gamesState: AsyncData<List<CollectionGame>>(singleGame),
             itemsState: AsyncData<List<CollectionItem>>(singleCollectionItem),
           );
           addTearDown(container.dispose);

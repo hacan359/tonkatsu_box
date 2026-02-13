@@ -125,19 +125,13 @@ enum ImportStage {
   /// Загрузка данных сериалов из TMDB.
   fetchingTvShows('Fetching TV show data...'),
 
-  /// Кэширование игр (v1).
-  cachingGames('Caching games...'),
-
-  /// Кэширование медиа-данных (v2).
+  /// Кэширование медиа-данных.
   cachingMedia('Caching media...'),
 
   /// Создание коллекции.
   creatingCollection('Creating collection...'),
 
-  /// Добавление игр (v1).
-  addingGames('Adding games...'),
-
-  /// Добавление элементов (v2).
+  /// Добавление элементов.
   addingItems('Adding items...'),
 
   /// Импорт canvas (v2 full).
@@ -155,7 +149,7 @@ enum ImportStage {
   final String description;
 }
 
-/// Сервис для импорта коллекций из .xcoll / .xcollx / .rcoll файлов.
+/// Сервис для импорта коллекций из .xcoll / .xcollx файлов.
 class ImportService {
   /// Создаёт экземпляр [ImportService].
   ImportService({
@@ -183,7 +177,6 @@ class ImportService {
   static const List<String> _allowedExtensions = <String>[
     'xcoll',
     'xcollx',
-    'rcoll',
     'json',
   ];
 
@@ -265,127 +258,11 @@ class ImportService {
   }
 
   /// Импортирует коллекцию из [XcollFile].
-  ///
-  /// Автоматически определяет версию (v1/v2) и вызывает
-  /// соответствующий пайплайн.
   Future<ImportResult> importFromXcoll(
     XcollFile xcoll, {
     ImportProgressCallback? onProgress,
   }) async {
-    if (xcoll.isV1) {
-      return _importV1(xcoll, onProgress: onProgress);
-    }
     return _importV2(xcoll, onProgress: onProgress);
-  }
-
-  // ==================== v1 Legacy Import (.rcoll) ====================
-
-  /// Импорт v1 файла (legacy .rcoll).
-  Future<ImportResult> _importV1(
-    XcollFile xcoll, {
-    ImportProgressCallback? onProgress,
-  }) async {
-    try {
-      final List<int> gameIds = xcoll.gameIds;
-
-      // Загрузка данных игр из IGDB
-      onProgress?.call(ImportProgress(
-        stage: ImportStage.fetchingGames,
-        current: 0,
-        total: gameIds.length,
-        message: 'Fetching ${gameIds.length} games from IGDB...',
-      ));
-
-      List<Game> games = <Game>[];
-      if (gameIds.isNotEmpty) {
-        try {
-          games = await _igdbApi.getGamesByIds(gameIds);
-        } on IgdbApiException catch (e) {
-          return ImportResult.failure(
-              'Failed to fetch games from IGDB: ${e.message}');
-        }
-      }
-
-      onProgress?.call(ImportProgress(
-        stage: ImportStage.fetchingGames,
-        current: games.length,
-        total: gameIds.length,
-        message: 'Fetched ${games.length} games',
-      ));
-
-      // Кэширование игр
-      onProgress?.call(ImportProgress(
-        stage: ImportStage.cachingGames,
-        current: 0,
-        total: games.length,
-      ));
-
-      for (int i = 0; i < games.length; i++) {
-        await _database.upsertGame(games[i]);
-        onProgress?.call(ImportProgress(
-          stage: ImportStage.cachingGames,
-          current: i + 1,
-          total: games.length,
-        ));
-      }
-
-      // Создание коллекции
-      onProgress?.call(const ImportProgress(
-        stage: ImportStage.creatingCollection,
-        current: 0,
-        total: 1,
-      ));
-
-      final Collection collection = await _repository.create(
-        name: xcoll.name,
-        author: xcoll.author,
-        type: CollectionType.imported,
-      );
-
-      onProgress?.call(const ImportProgress(
-        stage: ImportStage.creatingCollection,
-        current: 1,
-        total: 1,
-      ));
-
-      // Добавление игр в коллекцию
-      int addedCount = 0;
-      for (int i = 0; i < xcoll.legacyGames.length; i++) {
-        final RcollGame rcollGame = xcoll.legacyGames[i];
-
-        onProgress?.call(ImportProgress(
-          stage: ImportStage.addingGames,
-          current: i,
-          total: xcoll.legacyGames.length,
-        ));
-
-        final int? gameId = await _repository.addItem(
-          collectionId: collection.id,
-          mediaType: MediaType.game,
-          externalId: rcollGame.igdbId,
-          platformId: rcollGame.platformId,
-          authorComment: rcollGame.comment,
-        );
-
-        if (gameId != null) {
-          addedCount++;
-        }
-      }
-
-      // Завершено
-      onProgress?.call(ImportProgress(
-        stage: ImportStage.completed,
-        current: addedCount,
-        total: xcoll.legacyGames.length,
-        message: 'Imported $addedCount games',
-      ));
-
-      return ImportResult.success(collection, addedCount);
-    } on FormatException catch (e) {
-      return ImportResult.failure('Invalid file format: ${e.message}');
-    } catch (e) {
-      return ImportResult.failure('Import failed: $e');
-    }
   }
 
   // ==================== v2 Import (.xcoll / .xcollx) ====================

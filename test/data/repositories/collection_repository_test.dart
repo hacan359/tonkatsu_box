@@ -3,7 +3,6 @@ import 'package:mocktail/mocktail.dart';
 import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/data/repositories/collection_repository.dart';
 import 'package:xerabora/shared/models/collection.dart';
-import 'package:xerabora/shared/models/collection_game.dart';
 import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
@@ -22,7 +21,7 @@ void main() {
         const CollectionStats stats = CollectionStats(
           total: 10,
           completed: 3,
-          playing: 2,
+          inProgress: 2,
           notStarted: 4,
           dropped: 1,
           planned: 0,
@@ -30,7 +29,7 @@ void main() {
 
         expect(stats.total, 10);
         expect(stats.completed, 3);
-        expect(stats.playing, 2);
+        expect(stats.inProgress, 2);
         expect(stats.notStarted, 4);
         expect(stats.dropped, 1);
         expect(stats.planned, 0);
@@ -42,7 +41,7 @@ void main() {
         const CollectionStats stats = CollectionStats(
           total: 10,
           completed: 5,
-          playing: 2,
+          inProgress: 2,
           notStarted: 3,
           dropped: 0,
           planned: 0,
@@ -55,7 +54,7 @@ void main() {
         const CollectionStats stats = CollectionStats(
           total: 0,
           completed: 0,
-          playing: 0,
+          inProgress: 0,
           notStarted: 0,
           dropped: 0,
           planned: 0,
@@ -68,7 +67,7 @@ void main() {
         const CollectionStats stats = CollectionStats(
           total: 5,
           completed: 5,
-          playing: 0,
+          inProgress: 0,
           notStarted: 0,
           dropped: 0,
           planned: 0,
@@ -81,7 +80,7 @@ void main() {
         const CollectionStats stats = CollectionStats(
           total: 3,
           completed: 1,
-          playing: 1,
+          inProgress: 1,
           notStarted: 1,
           dropped: 0,
           planned: 0,
@@ -96,7 +95,7 @@ void main() {
         const CollectionStats stats = CollectionStats(
           total: 10,
           completed: 5,
-          playing: 5,
+          inProgress: 5,
           notStarted: 0,
           dropped: 0,
           planned: 0,
@@ -109,7 +108,7 @@ void main() {
         const CollectionStats stats = CollectionStats(
           total: 3,
           completed: 1,
-          playing: 2,
+          inProgress: 2,
           notStarted: 0,
           dropped: 0,
           planned: 0,
@@ -127,7 +126,7 @@ void main() {
       test('должен иметь все нулевые значения', () {
         expect(CollectionStats.empty.total, 0);
         expect(CollectionStats.empty.completed, 0);
-        expect(CollectionStats.empty.playing, 0);
+        expect(CollectionStats.empty.inProgress, 0);
         expect(CollectionStats.empty.notStarted, 0);
         expect(CollectionStats.empty.dropped, 0);
         expect(CollectionStats.empty.planned, 0);
@@ -153,25 +152,6 @@ void main() {
         author: author,
         type: type,
         createdAt: testDate,
-      );
-    }
-
-    CollectionGame createTestCollectionGame({
-      int id = 1,
-      int collectionId = 1,
-      int igdbId = 100,
-      int platformId = 18,
-      GameStatus status = GameStatus.notStarted,
-      String? authorComment,
-    }) {
-      return CollectionGame(
-        id: id,
-        collectionId: collectionId,
-        igdbId: igdbId,
-        platformId: platformId,
-        status: status,
-        addedAt: testDate,
-        authorComment: authorComment,
       );
     }
 
@@ -340,143 +320,13 @@ void main() {
       });
     });
 
-    group('getGames', () {
-      test('должен возвращать игры коллекции', () async {
-        final List<CollectionGame> games = <CollectionGame>[
-          createTestCollectionGame(id: 1, igdbId: 100),
-          createTestCollectionGame(id: 2, igdbId: 200),
-        ];
-
-        when(() => mockDb.getCollectionGames(1))
-            .thenAnswer((_) async => games);
-
-        final List<CollectionGame> result = await repository.getGames(1);
-
-        expect(result, equals(games));
-        verify(() => mockDb.getCollectionGames(1)).called(1);
-      });
-    });
-
-    group('getGamesWithData', () {
-      test('должен возвращать игры с подгруженными данными', () async {
-        final List<CollectionGame> games = <CollectionGame>[
-          createTestCollectionGame(id: 1),
-        ];
-
-        when(() => mockDb.getCollectionGamesWithData(1))
-            .thenAnswer((_) async => games);
-
-        final List<CollectionGame> result = await repository.getGamesWithData(1);
-
-        expect(result, equals(games));
-        verify(() => mockDb.getCollectionGamesWithData(1)).called(1);
-      });
-    });
-
-    group('addGame', () {
-      test('должен добавлять игру в коллекцию', () async {
-        when(() => mockDb.addGameToCollection(
-              collectionId: 1,
-              igdbId: 100,
-              platformId: 18,
-              authorComment: 'Great game!',
-            )).thenAnswer((_) async => 42);
-
-        final int? id = await repository.addGame(
-          collectionId: 1,
-          igdbId: 100,
-          platformId: 18,
-          authorComment: 'Great game!',
-        );
-
-        expect(id, 42);
-        verify(() => mockDb.addGameToCollection(
-              collectionId: 1,
-              igdbId: 100,
-              platformId: 18,
-              authorComment: 'Great game!',
-            )).called(1);
-      });
-
-      test('должен возвращать null при дубликате', () async {
-        when(() => mockDb.addGameToCollection(
-              collectionId: any(named: 'collectionId'),
-              igdbId: any(named: 'igdbId'),
-              platformId: any(named: 'platformId'),
-              authorComment: any(named: 'authorComment'),
-            )).thenAnswer((_) async => null);
-
-        final int? id = await repository.addGame(
-          collectionId: 1,
-          igdbId: 100,
-          platformId: 18,
-        );
-
-        expect(id, isNull);
-      });
-    });
-
-    group('removeGame', () {
-      test('должен удалять игру из коллекции', () async {
-        when(() => mockDb.removeGameFromCollection(42))
-            .thenAnswer((_) async {});
-
-        await repository.removeGame(42);
-
-        verify(() => mockDb.removeGameFromCollection(42)).called(1);
-      });
-    });
-
-    group('updateGameStatus', () {
-      test('должен обновлять статус игры', () async {
-        when(() => mockDb.updateGameStatus(1, GameStatus.completed))
-            .thenAnswer((_) async {});
-
-        await repository.updateGameStatus(1, GameStatus.completed);
-
-        verify(() => mockDb.updateGameStatus(1, GameStatus.completed)).called(1);
-      });
-    });
-
-    group('updateAuthorComment', () {
-      test('должен обновлять комментарий автора', () async {
-        when(() => mockDb.updateAuthorComment(1, 'New comment'))
-            .thenAnswer((_) async {});
-
-        await repository.updateAuthorComment(1, 'New comment');
-
-        verify(() => mockDb.updateAuthorComment(1, 'New comment')).called(1);
-      });
-
-      test('должен обрабатывать null комментарий', () async {
-        when(() => mockDb.updateAuthorComment(1, null))
-            .thenAnswer((_) async {});
-
-        await repository.updateAuthorComment(1, null);
-
-        verify(() => mockDb.updateAuthorComment(1, null)).called(1);
-      });
-    });
-
-    group('updateUserComment', () {
-      test('должен обновлять личный комментарий', () async {
-        when(() => mockDb.updateUserComment(1, 'My notes'))
-            .thenAnswer((_) async {});
-
-        await repository.updateUserComment(1, 'My notes');
-
-        verify(() => mockDb.updateUserComment(1, 'My notes')).called(1);
-      });
-    });
-
     group('getStats', () {
       test('должен возвращать статистику коллекции', () async {
         when(() => mockDb.getCollectionItemStats(1)).thenAnswer(
           (_) async => <String, int>{
             'total': 10,
             'completed': 5,
-            'playing': 2,
-            'inProgress': 0,
+            'inProgress': 2,
             'notStarted': 2,
             'dropped': 1,
             'planned': 0,
@@ -491,7 +341,7 @@ void main() {
 
         expect(stats.total, 10);
         expect(stats.completed, 5);
-        expect(stats.playing, 2);
+        expect(stats.inProgress, 2);
         expect(stats.notStarted, 2);
         expect(stats.dropped, 1);
         expect(stats.planned, 0);
@@ -592,14 +442,15 @@ void main() {
           type: CollectionType.fork,
           createdAt: testDate,
           originalSnapshot:
-              '{"name":"Original","author":"Author","games":[{"igdb_id":100,"platform_id":18,"author_comment":"Comment"}]}',
+              '{"name":"Original","author":"Author","items":[{"media_type":"game","external_id":100,"platform_id":18,"author_comment":"Comment"}]}',
         );
 
         when(() => mockDb.getCollectionById(2)).thenAnswer((_) async => fork);
         when(() => mockDb.clearCollectionItems(2)).thenAnswer((_) async {});
-        when(() => mockDb.addGameToCollection(
+        when(() => mockDb.addItemToCollection(
               collectionId: any(named: 'collectionId'),
-              igdbId: any(named: 'igdbId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
             )).thenAnswer((_) async => 10);
@@ -607,9 +458,10 @@ void main() {
         await repository.revertToOriginal(2);
 
         verify(() => mockDb.clearCollectionItems(2)).called(1);
-        verify(() => mockDb.addGameToCollection(
+        verify(() => mockDb.addItemToCollection(
               collectionId: 2,
-              igdbId: 100,
+              mediaType: MediaType.game,
+              externalId: 100,
               platformId: 18,
               authorComment: 'Comment',
             )).called(1);

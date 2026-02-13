@@ -41,7 +41,7 @@ void main() {
   const CollectionStats testStats = CollectionStats(
     total: 3,
     completed: 1,
-    playing: 1,
+    inProgress: 1,
     notStarted: 1,
     dropped: 0,
     planned: 0,
@@ -429,7 +429,7 @@ void main() {
             .thenAnswer((_) async => const CollectionStats(
                   total: 0,
                   completed: 0,
-                  playing: 0,
+                  inProgress: 0,
                   notStarted: 0,
                   dropped: 0,
                   planned: 0,

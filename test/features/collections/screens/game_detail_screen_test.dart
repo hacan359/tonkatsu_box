@@ -4,8 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:xerabora/data/repositories/collection_repository.dart';
 import 'package:xerabora/features/collections/screens/game_detail_screen.dart';
-import 'package:xerabora/shared/models/collection_game.dart';
+import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/game.dart';
+import 'package:xerabora/shared/models/item_status.dart';
+import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/platform.dart';
 import 'package:xerabora/shared/widgets/source_badge.dart';
 
@@ -16,21 +18,22 @@ void main() {
 
   late MockCollectionRepository mockRepo;
 
-  CollectionGame createTestCollectionGame({
+  CollectionItem createTestCollectionItem({
     int id = 1,
     int collectionId = 1,
-    int igdbId = 100,
-    int platformId = 18,
-    GameStatus status = GameStatus.notStarted,
+    int externalId = 100,
+    int? platformId = 18,
+    ItemStatus status = ItemStatus.notStarted,
     String? authorComment,
     String? userComment,
     Game? game,
     Platform? platform,
   }) {
-    return CollectionGame(
+    return CollectionItem(
       id: id,
       collectionId: collectionId,
-      igdbId: igdbId,
+      mediaType: MediaType.game,
+      externalId: externalId,
       platformId: platformId,
       status: status,
       addedAt: testDate,
@@ -67,12 +70,12 @@ void main() {
 
   Widget createTestWidget({
     required int collectionId,
-    required int gameId,
+    required int itemId,
     required bool isEditable,
-    required List<CollectionGame> games,
+    required List<CollectionItem> items,
   }) {
-    when(() => mockRepo.getGamesWithData(collectionId))
-        .thenAnswer((_) async => games);
+    when(() => mockRepo.getItemsWithData(collectionId))
+        .thenAnswer((_) async => items);
 
     return ProviderScope(
       overrides: <Override>[
@@ -81,7 +84,7 @@ void main() {
       child: MaterialApp(
         home: GameDetailScreen(
           collectionId: collectionId,
-          gameId: gameId,
+          itemId: itemId,
           isEditable: isEditable,
         ),
       ),
@@ -92,16 +95,16 @@ void main() {
     testWidgets('должен отображать название игры', (WidgetTester tester) async {
       const Game game = Game(id: 100, name: 'Chrono Trigger');
       const Platform platform = Platform(id: 18, name: 'SNES');
-      final CollectionGame collectionGame = createTestCollectionGame(
+      final CollectionItem collectionItem = createTestCollectionItem(
         game: game,
         platform: platform,
       );
 
       await tester.pumpWidget(createTestWidget(
         collectionId: 1,
-        gameId: 1,
+        itemId: 1,
         isEditable: true,
-        games: <CollectionGame>[collectionGame],
+        items: <CollectionItem>[collectionItem],
       ));
       await tester.pumpAndSettle();
 
@@ -115,16 +118,16 @@ void main() {
         name: 'Super Nintendo',
         abbreviation: 'SNES',
       );
-      final CollectionGame collectionGame = createTestCollectionGame(
+      final CollectionItem collectionItem = createTestCollectionItem(
         game: game,
         platform: platform,
       );
 
       await tester.pumpWidget(createTestWidget(
         collectionId: 1,
-        gameId: 1,
+        itemId: 1,
         isEditable: true,
-        games: <CollectionGame>[collectionGame],
+        items: <CollectionItem>[collectionItem],
       ));
       await tester.pumpAndSettle();
 
@@ -134,17 +137,17 @@ void main() {
     testWidgets('должен отображать статус dropdown', (WidgetTester tester) async {
       const Game game = Game(id: 100, name: 'Test Game');
       const Platform platform = Platform(id: 18, name: 'SNES');
-      final CollectionGame collectionGame = createTestCollectionGame(
+      final CollectionItem collectionItem = createTestCollectionItem(
         game: game,
         platform: platform,
-        status: GameStatus.playing,
+        status: ItemStatus.inProgress,
       );
 
       await tester.pumpWidget(createTestWidget(
         collectionId: 1,
-        gameId: 1,
+        itemId: 1,
         isEditable: true,
-        games: <CollectionGame>[collectionGame],
+        items: <CollectionItem>[collectionItem],
       ));
       await tester.pumpAndSettle();
 
@@ -158,16 +161,16 @@ void main() {
         summary: 'A group of adventurers travel through time.',
       );
       const Platform platform = Platform(id: 18, name: 'SNES');
-      final CollectionGame collectionGame = createTestCollectionGame(
+      final CollectionItem collectionItem = createTestCollectionItem(
         game: game,
         platform: platform,
       );
 
       await tester.pumpWidget(createTestWidget(
         collectionId: 1,
-        gameId: 1,
+        itemId: 1,
         isEditable: true,
-        games: <CollectionGame>[collectionGame],
+        items: <CollectionItem>[collectionItem],
       ));
       await tester.pumpAndSettle();
 
@@ -180,7 +183,7 @@ void main() {
     testWidgets('должен отображать комментарий автора', (WidgetTester tester) async {
       const Game game = Game(id: 100, name: 'Test Game');
       const Platform platform = Platform(id: 18, name: 'SNES');
-      final CollectionGame collectionGame = createTestCollectionGame(
+      final CollectionItem collectionItem = createTestCollectionItem(
         game: game,
         platform: platform,
         authorComment: 'Best RPG ever!',
@@ -188,9 +191,9 @@ void main() {
 
       await tester.pumpWidget(createTestWidget(
         collectionId: 1,
-        gameId: 1,
+        itemId: 1,
         isEditable: true,
-        games: <CollectionGame>[collectionGame],
+        items: <CollectionItem>[collectionItem],
       ));
       await tester.pumpAndSettle();
 
@@ -201,7 +204,7 @@ void main() {
     testWidgets('должен отображать личные заметки', (WidgetTester tester) async {
       const Game game = Game(id: 100, name: 'Test Game');
       const Platform platform = Platform(id: 18, name: 'SNES');
-      final CollectionGame collectionGame = createTestCollectionGame(
+      final CollectionItem collectionItem = createTestCollectionItem(
         game: game,
         platform: platform,
         userComment: 'Finished on 2024-01-15',
@@ -209,9 +212,9 @@ void main() {
 
       await tester.pumpWidget(createTestWidget(
         collectionId: 1,
-        gameId: 1,
+        itemId: 1,
         isEditable: true,
-        games: <CollectionGame>[collectionGame],
+        items: <CollectionItem>[collectionItem],
       ));
       await tester.pumpAndSettle();
 
@@ -227,16 +230,16 @@ void main() {
         (WidgetTester tester) async {
       const Game game = Game(id: 100, name: 'Test Game');
       const Platform platform = Platform(id: 18, name: 'SNES');
-      final CollectionGame collectionGame = createTestCollectionGame(
+      final CollectionItem collectionItem = createTestCollectionItem(
         game: game,
         platform: platform,
       );
 
       await tester.pumpWidget(createTestWidget(
         collectionId: 1,
-        gameId: 1,
+        itemId: 1,
         isEditable: true,
-        games: <CollectionGame>[collectionGame],
+        items: <CollectionItem>[collectionItem],
       ));
       await tester.pumpAndSettle();
 
@@ -252,16 +255,16 @@ void main() {
         (WidgetTester tester) async {
       const Game game = Game(id: 100, name: 'Test Game');
       const Platform platform = Platform(id: 18, name: 'SNES');
-      final CollectionGame collectionGame = createTestCollectionGame(
+      final CollectionItem collectionItem = createTestCollectionItem(
         game: game,
         platform: platform,
       );
 
       await tester.pumpWidget(createTestWidget(
         collectionId: 1,
-        gameId: 1,
+        itemId: 1,
         isEditable: false,
-        games: <CollectionGame>[collectionGame],
+        items: <CollectionItem>[collectionItem],
       ));
       await tester.pumpAndSettle();
 
@@ -278,16 +281,16 @@ void main() {
         genres: <String>['RPG', 'Adventure'],
       );
       const Platform platform = Platform(id: 18, name: 'SNES');
-      final CollectionGame collectionGame = createTestCollectionGame(
+      final CollectionItem collectionItem = createTestCollectionItem(
         game: game,
         platform: platform,
       );
 
       await tester.pumpWidget(createTestWidget(
         collectionId: 1,
-        gameId: 1,
+        itemId: 1,
         isEditable: true,
-        games: <CollectionGame>[collectionGame],
+        items: <CollectionItem>[collectionItem],
       ));
       await tester.pumpAndSettle();
 
@@ -297,16 +300,16 @@ void main() {
     testWidgets('должен отображать год релиза', (WidgetTester tester) async {
       final Game game = createTestGame(releaseYear: 1995);
       const Platform platform = Platform(id: 18, name: 'SNES');
-      final CollectionGame collectionGame = createTestCollectionGame(
+      final CollectionItem collectionItem = createTestCollectionItem(
         game: game,
         platform: platform,
       );
 
       await tester.pumpWidget(createTestWidget(
         collectionId: 1,
-        gameId: 1,
+        itemId: 1,
         isEditable: true,
-        games: <CollectionGame>[collectionGame],
+        items: <CollectionItem>[collectionItem],
       ));
       await tester.pumpAndSettle();
 
@@ -316,16 +319,16 @@ void main() {
     testWidgets('должен отображать рейтинг', (WidgetTester tester) async {
       final Game game = createTestGame(rating: 85.0);
       const Platform platform = Platform(id: 18, name: 'SNES');
-      final CollectionGame collectionGame = createTestCollectionGame(
+      final CollectionItem collectionItem = createTestCollectionItem(
         game: game,
         platform: platform,
       );
 
       await tester.pumpWidget(createTestWidget(
         collectionId: 1,
-        gameId: 1,
+        itemId: 1,
         isEditable: true,
-        games: <CollectionGame>[collectionGame],
+        items: <CollectionItem>[collectionItem],
       ));
       await tester.pumpAndSettle();
 
@@ -336,7 +339,7 @@ void main() {
         (WidgetTester tester) async {
       const Game game = Game(id: 100, name: 'Test Game');
       const Platform platform = Platform(id: 18, name: 'SNES');
-      final CollectionGame collectionGame = createTestCollectionGame(
+      final CollectionItem collectionItem = createTestCollectionItem(
         game: game,
         platform: platform,
         authorComment: null,
@@ -344,9 +347,9 @@ void main() {
 
       await tester.pumpWidget(createTestWidget(
         collectionId: 1,
-        gameId: 1,
+        itemId: 1,
         isEditable: true,
-        games: <CollectionGame>[collectionGame],
+        items: <CollectionItem>[collectionItem],
       ));
       await tester.pumpAndSettle();
 
@@ -357,7 +360,7 @@ void main() {
         (WidgetTester tester) async {
       const Game game = Game(id: 100, name: 'Test Game');
       const Platform platform = Platform(id: 18, name: 'SNES');
-      final CollectionGame collectionGame = createTestCollectionGame(
+      final CollectionItem collectionItem = createTestCollectionItem(
         game: game,
         platform: platform,
         authorComment: null,
@@ -365,9 +368,9 @@ void main() {
 
       await tester.pumpWidget(createTestWidget(
         collectionId: 1,
-        gameId: 1,
+        itemId: 1,
         isEditable: false,
-        games: <CollectionGame>[collectionGame],
+        items: <CollectionItem>[collectionItem],
       ));
       await tester.pumpAndSettle();
 
@@ -378,9 +381,9 @@ void main() {
         (WidgetTester tester) async {
       await tester.pumpWidget(createTestWidget(
         collectionId: 1,
-        gameId: 999, // Несуществующий ID
+        itemId: 999, // Несуществующий ID
         isEditable: true,
-        games: <CollectionGame>[],
+        items: <CollectionItem>[],
       ));
       await tester.pumpAndSettle();
 
@@ -391,16 +394,16 @@ void main() {
         (WidgetTester tester) async {
       const Game game = Game(id: 100, name: 'Test Game');
       const Platform platform = Platform(id: 18, name: 'SNES');
-      final CollectionGame collectionGame = createTestCollectionGame(
+      final CollectionItem collectionItem = createTestCollectionItem(
         game: game,
         platform: platform,
       );
 
       await tester.pumpWidget(createTestWidget(
         collectionId: 1,
-        gameId: 1,
+        itemId: 1,
         isEditable: true,
-        games: <CollectionGame>[collectionGame],
+        items: <CollectionItem>[collectionItem],
       ));
       await tester.pumpAndSettle();
 
@@ -418,16 +421,16 @@ void main() {
         (WidgetTester tester) async {
       const Game game = Game(id: 100, name: 'Test Game');
       const Platform platform = Platform(id: 18, name: 'SNES');
-      final CollectionGame collectionGame = createTestCollectionGame(
+      final CollectionItem collectionItem = createTestCollectionItem(
         game: game,
         platform: platform,
       );
 
       await tester.pumpWidget(createTestWidget(
         collectionId: 1,
-        gameId: 1,
+        itemId: 1,
         isEditable: true,
-        games: <CollectionGame>[collectionGame],
+        items: <CollectionItem>[collectionItem],
       ));
       await tester.pumpAndSettle();
 
@@ -447,16 +450,16 @@ void main() {
         (WidgetTester tester) async {
       const Game game = Game(id: 100, name: 'Test Game');
       const Platform platform = Platform(id: 18, name: 'SNES');
-      final CollectionGame collectionGame = createTestCollectionGame(
+      final CollectionItem collectionItem = createTestCollectionItem(
         game: game,
         platform: platform,
       );
 
       await tester.pumpWidget(createTestWidget(
         collectionId: 1,
-        gameId: 1,
+        itemId: 1,
         isEditable: true,
-        games: <CollectionGame>[collectionGame],
+        items: <CollectionItem>[collectionItem],
       ));
       await tester.pumpAndSettle();
 
@@ -468,16 +471,16 @@ void main() {
         (WidgetTester tester) async {
       const Game game = Game(id: 100, name: 'Test Game');
       const Platform platform = Platform(id: 18, name: 'SNES');
-      final CollectionGame collectionGame = createTestCollectionGame(
+      final CollectionItem collectionItem = createTestCollectionItem(
         game: game,
         platform: platform,
       );
 
       await tester.pumpWidget(createTestWidget(
         collectionId: 1,
-        gameId: 1,
+        itemId: 1,
         isEditable: true,
-        games: <CollectionGame>[collectionGame],
+        items: <CollectionItem>[collectionItem],
       ));
       await tester.pumpAndSettle();
 
@@ -491,16 +494,16 @@ void main() {
         (WidgetTester tester) async {
       const Game game = Game(id: 100, name: 'Test Game');
       const Platform platform = Platform(id: 18, name: 'SNES');
-      final CollectionGame collectionGame = createTestCollectionGame(
+      final CollectionItem collectionItem = createTestCollectionItem(
         game: game,
         platform: platform,
       );
 
       await tester.pumpWidget(createTestWidget(
         collectionId: 1,
-        gameId: 1,
+        itemId: 1,
         isEditable: true,
-        games: <CollectionGame>[collectionGame],
+        items: <CollectionItem>[collectionItem],
       ));
       await tester.pumpAndSettle();
 
@@ -512,7 +515,7 @@ void main() {
         (WidgetTester tester) async {
       const Game game = Game(id: 100, name: 'Test Game');
       const Platform platform = Platform(id: 18, name: 'SNES');
-      final CollectionGame collectionGame = createTestCollectionGame(
+      final CollectionItem collectionItem = createTestCollectionItem(
         game: game,
         platform: platform,
         authorComment: 'Test author comment',
@@ -520,9 +523,9 @@ void main() {
 
       await tester.pumpWidget(createTestWidget(
         collectionId: 1,
-        gameId: 1,
+        itemId: 1,
         isEditable: true,
-        games: <CollectionGame>[collectionGame],
+        items: <CollectionItem>[collectionItem],
       ));
       await tester.pumpAndSettle();
 
@@ -544,16 +547,16 @@ void main() {
           (WidgetTester tester) async {
         const Game game = Game(id: 100, name: 'Test Game');
         const Platform platform = Platform(id: 18, name: 'SNES');
-        final CollectionGame collectionGame = createTestCollectionGame(
+        final CollectionItem collectionItem = createTestCollectionItem(
           game: game,
           platform: platform,
         );
 
         await tester.pumpWidget(createTestWidget(
           collectionId: 1,
-          gameId: 1,
+          itemId: 1,
           isEditable: true,
-          games: <CollectionGame>[collectionGame],
+          items: <CollectionItem>[collectionItem],
         ));
         await tester.pumpAndSettle();
 
@@ -566,16 +569,16 @@ void main() {
           (WidgetTester tester) async {
         const Game game = Game(id: 100, name: 'Test Game');
         const Platform platform = Platform(id: 18, name: 'SNES');
-        final CollectionGame collectionGame = createTestCollectionGame(
+        final CollectionItem collectionItem = createTestCollectionItem(
           game: game,
           platform: platform,
         );
 
         await tester.pumpWidget(createTestWidget(
           collectionId: 1,
-          gameId: 1,
+          itemId: 1,
           isEditable: true,
-          games: <CollectionGame>[collectionGame],
+          items: <CollectionItem>[collectionItem],
         ));
         await tester.pumpAndSettle();
 
@@ -591,16 +594,16 @@ void main() {
           (WidgetTester tester) async {
         const Game game = Game(id: 100, name: 'Test Game');
         const Platform platform = Platform(id: 18, name: 'SNES');
-        final CollectionGame collectionGame = createTestCollectionGame(
+        final CollectionItem collectionItem = createTestCollectionItem(
           game: game,
           platform: platform,
         );
 
         await tester.pumpWidget(createTestWidget(
           collectionId: 1,
-          gameId: 1,
+          itemId: 1,
           isEditable: false,
-          games: <CollectionGame>[collectionGame],
+          items: <CollectionItem>[collectionItem],
         ));
         await tester.pumpAndSettle();
 
@@ -617,16 +620,16 @@ void main() {
           (WidgetTester tester) async {
         const Game game = Game(id: 100, name: 'Test Game');
         const Platform platform = Platform(id: 18, name: 'SNES');
-        final CollectionGame collectionGame = createTestCollectionGame(
+        final CollectionItem collectionItem = createTestCollectionItem(
           game: game,
           platform: platform,
         );
 
         await tester.pumpWidget(createTestWidget(
           collectionId: 1,
-          gameId: 1,
+          itemId: 1,
           isEditable: true,
-          games: <CollectionGame>[collectionGame],
+          items: <CollectionItem>[collectionItem],
         ));
         await tester.pumpAndSettle();
 

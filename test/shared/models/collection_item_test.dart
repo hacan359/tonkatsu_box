@@ -129,25 +129,6 @@ void main() {
         expect(item.platform, isNull);
       });
 
-      test('должен маппить legacy статус "playing" в inProgress', () {
-        final Map<String, dynamic> row = <String, dynamic>{
-          'id': 4,
-          'collection_id': 10,
-          'media_type': 'game',
-          'external_id': 100,
-          'platform_id': null,
-          'current_season': null,
-          'current_episode': null,
-          'status': 'playing',
-          'author_comment': null,
-          'user_comment': null,
-          'added_at': testAddedAtUnix,
-        };
-
-        final CollectionItem item = CollectionItem.fromDb(row);
-
-        expect(item.status, ItemStatus.inProgress);
-      });
     });
 
     group('fromDbWithJoins', () {
@@ -311,7 +292,7 @@ void main() {
         expect(db['user_comment'], isNull);
       });
 
-      test('должен использовать dbValue(mediaType) для статуса game inProgress', () {
+      test('должен использовать status.value для game inProgress', () {
         final CollectionItem item = CollectionItem(
           id: 3,
           collectionId: 10,
@@ -323,10 +304,10 @@ void main() {
 
         final Map<String, dynamic> db = item.toDb();
 
-        expect(db['status'], 'playing');
+        expect(db['status'], 'in_progress');
       });
 
-      test('должен использовать dbValue(mediaType) для статуса movie inProgress', () {
+      test('должен использовать status.value для movie inProgress', () {
         final CollectionItem item = CollectionItem(
           id: 4,
           collectionId: 10,
@@ -1152,11 +1133,9 @@ void main() {
         );
 
         final Map<String, dynamic> db = original.toDb();
-        // toDb для game inProgress пишет 'playing'
-        expect(db['status'], 'playing');
+        expect(db['status'], 'in_progress');
 
         final CollectionItem restored = CollectionItem.fromDb(db);
-        // fromDb маппит 'playing' обратно в inProgress
         expect(restored.status, ItemStatus.inProgress);
       });
     });

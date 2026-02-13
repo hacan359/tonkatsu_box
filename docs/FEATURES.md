@@ -97,7 +97,7 @@ Track status for each item in your collection with context-aware labels:
 | Status | Games | Movies/TV Shows |
 |--------|-------|-----------------|
 | ⬜ Not Started | Not Started | Not Started |
-| 🎮/📺 In Progress | Playing | Watching |
+| 🎮/📺 In Progress | In Progress | In Progress |
 | ✅ Completed | Completed | Completed |
 | ⏸️ On Hold | — | On Hold (TV shows only) |
 | ❌ Dropped | Dropped | Dropped |
@@ -197,11 +197,6 @@ Export collections in three formats:
 - Canvas data (viewport, items, connections) including per-item canvases
 - Base64-encoded cover images for offline import
 - Self-contained — recipients don't need internet for covers
-
-### Legacy Export (`.rcoll`)
-- v1 format with game IDs only
-- Supported for import (backward compatibility)
-- Share via Discord, Telegram, Reddit, email
 
 ## Forking
 

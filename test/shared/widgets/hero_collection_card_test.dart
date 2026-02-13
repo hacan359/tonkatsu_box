@@ -103,7 +103,7 @@ void main() {
         const CollectionStats stats = CollectionStats(
           total: 24,
           completed: 18,
-          playing: 2,
+          inProgress: 2,
           notStarted: 4,
           dropped: 0,
           planned: 0,
@@ -249,7 +249,7 @@ void main() {
         const CollectionStats stats = CollectionStats(
           total: 5,
           completed: 3,
-          playing: 1,
+          inProgress: 1,
           notStarted: 1,
           dropped: 0,
           planned: 0,
@@ -321,7 +321,7 @@ void main() {
         const CollectionStats stats = CollectionStats(
           total: 24,
           completed: 18,
-          playing: 2,
+          inProgress: 2,
           notStarted: 4,
           dropped: 0,
           planned: 0,
@@ -343,7 +343,7 @@ void main() {
         const CollectionStats stats = CollectionStats(
           total: 1,
           completed: 0,
-          playing: 1,
+          inProgress: 1,
           notStarted: 0,
           dropped: 0,
           planned: 0,
@@ -366,7 +366,7 @@ void main() {
         const CollectionStats stats = CollectionStats(
           total: 10,
           completed: 5,
-          playing: 0,
+          inProgress: 0,
           notStarted: 5,
           dropped: 0,
           planned: 0,
@@ -392,7 +392,7 @@ void main() {
         const CollectionStats stats = CollectionStats(
           total: 10,
           completed: 5,
-          playing: 3,
+          inProgress: 3,
           notStarted: 2,
           dropped: 0,
           planned: 0,
@@ -415,7 +415,7 @@ void main() {
         const CollectionStats stats = CollectionStats(
           total: 10,
           completed: 5,
-          playing: 0,
+          inProgress: 0,
           notStarted: 5,
           dropped: 0,
           planned: 0,
