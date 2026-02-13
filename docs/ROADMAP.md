@@ -40,6 +40,7 @@
 - [x] Activity Dates — started_at, completed_at, last_activity_at for all collection items. Auto-set on status change. DatePicker for manual editing. Watched dates in episode tracker
 - [x] Canvas Lock — view-only mode toggle (lock icon in AppBar) for own/fork collections. Closes side panels when locked. Available on collection and per-item canvas
 - [x] View Mode Persistence — grid/list toggle saved per-collection in SharedPreferences
+- [x] Animation Tab — 4th search tab combining animated movies and TV shows from TMDB (genre Animation, ID=16). MediaType.animation enum, AnimationSource discriminator (movie=0, tvShow=1), adaptive AnimeDetailScreen, purple accent color, filter chip in collections, canvas support
 
 ## UI Redesign (completed)
 

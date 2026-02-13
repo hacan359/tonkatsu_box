@@ -32,6 +32,7 @@ class CollectionStats {
     this.gameCount = 0,
     this.movieCount = 0,
     this.tvShowCount = 0,
+    this.animationCount = 0,
   });
 
   /// Общее количество элементов.
@@ -66,6 +67,9 @@ class CollectionStats {
 
   /// Количество сериалов.
   final int tvShowCount;
+
+  /// Количество анимации.
+  final int animationCount;
 
   /// Возвращает процент завершения (0-100).
   double get completionPercent {
@@ -296,6 +300,7 @@ class CollectionRepository {
       gameCount: raw['gameCount'] ?? 0,
       movieCount: raw['movieCount'] ?? 0,
       tvShowCount: raw['tvShowCount'] ?? 0,
+      animationCount: raw['animationCount'] ?? 0,
     );
   }
 

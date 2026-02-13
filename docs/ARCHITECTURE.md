@@ -67,14 +67,14 @@ lib/
 | `lib/shared/models/steamgriddb_game.dart` | **Модель SteamGridDB игры**. Поля: id, name, types, verified. Метод: `fromJson()` |
 | `lib/shared/models/steamgriddb_image.dart` | **Модель SteamGridDB изображения**. Поля: id, score, style, url, thumb, width, height, mime, author. Свойство `dimensions` |
 | `lib/shared/models/collection_item.dart` | **Модель универсального элемента коллекции**. Поля: id, collectionId, mediaType, externalId, platformId, sortOrder, status, authorComment, userComment, addedAt, startedAt, completedAt, lastActivityAt. Методы: `fromDb()`, `toDb()`, `copyWith()`. `sortOrder` используется для ручной сортировки drag-and-drop. Даты хранятся как Unix seconds |
-| `lib/shared/models/media_type.dart` | **Enum типа медиа**. Значения: `game`, `movie`, `tvShow`. Свойства: `label`, `icon`. Методы: `fromString()` |
+| `lib/shared/models/media_type.dart` | **Enum типа медиа**. Значения: `game`, `movie`, `tvShow`, `animation`. `AnimationSource` — abstract final class с константами `movie = 0`, `tvShow = 1` для дискриминации источника анимации через `platform_id`. Свойства: `label`, `icon`. Методы: `fromString()` |
 | `lib/shared/models/item_status.dart` | **Enum статуса элемента**. Значения: `notStarted`, `inProgress`, `completed`, `dropped`, `planned`, `onHold`. Свойства: `label`, `emoji`, `color`, `statusSortPriority`. Методы: `fromString()`, `dbValue()`, `displayLabel()` |
 | `lib/shared/models/collection_sort_mode.dart` | **Enum режима сортировки коллекции**. Значения: `manual`, `addedDate`, `status`, `name`. Свойства: `value`, `displayLabel`, `description`. Метод: `fromString()`. Хранится в SharedPreferences per collection |
 | `lib/shared/models/movie.dart` | **Модель фильма**. Поля: id, title, overview, posterPath, releaseDate, rating, genres, runtime и др. Свойства: `posterUrl`, `releaseYear`, `ratingString`, `genresString`. Методы: `fromJson()`, `fromDb()`, `toDb()`, `copyWith()` |
 | `lib/shared/models/tv_show.dart` | **Модель сериала**. Поля: id, title, overview, posterPath, firstAirDate, rating, genres, seasons, episodes, status. Свойства: `posterUrl`, `releaseYear`, `ratingString`, `genresString`. Методы: `fromJson()`, `fromDb()`, `toDb()`, `copyWith()` |
 | `lib/shared/models/tv_season.dart` | **Модель сезона сериала**. Поля: id, tvShowId, seasonNumber, name, overview, posterPath, airDate, episodeCount. Методы: `fromJson()`, `fromDb()`, `toDb()`, `copyWith()` |
 | `lib/shared/models/tv_episode.dart` | **Модель эпизода сериала**. Поля: tmdbShowId, seasonNumber, episodeNumber, name, overview, airDate, stillUrl, runtime. Equality по (tmdbShowId, seasonNumber, episodeNumber). Методы: `fromJson()`, `fromDb()`, `toDb()`, `copyWith()` |
-| `lib/shared/models/canvas_item.dart` | **Модель элемента канваса**. Enum `CanvasItemType` (game/movie/tvShow/text/image/link). Поля: id, collectionId, collectionItemId (null для коллекционного canvas, int для per-item), itemType, itemRefId, x, y, width, height, zIndex, data (JSON). Joined поля: `game: Game?`, `movie: Movie?`, `tvShow: TvShow?`. Статический метод `CanvasItemType.fromMediaType()`, геттер `isMediaItem` |
+| `lib/shared/models/canvas_item.dart` | **Модель элемента канваса**. Enum `CanvasItemType` (game/movie/tvShow/animation/text/image/link). Поля: id, collectionId, collectionItemId (null для коллекционного canvas, int для per-item), itemType, itemRefId, x, y, width, height, zIndex, data (JSON). Joined поля: `game: Game?`, `movie: Movie?`, `tvShow: TvShow?`. Статический метод `CanvasItemType.fromMediaType()`, геттер `isMediaItem` |
 | `lib/shared/models/canvas_viewport.dart` | **Модель viewport канваса**. Поля: collectionId, scale, offsetX, offsetY. Хранит зум и позицию камеры |
 | `lib/shared/models/canvas_connection.dart` | **Модель связи канваса**. Enum `ConnectionStyle` (solid/dashed/arrow). Поля: id, collectionId, collectionItemId (null для коллекционного canvas, int для per-item), fromItemId, toItemId, label, color (hex), style, createdAt |
 
@@ -87,10 +87,11 @@ lib/
 | Файл | Назначение |
 |------|------------|
 | `lib/features/collections/screens/home_screen.dart` | **Главный экран**. Список коллекций с группировкой (My/Forked/Imported). AppBar с кнопкой "+" для создания и Import. Меню: rename, fork, delete |
-| `lib/features/collections/screens/collection_screen.dart` | **Экран коллекции**. Заголовок со статистикой (прогресс-бар), список элементов. Кнопка "Add Items" открывает SearchScreen. Поддержка игр, фильмов и сериалов через `CollectionItem`/`collectionItemsNotifierProvider`. Навигация к `GameDetailScreen`/`MovieDetailScreen`/`TvShowDetailScreen` по типу. `_CollectionItemTile` — карточка с большой полупрозрачной фоновой иконкой типа медиа (Stack + Positioned) |
+| `lib/features/collections/screens/collection_screen.dart` | **Экран коллекции**. Заголовок со статистикой (прогресс-бар), список элементов. Кнопка "Add Items" открывает SearchScreen. Поддержка игр, фильмов, сериалов и анимации через `CollectionItem`/`collectionItemsNotifierProvider`. Навигация к `GameDetailScreen`/`MovieDetailScreen`/`TvShowDetailScreen`/`AnimeDetailScreen` по типу. Filter chips: All/Games/Movies/TV Shows/Animation. `_CollectionItemTile` — карточка с большой полупрозрачной фоновой иконкой типа медиа (Stack + Positioned) |
 | `lib/features/collections/screens/game_detail_screen.dart` | **Экран деталей игры**. TabBar с 2 вкладками: Details (`MediaDetailView(embedded: true)` с info chips, StatusChipRow) и Canvas (CanvasView + боковые панели SteamGridDB/VGMaps). Использует `gameCanvasNotifierProvider` для per-item canvas |
 | `lib/features/collections/screens/movie_detail_screen.dart` | **Экран деталей фильма**. TabBar с 2 вкладками: Details (`MediaDetailView(embedded: true)` с info chips, StatusChipRow) и Canvas (CanvasView + боковые панели SteamGridDB/VGMaps). Использует `gameCanvasNotifierProvider` для per-item canvas |
 | `lib/features/collections/screens/tv_show_detail_screen.dart` | **Экран деталей сериала**. TabBar с 2 вкладками: Details (`MediaDetailView(embedded: true)` с info chips, Episode Progress с трекером эпизодов по сезонам, StatusChipRow) и Canvas (CanvasView + боковые панели SteamGridDB/VGMaps). Виджеты `_SeasonsListWidget`, `_SeasonExpansionTile`, `_EpisodeTile` — ExpansionTile по сезонам с lazy-loading эпизодов и чекбоксами просмотра. Использует `episodeTrackerNotifierProvider` и `gameCanvasNotifierProvider` для per-item canvas |
+| `lib/features/collections/screens/anime_detail_screen.dart` | **Экран деталей анимации**. Адаптивный: movie-like layout для `AnimationSource.movie` (runtime, без episode tracker), tvShow-like layout для `AnimationSource.tvShow` (episode tracker по сезонам с чекбоксами). Accent color: `AppColors.animationAccent` (фиолетовый). TabBar: Details + Canvas (если kCanvasEnabled). Приватные виджеты: `_AnimeSeasonsListWidget`, `_AnimeSeasonExpansionTile`, `_AnimeEpisodeTile`. Использует `episodeTrackerNotifierProvider` и `gameCanvasNotifierProvider` |
 
 #### Виджеты
 
@@ -139,7 +140,7 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/features/search/screens/search_screen.dart` | **Экран поиска**. TabBar с 3 табами: Games / Movies / TV Shows. Общее поле ввода с debounce, фильтр платформ (только Games), сортировка (SortSelector), фильтры медиа (год, жанры через MediaFilterSheet). При `collectionId` — добавляет игры/фильмы/сериалы в коллекцию через `collectionItemsNotifierProvider`. Bottom sheet с деталями фильма/сериала |
+| `lib/features/search/screens/search_screen.dart` | **Экран поиска**. TabBar с 4 табами: Games / Movies / TV Shows / Animation. Общее поле ввода с debounce, фильтр платформ (только Games), сортировка (SortSelector), фильтры медиа (год, жанры через MediaFilterSheet). Animation tab объединяет animated movies + TV shows (genre_id=16), исключая их из Movies/TV Shows табов. При `collectionId` — добавляет игры/фильмы/сериалы/анимацию в коллекцию через `collectionItemsNotifierProvider`. Bottom sheet с деталями |
 
 #### Виджеты
 
@@ -148,6 +149,7 @@ lib/
 | `lib/features/search/widgets/game_card.dart` | **Карточка игры**. Тонкая обёртка над `MediaCard`: маппинг Game на параметры виджета, SourceBadge IGDB, subtitle (год, рейтинг), metadata (жанры, платформы) |
 | `lib/features/search/widgets/movie_card.dart` | **Карточка фильма**. Тонкая обёртка над `MediaCard`: маппинг Movie на параметры виджета, SourceBadge TMDB, subtitle (год, рейтинг, runtime), metadata (жанры) |
 | `lib/features/search/widgets/tv_show_card.dart` | **Карточка сериала**. Тонкая обёртка над `MediaCard`: маппинг TvShow на параметры виджета, SourceBadge TMDB, subtitle (год, рейтинг, сезоны), metadata (жанры, статус) |
+| `lib/features/search/widgets/animation_card.dart` | **Карточка анимации**. Обёртка над `MediaCard`: принимает `Movie?` или `TvShow?` + флаг `isMovie`. SourceBadge TMDB, бейдж "Movie"/"Series", subtitle (год, рейтинг, runtime или seasons) |
 | `lib/features/search/widgets/platform_filter_sheet.dart` | **Bottom sheet фильтра платформ**. Мультивыбор платформ с поиском. Кнопки Clear All / Apply |
 | `lib/features/search/widgets/sort_selector.dart` | **Селектор сортировки**. SegmentedButton с 3 опциями (Relevance, Date, Rating). Переключение направления при клике на активный сегмент. Визуальный индикатор ↑↓ |
 | `lib/features/search/widgets/media_filter_sheet.dart` | **Bottom sheet фильтров медиа**. DraggableScrollableSheet с фильтрами: Release Year (TextField), Genres (FilterChip). Кнопка Clear All |
@@ -157,7 +159,7 @@ lib/
 | Файл | Назначение |
 |------|------------|
 | `lib/features/search/providers/game_search_provider.dart` | **State поиска игр**. Debounce 400ms, минимум 2 символа. Фильтр по платформам. Сортировка (relevance/date/rating). Состояние: query, results, isLoading, error, currentSort |
-| `lib/features/search/providers/media_search_provider.dart` | **State поиска фильмов/сериалов**. Debounce 400ms через TMDB API. Enum `MediaSearchTab` (movies, tvShows). Сортировка (relevance/date/rating), фильтры (год, жанры). Состояние: query, movieResults, tvShowResults, isLoading, error, activeTab, currentSort, selectedYear, selectedGenreIds. Кэширование через `upsertMovies()`/`upsertTvShows()` |
+| `lib/features/search/providers/media_search_provider.dart` | **State поиска фильмов/сериалов/анимации**. Debounce 400ms через TMDB API. Enum `MediaSearchTab` (movies, tvShows, animation). Animation tab: `Future.wait([searchMovies, searchTvShows])` → фильтрация по genre_id=16. Movies/TV Shows табы исключают анимацию. Состояние: query, movieResults, tvShowResults, animationMovieResults, animationTvShowResults, isLoading, error, activeTab, currentSort, selectedYear, selectedGenreIds. Кэширование через `upsertMovies()`/`upsertTvShows()` |
 | `lib/features/search/providers/genre_provider.dart` | **Провайдеры жанров**. `movieGenresProvider`, `tvGenresProvider` — FutureProvider для кэширования списков жанров из TMDB API. `movieGenreMapProvider`, `tvGenreMapProvider` — маппинг ID→имя для быстрого резолвинга genre_ids. DB-first стратегия: загрузка из таблицы `tmdb_genres`, при пустом кэше — запрос к API и сохранение |
 
 ---
@@ -168,7 +170,7 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/shared/theme/app_colors.dart` | **Цвета тёмной темы**. Статические константы: background (#0A0A0A), surface (#141414), surfaceLight, surfaceBorder, textPrimary (#FFFFFF), textSecondary, textTertiary, gameAccent, movieAccent, tvShowAccent, ratingHigh/Medium/Low, statusInProgress/Completed/OnHold/Dropped/Planned |
+| `lib/shared/theme/app_colors.dart` | **Цвета тёмной темы**. Статические константы: background (#0A0A0A), surface (#141414), surfaceLight, surfaceBorder, textPrimary (#FFFFFF), textSecondary, textTertiary, gameAccent, movieAccent, tvShowAccent, animationAccent (#CE93D8), ratingHigh/Medium/Low, statusInProgress/Completed/OnHold/Dropped/Planned |
 | `lib/shared/theme/app_spacing.dart` | **Отступы и радиусы**. Отступы: xs(4), sm(8), md(16), lg(24), xl(32). Радиусы: radiusXs(4), radiusSm(8), radiusMd(12), radiusLg(16), radiusXl(20). Сетка: posterAspectRatio(2:3), gridColumnsDesktop(4)/Tablet(3)/Mobile(2) |
 | `lib/shared/theme/app_typography.dart` | **Типографика (Inter)**. TextStyle: h1(28 bold, -0.5ls), h2(20 w600, -0.2ls), h3(16 w600), body(14), bodySmall(12), caption(11), posterTitle(14 w600), posterSubtitle(11). fontFamily: 'Inter' |
 | `lib/shared/theme/app_theme.dart` | **Централизованная тёмная тема**. ThemeData с Brightness.dark принудительно, ColorScheme.dark из AppColors, стилизация AppBar/Card/Input/Dialog/BottomSheet/Chip/Button/NavigationRail/NavigationBar/TabBar |
@@ -198,7 +200,7 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/shared/constants/media_type_theme.dart` | **Тема типов медиа**. Цвета и иконки для визуального разделения: `colorFor(MediaType)`, `iconFor(MediaType)`. Статические константы `gameColor`, `movieColor`, `tvShowColor` |
+| `lib/shared/constants/media_type_theme.dart` | **Тема типов медиа**. Цвета и иконки для визуального разделения: `colorFor(MediaType)`, `iconFor(MediaType)`. Статические константы `gameColor`, `movieColor`, `tvShowColor`, `animationColor` (фиолетовый) |
 
 ---
 
@@ -631,6 +633,7 @@ CREATE TABLE game_canvas_viewport (
                               │  │  ├→ GameDetailScreen(collectionId, itemId)
                               │  │  ├→ MovieDetailScreen(collectionId, itemId)
                               │  │  ├→ TvShowDetailScreen(collectionId, itemId)
+                              │  │  ├→ AnimeDetailScreen(collectionId, itemId)
                               │  │  └→ SearchScreen(collectionId)
                               │  │      [добавление игр/фильмов/сериалов]
                               │  │

@@ -410,6 +410,14 @@ class ImportService {
             movieItems.add(item);
           case 'tv_show':
             tvShowItems.add(item);
+          case 'animation':
+            // Анимация: определяем тип по platform_id
+            final int? platformId = item['platform_id'] as int?;
+            if (platformId == AnimationSource.tvShow) {
+              tvShowItems.add(item);
+            } else {
+              movieItems.add(item);
+            }
         }
       }
 

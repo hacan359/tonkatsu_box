@@ -27,13 +27,21 @@ void main() {
         );
       });
 
+      test('должен возвращать фиолетовый для анимации', () {
+        expect(
+          MediaTypeTheme.colorFor(MediaType.animation),
+          MediaTypeTheme.animationColor,
+        );
+      });
+
       test('каждый тип должен иметь уникальный цвет', () {
         final Set<Color> colors = <Color>{
           MediaTypeTheme.gameColor,
           MediaTypeTheme.movieColor,
           MediaTypeTheme.tvShowColor,
+          MediaTypeTheme.animationColor,
         };
-        expect(colors.length, 3);
+        expect(colors.length, 4);
       });
     });
 
@@ -58,6 +66,13 @@ void main() {
           Icons.tv,
         );
       });
+
+      test('должен возвращать animation для анимации', () {
+        expect(
+          MediaTypeTheme.iconFor(MediaType.animation),
+          Icons.animation,
+        );
+      });
     });
 
     group('константы цветов', () {
@@ -71,6 +86,10 @@ void main() {
 
       test('tvShowColor должен быть зелёным (0xFF4CAF50)', () {
         expect(MediaTypeTheme.tvShowColor, const Color(0xFF4CAF50));
+      });
+
+      test('animationColor должен быть фиолетовым (0xFF9C27B0)', () {
+        expect(MediaTypeTheme.animationColor, const Color(0xFF9C27B0));
       });
     });
   });

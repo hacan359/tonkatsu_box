@@ -89,6 +89,8 @@ class CanvasMediaCard extends ConsumerWidget {
         return ImageType.moviePoster;
       case CanvasItemType.tvShow:
         return ImageType.tvShowPoster;
+      case CanvasItemType.animation:
+        return ImageType.moviePoster;
       case CanvasItemType.game:
       case CanvasItemType.text:
       case CanvasItemType.image:
@@ -103,6 +105,10 @@ class CanvasMediaCard extends ConsumerWidget {
         return (item.movie?.tmdbId ?? 0).toString();
       case CanvasItemType.tvShow:
         return (item.tvShow?.tmdbId ?? 0).toString();
+      case CanvasItemType.animation:
+        // Animation может быть movie или tvShow
+        final int id = item.movie?.tmdbId ?? item.tvShow?.tmdbId ?? 0;
+        return id.toString();
       case CanvasItemType.game:
       case CanvasItemType.text:
       case CanvasItemType.image:
@@ -117,6 +123,8 @@ class CanvasMediaCard extends ConsumerWidget {
         return MediaTypeTheme.colorFor(MediaType.movie);
       case CanvasItemType.tvShow:
         return MediaTypeTheme.colorFor(MediaType.tvShow);
+      case CanvasItemType.animation:
+        return MediaTypeTheme.colorFor(MediaType.animation);
       case CanvasItemType.game:
       case CanvasItemType.text:
       case CanvasItemType.image:
@@ -131,6 +139,8 @@ class CanvasMediaCard extends ConsumerWidget {
         return item.movie?.posterThumbUrl;
       case CanvasItemType.tvShow:
         return item.tvShow?.posterThumbUrl;
+      case CanvasItemType.animation:
+        return item.movie?.posterThumbUrl ?? item.tvShow?.posterThumbUrl;
       case CanvasItemType.game:
       case CanvasItemType.text:
       case CanvasItemType.image:
@@ -145,6 +155,8 @@ class CanvasMediaCard extends ConsumerWidget {
         return item.movie?.title ?? 'Unknown Movie';
       case CanvasItemType.tvShow:
         return item.tvShow?.title ?? 'Unknown TV Show';
+      case CanvasItemType.animation:
+        return item.movie?.title ?? item.tvShow?.title ?? 'Unknown Animation';
       case CanvasItemType.game:
       case CanvasItemType.text:
       case CanvasItemType.image:
@@ -159,6 +171,8 @@ class CanvasMediaCard extends ConsumerWidget {
         return Icons.movie_outlined;
       case CanvasItemType.tvShow:
         return Icons.tv_outlined;
+      case CanvasItemType.animation:
+        return Icons.animation;
       case CanvasItemType.game:
       case CanvasItemType.text:
       case CanvasItemType.image:

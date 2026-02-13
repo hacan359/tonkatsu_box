@@ -6,8 +6,8 @@ import 'package:xerabora/shared/models/media_type.dart';
 void main() {
   group('MediaType', () {
     group('значения enum', () {
-      test('должен содержать 3 значения', () {
-        expect(MediaType.values.length, 3);
+      test('должен содержать 4 значения', () {
+        expect(MediaType.values.length, 4);
       });
 
       test('должен содержать game', () {
@@ -20,6 +20,10 @@ void main() {
 
       test('должен содержать tvShow', () {
         expect(MediaType.values.contains(MediaType.tvShow), isTrue);
+      });
+
+      test('должен содержать animation', () {
+        expect(MediaType.values.contains(MediaType.animation), isTrue);
       });
     });
 
@@ -34,6 +38,10 @@ void main() {
 
       test('tvShow должен иметь значение "tv_show"', () {
         expect(MediaType.tvShow.value, 'tv_show');
+      });
+
+      test('animation должен иметь значение "animation"', () {
+        expect(MediaType.animation.value, 'animation');
       });
     });
 
@@ -73,6 +81,12 @@ void main() {
 
         expect(result, MediaType.game);
       });
+
+      test('должен вернуть animation для "animation"', () {
+        final MediaType result = MediaType.fromString('animation');
+
+        expect(result, MediaType.animation);
+      });
     });
 
     group('displayLabel', () {
@@ -86,6 +100,10 @@ void main() {
 
       test('tvShow должен отображаться как "TV Show"', () {
         expect(MediaType.tvShow.displayLabel, 'TV Show');
+      });
+
+      test('animation должен отображаться как "Animation"', () {
+        expect(MediaType.animation.displayLabel, 'Animation');
       });
     });
   });

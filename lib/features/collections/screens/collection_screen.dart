@@ -33,6 +33,7 @@ import '../widgets/create_collection_dialog.dart';
 import '../widgets/status_ribbon.dart';
 import '../widgets/steamgriddb_panel.dart';
 import '../widgets/vgmaps_panel.dart';
+import 'anime_detail_screen.dart';
 import 'game_detail_screen.dart';
 import 'movie_detail_screen.dart';
 import 'tv_show_detail_screen.dart';
@@ -492,6 +493,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
               _buildFilterChip(label: 'Movies', type: MediaType.movie),
               const SizedBox(width: AppSpacing.sm),
               _buildFilterChip(label: 'TV Shows', type: MediaType.tvShow),
+              const SizedBox(width: AppSpacing.sm),
+              _buildFilterChip(label: 'Animation', type: MediaType.animation),
             ],
           ),
 
@@ -765,6 +768,11 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         return item.movie?.rating;
       case MediaType.tvShow:
         return item.tvShow?.rating;
+      case MediaType.animation:
+        if (item.platformId == AnimationSource.tvShow) {
+          return item.tvShow?.rating;
+        }
+        return item.movie?.rating;
     }
   }
 
@@ -777,6 +785,11 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         return item.movie?.releaseYear;
       case MediaType.tvShow:
         return item.tvShow?.firstAirYear;
+      case MediaType.animation:
+        if (item.platformId == AnimationSource.tvShow) {
+          return item.tvShow?.firstAirYear;
+        }
+        return item.movie?.releaseYear;
     }
   }
 
@@ -789,6 +802,11 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         return item.movie?.genresString;
       case MediaType.tvShow:
         return item.tvShow?.genresString;
+      case MediaType.animation:
+        if (item.platformId == AnimationSource.tvShow) {
+          return item.tvShow?.genresString;
+        }
+        return item.movie?.genresString;
     }
   }
 
@@ -801,6 +819,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         return ImageType.moviePoster;
       case MediaType.tvShow:
         return ImageType.tvShowPoster;
+      case MediaType.animation:
+        return ImageType.moviePoster;
     }
   }
 
@@ -1001,6 +1021,16 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         Navigator.of(context).push(
           MaterialPageRoute<void>(
             builder: (BuildContext context) => TvShowDetailScreen(
+              collectionId: widget.collectionId,
+              itemId: item.id,
+              isEditable: _collection!.isEditable,
+            ),
+          ),
+        );
+      case MediaType.animation:
+        Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (BuildContext context) => AnimeDetailScreen(
               collectionId: widget.collectionId,
               itemId: item.id,
               isEditable: _collection!.isEditable,
@@ -1525,6 +1555,35 @@ class _CollectionItemTile extends StatelessWidget {
           );
         }
         return parts.isNotEmpty ? parts.join(' \u2022 ') : 'TV Show';
+      case MediaType.animation:
+        if (item.platformId == AnimationSource.tvShow) {
+          final List<String> parts = <String>[];
+          if (item.tvShow?.firstAirYear != null) {
+            parts.add(item.tvShow!.firstAirYear.toString());
+          }
+          if (item.tvShow?.totalSeasons != null) {
+            parts.add(
+              '${item.tvShow!.totalSeasons} season${item.tvShow!.totalSeasons != 1 ? 's' : ''}',
+            );
+          }
+          return parts.isNotEmpty ? parts.join(' \u2022 ') : 'Animated Series';
+        }
+        final List<String> parts = <String>[];
+        if (item.movie?.releaseYear != null) {
+          parts.add(item.movie!.releaseYear.toString());
+        }
+        if (item.movie?.runtime != null) {
+          final int hours = item.movie!.runtime! ~/ 60;
+          final int mins = item.movie!.runtime! % 60;
+          if (hours > 0 && mins > 0) {
+            parts.add('${hours}h ${mins}m');
+          } else if (hours > 0) {
+            parts.add('${hours}h');
+          } else {
+            parts.add('${mins}m');
+          }
+        }
+        return parts.isNotEmpty ? parts.join(' \u2022 ') : 'Animated Movie';
     }
   }
 
@@ -1536,6 +1595,8 @@ class _CollectionItemTile extends StatelessWidget {
         return Icons.movie_outlined;
       case MediaType.tvShow:
         return Icons.tv_outlined;
+      case MediaType.animation:
+        return Icons.animation;
     }
   }
 
@@ -1547,6 +1608,8 @@ class _CollectionItemTile extends StatelessWidget {
         return ImageType.moviePoster;
       case MediaType.tvShow:
         return ImageType.tvShowPoster;
+      case MediaType.animation:
+        return ImageType.moviePoster;
     }
   }
 

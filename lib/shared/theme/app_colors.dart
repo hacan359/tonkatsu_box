@@ -43,6 +43,9 @@ abstract final class AppColors {
   /// Акцентный цвет для сериалов (зелёный).
   static const Color tvShowAccent = Color(0xFF81C784);
 
+  /// Акцентный цвет для анимации (светло-фиолетовый).
+  static const Color animationAccent = Color(0xFFCE93D8);
+
   // ==================== Семантические цвета ====================
 
   /// Цвет успеха (completed, done).

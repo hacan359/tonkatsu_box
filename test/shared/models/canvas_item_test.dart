@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/shared/models/canvas_item.dart';
+import 'package:xerabora/shared/models/media_type.dart';
 
 void main() {
   group('CanvasItemType', () {
@@ -10,6 +11,7 @@ void main() {
       expect(CanvasItemType.text.value, 'text');
       expect(CanvasItemType.image.value, 'image');
       expect(CanvasItemType.link.value, 'link');
+      expect(CanvasItemType.animation.value, 'animation');
     });
 
     test('fromString should return correct type', () {
@@ -22,6 +24,17 @@ void main() {
     test('fromString should return game for unknown value', () {
       expect(CanvasItemType.fromString('unknown'), CanvasItemType.game);
       expect(CanvasItemType.fromString(''), CanvasItemType.game);
+    });
+
+    test('fromMediaType should return animation for MediaType.animation', () {
+      expect(
+        CanvasItemType.fromMediaType(MediaType.animation),
+        CanvasItemType.animation,
+      );
+    });
+
+    test('isMediaItem should return true for animation', () {
+      expect(CanvasItemType.animation.isMediaItem, isTrue);
     });
   });
 

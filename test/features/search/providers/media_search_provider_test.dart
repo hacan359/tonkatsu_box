@@ -7,10 +7,11 @@ import 'package:xerabora/shared/models/tv_show.dart';
 
 void main() {
   group('MediaSearchTab', () {
-    test('has movies and tvShows values', () {
-      expect(MediaSearchTab.values, hasLength(2));
+    test('has movies, tvShows and animation values', () {
+      expect(MediaSearchTab.values, hasLength(3));
       expect(MediaSearchTab.movies, isNotNull);
       expect(MediaSearchTab.tvShows, isNotNull);
+      expect(MediaSearchTab.animation, isNotNull);
     });
   });
 
@@ -116,6 +117,38 @@ void main() {
             Movie(tmdbId: 1, title: 'Test Movie'),
           ],
           tvShowResults: <TvShow>[],
+        );
+
+        expect(state.hasResults, isFalse);
+      });
+
+      test('returns true when animation tab has movie results', () {
+        const MediaSearchState state = MediaSearchState(
+          activeTab: MediaSearchTab.animation,
+          animationMovieResults: <Movie>[
+            Movie(tmdbId: 1, title: 'Spirited Away'),
+          ],
+        );
+
+        expect(state.hasResults, isTrue);
+      });
+
+      test('returns true when animation tab has tvShow results', () {
+        const MediaSearchState state = MediaSearchState(
+          activeTab: MediaSearchTab.animation,
+          animationTvShowResults: <TvShow>[
+            TvShow(tmdbId: 1, title: 'Attack on Titan'),
+          ],
+        );
+
+        expect(state.hasResults, isTrue);
+      });
+
+      test('returns false when animation tab has no results', () {
+        const MediaSearchState state = MediaSearchState(
+          activeTab: MediaSearchTab.animation,
+          animationMovieResults: <Movie>[],
+          animationTvShowResults: <TvShow>[],
         );
 
         expect(state.hasResults, isFalse);
@@ -230,6 +263,36 @@ void main() {
         expect(updated.tvShowResults, hasLength(2));
         expect(updated.tvShowResults[0].title, 'Show 1');
         expect(updated.tvShowResults[1].title, 'Show 2');
+      });
+
+      test('updates animation movie results', () {
+        const MediaSearchState original = MediaSearchState();
+        const List<Movie> newResults = <Movie>[
+          Movie(tmdbId: 10, title: 'Spirited Away'),
+          Movie(tmdbId: 11, title: 'Your Name'),
+        ];
+
+        final MediaSearchState updated =
+            original.copyWith(animationMovieResults: newResults);
+
+        expect(updated.animationMovieResults, hasLength(2));
+        expect(updated.animationMovieResults[0].title, 'Spirited Away');
+        expect(updated.animationMovieResults[1].title, 'Your Name');
+      });
+
+      test('updates animation tvShow results', () {
+        const MediaSearchState original = MediaSearchState();
+        const List<TvShow> newResults = <TvShow>[
+          TvShow(tmdbId: 20, title: 'Attack on Titan'),
+          TvShow(tmdbId: 21, title: 'Naruto'),
+        ];
+
+        final MediaSearchState updated =
+            original.copyWith(animationTvShowResults: newResults);
+
+        expect(updated.animationTvShowResults, hasLength(2));
+        expect(updated.animationTvShowResults[0].title, 'Attack on Titan');
+        expect(updated.animationTvShowResults[1].title, 'Naruto');
       });
 
       test('updates error', () {
@@ -445,6 +508,58 @@ void main() {
           isFalse,
         );
         expect(state1, isNot(equals(state2)));
+      });
+
+      test('states with different animationMovieResults are not equal', () {
+        const MediaSearchState state1 = MediaSearchState(
+          animationMovieResults: <Movie>[
+            Movie(tmdbId: 1, title: 'Spirited Away'),
+          ],
+        );
+        const MediaSearchState state2 = MediaSearchState(
+          animationMovieResults: <Movie>[
+            Movie(tmdbId: 2, title: 'Your Name'),
+          ],
+        );
+
+        expect(state1, isNot(equals(state2)));
+      });
+
+      test('states with different animationTvShowResults are not equal', () {
+        const MediaSearchState state1 = MediaSearchState(
+          animationTvShowResults: <TvShow>[
+            TvShow(tmdbId: 1, title: 'Attack on Titan'),
+          ],
+        );
+        const MediaSearchState state2 = MediaSearchState(
+          animationTvShowResults: <TvShow>[
+            TvShow(tmdbId: 2, title: 'Naruto'),
+          ],
+        );
+
+        expect(state1, isNot(equals(state2)));
+      });
+
+      test('states with same animation results are equal', () {
+        const MediaSearchState state1 = MediaSearchState(
+          animationMovieResults: <Movie>[
+            Movie(tmdbId: 1, title: 'Spirited Away'),
+          ],
+          animationTvShowResults: <TvShow>[
+            TvShow(tmdbId: 1, title: 'Attack on Titan'),
+          ],
+        );
+        const MediaSearchState state2 = MediaSearchState(
+          animationMovieResults: <Movie>[
+            Movie(tmdbId: 1, title: 'Spirited Away'),
+          ],
+          animationTvShowResults: <TvShow>[
+            TvShow(tmdbId: 1, title: 'Attack on Titan'),
+          ],
+        );
+
+        expect(state1, equals(state2));
+        expect(state1.hashCode, equals(state2.hashCode));
       });
 
       test('states with different currentSort are not equal', () {

@@ -495,6 +495,8 @@ class CollectionItemsNotifier
         ref.invalidate(collectedMovieIdsProvider);
       case MediaType.tvShow:
         ref.invalidate(collectedTvShowIdsProvider);
+      case MediaType.animation:
+        ref.invalidate(collectedAnimationIdsProvider);
     }
   }
 
@@ -662,6 +664,16 @@ final FutureProvider<Map<int, List<CollectedItemInfo>>>
     FutureProvider<Map<int, List<CollectedItemInfo>>>((Ref ref) async {
   final DatabaseService db = ref.watch(databaseServiceProvider);
   return db.getCollectedItemInfos(MediaType.tvShow);
+});
+
+/// Провайдер для информации о нахождении анимации в коллекциях.
+///
+/// Возвращает `Map` tmdb_id -> список записей в коллекциях.
+final FutureProvider<Map<int, List<CollectedItemInfo>>>
+    collectedAnimationIdsProvider =
+    FutureProvider<Map<int, List<CollectedItemInfo>>>((Ref ref) async {
+  final DatabaseService db = ref.watch(databaseServiceProvider);
+  return db.getCollectedItemInfos(MediaType.animation);
 });
 
 /// Провайдер для собственных коллекций.
