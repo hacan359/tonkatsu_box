@@ -340,11 +340,11 @@ void main() {
 
         expect(json['media_type'], 'game');
         expect(json['external_id'], 1942);
-        expect(json['status'], 'completed');
         expect(json['platform_id'], 48);
         expect(json['comment'], 'Шедевр');
-        expect(json['current_season'], 0);
-        expect(json['current_episode'], 0);
+        expect(json.containsKey('status'), isFalse);
+        expect(json.containsKey('current_season'), isFalse);
+        expect(json.containsKey('current_episode'), isFalse);
       });
 
       test('должен конвертировать movie элемент в JSON', () {
@@ -361,14 +361,14 @@ void main() {
 
         expect(json['media_type'], 'movie');
         expect(json['external_id'], 550);
-        expect(json['status'], 'not_started');
         expect(json['platform_id'], isNull);
         expect(json['comment'], isNull);
-        expect(json['current_season'], 0);
-        expect(json['current_episode'], 0);
+        expect(json.containsKey('status'), isFalse);
+        expect(json.containsKey('current_season'), isFalse);
+        expect(json.containsKey('current_episode'), isFalse);
       });
 
-      test('должен конвертировать tvShow элемент с season/episode в JSON', () {
+      test('должен конвертировать tvShow элемент в JSON без status/season/episode', () {
         final CollectionItem item = CollectionItem(
           id: 3,
           collectionId: 10,
@@ -384,9 +384,9 @@ void main() {
 
         expect(json['media_type'], 'tv_show');
         expect(json['external_id'], 1399);
-        expect(json['status'], 'in_progress');
-        expect(json['current_season'], 3);
-        expect(json['current_episode'], 5);
+        expect(json.containsKey('status'), isFalse);
+        expect(json.containsKey('current_season'), isFalse);
+        expect(json.containsKey('current_episode'), isFalse);
       });
 
       test('должен включать platform_id как null если не задан', () {
@@ -419,6 +419,131 @@ void main() {
 
         expect(json.containsKey('comment'), isTrue);
         expect(json['comment'], isNull);
+      });
+    });
+
+    group('fromExport', () {
+      test('должен создать CollectionItem из полных экспортных данных', () {
+        final Map<String, dynamic> json = <String, dynamic>{
+          'media_type': 'game',
+          'external_id': 1942,
+          'platform_id': 48,
+          'comment': 'Шедевр RPG',
+        };
+
+        final CollectionItem item = CollectionItem.fromExport(
+          json,
+          id: 1,
+          collectionId: 10,
+        );
+
+        expect(item.id, 1);
+        expect(item.collectionId, 10);
+        expect(item.mediaType, MediaType.game);
+        expect(item.externalId, 1942);
+        expect(item.platformId, 48);
+        expect(item.authorComment, 'Шедевр RPG');
+        expect(item.status, ItemStatus.notStarted);
+        expect(item.currentSeason, 0);
+        expect(item.currentEpisode, 0);
+      });
+
+      test('должен создать CollectionItem из минимальных экспортных данных', () {
+        final Map<String, dynamic> json = <String, dynamic>{
+          'media_type': 'movie',
+          'external_id': 550,
+        };
+
+        final CollectionItem item = CollectionItem.fromExport(json);
+
+        expect(item.id, 0);
+        expect(item.collectionId, 0);
+        expect(item.mediaType, MediaType.movie);
+        expect(item.externalId, 550);
+        expect(item.platformId, isNull);
+        expect(item.authorComment, isNull);
+        expect(item.status, ItemStatus.notStarted);
+      });
+
+      test('должен использовать дефолтный статус notStarted когда status отсутствует', () {
+        final Map<String, dynamic> json = <String, dynamic>{
+          'media_type': 'game',
+          'external_id': 100,
+          'platform_id': null,
+          'comment': null,
+        };
+
+        final CollectionItem item = CollectionItem.fromExport(json);
+
+        expect(item.status, ItemStatus.notStarted);
+      });
+
+      test('должен корректно парсить status из JSON для обратной совместимости', () {
+        final Map<String, dynamic> json = <String, dynamic>{
+          'media_type': 'game',
+          'external_id': 1942,
+          'platform_id': 48,
+          'comment': 'Шедевр',
+          'status': 'completed',
+          'current_season': 0,
+          'current_episode': 0,
+        };
+
+        final CollectionItem item = CollectionItem.fromExport(json);
+
+        expect(item.status, ItemStatus.completed);
+        expect(item.currentSeason, 0);
+        expect(item.currentEpisode, 0);
+      });
+
+      test('должен парсить все значения status для обратной совместимости', () {
+        for (final ItemStatus status in ItemStatus.values) {
+          final Map<String, dynamic> json = <String, dynamic>{
+            'media_type': 'game',
+            'external_id': 100,
+            'status': status.value,
+          };
+
+          final CollectionItem item = CollectionItem.fromExport(json);
+
+          expect(
+            item.status,
+            status,
+            reason: 'status ${status.value} должен быть корректно распарсен',
+          );
+        }
+      });
+
+      test('должен парсить tvShow с season/episode для обратной совместимости', () {
+        final Map<String, dynamic> json = <String, dynamic>{
+          'media_type': 'tv_show',
+          'external_id': 1399,
+          'status': 'in_progress',
+          'current_season': 3,
+          'current_episode': 5,
+        };
+
+        final CollectionItem item = CollectionItem.fromExport(json);
+
+        expect(item.mediaType, MediaType.tvShow);
+        expect(item.status, ItemStatus.inProgress);
+        expect(item.currentSeason, 3);
+        expect(item.currentEpisode, 5);
+      });
+
+      test('должен использовать переданный addedAt', () {
+        final DateTime customDate = DateTime(2023, 6, 15);
+        final Map<String, dynamic> json = <String, dynamic>{
+          'media_type': 'movie',
+          'external_id': 550,
+        };
+
+        final CollectionItem item = CollectionItem.fromExport(
+          json,
+          addedAt: customDate,
+        );
+
+        expect(item.addedAt, customDate);
       });
     });
 
@@ -1251,19 +1376,39 @@ void main() {
         expect(item.internalDbFields, contains('sort_order'));
       });
 
-      test('toExport не должен содержать sort_order', () {
+      test('status, current_season, current_episode должны быть в internalDbFields', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        expect(item.internalDbFields, contains('status'));
+        expect(item.internalDbFields, contains('current_season'));
+        expect(item.internalDbFields, contains('current_episode'));
+      });
+
+      test('toExport не должен содержать sort_order, status, current_season, current_episode', () {
         final CollectionItem item = CollectionItem(
           id: 1,
           collectionId: 10,
           mediaType: MediaType.game,
           externalId: 100,
           sortOrder: 5,
-          status: ItemStatus.notStarted,
+          currentSeason: 2,
+          currentEpisode: 3,
+          status: ItemStatus.inProgress,
           addedAt: testAddedAt,
         );
 
         final Map<String, dynamic> exported = item.toExport();
-        expect(exported.containsKey('sort_order'), false);
+        expect(exported.containsKey('sort_order'), isFalse);
+        expect(exported.containsKey('status'), isFalse);
+        expect(exported.containsKey('current_season'), isFalse);
+        expect(exported.containsKey('current_episode'), isFalse);
       });
     });
   });

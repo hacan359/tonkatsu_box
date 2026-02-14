@@ -7,6 +7,7 @@ import 'package:xerabora/app.dart';
 import 'package:xerabora/data/repositories/collection_repository.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/shared/models/collection.dart';
+import 'package:xerabora/shared/navigation/navigation_shell.dart';
 
 class MockCollectionRepository extends Mock implements CollectionRepository {}
 
@@ -39,7 +40,7 @@ void main() {
       expect(find.byType(MaterialApp), findsOneWidget);
     });
 
-    testWidgets('должен показывать SettingsScreen когда нет API ключа',
+    testWidgets('должен показывать NavigationShell',
         (WidgetTester tester) async {
       SharedPreferences.setMockInitialValues(<String, Object>{});
       final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -54,43 +55,9 @@ void main() {
         ),
       );
 
-      await tester.pumpAndSettle();
-
-      // SettingsScreen показывается для initial setup
-      expect(find.text('IGDB API Setup'), findsOneWidget);
-    });
-
-    testWidgets('должен показывать HomeScreen когда есть валидный API ключ',
-        (WidgetTester tester) async {
-      final int futureExpiry =
-          DateTime.now().millisecondsSinceEpoch ~/ 1000 + 3600;
-
-      SharedPreferences.setMockInitialValues(<String, Object>{
-        'igdb_client_id': 'test_client_id',
-        'igdb_client_secret': 'test_client_secret',
-        'igdb_access_token': 'test_access_token',
-        'igdb_token_expires': futureExpiry,
-      });
-      final SharedPreferences prefs = await SharedPreferences.getInstance();
-
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: <Override>[
-            sharedPreferencesProvider.overrideWithValue(prefs),
-            collectionRepositoryProvider.overrideWithValue(mockRepo),
-          ],
-          child: const XeraboraApp(),
-        ),
-      );
-
-      // Use multiple pump() instead of pumpAndSettle() to avoid timeout
-      // due to async providers
-      await tester.pump();
-      await tester.pump();
       await tester.pump();
 
-      // HomeScreen показывает заголовок Collections
-      expect(find.text('Collections'), findsOneWidget);
+      expect(find.byType(NavigationShell), findsOneWidget);
     });
 
     testWidgets('должен использовать Material 3', (WidgetTester tester) async {

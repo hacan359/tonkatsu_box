@@ -30,15 +30,11 @@ xeRAbora supports two file formats for sharing collections.
       "media_type": "game",
       "external_id": 1234,
       "platform_id": 19,
-      "status": "completed",
-      "author_comment": "All-time favorite",
-      "added_at": 1706880000
+      "comment": "All-time favorite"
     },
     {
       "media_type": "movie",
-      "external_id": 550,
-      "status": "completed",
-      "added_at": 1706880000
+      "external_id": 550
     }
   ]
 }
@@ -46,7 +42,7 @@ xeRAbora supports two file formats for sharing collections.
 
 ### Full Export (`.xcollx`)
 
-Includes everything from light export plus `canvas` and `images`:
+Includes everything from light export plus `canvas`, `images`, and `media`:
 
 ```json
 {
@@ -60,7 +56,6 @@ Includes everything from light export plus `canvas` and `images`:
       "media_type": "game",
       "external_id": 1234,
       "platform_id": 19,
-      "status": "completed",
       "_canvas": {
         "viewport": { "scale": 1.0, "offset_x": 0.0, "offset_y": 0.0 },
         "items": [ ... ],
@@ -98,7 +93,19 @@ Includes everything from light export plus `canvas` and `images`:
   },
   "images": {
     "game_covers/1234": "iVBORw0KGgo...",
-    "movie_posters/550": "iVBORw0KGgo..."
+    "movie_posters/550": "iVBORw0KGgo...",
+    "canvas_images/a1b2c3d4": "iVBORw0KGgo..."
+  },
+  "media": {
+    "games": [
+      { "id": 1234, "name": "Game Name", "summary": "...", "cover_url": "//images.igdb.com/...", "genres": "Action|RPG", "rating": 85.5, ... }
+    ],
+    "movies": [
+      { "tmdb_id": 550, "title": "Movie Title", "overview": "...", "poster_url": "/poster.jpg", "genres": "[\"Action\",\"Drama\"]", "runtime": 139, ... }
+    ],
+    "tv_shows": [
+      { "tmdb_id": 1399, "title": "TV Show", "total_seasons": 8, "total_episodes": 73, "genres": "[\"Drama\"]", ... }
+    ]
   }
 }
 ```
@@ -116,17 +123,16 @@ Includes everything from light export plus `canvas` and `images`:
 | items | array | yes | List of collection items |
 | canvas | object | no | Collection-level canvas (full only) |
 | images | object | no | Base64 cover images (full only) |
+| media | object | no | Embedded Game/Movie/TvShow data for offline import (full only) |
 
 ### Item Object
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| media_type | string | yes | `"game"`, `"movie"`, or `"tvShow"` |
+| media_type | string | yes | `"game"`, `"movie"`, `"tv_show"`, or `"animation"` |
 | external_id | number | yes | IGDB ID (games) or TMDB ID (movies/TV) |
-| platform_id | number | no | IGDB platform ID (games only) |
-| status | string | no | Item status (default: `"not_started"`) |
-| author_comment | string | no | Author's comment |
-| added_at | number | no | Unix timestamp |
+| platform_id | number | no | IGDB platform ID (games) or AnimationSource (animation: 0=movie, 1=tvShow) |
+| comment | string | no | Author's comment |
 | _canvas | object | no | Per-item canvas data (full only) |
 
 ### Canvas Object
@@ -139,14 +145,31 @@ Includes everything from light export plus `canvas` and `images`:
 
 ### Images Object
 
-Key format: `{ImageType.folder}/{externalId}`
+Key format: `{ImageType.folder}/{imageId}`
 
-Examples:
+**Cover images** — `imageId` is the external ID (IGDB/TMDB):
 - `game_covers/1234` — game cover for IGDB ID 1234
 - `movie_posters/550` — movie poster for TMDB ID 550
 - `tv_show_posters/1399` — TV show poster for TMDB ID 1399
 
+**Canvas images** — `imageId` is FNV-1a 32-bit hash of the image URL:
+- `canvas_images/a1b2c3d4` — image added to the canvas board
+
 Values are base64-encoded PNG image data.
+
+### Media Object
+
+Contains full Game/Movie/TvShow data for offline import. Each entry uses the same format as the corresponding model's `toDb()` output (without `cached_at`).
+
+| Field | Type | Description |
+|-------|------|-------------|
+| games | array | Game objects from IGDB (id, name, summary, cover_url, genres, rating, ...) |
+| movies | array | Movie objects from TMDB (tmdb_id, title, overview, poster_url, genres, runtime, ...) |
+| tv_shows | array | TvShow objects from TMDB (tmdb_id, title, total_seasons, total_episodes, genres, ...) |
+
+All three arrays are optional — only non-empty categories are included. Animation items are stored in `movies` (animated films) or `tv_shows` (animated series) based on their `AnimationSource`.
+
+When `media` is present during import, data is restored directly from the file via `fromDb()` — no API calls to IGDB/TMDB are needed. When `media` is absent (light export or older full exports), the app fetches data from APIs as before.
 
 ---
 
@@ -154,11 +177,13 @@ Values are base64-encoded PNG image data.
 
 ### v2 Light (`.xcoll`)
 1. App reads the file and creates a collection
-2. Inserts items with their metadata (status, comments)
+2. Inserts items with their metadata (comments)
 3. Fetches full game/movie/TV data from IGDB/TMDB using IDs
 
 ### v2 Full (`.xcollx`)
-1. Same as light import
-2. Restores collection-level canvas (viewport, items, connections)
-3. Restores per-item canvases (embedded in `_canvas` field of each item)
-4. Restores cover images from base64 to local disk cache
+1. If `media` section is present — restores Game/Movie/TvShow data from embedded data (offline)
+2. If `media` section is absent — fetches data from IGDB/TMDB APIs (online, same as light import)
+3. Creates collection and inserts items with metadata
+4. Restores collection-level canvas (viewport, items, connections)
+5. Restores per-item canvases (embedded in `_canvas` field of each item)
+6. Restores cover images and canvas images from base64 to local disk cache

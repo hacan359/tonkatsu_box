@@ -92,6 +92,7 @@ class XcollFile {
     this.items = const <Map<String, dynamic>>[],
     this.canvas,
     this.images = const <String, String>{},
+    this.media = const <String, dynamic>{},
   });
 
   /// Создаёт [XcollFile] из JSON строки.
@@ -173,6 +174,10 @@ class XcollFile {
                 MapEntry<String, String>(key, value as String))
         : const <String, String>{};
 
+    // Media data (optional, full export only)
+    final Map<String, dynamic> media =
+        json['media'] as Map<String, dynamic>? ?? const <String, dynamic>{};
+
     return XcollFile(
       version: 2,
       format: format,
@@ -183,6 +188,7 @@ class XcollFile {
       items: items,
       canvas: canvas,
       images: images,
+      media: media,
     );
   }
 
@@ -226,9 +232,15 @@ class XcollFile {
 
   /// Base64-изображения обложек (только full export).
   ///
-  /// Ключ — '{ImageType.folder}/{externalId}' (например, 'game_covers/12345').
+  /// Ключ — '{ImageType.folder}/{imageId}' (например, 'game_covers/12345').
   /// Значение — base64-строка изображения.
   final Map<String, String> images;
+
+  /// Полные данные медиа-объектов (только full export).
+  ///
+  /// Структура: `{games: [...], movies: [...], tv_shows: [...]}`.
+  /// Каждый элемент — Map в формате `toDb()` соответствующей модели.
+  final Map<String, dynamic> media;
 
   /// Является ли полным экспортом.
   bool get isFull => format == ExportFormat.full;
@@ -245,6 +257,7 @@ class XcollFile {
       'items': items,
       if (canvas != null) 'canvas': canvas!.toJson(),
       if (images.isNotEmpty) 'images': images,
+      if (media.isNotEmpty) 'media': media,
     };
   }
 

@@ -181,7 +181,6 @@ void main() {
       minimalExportJson: const <String, dynamic>{
         'media_type': 'game',
         'external_id': 1,
-        'status': 'not_started',
       },
     );
 

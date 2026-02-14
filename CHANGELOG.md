@@ -6,7 +6,28 @@
 
 ## [Unreleased]
 
+### Added
+- Добавлен экспорт canvas-изображений в полный экспорт `.xcollx` — изображения с канваса (`CanvasItemType.image`) теперь включаются в секцию `images` с ключом `canvas_images/{hash}`
+- Добавлен полный офлайн-экспорт: секция `media` в `.xcollx` содержит данные Game/Movie/TvShow (через `toDb()` без `cached_at`). При импорте данные восстанавливаются из файла через `fromDb()` — API-вызовы не требуются
+- Добавлен этап `ImportStage.restoringMedia` для отслеживания прогресса восстановления медиа-данных
+- Добавлено поле `media` в `XcollFile` с поддержкой сериализации/десериализации
+- Добавлен метод `ExportService._collectMediaData()` — сбор Game/Movie/TvShow из joined полей элементов с дедупликацией по ID
+- Добавлены методы `ImportService._restoreEmbeddedMedia()` и `_fetchMediaFromApi()` — условный импорт: офлайн из файла или онлайн из API
+
+### Fixed
+- Исправлен маппинг `ImageType` для анимации: `_imageTypeFor()` в `CollectionScreen` и `HeroCollectionCard` теперь учитывает `platformId` — анимационные сериалы (`AnimationSource.tvShow`) отображают обложки из `tv_show_posters` вместо `movie_posters`
+
+### Changed
+- Изменён `_AppRouter` — приложение больше не блокируется без API ключей, только поиск недоступен
+- Изменён `SearchScreen` — при отсутствии API ключей показывает заглушку вместо интерфейса поиска
+- Увеличена ширина кнопок Save в настройках: 80px → 100px (текст не обрезается на узких экранах)
+- Уменьшены размеры шрифтов на 2px для лучшего отображения на Android (h1: 26, h2: 18, h3: 14, body: 12, bodySmall: 11, caption: 10)
+
+### Fixed
+- Исправлена валидация API ключей: при пустом поле показывается ошибка вместо ложного успеха
+
 ### Removed
+- Удалены персональные данные прогресса из экспорта коллекции: `status`, `current_season`, `current_episode` больше не включаются в `.xcoll`/`.xcollx` файлы. При импорте старых файлов с этими полями — обратная совместимость сохранена
 - Удалён класс `CollectionGame` и enum `GameStatus` (`lib/shared/models/collection_game.dart`) — полностью заменены на `CollectionItem` и `ItemStatus`
 - Удалён `CollectionGamesNotifier` и провайдеры `collectionGamesProvider`, `collectionGamesNotifierProvider` из `collections_provider.dart` (~180 строк)
 - Удалён legacy-маппинг статуса `'playing'` — статус `inProgress` теперь единообразен для всех типов медиа. Миграция БД v13→v14 обновляет существующие записи

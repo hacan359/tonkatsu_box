@@ -675,7 +675,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 const Spacer(),
                 SizedBox(
-                  width: 80,
+                  width: 100,
                   height: 40,
                   child: FilledButton(
                     onPressed: _saveSteamGridDbKey,
@@ -692,15 +692,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   Future<void> _saveSteamGridDbKey() async {
     final String apiKey = _steamGridDbKeyController.text.trim();
+    if (apiKey.isEmpty) {
+      _showSnackBar('Please enter a SteamGridDB API key');
+      return;
+    }
+
     final SettingsNotifier notifier =
         ref.read(settingsNotifierProvider.notifier);
     await notifier.setSteamGridDbApiKey(apiKey);
 
     if (mounted) {
-      _showSnackBar(
-        apiKey.isEmpty ? 'API key cleared' : 'API key saved',
-        isError: false,
-      );
+      _showSnackBar('API key saved', isError: false);
     }
   }
 
@@ -775,7 +777,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 const Spacer(),
                 SizedBox(
-                  width: 80,
+                  width: 100,
                   height: 40,
                   child: FilledButton(
                     onPressed: _saveTmdbKey,
@@ -792,15 +794,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   Future<void> _saveTmdbKey() async {
     final String apiKey = _tmdbKeyController.text.trim();
+    if (apiKey.isEmpty) {
+      _showSnackBar('Please enter a TMDB API key');
+      return;
+    }
+
     final SettingsNotifier notifier =
         ref.read(settingsNotifierProvider.notifier);
     await notifier.setTmdbApiKey(apiKey);
 
     if (mounted) {
-      _showSnackBar(
-        apiKey.isEmpty ? 'TMDB API key cleared' : 'TMDB API key saved',
-        isError: false,
-      );
+      _showSnackBar('TMDB API key saved', isError: false);
     }
   }
 

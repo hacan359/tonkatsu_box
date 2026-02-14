@@ -21,6 +21,7 @@ import '../../../shared/widgets/cached_image.dart' as app_cached;
 import '../../../shared/widgets/poster_card.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../collections/providers/collections_provider.dart';
+import '../../settings/providers/settings_provider.dart';
 import '../providers/game_search_provider.dart';
 import '../providers/genre_provider.dart';
 import '../providers/media_search_provider.dart';
@@ -707,6 +708,50 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
   @override
   Widget build(BuildContext context) {
+    final bool isApiReady = ref.watch(hasValidApiKeyProvider);
+
+    if (!isApiReady) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          backgroundColor: AppColors.background,
+          surfaceTintColor: Colors.transparent,
+          foregroundColor: AppColors.textPrimary,
+          title: const Text('Search'),
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Icon(
+                  Icons.search_off,
+                  size: 64,
+                  color: AppColors.textTertiary.withAlpha(100),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  'Search unavailable',
+                  style: AppTypography.h2.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  'Configure IGDB API keys in Settings to enable search.',
+                  style: AppTypography.body.copyWith(
+                    color: AppColors.textTertiary,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(

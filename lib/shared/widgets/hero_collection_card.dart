@@ -88,7 +88,10 @@ class HeroCollectionCard extends ConsumerWidget {
   }
 
   /// Возвращает [ImageType] для кэширования по типу медиа.
-  static ImageType _imageTypeFor(MediaType mediaType) {
+  ///
+  /// Для [MediaType.animation] использует [platformId] для определения
+  /// источника: [AnimationSource.tvShow] → tvShowPoster, иначе moviePoster.
+  static ImageType _imageTypeFor(MediaType mediaType, int? platformId) {
     switch (mediaType) {
       case MediaType.game:
         return ImageType.gameCover;
@@ -97,6 +100,9 @@ class HeroCollectionCard extends ConsumerWidget {
       case MediaType.tvShow:
         return ImageType.tvShowPoster;
       case MediaType.animation:
+        if (platformId == AnimationSource.tvShow) {
+          return ImageType.tvShowPoster;
+        }
         return ImageType.moviePoster;
     }
   }
@@ -247,7 +253,7 @@ class HeroCollectionCard extends ConsumerWidget {
         for (final CollectionItem item in withCovers)
           Expanded(
             child: CachedImage(
-              imageType: _imageTypeFor(item.mediaType),
+              imageType: _imageTypeFor(item.mediaType, item.platformId),
               imageId: item.externalId.toString(),
               remoteUrl: item.thumbnailUrl!,
               fit: BoxFit.cover,
@@ -375,7 +381,7 @@ class HeroCollectionCard extends ConsumerWidget {
               width: cellSize - gap / 2,
               height: cellSize - gap / 2,
               child: CachedImage(
-                imageType: _imageTypeFor(withCovers[i].mediaType),
+                imageType: _imageTypeFor(withCovers[i].mediaType, withCovers[i].platformId),
                 imageId: withCovers[i].externalId.toString(),
                 remoteUrl: withCovers[i].thumbnailUrl!,
                 fit: BoxFit.cover,
@@ -404,7 +410,7 @@ class HeroCollectionCard extends ConsumerWidget {
               width: cellSize - gap / 2,
               height: cellSize - gap / 2,
               child: CachedImage(
-                imageType: _imageTypeFor(withCovers[_mosaicCount].mediaType),
+                imageType: _imageTypeFor(withCovers[_mosaicCount].mediaType, withCovers[_mosaicCount].platformId),
                 imageId: withCovers[_mosaicCount].externalId.toString(),
                 remoteUrl: withCovers[_mosaicCount].thumbnailUrl!,
                 fit: BoxFit.cover,

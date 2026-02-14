@@ -137,6 +137,9 @@ enum ImportStage {
   /// Импорт canvas (v2 full).
   importingCanvas('Importing canvas...'),
 
+  /// Восстановление медиа-данных из экспорта (v2 full).
+  restoringMedia('Restoring media data...'),
+
   /// Восстановление изображений из экспорта (v2 full).
   importingImages('Restoring images...'),
 
@@ -273,151 +276,14 @@ class ImportService {
     ImportProgressCallback? onProgress,
   }) async {
     try {
-      // Группируем элементы по типу медиа
-      final List<Map<String, dynamic>> gameItems = <Map<String, dynamic>>[];
-      final List<Map<String, dynamic>> movieItems = <Map<String, dynamic>>[];
-      final List<Map<String, dynamic>> tvShowItems = <Map<String, dynamic>>[];
+      final bool hasEmbeddedMedia = xcoll.media.isNotEmpty;
 
-      for (final Map<String, dynamic> item in xcoll.items) {
-        final String mediaType = item['media_type'] as String;
-        switch (mediaType) {
-          case 'game':
-            gameItems.add(item);
-          case 'movie':
-            movieItems.add(item);
-          case 'tv_show':
-            tvShowItems.add(item);
-          case 'animation':
-            // Анимация: определяем тип по platform_id
-            final int? platformId = item['platform_id'] as int?;
-            if (platformId == AnimationSource.tvShow) {
-              tvShowItems.add(item);
-            } else {
-              movieItems.add(item);
-            }
-        }
-      }
-
-      // Загрузка игр из IGDB
-      final List<int> gameIds =
-          gameItems.map((Map<String, dynamic> i) => i['external_id'] as int).toList();
-
-      onProgress?.call(ImportProgress(
-        stage: ImportStage.fetchingGames,
-        current: 0,
-        total: gameIds.length,
-        message: 'Fetching ${gameIds.length} games from IGDB...',
-      ));
-
-      List<Game> games = <Game>[];
-      if (gameIds.isNotEmpty) {
-        try {
-          games = await _igdbApi.getGamesByIds(gameIds);
-        } on IgdbApiException catch (e) {
-          return ImportResult.failure(
-              'Failed to fetch games from IGDB: ${e.message}');
-        }
-      }
-
-      // Загрузка фильмов из TMDB
-      final List<int> movieIds =
-          movieItems.map((Map<String, dynamic> i) => i['external_id'] as int).toList();
-      final List<Movie> movies = <Movie>[];
-
-      if (movieIds.isNotEmpty && _tmdbApi != null) {
-        final TmdbApi tmdbApi = _tmdbApi;
-        onProgress?.call(ImportProgress(
-          stage: ImportStage.fetchingMovies,
-          current: 0,
-          total: movieIds.length,
-          message: 'Fetching ${movieIds.length} movies from TMDB...',
-        ));
-
-        for (int i = 0; i < movieIds.length; i++) {
-          try {
-            final Movie? movie = await tmdbApi.getMovie(movieIds[i]);
-            if (movie != null) {
-              movies.add(movie);
-            }
-          } on TmdbApiException {
-            // Пропускаем недоступные фильмы
-          }
-          onProgress?.call(ImportProgress(
-            stage: ImportStage.fetchingMovies,
-            current: i + 1,
-            total: movieIds.length,
-          ));
-        }
-      }
-
-      // Загрузка сериалов из TMDB
-      final List<int> tvShowIds =
-          tvShowItems.map((Map<String, dynamic> i) => i['external_id'] as int).toList();
-      final List<TvShow> tvShows = <TvShow>[];
-
-      if (tvShowIds.isNotEmpty && _tmdbApi != null) {
-        final TmdbApi tmdbApi = _tmdbApi;
-        onProgress?.call(ImportProgress(
-          stage: ImportStage.fetchingTvShows,
-          current: 0,
-          total: tvShowIds.length,
-          message: 'Fetching ${tvShowIds.length} TV shows from TMDB...',
-        ));
-
-        for (int i = 0; i < tvShowIds.length; i++) {
-          try {
-            final TvShow? tvShow = await tmdbApi.getTvShow(tvShowIds[i]);
-            if (tvShow != null) {
-              tvShows.add(tvShow);
-            }
-          } on TmdbApiException {
-            // Пропускаем недоступные сериалы
-          }
-          onProgress?.call(ImportProgress(
-            stage: ImportStage.fetchingTvShows,
-            current: i + 1,
-            total: tvShowIds.length,
-          ));
-        }
-      }
-
-      // Кэширование медиа-данных
-      final int totalMedia = games.length + movies.length + tvShows.length;
-      onProgress?.call(ImportProgress(
-        stage: ImportStage.cachingMedia,
-        current: 0,
-        total: totalMedia,
-      ));
-
-      int cachedCount = 0;
-      for (final Game game in games) {
-        await _database.upsertGame(game);
-        cachedCount++;
-        onProgress?.call(ImportProgress(
-          stage: ImportStage.cachingMedia,
-          current: cachedCount,
-          total: totalMedia,
-        ));
-      }
-
-      if (movies.isNotEmpty) {
-        await _database.upsertMovies(movies);
-        cachedCount += movies.length;
-        onProgress?.call(ImportProgress(
-          stage: ImportStage.cachingMedia,
-          current: cachedCount,
-          total: totalMedia,
-        ));
-      }
-
-      if (tvShows.isNotEmpty) {
-        await _database.upsertTvShows(tvShows);
-        cachedCount += tvShows.length;
-        onProgress?.call(ImportProgress(
-          stage: ImportStage.cachingMedia,
-          current: cachedCount,
-          total: totalMedia,
-        ));
+      if (hasEmbeddedMedia) {
+        // Восстановление медиа-данных из встроенных данных (офлайн)
+        await _restoreEmbeddedMedia(xcoll.media, onProgress: onProgress);
+      } else {
+        // Загрузка медиа-данных из API (онлайн)
+        await _fetchMediaFromApi(xcoll.items, onProgress: onProgress);
       }
 
       // Создание коллекции
@@ -458,7 +324,6 @@ class ImportService {
           externalId: parsed.externalId,
           platformId: parsed.platformId,
           authorComment: parsed.authorComment,
-          status: parsed.status,
         );
 
         if (itemId != null) {
@@ -515,10 +380,258 @@ class ImportService {
       ));
 
       return ImportResult.success(collection, addedCount);
+    } on IgdbApiException catch (e) {
+      return ImportResult.failure(
+          'Failed to fetch games from IGDB: ${e.message}');
     } on FormatException catch (e) {
       return ImportResult.failure('Invalid file format: ${e.message}');
     } catch (e) {
       return ImportResult.failure('Import failed: $e');
+    }
+  }
+
+  // ==================== Media Restore (Embedded) ====================
+
+  /// Восстанавливает медиа-данные из встроенной секции media (офлайн).
+  ///
+  /// Парсит Game/Movie/TvShow из `media['games']`, `media['movies']`,
+  /// `media['tv_shows']` через `fromDb()` и сохраняет в локальный кэш.
+  Future<void> _restoreEmbeddedMedia(
+    Map<String, dynamic> media, {
+    ImportProgressCallback? onProgress,
+  }) async {
+    final List<dynamic> rawGames =
+        media['games'] as List<dynamic>? ?? <dynamic>[];
+    final List<dynamic> rawMovies =
+        media['movies'] as List<dynamic>? ?? <dynamic>[];
+    final List<dynamic> rawTvShows =
+        media['tv_shows'] as List<dynamic>? ?? <dynamic>[];
+
+    final int total = rawGames.length + rawMovies.length + rawTvShows.length;
+    final int cachedAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    int current = 0;
+
+    onProgress?.call(ImportProgress(
+      stage: ImportStage.restoringMedia,
+      current: 0,
+      total: total,
+      message: 'Restoring $total media entries...',
+    ));
+
+    // Восстановление игр
+    if (rawGames.isNotEmpty) {
+      final List<Game> games = <Game>[];
+      for (final dynamic raw in rawGames) {
+        final Map<String, dynamic> row =
+            Map<String, dynamic>.from(raw as Map<String, dynamic>);
+        // Устанавливаем cached_at, если отсутствует
+        if (!row.containsKey('cached_at') || row['cached_at'] == null) {
+          row['cached_at'] = cachedAt;
+        }
+        games.add(Game.fromDb(row));
+        current++;
+        onProgress?.call(ImportProgress(
+          stage: ImportStage.restoringMedia,
+          current: current,
+          total: total,
+        ));
+      }
+      await _database.upsertGames(games);
+    }
+
+    // Восстановление фильмов
+    if (rawMovies.isNotEmpty) {
+      final List<Movie> movies = <Movie>[];
+      for (final dynamic raw in rawMovies) {
+        final Map<String, dynamic> row =
+            Map<String, dynamic>.from(raw as Map<String, dynamic>);
+        if (!row.containsKey('cached_at') || row['cached_at'] == null) {
+          row['cached_at'] = cachedAt;
+        }
+        movies.add(Movie.fromDb(row));
+        current++;
+        onProgress?.call(ImportProgress(
+          stage: ImportStage.restoringMedia,
+          current: current,
+          total: total,
+        ));
+      }
+      await _database.upsertMovies(movies);
+    }
+
+    // Восстановление сериалов
+    if (rawTvShows.isNotEmpty) {
+      final List<TvShow> tvShows = <TvShow>[];
+      for (final dynamic raw in rawTvShows) {
+        final Map<String, dynamic> row =
+            Map<String, dynamic>.from(raw as Map<String, dynamic>);
+        if (!row.containsKey('cached_at') || row['cached_at'] == null) {
+          row['cached_at'] = cachedAt;
+        }
+        tvShows.add(TvShow.fromDb(row));
+        current++;
+        onProgress?.call(ImportProgress(
+          stage: ImportStage.restoringMedia,
+          current: current,
+          total: total,
+        ));
+      }
+      await _database.upsertTvShows(tvShows);
+    }
+  }
+
+  // ==================== Media Fetch (API) ====================
+
+  /// Загружает медиа-данные из API (IGDB/TMDB) и кэширует в БД.
+  ///
+  /// Используется при импорте файлов без встроенных медиа-данных
+  /// (light export или старые full export без секции media).
+  Future<void> _fetchMediaFromApi(
+    List<Map<String, dynamic>> items, {
+    ImportProgressCallback? onProgress,
+  }) async {
+    // Группируем элементы по типу медиа
+    final List<Map<String, dynamic>> gameItems = <Map<String, dynamic>>[];
+    final List<Map<String, dynamic>> movieItems = <Map<String, dynamic>>[];
+    final List<Map<String, dynamic>> tvShowItems = <Map<String, dynamic>>[];
+
+    for (final Map<String, dynamic> item in items) {
+      final String mediaType = item['media_type'] as String;
+      switch (mediaType) {
+        case 'game':
+          gameItems.add(item);
+        case 'movie':
+          movieItems.add(item);
+        case 'tv_show':
+          tvShowItems.add(item);
+        case 'animation':
+          final int? platformId = item['platform_id'] as int?;
+          if (platformId == AnimationSource.tvShow) {
+            tvShowItems.add(item);
+          } else {
+            movieItems.add(item);
+          }
+      }
+    }
+
+    // Загрузка игр из IGDB
+    final List<int> gameIds = gameItems
+        .map((Map<String, dynamic> i) => i['external_id'] as int)
+        .toList();
+
+    onProgress?.call(ImportProgress(
+      stage: ImportStage.fetchingGames,
+      current: 0,
+      total: gameIds.length,
+      message: 'Fetching ${gameIds.length} games from IGDB...',
+    ));
+
+    List<Game> games = <Game>[];
+    if (gameIds.isNotEmpty) {
+      games = await _igdbApi.getGamesByIds(gameIds);
+    }
+
+    // Загрузка фильмов из TMDB
+    final List<int> movieIds = movieItems
+        .map((Map<String, dynamic> i) => i['external_id'] as int)
+        .toList();
+    final List<Movie> movies = <Movie>[];
+
+    if (movieIds.isNotEmpty && _tmdbApi != null) {
+      final TmdbApi tmdbApi = _tmdbApi;
+      onProgress?.call(ImportProgress(
+        stage: ImportStage.fetchingMovies,
+        current: 0,
+        total: movieIds.length,
+        message: 'Fetching ${movieIds.length} movies from TMDB...',
+      ));
+
+      for (int i = 0; i < movieIds.length; i++) {
+        try {
+          final Movie? movie = await tmdbApi.getMovie(movieIds[i]);
+          if (movie != null) {
+            movies.add(movie);
+          }
+        } on TmdbApiException {
+          // Пропускаем недоступные фильмы
+        }
+        onProgress?.call(ImportProgress(
+          stage: ImportStage.fetchingMovies,
+          current: i + 1,
+          total: movieIds.length,
+        ));
+      }
+    }
+
+    // Загрузка сериалов из TMDB
+    final List<int> tvShowIds = tvShowItems
+        .map((Map<String, dynamic> i) => i['external_id'] as int)
+        .toList();
+    final List<TvShow> tvShows = <TvShow>[];
+
+    if (tvShowIds.isNotEmpty && _tmdbApi != null) {
+      final TmdbApi tmdbApi = _tmdbApi;
+      onProgress?.call(ImportProgress(
+        stage: ImportStage.fetchingTvShows,
+        current: 0,
+        total: tvShowIds.length,
+        message: 'Fetching ${tvShowIds.length} TV shows from TMDB...',
+      ));
+
+      for (int i = 0; i < tvShowIds.length; i++) {
+        try {
+          final TvShow? tvShow = await tmdbApi.getTvShow(tvShowIds[i]);
+          if (tvShow != null) {
+            tvShows.add(tvShow);
+          }
+        } on TmdbApiException {
+          // Пропускаем недоступные сериалы
+        }
+        onProgress?.call(ImportProgress(
+          stage: ImportStage.fetchingTvShows,
+          current: i + 1,
+          total: tvShowIds.length,
+        ));
+      }
+    }
+
+    // Кэширование медиа-данных
+    final int totalMedia = games.length + movies.length + tvShows.length;
+    onProgress?.call(ImportProgress(
+      stage: ImportStage.cachingMedia,
+      current: 0,
+      total: totalMedia,
+    ));
+
+    int cachedCount = 0;
+    for (final Game game in games) {
+      await _database.upsertGame(game);
+      cachedCount++;
+      onProgress?.call(ImportProgress(
+        stage: ImportStage.cachingMedia,
+        current: cachedCount,
+        total: totalMedia,
+      ));
+    }
+
+    if (movies.isNotEmpty) {
+      await _database.upsertMovies(movies);
+      cachedCount += movies.length;
+      onProgress?.call(ImportProgress(
+        stage: ImportStage.cachingMedia,
+        current: cachedCount,
+        total: totalMedia,
+      ));
+    }
+
+    if (tvShows.isNotEmpty) {
+      await _database.upsertTvShows(tvShows);
+      cachedCount += tvShows.length;
+      onProgress?.call(ImportProgress(
+        stage: ImportStage.cachingMedia,
+        current: cachedCount,
+        total: totalMedia,
+      ));
     }
   }
 

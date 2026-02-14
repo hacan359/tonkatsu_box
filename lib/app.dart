@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'features/settings/providers/settings_provider.dart';
-import 'features/settings/screens/settings_screen.dart';
 import 'shared/navigation/navigation_shell.dart';
 import 'shared/theme/app_theme.dart';
 
@@ -27,18 +25,12 @@ class XeraboraApp extends ConsumerWidget {
 
 /// Роутер приложения.
 ///
-/// Определяет начальный экран на основе состояния API ключей.
-class _AppRouter extends ConsumerWidget {
+/// Всегда показывает [NavigationShell]. Поиск недоступен без API ключей.
+class _AppRouter extends StatelessWidget {
   const _AppRouter();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final bool hasValidApiKey = ref.watch(hasValidApiKeyProvider);
-
-    if (!hasValidApiKey) {
-      return const SettingsScreen(isInitialSetup: true);
-    }
-
+  Widget build(BuildContext context) {
     return const NavigationShell();
   }
 }

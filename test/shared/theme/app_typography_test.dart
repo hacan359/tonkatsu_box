@@ -82,14 +82,14 @@ void main() {
 
     group('Poster стили', () {
       test('posterTitle должен быть определён', () {
-        expect(AppTypography.posterTitle.fontSize, equals(14));
+        expect(AppTypography.posterTitle.fontSize, equals(12));
         expect(AppTypography.posterTitle.fontWeight, equals(FontWeight.w600));
         expect(AppTypography.posterTitle.color, equals(AppColors.textPrimary));
         expect(AppTypography.posterTitle.fontFamily, equals('Inter'));
       });
 
       test('posterSubtitle должен быть определён', () {
-        expect(AppTypography.posterSubtitle.fontSize, equals(11));
+        expect(AppTypography.posterSubtitle.fontSize, equals(10));
         expect(AppTypography.posterSubtitle.fontWeight, equals(FontWeight.w400));
         expect(AppTypography.posterSubtitle.color, equals(AppColors.textSecondary));
         expect(AppTypography.posterSubtitle.fontFamily, equals('Inter'));

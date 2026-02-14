@@ -39,9 +39,9 @@ void main() {
   );
 
   const CollectionStats testStats = CollectionStats(
-    total: 3,
-    completed: 1,
-    inProgress: 1,
+    total: 5,
+    completed: 2,
+    inProgress: 2,
     notStarted: 1,
     dropped: 0,
     planned: 0,
@@ -90,6 +90,38 @@ void main() {
         posterUrl: 'https://example.com/bb.jpg',
         rating: 9.5,
         firstAirYear: 2008,
+      ),
+    ),
+    CollectionItem(
+      id: 4,
+      collectionId: 1,
+      mediaType: MediaType.animation,
+      externalId: 401,
+      platformId: AnimationSource.movie,
+      status: ItemStatus.completed,
+      addedAt: testDate,
+      movie: const Movie(
+        tmdbId: 401,
+        title: 'Spirited Away',
+        posterUrl: 'https://example.com/spirited.jpg',
+        rating: 8.6,
+        releaseYear: 2001,
+      ),
+    ),
+    CollectionItem(
+      id: 5,
+      collectionId: 1,
+      mediaType: MediaType.animation,
+      externalId: 501,
+      platformId: AnimationSource.tvShow,
+      status: ItemStatus.inProgress,
+      addedAt: testDate,
+      tvShow: const TvShow(
+        tmdbId: 501,
+        title: 'Attack on Titan',
+        posterUrl: 'https://example.com/aot.jpg',
+        rating: 8.9,
+        firstAirYear: 2013,
       ),
     ),
   ];
@@ -165,7 +197,7 @@ void main() {
       await tester.pumpWidget(createWidget());
       await pumpScreen(tester);
 
-      expect(find.textContaining('3 items'), findsOneWidget);
+      expect(find.textContaining('5 items'), findsOneWidget);
     });
 
     testWidgets('должен показывать элементы коллекции',
@@ -309,6 +341,113 @@ void main() {
         expect(find.text('Zelda'), findsOneWidget);
         expect(find.text('Inception'), findsOneWidget);
         expect(find.text('Breaking Bad'), findsOneWidget);
+      });
+
+      testWidgets('Animation фильтр должен показывать только анимацию',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        await tester.tap(find.text('Animation'));
+        await pumpScreen(tester);
+
+        expect(find.text('Zelda'), findsNothing);
+        expect(find.text('Inception'), findsNothing);
+        expect(find.text('Breaking Bad'), findsNothing);
+        expect(find.text('Spirited Away'), findsOneWidget);
+        expect(find.text('Attack on Titan'), findsOneWidget);
+      });
+    });
+
+    group('animation items в grid mode', () {
+      testWidgets('animation movie должен использовать moviePoster ImageType',
+          (WidgetTester tester) async {
+        // Элементы: только animation movie
+        final List<CollectionItem> animMovieItems = <CollectionItem>[
+          CollectionItem(
+            id: 4,
+            collectionId: 1,
+            mediaType: MediaType.animation,
+            externalId: 401,
+            platformId: AnimationSource.movie,
+            status: ItemStatus.completed,
+            addedAt: testDate,
+            movie: const Movie(
+              tmdbId: 401,
+              title: 'Spirited Away',
+              posterUrl: 'https://example.com/spirited.jpg',
+              rating: 8.6,
+              releaseYear: 2001,
+            ),
+          ),
+        ];
+
+        when(() => mockRepo.getItemsWithData(
+              1,
+              mediaType: any(named: 'mediaType'),
+            )).thenAnswer((_) async => animMovieItems);
+
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        // Переключаемся на grid
+        await tester.tap(find.byIcon(Icons.grid_view));
+        await pumpScreen(tester);
+
+        // Проверяем что PosterCard рендерится
+        expect(find.byType(PosterCard), findsOneWidget);
+
+        // Проверяем что getImageUri вызван с moviePoster
+        verify(() => mockCache.getImageUri(
+              type: ImageType.moviePoster,
+              imageId: '401',
+              remoteUrl: any(named: 'remoteUrl'),
+            )).called(greaterThan(0));
+      });
+
+      testWidgets('animation tvShow должен использовать tvShowPoster ImageType',
+          (WidgetTester tester) async {
+        // Элементы: только animation tvShow
+        final List<CollectionItem> animTvItems = <CollectionItem>[
+          CollectionItem(
+            id: 5,
+            collectionId: 1,
+            mediaType: MediaType.animation,
+            externalId: 501,
+            platformId: AnimationSource.tvShow,
+            status: ItemStatus.inProgress,
+            addedAt: testDate,
+            tvShow: const TvShow(
+              tmdbId: 501,
+              title: 'Attack on Titan',
+              posterUrl: 'https://example.com/aot.jpg',
+              rating: 8.9,
+              firstAirYear: 2013,
+            ),
+          ),
+        ];
+
+        when(() => mockRepo.getItemsWithData(
+              1,
+              mediaType: any(named: 'mediaType'),
+            )).thenAnswer((_) async => animTvItems);
+
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        // Переключаемся на grid
+        await tester.tap(find.byIcon(Icons.grid_view));
+        await pumpScreen(tester);
+
+        // Проверяем что PosterCard рендерится
+        expect(find.byType(PosterCard), findsOneWidget);
+
+        // Проверяем что getImageUri вызван с tvShowPoster
+        verify(() => mockCache.getImageUri(
+              type: ImageType.tvShowPoster,
+              imageId: '501',
+              remoteUrl: any(named: 'remoteUrl'),
+            )).called(greaterThan(0));
       });
     });
 

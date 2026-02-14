@@ -195,8 +195,10 @@ Export collections in three formats:
 ### Full Export (`.xcollx`)
 - Everything from light export, plus:
 - Canvas data (viewport, items, connections) including per-item canvases
-- Base64-encoded cover images for offline import
-- Self-contained — recipients don't need internet for covers
+- Base64-encoded cover images (game covers, movie/TV show posters)
+- Base64-encoded canvas images (images added to canvas boards)
+- Embedded media data (Game/Movie/TvShow) for fully offline import — no IGDB/TMDB API calls needed
+- Self-contained — recipients can import without internet (all data, covers, and canvas images included)
 
 ## Forking
 
