@@ -15,7 +15,7 @@ abstract final class AppTypography {
   /// Крупный заголовок (название приложения, заголовок экрана).
   static const TextStyle h1 = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: FontWeight.bold,
     color: AppColors.textPrimary,
     height: 1.2,
@@ -25,7 +25,7 @@ abstract final class AppTypography {
   /// Заголовок секции.
   static const TextStyle h2 = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
     height: 1.3,
@@ -35,7 +35,7 @@ abstract final class AppTypography {
   /// Подзаголовок (название карточки, элемент списка).
   static const TextStyle h3 = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
     height: 1.3,
@@ -44,7 +44,7 @@ abstract final class AppTypography {
   /// Основной текст.
   static const TextStyle body = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: FontWeight.normal,
     color: AppColors.textPrimary,
     height: 1.4,
@@ -53,7 +53,7 @@ abstract final class AppTypography {
   /// Мелкий текст (даты, мета-информация).
   static const TextStyle bodySmall = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: FontWeight.normal,
     color: AppColors.textSecondary,
     height: 1.4,
@@ -62,7 +62,7 @@ abstract final class AppTypography {
   /// Подпись (badge, chip, label).
   static const TextStyle caption = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: FontWeight.w500,
     color: AppColors.textTertiary,
     height: 1.2,
@@ -71,7 +71,7 @@ abstract final class AppTypography {
   /// Название на постерной карточке.
   static const TextStyle posterTitle = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
     height: 1.3,
@@ -80,7 +80,7 @@ abstract final class AppTypography {
   /// Подпись на постерной карточке (год, жанр).
   static const TextStyle posterSubtitle = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: FontWeight.w400,
     color: AppColors.textSecondary,
     height: 1.3,

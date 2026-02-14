@@ -484,18 +484,21 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       child: Column(
         children: <Widget>[
           // Фильтр по типу
-          Row(
-            children: <Widget>[
-              _buildFilterChip(label: 'All', type: null),
-              const SizedBox(width: AppSpacing.sm),
-              _buildFilterChip(label: 'Games', type: MediaType.game),
-              const SizedBox(width: AppSpacing.sm),
-              _buildFilterChip(label: 'Movies', type: MediaType.movie),
-              const SizedBox(width: AppSpacing.sm),
-              _buildFilterChip(label: 'TV Shows', type: MediaType.tvShow),
-              const SizedBox(width: AppSpacing.sm),
-              _buildFilterChip(label: 'Animation', type: MediaType.animation),
-            ],
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: <Widget>[
+                _buildFilterChip(label: 'All', type: null),
+                const SizedBox(width: AppSpacing.sm),
+                _buildFilterChip(label: 'Games', type: MediaType.game),
+                const SizedBox(width: AppSpacing.sm),
+                _buildFilterChip(label: 'Movies', type: MediaType.movie),
+                const SizedBox(width: AppSpacing.sm),
+                _buildFilterChip(label: 'TV Shows', type: MediaType.tvShow),
+                const SizedBox(width: AppSpacing.sm),
+                _buildFilterChip(label: 'Animation', type: MediaType.animation),
+              ],
+            ),
           ),
 
           const SizedBox(height: AppSpacing.sm),
@@ -744,7 +747,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             key: ValueKey<int>(item.id),
             title: item.itemName,
             imageUrl: item.thumbnailUrl ?? '',
-            cacheImageType: _imageTypeFor(item.mediaType),
+            cacheImageType: _imageTypeFor(item.mediaType, item.platformId),
             cacheImageId: item.externalId.toString(),
             rating: _normalizedRating(item),
             year: _yearFor(item),
@@ -811,7 +814,10 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   }
 
   /// ImageType для кэширования по типу медиа.
-  static ImageType _imageTypeFor(MediaType mediaType) {
+  ///
+  /// Для [MediaType.animation] использует [platformId] для определения
+  /// источника: [AnimationSource.tvShow] → tvShowPoster, иначе moviePoster.
+  static ImageType _imageTypeFor(MediaType mediaType, int? platformId) {
     switch (mediaType) {
       case MediaType.game:
         return ImageType.gameCover;
@@ -820,6 +826,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       case MediaType.tvShow:
         return ImageType.tvShowPoster;
       case MediaType.animation:
+        if (platformId == AnimationSource.tvShow) {
+          return ImageType.tvShowPoster;
+        }
         return ImageType.moviePoster;
     }
   }

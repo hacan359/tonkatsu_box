@@ -17,7 +17,6 @@ import 'package:xerabora/shared/models/canvas_item.dart';
 import 'package:xerabora/shared/models/canvas_viewport.dart';
 import 'package:xerabora/shared/models/collection.dart';
 import 'package:xerabora/shared/models/game.dart';
-import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/movie.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
@@ -41,9 +40,11 @@ void main() {
     registerFallbackValue(const Game(id: 0, name: 'fallback'));
     registerFallbackValue(const Movie(tmdbId: 0, title: 'fallback'));
     registerFallbackValue(const TvShow(tmdbId: 0, title: 'fallback'));
+    registerFallbackValue(const <Game>[]);
+    registerFallbackValue(const <Movie>[]);
+    registerFallbackValue(const <TvShow>[]);
     registerFallbackValue(CollectionType.own);
     registerFallbackValue(MediaType.game);
-    registerFallbackValue(ItemStatus.notStarted);
     registerFallbackValue(const CanvasViewport(collectionId: 0));
     registerFallbackValue(CanvasItem(
       id: 0,
@@ -215,7 +216,7 @@ void main() {
   "author": "Author",
   "created": "2024-01-15T12:00:00.000Z",
   "items": [
-    {"media_type": "game", "external_id": 100, "status": "completed"}
+    {"media_type": "game", "external_id": 100}
   ]
 }
 ''');
@@ -289,14 +290,12 @@ void main() {
             <String, dynamic>{
               'media_type': 'game',
               'external_id': 100,
-              'status': 'completed',
               'platform_id': 48,
               'comment': 'Great game',
             },
             <String, dynamic>{
               'media_type': 'game',
               'external_id': 200,
-              'status': 'in_progress',
             },
           ],
         );
@@ -328,7 +327,6 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
-              status: any(named: 'status'),
             )).thenAnswer((_) async => 1);
 
         final ImportResult result = await sutV2.importFromXcoll(xcoll);
@@ -345,7 +343,6 @@ void main() {
               externalId: 100,
               platformId: 48,
               authorComment: 'Great game',
-              status: ItemStatus.completed,
             )).called(1);
         verify(() => mockRepo.addItem(
               collectionId: 10,
@@ -353,7 +350,6 @@ void main() {
               externalId: 200,
               platformId: null,
               authorComment: null,
-              status: ItemStatus.inProgress,
             )).called(1);
       });
 
@@ -368,7 +364,6 @@ void main() {
             <String, dynamic>{
               'media_type': 'movie',
               'external_id': 550,
-              'status': 'completed',
             },
           ],
         );
@@ -397,7 +392,6 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
-              status: any(named: 'status'),
             )).thenAnswer((_) async => 1);
 
         final ImportResult result = await sutV2.importFromXcoll(xcoll);
@@ -420,7 +414,6 @@ void main() {
             <String, dynamic>{
               'media_type': 'tv_show',
               'external_id': 1399,
-              'status': 'in_progress',
               'current_season': 3,
               'current_episode': 5,
             },
@@ -452,7 +445,6 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
-              status: any(named: 'status'),
             )).thenAnswer((_) async => 1);
 
         final ImportResult result = await sutV2.importFromXcoll(xcoll);
@@ -475,17 +467,14 @@ void main() {
             <String, dynamic>{
               'media_type': 'game',
               'external_id': 100,
-              'status': 'completed',
             },
             <String, dynamic>{
               'media_type': 'movie',
               'external_id': 550,
-              'status': 'completed',
             },
             <String, dynamic>{
               'media_type': 'tv_show',
               'external_id': 1399,
-              'status': 'in_progress',
             },
           ],
         );
@@ -518,7 +507,6 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
-              status: any(named: 'status'),
             )).thenAnswer((_) async => 1);
 
         final ImportResult result = await sutV2.importFromXcoll(xcoll);
@@ -542,12 +530,10 @@ void main() {
             <String, dynamic>{
               'media_type': 'movie',
               'external_id': 550,
-              'status': 'completed',
             },
             <String, dynamic>{
               'media_type': 'movie',
               'external_id': 999,
-              'status': 'not_started',
             },
           ],
         );
@@ -576,7 +562,6 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
-              status: any(named: 'status'),
             )).thenAnswer((_) async => 1);
 
         final ImportResult result = await sutV2.importFromXcoll(xcoll);
@@ -597,7 +582,6 @@ void main() {
             <String, dynamic>{
               'media_type': 'tv_show',
               'external_id': 1399,
-              'status': 'in_progress',
             },
           ],
         );
@@ -623,7 +607,6 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
-              status: any(named: 'status'),
             )).thenAnswer((_) async => 1);
 
         final ImportResult result = await sutV2.importFromXcoll(xcoll);
@@ -643,7 +626,6 @@ void main() {
             <String, dynamic>{
               'media_type': 'game',
               'external_id': 100,
-              'status': 'completed',
             },
           ],
         );
@@ -675,7 +657,6 @@ void main() {
             <String, dynamic>{
               'media_type': 'movie',
               'external_id': 550,
-              'status': 'completed',
             },
           ],
         );
@@ -699,7 +680,6 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
-              status: any(named: 'status'),
             )).thenAnswer((_) async => 1);
 
         final ImportResult result = await sutNoTmdb.importFromXcoll(xcoll);
@@ -751,12 +731,10 @@ void main() {
             <String, dynamic>{
               'media_type': 'game',
               'external_id': 100,
-              'status': 'completed',
             },
             <String, dynamic>{
               'media_type': 'movie',
               'external_id': 550,
-              'status': 'completed',
             },
           ],
         );
@@ -786,7 +764,6 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
-              status: any(named: 'status'),
             )).thenAnswer((_) async => 1);
 
         final List<ImportStage> stages = <ImportStage>[];
@@ -816,12 +793,10 @@ void main() {
             <String, dynamic>{
               'media_type': 'game',
               'external_id': 100,
-              'status': 'completed',
             },
             <String, dynamic>{
               'media_type': 'game',
               'external_id': 200,
-              'status': 'completed',
             },
           ],
         );
@@ -849,7 +824,6 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
-              status: any(named: 'status'),
             )).thenAnswer((_) async {
           callCount++;
           return callCount == 1 ? 1 : null;
@@ -1272,7 +1246,6 @@ void main() {
             <String, dynamic>{
               'media_type': 'game',
               'external_id': 100,
-              'status': 'completed',
               '_canvas': <String, dynamic>{
                 'viewport': <String, dynamic>{
                   'scale': 0.5,
@@ -1312,7 +1285,6 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
-              status: any(named: 'status'),
             )).thenAnswer((_) async => 50); // collectionItemId = 50
         when(() => mockCanvas.saveGameCanvasViewport(any(), any()))
             .thenAnswer((_) async {});
@@ -1348,7 +1320,6 @@ void main() {
             <String, dynamic>{
               'media_type': 'game',
               'external_id': 100,
-              'status': 'completed',
               '_canvas': <String, dynamic>{
                 'items': <Map<String, dynamic>>[
                   <String, dynamic>{
@@ -1403,7 +1374,6 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
-              status: any(named: 'status'),
             )).thenAnswer((_) async => 51);
 
         int nextCanvasId = 200;
@@ -1453,7 +1423,6 @@ void main() {
             <String, dynamic>{
               'media_type': 'game',
               'external_id': 100,
-              'status': 'completed',
               '_canvas': <String, dynamic>{
                 'items': <Map<String, dynamic>>[
                   <String, dynamic>{
@@ -1510,7 +1479,6 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
-              status: any(named: 'status'),
             )).thenAnswer((_) async => 52);
 
         // createItem: export ID 10 → new ID 301, export ID 20 → new ID 302
@@ -1566,7 +1534,6 @@ void main() {
             <String, dynamic>{
               'media_type': 'game',
               'external_id': 100,
-              'status': 'completed',
               '_canvas': <String, dynamic>{
                 'viewport': <String, dynamic>{
                   'scale': 0.5,
@@ -1606,7 +1573,6 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
-              status: any(named: 'status'),
             )).thenAnswer((_) async => 1);
 
         final ImportResult result = await sutNoCanvas.importFromXcoll(xcoll);
@@ -1633,7 +1599,6 @@ void main() {
             <String, dynamic>{
               'media_type': 'game',
               'external_id': 100,
-              'status': 'completed',
               '_canvas': <String, dynamic>{
                 'items': <Map<String, dynamic>>[
                   <String, dynamic>{
@@ -1682,7 +1647,6 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
-              status: any(named: 'status'),
             )).thenAnswer((_) async => 53);
 
         when(() => mockCanvas.createItem(any())).thenAnswer((Invocation inv) async {
@@ -1744,7 +1708,6 @@ void main() {
               'media_type': 'game',
               'external_id': 100,
               'platform_id': 18,
-              'status': 'not_started',
             },
           ],
           images: images,
@@ -1777,7 +1740,6 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
-              status: any(named: 'status'),
             )).thenAnswer((_) async => 10);
         when(() => mockCanvas.getGameCanvasItems(any()))
             .thenAnswer((_) async => <CanvasItem>[]);
@@ -1834,7 +1796,6 @@ void main() {
               'media_type': 'game',
               'external_id': 100,
               'platform_id': 18,
-              'status': 'not_started',
             },
           ],
           images: <String, String>{'movie_posters/550': base64Data},
@@ -1938,7 +1899,6 @@ void main() {
               'media_type': 'game',
               'external_id': 100,
               'platform_id': 18,
-              'status': 'not_started',
             },
           ],
           images: <String, String>{'game_covers/100': base64Data},
@@ -1974,6 +1934,282 @@ void main() {
         );
 
         expect(stages, contains(ImportStage.importingImages));
+      });
+    });
+
+    // ==================== v2 full с embedded media ====================
+
+    group('importFromXcoll (v2 full с embedded media)', () {
+      late ImportService sutMedia;
+      late MockCanvasRepository mockCanvas;
+      late MockImageCacheService mockImageCache;
+
+      setUp(() {
+        mockCanvas = MockCanvasRepository();
+        mockImageCache = MockImageCacheService();
+        sutMedia = ImportService(
+          repository: mockRepo,
+          igdbApi: mockApi,
+          tmdbApi: mockTmdb,
+          database: mockDb,
+          canvasRepository: mockCanvas,
+          imageCacheService: mockImageCache,
+        );
+      });
+
+      void setupDefaultMocksForMedia() {
+        final Collection createdCollection = Collection(
+          id: 10,
+          name: 'Test',
+          author: 'Author',
+          type: CollectionType.imported,
+          createdAt: testDate,
+        );
+        when(() => mockRepo.create(
+              name: any(named: 'name'),
+              author: any(named: 'author'),
+              type: any(named: 'type'),
+            )).thenAnswer((_) async => createdCollection);
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              authorComment: any(named: 'authorComment'),
+            )).thenAnswer((_) async => 1);
+        when(() => mockDb.upsertGames(any())).thenAnswer((_) async {});
+        when(() => mockDb.upsertMovies(any())).thenAnswer((_) async {});
+        when(() => mockDb.upsertTvShows(any())).thenAnswer((_) async {});
+        when(() => mockImageCache.saveImageBytes(any(), any(), any()))
+            .thenAnswer((_) async => true);
+      }
+
+      test('должен восстановить games из embedded media', () async {
+        setupDefaultMocksForMedia();
+
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.full,
+          name: 'With Media',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'game',
+              'external_id': 42,
+            },
+          ],
+          media: const <String, dynamic>{
+            'games': <Map<String, dynamic>>[
+              <String, dynamic>{
+                'id': 42,
+                'name': 'Offline Game',
+                'summary': 'Test',
+                'genres': 'Action|RPG',
+              },
+            ],
+          },
+        );
+
+        final ImportResult result = await sutMedia.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        // Должен вызвать upsertGames, а НЕ igdb API
+        verify(() => mockDb.upsertGames(any())).called(1);
+        verifyNever(() => mockApi.getGamesByIds(any()));
+      });
+
+      test('должен восстановить movies из embedded media', () async {
+        setupDefaultMocksForMedia();
+
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.full,
+          name: 'With Movies',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'movie',
+              'external_id': 550,
+            },
+          ],
+          media: const <String, dynamic>{
+            'movies': <Map<String, dynamic>>[
+              <String, dynamic>{
+                'tmdb_id': 550,
+                'title': 'Fight Club',
+              },
+            ],
+          },
+        );
+
+        final ImportResult result = await sutMedia.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        verify(() => mockDb.upsertMovies(any())).called(1);
+        verifyNever(() => mockTmdb.getMovie(any()));
+      });
+
+      test('должен восстановить tv_shows из embedded media', () async {
+        setupDefaultMocksForMedia();
+
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.full,
+          name: 'With TV Shows',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'tv_show',
+              'external_id': 1399,
+            },
+          ],
+          media: const <String, dynamic>{
+            'tv_shows': <Map<String, dynamic>>[
+              <String, dynamic>{
+                'tmdb_id': 1399,
+                'title': 'Game of Thrones',
+                'total_seasons': 8,
+              },
+            ],
+          },
+        );
+
+        final ImportResult result = await sutMedia.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        verify(() => mockDb.upsertTvShows(any())).called(1);
+        verifyNever(() => mockTmdb.getTvShow(any()));
+      });
+
+      test('должен восстановить все типы медиа из embedded', () async {
+        setupDefaultMocksForMedia();
+
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.full,
+          name: 'All Types',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{'media_type': 'game', 'external_id': 1},
+            <String, dynamic>{'media_type': 'movie', 'external_id': 2},
+            <String, dynamic>{'media_type': 'tv_show', 'external_id': 3},
+          ],
+          media: const <String, dynamic>{
+            'games': <Map<String, dynamic>>[
+              <String, dynamic>{'id': 1, 'name': 'G'},
+            ],
+            'movies': <Map<String, dynamic>>[
+              <String, dynamic>{'tmdb_id': 2, 'title': 'M'},
+            ],
+            'tv_shows': <Map<String, dynamic>>[
+              <String, dynamic>{'tmdb_id': 3, 'title': 'T'},
+            ],
+          },
+        );
+
+        final ImportResult result = await sutMedia.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        expect(result.itemsImported, equals(3));
+        verify(() => mockDb.upsertGames(any())).called(1);
+        verify(() => mockDb.upsertMovies(any())).called(1);
+        verify(() => mockDb.upsertTvShows(any())).called(1);
+        verifyNever(() => mockApi.getGamesByIds(any()));
+        verifyNever(() => mockTmdb.getMovie(any()));
+        verifyNever(() => mockTmdb.getTvShow(any()));
+      });
+
+      test('должен использовать API при пустом media', () async {
+        setupDefaultMocksForMedia();
+        when(() => mockApi.getGamesByIds(any()))
+            .thenAnswer((_) async => const <Game>[Game(id: 42, name: 'G')]);
+        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
+
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.light,
+          name: 'No Media',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{'media_type': 'game', 'external_id': 42},
+          ],
+          // media пуст — должен загрузить из API
+        );
+
+        final ImportResult result = await sutMedia.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        verify(() => mockApi.getGamesByIds(<int>[42])).called(1);
+        verifyNever(() => mockDb.upsertGames(any()));
+      });
+
+      test('должен отслеживать прогресс restoringMedia', () async {
+        setupDefaultMocksForMedia();
+
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.full,
+          name: 'Progress',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{'media_type': 'game', 'external_id': 1},
+          ],
+          media: const <String, dynamic>{
+            'games': <Map<String, dynamic>>[
+              <String, dynamic>{'id': 1, 'name': 'G'},
+            ],
+          },
+        );
+
+        final List<ImportStage> stages = <ImportStage>[];
+        await sutMedia.importFromXcoll(
+          xcoll,
+          onProgress: (ImportProgress progress) {
+            if (!stages.contains(progress.stage)) {
+              stages.add(progress.stage);
+            }
+          },
+        );
+
+        expect(stages, contains(ImportStage.restoringMedia));
+        // Не должно быть этапов API-загрузки
+        expect(stages, isNot(contains(ImportStage.fetchingGames)));
+        expect(stages, isNot(contains(ImportStage.fetchingMovies)));
+        expect(stages, isNot(contains(ImportStage.fetchingTvShows)));
+      });
+
+      test('должен пропустить пустые категории в embedded media', () async {
+        setupDefaultMocksForMedia();
+
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.full,
+          name: 'Only Games',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{'media_type': 'game', 'external_id': 1},
+          ],
+          media: const <String, dynamic>{
+            'games': <Map<String, dynamic>>[
+              <String, dynamic>{'id': 1, 'name': 'G'},
+            ],
+            // movies и tv_shows отсутствуют
+          },
+        );
+
+        final ImportResult result = await sutMedia.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        verify(() => mockDb.upsertGames(any())).called(1);
+        verifyNever(() => mockDb.upsertMovies(any()));
+        verifyNever(() => mockDb.upsertTvShows(any()));
       });
     });
   });

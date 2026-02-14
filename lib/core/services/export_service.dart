@@ -106,7 +106,8 @@ class ExportService {
 
   /// Создаёт v2 full export (.xcollx).
   ///
-  /// Включает элементы, collection canvas, per-item canvas и images.
+  /// Включает элементы, collection canvas, per-item canvas, images
+  /// и полные медиа-данные (Game/Movie/TvShow) для офлайн-импорта.
   /// Требует [canvasRepository] для получения canvas-данных.
   Future<XcollFile> createFullExport(
     Collection collection,
@@ -128,10 +129,20 @@ class ExportService {
     }
 
     // Collect cached cover images
-    Map<String, String> images = const <String, String>{};
+    Map<String, String> images = <String, String>{};
     if (_imageCacheService != null) {
       images = await _collectCachedImages(items);
     }
+
+    // Collect canvas images (from collection and per-item canvases)
+    if (_imageCacheService != null && _canvasRepository != null) {
+      final Map<String, String> canvasImages =
+          await _collectCanvasImages(collectionId, items);
+      images.addAll(canvasImages);
+    }
+
+    // Collect full media data for offline import
+    final Map<String, dynamic> media = _collectMediaData(items);
 
     return XcollFile(
       version: xcollFormatVersion,
@@ -142,6 +153,7 @@ class ExportService {
       items: exportItems,
       canvas: canvas,
       images: images,
+      media: media,
     );
   }
 
@@ -215,7 +227,10 @@ class ExportService {
     final Map<String, String> images = <String, String>{};
 
     for (final CollectionItem item in items) {
-      final ImageType imageType = _imageTypeForMedia(item.mediaType);
+      final ImageType imageType = _imageTypeForMedia(
+        item.mediaType,
+        platformId: item.platformId,
+      );
       final String imageId = item.externalId.toString();
       final String key = '${imageType.folder}/$imageId';
 
@@ -233,7 +248,10 @@ class ExportService {
   }
 
   /// Маппинг MediaType → ImageType для обложек.
-  ImageType _imageTypeForMedia(MediaType mediaType) {
+  ///
+  /// Для [MediaType.animation] использует [platformId] для определения
+  /// источника: [AnimationSource.tvShow] → tvShowPoster, иначе moviePoster.
+  ImageType _imageTypeForMedia(MediaType mediaType, {int? platformId}) {
     switch (mediaType) {
       case MediaType.game:
         return ImageType.gameCover;
@@ -242,8 +260,135 @@ class ExportService {
       case MediaType.tvShow:
         return ImageType.tvShowPoster;
       case MediaType.animation:
+        if (platformId == AnimationSource.tvShow) {
+          return ImageType.tvShowPoster;
+        }
         return ImageType.moviePoster;
     }
+  }
+
+  // ==================== Canvas Images ====================
+
+  /// Собирает кэшированные изображения с канваса.
+  ///
+  /// Для canvas items типа [CanvasItemType.image] с URL,
+  /// читает кэшированные данные по imageId = FNV-1a hash URL.
+  Future<Map<String, String>> _collectCanvasImages(
+    int collectionId,
+    List<CollectionItem> items,
+  ) async {
+    final ImageCacheService cache = _imageCacheService!;
+    final CanvasRepository repo = _canvasRepository!;
+    final Map<String, String> images = <String, String>{};
+
+    // Collection-level canvas items
+    final List<CanvasItem> allCanvasItems =
+        await repo.getItems(collectionId);
+
+    // Per-item canvas items
+    for (final CollectionItem item in items) {
+      if (item.id == 0) continue;
+      final List<CanvasItem> perItemItems =
+          await repo.getGameCanvasItems(item.id);
+      allCanvasItems.addAll(perItemItems);
+    }
+
+    // Collect images from image-type canvas items
+    for (final CanvasItem canvasItem in allCanvasItems) {
+      if (canvasItem.itemType != CanvasItemType.image) continue;
+
+      final String? url = canvasItem.data?['url'] as String?;
+      if (url == null || url.isEmpty) continue;
+
+      final String imageId = _urlToImageId(url);
+      final String key = '${ImageType.canvasImage.folder}/$imageId';
+
+      if (images.containsKey(key)) continue;
+
+      final Uint8List? bytes =
+          await cache.readImageBytes(ImageType.canvasImage, imageId);
+      if (bytes != null) {
+        images[key] = base64Encode(bytes);
+      }
+    }
+
+    return images;
+  }
+
+  /// Вычисляет FNV-1a 32-bit хэш URL для imageId.
+  ///
+  /// Детерминированный хэш, не зависит от платформы.
+  static String _urlToImageId(String url) {
+    int hash = 0x811c9dc5;
+    for (int i = 0; i < url.length; i++) {
+      hash ^= url.codeUnitAt(i);
+      hash = (hash * 0x01000193) & 0xFFFFFFFF;
+    }
+    return hash.toRadixString(16).padLeft(8, '0');
+  }
+
+  // ==================== Media Data ====================
+
+  /// Собирает полные данные Game/Movie/TvShow из joined полей элементов.
+  ///
+  /// Используется для офлайн-импорта: при наличии этих данных
+  /// импорт не требует обращения к IGDB/TMDB API.
+  Map<String, dynamic> _collectMediaData(List<CollectionItem> items) {
+    final Map<int, Map<String, dynamic>> games = <int, Map<String, dynamic>>{};
+    final Map<int, Map<String, dynamic>> movies =
+        <int, Map<String, dynamic>>{};
+    final Map<int, Map<String, dynamic>> tvShows =
+        <int, Map<String, dynamic>>{};
+
+    for (final CollectionItem item in items) {
+      switch (item.mediaType) {
+        case MediaType.game:
+          if (item.game != null && !games.containsKey(item.externalId)) {
+            final Map<String, dynamic> data = item.game!.toDb();
+            data.remove('cached_at');
+            games[item.externalId] = data;
+          }
+        case MediaType.movie:
+          if (item.movie != null && !movies.containsKey(item.externalId)) {
+            final Map<String, dynamic> data = item.movie!.toDb();
+            data.remove('cached_at');
+            movies[item.externalId] = data;
+          }
+        case MediaType.tvShow:
+          if (item.tvShow != null && !tvShows.containsKey(item.externalId)) {
+            final Map<String, dynamic> data = item.tvShow!.toDb();
+            data.remove('cached_at');
+            tvShows[item.externalId] = data;
+          }
+        case MediaType.animation:
+          if (item.platformId == AnimationSource.tvShow) {
+            if (item.tvShow != null && !tvShows.containsKey(item.externalId)) {
+              final Map<String, dynamic> data = item.tvShow!.toDb();
+              data.remove('cached_at');
+              tvShows[item.externalId] = data;
+            }
+          } else {
+            if (item.movie != null && !movies.containsKey(item.externalId)) {
+              final Map<String, dynamic> data = item.movie!.toDb();
+              data.remove('cached_at');
+              movies[item.externalId] = data;
+            }
+          }
+      }
+    }
+
+    if (games.isEmpty && movies.isEmpty && tvShows.isEmpty) {
+      return const <String, dynamic>{};
+    }
+
+    return <String, dynamic>{
+      if (games.isNotEmpty)
+        'games': games.values.toList(),
+      if (movies.isNotEmpty)
+        'movies': movies.values.toList(),
+      if (tvShows.isNotEmpty)
+        'tv_shows': tvShows.values.toList(),
+    };
   }
 
   // ==================== Export API ====================

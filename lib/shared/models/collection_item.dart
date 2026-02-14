@@ -130,7 +130,9 @@ class CollectionItem with Exportable {
       platformId: json['platform_id'] as int?,
       currentSeason: (json['current_season'] as int?) ?? 0,
       currentEpisode: (json['current_episode'] as int?) ?? 0,
-      status: ItemStatus.fromString(json['status'] as String),
+      status: json['status'] != null
+          ? ItemStatus.fromString(json['status'] as String)
+          : ItemStatus.notStarted,
       authorComment: json['comment'] as String?,
       addedAt: addedAt ?? DateTime.now(),
     );
@@ -269,6 +271,7 @@ class CollectionItem with Exportable {
       const <String>{
         'id', 'collection_id', 'user_comment', 'added_at', 'sort_order',
         'started_at', 'completed_at', 'last_activity_at',
+        'status', 'current_season', 'current_episode',
       };
 
   @override
@@ -310,9 +313,6 @@ class CollectionItem with Exportable {
       'media_type': mediaType.value,
       'external_id': externalId,
       'platform_id': platformId,
-      'current_season': currentSeason,
-      'current_episode': currentEpisode,
-      'status': status.value,
       'comment': authorComment,
     };
   }

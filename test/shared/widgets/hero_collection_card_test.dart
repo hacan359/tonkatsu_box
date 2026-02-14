@@ -10,7 +10,10 @@ import 'package:xerabora/data/repositories/collection_repository.dart';
 import 'package:xerabora/features/collections/providers/collections_provider.dart';
 import 'package:xerabora/shared/models/collection.dart';
 import 'package:xerabora/shared/models/collection_item.dart';
+import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
+import 'package:xerabora/shared/models/movie.dart';
+import 'package:xerabora/shared/models/tv_show.dart';
 import 'package:xerabora/shared/theme/app_colors.dart';
 import 'package:xerabora/shared/navigation/navigation_shell.dart';
 import 'package:xerabora/shared/widgets/hero_collection_card.dart';
@@ -584,6 +587,102 @@ void main() {
           (Widget w) => w is ColoredBox && w.color == AppColors.gameAccent,
         );
         expect(accentLine, findsNothing);
+      });
+    });
+
+    group('animation ImageType', () {
+      testWidgets(
+          'animation movie должен запрашивать moviePoster из кэша',
+          (WidgetTester tester) async {
+        final Collection collection = createTestCollection();
+        const CollectionStats stats = CollectionStats(
+          total: 1,
+          completed: 1,
+          inProgress: 0,
+          notStarted: 0,
+          dropped: 0,
+          planned: 0,
+        );
+        final List<CollectionItem> items = <CollectionItem>[
+          CollectionItem(
+            id: 10,
+            collectionId: 1,
+            mediaType: MediaType.animation,
+            externalId: 401,
+            platformId: AnimationSource.movie,
+            status: ItemStatus.completed,
+            addedAt: testDate,
+            movie: const Movie(
+              tmdbId: 401,
+              title: 'Spirited Away',
+              posterUrl: 'https://example.com/spirited.jpg',
+              rating: 8.6,
+              releaseYear: 2001,
+            ),
+          ),
+        ];
+
+        await tester.pumpWidget(buildTestWidget(
+          collection: collection,
+          stats: stats,
+          items: items,
+        ));
+        await tester.pump();
+        await tester.pump();
+        await tester.pump();
+
+        verify(() => mockCacheService.getImageUri(
+              type: ImageType.moviePoster,
+              imageId: '401',
+              remoteUrl: any(named: 'remoteUrl'),
+            )).called(greaterThan(0));
+      });
+
+      testWidgets(
+          'animation tvShow должен запрашивать tvShowPoster из кэша',
+          (WidgetTester tester) async {
+        final Collection collection = createTestCollection();
+        const CollectionStats stats = CollectionStats(
+          total: 1,
+          completed: 0,
+          inProgress: 1,
+          notStarted: 0,
+          dropped: 0,
+          planned: 0,
+        );
+        final List<CollectionItem> items = <CollectionItem>[
+          CollectionItem(
+            id: 11,
+            collectionId: 1,
+            mediaType: MediaType.animation,
+            externalId: 501,
+            platformId: AnimationSource.tvShow,
+            status: ItemStatus.inProgress,
+            addedAt: testDate,
+            tvShow: const TvShow(
+              tmdbId: 501,
+              title: 'Attack on Titan',
+              posterUrl: 'https://example.com/aot.jpg',
+              rating: 8.9,
+              firstAirYear: 2013,
+            ),
+          ),
+        ];
+
+        await tester.pumpWidget(buildTestWidget(
+          collection: collection,
+          stats: stats,
+          items: items,
+        ));
+        await tester.pump();
+        await tester.pump();
+        await tester.pump();
+
+        verify(() => mockCacheService.getImageUri(
+              type: ImageType.tvShowPoster,
+              imageId: '501',
+              remoteUrl: any(named: 'remoteUrl'),
+            )).called(greaterThan(0));
       });
     });
   });

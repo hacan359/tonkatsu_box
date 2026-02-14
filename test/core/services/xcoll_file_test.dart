@@ -460,6 +460,130 @@ void main() {
       expect(restored.images.length, equals(1));
       expect(restored.images['game_covers/111'], equals('imgdata1'));
     });
+
+    group('media', () {
+      test('должен парсить media из full формата JSON', () {
+        final Map<String, dynamic> json = <String, dynamic>{
+          'version': 2,
+          'format': 'full',
+          'name': 'With Media',
+          'author': 'Author',
+          'created': '2024-01-15T12:00:00.000Z',
+          'items': <Map<String, dynamic>>[],
+          'media': <String, dynamic>{
+            'games': <Map<String, dynamic>>[
+              <String, dynamic>{'id': 100, 'name': 'Game 1'},
+            ],
+            'movies': <Map<String, dynamic>>[
+              <String, dynamic>{'tmdb_id': 550, 'title': 'Movie 1'},
+            ],
+            'tv_shows': <Map<String, dynamic>>[
+              <String, dynamic>{'tmdb_id': 1399, 'title': 'TV Show 1'},
+            ],
+          },
+        };
+
+        final XcollFile xcoll = XcollFile.fromJson(json);
+
+        expect(xcoll.media, isNotEmpty);
+        expect((xcoll.media['games'] as List<dynamic>).length, equals(1));
+        expect((xcoll.media['movies'] as List<dynamic>).length, equals(1));
+        expect((xcoll.media['tv_shows'] as List<dynamic>).length, equals(1));
+      });
+
+      test('должен использовать пустой media по умолчанию', () {
+        final Map<String, dynamic> json = <String, dynamic>{
+          'version': 2,
+          'name': 'No Media',
+          'author': 'Author',
+        };
+
+        final XcollFile xcoll = XcollFile.fromJson(json);
+
+        expect(xcoll.media, isEmpty);
+      });
+
+      test('toJson должен включить media если не пуст', () {
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.full,
+          name: 'With Media',
+          author: 'Author',
+          created: testDate,
+          media: const <String, dynamic>{
+            'games': <Map<String, dynamic>>[
+              <String, dynamic>{'id': 100, 'name': 'Test'},
+            ],
+          },
+        );
+
+        final Map<String, dynamic> json = xcoll.toJson();
+
+        expect(json.containsKey('media'), isTrue);
+        final Map<String, dynamic> media =
+            json['media'] as Map<String, dynamic>;
+        expect((media['games'] as List<dynamic>).length, equals(1));
+      });
+
+      test('toJson должен исключить media если пуст', () {
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          name: 'No Media',
+          author: 'Author',
+          created: testDate,
+        );
+
+        final Map<String, dynamic> json = xcoll.toJson();
+
+        expect(json.containsKey('media'), isFalse);
+      });
+
+      test('round-trip с media', () {
+        final XcollFile original = XcollFile(
+          version: 2,
+          format: ExportFormat.full,
+          name: 'Media Round Trip',
+          author: 'Tester',
+          created: testDate,
+          items: const <Map<String, dynamic>>[],
+          media: const <String, dynamic>{
+            'games': <Map<String, dynamic>>[
+              <String, dynamic>{
+                'id': 42,
+                'name': 'Round Trip Game',
+                'genres': 'Action|RPG',
+              },
+            ],
+            'movies': <Map<String, dynamic>>[
+              <String, dynamic>{
+                'tmdb_id': 550,
+                'title': 'Fight Club',
+              },
+            ],
+          },
+        );
+
+        final String jsonString = original.toJsonString();
+        final XcollFile restored = XcollFile.fromJsonString(jsonString);
+
+        expect(restored.media, isNotEmpty);
+        final List<dynamic> games =
+            restored.media['games'] as List<dynamic>;
+        expect(games.length, equals(1));
+        final Map<String, dynamic> game =
+            games[0] as Map<String, dynamic>;
+        expect(game['id'], equals(42));
+        expect(game['name'], equals('Round Trip Game'));
+
+        final List<dynamic> movies =
+            restored.media['movies'] as List<dynamic>;
+        expect(movies.length, equals(1));
+        final Map<String, dynamic> movie =
+            movies[0] as Map<String, dynamic>;
+        expect(movie['tmdb_id'], equals(550));
+        expect(movie['title'], equals('Fight Club'));
+      });
+    });
   });
 
   group('xcollFormatVersion', () {

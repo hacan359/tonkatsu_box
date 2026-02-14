@@ -9,7 +9,6 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/hero_collection_card.dart';
 import '../../../shared/widgets/section_header.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
-import '../../settings/providers/settings_provider.dart';
 import '../providers/collections_provider.dart';
 import '../widgets/collection_tile.dart';
 import '../widgets/create_collection_dialog.dart';
@@ -24,7 +23,6 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final SettingsState settings = ref.watch(settingsNotifierProvider);
     final AsyncValue<List<Collection>> collectionsAsync =
         ref.watch(collectionsProvider);
 
@@ -45,9 +43,7 @@ class HomeScreen extends ConsumerWidget {
             icon: const Icon(Icons.file_download_outlined),
             color: AppColors.textSecondary,
             tooltip: 'Import Collection',
-            onPressed: settings.isApiReady
-                ? () => _importCollection(context, ref)
-                : null,
+            onPressed: () => _importCollection(context, ref),
           ),
         ],
       ),
