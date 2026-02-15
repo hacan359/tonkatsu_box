@@ -5,6 +5,7 @@ import 'package:xerabora/features/collections/providers/canvas_provider.dart';
 import 'package:xerabora/features/collections/providers/steamgriddb_panel_provider.dart';
 import 'package:xerabora/features/collections/providers/vgmaps_panel_provider.dart';
 import 'package:xerabora/features/collections/widgets/canvas_view.dart';
+import 'package:xerabora/shared/constants/platform_features.dart';
 import 'package:xerabora/shared/models/canvas_item.dart';
 import 'package:xerabora/shared/models/game.dart';
 
@@ -370,8 +371,9 @@ void main() {
           );
           await tester.pump();
 
-          // 4 FAB: VGMaps + SteamGridDB + Center view + Reset positions
-          expect(find.byType(FloatingActionButton), findsNWidgets(4));
+          // FAB: SteamGridDB + Center view + Reset positions (+ VGMaps на Windows)
+          final int expectedFabs = kVgMapsEnabled ? 4 : 3;
+          expect(find.byType(FloatingActionButton), findsNWidgets(expectedFabs));
         },
       );
 
@@ -424,7 +426,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показывать FAB VGMaps Browser когда isEditable=true',
+        'должен показывать FAB VGMaps Browser когда isEditable=true и kVgMapsEnabled',
         (WidgetTester tester) async {
           final CanvasState normalState = CanvasState(
             isLoading: false,
@@ -442,8 +444,13 @@ void main() {
           );
           await tester.pump();
 
-          expect(find.byIcon(Icons.map), findsOneWidget);
-          expect(find.byTooltip('VGMaps Browser'), findsOneWidget);
+          if (kVgMapsEnabled) {
+            expect(find.byIcon(Icons.map), findsOneWidget);
+            expect(find.byTooltip('VGMaps Browser'), findsOneWidget);
+          } else {
+            expect(find.byIcon(Icons.map), findsNothing);
+            expect(find.byTooltip('VGMaps Browser'), findsNothing);
+          }
         },
       );
 
