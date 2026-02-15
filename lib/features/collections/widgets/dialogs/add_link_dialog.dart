@@ -83,9 +83,10 @@ class _AddLinkDialogState extends State<AddLinkDialog> {
       title: Text(_isEditing ? 'Edit Link' : 'Add Link'),
       content: SizedBox(
         width: 400,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
             TextField(
               controller: _urlController,
               decoration: const InputDecoration(
@@ -107,7 +108,8 @@ class _AddLinkDialogState extends State<AddLinkDialog> {
               ),
               onSubmitted: (_) => _submit(),
             ),
-          ],
+            ],
+          ),
         ),
       ),
       actions: <Widget>[

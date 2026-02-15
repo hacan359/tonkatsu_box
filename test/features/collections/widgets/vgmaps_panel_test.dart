@@ -241,7 +241,7 @@ class _TestableVgMapsPanel extends ConsumerWidget {
                           .clearCapturedImage();
                     },
                     icon: const Icon(Icons.add, size: 16),
-                    label: const Text('Add to Canvas'),
+                    label: const Text('Add to Board'),
                   ),
                   const SizedBox(width: 4),
                   IconButton(
@@ -437,7 +437,7 @@ void main() {
 
         expect(find.text('Image captured'), findsOneWidget);
         expect(find.text('1024x768'), findsOneWidget);
-        expect(find.text('Add to Canvas'), findsOneWidget);
+        expect(find.text('Add to Board'), findsOneWidget);
       });
 
       testWidgets('should not show bottom bar when no image captured',
@@ -447,7 +447,7 @@ void main() {
         ));
 
         expect(find.text('Image captured'), findsNothing);
-        expect(find.text('Add to Canvas'), findsNothing);
+        expect(find.text('Add to Board'), findsNothing);
       });
 
       testWidgets('should show thumbnail preview', (WidgetTester tester) async {
@@ -461,7 +461,7 @@ void main() {
         expect(find.byType(CachedNetworkImage), findsOneWidget);
       });
 
-      testWidgets('should call onAddImage when Add to Canvas tapped',
+      testWidgets('should call onAddImage when Add to Board tapped',
           (WidgetTester tester) async {
         String? addedUrl;
         int? addedWidth;
@@ -481,7 +481,7 @@ void main() {
           },
         ));
 
-        await tester.tap(find.text('Add to Canvas'));
+        await tester.tap(find.text('Add to Board'));
         await tester.pump();
 
         expect(addedUrl, 'https://example.com/map.png');

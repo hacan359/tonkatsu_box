@@ -1,9 +1,12 @@
+import 'dart:io' show Platform;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/repositories/canvas_repository.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/models/canvas_connection.dart';
 import '../../../shared/models/canvas_item.dart';
 import '../providers/canvas_provider.dart';
@@ -152,7 +155,14 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
     super.dispose();
   }
 
-  /// Центрирует вид на элементах канваса.
+  /// Отступ вокруг контента при zoom-to-fit (в пикселях viewport).
+  static const double _fitPadding = 32;
+
+  /// Центрирует вид на элементах канваса с автоподгонкой масштаба.
+  ///
+  /// На мобильных устройствах контент масштабируется так, чтобы все элементы
+  /// помещались в viewport с отступами. На десктопе масштаб не уменьшается
+  /// ниже 1.0, чтобы не делать элементы мельче чем нужно.
   void _centerViewOnItems(
     double viewportWidth,
     double viewportHeight,
@@ -176,13 +186,32 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
       if (bottom > maxY) maxY = bottom;
     }
 
+    final double contentWidth = maxX - minX;
+    final double contentHeight = maxY - minY;
     final double contentCenterX = (minX + maxX) / 2;
     final double contentCenterY = (minY + maxY) / 2;
 
+    // Вычисляем масштаб, чтобы контент поместился в viewport с отступами.
+    final double availableWidth = viewportWidth - _fitPadding * 2;
+    final double availableHeight = viewportHeight - _fitPadding * 2;
+    double scale = 1.0;
+    if (contentWidth > 0 && contentHeight > 0) {
+      final double scaleX = availableWidth / contentWidth;
+      final double scaleY = availableHeight / contentHeight;
+      scale = scaleX < scaleY ? scaleX : scaleY;
+    }
+
+    // На десктопе не уменьшаем ниже 1.0, на мобильных — ограничиваем
+    // минимальным масштабом InteractiveViewer.
+    final bool isMobile = Platform.isAndroid || Platform.isIOS;
+    final double minFitScale = isMobile ? _minScale : 1.0;
+    scale = scale.clamp(minFitScale, _maxScale);
+
     _transformationController.value = Matrix4.identity()
+      ..scaleByDouble(scale, scale, 1.0, 1.0)
       ..translateByDouble(
-        viewportWidth / 2 - contentCenterX,
-        viewportHeight / 2 - contentCenterY,
+        (viewportWidth / scale) / 2 - contentCenterX,
+        (viewportHeight / scale) / 2 - contentCenterY,
         0.0,
         1.0,
       );
@@ -214,7 +243,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
                   .openPanel();
             }
           : null,
-      onBrowseMaps: widget.isEditable
+      onBrowseMaps: widget.isEditable && kVgMapsEnabled
           ? () {
               ref
                   .read(
@@ -437,7 +466,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Failed to load canvas',
+              'Failed to load board',
               style: theme.textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
@@ -464,7 +493,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Canvas is empty',
+              'Board is empty',
               style: theme.textTheme.titleMedium?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),
@@ -480,11 +509,17 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
         ),
       );
 
-      // Позволяем добавлять элементы через ПКМ даже на пустом canvas
+      // Позволяем добавлять элементы через ПКМ или long press на пустом board
       if (widget.isEditable) {
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
           onSecondaryTapUp: (TapUpDetails details) {
+            _onCanvasSecondaryTap(
+              details.globalPosition,
+              details.localPosition,
+            );
+          },
+          onLongPressStart: (LongPressStartDetails details) {
             _onCanvasSecondaryTap(
               details.globalPosition,
               details.localPosition,
@@ -564,6 +599,15 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
                           );
                         }
                       : null,
+                  onLongPressStart: widget.isEditable
+                      ? (LongPressStartDetails details) {
+                          _onCanvasSecondaryTapWithConnections(
+                            details.globalPosition,
+                            details.localPosition,
+                            canvasState,
+                          );
+                        }
+                      : null,
                   child: MouseRegion(
                     cursor: isConnecting
                         ? SystemMouseCursors.cell
@@ -604,6 +648,10 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
                                         items: canvasState.items,
                                         connectingFrom: connectingFromItem,
                                         mousePosition: _mouseCanvasPosition,
+                                        labelStyle: TextStyle(
+                                          fontSize: 11,
+                                          color: colorScheme.onSurface,
+                                        ),
                                         labelBackgroundColor:
                                             colorScheme.surfaceContainerLow
                                                 .withAlpha(220),
@@ -629,8 +677,8 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  // VGMaps Browser
-                  if (widget.isEditable)
+                  // VGMaps Browser (Windows only — requires webview_windows)
+                  if (widget.isEditable && kVgMapsEnabled)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 8),
                       child: FloatingActionButton.small(
@@ -734,8 +782,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'Click on an element to create a connection. '
-                            'Press Escape to cancel.',
+                            'Tap an element to create a connection.',
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: colorScheme.onPrimaryContainer,
                             ),
@@ -838,7 +885,7 @@ class _DraggableCanvasItem extends ConsumerStatefulWidget {
   /// Callback для обновления drag-смещения (для связей).
   final void Function(int itemId, Offset delta) onDragUpdate;
 
-  /// Callback для ПКМ на элементе.
+  /// Callback для ПКМ или long press на элементе (контекстное меню).
   final void Function(Offset globalPosition, CanvasItem item)? onSecondaryTap;
 
   /// Callback для клика (используется в режиме создания связи).
@@ -888,8 +935,9 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
   /// Максимальный размер элемента.
   static const double _maxItemSize = 2000;
 
-  /// Размер resize handle.
-  static const double _handleSize = 14;
+  /// Размер resize handle (больше на мобильных для удобства тач-ввода).
+  static final double _handleSize =
+      (Platform.isAndroid || Platform.isIOS) ? 24 : 14;
 
   double get _itemWidth {
     if (widget.item.width != null) return widget.item.width!;
@@ -1057,6 +1105,14 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
                   );
                 }
               : null,
+          onLongPressStart: widget.onSecondaryTap != null
+              ? (LongPressStartDetails details) {
+                  widget.onSecondaryTap!(
+                    details.globalPosition,
+                    widget.item,
+                  );
+                }
+              : null,
           child: RepaintBoundary(
             child: AnimatedOpacity(
               opacity: _isDragging ? 0.8 : 1.0,
@@ -1106,7 +1162,7 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
                             ),
                             child: Icon(
                               Icons.drag_handle,
-                              size: 10,
+                              size: _handleSize * 0.6,
                               color: colorScheme.primary,
                             ),
                           ),

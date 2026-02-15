@@ -132,10 +132,11 @@ class _AddImageDialogState extends State<AddImageDialog> {
       title: Text(_isEditing ? 'Edit Image' : 'Add Image'),
       content: SizedBox(
         width: 400,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
             // Выбор источника
             if (!_isEditing) ...<Widget>[
               SegmentedButton<_ImageSource>(
@@ -228,7 +229,8 @@ class _AddImageDialogState extends State<AddImageDialog> {
                 label: Text(_fileName != null ? 'Choose Another' : 'Choose File'),
               ),
             ],
-          ],
+            ],
+          ),
         ),
       ),
       actions: <Widget>[

@@ -157,7 +157,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                       ),
                       ButtonSegment<bool>(
                         value: true,
-                        label: Text('Canvas'),
+                        label: Text('Board'),
                         icon: Icon(Icons.dashboard),
                       ),
                     ],
@@ -200,7 +200,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
               color: _isViewModeLocked
                   ? AppColors.warning
                   : AppColors.textSecondary,
-              tooltip: _isViewModeLocked ? 'Unlock canvas' : 'Lock canvas',
+              tooltip: _isViewModeLocked ? 'Unlock board' : 'Lock board',
               onPressed: () {
                 setState(() {
                   _isViewModeLocked = !_isViewModeLocked;
@@ -1242,7 +1242,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Image added to canvas'),
+          content: Text('Image added to board'),
           duration: Duration(seconds: 2),
         ),
       );
@@ -1281,7 +1281,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Map added to canvas'),
+          content: Text('Map added to board'),
           duration: Duration(seconds: 2),
         ),
       );
@@ -1383,7 +1383,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
               leading: const Icon(Icons.folder_zip_outlined),
               title: const Text('Full (.xcollx)'),
               subtitle: const Text(
-                'Items + canvas + covers + media (offline)',
+                'Items + board + covers + media (offline)',
               ),
               onTap: () =>
                   Navigator.of(dialogContext).pop(ExportFormat.full),

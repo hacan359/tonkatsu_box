@@ -23,15 +23,13 @@ class CanvasTextItem extends StatelessWidget {
     final double fontSize =
         (data?['fontSize'] as num?)?.toDouble() ?? 16;
 
-    final ColorScheme colorScheme = Theme.of(context).colorScheme;
-
     return Padding(
       padding: const EdgeInsets.all(8),
       child: Text(
         content,
         style: TextStyle(
           fontSize: fontSize,
-          color: colorScheme.onSurface,
+          color: Colors.white,
         ),
         overflow: TextOverflow.clip,
       ),

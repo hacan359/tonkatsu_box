@@ -925,7 +925,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             const SizedBox(height: AppSpacing.sm),
             const Text(
-              'Clears all collections, games, movies, TV shows and canvas data. '
+              'Clears all collections, games, movies, TV shows and board data. '
               'Settings and API keys will be preserved.',
               style: AppTypography.bodySmall,
             ),
@@ -955,7 +955,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         title: const Text('Reset Database?'),
         content: const Text(
           'This will permanently delete all your collections, games, '
-          'movies, TV shows, episode progress, and canvas data.\n\n'
+          'movies, TV shows, episode progress, and board data.\n\n'
           'Your API keys and settings will be preserved.\n\n'
           'This action cannot be undone.',
         ),

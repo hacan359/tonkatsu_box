@@ -124,7 +124,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показывать текст "Failed to load canvas" когда error!=null',
+        'должен показывать текст "Failed to load board" когда error!=null',
         (WidgetTester tester) async {
           const CanvasState errorState = CanvasState(
             isLoading: false,
@@ -133,7 +133,7 @@ void main() {
 
           await tester.pumpWidget(buildTestWidget(canvasState: errorState));
 
-          expect(find.text('Failed to load canvas'), findsOneWidget);
+          expect(find.text('Failed to load board'), findsOneWidget);
         },
       );
 
@@ -169,7 +169,7 @@ void main() {
 
     group('пустое состояние', () {
       testWidgets(
-        'должен показывать "Canvas is empty" когда список items пуст',
+        'должен показывать "Board is empty" когда список items пуст',
         (WidgetTester tester) async {
           const CanvasState emptyState = CanvasState(
             isLoading: false,
@@ -179,7 +179,7 @@ void main() {
 
           await tester.pumpWidget(buildTestWidget(canvasState: emptyState));
 
-          expect(find.text('Canvas is empty'), findsOneWidget);
+          expect(find.text('Board is empty'), findsOneWidget);
         },
       );
 
@@ -763,7 +763,7 @@ void main() {
           await tester.pumpWidget(buildTestWidget(canvasState: state));
 
           expect(find.byType(CircularProgressIndicator), findsOneWidget);
-          expect(find.text('Failed to load canvas'), findsNothing);
+          expect(find.text('Failed to load board'), findsNothing);
         },
       );
 
@@ -779,8 +779,8 @@ void main() {
 
           await tester.pumpWidget(buildTestWidget(canvasState: state));
 
-          expect(find.text('Failed to load canvas'), findsOneWidget);
-          expect(find.text('Canvas is empty'), findsNothing);
+          expect(find.text('Failed to load board'), findsOneWidget);
+          expect(find.text('Board is empty'), findsNothing);
         },
       );
     });
