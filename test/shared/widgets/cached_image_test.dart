@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -49,7 +48,7 @@ void main() {
 
   group('CachedImage', () {
     group('cache disabled (remote URL)', () {
-      testWidgets('должен показывать CachedNetworkImage при выключенном кэше',
+      testWidgets('должен показывать Image.network при выключенном кэше',
           (WidgetTester tester) async {
         // Arrange
         when(() => mockCacheService.getImageUri(
@@ -74,14 +73,14 @@ void main() {
         ));
         await tester.pump();
 
-        // Assert
-        expect(find.byType(CachedNetworkImage), findsOneWidget);
+        // Assert — Image.network создаёт виджет типа Image
+        expect(find.byType(Image), findsOneWidget);
       });
     });
 
     group('cache enabled + file missing (fallback to network)', () {
       testWidgets(
-          'должен показывать CachedNetworkImage и запускать auto-download',
+          'должен показывать Image.network и запускать auto-download',
           (WidgetTester tester) async {
         // Arrange
         when(() => mockCacheService.getImageUri(
@@ -109,12 +108,11 @@ void main() {
             height: 32,
           ),
         ));
-        // pump() вместо pumpAndSettle() — CachedNetworkImage не завершится
         await tester.pump();
         await tester.pump();
 
-        // Assert — CachedNetworkImage shown, download triggered
-        expect(find.byType(CachedNetworkImage), findsOneWidget);
+        // Assert — Image.network shown, download triggered
+        expect(find.byType(Image), findsOneWidget);
         verify(() => mockCacheService.downloadImage(
               type: ImageType.gameCover,
               imageId: '123',
@@ -424,7 +422,7 @@ void main() {
       // Image.file errorBuilder не срабатывает в тестовом окружении Flutter,
       // т.к. painting pipeline не декодирует изображения реально.
       // Тестируем структурно: при isLocal=true виджет использует Image.file.
-      // Полный flow (errorBuilder → _deleteAndRedownload → CachedNetworkImage)
+      // Полный flow (errorBuilder → _deleteAndRedownload → Image.network)
       // проверяется вручную.
 
       testWidgets('должен использовать Image (file) при isLocal=true',
@@ -468,9 +466,8 @@ void main() {
         ));
         await tester.pump();
 
-        // Assert — Image виджет (file-based), не CachedNetworkImage
+        // Assert — Image виджет (file-based)
         expect(find.byType(Image), findsOneWidget);
-        expect(find.byType(CachedNetworkImage), findsNothing);
 
         // Cleanup
         try {
@@ -527,13 +524,14 @@ void main() {
         ));
         await tester.pump();
 
-        // Assert — verify CachedNetworkImage is rendered with correct params
-        final CachedNetworkImage networkImage =
-            tester.widget<CachedNetworkImage>(
-          find.byType(CachedNetworkImage),
+        // Assert — Image.network создаёт Image виджет;
+        // cacheWidth/cacheHeight оборачиваются в ResizeImage внутри Image,
+        // проверяем что Image создан с правильными размерами
+        final Image networkImage = tester.widget<Image>(
+          find.byType(Image),
         );
-        expect(networkImage.memCacheWidth, 120);
-        expect(networkImage.memCacheHeight, 160);
+        expect(networkImage.width, 60);
+        expect(networkImage.height, 80);
       });
     });
   });
