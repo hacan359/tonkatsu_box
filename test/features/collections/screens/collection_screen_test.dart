@@ -45,6 +45,10 @@ void main() {
     notStarted: 1,
     dropped: 0,
     planned: 0,
+    gameCount: 1,
+    movieCount: 1,
+    tvShowCount: 1,
+    animationCount: 2,
   );
 
   final List<CollectionItem> testItems = <CollectionItem>[
@@ -279,10 +283,11 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        expect(find.text('All'), findsOneWidget);
-        expect(find.text('Games'), findsOneWidget);
-        expect(find.text('Movies'), findsOneWidget);
-        expect(find.text('TV Shows'), findsOneWidget);
+        expect(find.text('All (5)'), findsOneWidget);
+        expect(find.text('Games (1)'), findsOneWidget);
+        expect(find.text('Movies (1)'), findsOneWidget);
+        expect(find.text('TV Shows (1)'), findsOneWidget);
+        expect(find.text('Animation (2)'), findsOneWidget);
       });
 
       testWidgets('Games фильтр должен показывать только игры',
@@ -290,7 +295,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        await tester.tap(find.text('Games'));
+        await tester.tap(find.text('Games (1)'));
         await pumpScreen(tester);
 
         expect(find.text('Zelda'), findsOneWidget);
@@ -303,7 +308,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        await tester.tap(find.text('Movies'));
+        await tester.tap(find.text('Movies (1)'));
         await pumpScreen(tester);
 
         expect(find.text('Zelda'), findsNothing);
@@ -316,7 +321,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        await tester.tap(find.text('TV Shows'));
+        await tester.tap(find.text('TV Shows (1)'));
         await pumpScreen(tester);
 
         expect(find.text('Zelda'), findsNothing);
@@ -330,12 +335,12 @@ void main() {
         await pumpScreen(tester);
 
         // Сначала выбираем Games
-        await tester.tap(find.text('Games'));
+        await tester.tap(find.text('Games (1)'));
         await pumpScreen(tester);
         expect(find.text('Inception'), findsNothing);
 
         // Затем All
-        await tester.tap(find.text('All'));
+        await tester.tap(find.text('All (5)'));
         await pumpScreen(tester);
 
         expect(find.text('Zelda'), findsOneWidget);
@@ -348,7 +353,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        await tester.tap(find.text('Animation'));
+        await tester.tap(find.text('Animation (2)'));
         await pumpScreen(tester);
 
         expect(find.text('Zelda'), findsNothing);
@@ -451,6 +456,86 @@ void main() {
       });
     });
 
+    group('animation items в list mode (default)', () {
+      testWidgets(
+          'animation movie в list mode должен использовать moviePoster ImageType',
+          (WidgetTester tester) async {
+        final List<CollectionItem> animMovieItems = <CollectionItem>[
+          CollectionItem(
+            id: 4,
+            collectionId: 1,
+            mediaType: MediaType.animation,
+            externalId: 401,
+            platformId: AnimationSource.movie,
+            status: ItemStatus.completed,
+            addedAt: testDate,
+            movie: const Movie(
+              tmdbId: 401,
+              title: 'Spirited Away',
+              posterUrl: 'https://example.com/spirited.jpg',
+              rating: 8.6,
+              releaseYear: 2001,
+            ),
+          ),
+        ];
+
+        when(() => mockRepo.getItemsWithData(
+              1,
+              mediaType: any(named: 'mediaType'),
+            )).thenAnswer((_) async => animMovieItems);
+
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        // List mode — по умолчанию, не переключаемся на grid
+        // Проверяем что getImageUri вызван с moviePoster
+        verify(() => mockCache.getImageUri(
+              type: ImageType.moviePoster,
+              imageId: '401',
+              remoteUrl: any(named: 'remoteUrl'),
+            )).called(greaterThan(0));
+      });
+
+      testWidgets(
+          'animation tvShow в list mode должен использовать tvShowPoster ImageType',
+          (WidgetTester tester) async {
+        final List<CollectionItem> animTvItems = <CollectionItem>[
+          CollectionItem(
+            id: 5,
+            collectionId: 1,
+            mediaType: MediaType.animation,
+            externalId: 501,
+            platformId: AnimationSource.tvShow,
+            status: ItemStatus.inProgress,
+            addedAt: testDate,
+            tvShow: const TvShow(
+              tmdbId: 501,
+              title: 'Attack on Titan',
+              posterUrl: 'https://example.com/aot.jpg',
+              rating: 8.9,
+              firstAirYear: 2013,
+            ),
+          ),
+        ];
+
+        when(() => mockRepo.getItemsWithData(
+              1,
+              mediaType: any(named: 'mediaType'),
+            )).thenAnswer((_) async => animTvItems);
+
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        // List mode — по умолчанию
+        // Проверяем что getImageUri вызван с tvShowPoster (не moviePoster!)
+        verify(() => mockCache.getImageUri(
+              type: ImageType.tvShowPoster,
+              imageId: '501',
+              remoteUrl: any(named: 'remoteUrl'),
+            )).called(greaterThan(0));
+      });
+    });
+
     group('поиск по имени', () {
       testWidgets('должен показывать поле поиска',
           (WidgetTester tester) async {
@@ -513,7 +598,7 @@ void main() {
         await pumpScreen(tester);
 
         // Фильтр Games + поиск "Zel"
-        await tester.tap(find.text('Games'));
+        await tester.tap(find.text('Games (1)'));
         await pumpScreen(tester);
         await tester.enterText(find.byType(TextField), 'Zel');
         await pumpScreen(tester);
@@ -533,7 +618,7 @@ void main() {
         await pumpScreen(tester);
 
         // Фильтр Movies
-        await tester.tap(find.text('Movies'));
+        await tester.tap(find.text('Movies (1)'));
         await pumpScreen(tester);
 
         // Должен быть 1 PosterCard (Inception)
@@ -676,6 +761,61 @@ void main() {
           '${SettingsKeys.collectionViewModePrefix}2',
         );
         expect(saved2, isNull);
+      });
+    });
+
+    group('export кнопка', () {
+      testWidgets('должен показывать кнопку Export в AppBar',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        expect(find.byTooltip('Export'), findsOneWidget);
+        expect(find.byIcon(Icons.file_upload_outlined), findsOneWidget);
+      });
+    });
+
+    group('filter chips с нулевыми каунтами', () {
+      const CollectionStats zeroStats = CollectionStats(
+        total: 0,
+        completed: 0,
+        inProgress: 0,
+        notStarted: 0,
+        dropped: 0,
+        planned: 0,
+        gameCount: 0,
+        movieCount: 0,
+        tvShowCount: 0,
+        animationCount: 0,
+      );
+
+      testWidgets('должен показывать label без каунта при 0 элементах',
+          (WidgetTester tester) async {
+        when(() => mockRepo.getItemsWithData(
+              1,
+              mediaType: any(named: 'mediaType'),
+            )).thenAnswer((_) async => const <CollectionItem>[]);
+
+        await tester.pumpWidget(ProviderScope(
+          overrides: <Override>[
+            collectionRepositoryProvider.overrideWithValue(mockRepo),
+            imageCacheServiceProvider.overrideWithValue(mockCache),
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            collectionStatsProvider(1)
+                .overrideWith((Ref ref) async => zeroStats),
+          ],
+          child: const MaterialApp(
+            home: CollectionScreen(collectionId: 1),
+          ),
+        ));
+        await pumpScreen(tester);
+
+        // Без каунта — не "All (0)", а просто "All"
+        expect(find.text('All'), findsOneWidget);
+        expect(find.text('Games'), findsOneWidget);
+        expect(find.text('Movies'), findsOneWidget);
+        expect(find.text('TV Shows'), findsOneWidget);
+        expect(find.text('Animation'), findsOneWidget);
       });
     });
 

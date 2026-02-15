@@ -88,6 +88,7 @@ class _CachedImageState extends ConsumerState<CachedImage> {
         oldWidget.imageId != widget.imageId ||
         oldWidget.remoteUrl != widget.remoteUrl) {
       _imageFuture = _fetchImage();
+      _corruptHandled = false;
     }
   }
 
@@ -139,7 +140,9 @@ class _CachedImageState extends ConsumerState<CachedImage> {
             fit: widget.fit,
             errorBuilder:
                 (BuildContext ctx, Object error, StackTrace? stack) {
-              return _buildError(context);
+              // Файл повреждён — удалить из кэша, перекачать, показать из сети
+              _deleteAndRedownload();
+              return _buildNetworkImage(widget.remoteUrl, context);
             },
           );
         }
@@ -152,6 +155,27 @@ class _CachedImageState extends ConsumerState<CachedImage> {
         return _buildError(context);
       },
     );
+  }
+
+  /// Удаляет повреждённый файл из кэша и перекачивает.
+  ///
+  /// Защита от повторных вызовов: флаг [_corruptHandled] предотвращает
+  /// множественные delete+download при rebuild виджета.
+  bool _corruptHandled = false;
+
+  void _deleteAndRedownload() {
+    if (_corruptHandled) return;
+    _corruptHandled = true;
+    final ImageCacheService cacheService = ref.read(imageCacheServiceProvider);
+    cacheService.deleteImage(widget.imageType, widget.imageId).then((_) {
+      if (widget.autoDownload) {
+        cacheService.downloadImage(
+          type: widget.imageType,
+          imageId: widget.imageId,
+          remoteUrl: widget.remoteUrl,
+        );
+      }
+    });
   }
 
   Widget _buildNetworkImage(String imageUrl, BuildContext context) {

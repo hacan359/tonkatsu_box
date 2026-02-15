@@ -27,7 +27,7 @@ Create unlimited collections organized however you want:
 - Personal lists (Backlog, Completed, Favorites...)
 - Mix games, movies and TV shows in a single collection
 - **Grid mode** — toggle between list and poster grid view; choice is saved per-collection and restored on next open
-- **Type filter** — filter items by type (All/Games/Movies/TV Shows/Animation)
+- **Type filter** — filter items by type (All/Games/Movies/TV Shows/Animation) with item count badges on each chip
 - **Search** — filter items by name within a collection
 
 ## Universal Search
@@ -135,7 +135,8 @@ Sort mode is saved per collection and persists between sessions. A compact sort 
 Track your viewing progress for TV shows and animated series at the episode level:
 - **Episode Progress bar** — shows overall watched/total count with a LinearProgressIndicator
 - **Season sections** — ExpansionTile for each season with watched count badge
-- **Lazy loading** — episodes are fetched from TMDB API only when a season is expanded (cached in SQLite for offline access)
+- **Season preloading** — when adding a TV show or animated series to a collection, all seasons are automatically fetched and cached in SQLite (fire-and-forget, non-blocking)
+- **Lazy episode loading** — episodes are fetched from TMDB API only when a season is expanded (cached in SQLite for offline access)
 - **Per-episode checkboxes** — mark individual episodes as watched/unwatched with CheckboxListTile; watched date displayed in subtitle
 - **Bulk actions** — "Mark all" / "Unmark all" button per season to toggle all episodes at once
 - **Auto-complete** — when all episodes are watched, the show's status is automatically set to Completed (compares against total episode count from show metadata)
@@ -197,8 +198,10 @@ Export collections in three formats:
 - Canvas data (viewport, items, connections) including per-item canvases
 - Base64-encoded cover images (game covers, movie/TV show posters)
 - Base64-encoded canvas images (images added to canvas boards)
-- Embedded media data (Game/Movie/TvShow) for fully offline import — no IGDB/TMDB API calls needed
-- Self-contained — recipients can import without internet (all data, covers, and canvas images included)
+- Embedded media data (Game/Movie/TvShow/TvSeason/TvEpisode) for fully offline import — no IGDB/TMDB API calls needed
+- TV show seasons are preloaded into cache when adding a TV show or animated series to a collection, ensuring they're available for export
+- All episodes for each season are included in the export for complete offline access
+- Self-contained — recipients can import without internet (all data, covers, canvas images, seasons, and episodes included)
 
 ## Forking
 

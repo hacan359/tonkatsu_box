@@ -238,7 +238,7 @@ class XcollFile {
 
   /// Полные данные медиа-объектов (только full export).
   ///
-  /// Структура: `{games: [...], movies: [...], tv_shows: [...]}`.
+  /// Структура: `{games: [...], movies: [...], tv_shows: [...], tv_seasons: [...], tv_episodes: [...]}`.
   /// Каждый элемент — Map в формате `toDb()` соответствующей модели.
   final Map<String, dynamic> media;
 

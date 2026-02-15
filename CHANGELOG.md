@@ -13,9 +13,17 @@
 - Добавлено поле `media` в `XcollFile` с поддержкой сериализации/десериализации
 - Добавлен метод `ExportService._collectMediaData()` — сбор Game/Movie/TvShow из joined полей элементов с дедупликацией по ID
 - Добавлены методы `ImportService._restoreEmbeddedMedia()` и `_fetchMediaFromApi()` — условный импорт: офлайн из файла или онлайн из API
+- Добавлена предзагрузка сезонов сериалов при добавлении tvShow/animation-сериала в коллекцию — `_preloadSeasons()` в `SearchScreen` (fire-and-forget, не блокирует UI). Сезоны кэшируются в `tv_seasons_cache` для офлайн-доступа
+- Добавлены `tv_seasons` в полный экспорт `.xcollx` — сезоны сериалов собираются из кэша БД и включаются в секцию `media.tv_seasons`. `ExportService._collectMediaData()` стал async, принимает `DatabaseService`
+- Добавлено восстановление `tv_seasons` при импорте `.xcollx` — `ImportService._restoreEmbeddedMedia()` парсит `media.tv_seasons` и восстанавливает через `TvSeason.fromDb()` с отслеживанием прогресса
+- Добавлены счётчики элементов на filter chips коллекции — каждый чип показывает количество: All (N), Games (N), Movies (N), TV Shows (N), Animation (N)
+- Добавлены `tv_episodes` в полный экспорт `.xcollx` — эпизоды всех сезонов сериалов собираются из кэша БД и включаются в секцию `media.tv_episodes`. Метод `DatabaseService.getEpisodesByShowId()` возвращает все эпизоды сериала. Запросы сезонов и эпизодов выполняются параллельно через `Future.wait`
+- Добавлено восстановление `tv_episodes` при импорте `.xcollx` — `ImportService._restoreEmbeddedMedia()` парсит `media.tv_episodes` и восстанавливает через `TvEpisode.fromDb()` / `upsertEpisodes()` с отслеживанием прогресса
 
 ### Fixed
-- Исправлен маппинг `ImageType` для анимации: `_imageTypeFor()` в `CollectionScreen` и `HeroCollectionCard` теперь учитывает `platformId` — анимационные сериалы (`AnimationSource.tvShow`) отображают обложки из `tv_show_posters` вместо `movie_posters`
+- Исправлен маппинг `ImageType` для анимации: `_imageTypeFor()` в `CollectionScreen`, `HeroCollectionCard` и `CanvasMediaCard` теперь учитывает `platformId` — анимационные сериалы (`AnimationSource.tvShow`) отображают обложки из `tv_show_posters` вместо `movie_posters`
+- Исправлена обработка повреждённых кэшированных изображений: `CachedImage` теперь при ошибке декодирования (`Codec failed to produce an image`) удаляет битый файл из кэша, показывает изображение из сети (fallback) и перекачивает файл в фоне. Добавлен метод `ImageCacheService.deleteImage()`. Флаг `_corruptHandled` предотвращает повторные вызовы при rebuild
+- Исправлен диалог экспорта: выбор формата (Light/Full) теперь показывается всегда, а не только при наличии canvas данных
 
 ### Changed
 - Изменён `_AppRouter` — приложение больше не блокируется без API ключей, только поиск недоступен
