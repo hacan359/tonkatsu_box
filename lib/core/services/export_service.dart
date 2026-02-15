@@ -480,29 +480,37 @@ class ExportService {
       }
 
       final String json = xcoll.toJsonString();
+      final Uint8List jsonBytes = Uint8List.fromList(utf8.encode(json));
       final String suggestedName = _sanitizeFileName(collection.name);
 
       // На Android FileType.custom не поддерживает кастомные расширения.
-      final bool useAny = Platform.isAndroid;
+      final bool useAny = Platform.isAndroid || Platform.isIOS;
       final String? outputPath = await FilePicker.platform.saveFile(
         dialogTitle: 'Export Collection',
         fileName: '$suggestedName.$extension',
         type: useAny ? FileType.any : FileType.custom,
         allowedExtensions: useAny ? null : <String>[extension],
+        bytes: jsonBytes,
       );
 
       if (outputPath == null) {
         return const ExportResult.cancelled();
       }
 
-      final String finalPath = outputPath.endsWith('.$extension')
-          ? outputPath
-          : '$outputPath.$extension';
+      // На Android/iOS file_picker записывает bytes через SAF.
+      // На десктопе нужно записать файл самостоятельно.
+      if (!Platform.isAndroid && !Platform.isIOS) {
+        final String finalPath = outputPath.endsWith('.$extension')
+            ? outputPath
+            : '$outputPath.$extension';
 
-      final File file = File(finalPath);
-      await file.writeAsString(json);
+        final File file = File(finalPath);
+        await file.writeAsString(json);
 
-      return ExportResult.success(finalPath);
+        return ExportResult.success(finalPath);
+      }
+
+      return ExportResult.success(outputPath);
     } on FileSystemException catch (e) {
       return ExportResult.failure('Failed to save file: ${e.message}');
     } catch (e) {

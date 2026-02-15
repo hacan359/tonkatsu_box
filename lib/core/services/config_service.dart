@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -142,27 +143,35 @@ class ConfigService {
     try {
       final Map<String, Object> config = collectSettings();
       final String json = const JsonEncoder.withIndent('  ').convert(config);
+      final Uint8List jsonBytes = Uint8List.fromList(utf8.encode(json));
 
-      // На Android FileType.custom не поддерживает кастомные расширения.
-      final bool useAny = Platform.isAndroid;
+      // На Android/iOS FileType.custom не поддерживает кастомные расширения.
+      final bool useAny = Platform.isAndroid || Platform.isIOS;
       final String? outputPath = await FilePicker.platform.saveFile(
         dialogTitle: 'Export Configuration',
         fileName: 'xerabora-config.json',
         type: useAny ? FileType.any : FileType.custom,
         allowedExtensions: useAny ? null : <String>['json'],
+        bytes: jsonBytes,
       );
 
       if (outputPath == null) {
         return const ConfigResult.cancelled();
       }
 
-      final String finalPath =
-          outputPath.endsWith('.json') ? outputPath : '$outputPath.json';
+      // На Android/iOS file_picker записывает bytes через SAF.
+      // На десктопе нужно записать файл самостоятельно.
+      if (!Platform.isAndroid && !Platform.isIOS) {
+        final String finalPath =
+            outputPath.endsWith('.json') ? outputPath : '$outputPath.json';
 
-      final File file = File(finalPath);
-      await file.writeAsString(json);
+        final File file = File(finalPath);
+        await file.writeAsString(json);
 
-      return ConfigResult.success(finalPath);
+        return ConfigResult.success(finalPath);
+      }
+
+      return ConfigResult.success(outputPath);
     } on FileSystemException catch (e) {
       return ConfigResult.failure('Failed to save file: ${e.message}');
     } on Exception catch (e) {

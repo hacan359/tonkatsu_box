@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/collections/screens/home_screen.dart';
 import '../../features/search/screens/search_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
+import '../theme/app_assets.dart';
 import '../theme/app_colors.dart';
 
 /// Порог ширины для переключения NavigationRail ↔ BottomNavigationBar.
@@ -82,15 +83,12 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
             fontSize: 12,
           ),
           labelType: NavigationRailLabelType.all,
-          leading: const Padding(
-            padding: EdgeInsets.only(top: 8, bottom: 16),
-            child: Text(
-              'xR',
-              style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+          leading: Padding(
+            padding: const EdgeInsets.only(top: 8, bottom: 16),
+            child: Image.asset(
+              AppAssets.logo,
+              width: 32,
+              height: 32,
             ),
           ),
           destinations: const <NavigationRailDestination>[

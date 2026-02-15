@@ -7,6 +7,7 @@ import 'package:xerabora/app.dart';
 import 'package:xerabora/data/repositories/collection_repository.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/shared/models/collection.dart';
+import 'package:xerabora/features/splash/screens/splash_screen.dart';
 import 'package:xerabora/shared/navigation/navigation_shell.dart';
 
 class MockCollectionRepository extends Mock implements CollectionRepository {}
@@ -40,7 +41,7 @@ void main() {
       expect(find.byType(MaterialApp), findsOneWidget);
     });
 
-    testWidgets('должен показывать NavigationShell',
+    testWidgets('должен показывать SplashScreen при запуске',
         (WidgetTester tester) async {
       SharedPreferences.setMockInitialValues(<String, Object>{});
       final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -55,7 +56,28 @@ void main() {
         ),
       );
 
-      await tester.pump();
+      expect(find.byType(SplashScreen), findsOneWidget);
+    });
+
+    testWidgets('должен показывать NavigationShell после splash анимации',
+        (WidgetTester tester) async {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: <Override>[
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            collectionRepositoryProvider.overrideWithValue(mockRepo),
+          ],
+          child: const XeraboraApp(),
+        ),
+      );
+
+      // Прокручиваем анимацию splash (2с контроллер)
+      await tester.pump(const Duration(seconds: 2));
+      // Завершаем анимацию перехода (fade 500мс)
+      await tester.pumpAndSettle();
 
       expect(find.byType(NavigationShell), findsOneWidget);
     });

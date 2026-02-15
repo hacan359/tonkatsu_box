@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/import_service.dart';
 import '../../../shared/models/collection.dart';
+import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -47,12 +48,26 @@ class HomeScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: collectionsAsync.when(
-        data: (List<Collection> collections) =>
-            _buildCollectionsList(context, ref, collections),
-        loading: () => _buildLoadingState(),
-        error: (Object error, StackTrace stack) =>
-            _buildErrorState(context, ref, error),
+      body: Stack(
+        children: <Widget>[
+          Center(
+            child: Opacity(
+              opacity: 0.04,
+              child: Image.asset(
+                AppAssets.logo,
+                width: 300,
+                height: 300,
+              ),
+            ),
+          ),
+          collectionsAsync.when(
+            data: (List<Collection> collections) =>
+                _buildCollectionsList(context, ref, collections),
+            loading: () => _buildLoadingState(),
+            error: (Object error, StackTrace stack) =>
+                _buildErrorState(context, ref, error),
+          ),
+        ],
       ),
     );
   }

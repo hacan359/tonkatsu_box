@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'shared/navigation/navigation_shell.dart';
+import 'features/splash/screens/splash_screen.dart';
 import 'shared/theme/app_theme.dart';
 
 /// Главный виджет приложения.
 ///
 /// Принудительно тёмная тема через [AppTheme.darkTheme].
+/// Стартовый экран — [SplashScreen] с анимированным логотипом.
 class XeraboraApp extends ConsumerWidget {
   const XeraboraApp({super.key});
 
@@ -18,19 +19,7 @@ class XeraboraApp extends ConsumerWidget {
       theme: AppTheme.darkTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.dark,
-      home: const _AppRouter(),
+      home: const SplashScreen(),
     );
-  }
-}
-
-/// Роутер приложения.
-///
-/// Всегда показывает [NavigationShell]. Поиск недоступен без API ключей.
-class _AppRouter extends StatelessWidget {
-  const _AppRouter();
-
-  @override
-  Widget build(BuildContext context) {
-    return const NavigationShell();
   }
 }
