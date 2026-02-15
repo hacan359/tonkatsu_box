@@ -16,11 +16,16 @@ import 'package:xerabora/shared/models/game.dart';
 import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/movie.dart';
+import 'package:xerabora/shared/models/tv_episode.dart';
+import 'package:xerabora/shared/models/tv_season.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
+import 'package:xerabora/core/database/database_service.dart';
 
 class MockCanvasRepository extends Mock implements CanvasRepository {}
 
 class MockImageCacheService extends Mock implements ImageCacheService {}
+
+class MockDatabaseService extends Mock implements DatabaseService {}
 
 void main() {
   setUpAll(() {
@@ -1404,6 +1409,412 @@ void main() {
         expect((xcoll.media['movies'] as List<dynamic>).length, equals(1));
         expect(
             (xcoll.media['tv_shows'] as List<dynamic>).length, equals(1));
+      });
+    });
+
+    group('tv_seasons в full export', () {
+      late MockCanvasRepository mockCanvasRepo;
+      late MockImageCacheService mockImageCache;
+      late MockDatabaseService mockDatabase;
+
+      setUp(() {
+        mockCanvasRepo = MockCanvasRepository();
+        mockImageCache = MockImageCacheService();
+        mockDatabase = MockDatabaseService();
+
+        when(() => mockCanvasRepo.getViewport(any()))
+            .thenAnswer((_) async => null);
+        when(() => mockCanvasRepo.getItems(any()))
+            .thenAnswer((_) async => <CanvasItem>[]);
+        when(() => mockCanvasRepo.getConnections(any()))
+            .thenAnswer((_) async => <CanvasConnection>[]);
+        when(() => mockCanvasRepo.getGameCanvasItems(any()))
+            .thenAnswer((_) async => <CanvasItem>[]);
+        when(() => mockImageCache.readImageBytes(any(), any()))
+            .thenAnswer((_) async => null);
+        when(() => mockDatabase.getEpisodesByShowId(any()))
+            .thenAnswer((_) async => <TvEpisode>[]);
+      });
+
+      test('должен включить tv_seasons для tvShow элементов', () async {
+        const List<TvSeason> testSeasons = <TvSeason>[
+          TvSeason(
+            tmdbShowId: 1399,
+            seasonNumber: 1,
+            name: 'Season 1',
+            episodeCount: 10,
+            airDate: '2011-04-17',
+          ),
+          TvSeason(
+            tmdbShowId: 1399,
+            seasonNumber: 2,
+            name: 'Season 2',
+            episodeCount: 10,
+          ),
+        ];
+
+        when(() => mockDatabase.getTvSeasonsByShowId(1399))
+            .thenAnswer((_) async => testSeasons);
+
+        final ExportService sutMedia = ExportService(
+          canvasRepository: mockCanvasRepo,
+          imageCacheService: mockImageCache,
+          database: mockDatabase,
+        );
+
+        const TvShow testTvShow = TvShow(tmdbId: 1399, title: 'GoT');
+
+        final Collection collection = createTestCollection();
+        final List<CollectionItem> items = <CollectionItem>[
+          createTestItem(
+            id: 1,
+            mediaType: MediaType.tvShow,
+            externalId: 1399,
+            platformId: null,
+            tvShow: testTvShow,
+          ),
+        ];
+
+        final XcollFile xcoll =
+            await sutMedia.createFullExport(collection, items, 1);
+
+        expect(xcoll.media.containsKey('tv_seasons'), isTrue);
+        final List<dynamic> seasons =
+            xcoll.media['tv_seasons'] as List<dynamic>;
+        expect(seasons.length, equals(2));
+        final Map<String, dynamic> s1 =
+            seasons[0] as Map<String, dynamic>;
+        expect(s1['tmdb_show_id'], equals(1399));
+        expect(s1['season_number'], equals(1));
+        expect(s1['name'], equals('Season 1'));
+        expect(s1['episode_count'], equals(10));
+      });
+
+      test('не должен включить tv_seasons когда сезонов нет', () async {
+        when(() => mockDatabase.getTvSeasonsByShowId(any()))
+            .thenAnswer((_) async => <TvSeason>[]);
+
+        final ExportService sutMedia = ExportService(
+          canvasRepository: mockCanvasRepo,
+          imageCacheService: mockImageCache,
+          database: mockDatabase,
+        );
+
+        const TvShow testTvShow = TvShow(tmdbId: 1399, title: 'GoT');
+
+        final Collection collection = createTestCollection();
+        final List<CollectionItem> items = <CollectionItem>[
+          createTestItem(
+            id: 1,
+            mediaType: MediaType.tvShow,
+            externalId: 1399,
+            platformId: null,
+            tvShow: testTvShow,
+          ),
+        ];
+
+        final XcollFile xcoll =
+            await sutMedia.createFullExport(collection, items, 1);
+
+        expect(xcoll.media.containsKey('tv_seasons'), isFalse);
+      });
+
+      test('должен включить tv_seasons для animation tvShow', () async {
+        const List<TvSeason> testSeasons = <TvSeason>[
+          TvSeason(
+            tmdbShowId: 999,
+            seasonNumber: 1,
+            name: 'Season 1',
+            episodeCount: 26,
+          ),
+        ];
+
+        when(() => mockDatabase.getTvSeasonsByShowId(999))
+            .thenAnswer((_) async => testSeasons);
+
+        final ExportService sutMedia = ExportService(
+          canvasRepository: mockCanvasRepo,
+          imageCacheService: mockImageCache,
+          database: mockDatabase,
+        );
+
+        const TvShow animTvShow = TvShow(tmdbId: 999, title: 'Anime');
+
+        final Collection collection = createTestCollection();
+        final List<CollectionItem> items = <CollectionItem>[
+          createTestItem(
+            id: 1,
+            mediaType: MediaType.animation,
+            externalId: 999,
+            platformId: AnimationSource.tvShow,
+            tvShow: animTvShow,
+          ),
+        ];
+
+        final XcollFile xcoll =
+            await sutMedia.createFullExport(collection, items, 1);
+
+        expect(xcoll.media.containsKey('tv_seasons'), isTrue);
+        final List<dynamic> seasons =
+            xcoll.media['tv_seasons'] as List<dynamic>;
+        expect(seasons.length, equals(1));
+        final Map<String, dynamic> s1 =
+            seasons[0] as Map<String, dynamic>;
+        expect(s1['tmdb_show_id'], equals(999));
+      });
+
+      test('не должен запрашивать сезоны для animation movie', () async {
+        final ExportService sutMedia = ExportService(
+          canvasRepository: mockCanvasRepo,
+          imageCacheService: mockImageCache,
+          database: mockDatabase,
+        );
+
+        const Movie animMovie = Movie(tmdbId: 888, title: 'Animated Film');
+
+        final Collection collection = createTestCollection();
+        final List<CollectionItem> items = <CollectionItem>[
+          createTestItem(
+            id: 1,
+            mediaType: MediaType.animation,
+            externalId: 888,
+            platformId: AnimationSource.movie,
+            movie: animMovie,
+          ),
+        ];
+
+        final XcollFile xcoll =
+            await sutMedia.createFullExport(collection, items, 1);
+
+        expect(xcoll.media.containsKey('tv_seasons'), isFalse);
+        verifyNever(() => mockDatabase.getTvSeasonsByShowId(any()));
+      });
+
+      test('без database должен пропустить tv_seasons', () async {
+        final ExportService sutMedia = ExportService(
+          canvasRepository: mockCanvasRepo,
+          imageCacheService: mockImageCache,
+        );
+
+        const TvShow testTvShow = TvShow(tmdbId: 1399, title: 'GoT');
+
+        final Collection collection = createTestCollection();
+        final List<CollectionItem> items = <CollectionItem>[
+          createTestItem(
+            id: 1,
+            mediaType: MediaType.tvShow,
+            externalId: 1399,
+            platformId: null,
+            tvShow: testTvShow,
+          ),
+        ];
+
+        final XcollFile xcoll =
+            await sutMedia.createFullExport(collection, items, 1);
+
+        expect(xcoll.media.containsKey('tv_seasons'), isFalse);
+      });
+
+      test('должен дедуплицировать tvShow ID при сборе сезонов', () async {
+        const List<TvSeason> testSeasons = <TvSeason>[
+          TvSeason(tmdbShowId: 1399, seasonNumber: 1, name: 'S1'),
+        ];
+
+        when(() => mockDatabase.getTvSeasonsByShowId(1399))
+            .thenAnswer((_) async => testSeasons);
+
+        final ExportService sutMedia = ExportService(
+          canvasRepository: mockCanvasRepo,
+          imageCacheService: mockImageCache,
+          database: mockDatabase,
+        );
+
+        const TvShow testTvShow = TvShow(tmdbId: 1399, title: 'GoT');
+
+        final Collection collection = createTestCollection();
+        // Два элемента с одинаковым tvShow ID
+        final List<CollectionItem> items = <CollectionItem>[
+          createTestItem(
+            id: 1,
+            mediaType: MediaType.tvShow,
+            externalId: 1399,
+            platformId: null,
+            tvShow: testTvShow,
+          ),
+          createTestItem(
+            id: 2,
+            mediaType: MediaType.animation,
+            externalId: 1399,
+            platformId: AnimationSource.tvShow,
+            tvShow: testTvShow,
+          ),
+        ];
+
+        final XcollFile xcoll =
+            await sutMedia.createFullExport(collection, items, 1);
+
+        // getTvSeasonsByShowId вызван только 1 раз (дедупликация)
+        verify(() => mockDatabase.getTvSeasonsByShowId(1399)).called(1);
+        final List<dynamic> seasons =
+            xcoll.media['tv_seasons'] as List<dynamic>;
+        expect(seasons.length, equals(1));
+      });
+    });
+
+    group('tv_episodes в full export', () {
+      late MockCanvasRepository mockCanvasRepo;
+      late MockImageCacheService mockImageCache;
+      late MockDatabaseService mockDatabase;
+
+      setUp(() {
+        mockCanvasRepo = MockCanvasRepository();
+        mockImageCache = MockImageCacheService();
+        mockDatabase = MockDatabaseService();
+
+        when(() => mockCanvasRepo.getViewport(any()))
+            .thenAnswer((_) async => null);
+        when(() => mockCanvasRepo.getItems(any()))
+            .thenAnswer((_) async => <CanvasItem>[]);
+        when(() => mockCanvasRepo.getConnections(any()))
+            .thenAnswer((_) async => <CanvasConnection>[]);
+        when(() => mockCanvasRepo.getGameCanvasItems(any()))
+            .thenAnswer((_) async => <CanvasItem>[]);
+        when(() => mockImageCache.readImageBytes(any(), any()))
+            .thenAnswer((_) async => null);
+        when(() => mockDatabase.getTvSeasonsByShowId(any()))
+            .thenAnswer((_) async => <TvSeason>[]);
+        when(() => mockDatabase.getEpisodesByShowId(any()))
+            .thenAnswer((_) async => <TvEpisode>[]);
+      });
+
+      test('должен включить tv_episodes для tvShow элементов', () async {
+        const List<TvEpisode> testEpisodes = <TvEpisode>[
+          TvEpisode(
+            tmdbShowId: 1399,
+            seasonNumber: 1,
+            episodeNumber: 1,
+            name: 'Winter Is Coming',
+            overview: 'First episode',
+            airDate: '2011-04-17',
+            runtime: 62,
+          ),
+          TvEpisode(
+            tmdbShowId: 1399,
+            seasonNumber: 1,
+            episodeNumber: 2,
+            name: 'The Kingsroad',
+            runtime: 56,
+          ),
+        ];
+
+        when(() => mockDatabase.getEpisodesByShowId(1399))
+            .thenAnswer((_) async => testEpisodes);
+
+        final ExportService sut = ExportService(
+          canvasRepository: mockCanvasRepo,
+          imageCacheService: mockImageCache,
+          database: mockDatabase,
+        );
+
+        const TvShow testTvShow = TvShow(tmdbId: 1399, title: 'GoT');
+
+        final Collection collection = createTestCollection();
+        final List<CollectionItem> items = <CollectionItem>[
+          createTestItem(
+            id: 1,
+            mediaType: MediaType.tvShow,
+            externalId: 1399,
+            platformId: null,
+            tvShow: testTvShow,
+          ),
+        ];
+
+        final XcollFile xcoll =
+            await sut.createFullExport(collection, items, 1);
+
+        expect(xcoll.media.containsKey('tv_episodes'), isTrue);
+        final List<dynamic> episodes =
+            xcoll.media['tv_episodes'] as List<dynamic>;
+        expect(episodes.length, equals(2));
+        final Map<String, dynamic> ep1 =
+            episodes[0] as Map<String, dynamic>;
+        expect(ep1['tmdb_show_id'], equals(1399));
+        expect(ep1['episode_number'], equals(1));
+        expect(ep1['name'], equals('Winter Is Coming'));
+        expect(ep1.containsKey('cached_at'), isFalse);
+      });
+
+      test('не должен включить tv_episodes когда эпизодов нет', () async {
+        final ExportService sut = ExportService(
+          canvasRepository: mockCanvasRepo,
+          imageCacheService: mockImageCache,
+          database: mockDatabase,
+        );
+
+        const TvShow testTvShow = TvShow(tmdbId: 1399, title: 'GoT');
+
+        final Collection collection = createTestCollection();
+        final List<CollectionItem> items = <CollectionItem>[
+          createTestItem(
+            id: 1,
+            mediaType: MediaType.tvShow,
+            externalId: 1399,
+            platformId: null,
+            tvShow: testTvShow,
+          ),
+        ];
+
+        final XcollFile xcoll =
+            await sut.createFullExport(collection, items, 1);
+
+        expect(xcoll.media.containsKey('tv_episodes'), isFalse);
+      });
+
+      test('должен дедуплицировать запрос эпизодов по tvShow ID', () async {
+        const List<TvEpisode> testEpisodes = <TvEpisode>[
+          TvEpisode(
+            tmdbShowId: 1399,
+            seasonNumber: 1,
+            episodeNumber: 1,
+            name: 'Ep1',
+          ),
+        ];
+
+        when(() => mockDatabase.getEpisodesByShowId(1399))
+            .thenAnswer((_) async => testEpisodes);
+
+        final ExportService sut = ExportService(
+          canvasRepository: mockCanvasRepo,
+          imageCacheService: mockImageCache,
+          database: mockDatabase,
+        );
+
+        const TvShow testTvShow = TvShow(tmdbId: 1399, title: 'GoT');
+
+        final Collection collection = createTestCollection();
+        final List<CollectionItem> items = <CollectionItem>[
+          createTestItem(
+            id: 1,
+            mediaType: MediaType.tvShow,
+            externalId: 1399,
+            platformId: null,
+            tvShow: testTvShow,
+          ),
+          createTestItem(
+            id: 2,
+            mediaType: MediaType.animation,
+            externalId: 1399,
+            platformId: AnimationSource.tvShow,
+            tvShow: testTvShow,
+          ),
+        ];
+
+        final XcollFile xcoll =
+            await sut.createFullExport(collection, items, 1);
+
+        // getEpisodesByShowId вызван только 1 раз (дедупликация через Set)
+        verify(() => mockDatabase.getEpisodesByShowId(1399)).called(1);
+        expect(xcoll.media.containsKey('tv_episodes'), isTrue);
       });
     });
   });

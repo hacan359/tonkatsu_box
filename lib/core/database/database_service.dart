@@ -877,6 +877,18 @@ class DatabaseService {
 
   // ==================== TV Episodes Cache ====================
 
+  /// Возвращает все эпизоды сериала из кеша.
+  Future<List<TvEpisode>> getEpisodesByShowId(int showId) async {
+    final Database db = await database;
+    final List<Map<String, dynamic>> rows = await db.query(
+      'tv_episodes_cache',
+      where: 'tmdb_show_id = ?',
+      whereArgs: <Object?>[showId],
+      orderBy: 'season_number ASC, episode_number ASC',
+    );
+    return rows.map(TvEpisode.fromDb).toList();
+  }
+
   /// Возвращает эпизоды сезона сериала из кеша.
   Future<List<TvEpisode>> getEpisodesByShowAndSeason(
     int showId,

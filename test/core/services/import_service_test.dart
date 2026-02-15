@@ -19,6 +19,8 @@ import 'package:xerabora/shared/models/collection.dart';
 import 'package:xerabora/shared/models/game.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/movie.dart';
+import 'package:xerabora/shared/models/tv_episode.dart';
+import 'package:xerabora/shared/models/tv_season.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
 
 class MockCollectionRepository extends Mock implements CollectionRepository {}
@@ -43,6 +45,8 @@ void main() {
     registerFallbackValue(const <Game>[]);
     registerFallbackValue(const <Movie>[]);
     registerFallbackValue(const <TvShow>[]);
+    registerFallbackValue(const <TvSeason>[]);
+    registerFallbackValue(const <TvEpisode>[]);
     registerFallbackValue(CollectionType.own);
     registerFallbackValue(MediaType.game);
     registerFallbackValue(const CanvasViewport(collectionId: 0));
@@ -1980,6 +1984,8 @@ void main() {
         when(() => mockDb.upsertGames(any())).thenAnswer((_) async {});
         when(() => mockDb.upsertMovies(any())).thenAnswer((_) async {});
         when(() => mockDb.upsertTvShows(any())).thenAnswer((_) async {});
+        when(() => mockDb.upsertTvSeasons(any())).thenAnswer((_) async {});
+        when(() => mockDb.upsertEpisodes(any())).thenAnswer((_) async {});
         when(() => mockImageCache.saveImageBytes(any(), any(), any()))
             .thenAnswer((_) async => true);
       }
@@ -2210,6 +2216,169 @@ void main() {
         verify(() => mockDb.upsertGames(any())).called(1);
         verifyNever(() => mockDb.upsertMovies(any()));
         verifyNever(() => mockDb.upsertTvShows(any()));
+      });
+
+      test('должен восстановить tv_seasons из embedded media', () async {
+        setupDefaultMocksForMedia();
+
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.full,
+          name: 'With Seasons',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'tv_show',
+              'external_id': 1399,
+            },
+          ],
+          media: const <String, dynamic>{
+            'tv_shows': <Map<String, dynamic>>[
+              <String, dynamic>{
+                'tmdb_id': 1399,
+                'title': 'GoT',
+                'total_seasons': 8,
+              },
+            ],
+            'tv_seasons': <Map<String, dynamic>>[
+              <String, dynamic>{
+                'tmdb_show_id': 1399,
+                'season_number': 1,
+                'name': 'Season 1',
+                'episode_count': 10,
+                'air_date': '2011-04-17',
+              },
+              <String, dynamic>{
+                'tmdb_show_id': 1399,
+                'season_number': 2,
+                'name': 'Season 2',
+                'episode_count': 10,
+              },
+            ],
+          },
+        );
+
+        final ImportResult result = await sutMedia.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        verify(() => mockDb.upsertTvShows(any())).called(1);
+        verify(() => mockDb.upsertTvSeasons(any())).called(1);
+      });
+
+      test('не должен падать когда tv_seasons отсутствует в media', () async {
+        setupDefaultMocksForMedia();
+
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.full,
+          name: 'No Seasons',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'tv_show',
+              'external_id': 1399,
+            },
+          ],
+          media: const <String, dynamic>{
+            'tv_shows': <Map<String, dynamic>>[
+              <String, dynamic>{
+                'tmdb_id': 1399,
+                'title': 'GoT',
+              },
+            ],
+            // tv_seasons отсутствует
+          },
+        );
+
+        final ImportResult result = await sutMedia.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        verify(() => mockDb.upsertTvShows(any())).called(1);
+        verifyNever(() => mockDb.upsertTvSeasons(any()));
+      });
+
+      test('должен восстановить tv_episodes из embedded media', () async {
+        setupDefaultMocksForMedia();
+
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.full,
+          name: 'With Episodes',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'tv_show',
+              'external_id': 1399,
+            },
+          ],
+          media: const <String, dynamic>{
+            'tv_shows': <Map<String, dynamic>>[
+              <String, dynamic>{
+                'tmdb_id': 1399,
+                'title': 'GoT',
+              },
+            ],
+            'tv_episodes': <Map<String, dynamic>>[
+              <String, dynamic>{
+                'tmdb_show_id': 1399,
+                'season_number': 1,
+                'episode_number': 1,
+                'name': 'Winter Is Coming',
+                'overview': 'First episode',
+                'air_date': '2011-04-17',
+                'runtime': 62,
+              },
+              <String, dynamic>{
+                'tmdb_show_id': 1399,
+                'season_number': 1,
+                'episode_number': 2,
+                'name': 'The Kingsroad',
+                'runtime': 56,
+              },
+            ],
+          },
+        );
+
+        final ImportResult result = await sutMedia.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        verify(() => mockDb.upsertTvShows(any())).called(1);
+        verify(() => mockDb.upsertEpisodes(any())).called(1);
+      });
+
+      test('не должен падать когда tv_episodes отсутствует в media', () async {
+        setupDefaultMocksForMedia();
+
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.full,
+          name: 'No Episodes',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'tv_show',
+              'external_id': 1399,
+            },
+          ],
+          media: const <String, dynamic>{
+            'tv_shows': <Map<String, dynamic>>[
+              <String, dynamic>{
+                'tmdb_id': 1399,
+                'title': 'GoT',
+              },
+            ],
+          },
+        );
+
+        final ImportResult result = await sutMedia.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        verify(() => mockDb.upsertTvShows(any())).called(1);
+        verifyNever(() => mockDb.upsertEpisodes(any()));
       });
     });
   });

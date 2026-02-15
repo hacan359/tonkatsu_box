@@ -12,6 +12,9 @@ import '../../shared/models/canvas_viewport.dart';
 import '../../shared/models/collection.dart';
 import '../../shared/models/collection_item.dart';
 import '../../shared/models/media_type.dart';
+import '../../shared/models/tv_episode.dart';
+import '../../shared/models/tv_season.dart';
+import '../database/database_service.dart';
 import 'image_cache_service.dart';
 import 'xcoll_file.dart';
 
@@ -21,6 +24,7 @@ final Provider<ExportService> exportServiceProvider =
   return ExportService(
     canvasRepository: ref.watch(canvasRepositoryProvider),
     imageCacheService: ref.watch(imageCacheServiceProvider),
+    database: ref.watch(databaseServiceProvider),
   );
 });
 
@@ -70,14 +74,18 @@ class ExportService {
   ///
   /// [canvasRepository] нужен для full export (.xcollx) с canvas-данными.
   /// [imageCacheService] нужен для full export с обложками.
+  /// [database] нужен для full export с данными сезонов.
   ExportService({
     CanvasRepository? canvasRepository,
     ImageCacheService? imageCacheService,
+    DatabaseService? database,
   })  : _canvasRepository = canvasRepository,
-        _imageCacheService = imageCacheService;
+        _imageCacheService = imageCacheService,
+        _database = database;
 
   final CanvasRepository? _canvasRepository;
   final ImageCacheService? _imageCacheService;
+  final DatabaseService? _database;
 
   // ==================== v2 Light (.xcoll) ====================
 
@@ -141,8 +149,8 @@ class ExportService {
       images.addAll(canvasImages);
     }
 
-    // Collect full media data for offline import
-    final Map<String, dynamic> media = _collectMediaData(items);
+    // Collect full media data for offline import (includes tv_seasons)
+    final Map<String, dynamic> media = await _collectMediaData(items);
 
     return XcollFile(
       version: xcollFormatVersion,
@@ -329,16 +337,20 @@ class ExportService {
 
   // ==================== Media Data ====================
 
-  /// Собирает полные данные Game/Movie/TvShow из joined полей элементов.
+  /// Собирает полные данные Game/Movie/TvShow/TvSeason/TvEpisode из элементов.
   ///
   /// Используется для офлайн-импорта: при наличии этих данных
   /// импорт не требует обращения к IGDB/TMDB API.
-  Map<String, dynamic> _collectMediaData(List<CollectionItem> items) {
+  /// Сезоны и эпизоды загружаются из кэша БД для всех tvShow и animation-tvShow.
+  Future<Map<String, dynamic>> _collectMediaData(
+    List<CollectionItem> items,
+  ) async {
     final Map<int, Map<String, dynamic>> games = <int, Map<String, dynamic>>{};
     final Map<int, Map<String, dynamic>> movies =
         <int, Map<String, dynamic>>{};
     final Map<int, Map<String, dynamic>> tvShows =
         <int, Map<String, dynamic>>{};
+    final Set<int> tvShowIds = <int>{};
 
     for (final CollectionItem item in items) {
       switch (item.mediaType) {
@@ -360,6 +372,7 @@ class ExportService {
             data.remove('cached_at');
             tvShows[item.externalId] = data;
           }
+          tvShowIds.add(item.externalId);
         case MediaType.animation:
           if (item.platformId == AnimationSource.tvShow) {
             if (item.tvShow != null && !tvShows.containsKey(item.externalId)) {
@@ -367,6 +380,7 @@ class ExportService {
               data.remove('cached_at');
               tvShows[item.externalId] = data;
             }
+            tvShowIds.add(item.externalId);
           } else {
             if (item.movie != null && !movies.containsKey(item.externalId)) {
               final Map<String, dynamic> data = item.movie!.toDb();
@@ -377,17 +391,42 @@ class ExportService {
       }
     }
 
-    if (games.isEmpty && movies.isEmpty && tvShows.isEmpty) {
+    // Собираем сезоны и эпизоды из кэша БД (параллельно для каждого showId)
+    final List<Map<String, dynamic>> allSeasons = <Map<String, dynamic>>[];
+    final List<Map<String, dynamic>> allEpisodes = <Map<String, dynamic>>[];
+    if (_database != null && tvShowIds.isNotEmpty) {
+      for (final int showId in tvShowIds) {
+        final List<Object> results = await Future.wait(<Future<Object>>[
+          _database.getTvSeasonsByShowId(showId),
+          _database.getEpisodesByShowId(showId),
+        ]);
+        final List<TvSeason> seasons = results[0] as List<TvSeason>;
+        final List<TvEpisode> episodes = results[1] as List<TvEpisode>;
+        for (final TvSeason season in seasons) {
+          allSeasons.add(season.toDb());
+        }
+        for (final TvEpisode episode in episodes) {
+          final Map<String, dynamic> data = episode.toDb();
+          data.remove('cached_at');
+          allEpisodes.add(data);
+        }
+      }
+    }
+
+    if (games.isEmpty &&
+        movies.isEmpty &&
+        tvShows.isEmpty &&
+        allSeasons.isEmpty &&
+        allEpisodes.isEmpty) {
       return const <String, dynamic>{};
     }
 
     return <String, dynamic>{
-      if (games.isNotEmpty)
-        'games': games.values.toList(),
-      if (movies.isNotEmpty)
-        'movies': movies.values.toList(),
-      if (tvShows.isNotEmpty)
-        'tv_shows': tvShows.values.toList(),
+      if (games.isNotEmpty) 'games': games.values.toList(),
+      if (movies.isNotEmpty) 'movies': movies.values.toList(),
+      if (tvShows.isNotEmpty) 'tv_shows': tvShows.values.toList(),
+      if (allSeasons.isNotEmpty) 'tv_seasons': allSeasons,
+      if (allEpisodes.isNotEmpty) 'tv_episodes': allEpisodes,
     };
   }
 

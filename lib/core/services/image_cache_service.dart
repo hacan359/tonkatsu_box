@@ -141,6 +141,17 @@ class ImageCacheService {
     return File(path).existsSync();
   }
 
+  /// Удаляет изображение из кэша.
+  ///
+  /// Безопасно обрабатывает блокировку файла на Windows.
+  Future<void> deleteImage(ImageType type, String imageId) async {
+    final String path = await getLocalImagePath(type, imageId);
+    final File file = File(path);
+    if (file.existsSync()) {
+      await _tryDelete(file);
+    }
+  }
+
   /// Возвращает результат получения изображения.
   ///
   /// Логика:

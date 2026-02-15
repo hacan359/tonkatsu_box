@@ -334,7 +334,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                 _buildHeader(statsAsync),
 
                 // Фильтры (тип + поиск)
-                _buildFilterBar(),
+                _buildFilterBar(statsAsync),
 
                 // Селектор сортировки
                 _buildSortSelector(),
@@ -473,7 +473,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     return result;
   }
 
-  Widget _buildFilterBar() {
+  Widget _buildFilterBar(AsyncValue<CollectionStats> statsAsync) {
+    final CollectionStats? stats = statsAsync.valueOrNull;
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.md,
@@ -488,15 +489,35 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: <Widget>[
-                _buildFilterChip(label: 'All', type: null),
+                _buildFilterChip(
+                  label: 'All',
+                  type: null,
+                  count: stats?.total,
+                ),
                 const SizedBox(width: AppSpacing.sm),
-                _buildFilterChip(label: 'Games', type: MediaType.game),
+                _buildFilterChip(
+                  label: 'Games',
+                  type: MediaType.game,
+                  count: stats?.gameCount,
+                ),
                 const SizedBox(width: AppSpacing.sm),
-                _buildFilterChip(label: 'Movies', type: MediaType.movie),
+                _buildFilterChip(
+                  label: 'Movies',
+                  type: MediaType.movie,
+                  count: stats?.movieCount,
+                ),
                 const SizedBox(width: AppSpacing.sm),
-                _buildFilterChip(label: 'TV Shows', type: MediaType.tvShow),
+                _buildFilterChip(
+                  label: 'TV Shows',
+                  type: MediaType.tvShow,
+                  count: stats?.tvShowCount,
+                ),
                 const SizedBox(width: AppSpacing.sm),
-                _buildFilterChip(label: 'Animation', type: MediaType.animation),
+                _buildFilterChip(
+                  label: 'Animation',
+                  type: MediaType.animation,
+                  count: stats?.animationCount,
+                ),
               ],
             ),
           ),
@@ -552,11 +573,14 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   Widget _buildFilterChip({
     required String label,
     required MediaType? type,
+    int? count,
   }) {
     final bool selected = _filterType == type;
+    final String displayLabel =
+        count != null && count > 0 ? '$label ($count)' : label;
     return ChoiceChip(
       label: Text(
-        label,
+        displayLabel,
         style: AppTypography.bodySmall.copyWith(
           color: selected ? AppColors.background : AppColors.textSecondary,
         ),
@@ -1281,18 +1305,11 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       return;
     }
 
-    // Проверяем наличие canvas данных для выбора формата
-    final CanvasRepository canvasRepo = ref.read(canvasRepositoryProvider);
-    final bool hasCanvas =
-        await canvasRepo.hasCanvasItems(widget.collectionId);
-
-    ExportFormat format = ExportFormat.light;
-
-    if (hasCanvas && mounted) {
-      final ExportFormat? chosen = await _showExportFormatDialog();
-      if (chosen == null) return; // Отмена
-      format = chosen;
-    }
+    // Выбор формата экспорта
+    if (!mounted) return;
+    final ExportFormat? chosen = await _showExportFormatDialog();
+    if (chosen == null) return; // Отмена
+    final ExportFormat format = chosen;
 
     // Показываем индикатор
     if (mounted) {
@@ -1353,9 +1370,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            const Text(
-              'This collection has canvas data. Choose export format:',
-            ),
+            const Text('Choose export format:'),
             const SizedBox(height: 16),
             ListTile(
               leading: const Icon(Icons.description_outlined),
@@ -1367,7 +1382,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             ListTile(
               leading: const Icon(Icons.folder_zip_outlined),
               title: const Text('Full (.xcollx)'),
-              subtitle: const Text('Items + canvas + images'),
+              subtitle: const Text(
+                'Items + canvas + covers + media (offline)',
+              ),
               onTap: () =>
                   Navigator.of(dialogContext).pop(ExportFormat.full),
             ),
@@ -1618,6 +1635,9 @@ class _CollectionItemTile extends StatelessWidget {
       case MediaType.tvShow:
         return ImageType.tvShowPoster;
       case MediaType.animation:
+        if (item.platformId == AnimationSource.tvShow) {
+          return ImageType.tvShowPoster;
+        }
         return ImageType.moviePoster;
     }
   }

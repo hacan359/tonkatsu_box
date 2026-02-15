@@ -90,6 +90,9 @@ class CanvasMediaCard extends ConsumerWidget {
       case CanvasItemType.tvShow:
         return ImageType.tvShowPoster;
       case CanvasItemType.animation:
+        if (item.tvShow != null) {
+          return ImageType.tvShowPoster;
+        }
         return ImageType.moviePoster;
       case CanvasItemType.game:
       case CanvasItemType.text:

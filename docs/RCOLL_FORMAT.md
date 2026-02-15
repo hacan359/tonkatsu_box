@@ -105,6 +105,12 @@ Includes everything from light export plus `canvas`, `images`, and `media`:
     ],
     "tv_shows": [
       { "tmdb_id": 1399, "title": "TV Show", "total_seasons": 8, "total_episodes": 73, "genres": "[\"Drama\"]", ... }
+    ],
+    "tv_seasons": [
+      { "tmdb_show_id": 1399, "season_number": 1, "name": "Season 1", "episode_count": 10, "poster_url": "https://image.tmdb.org/t/p/w500/...", "air_date": "2011-04-17" }
+    ],
+    "tv_episodes": [
+      { "tmdb_show_id": 1399, "season_number": 1, "episode_number": 1, "name": "Winter Is Coming", "overview": "...", "air_date": "2011-04-17", "still_url": "https://image.tmdb.org/t/p/w300/...", "runtime": 62 }
     ]
   }
 }
@@ -123,7 +129,7 @@ Includes everything from light export plus `canvas`, `images`, and `media`:
 | items | array | yes | List of collection items |
 | canvas | object | no | Collection-level canvas (full only) |
 | images | object | no | Base64 cover images (full only) |
-| media | object | no | Embedded Game/Movie/TvShow data for offline import (full only) |
+| media | object | no | Embedded Game/Movie/TvShow/TvSeason/TvEpisode data for offline import (full only) |
 
 ### Item Object
 
@@ -159,17 +165,19 @@ Values are base64-encoded PNG image data.
 
 ### Media Object
 
-Contains full Game/Movie/TvShow data for offline import. Each entry uses the same format as the corresponding model's `toDb()` output (without `cached_at`).
+Contains full Game/Movie/TvShow/TvSeason/TvEpisode data for offline import. Each entry uses the same format as the corresponding model's `toDb()` output (without `cached_at`).
 
 | Field | Type | Description |
 |-------|------|-------------|
 | games | array | Game objects from IGDB (id, name, summary, cover_url, genres, rating, ...) |
 | movies | array | Movie objects from TMDB (tmdb_id, title, overview, poster_url, genres, runtime, ...) |
 | tv_shows | array | TvShow objects from TMDB (tmdb_id, title, total_seasons, total_episodes, genres, ...) |
+| tv_seasons | array | TvSeason objects from TMDB (tmdb_show_id, season_number, name, episode_count, poster_url, air_date) |
+| tv_episodes | array | TvEpisode objects from TMDB (tmdb_show_id, season_number, episode_number, name, overview, air_date, still_url, runtime) |
 
-All three arrays are optional — only non-empty categories are included. Animation items are stored in `movies` (animated films) or `tv_shows` (animated series) based on their `AnimationSource`.
+All five arrays are optional — only non-empty categories are included. Animation items are stored in `movies` (animated films) or `tv_shows` (animated series) based on their `AnimationSource`. Seasons are preloaded when a TV show or animation series is added to a collection. Episodes are included from the local cache for each TV show in the collection.
 
-When `media` is present during import, data is restored directly from the file via `fromDb()` — no API calls to IGDB/TMDB are needed. When `media` is absent (light export or older full exports), the app fetches data from APIs as before.
+When `media` is present during import, data is restored directly from the file via `fromDb()` — no API calls to IGDB/TMDB are needed. TV seasons and episodes are also restored if present. When `media` is absent (light export or older full exports), the app fetches data from APIs as before.
 
 ---
 
@@ -181,7 +189,7 @@ When `media` is present during import, data is restored directly from the file v
 3. Fetches full game/movie/TV data from IGDB/TMDB using IDs
 
 ### v2 Full (`.xcollx`)
-1. If `media` section is present — restores Game/Movie/TvShow data from embedded data (offline)
+1. If `media` section is present — restores Game/Movie/TvShow/TvSeason/TvEpisode data from embedded data (offline)
 2. If `media` section is absent — fetches data from IGDB/TMDB APIs (online, same as light import)
 3. Creates collection and inserts items with metadata
 4. Restores collection-level canvas (viewport, items, connections)

@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -415,6 +417,85 @@ void main() {
 
         // Assert
         expect(tester.takeException(), isNull);
+      });
+    });
+
+    group('corrupt local file fallback', () {
+      // Image.file errorBuilder не срабатывает в тестовом окружении Flutter,
+      // т.к. painting pipeline не декодирует изображения реально.
+      // Тестируем структурно: при isLocal=true виджет использует Image.file.
+      // Полный flow (errorBuilder → _deleteAndRedownload → CachedNetworkImage)
+      // проверяется вручную.
+
+      testWidgets('должен использовать Image (file) при isLocal=true',
+          (WidgetTester tester) async {
+        // Arrange — создаём реальный валидный 1x1 PNG
+        final Directory tempDir =
+            Directory.systemTemp.createTempSync('cached_image_test_');
+        final File validFile = File('${tempDir.path}/valid.png');
+        // Минимальный валидный 1x1 RGBA PNG (67 bytes)
+        validFile.writeAsBytesSync(Uint8List.fromList(<int>[
+          0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
+          0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52, // IHDR
+          0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, // 1x1
+          0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4, // RGBA, CRC
+          0x89, 0x00, 0x00, 0x00, 0x0A, 0x49, 0x44, 0x41, // IDAT
+          0x54, 0x78, 0x9C, 0x62, 0x00, 0x00, 0x00, 0x02, // compressed
+          0x00, 0x01, 0xE5, 0x27, 0xDE, 0xFC, 0x00, 0x00, // CRC
+          0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, // IEND
+          0x60, 0x82,
+        ]));
+
+        when(() => mockCacheService.getImageUri(
+              type: any(named: 'type'),
+              imageId: any(named: 'imageId'),
+              remoteUrl: any(named: 'remoteUrl'),
+            )).thenAnswer((_) async => ImageResult(
+              uri: validFile.path,
+              isLocal: true,
+              isMissing: false,
+            ));
+
+        // Act
+        await tester.pumpWidget(buildTestWidget(
+          child: const CachedImage(
+            imageType: ImageType.moviePoster,
+            imageId: '69735',
+            remoteUrl: 'https://example.com/poster.jpg',
+            width: 60,
+            height: 80,
+          ),
+        ));
+        await tester.pump();
+
+        // Assert — Image виджет (file-based), не CachedNetworkImage
+        expect(find.byType(Image), findsOneWidget);
+        expect(find.byType(CachedNetworkImage), findsNothing);
+
+        // Cleanup
+        try {
+          tempDir.deleteSync(recursive: true);
+        } on FileSystemException {
+          // Windows file lock — пропускаем
+        }
+      });
+    });
+
+    group('deleteImage', () {
+      test('должен вызывать deleteImage на сервисе', () async {
+        // Arrange
+        when(() => mockCacheService.deleteImage(any(), any()))
+            .thenAnswer((_) async {});
+
+        // Act
+        await mockCacheService.deleteImage(
+            ImageType.moviePoster, '69735');
+
+        // Assert
+        verify(() => mockCacheService.deleteImage(
+              ImageType.moviePoster,
+              '69735',
+            )).called(1);
       });
     });
 

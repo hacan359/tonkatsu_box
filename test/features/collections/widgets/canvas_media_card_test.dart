@@ -377,6 +377,130 @@ void main() {
       );
     });
 
+    group('Карточка анимации', () {
+      CanvasItem createAnimationItem({
+        Movie? movie,
+        TvShow? tvShow,
+      }) {
+        return CanvasItem(
+          id: 3,
+          collectionId: 10,
+          itemType: CanvasItemType.animation,
+          itemRefId: 400,
+          x: 0,
+          y: 0,
+          width: 160,
+          height: 220,
+          zIndex: 0,
+          createdAt: testDate,
+          movie: movie,
+          tvShow: tvShow,
+        );
+      }
+
+      testWidgets(
+        'animation movie использует ImageType.moviePoster для кэша',
+        (WidgetTester tester) async {
+          final CanvasItem item = createAnimationItem(
+            movie: const Movie(
+              tmdbId: 400,
+              title: 'Spirited Away',
+              posterUrl: 'https://image.tmdb.org/t/p/w500/spirited.jpg',
+            ),
+          );
+
+          await tester.pumpWidget(buildTestWidget(item));
+          await tester.pump();
+
+          final CachedImage cachedImage = tester.widget<CachedImage>(
+            find.byType(CachedImage),
+          );
+          expect(cachedImage.imageType, ImageType.moviePoster);
+          expect(cachedImage.imageId, '400');
+        },
+      );
+
+      testWidgets(
+        'animation tvShow использует ImageType.tvShowPoster для кэша',
+        (WidgetTester tester) async {
+          final CanvasItem item = createAnimationItem(
+            tvShow: const TvShow(
+              tmdbId: 500,
+              title: 'Avatar: The Last Airbender',
+              posterUrl: 'https://image.tmdb.org/t/p/w500/avatar.jpg',
+            ),
+          );
+
+          await tester.pumpWidget(buildTestWidget(item));
+          await tester.pump();
+
+          final CachedImage cachedImage = tester.widget<CachedImage>(
+            find.byType(CachedImage),
+          );
+          expect(cachedImage.imageType, ImageType.tvShowPoster);
+          expect(cachedImage.imageId, '500');
+        },
+      );
+
+      testWidgets(
+        'отображает название анимации когда movie задан',
+        (WidgetTester tester) async {
+          final CanvasItem item = createAnimationItem(
+            movie: const Movie(
+              tmdbId: 400,
+              title: 'Spirited Away',
+            ),
+          );
+
+          await tester.pumpWidget(buildTestWidget(item));
+
+          expect(find.text('Spirited Away'), findsOneWidget);
+        },
+      );
+
+      testWidgets(
+        'отображает название анимации когда tvShow задан',
+        (WidgetTester tester) async {
+          final CanvasItem item = createAnimationItem(
+            tvShow: const TvShow(
+              tmdbId: 500,
+              title: 'Avatar: The Last Airbender',
+            ),
+          );
+
+          await tester.pumpWidget(buildTestWidget(item));
+
+          expect(find.text('Avatar: The Last Airbender'), findsOneWidget);
+        },
+      );
+
+      testWidgets(
+        'отображает "Unknown Animation" когда нет данных',
+        (WidgetTester tester) async {
+          final CanvasItem item = createAnimationItem();
+
+          await tester.pumpWidget(buildTestWidget(item));
+
+          expect(find.text('Unknown Animation'), findsOneWidget);
+        },
+      );
+
+      testWidgets(
+        'отображает иконку анимации и бордер',
+        (WidgetTester tester) async {
+          final CanvasItem item = createAnimationItem();
+
+          await tester.pumpWidget(buildTestWidget(item));
+
+          expect(find.byIcon(Icons.animation), findsOneWidget);
+          final Card card = tester.widget<Card>(find.byType(Card));
+          final RoundedRectangleBorder shape =
+              card.shape! as RoundedRectangleBorder;
+          expect(shape.side.color, MediaTypeTheme.animationColor);
+        },
+      );
+    });
+
     group('Цветные бордеры', () {
       testWidgets(
         'должен отображать красный бордер для фильмов (movieColor)',

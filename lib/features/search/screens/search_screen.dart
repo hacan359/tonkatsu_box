@@ -12,6 +12,7 @@ import '../../../shared/models/game.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/movie.dart';
 import '../../../shared/models/platform.dart';
+import '../../../shared/models/tv_season.dart';
 import '../../../shared/models/tv_show.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -301,6 +302,30 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     );
   }
 
+  /// Предзагружает сезоны сериала в кэш БД.
+  ///
+  /// Fire-and-forget: не блокирует UI, ошибки игнорируются.
+  /// Сезоны будут доступны при открытии деталей и при full export.
+  void _preloadSeasons(int tmdbId) {
+    _preloadSeasonsAsync(tmdbId);
+  }
+
+  Future<void> _preloadSeasonsAsync(int tmdbId) async {
+    if (!mounted) return;
+    try {
+      final DatabaseService db = ref.read(databaseServiceProvider);
+      final List<TvSeason> cached = await db.getTvSeasonsByShowId(tmdbId);
+      if (cached.isNotEmpty) return;
+      final TmdbApi tmdb = ref.read(tmdbApiProvider);
+      final List<TvSeason> seasons = await tmdb.getTvSeasons(tmdbId);
+      if (seasons.isNotEmpty) {
+        await db.upsertTvSeasons(seasons);
+      }
+    } catch (_) {
+      // Не критично — сезоны загрузятся при просмотре деталей
+    }
+  }
+
   // ==================== Game actions ====================
 
   void _onGameTap(Game game) {
@@ -485,6 +510,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           tvShow.tmdbId.toString(),
           tvShow.posterUrl,
         );
+        _preloadSeasons(tvShow.tmdbId);
         messenger.showSnackBar(
           SnackBar(content: Text('$title added to collection')),
         );
@@ -518,6 +544,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           tvShow.tmdbId.toString(),
           tvShow.posterUrl,
         );
+        _preloadSeasons(tvShow.tmdbId);
         messenger.showSnackBar(
           SnackBar(
             content: Text('$title added to ${selectedCollection.name}'),
@@ -1237,6 +1264,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           tvShow.tmdbId.toString(),
           tvShow.posterUrl,
         );
+        _preloadSeasons(tvShow.tmdbId);
         messenger.showSnackBar(
           SnackBar(
             content: Text('$title added to ${selectedCollection.name}'),
@@ -1303,6 +1331,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           tvShow.tmdbId.toString(),
           tvShow.posterUrl,
         );
+        _preloadSeasons(tvShow.tmdbId);
         messenger.showSnackBar(
           SnackBar(content: Text('$title added to collection')),
         );

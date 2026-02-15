@@ -15,6 +15,8 @@ import '../../shared/models/collection_item.dart';
 import '../../shared/models/game.dart';
 import '../../shared/models/media_type.dart';
 import '../../shared/models/movie.dart';
+import '../../shared/models/tv_episode.dart';
+import '../../shared/models/tv_season.dart';
 import '../../shared/models/tv_show.dart';
 import '../api/igdb_api.dart';
 import '../api/tmdb_api.dart';
@@ -394,8 +396,9 @@ class ImportService {
 
   /// Восстанавливает медиа-данные из встроенной секции media (офлайн).
   ///
-  /// Парсит Game/Movie/TvShow из `media['games']`, `media['movies']`,
-  /// `media['tv_shows']` через `fromDb()` и сохраняет в локальный кэш.
+  /// Парсит Game/Movie/TvShow/TvSeason/TvEpisode из `media['games']`,
+  /// `media['movies']`, `media['tv_shows']`, `media['tv_seasons']`,
+  /// `media['tv_episodes']` через `fromDb()` и сохраняет в локальный кэш.
   Future<void> _restoreEmbeddedMedia(
     Map<String, dynamic> media, {
     ImportProgressCallback? onProgress,
@@ -406,8 +409,16 @@ class ImportService {
         media['movies'] as List<dynamic>? ?? <dynamic>[];
     final List<dynamic> rawTvShows =
         media['tv_shows'] as List<dynamic>? ?? <dynamic>[];
+    final List<dynamic> rawSeasons =
+        media['tv_seasons'] as List<dynamic>? ?? <dynamic>[];
+    final List<dynamic> rawEpisodes =
+        media['tv_episodes'] as List<dynamic>? ?? <dynamic>[];
 
-    final int total = rawGames.length + rawMovies.length + rawTvShows.length;
+    final int total = rawGames.length +
+        rawMovies.length +
+        rawTvShows.length +
+        rawSeasons.length +
+        rawEpisodes.length;
     final int cachedAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     int current = 0;
 
@@ -477,6 +488,43 @@ class ImportService {
         ));
       }
       await _database.upsertTvShows(tvShows);
+    }
+
+    // Восстановление сезонов
+    if (rawSeasons.isNotEmpty) {
+      final List<TvSeason> seasons = <TvSeason>[];
+      for (final dynamic raw in rawSeasons) {
+        final Map<String, dynamic> row =
+            Map<String, dynamic>.from(raw as Map<String, dynamic>);
+        seasons.add(TvSeason.fromDb(row));
+        current++;
+        onProgress?.call(ImportProgress(
+          stage: ImportStage.restoringMedia,
+          current: current,
+          total: total,
+        ));
+      }
+      await _database.upsertTvSeasons(seasons);
+    }
+
+    // Восстановление эпизодов
+    if (rawEpisodes.isNotEmpty) {
+      final List<TvEpisode> episodes = <TvEpisode>[];
+      for (final dynamic raw in rawEpisodes) {
+        final Map<String, dynamic> row =
+            Map<String, dynamic>.from(raw as Map<String, dynamic>);
+        if (!row.containsKey('cached_at') || row['cached_at'] == null) {
+          row['cached_at'] = cachedAt;
+        }
+        episodes.add(TvEpisode.fromDb(row));
+        current++;
+        onProgress?.call(ImportProgress(
+          stage: ImportStage.restoringMedia,
+          current: current,
+          total: total,
+        ));
+      }
+      await _database.upsertEpisodes(episodes);
     }
   }
 
