@@ -2,7 +2,6 @@
 
 import 'dart:io';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -110,6 +109,10 @@ class _CachedImageState extends ConsumerState<CachedImage> {
           return _buildPlaceholder();
         }
 
+        if (snapshot.hasError) {
+          return _buildError(context);
+        }
+
         final ImageResult? result = snapshot.data;
         if (result == null) {
           return _buildError(context);
@@ -179,16 +182,30 @@ class _CachedImageState extends ConsumerState<CachedImage> {
   }
 
   Widget _buildNetworkImage(String imageUrl, BuildContext context) {
-    return CachedNetworkImage(
-      imageUrl: imageUrl,
+    if (imageUrl.isEmpty) {
+      return _buildError(context);
+    }
+    return Image.network(
+      imageUrl,
       width: widget.width,
       height: widget.height,
       fit: widget.fit,
-      memCacheWidth: widget.memCacheWidth,
-      memCacheHeight: widget.memCacheHeight,
-      placeholder: (BuildContext ctx, String url) => _buildPlaceholder(),
-      errorWidget: (BuildContext ctx, String url, Object error) =>
-          _buildError(context),
+      cacheWidth: widget.memCacheWidth,
+      cacheHeight: widget.memCacheHeight,
+      frameBuilder: (
+        BuildContext ctx,
+        Widget child,
+        int? frame,
+        bool wasSynchronouslyLoaded,
+      ) {
+        if (wasSynchronouslyLoaded || frame != null) {
+          return child;
+        }
+        return _buildPlaceholder();
+      },
+      errorBuilder: (BuildContext ctx, Object error, StackTrace? stack) {
+        return _buildError(context);
+      },
     );
   }
 

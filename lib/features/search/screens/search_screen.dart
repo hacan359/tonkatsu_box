@@ -1042,30 +1042,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   Widget _buildMoviesTab() {
     final MediaSearchState searchState = ref.watch(mediaSearchProvider);
 
-    if (searchState.error != null && searchState.activeTab == MediaSearchTab.movies) {
-      return _buildErrorState(searchState.error!, onRetry: () {
-        ref
-            .read(mediaSearchProvider.notifier)
-            .search(_searchController.text);
-      });
-    }
-
-    if (searchState.isLoading && searchState.activeTab == MediaSearchTab.movies) {
-      return _buildShimmerGrid();
-    }
-
-    if (searchState.query.isEmpty && searchState.movieResults.isEmpty) {
-      return _buildEmptyState('Search for movies', Icons.movie);
-    }
-
-    if (searchState.movieResults.isEmpty && searchState.query.isNotEmpty) {
-      return _buildNoResults(searchState.query);
-    }
-
-    final Map<int, List<CollectedItemInfo>> collectedMovieInfos =
-        ref.watch(collectedMovieIdsProvider).valueOrNull ??
-            <int, List<CollectedItemInfo>>{};
-
     return Column(
       children: <Widget>[
         // Фильтры медиа
@@ -1087,44 +1063,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           ),
 
         Expanded(
-          child: GridView.builder(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: _gridCrossAxisCount,
-              crossAxisSpacing: AppSpacing.md,
-              mainAxisSpacing: AppSpacing.lg,
-              childAspectRatio: 0.55,
-            ),
-            itemCount: searchState.movieResults.length,
-            itemBuilder: (BuildContext context, int index) {
-              final Movie movie = searchState.movieResults[index];
-              final List<CollectedItemInfo>? infos =
-                  collectedMovieInfos[movie.tmdbId];
-              return PosterCard(
-                key: ValueKey<int>(movie.tmdbId),
-                title: movie.title,
-                imageUrl: movie.posterUrl ?? '',
-                cacheImageType: ImageType.moviePoster,
-                cacheImageId: movie.tmdbId.toString(),
-                rating: movie.rating,
-                year: movie.releaseYear,
-                subtitle: movie.genres?.take(2).join(', '),
-                isInCollection: infos != null && infos.isNotEmpty,
-                onTap: () => _onMovieTap(movie),
-              );
-            },
-          ),
+          child: _buildMovieResults(searchState),
         ),
       ],
     );
   }
 
-  // ==================== TV Shows tab ====================
-
-  Widget _buildTvShowsTab() {
-    final MediaSearchState searchState = ref.watch(mediaSearchProvider);
-
-    if (searchState.error != null && searchState.activeTab == MediaSearchTab.tvShows) {
+  Widget _buildMovieResults(MediaSearchState searchState) {
+    if (searchState.error != null &&
+        searchState.activeTab == MediaSearchTab.movies) {
       return _buildErrorState(searchState.error!, onRetry: () {
         ref
             .read(mediaSearchProvider.notifier)
@@ -1132,21 +1079,56 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       });
     }
 
-    if (searchState.isLoading && searchState.activeTab == MediaSearchTab.tvShows) {
+    if (searchState.isLoading &&
+        searchState.activeTab == MediaSearchTab.movies) {
       return _buildShimmerGrid();
     }
 
-    if (searchState.query.isEmpty && searchState.tvShowResults.isEmpty) {
-      return _buildEmptyState('Search for TV shows', Icons.tv);
+    if (searchState.query.isEmpty && searchState.movieResults.isEmpty) {
+      return _buildEmptyState('Search for movies', Icons.movie);
     }
 
-    if (searchState.tvShowResults.isEmpty && searchState.query.isNotEmpty) {
+    if (searchState.movieResults.isEmpty && searchState.query.isNotEmpty) {
       return _buildNoResults(searchState.query);
     }
 
-    final Map<int, List<CollectedItemInfo>> collectedTvShowInfos =
-        ref.watch(collectedTvShowIdsProvider).valueOrNull ??
+    final Map<int, List<CollectedItemInfo>> collectedMovieInfos =
+        ref.watch(collectedMovieIdsProvider).valueOrNull ??
             <int, List<CollectedItemInfo>>{};
+
+    return GridView.builder(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: _gridCrossAxisCount,
+        crossAxisSpacing: AppSpacing.md,
+        mainAxisSpacing: AppSpacing.lg,
+        childAspectRatio: 0.55,
+      ),
+      itemCount: searchState.movieResults.length,
+      itemBuilder: (BuildContext context, int index) {
+        final Movie movie = searchState.movieResults[index];
+        final List<CollectedItemInfo>? infos =
+            collectedMovieInfos[movie.tmdbId];
+        return PosterCard(
+          key: ValueKey<int>(movie.tmdbId),
+          title: movie.title,
+          imageUrl: movie.posterUrl ?? '',
+          cacheImageType: ImageType.moviePoster,
+          cacheImageId: movie.tmdbId.toString(),
+          rating: movie.rating,
+          year: movie.releaseYear,
+          subtitle: movie.genres?.take(2).join(', '),
+          isInCollection: infos != null && infos.isNotEmpty,
+          onTap: () => _onMovieTap(movie),
+        );
+      },
+    );
+  }
+
+  // ==================== TV Shows tab ====================
+
+  Widget _buildTvShowsTab() {
+    final MediaSearchState searchState = ref.watch(mediaSearchProvider);
 
     return Column(
       children: <Widget>[
@@ -1169,35 +1151,65 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           ),
 
         Expanded(
-          child: GridView.builder(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: _gridCrossAxisCount,
-              crossAxisSpacing: AppSpacing.md,
-              mainAxisSpacing: AppSpacing.lg,
-              childAspectRatio: 0.55,
-            ),
-            itemCount: searchState.tvShowResults.length,
-            itemBuilder: (BuildContext context, int index) {
-              final TvShow tvShow = searchState.tvShowResults[index];
-              final List<CollectedItemInfo>? infos =
-                  collectedTvShowInfos[tvShow.tmdbId];
-              return PosterCard(
-                key: ValueKey<int>(tvShow.tmdbId),
-                title: tvShow.title,
-                imageUrl: tvShow.posterUrl ?? '',
-                cacheImageType: ImageType.tvShowPoster,
-                cacheImageId: tvShow.tmdbId.toString(),
-                rating: tvShow.rating,
-                year: tvShow.firstAirYear,
-                subtitle: tvShow.genres?.take(2).join(', '),
-                isInCollection: infos != null && infos.isNotEmpty,
-                onTap: () => _onTvShowTap(tvShow),
-              );
-            },
-          ),
+          child: _buildTvShowResults(searchState),
         ),
       ],
+    );
+  }
+
+  Widget _buildTvShowResults(MediaSearchState searchState) {
+    if (searchState.error != null &&
+        searchState.activeTab == MediaSearchTab.tvShows) {
+      return _buildErrorState(searchState.error!, onRetry: () {
+        ref
+            .read(mediaSearchProvider.notifier)
+            .search(_searchController.text);
+      });
+    }
+
+    if (searchState.isLoading &&
+        searchState.activeTab == MediaSearchTab.tvShows) {
+      return _buildShimmerGrid();
+    }
+
+    if (searchState.query.isEmpty && searchState.tvShowResults.isEmpty) {
+      return _buildEmptyState('Search for TV shows', Icons.tv);
+    }
+
+    if (searchState.tvShowResults.isEmpty && searchState.query.isNotEmpty) {
+      return _buildNoResults(searchState.query);
+    }
+
+    final Map<int, List<CollectedItemInfo>> collectedTvShowInfos =
+        ref.watch(collectedTvShowIdsProvider).valueOrNull ??
+            <int, List<CollectedItemInfo>>{};
+
+    return GridView.builder(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: _gridCrossAxisCount,
+        crossAxisSpacing: AppSpacing.md,
+        mainAxisSpacing: AppSpacing.lg,
+        childAspectRatio: 0.55,
+      ),
+      itemCount: searchState.tvShowResults.length,
+      itemBuilder: (BuildContext context, int index) {
+        final TvShow tvShow = searchState.tvShowResults[index];
+        final List<CollectedItemInfo>? infos =
+            collectedTvShowInfos[tvShow.tmdbId];
+        return PosterCard(
+          key: ValueKey<int>(tvShow.tmdbId),
+          title: tvShow.title,
+          imageUrl: tvShow.posterUrl ?? '',
+          cacheImageType: ImageType.tvShowPoster,
+          cacheImageId: tvShow.tmdbId.toString(),
+          rating: tvShow.rating,
+          year: tvShow.firstAirYear,
+          subtitle: tvShow.genres?.take(2).join(', '),
+          isInCollection: infos != null && infos.isNotEmpty,
+          onTap: () => _onTvShowTap(tvShow),
+        );
+      },
     );
   }
 
@@ -1398,43 +1410,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   Widget _buildAnimationTab() {
     final MediaSearchState searchState = ref.watch(mediaSearchProvider);
 
-    if (searchState.error != null &&
-        searchState.activeTab == MediaSearchTab.animation) {
-      return _buildErrorState(searchState.error!, onRetry: () {
-        ref
-            .read(mediaSearchProvider.notifier)
-            .search(_searchController.text);
-      });
-    }
-
-    if (searchState.isLoading &&
-        searchState.activeTab == MediaSearchTab.animation) {
-      return _buildShimmerGrid();
-    }
-
     final bool hasAnimationResults =
         searchState.animationMovieResults.isNotEmpty ||
             searchState.animationTvShowResults.isNotEmpty;
-
-    if (searchState.query.isEmpty && !hasAnimationResults) {
-      return _buildEmptyState('Search for animation', Icons.animation);
-    }
-
-    if (!hasAnimationResults && searchState.query.isNotEmpty) {
-      return _buildNoResults(searchState.query);
-    }
-
-    final Map<int, List<CollectedItemInfo>> collectedAnimationInfos =
-        ref.watch(collectedAnimationIdsProvider).valueOrNull ??
-            <int, List<CollectedItemInfo>>{};
-
-    // Объединяем анимационные фильмы и сериалы в один список
-    final List<_AnimationItem> items = <_AnimationItem>[
-      ...searchState.animationMovieResults
-          .map((Movie m) => _AnimationItem(movie: m)),
-      ...searchState.animationTvShowResults
-          .map((TvShow t) => _AnimationItem(tvShow: t)),
-    ];
 
     return Column(
       children: <Widget>[
@@ -1457,54 +1435,95 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           ),
 
         Expanded(
-          child: GridView.builder(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: _gridCrossAxisCount,
-              crossAxisSpacing: AppSpacing.md,
-              mainAxisSpacing: AppSpacing.lg,
-              childAspectRatio: 0.55,
-            ),
-            itemCount: items.length,
-            itemBuilder: (BuildContext context, int index) {
-              final _AnimationItem item = items[index];
-              if (item.isMovie) {
-                final Movie movie = item.movie!;
-                final List<CollectedItemInfo>? infos =
-                    collectedAnimationInfos[movie.tmdbId];
-                return PosterCard(
-                  key: ValueKey<String>('anim_m_${movie.tmdbId}'),
-                  title: movie.title,
-                  imageUrl: movie.posterUrl ?? '',
-                  cacheImageType: ImageType.moviePoster,
-                  cacheImageId: movie.tmdbId.toString(),
-                  rating: movie.rating,
-                  year: movie.releaseYear,
-                  subtitle: 'Movie${_genreSuffix(movie.genres)}',
-                  isInCollection: infos != null && infos.isNotEmpty,
-                  onTap: () => _onAnimationMovieTap(movie),
-                );
-              } else {
-                final TvShow tvShow = item.tvShow!;
-                final List<CollectedItemInfo>? infos =
-                    collectedAnimationInfos[tvShow.tmdbId];
-                return PosterCard(
-                  key: ValueKey<String>('anim_t_${tvShow.tmdbId}'),
-                  title: tvShow.title,
-                  imageUrl: tvShow.posterUrl ?? '',
-                  cacheImageType: ImageType.tvShowPoster,
-                  cacheImageId: tvShow.tmdbId.toString(),
-                  rating: tvShow.rating,
-                  year: tvShow.firstAirYear,
-                  subtitle: 'Series${_genreSuffix(tvShow.genres)}',
-                  isInCollection: infos != null && infos.isNotEmpty,
-                  onTap: () => _onAnimationTvShowTap(tvShow),
-                );
-              }
-            },
-          ),
+          child: _buildAnimationResults(searchState, hasAnimationResults),
         ),
       ],
+    );
+  }
+
+  Widget _buildAnimationResults(
+    MediaSearchState searchState,
+    bool hasAnimationResults,
+  ) {
+    if (searchState.error != null &&
+        searchState.activeTab == MediaSearchTab.animation) {
+      return _buildErrorState(searchState.error!, onRetry: () {
+        ref
+            .read(mediaSearchProvider.notifier)
+            .search(_searchController.text);
+      });
+    }
+
+    if (searchState.isLoading &&
+        searchState.activeTab == MediaSearchTab.animation) {
+      return _buildShimmerGrid();
+    }
+
+    if (searchState.query.isEmpty && !hasAnimationResults) {
+      return _buildEmptyState('Search for animation', Icons.animation);
+    }
+
+    if (!hasAnimationResults && searchState.query.isNotEmpty) {
+      return _buildNoResults(searchState.query);
+    }
+
+    final Map<int, List<CollectedItemInfo>> collectedAnimationInfos =
+        ref.watch(collectedAnimationIdsProvider).valueOrNull ??
+            <int, List<CollectedItemInfo>>{};
+
+    // Объединяем анимационные фильмы и сериалы в один список
+    final List<_AnimationItem> items = <_AnimationItem>[
+      ...searchState.animationMovieResults
+          .map((Movie m) => _AnimationItem(movie: m)),
+      ...searchState.animationTvShowResults
+          .map((TvShow t) => _AnimationItem(tvShow: t)),
+    ];
+
+    return GridView.builder(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: _gridCrossAxisCount,
+        crossAxisSpacing: AppSpacing.md,
+        mainAxisSpacing: AppSpacing.lg,
+        childAspectRatio: 0.55,
+      ),
+      itemCount: items.length,
+      itemBuilder: (BuildContext context, int index) {
+        final _AnimationItem item = items[index];
+        if (item.isMovie) {
+          final Movie movie = item.movie!;
+          final List<CollectedItemInfo>? infos =
+              collectedAnimationInfos[movie.tmdbId];
+          return PosterCard(
+            key: ValueKey<String>('anim_m_${movie.tmdbId}'),
+            title: movie.title,
+            imageUrl: movie.posterUrl ?? '',
+            cacheImageType: ImageType.moviePoster,
+            cacheImageId: movie.tmdbId.toString(),
+            rating: movie.rating,
+            year: movie.releaseYear,
+            subtitle: 'Movie${_genreSuffix(movie.genres)}',
+            isInCollection: infos != null && infos.isNotEmpty,
+            onTap: () => _onAnimationMovieTap(movie),
+          );
+        } else {
+          final TvShow tvShow = item.tvShow!;
+          final List<CollectedItemInfo>? infos =
+              collectedAnimationInfos[tvShow.tmdbId];
+          return PosterCard(
+            key: ValueKey<String>('anim_t_${tvShow.tmdbId}'),
+            title: tvShow.title,
+            imageUrl: tvShow.posterUrl ?? '',
+            cacheImageType: ImageType.tvShowPoster,
+            cacheImageId: tvShow.tmdbId.toString(),
+            rating: tvShow.rating,
+            year: tvShow.firstAirYear,
+            subtitle: 'Series${_genreSuffix(tvShow.genres)}',
+            isInCollection: infos != null && infos.isNotEmpty,
+            onTap: () => _onAnimationTvShowTap(tvShow),
+          );
+        }
+      },
     );
   }
 

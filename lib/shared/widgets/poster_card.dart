@@ -130,8 +130,16 @@ class _PosterCardState extends State<PosterCard>
                         imageId: widget.cacheImageId,
                         remoteUrl: widget.imageUrl,
                         fit: BoxFit.cover,
-                        placeholder:
-                            Container(color: AppColors.surfaceLight),
+                        placeholder: Container(
+                          color: AppColors.surfaceLight,
+                          child: const Center(
+                            child: Icon(
+                              Icons.image_outlined,
+                              color: AppColors.textTertiary,
+                              size: 32,
+                            ),
+                          ),
+                        ),
                         errorWidget: Container(
                           color: AppColors.surfaceLight,
                           child: const Icon(
