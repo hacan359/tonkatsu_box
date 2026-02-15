@@ -916,11 +916,6 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
   Offset _dragDelta = Offset.zero;
   bool _isDragging = false;
 
-  /// ValueNotifier для drag offset — обновляет только Transform.translate,
-  /// без перестройки всего виджета (setState не нужен при перетаскивании).
-  final ValueNotifier<Offset> _dragNotifier =
-      ValueNotifier<Offset>(Offset.zero);
-
   /// Глобальная позиция указателя при старте перетаскивания.
   Offset _panStartGlobal = Offset.zero;
 
@@ -977,9 +972,8 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
   void _onPanStart(DragStartDetails details) {
     if (!widget.isEditable) return;
     _panStartGlobal = details.globalPosition;
-    _dragDelta = Offset.zero;
-    _dragNotifier.value = Offset.zero;
     setState(() {
+      _dragDelta = Offset.zero;
       _isDragging = true;
     });
     widget.onDragStateChanged(isDragging: true);
@@ -996,10 +990,9 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
       totalGlobalDelta.dx / scale,
       totalGlobalDelta.dy / scale,
     );
-    _dragDelta = newDelta;
-    // Обновляем только ValueNotifier — без setState, перестраивается
-    // только ConnectionPainter и Transform.translate (через _dragNotifier).
-    _dragNotifier.value = newDelta;
+    setState(() {
+      _dragDelta = newDelta;
+    });
     widget.onDragUpdate(widget.item.id, newDelta);
   }
 
@@ -1011,9 +1004,8 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
 
     _readNotifier().moveItem(widget.item.id, newX, newY);
 
-    _dragDelta = Offset.zero;
-    _dragNotifier.value = Offset.zero;
     setState(() {
+      _dragDelta = Offset.zero;
       _isDragging = false;
     });
     widget.onDragStateChanged(isDragging: false);
@@ -1069,15 +1061,15 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
   }
 
   @override
-  void dispose() {
-    _dragNotifier.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
     final Color shadowColor = colorScheme.shadow.withAlpha(80);
+
+    // Позиция обновляется в реальном времени при перетаскивании.
+    final double left =
+        widget.item.x + (_isDragging ? _dragDelta.dx : 0);
+    final double top =
+        widget.item.y + (_isDragging ? _dragDelta.dy : 0);
 
     // Размер обновляется в реальном времени при ресайзе.
     final double currentWidth = _isResizing
@@ -1089,23 +1081,12 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
             .clamp(_minItemSize, _maxItemSize)
         : _itemHeight;
 
-    // Positioned остаётся на базовой позиции — не меняется при drag.
-    // Transform.translate обновляется через ValueListenableBuilder
-    // без setState, что значительно ускоряет drag на мобильных.
     return Positioned(
-      left: widget.item.x,
-      top: widget.item.y,
+      left: left,
+      top: top,
       width: currentWidth,
       height: currentHeight,
-      child: ValueListenableBuilder<Offset>(
-        valueListenable: _dragNotifier,
-        builder: (BuildContext context, Offset dragOffset, Widget? child) {
-          return Transform.translate(
-            offset: dragOffset,
-            child: child,
-          );
-        },
-        child: MouseRegion(
+      child: MouseRegion(
         cursor: widget.onTap != null
             ? SystemMouseCursors.cell
             : _isDragging
@@ -1197,7 +1178,6 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
             ),
           ),
         ),
-      ),
     );
   }
 }
