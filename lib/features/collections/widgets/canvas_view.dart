@@ -982,8 +982,11 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
   void _onPanUpdate(DragUpdateDetails details) {
     if (!_isDragging) return;
 
+    // entry(0,0) — реальный масштаб X-оси. getMaxScaleOnAxis() возвращает
+    // max(scaleX, scaleY, scaleZ), а scaleZ всегда 1.0, поэтому при zoom < 1
+    // он вернёт 1.0 вместо реального масштаба.
     final double scale =
-        widget.transformationController.value.getMaxScaleOnAxis();
+        widget.transformationController.value.entry(0, 0);
     final Offset totalGlobalDelta =
         details.globalPosition - _panStartGlobal;
     final Offset newDelta = Offset(
@@ -1028,7 +1031,7 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
     if (!_isResizing) return;
 
     final double scale =
-        widget.transformationController.value.getMaxScaleOnAxis();
+        widget.transformationController.value.entry(0, 0);
     final Offset totalGlobalDelta =
         details.globalPosition - _panStartGlobal;
     setState(() {
