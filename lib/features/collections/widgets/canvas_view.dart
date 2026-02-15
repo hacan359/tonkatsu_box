@@ -940,9 +940,11 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
   /// Максимальный размер элемента.
   static const double _maxItemSize = 2000;
 
+  /// Мобильная платформа (тач вместо мыши, слабее GPU).
+  static final bool _isMobile = Platform.isAndroid || Platform.isIOS;
+
   /// Размер resize handle (больше на мобильных для удобства тач-ввода).
-  static final double _handleSize =
-      (Platform.isAndroid || Platform.isIOS) ? 24 : 14;
+  static final double _handleSize = _isMobile ? 24 : 14;
 
   double get _itemWidth {
     if (widget.item.width != null) return widget.item.width!;
@@ -1133,12 +1135,14 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
                 }
               : null,
           child: RepaintBoundary(
-            child: AnimatedOpacity(
-              opacity: _isDragging ? 0.8 : 1.0,
-              duration: const Duration(milliseconds: 150),
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: <Widget>[
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: <Widget>[
+                // На мобильных: без boxShadow blur (дорого для GPU).
+                // На десктопе: анимированная тень при drag.
+                if (_isMobile)
+                  SizedBox.expand(child: widget.child)
+                else
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 150),
                     decoration: BoxDecoration(
@@ -1193,7 +1197,6 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
             ),
           ),
         ),
-      ),
       ),
     );
   }
