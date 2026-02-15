@@ -7,6 +7,17 @@
 ## [Unreleased]
 
 ### Added
+- Добавлена визуальная доска (Board) на Android — `kCanvasEnabled` теперь возвращает `true` на всех платформах, Board доступен в коллекциях и на экранах деталей (игры, фильмы, сериалы, анимация)
+- Добавлено контекстное меню по long press на мобильных устройствах — long press на пустом месте доски открывает меню добавления элементов (текст/изображение/ссылка), long press на элементе — меню редактирования (Edit/Delete/Connect и т.д.)
+- Увеличен размер resize handle на мобильных устройствах (24px вместо 14px) для удобства тач-ввода
+- Добавлен zoom-to-fit при открытии Board — на мобильных контент автоматически масштабируется, чтобы все элементы помещались в viewport с отступами
+
+### Changed
+- Переименован «Canvas» → «Board» во всех пользовательских текстах (28 вхождений): вкладка «Board» в коллекции и на экранах деталей, tooltip замка «Lock/Unlock board», SnackBar «Image/Map added to board», кнопка «Add to Board» в VGMaps, описание формата экспорта, сообщения импорта, описание сброса БД в настройках, пустые состояния доски
+- Скрыта кнопка VGMaps Browser и пункт меню «Browse maps...» на не-Windows платформах — VGMaps требует `webview_windows`, доступен только на Windows через `kVgMapsEnabled`
+- Упрощена подсказка режима создания связей: «Tap an element to create a connection.» вместо «Click on an element to create a connection. Press Escape to cancel.»
+
+### Added
 - Добавлен экспорт canvas-изображений в полный экспорт `.xcollx` — изображения с канваса (`CanvasItemType.image`) теперь включаются в секцию `images` с ключом `canvas_images/{hash}`
 - Добавлен полный офлайн-экспорт: секция `media` в `.xcollx` содержит данные Game/Movie/TvShow (через `toDb()` без `cached_at`). При импорте данные восстанавливаются из файла через `fromDb()` — API-вызовы не требуются
 - Добавлен этап `ImportStage.restoringMedia` для отслеживания прогресса восстановления медиа-данных

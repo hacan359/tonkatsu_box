@@ -1039,8 +1039,8 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        expect(find.byTooltip('Lock canvas'), findsNothing);
-        expect(find.byTooltip('Unlock canvas'), findsNothing);
+        expect(find.byTooltip('Lock board'), findsNothing);
+        expect(find.byTooltip('Unlock board'), findsNothing);
       });
 
       testWidgets('должен показывать замок на вкладке Canvas (editable)',
@@ -1057,10 +1057,10 @@ void main() {
         await tester.pumpAndSettle();
 
         // Переключаемся на Canvas
-        await tester.tap(find.text('Canvas'));
+        await tester.tap(find.text('Board'));
         await pumpFrames(tester);
 
-        expect(find.byTooltip('Lock canvas'), findsOneWidget);
+        expect(find.byTooltip('Lock board'), findsOneWidget);
         expect(find.byIcon(Icons.lock_open), findsOneWidget);
       });
 
@@ -1078,11 +1078,11 @@ void main() {
         await tester.pumpAndSettle();
 
         // Переключаемся на Canvas
-        await tester.tap(find.text('Canvas'));
+        await tester.tap(find.text('Board'));
         await pumpFrames(tester);
 
-        expect(find.byTooltip('Lock canvas'), findsNothing);
-        expect(find.byTooltip('Unlock canvas'), findsNothing);
+        expect(find.byTooltip('Lock board'), findsNothing);
+        expect(find.byTooltip('Unlock board'), findsNothing);
       });
 
       testWidgets('должен переключать состояние замка',
@@ -1099,22 +1099,22 @@ void main() {
         await tester.pumpAndSettle();
 
         // Переключаемся на Canvas
-        await tester.tap(find.text('Canvas'));
+        await tester.tap(find.text('Board'));
         await pumpFrames(tester);
 
         // Блокируем
-        await tester.tap(find.byTooltip('Lock canvas'));
+        await tester.tap(find.byTooltip('Lock board'));
         await pumpFrames(tester);
 
         expect(find.byIcon(Icons.lock), findsOneWidget);
-        expect(find.byTooltip('Unlock canvas'), findsOneWidget);
+        expect(find.byTooltip('Unlock board'), findsOneWidget);
 
         // Разблокируем
-        await tester.tap(find.byTooltip('Unlock canvas'));
+        await tester.tap(find.byTooltip('Unlock board'));
         await pumpFrames(tester);
 
         expect(find.byIcon(Icons.lock_open), findsOneWidget);
-        expect(find.byTooltip('Lock canvas'), findsOneWidget);
+        expect(find.byTooltip('Lock board'), findsOneWidget);
       });
     });
   });

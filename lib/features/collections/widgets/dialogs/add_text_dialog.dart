@@ -97,44 +97,47 @@ class _AddTextDialogState extends State<AddTextDialog> {
       title: Text(_isEditing ? 'Edit Text' : 'Add Text'),
       content: SizedBox(
         width: 400,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            TextField(
-              controller: _contentController,
-              decoration: const InputDecoration(
-                labelText: 'Text content',
-                border: OutlineInputBorder(),
-                alignLabelWithHint: true,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              TextField(
+                controller: _contentController,
+                decoration: const InputDecoration(
+                  labelText: 'Text content',
+                  border: OutlineInputBorder(),
+                  alignLabelWithHint: true,
+                ),
+                maxLines: 3,
+                minLines: 2,
+                autofocus: true,
+                onSubmitted: (_) => _submit(),
               ),
-              maxLines: 5,
-              minLines: 2,
-              autofocus: true,
-              onSubmitted: (_) => _submit(),
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<double>(
-              initialValue: _selectedFontSize,
-              decoration: const InputDecoration(
-                labelText: 'Font size',
-                border: OutlineInputBorder(),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<double>(
+                initialValue: _selectedFontSize,
+                decoration: const InputDecoration(
+                  labelText: 'Font size',
+                  border: OutlineInputBorder(),
+                ),
+                items: _fontSizeOptions
+                    .map(
+                      (_FontSizeOption option) => DropdownMenuItem<double>(
+                        value: option.size,
+                        child:
+                            Text('${option.label} (${option.size.toInt()}px)'),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (double? value) {
+                  if (value != null) {
+                    setState(() => _selectedFontSize = value);
+                  }
+                },
               ),
-              items: _fontSizeOptions
-                  .map(
-                    (_FontSizeOption option) => DropdownMenuItem<double>(
-                      value: option.size,
-                      child: Text('${option.label} (${option.size.toInt()}px)'),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (double? value) {
-                if (value != null) {
-                  setState(() => _selectedFontSize = value);
-                }
-              },
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       actions: <Widget>[

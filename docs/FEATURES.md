@@ -15,8 +15,9 @@ The app uses a forced dark theme (ThemeMode.dark) with a cinematic design system
 
 ## Platforms
 
-- **Windows** — full version with Canvas, VGMaps Browser, all features
-- **Android** — Lite version: collections, search, details, episode tracker, export/import (no Canvas)
+- **Windows** — full version with Board, VGMaps Browser, SteamGridDB panel, all features
+- **Android** — full version: collections, search, details, episode tracker, Board (visual board), export/import. VGMaps Browser is not available (requires `webview_windows`). SteamGridDB panel works on all platforms
+- Board is available on all platforms (long press opens context menu on mobile instead of right-click)
 
 ## Collections
 
@@ -87,7 +88,7 @@ Color-coded visual distinction between media types:
 - Movies — red accent
 - TV Shows — green accent
 - Animation — purple accent
-- Applied to canvas card borders and collection item card backgrounds
+- Applied to board card borders and collection item card backgrounds
 - Large tilted semi-transparent background icon (200px, 6% opacity, rotated -17°) on each collection item card as a watermark for quick visual identification
 
 ## Progress Tracking
@@ -152,7 +153,7 @@ Tap any item in a collection to see its full details. All detail screens have tw
 - Inline description (max 4 lines)
 - Status chip row (horizontal chips for all available statuses), author comment, personal notes
 
-**Canvas tab** — personal canvas for the item with full canvas functionality (see Per-Item Canvas above)
+**Board tab** — personal board for the item with full board functionality (see Per-Item Board above)
 
 ### Game Details
 - Source: IGDB
@@ -176,7 +177,7 @@ Tap any item in a collection to see its full details. All detail screens have tw
   - **Animated movie** — movie-like layout: runtime, rating, genres (no episode tracker)
   - **Animated series** — TV show-like layout: seasons, episodes, episode tracker with per-episode checkboxes
 - Purple accent color (`AppColors.animationAccent`)
-- Canvas tab with SteamGridDB and VGMaps panels (desktop only)
+- Board tab with SteamGridDB panel (all platforms) and VGMaps panel (Windows only)
 
 ## Comments
 
@@ -195,13 +196,13 @@ Export collections in three formats:
 
 ### Full Export (`.xcollx`)
 - Everything from light export, plus:
-- Canvas data (viewport, items, connections) including per-item canvases
+- Board data (viewport, items, connections) including per-item boards
 - Base64-encoded cover images (game covers, movie/TV show posters)
-- Base64-encoded canvas images (images added to canvas boards)
+- Base64-encoded board images (images added to visual boards)
 - Embedded media data (Game/Movie/TvShow/TvSeason/TvEpisode) for fully offline import — no IGDB/TMDB API calls needed
 - TV show seasons are preloaded into cache when adding a TV show or animated series to a collection, ensuring they're available for export
 - All episodes for each season are included in the export for complete offline access
-- Self-contained — recipients can import without internet (all data, covers, canvas images, seasons, and episodes included)
+- Self-contained — recipients can import without internet (all data, covers, board images, seasons, and episodes included)
 
 ## Forking
 
@@ -210,55 +211,58 @@ Found a collection you like? Fork it:
 - Add or remove games
 - Revert to original anytime
 
-## Canvas View
+## Board (Visual Board)
 
-Visualize your collection on a free-form canvas, or create a personal canvas for each item:
-- **Infinite canvas** with zoom (0.3x – 3.0x) and pan
+Visualize your collection on a free-form board, or create a personal board for each item. Board is available on all platforms (Windows, Android).
+
+> **Note:** In the UI the feature is called "Board". In the codebase, file names and class names still use "canvas" (e.g. `CanvasView`, `canvas_view.dart`, `CanvasItem`).
+
+- **Infinite board** with zoom (0.3x – 3.0x) and pan
 - **Drag-and-drop** all elements with real-time visual feedback
 - **Dot grid background** for visual alignment
-- **Auto-layout** — new canvas initializes all items (games, movies, TV shows) in a 5-column grid
-- **Auto-sync** — adding or removing items in the collection automatically updates the canvas
+- **Auto-layout** — new board initializes all items (games, movies, TV shows) in a 5-column grid
+- **Auto-sync** — adding or removing items in the collection automatically updates the board
 - **Media cards** — games, movies and TV shows display as compact cards with poster/cover and title
 - **Persistent viewport** — zoom level and position are saved and restored
 - **Center view** and **Reset positions** controls
-- **List/Canvas toggle** — switch between traditional list and visual canvas via SegmentedButton
-- **Canvas lock** — lock button in AppBar to freeze the canvas in view-only mode (only for own/fork collections). When locked, all editing is disabled and side panels (SteamGridDB, VGMaps) are closed. Available on collection canvas and per-item canvas (detail screens, Canvas tab only)
-- **Context menu** (right-click) — Add Text/Image/Link on empty space; Edit/Delete/Bring to Front/Send to Back on elements
+- **List/Board toggle** — switch between traditional list and visual board via SegmentedButton
+- **Board lock** — lock button in AppBar to freeze the board in view-only mode (only for own/fork collections). When locked, all editing is disabled and side panels (SteamGridDB, VGMaps) are closed. Available on collection board and per-item board (detail screens, Board tab only)
+- **Context menu** — right-click (desktop) or long press (mobile) to open context menu. On empty space: Add Text/Image/Link. On elements: Edit/Delete/Bring to Front/Send to Back/Connect
 - **Text blocks** — add custom text with configurable font size (Small 12/Medium 16/Large 24/Title 32), transparent background
 - **Images** — add images from URL or local file (base64 encoded)
 - **Links** — add clickable links with custom labels (double-click to open in browser)
-- **Resize** — drag the bottom-right handle to resize any element with real-time preview (min 50x50, max 2000x2000)
+- **Resize** — drag the bottom-right handle to resize any element with real-time preview (min 50x50, max 2000x2000). Resize handle is larger on mobile (24px vs 14px) for easier touch input
 - **Z-index management** — Bring to Front / Send to Back via context menu
-- **Connections** — draw visual lines between any two canvas elements
+- **Connections** — draw visual lines between any two board elements
   - Three line styles: solid, dashed, arrow
   - 8 color choices (gray, red, orange, yellow, green, blue, purple, black)
   - Optional text labels displayed at the midpoint of the line
-  - Create via right-click → Connect, then click the target element
-  - Edit/Delete connections via right-click on the line
+  - Create via right-click/long press → Connect, then tap the target element
+  - Edit/Delete connections via right-click/long press on the line
   - Connections auto-delete when a connected element is removed
   - Temporary dashed preview line while creating a connection
-- **SteamGridDB Image Panel** — side panel for browsing and adding SteamGridDB images to canvas
+- **SteamGridDB Image Panel** — side panel for browsing and adding SteamGridDB images to board (available on all platforms)
   - Search games by name (auto-fills from collection name)
   - Browse 4 image types: Grids (box art), Heroes (banners), Logos, Icons
-  - Click any thumbnail to add it to the canvas center (scaled to max 300px width)
+  - Click any thumbnail to add it to the board center (scaled to max 300px width)
   - In-memory cache for API results (no re-fetching on tab switch)
-  - Toggle via toolbar button or right-click "Find images..."
+  - Toggle via toolbar button or right-click/long press "Find images..."
   - Warning when SteamGridDB API key is not configured
-- **VGMaps Browser Panel** — side panel with embedded WebView2 browser for vgmaps.de
+- **VGMaps Browser Panel** — side panel with embedded WebView2 browser for vgmaps.de (**Windows only** — requires `webview_windows`, hidden on other platforms via `kVgMapsEnabled`)
   - Navigate vgmaps.de directly inside the app (back/forward/home/reload)
   - Search games by name via built-in search field
   - Right-click any image on vgmaps.de to capture it
   - Preview captured image with dimensions in the bottom bar
-  - Click "Add to Canvas" to place the map image on the canvas (scaled to max 400px width)
+  - Click "Add to Board" to place the map image on the board (scaled to max 400px width)
   - Toggle via toolbar button or right-click "Browse maps..."
   - Mutually exclusive with SteamGridDB panel (opening one closes the other)
 
-### Per-Item Canvas
-Each game, movie, or TV show in a collection has its own personal canvas:
-- Access via the **Canvas** tab on any detail screen (game/movie/TV show)
+### Per-Item Board
+Each game, movie, or TV show in a collection has its own personal board:
+- Access via the **Board** tab on any detail screen (game/movie/TV show)
 - Auto-initialized with the item's media card (game cover, movie poster, etc.)
-- Full canvas functionality: text, images, links, connections, SteamGridDB and VGMaps panels
-- Completely isolated from the collection canvas — items don't leak between canvases
+- Full board functionality: text, images, links, connections, SteamGridDB panel (all platforms) and VGMaps panel (Windows only)
+- Completely isolated from the collection board — items don't leak between boards
 - Separate viewport (zoom/position) saved per item
 
 ## TMDB Integration
@@ -277,7 +281,7 @@ Access high-quality game artwork from SteamGridDB:
 - Browse grid images (box art)
 - Browse hero images (banners)
 - Browse logos and icons
-- Add images directly to canvas from the side panel
+- Add images directly to board from the side panel
 - Debug panel for testing API endpoints (dev builds only)
 
 ## Configuration Management
@@ -292,7 +296,7 @@ Export your API keys and settings to a JSON file and import them on another mach
 Clear all application data while preserving your API keys and settings:
 - **Reset Database** button in the Danger Zone section of Settings
 - Confirmation dialog prevents accidental data loss
-- Clears all 14 SQLite tables (collections, games, movies, TV shows, canvas, episodes) in a single transaction
+- Clears all 14 SQLite tables (collections, games, movies, TV shows, board, episodes) in a single transaction
 - SharedPreferences (API keys, tokens) are preserved
 
 ## Offline Mode
@@ -306,14 +310,14 @@ Only searching for new games requires internet.
 
 ### Image Caching
 
-When enabled in Settings, media images (game covers, movie posters, TV show posters, canvas URL images) are downloaded locally for offline access:
+When enabled in Settings, media images (game covers, movie posters, TV show posters, board URL images) are downloaded locally for offline access:
 - **Toggle** — enable/disable image caching in Settings → Image Cache
 - **Auto-download** — images are automatically saved to local storage when viewed with caching enabled
 - **Eager caching** — cover images are downloaded immediately when adding items to collections from search
 - **Validation** — downloaded files are validated by JPEG/PNG/WebP magic bytes; invalid files are deleted
 - **Fallback** — if cache is cleared or a file is missing, images load from the network and re-download in the background
-- **Canvas images** — URL images added to canvases are also cached to disk (using FNV-1a hash of URL as cache key)
+- **Board images** — URL images added to boards are also cached to disk (using FNV-1a hash of URL as cache key)
 - **Custom folder** — choose where cached images are stored via file picker
 - **Cache stats** — view file count and total size in Settings
 - **Clear cache** — delete all locally saved images with one tap
-- Covers collection thumbnails, detail screens, canvas cards, and canvas URL images
+- Covers collection thumbnails, detail screens, board cards, and board URL images

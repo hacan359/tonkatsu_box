@@ -597,7 +597,7 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
           FilledButton.icon(
             onPressed: _handleAddToCanvas,
             icon: const Icon(Icons.add, size: 16),
-            label: const Text('Add to Canvas'),
+            label: const Text('Add to Board'),
             style: FilledButton.styleFrom(
               visualDensity: VisualDensity.compact,
               padding: const EdgeInsets.symmetric(horizontal: 12),

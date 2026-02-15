@@ -14,6 +14,7 @@ const List<_ColorOption> _colorOptions = <_ColorOption>[
   _ColorOption(label: 'Blue', hex: '#1E88E5', color: Color(0xFF1E88E5)),
   _ColorOption(label: 'Purple', hex: '#8E24AA', color: Color(0xFF8E24AA)),
   _ColorOption(label: 'Black', hex: '#212121', color: Color(0xFF212121)),
+  _ColorOption(label: 'White', hex: '#FFFFFF', color: Color(0xFFFFFFFF)),
 ];
 
 class _ColorOption {
@@ -114,10 +115,11 @@ class _EditConnectionDialogState extends State<EditConnectionDialog> {
       title: const Text('Edit Connection'),
       content: SizedBox(
         width: 400,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
             TextField(
               controller: _labelController,
               decoration: const InputDecoration(
@@ -177,7 +179,8 @@ class _EditConnectionDialogState extends State<EditConnectionDialog> {
                 setState(() => _selectedStyle = selection.first);
               },
             ),
-          ],
+            ],
+          ),
         ),
       ),
       actions: <Widget>[
@@ -224,8 +227,10 @@ class _ColorButton extends StatelessWidget {
             border: Border.all(
               color: isSelected
                   ? Theme.of(context).colorScheme.primary
-                  : Colors.transparent,
-              width: isSelected ? 3 : 0,
+                  : color.computeLuminance() > 0.7
+                      ? Colors.grey.shade400
+                      : Colors.transparent,
+              width: isSelected ? 3 : 1,
             ),
           ),
           child: isSelected

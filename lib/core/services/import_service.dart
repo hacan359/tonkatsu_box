@@ -136,8 +136,8 @@ enum ImportStage {
   /// Добавление элементов.
   addingItems('Adding items...'),
 
-  /// Импорт canvas (v2 full).
-  importingCanvas('Importing canvas...'),
+  /// Импорт board (v2 full).
+  importingCanvas('Importing board...'),
 
   /// Восстановление медиа-данных из экспорта (v2 full).
   restoringMedia('Restoring media data...'),
@@ -347,7 +347,7 @@ class ImportService {
           stage: ImportStage.importingCanvas,
           current: 0,
           total: 1,
-          message: 'Importing canvas...',
+          message: 'Importing board...',
         ));
 
         await _importCanvas(xcoll, collection.id);

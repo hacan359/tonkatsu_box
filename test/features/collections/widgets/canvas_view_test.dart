@@ -5,6 +5,7 @@ import 'package:xerabora/features/collections/providers/canvas_provider.dart';
 import 'package:xerabora/features/collections/providers/steamgriddb_panel_provider.dart';
 import 'package:xerabora/features/collections/providers/vgmaps_panel_provider.dart';
 import 'package:xerabora/features/collections/widgets/canvas_view.dart';
+import 'package:xerabora/shared/constants/platform_features.dart';
 import 'package:xerabora/shared/models/canvas_item.dart';
 import 'package:xerabora/shared/models/game.dart';
 
@@ -124,7 +125,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показывать текст "Failed to load canvas" когда error!=null',
+        'должен показывать текст "Failed to load board" когда error!=null',
         (WidgetTester tester) async {
           const CanvasState errorState = CanvasState(
             isLoading: false,
@@ -133,7 +134,7 @@ void main() {
 
           await tester.pumpWidget(buildTestWidget(canvasState: errorState));
 
-          expect(find.text('Failed to load canvas'), findsOneWidget);
+          expect(find.text('Failed to load board'), findsOneWidget);
         },
       );
 
@@ -169,7 +170,7 @@ void main() {
 
     group('пустое состояние', () {
       testWidgets(
-        'должен показывать "Canvas is empty" когда список items пуст',
+        'должен показывать "Board is empty" когда список items пуст',
         (WidgetTester tester) async {
           const CanvasState emptyState = CanvasState(
             isLoading: false,
@@ -179,7 +180,7 @@ void main() {
 
           await tester.pumpWidget(buildTestWidget(canvasState: emptyState));
 
-          expect(find.text('Canvas is empty'), findsOneWidget);
+          expect(find.text('Board is empty'), findsOneWidget);
         },
       );
 
@@ -370,8 +371,9 @@ void main() {
           );
           await tester.pump();
 
-          // 4 FAB: VGMaps + SteamGridDB + Center view + Reset positions
-          expect(find.byType(FloatingActionButton), findsNWidgets(4));
+          // FAB: SteamGridDB + Center view + Reset positions (+ VGMaps на Windows)
+          final int expectedFabs = kVgMapsEnabled ? 4 : 3;
+          expect(find.byType(FloatingActionButton), findsNWidgets(expectedFabs));
         },
       );
 
@@ -424,7 +426,7 @@ void main() {
       );
 
       testWidgets(
-        'должен показывать FAB VGMaps Browser когда isEditable=true',
+        'должен показывать FAB VGMaps Browser когда isEditable=true и kVgMapsEnabled',
         (WidgetTester tester) async {
           final CanvasState normalState = CanvasState(
             isLoading: false,
@@ -442,8 +444,13 @@ void main() {
           );
           await tester.pump();
 
-          expect(find.byIcon(Icons.map), findsOneWidget);
-          expect(find.byTooltip('VGMaps Browser'), findsOneWidget);
+          if (kVgMapsEnabled) {
+            expect(find.byIcon(Icons.map), findsOneWidget);
+            expect(find.byTooltip('VGMaps Browser'), findsOneWidget);
+          } else {
+            expect(find.byIcon(Icons.map), findsNothing);
+            expect(find.byTooltip('VGMaps Browser'), findsNothing);
+          }
         },
       );
 
@@ -763,7 +770,7 @@ void main() {
           await tester.pumpWidget(buildTestWidget(canvasState: state));
 
           expect(find.byType(CircularProgressIndicator), findsOneWidget);
-          expect(find.text('Failed to load canvas'), findsNothing);
+          expect(find.text('Failed to load board'), findsNothing);
         },
       );
 
@@ -779,8 +786,8 @@ void main() {
 
           await tester.pumpWidget(buildTestWidget(canvasState: state));
 
-          expect(find.text('Failed to load canvas'), findsOneWidget);
-          expect(find.text('Canvas is empty'), findsNothing);
+          expect(find.text('Failed to load board'), findsOneWidget);
+          expect(find.text('Board is empty'), findsNothing);
         },
       );
     });

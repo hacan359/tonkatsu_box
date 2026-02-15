@@ -147,7 +147,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                   ? AppColors.warning
                   : AppColors.textSecondary,
               tooltip:
-                  _isViewModeLocked ? 'Unlock canvas' : 'Lock canvas',
+                  _isViewModeLocked ? 'Unlock board' : 'Lock board',
               onPressed: () {
                 setState(() {
                   _isViewModeLocked = !_isViewModeLocked;
@@ -175,7 +175,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
             if (kCanvasEnabled)
               const Tab(
                 icon: Icon(Icons.dashboard_outlined),
-                text: 'Canvas',
+                text: 'Board',
               ),
           ],
         ),
@@ -377,7 +377,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Image added to canvas'),
+          content: Text('Image added to board'),
           duration: Duration(seconds: 2),
         ),
       );
@@ -414,7 +414,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Map added to canvas'),
+          content: Text('Map added to board'),
           duration: Duration(seconds: 2),
         ),
       );
