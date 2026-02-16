@@ -12,9 +12,12 @@ void main() {
       expect(state.query, isEmpty);
       expect(state.results, isEmpty);
       expect(state.isLoading, isFalse);
+      expect(state.isLoadingMore, isFalse);
       expect(state.error, isNull);
       expect(state.selectedPlatformIds, isEmpty);
       expect(state.currentSort, const SearchSort());
+      expect(state.currentOffset, 0);
+      expect(state.hasMore, isFalse);
     });
 
     test('hasResults returns true when results is not empty', () {
@@ -90,6 +93,8 @@ void main() {
           query: 'original',
           results: <Game>[Game(id: 1, name: 'Game')],
           selectedPlatformIds: <int>[100],
+          currentOffset: 20,
+          hasMore: true,
         );
 
         final GameSearchState updated = original.copyWith(isLoading: true);
@@ -98,6 +103,8 @@ void main() {
         expect(updated.results, hasLength(1));
         expect(updated.selectedPlatformIds, <int>[100]);
         expect(updated.isLoading, isTrue);
+        expect(updated.currentOffset, 20);
+        expect(updated.hasMore, isTrue);
       });
 
       test('clears error when clearError is true', () {
@@ -187,6 +194,44 @@ void main() {
 
         expect(updated.currentSort, sort);
       });
+
+      test('updates isLoadingMore', () {
+        const GameSearchState original = GameSearchState();
+
+        final GameSearchState updated = original.copyWith(isLoadingMore: true);
+
+        expect(updated.isLoadingMore, isTrue);
+      });
+
+      test('updates currentOffset', () {
+        const GameSearchState original = GameSearchState();
+
+        final GameSearchState updated = original.copyWith(currentOffset: 40);
+
+        expect(updated.currentOffset, 40);
+      });
+
+      test('updates hasMore', () {
+        const GameSearchState original = GameSearchState();
+
+        final GameSearchState updated = original.copyWith(hasMore: true);
+
+        expect(updated.hasMore, isTrue);
+      });
+
+      test('preserves pagination fields when not specified', () {
+        const GameSearchState original = GameSearchState(
+          isLoadingMore: true,
+          currentOffset: 60,
+          hasMore: true,
+        );
+
+        final GameSearchState updated = original.copyWith(query: 'test');
+
+        expect(updated.isLoadingMore, isTrue);
+        expect(updated.currentOffset, 60);
+        expect(updated.hasMore, isTrue);
+      });
     });
 
     group('equality', () {
@@ -195,11 +240,15 @@ void main() {
           query: 'test',
           results: <Game>[Game(id: 1, name: 'Game')],
           selectedPlatformIds: <int>[130],
+          currentOffset: 20,
+          hasMore: true,
         );
         const GameSearchState state2 = GameSearchState(
           query: 'test',
           results: <Game>[Game(id: 1, name: 'Game')],
           selectedPlatformIds: <int>[130],
+          currentOffset: 20,
+          hasMore: true,
         );
 
         expect(state1, equals(state2));
@@ -226,7 +275,13 @@ void main() {
         );
 
         // listEquals compares order too
-        expect(listEquals(state1.selectedPlatformIds, state2.selectedPlatformIds), isFalse);
+        expect(
+          listEquals(
+            state1.selectedPlatformIds,
+            state2.selectedPlatformIds,
+          ),
+          isFalse,
+        );
         expect(state1, isNot(equals(state2)));
       });
 
@@ -251,6 +306,32 @@ void main() {
 
         expect(state1, equals(state2));
         expect(state1.hashCode, equals(state2.hashCode));
+      });
+
+      test('states with different isLoadingMore are not equal', () {
+        const GameSearchState state1 = GameSearchState(isLoadingMore: true);
+        const GameSearchState state2 = GameSearchState(isLoadingMore: false);
+
+        expect(state1, isNot(equals(state2)));
+      });
+
+      test('states with different currentOffset are not equal', () {
+        const GameSearchState state1 = GameSearchState(currentOffset: 0);
+        const GameSearchState state2 = GameSearchState(currentOffset: 20);
+
+        expect(state1, isNot(equals(state2)));
+      });
+
+      test('states with different hasMore are not equal', () {
+        const GameSearchState state1 = GameSearchState(hasMore: true);
+        const GameSearchState state2 = GameSearchState(hasMore: false);
+
+        expect(state1, isNot(equals(state2)));
+      });
+
+      test('identical states return true', () {
+        const GameSearchState state = GameSearchState(query: 'test');
+        expect(state == state, isTrue);
       });
     });
   });

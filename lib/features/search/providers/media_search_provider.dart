@@ -8,6 +8,8 @@ import '../../../core/database/database_service.dart';
 import '../../../shared/models/movie.dart';
 import '../../../shared/models/search_sort.dart';
 import '../../../shared/models/tv_show.dart';
+import '../models/media_search_item.dart';
+import '../models/tv_sub_filter.dart';
 import 'genre_provider.dart';
 
 /// ID жанра Animation в TMDB (одинаковый для Movies и TV Shows).
@@ -16,83 +18,61 @@ const int animationGenreId = 16;
 /// Строковое представление жанра Animation для фильтрации.
 const String _animationGenreIdStr = '16';
 
-/// Активный таб поиска медиа.
-enum MediaSearchTab {
-  /// Фильмы.
-  movies,
-
-  /// Сериалы.
-  tvShows,
-
-  /// Анимация (фильмы + сериалы).
-  animation,
-}
-
 /// Состояние поиска фильмов, сериалов и анимации.
 class MediaSearchState {
   /// Создаёт [MediaSearchState].
   const MediaSearchState({
     this.query = '',
-    this.movieResults = const <Movie>[],
-    this.tvShowResults = const <TvShow>[],
-    this.animationMovieResults = const <Movie>[],
-    this.animationTvShowResults = const <TvShow>[],
+    this.items = const <MediaSearchItem>[],
     this.isLoading = false,
+    this.isLoadingMore = false,
     this.error,
-    this.activeTab = MediaSearchTab.movies,
+    this.subFilter = TvSubFilter.all,
     this.currentSort = const SearchSort(),
-    this.selectedYear,
-    this.selectedGenreIds = const <int>[],
+    this.currentMoviePage = 1,
+    this.currentTvPage = 1,
+    this.hasMoreMovies = false,
+    this.hasMoreTvShows = false,
   });
 
   /// Текущий поисковый запрос.
   final String query;
 
-  /// Результаты поиска фильмов (без анимации).
-  final List<Movie> movieResults;
+  /// Объединённые результаты поиска (фильмы + сериалы).
+  final List<MediaSearchItem> items;
 
-  /// Результаты поиска сериалов (без анимации).
-  final List<TvShow> tvShowResults;
-
-  /// Результаты поиска анимационных фильмов.
-  final List<Movie> animationMovieResults;
-
-  /// Результаты поиска анимационных сериалов.
-  final List<TvShow> animationTvShowResults;
-
-  /// Флаг загрузки.
+  /// Флаг загрузки первой страницы.
   final bool isLoading;
+
+  /// Флаг загрузки следующей страницы.
+  final bool isLoadingMore;
 
   /// Сообщение об ошибке.
   final String? error;
 
-  /// Активный таб.
-  final MediaSearchTab activeTab;
+  /// Текущий субфильтр (все, фильмы, сериалы, анимация).
+  final TvSubFilter subFilter;
 
   /// Текущая сортировка.
   final SearchSort currentSort;
 
-  /// Фильтр по году (опционально).
-  final int? selectedYear;
+  /// Текущая страница для фильмов TMDB.
+  final int currentMoviePage;
 
-  /// Фильтр по жанрам (ID жанров TMDB).
-  final List<int> selectedGenreIds;
+  /// Текущая страница для сериалов TMDB.
+  final int currentTvPage;
 
-  /// Проверяет, есть ли активные фильтры.
-  bool get hasFilters => selectedYear != null || selectedGenreIds.isNotEmpty;
+  /// Есть ли ещё страницы фильмов.
+  final bool hasMoreMovies;
 
-  /// Проверяет, есть ли результаты для активного таба.
-  bool get hasResults {
-    switch (activeTab) {
-      case MediaSearchTab.movies:
-        return movieResults.isNotEmpty;
-      case MediaSearchTab.tvShows:
-        return tvShowResults.isNotEmpty;
-      case MediaSearchTab.animation:
-        return animationMovieResults.isNotEmpty ||
-            animationTvShowResults.isNotEmpty;
-    }
-  }
+  /// Есть ли ещё страницы сериалов.
+  final bool hasMoreTvShows;
+
+  /// Есть ли ещё результаты (хотя бы один API).
+  bool get hasMore => hasMoreMovies || hasMoreTvShows;
+
+  /// Проверяет, есть ли результаты.
+  bool get hasResults => items.isNotEmpty;
 
   /// Проверяет, пустой ли запрос.
   bool get isEmpty => query.isEmpty && !hasResults && !isLoading;
@@ -100,33 +80,30 @@ class MediaSearchState {
   /// Копирует с изменёнными полями.
   MediaSearchState copyWith({
     String? query,
-    List<Movie>? movieResults,
-    List<TvShow>? tvShowResults,
-    List<Movie>? animationMovieResults,
-    List<TvShow>? animationTvShowResults,
+    List<MediaSearchItem>? items,
     bool? isLoading,
+    bool? isLoadingMore,
     String? error,
-    MediaSearchTab? activeTab,
+    TvSubFilter? subFilter,
     SearchSort? currentSort,
-    int? selectedYear,
-    List<int>? selectedGenreIds,
+    int? currentMoviePage,
+    int? currentTvPage,
+    bool? hasMoreMovies,
+    bool? hasMoreTvShows,
     bool clearError = false,
-    bool clearYear = false,
   }) {
     return MediaSearchState(
       query: query ?? this.query,
-      movieResults: movieResults ?? this.movieResults,
-      tvShowResults: tvShowResults ?? this.tvShowResults,
-      animationMovieResults:
-          animationMovieResults ?? this.animationMovieResults,
-      animationTvShowResults:
-          animationTvShowResults ?? this.animationTvShowResults,
+      items: items ?? this.items,
       isLoading: isLoading ?? this.isLoading,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       error: clearError ? null : (error ?? this.error),
-      activeTab: activeTab ?? this.activeTab,
+      subFilter: subFilter ?? this.subFilter,
       currentSort: currentSort ?? this.currentSort,
-      selectedYear: clearYear ? null : (selectedYear ?? this.selectedYear),
-      selectedGenreIds: selectedGenreIds ?? this.selectedGenreIds,
+      currentMoviePage: currentMoviePage ?? this.currentMoviePage,
+      currentTvPage: currentTvPage ?? this.currentTvPage,
+      hasMoreMovies: hasMoreMovies ?? this.hasMoreMovies,
+      hasMoreTvShows: hasMoreTvShows ?? this.hasMoreTvShows,
     );
   }
 
@@ -135,31 +112,31 @@ class MediaSearchState {
     if (identical(this, other)) return true;
     return other is MediaSearchState &&
         other.query == query &&
-        listEquals(other.movieResults, movieResults) &&
-        listEquals(other.tvShowResults, tvShowResults) &&
-        listEquals(other.animationMovieResults, animationMovieResults) &&
-        listEquals(other.animationTvShowResults, animationTvShowResults) &&
+        listEquals(other.items, items) &&
         other.isLoading == isLoading &&
+        other.isLoadingMore == isLoadingMore &&
         other.error == error &&
-        other.activeTab == activeTab &&
+        other.subFilter == subFilter &&
         other.currentSort == currentSort &&
-        other.selectedYear == selectedYear &&
-        listEquals(other.selectedGenreIds, selectedGenreIds);
+        other.currentMoviePage == currentMoviePage &&
+        other.currentTvPage == currentTvPage &&
+        other.hasMoreMovies == hasMoreMovies &&
+        other.hasMoreTvShows == hasMoreTvShows;
   }
 
   @override
   int get hashCode => Object.hash(
         query,
-        Object.hashAll(movieResults),
-        Object.hashAll(tvShowResults),
-        Object.hashAll(animationMovieResults),
-        Object.hashAll(animationTvShowResults),
+        Object.hashAll(items),
         isLoading,
+        isLoadingMore,
         error,
-        activeTab,
+        subFilter,
         currentSort,
-        selectedYear,
-        Object.hashAll(selectedGenreIds),
+        currentMoviePage,
+        currentTvPage,
+        hasMoreMovies,
+        hasMoreTvShows,
       );
 }
 
@@ -185,139 +162,239 @@ class MediaSearchNotifier extends Notifier<MediaSearchState> {
     return const MediaSearchState();
   }
 
-  /// Выполняет поиск фильмов, сериалов или анимации.
+  /// Выполняет поиск (первая страница).
   ///
   /// [query] — строка поиска.
   Future<void> search(String query) async {
-    state = state.copyWith(query: query, clearError: true);
+    state = state.copyWith(
+      query: query,
+      clearError: true,
+      currentMoviePage: 1,
+      currentTvPage: 1,
+      hasMoreMovies: false,
+      hasMoreTvShows: false,
+    );
 
     if (query.length < minQueryLength) {
       state = state.copyWith(
-        movieResults: <Movie>[],
-        tvShowResults: <TvShow>[],
-        animationMovieResults: <Movie>[],
-        animationTvShowResults: <TvShow>[],
+        items: const <MediaSearchItem>[],
         isLoading: false,
       );
       return;
     }
 
-    await _performSearch(query);
+    await _performSearch(query, append: false);
   }
 
-  Future<void> _performSearch(String query) async {
-    state = state.copyWith(isLoading: true, clearError: true);
+  /// Загружает следующую страницу результатов.
+  Future<void> loadMore() async {
+    if (state.isLoadingMore || state.isLoading || !state.hasMore) return;
+    if (state.query.length < minQueryLength) return;
+
+    await _performSearch(state.query, append: true);
+  }
+
+  /// Устанавливает субфильтр без перезапуска поиска.
+  ///
+  /// Пользователь должен нажать Enter для нового поиска.
+  void setSubFilter(TvSubFilter filter) {
+    if (state.subFilter == filter) return;
+    state = state.copyWith(subFilter: filter);
+  }
+
+  Future<void> _performSearch(
+    String query, {
+    required bool append,
+  }) async {
+    if (append) {
+      state = state.copyWith(isLoadingMore: true, clearError: true);
+    } else {
+      state = state.copyWith(isLoading: true, clearError: true);
+    }
 
     try {
-      switch (state.activeTab) {
-        case MediaSearchTab.movies:
-          final List<Movie> results = await _tmdbApi.searchMovies(
-            query,
-            year: state.selectedYear,
-          );
-          if (state.query == query) {
-            // Фильтруем по жанрам (по ID, до резолвинга)
-            final List<Movie> filtered = _filterMoviesByGenre(
-              results,
-              state.selectedGenreIds,
-            );
-            // Исключаем анимацию
-            final List<Movie> withoutAnimation =
-                _excludeAnimationMovies(filtered);
-            // Резолвим genre_ids в имена
+      final List<MediaSearchItem> newItems = <MediaSearchItem>[];
+      bool hasMoreMovies = false;
+      bool hasMoreTvShows = false;
+      int moviePage = append ? state.currentMoviePage + 1 : 1;
+      int tvPage = append ? state.currentTvPage + 1 : 1;
+
+      switch (state.subFilter) {
+        case TvSubFilter.all:
+          // Ищем параллельно в фильмах и сериалах
+          final bool shouldFetchMovies =
+              !append || state.hasMoreMovies;
+          final bool shouldFetchTvShows =
+              !append || state.hasMoreTvShows;
+
+          final List<Future<Object>> futures = <Future<Object>>[];
+          if (shouldFetchMovies) {
+            futures.add(_tmdbApi.searchMoviesPaged(
+              query,
+              page: append ? moviePage : 1,
+            ));
+          }
+          if (shouldFetchTvShows) {
+            futures.add(_tmdbApi.searchTvShowsPaged(
+              query,
+              page: append ? tvPage : 1,
+            ));
+          }
+
+          final List<Object> results = await Future.wait(futures);
+
+          int resultIndex = 0;
+          if (shouldFetchMovies) {
+            final TmdbPagedResult<Movie> movieResult =
+                results[resultIndex] as TmdbPagedResult<Movie>;
+            resultIndex++;
             final List<Movie> resolved =
-                await _resolveMovieGenres(withoutAnimation);
-            // Кэшируем с резолвленными жанрами
+                await _resolveMovieGenres(movieResult.results);
             if (resolved.isNotEmpty) {
               await _db.upsertMovies(resolved);
             }
-            final List<Movie> sorted = _applySortToMovies(
-              resolved,
-              state.currentSort,
-              query,
-            );
-            state = state.copyWith(movieResults: sorted, isLoading: false);
+            for (final Movie movie in resolved) {
+              newItems.add(MediaSearchItem.fromMovie(movie));
+            }
+            hasMoreMovies = movieResult.hasMore;
+            moviePage = movieResult.page;
           }
-        case MediaSearchTab.tvShows:
-          final List<TvShow> results = await _tmdbApi.searchTvShows(
-            query,
-            firstAirDateYear: state.selectedYear,
-          );
-          if (state.query == query) {
-            // Фильтруем по жанрам (по ID, до резолвинга)
-            final List<TvShow> filtered = _filterTvShowsByGenre(
-              results,
-              state.selectedGenreIds,
-            );
-            // Исключаем анимацию
-            final List<TvShow> withoutAnimation =
-                _excludeAnimationTvShows(filtered);
-            // Резолвим genre_ids в имена
+          if (shouldFetchTvShows) {
+            final TmdbPagedResult<TvShow> tvResult =
+                results[resultIndex] as TmdbPagedResult<TvShow>;
             final List<TvShow> resolved =
-                await _resolveTvShowGenres(withoutAnimation);
-            // Кэшируем с резолвленными жанрами
+                await _resolveTvShowGenres(tvResult.results);
             if (resolved.isNotEmpty) {
               await _db.upsertTvShows(resolved);
             }
-            final List<TvShow> sorted = _applySortToTvShows(
-              resolved,
-              state.currentSort,
-              query,
-            );
-            state = state.copyWith(tvShowResults: sorted, isLoading: false);
-          }
-        case MediaSearchTab.animation:
-          // Ищем параллельно в фильмах и сериалах
-          final List<Object> results = await Future.wait(<Future<Object>>[
-            _tmdbApi.searchMovies(query, year: state.selectedYear),
-            _tmdbApi.searchTvShows(
-              query,
-              firstAirDateYear: state.selectedYear,
-            ),
-          ]);
-          if (state.query == query) {
-            final List<Movie> movieResults = results[0] as List<Movie>;
-            final List<TvShow> tvShowResults = results[1] as List<TvShow>;
-            // Оставляем только анимацию
-            final List<Movie> animMovies =
-                _filterAnimationOnlyMovies(movieResults);
-            final List<TvShow> animTvShows =
-                _filterAnimationOnlyTvShows(tvShowResults);
-            // Резолвим жанры
-            final List<Movie> resolvedMovies =
-                await _resolveMovieGenres(animMovies);
-            final List<TvShow> resolvedTvShows =
-                await _resolveTvShowGenres(animTvShows);
-            // Кэшируем
-            if (resolvedMovies.isNotEmpty) {
-              await _db.upsertMovies(resolvedMovies);
+            for (final TvShow tvShow in resolved) {
+              newItems.add(MediaSearchItem.fromTvShow(tvShow));
             }
-            if (resolvedTvShows.isNotEmpty) {
-              await _db.upsertTvShows(resolvedTvShows);
-            }
-            // Сортируем
-            final List<Movie> sortedMovies = _applySortToMovies(
-              resolvedMovies,
-              state.currentSort,
-              query,
-            );
-            final List<TvShow> sortedTvShows = _applySortToTvShows(
-              resolvedTvShows,
-              state.currentSort,
-              query,
-            );
-            state = state.copyWith(
-              animationMovieResults: sortedMovies,
-              animationTvShowResults: sortedTvShows,
-              isLoading: false,
-            );
+            hasMoreTvShows = tvResult.hasMore;
+            tvPage = tvResult.page;
           }
+
+        case TvSubFilter.movies:
+          // Только фильмы, исключая анимацию
+          final TmdbPagedResult<Movie> movieResult =
+              await _tmdbApi.searchMoviesPaged(
+            query,
+            page: append ? moviePage : 1,
+          );
+          final List<Movie> withoutAnimation =
+              _excludeAnimationMovies(movieResult.results);
+          final List<Movie> resolved =
+              await _resolveMovieGenres(withoutAnimation);
+          if (resolved.isNotEmpty) {
+            await _db.upsertMovies(resolved);
+          }
+          for (final Movie movie in resolved) {
+            newItems.add(MediaSearchItem.fromMovie(movie));
+          }
+          hasMoreMovies = movieResult.hasMore;
+          moviePage = movieResult.page;
+
+        case TvSubFilter.tvShows:
+          // Только сериалы, исключая анимацию
+          final TmdbPagedResult<TvShow> tvResult =
+              await _tmdbApi.searchTvShowsPaged(
+            query,
+            page: append ? tvPage : 1,
+          );
+          final List<TvShow> withoutAnimation =
+              _excludeAnimationTvShows(tvResult.results);
+          final List<TvShow> resolved =
+              await _resolveTvShowGenres(withoutAnimation);
+          if (resolved.isNotEmpty) {
+            await _db.upsertTvShows(resolved);
+          }
+          for (final TvShow tvShow in resolved) {
+            newItems.add(MediaSearchItem.fromTvShow(tvShow));
+          }
+          hasMoreTvShows = tvResult.hasMore;
+          tvPage = tvResult.page;
+
+        case TvSubFilter.animation:
+          // Параллельно ищем анимацию среди фильмов и сериалов
+          final bool shouldFetchMovies =
+              !append || state.hasMoreMovies;
+          final bool shouldFetchTvShows =
+              !append || state.hasMoreTvShows;
+
+          final List<Future<Object>> futures = <Future<Object>>[];
+          if (shouldFetchMovies) {
+            futures.add(_tmdbApi.searchMoviesPaged(
+              query,
+              page: append ? moviePage : 1,
+            ));
+          }
+          if (shouldFetchTvShows) {
+            futures.add(_tmdbApi.searchTvShowsPaged(
+              query,
+              page: append ? tvPage : 1,
+            ));
+          }
+
+          final List<Object> results = await Future.wait(futures);
+
+          int resultIndex = 0;
+          if (shouldFetchMovies) {
+            final TmdbPagedResult<Movie> movieResult =
+                results[resultIndex] as TmdbPagedResult<Movie>;
+            resultIndex++;
+            final List<Movie> animOnly =
+                _filterAnimationOnlyMovies(movieResult.results);
+            final List<Movie> resolved =
+                await _resolveMovieGenres(animOnly);
+            if (resolved.isNotEmpty) {
+              await _db.upsertMovies(resolved);
+            }
+            for (final Movie movie in resolved) {
+              newItems.add(MediaSearchItem.fromMovie(movie));
+            }
+            hasMoreMovies = movieResult.hasMore;
+            moviePage = movieResult.page;
+          }
+          if (shouldFetchTvShows) {
+            final TmdbPagedResult<TvShow> tvResult =
+                results[resultIndex] as TmdbPagedResult<TvShow>;
+            final List<TvShow> animOnly =
+                _filterAnimationOnlyTvShows(tvResult.results);
+            final List<TvShow> resolved =
+                await _resolveTvShowGenres(animOnly);
+            if (resolved.isNotEmpty) {
+              await _db.upsertTvShows(resolved);
+            }
+            for (final TvShow tvShow in resolved) {
+              newItems.add(MediaSearchItem.fromTvShow(tvShow));
+            }
+            hasMoreTvShows = tvResult.hasMore;
+            tvPage = tvResult.page;
+          }
+      }
+
+      if (state.query == query) {
+        final List<MediaSearchItem> allItems = append
+            ? <MediaSearchItem>[...state.items, ...newItems]
+            : newItems;
+        final List<MediaSearchItem> sorted =
+            _applySort(allItems, state.currentSort, query);
+        state = state.copyWith(
+          items: sorted,
+          isLoading: false,
+          isLoadingMore: false,
+          currentMoviePage: moviePage,
+          currentTvPage: tvPage,
+          hasMoreMovies: hasMoreMovies,
+          hasMoreTvShows: hasMoreTvShows,
+        );
       }
     } on TmdbApiException catch (e) {
       if (state.query == query) {
         state = state.copyWith(
           error: e.message,
           isLoading: false,
+          isLoadingMore: false,
         );
       }
     } on Exception catch (e) {
@@ -325,6 +402,7 @@ class MediaSearchNotifier extends Notifier<MediaSearchState> {
         state = state.copyWith(
           error: e.toString(),
           isLoading: false,
+          isLoadingMore: false,
         );
       }
     }
@@ -358,8 +436,6 @@ class MediaSearchNotifier extends Notifier<MediaSearchState> {
   }
 
   /// Резолвит числовые genre_ids в имена жанров для фильмов.
-  ///
-  /// Использует БД-кэш жанров. При ошибке возвращает исходный список.
   Future<List<Movie>> _resolveMovieGenres(List<Movie> movies) async {
     try {
       final Map<String, String> genreMap =
@@ -380,8 +456,6 @@ class MediaSearchNotifier extends Notifier<MediaSearchState> {
   }
 
   /// Резолвит числовые genre_ids в имена жанров для сериалов.
-  ///
-  /// Использует БД-кэш жанров. При ошибке возвращает исходный список.
   Future<List<TvShow>> _resolveTvShowGenres(List<TvShow> tvShows) async {
     try {
       final Map<String, String> genreMap =
@@ -405,136 +479,70 @@ class MediaSearchNotifier extends Notifier<MediaSearchState> {
   void setSort(SearchSort sort) {
     if (state.currentSort == sort) return;
 
-    final List<Movie> sortedMovies = _applySortToMovies(
-      state.movieResults,
-      sort,
-      state.query,
-    );
-    final List<TvShow> sortedTvShows = _applySortToTvShows(
-      state.tvShowResults,
-      sort,
-      state.query,
-    );
-    final List<Movie> sortedAnimMovies = _applySortToMovies(
-      state.animationMovieResults,
-      sort,
-      state.query,
-    );
-    final List<TvShow> sortedAnimTvShows = _applySortToTvShows(
-      state.animationTvShowResults,
-      sort,
-      state.query,
-    );
-    state = state.copyWith(
-      currentSort: sort,
-      movieResults: sortedMovies,
-      tvShowResults: sortedTvShows,
-      animationMovieResults: sortedAnimMovies,
-      animationTvShowResults: sortedAnimTvShows,
-    );
+    final List<MediaSearchItem> sorted =
+        _applySort(state.items, sort, state.query);
+    state = state.copyWith(currentSort: sort, items: sorted);
   }
 
-  /// Применяет сортировку к списку фильмов.
-  List<Movie> _applySortToMovies(
-    List<Movie> movies,
+  /// Применяет сортировку к списку элементов.
+  List<MediaSearchItem> _applySort(
+    List<MediaSearchItem> items,
     SearchSort sort,
     String query,
   ) {
-    if (movies.isEmpty) return movies;
+    if (items.isEmpty) return items;
 
-    final List<Movie> sorted = List<Movie>.of(movies);
+    final List<MediaSearchItem> sorted = List<MediaSearchItem>.of(items);
     final bool ascending = sort.order == SearchSortOrder.ascending;
 
     switch (sort.field) {
       case SearchSortField.relevance:
-        _sortMoviesByRelevance(sorted, query, ascending);
+        _sortByRelevance(sorted, query, ascending);
       case SearchSortField.date:
-        sorted.sort((Movie a, Movie b) {
-          final int? yearA = a.releaseYear;
-          final int? yearB = b.releaseYear;
-          if (yearA == null && yearB == null) return 0;
-          if (yearA == null) return 1;
-          if (yearB == null) return -1;
-          return ascending ? yearA.compareTo(yearB) : yearB.compareTo(yearA);
-        });
+        _sortByDate(sorted, ascending);
       case SearchSortField.rating:
-        sorted.sort((Movie a, Movie b) {
-          final double? ratingA = a.rating;
-          final double? ratingB = b.rating;
-          if (ratingA == null && ratingB == null) return 0;
-          if (ratingA == null) return 1;
-          if (ratingB == null) return -1;
-          return ascending
-              ? ratingA.compareTo(ratingB)
-              : ratingB.compareTo(ratingA);
-        });
+        _sortByRating(sorted, ascending);
     }
 
     return sorted;
   }
 
-  /// Применяет сортировку к списку сериалов.
-  List<TvShow> _applySortToTvShows(
-    List<TvShow> tvShows,
-    SearchSort sort,
-    String query,
-  ) {
-    if (tvShows.isEmpty) return tvShows;
-
-    final List<TvShow> sorted = List<TvShow>.of(tvShows);
-    final bool ascending = sort.order == SearchSortOrder.ascending;
-
-    switch (sort.field) {
-      case SearchSortField.relevance:
-        _sortTvShowsByRelevance(sorted, query, ascending);
-      case SearchSortField.date:
-        sorted.sort((TvShow a, TvShow b) {
-          final int? yearA = a.firstAirYear;
-          final int? yearB = b.firstAirYear;
-          if (yearA == null && yearB == null) return 0;
-          if (yearA == null) return 1;
-          if (yearB == null) return -1;
-          return ascending ? yearA.compareTo(yearB) : yearB.compareTo(yearA);
-        });
-      case SearchSortField.rating:
-        sorted.sort((TvShow a, TvShow b) {
-          final double? ratingA = a.rating;
-          final double? ratingB = b.rating;
-          if (ratingA == null && ratingB == null) return 0;
-          if (ratingA == null) return 1;
-          if (ratingB == null) return -1;
-          return ascending
-              ? ratingA.compareTo(ratingB)
-              : ratingB.compareTo(ratingA);
-        });
-    }
-
-    return sorted;
-  }
-
-  void _sortMoviesByRelevance(
-    List<Movie> movies,
+  void _sortByRelevance(
+    List<MediaSearchItem> items,
     String query,
     bool ascending,
   ) {
     final String lowerQuery = query.toLowerCase();
-    movies.sort((Movie a, Movie b) {
-      final int scoreA = _relevanceScore(a.title.toLowerCase(), lowerQuery);
-      final int scoreB = _relevanceScore(b.title.toLowerCase(), lowerQuery);
+    items.sort((MediaSearchItem a, MediaSearchItem b) {
+      final int scoreA =
+          _relevanceScore(a.title.toLowerCase(), lowerQuery);
+      final int scoreB =
+          _relevanceScore(b.title.toLowerCase(), lowerQuery);
       return ascending ? scoreA.compareTo(scoreB) : scoreB.compareTo(scoreA);
     });
   }
 
-  void _sortTvShowsByRelevance(
-    List<TvShow> tvShows,
-    String query,
-    bool ascending,
-  ) {
-    final String lowerQuery = query.toLowerCase();
-    tvShows.sort((TvShow a, TvShow b) {
-      final int scoreA = _relevanceScore(a.title.toLowerCase(), lowerQuery);
-      final int scoreB = _relevanceScore(b.title.toLowerCase(), lowerQuery);
-      return ascending ? scoreA.compareTo(scoreB) : scoreB.compareTo(scoreA);
+  void _sortByDate(List<MediaSearchItem> items, bool ascending) {
+    items.sort((MediaSearchItem a, MediaSearchItem b) {
+      final int? yearA = a.year;
+      final int? yearB = b.year;
+      if (yearA == null && yearB == null) return 0;
+      if (yearA == null) return 1;
+      if (yearB == null) return -1;
+      return ascending ? yearA.compareTo(yearB) : yearB.compareTo(yearA);
+    });
+  }
+
+  void _sortByRating(List<MediaSearchItem> items, bool ascending) {
+    items.sort((MediaSearchItem a, MediaSearchItem b) {
+      final double? ratingA = a.rating;
+      final double? ratingB = b.rating;
+      if (ratingA == null && ratingB == null) return 0;
+      if (ratingA == null) return 1;
+      if (ratingB == null) return -1;
+      return ascending
+          ? ratingA.compareTo(ratingB)
+          : ratingB.compareTo(ratingA);
     });
   }
 
@@ -546,121 +554,8 @@ class MediaSearchNotifier extends Notifier<MediaSearchState> {
     return 0;
   }
 
-  /// Устанавливает фильтр по году и повторяет поиск.
-  Future<void> setYearFilter(int? year) async {
-    if (state.selectedYear == year) return;
-
-    if (year != null) {
-      state = state.copyWith(selectedYear: year);
-    } else {
-      state = state.copyWith(clearYear: true);
-    }
-
-    if (state.query.length >= minQueryLength) {
-      await _performSearch(state.query);
-    }
-  }
-
-  /// Устанавливает фильтр по жанрам и пересортирует результаты.
-  ///
-  /// Жанры фильтруются локально (TMDB Search API не поддерживает with_genres).
-  Future<void> setGenreFilter(List<int> genreIds) async {
-    if (listEquals(state.selectedGenreIds, genreIds)) return;
-
-    state = state.copyWith(selectedGenreIds: genreIds);
-
-    // Перезапускаем поиск для обновления локального фильтра
-    if (state.query.length >= minQueryLength) {
-      await _performSearch(state.query);
-    }
-  }
-
-  /// Применяет фильтры года и жанров за один вызов.
-  ///
-  /// Выполняет только один поиск вместо двух отдельных вызовов
-  /// [setYearFilter] и [setGenreFilter].
-  Future<void> applyFilters({
-    int? year,
-    required List<int> genreIds,
-  }) async {
-    final bool yearChanged = state.selectedYear != year;
-    final bool genresChanged =
-        !listEquals(state.selectedGenreIds, genreIds);
-
-    if (!yearChanged && !genresChanged) return;
-
-    state = state.copyWith(
-      selectedYear: year,
-      clearYear: year == null,
-      selectedGenreIds: genreIds,
-    );
-
-    if (state.query.length >= minQueryLength) {
-      await _performSearch(state.query);
-    }
-  }
-
-  /// Очищает все фильтры и повторяет поиск.
-  Future<void> clearFilters() async {
-    if (!state.hasFilters) return;
-
-    state = state.copyWith(
-      clearYear: true,
-      selectedGenreIds: <int>[],
-    );
-
-    if (state.query.length >= minQueryLength) {
-      await _performSearch(state.query);
-    }
-  }
-
-  /// Фильтрует фильмы по жанрам локально.
-  List<Movie> _filterMoviesByGenre(
-    List<Movie> movies,
-    List<int> genreIds,
-  ) {
-    if (genreIds.isEmpty) return movies;
-
-    final Set<String> genreIdStrings =
-        genreIds.map((int id) => id.toString()).toSet();
-
-    return movies.where((Movie movie) {
-      final List<String>? movieGenres = movie.genres;
-      if (movieGenres == null || movieGenres.isEmpty) return false;
-      return genreIdStrings.any(movieGenres.contains);
-    }).toList();
-  }
-
-  /// Фильтрует сериалы по жанрам локально.
-  List<TvShow> _filterTvShowsByGenre(
-    List<TvShow> tvShows,
-    List<int> genreIds,
-  ) {
-    if (genreIds.isEmpty) return tvShows;
-
-    final Set<String> genreIdStrings =
-        genreIds.map((int id) => id.toString()).toSet();
-
-    return tvShows.where((TvShow tvShow) {
-      final List<String>? showGenres = tvShow.genres;
-      if (showGenres == null || showGenres.isEmpty) return false;
-      return genreIdStrings.any(showGenres.contains);
-    }).toList();
-  }
-
-  /// Переключает активный таб и повторяет поиск при необходимости.
-  Future<void> switchTab(MediaSearchTab tab) async {
-    if (state.activeTab == tab) return;
-
-    state = state.copyWith(activeTab: tab, clearError: true);
-
-    if (state.query.length >= minQueryLength) {
-      await _performSearch(state.query);
-    }
-  }
-
   /// Очищает результаты поиска.
   void clear() {
-    state = MediaSearchState(activeTab: state.activeTab);
+    state = MediaSearchState(subFilter: state.subFilter);
   }
 }
