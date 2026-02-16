@@ -6,11 +6,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/collections/screens/home_screen.dart';
 import '../../features/search/screens/search_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
+import '../gamepad/gamepad_action.dart';
+import '../gamepad/widgets/gamepad_listener.dart';
 import '../theme/app_assets.dart';
 import '../theme/app_colors.dart';
 
 /// Порог ширины для переключения NavigationRail ↔ BottomNavigationBar.
 const double navigationBreakpoint = 800;
+
+/// Количество основных табов.
+const int _tabCount = 3;
 
 /// Индексы вкладок навигации.
 enum NavTab {
@@ -30,6 +35,10 @@ enum NavTab {
 /// - `width < 800`: BottomNavigationBar снизу (мобильный)
 ///
 /// Каждая вкладка сохраняет своё состояние через [IndexedStack].
+///
+/// Поддержка геймпада:
+/// - LB/RB — переключение между табами
+/// - B — назад (Navigator.pop если есть куда)
 class NavigationShell extends ConsumerStatefulWidget {
   /// Создаёт [NavigationShell].
   const NavigationShell({super.key});
@@ -52,10 +61,19 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
     final double width = MediaQuery.sizeOf(context).width;
     final bool useRail = width >= navigationBreakpoint;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: useRail ? _buildRailLayout() : _buildContent(),
-      bottomNavigationBar: useRail ? null : _buildBottomNav(),
+    return GamepadListener(
+      onTabSwitch: _onGamepadTabSwitch,
+      onBack: () {
+        // B на корневом экране — pop если возможно
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        body: useRail ? _buildRailLayout() : _buildContent(),
+        bottomNavigationBar: useRail ? null : _buildBottomNav(),
+      ),
     );
   }
 
@@ -156,5 +174,12 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
 
   void _onDestinationSelected(int index) {
     setState(() => _selectedIndex = index);
+  }
+
+  void _onGamepadTabSwitch(GamepadAction action) {
+    final int newIndex = action == GamepadAction.nextTab
+        ? (_selectedIndex + 1) % _tabCount
+        : (_selectedIndex - 1 + _tabCount) % _tabCount;
+    _onDestinationSelected(newIndex);
   }
 }
