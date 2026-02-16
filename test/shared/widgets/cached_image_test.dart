@@ -108,6 +108,9 @@ void main() {
             height: 32,
           ),
         ));
+        // Resolve getImageUri Future
+        await tester.pump();
+        // Process downloadImage completion + setState + new Future
         await tester.pump();
         await tester.pump();
 
