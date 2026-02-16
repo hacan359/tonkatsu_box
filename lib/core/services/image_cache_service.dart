@@ -183,32 +183,48 @@ class ImageCacheService {
     return ImageResult(uri: remoteUrl, isLocal: false, isMissing: true);
   }
 
-  /// Проверяет, что файл является валидным изображением по magic bytes.
+  /// Проверяет, что файл является валидным изображением.
   ///
-  /// Поддерживает JPEG (FF D8 FF), PNG (89 50 4E 47), WebP (RIFF...WEBP).
+  /// Проверяет magic bytes (начало) и маркер конца файла,
+  /// чтобы поймать обрезанные при скачивании файлы.
+  /// Поддерживает JPEG (FF D8 FF … FF D9), PNG (89 50 4E 47 … IEND),
+  /// WebP (RIFF…WEBP).
   bool _isValidImageFile(File file) {
     if (!file.existsSync()) return false;
     final int length = file.lengthSync();
-    if (length < 8) return false;
+    if (length < 12) return false;
 
     final RandomAccessFile raf = file.openSync();
     try {
       final Uint8List header = raf.readSync(12);
 
-      // JPEG: FF D8 FF
+      // JPEG: начало FF D8 FF, конец FF D9
       if (header[0] == 0xFF && header[1] == 0xD8 && header[2] == 0xFF) {
-        return true;
+        raf.setPositionSync(length - 2);
+        final Uint8List tail = raf.readSync(2);
+        return tail[0] == 0xFF && tail[1] == 0xD9;
       }
-      // PNG: 89 50 4E 47
+
+      // PNG: начало 89 50 4E 47, конец IEND (49 45 4E 44 AE 42 60 82)
       if (header[0] == 0x89 &&
           header[1] == 0x50 &&
           header[2] == 0x4E &&
           header[3] == 0x47) {
-        return true;
+        if (length < 20) return false;
+        raf.setPositionSync(length - 8);
+        final Uint8List tail = raf.readSync(8);
+        return tail[0] == 0x49 &&
+            tail[1] == 0x45 &&
+            tail[2] == 0x4E &&
+            tail[3] == 0x44 &&
+            tail[4] == 0xAE &&
+            tail[5] == 0x42 &&
+            tail[6] == 0x60 &&
+            tail[7] == 0x82;
       }
-      // WebP: RIFF....WEBP
-      if (length >= 12 &&
-          header[0] == 0x52 &&
+
+      // WebP: RIFF....WEBP — проверяем заявленный размер
+      if (header[0] == 0x52 &&
           header[1] == 0x49 &&
           header[2] == 0x46 &&
           header[3] == 0x46 &&
@@ -216,8 +232,13 @@ class ImageCacheService {
           header[9] == 0x45 &&
           header[10] == 0x42 &&
           header[11] == 0x50) {
-        return true;
+        // RIFF header содержит размер данных в байтах 4-7 (little-endian)
+        final int declaredSize =
+            header[4] | header[5] << 8 | header[6] << 16 | header[7] << 24;
+        // Реальный размер = declaredSize + 8 (RIFF + size bytes)
+        return length >= declaredSize + 8;
       }
+
       return false;
     } finally {
       raf.closeSync();
