@@ -129,6 +129,7 @@ class _AddImageDialogState extends State<AddImageDialog> {
     final ThemeData theme = Theme.of(context);
 
     return AlertDialog(
+      scrollable: true,
       title: Text(_isEditing ? 'Edit Image' : 'Add Image'),
       content: SizedBox(
         width: 400,

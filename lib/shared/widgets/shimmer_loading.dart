@@ -87,8 +87,7 @@ class ShimmerPosterCard extends StatelessWidget {
     return const Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        AspectRatio(
-          aspectRatio: AppSpacing.posterAspectRatio,
+        Expanded(
           child: ShimmerBox(
             width: double.infinity,
             height: double.infinity,

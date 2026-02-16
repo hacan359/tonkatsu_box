@@ -85,7 +85,7 @@ class ImageCacheService {
   /// Возвращает включено ли кэширование.
   Future<bool> isCacheEnabled() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_CacheKeys.cacheEnabled) ?? false;
+    return prefs.getBool(_CacheKeys.cacheEnabled) ?? true;
   }
 
   /// Устанавливает состояние кэширования.

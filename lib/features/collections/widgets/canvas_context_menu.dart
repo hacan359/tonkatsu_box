@@ -261,6 +261,7 @@ class CanvasContextMenu {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          scrollable: true,
           title: const Text('Delete element'),
           content: const Text(
             'Are you sure you want to delete this element?',

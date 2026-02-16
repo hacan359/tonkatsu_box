@@ -27,6 +27,7 @@ class PosterCard extends StatefulWidget {
     this.subtitle,
     this.isInCollection = false,
     this.status,
+    this.compact = false,
     this.onTap,
     this.onLongPress,
     super.key,
@@ -58,6 +59,9 @@ class PosterCard extends StatefulWidget {
 
   /// Статус элемента. Если задан и != notStarted — показывается бейдж.
   final ItemStatus? status;
+
+  /// Компактный режим (уменьшенные размеры для ландшафта).
+  final bool compact;
 
   /// Обработчик нажатия.
   final VoidCallback? onTap;
@@ -120,7 +124,11 @@ class _PosterCardState extends State<PosterCard>
               // Постер с overlay-элементами
               Expanded(
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                  borderRadius: BorderRadius.circular(
+                    widget.compact
+                        ? AppSpacing.radiusSm
+                        : AppSpacing.radiusMd,
+                  ),
                   child: Stack(
                     fit: StackFit.expand,
                     children: <Widget>[
@@ -132,20 +140,20 @@ class _PosterCardState extends State<PosterCard>
                         fit: BoxFit.cover,
                         placeholder: Container(
                           color: AppColors.surfaceLight,
-                          child: const Center(
+                          child: Center(
                             child: Icon(
                               Icons.image_outlined,
                               color: AppColors.textTertiary,
-                              size: 32,
+                              size: widget.compact ? 16 : 32,
                             ),
                           ),
                         ),
                         errorWidget: Container(
                           color: AppColors.surfaceLight,
-                          child: const Icon(
+                          child: Icon(
                             Icons.image_not_supported_outlined,
                             color: AppColors.textTertiary,
-                            size: 32,
+                            size: widget.compact ? 16 : 32,
                           ),
                         ),
                       ),
@@ -176,7 +184,9 @@ class _PosterCardState extends State<PosterCard>
                                       ),
                                 ),
                                 borderRadius: BorderRadius.circular(
-                                  AppSpacing.radiusMd,
+                                  widget.compact
+                                      ? AppSpacing.radiusSm
+                                      : AppSpacing.radiusMd,
                                 ),
                               ),
                             ),
@@ -187,26 +197,31 @@ class _PosterCardState extends State<PosterCard>
                       // Рейтинг badge (top-left)
                       if (widget.rating != null && widget.rating! > 0)
                         Positioned(
-                          top: AppSpacing.xs,
-                          left: AppSpacing.xs,
-                          child: RatingBadge(rating: widget.rating!),
+                          top: widget.compact ? 2 : AppSpacing.xs,
+                          left: widget.compact ? 2 : AppSpacing.xs,
+                          child: RatingBadge(
+                            rating: widget.rating!,
+                            compact: widget.compact,
+                          ),
                         ),
 
                       // Отметка "в коллекции" (top-right)
                       if (widget.isInCollection)
                         Positioned(
-                          top: AppSpacing.xs,
-                          right: AppSpacing.xs,
+                          top: widget.compact ? 2 : AppSpacing.xs,
+                          right: widget.compact ? 2 : AppSpacing.xs,
                           child: Container(
-                            padding: const EdgeInsets.all(4),
+                            padding: EdgeInsets.all(
+                              widget.compact ? 2 : 4,
+                            ),
                             decoration: const BoxDecoration(
                               color: AppColors.success,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.check,
                               color: Colors.white,
-                              size: 12,
+                              size: widget.compact ? 8 : 12,
                             ),
                           ),
                         ),
@@ -215,17 +230,21 @@ class _PosterCardState extends State<PosterCard>
                       if (widget.status != null &&
                           widget.status != ItemStatus.notStarted)
                         Positioned(
-                          bottom: AppSpacing.xs,
-                          left: AppSpacing.xs,
+                          bottom: widget.compact ? 2 : AppSpacing.xs,
+                          left: widget.compact ? 2 : AppSpacing.xs,
                           child: Container(
-                            padding: const EdgeInsets.all(4),
+                            padding: EdgeInsets.all(
+                              widget.compact ? 2 : 4,
+                            ),
                             decoration: BoxDecoration(
                               color: widget.status!.color,
                               shape: BoxShape.circle,
                             ),
                             child: Text(
                               widget.status!.icon,
-                              style: const TextStyle(fontSize: 10),
+                              style: TextStyle(
+                                fontSize: widget.compact ? 7 : 10,
+                              ),
                             ),
                           ),
                         ),
@@ -234,12 +253,14 @@ class _PosterCardState extends State<PosterCard>
                 ),
               ),
 
-              const SizedBox(height: AppSpacing.xs),
+              SizedBox(height: widget.compact ? 2 : AppSpacing.xs),
 
               // Название
               Text(
                 widget.title,
-                style: AppTypography.posterTitle,
+                style: widget.compact
+                    ? AppTypography.posterTitle.copyWith(fontSize: 9)
+                    : AppTypography.posterTitle,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -247,10 +268,13 @@ class _PosterCardState extends State<PosterCard>
               // Подзаголовок (год + жанр)
               if (widget.year != null || widget.subtitle != null)
                 Padding(
-                  padding: const EdgeInsets.only(top: 2),
+                  padding: EdgeInsets.only(top: widget.compact ? 1 : 2),
                   child: Text(
                     _buildSubtitleText(),
-                    style: AppTypography.posterSubtitle,
+                    style: widget.compact
+                        ? AppTypography.posterSubtitle
+                            .copyWith(fontSize: 7)
+                        : AppTypography.posterSubtitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),

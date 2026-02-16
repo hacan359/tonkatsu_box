@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../shared/constants/platform_features.dart';
 import '../../../core/database/database_service.dart';
 import '../../../core/services/config_service.dart';
 import '../../../core/services/image_cache_service.dart';
@@ -172,17 +173,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget build(BuildContext context) {
     final SettingsState settings = ref.watch(settingsNotifierProvider);
 
+    final bool isLandscape = isLandscapeMobile(context);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
         surfaceTintColor: Colors.transparent,
         foregroundColor: AppColors.textPrimary,
-        title: const Text('IGDB API Setup'),
+        toolbarHeight: isLandscape ? 40 : kToolbarHeight,
+        title: isLandscape ? null : const Text('IGDB API Setup'),
         automaticallyImplyLeading: !widget.isInitialSetup,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.lg),
+        padding: EdgeInsets.all(isLandscape ? AppSpacing.md : AppSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
@@ -577,6 +581,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final bool? confirm = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
+        scrollable: true,
         title: const Text('Clear cache?'),
         content: const Text(
           'This will delete all locally saved images. '
@@ -952,6 +957,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final bool? confirm = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
+        scrollable: true,
         title: const Text('Reset Database?'),
         content: const Text(
           'This will permanently delete all your collections, games, '

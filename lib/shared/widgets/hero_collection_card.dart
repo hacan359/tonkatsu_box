@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/services/image_cache_service.dart';
 import '../../data/repositories/collection_repository.dart';
 import '../../features/collections/providers/collections_provider.dart';
+import '../../shared/constants/platform_features.dart';
 import '../../shared/models/collection.dart';
 import '../../shared/models/collection_item.dart';
 import '../../shared/models/media_type.dart';
@@ -132,9 +133,9 @@ class HeroCollectionCard extends ConsumerWidget {
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
           child: switch (effectiveStyle) {
             HeroCardStyle.mosaic =>
-              _buildMosaicLayout(accent, statsAsync, itemsAsync),
+              _buildMosaicLayout(context, accent, statsAsync, itemsAsync),
             HeroCardStyle.backdrop =>
-              _buildBackdropLayout(accent, statsAsync, itemsAsync),
+              _buildBackdropLayout(context, accent, statsAsync, itemsAsync),
           },
         ),
       ),
@@ -146,14 +147,16 @@ class HeroCollectionCard extends ConsumerWidget {
   // ---------------------------------------------------------------------------
 
   Widget _buildBackdropLayout(
+    BuildContext context,
     Color accent,
     AsyncValue<CollectionStats> statsAsync,
     AsyncValue<List<CollectionItem>> itemsAsync,
   ) {
+    final bool isLandscape = isLandscapeMobile(context);
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
       child: SizedBox(
-        height: 120,
+        height: isLandscape ? 80 : 120,
         child: Stack(
           fit: StackFit.expand,
           children: <Widget>[
@@ -193,7 +196,9 @@ class HeroCollectionCard extends ConsumerWidget {
 
             // Контент
             Padding(
-              padding: const EdgeInsets.all(AppSpacing.md),
+              padding: EdgeInsets.all(
+                isLandscape ? AppSpacing.sm : AppSpacing.md,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
@@ -203,15 +208,16 @@ class HeroCollectionCard extends ConsumerWidget {
                       Icon(
                         iconForType(collection.type),
                         color: accent,
-                        size: 20,
+                        size: isLandscape ? 16 : 20,
                       ),
                       const SizedBox(width: AppSpacing.xs),
                       Expanded(
                         child: Text(
                           collection.name,
-                          style: AppTypography.h2.copyWith(
-                            color: Colors.white,
-                          ),
+                          style: (isLandscape
+                                  ? AppTypography.h3
+                                  : AppTypography.h2)
+                              .copyWith(color: Colors.white),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -287,13 +293,15 @@ class HeroCollectionCard extends ConsumerWidget {
   // ---------------------------------------------------------------------------
 
   Widget _buildMosaicLayout(
+    BuildContext context,
     Color accent,
     AsyncValue<CollectionStats> statsAsync,
     AsyncValue<List<CollectionItem>> itemsAsync,
   ) {
+    final bool isLandscape = isLandscapeMobile(context);
     return Container(
-      height: 120,
-      padding: const EdgeInsets.all(AppSpacing.md),
+      height: isLandscape ? 80 : 120,
+      padding: EdgeInsets.all(isLandscape ? AppSpacing.sm : AppSpacing.md),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         gradient: LinearGradient(

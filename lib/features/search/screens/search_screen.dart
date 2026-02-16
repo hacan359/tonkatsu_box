@@ -2,6 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../shared/constants/platform_features.dart';
+
 import '../../../core/api/tmdb_api.dart';
 import '../../../core/database/database_service.dart';
 import '../../../core/services/image_cache_service.dart';
@@ -220,6 +222,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   }
 
   Widget _buildMediaFilterBar(MediaSearchState searchState) {
+    final bool isLandscape = isLandscapeMobile(context);
     final int filterCount = (searchState.selectedYear != null ? 1 : 0) +
         searchState.selectedGenreIds.length;
     final String buttonLabel = filterCount == 0
@@ -231,17 +234,28 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       children: <Widget>[
         SizedBox(
           width: double.infinity,
+          height: isLandscape ? 30 : null,
           child: OutlinedButton.icon(
             onPressed: _showMediaFilterSheet,
-            icon: const Icon(Icons.filter_list),
-            label: Text(buttonLabel),
+            icon: Icon(Icons.filter_list, size: isLandscape ? 14 : null),
+            label: Text(
+              buttonLabel,
+              style: isLandscape ? AppTypography.caption : null,
+            ),
+            style: isLandscape
+                ? OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                    ),
+                  )
+                : null,
           ),
         ),
         if (searchState.hasFilters) ...<Widget>[
-          const SizedBox(height: AppSpacing.sm),
+          SizedBox(height: isLandscape ? AppSpacing.xs : AppSpacing.sm),
           _buildMediaFilterChips(searchState),
         ],
-        const SizedBox(height: AppSpacing.sm),
+        SizedBox(height: isLandscape ? AppSpacing.xs : AppSpacing.sm),
       ],
     );
   }
@@ -595,6 +609,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     return showDialog<Collection>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
+        scrollable: true,
         title: const Text('Add to Collection'),
         content: SizedBox(
           width: double.maxFinite,
@@ -640,6 +655,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     return showDialog<int>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
+        scrollable: true,
         title: const Text('Select Platform'),
         content: SingleChildScrollView(
           child: Column(
@@ -736,6 +752,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   @override
   Widget build(BuildContext context) {
     final bool isApiReady = ref.watch(hasValidApiKeyProvider);
+    final bool isLandscape = isLandscapeMobile(context);
 
     if (!isApiReady) {
       return Scaffold(
@@ -744,7 +761,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           backgroundColor: AppColors.background,
           surfaceTintColor: Colors.transparent,
           foregroundColor: AppColors.textPrimary,
-          title: const Text('Search'),
+          title: isLandscape ? null : const Text('Search'),
         ),
         body: Center(
           child: Padding(
@@ -754,7 +771,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
               children: <Widget>[
                 Icon(
                   Icons.search_off,
-                  size: 64,
+                  size: isLandscape ? 40 : 64,
                   color: AppColors.textTertiary.withAlpha(100),
                 ),
                 const SizedBox(height: AppSpacing.md),
@@ -781,63 +798,119 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      resizeToAvoidBottomInset: !isLandscape,
       appBar: AppBar(
         backgroundColor: AppColors.background,
         surfaceTintColor: Colors.transparent,
         foregroundColor: AppColors.textPrimary,
-        title: const Text('Search'),
+        title: isLandscape ? null : const Text('Search'),
+        toolbarHeight: isLandscape ? 0 : kToolbarHeight,
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
           tabAlignment: TabAlignment.start,
-          tabs: const <Widget>[
-            Tab(icon: Icon(Icons.videogame_asset), text: 'Games'),
-            Tab(icon: Icon(Icons.movie), text: 'Movies'),
-            Tab(icon: Icon(Icons.tv), text: 'TV Shows'),
-            Tab(icon: Icon(Icons.animation), text: 'Animation'),
-          ],
+          labelPadding: isLandscape
+              ? const EdgeInsets.symmetric(horizontal: AppSpacing.sm)
+              : null,
+          tabs: isLandscape
+              ? const <Widget>[
+                  Tab(icon: Icon(Icons.videogame_asset, size: 18)),
+                  Tab(icon: Icon(Icons.movie, size: 18)),
+                  Tab(icon: Icon(Icons.tv, size: 18)),
+                  Tab(icon: Icon(Icons.animation, size: 18)),
+                ]
+              : const <Widget>[
+                  Tab(icon: Icon(Icons.videogame_asset), text: 'Games'),
+                  Tab(icon: Icon(Icons.movie), text: 'Movies'),
+                  Tab(icon: Icon(Icons.tv), text: 'TV Shows'),
+                  Tab(icon: Icon(Icons.animation), text: 'Animation'),
+                ],
         ),
       ),
       body: Column(
         children: <Widget>[
           // Поле поиска
           Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
+            padding: isLandscape
+                ? const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                    vertical: AppSpacing.xs,
+                  )
+                : const EdgeInsets.all(AppSpacing.md),
             child: Row(
-              children: <Widget>[
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    focusNode: _searchFocus,
-                    decoration: InputDecoration(
-                      hintText: _searchHint,
-                      prefixIcon: const Icon(Icons.search),
-                      suffixIcon: _searchController.text.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear),
-                              onPressed: _onClearSearch,
-                            )
-                          : null,
-                      border: const OutlineInputBorder(),
+                children: <Widget>[
+                  Expanded(
+                    child: TextField(
+                      controller: _searchController,
+                      focusNode: _searchFocus,
+                      style: isLandscape ? AppTypography.bodySmall : null,
+                      decoration: InputDecoration(
+                        hintText: _searchHint,
+                        prefixIcon: Icon(
+                          Icons.search,
+                          size: isLandscape ? 18 : null,
+                        ),
+                        prefixIconConstraints: isLandscape
+                            ? const BoxConstraints(
+                                minWidth: 32,
+                                minHeight: 32,
+                              )
+                            : null,
+                        suffixIcon: _searchController.text.isNotEmpty
+                            ? IconButton(
+                                icon: Icon(
+                                  Icons.clear,
+                                  size: isLandscape ? 16 : null,
+                                ),
+                                onPressed: _onClearSearch,
+                              )
+                            : null,
+                        suffixIconConstraints: isLandscape
+                            ? const BoxConstraints(
+                                minWidth: 32,
+                                minHeight: 32,
+                              )
+                            : null,
+                        border: const OutlineInputBorder(),
+                        isDense: isLandscape,
+                        contentPadding: isLandscape
+                            ? const EdgeInsets.symmetric(
+                                horizontal: AppSpacing.sm,
+                                vertical: AppSpacing.xs,
+                              )
+                            : null,
+                      ),
+                      textInputAction: TextInputAction.search,
+                      onSubmitted: (_) => _onSearchSubmit(),
                     ),
-                    textInputAction: TextInputAction.search,
-                    onSubmitted: (_) => _onSearchSubmit(),
                   ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                FilledButton(
-                  onPressed: _searchController.text.length >= 2
-                      ? _onSearchSubmit
-                      : null,
-                  style: FilledButton.styleFrom(
-                    minimumSize: const Size(48, 48),
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                  ),
-                  child: const Text('Search'),
-                ),
-              ],
+                  const SizedBox(width: AppSpacing.sm),
+                  isLandscape
+                      ? IconButton.filled(
+                          onPressed: _searchController.text.length >= 2
+                              ? _onSearchSubmit
+                              : null,
+                          icon: const Icon(Icons.search, size: 18),
+                          style: IconButton.styleFrom(
+                            minimumSize: const Size(36, 36),
+                            padding: EdgeInsets.zero,
+                          ),
+                        )
+                      : FilledButton(
+                          onPressed: _searchController.text.length >= 2
+                              ? _onSearchSubmit
+                              : null,
+                          style: FilledButton.styleFrom(
+                            minimumSize: const Size(48, 48),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.md,
+                            ),
+                          ),
+                          child: const Text('Search'),
+                        ),
+                ],
+              ),
             ),
-          ),
 
           // Контент табов
           Expanded(
@@ -875,7 +948,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
   int get _gridCrossAxisCount {
     final double screenWidth = MediaQuery.sizeOf(context).width;
+    final bool isLandscape = isLandscapeMobile(context);
     if (screenWidth >= navigationBreakpoint) {
+      return AppSpacing.gridColumnsDesktop;
+    } else if (isLandscape) {
+      // Ландшафт мобильный — больше колонок
       return AppSpacing.gridColumnsDesktop;
     } else if (screenWidth >= 500) {
       return AppSpacing.gridColumnsTablet;
@@ -883,13 +960,23 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     return AppSpacing.gridColumnsMobile;
   }
 
+  /// Отступ и расстояния в гриде, уменьшенные в ландшафте.
+  double get _gridPadding =>
+      isLandscapeMobile(context) ? AppSpacing.sm : AppSpacing.md;
+
+  double get _gridCrossAxisSpacing =>
+      isLandscapeMobile(context) ? AppSpacing.sm : AppSpacing.md;
+
+  double get _gridMainAxisSpacing =>
+      isLandscapeMobile(context) ? AppSpacing.sm : AppSpacing.lg;
+
   Widget _buildShimmerGrid() {
     return GridView.builder(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: EdgeInsets.all(_gridPadding),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: _gridCrossAxisCount,
-        crossAxisSpacing: AppSpacing.md,
-        mainAxisSpacing: AppSpacing.lg,
+        crossAxisSpacing: _gridCrossAxisSpacing,
+        mainAxisSpacing: _gridMainAxisSpacing,
         childAspectRatio: 0.55,
       ),
       itemCount: _gridCrossAxisCount * 2,
@@ -903,19 +990,21 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
   Widget _buildGamesTab() {
     final GameSearchState searchState = ref.watch(gameSearchProvider);
+    final double hPadding =
+        isLandscapeMobile(context) ? AppSpacing.sm : AppSpacing.md;
 
     return Column(
       children: <Widget>[
         // Фильтр по платформе (только для игр)
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          padding: EdgeInsets.symmetric(horizontal: hPadding),
           child: _buildPlatformFilter(searchState),
         ),
 
         // Сортировка (только когда есть результаты)
         if (searchState.hasResults)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            padding: EdgeInsets.symmetric(horizontal: hPadding),
             child: SortSelector(
               currentSort: searchState.currentSort,
               onChanged: (SearchSort sort) {
@@ -932,10 +1021,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   }
 
   Widget _buildPlatformFilter(GameSearchState searchState) {
+    final bool isLandscape = isLandscapeMobile(context);
+
     if (_platformsLoading) {
-      return const SizedBox(
-        height: 48,
-        child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+      return SizedBox(
+        height: isLandscape ? 32 : 48,
+        child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
       );
     }
 
@@ -953,17 +1044,28 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       children: <Widget>[
         SizedBox(
           width: double.infinity,
+          height: isLandscape ? 30 : null,
           child: OutlinedButton.icon(
             onPressed: _showPlatformFilterSheet,
-            icon: const Icon(Icons.filter_list),
-            label: Text(buttonLabel),
+            icon: Icon(Icons.filter_list, size: isLandscape ? 14 : null),
+            label: Text(
+              buttonLabel,
+              style: isLandscape ? AppTypography.caption : null,
+            ),
+            style: isLandscape
+                ? OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                    ),
+                  )
+                : null,
           ),
         ),
         if (searchState.selectedPlatformIds.isNotEmpty) ...<Widget>[
-          const SizedBox(height: AppSpacing.sm),
+          SizedBox(height: isLandscape ? AppSpacing.xs : AppSpacing.sm),
           _buildSelectedPlatformChips(searchState.selectedPlatformIds),
         ],
-        const SizedBox(height: AppSpacing.sm),
+        SizedBox(height: isLandscape ? AppSpacing.xs : AppSpacing.sm),
       ],
     );
   }
@@ -1010,11 +1112,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
             <int, List<CollectedItemInfo>>{};
 
     return GridView.builder(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: EdgeInsets.all(_gridPadding),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: _gridCrossAxisCount,
-        crossAxisSpacing: AppSpacing.md,
-        mainAxisSpacing: AppSpacing.lg,
+        crossAxisSpacing: _gridCrossAxisSpacing,
+        mainAxisSpacing: _gridMainAxisSpacing,
         childAspectRatio: 0.55,
       ),
       itemCount: searchState.results.length,
@@ -1031,6 +1133,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           year: game.releaseYear,
           subtitle: game.genres?.take(2).join(', '),
           isInCollection: infos != null && infos.isNotEmpty,
+          compact: isLandscapeMobile(context),
           onTap: () => _onGameTap(game),
         );
       },
@@ -1041,19 +1144,21 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
   Widget _buildMoviesTab() {
     final MediaSearchState searchState = ref.watch(mediaSearchProvider);
+    final double hPadding =
+        isLandscapeMobile(context) ? AppSpacing.sm : AppSpacing.md;
 
     return Column(
       children: <Widget>[
         // Фильтры медиа
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          padding: EdgeInsets.symmetric(horizontal: hPadding),
           child: _buildMediaFilterBar(searchState),
         ),
 
         // Сортировка (только когда есть результаты)
         if (searchState.movieResults.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            padding: EdgeInsets.symmetric(horizontal: hPadding),
             child: SortSelector(
               currentSort: searchState.currentSort,
               onChanged: (SearchSort sort) {
@@ -1097,11 +1202,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
             <int, List<CollectedItemInfo>>{};
 
     return GridView.builder(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: EdgeInsets.all(_gridPadding),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: _gridCrossAxisCount,
-        crossAxisSpacing: AppSpacing.md,
-        mainAxisSpacing: AppSpacing.lg,
+        crossAxisSpacing: _gridCrossAxisSpacing,
+        mainAxisSpacing: _gridMainAxisSpacing,
         childAspectRatio: 0.55,
       ),
       itemCount: searchState.movieResults.length,
@@ -1119,6 +1224,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           year: movie.releaseYear,
           subtitle: movie.genres?.take(2).join(', '),
           isInCollection: infos != null && infos.isNotEmpty,
+          compact: isLandscapeMobile(context),
           onTap: () => _onMovieTap(movie),
         );
       },
@@ -1129,19 +1235,21 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
   Widget _buildTvShowsTab() {
     final MediaSearchState searchState = ref.watch(mediaSearchProvider);
+    final double hPadding =
+        isLandscapeMobile(context) ? AppSpacing.sm : AppSpacing.md;
 
     return Column(
       children: <Widget>[
         // Фильтры медиа
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          padding: EdgeInsets.symmetric(horizontal: hPadding),
           child: _buildMediaFilterBar(searchState),
         ),
 
         // Сортировка (только когда есть результаты)
         if (searchState.tvShowResults.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            padding: EdgeInsets.symmetric(horizontal: hPadding),
             child: SortSelector(
               currentSort: searchState.currentSort,
               onChanged: (SearchSort sort) {
@@ -1185,11 +1293,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
             <int, List<CollectedItemInfo>>{};
 
     return GridView.builder(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: EdgeInsets.all(_gridPadding),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: _gridCrossAxisCount,
-        crossAxisSpacing: AppSpacing.md,
-        mainAxisSpacing: AppSpacing.lg,
+        crossAxisSpacing: _gridCrossAxisSpacing,
+        mainAxisSpacing: _gridMainAxisSpacing,
         childAspectRatio: 0.55,
       ),
       itemCount: searchState.tvShowResults.length,
@@ -1207,6 +1315,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           year: tvShow.firstAirYear,
           subtitle: tvShow.genres?.take(2).join(', '),
           isInCollection: infos != null && infos.isNotEmpty,
+          compact: isLandscapeMobile(context),
           onTap: () => _onTvShowTap(tvShow),
         );
       },
@@ -1409,6 +1518,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
   Widget _buildAnimationTab() {
     final MediaSearchState searchState = ref.watch(mediaSearchProvider);
+    final double hPadding =
+        isLandscapeMobile(context) ? AppSpacing.sm : AppSpacing.md;
 
     final bool hasAnimationResults =
         searchState.animationMovieResults.isNotEmpty ||
@@ -1418,14 +1529,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       children: <Widget>[
         // Фильтры медиа
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          padding: EdgeInsets.symmetric(horizontal: hPadding),
           child: _buildMediaFilterBar(searchState),
         ),
 
         // Сортировка
         if (hasAnimationResults)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            padding: EdgeInsets.symmetric(horizontal: hPadding),
             child: SortSelector(
               currentSort: searchState.currentSort,
               onChanged: (SearchSort sort) {
@@ -1480,11 +1591,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     ];
 
     return GridView.builder(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: EdgeInsets.all(_gridPadding),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: _gridCrossAxisCount,
-        crossAxisSpacing: AppSpacing.md,
-        mainAxisSpacing: AppSpacing.lg,
+        crossAxisSpacing: _gridCrossAxisSpacing,
+        mainAxisSpacing: _gridMainAxisSpacing,
         childAspectRatio: 0.55,
       ),
       itemCount: items.length,
@@ -1504,6 +1615,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
             year: movie.releaseYear,
             subtitle: 'Movie${_genreSuffix(movie.genres)}',
             isInCollection: infos != null && infos.isNotEmpty,
+            compact: isLandscapeMobile(context),
             onTap: () => _onAnimationMovieTap(movie),
           );
         } else {
@@ -1520,6 +1632,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
             year: tvShow.firstAirYear,
             subtitle: 'Series${_genreSuffix(tvShow.genres)}',
             isInCollection: infos != null && infos.isNotEmpty,
+            compact: isLandscapeMobile(context),
             onTap: () => _onAnimationTvShowTap(tvShow),
           );
         }
@@ -1540,6 +1653,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   // ==================== Shared UI states ====================
 
   Widget _buildEmptyState(String message, IconData icon) {
+    final bool isLandscape = isLandscapeMobile(context);
     return Center(
       child: SingleChildScrollView(
         child: Column(
@@ -1547,25 +1661,26 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           children: <Widget>[
             Icon(
               icon,
-              size: 64,
+              size: isLandscape ? 32 : 64,
               color: AppColors.textSecondary.withAlpha(128),
             ),
-            const SizedBox(height: AppSpacing.md),
+            SizedBox(height: isLandscape ? AppSpacing.sm : AppSpacing.md),
             Text(
               message,
-              style: AppTypography.h3.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+              style: (isLandscape ? AppTypography.body : AppTypography.h3)
+                  .copyWith(color: AppColors.textSecondary),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              'Type at least 2 characters to start searching',
-              style: AppTypography.body.copyWith(
-                    color: AppColors.textSecondary.withAlpha(179),
-                  ),
-              textAlign: TextAlign.center,
-            ),
+            if (!isLandscape) ...<Widget>[
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                'Type at least 2 characters to start searching',
+                style: AppTypography.body.copyWith(
+                  color: AppColors.textSecondary.withAlpha(179),
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ],
         ),
       ),
@@ -1573,28 +1688,28 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   }
 
   Widget _buildNoResults(String query) {
+    final bool isLandscape = isLandscapeMobile(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Icon(
             Icons.search_off,
-            size: 64,
+            size: isLandscape ? 32 : 64,
             color: AppColors.textSecondary.withAlpha(128),
           ),
-          const SizedBox(height: AppSpacing.md),
+          SizedBox(height: isLandscape ? AppSpacing.sm : AppSpacing.md),
           Text(
             'No results found',
-            style: AppTypography.h3.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+            style: (isLandscape ? AppTypography.body : AppTypography.h3)
+                .copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
             'Nothing found for "$query"',
-            style: AppTypography.body.copyWith(
-                  color: AppColors.textSecondary.withAlpha(179),
-                ),
+            style: AppTypography.bodySmall.copyWith(
+              color: AppColors.textSecondary.withAlpha(179),
+            ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -1603,18 +1718,19 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   }
 
   Widget _buildErrorState(String error, {required VoidCallback onRetry}) {
+    final bool isLandscape = isLandscapeMobile(context);
     return Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.xl),
+        padding: EdgeInsets.all(isLandscape ? AppSpacing.md : AppSpacing.xl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            const Icon(
+            Icon(
               Icons.error_outline,
-              size: 64,
+              size: isLandscape ? 32 : 64,
               color: AppColors.error,
             ),
-            const SizedBox(height: AppSpacing.md),
+            SizedBox(height: isLandscape ? AppSpacing.sm : AppSpacing.md),
             Text(
               'Search failed',
               style: AppTypography.h3.copyWith(

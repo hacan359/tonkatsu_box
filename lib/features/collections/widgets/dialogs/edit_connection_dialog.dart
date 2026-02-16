@@ -112,6 +112,7 @@ class _EditConnectionDialogState extends State<EditConnectionDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      scrollable: true,
       title: const Text('Edit Connection'),
       content: SizedBox(
         width: 400,

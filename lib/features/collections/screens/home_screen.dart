@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/import_service.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_colors.dart';
@@ -26,22 +27,24 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final AsyncValue<List<Collection>> collectionsAsync =
         ref.watch(collectionsProvider);
+    final bool isLandscape = isLandscapeMobile(context);
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
         surfaceTintColor: Colors.transparent,
-        title: const Text('Collections', style: AppTypography.h1),
+        toolbarHeight: isLandscape ? 40 : kToolbarHeight,
+        title: isLandscape ? null : const Text('Collections', style: AppTypography.h1),
         actions: <Widget>[
           IconButton(
-            icon: const Icon(Icons.add),
+            icon: Icon(Icons.add, size: isLandscape ? 20 : null),
             color: AppColors.textSecondary,
             tooltip: 'New Collection',
             onPressed: () => _createCollection(context, ref),
           ),
           IconButton(
-            icon: const Icon(Icons.file_download_outlined),
+            icon: Icon(Icons.file_download_outlined, size: isLandscape ? 20 : null),
             color: AppColors.textSecondary,
             tooltip: 'Import Collection',
             onPressed: () => _importCollection(context, ref),
@@ -101,13 +104,15 @@ class HomeScreen extends ConsumerWidget {
     final List<Collection> tileCollections =
         ownCollections.skip(_maxHeroCards).toList();
 
+    final bool isLandscape = isLandscapeMobile(context);
+
     return RefreshIndicator(
       onRefresh: () => ref.read(collectionsProvider.notifier).refresh(),
       child: ListView(
-        padding: const EdgeInsets.only(
-          left: AppSpacing.md,
-          right: AppSpacing.md,
-          bottom: 80,
+        padding: EdgeInsets.only(
+          left: isLandscape ? AppSpacing.sm : AppSpacing.md,
+          right: isLandscape ? AppSpacing.sm : AppSpacing.md,
+          bottom: isLandscape ? 40 : 80,
         ),
         children: <Widget>[
           // Hero-карточки (первые 3 own коллекции)
@@ -515,6 +520,7 @@ class _ImportProgressDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      scrollable: true,
       title: const Text('Importing Collection'),
       content: ValueListenableBuilder<ImportProgress?>(
         valueListenable: progressNotifier,
