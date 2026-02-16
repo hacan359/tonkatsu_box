@@ -3,13 +3,21 @@
 /// Поле сортировки.
 enum SearchSortField {
   /// По релевантности (совпадение с запросом).
-  relevance,
+  relevance('Rel', 'Relevance'),
 
   /// По дате выпуска.
-  date,
+  date('Date', 'Date'),
 
   /// По рейтингу.
-  rating,
+  rating('Rate', 'Rating');
+
+  const SearchSortField(this.shortLabel, this.displayLabel);
+
+  /// Короткий лейбл для компактного UI (3-4 символа).
+  final String shortLabel;
+
+  /// Полное отображаемое название.
+  final String displayLabel;
 }
 
 /// Направление сортировки.

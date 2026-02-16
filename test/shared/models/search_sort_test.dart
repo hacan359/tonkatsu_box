@@ -9,6 +9,21 @@ void main() {
       expect(SearchSortField.values, contains(SearchSortField.date));
       expect(SearchSortField.values, contains(SearchSortField.rating));
     });
+
+    test('relevance has correct labels', () {
+      expect(SearchSortField.relevance.shortLabel, 'Rel');
+      expect(SearchSortField.relevance.displayLabel, 'Relevance');
+    });
+
+    test('date has correct labels', () {
+      expect(SearchSortField.date.shortLabel, 'Date');
+      expect(SearchSortField.date.displayLabel, 'Date');
+    });
+
+    test('rating has correct labels', () {
+      expect(SearchSortField.rating.shortLabel, 'Rate');
+      expect(SearchSortField.rating.displayLabel, 'Rating');
+    });
   });
 
   group('SearchSortOrder', () {

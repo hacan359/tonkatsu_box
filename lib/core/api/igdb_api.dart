@@ -218,6 +218,7 @@ class IgdbApi {
   /// [query] — строка поиска.
   /// [platformIds] — опциональный фильтр по платформам (несколько).
   /// [limit] — максимальное количество результатов (по умолчанию 20).
+  /// [offset] — смещение для пагинации (по умолчанию 0).
   ///
   /// Возвращает список найденных игр.
   /// Throws [IgdbApiException] при ошибке запроса.
@@ -225,6 +226,7 @@ class IgdbApi {
     required String query,
     List<int>? platformIds,
     int limit = 20,
+    int offset = 0,
   }) async {
     _ensureCredentials();
 
@@ -246,6 +248,9 @@ class IgdbApi {
       }
 
       body.write(' search "$escapedQuery"; limit $limit;');
+      if (offset > 0) {
+        body.write(' offset $offset;');
+      }
 
       final Response<dynamic> response = await _dio.post<dynamic>(
         '$_igdbBaseUrl/games',

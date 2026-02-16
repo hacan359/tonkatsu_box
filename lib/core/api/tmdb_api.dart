@@ -8,6 +8,32 @@ import '../../shared/models/tv_episode.dart';
 import '../../shared/models/tv_season.dart';
 import '../../shared/models/tv_show.dart';
 
+/// Результат пагинированного поиска TMDB.
+class TmdbPagedResult<T> {
+  /// Создаёт [TmdbPagedResult].
+  const TmdbPagedResult({
+    required this.results,
+    required this.page,
+    required this.totalPages,
+    required this.totalResults,
+  });
+
+  /// Список результатов текущей страницы.
+  final List<T> results;
+
+  /// Номер текущей страницы.
+  final int page;
+
+  /// Общее количество страниц.
+  final int totalPages;
+
+  /// Общее количество результатов.
+  final int totalResults;
+
+  /// Есть ли ещё страницы.
+  bool get hasMore => page < totalPages;
+}
+
 /// Провайдер для TMDB API клиента.
 final Provider<TmdbApi> tmdbApiProvider = Provider<TmdbApi>((Ref ref) {
   return TmdbApi();
@@ -176,6 +202,68 @@ class TmdbApi {
     }
   }
 
+  /// Ищет фильмы по названию с информацией о пагинации.
+  ///
+  /// [query] — строка поиска.
+  /// [page] — номер страницы (по умолчанию 1).
+  ///
+  /// Возвращает [TmdbPagedResult] с фильмами и метаданными пагинации.
+  /// Throws [TmdbApiException] при ошибке запроса.
+  Future<TmdbPagedResult<Movie>> searchMoviesPaged(
+    String query, {
+    int page = 1,
+  }) async {
+    _ensureApiKey();
+
+    if (query.trim().isEmpty) {
+      return const TmdbPagedResult<Movie>(
+        results: <Movie>[],
+        page: 1,
+        totalPages: 0,
+        totalResults: 0,
+      );
+    }
+
+    try {
+      final Map<String, dynamic> params = <String, dynamic>{
+        'api_key': _apiKey,
+        'language': language,
+        'query': query.trim(),
+        'page': page,
+      };
+      final Response<dynamic> response = await _dio.get<dynamic>(
+        '$_baseUrl/search/movie',
+        queryParameters: params,
+      );
+
+      if (response.statusCode != 200 || response.data == null) {
+        throw TmdbApiException(
+          'Failed to search movies',
+          statusCode: response.statusCode,
+        );
+      }
+
+      final Map<String, dynamic> data =
+          response.data as Map<String, dynamic>;
+      final List<dynamic> results = data['results'] as List<dynamic>;
+      final int currentPage = (data['page'] as int?) ?? 1;
+      final int totalPages = (data['total_pages'] as int?) ?? 0;
+      final int totalResults = (data['total_results'] as int?) ?? 0;
+
+      return TmdbPagedResult<Movie>(
+        results: results
+            .map((dynamic item) =>
+                Movie.fromJson(item as Map<String, dynamic>))
+            .toList(),
+        page: currentPage,
+        totalPages: totalPages,
+        totalResults: totalResults,
+      );
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'Failed to search movies');
+    }
+  }
+
   /// Получает фильм по ID.
   ///
   /// Возвращает фильм или null, если не найден.
@@ -298,6 +386,68 @@ class TmdbApi {
           .map((dynamic item) =>
               TvShow.fromJson(item as Map<String, dynamic>))
           .toList();
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'Failed to search TV shows');
+    }
+  }
+
+  /// Ищет сериалы по названию с информацией о пагинации.
+  ///
+  /// [query] — строка поиска.
+  /// [page] — номер страницы (по умолчанию 1).
+  ///
+  /// Возвращает [TmdbPagedResult] с сериалами и метаданными пагинации.
+  /// Throws [TmdbApiException] при ошибке запроса.
+  Future<TmdbPagedResult<TvShow>> searchTvShowsPaged(
+    String query, {
+    int page = 1,
+  }) async {
+    _ensureApiKey();
+
+    if (query.trim().isEmpty) {
+      return const TmdbPagedResult<TvShow>(
+        results: <TvShow>[],
+        page: 1,
+        totalPages: 0,
+        totalResults: 0,
+      );
+    }
+
+    try {
+      final Map<String, dynamic> params = <String, dynamic>{
+        'api_key': _apiKey,
+        'language': language,
+        'query': query.trim(),
+        'page': page,
+      };
+      final Response<dynamic> response = await _dio.get<dynamic>(
+        '$_baseUrl/search/tv',
+        queryParameters: params,
+      );
+
+      if (response.statusCode != 200 || response.data == null) {
+        throw TmdbApiException(
+          'Failed to search TV shows',
+          statusCode: response.statusCode,
+        );
+      }
+
+      final Map<String, dynamic> data =
+          response.data as Map<String, dynamic>;
+      final List<dynamic> results = data['results'] as List<dynamic>;
+      final int currentPage = (data['page'] as int?) ?? 1;
+      final int totalPages = (data['total_pages'] as int?) ?? 0;
+      final int totalResults = (data['total_results'] as int?) ?? 0;
+
+      return TmdbPagedResult<TvShow>(
+        results: results
+            .map((dynamic item) =>
+                TvShow.fromJson(item as Map<String, dynamic>))
+            .toList(),
+        page: currentPage,
+        totalPages: totalPages,
+        totalResults: totalResults,
+      );
     } on DioException catch (e) {
       throw _handleDioException(e, 'Failed to search TV shows');
     }

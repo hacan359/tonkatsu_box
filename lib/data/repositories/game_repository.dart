@@ -36,18 +36,21 @@ class GameRepository {
   /// [query] — строка поиска.
   /// [platformIds] — опциональный фильтр по платформам (несколько).
   /// [limit] — максимальное количество результатов.
+  /// [offset] — смещение для пагинации (по умолчанию 0).
   ///
   /// Возвращает список найденных игр.
   Future<List<Game>> searchGames({
     required String query,
     List<int>? platformIds,
     int limit = 20,
+    int offset = 0,
   }) async {
     // Поиск через IGDB API
     final List<Game> games = await _api.searchGames(
       query: query,
       platformIds: platformIds,
       limit: limit,
+      offset: offset,
     );
 
     // Кешируем результаты

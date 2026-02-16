@@ -5,6 +5,9 @@ import '../../../data/repositories/game_repository.dart';
 import '../../../shared/models/game.dart';
 import '../../../shared/models/search_sort.dart';
 
+/// Количество результатов на одну страницу.
+const int _gamePageSize = 20;
+
 /// Состояние поиска игр.
 class GameSearchState {
   /// Создаёт [GameSearchState].
@@ -12,9 +15,12 @@ class GameSearchState {
     this.query = '',
     this.results = const <Game>[],
     this.isLoading = false,
+    this.isLoadingMore = false,
     this.error,
     this.selectedPlatformIds = const <int>[],
     this.currentSort = const SearchSort(),
+    this.currentOffset = 0,
+    this.hasMore = false,
   });
 
   /// Текущий поисковый запрос.
@@ -23,8 +29,11 @@ class GameSearchState {
   /// Результаты поиска.
   final List<Game> results;
 
-  /// Флаг загрузки.
+  /// Флаг загрузки первой страницы.
   final bool isLoading;
+
+  /// Флаг загрузки следующей страницы.
+  final bool isLoadingMore;
 
   /// Сообщение об ошибке.
   final String? error;
@@ -34,6 +43,12 @@ class GameSearchState {
 
   /// Текущая сортировка.
   final SearchSort currentSort;
+
+  /// Текущее смещение для пагинации IGDB.
+  final int currentOffset;
+
+  /// Есть ли ещё результаты для загрузки.
+  final bool hasMore;
 
   /// Проверяет, есть ли результаты.
   bool get hasResults => results.isNotEmpty;
@@ -49,18 +64,24 @@ class GameSearchState {
     String? query,
     List<Game>? results,
     bool? isLoading,
+    bool? isLoadingMore,
     String? error,
     List<int>? selectedPlatformIds,
     SearchSort? currentSort,
+    int? currentOffset,
+    bool? hasMore,
     bool clearError = false,
   }) {
     return GameSearchState(
       query: query ?? this.query,
       results: results ?? this.results,
       isLoading: isLoading ?? this.isLoading,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       error: clearError ? null : (error ?? this.error),
       selectedPlatformIds: selectedPlatformIds ?? this.selectedPlatformIds,
       currentSort: currentSort ?? this.currentSort,
+      currentOffset: currentOffset ?? this.currentOffset,
+      hasMore: hasMore ?? this.hasMore,
     );
   }
 
@@ -71,9 +92,12 @@ class GameSearchState {
         other.query == query &&
         listEquals(other.results, results) &&
         other.isLoading == isLoading &&
+        other.isLoadingMore == isLoadingMore &&
         other.error == error &&
         listEquals(other.selectedPlatformIds, selectedPlatformIds) &&
-        other.currentSort == currentSort;
+        other.currentSort == currentSort &&
+        other.currentOffset == currentOffset &&
+        other.hasMore == hasMore;
   }
 
   @override
@@ -81,9 +105,12 @@ class GameSearchState {
         query,
         Object.hashAll(results),
         isLoading,
+        isLoadingMore,
         error,
         Object.hashAll(selectedPlatformIds),
         currentSort,
+        currentOffset,
+        hasMore,
       );
 }
 
@@ -107,22 +134,44 @@ class GameSearchNotifier extends Notifier<GameSearchState> {
     return const GameSearchState();
   }
 
-  /// Выполняет поиск игр.
+  /// Выполняет поиск игр (первая страница).
   ///
   /// [query] — строка поиска.
   Future<void> search(String query) async {
-    state = state.copyWith(query: query, clearError: true);
+    state = state.copyWith(
+      query: query,
+      clearError: true,
+      currentOffset: 0,
+      hasMore: false,
+    );
 
     if (query.length < minQueryLength) {
       state = state.copyWith(results: <Game>[], isLoading: false);
       return;
     }
 
-    await _performSearch(query);
+    await _performSearch(query, offset: 0, append: false);
   }
 
-  Future<void> _performSearch(String query) async {
-    state = state.copyWith(isLoading: true, clearError: true);
+  /// Загружает следующую страницу результатов.
+  Future<void> loadMore() async {
+    if (state.isLoadingMore || state.isLoading || !state.hasMore) return;
+    if (state.query.length < minQueryLength) return;
+
+    final int nextOffset = state.currentOffset + _gamePageSize;
+    await _performSearch(state.query, offset: nextOffset, append: true);
+  }
+
+  Future<void> _performSearch(
+    String query, {
+    required int offset,
+    required bool append,
+  }) async {
+    if (append) {
+      state = state.copyWith(isLoadingMore: true, clearError: true);
+    } else {
+      state = state.copyWith(isLoading: true, clearError: true);
+    }
 
     try {
       final List<Game> results = await _repository.searchGames(
@@ -130,18 +179,30 @@ class GameSearchNotifier extends Notifier<GameSearchState> {
         platformIds: state.selectedPlatformIds.isEmpty
             ? null
             : state.selectedPlatformIds,
+        offset: offset,
       );
 
       // Проверяем, что запрос всё ещё актуален
       if (state.query == query) {
-        final List<Game> sorted = _applySort(results, state.currentSort, query);
-        state = state.copyWith(results: sorted, isLoading: false);
+        final List<Game> allResults = append
+            ? <Game>[...state.results, ...results]
+            : results;
+        final List<Game> sorted =
+            _applySort(allResults, state.currentSort, query);
+        state = state.copyWith(
+          results: sorted,
+          isLoading: false,
+          isLoadingMore: false,
+          currentOffset: offset,
+          hasMore: results.length >= _gamePageSize,
+        );
       }
     } on Exception catch (e) {
       if (state.query == query) {
         state = state.copyWith(
           error: e.toString(),
           isLoading: false,
+          isLoadingMore: false,
         );
       }
     }
@@ -237,7 +298,7 @@ class GameSearchNotifier extends Notifier<GameSearchState> {
     state = state.copyWith(selectedPlatformIds: platformIds);
 
     if (state.query.length >= minQueryLength) {
-      await _performSearch(state.query);
+      await _performSearch(state.query, offset: 0, append: false);
     }
   }
 
