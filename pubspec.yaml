@@ -58,6 +58,9 @@ dependencies:
   # WebView
   webview_windows: ^0.4.0
 
+  # Gamepad
+  gamepads: ^0.1.9
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -580,6 +580,185 @@ void main() {
       });
     });
 
+    group('focus и gamepad', () {
+      testWidgets('должен содержать Focus виджет',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(
+          child: const PosterCard(
+            title: 'Focus Test',
+            imageUrl: 'https://example.com/poster.jpg',
+            cacheImageType: ImageType.gameCover,
+            cacheImageId: '123',
+          ),
+        ));
+
+        expect(
+          find.descendant(
+            of: find.byType(PosterCard),
+            matching: find.byType(Focus),
+          ),
+          findsAtLeastNWidgets(1),
+        );
+      });
+
+      testWidgets('должен содержать Actions виджет с ActivateIntent',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(
+          child: const PosterCard(
+            title: 'Actions Test',
+            imageUrl: 'https://example.com/poster.jpg',
+            cacheImageType: ImageType.gameCover,
+            cacheImageId: '123',
+          ),
+        ));
+
+        expect(
+          find.descendant(
+            of: find.byType(PosterCard),
+            matching: find.byType(Actions),
+          ),
+          findsAtLeastNWidgets(1),
+        );
+      });
+
+      testWidgets('ActivateIntent должен вызывать onTap',
+          (WidgetTester tester) async {
+        bool tapped = false;
+
+        await tester.pumpWidget(buildTestWidget(
+          child: PosterCard(
+            title: 'Activate Test',
+            imageUrl: 'https://example.com/poster.jpg',
+            cacheImageType: ImageType.gameCover,
+            cacheImageId: '123',
+            onTap: () => tapped = true,
+          ),
+        ));
+
+        // Находим Focus виджет PosterCard и фокусируемся на нём
+        final FocusNode focusNode = tester
+            .widget<Focus>(find.descendant(
+              of: find.byType(PosterCard),
+              matching: find.byType(Focus),
+            ).first)
+            .focusNode!;
+
+        focusNode.requestFocus();
+        await tester.pump();
+
+        // Получаем контекст Focus для вызова ActivateIntent
+        final BuildContext focusContext = focusNode.context!;
+        Actions.invoke(focusContext, const ActivateIntent());
+
+        expect(tapped, isTrue);
+      });
+
+      testWidgets('ActivateIntent без onTap не вызывает ошибку',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(
+          child: const PosterCard(
+            title: 'No Tap Activate',
+            imageUrl: 'https://example.com/poster.jpg',
+            cacheImageType: ImageType.gameCover,
+            cacheImageId: '123',
+          ),
+        ));
+
+        final FocusNode focusNode = tester
+            .widget<Focus>(find.descendant(
+              of: find.byType(PosterCard),
+              matching: find.byType(Focus),
+            ).first)
+            .focusNode!;
+
+        focusNode.requestFocus();
+        await tester.pump();
+
+        final BuildContext focusContext = focusNode.context!;
+
+        // Не должно бросать исключение
+        expect(
+          () => Actions.invoke(focusContext, const ActivateIntent()),
+          returnsNormally,
+        );
+      });
+
+      testWidgets('фокус должен запускать hover анимацию',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(
+          child: const PosterCard(
+            title: 'Focus Anim Test',
+            imageUrl: 'https://example.com/poster.jpg',
+            cacheImageType: ImageType.gameCover,
+            cacheImageId: '123',
+          ),
+        ));
+
+        // До фокуса — масштаб 1.0
+        Finder transforms = find.descendant(
+          of: find.byType(PosterCard),
+          matching: find.byType(Transform),
+        );
+        Transform transform = tester.widget<Transform>(transforms.first);
+        expect(transform.transform.entry(0, 0), 1.0);
+
+        // Фокусируемся
+        final FocusNode focusNode = tester
+            .widget<Focus>(find.descendant(
+              of: find.byType(PosterCard),
+              matching: find.byType(Focus),
+            ).first)
+            .focusNode!;
+
+        focusNode.requestFocus();
+        await tester.pumpAndSettle();
+
+        // После фокуса — масштаб > 1.0 (hover scale)
+        transforms = find.descendant(
+          of: find.byType(PosterCard),
+          matching: find.byType(Transform),
+        );
+        transform = tester.widget<Transform>(transforms.first);
+        expect(transform.transform.entry(0, 0), greaterThan(1.0));
+      });
+
+      testWidgets('потеря фокуса должна возвращать масштаб к 1.0',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(
+          child: const PosterCard(
+            title: 'Unfocus Test',
+            imageUrl: 'https://example.com/poster.jpg',
+            cacheImageType: ImageType.gameCover,
+            cacheImageId: '123',
+          ),
+        ));
+
+        final FocusNode focusNode = tester
+            .widget<Focus>(find.descendant(
+              of: find.byType(PosterCard),
+              matching: find.byType(Focus),
+            ).first)
+            .focusNode!;
+
+        // Фокусируемся и ждём анимацию
+        focusNode.requestFocus();
+        await tester.pumpAndSettle();
+
+        // Убираем фокус
+        focusNode.unfocus();
+        await tester.pumpAndSettle();
+
+        // Масштаб вернулся к 1.0
+        final Finder transforms = find.descendant(
+          of: find.byType(PosterCard),
+          matching: find.byType(Transform),
+        );
+        final Transform transform =
+            tester.widget<Transform>(transforms.first);
+        expect(transform.transform.entry(0, 0), 1.0);
+      });
+    });
+
     group('комбинированный тест', () {
       testWidgets('должен отображать все элементы одновременно',
           (WidgetTester tester) async {

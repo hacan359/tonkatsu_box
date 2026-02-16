@@ -222,6 +222,33 @@ flutter test       # Все тесты проходят
 - VGMaps / WebView2 — только Windows
 - Long press контекстное меню — Android, right-click — Windows
 
+### Поддержка геймпада (D-pad навигация)
+
+D-pad и кнопка A обрабатываются глобально в `NavigationShell` через `DirectionalFocusIntent` / `ActivateIntent`. Новые виджеты автоматически поддерживают геймпад **если они focusable**.
+
+**Правила для новых виджетов:**
+
+1. **InkWell / Material кнопки** — ничего делать не нужно (focusable + ActivateIntent из коробки)
+2. **GestureDetector** — НЕ focusable! Обернуть в `Actions` > `Focus`:
+   ```dart
+   Actions(
+     actions: <Type, Action<Intent>>{
+       ActivateIntent: CallbackAction<ActivateIntent>(
+         onInvoke: (_) { onTap?.call(); return null; },
+       ),
+     },
+     child: Focus(
+       focusNode: _focusNode, // dispose в dispose()!
+       child: GestureDetector(onTap: onTap, child: ...),
+     ),
+   )
+   ```
+   **Важно:** `Actions` ВЫШЕ `Focus` (Actions.invoke ищет вверх по дереву)
+3. **Новый экран со скроллом/табами** — добавить `GamepadListener` с нужными callbacks (`onScroll`, `onSubTabSwitch`)
+4. **Визуальная рамка фокуса** — `GamepadFocusIndicator(child: ...)` (2px рамка в gamepad-режиме)
+
+Подробная документация: `docs/GAMEPAD.md`
+
 ## Ключевые файлы для ориентации
 | Файл | Описание |
 |------|----------|

@@ -15,6 +15,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/source_badge.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../providers/settings_provider.dart';
+import 'gamepad_debug_screen.dart';
 import 'image_debug_screen.dart';
 import 'steamgriddb_debug_screen.dart';
 
@@ -1052,6 +1053,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   MaterialPageRoute<void>(
                     builder: (BuildContext context) =>
                         const ImageDebugScreen(),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.gamepad),
+              title: const Text('Gamepad Debug Panel'),
+              subtitle: const Text('Test controller input events'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (BuildContext context) =>
+                        const GamepadDebugScreen(),
                   ),
                 );
               },
