@@ -1,5 +1,6 @@
 // Адаптивная оболочка навигации приложения.
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -37,6 +38,8 @@ enum NavTab {
 /// Каждая вкладка сохраняет своё состояние через [IndexedStack].
 ///
 /// Поддержка геймпада:
+/// - D-pad — навигация фокуса между виджетами (DirectionalFocusIntent)
+/// - A — активация фокусированного виджета (ActivateIntent)
 /// - LB/RB — переключение между табами
 /// - B — назад (Navigator.pop если есть куда)
 class NavigationShell extends ConsumerStatefulWidget {
@@ -63,6 +66,9 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
 
     return GamepadListener(
       onTabSwitch: _onGamepadTabSwitch,
+      onNavigate: _onGamepadNavigate,
+      onConfirm: _onGamepadConfirm,
+      onScroll: _onGamepadScroll,
       onBack: () {
         // B на корневом экране — pop если возможно
         if (Navigator.of(context).canPop()) {
@@ -181,5 +187,70 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
         ? (_selectedIndex + 1) % _tabCount
         : (_selectedIndex - 1 + _tabCount) % _tabCount;
     _onDestinationSelected(newIndex);
+  }
+
+  /// D-pad → перемещение фокуса через DirectionalFocusIntent.
+  ///
+  /// Если ни один виджет ещё не в фокусе — фокусирует первый доступный.
+  void _onGamepadNavigate(GamepadAction action) {
+    final FocusNode? primaryFocus = FocusManager.instance.primaryFocus;
+    final BuildContext? focusContext = primaryFocus?.context;
+
+    if (focusContext == null) {
+      // Ничего не сфокусировано — перейти к первому виджету
+      FocusScope.of(context).nextFocus();
+      return;
+    }
+
+    final TraversalDirection direction = switch (action) {
+      GamepadAction.navigateUp => TraversalDirection.up,
+      GamepadAction.navigateDown => TraversalDirection.down,
+      GamepadAction.navigateLeft => TraversalDirection.left,
+      GamepadAction.navigateRight => TraversalDirection.right,
+      _ => TraversalDirection.down,
+    };
+
+    Actions.maybeInvoke(focusContext, DirectionalFocusIntent(direction));
+  }
+
+  /// A кнопка → активация фокусированного виджета (ActivateIntent).
+  ///
+  /// Для InkWell это вызовет onTap. Для Focus + Actions — зарегистрированный callback.
+  void _onGamepadConfirm() {
+    final BuildContext? focusContext =
+        FocusManager.instance.primaryFocus?.context;
+    if (focusContext == null) return;
+
+    Actions.maybeInvoke(focusContext, const ActivateIntent());
+  }
+
+  /// Left Stick → скролл через синтетический PointerScrollEvent.
+  ///
+  /// Работает как колесо мыши — не требует фокуса на виджете.
+  /// Событие отправляется в центр экрана, Flutter направляет его
+  /// к Scrollable под этой точкой.
+  void _onGamepadScroll(GamepadAction action) {
+    const double scrollAmount = 80.0;
+
+    final double dy = switch (action) {
+      GamepadAction.scrollUp => -scrollAmount,
+      GamepadAction.scrollDown => scrollAmount,
+      _ => 0.0,
+    };
+    final double dx = switch (action) {
+      GamepadAction.scrollLeft => -scrollAmount,
+      GamepadAction.scrollRight => scrollAmount,
+      _ => 0.0,
+    };
+
+    if (dx == 0.0 && dy == 0.0) return;
+
+    final Size size = MediaQuery.sizeOf(context);
+    GestureBinding.instance.handlePointerEvent(
+      PointerScrollEvent(
+        position: Offset(size.width / 2, size.height / 2),
+        scrollDelta: Offset(dx, dy),
+      ),
+    );
   }
 }

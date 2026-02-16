@@ -44,6 +44,9 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
     final GamepadService service = ref.read(gamepadServiceProvider);
 
     _rawSub = service.rawEvents.listen((GamepadEvent event) {
+      // ignore: avoid_print
+      print('[GAMEPAD] key=${event.key}  type=${event.type}  '
+          'value=${event.value.toStringAsFixed(3)}');
       setState(() {
         _rawEvents.insert(
           0,

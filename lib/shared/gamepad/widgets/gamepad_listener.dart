@@ -14,8 +14,22 @@ import '../gamepad_provider.dart';
 /// Оборачивает дочерний виджет и подписывается на [gamepadServiceProvider].
 /// При получении события определяет тип и вызывает соответствующий callback.
 ///
-/// При фокусе на TextField навигационные действия (D-pad) пропускаются,
-/// чтобы не конфликтовать с вводом текста.
+/// При фокусе на TextField:
+/// - D-pad Up/Down — выход из TextField и навигация к соседнему виджету
+/// - D-pad Left/Right — заблокированы (курсор в тексте)
+/// - A — заблокирован (ввод текста)
+/// - B — снятие фокуса с TextField
+///
+/// Маппинг кнопок Xbox контроллера (Windows JOYINFOEX):
+/// - `button-0` (A) → confirm
+/// - `button-1` (B) → back
+/// - `button-4` (LB) → previousTab
+/// - `button-5` (RB) → nextTab
+/// - `button-7` (Start) → openMenu
+/// - `dpad-*` (POV hat) → navigate
+/// - `dwXpos`/`dwYpos` (Left Stick) → scroll
+/// - `dwRpos`/`dwUpos` (Right Stick) → pan
+/// - `dwZpos` (Triggers) → sub-tab switch
 class GamepadListener extends ConsumerStatefulWidget {
   /// Создаёт [GamepadListener].
   const GamepadListener({
@@ -94,7 +108,28 @@ class _GamepadListenerState extends ConsumerState<GamepadListener> {
       if (action == GamepadAction.back) {
         // B на TextField → снять фокус
         FocusManager.instance.primaryFocus?.unfocus();
+        return;
       }
+      if (action == GamepadAction.navigateUp ||
+          action == GamepadAction.navigateDown) {
+        // D-pad Up/Down → выйти из TextField и перейти к соседнему виджету
+        final FocusNode? focus = FocusManager.instance.primaryFocus;
+        final BuildContext? focusContext = focus?.context;
+        if (focusContext != null) {
+          focus!.unfocus();
+          // Перемещаем фокус в направлении D-pad
+          final TraversalDirection direction =
+              action == GamepadAction.navigateUp
+                  ? TraversalDirection.up
+                  : TraversalDirection.down;
+          Actions.maybeInvoke(
+            focusContext,
+            DirectionalFocusIntent(direction),
+          );
+        }
+        return;
+      }
+      // D-pad Left/Right, A — заблокированы в TextField (курсор / ввод)
       return;
     }
 
@@ -102,103 +137,81 @@ class _GamepadListenerState extends ConsumerState<GamepadListener> {
   }
 
   GamepadAction? _mapServiceEvent(GamepadServiceEvent event) {
-    final String key = event.key;
-    final double value = event.value;
-
     switch (event.type) {
       case GamepadServiceEventType.button:
-        return _mapButton(key);
+        return _mapButton(event.key);
       case GamepadServiceEventType.analog:
-        return _mapAnalog(key, value);
+        return _mapAnalog(event.key, event.value);
       case GamepadServiceEventType.trigger:
-        return _mapTrigger(key, value);
+        return _mapTrigger(event.value);
     }
   }
 
-  /// Маппинг цифровых кнопок.
+  /// Маппинг цифровых кнопок и D-pad.
   ///
-  /// Key-значения могут отличаться между платформами.
-  /// Поддерживаем несколько вариантов для кроссплатформенности.
+  /// Ключи соответствуют Windows JOYINFOEX / gamepads_windows:
+  /// - `button-0` .. `button-7` — кнопки контроллера
+  /// - `dpad-*` — синтетические ключи от [GamepadService] для POV hat
   GamepadAction? _mapButton(String key) {
-    // A button (Xbox) / Cross (PS)
-    if (key == '0' || key == 'a' || key == 'button-a') {
-      return GamepadAction.confirm;
+    switch (key) {
+      // Xbox кнопки
+      case 'button-0': // A
+        return GamepadAction.confirm;
+      case 'button-1': // B
+        return GamepadAction.back;
+      // button-2 = X, button-3 = Y — не назначены
+      case 'button-4': // LB (Left Bumper)
+        return GamepadAction.previousTab;
+      case 'button-5': // RB (Right Bumper)
+        return GamepadAction.nextTab;
+      // button-6 = Back/Select — не назначена
+      case 'button-7': // Start/Menu
+        return GamepadAction.openMenu;
+      // D-pad (синтетические ключи от GamepadService)
+      case 'dpad-up':
+        return GamepadAction.navigateUp;
+      case 'dpad-down':
+        return GamepadAction.navigateDown;
+      case 'dpad-left':
+        return GamepadAction.navigateLeft;
+      case 'dpad-right':
+        return GamepadAction.navigateRight;
+      default:
+        return null;
     }
-    // B button (Xbox) / Circle (PS)
-    if (key == '1' || key == 'b' || key == 'button-b') {
-      return GamepadAction.back;
-    }
-    // Left Bumper (LB / L1)
-    if (key == '6' ||
-        key == '4' ||
-        key == 'leftBumper' ||
-        key == 'left-bumper') {
-      return GamepadAction.previousTab;
-    }
-    // Right Bumper (RB / R1)
-    if (key == '7' ||
-        key == '5' ||
-        key == 'rightBumper' ||
-        key == 'right-bumper') {
-      return GamepadAction.nextTab;
-    }
-    // D-pad
-    if (key == 'dpadUp' || key == 'dpup' || key == 'dpad-up') {
-      return GamepadAction.navigateUp;
-    }
-    if (key == 'dpadDown' || key == 'dpdown' || key == 'dpad-down') {
-      return GamepadAction.navigateDown;
-    }
-    if (key == 'dpadLeft' || key == 'dpleft' || key == 'dpad-left') {
-      return GamepadAction.navigateLeft;
-    }
-    if (key == 'dpadRight' || key == 'dpright' || key == 'dpad-right') {
-      return GamepadAction.navigateRight;
-    }
-    // Start / Menu
-    if (key == '11' ||
-        key == '9' ||
-        key == '7' ||
-        key == 'start' ||
-        key == 'menu') {
-      return GamepadAction.openMenu;
-    }
-    return null;
   }
 
   /// Маппинг аналоговых стиков.
+  ///
+  /// Значения нормализованы [GamepadService]: -1.0 (лево/верх) .. 1.0 (право/низ).
+  /// - `dwXpos`/`dwYpos` — Left Stick → скролл
+  /// - `dwRpos`/`dwUpos` — Right Stick → панорама
   GamepadAction? _mapAnalog(String key, double value) {
-    final bool isLeft = key.contains('left') || key.contains('Left');
-    final bool isX = key.contains('x') || key.contains('X');
-
-    if (isLeft) {
-      // Left Stick → скролл
-      if (isX) {
-        return value > 0 ? GamepadAction.scrollRight : GamepadAction.scrollLeft;
-      }
-      return value > 0 ? GamepadAction.scrollDown : GamepadAction.scrollUp;
-    } else {
-      // Right Stick → панорама
-      if (isX) {
+    switch (key) {
+      case 'dwXpos': // Left Stick X → горизонтальный скролл
+        return value > 0
+            ? GamepadAction.scrollRight
+            : GamepadAction.scrollLeft;
+      case 'dwYpos': // Left Stick Y → вертикальный скролл
+        return value > 0 ? GamepadAction.scrollDown : GamepadAction.scrollUp;
+      case 'dwRpos': // Right Stick X → горизонтальная панорама
         return value > 0 ? GamepadAction.panRight : GamepadAction.panLeft;
-      }
-      return value > 0 ? GamepadAction.panDown : GamepadAction.panUp;
+      case 'dwUpos': // Right Stick Y → вертикальная панорама
+        return value > 0 ? GamepadAction.panDown : GamepadAction.panUp;
+      default:
+        return null;
     }
   }
 
-  /// Маппинг триггеров (аналоговые).
-  GamepadAction? _mapTrigger(String key, double value) {
-    if (value < 0.5) return null; // Порог для digital-интерпретации
-
-    final bool isLeft = key.contains('left') ||
-        key.contains('Left') ||
-        key == '4' ||
-        key == '2';
-
-    if (isLeft) {
-      return GamepadAction.previousSubTab;
+  /// Маппинг триггеров в переключение суб-табов.
+  ///
+  /// Значение нормализовано [GamepadService]: отрицательное = LT, положительное = RT.
+  /// Edge detection уже применён в сервисе — приходит одно событие за нажатие.
+  GamepadAction? _mapTrigger(double value) {
+    if (value < 0) {
+      return GamepadAction.previousSubTab; // LT
     }
-    return GamepadAction.nextSubTab;
+    return GamepadAction.nextSubTab; // RT
   }
 
   void _dispatchAction(GamepadAction action) {

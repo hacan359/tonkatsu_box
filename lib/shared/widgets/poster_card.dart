@@ -77,8 +77,9 @@ class _PosterCardState extends State<PosterCard>
     with SingleTickerProviderStateMixin {
   late final AnimationController _hoverController;
   late final Animation<double> _scaleAnimation;
+  final FocusNode _focusNode = FocusNode();
 
-  /// Масштаб при наведении.
+  /// Масштаб при наведении / фокусе.
   static const double _hoverScale = 1.04;
 
   @override
@@ -95,191 +96,235 @@ class _PosterCardState extends State<PosterCard>
 
   @override
   void dispose() {
+    _focusNode.dispose();
     _hoverController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => _hoverController.forward(),
-      onExit: (_) => _hoverController.reverse(),
-      cursor: widget.onTap != null
-          ? SystemMouseCursors.click
-          : SystemMouseCursors.basic,
-      child: AnimatedBuilder(
-        animation: _scaleAnimation,
-        builder: (BuildContext context, Widget? child) {
-          return Transform.scale(
-            scale: _scaleAnimation.value,
-            child: child,
-          );
+    return Actions(
+      actions: <Type, Action<Intent>>{
+        ActivateIntent: CallbackAction<ActivateIntent>(
+          onInvoke: (ActivateIntent intent) {
+            widget.onTap?.call();
+            return null;
+          },
+        ),
+      },
+      child: Focus(
+        focusNode: _focusNode,
+        onFocusChange: (bool hasFocus) {
+          if (hasFocus) {
+            _hoverController.forward();
+          } else {
+            _hoverController.reverse();
+          }
         },
-        child: GestureDetector(
-          onTap: widget.onTap,
-          onLongPress: widget.onLongPress,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              // Постер с overlay-элементами
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(
-                    widget.compact
-                        ? AppSpacing.radiusSm
-                        : AppSpacing.radiusMd,
-                  ),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: <Widget>[
-                      // Постер
-                      CachedImage(
-                        imageType: widget.cacheImageType,
-                        imageId: widget.cacheImageId,
-                        remoteUrl: widget.imageUrl,
-                        fit: BoxFit.cover,
-                        placeholder: Container(
-                          color: AppColors.surfaceLight,
-                          child: Center(
-                            child: Icon(
-                              Icons.image_outlined,
-                              color: AppColors.textTertiary,
-                              size: widget.compact ? 16 : 32,
-                            ),
-                          ),
-                        ),
-                        errorWidget: Container(
-                          color: AppColors.surfaceLight,
-                          child: Icon(
-                            Icons.image_not_supported_outlined,
-                            color: AppColors.textTertiary,
-                            size: widget.compact ? 16 : 32,
-                          ),
-                        ),
+        child: MouseRegion(
+          onEnter: (_) => _hoverController.forward(),
+          onExit: (_) => _hoverController.reverse(),
+          cursor: widget.onTap != null
+              ? SystemMouseCursors.click
+              : SystemMouseCursors.basic,
+          child: AnimatedBuilder(
+            animation: _scaleAnimation,
+            builder: (BuildContext context, Widget? child) {
+              return Transform.scale(
+                scale: _scaleAnimation.value,
+                child: child,
+              );
+            },
+            child: GestureDetector(
+              onTap: widget.onTap,
+              onLongPress: widget.onLongPress,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  // Постер с overlay-элементами
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(
+                        widget.compact
+                            ? AppSpacing.radiusSm
+                            : AppSpacing.radiusMd,
                       ),
-
-                      // Затемнение постера
-                      const Positioned.fill(
-                        child: ColoredBox(
-                          color: Color(0x30000000),
-                        ),
-                      ),
-
-                      // Hover-подсветка
-                      AnimatedBuilder(
-                        animation: _hoverController,
-                        builder:
-                            (BuildContext context, Widget? child) {
-                          if (_hoverController.value == 0) {
-                            return const SizedBox.shrink();
-                          }
-                          return Positioned.fill(
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: AppColors.textPrimary
-                                      .withAlpha(
-                                        (40 * _hoverController.value)
-                                            .round(),
-                                      ),
-                                ),
-                                borderRadius: BorderRadius.circular(
-                                  widget.compact
-                                      ? AppSpacing.radiusSm
-                                      : AppSpacing.radiusMd,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: <Widget>[
+                          // Постер
+                          CachedImage(
+                            imageType: widget.cacheImageType,
+                            imageId: widget.cacheImageId,
+                            remoteUrl: widget.imageUrl,
+                            fit: BoxFit.cover,
+                            placeholder: Container(
+                              color: AppColors.surfaceLight,
+                              child: Center(
+                                child: Icon(
+                                  Icons.image_outlined,
+                                  color: AppColors.textTertiary,
+                                  size: widget.compact ? 16 : 32,
                                 ),
                               ),
                             ),
-                          );
-                        },
-                      ),
-
-                      // Рейтинг badge (top-left)
-                      if (widget.rating != null && widget.rating! > 0)
-                        Positioned(
-                          top: widget.compact ? 2 : AppSpacing.xs,
-                          left: widget.compact ? 2 : AppSpacing.xs,
-                          child: RatingBadge(
-                            rating: widget.rating!,
-                            compact: widget.compact,
-                          ),
-                        ),
-
-                      // Отметка "в коллекции" (top-right)
-                      if (widget.isInCollection)
-                        Positioned(
-                          top: widget.compact ? 2 : AppSpacing.xs,
-                          right: widget.compact ? 2 : AppSpacing.xs,
-                          child: Container(
-                            padding: EdgeInsets.all(
-                              widget.compact ? 2 : 4,
-                            ),
-                            decoration: const BoxDecoration(
-                              color: AppColors.success,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.check,
-                              color: Colors.white,
-                              size: widget.compact ? 8 : 12,
-                            ),
-                          ),
-                        ),
-
-                      // Статус-бейдж (bottom-left)
-                      if (widget.status != null &&
-                          widget.status != ItemStatus.notStarted)
-                        Positioned(
-                          bottom: widget.compact ? 2 : AppSpacing.xs,
-                          left: widget.compact ? 2 : AppSpacing.xs,
-                          child: Container(
-                            padding: EdgeInsets.all(
-                              widget.compact ? 2 : 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: widget.status!.color,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Text(
-                              widget.status!.icon,
-                              style: TextStyle(
-                                fontSize: widget.compact ? 7 : 10,
+                            errorWidget: Container(
+                              color: AppColors.surfaceLight,
+                              child: Icon(
+                                Icons.image_not_supported_outlined,
+                                color: AppColors.textTertiary,
+                                size: widget.compact ? 16 : 32,
                               ),
                             ),
                           ),
-                        ),
-                    ],
+
+                          // Затемнение постера
+                          const Positioned.fill(
+                            child: ColoredBox(
+                              color: Color(0x30000000),
+                            ),
+                          ),
+
+                          // Hover/focus подсветка
+                          AnimatedBuilder(
+                            animation: _hoverController,
+                            builder:
+                                (BuildContext context, Widget? child) {
+                              if (_hoverController.value == 0) {
+                                return const SizedBox.shrink();
+                              }
+                              return Positioned.fill(
+                                child: DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: AppColors.textPrimary
+                                          .withAlpha(
+                                            (40 *
+                                                    _hoverController
+                                                        .value)
+                                                .round(),
+                                          ),
+                                    ),
+                                    borderRadius:
+                                        BorderRadius.circular(
+                                      widget.compact
+                                          ? AppSpacing.radiusSm
+                                          : AppSpacing.radiusMd,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+
+                          // Рейтинг badge (top-left)
+                          if (widget.rating != null &&
+                              widget.rating! > 0)
+                            Positioned(
+                              top: widget.compact
+                                  ? 2
+                                  : AppSpacing.xs,
+                              left: widget.compact
+                                  ? 2
+                                  : AppSpacing.xs,
+                              child: RatingBadge(
+                                rating: widget.rating!,
+                                compact: widget.compact,
+                              ),
+                            ),
+
+                          // Отметка "в коллекции" (top-right)
+                          if (widget.isInCollection)
+                            Positioned(
+                              top: widget.compact
+                                  ? 2
+                                  : AppSpacing.xs,
+                              right: widget.compact
+                                  ? 2
+                                  : AppSpacing.xs,
+                              child: Container(
+                                padding: EdgeInsets.all(
+                                  widget.compact ? 2 : 4,
+                                ),
+                                decoration: const BoxDecoration(
+                                  color: AppColors.success,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.check,
+                                  color: Colors.white,
+                                  size: widget.compact ? 8 : 12,
+                                ),
+                              ),
+                            ),
+
+                          // Статус-бейдж (bottom-left)
+                          if (widget.status != null &&
+                              widget.status != ItemStatus.notStarted)
+                            Positioned(
+                              bottom: widget.compact
+                                  ? 2
+                                  : AppSpacing.xs,
+                              left: widget.compact
+                                  ? 2
+                                  : AppSpacing.xs,
+                              child: Container(
+                                padding: EdgeInsets.all(
+                                  widget.compact ? 2 : 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: widget.status!.color,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Text(
+                                  widget.status!.icon,
+                                  style: TextStyle(
+                                    fontSize:
+                                        widget.compact ? 7 : 10,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-              ),
 
-              SizedBox(height: widget.compact ? 2 : AppSpacing.xs),
+                  SizedBox(
+                    height: widget.compact ? 2 : AppSpacing.xs,
+                  ),
 
-              // Название
-              Text(
-                widget.title,
-                style: widget.compact
-                    ? AppTypography.posterTitle.copyWith(fontSize: 9)
-                    : AppTypography.posterTitle,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-
-              // Подзаголовок (год + жанр)
-              if (widget.year != null || widget.subtitle != null)
-                Padding(
-                  padding: EdgeInsets.only(top: widget.compact ? 1 : 2),
-                  child: Text(
-                    _buildSubtitleText(),
+                  // Название
+                  Text(
+                    widget.title,
                     style: widget.compact
-                        ? AppTypography.posterSubtitle
-                            .copyWith(fontSize: 7)
-                        : AppTypography.posterSubtitle,
+                        ? AppTypography.posterTitle
+                            .copyWith(fontSize: 9)
+                        : AppTypography.posterTitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                ),
-            ],
+
+                  // Подзаголовок (год + жанр)
+                  if (widget.year != null ||
+                      widget.subtitle != null)
+                    Padding(
+                      padding: EdgeInsets.only(
+                        top: widget.compact ? 1 : 2,
+                      ),
+                      child: Text(
+                        _buildSubtitleText(),
+                        style: widget.compact
+                            ? AppTypography.posterSubtitle
+                                .copyWith(fontSize: 7)
+                            : AppTypography.posterSubtitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
