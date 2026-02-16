@@ -57,6 +57,24 @@ void main() {
       });
     });
 
+    group('shortLabel', () {
+      test('manual должен иметь shortLabel "Manual"', () {
+        expect(CollectionSortMode.manual.shortLabel, 'Manual');
+      });
+
+      test('addedDate должен иметь shortLabel "Date"', () {
+        expect(CollectionSortMode.addedDate.shortLabel, 'Date');
+      });
+
+      test('status должен иметь shortLabel "Status"', () {
+        expect(CollectionSortMode.status.shortLabel, 'Status');
+      });
+
+      test('name должен иметь shortLabel "A-Z"', () {
+        expect(CollectionSortMode.name.shortLabel, 'A-Z');
+      });
+    });
+
     group('description', () {
       test('manual должен иметь описание "Custom order"', () {
         expect(CollectionSortMode.manual.description, 'Custom order');
@@ -148,6 +166,16 @@ void main() {
             mode.displayLabel.isNotEmpty,
             isTrue,
             reason: '${mode.name} displayLabel должен быть непустым',
+          );
+        }
+      });
+
+      test('каждый режим должен иметь непустой shortLabel', () {
+        for (final CollectionSortMode mode in CollectionSortMode.values) {
+          expect(
+            mode.shortLabel.isNotEmpty,
+            isTrue,
+            reason: '${mode.name} shortLabel должен быть непустым',
           );
         }
       });

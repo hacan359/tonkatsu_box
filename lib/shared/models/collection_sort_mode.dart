@@ -3,24 +3,32 @@
 /// Режим сортировки элементов в коллекции.
 enum CollectionSortMode {
   /// Ручной порядок (drag-and-drop, sort_order ASC).
-  manual('manual', 'Manual', 'Custom order'),
+  manual('manual', 'Manual', 'Manual', 'Custom order'),
 
   /// По дате добавления (added_at DESC, новые первыми).
-  addedDate('added_date', 'Date Added', 'Newest first'),
+  addedDate('added_date', 'Date Added', 'Date', 'Newest first'),
 
   /// По статусу (активные первыми, завершённые последними).
-  status('status', 'Status', 'Active first'),
+  status('status', 'Status', 'Status', 'Active first'),
 
   /// По алфавиту (itemName ASC).
-  name('name', 'Name', 'A to Z');
+  name('name', 'Name', 'A-Z', 'A to Z');
 
-  const CollectionSortMode(this.value, this.displayLabel, this.description);
+  const CollectionSortMode(
+    this.value,
+    this.displayLabel,
+    this.shortLabel,
+    this.description,
+  );
 
   /// Строковое значение для хранения в SharedPreferences.
   final String value;
 
   /// Отображаемое название.
   final String displayLabel;
+
+  /// Короткий лейбл для компактного UI (2-6 символов).
+  final String shortLabel;
 
   /// Краткое описание порядка сортировки.
   final String description;
