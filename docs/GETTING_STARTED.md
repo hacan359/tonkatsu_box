@@ -9,13 +9,13 @@
 
 ## Getting IGDB API Keys
 
-xeRAbora uses IGDB to fetch game metadata. You need free API credentials:
+Tonkatsu Box uses IGDB to fetch game metadata. You need free API credentials:
 
 1. Go to [dev.twitch.tv](https://dev.twitch.tv)
 2. Log in with Twitch account (create one if needed)
 3. Go to **Applications** → **Register Your Application**
 4. Fill in:
-   - Name: `xeRAbora` (or anything)
+   - Name: `Tonkatsu Box` (or anything)
    - OAuth Redirect URLs: `http://localhost`
    - Category: `Application Integration`
 5. Click **Create**
@@ -42,7 +42,7 @@ For high-quality game artwork (grids, heroes, logos, icons):
 
 ## First Launch
 
-1. Start xeRAbora
+1. Start Tonkatsu Box
 2. Enter your IGDB Client ID and Client Secret
 3. Click **Verify Connection**
 4. Platforms will sync automatically

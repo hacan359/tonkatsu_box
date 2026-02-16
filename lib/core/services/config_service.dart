@@ -12,7 +12,10 @@ import '../../features/settings/providers/settings_provider.dart';
 const int configFormatVersion = 1;
 
 // Ключ версии в JSON.
-const String _configVersionKey = 'xerabora_config_version';
+const String _configVersionKey = 'tonkatsu_box_config_version';
+
+// Устаревший ключ версии (для обратной совместимости при импорте).
+const String _legacyConfigVersionKey = 'xerabora_config_version';
 
 /// Провайдер для сервиса конфигурации.
 final Provider<ConfigService> configServiceProvider =
@@ -149,7 +152,7 @@ class ConfigService {
       final bool useAny = Platform.isAndroid || Platform.isIOS;
       final String? outputPath = await FilePicker.platform.saveFile(
         dialogTitle: 'Export Configuration',
-        fileName: 'xerabora-config.json',
+        fileName: 'tonkatsu-box-config.json',
         type: useAny ? FileType.any : FileType.custom,
         allowedExtensions: useAny ? null : <String>['json'],
         bytes: jsonBytes,
@@ -210,10 +213,11 @@ class ConfigService {
         return const ConfigResult.failure('Invalid config file format');
       }
 
-      final Object? version = decoded[_configVersionKey];
+      final Object? version =
+          decoded[_configVersionKey] ?? decoded[_legacyConfigVersionKey];
       if (version == null) {
         return const ConfigResult.failure(
-          'Not a valid xerabora config file (missing version)',
+          'Not a valid Tonkatsu Box config file (missing version)',
         );
       }
 

@@ -38,8 +38,8 @@ class DatabaseService {
 
   Future<Database> _initDatabase() async {
     final Directory appDir = await getApplicationDocumentsDirectory();
-    final String dbDir = p.join(appDir.path, 'xerabora');
-    final String dbPath = p.join(dbDir, 'xerabora.db');
+    final String dbDir = p.join(appDir.path, 'tonkatsu_box');
+    final String dbPath = p.join(dbDir, 'tonkatsu_box.db');
 
     // Создаём директорию, если не существует
     final Directory dir = Directory(dbDir);

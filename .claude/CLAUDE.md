@@ -27,7 +27,7 @@ powershell.exe -Command "cd D:\CODE\xerabora; flutter run -d windows"
 ```
 lib/
 ├── main.dart              # Точка входа, SQLite init, ProviderScope
-├── app.dart               # XeraboraApp — MaterialApp, dark theme, SplashScreen
+├── app.dart               # TonkatsuBoxApp — MaterialApp, dark theme, SplashScreen
 ├── core/
 │   ├── api/               # API клиенты: igdb_api, tmdb_api, steamgriddb_api
 │   ├── database/          # DatabaseService — SQLite, 15 таблиц, миграции

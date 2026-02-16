@@ -8,13 +8,13 @@ import 'shared/theme/app_theme.dart';
 ///
 /// Принудительно тёмная тема через [AppTheme.darkTheme].
 /// Стартовый экран — [SplashScreen] с анимированным логотипом.
-class XeraboraApp extends ConsumerWidget {
-  const XeraboraApp({super.key});
+class TonkatsuBoxApp extends ConsumerWidget {
+  const TonkatsuBoxApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-      title: 'xeRAbora',
+      title: 'Tonkatsu Box',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
       darkTheme: AppTheme.darkTheme,

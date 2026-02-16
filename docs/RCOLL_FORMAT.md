@@ -1,6 +1,6 @@
 # Collection File Formats
 
-xeRAbora supports two file formats for sharing collections.
+Tonkatsu Box supports two file formats for sharing collections.
 
 ## Formats Overview
 

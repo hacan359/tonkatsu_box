@@ -13,7 +13,7 @@ import 'package:xerabora/shared/navigation/navigation_shell.dart';
 class MockCollectionRepository extends Mock implements CollectionRepository {}
 
 void main() {
-  group('XeraboraApp', () {
+  group('TonkatsuBoxApp', () {
     late MockCollectionRepository mockRepo;
 
     setUp(() {
@@ -34,7 +34,7 @@ void main() {
             sharedPreferencesProvider.overrideWithValue(prefs),
             collectionRepositoryProvider.overrideWithValue(mockRepo),
           ],
-          child: const XeraboraApp(),
+          child: const TonkatsuBoxApp(),
         ),
       );
 
@@ -52,7 +52,7 @@ void main() {
             sharedPreferencesProvider.overrideWithValue(prefs),
             collectionRepositoryProvider.overrideWithValue(mockRepo),
           ],
-          child: const XeraboraApp(),
+          child: const TonkatsuBoxApp(),
         ),
       );
 
@@ -70,7 +70,7 @@ void main() {
             sharedPreferencesProvider.overrideWithValue(prefs),
             collectionRepositoryProvider.overrideWithValue(mockRepo),
           ],
-          child: const XeraboraApp(),
+          child: const TonkatsuBoxApp(),
         ),
       );
 
@@ -92,7 +92,7 @@ void main() {
             sharedPreferencesProvider.overrideWithValue(prefs),
             collectionRepositoryProvider.overrideWithValue(mockRepo),
           ],
-          child: const XeraboraApp(),
+          child: const TonkatsuBoxApp(),
         ),
       );
 
@@ -112,7 +112,7 @@ void main() {
             sharedPreferencesProvider.overrideWithValue(prefs),
             collectionRepositoryProvider.overrideWithValue(mockRepo),
           ],
-          child: const XeraboraApp(),
+          child: const TonkatsuBoxApp(),
         ),
       );
 

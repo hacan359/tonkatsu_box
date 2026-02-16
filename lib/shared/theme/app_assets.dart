@@ -2,6 +2,6 @@
 
 /// Пути к ассетам приложения.
 abstract final class AppAssets {
-  /// Логотип xerabora.
+  /// Логотип Tonkatsu Box.
   static const String logo = 'assets/images/logo.png';
 }

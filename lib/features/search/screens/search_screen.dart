@@ -609,7 +609,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     return showDialog<Collection>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
-        scrollable: true,
         title: const Text('Add to Collection'),
         content: SizedBox(
           width: double.maxFinite,
@@ -657,20 +656,18 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       builder: (BuildContext context) => AlertDialog(
         scrollable: true,
         title: const Text('Select Platform'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: platformIds.map((int id) {
-              final Platform? platform = _platformMap[id];
-              final String platformName =
-                  platform?.displayName ?? 'Platform $id';
-              return ListTile(
-                leading: _buildPlatformLogo(platform),
-                title: Text(platformName),
-                onTap: () => Navigator.of(context).pop(id),
-              );
-            }).toList(),
-          ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: platformIds.map((int id) {
+            final Platform? platform = _platformMap[id];
+            final String platformName =
+                platform?.displayName ?? 'Platform $id';
+            return ListTile(
+              leading: _buildPlatformLogo(platform),
+              title: Text(platformName),
+              onTap: () => Navigator.of(context).pop(id),
+            );
+          }).toList(),
         ),
         actions: <Widget>[
           TextButton(
@@ -946,18 +943,39 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
   // ==================== Grid helpers ====================
 
+  static const double _desktopMaxCardWidth = 150;
+
+  bool get _isDesktop {
+    final double screenWidth = MediaQuery.sizeOf(context).width;
+    return screenWidth >= navigationBreakpoint && !kIsMobile;
+  }
+
   int get _gridCrossAxisCount {
     final double screenWidth = MediaQuery.sizeOf(context).width;
     final bool isLandscape = isLandscapeMobile(context);
-    if (screenWidth >= navigationBreakpoint) {
-      return AppSpacing.gridColumnsDesktop;
-    } else if (isLandscape) {
-      // Ландшафт мобильный — больше колонок
+    if (isLandscape) {
       return AppSpacing.gridColumnsDesktop;
     } else if (screenWidth >= 500) {
       return AppSpacing.gridColumnsTablet;
     }
     return AppSpacing.gridColumnsMobile;
+  }
+
+  SliverGridDelegate get _gridDelegate {
+    if (_isDesktop) {
+      return SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: _desktopMaxCardWidth,
+        crossAxisSpacing: _gridCrossAxisSpacing,
+        mainAxisSpacing: _gridMainAxisSpacing,
+        childAspectRatio: 0.55,
+      );
+    }
+    return SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: _gridCrossAxisCount,
+      crossAxisSpacing: _gridCrossAxisSpacing,
+      mainAxisSpacing: _gridMainAxisSpacing,
+      childAspectRatio: 0.55,
+    );
   }
 
   /// Отступ и расстояния в гриде, уменьшенные в ландшафте.
@@ -973,12 +991,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   Widget _buildShimmerGrid() {
     return GridView.builder(
       padding: EdgeInsets.all(_gridPadding),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: _gridCrossAxisCount,
-        crossAxisSpacing: _gridCrossAxisSpacing,
-        mainAxisSpacing: _gridMainAxisSpacing,
-        childAspectRatio: 0.55,
-      ),
+      gridDelegate: _gridDelegate,
       itemCount: _gridCrossAxisCount * 2,
       itemBuilder: (BuildContext context, int index) {
         return const ShimmerPosterCard();
@@ -1113,12 +1126,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
     return GridView.builder(
       padding: EdgeInsets.all(_gridPadding),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: _gridCrossAxisCount,
-        crossAxisSpacing: _gridCrossAxisSpacing,
-        mainAxisSpacing: _gridMainAxisSpacing,
-        childAspectRatio: 0.55,
-      ),
+      gridDelegate: _gridDelegate,
       itemCount: searchState.results.length,
       itemBuilder: (BuildContext context, int index) {
         final Game game = searchState.results[index];
@@ -1203,12 +1211,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
     return GridView.builder(
       padding: EdgeInsets.all(_gridPadding),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: _gridCrossAxisCount,
-        crossAxisSpacing: _gridCrossAxisSpacing,
-        mainAxisSpacing: _gridMainAxisSpacing,
-        childAspectRatio: 0.55,
-      ),
+      gridDelegate: _gridDelegate,
       itemCount: searchState.movieResults.length,
       itemBuilder: (BuildContext context, int index) {
         final Movie movie = searchState.movieResults[index];
@@ -1294,12 +1297,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
     return GridView.builder(
       padding: EdgeInsets.all(_gridPadding),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: _gridCrossAxisCount,
-        crossAxisSpacing: _gridCrossAxisSpacing,
-        mainAxisSpacing: _gridMainAxisSpacing,
-        childAspectRatio: 0.55,
-      ),
+      gridDelegate: _gridDelegate,
       itemCount: searchState.tvShowResults.length,
       itemBuilder: (BuildContext context, int index) {
         final TvShow tvShow = searchState.tvShowResults[index];
@@ -1592,12 +1590,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
     return GridView.builder(
       padding: EdgeInsets.all(_gridPadding),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: _gridCrossAxisCount,
-        crossAxisSpacing: _gridCrossAxisSpacing,
-        mainAxisSpacing: _gridMainAxisSpacing,
-        childAspectRatio: 0.55,
-      ),
+      gridDelegate: _gridDelegate,
       itemCount: items.length,
       itemBuilder: (BuildContext context, int index) {
         final _AnimationItem item = items[index];

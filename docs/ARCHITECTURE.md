@@ -1,8 +1,8 @@
-# Архитектура xeRAbora
+# Архитектура Tonkatsu Box
 
 ## Обзор
 
-xeRAbora — кроссплатформенное приложение на Flutter для управления коллекциями ретро-игр, фильмов и сериалов с интеграцией IGDB, TMDB и SteamGridDB API.
+Tonkatsu Box — кроссплатформенное приложение на Flutter для управления коллекциями ретро-игр, фильмов и сериалов с интеграцией IGDB, TMDB и SteamGridDB API.
 
 | Слой | Технология |
 |------|------------|
@@ -35,7 +35,7 @@ lib/
 | Файл | Назначение |
 |------|------------|
 | `lib/main.dart` | Инициализация Flutter, SQLite, SharedPreferences. Запуск приложения через `ProviderScope` |
-| `lib/app.dart` | Корневой виджет `XeraboraApp`. Настройка темы (Material 3), роутинг на основе состояния API |
+| `lib/app.dart` | Корневой виджет `TonkatsuBoxApp`. Настройка темы (Material 3), роутинг на основе состояния API |
 
 ---
 

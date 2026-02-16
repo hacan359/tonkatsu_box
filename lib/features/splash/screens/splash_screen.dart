@@ -1,4 +1,4 @@
-// Анимированный splash screen с логотипом xerabora.
+// Анимированный splash screen с логотипом Tonkatsu Box.
 
 import 'package:flutter/material.dart';
 

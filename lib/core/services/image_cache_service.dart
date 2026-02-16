@@ -61,7 +61,7 @@ class ImageCacheService {
 
     // Путь по умолчанию
     final Directory appDir = await getApplicationDocumentsDirectory();
-    return p.join(appDir.path, 'xerabora', 'image_cache');
+    return p.join(appDir.path, 'tonkatsu_box', 'image_cache');
   }
 
   /// Возвращает путь к директории для конкретного типа изображений.
