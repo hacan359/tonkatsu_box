@@ -115,6 +115,10 @@ final FutureProviderFamily<CollectionStats, int> collectionStatsProvider =
 String _sortModeKey(int collectionId) =>
     'collection_sort_mode_$collectionId';
 
+/// Ключ SharedPreferences для направления сортировки.
+String _sortDescKey(int collectionId) =>
+    'collection_sort_desc_$collectionId';
+
 /// Провайдер режима сортировки для конкретной коллекции.
 final NotifierProviderFamily<CollectionSortNotifier, CollectionSortMode, int>
     collectionSortProvider =
@@ -149,6 +153,44 @@ class CollectionSortNotifier extends FamilyNotifier<CollectionSortMode, int> {
   }
 }
 
+/// Провайдер направления сортировки (descending) для конкретной коллекции.
+final NotifierProviderFamily<CollectionSortDescNotifier, bool, int>
+    collectionSortDescProvider =
+    NotifierProvider.family<CollectionSortDescNotifier, bool, int>(
+  CollectionSortDescNotifier.new,
+);
+
+/// Notifier для направления сортировки (ascending/descending).
+class CollectionSortDescNotifier extends FamilyNotifier<bool, int> {
+  @override
+  bool build(int arg) {
+    _loadFromPrefs(arg);
+    return false;
+  }
+
+  Future<void> _loadFromPrefs(int collectionId) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final bool? value = prefs.getBool(_sortDescKey(collectionId));
+    if (value != null) {
+      state = value;
+    }
+  }
+
+  /// Переключает направление сортировки.
+  Future<void> toggle() async {
+    state = !state;
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_sortDescKey(arg), state);
+  }
+
+  /// Устанавливает направление сортировки.
+  Future<void> setDescending({required bool descending}) async {
+    state = descending;
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_sortDescKey(arg), descending);
+  }
+}
+
 // ==================== Collection Items ====================
 
 /// Провайдер для управления элементами в конкретной коллекции.
@@ -170,29 +212,35 @@ class CollectionItemsNotifier
     _collectionId = arg;
     _repository = ref.watch(collectionRepositoryProvider);
 
-    // Подписываемся на режим сортировки
+    // Подписываемся на режим и направление сортировки
     final CollectionSortMode sortMode =
         ref.watch(collectionSortProvider(_collectionId));
+    final bool isDescending =
+        ref.watch(collectionSortDescProvider(_collectionId));
 
-    _loadItems(sortMode);
+    _loadItems(sortMode, isDescending: isDescending);
 
     return const AsyncLoading<List<CollectionItem>>();
   }
 
-  Future<void> _loadItems(CollectionSortMode sortMode) async {
+  Future<void> _loadItems(
+    CollectionSortMode sortMode, {
+    bool isDescending = false,
+  }) async {
     state = const AsyncLoading<List<CollectionItem>>();
     state = await AsyncValue.guard(() async {
       final List<CollectionItem> items =
           await _repository.getItemsWithData(_collectionId);
-      return _applySortMode(items, sortMode);
+      return _applySortMode(items, sortMode, isDescending: isDescending);
     });
   }
 
   /// Применяет режим сортировки к списку элементов.
   List<CollectionItem> _applySortMode(
     List<CollectionItem> items,
-    CollectionSortMode sortMode,
-  ) {
+    CollectionSortMode sortMode, {
+    bool isDescending = false,
+  }) {
     final List<CollectionItem> sorted = List<CollectionItem>.of(items);
     switch (sortMode) {
       case CollectionSortMode.manual:
@@ -200,6 +248,8 @@ class CollectionItemsNotifier
           (CollectionItem a, CollectionItem b) =>
               a.sortOrder.compareTo(b.sortOrder),
         );
+        // Manual не инвертируется — порядок всегда от пользователя
+        return sorted;
       case CollectionSortMode.addedDate:
         sorted.sort(
           (CollectionItem a, CollectionItem b) =>
@@ -218,6 +268,9 @@ class CollectionItemsNotifier
               a.itemName.toLowerCase().compareTo(b.itemName.toLowerCase()),
         );
     }
+    if (isDescending) {
+      return sorted.reversed.toList();
+    }
     return sorted;
   }
 
@@ -225,7 +278,9 @@ class CollectionItemsNotifier
   Future<void> refresh() async {
     final CollectionSortMode sortMode =
         ref.read(collectionSortProvider(_collectionId));
-    await _loadItems(sortMode);
+    final bool isDescending =
+        ref.read(collectionSortDescProvider(_collectionId));
+    await _loadItems(sortMode, isDescending: isDescending);
     ref.invalidate(collectionStatsProvider(_collectionId));
   }
 

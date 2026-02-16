@@ -143,37 +143,15 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         surfaceTintColor: Colors.transparent,
         foregroundColor: AppColors.textPrimary,
         title: Text(_collection!.name, style: AppTypography.h2),
-        bottom: kCanvasEnabled && !isLandscapeMobile(context)
-            ? PreferredSize(
-                preferredSize: const Size.fromHeight(48),
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: SegmentedButton<bool>(
-                    segments: const <ButtonSegment<bool>>[
-                      ButtonSegment<bool>(
-                        value: false,
-                        label: Text('List'),
-                        icon: Icon(Icons.list),
-                      ),
-                      ButtonSegment<bool>(
-                        value: true,
-                        label: Text('Board'),
-                        icon: Icon(Icons.dashboard),
-                      ),
-                    ],
-                    selected: <bool>{_isCanvasMode},
-                    onSelectionChanged: (Set<bool> selection) {
-                      setState(() {
-                        _isCanvasMode = selection.first;
-                      });
-                    },
-                  ),
-                ),
-              )
-            : null,
         actions: <Widget>[
-          // В ландшафте на мобильном — компактный переключатель List/Board
-          if (kCanvasEnabled && isLandscapeMobile(context))
+          if (_collection!.isEditable && !_isCanvasMode)
+            IconButton(
+              icon: const Icon(Icons.add),
+              color: AppColors.textSecondary,
+              tooltip: 'Add Items',
+              onPressed: () => _addItems(context),
+            ),
+          if (kCanvasEnabled)
             IconButton(
               icon: Icon(
                 _isCanvasMode ? Icons.list : Icons.dashboard,
@@ -186,26 +164,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                 });
               },
             ),
-          if (_collection!.isEditable && !_isCanvasMode)
-            IconButton(
-              icon: const Icon(Icons.add),
-              color: AppColors.textSecondary,
-              tooltip: 'Add Items',
-              onPressed: () => _addItems(context),
-            ),
-          if (_collection!.isEditable)
-            IconButton(
-              icon: const Icon(Icons.edit),
-              color: AppColors.textSecondary,
-              tooltip: 'Rename',
-              onPressed: () => _renameCollection(context),
-            ),
-          IconButton(
-            icon: const Icon(Icons.file_upload_outlined),
-            color: AppColors.textSecondary,
-            tooltip: 'Export',
-            onPressed: () => _exportCollection(),
-          ),
           if (_collection!.isEditable && _isCanvasMode && kCanvasEnabled)
             IconButton(
               icon: Icon(
@@ -235,6 +193,23 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             iconColor: AppColors.textSecondary,
             onSelected: (String value) => _handleMenuAction(value),
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              if (_collection!.isEditable)
+                const PopupMenuItem<String>(
+                  value: 'rename',
+                  child: ListTile(
+                    leading: Icon(Icons.edit),
+                    title: Text('Rename'),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              const PopupMenuItem<String>(
+                value: 'export',
+                child: ListTile(
+                  leading: Icon(Icons.file_upload_outlined),
+                  title: Text('Export'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
               if (_collection!.isFork)
                 const PopupMenuItem<String>(
                   value: 'revert',
@@ -244,6 +219,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),
+              const PopupMenuDivider(),
               const PopupMenuItem<String>(
                 value: 'delete',
                 child: ListTile(
@@ -344,19 +320,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             )
           : Column(
               children: <Widget>[
-                // Заголовок со статистикой (скрываем в ландшафте на мобильном)
-                if (!isLandscapeMobile(context))
-                  _buildHeader(statsAsync),
-
-                // Фильтры и сортировка — только если есть элементы
-                if ((statsAsync.valueOrNull?.total ?? 0) > 0) ...<Widget>[
-                  // Фильтры (тип + поиск)
-                  _buildFilterBar(statsAsync),
-
-                  // Селектор сортировки
-                  if (!isLandscapeMobile(context))
-                    _buildSortSelector(),
-                ],
+                // Единая строка фильтров — только если есть элементы
+                if ((statsAsync.valueOrNull?.total ?? 0) > 0)
+                  _buildFilterRow(statsAsync),
 
                 // Список элементов
                 Expanded(
@@ -374,98 +340,322 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     );
   }
 
-  Widget _buildHeader(AsyncValue<CollectionStats> statsAsync) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(
-          bottom: BorderSide(color: AppColors.surfaceBorder),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          // Информация о форке
-          if (_collection!.isFork && _collection!.forkedFromAuthor != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-              child: Row(
-                children: <Widget>[
-                  const Icon(
-                    Icons.fork_right,
-                    size: 16,
-                    color: AppColors.tvShowAccent,
-                  ),
-                  const SizedBox(width: AppSpacing.xs),
-                  Text(
-                    'Forked from ${_collection!.forkedFromAuthor} / ${_collection!.forkedFromName}',
-                    style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.tvShowAccent,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+  Widget _buildFilterRow(AsyncValue<CollectionStats> statsAsync) {
+    final CollectionStats? stats = statsAsync.valueOrNull;
+    final CollectionSortMode currentSort =
+        ref.watch(collectionSortProvider(widget.collectionId));
+    final bool isDescending =
+        ref.watch(collectionSortDescProvider(widget.collectionId));
 
-          // Статистика
-          statsAsync.when(
-            data: (CollectionStats stats) => _buildStatsContent(stats),
-            loading: () => const SizedBox(
-              height: 40,
-              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-            ),
-            error: (Object error, StackTrace stack) => Text(
-              'Error loading stats',
-              style: AppTypography.bodySmall.copyWith(color: AppColors.error),
-            ),
-          ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
+      ),
+      child: Row(
+        children: <Widget>[
+          // Фильтр по типу медиа
+          _buildMediaTypeDropdown(stats),
+
+          const SizedBox(width: AppSpacing.xs),
+
+          // Поиск
+          Expanded(child: _buildCompactSearch()),
+
+          const SizedBox(width: AppSpacing.xs),
+
+          // Сортировка
+          _buildSortDropdown(currentSort, isDescending),
+
+          const SizedBox(width: AppSpacing.xs),
+
+          // Grid ⇄ List
+          _buildViewToggle(),
         ],
       ),
     );
   }
 
-  Widget _buildStatsContent(CollectionStats stats) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        // Основная статистика
-        Text(
-          '${stats.total} item${stats.total != 1 ? 's' : ''} \u2022 ${stats.completed} completed',
-          style: AppTypography.body.copyWith(color: AppColors.textSecondary),
+  /// Ключ для "All" фильтра (без типа медиа).
+  static const String _filterAllKey = 'all';
+
+  /// Высота компактных элементов FilterRow.
+  static const double _filterRowHeight = 32;
+
+  Widget _buildMediaTypeDropdown(CollectionStats? stats) {
+    String label;
+    if (_filterType == null) {
+      label = 'All';
+    } else {
+      final int? count = switch (_filterType!) {
+        MediaType.game => stats?.gameCount,
+        MediaType.movie => stats?.movieCount,
+        MediaType.tvShow => stats?.tvShowCount,
+        MediaType.animation => stats?.animationCount,
+      };
+      label = '${_filterType!.displayLabel}${count != null ? ' ($count)' : ''}';
+    }
+
+    return PopupMenuButton<String>(
+      tooltip: 'Filter by type',
+      onSelected: (String value) {
+        setState(() {
+          _filterType =
+              value == _filterAllKey ? null : MediaType.fromString(value);
+        });
+      },
+      constraints: const BoxConstraints(),
+      padding: EdgeInsets.zero,
+      position: PopupMenuPosition.under,
+      child: Container(
+        height: _filterRowHeight,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        decoration: BoxDecoration(
+          color: _filterType != null
+              ? AppColors.gameAccent.withAlpha(30)
+              : AppColors.surfaceLight,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+          border: _filterType != null
+              ? Border.all(color: AppColors.gameAccent.withAlpha(100))
+              : null,
         ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(
+              Icons.filter_list,
+              size: 16,
+              color: _filterType != null
+                  ? AppColors.gameAccent
+                  : AppColors.textSecondary,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: AppTypography.bodySmall.copyWith(
+                color: _filterType != null
+                    ? AppColors.gameAccent
+                    : AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(width: 2),
+            Icon(
+              Icons.arrow_drop_down,
+              size: 16,
+              color: _filterType != null
+                  ? AppColors.gameAccent
+                  : AppColors.textSecondary,
+            ),
+          ],
+        ),
+      ),
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+        _buildMediaTypeMenuItem(_filterAllKey, 'All', stats?.total),
+        _buildMediaTypeMenuItem(
+            MediaType.game.value, 'Games', stats?.gameCount),
+        _buildMediaTypeMenuItem(
+            MediaType.movie.value, 'Movies', stats?.movieCount),
+        _buildMediaTypeMenuItem(
+            MediaType.tvShow.value, 'TV Shows', stats?.tvShowCount),
+        _buildMediaTypeMenuItem(
+            MediaType.animation.value, 'Animation', stats?.animationCount),
+      ],
+    );
+  }
 
-        const SizedBox(height: AppSpacing.sm),
+  PopupMenuItem<String> _buildMediaTypeMenuItem(
+    String value,
+    String label,
+    int? count,
+  ) {
+    final bool selected = (value == _filterAllKey && _filterType == null) ||
+        (_filterType != null && _filterType!.value == value);
+    final String displayLabel =
+        count != null && count > 0 ? '$label ($count)' : label;
+    return PopupMenuItem<String>(
+      value: value,
+      child: Row(
+        children: <Widget>[
+          if (selected)
+            const Icon(Icons.check, size: 18, color: AppColors.gameAccent)
+          else
+            const SizedBox(width: 18),
+          const SizedBox(width: AppSpacing.sm),
+          Text(displayLabel),
+        ],
+      ),
+    );
+  }
 
-        // Прогресс-бар
-        if (stats.total > 0) ...<Widget>[
-          Row(
-            children: <Widget>[
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
-                  child: LinearProgressIndicator(
-                    value: stats.completionPercent / 100,
-                    minHeight: 8,
-                    backgroundColor: AppColors.surfaceLight,
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      AppColors.gameAccent,
-                    ),
+  Widget _buildCompactSearch() {
+    return SizedBox(
+      height: _filterRowHeight,
+      child: TextField(
+        controller: _searchController,
+        style: AppTypography.bodySmall.copyWith(
+          color: AppColors.textPrimary,
+        ),
+        decoration: InputDecoration(
+          hintText: 'Search...',
+          hintStyle: AppTypography.bodySmall.copyWith(
+            color: AppColors.textTertiary,
+          ),
+          prefixIcon: const Icon(
+            Icons.search,
+            size: 16,
+            color: AppColors.textTertiary,
+          ),
+          prefixIconConstraints: const BoxConstraints(
+            minWidth: 32,
+            minHeight: 32,
+          ),
+          suffixIcon: _searchQuery.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(
+                    Icons.close,
+                    size: 14,
+                    color: AppColors.textTertiary,
                   ),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 28,
+                    minHeight: 28,
+                  ),
+                  onPressed: () => _searchController.clear(),
+                )
+              : null,
+          filled: true,
+          fillColor: AppColors.surfaceLight,
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: AppSpacing.xs,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+            borderSide: BorderSide.none,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSortDropdown(
+    CollectionSortMode currentSort,
+    bool isDescending,
+  ) {
+    return PopupMenuButton<String>(
+      tooltip: 'Sort',
+      onSelected: (String value) {
+        if (value == 'toggle_direction') {
+          ref
+              .read(collectionSortDescProvider(widget.collectionId).notifier)
+              .toggle();
+        } else {
+          final CollectionSortMode mode =
+              CollectionSortMode.fromString(value);
+          ref
+              .read(collectionSortProvider(widget.collectionId).notifier)
+              .setSortMode(mode);
+        }
+      },
+      constraints: const BoxConstraints(),
+      padding: EdgeInsets.zero,
+      position: PopupMenuPosition.under,
+      child: Container(
+        height: _filterRowHeight,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceLight,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Text(
+              currentSort.shortLabel,
+              style: AppTypography.bodySmall,
+            ),
+            const SizedBox(width: 2),
+            Icon(
+              isDescending ? Icons.arrow_downward : Icons.arrow_upward,
+              size: 14,
+              color: AppColors.textSecondary,
+            ),
+          ],
+        ),
+      ),
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+        ...CollectionSortMode.values.map(
+          (CollectionSortMode mode) => PopupMenuItem<String>(
+            value: mode.value,
+            child: Row(
+              children: <Widget>[
+                if (mode == currentSort)
+                  const Icon(
+                    Icons.check,
+                    size: 18,
+                    color: AppColors.gameAccent,
+                  )
+                else
+                  const SizedBox(width: 18),
+                const SizedBox(width: AppSpacing.sm),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Text(mode.displayLabel),
+                    Text(
+                      mode.description,
+                      style: AppTypography.caption,
+                    ),
+                  ],
                 ),
+              ],
+            ),
+          ),
+        ),
+        const PopupMenuDivider(),
+        PopupMenuItem<String>(
+          value: 'toggle_direction',
+          child: Row(
+            children: <Widget>[
+              Icon(
+                isDescending ? Icons.arrow_downward : Icons.arrow_upward,
+                size: 18,
+                color: AppColors.textSecondary,
               ),
-              const SizedBox(width: AppSpacing.md),
-              Text(
-                stats.completionPercentFormatted,
-                style: AppTypography.h3.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.gameAccent,
-                ),
-              ),
+              const SizedBox(width: AppSpacing.sm),
+              Text(isDescending ? 'Descending' : 'Ascending'),
             ],
           ),
-        ],
+        ),
       ],
+    );
+  }
+
+  Widget _buildViewToggle() {
+    return SizedBox(
+      width: _filterRowHeight,
+      height: _filterRowHeight,
+      child: IconButton(
+        icon: Icon(
+          _isGridMode ? Icons.view_list : Icons.grid_view,
+          size: 18,
+          color: AppColors.textSecondary,
+        ),
+        tooltip: _isGridMode ? 'List view' : 'Grid view',
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(),
+        visualDensity: VisualDensity.compact,
+        onPressed: () {
+          setState(() => _isGridMode = !_isGridMode);
+          ref
+              .read(sharedPreferencesProvider)
+              .setBool(
+                '${SettingsKeys.collectionViewModePrefix}${widget.collectionId}',
+                _isGridMode,
+              );
+        },
+      ),
     );
   }
 
@@ -490,233 +680,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     }
 
     return result;
-  }
-
-  Widget _buildFilterBar(AsyncValue<CollectionStats> statsAsync) {
-    final CollectionStats? stats = statsAsync.valueOrNull;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.md,
-        AppSpacing.sm,
-        AppSpacing.md,
-        0,
-      ),
-      child: Column(
-        children: <Widget>[
-          // Фильтр по типу
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: <Widget>[
-                _buildFilterChip(
-                  label: 'All',
-                  type: null,
-                  count: stats?.total,
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                _buildFilterChip(
-                  label: 'Games',
-                  type: MediaType.game,
-                  count: stats?.gameCount,
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                _buildFilterChip(
-                  label: 'Movies',
-                  type: MediaType.movie,
-                  count: stats?.movieCount,
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                _buildFilterChip(
-                  label: 'TV Shows',
-                  type: MediaType.tvShow,
-                  count: stats?.tvShowCount,
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                _buildFilterChip(
-                  label: 'Animation',
-                  type: MediaType.animation,
-                  count: stats?.animationCount,
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: AppSpacing.sm),
-
-          // Поиск по имени
-          SizedBox(
-            height: 36,
-            child: TextField(
-              controller: _searchController,
-              style: AppTypography.bodySmall.copyWith(
-                color: AppColors.textPrimary,
-              ),
-              decoration: InputDecoration(
-                hintText: 'Search in collection...',
-                hintStyle: AppTypography.bodySmall.copyWith(
-                  color: AppColors.textTertiary,
-                ),
-                prefixIcon: const Icon(
-                  Icons.search,
-                  size: 18,
-                  color: AppColors.textTertiary,
-                ),
-                suffixIcon: _searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(
-                          Icons.close,
-                          size: 16,
-                          color: AppColors.textTertiary,
-                        ),
-                        padding: EdgeInsets.zero,
-                        onPressed: () => _searchController.clear(),
-                      )
-                    : null,
-                filled: true,
-                fillColor: AppColors.surfaceLight,
-                contentPadding: const EdgeInsets.symmetric(
-                  vertical: AppSpacing.xs,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFilterChip({
-    required String label,
-    required MediaType? type,
-    int? count,
-  }) {
-    final bool selected = _filterType == type;
-    final String displayLabel =
-        count != null && count > 0 ? '$label ($count)' : label;
-    return ChoiceChip(
-      label: Text(
-        displayLabel,
-        style: AppTypography.bodySmall.copyWith(
-          color: selected ? AppColors.background : AppColors.textSecondary,
-        ),
-      ),
-      selected: selected,
-      selectedColor: AppColors.gameAccent,
-      backgroundColor: AppColors.surfaceLight,
-      side: BorderSide.none,
-      visualDensity: VisualDensity.compact,
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-      onSelected: (bool value) {
-        setState(() => _filterType = value ? type : null);
-      },
-    );
-  }
-
-  Widget _buildSortSelector() {
-    final CollectionSortMode currentSort =
-        ref.watch(collectionSortProvider(widget.collectionId));
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.xs,
-      ),
-      child: Row(
-        children: <Widget>[
-          const Icon(
-            Icons.sort,
-            size: 16,
-            color: AppColors.textSecondary,
-          ),
-          const SizedBox(width: AppSpacing.xs),
-          Text(
-            currentSort.displayLabel,
-            style: AppTypography.bodySmall,
-          ),
-          const SizedBox(width: 2),
-          PopupMenuButton<CollectionSortMode>(
-            icon: const Icon(
-              Icons.arrow_drop_down,
-              size: 20,
-              color: AppColors.textSecondary,
-            ),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            style: const ButtonStyle(
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              visualDensity: VisualDensity.compact,
-            ),
-            tooltip: 'Sort mode',
-            onSelected: (CollectionSortMode mode) {
-              ref
-                  .read(collectionSortProvider(widget.collectionId).notifier)
-                  .setSortMode(mode);
-            },
-            itemBuilder: (BuildContext context) {
-              return CollectionSortMode.values
-                  .map(
-                    (CollectionSortMode mode) =>
-                        PopupMenuItem<CollectionSortMode>(
-                      value: mode,
-                      child: Row(
-                        children: <Widget>[
-                          if (mode == currentSort)
-                            const Icon(
-                              Icons.check,
-                              size: 18,
-                              color: AppColors.gameAccent,
-                            )
-                          else
-                            const SizedBox(width: 18),
-                          const SizedBox(width: AppSpacing.sm),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              Text(mode.displayLabel),
-                              Text(
-                                mode.description,
-                                style: AppTypography.caption,
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                  .toList();
-            },
-          ),
-          const Spacer(),
-          // Переключатель list/grid
-          IconButton(
-            icon: Icon(
-              _isGridMode ? Icons.view_list : Icons.grid_view,
-              size: 20,
-              color: AppColors.textSecondary,
-            ),
-            tooltip: _isGridMode ? 'List view' : 'Grid view',
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            visualDensity: VisualDensity.compact,
-            onPressed: () {
-              setState(() => _isGridMode = !_isGridMode);
-              ref
-                  .read(sharedPreferencesProvider)
-                  .setBool(
-                    '${SettingsKeys.collectionViewModePrefix}${widget.collectionId}',
-                    _isGridMode,
-                  );
-            },
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _buildItemsList(BuildContext context, List<CollectionItem> items) {
@@ -1156,6 +1119,10 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
 
   void _handleMenuAction(String action) {
     switch (action) {
+      case 'rename':
+        _renameCollection(context);
+      case 'export':
+        _exportCollection();
       case 'revert':
         _revertToOriginal();
       case 'delete':

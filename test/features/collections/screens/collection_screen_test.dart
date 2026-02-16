@@ -196,12 +196,15 @@ void main() {
       expect(find.text('Test Collection'), findsOneWidget);
     });
 
-    testWidgets('должен показывать статистику',
+    testWidgets('не должен показывать header со статистикой',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await pumpScreen(tester);
 
-      expect(find.textContaining('5 items'), findsOneWidget);
+      // Header удалён — нет текста со статистикой
+      expect(find.textContaining('5 items'), findsNothing);
+      // Нет прогресс-бара
+      expect(find.byType(LinearProgressIndicator), findsNothing);
     });
 
     testWidgets('должен показывать элементы коллекции',
@@ -277,11 +280,37 @@ void main() {
       });
     });
 
-    group('фильтр по типу', () {
-      testWidgets('должен показывать чипы фильтра',
+    group('фильтр по типу (dropdown)', () {
+      /// Открывает dropdown фильтра типа и выбирает пункт.
+      Future<void> selectMediaFilter(
+        WidgetTester tester,
+        String itemText,
+      ) async {
+        // Тапаем по кнопке фильтра (содержит иконку filter_list)
+        await tester.tap(find.byTooltip('Filter by type'));
+        await tester.pumpAndSettle();
+        // Тапаем по пункту меню
+        await tester.tap(find.text(itemText).last);
+        await pumpScreen(tester);
+      }
+
+      testWidgets('должен показывать dropdown с All по умолчанию',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
+
+        // Кнопка фильтра показывает "All"
+        expect(find.text('All'), findsOneWidget);
+      });
+
+      testWidgets('dropdown должен содержать все типы',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        // Открываем dropdown
+        await tester.tap(find.byTooltip('Filter by type'));
+        await tester.pumpAndSettle();
 
         expect(find.text('All (5)'), findsOneWidget);
         expect(find.text('Games (1)'), findsOneWidget);
@@ -295,8 +324,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        await tester.tap(find.text('Games (1)'));
-        await pumpScreen(tester);
+        await selectMediaFilter(tester, 'Games (1)');
 
         expect(find.text('Zelda'), findsOneWidget);
         expect(find.text('Inception'), findsNothing);
@@ -308,8 +336,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        await tester.tap(find.text('Movies (1)'));
-        await pumpScreen(tester);
+        await selectMediaFilter(tester, 'Movies (1)');
 
         expect(find.text('Zelda'), findsNothing);
         expect(find.text('Inception'), findsOneWidget);
@@ -321,8 +348,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        await tester.tap(find.text('TV Shows (1)'));
-        await pumpScreen(tester);
+        await selectMediaFilter(tester, 'TV Shows (1)');
 
         expect(find.text('Zelda'), findsNothing);
         expect(find.text('Inception'), findsNothing);
@@ -335,11 +361,13 @@ void main() {
         await pumpScreen(tester);
 
         // Сначала выбираем Games
-        await tester.tap(find.text('Games (1)'));
-        await pumpScreen(tester);
+        await selectMediaFilter(tester, 'Games (1)');
         expect(find.text('Inception'), findsNothing);
 
-        // Затем All
+        // Затем All — при открытом dropdown "All (5)" содержит checkmark
+        await tester.tap(find.byTooltip('Filter by type'));
+        await tester.pumpAndSettle();
+        // Тапаем по "All (5)" в popup
         await tester.tap(find.text('All (5)'));
         await pumpScreen(tester);
 
@@ -353,8 +381,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        await tester.tap(find.text('Animation (2)'));
-        await pumpScreen(tester);
+        await selectMediaFilter(tester, 'Animation (2)');
 
         expect(find.text('Zelda'), findsNothing);
         expect(find.text('Inception'), findsNothing);
@@ -597,9 +624,13 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // Фильтр Games + поиск "Zel"
-        await tester.tap(find.text('Games (1)'));
+        // Фильтр Games
+        await tester.tap(find.byTooltip('Filter by type'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Games (1)').last);
         await pumpScreen(tester);
+
+        // + поиск "Zel"
         await tester.enterText(find.byType(TextField), 'Zel');
         await pumpScreen(tester);
 
@@ -618,7 +649,9 @@ void main() {
         await pumpScreen(tester);
 
         // Фильтр Movies
-        await tester.tap(find.text('Movies (1)'));
+        await tester.tap(find.byTooltip('Filter by type'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Movies (1)').last);
         await pumpScreen(tester);
 
         // Должен быть 1 PosterCard (Inception)
@@ -764,18 +797,33 @@ void main() {
       });
     });
 
-    group('export кнопка', () {
-      testWidgets('должен показывать кнопку Export в AppBar',
+    group('export в PopupMenu', () {
+      testWidgets('должен показывать Export в трёхточечном меню',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        expect(find.byTooltip('Export'), findsOneWidget);
-        expect(find.byIcon(Icons.file_upload_outlined), findsOneWidget);
+        // Открываем PopupMenu (последний PopupMenuButton<String> — в AppBar actions)
+        await tester.tap(find.byType(PopupMenuButton<String>).last);
+        await tester.pumpAndSettle();
+
+        expect(find.text('Export'), findsOneWidget);
+      });
+
+      testWidgets('должен показывать Rename в трёхточечном меню для editable',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        // Открываем PopupMenu
+        await tester.tap(find.byType(PopupMenuButton<String>).last);
+        await tester.pumpAndSettle();
+
+        expect(find.text('Rename'), findsOneWidget);
       });
     });
 
-    group('filter chips с нулевыми каунтами', () {
+    group('фильтры при пустой коллекции', () {
       const CollectionStats zeroStats = CollectionStats(
         total: 0,
         completed: 0,
@@ -789,7 +837,7 @@ void main() {
         animationCount: 0,
       );
 
-      testWidgets('должен скрывать фильтры при 0 элементах',
+      testWidgets('должен скрывать FilterRow при 0 элементах',
           (WidgetTester tester) async {
         when(() => mockRepo.getItemsWithData(
               1,
@@ -810,12 +858,66 @@ void main() {
         ));
         await pumpScreen(tester);
 
-        // Фильтры скрыты при пустой коллекции
-        expect(find.text('All'), findsNothing);
-        expect(find.text('Games'), findsNothing);
-        expect(find.text('Movies'), findsNothing);
-        expect(find.text('TV Shows'), findsNothing);
-        expect(find.text('Animation'), findsNothing);
+        // FilterRow скрыта — нет кнопки фильтра типа
+        expect(find.byTooltip('Filter by type'), findsNothing);
+        // Нет поля поиска
+        expect(find.byType(TextField), findsNothing);
+        // Нет кнопки сортировки
+        expect(find.byTooltip('Sort'), findsNothing);
+      });
+    });
+
+    group('sort dropdown', () {
+      testWidgets('должен показывать кнопку сортировки',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        expect(find.byTooltip('Sort'), findsOneWidget);
+      });
+
+      testWidgets('должен содержать все режимы сортировки',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        await tester.tap(find.byTooltip('Sort'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Manual'), findsOneWidget);
+        expect(find.text('Date Added'), findsOneWidget);
+        expect(find.text('Status'), findsOneWidget);
+        expect(find.text('Name'), findsOneWidget);
+      });
+
+      testWidgets('должен содержать пункт Ascending/Descending',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        await tester.tap(find.byTooltip('Sort'));
+        await tester.pumpAndSettle();
+
+        // По умолчанию ascending
+        expect(find.text('Ascending'), findsOneWidget);
+      });
+
+      testWidgets('должен показывать shortLabel на кнопке',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        // По умолчанию addedDate → shortLabel "Date"
+        expect(find.text('Date'), findsOneWidget);
+      });
+
+      testWidgets('должен показывать иконку направления сортировки',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await pumpScreen(tester);
+
+        // По умолчанию ascending — стрелка вверх
+        expect(find.byIcon(Icons.arrow_upward), findsOneWidget);
       });
     });
 
@@ -835,8 +937,8 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // Переключаемся на Canvas mode
-        await tester.tap(find.text('Board'));
+        // Переключаемся на Canvas mode через IconButton
+        await tester.tap(find.byTooltip('Switch to Board'));
         await pumpScreen(tester);
 
         // Замок виден (collection.isEditable = true для own)
@@ -859,8 +961,8 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // Переключаемся на Canvas mode
-        await tester.tap(find.text('Board'));
+        // Переключаемся на Canvas mode через IconButton
+        await tester.tap(find.byTooltip('Switch to Board'));
         await pumpScreen(tester);
 
         // Замок не виден (imported — не editable)
@@ -873,8 +975,8 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // Переключаемся на Canvas mode
-        await tester.tap(find.text('Board'));
+        // Переключаемся на Canvas mode через IconButton
+        await tester.tap(find.byTooltip('Switch to Board'));
         await pumpScreen(tester);
 
         // Нажимаем замок (lock_open → lock)
