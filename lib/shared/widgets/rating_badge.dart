@@ -14,11 +14,15 @@ class RatingBadge extends StatelessWidget {
   /// Создаёт бейдж рейтинга.
   const RatingBadge({
     required this.rating,
+    this.compact = false,
     super.key,
   });
 
   /// Числовой рейтинг (0.0–10.0).
   final double rating;
+
+  /// Компактный режим (уменьшенные размеры для ландшафта).
+  final bool compact;
 
   /// Возвращает цвет фона на основе рейтинга.
   static Color colorForRating(double rating) {
@@ -30,16 +34,19 @@ class RatingBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 3 : 6,
+        vertical: compact ? 1 : 2,
+      ),
       decoration: BoxDecoration(
         color: colorForRating(rating),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(compact ? 4 : 6),
       ),
       child: Text(
         rating.toStringAsFixed(1),
-        style: const TextStyle(
+        style: TextStyle(
           color: Colors.white,
-          fontSize: 12,
+          fontSize: compact ? 8 : 12,
           fontWeight: FontWeight.bold,
           height: 1.2,
         ),

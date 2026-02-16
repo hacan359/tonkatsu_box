@@ -143,7 +143,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         surfaceTintColor: Colors.transparent,
         foregroundColor: AppColors.textPrimary,
         title: Text(_collection!.name, style: AppTypography.h2),
-        bottom: kCanvasEnabled
+        bottom: kCanvasEnabled && !isLandscapeMobile(context)
             ? PreferredSize(
                 preferredSize: const Size.fromHeight(48),
                 child: Padding(
@@ -172,6 +172,20 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
               )
             : null,
         actions: <Widget>[
+          // В ландшафте на мобильном — компактный переключатель List/Board
+          if (kCanvasEnabled && isLandscapeMobile(context))
+            IconButton(
+              icon: Icon(
+                _isCanvasMode ? Icons.list : Icons.dashboard,
+              ),
+              color: AppColors.textSecondary,
+              tooltip: _isCanvasMode ? 'Switch to List' : 'Switch to Board',
+              onPressed: () {
+                setState(() {
+                  _isCanvasMode = !_isCanvasMode;
+                });
+              },
+            ),
           if (_collection!.isEditable && !_isCanvasMode)
             IconButton(
               icon: const Icon(Icons.add),
@@ -330,14 +344,19 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             )
           : Column(
               children: <Widget>[
-                // Заголовок со статистикой
-                _buildHeader(statsAsync),
+                // Заголовок со статистикой (скрываем в ландшафте на мобильном)
+                if (!isLandscapeMobile(context))
+                  _buildHeader(statsAsync),
 
-                // Фильтры (тип + поиск)
-                _buildFilterBar(statsAsync),
+                // Фильтры и сортировка — только если есть элементы
+                if ((statsAsync.valueOrNull?.total ?? 0) > 0) ...<Widget>[
+                  // Фильтры (тип + поиск)
+                  _buildFilterBar(statsAsync),
 
-                // Селектор сортировки
-                _buildSortSelector(),
+                  // Селектор сортировки
+                  if (!isLandscapeMobile(context))
+                    _buildSortSelector(),
+                ],
 
                 // Список элементов
                 Expanded(
@@ -741,15 +760,42 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     );
   }
 
+  /// Максимальная ширина карточки на десктопе.
+  static const double _desktopMaxCardWidth = 150;
+
   Widget _buildGridView(List<CollectionItem> items) {
     final double screenWidth = MediaQuery.sizeOf(context).width;
-    final int crossAxisCount;
-    if (screenWidth >= navigationBreakpoint) {
-      crossAxisCount = AppSpacing.gridColumnsDesktop;
-    } else if (screenWidth >= 500) {
-      crossAxisCount = AppSpacing.gridColumnsTablet;
+    final bool isLandscape = isLandscapeMobile(context);
+    final bool isDesktop = screenWidth >= navigationBreakpoint && !kIsMobile;
+
+    final double gridPadding = isLandscape ? AppSpacing.sm : AppSpacing.md;
+    final double crossSpacing = isLandscape ? AppSpacing.sm : AppSpacing.md;
+    final double mainSpacing = isLandscape ? AppSpacing.sm : AppSpacing.lg;
+
+    final SliverGridDelegate gridDelegate;
+    if (isDesktop) {
+      // На десктопе ограничиваем максимальный размер карточки
+      gridDelegate = SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: _desktopMaxCardWidth,
+        crossAxisSpacing: crossSpacing,
+        mainAxisSpacing: mainSpacing,
+        childAspectRatio: 0.55,
+      );
     } else {
-      crossAxisCount = AppSpacing.gridColumnsMobile;
+      final int crossAxisCount;
+      if (isLandscape) {
+        crossAxisCount = AppSpacing.gridColumnsDesktop;
+      } else if (screenWidth >= 500) {
+        crossAxisCount = AppSpacing.gridColumnsTablet;
+      } else {
+        crossAxisCount = AppSpacing.gridColumnsMobile;
+      }
+      gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        crossAxisSpacing: crossSpacing,
+        mainAxisSpacing: mainSpacing,
+        childAspectRatio: 0.55,
+      );
     }
 
     return RefreshIndicator(
@@ -757,13 +803,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
           .refresh(),
       child: GridView.builder(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: crossAxisCount,
-          crossAxisSpacing: AppSpacing.md,
-          mainAxisSpacing: AppSpacing.lg,
-          childAspectRatio: 0.55,
-        ),
+        padding: EdgeInsets.all(gridPadding),
+        gridDelegate: gridDelegate,
         itemCount: items.length,
         itemBuilder: (BuildContext context, int index) {
           final CollectionItem item = items[index];
@@ -777,6 +818,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             year: _yearFor(item),
             subtitle: _subtitleFor(item),
             status: item.status,
+            compact: isLandscape,
             onTap: () => _showItemDetails(item),
           );
         },
@@ -992,6 +1034,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
+        scrollable: true,
         title: const Text('Remove Item?'),
         content: Text('Remove ${item.itemName} from this collection?'),
         actions: <Widget>[
@@ -1124,6 +1167,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
+        scrollable: true,
         title: const Text('Revert to Original?'),
         content: const Text(
           'This will restore the collection to its original state. '
@@ -1366,6 +1410,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     return showDialog<ExportFormat>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
+        scrollable: true,
         title: const Text('Export Format'),
         content: Column(
           mainAxisSize: MainAxisSize.min,

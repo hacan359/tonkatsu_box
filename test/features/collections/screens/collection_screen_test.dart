@@ -789,7 +789,7 @@ void main() {
         animationCount: 0,
       );
 
-      testWidgets('должен показывать label без каунта при 0 элементах',
+      testWidgets('должен скрывать фильтры при 0 элементах',
           (WidgetTester tester) async {
         when(() => mockRepo.getItemsWithData(
               1,
@@ -810,12 +810,12 @@ void main() {
         ));
         await pumpScreen(tester);
 
-        // Без каунта — не "All (0)", а просто "All"
-        expect(find.text('All'), findsOneWidget);
-        expect(find.text('Games'), findsOneWidget);
-        expect(find.text('Movies'), findsOneWidget);
-        expect(find.text('TV Shows'), findsOneWidget);
-        expect(find.text('Animation'), findsOneWidget);
+        // Фильтры скрыты при пустой коллекции
+        expect(find.text('All'), findsNothing);
+        expect(find.text('Games'), findsNothing);
+        expect(find.text('Movies'), findsNothing);
+        expect(find.text('TV Shows'), findsNothing);
+        expect(find.text('Animation'), findsNothing);
       });
     });
 

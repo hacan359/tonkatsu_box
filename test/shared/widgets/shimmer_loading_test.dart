@@ -64,7 +64,7 @@ void main() {
       );
 
       expect(find.byType(ShimmerPosterCard), findsOneWidget);
-      expect(find.byType(AspectRatio), findsOneWidget);
+      expect(find.byType(Expanded), findsOneWidget);
     });
 
     testWidgets('должен содержать ShimmerBox элементы',

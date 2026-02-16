@@ -88,50 +88,49 @@ class _CreateCollectionDialogState extends State<CreateCollectionDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('New Collection'),
+      scrollable: true,
       content: Form(
         key: _formKey,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              TextFormField(
-                controller: _nameController,
-                focusNode: _nameFocus,
-                decoration: const InputDecoration(
-                  labelText: 'Collection Name',
-                  hintText: 'e.g., SNES Classics',
-                  border: OutlineInputBorder(),
-                ),
-                textInputAction: TextInputAction.next,
-                validator: (String? value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter a name';
-                  }
-                  if (value.trim().length < 2) {
-                    return 'Name must be at least 2 characters';
-                  }
-                  return null;
-                },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            TextFormField(
+              controller: _nameController,
+              focusNode: _nameFocus,
+              decoration: const InputDecoration(
+                labelText: 'Collection Name',
+                hintText: 'e.g., SNES Classics',
+                border: OutlineInputBorder(),
               ),
-              const SizedBox(height: AppSpacing.md),
-              TextFormField(
-                controller: _authorController,
-                decoration: const InputDecoration(
-                  labelText: 'Author',
-                  hintText: 'Your name or username',
-                  border: OutlineInputBorder(),
-                ),
-                textInputAction: TextInputAction.done,
-                onFieldSubmitted: (_) => _submit(),
-                validator: (String? value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter an author name';
-                  }
-                  return null;
-                },
+              textInputAction: TextInputAction.next,
+              validator: (String? value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Please enter a name';
+                }
+                if (value.trim().length < 2) {
+                  return 'Name must be at least 2 characters';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: AppSpacing.md),
+            TextFormField(
+              controller: _authorController,
+              decoration: const InputDecoration(
+                labelText: 'Author',
+                hintText: 'Your name or username',
+                border: OutlineInputBorder(),
               ),
-            ],
-          ),
+              textInputAction: TextInputAction.done,
+              onFieldSubmitted: (_) => _submit(),
+              validator: (String? value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Please enter an author name';
+                }
+                return null;
+              },
+            ),
+          ],
         ),
       ),
       actions: <Widget>[
@@ -208,6 +207,7 @@ class _RenameCollectionDialogState extends State<RenameCollectionDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Rename Collection'),
+      scrollable: true,
       content: Form(
         key: _formKey,
         child: TextFormField(
@@ -270,6 +270,7 @@ class DeleteCollectionDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Delete Collection?'),
+      scrollable: true,
       content: RichText(
         text: TextSpan(
           style: AppTypography.body,

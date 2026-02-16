@@ -480,6 +480,7 @@ class MediaDetailView extends StatelessWidget {
     final String? result = await showDialog<String>(
       context: context,
       builder: (BuildContext ctx) => AlertDialog(
+        scrollable: true,
         title: Text(title),
         content: TextField(
           controller: controller,

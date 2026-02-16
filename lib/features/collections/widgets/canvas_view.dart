@@ -1,5 +1,3 @@
-import 'dart:io' show Platform;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -90,7 +88,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
   }
 
   /// Минимальный зум.
-  static const double _minScale = 0.3;
+  static const double _minScale = 0.1;
 
   /// Максимальный зум.
   static const double _maxScale = 3.0;
@@ -203,7 +201,9 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
 
     // На десктопе не уменьшаем ниже 1.0, на мобильных — ограничиваем
     // минимальным масштабом InteractiveViewer.
-    final bool isMobile = Platform.isAndroid || Platform.isIOS;
+    final bool isMobile = kIsMobile;
+    // На мобильных отдаляем камеру в 5 раз, чтобы видеть все элементы.
+    if (isMobile) scale /= 5;
     final double minFitScale = isMobile ? _minScale : 1.0;
     scale = scale.clamp(minFitScale, _maxScale);
 
@@ -936,7 +936,7 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
   static const double _maxItemSize = 2000;
 
   /// Мобильная платформа (тач вместо мыши, слабее GPU).
-  static final bool _isMobile = Platform.isAndroid || Platform.isIOS;
+  static final bool _isMobile = kIsMobile;
 
   /// Размер resize handle (больше на мобильных для удобства тач-ввода).
   static final double _handleSize = _isMobile ? 24 : 14;

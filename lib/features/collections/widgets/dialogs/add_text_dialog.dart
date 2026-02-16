@@ -94,6 +94,7 @@ class _AddTextDialogState extends State<AddTextDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      scrollable: true,
       title: Text(_isEditing ? 'Edit Text' : 'Add Text'),
       content: SizedBox(
         width: 400,

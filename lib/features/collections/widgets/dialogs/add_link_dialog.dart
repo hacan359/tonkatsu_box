@@ -80,6 +80,7 @@ class _AddLinkDialogState extends State<AddLinkDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      scrollable: true,
       title: Text(_isEditing ? 'Edit Link' : 'Add Link'),
       content: SizedBox(
         width: 400,
