@@ -71,7 +71,7 @@ void main() {
       test('должен вернуть пустой конфиг при пустых prefs', () {
         final Map<String, Object> config = sut.collectSettings();
 
-        expect(config['xerabora_config_version'], equals(configFormatVersion));
+        expect(config['tonkatsu_box_config_version'], equals(configFormatVersion));
         // Только версия, никаких ключей
         expect(config.length, equals(1));
       });
@@ -135,7 +135,7 @@ void main() {
         final Map<String, Object?> decoded =
             jsonDecode(json) as Map<String, Object?>;
 
-        expect(decoded['xerabora_config_version'], equals(configFormatVersion));
+        expect(decoded['tonkatsu_box_config_version'], equals(configFormatVersion));
         expect(decoded[SettingsKeys.clientId], equals('test_id'));
         expect(decoded[SettingsKeys.tokenExpires], equals(42));
       });

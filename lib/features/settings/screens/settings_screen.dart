@@ -237,7 +237,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 SizedBox(width: AppSpacing.sm),
                 Flexible(
                   child: Text(
-                    'Welcome to xeRAbora!',
+                    'Welcome to Tonkatsu Box!',
                     style: AppTypography.h2,
                     overflow: TextOverflow.ellipsis,
                   ),

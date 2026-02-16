@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for your interest in contributing to xeRAbora!
+Thanks for your interest in contributing to Tonkatsu Box!
 
 ## Ways to Contribute
 
@@ -28,7 +28,7 @@ Before creating an issue:
 
 ```bash
 git clone https://github.com/your-username/xerabora.git
-cd xerabora
+cd xerabora  # repository name unchanged
 flutter pub get
 flutter run -d windows
 ```

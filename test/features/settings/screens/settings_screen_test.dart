@@ -72,7 +72,7 @@ void main() {
       await tester.pumpWidget(createWidget(isInitialSetup: true));
       await tester.pumpAndSettle();
 
-      expect(find.text('Welcome to xeRAbora!'), findsOneWidget);
+      expect(find.text('Welcome to Tonkatsu Box!'), findsOneWidget);
     });
 
     testWidgets('должен скрывать Welcome секцию при isInitialSetup=false',
@@ -80,7 +80,7 @@ void main() {
       await tester.pumpWidget(createWidget(isInitialSetup: false));
       await tester.pumpAndSettle();
 
-      expect(find.text('Welcome to xeRAbora!'), findsNothing);
+      expect(find.text('Welcome to Tonkatsu Box!'), findsNothing);
     });
 
     testWidgets('должен скрывать кнопку назад при isInitialSetup=true',

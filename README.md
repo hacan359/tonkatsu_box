@@ -1,4 +1,4 @@
-# xeRAbora
+# Tonkatsu Box
 
 [![Tests](https://github.com/hacan359/xerabora/actions/workflows/test.yml/badge.svg)](https://github.com/hacan359/xerabora/actions/workflows/test.yml)
 [![codecov](https://codecov.io/gh/hacan359/xerabora/graph/badge.svg)](https://codecov.io/gh/hacan359/xerabora)
