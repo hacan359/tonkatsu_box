@@ -47,15 +47,6 @@ class DatabaseService {
       await dir.create(recursive: true);
     }
 
-    // Миграция из старого пути (xerabora → tonkatsu_box)
-    final String legacyDbPath =
-        p.join(appDir.path, 'xerabora', 'xerabora.db');
-    final File legacyDbFile = File(legacyDbPath);
-    final File newDbFile = File(dbPath);
-    if (legacyDbFile.existsSync() && !newDbFile.existsSync()) {
-      await legacyDbFile.copy(dbPath);
-    }
-
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(

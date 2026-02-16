@@ -61,17 +61,7 @@ class ImageCacheService {
 
     // Путь по умолчанию
     final Directory appDir = await getApplicationDocumentsDirectory();
-    final String newPath = p.join(appDir.path, 'tonkatsu_box', 'image_cache');
-
-    // Миграция из старого пути (xerabora → tonkatsu_box)
-    final String legacyPath = p.join(appDir.path, 'xerabora', 'image_cache');
-    final Directory legacyDir = Directory(legacyPath);
-    final Directory newDir = Directory(newPath);
-    if (legacyDir.existsSync() && !newDir.existsSync()) {
-      await legacyDir.rename(newPath);
-    }
-
-    return newPath;
+    return p.join(appDir.path, 'tonkatsu_box', 'image_cache');
   }
 
   /// Возвращает путь к директории для конкретного типа изображений.

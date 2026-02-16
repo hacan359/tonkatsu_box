@@ -73,7 +73,6 @@ class CachedImage extends ConsumerStatefulWidget {
 
 class _CachedImageState extends ConsumerState<CachedImage> {
   Future<ImageResult>? _imageFuture;
-  bool _downloadStarted = false;
 
   @override
   void initState() {
@@ -89,7 +88,6 @@ class _CachedImageState extends ConsumerState<CachedImage> {
         oldWidget.remoteUrl != widget.remoteUrl) {
       _imageFuture = _fetchImage();
       _corruptHandled = false;
-      _downloadStarted = false;
     }
   }
 
@@ -100,27 +98,6 @@ class _CachedImageState extends ConsumerState<CachedImage> {
       imageId: widget.imageId,
       remoteUrl: widget.remoteUrl,
     );
-  }
-
-  /// Скачивает изображение в кэш и обновляет виджет после завершения.
-  void _startBackgroundDownload() {
-    if (_downloadStarted || !widget.autoDownload) return;
-    _downloadStarted = true;
-
-    final ImageCacheService cacheService = ref.read(imageCacheServiceProvider);
-    cacheService
-        .downloadImage(
-      type: widget.imageType,
-      imageId: widget.imageId,
-      remoteUrl: widget.remoteUrl,
-    )
-        .then((bool success) {
-      if (success && mounted) {
-        setState(() {
-          _imageFuture = _fetchImage();
-        });
-      }
-    });
   }
 
   @override
@@ -143,8 +120,16 @@ class _CachedImageState extends ConsumerState<CachedImage> {
 
         // Кэш включён, но файл отсутствует — показать из сети + скачать
         if (result.isMissing) {
-          if (result.uri != null) {
-            _startBackgroundDownload();
+          if (widget.autoDownload && result.uri != null) {
+            final ImageCacheService cacheService =
+                ref.read(imageCacheServiceProvider);
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              cacheService.downloadImage(
+                type: widget.imageType,
+                imageId: widget.imageId,
+                remoteUrl: widget.remoteUrl,
+              );
+            });
           }
           return _buildNetworkImage(result.uri!, context);
         }
