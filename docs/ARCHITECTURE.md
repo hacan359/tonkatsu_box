@@ -86,7 +86,10 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/features/collections/screens/home_screen.dart` | **Главный экран**. Список коллекций с группировкой (My/Forked/Imported). AppBar с кнопкой "+" для создания и Import. Меню: rename, fork, delete |
+| `lib/features/home/screens/all_items_screen.dart` | **Экран всех элементов (Home tab)**. Grid-вид всех элементов из всех коллекций с PosterCard, именем коллекции как subtitle. ChoiceChip фильтрация по типу медиа (All/Games/Movies/TV Shows/Animation), ActionChip сортировки по рейтингу (toggle asc/desc). Tap → detail screen. Loading, empty, error + retry states. RefreshIndicator |
+| `lib/features/home/providers/all_items_provider.dart` | **Провайдеры All Items**. `allItemsSortProvider` (NotifierProvider, SharedPreferences), `allItemsSortDescProvider` (NotifierProvider, SharedPreferences), `allItemsNotifierProvider` (загрузка + сортировка всех элементов), `collectionNamesProvider` (Map<int, String> из collectionsProvider) |
+| `lib/features/collections/providers/sort_utils.dart` | **Утилита сортировки**. Top-level функция `applySortMode()` — shared логика сортировки по 5 режимам (manual, addedDate, status, name, rating). Используется в `CollectionItemsNotifier` и `AllItemsNotifier` |
+| `lib/features/collections/screens/home_screen.dart` | **Экран коллекций (Collections tab)**. Список коллекций с группировкой (My/Forked/Imported). AppBar с кнопкой "+" для создания и Import. Меню: rename, fork, delete |
 | `lib/features/collections/screens/collection_screen.dart` | **Экран коллекции**. Заголовок со статистикой (прогресс-бар), список элементов. Кнопка "Add Items" открывает SearchScreen. Поддержка игр, фильмов, сериалов и анимации через `CollectionItem`/`collectionItemsNotifierProvider`. Навигация к `GameDetailScreen`/`MovieDetailScreen`/`TvShowDetailScreen`/`AnimeDetailScreen` по типу. Filter chips: All/Games/Movies/TV Shows/Animation. Grid: `MediaPosterCard(variant: grid/compact)` с двойным рейтингом. `_CollectionItemTile` — карточка с DualRatingBadge inline, описанием, заметками пользователя, большой полупрозрачной фоновой иконкой типа медиа |
 | `lib/features/collections/screens/game_detail_screen.dart` | **Экран деталей игры**. TabBar с 2 вкладками: Details (`MediaDetailView(embedded: true)` с info chips, StatusChipRow) и Canvas (CanvasView + боковые панели SteamGridDB/VGMaps). Использует `gameCanvasNotifierProvider` для per-item canvas |
 | `lib/features/collections/screens/movie_detail_screen.dart` | **Экран деталей фильма**. TabBar с 2 вкладками: Details (`MediaDetailView(embedded: true)` с info chips, StatusChipRow) и Canvas (CanvasView + боковые панели SteamGridDB/VGMaps). Использует `gameCanvasNotifierProvider` для per-item canvas |
@@ -177,7 +180,7 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/shared/navigation/navigation_shell.dart` | **NavigationShell**. Адаптивная навигация: `NavigationRail` (боковая панель) при ширине ≥800px, `BottomNavigationBar` при <800px. Табы: Home, Search, Settings. Lazy IndexedStack — SearchScreen и SettingsScreen строятся при первом переключении на таб (оптимизация запуска Android) |
+| `lib/shared/navigation/navigation_shell.dart` | **NavigationShell**. Адаптивная навигация: `NavigationRail` (боковая панель) при ширине ≥800px, `BottomNavigationBar` при <800px. 4 таба: Home (AllItemsScreen), Collections (HomeScreen), Search, Settings. Lazy IndexedStack — AllItemsScreen загружается eager, Collections/Search/Settings строятся при первом переключении на таб |
 
 #### Виджеты
 
@@ -622,7 +625,13 @@ CREATE TABLE game_canvas_viewport (
          ├─[Нет API ключа]→ SettingsScreen(isInitialSetup: true)
          │
          └─[Есть API ключ]→ NavigationShell (NavigationRail sidebar)
-                              ├─ Tab 0: HomeScreen
+                              ├─ Tab 0: AllItemsScreen (Home)
+                              │  ├→ GameDetailScreen(collectionId, itemId)
+                              │  ├→ MovieDetailScreen(collectionId, itemId)
+                              │  ├→ TvShowDetailScreen(collectionId, itemId)
+                              │  └→ AnimeDetailScreen(collectionId, itemId)
+                              │
+                              ├─ Tab 1: HomeScreen (Collections)
                               │  ├→ CollectionScreen(collectionId)
                               │  │  ├→ GameDetailScreen(collectionId, itemId)
                               │  │  ├→ MovieDetailScreen(collectionId, itemId)
@@ -631,10 +640,10 @@ CREATE TABLE game_canvas_viewport (
                               │  │  └→ SearchScreen(collectionId)
                               │  │      [добавление игр/фильмов/сериалов]
                               │  │
-                              ├─ Tab 1: SearchScreen()
+                              ├─ Tab 2: SearchScreen()
                               │   [просмотр игр/фильмов/сериалов]
                               │
-                              └─ Tab 2: SettingsScreen()
+                              └─ Tab 3: SettingsScreen()
                                   [настройки]
                                   └→ SteamGridDbDebugScreen()
                                       [debug, только в debug сборке]

@@ -9,6 +9,8 @@ import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/collection_sort_mode.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
+import '../../home/providers/all_items_provider.dart';
+import 'sort_utils.dart';
 
 /// Провайдер для списка коллекций.
 final AsyncNotifierProvider<CollectionsNotifier, List<Collection>>
@@ -241,45 +243,7 @@ class CollectionItemsNotifier
     CollectionSortMode sortMode, {
     bool isDescending = false,
   }) {
-    final List<CollectionItem> sorted = List<CollectionItem>.of(items);
-    switch (sortMode) {
-      case CollectionSortMode.manual:
-        sorted.sort(
-          (CollectionItem a, CollectionItem b) =>
-              a.sortOrder.compareTo(b.sortOrder),
-        );
-        // Manual не инвертируется — порядок всегда от пользователя
-        return sorted;
-      case CollectionSortMode.addedDate:
-        sorted.sort(
-          (CollectionItem a, CollectionItem b) =>
-              b.addedAt.compareTo(a.addedAt),
-        );
-      case CollectionSortMode.status:
-        sorted.sort((CollectionItem a, CollectionItem b) {
-          final int cmp =
-              a.status.statusSortPriority.compareTo(b.status.statusSortPriority);
-          if (cmp != 0) return cmp;
-          return a.itemName.toLowerCase().compareTo(b.itemName.toLowerCase());
-        });
-      case CollectionSortMode.name:
-        sorted.sort(
-          (CollectionItem a, CollectionItem b) =>
-              a.itemName.toLowerCase().compareTo(b.itemName.toLowerCase()),
-        );
-      case CollectionSortMode.rating:
-        sorted.sort((CollectionItem a, CollectionItem b) {
-          // null рейтинг в конец
-          if (a.userRating == null && b.userRating == null) return 0;
-          if (a.userRating == null) return 1;
-          if (b.userRating == null) return -1;
-          return b.userRating!.compareTo(a.userRating!);
-        });
-    }
-    if (isDescending) {
-      return sorted.reversed.toList();
-    }
-    return sorted;
+    return applySortMode(items, sortMode, isDescending: isDescending);
   }
 
   /// Обновляет список элементов.
@@ -339,6 +303,7 @@ class CollectionItemsNotifier
 
     await refresh();
     _invalidateCollectedIds(mediaType);
+    ref.invalidate(allItemsNotifierProvider);
     return true;
   }
 
@@ -349,6 +314,7 @@ class CollectionItemsNotifier
     if (mediaType != null) {
       _invalidateCollectedIds(mediaType);
     }
+    ref.invalidate(allItemsNotifierProvider);
   }
 
   void _invalidateCollectedIds(MediaType mediaType) {
@@ -400,6 +366,7 @@ class CollectionItemsNotifier
     }
 
     ref.invalidate(collectionStatsProvider(_collectionId));
+    ref.invalidate(allItemsNotifierProvider);
   }
 
   /// Обновляет даты активности элемента вручную.
@@ -522,6 +489,7 @@ class CollectionItemsNotifier
         }).toList(),
       );
     }
+    ref.invalidate(allItemsNotifierProvider);
   }
 }
 

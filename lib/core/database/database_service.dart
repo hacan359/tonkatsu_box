@@ -1204,6 +1204,37 @@ class DatabaseService {
     return _loadJoinedData(items);
   }
 
+  /// Возвращает все элементы из всех коллекций.
+  Future<List<CollectionItem>> getAllCollectionItems({
+    MediaType? mediaType,
+  }) async {
+    final Database db = await database;
+    String? where;
+    List<Object?>? whereArgs;
+    if (mediaType != null) {
+      where = 'media_type = ?';
+      whereArgs = <Object?>[mediaType.value];
+    }
+    final List<Map<String, dynamic>> rows = await db.query(
+      'collection_items',
+      where: where,
+      whereArgs: whereArgs,
+      orderBy: 'added_at DESC',
+    );
+    return rows.map(CollectionItem.fromDb).toList();
+  }
+
+  /// Возвращает все элементы из всех коллекций с подгруженными данными.
+  Future<List<CollectionItem>> getAllCollectionItemsWithData({
+    MediaType? mediaType,
+  }) async {
+    final List<CollectionItem> items = await getAllCollectionItems(
+      mediaType: mediaType,
+    );
+    if (items.isEmpty) return items;
+    return _loadJoinedData(items);
+  }
+
   /// Загружает связанные данные (Game, Movie, TvShow, Platform) для элементов.
   Future<List<CollectionItem>> _loadJoinedData(
     List<CollectionItem> items,
