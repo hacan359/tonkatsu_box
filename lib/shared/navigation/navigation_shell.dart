@@ -53,11 +53,12 @@ class NavigationShell extends ConsumerStatefulWidget {
 class _NavigationShellState extends ConsumerState<NavigationShell> {
   int _selectedIndex = NavTab.home.index;
 
-  static const List<Widget> _screens = <Widget>[
-    HomeScreen(),
-    SearchScreen(),
-    SettingsScreen(),
-  ];
+  /// Табы, которые уже были посещены и инициализированы.
+  ///
+  /// HomeScreen строится сразу, остальные — при первом переключении.
+  /// Это предотвращает тяжёлую инициализацию SearchScreen (4 DB-запроса,
+  /// загрузка платформ) и SettingsScreen при старте приложения.
+  final Set<int> _initializedTabs = <int>{NavTab.home.index};
 
   @override
   Widget build(BuildContext context) {
@@ -174,11 +175,22 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
   Widget _buildContent() {
     return IndexedStack(
       index: _selectedIndex,
-      children: _screens,
+      children: <Widget>[
+        const HomeScreen(),
+        if (_initializedTabs.contains(NavTab.search.index))
+          const SearchScreen()
+        else
+          const SizedBox.shrink(),
+        if (_initializedTabs.contains(NavTab.settings.index))
+          const SettingsScreen()
+        else
+          const SizedBox.shrink(),
+      ],
     );
   }
 
   void _onDestinationSelected(int index) {
+    _initializedTabs.add(index);
     setState(() => _selectedIndex = index);
   }
 

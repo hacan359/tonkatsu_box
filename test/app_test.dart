@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:xerabora/app.dart';
+import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/data/repositories/collection_repository.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/shared/models/collection.dart';
@@ -12,9 +14,14 @@ import 'package:xerabora/shared/navigation/navigation_shell.dart';
 
 class MockCollectionRepository extends Mock implements CollectionRepository {}
 
+class MockDatabaseService extends Mock implements DatabaseService {}
+
+class MockDatabase extends Mock implements Database {}
+
 void main() {
   group('TonkatsuBoxApp', () {
     late MockCollectionRepository mockRepo;
+    late MockDatabaseService mockDb;
 
     setUp(() {
       mockRepo = MockCollectionRepository();
@@ -22,6 +29,9 @@ void main() {
       when(() => mockRepo.getStats(any())).thenAnswer(
         (_) async => CollectionStats.empty,
       );
+
+      mockDb = MockDatabaseService();
+      when(() => mockDb.database).thenAnswer((_) async => MockDatabase());
     });
 
     testWidgets('должен рендерить MaterialApp', (WidgetTester tester) async {
@@ -33,6 +43,7 @@ void main() {
           overrides: <Override>[
             sharedPreferencesProvider.overrideWithValue(prefs),
             collectionRepositoryProvider.overrideWithValue(mockRepo),
+            databaseServiceProvider.overrideWithValue(mockDb),
           ],
           child: const TonkatsuBoxApp(),
         ),
@@ -51,6 +62,7 @@ void main() {
           overrides: <Override>[
             sharedPreferencesProvider.overrideWithValue(prefs),
             collectionRepositoryProvider.overrideWithValue(mockRepo),
+            databaseServiceProvider.overrideWithValue(mockDb),
           ],
           child: const TonkatsuBoxApp(),
         ),
@@ -69,6 +81,7 @@ void main() {
           overrides: <Override>[
             sharedPreferencesProvider.overrideWithValue(prefs),
             collectionRepositoryProvider.overrideWithValue(mockRepo),
+            databaseServiceProvider.overrideWithValue(mockDb),
           ],
           child: const TonkatsuBoxApp(),
         ),
@@ -91,6 +104,7 @@ void main() {
           overrides: <Override>[
             sharedPreferencesProvider.overrideWithValue(prefs),
             collectionRepositoryProvider.overrideWithValue(mockRepo),
+            databaseServiceProvider.overrideWithValue(mockDb),
           ],
           child: const TonkatsuBoxApp(),
         ),
@@ -111,6 +125,7 @@ void main() {
           overrides: <Override>[
             sharedPreferencesProvider.overrideWithValue(prefs),
             collectionRepositoryProvider.overrideWithValue(mockRepo),
+            databaseServiceProvider.overrideWithValue(mockDb),
           ],
           child: const TonkatsuBoxApp(),
         ),

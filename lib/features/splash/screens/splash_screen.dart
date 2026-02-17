@@ -1,7 +1,10 @@
 // Анимированный splash screen с логотипом Tonkatsu Box.
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/database/database_service.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/navigation/navigation_shell.dart';
 import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_colors.dart';
@@ -11,21 +14,35 @@ import '../../../shared/theme/app_colors.dart';
 /// Показывает логотип с fade-in и scale анимацией (~1.5 сек),
 /// удерживает на экране 0.5 сек, затем плавно переходит к [NavigationShell].
 /// Общая длительность контроллера 2 сек: [0..0.75] — анимация, [0.75..1.0] — пауза.
-class SplashScreen extends StatefulWidget {
+///
+/// Параллельно с анимацией запускает инициализацию базы данных (pre-warming).
+/// Навигация происходит только когда **оба** условия выполнены:
+/// анимация завершена И база данных открыта. Это гарантирует, что тяжёлая
+/// DB-инициализация не пересекается с route transition, предотвращая ANR.
+class SplashScreen extends ConsumerStatefulWidget {
   /// Создаёт [SplashScreen].
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
+class _SplashScreenState extends ConsumerState<SplashScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final CurvedAnimation _fadeCurve;
   late final CurvedAnimation _scaleCurve;
   late final Animation<double> _fadeAnimation;
   late final Animation<double> _scaleAnimation;
+
+  /// Анимация завершена.
+  bool _animationDone = false;
+
+  /// База данных инициализирована.
+  bool _dbDone = false;
+
+  /// Навигация уже выполнена.
+  bool _navigated = false;
 
   /// Общая длительность: 1.5с анимация + 0.5с пауза = 2с.
   static const Duration _totalDuration = Duration(milliseconds: 2000);
@@ -57,10 +74,29 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.addStatusListener((AnimationStatus status) {
       if (status == AnimationStatus.completed) {
-        _navigateToHome();
+        _animationDone = true;
+        _tryNavigate();
       }
     });
     _controller.forward();
+
+    // Pre-warm: запускаем инициализацию DB в фоне.
+    // Навигация произойдёт только когда И анимация завершена, И DB открыта.
+    // Это разводит DB-инициализацию и route transition по времени,
+    // предотвращая конкуренцию за main thread и ANR на слабых устройствах.
+    ref.read(databaseServiceProvider).database.then((_) {
+      _dbDone = true;
+      _tryNavigate();
+    });
+  }
+
+  /// Навигирует на главный экран когда оба условия выполнены:
+  /// анимация завершена И база данных открыта.
+  void _tryNavigate() {
+    if (_animationDone && _dbDone && !_navigated && mounted) {
+      _navigated = true;
+      _navigateToHome();
+    }
   }
 
   void _navigateToHome() {
@@ -83,7 +119,7 @@ class _SplashScreenState extends State<SplashScreen>
         ) {
           return FadeTransition(opacity: animation, child: child);
         },
-        transitionDuration: const Duration(milliseconds: 500),
+        transitionDuration: Duration(milliseconds: kIsMobile ? 200 : 500),
       ),
     );
   }

@@ -179,7 +179,7 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/shared/navigation/navigation_shell.dart` | **NavigationShell**. Адаптивная навигация: `NavigationRail` (боковая панель) при ширине ≥800px, `BottomNavigationBar` при <800px. Табы: Home, Search, Settings. IndexedStack для сохранения состояния |
+| `lib/shared/navigation/navigation_shell.dart` | **NavigationShell**. Адаптивная навигация: `NavigationRail` (боковая панель) при ширине ≥800px, `BottomNavigationBar` при <800px. Табы: Home, Search, Settings. Lazy IndexedStack — SearchScreen и SettingsScreen строятся при первом переключении на таб (оптимизация запуска Android) |
 
 #### Виджеты
 
@@ -202,6 +202,14 @@ lib/
 | Файл | Назначение |
 |------|------------|
 | `lib/shared/constants/media_type_theme.dart` | **Тема типов медиа**. Цвета и иконки для визуального разделения: `colorFor(MediaType)`, `iconFor(MediaType)`. Статические константы `gameColor`, `movieColor`, `tvShowColor`, `animationColor` (фиолетовый) |
+
+---
+
+### Features: Splash (Загрузочный экран)
+
+| Файл | Назначение |
+|------|------------|
+| `lib/features/splash/screens/splash_screen.dart` | **SplashScreen** (ConsumerStatefulWidget). Анимированный логотип с fade-in и scale (1.5с + 0.5с пауза = 2с). Параллельно с анимацией выполняет pre-warming SQLite DB. Навигация происходит только когда оба условия выполнены: анимация завершена И DB открыта (предотвращает ANR). Переход через `pushReplacement` с `FadeTransition` (500ms desktop, 200ms mobile) |
 
 ---
 

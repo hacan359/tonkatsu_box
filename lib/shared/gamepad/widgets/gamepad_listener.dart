@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/gamepad_service.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../gamepad_action.dart';
 import '../gamepad_provider.dart';
 
@@ -86,8 +87,11 @@ class _GamepadListenerState extends ConsumerState<GamepadListener> {
   @override
   void initState() {
     super.initState();
-    final GamepadService service = ref.read(gamepadServiceProvider);
-    _subscription = service.events.listen(_handleEvent);
+    // На мобильных платформах геймпад не используется — пропускаем подписку.
+    if (!kIsMobile) {
+      final GamepadService service = ref.read(gamepadServiceProvider);
+      _subscription = service.events.listen(_handleEvent);
+    }
   }
 
   @override
