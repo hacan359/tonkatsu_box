@@ -265,8 +265,9 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
     }
     if (tvShow?.formattedRating != null) {
       chips.add(MediaDetailChip(
-        icon: Icons.star_outline,
+        icon: Icons.star,
         text: '${tvShow!.formattedRating}/10',
+        iconColor: AppColors.ratingStar,
       ));
     }
     if (tvShow?.status != null) {

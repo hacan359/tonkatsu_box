@@ -377,7 +377,7 @@ void main() {
         expect(find.byIcon(Icons.video_library_outlined), findsNothing);
         expect(find.byIcon(Icons.playlist_play), findsNothing);
         expect(find.byIcon(Icons.category_outlined), findsNothing);
-        expect(find.byIcon(Icons.star_outline), findsNothing);
+        expect(find.byIcon(Icons.star), findsNothing);
         // Icons.info_outline appears in TabBar, so check chip absence by count
         // TabBar has 1 info_outline icon (Details tab), chips should add 0 more
         expect(find.byIcon(Icons.info_outline), findsOneWidget);

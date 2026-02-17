@@ -249,8 +249,9 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
     }
     if (movie?.formattedRating != null) {
       chips.add(MediaDetailChip(
-        icon: Icons.star_outline,
+        icon: Icons.star,
         text: '${movie!.formattedRating}/10',
+        iconColor: AppColors.ratingStar,
       ));
     }
     if (movie?.genresString != null) {

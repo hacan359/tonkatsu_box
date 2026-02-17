@@ -193,7 +193,7 @@ class MediaDetailsSheet extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        Icon(icon, size: 16, color: AppColors.gameAccent),
+        Icon(icon, size: 16, color: icon == Icons.star ? AppColors.ratingStar : AppColors.gameAccent),
         const SizedBox(width: AppSpacing.xs),
         Text(label),
       ],

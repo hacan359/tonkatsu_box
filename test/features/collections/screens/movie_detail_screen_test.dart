@@ -348,7 +348,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('8.4/10'), findsOneWidget);
-        expect(find.byIcon(Icons.star_outline), findsOneWidget);
+        expect(find.byIcon(Icons.star), findsOneWidget);
       });
 
       testWidgets(
@@ -365,7 +365,7 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.star_outline), findsNothing);
+        expect(find.byIcon(Icons.star), findsNothing);
       });
     });
 
@@ -854,7 +854,7 @@ void main() {
         expect(find.byIcon(Icons.calendar_today_outlined), findsNothing);
         expect(find.byIcon(Icons.schedule_outlined), findsNothing);
         expect(find.byIcon(Icons.category_outlined), findsNothing);
-        expect(find.byIcon(Icons.star_outline), findsNothing);
+        expect(find.byIcon(Icons.star), findsNothing);
 
         // Нет описания
         expect(find.text('Description'), findsNothing);

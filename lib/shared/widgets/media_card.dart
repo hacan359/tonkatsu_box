@@ -256,10 +256,10 @@ class MediaCard extends StatelessWidget {
               const SizedBox(width: AppSpacing.md),
             ],
             if (rating != null) ...<Widget>[
-              Icon(
+              const Icon(
                 Icons.star,
                 size: 14,
-                color: Colors.amber.shade600,
+                color: AppColors.ratingStar,
               ),
               const SizedBox(width: 2),
               Text(

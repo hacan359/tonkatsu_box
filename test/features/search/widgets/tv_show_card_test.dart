@@ -320,7 +320,7 @@ void main() {
         await tester.pumpWidget(buildTestWidget());
 
         final Icon starIcon = tester.widget<Icon>(find.byIcon(Icons.star));
-        expect(starIcon.color, Colors.amber.shade600);
+        expect(starIcon.color, AppColors.ratingStar);
       });
 
       testWidgets('should use correct size for star icon',

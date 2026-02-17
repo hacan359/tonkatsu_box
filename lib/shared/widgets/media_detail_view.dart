@@ -13,13 +13,20 @@ import 'source_badge.dart';
 /// Чип с иконкой и текстом для отображения метаинформации.
 class MediaDetailChip {
   /// Создаёт [MediaDetailChip].
-  const MediaDetailChip({required this.icon, required this.text});
+  const MediaDetailChip({
+    required this.icon,
+    required this.text,
+    this.iconColor,
+  });
 
   /// Иконка чипа.
   final IconData icon;
 
   /// Текст чипа.
   final String text;
+
+  /// Цвет иконки (по умолчанию [AppColors.textSecondary]).
+  final Color? iconColor;
 }
 
 /// Базовый виджет экрана деталей медиа в коллекции.
@@ -213,7 +220,7 @@ class MediaDetailView extends StatelessWidget {
                   runSpacing: 4,
                   children: <Widget>[
                     for (final MediaDetailChip chip in infoChips)
-                      _buildInfoChip(chip.icon, chip.text),
+                      _buildInfoChip(chip.icon, chip.text, iconColor: chip.iconColor),
                   ],
                 ),
               ],
@@ -292,7 +299,7 @@ class MediaDetailView extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoChip(IconData icon, String text) {
+  Widget _buildInfoChip(IconData icon, String text, {Color? iconColor}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
@@ -302,7 +309,7 @@ class MediaDetailView extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Icon(icon, size: 12, color: AppColors.textSecondary),
+          Icon(icon, size: 12, color: iconColor ?? AppColors.textSecondary),
           const SizedBox(width: 4),
           Flexible(
             child: Text(

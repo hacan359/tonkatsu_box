@@ -273,8 +273,9 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
     }
     if (movie?.formattedRating != null) {
       chips.add(MediaDetailChip(
-        icon: Icons.star_outline,
+        icon: Icons.star,
         text: '${movie!.formattedRating}/10',
+        iconColor: AppColors.ratingStar,
       ));
     }
     if (movie?.genresString != null) {
@@ -368,8 +369,9 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
     }
     if (tvShow?.formattedRating != null) {
       chips.add(MediaDetailChip(
-        icon: Icons.star_outline,
+        icon: Icons.star,
         text: '${tvShow!.formattedRating}/10',
+        iconColor: AppColors.ratingStar,
       ));
     }
     if (tvShow?.status != null) {

@@ -76,6 +76,9 @@ abstract final class AppColors {
 
   // ==================== Рейтинги ====================
 
+  /// Цвет иконки звезды рейтинга (amber).
+  static const Color ratingStar = Color(0xFFF59E0B);
+
   /// Рейтинг высокий (>= 8.0).
   static const Color ratingHigh = Color(0xFF22C55E);
 

@@ -240,8 +240,9 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
     }
     if (game?.formattedRating != null) {
       chips.add(MediaDetailChip(
-        icon: Icons.star_outline,
+        icon: Icons.star,
         text: '${game!.formattedRating}/10',
+        iconColor: AppColors.ratingStar,
       ));
     }
     if (game?.genres != null && game!.genres!.isNotEmpty) {
