@@ -3,13 +3,19 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/services/gamepad_service.dart';
+import '../constants/platform_features.dart';
 import 'gamepad_action.dart';
 
 /// Провайдер сервиса геймпада (singleton).
+///
+/// На мобильных платформах (Android/iOS) сервис создаётся, но не запускается —
+/// подписка на Gamepads.events не нужна и создаёт лишнюю нагрузку при старте.
 final Provider<GamepadService> gamepadServiceProvider =
     Provider<GamepadService>((Ref ref) {
   final GamepadService service = GamepadService();
-  service.start();
+  if (!kIsMobile) {
+    service.start();
+  }
   ref.onDispose(service.dispose);
   return service;
 });

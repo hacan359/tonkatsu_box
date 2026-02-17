@@ -1,4 +1,9 @@
 // Тесты для Riverpod провайдеров геймпада.
+//
+// Платформенная проверка: gamepadServiceProvider вызывает start() только
+// на десктопе (kIsMobile == false). В тестовой среде Platform — Linux/macOS/Windows,
+// поэтому kIsMobile == false и сервис стартует. На Android/iOS start() пропускается,
+// что снижает нагрузку при запуске приложения.
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

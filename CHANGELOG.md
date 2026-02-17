@@ -6,6 +6,12 @@
 
 ## [Unreleased]
 
+### Changed
+- Оптимизирован запуск на Android — ленивая инициализация табов в `NavigationShell`: SearchScreen и SettingsScreen строятся только при первом переключении на таб (убирает 4 тяжёлых DB-запроса и загрузку платформ при старте)
+- Добавлена платформенная проверка в `GamepadService` — на мобильных (Android/iOS) сервис не запускается и не подписывается на `Gamepads.events`, что снижает нагрузку при старте
+- Оптимизирован `SplashScreen` — pre-warming базы данных выполняется параллельно с 2-секундной анимацией логотипа. Навигация происходит только когда И анимация завершена, И DB открыта — это разводит DB-инициализацию и route transition по времени, предотвращая ANR на слабых устройствах
+- Уменьшена длительность FadeTransition при переходе с splash на главный экран на мобильных: 200ms вместо 500ms
+
 ### Added
 - Добавлен пользовательский рейтинг (1-10) — новое поле `userRating` в `CollectionItem`, миграция БД v14→v15 (`ALTER TABLE collection_items ADD COLUMN user_rating INTEGER`), метод `DatabaseService.updateItemUserRating()`
 - Добавлен виджет `StarRatingBar` (`lib/shared/widgets/star_rating_bar.dart`) — 10 кликабельных звёзд с InkWell (focusable для геймпада), повторный клик на текущий рейтинг сбрасывает оценку
