@@ -12,7 +12,10 @@ enum CollectionSortMode {
   status('status', 'Status', 'Status', 'Active first'),
 
   /// По алфавиту (itemName ASC).
-  name('name', 'Name', 'A-Z', 'A to Z');
+  name('name', 'Name', 'A-Z', 'A to Z'),
+
+  /// По пользовательскому рейтингу (userRating DESC, высшие первыми).
+  rating('rating', 'My Rating', 'Rating', 'Highest first');
 
   const CollectionSortMode(
     this.value,

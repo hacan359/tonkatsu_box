@@ -348,7 +348,8 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('8.4/10'), findsOneWidget);
-        expect(find.byIcon(Icons.star_outline), findsOneWidget);
+        // 1 star in info chip + 1 star in My Rating section header
+        expect(find.byIcon(Icons.star), findsNWidgets(2));
       });
 
       testWidgets(
@@ -365,7 +366,8 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.star_outline), findsNothing);
+        // Only 1 star icon from My Rating section header (no rating chip)
+        expect(find.byIcon(Icons.star), findsOneWidget);
       });
     });
 
@@ -545,7 +547,7 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        expect(find.text("Author's Comment"), findsOneWidget);
+        expect(find.text("Author's Review"), findsOneWidget);
         expect(find.text('Must watch masterpiece!'), findsOneWidget);
       });
 
@@ -567,7 +569,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(
-          find.text('No comment yet. Tap Edit to add one.'),
+          find.text('No review yet. Tap Edit to add one.'),
           findsOneWidget,
         );
       });
@@ -590,7 +592,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(
-          find.text('No comment from the author.'),
+          find.text('No review from the author.'),
           findsOneWidget,
         );
       });
@@ -613,7 +615,7 @@ void main() {
         await tester.drag(find.byType(Scrollable).at(1), const Offset(0, -300));
         await tester.pumpAndSettle();
 
-        // 2 кнопки Edit: для Author's Comment и My Notes
+        // 2 кнопки Edit: для Author's Review и My Notes
         expect(find.text('Edit'), findsNWidgets(2));
       });
 
@@ -694,6 +696,8 @@ void main() {
     });
 
     group('Диалог редактирования', () {
+      // Порядок секций: My Notes (first Edit) → Author's Review (last Edit)
+
       testWidgets(
           'должен открывать диалог редактирования комментария автора',
           (WidgetTester tester) async {
@@ -708,11 +712,19 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Нажимаем первую кнопку Edit (Author's Comment)
-        await tester.tap(find.text('Edit').first);
+        // Author's Review — последняя кнопка Edit
+        final Finder authorEdit = find.text('Edit').last;
+        await tester.scrollUntilVisible(
+          authorEdit,
+          200,
+          scrollable: find.byType(Scrollable).at(1),
+        );
         await tester.pumpAndSettle();
 
-        expect(find.text("Edit Author's Comment"), findsOneWidget);
+        await tester.tap(authorEdit);
+        await tester.pumpAndSettle();
+
+        expect(find.text("Edit Author's Review"), findsOneWidget);
         expect(find.text('Cancel'), findsOneWidget);
         expect(find.text('Save'), findsOneWidget);
       });
@@ -731,13 +743,22 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Edit').first);
+        // Author's Review — последняя кнопка Edit
+        final Finder authorEdit = find.text('Edit').last;
+        await tester.scrollUntilVisible(
+          authorEdit,
+          200,
+          scrollable: find.byType(Scrollable).at(1),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(authorEdit);
         await tester.pumpAndSettle();
 
         await tester.tap(find.text('Cancel'));
         await tester.pumpAndSettle();
 
-        expect(find.text("Edit Author's Comment"), findsNothing);
+        expect(find.text("Edit Author's Review"), findsNothing);
       });
 
       testWidgets(
@@ -754,17 +775,8 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Прокручиваем до секции My Notes, чтобы кнопка Edit была видна
-        final Finder myNotesEdit = find.text('Edit').last;
-        await tester.scrollUntilVisible(
-          myNotesEdit,
-          200,
-          scrollable: find.byType(Scrollable).at(1),
-        );
-        await tester.pumpAndSettle();
-
-        // Нажимаем последнюю кнопку Edit (My Notes)
-        await tester.tap(myNotesEdit);
+        // My Notes — первая кнопка Edit
+        await tester.tap(find.text('Edit').first);
         await tester.pumpAndSettle();
 
         expect(find.text('Edit My Notes'), findsOneWidget);
@@ -854,7 +866,8 @@ void main() {
         expect(find.byIcon(Icons.calendar_today_outlined), findsNothing);
         expect(find.byIcon(Icons.schedule_outlined), findsNothing);
         expect(find.byIcon(Icons.category_outlined), findsNothing);
-        expect(find.byIcon(Icons.star_outline), findsNothing);
+        // Only 1 star icon from My Rating section header (no rating chip)
+        expect(find.byIcon(Icons.star), findsOneWidget);
 
         // Нет описания
         expect(find.text('Description'), findsNothing);
@@ -867,7 +880,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Секции комментариев отображаются
-        expect(find.text("Author's Comment"), findsOneWidget);
+        expect(find.text("Author's Review"), findsOneWidget);
         expect(find.text('My Notes'), findsOneWidget);
       });
 

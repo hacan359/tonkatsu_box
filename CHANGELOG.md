@@ -7,6 +7,22 @@
 ## [Unreleased]
 
 ### Added
+- Добавлен пользовательский рейтинг (1-10) — новое поле `userRating` в `CollectionItem`, миграция БД v14→v15 (`ALTER TABLE collection_items ADD COLUMN user_rating INTEGER`), метод `DatabaseService.updateItemUserRating()`
+- Добавлен виджет `StarRatingBar` (`lib/shared/widgets/star_rating_bar.dart`) — 10 кликабельных звёзд с InkWell (focusable для геймпада), повторный клик на текущий рейтинг сбрасывает оценку
+- Добавлена секция "My Rating" на экранах деталей (Game, Movie, TV Show, Anime) — между Status и My Notes, отображает `StarRatingBar` с текущим значением и label "X/10"
+- Добавлен режим сортировки `CollectionSortMode.rating` — сортировка по пользовательскому рейтингу (высшие первыми, без оценки — в конце)
+
+### Changed
+- Переименована секция "Author's Comment" → "Author's Review" на экранах деталей — добавлена подпись "Visible to others when shared. Your review of this title." для пояснения назначения
+- Изменён порядок секций на экранах деталей: Header → Status → My Rating → **My Notes** → **Author's Review** → Activity & Progress (ранее Author's Comment шёл перед My Notes)
+- Изменён `CollectionItem.copyWith()` — добавлены sentinel-флаги `clearAuthorComment` и `clearUserComment` для возможности очистки комментариев (установки в `null`)
+- Изменён `CollectionItemsNotifier` — методы `updateAuthorComment` и `updateUserComment` используют sentinel-флаги при передаче `null`, добавлен метод `updateUserRating` с валидацией диапазона 1-10
+- Дополнительные секции (Activity Dates, Episode Progress) обёрнуты в `ExpansionTile` "Activity & Progress" (свёрнуто по умолчанию)
+
+### Fixed
+- Исправлена невозможность очистить комментарий автора и личные заметки — `copyWith` использовал `??` для nullable String-полей, что не позволяло установить `null`
+
+### Added
 - Добавлена визуальная доска (Board) на Android — `kCanvasEnabled` теперь возвращает `true` на всех платформах, Board доступен в коллекциях и на экранах деталей (игры, фильмы, сериалы, анимация)
 - Добавлено контекстное меню по long press на мобильных устройствах — long press на пустом месте доски открывает меню добавления элементов (текст/изображение/ссылка), long press на элементе — меню редактирования (Edit/Delete/Connect и т.д.)
 - Увеличен размер resize handle на мобильных устройствах (24px вместо 14px) для удобства тач-ввода

@@ -50,7 +50,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 14,
+        version: 15,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -224,6 +224,12 @@ class DatabaseService {
       await db.execute(
         "UPDATE collection_items SET status = 'in_progress' "
         "WHERE status = 'playing'",
+      );
+    }
+    if (oldVersion < 15) {
+      // Пользовательский рейтинг (1-10)
+      await db.execute(
+        'ALTER TABLE collection_items ADD COLUMN user_rating INTEGER',
       );
     }
   }
@@ -1552,6 +1558,17 @@ class DatabaseService {
     await db.update(
       'collection_items',
       <String, dynamic>{'user_comment': comment},
+      where: 'id = ?',
+      whereArgs: <Object?>[id],
+    );
+  }
+
+  /// Обновляет пользовательский рейтинг элемента (1-10 или null).
+  Future<void> updateItemUserRating(int id, int? rating) async {
+    final Database db = await database;
+    await db.update(
+      'collection_items',
+      <String, dynamic>{'user_rating': rating},
       where: 'id = ?',
       whereArgs: <Object?>[id],
     );

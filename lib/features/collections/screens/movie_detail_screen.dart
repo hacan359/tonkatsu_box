@@ -223,6 +223,9 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
                 _saveAuthorComment(item.id, text),
             onUserCommentSave: (String? text) =>
                 _saveUserComment(item.id, text),
+            userRating: item.userRating,
+            onUserRatingChanged: (int? rating) =>
+                _updateUserRating(item.id, rating),
             accentColor: AppColors.movieAccent,
             embedded: true,
           ),
@@ -249,8 +252,9 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
     }
     if (movie?.formattedRating != null) {
       chips.add(MediaDetailChip(
-        icon: Icons.star_outline,
+        icon: Icons.star,
         text: '${movie!.formattedRating}/10',
+        iconColor: AppColors.ratingStar,
       ));
     }
     if (movie?.genresString != null) {
@@ -472,5 +476,11 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
     await ref
         .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
         .updateUserComment(id, text);
+  }
+
+  Future<void> _updateUserRating(int id, int? rating) async {
+    await ref
+        .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
+        .updateUserRating(id, rating);
   }
 }

@@ -9,17 +9,25 @@ import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import 'cached_image.dart';
 import 'source_badge.dart';
+import 'star_rating_bar.dart';
 
 /// Чип с иконкой и текстом для отображения метаинформации.
 class MediaDetailChip {
   /// Создаёт [MediaDetailChip].
-  const MediaDetailChip({required this.icon, required this.text});
+  const MediaDetailChip({
+    required this.icon,
+    required this.text,
+    this.iconColor,
+  });
 
   /// Иконка чипа.
   final IconData icon;
 
   /// Текст чипа.
   final String text;
+
+  /// Цвет иконки (по умолчанию [AppColors.textSecondary]).
+  final Color? iconColor;
 }
 
 /// Базовый виджет экрана деталей медиа в коллекции.
@@ -45,6 +53,8 @@ class MediaDetailView extends StatelessWidget {
     this.extraSections,
     this.authorComment,
     this.userComment,
+    this.userRating,
+    this.onUserRatingChanged,
     this.hasAuthorComment = false,
     this.hasUserComment = false,
     this.embedded = false,
@@ -84,19 +94,25 @@ class MediaDetailView extends StatelessWidget {
   /// Дополнительные секции (например, Progress для сериалов).
   final List<Widget>? extraSections;
 
-  /// Комментарий автора коллекции.
+  /// Рецензия автора коллекции (видна другим пользователям при экспорте).
   final String? authorComment;
 
   /// Личные заметки пользователя.
   final String? userComment;
 
-  /// Есть ли комментарий автора.
+  /// Пользовательский рейтинг (1-10).
+  final int? userRating;
+
+  /// Колбэк при изменении пользовательского рейтинга.
+  final ValueChanged<int?>? onUserRatingChanged;
+
+  /// Есть ли рецензия автора.
   final bool hasAuthorComment;
 
   /// Есть ли личные заметки.
   final bool hasUserComment;
 
-  /// Можно ли редактировать комментарий автора.
+  /// Можно ли редактировать рецензию автора.
   final bool isEditable;
 
   /// Встраиваемый режим (без Scaffold и AppBar).
@@ -134,15 +150,18 @@ class MediaDetailView extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           _buildStatusSection(),
         ],
-        if (extraSections != null)
-          for (final Widget section in extraSections!) ...<Widget>[
-            const SizedBox(height: AppSpacing.md),
-            section,
-          ],
-        const SizedBox(height: AppSpacing.md),
-        _buildAuthorCommentSection(context),
+        if (onUserRatingChanged != null) ...<Widget>[
+          const SizedBox(height: AppSpacing.md),
+          _buildUserRatingSection(),
+        ],
         const SizedBox(height: AppSpacing.md),
         _buildUserNotesSection(context),
+        const SizedBox(height: AppSpacing.md),
+        _buildAuthorCommentSection(context),
+        if (extraSections != null && extraSections!.isNotEmpty) ...<Widget>[
+          const SizedBox(height: AppSpacing.md),
+          _buildExtraSectionsExpansion(context),
+        ],
         const SizedBox(height: AppSpacing.lg),
       ],
     );
@@ -213,7 +232,7 @@ class MediaDetailView extends StatelessWidget {
                   runSpacing: 4,
                   children: <Widget>[
                     for (final MediaDetailChip chip in infoChips)
-                      _buildInfoChip(chip.icon, chip.text),
+                      _buildInfoChip(chip.icon, chip.text, iconColor: chip.iconColor),
                   ],
                 ),
               ],
@@ -292,7 +311,7 @@ class MediaDetailView extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoChip(IconData icon, String text) {
+  Widget _buildInfoChip(IconData icon, String text, {Color? iconColor}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
@@ -302,7 +321,7 @@ class MediaDetailView extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Icon(icon, size: 12, color: AppColors.textSecondary),
+          Icon(icon, size: 12, color: iconColor ?? AppColors.textSecondary),
           const SizedBox(width: 4),
           Flexible(
             child: Text(
@@ -333,6 +352,66 @@ class MediaDetailView extends StatelessWidget {
     );
   }
 
+  Widget _buildUserRatingSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Row(
+          children: <Widget>[
+            const Icon(
+              Icons.star,
+              size: 18,
+              color: AppColors.ratingStar,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              'My Rating',
+              style: AppTypography.h3.copyWith(fontWeight: FontWeight.w600),
+            ),
+            if (userRating != null) ...<Widget>[
+              const SizedBox(width: AppSpacing.sm),
+              Text(
+                '$userRating/10',
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 6),
+        StarRatingBar(
+          rating: userRating,
+          onChanged: onUserRatingChanged!,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildExtraSectionsExpansion(BuildContext context) {
+    return Theme(
+      data: Theme.of(context).copyWith(
+        dividerColor: Colors.transparent,
+      ),
+      child: ExpansionTile(
+        tilePadding: EdgeInsets.zero,
+        childrenPadding: EdgeInsets.zero,
+        title: Text(
+          'Activity & Progress',
+          style: AppTypography.h3.copyWith(fontWeight: FontWeight.w600),
+        ),
+        iconColor: AppColors.textSecondary,
+        collapsedIconColor: AppColors.textSecondary,
+        children: <Widget>[
+          for (final Widget section in extraSections!) ...<Widget>[
+            const SizedBox(height: AppSpacing.sm),
+            section,
+          ],
+        ],
+      ),
+    );
+  }
+
   Widget _buildAuthorCommentSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -349,7 +428,7 @@ class MediaDetailView extends StatelessWidget {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  "Author's Comment",
+                  "Author's Review",
                   style: AppTypography.h3.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
@@ -360,8 +439,8 @@ class MediaDetailView extends StatelessWidget {
               TextButton.icon(
                 onPressed: () => _editComment(
                   context,
-                  title: "Edit Author's Comment",
-                  hint: 'Write a comment...',
+                  title: "Edit Author's Review",
+                  hint: 'Write your review...',
                   initialValue: authorComment,
                   onSave: onAuthorCommentSave,
                 ),
@@ -369,6 +448,13 @@ class MediaDetailView extends StatelessWidget {
                 label: const Text('Edit'),
               ),
           ],
+        ),
+        const SizedBox(height: 2),
+        Text(
+          'Visible to others when shared. Your review of this title.',
+          style: AppTypography.caption.copyWith(
+            color: AppColors.textTertiary,
+          ),
         ),
         const SizedBox(height: 6),
         Container(
@@ -391,8 +477,8 @@ class MediaDetailView extends StatelessWidget {
                 )
               : Text(
                   isEditable
-                      ? 'No comment yet. Tap Edit to add one.'
-                      : 'No comment from the author.',
+                      ? 'No review yet. Tap Edit to add one.'
+                      : 'No review from the author.',
                   style: AppTypography.body.copyWith(
                     color: AppColors.textTertiary,
                     fontStyle: FontStyle.italic,

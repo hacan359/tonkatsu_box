@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/search/widgets/movie_card.dart';
+import 'package:xerabora/shared/theme/app_colors.dart';
 import 'package:xerabora/shared/models/movie.dart';
 import 'package:xerabora/shared/widgets/media_type_badge.dart';
 import 'package:xerabora/shared/widgets/source_badge.dart';
@@ -248,7 +249,7 @@ void main() {
         await tester.pumpWidget(buildTestWidget());
 
         final Icon starIcon = tester.widget<Icon>(find.byIcon(Icons.star));
-        expect(starIcon.color, Colors.amber.shade600);
+        expect(starIcon.color, AppColors.ratingStar);
       });
 
       testWidgets('should use correct size for star icon',

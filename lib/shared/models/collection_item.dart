@@ -29,6 +29,7 @@ class CollectionItem with Exportable {
     this.sortOrder = 0,
     this.authorComment,
     this.userComment,
+    this.userRating,
     this.game,
     this.movie,
     this.tvShow,
@@ -49,6 +50,7 @@ class CollectionItem with Exportable {
       status: ItemStatus.fromString(row['status'] as String),
       authorComment: row['author_comment'] as String?,
       userComment: row['user_comment'] as String?,
+      userRating: row['user_rating'] as int?,
       addedAt: DateTime.fromMillisecondsSinceEpoch(
         (row['added_at'] as int) * 1000,
       ),
@@ -90,6 +92,7 @@ class CollectionItem with Exportable {
       status: ItemStatus.fromString(row['status'] as String),
       authorComment: row['author_comment'] as String?,
       userComment: row['user_comment'] as String?,
+      userRating: row['user_rating'] as int?,
       addedAt: DateTime.fromMillisecondsSinceEpoch(
         (row['added_at'] as int) * 1000,
       ),
@@ -134,6 +137,7 @@ class CollectionItem with Exportable {
           ? ItemStatus.fromString(json['status'] as String)
           : ItemStatus.notStarted,
       authorComment: json['comment'] as String?,
+      userRating: json['user_rating'] as int?,
       addedAt: addedAt ?? DateTime.now(),
     );
   }
@@ -170,6 +174,9 @@ class CollectionItem with Exportable {
 
   /// Личный комментарий пользователя.
   final String? userComment;
+
+  /// Пользовательский рейтинг (1-10).
+  final int? userRating;
 
   /// Дата добавления в коллекцию.
   final DateTime addedAt;
@@ -269,7 +276,8 @@ class CollectionItem with Exportable {
   @override
   Set<String> get internalDbFields =>
       const <String>{
-        'id', 'collection_id', 'user_comment', 'added_at', 'sort_order',
+        'id', 'collection_id', 'user_comment',
+        'added_at', 'sort_order',
         'started_at', 'completed_at', 'last_activity_at',
         'status', 'current_season', 'current_episode',
       };
@@ -292,6 +300,7 @@ class CollectionItem with Exportable {
       'status': status.value,
       'author_comment': authorComment,
       'user_comment': userComment,
+      'user_rating': userRating,
       'added_at': addedAt.millisecondsSinceEpoch ~/ 1000,
       'sort_order': sortOrder,
       'started_at': startedAt != null
@@ -314,6 +323,7 @@ class CollectionItem with Exportable {
       'external_id': externalId,
       'platform_id': platformId,
       'comment': authorComment,
+      'user_rating': userRating,
     };
   }
 
@@ -329,7 +339,11 @@ class CollectionItem with Exportable {
     int? sortOrder,
     ItemStatus? status,
     String? authorComment,
+    bool clearAuthorComment = false,
     String? userComment,
+    bool clearUserComment = false,
+    int? userRating,
+    bool clearUserRating = false,
     DateTime? addedAt,
     DateTime? startedAt,
     DateTime? completedAt,
@@ -349,8 +363,11 @@ class CollectionItem with Exportable {
       currentEpisode: currentEpisode ?? this.currentEpisode,
       sortOrder: sortOrder ?? this.sortOrder,
       status: status ?? this.status,
-      authorComment: authorComment ?? this.authorComment,
-      userComment: userComment ?? this.userComment,
+      authorComment:
+          clearAuthorComment ? null : (authorComment ?? this.authorComment),
+      userComment:
+          clearUserComment ? null : (userComment ?? this.userComment),
+      userRating: clearUserRating ? null : (userRating ?? this.userRating),
       addedAt: addedAt ?? this.addedAt,
       startedAt: startedAt ?? this.startedAt,
       completedAt: completedAt ?? this.completedAt,
