@@ -252,6 +252,9 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
           _saveAuthorComment(item.id, text),
       onUserCommentSave: (String? text) =>
           _saveUserComment(item.id, text),
+      userRating: item.userRating,
+      onUserRatingChanged: (int? rating) =>
+          _updateUserRating(item.id, rating),
       accentColor: AppColors.animationAccent,
       embedded: true,
     );
@@ -341,6 +344,9 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
           _saveAuthorComment(item.id, text),
       onUserCommentSave: (String? text) =>
           _saveUserComment(item.id, text),
+      userRating: item.userRating,
+      onUserRatingChanged: (int? rating) =>
+          _updateUserRating(item.id, rating),
       accentColor: AppColors.animationAccent,
       embedded: true,
     );
@@ -651,6 +657,12 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
     await ref
         .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
         .updateUserComment(id, text);
+  }
+
+  Future<void> _updateUserRating(int id, int? rating) async {
+    await ref
+        .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
+        .updateUserRating(id, rating);
   }
 }
 

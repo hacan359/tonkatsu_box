@@ -221,6 +221,9 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                 _saveAuthorComment(collectionItem.id, text),
             onUserCommentSave: (String? text) =>
                 _saveUserComment(collectionItem.id, text),
+            userRating: collectionItem.userRating,
+            onUserRatingChanged: (int? rating) =>
+                _updateUserRating(collectionItem.id, rating),
             embedded: true,
           ),
           // Canvas tab (только desktop)
@@ -456,5 +459,11 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
     await ref
         .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
         .updateUserComment(id, text);
+  }
+
+  Future<void> _updateUserRating(int id, int? rating) async {
+    await ref
+        .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
+        .updateUserRating(id, rating);
   }
 }

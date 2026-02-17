@@ -377,7 +377,8 @@ void main() {
         expect(find.byIcon(Icons.video_library_outlined), findsNothing);
         expect(find.byIcon(Icons.playlist_play), findsNothing);
         expect(find.byIcon(Icons.category_outlined), findsNothing);
-        expect(find.byIcon(Icons.star), findsNothing);
+        // Only 1 star icon from My Rating section header (no rating chip)
+        expect(find.byIcon(Icons.star), findsOneWidget);
         // Icons.info_outline appears in TabBar, so check chip absence by count
         // TabBar has 1 info_outline icon (Details tab), chips should add 0 more
         expect(find.byIcon(Icons.info_outline), findsOneWidget);
@@ -427,6 +428,20 @@ void main() {
     });
 
     group('секция прогресса эпизодов', () {
+      // Extra sections (Episode Progress) are inside "Activity & Progress"
+      // ExpansionTile — нужно раскрыть его перед проверками.
+
+      Future<void> expandActivitySection(WidgetTester tester) async {
+        await tester.scrollUntilVisible(
+          find.text('Activity & Progress'),
+          200,
+          scrollable: find.byType(Scrollable).at(1),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Activity & Progress'));
+        await tester.pumpAndSettle();
+      }
+
       testWidgets('должен отображать заголовок Episode Progress',
           (WidgetTester tester) async {
         final TvShow tvShow = createTestTvShow(
@@ -442,6 +457,8 @@ void main() {
           items: <CollectionItem>[item],
         ));
         await tester.pumpAndSettle();
+
+        await expandActivitySection(tester);
 
         expect(find.text('Episode Progress'), findsOneWidget);
       });
@@ -462,6 +479,8 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
+        await expandActivitySection(tester);
+
         expect(find.textContaining('0/62 watched'), findsOneWidget);
       });
 
@@ -481,6 +500,8 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
+        await expandActivitySection(tester);
+
         expect(find.byType(LinearProgressIndicator), findsOneWidget);
       });
 
@@ -499,6 +520,8 @@ void main() {
           items: <CollectionItem>[item],
         ));
         await tester.pumpAndSettle();
+
+        await expandActivitySection(tester);
 
         expect(find.text('No season data available'), findsOneWidget);
       });
@@ -535,9 +558,12 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
+        await expandActivitySection(tester);
+
         expect(find.text('Season 1'), findsOneWidget);
         expect(find.text('Season 2'), findsOneWidget);
-        expect(find.byType(ExpansionTile), findsNWidgets(2));
+        // 1 Activity & Progress ExpansionTile + 2 Season ExpansionTiles
+        expect(find.byType(ExpansionTile), findsNWidgets(3));
       });
     });
 
@@ -616,15 +642,15 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Скролл до Author's Comment (мимо ActivityDates + Episode Progress)
+        // Скролл до Author's Review (мимо ActivityDates + Episode Progress)
         await tester.scrollUntilVisible(
-          find.text("Author's Comment"),
+          find.text("Author's Review"),
           200,
           scrollable: find.byType(Scrollable).at(1),
         );
         await tester.pumpAndSettle();
 
-        expect(find.text("Author's Comment"), findsOneWidget);
+        expect(find.text("Author's Review"), findsOneWidget);
         expect(find.text('Must watch!'), findsOneWidget);
       });
 
@@ -645,16 +671,16 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Скролл до Author's Comment (мимо ActivityDates + Episode Progress)
+        // Скролл до Author's Review (мимо ActivityDates + Episode Progress)
         await tester.scrollUntilVisible(
-          find.text('No comment yet. Tap Edit to add one.'),
+          find.text('No review yet. Tap Edit to add one.'),
           200,
           scrollable: find.byType(Scrollable).at(1),
         );
         await tester.pumpAndSettle();
 
         expect(
-          find.text('No comment yet. Tap Edit to add one.'),
+          find.text('No review yet. Tap Edit to add one.'),
           findsOneWidget,
         );
       });
@@ -676,16 +702,16 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Скролл до Author's Comment (мимо ActivityDates + Episode Progress)
+        // Скролл до Author's Review (мимо ActivityDates + Episode Progress)
         await tester.scrollUntilVisible(
-          find.text('No comment from the author.'),
+          find.text('No review from the author.'),
           200,
           scrollable: find.byType(Scrollable).at(1),
         );
         await tester.pumpAndSettle();
 
         expect(
-          find.text('No comment from the author.'),
+          find.text('No review from the author.'),
           findsOneWidget,
         );
       });
@@ -704,15 +730,15 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Скролл до секции My Notes (мимо ActivityDates + Episode Progress)
+        // Скролл до Author's Review (идёт после My Notes)
         await tester.scrollUntilVisible(
-          find.text('My Notes'),
+          find.text("Author's Review"),
           200,
           scrollable: find.byType(Scrollable).at(1),
         );
         await tester.pumpAndSettle();
 
-        // 2 кнопки Edit: Author's Comment и My Notes
+        // 2 кнопки Edit: My Notes и Author's Review
         expect(find.text('Edit'), findsNWidgets(2));
       });
 
@@ -730,9 +756,9 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Скролл до секции My Notes (мимо ActivityDates + Episode Progress)
+        // Скролл до Author's Review (идёт после My Notes)
         await tester.scrollUntilVisible(
-          find.text('My Notes'),
+          find.text("Author's Review"),
           200,
           scrollable: find.byType(Scrollable).at(1),
         );
@@ -836,8 +862,17 @@ void main() {
 
         // Должен показать itemName как "Unknown TV Show"
         expect(find.text('Unknown TV Show'), findsWidgets);
-        // Секции Status и Episode Progress должны быть
+        // Секция Status должна быть видна
         expect(find.text('Status'), findsOneWidget);
+        // Episode Progress внутри Activity & Progress ExpansionTile
+        await tester.scrollUntilVisible(
+          find.text('Activity & Progress'),
+          200,
+          scrollable: find.byType(Scrollable).at(1),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Activity & Progress'));
+        await tester.pumpAndSettle();
         expect(find.text('Episode Progress'), findsOneWidget);
       });
 
@@ -967,6 +1002,8 @@ void main() {
     });
 
     group('диалоги редактирования', () {
+      // Порядок секций: My Notes (first Edit) → Author's Review (last Edit)
+
       testWidgets(
           'должен открывать диалог редактирования комментария автора при нажатии Edit',
           (WidgetTester tester) async {
@@ -981,19 +1018,19 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Прокручиваем до секции Author's Comment (мимо ActivityDates + Episode Progress)
+        // Прокручиваем до секции Author's Review (идёт после My Notes)
         await tester.scrollUntilVisible(
-          find.text("Author's Comment"),
+          find.text("Author's Review"),
           200,
           scrollable: find.byType(Scrollable).at(1),
         );
         await tester.pumpAndSettle();
 
-        // Нажимаем первую кнопку Edit (для Author's Comment)
-        await tester.tap(find.text('Edit').first);
+        // Author's Review — последняя кнопка Edit
+        await tester.tap(find.text('Edit').last);
         await tester.pumpAndSettle();
 
-        expect(find.text("Edit Author's Comment"), findsOneWidget);
+        expect(find.text("Edit Author's Review"), findsOneWidget);
         expect(find.text('Cancel'), findsOneWidget);
         expect(find.text('Save'), findsOneWidget);
       });
@@ -1011,21 +1048,22 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Прокручиваем до секции Author's Comment (мимо ActivityDates + Episode Progress)
+        // Прокручиваем до секции Author's Review (идёт после My Notes)
         await tester.scrollUntilVisible(
-          find.text("Author's Comment"),
+          find.text("Author's Review"),
           200,
           scrollable: find.byType(Scrollable).at(1),
         );
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Edit').first);
+        // Author's Review — последняя кнопка Edit
+        await tester.tap(find.text('Edit').last);
         await tester.pumpAndSettle();
 
         await tester.tap(find.text('Cancel'));
         await tester.pumpAndSettle();
 
-        expect(find.text("Edit Author's Comment"), findsNothing);
+        expect(find.text("Edit Author's Review"), findsNothing);
       });
 
       testWidgets(
@@ -1042,11 +1080,7 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Прокручиваем до секции My Notes (мимо ActivityDatesSection)
-        await tester.drag(find.byType(Scrollable).at(1), const Offset(0, -300));
-        await tester.pumpAndSettle();
-
-        // isEditable=false значит есть только 1 кнопка Edit (для My Notes)
+        // My Notes — первая секция, один Edit (isEditable=false → нет Edit автора)
         await tester.tap(find.text('Edit').first);
         await tester.pumpAndSettle();
 

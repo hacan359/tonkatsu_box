@@ -267,6 +267,14 @@ class CollectionItemsNotifier
           (CollectionItem a, CollectionItem b) =>
               a.itemName.toLowerCase().compareTo(b.itemName.toLowerCase()),
         );
+      case CollectionSortMode.rating:
+        sorted.sort((CollectionItem a, CollectionItem b) {
+          // null рейтинг в конец
+          if (a.userRating == null && b.userRating == null) return 0;
+          if (a.userRating == null) return 1;
+          if (b.userRating == null) return -1;
+          return b.userRating!.compareTo(a.userRating!);
+        });
     }
     if (isDescending) {
       return sorted.reversed.toList();
@@ -464,7 +472,9 @@ class CollectionItemsNotifier
       state = AsyncData<List<CollectionItem>>(
         items.map((CollectionItem i) {
           if (i.id == id) {
-            return i.copyWith(authorComment: comment);
+            return comment == null
+                ? i.copyWith(clearAuthorComment: true)
+                : i.copyWith(authorComment: comment);
           }
           return i;
         }).toList(),
@@ -481,7 +491,32 @@ class CollectionItemsNotifier
       state = AsyncData<List<CollectionItem>>(
         items.map((CollectionItem i) {
           if (i.id == id) {
-            return i.copyWith(userComment: comment);
+            return comment == null
+                ? i.copyWith(clearUserComment: true)
+                : i.copyWith(userComment: comment);
+          }
+          return i;
+        }).toList(),
+      );
+    }
+  }
+
+  /// Обновляет пользовательский рейтинг (1-10 или null для сброса).
+  Future<void> updateUserRating(int id, int? rating) async {
+    assert(
+      rating == null || (rating >= 1 && rating <= 10),
+      'Rating must be 1-10 or null, got $rating',
+    );
+    await _repository.updateItemUserRating(id, rating);
+
+    final List<CollectionItem>? items = state.valueOrNull;
+    if (items != null) {
+      state = AsyncData<List<CollectionItem>>(
+        items.map((CollectionItem i) {
+          if (i.id == id) {
+            return rating == null
+                ? i.copyWith(clearUserRating: true)
+                : i.copyWith(userRating: rating);
           }
           return i;
         }).toList(),

@@ -215,6 +215,11 @@ class CollectionRepository {
     await _db.updateItemUserComment(id, comment);
   }
 
+  /// Обновляет пользовательский рейтинг элемента (1-10 или null).
+  Future<void> updateItemUserRating(int id, int? rating) async {
+    await _db.updateItemUserRating(id, rating);
+  }
+
   /// Обновляет даты активности элемента.
   Future<void> updateItemActivityDates(
     int id, {

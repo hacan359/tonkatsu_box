@@ -151,7 +151,10 @@ Tap any item in a collection to see its full details. All detail screens have tw
 - Type icon and label
 - Info chips (year, rating, genres, etc.)
 - Inline description (max 4 lines)
-- Status chip row (horizontal chips for all available statuses), author comment, personal notes
+- Status chip row (horizontal chips for all available statuses)
+- My Rating (10 clickable stars, 1-10 scale, tap again to clear)
+- My Notes (private), Author's Review (visible to others when shared)
+- Activity & Progress (collapsed ExpansionTile with dates, episode tracker)
 
 **Board tab** — personal board for the item with full board functionality (see Per-Item Board above)
 
@@ -179,11 +182,15 @@ Tap any item in a collection to see its full details. All detail screens have tw
 - Purple accent color (`AppColors.animationAccent`)
 - Board tab with SteamGridDB panel (all platforms) and VGMaps panel (Windows only)
 
-## Comments
+## User Rating
 
-Add personal notes to any item:
-- **Author comments** — Visible to everyone who imports your collection
-- **Personal comments** — Private notes only you can see
+Rate any item in your collection from 1 to 10 using clickable stars (`StarRatingBar` widget). Tap a star to set the rating, tap the same star again to clear it. Rating is displayed as "X/10" next to the section header. Collections can be sorted by rating (highest first, unrated items at the end).
+
+## Comments & Reviews
+
+Add personal notes and reviews to any item:
+- **Author's Review** — Your review of the title. Visible to everyone who imports your collection. Included in export files
+- **My Notes** — Private notes only you can see. Not included in export
 
 ## Sharing
 

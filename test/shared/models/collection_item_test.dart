@@ -604,6 +604,78 @@ void main() {
         expect(copy.tvShow, original.tvShow);
       });
 
+      test('должен очищать authorComment через clearAuthorComment', () {
+        final CollectionItem original = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          status: ItemStatus.notStarted,
+          authorComment: 'Отличная игра',
+          addedAt: testAddedAt,
+        );
+
+        final CollectionItem copy = original.copyWith(clearAuthorComment: true);
+
+        expect(copy.authorComment, isNull);
+        expect(copy.id, original.id);
+      });
+
+      test('должен очищать userComment через clearUserComment', () {
+        final CollectionItem original = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          status: ItemStatus.notStarted,
+          userComment: 'Мои заметки',
+          addedAt: testAddedAt,
+        );
+
+        final CollectionItem copy = original.copyWith(clearUserComment: true);
+
+        expect(copy.userComment, isNull);
+        expect(copy.id, original.id);
+      });
+
+      test('clearAuthorComment должен иметь приоритет над authorComment', () {
+        final CollectionItem original = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          status: ItemStatus.notStarted,
+          authorComment: 'Старый',
+          addedAt: testAddedAt,
+        );
+
+        final CollectionItem copy = original.copyWith(
+          authorComment: 'Новый',
+          clearAuthorComment: true,
+        );
+
+        expect(copy.authorComment, isNull);
+      });
+
+      test('clearUserComment должен иметь приоритет над userComment', () {
+        final CollectionItem original = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          status: ItemStatus.notStarted,
+          userComment: 'Старые заметки',
+          addedAt: testAddedAt,
+        );
+
+        final CollectionItem copy = original.copyWith(
+          userComment: 'Новые заметки',
+          clearUserComment: true,
+        );
+
+        expect(copy.userComment, isNull);
+      });
+
       test('должен позволять изменять joined объекты', () {
         final CollectionItem original = CollectionItem(
           id: 1,

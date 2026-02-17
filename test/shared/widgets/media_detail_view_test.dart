@@ -158,7 +158,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Нет текста описания, только стандартные секции
-        expect(find.text("Author's Comment"), findsOneWidget);
+        expect(find.text("Author's Review"), findsOneWidget);
         expect(find.text('My Notes'), findsOneWidget);
       });
 
@@ -194,7 +194,7 @@ void main() {
     });
 
     group('Extra Sections', () {
-      testWidgets('должен отображать дополнительные секции',
+      testWidgets('должен отображать дополнительные секции в ExpansionTile',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(
           extraSections: <Widget>[
@@ -202,6 +202,12 @@ void main() {
             const Text('Another Section'),
           ],
         ));
+        await tester.pumpAndSettle();
+
+        // Extra sections are inside collapsed "Activity & Progress" ExpansionTile
+        expect(find.text('Activity & Progress'), findsOneWidget);
+        // Раскрываем ExpansionTile
+        await tester.tap(find.text('Activity & Progress'));
         await tester.pumpAndSettle();
 
         expect(find.text('Progress Section'), findsOneWidget);
@@ -213,17 +219,18 @@ void main() {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
+        expect(find.text('Activity & Progress'), findsNothing);
         expect(find.text('Progress Section'), findsNothing);
       });
     });
 
-    group("Author's Comment Section", () {
+    group("Author's Review Section", () {
       testWidgets('должен отображать заголовок',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
-        expect(find.text("Author's Comment"), findsOneWidget);
+        expect(find.text("Author's Review"), findsOneWidget);
       });
 
       testWidgets('должен отображать комментарий когда есть',
@@ -246,7 +253,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(
-          find.text('No comment yet. Tap Edit to add one.'),
+          find.text('No review yet. Tap Edit to add one.'),
           findsOneWidget,
         );
       });
@@ -260,7 +267,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(
-          find.text('No comment from the author.'),
+          find.text('No review from the author.'),
           findsOneWidget,
         );
       });
@@ -326,28 +333,32 @@ void main() {
     });
 
     group('Edit Dialog', () {
-      testWidgets('должен открывать диалог при нажатии Edit автора',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(isEditable: true));
-        await tester.pumpAndSettle();
-
-        await tester.tap(find.text('Edit').first);
-        await tester.pumpAndSettle();
-
-        expect(find.text("Edit Author's Comment"), findsOneWidget);
-        expect(find.text('Cancel'), findsOneWidget);
-        expect(find.text('Save'), findsOneWidget);
-      });
+      // Порядок секций: My Notes (first Edit) → Author's Review (last Edit)
 
       testWidgets('должен открывать диалог при нажатии Edit заметок',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(isEditable: true));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Edit').last);
+        // My Notes is first section → first Edit button
+        await tester.tap(find.text('Edit').first);
         await tester.pumpAndSettle();
 
         expect(find.text('Edit My Notes'), findsOneWidget);
+        expect(find.text('Cancel'), findsOneWidget);
+        expect(find.text('Save'), findsOneWidget);
+      });
+
+      testWidgets('должен открывать диалог при нажатии Edit автора',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(isEditable: true));
+        await tester.pumpAndSettle();
+
+        // Author's Review is second section → last Edit button
+        await tester.tap(find.text('Edit').last);
+        await tester.pumpAndSettle();
+
+        expect(find.text("Edit Author's Review"), findsOneWidget);
       });
 
       testWidgets('должен закрывать диалог при Cancel',
@@ -355,13 +366,13 @@ void main() {
         await tester.pumpWidget(buildTestWidget(isEditable: true));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Edit').first);
+        await tester.tap(find.text('Edit').last);
         await tester.pumpAndSettle();
 
         await tester.tap(find.text('Cancel'));
         await tester.pumpAndSettle();
 
-        expect(find.text("Edit Author's Comment"), findsNothing);
+        expect(find.text("Edit Author's Review"), findsNothing);
       });
 
       testWidgets('не должен вызывать onSave при Cancel',
@@ -373,7 +384,8 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Edit').first);
+        // Author's Review → last Edit button
+        await tester.tap(find.text('Edit').last);
         await tester.pumpAndSettle();
 
         await tester.tap(find.text('Cancel'));
@@ -391,7 +403,8 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Edit').first);
+        // Author's Review → last Edit button
+        await tester.tap(find.text('Edit').last);
         await tester.pumpAndSettle();
 
         await tester.enterText(find.byType(TextField), 'New comment');
@@ -410,7 +423,8 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Edit').first);
+        // Author's Review → last Edit button
+        await tester.tap(find.text('Edit').last);
         await tester.pumpAndSettle();
 
         // Поле уже пустое, нажимаем Save
@@ -429,7 +443,8 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Edit').first);
+        // Author's Review → last Edit button
+        await tester.tap(find.text('Edit').last);
         await tester.pumpAndSettle();
 
         final TextField textField =
@@ -446,7 +461,8 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Edit').last);
+        // My Notes → first Edit button
+        await tester.tap(find.text('Edit').first);
         await tester.pumpAndSettle();
 
         await tester.enterText(find.byType(TextField), 'My note');
@@ -483,11 +499,15 @@ void main() {
         expect(find.text('Test description'), findsOneWidget);
         expect(find.text('Status'), findsOneWidget);
         expect(find.text('Status Widget'), findsOneWidget);
-        expect(find.text('Extra'), findsOneWidget);
-        expect(find.text("Author's Comment"), findsOneWidget);
+        expect(find.text("Author's Review"), findsOneWidget);
         expect(find.text('Author text'), findsOneWidget);
         expect(find.text('My Notes'), findsOneWidget);
         expect(find.text('User text'), findsOneWidget);
+        // Extra sections inside collapsed ExpansionTile
+        expect(find.text('Activity & Progress'), findsOneWidget);
+        await tester.tap(find.text('Activity & Progress'));
+        await tester.pumpAndSettle();
+        expect(find.text('Extra'), findsOneWidget);
       });
     });
   });

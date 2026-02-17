@@ -6,8 +6,8 @@ import 'package:xerabora/shared/models/collection_sort_mode.dart';
 void main() {
   group('CollectionSortMode', () {
     group('значения enum', () {
-      test('должен содержать 4 значения', () {
-        expect(CollectionSortMode.values.length, 4);
+      test('должен содержать 5 значений', () {
+        expect(CollectionSortMode.values.length, 5);
       });
 
       test('должен содержать все режимы сортировки', () {
@@ -18,6 +18,7 @@ void main() {
         );
         expect(CollectionSortMode.values, contains(CollectionSortMode.status));
         expect(CollectionSortMode.values, contains(CollectionSortMode.name));
+        expect(CollectionSortMode.values, contains(CollectionSortMode.rating));
       });
     });
 
@@ -37,6 +38,10 @@ void main() {
       test('name должен иметь значение "name"', () {
         expect(CollectionSortMode.name.value, 'name');
       });
+
+      test('rating должен иметь значение "rating"', () {
+        expect(CollectionSortMode.rating.value, 'rating');
+      });
     });
 
     group('displayLabel', () {
@@ -54,6 +59,10 @@ void main() {
 
       test('name должен отображаться как "Name"', () {
         expect(CollectionSortMode.name.displayLabel, 'Name');
+      });
+
+      test('rating должен отображаться как "My Rating"', () {
+        expect(CollectionSortMode.rating.displayLabel, 'My Rating');
       });
     });
 
@@ -73,6 +82,10 @@ void main() {
       test('name должен иметь shortLabel "A-Z"', () {
         expect(CollectionSortMode.name.shortLabel, 'A-Z');
       });
+
+      test('rating должен иметь shortLabel "Rating"', () {
+        expect(CollectionSortMode.rating.shortLabel, 'Rating');
+      });
     });
 
     group('description', () {
@@ -90,6 +103,10 @@ void main() {
 
       test('name должен иметь описание "A to Z"', () {
         expect(CollectionSortMode.name.description, 'A to Z');
+      });
+
+      test('rating должен иметь описание "Highest first"', () {
+        expect(CollectionSortMode.rating.description, 'Highest first');
       });
     });
 
@@ -119,6 +136,13 @@ void main() {
         final CollectionSortMode result = CollectionSortMode.fromString('name');
 
         expect(result, CollectionSortMode.name);
+      });
+
+      test('должен вернуть rating для "rating"', () {
+        final CollectionSortMode result =
+            CollectionSortMode.fromString('rating');
+
+        expect(result, CollectionSortMode.rating);
       });
 
       test('должен вернуть addedDate для неизвестного значения', () {

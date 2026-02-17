@@ -197,7 +197,7 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.text("Author's Comment"), findsOneWidget);
+      expect(find.text("Author's Review"), findsOneWidget);
       expect(find.text('Best RPG ever!'), findsOneWidget);
     });
 
@@ -353,7 +353,7 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.text('No comment yet. Tap Edit to add one.'), findsOneWidget);
+      expect(find.text('No review yet. Tap Edit to add one.'), findsOneWidget);
     });
 
     testWidgets('должен показывать сообщение для readonly когда нет комментария',
@@ -374,7 +374,7 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.text('No comment from the author.'), findsOneWidget);
+      expect(find.text('No review from the author.'), findsOneWidget);
     });
 
     testWidgets('должен показывать Game not found для несуществующей игры',
@@ -407,12 +407,12 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // Нажимаем первую кнопку Edit (для Author's Comment)
-      await tester.tap(find.text('Edit').first);
+      // Нажимаем вторую кнопку Edit (для Author's Review, My Notes идёт первой)
+      await tester.tap(find.text('Edit').last);
       await tester.pumpAndSettle();
 
       // Проверяем что открылся диалог
-      expect(find.text("Edit Author's Comment"), findsOneWidget);
+      expect(find.text("Edit Author's Review"), findsOneWidget);
       expect(find.text('Cancel'), findsOneWidget);
       expect(find.text('Save'), findsOneWidget);
     });
@@ -434,8 +434,8 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // Открываем диалог
-      await tester.tap(find.text('Edit').first);
+      // Открываем диалог Author's Review (вторая кнопка Edit)
+      await tester.tap(find.text('Edit').last);
       await tester.pumpAndSettle();
 
       // Нажимаем Cancel
@@ -443,7 +443,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Проверяем что диалог закрылся
-      expect(find.text("Edit Author's Comment"), findsNothing);
+      expect(find.text("Edit Author's Review"), findsNothing);
     });
 
     testWidgets('должен отображать SourceBadge IGDB',
@@ -530,7 +530,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Содержимое вкладки Details должно быть видимым по умолчанию
-      expect(find.text("Author's Comment"), findsOneWidget);
+      expect(find.text("Author's Review"), findsOneWidget);
       expect(find.text('Test author comment'), findsOneWidget);
     });
 
