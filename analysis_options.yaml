@@ -1,4 +1,4 @@
-# Строгие настройки анализатора для xerabora
+# Строгие настройки анализатора для Tonkatsu Box
 # Максимальная типизация и лучшие практики
 
 include: package:flutter_lints/flutter.yaml

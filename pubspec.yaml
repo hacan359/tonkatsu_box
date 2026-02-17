@@ -71,6 +71,9 @@ dev_dependencies:
   # Testing
   mocktail: ^1.0.3
 
+  # Icons
+  flutter_launcher_icons: ^0.14.3
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
@@ -102,3 +105,11 @@ flutter:
           weight: 600
         - asset: assets/fonts/Inter-Bold.ttf
           weight: 700
+
+flutter_launcher_icons:
+  image_path: "assets/icon/icon.png"
+  android: true
+  min_sdk_android: 21
+  windows:
+    generate: true
+    icon_size: 256

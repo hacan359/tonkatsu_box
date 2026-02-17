@@ -6,6 +6,20 @@
 
 ## [Unreleased]
 
+### Added
+- Добавлен экран All Items (Home tab) — отображает все элементы из всех коллекций в grid-виде с PosterCard, именем коллекции как subtitle. Чипсы фильтрации по типу медиа (All/Games/Movies/TV Shows/Animation) и ActionChip сортировки по рейтингу (toggle asc/desc). Loading, empty, error states. RefreshIndicator
+- Добавлена 4-табная навигация: Home (все элементы), Collections, Search, Settings. Ранее было 3 таба: Home (коллекции), Search, Settings
+- Добавлены провайдеры `allItemsSortProvider`, `allItemsSortDescProvider`, `allItemsNotifierProvider`, `collectionNamesProvider` (`lib/features/home/providers/all_items_provider.dart`)
+- Добавлены методы `DatabaseService.getAllCollectionItems()` и `getAllCollectionItemsWithData()` — загрузка элементов из всех коллекций (с опциональной фильтрацией по типу медиа)
+- Добавлен метод `CollectionRepository.getAllItemsWithData()`
+- Добавлена утилита `applySortMode()` (`lib/features/collections/providers/sort_utils.dart`) — вынесена общая логика сортировки из `CollectionItemsNotifier`
+
+### Changed
+- Изменена навигация `NavigationShell`: `NavTab` enum расширен до 4 значений (home, collections, search, settings), `_tabCount = 4`, `AllItemsScreen` загружается eager, остальные tabs lazy
+- Рефакторинг `CollectionItemsNotifier._applySortMode()` → вызывает shared `applySortMode()` из `sort_utils.dart`
+- Добавлена инвалидация `allItemsNotifierProvider` при добавлении/удалении элементов в `CollectionItemsNotifier`
+- Исправлен баг `_loadFromPrefs()` в sort-нотифайерах: добавлен `await Future<void>.value()` чтобы state не перезаписывался return в build()
+
 ### Changed
 - Оптимизирован запуск на Android — ленивая инициализация табов в `NavigationShell`: SearchScreen и SettingsScreen строятся только при первом переключении на таб (убирает 4 тяжёлых DB-запроса и загрузку платформ при старте)
 - Добавлена платформенная проверка в `GamepadService` — на мобильных (Android/iOS) сервис не запускается и не подписывается на `Gamepads.events`, что снижает нагрузку при старте

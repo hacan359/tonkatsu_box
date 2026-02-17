@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/collections/screens/home_screen.dart';
+import '../../features/home/screens/all_items_screen.dart';
 import '../../features/search/screens/search_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
 import '../gamepad/gamepad_action.dart';
@@ -16,12 +17,15 @@ import '../theme/app_colors.dart';
 const double navigationBreakpoint = 800;
 
 /// Количество основных табов.
-const int _tabCount = 3;
+const int _tabCount = 4;
 
 /// Индексы вкладок навигации.
 enum NavTab {
-  /// Домашний экран (коллекции).
+  /// Домашний экран (все элементы).
   home,
+
+  /// Коллекции.
+  collections,
 
   /// Поиск.
   search,
@@ -112,15 +116,20 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
             padding: const EdgeInsets.only(top: 8, bottom: 16),
             child: Image.asset(
               AppAssets.logo,
-              width: 32,
-              height: 32,
+              width: 48,
+              height: 48,
             ),
           ),
           destinations: const <NavigationRailDestination>[
             NavigationRailDestination(
               icon: Icon(Icons.home_outlined),
               selectedIcon: Icon(Icons.home),
-              label: Text('Home'),
+              label: Text('Main'),
+            ),
+            NavigationRailDestination(
+              icon: Icon(Icons.collections_bookmark_outlined),
+              selectedIcon: Icon(Icons.collections_bookmark),
+              label: Text('Collections'),
             ),
             NavigationRailDestination(
               icon: Icon(Icons.search_outlined),
@@ -156,7 +165,12 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
         BottomNavigationBarItem(
           icon: Icon(Icons.home_outlined),
           activeIcon: Icon(Icons.home),
-          label: 'Home',
+          label: 'Main',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.collections_bookmark_outlined),
+          activeIcon: Icon(Icons.collections_bookmark),
+          label: 'Collections',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.search_outlined),
@@ -176,7 +190,11 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
     return IndexedStack(
       index: _selectedIndex,
       children: <Widget>[
-        const HomeScreen(),
+        const AllItemsScreen(),
+        if (_initializedTabs.contains(NavTab.collections.index))
+          const HomeScreen()
+        else
+          const SizedBox.shrink(),
         if (_initializedTabs.contains(NavTab.search.index))
           const SearchScreen()
         else

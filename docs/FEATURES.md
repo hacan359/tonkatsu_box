@@ -7,7 +7,7 @@ The app uses a forced dark theme (ThemeMode.dark) with a cinematic design system
 - **AppTypography** — Inter font with 8 text styles (h1–caption, posterTitle, posterSubtitle), negative letter-spacing on headings
 - **AppSpacing** — standardized spacing (4–32px), border radii (4–20px), poster aspect ratio (2:3), grid column counts
 - **AppTheme** — centralized ThemeData with styled AppBar, Card, Input, Dialog, BottomSheet, Chip, Button, NavigationRail, TabBar
-- **Adaptive navigation** — NavigationRail sidebar on desktop (≥800px), BottomNavigationBar on mobile (<800px)
+- **Adaptive navigation** — NavigationRail sidebar on desktop (≥800px), BottomNavigationBar on mobile (<800px), 4 tabs: Home, Collections, Search, Settings
 - **MediaPosterCard** — unified vertical 2:3 poster card with 3 variants: grid (hover animation, dual rating badge, collection checkmark, status emoji), compact (smaller sizes for landscape), canvas (colored border by media type, no hover)
 - **DualRatingBadge** — dual rating display `★ 8 / 7.5` (user rating + API rating) on poster cards and list items. Modes: badge (dark overlay on poster), compact (smaller), inline (no background, for list tiles)
 - **HeroCollectionCard** — large gradient collection card with progress bar and stats
@@ -18,6 +18,18 @@ The app uses a forced dark theme (ThemeMode.dark) with a cinematic design system
 - **Windows** — full version with Board, VGMaps Browser, SteamGridDB panel, all features
 - **Android** — full version: collections, search, details, episode tracker, Board (visual board), export/import. VGMaps Browser is not available (requires `webview_windows`). SteamGridDB panel works on all platforms
 - Board is available on all platforms (long press opens context menu on mobile instead of right-click)
+
+## Home (All Items)
+
+The Home tab shows all items from all collections in a single grid view:
+- **Unified view** — browse all collection items (games, movies, TV shows, animation) in one place
+- **Media type filter** — horizontal ChoiceChip row: All, Games, Movies, TV Shows, Animation
+- **Rating sort** — toggle chip to sort by user rating (ascending/descending)
+- **Default sort** — by date added (newest first); Manual sort mode is not available (falls back to Date Added)
+- **Collection name** — each card shows which collection the item belongs to
+- **Tap to navigate** — opens the item's detail screen (game/movie/TV show/anime)
+- **Pull to refresh** — RefreshIndicator to reload all items
+- **Loading/empty/error states** — shimmer loading, "No items yet" message, retry on error
 
 ## Collections
 

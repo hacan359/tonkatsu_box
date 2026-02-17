@@ -159,6 +159,13 @@ class CollectionRepository {
     return _db.getCollectionItemsWithData(collectionId, mediaType: mediaType);
   }
 
+  /// Возвращает все элементы из всех коллекций с подгруженными данными.
+  Future<List<CollectionItem>> getAllItemsWithData({
+    MediaType? mediaType,
+  }) async {
+    return _db.getAllCollectionItemsWithData(mediaType: mediaType);
+  }
+
   /// Добавляет элемент в коллекцию.
   Future<int?> addItem({
     required int collectionId,

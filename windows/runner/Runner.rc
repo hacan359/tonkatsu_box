@@ -92,9 +92,9 @@ BEGIN
             VALUE "CompanyName", "Tonkatsu Box" "\0"
             VALUE "FileDescription", "Tonkatsu Box" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "xerabora" "\0"
+            VALUE "InternalName", "tonkatsu_box" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 Tonkatsu Box. All rights reserved." "\0"
-            VALUE "OriginalFilename", "xerabora.exe" "\0"
+            VALUE "OriginalFilename", "tonkatsu_box.exe" "\0"
             VALUE "ProductName", "Tonkatsu Box" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
