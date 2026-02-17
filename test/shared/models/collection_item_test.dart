@@ -1123,6 +1123,357 @@ void main() {
         });
       });
 
+      group('apiRating', () {
+        test('должен вернуть rating/10 для game', () {
+          final CollectionItem item = CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            game: const Game(
+              id: 1942,
+              name: 'The Witcher 3',
+              coverUrl: '',
+              rating: 85.0,
+            ),
+          );
+
+          expect(item.apiRating, closeTo(8.5, 0.001));
+        });
+
+        test('должен вернуть null когда game null', () {
+          final CollectionItem item = CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.apiRating, isNull);
+        });
+
+        test('должен вернуть null когда game.rating null', () {
+          final CollectionItem item = CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            game: testGame,
+          );
+
+          expect(item.apiRating, isNull);
+        });
+
+        test('должен вернуть rating фильма as-is', () {
+          final CollectionItem item = CollectionItem(
+            id: 2,
+            collectionId: 10,
+            mediaType: MediaType.movie,
+            externalId: 550,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            movie: const Movie(
+              tmdbId: 550,
+              title: 'Fight Club',
+              posterUrl: '',
+              rating: 8.4,
+            ),
+          );
+
+          expect(item.apiRating, closeTo(8.4, 0.001));
+        });
+
+        test('должен вернуть null когда movie null', () {
+          final CollectionItem item = CollectionItem(
+            id: 2,
+            collectionId: 10,
+            mediaType: MediaType.movie,
+            externalId: 550,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.apiRating, isNull);
+        });
+
+        test('должен вернуть rating сериала as-is', () {
+          final CollectionItem item = CollectionItem(
+            id: 3,
+            collectionId: 10,
+            mediaType: MediaType.tvShow,
+            externalId: 1399,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            tvShow: const TvShow(
+              tmdbId: 1399,
+              title: 'Breaking Bad',
+              posterUrl: '',
+              rating: 9.5,
+            ),
+          );
+
+          expect(item.apiRating, closeTo(9.5, 0.001));
+        });
+
+        test('должен вернуть null когда tvShow null', () {
+          final CollectionItem item = CollectionItem(
+            id: 3,
+            collectionId: 10,
+            mediaType: MediaType.tvShow,
+            externalId: 1399,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.apiRating, isNull);
+        });
+
+        test('должен вернуть rating tvShow для анимации с источником tvShow', () {
+          final CollectionItem item = CollectionItem(
+            id: 4,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 1399,
+            platformId: AnimationSource.tvShow,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            tvShow: const TvShow(
+              tmdbId: 1399,
+              title: 'Anime Series',
+              posterUrl: '',
+              rating: 8.0,
+            ),
+          );
+
+          expect(item.apiRating, closeTo(8.0, 0.001));
+        });
+
+        test('должен вернуть rating movie для анимации с источником movie', () {
+          final CollectionItem item = CollectionItem(
+            id: 5,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 550,
+            platformId: AnimationSource.movie,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            movie: const Movie(
+              tmdbId: 550,
+              title: 'Anime Movie',
+              posterUrl: '',
+              rating: 7.2,
+            ),
+          );
+
+          expect(item.apiRating, closeTo(7.2, 0.001));
+        });
+
+        test('должен вернуть 0.0 для game с rating 0', () {
+          final CollectionItem item = CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 100,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            game: const Game(
+              id: 100,
+              name: 'No Rating Game',
+              coverUrl: '',
+              rating: 0.0,
+            ),
+          );
+
+          expect(item.apiRating, closeTo(0.0, 0.001));
+        });
+      });
+
+      group('itemDescription', () {
+        test('должен вернуть summary для game', () {
+          final CollectionItem item = CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            game: const Game(
+              id: 1942,
+              name: 'The Witcher 3',
+              coverUrl: '',
+              summary: 'An open-world RPG.',
+            ),
+          );
+
+          expect(item.itemDescription, 'An open-world RPG.');
+        });
+
+        test('должен вернуть null когда game null', () {
+          final CollectionItem item = CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.itemDescription, isNull);
+        });
+
+        test('должен вернуть null когда game.summary null', () {
+          final CollectionItem item = CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.game,
+            externalId: 1942,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            game: testGame,
+          );
+
+          expect(item.itemDescription, isNull);
+        });
+
+        test('должен вернуть overview для movie', () {
+          final CollectionItem item = CollectionItem(
+            id: 2,
+            collectionId: 10,
+            mediaType: MediaType.movie,
+            externalId: 550,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            movie: const Movie(
+              tmdbId: 550,
+              title: 'Fight Club',
+              posterUrl: '',
+              overview: 'A depressed man meets Tyler Durden.',
+            ),
+          );
+
+          expect(item.itemDescription, 'A depressed man meets Tyler Durden.');
+        });
+
+        test('должен вернуть null когда movie null', () {
+          final CollectionItem item = CollectionItem(
+            id: 2,
+            collectionId: 10,
+            mediaType: MediaType.movie,
+            externalId: 550,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.itemDescription, isNull);
+        });
+
+        test('должен вернуть overview для tvShow', () {
+          final CollectionItem item = CollectionItem(
+            id: 3,
+            collectionId: 10,
+            mediaType: MediaType.tvShow,
+            externalId: 1399,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            tvShow: const TvShow(
+              tmdbId: 1399,
+              title: 'Breaking Bad',
+              posterUrl: '',
+              overview: 'A chemistry teacher turns to crime.',
+            ),
+          );
+
+          expect(item.itemDescription, 'A chemistry teacher turns to crime.');
+        });
+
+        test('должен вернуть null когда tvShow null', () {
+          final CollectionItem item = CollectionItem(
+            id: 3,
+            collectionId: 10,
+            mediaType: MediaType.tvShow,
+            externalId: 1399,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.itemDescription, isNull);
+        });
+
+        test('должен вернуть overview tvShow для анимации с источником tvShow', () {
+          final CollectionItem item = CollectionItem(
+            id: 4,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 1399,
+            platformId: AnimationSource.tvShow,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            tvShow: const TvShow(
+              tmdbId: 1399,
+              title: 'Anime Series',
+              posterUrl: '',
+              overview: 'An anime series overview.',
+            ),
+          );
+
+          expect(item.itemDescription, 'An anime series overview.');
+        });
+
+        test('должен вернуть overview movie для анимации с источником movie', () {
+          final CollectionItem item = CollectionItem(
+            id: 5,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 550,
+            platformId: AnimationSource.movie,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+            movie: const Movie(
+              tmdbId: 550,
+              title: 'Anime Movie',
+              posterUrl: '',
+              overview: 'An anime movie overview.',
+            ),
+          );
+
+          expect(item.itemDescription, 'An anime movie overview.');
+        });
+
+        test('должен вернуть null когда movie null для анимации movie', () {
+          final CollectionItem item = CollectionItem(
+            id: 6,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 550,
+            platformId: AnimationSource.movie,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.itemDescription, isNull);
+        });
+
+        test('должен вернуть null когда tvShow null для анимации tvShow', () {
+          final CollectionItem item = CollectionItem(
+            id: 7,
+            collectionId: 10,
+            mediaType: MediaType.animation,
+            externalId: 1399,
+            platformId: AnimationSource.tvShow,
+            status: ItemStatus.notStarted,
+            addedAt: testAddedAt,
+          );
+
+          expect(item.itemDescription, isNull);
+        });
+      });
+
       group('hasAuthorComment', () {
         test('должен вернуть true когда authorComment не пустой', () {
           final CollectionItem item = CollectionItem(

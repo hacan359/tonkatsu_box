@@ -13,6 +13,24 @@
 - Уменьшена длительность FadeTransition при переходе с splash на главный экран на мобильных: 200ms вместо 500ms
 
 ### Added
+- Добавлен виджет `DualRatingBadge` (`lib/shared/widgets/dual_rating_badge.dart`) — двойной рейтинг `★ 8 / 7.5` (пользовательский + API). Режимы: badge (затемнённый фон на постере), compact (уменьшенный), inline (без фона, для list-карточек). Геттеры `hasRating`, `formattedRating`
+- Добавлен виджет `MediaPosterCard` (`lib/shared/widgets/media_poster_card.dart`) — единая вертикальная постерная карточка с enum `CardVariant` (grid/compact/canvas). Grid/compact: hover-анимация, DualRatingBadge, отметка коллекции, статус-бейдж, title+subtitle. Canvas: Card с цветной рамкой по типу медиа, без hover/рейтинга
+- Добавлены геттеры `CollectionItem.apiRating` (нормализованный 0–10: IGDB/10, TMDB as-is) и `CollectionItem.itemDescription` (game.summary / movie.overview / tvShow.overview) в `lib/shared/models/collection_item.dart`
+- Добавлены тесты: `dual_rating_badge_test.dart` (25 тестов), `media_poster_card_test.dart` (46 тестов), дополнены `collection_item_test.dart` (+20 тестов apiRating/itemDescription)
+
+### Changed
+- Изменён `collection_screen.dart` — `PosterCard` заменён на `MediaPosterCard(variant: grid/compact)` с двойным рейтингом. `_CollectionItemTile` обогащён: DualRatingBadge inline, описание (1 строка), заметки пользователя (иконка `note_outlined`). Удалён метод `_normalizedRating()`
+- Изменён `search_screen.dart` — `PosterCard` заменён на `MediaPosterCard(variant: grid/compact)` с API рейтингом
+- Изменён `canvas_view.dart` — `CanvasGameCard`/`CanvasMediaCard` заменены на `MediaPosterCard(variant: canvas)` через единый helper `_buildMediaCard(CanvasItem)`
+
+### Removed
+- Удалён `PosterCard` (`lib/shared/widgets/poster_card.dart`) — заменён на `MediaPosterCard(variant: grid/compact)` (~340 строк)
+- Удалён `MediaCard` (`lib/shared/widgets/media_card.dart`) — мёртвый код после редизайна SearchScreen (~323 строки)
+- Удалены `GameCard`, `MovieCard`, `TvShowCard` (`lib/features/search/widgets/`) — мёртвый код (~361 строка)
+- Удалены `CanvasGameCard`, `CanvasMediaCard` (`lib/features/collections/widgets/`) — заменены на `MediaPosterCard(variant: canvas)` (~282 строки)
+- Удалены тесты удалённых виджетов: 7 файлов (~2792 строки). Итого: -3604 строки кода
+
+### Added
 - Добавлен пользовательский рейтинг (1-10) — новое поле `userRating` в `CollectionItem`, миграция БД v14→v15 (`ALTER TABLE collection_items ADD COLUMN user_rating INTEGER`), метод `DatabaseService.updateItemUserRating()`
 - Добавлен виджет `StarRatingBar` (`lib/shared/widgets/star_rating_bar.dart`) — 10 кликабельных звёзд с InkWell (focusable для геймпада), повторный клик на текущий рейтинг сбрасывает оценку
 - Добавлена секция "My Rating" на экранах деталей (Game, Movie, TV Show, Anime) — между Status и My Notes, отображает `StarRatingBar` с текущим значением и label "X/10"

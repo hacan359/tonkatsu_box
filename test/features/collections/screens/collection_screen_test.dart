@@ -18,7 +18,7 @@ import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/movie.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
-import 'package:xerabora/shared/widgets/poster_card.dart';
+import 'package:xerabora/shared/widgets/media_poster_card.dart';
 
 class MockCollectionRepository extends Mock implements CollectionRepository {}
 
@@ -240,7 +240,7 @@ void main() {
         expect(find.byIcon(Icons.view_list), findsOneWidget);
       });
 
-      testWidgets('grid mode должен показывать PosterCard',
+      testWidgets('grid mode должен показывать MediaPosterCard',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
@@ -249,17 +249,17 @@ void main() {
         await tester.tap(find.byIcon(Icons.grid_view));
         await pumpScreen(tester);
 
-        expect(find.byType(PosterCard), findsWidgets);
+        expect(find.byType(MediaPosterCard), findsWidgets);
         expect(find.byType(GridView), findsOneWidget);
       });
 
-      testWidgets('list mode не должен содержать PosterCard',
+      testWidgets('list mode не должен содержать MediaPosterCard',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
         // По умолчанию list mode
-        expect(find.byType(PosterCard), findsNothing);
+        expect(find.byType(MediaPosterCard), findsNothing);
       });
 
       testWidgets('должен переключаться обратно на list',
@@ -426,8 +426,8 @@ void main() {
         await tester.tap(find.byIcon(Icons.grid_view));
         await pumpScreen(tester);
 
-        // Проверяем что PosterCard рендерится
-        expect(find.byType(PosterCard), findsOneWidget);
+        // Проверяем что MediaPosterCard рендерится
+        expect(find.byType(MediaPosterCard), findsOneWidget);
 
         // Проверяем что getImageUri вызван с moviePoster
         verify(() => mockCache.getImageUri(
@@ -471,8 +471,8 @@ void main() {
         await tester.tap(find.byIcon(Icons.grid_view));
         await pumpScreen(tester);
 
-        // Проверяем что PosterCard рендерится
-        expect(find.byType(PosterCard), findsOneWidget);
+        // Проверяем что MediaPosterCard рендерится
+        expect(find.byType(MediaPosterCard), findsOneWidget);
 
         // Проверяем что getImageUri вызван с tvShowPoster
         verify(() => mockCache.getImageUri(
@@ -654,8 +654,8 @@ void main() {
         await tester.tap(find.text('Movies (1)').last);
         await pumpScreen(tester);
 
-        // Должен быть 1 PosterCard (Inception)
-        expect(find.byType(PosterCard), findsOneWidget);
+        // Должен быть 1 MediaPosterCard (Inception)
+        expect(find.byType(MediaPosterCard), findsOneWidget);
       });
     });
 
