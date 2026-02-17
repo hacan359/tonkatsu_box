@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/image_cache_service.dart';
 import '../../../shared/theme/app_colors.dart';
+import '../../../shared/widgets/breadcrumb_app_bar.dart';
 import '../../../data/repositories/canvas_repository.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/game.dart';
@@ -32,6 +33,7 @@ class GameDetailScreen extends ConsumerStatefulWidget {
     required this.collectionId,
     required this.itemId,
     required this.isEditable,
+    required this.collectionName,
     super.key,
   });
 
@@ -43,6 +45,9 @@ class GameDetailScreen extends ConsumerStatefulWidget {
 
   /// Можно ли редактировать комментарий автора.
   final bool isEditable;
+
+  /// Имя коллекции для хлебных крошек.
+  final String collectionName;
 
   @override
   ConsumerState<GameDetailScreen> createState() => _GameDetailScreenState();
@@ -84,11 +89,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
         if (item == null) {
           return Scaffold(
             backgroundColor: AppColors.background,
-            appBar: AppBar(
-              backgroundColor: AppColors.background,
-              surfaceTintColor: Colors.transparent,
-              foregroundColor: AppColors.textPrimary,
-            ),
+            appBar: _buildFallbackAppBar(),
             body: const Center(child: Text('Game not found')),
           );
         }
@@ -96,22 +97,30 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
       },
       loading: () => Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          backgroundColor: AppColors.background,
-          surfaceTintColor: Colors.transparent,
-          foregroundColor: AppColors.textPrimary,
-        ),
+        appBar: _buildFallbackAppBar(),
         body: const Center(child: CircularProgressIndicator()),
       ),
       error: (Object error, StackTrace stack) => Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          backgroundColor: AppColors.background,
-          surfaceTintColor: Colors.transparent,
-          foregroundColor: AppColors.textPrimary,
-        ),
+        appBar: _buildFallbackAppBar(),
         body: Center(child: Text('Error: $error')),
       ),
+    );
+  }
+
+  BreadcrumbAppBar _buildFallbackAppBar() {
+    return BreadcrumbAppBar(
+      crumbs: <BreadcrumbItem>[
+        BreadcrumbItem(
+          label: 'Collections',
+          onTap: () => Navigator.of(context)
+              .popUntil((Route<dynamic> route) => route.isFirst),
+        ),
+        BreadcrumbItem(
+          label: widget.collectionName,
+          onTap: () => Navigator.of(context).pop(),
+        ),
+      ],
     );
   }
 
@@ -130,11 +139,19 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        surfaceTintColor: Colors.transparent,
-        foregroundColor: AppColors.textPrimary,
-        title: Text(collectionItem.itemName),
+      appBar: BreadcrumbAppBar(
+        crumbs: <BreadcrumbItem>[
+          BreadcrumbItem(
+            label: 'Collections',
+            onTap: () => Navigator.of(context)
+                .popUntil((Route<dynamic> route) => route.isFirst),
+          ),
+          BreadcrumbItem(
+            label: widget.collectionName,
+            onTap: () => Navigator.of(context).pop(),
+          ),
+          BreadcrumbItem(label: collectionItem.itemName),
+        ],
         actions: <Widget>[
           if (widget.isEditable &&
               kCanvasEnabled &&

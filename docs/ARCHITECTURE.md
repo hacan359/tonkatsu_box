@@ -180,7 +180,7 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/shared/navigation/navigation_shell.dart` | **NavigationShell**. Адаптивная навигация: `NavigationRail` (боковая панель) при ширине ≥800px, `BottomNavigationBar` при <800px. 4 таба: Home (AllItemsScreen), Collections (HomeScreen), Search, Settings. Lazy IndexedStack — AllItemsScreen загружается eager, Collections/Search/Settings строятся при первом переключении на таб |
+| `lib/shared/navigation/navigation_shell.dart` | **NavigationShell**. Адаптивная навигация: `NavigationRail` (боковая панель) при ширине ≥800px, `BottomNavigationBar` при <800px. 4 таба: Home (AllItemsScreen), Collections (HomeScreen), Search, Settings. Lazy IndexedStack — AllItemsScreen загружается eager, Collections/Search/Settings строятся при первом переключении на таб. Desktop: логотип 48×48 вынесен в Column выше Rail (не в Rail.leading) |
 
 #### Виджеты
 
@@ -197,6 +197,7 @@ lib/
 | ~~`lib/shared/widgets/media_card.dart`~~ | **Удалён**. Мёртвый код после редизайна SearchScreen |
 | `lib/shared/widgets/media_detail_view.dart` | **Базовый виджет экрана деталей**. Постер 100x150 (CachedNetworkImage или CachedImage), SourceBadge, info chips (`MediaDetailChip`), описание inline, секция статуса, секция "My Rating" (`StarRatingBar`), личные заметки (My Notes), рецензия автора (Author's Review, видна другим при экспорте), дополнительные секции в `ExpansionTile` "Activity & Progress", `accentColor` для per-media окрашивания. `GameDetailScreen`, `MovieDetailScreen`, `TvShowDetailScreen` являются тонкими обёртками |
 | `lib/shared/widgets/star_rating_bar.dart` | **Виджет рейтинга**. 10 кликабельных звёзд (InkWell, focusable для геймпада). Параметры: `rating: int?`, `starSize: double`, `onChanged: ValueChanged<int?>`. Повторный клик на текущий рейтинг сбрасывает на `null` |
+| `lib/shared/widgets/breadcrumb_app_bar.dart` | **Навигационные хлебные крошки**. `BreadcrumbAppBar implements PreferredSizeWidget`. Логотип 20×20 + разделители `›` + кликабельные крошки. Поддержка `bottom` (TabBar), `actions`, горизонтальный скролл. Последняя крошка — w600, остальные — w400, кликабельные |
 | `lib/shared/widgets/source_badge.dart` | **Бейдж источника данных**. Enum `DataSource` (igdb, tmdb, steamGridDb, vgMaps). Размеры: small, medium, large. Цветовая маркировка и текстовая метка |
 | `lib/shared/widgets/media_type_badge.dart` | **Бейдж типа медиа**. Цветная иконка по `MediaType`: синий (игры), красный (фильмы), зелёный (сериалы) |
 
@@ -220,8 +221,14 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/features/settings/screens/settings_screen.dart` | **Экран настроек**. Ввод IGDB Client ID/Secret, SteamGridDB API key, TMDB API key. Кнопки Verify/Refresh Platforms. Секция Configuration (Export/Import Config). Секция Danger Zone (Reset Database с диалогом подтверждения). Debug Panel (только в debug) |
+| `lib/features/settings/screens/settings_screen.dart` | **Хаб настроек**. 4 навигационные плитки: Credentials, Cache, Database, Debug (только kDebugMode). Карточка ошибки при `settings.errorMessage` |
+| `lib/features/settings/screens/credentials_screen.dart` | **Учётные данные API**. Ввод IGDB Client ID/Secret, SteamGridDB API key, TMDB API key. Кнопки Verify/Refresh Platforms. Секция Welcome при начальной настройке |
+| `lib/features/settings/screens/cache_screen.dart` | **Настройки кэша**. Toggle включения кэша, выбор папки, статистика (файлы/размер), очистка кэша |
+| `lib/features/settings/screens/database_screen.dart` | **Управление БД**. Export/Import Config (JSON). Danger Zone: Reset Database с диалогом подтверждения |
+| `lib/features/settings/screens/debug_hub_screen.dart` | **Хаб отладки** (только kDebugMode). 3 плитки: IGDB Media, SteamGridDB, Gamepad. SteamGridDB недоступен без API ключа |
 | `lib/features/settings/screens/steamgriddb_debug_screen.dart` | **Debug-экран SteamGridDB**. 5 табов: Search, Grids, Heroes, Logos, Icons. Тестирование всех API эндпоинтов |
+| `lib/features/settings/screens/image_debug_screen.dart` | **Debug-экран IGDB Media**. Проверка URL изображений в коллекциях: постеры, thumbnail, превью |
+| `lib/features/settings/screens/gamepad_debug_screen.dart` | **Debug-экран Gamepad**. Raw events от Gamepads.events + filtered events от GamepadService в двух колонках |
 | `lib/features/settings/providers/settings_provider.dart` | **State настроек**. Хранение IGDB, SteamGridDB, TMDB credentials в SharedPreferences, валидация токена, синхронизация платформ. Методы: `exportConfig()`, `importConfig()`, `flushDatabase()` |
 
 ---

@@ -18,6 +18,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/navigation/navigation_shell.dart';
+import '../../../shared/widgets/breadcrumb_app_bar.dart';
 import '../../../shared/widgets/cached_image.dart' as app_cached;
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
@@ -776,11 +777,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     if (!isApiReady) {
       return Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          backgroundColor: AppColors.background,
-          surfaceTintColor: Colors.transparent,
-          foregroundColor: AppColors.textPrimary,
-          title: isLandscape ? null : const Text('Search'),
+        appBar: const BreadcrumbAppBar(
+          crumbs: <BreadcrumbItem>[
+            BreadcrumbItem(label: 'Search'),
+          ],
         ),
         body: Center(
           child: Padding(
@@ -818,12 +818,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     return Scaffold(
       backgroundColor: AppColors.background,
       resizeToAvoidBottomInset: !isLandscape,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        surfaceTintColor: Colors.transparent,
-        foregroundColor: AppColors.textPrimary,
-        title: isLandscape ? null : const Text('Search'),
-        toolbarHeight: isLandscape ? 0 : kToolbarHeight,
+      appBar: BreadcrumbAppBar(
+        crumbs: const <BreadcrumbItem>[
+          BreadcrumbItem(label: 'Search'),
+        ],
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,

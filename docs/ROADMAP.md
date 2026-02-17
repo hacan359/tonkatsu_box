@@ -44,6 +44,8 @@
 - [x] Legacy Removal — removed CollectionGame/GameStatus, collectionGamesNotifierProvider, v1 .rcoll format, 'playing' status mapping. DB migration v14. Unified on CollectionItem/ItemStatus only
 - [x] User Rating — userRating field (1-10) on CollectionItem, DB migration v15, StarRatingBar widget (10 clickable stars), My Rating section on detail screens, sort by rating. Author's Comment renamed to Author's Review with description subtitle
 - [x] Unified MediaPosterCard — single vertical poster card with 3 variants (grid/compact/canvas). DualRatingBadge (`★ 8 / 7.5`), enhanced list tiles (description, inline rating, user notes). Replaced 7 card widgets, deleted ~3600 lines of dead code
+- [x] Breadcrumb Navigation — BreadcrumbAppBar on all screens (logo + `›` separators + clickable crumbs). Logo above NavigationRail on desktop. collectionName parameter on detail screens for full path display
+- [x] Settings Restructuring — monolithic SettingsScreen (~1118 lines) split into hub + 4 sub-screens: CredentialsScreen, CacheScreen, DatabaseScreen, DebugHubScreen. Debug screens use breadcrumb navigation
 
 ## UI Redesign (completed)
 

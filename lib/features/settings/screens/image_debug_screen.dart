@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/media_type.dart';
+import '../../../shared/widgets/breadcrumb_app_bar.dart';
 import '../../collections/providers/collections_provider.dart';
 
 /// Debug-экран для проверки URL изображений.
@@ -52,8 +53,19 @@ class _ImageDebugScreenState extends ConsumerState<ImageDebugScreen> {
     final ColorScheme colorScheme = theme.colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Image Debug Panel'),
+      appBar: BreadcrumbAppBar(
+        crumbs: <BreadcrumbItem>[
+          BreadcrumbItem(
+            label: 'Settings',
+            onTap: () => Navigator.of(context)
+                .popUntil((Route<dynamic> route) => route.isFirst),
+          ),
+          BreadcrumbItem(
+            label: 'Debug',
+            onTap: () => Navigator.of(context).pop(),
+          ),
+          const BreadcrumbItem(label: 'IGDB Media'),
+        ],
       ),
       body: Column(
         children: <Widget>[

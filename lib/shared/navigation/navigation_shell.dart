@@ -91,57 +91,67 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
   Widget _buildRailLayout() {
     return Row(
       children: <Widget>[
-        NavigationRail(
-          selectedIndex: _selectedIndex,
-          onDestinationSelected: _onDestinationSelected,
-          backgroundColor: AppColors.surface,
-          indicatorColor: AppColors.gameAccent.withAlpha(30),
-          selectedIconTheme: const IconThemeData(
-            color: AppColors.textPrimary,
-          ),
-          unselectedIconTheme: const IconThemeData(
-            color: AppColors.textTertiary,
-          ),
-          selectedLabelTextStyle: const TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-          ),
-          unselectedLabelTextStyle: const TextStyle(
-            color: AppColors.textTertiary,
-            fontSize: 12,
-          ),
-          labelType: NavigationRailLabelType.all,
-          leading: Padding(
-            padding: const EdgeInsets.only(top: 8, bottom: 16),
-            child: Image.asset(
-              AppAssets.logo,
-              width: 48,
-              height: 48,
-            ),
-          ),
-          destinations: const <NavigationRailDestination>[
-            NavigationRailDestination(
-              icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(Icons.home),
-              label: Text('Main'),
-            ),
-            NavigationRailDestination(
-              icon: Icon(Icons.collections_bookmark_outlined),
-              selectedIcon: Icon(Icons.collections_bookmark),
-              label: Text('Collections'),
-            ),
-            NavigationRailDestination(
-              icon: Icon(Icons.search_outlined),
-              selectedIcon: Icon(Icons.search),
-              label: Text('Search'),
-            ),
-            NavigationRailDestination(
-              icon: Icon(Icons.settings_outlined),
-              selectedIcon: Icon(Icons.settings),
-              label: Text('Settings'),
+        ColoredBox(
+          color: AppColors.surface,
+          child: Column(
+            children: <Widget>[
+              // Логотип выше NavigationRail — всегда виден
+              Padding(
+                padding: const EdgeInsets.only(top: 12, bottom: 8),
+                child: Image.asset(
+                  AppAssets.logo,
+                  width: 48,
+                  height: 48,
+                ),
+              ),
+              Expanded(
+                child: NavigationRail(
+                selectedIndex: _selectedIndex,
+                onDestinationSelected: _onDestinationSelected,
+                backgroundColor: AppColors.surface,
+                indicatorColor: AppColors.gameAccent.withAlpha(30),
+                selectedIconTheme: const IconThemeData(
+                  color: AppColors.textPrimary,
+                ),
+                unselectedIconTheme: const IconThemeData(
+                  color: AppColors.textTertiary,
+                ),
+                selectedLabelTextStyle: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+                unselectedLabelTextStyle: const TextStyle(
+                  color: AppColors.textTertiary,
+                  fontSize: 12,
+                ),
+                labelType: NavigationRailLabelType.all,
+                destinations: const <NavigationRailDestination>[
+                  NavigationRailDestination(
+                    icon: Icon(Icons.home_outlined),
+                    selectedIcon: Icon(Icons.home),
+                    label: Text('Main'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.collections_bookmark_outlined),
+                    selectedIcon: Icon(Icons.collections_bookmark),
+                    label: Text('Collections'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.search_outlined),
+                    selectedIcon: Icon(Icons.search),
+                    label: Text('Search'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.settings_outlined),
+                    selectedIcon: Icon(Icons.settings),
+                    label: Text('Settings'),
+                  ),
+                ],
+              ),
             ),
           ],
+          ),
         ),
         const VerticalDivider(
           thickness: 1,

@@ -1,349 +1,311 @@
+// Тесты для SettingsScreen (hub с 4 плитками навигации).
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/features/settings/screens/settings_screen.dart';
-import 'package:xerabora/shared/widgets/source_badge.dart';
+import 'package:xerabora/shared/widgets/breadcrumb_app_bar.dart';
 
 void main() {
+  late SharedPreferences prefs;
+
+  setUp(() async {
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    prefs = await SharedPreferences.getInstance();
+  });
+
+  Widget createWidget({bool isInitialSetup = false}) {
+    return ProviderScope(
+      overrides: <Override>[
+        sharedPreferencesProvider.overrideWithValue(prefs),
+      ],
+      child: MaterialApp(
+        home: SettingsScreen(isInitialSetup: isInitialSetup),
+      ),
+    );
+  }
+
   group('SettingsScreen', () {
-    late SharedPreferences prefs;
+    group('UI components', () {
+      testWidgets('shows breadcrumb with Settings label', (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
 
-    setUp(() async {
-      SharedPreferences.setMockInitialValues(<String, Object>{});
-      prefs = await SharedPreferences.getInstance();
-    });
-
-    Widget createWidget({bool isInitialSetup = false}) {
-      return ProviderScope(
-        overrides: <Override>[
-          sharedPreferencesProvider.overrideWithValue(prefs),
-        ],
-        child: MaterialApp(
-          home: SettingsScreen(isInitialSetup: isInitialSetup),
-        ),
-      );
-    }
-
-    testWidgets('должен показывать заголовок', (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      expect(find.text('IGDB API Setup'), findsOneWidget);
-    });
-
-    testWidgets('должен показывать поля ввода credentials',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      expect(find.text('Client ID'), findsOneWidget);
-      expect(find.text('Client Secret'), findsOneWidget);
-    });
-
-    testWidgets('должен показывать кнопку Verify Connection',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      expect(find.text('Verify Connection'), findsOneWidget);
-    });
-
-    testWidgets('должен показывать кнопку Refresh Platforms',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      expect(find.text('Refresh Platforms'), findsOneWidget);
-    });
-
-    testWidgets('должен показывать секцию статуса', (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      expect(find.text('Connection Status'), findsOneWidget);
-      expect(find.text('Not Connected'), findsOneWidget);
-    });
-
-    testWidgets('должен показывать Welcome секцию при isInitialSetup=true',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget(isInitialSetup: true));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Welcome to Tonkatsu Box!'), findsOneWidget);
-    });
-
-    testWidgets('должен скрывать Welcome секцию при isInitialSetup=false',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget(isInitialSetup: false));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Welcome to Tonkatsu Box!'), findsNothing);
-    });
-
-    testWidgets('должен скрывать кнопку назад при isInitialSetup=true',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget(isInitialSetup: true));
-      await tester.pumpAndSettle();
-
-      expect(find.byType(BackButton), findsNothing);
-    });
-
-    testWidgets('должен позволять вводить Client ID',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      final Finder clientIdField = find.widgetWithText(TextField, 'Client ID');
-      await tester.enterText(clientIdField, 'test_client_id');
-
-      expect(find.text('test_client_id'), findsOneWidget);
-    });
-
-    testWidgets('должен позволять вводить Client Secret',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      final Finder secretField =
-          find.widgetWithText(TextField, 'Client Secret');
-      await tester.enterText(secretField, 'test_secret');
-
-      // Текст скрыт, но виджет содержит значение
-      final TextField textField = tester.widget<TextField>(secretField);
-      expect(textField.controller?.text, equals('test_secret'));
-    });
-
-    testWidgets('должен показывать snackbar при пустых полях',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.text('Verify Connection'));
-      await tester.pumpAndSettle();
-
-      expect(
-        find.text('Please enter both Client ID and Client Secret'),
-        findsOneWidget,
-      );
-    });
-
-    testWidgets('должен переключать видимость пароля',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      // Изначально пароль скрыт
-      Finder secretField = find.widgetWithText(TextField, 'Client Secret');
-      TextField textField = tester.widget<TextField>(secretField);
-      expect(textField.obscureText, isTrue);
-
-      // Нажимаем на первую иконку видимости (Client Secret)
-      await tester.tap(find.byIcon(Icons.visibility).first);
-      await tester.pumpAndSettle();
-
-      // Теперь пароль виден
-      secretField = find.widgetWithText(TextField, 'Client Secret');
-      textField = tester.widget<TextField>(secretField);
-      expect(textField.obscureText, isFalse);
-    });
-
-    testWidgets('должен копировать URL при нажатии кнопки',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget(isInitialSetup: true));
-      await tester.pumpAndSettle();
-
-      // Мокаем clipboard
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(
-        SystemChannels.platform,
-        (MethodCall methodCall) async {
-          if (methodCall.method == 'Clipboard.setData') {
-            return null;
-          }
-          return null;
-        },
-      );
-
-      await tester.tap(find.text('Copy Twitch Console URL'));
-      await tester.pumpAndSettle();
-
-      expect(
-        find.textContaining('URL copied'),
-        findsOneWidget,
-      );
-    });
-
-    testWidgets('должен показывать количество платформ',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      expect(find.text('Platforms synced: '), findsOneWidget);
-      expect(find.text('0'), findsOneWidget);
-    });
-
-    testWidgets('Refresh Platforms должен быть отключен без API key',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      final Finder button = find.widgetWithText(OutlinedButton, 'Refresh Platforms');
-      final OutlinedButton widget = tester.widget<OutlinedButton>(button);
-
-      expect(widget.onPressed, isNull);
-    });
-
-    testWidgets('должен загружать существующие credentials',
-        (WidgetTester tester) async {
-      SharedPreferences.setMockInitialValues(<String, Object>{
-        'igdb_client_id': 'existing_client_id',
-        'igdb_client_secret': 'existing_secret',
+        expect(find.byType(BreadcrumbAppBar), findsOneWidget);
+        expect(find.text('Settings'), findsOneWidget);
       });
-      prefs = await SharedPreferences.getInstance();
 
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      expect(find.text('existing_client_id'), findsOneWidget);
-
-      // Secret скрыт, проверяем через контроллер
-      final Finder secretField =
-          find.widgetWithText(TextField, 'Client Secret');
-      final TextField textField = tester.widget<TextField>(secretField);
-      expect(textField.controller?.text, equals('existing_secret'));
-    });
-
-    group('Configuration Export/Import', () {
-      testWidgets('должен показывать кнопки Export и Import',
+      testWidgets('shows Credentials tile with correct icon and subtitle',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        await tester.scrollUntilVisible(
-          find.text('Export Config'),
-          200,
-          scrollable: find.byType(Scrollable).first,
+        final Finder credentialsTile = find.ancestor(
+          of: find.text('Credentials'),
+          matching: find.byType(ListTile),
+        );
+
+        expect(credentialsTile, findsOneWidget);
+        expect(
+          find.descendant(
+            of: credentialsTile,
+            matching: find.text('IGDB, SteamGridDB, TMDB API keys'),
+          ),
+          findsOneWidget,
+        );
+
+        // Проверяем leading icon
+        final ListTile tile = tester.widget<ListTile>(credentialsTile);
+        final Icon? leadingIcon = tile.leading as Icon?;
+        expect(leadingIcon, isNotNull);
+        expect(leadingIcon!.icon, equals(Icons.key));
+      });
+
+      testWidgets('shows Cache tile with correct icon and subtitle',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        final Finder cacheTile = find.ancestor(
+          of: find.text('Cache'),
+          matching: find.byType(ListTile),
+        );
+
+        expect(cacheTile, findsOneWidget);
+        expect(
+          find.descendant(
+            of: cacheTile,
+            matching: find.text('Image cache settings'),
+          ),
+          findsOneWidget,
+        );
+
+        final ListTile tile = tester.widget<ListTile>(cacheTile);
+        final Icon? leadingIcon = tile.leading as Icon?;
+        expect(leadingIcon, isNotNull);
+        expect(leadingIcon!.icon, equals(Icons.cached));
+      });
+
+      testWidgets('shows Database tile with correct icon and subtitle',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        final Finder databaseTile = find.ancestor(
+          of: find.text('Database'),
+          matching: find.byType(ListTile),
+        );
+
+        expect(databaseTile, findsOneWidget);
+        expect(
+          find.descendant(
+            of: databaseTile,
+            matching: find.text('Export, import, reset'),
+          ),
+          findsOneWidget,
+        );
+
+        final ListTile tile = tester.widget<ListTile>(databaseTile);
+        final Icon? leadingIcon = tile.leading as Icon?;
+        expect(leadingIcon, isNotNull);
+        expect(leadingIcon!.icon, equals(Icons.storage));
+      });
+
+      testWidgets('shows Debug tile with correct icon and subtitle when in debug mode',
+          (WidgetTester tester) async {
+        // В тестах kDebugMode всегда true
+        expect(kDebugMode, isTrue);
+
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        final Finder debugTile = find.ancestor(
+          of: find.text('Debug'),
+          matching: find.byType(ListTile),
+        );
+
+        expect(debugTile, findsOneWidget);
+
+        // Без SteamGridDB ключа показывает предупреждение
+        expect(
+          find.text('Set SteamGridDB key first for some tools'),
+          findsOneWidget,
+        );
+
+        final ListTile tile = tester.widget<ListTile>(debugTile);
+        final Icon? leadingIcon = tile.leading as Icon?;
+        expect(leadingIcon, isNotNull);
+        expect(leadingIcon!.icon, equals(Icons.bug_report));
+      });
+
+      testWidgets('Debug tile subtitle changes when SteamGridDB key is set',
+          (WidgetTester tester) async {
+        // Устанавливаем SteamGridDB ключ
+        await prefs.setString(SettingsKeys.steamGridDbApiKey, 'test-key');
+
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        expect(find.text('Developer tools'), findsOneWidget);
+        expect(
+          find.text('Set SteamGridDB key first for some tools'),
+          findsNothing,
+        );
+      });
+
+      testWidgets('shows chevron_right trailing icons for all tiles',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        final Iterable<ListTile> tiles = tester.widgetList<ListTile>(
+          find.byType(ListTile),
+        );
+
+        // В debug mode должно быть 4 плитки (Credentials, Cache, Database, Debug)
+        expect(tiles.length, equals(4));
+
+        for (final ListTile tile in tiles) {
+          final Icon? trailingIcon = tile.trailing as Icon?;
+          expect(trailingIcon, isNotNull);
+          expect(trailingIcon!.icon, equals(Icons.chevron_right));
+        }
+      });
+    });
+
+    group('Navigation', () {
+      testWidgets('all tiles have onTap callback', (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        final Iterable<ListTile> tiles = tester.widgetList<ListTile>(
+          find.byType(ListTile),
+        );
+
+        for (final ListTile tile in tiles) {
+          expect(tile.onTap, isNotNull, reason: 'Tile "${tile.title}" should have onTap');
+        }
+      });
+
+      testWidgets('Credentials tile is tappable', (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        final Finder credentialsTile = find.ancestor(
+          of: find.text('Credentials'),
+          matching: find.byType(ListTile),
+        );
+
+        // Tap не должен вызвать ошибку (навигация работает)
+        await tester.tap(credentialsTile);
+        await tester.pumpAndSettle();
+
+        // После навигации SettingsScreen в стеке, но перекрыт новым экраном
+        expect(tester.takeException(), isNull);
+      });
+
+      testWidgets('Cache tile is tappable', (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        final Finder cacheTile = find.ancestor(
+          of: find.text('Cache'),
+          matching: find.byType(ListTile),
+        );
+
+        await tester.tap(cacheTile);
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+      });
+
+      testWidgets('Database tile is tappable', (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        final Finder databaseTile = find.ancestor(
+          of: find.text('Database'),
+          matching: find.byType(ListTile),
+        );
+
+        await tester.tap(databaseTile);
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+      });
+
+      testWidgets('Debug tile is tappable', (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        final Finder debugTile = find.ancestor(
+          of: find.text('Debug'),
+          matching: find.byType(ListTile),
+        );
+
+        await tester.tap(debugTile);
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+      });
+    });
+
+    group('Error handling', () {
+      testWidgets('does not show error card by default', (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        expect(find.byIcon(Icons.warning_amber), findsNothing);
+      });
+
+      testWidgets('shows error card when errorMessage is set',
+          (WidgetTester tester) async {
+        const String errorMessage = 'Test error message';
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: <Override>[
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              settingsNotifierProvider.overrideWith(
+                () => _TestSettingsNotifier(errorMessage),
+              ),
+            ],
+            child: const MaterialApp(home: SettingsScreen()),
+          ),
         );
         await tester.pumpAndSettle();
 
-        expect(find.text('Export Config'), findsOneWidget);
-        expect(find.text('Import Config'), findsOneWidget);
-      });
-
-      testWidgets(
-          'должен показывать кнопки горизонтально на широком экране (>= 400)',
-          (WidgetTester tester) async {
-        // Стандартный тестовый viewport 800×600
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        await tester.scrollUntilVisible(
-          find.text('Export Config'),
-          200,
-          scrollable: find.byType(Scrollable).first,
-        );
-        await tester.pumpAndSettle();
-
-        // Кнопки в Row — проверяем что обе кнопки на одной строке (Y совпадает)
-        final Offset exportPos = tester.getCenter(find.text('Export Config'));
-        final Offset importPos = tester.getCenter(find.text('Import Config'));
-        expect(exportPos.dy, equals(importPos.dy));
-      });
-
-      testWidgets(
-          'должен показывать кнопки вертикально на узком экране (< 400)',
-          (WidgetTester tester) async {
-        tester.view.physicalSize = const Size(399, 800);
-        tester.view.devicePixelRatio = 1.0;
-        addTearDown(tester.view.resetPhysicalSize);
-        addTearDown(tester.view.resetDevicePixelRatio);
-
-        // Подавляем overflow ошибки от других Row при узком экране
-        final void Function(FlutterErrorDetails)? oldHandler = FlutterError.onError;
-        FlutterError.onError = (FlutterErrorDetails details) {
-          final String message = details.exceptionAsString();
-          if (message.contains('overflowed')) return;
-          oldHandler?.call(details);
-        };
-        addTearDown(() => FlutterError.onError = oldHandler);
-
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        await tester.scrollUntilVisible(
-          find.text('Export Config'),
-          200,
-          scrollable: find.byType(Scrollable).first,
-        );
-        await tester.pumpAndSettle();
-
-        // Кнопки в Column — Export выше Import
-        final Offset exportPos = tester.getCenter(find.text('Export Config'));
-        final Offset importPos = tester.getCenter(find.text('Import Config'));
-        expect(exportPos.dy, lessThan(importPos.dy));
+        expect(find.byIcon(Icons.warning_amber), findsOneWidget);
+        expect(find.text(errorMessage), findsOneWidget);
       });
     });
 
-    group('SourceBadges в секциях API', () {
-      testWidgets('должен отображать SourceBadge IGDB в секции IGDB',
+    group('Initial setup', () {
+      testWidgets('isInitialSetup параметр не влияет на рендеринг hub',
           (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
+        await tester.pumpWidget(createWidget(isInitialSetup: true));
         await tester.pumpAndSettle();
 
-        expect(find.text('IGDB'), findsOneWidget);
-      });
-
-      testWidgets('должен отображать SourceBadge SGDB в секции SteamGridDB',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        // Прокручиваем вниз к SteamGridDB секции
-        await tester.scrollUntilVisible(
-          find.text('SGDB'),
-          200,
-          scrollable: find.byType(Scrollable).first,
-        );
-        await tester.pumpAndSettle();
-
-        expect(find.text('SGDB'), findsOneWidget);
-      });
-
-      testWidgets('должен отображать SourceBadge TMDB в секции TMDB',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        // Прокручиваем вниз к TMDB секции
-        await tester.scrollUntilVisible(
-          find.text('TMDB'),
-          200,
-          scrollable: find.byType(Scrollable).first,
-        );
-        await tester.pumpAndSettle();
-
-        expect(find.text('TMDB'), findsOneWidget);
-      });
-
-      testWidgets('должен использовать все три SourceBadge виджета',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        // Прокручиваем до конца
-        await tester.scrollUntilVisible(
-          find.text('TMDB API (Movies & TV)'),
-          200,
-          scrollable: find.byType(Scrollable).first,
-        );
-        await tester.pumpAndSettle();
-
-        // Все 3 бейджа должны быть видны
-        expect(find.byType(SourceBadge), findsNWidgets(3));
+        // Hub рендерится нормально вне зависимости от isInitialSetup
+        expect(find.text('Credentials'), findsOneWidget);
+        expect(find.text('Cache'), findsOneWidget);
+        expect(find.text('Database'), findsOneWidget);
       });
     });
   });
+}
+
+/// Тестовый notifier с кастомным errorMessage.
+class _TestSettingsNotifier extends SettingsNotifier {
+  _TestSettingsNotifier(this._errorMessage);
+
+  final String _errorMessage;
+
+  @override
+  SettingsState build() {
+    return SettingsState(errorMessage: _errorMessage);
+  }
 }

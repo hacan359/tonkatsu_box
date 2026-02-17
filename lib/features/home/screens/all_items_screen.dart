@@ -14,6 +14,7 @@ import '../../../shared/navigation/navigation_shell.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/breadcrumb_app_bar.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../collections/screens/anime_detail_screen.dart';
@@ -52,18 +53,10 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        surfaceTintColor: Colors.transparent,
-        toolbarHeight: 40,
-        title: Text(
-          'Main',
-          style: AppTypography.body.copyWith(
-            color: AppColors.textSecondary,
-            fontWeight: FontWeight.w600,
-            fontSize: 14,
-          ),
-        ),
+      appBar: const BreadcrumbAppBar(
+        crumbs: <BreadcrumbItem>[
+          BreadcrumbItem(label: 'Main'),
+        ],
       ),
       body: Column(
         children: <Widget>[
@@ -265,7 +258,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
             year: _yearFor(item),
             subtitle: collectionNames[item.collectionId],
             status: item.status,
-            onTap: () => _showItemDetails(item),
+            onTap: () => _showItemDetails(item, collectionNames),
           );
         },
       ),
@@ -325,7 +318,10 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     );
   }
 
-  void _showItemDetails(CollectionItem item) {
+  void _showItemDetails(
+    CollectionItem item,
+    Map<int, String> collectionNames,
+  ) {
     // Определяем isEditable из коллекции
     final List<Collection>? collections =
         ref.read(collectionsProvider).valueOrNull;
@@ -334,6 +330,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
       orElse: () => null,
     );
     final bool isEditable = collection?.isEditable ?? false;
+    final String colName = collectionNames[item.collectionId] ?? '';
 
     switch (item.mediaType) {
       case MediaType.game:
@@ -343,6 +340,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
               collectionId: item.collectionId,
               itemId: item.id,
               isEditable: isEditable,
+              collectionName: colName,
             ),
           ),
         );
@@ -353,6 +351,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
               collectionId: item.collectionId,
               itemId: item.id,
               isEditable: isEditable,
+              collectionName: colName,
             ),
           ),
         );
@@ -363,6 +362,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
               collectionId: item.collectionId,
               itemId: item.id,
               isEditable: isEditable,
+              collectionName: colName,
             ),
           ),
         );
@@ -373,6 +373,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
               collectionId: item.collectionId,
               itemId: item.id,
               isEditable: isEditable,
+              collectionName: colName,
             ),
           ),
         );
