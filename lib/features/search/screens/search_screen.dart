@@ -19,7 +19,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/navigation/navigation_shell.dart';
 import '../../../shared/widgets/cached_image.dart' as app_cached;
-import '../../../shared/widgets/poster_card.dart';
+import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../settings/providers/settings_provider.dart';
@@ -1292,18 +1292,20 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                   ? ImageType.moviePoster
                   : ImageType.tvShowPoster;
 
-          return PosterCard(
+          return MediaPosterCard(
             key: ValueKey<String>(
                 '${item.type.name}_${item.tmdbId}'),
+            variant: isLandscapeMobile(context)
+                ? CardVariant.compact
+                : CardVariant.grid,
             title: item.title,
             imageUrl: item.posterUrl ?? '',
             cacheImageType: imageType,
             cacheImageId: item.tmdbId.toString(),
-            rating: item.rating,
+            apiRating: item.rating,
             year: item.year,
             subtitle: _mediaSubtitle(item),
             isInCollection: isInCollection,
-            compact: isLandscapeMobile(context),
             onTap: () => _onMediaItemTapForAnimation(item),
           );
         },
@@ -1402,17 +1404,19 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
           final Game game = searchState.results[index];
           final List<CollectedItemInfo>? infos = collectedGameInfos[game.id];
-          return PosterCard(
+          return MediaPosterCard(
             key: ValueKey<int>(game.id),
+            variant: isLandscapeMobile(context)
+                ? CardVariant.compact
+                : CardVariant.grid,
             title: game.name,
             imageUrl: game.coverUrl ?? '',
             cacheImageType: ImageType.gameCover,
             cacheImageId: game.id.toString(),
-            rating: game.rating != null ? game.rating! / 10 : null,
+            apiRating: game.rating != null ? game.rating! / 10 : null,
             year: game.releaseYear,
             subtitle: game.genres?.take(2).join(', '),
             isInCollection: infos != null && infos.isNotEmpty,
-            compact: isLandscapeMobile(context),
             onTap: () => _onGameTap(game),
           );
         },

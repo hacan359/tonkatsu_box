@@ -18,7 +18,8 @@ import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/collection_sort_mode.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/navigation/navigation_shell.dart';
-import '../../../shared/widgets/poster_card.dart';
+import '../../../shared/widgets/dual_rating_badge.dart';
+import '../../../shared/widgets/media_poster_card.dart';
 import '../../search/screens/search_screen.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../../../data/repositories/canvas_repository.dart';
@@ -771,41 +772,23 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         itemCount: items.length,
         itemBuilder: (BuildContext context, int index) {
           final CollectionItem item = items[index];
-          return PosterCard(
+          return MediaPosterCard(
             key: ValueKey<int>(item.id),
+            variant: isLandscape ? CardVariant.compact : CardVariant.grid,
             title: item.itemName,
             imageUrl: item.thumbnailUrl ?? '',
             cacheImageType: _imageTypeFor(item.mediaType, item.platformId),
             cacheImageId: item.externalId.toString(),
-            rating: _normalizedRating(item),
+            userRating: item.userRating,
+            apiRating: item.apiRating,
             year: _yearFor(item),
             subtitle: _subtitleFor(item),
             status: item.status,
-            compact: isLandscape,
             onTap: () => _showItemDetails(item),
           );
         },
       ),
     );
-  }
-
-  /// Нормализует рейтинг к 0–10 (IGDB 0-100, TMDB 0-10).
-  static double? _normalizedRating(CollectionItem item) {
-    switch (item.mediaType) {
-      case MediaType.game:
-        final double? raw = item.game?.rating;
-        if (raw == null) return null;
-        return raw / 10;
-      case MediaType.movie:
-        return item.movie?.rating;
-      case MediaType.tvShow:
-        return item.tvShow?.rating;
-      case MediaType.animation:
-        if (item.platformId == AnimationSource.tvShow) {
-          return item.tvShow?.rating;
-        }
-        return item.movie?.rating;
-    }
   }
 
   /// Год выпуска элемента.
@@ -1508,7 +1491,31 @@ class _CollectionItemTile extends StatelessWidget {
                           style: AppTypography.bodySmall,
                         ),
 
-                        // Комментарий автора
+                        // Рейтинги (пользовательский + API)
+                        if (_hasAnyRating) ...<Widget>[
+                          const SizedBox(height: AppSpacing.xs),
+                          DualRatingBadge(
+                            userRating: item.userRating,
+                            apiRating: item.apiRating,
+                            inline: true,
+                          ),
+                        ],
+
+                        // Описание
+                        if (item.itemDescription != null &&
+                            item.itemDescription!.isNotEmpty) ...<Widget>[
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(
+                            item.itemDescription!,
+                            style: AppTypography.bodySmall.copyWith(
+                              color: AppColors.textTertiary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+
+                        // Комментарий автора (рецензия)
                         if (item.hasAuthorComment) ...<Widget>[
                           const SizedBox(height: AppSpacing.xs),
                           Row(
@@ -1525,6 +1532,31 @@ class _CollectionItemTile extends StatelessWidget {
                                   style: AppTypography.bodySmall.copyWith(
                                     color: AppColors.movieAccent,
                                     fontStyle: FontStyle.italic,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+
+                        // Личные заметки
+                        if (item.hasUserComment) ...<Widget>[
+                          const SizedBox(height: AppSpacing.xs),
+                          Row(
+                            children: <Widget>[
+                              const Icon(
+                                Icons.note_outlined,
+                                size: 14,
+                                color: AppColors.textTertiary,
+                              ),
+                              const SizedBox(width: AppSpacing.xs),
+                              Expanded(
+                                child: Text(
+                                  item.userComment!,
+                                  style: AppTypography.bodySmall.copyWith(
+                                    color: AppColors.textTertiary,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -1560,6 +1592,10 @@ class _CollectionItemTile extends StatelessWidget {
       ),
     );
   }
+
+  bool get _hasAnyRating =>
+      item.userRating != null ||
+      (item.apiRating != null && item.apiRating! > 0);
 
   String _getSubtitle() {
     switch (item.mediaType) {

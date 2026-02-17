@@ -43,17 +43,18 @@
 - [x] Animation Tab — 4th search tab combining animated movies and TV shows from TMDB (genre Animation, ID=16). MediaType.animation enum, AnimationSource discriminator (movie=0, tvShow=1), adaptive AnimeDetailScreen, purple accent color, filter chip in collections, canvas support
 - [x] Legacy Removal — removed CollectionGame/GameStatus, collectionGamesNotifierProvider, v1 .rcoll format, 'playing' status mapping. DB migration v14. Unified on CollectionItem/ItemStatus only
 - [x] User Rating — userRating field (1-10) on CollectionItem, DB migration v15, StarRatingBar widget (10 clickable stars), My Rating section on detail screens, sort by rating. Author's Comment renamed to Author's Review with description subtitle
+- [x] Unified MediaPosterCard — single vertical poster card with 3 variants (grid/compact/canvas). DualRatingBadge (`★ 8 / 7.5`), enhanced list tiles (description, inline rating, user notes). Replaced 7 card widgets, deleted ~3600 lines of dead code
 
 ## UI Redesign (completed)
 
 - [x] Design system — AppColors (deep dark palette), AppSpacing, AppTypography (Inter font), AppTheme (centralized dark theme)
 - [x] NavigationShell — adaptive: NavigationRail (≥800px) / BottomNavigationBar (<800px)
 - [x] Dark theme — forced dark theme applied to all screens via AppTheme
-- [x] Reusable widgets — SectionHeader, RatingBadge, ShimmerLoading, PosterCard, HeroCollectionCard
+- [x] Reusable widgets — SectionHeader, RatingBadge, ShimmerLoading, MediaPosterCard (replaced PosterCard), DualRatingBadge, HeroCollectionCard
 - [x] TMDB Genre caching — tmdb_genres DB table, DB-first loading, auto-resolve numeric IDs
 - [x] HomeScreen — HeroCollectionCard for featured collections, shimmer loading
-- [x] CollectionScreen — grid mode with PosterCard, type filter, name search
-- [x] SearchScreen — poster grid with PosterCard, shimmer loading
+- [x] CollectionScreen — grid mode with MediaPosterCard (dual rating), type filter, name search
+- [x] SearchScreen — poster grid with MediaPosterCard, shimmer loading
 - [x] MediaDetailView — AppColors/AppTypography, poster 100×150, per-media accent colors
 - [x] Detail screens — styled fallback AppBars, per-media accent colors
 - [x] Settings — adaptive Export/Import buttons

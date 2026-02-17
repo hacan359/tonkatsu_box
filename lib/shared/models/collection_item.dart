@@ -254,6 +254,45 @@ class CollectionItem with Exportable {
     }
   }
 
+  /// API рейтинг, нормализованный к шкале 0–10.
+  ///
+  /// IGDB хранит рейтинг 0–100, поэтому делим на 10.
+  /// TMDB уже хранит 0–10.
+  double? get apiRating {
+    switch (mediaType) {
+      case MediaType.game:
+        final double? raw = game?.rating;
+        if (raw == null) return null;
+        return raw / 10;
+      case MediaType.movie:
+        return movie?.rating;
+      case MediaType.tvShow:
+        return tvShow?.rating;
+      case MediaType.animation:
+        if (platformId == AnimationSource.tvShow) {
+          return tvShow?.rating;
+        }
+        return movie?.rating;
+    }
+  }
+
+  /// Описание элемента (summary для игр, overview для фильмов/сериалов).
+  String? get itemDescription {
+    switch (mediaType) {
+      case MediaType.game:
+        return game?.summary;
+      case MediaType.movie:
+        return movie?.overview;
+      case MediaType.tvShow:
+        return tvShow?.overview;
+      case MediaType.animation:
+        if (platformId == AnimationSource.tvShow) {
+          return tvShow?.overview;
+        }
+        return movie?.overview;
+    }
+  }
+
   /// URL маленького постера/обложки для thumbnail-ов.
   String? get thumbnailUrl {
     switch (mediaType) {

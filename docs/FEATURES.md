@@ -8,9 +8,9 @@ The app uses a forced dark theme (ThemeMode.dark) with a cinematic design system
 - **AppSpacing** — standardized spacing (4–32px), border radii (4–20px), poster aspect ratio (2:3), grid column counts
 - **AppTheme** — centralized ThemeData with styled AppBar, Card, Input, Dialog, BottomSheet, Chip, Button, NavigationRail, TabBar
 - **Adaptive navigation** — NavigationRail sidebar on desktop (≥800px), BottomNavigationBar on mobile (<800px)
-- **PosterCard** — vertical 2:3 poster card with hover animation, RatingBadge overlay, collection checkmark
+- **MediaPosterCard** — unified vertical 2:3 poster card with 3 variants: grid (hover animation, dual rating badge, collection checkmark, status emoji), compact (smaller sizes for landscape), canvas (colored border by media type, no hover)
+- **DualRatingBadge** — dual rating display `★ 8 / 7.5` (user rating + API rating) on poster cards and list items. Modes: badge (dark overlay on poster), compact (smaller), inline (no background, for list tiles)
 - **HeroCollectionCard** — large gradient collection card with progress bar and stats
-- **RatingBadge** — color-coded rating badge (green ≥8, yellow ≥6, red <6)
 - **ShimmerLoading** — animated shimmer placeholders (ShimmerBox, ShimmerPosterCard, ShimmerListTile)
 
 ## Platforms
@@ -27,7 +27,7 @@ Create unlimited collections organized however you want:
 - By theme (Couch co-op, Hidden gems...)
 - Personal lists (Backlog, Completed, Favorites...)
 - Mix games, movies and TV shows in a single collection
-- **Grid mode** — toggle between list and poster grid view; choice is saved per-collection and restored on next open
+- **Grid mode** — toggle between list and poster grid view; choice is saved per-collection and restored on next open. Grid cards show dual rating badge (`★ 8 / 7.5`), collection checkmark, and status emoji
 - **Type filter** — filter items by type (All/Games/Movies/TV Shows/Animation) with item count badges on each chip
 - **Search** — filter items by name within a collection
 
@@ -229,7 +229,7 @@ Visualize your collection on a free-form board, or create a personal board for e
 - **Dot grid background** for visual alignment
 - **Auto-layout** — new board initializes all items (games, movies, TV shows) in a 5-column grid
 - **Auto-sync** — adding or removing items in the collection automatically updates the board
-- **Media cards** — games, movies and TV shows display as compact cards with poster/cover and title
+- **Media cards** — games, movies and TV shows display as `MediaPosterCard(canvas)` with poster/cover, title, and colored border by media type
 - **Persistent viewport** — zoom level and position are saved and restored
 - **Center view** and **Reset positions** controls
 - **List/Board toggle** — switch between traditional list and visual board via SegmentedButton
