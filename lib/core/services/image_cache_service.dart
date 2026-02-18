@@ -59,8 +59,9 @@ class ImageCacheService {
       return customPath;
     }
 
-    // Путь по умолчанию
-    final Directory appDir = await getApplicationDocumentsDirectory();
+    // AppSupport вместо Documents — Documents может быть под OneDrive,
+    // который блокирует создание файлов (PathAccessException).
+    final Directory appDir = await getApplicationSupportDirectory();
     return p.join(appDir.path, 'tonkatsu_box', 'image_cache');
   }
 
