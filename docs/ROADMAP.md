@@ -1,6 +1,14 @@
-# Roadmap
+[← Back to README](../README.md)
 
-## Current Version (v1.0)
+# 🗺️ Roadmap
+
+![Progress](https://img.shields.io/badge/overall_progress-~85%25-brightgreen?style=for-the-badge)
+
+> Approximate completion: **~85%** — Core features, canvas system, media integrations, Android Lite, and UI redesign are done. A few restoration tasks and future plans remain.
+
+---
+
+## ✅ Current Version (v1.0)
 
 - [x] Project setup
 - [x] IGDB integration
@@ -13,7 +21,9 @@
 - [x] Offline image caching
 - [x] Platform logos
 
-## Canvas Development
+---
+
+## ✅ Canvas Development
 
 - [x] Stage 7: Basic Canvas — visual canvas with zoom, pan, drag-and-drop, grid layout, List/Canvas toggle, bidirectional collection sync
 - [x] Stage 8: Canvas Elements — context menu, text blocks, images, links, resize, z-index
@@ -48,7 +58,9 @@
 - [x] Settings Restructuring — monolithic SettingsScreen (~1118 lines) split into hub + 4 sub-screens: CredentialsScreen, CacheScreen, DatabaseScreen, DebugHubScreen. Debug screens use breadcrumb navigation
 - [x] Move to Collection — move items between collections or to/from uncategorized. DB `updateItemCollectionId`, shared `CollectionPickerDialog`, PopupMenuButton on detail screens and collection tiles. Board tab hidden for uncategorized items
 
-## UI Redesign (completed)
+---
+
+## ✅ UI Redesign (completed)
 
 - [x] Design system — AppColors (deep dark palette), AppSpacing, AppTypography (Inter font), AppTheme (centralized dark theme)
 - [x] NavigationShell — adaptive: NavigationRail (≥800px) / BottomNavigationBar (<800px)
@@ -63,30 +75,40 @@
 - [x] Settings — adaptive Export/Import buttons
 - [x] MediaCard — poster 64×96
 - [x] Image caching — eager download on add, magic bytes validation, Windows file lock fix
+- [x] StatusChipRow + StatusRibbon — modern chip-based status selection on detail screens, diagonal ribbon on list cards
+
+### 📋 UI Restoration (remaining)
+
 - [ ] Canvas mode restoration — Grid/Canvas toggle, CanvasView + SteamGridDB/VGMaps panels
 - [ ] Episode Tracker restoration — full episode tracker in TV Show detail screen
 - [ ] Activity Dates restoration — editable ActivityDatesSection in detail screens
-- [x] StatusChipRow + StatusRibbon — modern chip-based status selection on detail screens, diagonal ribbon on list cards
 - [ ] Search filters restoration — Platform Filter, Media Filter, Sort Selector
 
-## Future Plans
+---
+
+## 📋 Future Plans
 
 ### RetroAchievements Integration
+
 Connect your ROM library with RetroAchievements:
 - Link games by ROM hash
 - View available achievements
 - Track your unlocked achievements
 
 ### Online Features
+
 - Cloud sync between devices
 - Public collection marketplace
 - Follow other collectors
 - Collection ratings and reviews
 
 ### Additional Platforms
+
 - [x] Android support (Lite — collections, search, details, no Canvas)
 - [ ] macOS support
 - [ ] Linux support
+
+---
 
 ## Contributing
 

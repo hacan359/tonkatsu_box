@@ -1,4 +1,6 @@
-# Breadcrumb Navigation
+[← Back to README](../README.md)
+
+# 🍞 Breadcrumb Navigation
 
 ## Overview
 
@@ -19,6 +21,8 @@ BreadcrumbAppBar(
 )
 ```
 
+---
+
 ## Adaptive Root Element
 
 The root element (leftmost) adapts to screen size:
@@ -27,6 +31,8 @@ The root element (leftmost) adapts to screen size:
 |---|---|---|
 | >= 800px (desktop) | `/` text | Static, no interaction (logo is visible above NavigationRail) |
 | < 800px (mobile) | App logo 20x20 | Tappable — navigates to home (pops to root route) |
+
+---
 
 ## Styling
 
@@ -41,10 +47,14 @@ The root element (leftmost) adapts to screen size:
 - Clickable crumbs show `SystemMouseCursors.click` cursor
 - The last crumb is always non-interactive (even if `onTap` is provided)
 
+---
+
 ## Navigation Patterns
 
 ### Tab Screens (root level)
+
 Single crumb, no `onTap`:
+
 ```dart
 // AllItemsScreen, HomeScreen, SearchScreen, SettingsScreen
 BreadcrumbAppBar(
@@ -55,7 +65,9 @@ BreadcrumbAppBar(
 ```
 
 ### One Level Deep
+
 Two crumbs, first is clickable:
+
 ```dart
 // CredentialsScreen, CacheScreen, DatabaseScreen, DebugHubScreen
 BreadcrumbAppBar(
@@ -67,7 +79,9 @@ BreadcrumbAppBar(
 ```
 
 ### Two Levels Deep
+
 Three crumbs. Use `popUntil(isFirst)` for the root crumb:
+
 ```dart
 // CollectionScreen -> Detail Screen
 BreadcrumbAppBar(
@@ -87,6 +101,7 @@ BreadcrumbAppBar(
 ```
 
 ### Three Levels Deep (Debug Screens)
+
 ```dart
 // Settings > Debug > SteamGridDB
 BreadcrumbAppBar(
@@ -104,6 +119,8 @@ BreadcrumbAppBar(
   bottom: tabBar, // SteamGridDB has 5 tabs
 )
 ```
+
+---
 
 ## With TabBar
 
@@ -132,13 +149,21 @@ BreadcrumbAppBar(
 )
 ```
 
+---
+
 ## Technical Details
 
-- **Height:** `kBreadcrumbToolbarHeight = 40` (+ TabBar if present)
-- **Horizontal scroll:** long breadcrumb trails wrap in `SingleChildScrollView`
-- **No back button:** `automaticallyImplyLeading: false` — navigation is via crumbs
-- **Background:** `AppColors.background` (#0A0A0A)
-- **Breakpoint:** uses `navigationBreakpoint` (800px) from `navigation_shell.dart`
+> [!NOTE]
+> - **Height:** `kBreadcrumbToolbarHeight = 40` (+ TabBar if present)
+> - **Horizontal scroll:** long breadcrumb trails wrap in `SingleChildScrollView`
+> - **No back button:** `automaticallyImplyLeading: false` — navigation is via crumbs only
+> - **Background:** `AppColors.background` (#0A0A0A)
+> - **Breakpoint:** uses `navigationBreakpoint` (800px) from `navigation_shell.dart`
+
+> [!TIP]
+> When adding a new screen, always use `BreadcrumbAppBar` instead of the standard `AppBar`. The last crumb in the list represents the current screen and should **not** have an `onTap` handler.
+
+---
 
 ## All Screens Using BreadcrumbAppBar
 
