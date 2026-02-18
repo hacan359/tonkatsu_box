@@ -17,13 +17,13 @@ void main() {
     prefs = await SharedPreferences.getInstance();
   });
 
-  Widget createWidget({bool isInitialSetup = false}) {
+  Widget createWidget() {
     return ProviderScope(
       overrides: <Override>[
         sharedPreferencesProvider.overrideWithValue(prefs),
       ],
-      child: MaterialApp(
-        home: SettingsScreen(isInitialSetup: isInitialSetup),
+      child: const MaterialApp(
+        home: SettingsScreen(),
       ),
     );
   }
@@ -283,18 +283,6 @@ void main() {
       });
     });
 
-    group('Initial setup', () {
-      testWidgets('isInitialSetup параметр не влияет на рендеринг hub',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget(isInitialSetup: true));
-        await tester.pumpAndSettle();
-
-        // Hub рендерится нормально вне зависимости от isInitialSetup
-        expect(find.text('Credentials'), findsOneWidget);
-        expect(find.text('Cache'), findsOneWidget);
-        expect(find.text('Database'), findsOneWidget);
-      });
-    });
   });
 }
 

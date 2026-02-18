@@ -119,19 +119,7 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
   }
 
   BreadcrumbAppBar _buildFallbackAppBar() {
-    return BreadcrumbAppBar(
-      crumbs: <BreadcrumbItem>[
-        BreadcrumbItem(
-          label: 'Collections',
-          onTap: () => Navigator.of(context)
-              .popUntil((Route<dynamic> route) => route.isFirst),
-        ),
-        BreadcrumbItem(
-          label: widget.collectionName,
-          onTap: () => Navigator.of(context).pop(),
-        ),
-      ],
-    );
+    return BreadcrumbAppBar.collectionFallback(context, widget.collectionName);
   }
 
   CollectionItem? _findItem(List<CollectionItem> items) {

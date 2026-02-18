@@ -18,13 +18,7 @@ import 'debug_hub_screen.dart';
 /// Содержит ссылки на подразделы: Credentials, Cache, Database, Debug.
 class SettingsScreen extends ConsumerWidget {
   /// Создаёт [SettingsScreen].
-  const SettingsScreen({
-    super.key,
-    this.isInitialSetup = false,
-  });
-
-  /// Флаг начальной настройки (legacy, не используется).
-  final bool isInitialSetup;
+  const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

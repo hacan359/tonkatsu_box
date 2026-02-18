@@ -107,7 +107,7 @@ void main() {
         expect(find.text('/'), findsNothing);
       });
 
-      testWidgets('на mobile логотип обёрнут в GestureDetector',
+      testWidgets('на mobile логотип обёрнут в InkWell',
           (WidgetTester tester) async {
         tester.view.physicalSize = const Size(700, 600);
         tester.view.devicePixelRatio = 1.0;
@@ -121,11 +121,11 @@ void main() {
         await tester.pumpWidget(createWidget(crumbs: crumbs));
         await tester.pumpAndSettle();
 
-        final Finder gestureDetector = find.ancestor(
+        final Finder inkWell = find.ancestor(
           of: find.byType(Image),
-          matching: find.byType(GestureDetector),
+          matching: find.byType(InkWell),
         );
-        expect(gestureDetector, findsOneWidget);
+        expect(inkWell, findsOneWidget);
       });
     });
 
@@ -256,7 +256,7 @@ void main() {
         expect(crumbText.style?.color, AppColors.textPrimary);
 
         // Убираем мышь — обратно textTertiary
-        await gesture.moveTo(const Offset(0, 0));
+        await gesture.moveTo(Offset.zero);
         await tester.pumpAndSettle();
 
         crumbText = tester.widget<Text>(find.text('Ховер'));
@@ -562,6 +562,55 @@ void main() {
 
         final AppBar appBar = tester.widget<AppBar>(find.byType(AppBar));
         expect(appBar.automaticallyImplyLeading, isFalse);
+      });
+    });
+
+    group('collectionFallback factory', () {
+      testWidgets('создаёт AppBar с крошками Collections и collectionName',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Builder(
+              builder: (BuildContext context) {
+                return Scaffold(
+                  appBar: BreadcrumbAppBar.collectionFallback(
+                    context,
+                    'My Games',
+                  ),
+                  body: const SizedBox(),
+                );
+              },
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Collections'), findsOneWidget);
+        expect(find.text('My Games'), findsOneWidget);
+        expect(find.byType(BreadcrumbAppBar), findsOneWidget);
+      });
+
+      testWidgets('collectionFallback не содержит третью крошку',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Builder(
+              builder: (BuildContext context) {
+                return Scaffold(
+                  appBar: BreadcrumbAppBar.collectionFallback(
+                    context,
+                    'RPGs',
+                  ),
+                  body: const SizedBox(),
+                );
+              },
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // 2 крошки = 2 разделителя (по одному перед каждой)
+        expect(find.text('›'), findsNWidgets(2));
       });
     });
   });

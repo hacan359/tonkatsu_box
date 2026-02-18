@@ -42,6 +42,28 @@ class BreadcrumbAppBar extends StatelessWidget implements PreferredSizeWidget {
     super.key,
   });
 
+  /// Создаёт fallback AppBar для detail screen коллекции (loading/error).
+  ///
+  /// Показывает `Collections › {collectionName}` с навигацией назад.
+  factory BreadcrumbAppBar.collectionFallback(
+    BuildContext context,
+    String collectionName,
+  ) {
+    return BreadcrumbAppBar(
+      crumbs: <BreadcrumbItem>[
+        BreadcrumbItem(
+          label: 'Collections',
+          onTap: () => Navigator.of(context)
+              .popUntil((Route<dynamic> route) => route.isFirst),
+        ),
+        BreadcrumbItem(
+          label: collectionName,
+          onTap: () => Navigator.of(context).pop(),
+        ),
+      ],
+    );
+  }
+
   /// Элементы хлебных крошек (без корня — он добавляется автоматически).
   final List<BreadcrumbItem> crumbs;
 
@@ -99,9 +121,12 @@ class _BreadcrumbRow extends StatelessWidget {
               ),
             )
           else
-            GestureDetector(
+            InkWell(
               onTap: () => Navigator.of(context)
                   .popUntil((Route<dynamic> route) => route.isFirst),
+              borderRadius: BorderRadius.circular(4),
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
               child: Image.asset(
                 AppAssets.logo,
                 width: 20,

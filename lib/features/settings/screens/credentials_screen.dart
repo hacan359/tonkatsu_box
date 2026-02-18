@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/database_service.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../shared/models/platform.dart';
+import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -150,9 +151,8 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
                 Clipboard.setData(
                   const ClipboardData(text: _twitchConsoleUrl),
                 );
-                _showSnackBar(
+                context.showAppSnackBar(
                   'URL copied: $_twitchConsoleUrl',
-                  isError: false,
                 );
               },
               icon: const Icon(Icons.copy, size: 16),
@@ -267,7 +267,7 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
             Row(
               children: <Widget>[
                 Icon(statusIcon, color: statusColor, size: 28),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppSpacing.sm),
                 Text(
                   statusText,
                   style: TextStyle(
@@ -334,7 +334,7 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
               : const Icon(Icons.verified_user),
           label: const Text('Verify Connection'),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.sm),
         OutlinedButton.icon(
           onPressed:
               settings.isLoading || !settings.isApiReady ? null : _syncPlatforms,
@@ -555,7 +555,10 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
     final String clientSecret = _clientSecretController.text.trim();
 
     if (clientId.isEmpty || clientSecret.isEmpty) {
-      _showSnackBar('Please enter both Client ID and Client Secret');
+      context.showAppSnackBar(
+        'Please enter both Client ID and Client Secret',
+        isError: true,
+      );
       return;
     }
 
@@ -569,7 +572,7 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
     final bool success = await notifier.verifyConnection();
 
     if (success && mounted) {
-      _showSnackBar('Connection verified successfully!', isError: false);
+      context.showAppSnackBar('Connection verified successfully!');
     }
   }
 
@@ -579,7 +582,7 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
     final bool success = await notifier.syncPlatforms();
 
     if (success && mounted) {
-      _showSnackBar('Platforms synced successfully!', isError: false);
+      context.showAppSnackBar('Platforms synced successfully!');
       await _downloadLogosIfEnabled();
     }
   }
@@ -619,46 +622,36 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
 
     messenger.hideCurrentSnackBar();
     if (mounted) {
-      _showSnackBar('Downloaded $downloaded logos', isError: false);
+      context.showAppSnackBar('Downloaded $downloaded logos');
     }
   }
 
   Future<void> _saveSteamGridDbKey() async {
     final String apiKey = _steamGridDbKeyController.text.trim();
     if (apiKey.isEmpty) {
-      _showSnackBar('Please enter a SteamGridDB API key');
+      context.showAppSnackBar('Please enter a SteamGridDB API key', isError: true);
       return;
     }
 
     await ref.read(settingsNotifierProvider.notifier).setSteamGridDbApiKey(apiKey);
 
     if (mounted) {
-      _showSnackBar('API key saved', isError: false);
+      context.showAppSnackBar('API key saved');
     }
   }
 
   Future<void> _saveTmdbKey() async {
     final String apiKey = _tmdbKeyController.text.trim();
     if (apiKey.isEmpty) {
-      _showSnackBar('Please enter a TMDB API key');
+      context.showAppSnackBar('Please enter a TMDB API key', isError: true);
       return;
     }
 
     await ref.read(settingsNotifierProvider.notifier).setTmdbApiKey(apiKey);
 
     if (mounted) {
-      _showSnackBar('TMDB API key saved', isError: false);
+      context.showAppSnackBar('TMDB API key saved');
     }
-  }
-
-  void _showSnackBar(String message, {bool isError = true}) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: isError ? AppColors.error : AppColors.gameAccent,
-      ),
-    );
   }
 
   String _formatTimestamp(int timestamp) {

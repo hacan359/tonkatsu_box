@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/image_cache_service.dart';
+import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -23,6 +24,24 @@ class CacheScreen extends ConsumerStatefulWidget {
 }
 
 class _CacheScreenState extends ConsumerState<CacheScreen> {
+  late Future<bool> _enabledFuture;
+  late Future<String> _pathFuture;
+  late Future<(int, int)> _statsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshFutures();
+  }
+
+  void _refreshFutures() {
+    final ImageCacheService cacheService =
+        ref.read(imageCacheServiceProvider);
+    _enabledFuture = cacheService.isCacheEnabled();
+    _pathFuture = cacheService.getBaseCachePath();
+    _statsFuture = _getCacheStats(cacheService);
+  }
+
   @override
   Widget build(BuildContext context) {
     final ImageCacheService cacheService =
@@ -64,7 +83,7 @@ class _CacheScreenState extends ConsumerState<CacheScreen> {
 
                 // Галка включения кэширования
                 FutureBuilder<bool>(
-                  future: cacheService.isCacheEnabled(),
+                  future: _enabledFuture,
                   builder:
                       (BuildContext context, AsyncSnapshot<bool> snapshot) {
                     final bool enabled = snapshot.data ?? false;
@@ -76,6 +95,7 @@ class _CacheScreenState extends ConsumerState<CacheScreen> {
                       value: enabled,
                       onChanged: (bool value) async {
                         await cacheService.setCacheEnabled(value);
+                        _refreshFutures();
                         setState(() {});
                       },
                       contentPadding: EdgeInsets.zero,
@@ -87,7 +107,7 @@ class _CacheScreenState extends ConsumerState<CacheScreen> {
 
                 // Путь к кэшу
                 FutureBuilder<String>(
-                  future: cacheService.getBaseCachePath(),
+                  future: _pathFuture,
                   builder:
                       (BuildContext context, AsyncSnapshot<String> snapshot) {
                     final String path = snapshot.data ?? 'Loading...';
@@ -112,7 +132,7 @@ class _CacheScreenState extends ConsumerState<CacheScreen> {
 
                 // Статистика кэша
                 FutureBuilder<(int, int)>(
-                  future: _getCacheStats(cacheService),
+                  future: _statsFuture,
                   builder: (BuildContext context,
                       AsyncSnapshot<(int, int)> snapshot) {
                     final int count = snapshot.data?.$1 ?? 0;
@@ -155,9 +175,10 @@ class _CacheScreenState extends ConsumerState<CacheScreen> {
 
     if (selectedDirectory != null) {
       await cacheService.setCachePath(selectedDirectory);
+      _refreshFutures();
       setState(() {});
       if (mounted) {
-        _showSnackBar('Cache folder updated');
+        context.showAppSnackBar('Cache folder updated');
       }
     }
   }
@@ -187,20 +208,11 @@ class _CacheScreenState extends ConsumerState<CacheScreen> {
 
     if (confirm == true) {
       await cacheService.clearCache();
+      _refreshFutures();
       setState(() {});
       if (mounted) {
-        _showSnackBar('Cache cleared');
+        context.showAppSnackBar('Cache cleared');
       }
     }
-  }
-
-  void _showSnackBar(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppColors.gameAccent,
-      ),
-    );
   }
 }

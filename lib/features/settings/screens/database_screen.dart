@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/config_service.dart';
+import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -89,7 +90,7 @@ class DatabaseScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
                       exportButton,
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AppSpacing.sm),
                       importButton,
                     ],
                   );
@@ -97,7 +98,7 @@ class DatabaseScreen extends ConsumerWidget {
                 return Row(
                   children: <Widget>[
                     Expanded(child: exportButton),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: AppSpacing.sm),
                     Expanded(child: importButton),
                   ],
                 );
@@ -159,19 +160,9 @@ class DatabaseScreen extends ConsumerWidget {
     if (!context.mounted) return;
 
     if (result.success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Config exported to ${result.filePath}'),
-          backgroundColor: AppColors.gameAccent,
-        ),
-      );
+      context.showAppSnackBar('Config exported to ${result.filePath}');
     } else if (result.error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result.error!),
-          backgroundColor: AppColors.error,
-        ),
-      );
+      context.showAppSnackBar(result.error!, isError: true);
     }
   }
 
@@ -183,19 +174,9 @@ class DatabaseScreen extends ConsumerWidget {
     if (!context.mounted) return;
 
     if (result.success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Config imported successfully'),
-          backgroundColor: AppColors.gameAccent,
-        ),
-      );
+      context.showAppSnackBar('Config imported successfully');
     } else if (result.error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result.error!),
-          backgroundColor: AppColors.error,
-        ),
-      );
+      context.showAppSnackBar(result.error!, isError: true);
     }
   }
 
@@ -235,12 +216,7 @@ class DatabaseScreen extends ConsumerWidget {
       ref.invalidate(collectionsProvider);
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Database has been reset'),
-            backgroundColor: AppColors.gameAccent,
-          ),
-        );
+        context.showAppSnackBar('Database has been reset');
         Navigator.of(context)
             .popUntil((Route<dynamic> route) => route.isFirst);
       }
