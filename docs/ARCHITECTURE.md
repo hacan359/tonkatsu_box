@@ -1,3 +1,5 @@
+[← Back to README](../README.md)
+
 # Архитектура Tonkatsu Box
 
 ## Обзор
@@ -12,9 +14,58 @@ Tonkatsu Box — кроссплатформенное приложение на 
 | API | IGDB (Twitch OAuth), TMDB (Bearer token), SteamGridDB (Bearer token) |
 | Platform | Windows Desktop, Android (VGMaps недоступен) |
 
+> [!IMPORTANT]
+> Приложение использует **Feature-based архитектуру** с чётким разделением слоёв: core → data → features → shared. State management реализован исключительно через **Riverpod** (NotifierProvider, AsyncNotifierProvider).
+
 ---
 
-## Структура проекта
+## Архитектурная диаграмма
+
+```mermaid
+graph TB
+    subgraph core ["🔧 Core"]
+        api["API<br/><small>igdb_api, tmdb_api,<br/>steamgriddb_api</small>"]
+        database["Database<br/><small>database_service<br/>SQLite, 15 таблиц</small>"]
+        services["Services<br/><small>export, import,<br/>image_cache, config</small>"]
+    end
+
+    subgraph data ["💾 Data"]
+        repositories["Repositories<br/><small>collection_repository<br/>game_repository<br/>canvas_repository</small>"]
+    end
+
+    subgraph features ["🖥️ Features"]
+        collections["Collections<br/><small>home, collection,<br/>detail screens,<br/>canvas, panels</small>"]
+        search["Search<br/><small>game, movie,<br/>tv show, animation</small>"]
+        settings["Settings<br/><small>credentials, cache,<br/>database, debug</small>"]
+        home["Home<br/><small>all items grid</small>"]
+        splash["Splash<br/><small>animated logo,<br/>DB pre-warming</small>"]
+    end
+
+    subgraph shared ["🧩 Shared"]
+        models["Models<br/><small>19 моделей:<br/>Game, Movie, TvShow,<br/>Collection, CanvasItem...</small>"]
+        widgets["Widgets<br/><small>CachedImage, MediaPosterCard,<br/>BreadcrumbAppBar,<br/>StarRatingBar...</small>"]
+        theme["Theme<br/><small>AppColors, AppTypography,<br/>AppSpacing, AppTheme</small>"]
+        navigation["Navigation<br/><small>NavigationShell<br/>Rail / BottomBar</small>"]
+    end
+
+    features --> data
+    features --> shared
+    data --> core
+    data --> shared
+    core --> shared
+
+    collections --> repositories
+    search --> repositories
+    settings --> database
+    home --> repositories
+    repositories --> api
+    repositories --> database
+    services --> database
+```
+
+---
+
+## 📁 Структура проекта
 
 ```
 lib/
@@ -28,7 +79,7 @@ lib/
 
 ---
 
-## Файлы и их назначение
+## 📄 Файлы и их назначение
 
 ### Точка входа
 
@@ -39,7 +90,10 @@ lib/
 
 ---
 
-### Core (Ядро)
+### 🔧 Core (Ядро)
+
+<details>
+<summary><strong>API клиенты, База данных, Сервисы</strong> — развернуть таблицу</summary>
 
 | Файл | Назначение |
 |------|------------|
@@ -54,9 +108,14 @@ lib/
 | `lib/core/services/export_service.dart` | **Сервис экспорта**. Создаёт XcollFile из коллекции. Режимы: v2 light (.xcoll — ID элементов), v2 full (.xcollx — + canvas + per-item canvas + base64 обложки). Зависимости: `CanvasRepository`, `ImageCacheService`. Методы: `createLightExport()`, `createFullExport()`, `exportToFile()` |
 | `lib/core/services/import_service.dart` | **Сервис импорта**. Импортирует XcollFile в коллекцию. items + canvas (viewport/items/connections) + per-item canvas + восстановление обложек из base64. Прогресс через `ImportStage` enum и `ImportProgressCallback`. Зависимости: `DatabaseService`, `CanvasRepository`, `GameRepository`, `ImageCacheService` |
 
+</details>
+
 ---
 
-### Models (Модели данных)
+### 📦 Models (Модели данных)
+
+<details>
+<summary><strong>19 моделей</strong> — развернуть таблицу</summary>
 
 | Файл | Назначение |
 |------|------------|
@@ -66,7 +125,7 @@ lib/
 | ~~`lib/shared/models/collection_game.dart`~~ | **Удалён**. Заменён на `CollectionItem` с `MediaType` и `ItemStatus` |
 | `lib/shared/models/steamgriddb_game.dart` | **Модель SteamGridDB игры**. Поля: id, name, types, verified. Метод: `fromJson()` |
 | `lib/shared/models/steamgriddb_image.dart` | **Модель SteamGridDB изображения**. Поля: id, score, style, url, thumb, width, height, mime, author. Свойство `dimensions` |
-| `lib/shared/models/collection_item.dart` | **Модель универсального элемента коллекции**. Поля: id, collectionId, mediaType, externalId, platformId, sortOrder, status, authorComment, userComment, userRating (1-10), addedAt, startedAt, completedAt, lastActivityAt. Методы: `fromDb()`, `toDb()`, `copyWith()` (с sentinel-флагами `clearAuthorComment`, `clearUserComment`, `clearUserRating`). Геттеры: `apiRating` (нормализованный 0–10: IGDB rating/10, TMDB as-is, учитывает AnimationSource), `itemDescription` (game.summary / movie.overview / tvShow.overview). `sortOrder` используется для ручной сортировки drag-and-drop. Даты хранятся как Unix seconds |
+| `lib/shared/models/collection_item.dart` | **Модель универсального элемента коллекции**. Поля: id, collectionId, mediaType, externalId, platformId, sortOrder, status, authorComment, userComment, userRating (1-10), addedAt, startedAt, completedAt, lastActivityAt. Методы: `fromDb()`, `toDb()`, `copyWith()` (с sentinel-флагами `clearAuthorComment`, `clearUserComment`, `clearUserRating`). Геттеры: `apiRating` (нормализованный 0-10: IGDB rating/10, TMDB as-is, учитывает AnimationSource), `itemDescription` (game.summary / movie.overview / tvShow.overview). `sortOrder` используется для ручной сортировки drag-and-drop. Даты хранятся как Unix seconds |
 | `lib/shared/models/media_type.dart` | **Enum типа медиа**. Значения: `game`, `movie`, `tvShow`, `animation`. `AnimationSource` — abstract final class с константами `movie = 0`, `tvShow = 1` для дискриминации источника анимации через `platform_id`. Свойства: `label`, `icon`. Методы: `fromString()` |
 | `lib/shared/models/item_status.dart` | **Enum статуса элемента**. Значения: `notStarted`, `inProgress`, `completed`, `dropped`, `planned`, `onHold`. Свойства: `label`, `emoji`, `color`, `statusSortPriority`. Методы: `fromString()`, `displayLabel()` |
 | `lib/shared/models/collection_sort_mode.dart` | **Enum режима сортировки коллекции**. Значения: `manual`, `addedDate`, `status`, `name`, `rating`. Свойства: `value`, `displayLabel`, `shortLabel`, `description`. Метод: `fromString()`. Хранится в SharedPreferences per collection |
@@ -78,15 +137,17 @@ lib/
 | `lib/shared/models/canvas_viewport.dart` | **Модель viewport канваса**. Поля: collectionId, scale, offsetX, offsetY. Хранит зум и позицию камеры |
 | `lib/shared/models/canvas_connection.dart` | **Модель связи канваса**. Enum `ConnectionStyle` (solid/dashed/arrow). Поля: id, collectionId, collectionItemId (null для коллекционного canvas, int для per-item), fromItemId, toItemId, label, color (hex), style, createdAt |
 
+</details>
+
 ---
 
-### Features: Collections (Коллекции)
+### 🖥️ Features: Collections (Коллекции)
 
 #### Экраны
 
 | Файл | Назначение |
 |------|------------|
-| `lib/features/home/screens/all_items_screen.dart` | **Экран всех элементов (Home tab)**. Grid-вид всех элементов из всех коллекций с PosterCard, именем коллекции как subtitle. ChoiceChip фильтрация по типу медиа (All/Games/Movies/TV Shows/Animation), ActionChip сортировки по рейтингу (toggle asc/desc). Tap → detail screen. Loading, empty, error + retry states. RefreshIndicator |
+| `lib/features/home/screens/all_items_screen.dart` | **Экран всех элементов (Home tab)**. Grid-вид всех элементов из всех коллекций с PosterCard, именем коллекции как subtitle. ChoiceChip фильтрация по типу медиа (All/Games/Movies/TV Shows/Animation), ActionChip сортировки по рейтингу (toggle asc/desc). Tap -> detail screen. Loading, empty, error + retry states. RefreshIndicator |
 | `lib/features/home/providers/all_items_provider.dart` | **Провайдеры All Items**. `allItemsSortProvider` (NotifierProvider, SharedPreferences), `allItemsSortDescProvider` (NotifierProvider, SharedPreferences), `allItemsNotifierProvider` (загрузка + сортировка всех элементов), `collectionNamesProvider` (Map<int, String> из collectionsProvider) |
 | `lib/features/collections/providers/sort_utils.dart` | **Утилита сортировки**. Top-level функция `applySortMode()` — shared логика сортировки по 5 режимам (manual, addedDate, status, name, rating). Используется в `CollectionItemsNotifier` и `AllItemsNotifier` |
 | `lib/features/collections/screens/home_screen.dart` | **Экран коллекций (Collections tab)**. Список коллекций с группировкой (My/Forked/Imported). AppBar с кнопкой "+" для создания и Import. Меню: rename, fork, delete |
@@ -96,7 +157,8 @@ lib/
 | `lib/features/collections/screens/tv_show_detail_screen.dart` | **Экран деталей сериала**. TabBar с 1-2 вкладками: Details (Episode Progress, StatusChipRow) + Board (если `_hasCanvas`). PopupMenuButton: Move to Collection, Remove. Виджеты `_SeasonsListWidget`, `_SeasonExpansionTile`, `_EpisodeTile`. Использует `episodeTrackerNotifierProvider` и `gameCanvasNotifierProvider` |
 | `lib/features/collections/screens/anime_detail_screen.dart` | **Экран деталей анимации**. Адаптивный: movie-like для `AnimationSource.movie`, tvShow-like для `AnimationSource.tvShow`. TabBar: Details + Board (если `_hasCanvas`). PopupMenuButton: Move to Collection, Remove. Accent color: `AppColors.animationAccent`. Приватные виджеты: `_AnimeSeasonsListWidget`, `_AnimeSeasonExpansionTile`, `_AnimeEpisodeTile`. Использует `episodeTrackerNotifierProvider` и `gameCanvasNotifierProvider` |
 
-#### Виджеты
+<details>
+<summary><strong>Виджеты коллекций</strong> — развернуть таблицу</summary>
 
 | Файл | Назначение |
 |------|------------|
@@ -104,17 +166,20 @@ lib/
 | `lib/features/collections/widgets/collection_tile.dart` | **Плитка коллекции**. Показывает имя, автора, тип, количество игр. Иконка удаления |
 | `lib/features/collections/widgets/create_collection_dialog.dart` | **Диалоги**. Создание, переименование, удаление коллекции |
 | `lib/features/collections/widgets/status_chip_row.dart` | **Ряд чипов выбора статуса**. Горизонтальный `Wrap` с кастомными chip-кнопками. Выбранный чип: цветной фон, жирный текст, цветная рамка. `onHold` только для сериалов. Используется на detail-экранах |
-| `lib/features/collections/widgets/status_ribbon.dart` | **Диагональная ленточка статуса**. Display-only `Positioned` + `Transform.rotate(-45°)` в верхнем левом углу list-карточек. Emoji + метка, цвет = `status.color`. Не показывается для `notStarted` |
-| `lib/features/collections/widgets/canvas_view.dart` | **Canvas View**. InteractiveViewer с зумом 0.3–3.0x, панорамированием, drag-and-drop (абсолютное отслеживание позиции). Фоновая сетка (CustomPainter), автоцентрирование. Медиа-карточки рендерятся через `MediaPosterCard(variant: CardVariant.canvas)` |
+| `lib/features/collections/widgets/status_ribbon.dart` | **Диагональная ленточка статуса**. Display-only `Positioned` + `Transform.rotate(-45deg)` в верхнем левом углу list-карточек. Emoji + метка, цвет = `status.color`. Не показывается для `notStarted` |
+| `lib/features/collections/widgets/canvas_view.dart` | **Canvas View**. InteractiveViewer с зумом 0.3-3.0x, панорамированием, drag-and-drop (абсолютное отслеживание позиции). Фоновая сетка (CustomPainter), автоцентрирование. Медиа-карточки рендерятся через `MediaPosterCard(variant: CardVariant.canvas)` |
 | `lib/features/collections/widgets/canvas_context_menu.dart` | **Контекстное меню канваса**. ПКМ на пустом месте: Add Text/Image/Link. ПКМ на элементе: Edit/Delete/Bring to Front/Send to Back/Connect. ПКМ на связи: Edit/Delete. Delete с диалогом подтверждения |
 | `lib/features/collections/widgets/canvas_connection_painter.dart` | **CustomPainter для связей**. Рисует solid/dashed/arrow линии между центрами элементов. Лейблы с фоном в середине линии. Hit-test для определения клика на линии. Временная пунктирная линия при создании связи |
 | `lib/features/collections/widgets/canvas_text_item.dart` | **Текстовый блок на канвасе**. Настраиваемый fontSize (12/16/24/32). Container с padding, фоном surfaceContainerLow |
 | `lib/features/collections/widgets/canvas_image_item.dart` | **Изображение на канвасе**. ConsumerWidget. URL (CachedImage с ImageType.canvasImage, FNV-1a хэш URL как imageId) или base64 (Image.memory). Card с Clip.antiAlias, размер по умолчанию 200x200. Функция `urlToImageId()` для стабильных cache-ключей |
-| `lib/features/collections/widgets/canvas_link_item.dart` | **Ссылка на канвасе**. Card с иконкой и подчёркнутым текстом. Double-tap → url_launcher. Размер по умолчанию 200x48 |
-| `lib/features/collections/widgets/steamgriddb_panel.dart` | **Боковая панель SteamGridDB**. Поиск игр, выбор типа изображений (SegmentedButton), сетка thumbnail-ов (GridView.builder + CachedNetworkImage). Автозаполнение поиска из названия коллекции. Клик на изображение → добавление на канвас |
+| `lib/features/collections/widgets/canvas_link_item.dart` | **Ссылка на канвасе**. Card с иконкой и подчёркнутым текстом. Double-tap -> url_launcher. Размер по умолчанию 200x48 |
+| `lib/features/collections/widgets/steamgriddb_panel.dart` | **Боковая панель SteamGridDB**. Поиск игр, выбор типа изображений (SegmentedButton), сетка thumbnail-ов (GridView.builder + CachedNetworkImage). Автозаполнение поиска из названия коллекции. Клик на изображение -> добавление на канвас |
 | `lib/features/collections/widgets/vgmaps_panel.dart` | **Боковая панель VGMaps Browser**. WebView2 (webview_windows) для просмотра vgmaps.de. Навигация (back/forward/home/reload), поиск по имени игры, JS injection для перехвата ПКМ на `<img>`, bottom bar с превью и "Add to Board". Ширина 500px. Взаимоисключение с SteamGridDB панелью. Доступен только на Windows (`kVgMapsEnabled`) |
 
-#### Диалоги
+</details>
+
+<details>
+<summary><strong>Диалоги канваса</strong> — развернуть таблицу</summary>
 
 | Файл | Назначение |
 |------|------------|
@@ -123,25 +188,33 @@ lib/
 | `lib/features/collections/widgets/dialogs/add_link_dialog.dart` | **Диалог ссылки**. TextField URL (валидация http/https) + Label (optional). Возвращает {url, label} |
 | `lib/features/collections/widgets/dialogs/edit_connection_dialog.dart` | **Диалог редактирования связи**. TextField для label, Wrap из 8 цветных кнопок (серый, красный, оранжевый, жёлтый, зелёный, синий, фиолетовый, чёрный), SegmentedButton для стиля (Solid/Dashed/Arrow). Возвращает {label, color, style} |
 
-#### Провайдеры
+</details>
+
+<details>
+<summary><strong>Провайдеры коллекций</strong> — развернуть таблицу</summary>
 
 | Файл | Назначение |
 |------|------------|
 | `lib/features/collections/providers/collections_provider.dart` | **State management коллекций**. `collectionsProvider` — список. `collectionItemsNotifierProvider` — универсальные элементы коллекции (games/movies/tvShows/animation) с CRUD, реактивной сортировкой, оптимистичным обновлением дат активности и `moveItem()` для перемещения элементов между коллекциями. `collectionSortProvider` — режим сортировки per collection (SharedPreferences). `uncategorizedItemCountProvider` — количество элементов без коллекции |
 | `lib/features/collections/providers/steamgriddb_panel_provider.dart` | **State management панели SteamGridDB**. `steamGridDbPanelProvider` — NotifierProvider.family по collectionId. Enum `SteamGridDbImageType` (grids/heroes/logos/icons). State: isOpen, searchTerm, searchResults, selectedGame, selectedImageType, images, isSearching, isLoadingImages, searchError, imageError, imageCache. Методы: togglePanel, openPanel, closePanel, searchGames, selectGame, clearGameSelection, selectImageType. In-memory кэш по ключу `gameId:imageType` |
 | `lib/features/collections/providers/vgmaps_panel_provider.dart` | **State management панели VGMaps**. `vgMapsPanelProvider` — NotifierProvider.family по collectionId. State: isOpen, currentUrl, canGoBack, canGoForward, isLoading, capturedImageUrl/Width/Height, error. Методы: togglePanel, openPanel, closePanel, setCurrentUrl, setNavigationState, setLoading, captureImage, clearCapturedImage, setError, clearError |
-| `lib/features/collections/providers/episode_tracker_provider.dart` | **State management трекера эпизодов**. `episodeTrackerNotifierProvider` — NotifierProvider.family по `({collectionId, showId})`. State: episodesBySeason (Map<int, List<TvEpisode>>), watchedEpisodes (Map<(int,int), DateTime?>), loadingSeasons, error. Методы: loadSeason (cache-first: DB → API → DB), toggleEpisode, toggleSeason, isEpisodeWatched, watchedCountForSeason, totalWatchedCount, getWatchedAt. Автоматический переход в Completed при просмотре всех эпизодов (сравнение с tvShow.totalEpisodes) |
+| `lib/features/collections/providers/episode_tracker_provider.dart` | **State management трекера эпизодов**. `episodeTrackerNotifierProvider` — NotifierProvider.family по `({collectionId, showId})`. State: episodesBySeason (Map<int, List\<TvEpisode\>>), watchedEpisodes (Map<(int,int), DateTime?>), loadingSeasons, error. Методы: loadSeason (cache-first: DB -> API -> DB), toggleEpisode, toggleSeason, isEpisodeWatched, watchedCountForSeason, totalWatchedCount, getWatchedAt. Автоматический переход в Completed при просмотре всех эпизодов (сравнение с tvShow.totalEpisodes) |
 | `lib/features/collections/providers/canvas_provider.dart` | **State management канваса**. `canvasNotifierProvider` — NotifierProvider.family по collectionId (коллекционный canvas). `gameCanvasNotifierProvider` — NotifierProvider.family по `({collectionId, collectionItemId})` (per-item canvas). Оба реализуют общий интерфейс методов: moveItem, updateViewport, addItem, deleteItem, bringToFront, sendToBack, removeMediaItem, addTextItem, addImageItem, addLinkItem, updateItemData, updateItemSize, startConnection, completeConnection, cancelConnection, deleteConnection, updateConnection. Debounced save (300ms position, 500ms viewport). Коллекционный canvas синхронизируется с коллекцией через `ref.listen`. Per-item canvas автоинициализируется одним медиа-элементом |
+
+</details>
 
 ---
 
-### Features: Search (Поиск)
+### 🔍 Features: Search (Поиск)
 
 #### Экраны
 
 | Файл | Назначение |
 |------|------------|
 | `lib/features/search/screens/search_screen.dart` | **Экран поиска**. TabBar с 4 табами: Games / Movies / TV Shows / Animation. Общее поле ввода с debounce, фильтр платформ (только Games), сортировка (SortSelector), фильтры медиа (год, жанры через MediaFilterSheet). Animation tab объединяет animated movies + TV shows (genre_id=16), исключая их из Movies/TV Shows табов. При `collectionId` — добавляет игры/фильмы/сериалы/анимацию в коллекцию через `collectionItemsNotifierProvider`. Bottom sheet с деталями |
+
+<details>
+<summary><strong>Виджеты и провайдеры поиска</strong> — развернуть таблицу</summary>
 
 #### Виджеты
 
@@ -152,7 +225,7 @@ lib/
 | ~~`lib/features/search/widgets/tv_show_card.dart`~~ | **Удалён**. Заменён на `MediaPosterCard` в grid-сетке поиска |
 | `lib/features/search/widgets/animation_card.dart` | **Карточка анимации**. Обёртка над `MediaCard`: принимает `Movie?` или `TvShow?` + флаг `isMovie`. SourceBadge TMDB, бейдж "Movie"/"Series", subtitle (год, рейтинг, runtime или seasons) |
 | `lib/features/search/widgets/platform_filter_sheet.dart` | **Bottom sheet фильтра платформ**. Мультивыбор платформ с поиском. Кнопки Clear All / Apply |
-| `lib/features/search/widgets/sort_selector.dart` | **Селектор сортировки**. SegmentedButton с 3 опциями (Relevance, Date, Rating). Переключение направления при клике на активный сегмент. Визуальный индикатор ↑↓ |
+| `lib/features/search/widgets/sort_selector.dart` | **Селектор сортировки**. SegmentedButton с 3 опциями (Relevance, Date, Rating). Переключение направления при клике на активный сегмент. Визуальный индикатор |
 | `lib/features/search/widgets/media_filter_sheet.dart` | **Bottom sheet фильтров медиа**. DraggableScrollableSheet с фильтрами: Release Year (TextField), Genres (FilterChip). Кнопка Clear All |
 
 #### Провайдеры
@@ -160,14 +233,16 @@ lib/
 | Файл | Назначение |
 |------|------------|
 | `lib/features/search/providers/game_search_provider.dart` | **State поиска игр**. Debounce 400ms, минимум 2 символа. Фильтр по платформам. Сортировка (relevance/date/rating). Состояние: query, results, isLoading, error, currentSort |
-| `lib/features/search/providers/media_search_provider.dart` | **State поиска фильмов/сериалов/анимации**. Debounce 400ms через TMDB API. Enum `MediaSearchTab` (movies, tvShows, animation). Animation tab: `Future.wait([searchMovies, searchTvShows])` → фильтрация по genre_id=16. Movies/TV Shows табы исключают анимацию. Состояние: query, movieResults, tvShowResults, animationMovieResults, animationTvShowResults, isLoading, error, activeTab, currentSort, selectedYear, selectedGenreIds. Кэширование через `upsertMovies()`/`upsertTvShows()` |
-| `lib/features/search/providers/genre_provider.dart` | **Провайдеры жанров**. `movieGenresProvider`, `tvGenresProvider` — FutureProvider для кэширования списков жанров из TMDB API. `movieGenreMapProvider`, `tvGenreMapProvider` — маппинг ID→имя для быстрого резолвинга genre_ids. DB-first стратегия: загрузка из таблицы `tmdb_genres`, при пустом кэше — запрос к API и сохранение |
+| `lib/features/search/providers/media_search_provider.dart` | **State поиска фильмов/сериалов/анимации**. Debounce 400ms через TMDB API. Enum `MediaSearchTab` (movies, tvShows, animation). Animation tab: `Future.wait([searchMovies, searchTvShows])` -> фильтрация по genre_id=16. Movies/TV Shows табы исключают анимацию. Состояние: query, movieResults, tvShowResults, animationMovieResults, animationTvShowResults, isLoading, error, activeTab, currentSort, selectedYear, selectedGenreIds. Кэширование через `upsertMovies()`/`upsertTvShows()` |
+| `lib/features/search/providers/genre_provider.dart` | **Провайдеры жанров**. `movieGenresProvider`, `tvGenresProvider` — FutureProvider для кэширования списков жанров из TMDB API. `movieGenreMapProvider`, `tvGenreMapProvider` — маппинг ID->имя для быстрого резолвинга genre_ids. DB-first стратегия: загрузка из таблицы `tmdb_genres`, при пустом кэше — запрос к API и сохранение |
+
+</details>
 
 ---
 
-### Shared (Общие виджеты, тема и константы)
+### 🧩 Shared (Общие виджеты, тема и константы)
 
-#### Тема
+#### 🎨 Тема
 
 | Файл | Назначение |
 |------|------------|
@@ -176,33 +251,41 @@ lib/
 | `lib/shared/theme/app_typography.dart` | **Типографика (Inter)**. TextStyle: h1(28 bold, -0.5ls), h2(20 w600, -0.2ls), h3(16 w600), body(14), bodySmall(12), caption(11), posterTitle(14 w600), posterSubtitle(11). fontFamily: 'Inter' |
 | `lib/shared/theme/app_theme.dart` | **Централизованная тёмная тема**. ThemeData с Brightness.dark принудительно, ColorScheme.dark из AppColors, стилизация AppBar/Card/Input/Dialog/BottomSheet/Chip/Button/NavigationRail/NavigationBar/TabBar |
 
-#### Навигация
+> [!NOTE]
+> Приложение использует **исключительно тёмную тему** (Material 3). Все цвета, типографика и отступы централизованы в `lib/shared/theme/` и не должны дублироваться в виджетах.
+
+#### 🧭 Навигация
 
 | Файл | Назначение |
 |------|------------|
-| `lib/shared/navigation/navigation_shell.dart` | **NavigationShell**. Адаптивная навигация: `NavigationRail` (боковая панель) при ширине ≥800px, `BottomNavigationBar` при <800px. 4 таба: Home (AllItemsScreen), Collections (HomeScreen), Search, Settings. Lazy IndexedStack — AllItemsScreen загружается eager, Collections/Search/Settings строятся при первом переключении на таб. Desktop: логотип 48×48 вынесен в Column выше Rail (не в Rail.leading) |
+| `lib/shared/navigation/navigation_shell.dart` | **NavigationShell**. Адаптивная навигация: `NavigationRail` (боковая панель) при ширине >= 800px, `BottomNavigationBar` при < 800px. 4 таба: Home (AllItemsScreen), Collections (HomeScreen), Search, Settings. Lazy IndexedStack — AllItemsScreen загружается eager, Collections/Search/Settings строятся при первом переключении на таб. Desktop: логотип 48x48 вынесен в Column выше Rail (не в Rail.leading) |
+
+<details>
+<summary><strong>Общие виджеты</strong> — развернуть таблицу</summary>
 
 #### Виджеты
 
 | Файл | Назначение |
 |------|------------|
 | `lib/shared/widgets/section_header.dart` | **SectionHeader**. Заголовок секции с опциональной кнопкой действия справа |
-| `lib/shared/widgets/cached_image.dart` | **Виджет кэшированного изображения**. ConsumerStatefulWidget с FutureBuilder. Логика: cache disabled → Image.network, cache enabled + file → Image.file (с sync guard: existsSync + lengthSync > 0), cache enabled + no file → Image.network + фоновый download через addPostFrameCallback. Corrupt/empty файлы удаляются и перекачиваются (`_deleteAndRedownload` с флагом `_corruptHandled`). Параметры: imageType, imageId, remoteUrl, memCacheWidth/Height, autoDownload, placeholder, errorWidget |
-| `lib/shared/widgets/dual_rating_badge.dart` | **Двойной рейтинг**. Формат `★ 8 / 7.5` (userRating / apiRating). Режимы: badge (затемнённый фон 0xCC000000, белый текст), compact (уменьшенные размеры), inline (без фона, для list-карточек). Геттеры `hasRating`, `formattedRating`. Если нет ни одного рейтинга — `SizedBox.shrink()` |
+| `lib/shared/widgets/cached_image.dart` | **Виджет кэшированного изображения**. ConsumerStatefulWidget с FutureBuilder. Логика: cache disabled -> Image.network, cache enabled + file -> Image.file (с sync guard: existsSync + lengthSync > 0), cache enabled + no file -> Image.network + фоновый download через addPostFrameCallback. Corrupt/empty файлы удаляются и перекачиваются (`_deleteAndRedownload` с флагом `_corruptHandled`). Параметры: imageType, imageId, remoteUrl, memCacheWidth/Height, autoDownload, placeholder, errorWidget |
+| `lib/shared/widgets/dual_rating_badge.dart` | **Двойной рейтинг**. Формат `* 8 / 7.5` (userRating / apiRating). Режимы: badge (затемнённый фон 0xCC000000, белый текст), compact (уменьшенные размеры), inline (без фона, для list-карточек). Геттеры `hasRating`, `formattedRating`. Если нет ни одного рейтинга — `SizedBox.shrink()` |
 | `lib/shared/widgets/media_poster_card.dart` | **Единая вертикальная постерная карточка**. StatefulWidget с enum `CardVariant` (grid/compact/canvas). Grid/compact: hover-анимация (scale 1.04x), Focus+ActivateIntent, DualRatingBadge (top-left), отметка коллекции (top-right), статус-бейдж (bottom-left), title+subtitle. Canvas: Card с цветной рамкой по MediaType, без hover/рейтинга. Заменяет PosterCard, CanvasGameCard, CanvasMediaCard |
-| `lib/shared/widgets/rating_badge.dart` | **Бейдж рейтинга**. Цветной бейдж 28×20: зелёный (≥8.0), жёлтый (≥6.0), красный (<6.0). Текст белый bold 12px |
-| `lib/shared/widgets/shimmer_loading.dart` | **Shimmer-загрузка**. `ShimmerBox` (базовый блок), `ShimmerPosterCard` (заглушка для MediaPosterCard), `ShimmerListTile` (заглушка для списка). Анимированный линейный градиент surfaceLight↔surface |
+| `lib/shared/widgets/rating_badge.dart` | **Бейдж рейтинга**. Цветной бейдж 28x20: зелёный (>= 8.0), жёлтый (>= 6.0), красный (< 6.0). Текст белый bold 12px |
+| `lib/shared/widgets/shimmer_loading.dart` | **Shimmer-загрузка**. `ShimmerBox` (базовый блок), `ShimmerPosterCard` (заглушка для MediaPosterCard), `ShimmerListTile` (заглушка для списка). Анимированный линейный градиент surfaceLight <-> surface |
 | ~~`lib/shared/widgets/poster_card.dart`~~ | **Удалён**. Заменён на `MediaPosterCard(variant: grid/compact)` |
 | `lib/shared/widgets/hero_collection_card.dart` | **Большая карточка коллекции**. Градиентный фон с иконкой типа медиа, название коллекции, статистика (items, completion %), прогресс-бар. Используется в HomeScreen |
 | ~~`lib/shared/widgets/media_card.dart`~~ | **Удалён**. Мёртвый код после редизайна SearchScreen |
 | `lib/shared/widgets/media_detail_view.dart` | **Базовый виджет экрана деталей**. Постер 100x150 (CachedNetworkImage или CachedImage), SourceBadge, info chips (`MediaDetailChip`), описание inline, секция статуса, секция "My Rating" (`StarRatingBar`), личные заметки (My Notes), рецензия автора (Author's Review, видна другим при экспорте), дополнительные секции в `ExpansionTile` "Activity & Progress", `accentColor` для per-media окрашивания. `GameDetailScreen`, `MovieDetailScreen`, `TvShowDetailScreen` являются тонкими обёртками |
 | `lib/shared/widgets/star_rating_bar.dart` | **Виджет рейтинга**. 10 кликабельных звёзд (InkWell, focusable для геймпада). Параметры: `rating: int?`, `starSize: double`, `onChanged: ValueChanged<int?>`. Повторный клик на текущий рейтинг сбрасывает на `null` |
-| `lib/shared/widgets/breadcrumb_app_bar.dart` | **Навигационные хлебные крошки**. `BreadcrumbAppBar implements PreferredSizeWidget`. Логотип 20×20 + разделители `›` + кликабельные крошки. Поддержка `bottom` (TabBar), `actions`, горизонтальный скролл. Последняя крошка — w600, остальные — w400, кликабельные |
+| `lib/shared/widgets/breadcrumb_app_bar.dart` | **Навигационные хлебные крошки**. `BreadcrumbAppBar implements PreferredSizeWidget`. Логотип 20x20 + разделители `>` + кликабельные крошки. Поддержка `bottom` (TabBar), `actions`, горизонтальный скролл. Последняя крошка — w600, остальные — w400, кликабельные |
 | `lib/shared/widgets/source_badge.dart` | **Бейдж источника данных**. Enum `DataSource` (igdb, tmdb, steamGridDb, vgMaps). Размеры: small, medium, large. Цветовая маркировка и текстовая метка |
 | `lib/shared/widgets/media_type_badge.dart` | **Бейдж типа медиа**. Цветная иконка по `MediaType`: синий (игры), красный (фильмы), зелёный (сериалы) |
-| `lib/shared/widgets/collection_picker_dialog.dart` | **Диалог выбора коллекции**. Sealed class `CollectionChoice` (`ChosenCollection(int id)` / `WithoutCollection`). Функция `showCollectionPickerDialog()` — диалог со списком коллекций. Параметры: `excludeCollectionId` (скрыть текущую), `showUncategorized` (показать «Without Collection»), `title` (заголовок). Используется в Search (добавление) и Detail Screens (перемещение) |
+| `lib/shared/widgets/collection_picker_dialog.dart` | **Диалог выбора коллекции**. Sealed class `CollectionChoice` (`ChosenCollection(int id)` / `WithoutCollection`). Функция `showCollectionPickerDialog()` — диалог со списком коллекций. Параметры: `excludeCollectionId` (скрыть текущую), `showUncategorized` (показать "Without Collection"), `title` (заголовок). Используется в Search (добавление) и Detail Screens (перемещение) |
 
-#### Константы
+</details>
+
+#### 🏷️ Константы
 
 | Файл | Назначение |
 |------|------------|
@@ -210,7 +293,7 @@ lib/
 
 ---
 
-### Features: Splash (Загрузочный экран)
+### 🌅 Features: Splash (Загрузочный экран)
 
 | Файл | Назначение |
 |------|------------|
@@ -218,7 +301,7 @@ lib/
 
 ---
 
-### Features: Settings (Настройки)
+### ⚙️ Features: Settings (Настройки)
 
 | Файл | Назначение |
 |------|------------|
@@ -234,7 +317,7 @@ lib/
 
 ---
 
-### Repositories (Репозитории)
+### 📂 Repositories (Репозитории)
 
 | Файл | Назначение |
 |------|------------|
@@ -244,166 +327,155 @@ lib/
 
 ---
 
-## Потоки данных
+## 🗄️ База данных
 
-### 1. Поиск игры
+> [!IMPORTANT]
+> SQLite через `sqflite_common_ffi` на desktop, нативный `sqflite` на Android. Текущая версия БД: **15**. Миграции инкрементальные (v1 -> v2 -> ... -> v15). Всего **15 таблиц**.
 
-```
-Пользователь вводит текст
-       ↓
-SearchScreen._onSearchChanged()
-       ↓
-gameSearchProvider.search() [debounce 400ms]
-       ↓
-GameRepository.searchGames()
-       ↓
-IgdbApi.searchGames() → API запрос
-       ↓
-Результаты кешируются в SQLite
-       ↓
-UI обновляется через ref.watch()
-```
+### ER-диаграмма
 
-### 2. Добавление игры в коллекцию
+```mermaid
+erDiagram
+    collections ||--o{ collection_items : "содержит"
+    collections ||--o{ canvas_items : "имеет"
+    collections ||--o{ canvas_viewport : "хранит вид"
+    collections ||--o{ canvas_connections : "связывает"
+    collections ||--o{ watched_episodes : "отслеживает"
 
-```
-Тап на игру в SearchScreen (таб Games)
-       ↓
-_addGameToCollection()
-       ↓
-Диалог выбора платформы (если несколько)
-       ↓
-collectionItemsNotifierProvider.addItem(mediaType: MediaType.game, ...)
-       ↓
-CollectionRepository.addItem()
-       ↓
-DatabaseService.addItemToCollection()
-       ↓
-SnackBar "Game added to collection"
-```
+    collection_items ||--o| games : "ссылается (game)"
+    collection_items ||--o| movies_cache : "ссылается (movie)"
+    collection_items ||--o| tv_shows_cache : "ссылается (tvShow)"
+    collection_items ||--o{ canvas_items : "per-item canvas"
+    collection_items ||--o{ canvas_connections : "per-item связи"
+    collection_items ||--o| game_canvas_viewport : "per-item вид"
 
-### 2a. Поиск фильмов/сериалов
+    tv_shows_cache ||--o{ tv_seasons_cache : "содержит сезоны"
+    tv_shows_cache ||--o{ tv_episodes_cache : "содержит эпизоды"
 
-```
-Пользователь вводит текст (таб Movies или TV Shows)
-       ↓
-SearchScreen._onSearchChanged()
-       ↓
-mediaSearchProvider.search() [debounce 400ms]
-       ↓
-TmdbApi.searchMovies() / searchTvShows() → API запрос
-       ↓
-Результаты кешируются через upsertMovies() / upsertTvShows()
-       ↓
-UI обновляется через ref.watch()
-```
+    canvas_items ||--o{ canvas_connections : "from/to"
 
-### 2b. Добавление фильма/сериала в коллекцию
+    games ||--o{ platforms : "platform_ids"
 
-```
-Тап на фильм/сериал в SearchScreen
-       ↓
-_showCollectionSelectionDialog() [если нет collectionId]
-       ↓
-collectionItemsNotifierProvider.addItem(
-  mediaType: MediaType.movie / .tvShow,
-  externalId: tmdbId
-)
-       ↓
-CollectionRepository.addItem()
-       ↓
-DatabaseService.insertCollectionItem()
-       ↓
-SnackBar "Movie/TV show added to collection"
-```
+    collections {
+        int id PK
+        text name
+        text author
+        text type
+        int created_at
+    }
 
-### 3. Canvas (визуальный холст)
+    collection_items {
+        int id PK
+        int collection_id FK
+        text media_type
+        int external_id
+        int platform_id
+        text status
+        int sort_order
+        int added_at
+    }
 
-```
-Переключение List → Canvas
-       ↓
-CanvasView (ConsumerStatefulWidget)
-       ↓
-canvasNotifierProvider(collectionId).build()
-       ↓
-CanvasRepository.getItemsWithData()  [items + joined Game]
-CanvasRepository.getViewport()       [zoom + offset]
-       ↓
-Если пусто → initializeCanvas() [раскладка игр сеткой]
-       ↓
-InteractiveViewer (zoom 0.3–3.0x, pan)
-       ↓
-Drag карточки → moveItem() [debounce 300ms → updateItemPosition]
-Zoom/Pan → updateViewport() [debounce 500ms → saveViewport]
-```
+    games {
+        int id PK
+        text name
+        text cover_url
+        real rating
+        text genres
+        text platform_ids
+    }
 
-### 4. Создание связи на канвасе
+    movies_cache {
+        int id PK
+        text title
+        text poster_path
+        real rating
+        text genres
+        int runtime
+    }
 
-```
-ПКМ на элементе → Connect
-       ↓
-CanvasNotifier.startConnection(fromItemId)
-       ↓
-Курсор → cell, временная пунктирная линия к курсору
-       ↓
-Клик на другой элемент → completeConnection(toItemId)
-       ↓
-CanvasRepository.createConnection()
-       ↓
-DatabaseService.insertCanvasConnection()
-       ↓
-State обновляется, связь рисуется CanvasConnectionPainter
-```
+    tv_shows_cache {
+        int id PK
+        text title
+        text poster_path
+        real rating
+        int number_of_seasons
+        int number_of_episodes
+    }
 
-### 5. Добавление SteamGridDB-изображения на канвас
+    tv_seasons_cache {
+        int id PK
+        int tv_show_id FK
+        int season_number
+        int episode_count
+    }
 
-```
-Клик кнопки SteamGridDB / ПКМ → Find images...
-       ↓
-SteamGridDbPanelNotifier.togglePanel() / openPanel()
-       ↓
-Ввод запроса → searchGames(term)
-       ↓
-SteamGridDbApi.searchGames() → список SteamGridDbGame
-       ↓
-Клик на игру → selectGame(game)
-       ↓
-_loadImages() → api.getGrids(gameId) [кэш по gameId:imageType]
-       ↓
-GridView.builder с CachedNetworkImage thumbnails
-       ↓
-Клик на thumbnail → onAddImage(SteamGridDbImage)
-       ↓
-CollectionScreen._addSteamGridDbImage()
-       ↓
-canvasNotifierProvider.addImageItem(centerX, centerY, {url})
-       ↓
-SnackBar "Image added to canvas"
-```
+    tv_episodes_cache {
+        int id PK
+        int tmdb_show_id
+        int season_number
+        int episode_number
+        text name
+    }
 
-### 6. Изменение статуса
+    watched_episodes {
+        int id PK
+        int collection_id FK
+        int show_id
+        int season_number
+        int episode_number
+        int watched_at
+    }
 
-```
-Тап на StatusChipRow (detail-экран)
-       ↓
-collectionItemsNotifierProvider.updateStatus()  [все типы медиа]
-       ↓
-DatabaseService.updateItemStatus()
-  → last_activity_at = now (всегда)
-  → started_at = now (при inProgress, если null)
-  → completed_at = now (при completed)
-       ↓
-Оптимистичное обновление state (с датами)
-       ↓
-Инвалидация collectionStatsProvider
-Инвалидация collectionItemsNotifierProvider [только для games]
+    canvas_items {
+        int id PK
+        int collection_id FK
+        int collection_item_id
+        text item_type
+        real x
+        real y
+        int z_index
+    }
+
+    canvas_viewport {
+        int collection_id PK
+        real scale
+        real offset_x
+        real offset_y
+    }
+
+    canvas_connections {
+        int id PK
+        int collection_id FK
+        int from_item_id FK
+        int to_item_id FK
+        text label
+        text style
+    }
+
+    game_canvas_viewport {
+        int collection_item_id PK
+        real scale
+        real offset_x
+        real offset_y
+    }
+
+    platforms {
+        int id PK
+        text name
+        text abbreviation
+    }
+
+    tmdb_genres {
+        int id PK
+        text type PK
+        text name
+    }
 ```
 
----
+### SQL-схема таблиц
 
-## База данных
-
-### Таблицы
+<details>
+<summary><strong>Полная SQL-схема всех 15 таблиц</strong> — развернуть</summary>
 
 ```sql
 -- Платформы из IGDB (кеш)
@@ -591,15 +663,21 @@ CREATE TABLE game_canvas_viewport (
 );
 ```
 
+</details>
+
 ---
 
-## Riverpod провайдеры
+## 🔌 Riverpod провайдеры
+
+<details>
+<summary><strong>Полная таблица провайдеров</strong> — развернуть</summary>
 
 | Провайдер | Тип | Назначение |
 |-----------|-----|------------|
 | `databaseServiceProvider` | Provider | Синглтон DatabaseService |
 | `igdbApiProvider` | Provider | Синглтон IgdbApi |
 | `steamGridDbApiProvider` | Provider | Синглтон SteamGridDbApi |
+| `tmdbApiProvider` | Provider | Синглтон TmdbApi |
 | `imageCacheServiceProvider` | Provider | Синглтон ImageCacheService |
 | `sharedPreferencesProvider` | Provider | SharedPreferences (override в main) |
 | `settingsNotifierProvider` | NotifierProvider | Настройки IGDB, токены |
@@ -607,10 +685,8 @@ CREATE TABLE game_canvas_viewport (
 | `collectionsProvider` | AsyncNotifierProvider | Список коллекций |
 | `collectionItemsNotifierProvider` | NotifierProvider.family | Элементы коллекции (по collectionId) |
 | `collectionStatsProvider` | FutureProvider.family | Статистика коллекции |
-| `tmdbApiProvider` | Provider | Синглтон TmdbApi |
 | `gameSearchProvider` | NotifierProvider | Состояние поиска игр |
 | `mediaSearchProvider` | NotifierProvider | Состояние поиска фильмов/сериалов |
-| `collectionItemsNotifierProvider` | NotifierProvider.family | Универсальные элементы коллекции (по collectionId) |
 | `gameRepositoryProvider` | Provider | Репозиторий игр |
 | `collectionRepositoryProvider` | Provider | Репозиторий коллекций |
 | `canvasRepositoryProvider` | Provider | Репозиторий канваса |
@@ -620,64 +696,232 @@ CREATE TABLE game_canvas_viewport (
 | `steamGridDbPanelProvider` | NotifierProvider.family | Состояние панели SteamGridDB (по collectionId) |
 | `movieGenresProvider` | FutureProvider | Список жанров фильмов из TMDB (DB-first cache) |
 | `tvGenresProvider` | FutureProvider | Список жанров сериалов из TMDB (DB-first cache) |
-| `movieGenreMapProvider` | FutureProvider | Маппинг ID→имя жанров фильмов |
-| `tvGenreMapProvider` | FutureProvider | Маппинг ID→имя жанров сериалов |
+| `movieGenreMapProvider` | FutureProvider | Маппинг ID->имя жанров фильмов |
+| `tvGenreMapProvider` | FutureProvider | Маппинг ID->имя жанров сериалов |
+
+</details>
 
 ---
 
-## Навигация
+## 🗺️ Навигация
 
 ```
-Запуск → _AppRouter
-         │
-         ├─[Нет API ключа]→ SettingsScreen(isInitialSetup: true)
-         │
-         └─[Есть API ключ]→ NavigationShell (NavigationRail sidebar)
-                              ├─ Tab 0: AllItemsScreen (Home)
-                              │  ├→ GameDetailScreen(collectionId, itemId)
-                              │  ├→ MovieDetailScreen(collectionId, itemId)
-                              │  ├→ TvShowDetailScreen(collectionId, itemId)
-                              │  └→ AnimeDetailScreen(collectionId, itemId)
-                              │
-                              ├─ Tab 1: HomeScreen (Collections)
-                              │  ├→ CollectionScreen(collectionId)
-                              │  │  ├→ GameDetailScreen(collectionId, itemId)
-                              │  │  ├→ MovieDetailScreen(collectionId, itemId)
-                              │  │  ├→ TvShowDetailScreen(collectionId, itemId)
-                              │  │  ├→ AnimeDetailScreen(collectionId, itemId)
-                              │  │  └→ SearchScreen(collectionId)
-                              │  │      [добавление игр/фильмов/сериалов]
-                              │  │
-                              ├─ Tab 2: SearchScreen()
-                              │   [просмотр игр/фильмов/сериалов]
-                              │
-                              └─ Tab 3: SettingsScreen()
-                                  [настройки]
-                                  └→ SteamGridDbDebugScreen()
-                                      [debug, только в debug сборке]
+Запуск -> _AppRouter
+         |
+         +--[Нет API ключа]--> SettingsScreen(isInitialSetup: true)
+         |
+         +--[Есть API ключ]--> NavigationShell (NavigationRail sidebar)
+                                +-- Tab 0: AllItemsScreen (Home)
+                                |   +-> GameDetailScreen(collectionId, itemId)
+                                |   +-> MovieDetailScreen(collectionId, itemId)
+                                |   +-> TvShowDetailScreen(collectionId, itemId)
+                                |   +-> AnimeDetailScreen(collectionId, itemId)
+                                |
+                                +-- Tab 1: HomeScreen (Collections)
+                                |   +-> CollectionScreen(collectionId)
+                                |   |   +-> GameDetailScreen(collectionId, itemId)
+                                |   |   +-> MovieDetailScreen(collectionId, itemId)
+                                |   |   +-> TvShowDetailScreen(collectionId, itemId)
+                                |   |   +-> AnimeDetailScreen(collectionId, itemId)
+                                |   |   +-> SearchScreen(collectionId)
+                                |   |       [добавление игр/фильмов/сериалов]
+                                |   |
+                                +-- Tab 2: SearchScreen()
+                                |   [просмотр игр/фильмов/сериалов]
+                                |
+                                +-- Tab 3: SettingsScreen()
+                                    [настройки]
+                                    +-> SteamGridDbDebugScreen()
+                                        [debug, только в debug сборке]
 ```
 
 ---
 
-## Ключевые паттерны
+## 🔄 Потоки данных
+
+### 1. Поиск игры
+
+```
+Пользователь вводит текст
+       |
+SearchScreen._onSearchChanged()
+       |
+gameSearchProvider.search() [debounce 400ms]
+       |
+GameRepository.searchGames()
+       |
+IgdbApi.searchGames() -> API запрос
+       |
+Результаты кешируются в SQLite
+       |
+UI обновляется через ref.watch()
+```
+
+### 2. Добавление игры в коллекцию
+
+```
+Тап на игру в SearchScreen (таб Games)
+       |
+_addGameToCollection()
+       |
+Диалог выбора платформы (если несколько)
+       |
+collectionItemsNotifierProvider.addItem(mediaType: MediaType.game, ...)
+       |
+CollectionRepository.addItem()
+       |
+DatabaseService.addItemToCollection()
+       |
+SnackBar "Game added to collection"
+```
+
+### 2a. Поиск фильмов/сериалов
+
+```
+Пользователь вводит текст (таб Movies или TV Shows)
+       |
+SearchScreen._onSearchChanged()
+       |
+mediaSearchProvider.search() [debounce 400ms]
+       |
+TmdbApi.searchMovies() / searchTvShows() -> API запрос
+       |
+Результаты кешируются через upsertMovies() / upsertTvShows()
+       |
+UI обновляется через ref.watch()
+```
+
+### 2b. Добавление фильма/сериала в коллекцию
+
+```
+Тап на фильм/сериал в SearchScreen
+       |
+_showCollectionSelectionDialog() [если нет collectionId]
+       |
+collectionItemsNotifierProvider.addItem(
+  mediaType: MediaType.movie / .tvShow,
+  externalId: tmdbId
+)
+       |
+CollectionRepository.addItem()
+       |
+DatabaseService.insertCollectionItem()
+       |
+SnackBar "Movie/TV show added to collection"
+```
+
+### 3. Canvas (визуальный холст)
+
+```
+Переключение List -> Canvas
+       |
+CanvasView (ConsumerStatefulWidget)
+       |
+canvasNotifierProvider(collectionId).build()
+       |
+CanvasRepository.getItemsWithData()  [items + joined Game]
+CanvasRepository.getViewport()       [zoom + offset]
+       |
+Если пусто -> initializeCanvas() [раскладка игр сеткой]
+       |
+InteractiveViewer (zoom 0.3-3.0x, pan)
+       |
+Drag карточки -> moveItem() [debounce 300ms -> updateItemPosition]
+Zoom/Pan -> updateViewport() [debounce 500ms -> saveViewport]
+```
+
+### 4. Создание связи на канвасе
+
+```
+ПКМ на элементе -> Connect
+       |
+CanvasNotifier.startConnection(fromItemId)
+       |
+Курсор -> cell, временная пунктирная линия к курсору
+       |
+Клик на другой элемент -> completeConnection(toItemId)
+       |
+CanvasRepository.createConnection()
+       |
+DatabaseService.insertCanvasConnection()
+       |
+State обновляется, связь рисуется CanvasConnectionPainter
+```
+
+### 5. Добавление SteamGridDB-изображения на канвас
+
+```
+Клик кнопки SteamGridDB / ПКМ -> Find images...
+       |
+SteamGridDbPanelNotifier.togglePanel() / openPanel()
+       |
+Ввод запроса -> searchGames(term)
+       |
+SteamGridDbApi.searchGames() -> список SteamGridDbGame
+       |
+Клик на игру -> selectGame(game)
+       |
+_loadImages() -> api.getGrids(gameId) [кэш по gameId:imageType]
+       |
+GridView.builder с CachedNetworkImage thumbnails
+       |
+Клик на thumbnail -> onAddImage(SteamGridDbImage)
+       |
+CollectionScreen._addSteamGridDbImage()
+       |
+canvasNotifierProvider.addImageItem(centerX, centerY, {url})
+       |
+SnackBar "Image added to canvas"
+```
+
+### 6. Изменение статуса
+
+```
+Тап на StatusChipRow (detail-экран)
+       |
+collectionItemsNotifierProvider.updateStatus()  [все типы медиа]
+       |
+DatabaseService.updateItemStatus()
+  -> last_activity_at = now (всегда)
+  -> started_at = now (при inProgress, если null)
+  -> completed_at = now (при completed)
+       |
+Оптимистичное обновление state (с датами)
+       |
+Инвалидация collectionStatsProvider
+Инвалидация collectionItemsNotifierProvider [только для games]
+```
+
+---
+
+## 🏗️ Ключевые паттерны
+
+> [!IMPORTANT]
+> Все модели **иммутабельны** (`final` поля) и используют `copyWith()` для обновлений. Прямая мутация state запрещена — только через Riverpod Notifier.
 
 ### 1. Immutable Models
+
 Все модели используют `final` поля и метод `copyWith()` для создания изменённых копий.
 
 ### 2. Factory Constructors
+
 - `fromJson()` — парсинг API ответа
 - `fromDb()` — парсинг записи SQLite
 - `toDb()` — сериализация для БД
 
 ### 3. Riverpod Family
+
 Для данных, зависящих от ID (элементы коллекции, статистика):
+
 ```dart
 final collectionItemsNotifierProvider = NotifierProvider.family<..., int>
 ref.watch(collectionItemsNotifierProvider(collectionId))
 ```
 
 ### 4. Optimistic Updates
+
 При изменении статуса сначала обновляется локальный state, затем база данных.
 
 ### 5. Debounce
+
 Поиск использует 400ms debounce для снижения нагрузки на API.

@@ -1,4 +1,6 @@
-# Collection File Formats
+[← Back to README](../README.md)
+
+# 📦 Collection File Formats
 
 Tonkatsu Box supports two file formats for sharing collections.
 
@@ -9,7 +11,8 @@ Tonkatsu Box supports two file formats for sharing collections.
 | `.xcoll` | v2 | Light export — metadata + element IDs |
 | `.xcollx` | v2 | Full export — + canvas + base64 images |
 
-> **Note:** The legacy `.rcoll` (v1) format is no longer supported. Files in v1 format will be rejected with a `FormatException`.
+> [!WARNING]
+> **The legacy `.rcoll` (v1) format is deprecated and no longer supported.** Files in v1 format will be rejected with a `FormatException`. All collections should use `.xcoll` or `.xcollx` (v2) going forward.
 
 ---
 
@@ -116,6 +119,8 @@ Includes everything from light export plus `canvas`, `images`, and `media`:
 }
 ```
 
+---
+
 ### v2 Top-Level Fields
 
 | Field | Type | Required | Description |
@@ -184,11 +189,13 @@ When `media` is present during import, data is restored directly from the file v
 ## How Import Works
 
 ### v2 Light (`.xcoll`)
+
 1. App reads the file and creates a collection
 2. Inserts items with their metadata (comments)
 3. Fetches full game/movie/TV data from IGDB/TMDB using IDs
 
 ### v2 Full (`.xcollx`)
+
 1. If `media` section is present — restores Game/Movie/TvShow/TvSeason/TvEpisode data from embedded data (offline)
 2. If `media` section is absent — fetches data from IGDB/TMDB APIs (online, same as light import)
 3. Creates collection and inserts items with metadata

@@ -1,4 +1,6 @@
-# Getting Started
+[← Back to README](../README.md)
+
+# 🚀 Getting Started
 
 ## Requirements
 
@@ -7,7 +9,12 @@
 - IGDB API credentials (for game search)
 - TMDB API key (optional, for movie/TV show search)
 
+---
+
 ## Getting IGDB API Keys
+
+> [!IMPORTANT]
+> IGDB credentials are **required** for the app to function. Game search will not work without them.
 
 Tonkatsu Box uses IGDB to fetch game metadata. You need free API credentials:
 
@@ -21,7 +28,12 @@ Tonkatsu Box uses IGDB to fetch game metadata. You need free API credentials:
 5. Click **Create**
 6. Copy your **Client ID** and generate a **Client Secret**
 
+---
+
 ## Getting TMDB API Key (Optional)
+
+> [!NOTE]
+> TMDB is **optional**. It enables searching for movies, TV shows, and animation. The app works fine without it for game-only collections.
 
 For searching movies and TV shows:
 
@@ -31,14 +43,19 @@ For searching movies and TV shows:
 4. Request an API key (choose "Developer" type)
 5. Copy your **API Key (v3 auth)**
 
+---
+
 ## Getting SteamGridDB API Key (Optional)
 
-For high-quality game artwork (grids, heroes, logos, icons):
+> [!NOTE]
+> SteamGridDB is **optional**. It provides high-quality game artwork for the canvas board (grids, heroes, logos, icons).
 
 1. Go to [steamgriddb.com](https://www.steamgriddb.com)
 2. Create an account or log in
 3. Go to **Preferences** → **API**
 4. Copy your **API Key**
+
+---
 
 ## First Launch
 
@@ -49,6 +66,11 @@ For high-quality game artwork (grids, heroes, logos, icons):
 5. (Optional) Enter your TMDB API Key in the **TMDB API** section for movie/TV show search
 6. (Optional) Enter your SteamGridDB API Key in the **SteamGridDB API** section
 7. You're ready to create collections!
+
+> [!TIP]
+> All API keys can be changed later in **Settings → Credentials**.
+
+---
 
 ## Quick Start
 
@@ -63,20 +85,30 @@ For high-quality game artwork (grids, heroes, logos, icons):
 
 ### Import a Collection
 
-1. Get a `.rcoll` file from someone
+1. Get a `.xcoll` or `.xcollx` file from someone
 2. Click **Import**
 3. Select the file
-4. Collection appears with all game data
+4. Collection appears with all data
+
+> [!TIP]
+> `.xcoll` is a light export (metadata only — requires internet to fetch covers and details).
+> `.xcollx` is a full export (includes canvas, images, and media data — works offline).
 
 ### Share a Collection
 
 1. Open your collection
 2. Click **Export**
-3. Save the `.rcoll` file
-4. Share it anywhere!
+3. Choose `.xcoll` (light) or `.xcollx` (full)
+4. Save the file
+5. Share it anywhere!
+
+---
 
 ## Tips
 
-- Use the status tracker to manage your backlog
-- Add comments to remember why you added a game
-- Fork interesting collections and customize them
+> [!TIP]
+> - Use the status tracker to manage your backlog
+> - Add comments to remember why you added a game
+> - Fork interesting collections and customize them
+> - Use the star rating (1–10) to rank your favorites
+> - On Android, long-press items for context menus; on Windows, right-click
