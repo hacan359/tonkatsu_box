@@ -7,7 +7,6 @@ import '../../../core/database/database_service.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/navigation/navigation_shell.dart';
 import '../../../shared/theme/app_assets.dart';
-import '../../../shared/theme/app_colors.dart';
 
 /// Анимированный splash screen.
 ///
@@ -135,7 +134,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
       body: Center(
         child: FadeTransition(
           opacity: _fadeAnimation,

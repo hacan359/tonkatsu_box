@@ -25,7 +25,6 @@ class SettingsScreen extends ConsumerWidget {
     final SettingsState settings = ref.watch(settingsNotifierProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: const BreadcrumbAppBar(
         crumbs: <BreadcrumbItem>[
           BreadcrumbItem(label: 'Settings'),

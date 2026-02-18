@@ -103,7 +103,6 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
         final CollectionItem? item = _findItem(items);
         if (item == null) {
           return Scaffold(
-            backgroundColor: AppColors.background,
             appBar: _buildFallbackAppBar(),
             body: const Center(child: Text('Animation not found')),
           );
@@ -111,12 +110,10 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
         return _buildContent(item);
       },
       loading: () => Scaffold(
-        backgroundColor: AppColors.background,
         appBar: _buildFallbackAppBar(),
         body: const Center(child: CircularProgressIndicator()),
       ),
       error: (Object error, StackTrace stack) => Scaffold(
-        backgroundColor: AppColors.background,
         appBar: _buildFallbackAppBar(),
         body: Center(child: Text('Error: $error')),
       ),
@@ -235,7 +232,6 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
     final bool isTvShow = _isTvShowSource(item);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: BreadcrumbAppBar(
         crumbs: <BreadcrumbItem>[
           BreadcrumbItem(

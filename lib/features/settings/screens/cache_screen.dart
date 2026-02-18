@@ -49,7 +49,6 @@ class _CacheScreenState extends ConsumerState<CacheScreen> {
         ref.read(imageCacheServiceProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: BreadcrumbAppBar(
         crumbs: <BreadcrumbItem>[
           BreadcrumbItem(

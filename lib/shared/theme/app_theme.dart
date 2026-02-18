@@ -30,7 +30,7 @@ abstract final class AppTheme {
       error: AppColors.error,
       onError: AppColors.textPrimary,
     ),
-    scaffoldBackgroundColor: AppColors.background,
+    scaffoldBackgroundColor: Colors.transparent,
     appBarTheme: const AppBarTheme(
       centerTitle: false,
       elevation: 0,

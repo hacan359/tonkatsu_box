@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'features/splash/screens/splash_screen.dart';
 import 'shared/gamepad/gamepad_provider.dart';
+import 'shared/theme/app_assets.dart';
+import 'shared/theme/app_colors.dart';
 import 'shared/theme/app_theme.dart';
 
 /// Главный виджет приложения.
@@ -27,6 +29,20 @@ class TonkatsuBoxApp extends ConsumerWidget {
         theme: AppTheme.darkTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: ThemeMode.dark,
+        builder: (BuildContext context, Widget? child) {
+          return DecoratedBox(
+            decoration: const BoxDecoration(
+              color: AppColors.background,
+              image: DecorationImage(
+                image: AssetImage(AppAssets.backgroundTile),
+                repeat: ImageRepeat.repeat,
+                opacity: 0.03,
+                scale: 0.667,
+              ),
+            ),
+            child: child ?? const SizedBox.shrink(),
+          );
+        },
         home: const SplashScreen(),
       ),
     );

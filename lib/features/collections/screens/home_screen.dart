@@ -32,7 +32,6 @@ class HomeScreen extends ConsumerWidget {
     final bool isLandscape = isLandscapeMobile(context);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: BreadcrumbAppBar(
         crumbs: const <BreadcrumbItem>[
           BreadcrumbItem(label: 'Collections'),

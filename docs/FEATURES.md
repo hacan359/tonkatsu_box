@@ -164,6 +164,9 @@ Tap any item to see full details. Screens have one or two tabs:
 
 Applied to board card borders, collection item backgrounds, and tilted watermark icons (200px, 6% opacity, rotated -17°).
 
+### Tiled Background
+A subtle gamepad pattern (`background_tile.png`) is repeated across the entire app via `MaterialApp.builder`. The tile is rendered at 3% opacity and 1.5x scale over the dark background, giving all screens a consistent textured look without per-screen configuration.
+
 ## 📤 Sharing
 
 ### Light Export (`.xcoll`)
