@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/services/export_service.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../core/services/xcoll_file.dart';
+import '../../../shared/widgets/breadcrumb_app_bar.dart';
 import '../../../shared/widgets/cached_image.dart';
 import '../../../data/repositories/collection_repository.dart';
 import '../../../shared/constants/media_type_theme.dart';
@@ -106,10 +107,13 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     if (_collectionLoading) {
       return Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          backgroundColor: AppColors.background,
-          surfaceTintColor: Colors.transparent,
-          foregroundColor: AppColors.textPrimary,
+        appBar: BreadcrumbAppBar(
+          crumbs: <BreadcrumbItem>[
+            BreadcrumbItem(
+              label: 'Collections',
+              onTap: () => Navigator.of(context).pop(),
+            ),
+          ],
         ),
         body: const Center(child: CircularProgressIndicator()),
       );
@@ -118,10 +122,13 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     if (_collection == null) {
       return Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          backgroundColor: AppColors.background,
-          surfaceTintColor: Colors.transparent,
-          foregroundColor: AppColors.textPrimary,
+        appBar: BreadcrumbAppBar(
+          crumbs: <BreadcrumbItem>[
+            BreadcrumbItem(
+              label: 'Collections',
+              onTap: () => Navigator.of(context).pop(),
+            ),
+          ],
         ),
         body: Center(
           child: Text(
@@ -139,11 +146,14 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        surfaceTintColor: Colors.transparent,
-        foregroundColor: AppColors.textPrimary,
-        title: Text(_collection!.name, style: AppTypography.h2),
+      appBar: BreadcrumbAppBar(
+        crumbs: <BreadcrumbItem>[
+          BreadcrumbItem(
+            label: 'Collections',
+            onTap: () => Navigator.of(context).pop(),
+          ),
+          BreadcrumbItem(label: _collection!.name),
+        ],
         actions: <Widget>[
           if (_collection!.isEditable && !_isCanvasMode)
             IconButton(
@@ -1018,6 +1028,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   }
 
   void _showItemDetails(CollectionItem item) {
+    final String colName = _collection!.name;
     switch (item.mediaType) {
       case MediaType.game:
         Navigator.of(context).push(
@@ -1026,6 +1037,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
               collectionId: widget.collectionId,
               itemId: item.id,
               isEditable: _collection!.isEditable,
+              collectionName: colName,
             ),
           ),
         );
@@ -1036,6 +1048,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
               collectionId: widget.collectionId,
               itemId: item.id,
               isEditable: _collection!.isEditable,
+              collectionName: colName,
             ),
           ),
         );
@@ -1046,6 +1059,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
               collectionId: widget.collectionId,
               itemId: item.id,
               isEditable: _collection!.isEditable,
+              collectionName: colName,
             ),
           ),
         );
@@ -1056,6 +1070,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
               collectionId: widget.collectionId,
               itemId: item.id,
               isEditable: _collection!.isEditable,
+              collectionName: colName,
             ),
           ),
         );

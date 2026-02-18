@@ -7,6 +7,23 @@
 ## [Unreleased]
 
 ### Added
+- Добавлен виджет `BreadcrumbAppBar` (`lib/shared/widgets/breadcrumb_app_bar.dart`) — навигационные хлебные крошки: логотип 20x20 + разделители `›` + кликабельные крошки. Поддержка `bottom` (TabBar), `actions`, горизонтальный скролл. Последняя крошка — жирная (w600), остальные кликабельные (w400)
+- Добавлен экран-хаб `SettingsScreen` — 4 карточки навигации: Credentials, Cache, Database, Debug (только kDebugMode). Заменяет монолитный экран настроек (~1118 строк)
+- Добавлены подэкраны настроек: `CredentialsScreen` (IGDB/SteamGridDB/TMDB API ключи), `CacheScreen` (кэш изображений), `DatabaseScreen` (export/import/reset), `DebugHubScreen` (3 debug-инструмента)
+- Добавлен параметр `collectionName` в экраны деталей (`GameDetailScreen`, `MovieDetailScreen`, `TvShowDetailScreen`, `AnimeDetailScreen`) для отображения в хлебных крошках
+- Добавлены тесты: `breadcrumb_app_bar_test.dart` (21 тест), `settings_screen_test.dart` (15 тестов, переписан), `credentials_screen_test.dart` (43 теста), `database_screen_test.dart` (11 тестов), `cache_screen_test.dart` (8 тестов), `debug_hub_screen_test.dart` (10 тестов)
+
+### Changed
+- Все экраны переведены на `BreadcrumbAppBar` вместо стандартного AppBar: AllItemsScreen, HomeScreen, CollectionScreen, SearchScreen, все detail screens, все debug screens
+- Логотип вынесен выше NavigationRail в `NavigationShell` (desktop) — `Column(logo, Expanded(Rail))` вместо `Rail.leading`
+- Реструктуризация Settings: монолитный экран (~1118 строк) разбит на хаб + 4 подэкрана с навигацией через `Navigator.push`
+- Debug screens (IGDB Media, SteamGridDB, Gamepad) используют `BreadcrumbAppBar` с крошками Settings › Debug › {name}
+
+### Removed
+- Удалён монолитный код SettingsScreen (секции credentials, cache, database, danger zone — перенесены в отдельные экраны)
+- Удалён `settings_screen_config_test.dart` — покрытие перенесено в `database_screen_test.dart`
+
+### Added
 - Добавлен экран All Items (Home tab) — отображает все элементы из всех коллекций в grid-виде с PosterCard, именем коллекции как subtitle. Чипсы фильтрации по типу медиа (All/Games/Movies/TV Shows/Animation) и ActionChip сортировки по рейтингу (toggle asc/desc). Loading, empty, error states. RefreshIndicator
 - Добавлена 4-табная навигация: Home (все элементы), Collections, Search, Settings. Ранее было 3 таба: Home (коллекции), Search, Settings
 - Добавлены провайдеры `allItemsSortProvider`, `allItemsSortDescProvider`, `allItemsNotifierProvider`, `collectionNamesProvider` (`lib/features/home/providers/all_items_provider.dart`)

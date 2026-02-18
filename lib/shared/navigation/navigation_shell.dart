@@ -2,6 +2,7 @@
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/collections/screens/home_screen.dart';
@@ -39,13 +40,15 @@ enum NavTab {
 /// - `width >= 800`: NavigationRail слева (десктоп)
 /// - `width < 800`: BottomNavigationBar снизу (мобильный)
 ///
-/// Каждая вкладка сохраняет своё состояние через [IndexedStack].
+/// Каждая вкладка имеет свой [Navigator] (nested navigation) — маршруты
+/// пушатся ВНУТРИ таба, а Rail/BottomBar остаётся видимым.
+/// Состояние каждого таба сохраняется через [IndexedStack].
 ///
 /// Поддержка геймпада:
 /// - D-pad — навигация фокуса между виджетами (DirectionalFocusIntent)
 /// - A — активация фокусированного виджета (ActivateIntent)
 /// - LB/RB — переключение между табами
-/// - B — назад (Navigator.pop если есть куда)
+/// - B — назад (pop внутри таба или переключение на Home)
 class NavigationShell extends ConsumerStatefulWidget {
   /// Создаёт [NavigationShell].
   const NavigationShell({super.key});
@@ -64,26 +67,43 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
   /// загрузка платформ) и SettingsScreen при старте приложения.
   final Set<int> _initializedTabs = <int>{NavTab.home.index};
 
+  /// Ключи Navigator для каждого таба (nested navigation).
+  ///
+  /// Каждый таб имеет свой Navigator — push/pop происходит внутри таба,
+  /// а NavigationShell (Rail/BottomBar) остаётся видимым.
+  final List<GlobalKey<NavigatorState>> _navigatorKeys =
+      List<GlobalKey<NavigatorState>>.generate(
+    _tabCount,
+    (_) => GlobalKey<NavigatorState>(),
+  );
+
   @override
   Widget build(BuildContext context) {
     final double width = MediaQuery.sizeOf(context).width;
     final bool useRail = width >= navigationBreakpoint;
 
-    return GamepadListener(
-      onTabSwitch: _onGamepadTabSwitch,
-      onNavigate: _onGamepadNavigate,
-      onConfirm: _onGamepadConfirm,
-      onScroll: _onGamepadScroll,
-      onBack: () {
-        // B на корневом экране — pop если возможно
-        if (Navigator.of(context).canPop()) {
-          Navigator.of(context).pop();
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, Object? result) {
+        if (didPop) return;
+        // Android back: pop внутри таба → переключить на Home → выйти
+        if (!_handleBack()) {
+          SystemNavigator.pop();
         }
       },
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        body: useRail ? _buildRailLayout() : _buildContent(),
-        bottomNavigationBar: useRail ? null : _buildBottomNav(),
+      child: GamepadListener(
+        onTabSwitch: _onGamepadTabSwitch,
+        onNavigate: _onGamepadNavigate,
+        onConfirm: _onGamepadConfirm,
+        onScroll: _onGamepadScroll,
+        onBack: () {
+          _handleBack();
+        },
+        child: Scaffold(
+          backgroundColor: AppColors.background,
+          body: useRail ? _buildRailLayout() : _buildContent(),
+          bottomNavigationBar: useRail ? null : _buildBottomNav(),
+        ),
       ),
     );
   }
@@ -91,57 +111,67 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
   Widget _buildRailLayout() {
     return Row(
       children: <Widget>[
-        NavigationRail(
-          selectedIndex: _selectedIndex,
-          onDestinationSelected: _onDestinationSelected,
-          backgroundColor: AppColors.surface,
-          indicatorColor: AppColors.gameAccent.withAlpha(30),
-          selectedIconTheme: const IconThemeData(
-            color: AppColors.textPrimary,
-          ),
-          unselectedIconTheme: const IconThemeData(
-            color: AppColors.textTertiary,
-          ),
-          selectedLabelTextStyle: const TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-          ),
-          unselectedLabelTextStyle: const TextStyle(
-            color: AppColors.textTertiary,
-            fontSize: 12,
-          ),
-          labelType: NavigationRailLabelType.all,
-          leading: Padding(
-            padding: const EdgeInsets.only(top: 8, bottom: 16),
-            child: Image.asset(
-              AppAssets.logo,
-              width: 48,
-              height: 48,
-            ),
-          ),
-          destinations: const <NavigationRailDestination>[
-            NavigationRailDestination(
-              icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(Icons.home),
-              label: Text('Main'),
-            ),
-            NavigationRailDestination(
-              icon: Icon(Icons.collections_bookmark_outlined),
-              selectedIcon: Icon(Icons.collections_bookmark),
-              label: Text('Collections'),
-            ),
-            NavigationRailDestination(
-              icon: Icon(Icons.search_outlined),
-              selectedIcon: Icon(Icons.search),
-              label: Text('Search'),
-            ),
-            NavigationRailDestination(
-              icon: Icon(Icons.settings_outlined),
-              selectedIcon: Icon(Icons.settings),
-              label: Text('Settings'),
+        ColoredBox(
+          color: AppColors.surface,
+          child: Column(
+            children: <Widget>[
+              // Логотип выше NavigationRail — всегда виден
+              Padding(
+                padding: const EdgeInsets.only(top: 12, bottom: 8),
+                child: Image.asset(
+                  AppAssets.logo,
+                  width: 48,
+                  height: 48,
+                ),
+              ),
+              Expanded(
+                child: NavigationRail(
+                selectedIndex: _selectedIndex,
+                onDestinationSelected: _onDestinationSelected,
+                backgroundColor: AppColors.surface,
+                indicatorColor: AppColors.gameAccent.withAlpha(30),
+                selectedIconTheme: const IconThemeData(
+                  color: AppColors.textPrimary,
+                ),
+                unselectedIconTheme: const IconThemeData(
+                  color: AppColors.textTertiary,
+                ),
+                selectedLabelTextStyle: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+                unselectedLabelTextStyle: const TextStyle(
+                  color: AppColors.textTertiary,
+                  fontSize: 12,
+                ),
+                labelType: NavigationRailLabelType.all,
+                destinations: const <NavigationRailDestination>[
+                  NavigationRailDestination(
+                    icon: Icon(Icons.home_outlined),
+                    selectedIcon: Icon(Icons.home),
+                    label: Text('Main'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.collections_bookmark_outlined),
+                    selectedIcon: Icon(Icons.collections_bookmark),
+                    label: Text('Collections'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.search_outlined),
+                    selectedIcon: Icon(Icons.search),
+                    label: Text('Search'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.settings_outlined),
+                    selectedIcon: Icon(Icons.settings),
+                    label: Text('Settings'),
+                  ),
+                ],
+              ),
             ),
           ],
+          ),
         ),
         const VerticalDivider(
           thickness: 1,
@@ -189,27 +219,61 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
   Widget _buildContent() {
     return IndexedStack(
       index: _selectedIndex,
-      children: <Widget>[
-        const AllItemsScreen(),
-        if (_initializedTabs.contains(NavTab.collections.index))
-          const HomeScreen()
-        else
-          const SizedBox.shrink(),
-        if (_initializedTabs.contains(NavTab.search.index))
-          const SearchScreen()
-        else
-          const SizedBox.shrink(),
-        if (_initializedTabs.contains(NavTab.settings.index))
-          const SettingsScreen()
-        else
-          const SizedBox.shrink(),
-      ],
+      children: List<Widget>.generate(_tabCount, (int index) {
+        if (!_initializedTabs.contains(index)) {
+          return const SizedBox.shrink();
+        }
+        return _buildTabNavigator(index);
+      }),
+    );
+  }
+
+  Widget _buildTabNavigator(int tabIndex) {
+    final Widget screen = switch (NavTab.values[tabIndex]) {
+      NavTab.home => const AllItemsScreen(),
+      NavTab.collections => const HomeScreen(),
+      NavTab.search => const SearchScreen(),
+      NavTab.settings => const SettingsScreen(),
+    };
+
+    return Navigator(
+      key: _navigatorKeys[tabIndex],
+      onGenerateRoute: (RouteSettings settings) {
+        return MaterialPageRoute<void>(
+          builder: (BuildContext context) => screen,
+        );
+      },
     );
   }
 
   void _onDestinationSelected(int index) {
+    if (index == _selectedIndex) {
+      // Повторное нажатие — вернуться к корню таба
+      _navigatorKeys[index]
+          .currentState
+          ?.popUntil((Route<dynamic> route) => route.isFirst);
+      return;
+    }
     _initializedTabs.add(index);
     setState(() => _selectedIndex = index);
+  }
+
+  /// Обработка кнопки «назад» (Android back, Gamepad B).
+  ///
+  /// Возвращает `true`, если навигация обработана (pop в табе или
+  /// переключение на Home). Возвращает `false`, если нужно выйти.
+  bool _handleBack() {
+    final NavigatorState? tabNav =
+        _navigatorKeys[_selectedIndex].currentState;
+    if (tabNav != null && tabNav.canPop()) {
+      tabNav.pop();
+      return true;
+    }
+    if (_selectedIndex != NavTab.home.index) {
+      _onDestinationSelected(NavTab.home.index);
+      return true;
+    }
+    return false;
   }
 
   void _onGamepadTabSwitch(GamepadAction action) {

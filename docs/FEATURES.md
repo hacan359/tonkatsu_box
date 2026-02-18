@@ -7,7 +7,8 @@ The app uses a forced dark theme (ThemeMode.dark) with a cinematic design system
 - **AppTypography** — Inter font with 8 text styles (h1–caption, posterTitle, posterSubtitle), negative letter-spacing on headings
 - **AppSpacing** — standardized spacing (4–32px), border radii (4–20px), poster aspect ratio (2:3), grid column counts
 - **AppTheme** — centralized ThemeData with styled AppBar, Card, Input, Dialog, BottomSheet, Chip, Button, NavigationRail, TabBar
-- **Adaptive navigation** — NavigationRail sidebar on desktop (≥800px), BottomNavigationBar on mobile (<800px), 4 tabs: Home, Collections, Search, Settings
+- **Adaptive navigation** — NavigationRail sidebar on desktop (≥800px), BottomNavigationBar on mobile (<800px), 4 tabs: Home, Collections, Search, Settings. Logo 48×48 above NavigationRail (desktop)
+- **BreadcrumbAppBar** — unified navigation breadcrumbs on all screens: logo 20×20 + `›` separators + clickable crumbs. Last crumb is bold (w600), non-last crumbs are clickable and navigate back. Supports TabBar (bottom) and action buttons
 - **MediaPosterCard** — unified vertical 2:3 poster card with 3 variants: grid (hover animation, dual rating badge, collection checkmark, status emoji), compact (smaller sizes for landscape), canvas (colored border by media type, no hover)
 - **DualRatingBadge** — dual rating display `★ 8 / 7.5` (user rating + API rating) on poster cards and list items. Modes: badge (dark overlay on poster), compact (smaller), inline (no background, for list tiles)
 - **HeroCollectionCard** — large gradient collection card with progress bar and stats
@@ -303,20 +304,36 @@ Access high-quality game artwork from SteamGridDB:
 - Add images directly to board from the side panel
 - Debug panel for testing API endpoints (dev builds only)
 
-## Configuration Management
+## Settings
 
-### Export / Import Config
-Export your API keys and settings to a JSON file and import them on another machine:
+Settings is organized as a hub with 4 sub-screens:
+
+### Credentials
+Manage API keys for all external services:
+- **IGDB** — Client ID, Client Secret, Verify connection, Refresh Platforms
+- **SteamGridDB** — API Key
+- **TMDB** — API Key
+- Welcome section shown during initial setup
+
+### Cache
+Image cache settings:
+- Toggle image caching on/off
+- Choose cache folder via file picker
+- View cache stats (file count, total size)
+- Clear all cached images
+
+### Database
+Configuration management and data reset:
 - **Export Config** — saves all 7 settings keys (IGDB, SteamGridDB, TMDB) to a `.json` file via file dialog
 - **Import Config** — loads settings from a `.json` file, validates format and version, updates API clients immediately
 - Config file includes a version marker for forward compatibility
+- **Reset Database** (Danger Zone) — clears all 14 SQLite tables in a single transaction, preserves SharedPreferences
 
-### Reset Database
-Clear all application data while preserving your API keys and settings:
-- **Reset Database** button in the Danger Zone section of Settings
-- Confirmation dialog prevents accidental data loss
-- Clears all 14 SQLite tables (collections, games, movies, TV shows, board, episodes) in a single transaction
-- SharedPreferences (API keys, tokens) are preserved
+### Debug (dev builds only)
+Developer tools hub with 3 sub-screens:
+- **IGDB Media** — check image URLs in collections (posters, thumbnails, previews)
+- **SteamGridDB** — test all API endpoints (search, grids, heroes, logos, icons)
+- **Gamepad** — raw events + filtered service events in real-time
 
 ## Offline Mode
 

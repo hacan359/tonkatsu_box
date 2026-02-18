@@ -98,6 +98,7 @@ void main() {
       child: MaterialApp(
         home: MovieDetailScreen(
           collectionId: collectionId,
+          collectionName: 'Test Collection',
           itemId: itemId,
           isEditable: isEditable,
         ),
@@ -799,6 +800,7 @@ void main() {
           child: const MaterialApp(
             home: MovieDetailScreen(
               collectionId: 1,
+              collectionName: 'Test Collection',
               itemId: 1,
               isEditable: true,
             ),
@@ -827,6 +829,7 @@ void main() {
           child: const MaterialApp(
             home: MovieDetailScreen(
               collectionId: 1,
+              collectionName: 'Test Collection',
               itemId: 1,
               isEditable: true,
             ),

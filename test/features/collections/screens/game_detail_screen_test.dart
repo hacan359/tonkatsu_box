@@ -84,6 +84,7 @@ void main() {
       child: MaterialApp(
         home: GameDetailScreen(
           collectionId: collectionId,
+          collectionName: 'Test Collection',
           itemId: itemId,
           isEditable: isEditable,
         ),

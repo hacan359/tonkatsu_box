@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/image_cache_service.dart';
 import '../../../shared/theme/app_colors.dart';
+import '../../../shared/widgets/breadcrumb_app_bar.dart';
 import '../../../data/repositories/canvas_repository.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/item_status.dart';
@@ -34,6 +35,7 @@ class MovieDetailScreen extends ConsumerStatefulWidget {
     required this.collectionId,
     required this.itemId,
     required this.isEditable,
+    required this.collectionName,
     super.key,
   });
 
@@ -45,6 +47,9 @@ class MovieDetailScreen extends ConsumerStatefulWidget {
 
   /// Можно ли редактировать комментарий автора.
   final bool isEditable;
+
+  /// Имя коллекции для хлебных крошек.
+  final String collectionName;
 
   @override
   ConsumerState<MovieDetailScreen> createState() => _MovieDetailScreenState();
@@ -86,11 +91,7 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
         if (item == null) {
           return Scaffold(
             backgroundColor: AppColors.background,
-            appBar: AppBar(
-              backgroundColor: AppColors.background,
-              surfaceTintColor: Colors.transparent,
-              foregroundColor: AppColors.textPrimary,
-            ),
+            appBar: _buildFallbackAppBar(),
             body: const Center(child: Text('Movie not found')),
           );
         }
@@ -98,23 +99,19 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
       },
       loading: () => Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          backgroundColor: AppColors.background,
-          surfaceTintColor: Colors.transparent,
-          foregroundColor: AppColors.textPrimary,
-        ),
+        appBar: _buildFallbackAppBar(),
         body: const Center(child: CircularProgressIndicator()),
       ),
       error: (Object error, StackTrace stack) => Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          backgroundColor: AppColors.background,
-          surfaceTintColor: Colors.transparent,
-          foregroundColor: AppColors.textPrimary,
-        ),
+        appBar: _buildFallbackAppBar(),
         body: Center(child: Text('Error: $error')),
       ),
     );
+  }
+
+  BreadcrumbAppBar _buildFallbackAppBar() {
+    return BreadcrumbAppBar.collectionFallback(context, widget.collectionName);
   }
 
   CollectionItem? _findItem(List<CollectionItem> items) {
@@ -132,11 +129,19 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        surfaceTintColor: Colors.transparent,
-        foregroundColor: AppColors.textPrimary,
-        title: Text(item.itemName),
+      appBar: BreadcrumbAppBar(
+        crumbs: <BreadcrumbItem>[
+          BreadcrumbItem(
+            label: 'Collections',
+            onTap: () => Navigator.of(context)
+                .popUntil((Route<dynamic> route) => route.isFirst),
+          ),
+          BreadcrumbItem(
+            label: widget.collectionName,
+            onTap: () => Navigator.of(context).pop(),
+          ),
+          BreadcrumbItem(label: item.itemName),
+        ],
         actions: <Widget>[
           if (widget.isEditable &&
               kCanvasEnabled &&
