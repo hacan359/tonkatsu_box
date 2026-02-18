@@ -7,6 +7,24 @@
 ## [Unreleased]
 
 ### Added
+- Добавлена поддержка мультиплатформенных игр — одна и та же игра может быть добавлена в коллекцию с разными платформами (SNES, GBA и т.д.) с независимым прогрессом, рейтингом и заметками
+  - Миграция БД v17→v18: UNIQUE индексы `collection_items` расширены на `COALESCE(platform_id, -1)` для различения записей по платформе
+  - Метод `DatabaseService.getUniquePlatformIds()` — получение уникальных ID платформ из игровых элементов (опционально по коллекции)
+  - Метод `DatabaseService.deleteCanvasItemByCollectionItemId()` — удаление канвас-элемента по ID элемента коллекции
+  - Метод `CanvasRepository.deleteByCollectionItemId()` — обёртка для удаления канвас-элементов
+  - Провайдер `allItemsPlatformsProvider` (`all_items_provider.dart`) — FutureProvider уникальных платформ из игровых элементов
+- Добавлен фильтр платформ на экранах Home (AllItemsScreen) и Collection (CollectionScreen)
+  - При выборе типа "Games" появляется второй ряд ChoiceChip с платформами (All + список платформ из текущих элементов)
+  - Фильтрация работает совместно с фильтром типа медиа
+  - Смена типа медиа автоматически сбрасывает выбранную платформу
+- Добавлен бейдж платформы на постер-карточках игр — параметр `platformLabel` в `MediaPosterCard`, отображается как subtitle
+- Добавлены тесты: `database_service_test.dart` (+11 тестов: multi-platform UNIQUE index, getUniquePlatformIds), `all_items_provider_test.dart` (+5 тестов: allItemsPlatformsProvider), `all_items_screen_test.dart` (+4 теста: платформенный фильтр), `canvas_repository_test.dart` (+2 теста: deleteByCollectionItemId)
+
+### Changed
+- Рефакторинг синхронизации канваса (`canvas_provider.dart`) — ключи элементов изменены с `"mediaType:externalId"` на `collectionItemId` (уникальный PK), что позволяет корректно различать одну игру на разных платформах
+- Обновлена `_syncCanvasWithItems()` и `removeByCollectionItemId()` в `CanvasNotifier` для работы с `collectionItemId`
+
+### Added
 - Добавлена фича «Move to Collection» — перемещение элементов между коллекциями и в/из uncategorized
   - Метод `DatabaseService.updateItemCollectionId()` — обновление `collection_id` и `sort_order` элемента
   - Метод `CollectionRepository.moveItemToCollection()` — перемещение с обработкой UNIQUE constraint

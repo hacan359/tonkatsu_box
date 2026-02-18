@@ -1050,5 +1050,29 @@ void main() {
         verify(() => mockDb.getGameCanvasConnections(42)).called(1);
       });
     });
+
+    group('deleteByCollectionItemId', () {
+      test('should call deleteCanvasItemByCollectionItemId on database',
+          () async {
+        when(() => mockDb.deleteCanvasItemByCollectionItemId(10, 42))
+            .thenAnswer((_) async {});
+
+        await repository.deleteByCollectionItemId(10, 42);
+
+        verify(() => mockDb.deleteCanvasItemByCollectionItemId(10, 42))
+            .called(1);
+      });
+
+      test('should pass correct collectionId and collectionItemId', () async {
+        when(() => mockDb.deleteCanvasItemByCollectionItemId(
+              any(), any(),
+            )).thenAnswer((_) async {});
+
+        await repository.deleteByCollectionItemId(99, 123);
+
+        verify(() => mockDb.deleteCanvasItemByCollectionItemId(99, 123))
+            .called(1);
+      });
+    });
   });
 }

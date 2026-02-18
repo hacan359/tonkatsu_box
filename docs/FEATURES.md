@@ -16,7 +16,7 @@ The app uses a forced dark theme (ThemeMode.dark) with a cinematic design system
 <details>
 <summary><b>UI Components</b></summary>
 
-- **MediaPosterCard** — unified vertical 2:3 poster card with 3 variants: grid (hover animation, dual rating badge, collection checkmark, status emoji), compact (smaller sizes for landscape), canvas (colored border by media type, no hover)
+- **MediaPosterCard** — unified vertical 2:3 poster card with 3 variants: grid (hover animation, dual rating badge, collection checkmark, status emoji, platform label for games), compact (smaller sizes for landscape), canvas (colored border by media type, no hover)
 - **DualRatingBadge** — dual rating display `★ 8 / 7.5` (user rating + API rating) on poster cards and list items. Modes: badge (dark overlay on poster), compact (smaller), inline (no background, for list tiles)
 - **HeroCollectionCard** — large gradient collection card with progress bar and stats
 - **ShimmerLoading** — animated shimmer placeholders (ShimmerBox, ShimmerPosterCard, ShimmerListTile)
@@ -39,6 +39,7 @@ The Home tab shows all items from all collections in a single grid view:
 
 - **Unified view** — browse all collection items (games, movies, TV shows, animation) in one place
 - **Media type filter** — horizontal ChoiceChip row: All, Games, Movies, TV Shows, Animation
+- **Platform filter** — when "Games" is selected, a second row of ChoiceChips shows available platforms (All + SNES, GBA, etc.). Resets on media type change
 - **Rating sort** — toggle chip to sort by user rating (ascending/descending)
 - **Default sort** — by date added (newest first)
 - **Collection name** — each card shows which collection the item belongs to
@@ -52,8 +53,10 @@ Create unlimited collections organized however you want:
 
 - By platform (SNES, PlayStation, PC...), genre (RPGs, Platformers...), theme (Couch co-op, Hidden gems...), or personal lists (Backlog, Completed, Favorites...)
 - Mix games, movies and TV shows in a single collection
+- **Multi-platform games** — add the same game with different platforms (e.g. Castlevania for SNES and GBA) with independent progress, rating, and notes. Platform badge shown on poster cards
 - **Grid mode** — toggle between list and poster grid view; choice is saved per-collection. Grid cards show dual rating badge (`★ 8 / 7.5`), collection checkmark, and status emoji
 - **Type filter** — filter items by type (All/Games/Movies/TV Shows/Animation) with item count badges
+- **Platform filter** — when "Games" is selected, a second row of ChoiceChips shows platforms from current collection items. Resets when switching media types
 - **Search** — filter items by name within a collection
 - **Move to Collection** — move items between collections or to/from uncategorized via PopupMenuButton on detail screens and collection tiles
 

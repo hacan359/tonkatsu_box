@@ -52,7 +52,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 17,
+        version: 18,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -249,6 +249,32 @@ class DatabaseService {
     if (oldVersion < 17) {
       await _migrateCollectionItemsNullable(db);
     }
+    if (oldVersion < 18) {
+      await _migrateUniqueIndexWithPlatform(db);
+    }
+  }
+
+  /// Обновляет UNIQUE индексы на collection_items, включая platform_id.
+  ///
+  /// Позволяет добавлять одну и ту же игру с разными платформами
+  /// в одну коллекцию. COALESCE(platform_id, -1) приводит NULL к -1,
+  /// чтобы фильмы/сериалы (platform_id = NULL) корректно проверялись
+  /// на уникальность (в SQLite NULL != NULL).
+  Future<void> _migrateUniqueIndexWithPlatform(Database db) async {
+    await db.execute('DROP INDEX IF EXISTS idx_ci_coll');
+    await db.execute('DROP INDEX IF EXISTS idx_ci_uncat');
+    await db.execute('''
+      CREATE UNIQUE INDEX idx_ci_coll
+      ON collection_items(
+        collection_id, media_type, external_id, COALESCE(platform_id, -1)
+      )
+      WHERE collection_id IS NOT NULL
+    ''');
+    await db.execute('''
+      CREATE UNIQUE INDEX idx_ci_uncat
+      ON collection_items(media_type, external_id, COALESCE(platform_id, -1))
+      WHERE collection_id IS NULL
+    ''');
   }
 
   /// Пересоздаёт таблицу collection_items с nullable collection_id.
@@ -287,15 +313,17 @@ class DatabaseService {
       'ALTER TABLE collection_items_new RENAME TO collection_items',
     );
 
-    // Partial unique indexes
+    // Partial unique indexes (with platform_id for multi-platform games)
     await db.execute('''
       CREATE UNIQUE INDEX idx_ci_coll
-      ON collection_items(collection_id, media_type, external_id)
+      ON collection_items(
+        collection_id, media_type, external_id, COALESCE(platform_id, -1)
+      )
       WHERE collection_id IS NOT NULL
     ''');
     await db.execute('''
       CREATE UNIQUE INDEX idx_ci_uncat
-      ON collection_items(media_type, external_id)
+      ON collection_items(media_type, external_id, COALESCE(platform_id, -1))
       WHERE collection_id IS NULL
     ''');
 
@@ -1738,6 +1766,32 @@ class DatabaseService {
     }
   }
 
+  /// Возвращает уникальные platform_id из игр в коллекциях.
+  ///
+  /// Если [collectionId] указан, фильтрует по этой коллекции.
+  /// Если null — возвращает платформы из всех коллекций.
+  /// Исключает platform_id = NULL и platform_id = -1.
+  Future<List<int>> getUniquePlatformIds({int? collectionId}) async {
+    final Database db = await database;
+    final StringBuffer sql = StringBuffer('''
+      SELECT DISTINCT platform_id FROM collection_items
+      WHERE media_type = 'game'
+        AND platform_id IS NOT NULL
+        AND platform_id != -1
+    ''');
+    final List<Object?> args = <Object?>[];
+    if (collectionId != null) {
+      sql.write(' AND collection_id = ?');
+      args.add(collectionId);
+    }
+    sql.write(' ORDER BY platform_id');
+    final List<Map<String, dynamic>> rows =
+        await db.rawQuery(sql.toString(), args);
+    return rows
+        .map((Map<String, dynamic> row) => row['platform_id'] as int)
+        .toList();
+  }
+
   /// Возвращает количество элементов в коллекции.
   ///
   /// Если [collectionId] == null, считает uncategorized элементы.
@@ -1905,6 +1959,19 @@ class DatabaseService {
       where: 'collection_id = ? AND item_type = ? AND item_ref_id = ?'
           ' AND collection_item_id IS NULL',
       whereArgs: <Object?>[collectionId, itemType, itemRefId],
+    );
+  }
+
+  /// Удаляет элемент канваса по collection_item_id.
+  Future<void> deleteCanvasItemByCollectionItemId(
+    int collectionId,
+    int collectionItemId,
+  ) async {
+    final Database db = await database;
+    await db.delete(
+      'canvas_items',
+      where: 'collection_id = ? AND collection_item_id = ?',
+      whereArgs: <Object?>[collectionId, collectionItemId],
     );
   }
 

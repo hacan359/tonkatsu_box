@@ -12,6 +12,7 @@ import '../../../shared/widgets/breadcrumb_app_bar.dart';
 import '../../../shared/widgets/hero_collection_card.dart';
 import '../../../shared/widgets/section_header.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
+import '../../home/providers/all_items_provider.dart';
 import '../providers/collections_provider.dart';
 import '../widgets/collection_tile.dart';
 import '../widgets/create_collection_dialog.dart';
@@ -505,8 +506,9 @@ class HomeScreen extends ConsumerWidget {
     if (!context.mounted) return;
 
     if (result.success && result.collection != null) {
-      // Обновляем список коллекций
+      // Обновляем список коллекций и All Items
       ref.invalidate(collectionsProvider);
+      ref.invalidate(allItemsNotifierProvider);
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

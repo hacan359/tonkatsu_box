@@ -17,6 +17,7 @@ import 'package:xerabora/shared/models/collection_sort_mode.dart';
 import 'package:xerabora/shared/models/game.dart';
 import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
+import 'package:xerabora/shared/models/platform.dart' as model;
 
 class MockCollectionRepository extends Mock implements CollectionRepository {}
 
@@ -38,12 +39,14 @@ CollectionItem _makeItem({
   int? userRating,
   ItemStatus status = ItemStatus.notStarted,
   int collectionId = 1,
+  int? platformId,
 }) {
   return CollectionItem(
     id: id,
     collectionId: collectionId,
     mediaType: MediaType.game,
     externalId: id * 100,
+    platformId: platformId,
     sortOrder: id,
     status: status,
     addedAt: addedAt ?? DateTime(2026, 1, id),
@@ -492,6 +495,118 @@ void main() {
       final Map<int, String> names =
           container.read(collectionNamesProvider);
       expect(names, isEmpty);
+    });
+  });
+
+  // ==================== allItemsPlatformsProvider ====================
+
+  group('allItemsPlatformsProvider', () {
+    test('возвращает пустой список когда нет элементов', () async {
+      when(() => mockRepo.getAllItemsWithData())
+          .thenAnswer((_) async => <CollectionItem>[]);
+
+      final ProviderContainer container = createContainer();
+      container.listen(allItemsNotifierProvider, (_, _) {});
+      container.listen(allItemsPlatformsProvider, (_, _) {});
+      await _pump(10);
+
+      final List<model.Platform>? platforms =
+          container.read(allItemsPlatformsProvider).valueOrNull;
+      expect(platforms, isNotNull);
+      expect(platforms, isEmpty);
+    });
+
+    test('возвращает уникальные платформы из игровых элементов', () async {
+      final List<CollectionItem> items = <CollectionItem>[
+        _makeItem(id: 1, platformId: 19),
+        _makeItem(id: 2, platformId: 24),
+        _makeItem(id: 3, platformId: 19), // дубль платформы
+      ];
+      when(() => mockRepo.getAllItemsWithData())
+          .thenAnswer((_) async => items);
+      when(() => mockDb.getPlatformById(19)).thenAnswer(
+        (_) async => const model.Platform(id: 19, name: 'Super Nintendo'),
+      );
+      when(() => mockDb.getPlatformById(24)).thenAnswer(
+        (_) async => const model.Platform(id: 24, name: 'Game Boy Advance'),
+      );
+
+      final ProviderContainer container = createContainer();
+      container.listen(allItemsNotifierProvider, (_, _) {});
+      container.listen(allItemsPlatformsProvider, (_, _) {});
+      await _pump(10);
+
+      final List<model.Platform>? platforms =
+          container.read(allItemsPlatformsProvider).valueOrNull;
+      expect(platforms, isNotNull);
+      expect(platforms!.length, 2);
+      // Отсортированы по имени.
+      expect(platforms[0].name, 'Game Boy Advance');
+      expect(platforms[1].name, 'Super Nintendo');
+    });
+
+    test('игнорирует элементы без платформы', () async {
+      final List<CollectionItem> items = <CollectionItem>[
+        _makeItem(id: 1, platformId: 19),
+        _makeItem(id: 2), // без платформы
+        CollectionItem(
+          id: 3,
+          collectionId: 1,
+          mediaType: MediaType.movie,
+          externalId: 300,
+          sortOrder: 3,
+          status: ItemStatus.notStarted,
+          addedAt: DateTime(2026, 1, 3),
+        ),
+      ];
+      when(() => mockRepo.getAllItemsWithData())
+          .thenAnswer((_) async => items);
+      when(() => mockDb.getPlatformById(19)).thenAnswer(
+        (_) async => const model.Platform(id: 19, name: 'Super Nintendo'),
+      );
+
+      final ProviderContainer container = createContainer();
+      container.listen(allItemsNotifierProvider, (_, _) {});
+      container.listen(allItemsPlatformsProvider, (_, _) {});
+      await _pump(10);
+
+      final List<model.Platform>? platforms =
+          container.read(allItemsPlatformsProvider).valueOrNull;
+      expect(platforms, isNotNull);
+      expect(platforms!.length, 1);
+      expect(platforms[0].id, 19);
+    });
+
+    test('игнорирует platform_id = -1', () async {
+      final List<CollectionItem> items = <CollectionItem>[
+        _makeItem(id: 1, platformId: -1),
+        _makeItem(id: 2, platformId: 19),
+      ];
+      when(() => mockRepo.getAllItemsWithData())
+          .thenAnswer((_) async => items);
+      when(() => mockDb.getPlatformById(19)).thenAnswer(
+        (_) async => const model.Platform(id: 19, name: 'Super Nintendo'),
+      );
+
+      final ProviderContainer container = createContainer();
+      container.listen(allItemsNotifierProvider, (_, _) {});
+      container.listen(allItemsPlatformsProvider, (_, _) {});
+      await _pump(10);
+
+      final List<model.Platform>? platforms =
+          container.read(allItemsPlatformsProvider).valueOrNull;
+      expect(platforms, isNotNull);
+      expect(platforms!.length, 1);
+      expect(platforms[0].id, 19);
+    });
+
+    test('возвращает пустой список при AsyncLoading', () {
+      final ProviderContainer container = createContainer();
+
+      final AsyncValue<List<model.Platform>> platforms =
+          container.read(allItemsPlatformsProvider);
+      // При loading allItemsNotifier — valueOrNull будет null.
+      expect(platforms.valueOrNull ?? <model.Platform>[], isEmpty);
     });
   });
 }

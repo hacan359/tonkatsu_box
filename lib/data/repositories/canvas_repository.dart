@@ -128,6 +128,17 @@ class CanvasRepository {
     await _db.deleteCanvasItemByRef(collectionId, itemType.value, refId);
   }
 
+  /// Удаляет элемент канваса по ID элемента коллекции.
+  Future<void> deleteByCollectionItemId(
+    int collectionId,
+    int collectionItemId,
+  ) async {
+    await _db.deleteCanvasItemByCollectionItemId(
+      collectionId,
+      collectionItemId,
+    );
+  }
+
   /// Проверяет, есть ли элементы канваса для коллекции.
   Future<bool> hasCanvasItems(int collectionId) async {
     final int count = await _db.getCanvasItemCount(collectionId);
