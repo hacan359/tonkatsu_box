@@ -50,7 +50,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 15,
+        version: 16,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -231,6 +231,18 @@ class DatabaseService {
       await db.execute(
         'ALTER TABLE collection_items ADD COLUMN user_rating INTEGER',
       );
+    }
+    if (oldVersion < 16) {
+      // Repair: v15 _createCollectionItemsTable не включала user_rating.
+      // Если колонка уже есть (миграция v14→v15 её добавила), ALTER TABLE
+      // выбросит ошибку — игнорируем.
+      try {
+        await db.execute(
+          'ALTER TABLE collection_items ADD COLUMN user_rating INTEGER',
+        );
+      } on DatabaseException catch (_) {
+        // Колонка уже существует — ничего делать не нужно.
+      }
     }
   }
 
@@ -445,6 +457,7 @@ class DatabaseService {
         started_at INTEGER,
         completed_at INTEGER,
         last_activity_at INTEGER,
+        user_rating INTEGER,
         FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE,
         UNIQUE(collection_id, media_type, external_id)
       )
