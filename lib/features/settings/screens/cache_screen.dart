@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/image_cache_service.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -105,30 +106,32 @@ class _CacheScreenState extends ConsumerState<CacheScreen> {
 
                 const Divider(),
 
-                // Путь к кэшу
-                FutureBuilder<String>(
-                  future: _pathFuture,
-                  builder:
-                      (BuildContext context, AsyncSnapshot<String> snapshot) {
-                    final String path = snapshot.data ?? 'Loading...';
-                    return ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text('Cache folder'),
-                      subtitle: Text(
-                        path,
-                        style: AppTypography.bodySmall,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.folder_open),
-                        onPressed: () =>
-                            _selectCacheFolder(cacheService),
-                        tooltip: 'Select folder',
-                      ),
-                    );
-                  },
-                ),
+                // Путь к кэшу (только десктоп — на Android Scoped Storage
+                // не позволяет dart:io писать в выбранную SAF-папку)
+                if (!kIsMobile)
+                  FutureBuilder<String>(
+                    future: _pathFuture,
+                    builder:
+                        (BuildContext context, AsyncSnapshot<String> snapshot) {
+                      final String path = snapshot.data ?? 'Loading...';
+                      return ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('Cache folder'),
+                        subtitle: Text(
+                          path,
+                          style: AppTypography.bodySmall,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.folder_open),
+                          onPressed: () =>
+                              _selectCacheFolder(cacheService),
+                          tooltip: 'Select folder',
+                        ),
+                      );
+                    },
+                  ),
 
                 // Статистика кэша
                 FutureBuilder<(int, int)>(

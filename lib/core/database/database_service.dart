@@ -37,7 +37,9 @@ class DatabaseService {
   }
 
   Future<Database> _initDatabase() async {
-    final Directory appDir = await getApplicationDocumentsDirectory();
+    // AppSupport вместо Documents — Documents может быть под OneDrive,
+    // который блокирует создание файлов (PathAccessException).
+    final Directory appDir = await getApplicationSupportDirectory();
     final String dbDir = p.join(appDir.path, 'tonkatsu_box');
     final String dbPath = p.join(dbDir, 'tonkatsu_box.db');
 
