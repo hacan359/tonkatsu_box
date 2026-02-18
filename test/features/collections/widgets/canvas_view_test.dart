@@ -17,7 +17,7 @@ class TestCanvasNotifier extends CanvasNotifier {
   final CanvasState _testState;
 
   @override
-  CanvasState build(int arg) {
+  CanvasState build(int? arg) {
     return _testState;
   }
 
@@ -942,7 +942,7 @@ void main() {
 /// Тестовый notifier для SteamGridDB панели (не делает ничего).
 class _TestSteamGridDbPanelNotifier extends SteamGridDbPanelNotifier {
   @override
-  SteamGridDbPanelState build(int arg) {
+  SteamGridDbPanelState build(int? arg) {
     return const SteamGridDbPanelState();
   }
 }
@@ -950,7 +950,7 @@ class _TestSteamGridDbPanelNotifier extends SteamGridDbPanelNotifier {
 /// Тестовый notifier для VGMaps панели (не делает ничего).
 class _TestVgMapsPanelNotifier extends VgMapsPanelNotifier {
   @override
-  VgMapsPanelState build(int arg) {
+  VgMapsPanelState build(int? arg) {
     return const VgMapsPanelState();
   }
 }

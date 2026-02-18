@@ -80,29 +80,34 @@ class EpisodeTrackerState {
 }
 
 /// Провайдер для трекинга эпизодов.
+///
+/// Если collectionId == null (uncategorized), трекинг отключён.
 final NotifierProviderFamily<EpisodeTrackerNotifier, EpisodeTrackerState,
-        ({int collectionId, int showId})>
+        ({int? collectionId, int showId})>
     episodeTrackerNotifierProvider = NotifierProvider.family<
         EpisodeTrackerNotifier,
         EpisodeTrackerState,
-        ({int collectionId, int showId})>(
+        ({int? collectionId, int showId})>(
   EpisodeTrackerNotifier.new,
 );
 
 /// Нотификатор для управления просмотренными эпизодами.
 class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
-    ({int collectionId, int showId})> {
+    ({int? collectionId, int showId})> {
   late DatabaseService _db;
   late TmdbApi _tmdbApi;
-  late int _collectionId;
+  late int? _collectionId;
   late int _showId;
 
   @override
-  EpisodeTrackerState build(({int collectionId, int showId}) arg) {
+  EpisodeTrackerState build(({int? collectionId, int showId}) arg) {
     _collectionId = arg.collectionId;
     _showId = arg.showId;
     _db = ref.watch(databaseServiceProvider);
     _tmdbApi = ref.watch(tmdbApiProvider);
+
+    // Трекинг эпизодов не поддерживается для uncategorized элементов
+    if (_collectionId == null) return const EpisodeTrackerState();
 
     Future<void>.microtask(_loadWatchedEpisodes);
 
@@ -110,9 +115,11 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
   }
 
   Future<void> _loadWatchedEpisodes() async {
+    final int? collId = _collectionId;
+    if (collId == null) return;
     try {
       final Map<(int, int), DateTime?> watched =
-          await _db.getWatchedEpisodes(_collectionId, _showId);
+          await _db.getWatchedEpisodes(collId, _showId);
       state = state.copyWith(watchedEpisodes: watched);
     } on Exception catch (e) {
       state = state.copyWith(error: 'Failed to load watched episodes: $e');
@@ -213,18 +220,20 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
 
   /// Переключает отметку просмотра эпизода.
   Future<void> toggleEpisode(int season, int episode) async {
+    final int? collId = _collectionId;
+    if (collId == null) return;
     final bool isWatched = state.isEpisodeWatched(season, episode);
 
     if (isWatched) {
       await _db.markEpisodeUnwatched(
-          _collectionId, _showId, season, episode);
+          collId, _showId, season, episode);
       final Map<(int, int), DateTime?> updated =
           Map<(int, int), DateTime?>.of(state.watchedEpisodes)
             ..remove((season, episode));
       state = state.copyWith(watchedEpisodes: updated);
     } else {
       await _db.markEpisodeWatched(
-          _collectionId, _showId, season, episode);
+          collId, _showId, season, episode);
       final Map<(int, int), DateTime?> updated =
           Map<(int, int), DateTime?>.of(state.watchedEpisodes)
             ..[(season, episode)] = DateTime.now();
@@ -236,6 +245,8 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
 
   /// Переключает отметку просмотра всех эпизодов сезона.
   Future<void> toggleSeason(int season) async {
+    final int? collId = _collectionId;
+    if (collId == null) return;
     final List<TvEpisode>? episodes = state.episodesBySeason[season];
     if (episodes == null || episodes.isEmpty) return;
 
@@ -244,7 +255,7 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
 
     if (allWatched) {
       // Снимаем все отметки сезона
-      await _db.unmarkSeasonWatched(_collectionId, _showId, season);
+      await _db.unmarkSeasonWatched(collId, _showId, season);
       final Map<(int, int), DateTime?> updated =
           Map<(int, int), DateTime?>.of(state.watchedEpisodes);
       for (final TvEpisode ep in episodes) {
@@ -256,7 +267,7 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
       final List<int> episodeNumbers =
           episodes.map((TvEpisode ep) => ep.episodeNumber).toList();
       await _db.markSeasonWatched(
-          _collectionId, _showId, season, episodeNumbers);
+          collId, _showId, season, episodeNumbers);
       final DateTime now = DateTime.now();
       final Map<(int, int), DateTime?> updated =
           Map<(int, int), DateTime?>.of(state.watchedEpisodes);

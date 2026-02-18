@@ -83,7 +83,10 @@ class HomeScreen extends ConsumerWidget {
     WidgetRef ref,
     List<Collection> collections,
   ) {
-    if (collections.isEmpty) {
+    final int uncategorizedCount =
+        ref.watch(uncategorizedItemCountProvider).valueOrNull ?? 0;
+
+    if (collections.isEmpty && uncategorizedCount == 0) {
       return _buildEmptyState(context);
     }
 
@@ -115,6 +118,15 @@ class HomeScreen extends ConsumerWidget {
           bottom: isLandscape ? 40 : 80,
         ),
         children: <Widget>[
+          // Uncategorized тайл (если есть элементы без коллекции)
+          if (uncategorizedCount > 0) ...<Widget>[
+            const SizedBox(height: AppSpacing.md),
+            _UncategorizedTile(
+              count: uncategorizedCount,
+              onTap: () => _navigateToUncategorized(context),
+            ),
+          ],
+
           // Hero-карточки (первые 3 own коллекции)
           if (heroCollections.isNotEmpty) ...<Widget>[
             const SizedBox(height: AppSpacing.md),
@@ -262,6 +274,16 @@ class HomeScreen extends ConsumerWidget {
       MaterialPageRoute<void>(
         builder: (BuildContext context) => CollectionScreen(
           collectionId: collection.id,
+        ),
+      ),
+    );
+  }
+
+  void _navigateToUncategorized(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => const CollectionScreen(
+          collectionId: null,
         ),
       ),
     );
@@ -504,6 +526,83 @@ class HomeScreen extends ConsumerWidget {
         ),
       );
     }
+  }
+}
+
+/// Тайл для перехода к uncategorized элементам.
+class _UncategorizedTile extends StatelessWidget {
+  const _UncategorizedTile({
+    required this.count,
+    required this.onTap,
+  });
+
+  /// Количество uncategorized элементов.
+  final int count;
+
+  /// Callback при нажатии.
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: AppColors.surface,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        side: BorderSide(
+          color: AppColors.surfaceBorder.withAlpha(100),
+        ),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Row(
+            children: <Widget>[
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.textTertiary.withAlpha(30),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                ),
+                child: const Icon(
+                  Icons.inbox_outlined,
+                  color: AppColors.textTertiary,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      'Uncategorized',
+                      style: AppTypography.h3.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '$count item${count != 1 ? 's' : ''}',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.chevron_right,
+                color: AppColors.textTertiary,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

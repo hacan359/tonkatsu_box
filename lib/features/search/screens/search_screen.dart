@@ -19,6 +19,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/navigation/navigation_shell.dart';
 import '../../../shared/widgets/breadcrumb_app_bar.dart';
+import '../../../shared/widgets/collection_picker_dialog.dart';
 import '../../../shared/widgets/cached_image.dart' as app_cached;
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
@@ -222,7 +223,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     if (platformId == null || !mounted) return;
 
     final bool success = await ref
-        .read(collectionItemsNotifierProvider(widget.collectionId!).notifier)
+        .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
         .addItem(
           mediaType: MediaType.game,
           externalId: game.id,
@@ -247,15 +248,30 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
     final String gameName = game.name;
 
-    final Collection? selectedCollection =
-        await _showCollectionSelectionDialog();
-    if (selectedCollection == null || !mounted) return;
+    final CollectionChoice? choice =
+        await showCollectionPickerDialog(
+            context: context,
+            ref: ref,
+            title: 'Add to Collection',
+          );
+    if (choice == null || !mounted) return;
+
+    final int? collectionId;
+    final String collectionName;
+    switch (choice) {
+      case ChosenCollection(:final Collection collection):
+        collectionId = collection.id;
+        collectionName = collection.name;
+      case WithoutCollection():
+        collectionId = null;
+        collectionName = 'Uncategorized';
+    }
 
     final int? platformId = await _showPlatformSelectionDialog(game);
     if (platformId == null || !mounted) return;
 
     final bool success = await ref
-        .read(collectionItemsNotifierProvider(selectedCollection.id).notifier)
+        .read(collectionItemsNotifierProvider(collectionId).notifier)
         .addItem(
           mediaType: MediaType.game,
           externalId: game.id,
@@ -267,13 +283,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         _cacheImage(ImageType.gameCover, game.id.toString(), game.coverUrl);
         messenger.showSnackBar(
           SnackBar(
-            content: Text('$gameName added to ${selectedCollection.name}'),
+            content: Text('$gameName added to $collectionName'),
           ),
         );
       } else {
         messenger.showSnackBar(
           SnackBar(
-            content: Text('$gameName already in ${selectedCollection.name}'),
+            content: Text('$gameName already in $collectionName'),
           ),
         );
       }
@@ -360,7 +376,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
     final bool success = await ref
         .read(
-            collectionItemsNotifierProvider(widget.collectionId!).notifier)
+            collectionItemsNotifierProvider(widget.collectionId).notifier)
         .addItem(
           mediaType: MediaType.movie,
           externalId: movie.tmdbId,
@@ -388,12 +404,27 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
     final String title = movie.title;
 
-    final Collection? selectedCollection =
-        await _showCollectionSelectionDialog();
-    if (selectedCollection == null || !mounted) return;
+    final CollectionChoice? choice =
+        await showCollectionPickerDialog(
+            context: context,
+            ref: ref,
+            title: 'Add to Collection',
+          );
+    if (choice == null || !mounted) return;
+
+    final int? collectionId;
+    final String collectionName;
+    switch (choice) {
+      case ChosenCollection(:final Collection collection):
+        collectionId = collection.id;
+        collectionName = collection.name;
+      case WithoutCollection():
+        collectionId = null;
+        collectionName = 'Uncategorized';
+    }
 
     final bool success = await ref
-        .read(collectionItemsNotifierProvider(selectedCollection.id).notifier)
+        .read(collectionItemsNotifierProvider(collectionId).notifier)
         .addItem(
           mediaType: MediaType.movie,
           externalId: movie.tmdbId,
@@ -408,13 +439,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         );
         messenger.showSnackBar(
           SnackBar(
-            content: Text('$title added to ${selectedCollection.name}'),
+            content: Text('$title added to $collectionName'),
           ),
         );
       } else {
         messenger.showSnackBar(
           SnackBar(
-            content: Text('$title already in ${selectedCollection.name}'),
+            content: Text('$title already in $collectionName'),
           ),
         );
       }
@@ -427,7 +458,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
     final bool success = await ref
         .read(
-            collectionItemsNotifierProvider(widget.collectionId!).notifier)
+            collectionItemsNotifierProvider(widget.collectionId).notifier)
         .addItem(
           mediaType: MediaType.tvShow,
           externalId: tvShow.tmdbId,
@@ -456,12 +487,27 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
     final String title = tvShow.title;
 
-    final Collection? selectedCollection =
-        await _showCollectionSelectionDialog();
-    if (selectedCollection == null || !mounted) return;
+    final CollectionChoice? choice =
+        await showCollectionPickerDialog(
+            context: context,
+            ref: ref,
+            title: 'Add to Collection',
+          );
+    if (choice == null || !mounted) return;
+
+    final int? collectionId;
+    final String collectionName;
+    switch (choice) {
+      case ChosenCollection(:final Collection collection):
+        collectionId = collection.id;
+        collectionName = collection.name;
+      case WithoutCollection():
+        collectionId = null;
+        collectionName = 'Uncategorized';
+    }
 
     final bool success = await ref
-        .read(collectionItemsNotifierProvider(selectedCollection.id).notifier)
+        .read(collectionItemsNotifierProvider(collectionId).notifier)
         .addItem(
           mediaType: MediaType.tvShow,
           externalId: tvShow.tmdbId,
@@ -477,13 +523,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         _preloadSeasons(tvShow.tmdbId);
         messenger.showSnackBar(
           SnackBar(
-            content: Text('$title added to ${selectedCollection.name}'),
+            content: Text('$title added to $collectionName'),
           ),
         );
       } else {
         messenger.showSnackBar(
           SnackBar(
-            content: Text('$title already in ${selectedCollection.name}'),
+            content: Text('$title already in $collectionName'),
           ),
         );
       }
@@ -498,7 +544,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
     final bool success = await ref
         .read(
-            collectionItemsNotifierProvider(widget.collectionId!).notifier)
+            collectionItemsNotifierProvider(widget.collectionId).notifier)
         .addItem(
           mediaType: MediaType.animation,
           externalId: movie.tmdbId,
@@ -529,7 +575,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
     final bool success = await ref
         .read(
-            collectionItemsNotifierProvider(widget.collectionId!).notifier)
+            collectionItemsNotifierProvider(widget.collectionId).notifier)
         .addItem(
           mediaType: MediaType.animation,
           externalId: tvShow.tmdbId,
@@ -559,12 +605,27 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
     final String title = movie.title;
 
-    final Collection? selectedCollection =
-        await _showCollectionSelectionDialog();
-    if (selectedCollection == null || !mounted) return;
+    final CollectionChoice? choice =
+        await showCollectionPickerDialog(
+            context: context,
+            ref: ref,
+            title: 'Add to Collection',
+          );
+    if (choice == null || !mounted) return;
+
+    final int? collectionId;
+    final String collectionName;
+    switch (choice) {
+      case ChosenCollection(:final Collection collection):
+        collectionId = collection.id;
+        collectionName = collection.name;
+      case WithoutCollection():
+        collectionId = null;
+        collectionName = 'Uncategorized';
+    }
 
     final bool success = await ref
-        .read(collectionItemsNotifierProvider(selectedCollection.id).notifier)
+        .read(collectionItemsNotifierProvider(collectionId).notifier)
         .addItem(
           mediaType: MediaType.animation,
           externalId: movie.tmdbId,
@@ -580,13 +641,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         );
         messenger.showSnackBar(
           SnackBar(
-            content: Text('$title added to ${selectedCollection.name}'),
+            content: Text('$title added to $collectionName'),
           ),
         );
       } else {
         messenger.showSnackBar(
           SnackBar(
-            content: Text('$title already in ${selectedCollection.name}'),
+            content: Text('$title already in $collectionName'),
           ),
         );
       }
@@ -597,12 +658,27 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
     final String title = tvShow.title;
 
-    final Collection? selectedCollection =
-        await _showCollectionSelectionDialog();
-    if (selectedCollection == null || !mounted) return;
+    final CollectionChoice? choice =
+        await showCollectionPickerDialog(
+            context: context,
+            ref: ref,
+            title: 'Add to Collection',
+          );
+    if (choice == null || !mounted) return;
+
+    final int? collectionId;
+    final String collectionName;
+    switch (choice) {
+      case ChosenCollection(:final Collection collection):
+        collectionId = collection.id;
+        collectionName = collection.name;
+      case WithoutCollection():
+        collectionId = null;
+        collectionName = 'Uncategorized';
+    }
 
     final bool success = await ref
-        .read(collectionItemsNotifierProvider(selectedCollection.id).notifier)
+        .read(collectionItemsNotifierProvider(collectionId).notifier)
         .addItem(
           mediaType: MediaType.animation,
           externalId: tvShow.tmdbId,
@@ -619,13 +695,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         _preloadSeasons(tvShow.tmdbId);
         messenger.showSnackBar(
           SnackBar(
-            content: Text('$title added to ${selectedCollection.name}'),
+            content: Text('$title added to $collectionName'),
           ),
         );
       } else {
         messenger.showSnackBar(
           SnackBar(
-            content: Text('$title already in ${selectedCollection.name}'),
+            content: Text('$title already in $collectionName'),
           ),
         );
       }
@@ -633,70 +709,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   }
 
   // ==================== Shared dialogs ====================
-
-  Future<Collection?> _showCollectionSelectionDialog() async {
-    final AsyncValue<List<Collection>> collectionsAsync =
-        ref.read(collectionsProvider);
-
-    final List<Collection>? collections = collectionsAsync.valueOrNull;
-    if (collections == null || collections.isEmpty) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('No collections available. Create one first.'),
-          ),
-        );
-      }
-      return null;
-    }
-
-    final List<Collection> editableCollections =
-        collections.where((Collection c) => c.isEditable).toList();
-
-    if (editableCollections.isEmpty) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('No editable collections. Create your own first.'),
-          ),
-        );
-      }
-      return null;
-    }
-
-    return showDialog<Collection>(
-      context: context,
-      builder: (BuildContext context) => AlertDialog(
-        title: const Text('Add to Collection'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: editableCollections.length,
-            itemBuilder: (BuildContext context, int index) {
-              final Collection collection = editableCollections[index];
-              return ListTile(
-                leading: Icon(
-                  collection.type == CollectionType.own
-                      ? Icons.folder
-                      : Icons.fork_right,
-                ),
-                title: Text(collection.name),
-                subtitle: Text(collection.author),
-                onTap: () => Navigator.of(context).pop(collection),
-              );
-            },
-          ),
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-        ],
-      ),
-    );
-  }
 
   Future<int?> _showPlatformSelectionDialog(Game game) async {
     final List<int>? platformIds = game.platformIds;

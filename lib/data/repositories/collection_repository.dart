@@ -144,16 +144,20 @@ class CollectionRepository {
   // ==================== Collection Items ====================
 
   /// Возвращает все элементы коллекции.
+  ///
+  /// Если [collectionId] == null, возвращает uncategorized элементы.
   Future<List<CollectionItem>> getItems(
-    int collectionId, {
+    int? collectionId, {
     MediaType? mediaType,
   }) async {
     return _db.getCollectionItems(collectionId, mediaType: mediaType);
   }
 
   /// Возвращает элементы коллекции с подгруженными данными.
+  ///
+  /// Если [collectionId] == null, возвращает uncategorized элементы.
   Future<List<CollectionItem>> getItemsWithData(
-    int collectionId, {
+    int? collectionId, {
     MediaType? mediaType,
   }) async {
     return _db.getCollectionItemsWithData(collectionId, mediaType: mediaType);
@@ -167,8 +171,10 @@ class CollectionRepository {
   }
 
   /// Добавляет элемент в коллекцию.
+  ///
+  /// Если [collectionId] == null, добавляет как uncategorized.
   Future<int?> addItem({
-    required int collectionId,
+    required int? collectionId,
     required MediaType mediaType,
     required int externalId,
     int? platformId,
@@ -183,6 +189,14 @@ class CollectionRepository {
       authorComment: authorComment,
       status: status,
     );
+  }
+
+  /// Перемещает элемент в другую коллекцию.
+  ///
+  /// Возвращает true при успехе, false если элемент уже есть в целевой
+  /// коллекции (дубликат).
+  Future<bool> moveItemToCollection(int itemId, int? targetCollectionId) async {
+    return _db.updateItemCollectionId(itemId, targetCollectionId);
   }
 
   /// Удаляет элемент из коллекции.
@@ -245,7 +259,9 @@ class CollectionRepository {
   // ==================== Stats ====================
 
   /// Возвращает статистику коллекции.
-  Future<CollectionStats> getStats(int collectionId) async {
+  ///
+  /// Если [collectionId] == null, возвращает статистику uncategorized.
+  Future<CollectionStats> getStats(int? collectionId) async {
     final Map<String, int> raw =
         await _db.getCollectionItemStats(collectionId);
     return CollectionStats(
@@ -261,6 +277,11 @@ class CollectionRepository {
       tvShowCount: raw['tvShowCount'] ?? 0,
       animationCount: raw['animationCount'] ?? 0,
     );
+  }
+
+  /// Возвращает количество uncategorized элементов.
+  Future<int> getUncategorizedCount() async {
+    return _db.getUncategorizedItemCount();
   }
 
   // ==================== Fork ====================

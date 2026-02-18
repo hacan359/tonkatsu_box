@@ -457,7 +457,7 @@ void main() {
         final CollectionItem item = CollectionItem.fromExport(json);
 
         expect(item.id, 0);
-        expect(item.collectionId, 0);
+        expect(item.collectionId, isNull);
         expect(item.mediaType, MediaType.movie);
         expect(item.externalId, 550);
         expect(item.platformId, isNull);
@@ -1594,6 +1594,156 @@ void main() {
             );
           }
         });
+      });
+    });
+
+    group('isUncategorized', () {
+      test('должен вернуть true когда collectionId null', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: null,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        expect(item.isUncategorized, isTrue);
+        expect(item.collectionId, isNull);
+      });
+
+      test('должен вернуть false когда collectionId задан', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        expect(item.isUncategorized, isFalse);
+        expect(item.collectionId, 10);
+      });
+
+      test('fromDb должен создать uncategorized при collection_id null', () {
+        final Map<String, dynamic> row = <String, dynamic>{
+          'id': 1,
+          'collection_id': null,
+          'media_type': 'game',
+          'external_id': 1942,
+          'platform_id': null,
+          'current_season': null,
+          'current_episode': null,
+          'status': 'not_started',
+          'author_comment': null,
+          'user_comment': null,
+          'added_at': testAddedAtUnix,
+        };
+
+        final CollectionItem item = CollectionItem.fromDb(row);
+
+        expect(item.isUncategorized, isTrue);
+        expect(item.collectionId, isNull);
+      });
+
+      test('toDb должен сохранить null collection_id', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: null,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        final Map<String, dynamic> db = item.toDb();
+
+        expect(db['collection_id'], isNull);
+      });
+
+      test('copyWith clearCollectionId должен установить null', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        final CollectionItem copy = item.copyWith(clearCollectionId: true);
+
+        expect(copy.collectionId, isNull);
+        expect(copy.isUncategorized, isTrue);
+      });
+
+      test('copyWith clearCollectionId должен иметь приоритет над collectionId', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        final CollectionItem copy = item.copyWith(
+          collectionId: 20,
+          clearCollectionId: true,
+        );
+
+        expect(copy.collectionId, isNull);
+      });
+
+      test('copyWith должен позволять установить collectionId на uncategorized item', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: null,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        expect(item.isUncategorized, isTrue);
+
+        final CollectionItem copy = item.copyWith(collectionId: 5);
+
+        expect(copy.collectionId, 5);
+        expect(copy.isUncategorized, isFalse);
+      });
+
+      test('toDb/fromDb round-trip с null collectionId', () {
+        final CollectionItem original = CollectionItem(
+          id: 1,
+          collectionId: null,
+          mediaType: MediaType.game,
+          externalId: 1942,
+          platformId: 48,
+          status: ItemStatus.completed,
+          addedAt: testAddedAt,
+        );
+
+        final Map<String, dynamic> db = original.toDb();
+        final CollectionItem restored = CollectionItem.fromDb(db);
+
+        expect(restored.collectionId, isNull);
+        expect(restored.isUncategorized, isTrue);
+        expect(restored.externalId, original.externalId);
+        expect(restored.status, original.status);
+      });
+
+      test('fromExport без collectionId должен создать uncategorized', () {
+        final Map<String, dynamic> json = <String, dynamic>{
+          'media_type': 'movie',
+          'external_id': 550,
+        };
+
+        final CollectionItem item = CollectionItem.fromExport(json);
+
+        expect(item.collectionId, isNull);
+        expect(item.isUncategorized, isTrue);
       });
     });
 

@@ -158,24 +158,29 @@ abstract class BaseCanvasController {
 }
 
 /// Провайдер для управления канвасом конкретной коллекции.
-final NotifierProviderFamily<CanvasNotifier, CanvasState, int>
+final NotifierProviderFamily<CanvasNotifier, CanvasState, int?>
     canvasNotifierProvider =
-    NotifierProvider.family<CanvasNotifier, CanvasState, int>(
+    NotifierProvider.family<CanvasNotifier, CanvasState, int?>(
   CanvasNotifier.new,
 );
 
 /// Notifier для управления состоянием канваса.
-class CanvasNotifier extends FamilyNotifier<CanvasState, int>
+class CanvasNotifier extends FamilyNotifier<CanvasState, int?>
     implements BaseCanvasController {
   late CanvasRepository _repository;
-  late int _collectionId;
+  late int? _collectionId;
   Timer? _viewportSaveTimer;
   Timer? _positionSaveTimer;
 
   @override
-  CanvasState build(int arg) {
+  CanvasState build(int? arg) {
     _collectionId = arg;
     _repository = ref.watch(canvasRepositoryProvider);
+
+    // Canvas не поддерживается для uncategorized элементов
+    if (_collectionId == null) {
+      return const CanvasState(isLoading: false, isInitialized: true);
+    }
 
     ref.onDispose(() {
       _viewportSaveTimer?.cancel();
@@ -201,8 +206,10 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int>
   }
 
   Future<void> _loadCanvas() async {
+    if (_collectionId == null) return;
+    final int collectionId = _collectionId!;
     try {
-      final bool hasItems = await _repository.hasCanvasItems(_collectionId);
+      final bool hasItems = await _repository.hasCanvasItems(collectionId);
 
       if (!hasItems) {
         // Первый запуск — инициализируем канвас из элементов коллекции
@@ -217,16 +224,16 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int>
           CanvasViewport? viewport,
           List<CanvasConnection> connections,
         ) = await (
-          _repository.getItemsWithData(_collectionId),
-          _repository.getViewport(_collectionId),
-          _repository.getConnections(_collectionId),
+          _repository.getItemsWithData(collectionId),
+          _repository.getViewport(collectionId),
+          _repository.getConnections(collectionId),
         ).wait;
 
         state = state.copyWith(
           items: items,
           connections: connections,
           viewport: viewport ??
-              CanvasViewport(collectionId: _collectionId),
+              CanvasViewport(collectionId: collectionId),
           isLoading: false,
           isInitialized: true,
         );
@@ -240,18 +247,20 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int>
   }
 
   Future<void> _initializeFromItems() async {
+    if (_collectionId == null) return;
+    final int collectionId = _collectionId!;
     try {
       final AsyncValue<List<CollectionItem>> itemsAsync =
-          ref.read(collectionItemsNotifierProvider(_collectionId));
+          ref.read(collectionItemsNotifierProvider(collectionId));
       final List<CollectionItem> allItems =
           itemsAsync.valueOrNull ?? <CollectionItem>[];
 
       final List<CanvasItem> items =
-          await _repository.initializeCanvas(_collectionId, allItems);
+          await _repository.initializeCanvas(collectionId, allItems);
 
       state = state.copyWith(
         items: items,
-        viewport: CanvasViewport(collectionId: _collectionId),
+        viewport: CanvasViewport(collectionId: collectionId),
         isLoading: false,
         isInitialized: true,
       );
@@ -267,10 +276,12 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int>
   ///
   /// Вызывается реактивно при изменении элементов коллекции.
   Future<void> _syncAndReload() async {
+    if (_collectionId == null) return;
+    final int collectionId = _collectionId!;
     try {
       await _syncCanvasWithItems();
       final List<CanvasItem> items =
-          await _repository.getItemsWithData(_collectionId);
+          await _repository.getItemsWithData(collectionId);
       state = state.copyWith(items: items);
     } catch (_) {
       // Ошибки синхронизации не критичны — при следующем открытии
@@ -284,8 +295,10 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int>
   /// - Удаляет элементы канваса для удалённых из коллекции
   /// - Создаёт элементы канваса для новых элементов в коллекции
   Future<void> _syncCanvasWithItems() async {
+    if (_collectionId == null) return;
+    final int collectionId = _collectionId!;
     final AsyncValue<List<CollectionItem>> itemsAsync =
-        ref.read(collectionItemsNotifierProvider(_collectionId));
+        ref.read(collectionItemsNotifierProvider(collectionId));
     final List<CollectionItem>? allItems = itemsAsync.valueOrNull;
 
     // Если элементы ещё не загружены — пропускаем синхронизацию
@@ -298,7 +311,7 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int>
         .toSet();
 
     final List<CanvasItem> canvasItems =
-        await _repository.getItems(_collectionId);
+        await _repository.getItems(collectionId);
 
     // Удаляем сиротские медиа-элементы (удалены из коллекции)
     for (final CanvasItem item in canvasItems) {
@@ -370,7 +383,7 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int>
 
       final CanvasItem item = CanvasItem(
         id: 0,
-        collectionId: _collectionId,
+        collectionId: collectionId,
         itemType: canvasType,
         itemRefId: missingItems[i].externalId,
         x: x,
@@ -398,7 +411,7 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int>
                   item.itemRefId == externalId))
           .toList(),
     );
-    _repository.deleteMediaItem(_collectionId, canvasType, externalId);
+    _repository.deleteMediaItem(_collectionId!, canvasType, externalId);
   }
 
   /// Удаляет элемент игры с канваса по igdbId.
@@ -443,7 +456,7 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int>
   @override
   void updateViewport(double scale, double offsetX, double offsetY) {
     final CanvasViewport newViewport = CanvasViewport(
-      collectionId: _collectionId,
+      collectionId: _collectionId!,
       scale: scale,
       offsetX: offsetX,
       offsetY: offsetY,
@@ -462,7 +475,7 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int>
   @override
   void resetViewport() {
     final CanvasViewport defaultViewport = CanvasViewport(
-      collectionId: _collectionId,
+      collectionId: _collectionId!,
     );
 
     state = state.copyWith(viewport: defaultViewport);
@@ -559,7 +572,7 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int>
 
     final CanvasItem item = CanvasItem(
       id: 0,
-      collectionId: _collectionId,
+      collectionId: _collectionId!,
       itemType: CanvasItemType.text,
       x: x,
       y: y,
@@ -598,7 +611,7 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int>
 
     final CanvasItem item = CanvasItem(
       id: 0,
-      collectionId: _collectionId,
+      collectionId: _collectionId!,
       itemType: CanvasItemType.image,
       x: x,
       y: y,
@@ -630,7 +643,7 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int>
 
     final CanvasItem item = CanvasItem(
       id: 0,
-      collectionId: _collectionId,
+      collectionId: _collectionId!,
       itemType: CanvasItemType.link,
       x: x,
       y: y,
@@ -752,7 +765,7 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int>
     final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     final CanvasConnection conn = CanvasConnection(
       id: 0,
-      collectionId: _collectionId,
+      collectionId: _collectionId!,
       fromItemId: fromItemId,
       toItemId: toItemId,
       createdAt: DateTime.fromMillisecondsSinceEpoch(now * 1000),
@@ -821,9 +834,9 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int>
 /// - Автоинициализируется одним медиа-элементом (игра/фильм/сериал)
 /// - Поддерживает game/movie/tvShow/text/image/link элементы
 final NotifierProviderFamily<GameCanvasNotifier, CanvasState,
-        ({int collectionId, int collectionItemId})>
+        ({int? collectionId, int collectionItemId})>
     gameCanvasNotifierProvider = NotifierProvider.family<GameCanvasNotifier,
-        CanvasState, ({int collectionId, int collectionItemId})>(
+        CanvasState, ({int? collectionId, int collectionItemId})>(
   GameCanvasNotifier.new,
 );
 
@@ -832,16 +845,16 @@ final NotifierProviderFamily<GameCanvasNotifier, CanvasState,
 /// Упрощённая версия [CanvasNotifier] без реактивной синхронизации
 /// с элементами коллекции. Каждый элемент коллекции имеет свой canvas.
 class GameCanvasNotifier
-    extends FamilyNotifier<CanvasState, ({int collectionId, int collectionItemId})>
+    extends FamilyNotifier<CanvasState, ({int? collectionId, int collectionItemId})>
     implements BaseCanvasController {
   late CanvasRepository _repository;
-  late int _collectionId;
+  late int? _collectionId;
   late int _collectionItemId;
   Timer? _viewportSaveTimer;
   Timer? _positionSaveTimer;
 
   @override
-  CanvasState build(({int collectionId, int collectionItemId}) arg) {
+  CanvasState build(({int? collectionId, int collectionItemId}) arg) {
     _collectionId = arg.collectionId;
     _collectionItemId = arg.collectionItemId;
     _repository = ref.watch(canvasRepositoryProvider);
@@ -929,7 +942,7 @@ class GameCanvasNotifier
 
     final CanvasItem item = CanvasItem(
       id: 0,
-      collectionId: _collectionId,
+      collectionId: _collectionId!,
       collectionItemId: _collectionItemId,
       itemType: canvasType,
       itemRefId: collectionItem.externalId,
@@ -1096,7 +1109,7 @@ class GameCanvasNotifier
 
     final CanvasItem item = CanvasItem(
       id: 0,
-      collectionId: _collectionId,
+      collectionId: _collectionId!,
       collectionItemId: _collectionItemId,
       itemType: CanvasItemType.text,
       x: x,
@@ -1133,7 +1146,7 @@ class GameCanvasNotifier
 
     final CanvasItem item = CanvasItem(
       id: 0,
-      collectionId: _collectionId,
+      collectionId: _collectionId!,
       collectionItemId: _collectionItemId,
       itemType: CanvasItemType.image,
       x: x,
@@ -1166,7 +1179,7 @@ class GameCanvasNotifier
 
     final CanvasItem item = CanvasItem(
       id: 0,
-      collectionId: _collectionId,
+      collectionId: _collectionId!,
       collectionItemId: _collectionItemId,
       itemType: CanvasItemType.link,
       x: x,
@@ -1281,7 +1294,7 @@ class GameCanvasNotifier
     final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     final CanvasConnection conn = CanvasConnection(
       id: 0,
-      collectionId: _collectionId,
+      collectionId: _collectionId!,
       collectionItemId: _collectionItemId,
       fromItemId: fromItemId,
       toItemId: toItemId,

@@ -17,7 +17,7 @@ class MockTmdbApi extends Mock implements TmdbApi {}
 
 class MockCollectionItemsNotifier extends CollectionItemsNotifier {
   @override
-  AsyncValue<List<CollectionItem>> build(int arg) {
+  AsyncValue<List<CollectionItem>> build(int? arg) {
     return const AsyncValue<List<CollectionItem>>.data(<CollectionItem>[]);
   }
 }

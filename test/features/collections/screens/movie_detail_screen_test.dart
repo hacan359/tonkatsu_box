@@ -20,7 +20,7 @@ class MockCollectionItemsNotifier extends CollectionItemsNotifier {
   final AsyncValue<List<CollectionItem>> _initialState;
 
   @override
-  AsyncValue<List<CollectionItem>> build(int arg) {
+  AsyncValue<List<CollectionItem>> build(int? arg) {
     return _initialState;
   }
 }
@@ -32,7 +32,7 @@ void main() {
 
   CollectionItem createTestItem({
     int id = 1,
-    int collectionId = 1,
+    int? collectionId = 1,
     int externalId = 550,
     ItemStatus status = ItemStatus.notStarted,
     String? authorComment,
@@ -81,7 +81,7 @@ void main() {
   // -- Хелпер для создания тестового виджета --
 
   Widget createTestWidget({
-    required int collectionId,
+    required int? collectionId,
     required int itemId,
     required bool isEditable,
     required List<CollectionItem> items,
@@ -1030,6 +1030,44 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.byType(MediaDetailView), findsOneWidget);
+      });
+    });
+
+    group('uncategorized (collectionId == null)', () {
+      testWidgets('не должен показывать вкладку Board',
+          (WidgetTester tester) async {
+        final Movie movie = createTestMovie();
+        final CollectionItem item =
+            createTestItem(collectionId: null, movie: movie);
+
+        await tester.pumpWidget(createTestWidget(
+          collectionId: null,
+          itemId: 1,
+          isEditable: true,
+          items: <CollectionItem>[item],
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(Tab), findsOneWidget);
+        expect(find.text('Details'), findsOneWidget);
+        expect(find.text('Board'), findsNothing);
+      });
+
+      testWidgets('не должен показывать иконку Board',
+          (WidgetTester tester) async {
+        final Movie movie = createTestMovie();
+        final CollectionItem item =
+            createTestItem(collectionId: null, movie: movie);
+
+        await tester.pumpWidget(createTestWidget(
+          collectionId: null,
+          itemId: 1,
+          isEditable: true,
+          items: <CollectionItem>[item],
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.byIcon(Icons.dashboard_outlined), findsNothing);
       });
     });
 

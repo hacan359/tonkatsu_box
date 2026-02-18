@@ -49,7 +49,7 @@ class TestSteamGridDbPanelNotifier extends SteamGridDbPanelNotifier {
   final SteamGridDbPanelState _initialState;
 
   @override
-  SteamGridDbPanelState build(int arg) {
+  SteamGridDbPanelState build(int? arg) {
     return _initialState;
   }
 }

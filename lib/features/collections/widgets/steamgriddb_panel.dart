@@ -17,8 +17,8 @@ class SteamGridDbPanel extends ConsumerStatefulWidget {
     super.key,
   });
 
-  /// ID коллекции.
-  final int collectionId;
+  /// ID коллекции (null для uncategorized).
+  final int? collectionId;
 
   /// Название коллекции (для автозаполнения поиска).
   final String collectionName;

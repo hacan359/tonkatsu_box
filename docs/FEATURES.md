@@ -43,6 +43,7 @@ Create unlimited collections organized however you want:
 - **Grid mode** — toggle between list and poster grid view; choice is saved per-collection and restored on next open. Grid cards show dual rating badge (`★ 8 / 7.5`), collection checkmark, and status emoji
 - **Type filter** — filter items by type (All/Games/Movies/TV Shows/Animation) with item count badges on each chip
 - **Search** — filter items by name within a collection
+- **Move to Collection** — move items between collections or to/from uncategorized via PopupMenuButton on detail screens and collection tiles. Shared `CollectionPickerDialog` with options to exclude current collection and show/hide "Without Collection"
 
 ## Universal Search
 
@@ -157,7 +158,7 @@ Track your viewing progress for TV shows and animated series at the episode leve
 
 ## Detail Screens
 
-Tap any item in a collection to see its full details. All detail screens have two tabs:
+Tap any item in a collection to see its full details. Detail screens have one or two tabs depending on context:
 
 **Details tab** — unified layout via `MediaDetailView`:
 - Poster (100x150) with source badge (IGDB/TMDB) and per-media accent color
@@ -169,7 +170,11 @@ Tap any item in a collection to see its full details. All detail screens have tw
 - My Notes (private), Author's Review (visible to others when shared)
 - Activity & Progress (collapsed ExpansionTile with dates, episode tracker)
 
-**Board tab** — personal board for the item with full board functionality (see Per-Item Board above)
+**Board tab** — personal board for the item with full board functionality (see Per-Item Board above). Hidden for uncategorized items (items without a collection)
+
+**Actions menu** — PopupMenuButton in AppBar (when editable):
+- "Move to Collection" — move the item to another collection or remove from collection (uncategorized)
+- "Remove" — delete the item from the collection with confirmation dialog
 
 ### Game Details
 - Source: IGDB
@@ -327,7 +332,7 @@ Configuration management and data reset:
 - **Export Config** — saves all 7 settings keys (IGDB, SteamGridDB, TMDB) to a `.json` file via file dialog
 - **Import Config** — loads settings from a `.json` file, validates format and version, updates API clients immediately
 - Config file includes a version marker for forward compatibility
-- **Reset Database** (Danger Zone) — clears all 14 SQLite tables in a single transaction, preserves SharedPreferences
+- **Reset Database** (Danger Zone) — clears all 14 SQLite tables in a single transaction, preserves SharedPreferences. After reset, invalidates all data providers and replaces NavigationShell to reset all tab navigation stacks
 
 ### Debug (dev builds only)
 Developer tools hub with 3 sub-screens:
@@ -350,8 +355,8 @@ When enabled in Settings, media images (game covers, movie posters, TV show post
 - **Toggle** — enable/disable image caching in Settings → Image Cache
 - **Auto-download** — images are automatically saved to local storage when viewed with caching enabled
 - **Eager caching** — cover images are downloaded immediately when adding items to collections from search
-- **Validation** — downloaded files are validated by JPEG/PNG/WebP magic bytes; invalid files are deleted
-- **Fallback** — if cache is cleared or a file is missing, images load from the network and re-download in the background
+- **Validation** — downloaded files are validated by JPEG/PNG/WebP magic bytes; invalid or empty files are rejected. `isImageCached()` validates file integrity, not just existence
+- **Fallback** — if cache is cleared, a file is missing, or a file is empty/corrupt, images load from the network and re-download in the background. Three layers of defense: service validation, sync guard before `Image.file()`, and `errorBuilder` fallback
 - **Board images** — URL images added to boards are also cached to disk (using FNV-1a hash of URL as cache key)
 - **Custom folder** — choose where cached images are stored via file picker
 - **Cache stats** — view file count and total size in Settings

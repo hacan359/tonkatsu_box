@@ -3,6 +3,7 @@
 /// Данные о нахождении элемента в коллекции.
 ///
 /// Используется для маркировки результатов поиска и удаления элементов.
+/// Если [collectionId] == null, элемент является «без коллекции».
 class CollectedItemInfo {
   /// Создаёт [CollectedItemInfo].
   const CollectedItemInfo({
@@ -14,9 +15,9 @@ class CollectedItemInfo {
   /// ID записи в таблице collection_items.
   final int recordId;
 
-  /// ID коллекции.
-  final int collectionId;
+  /// ID коллекции (null для элементов без коллекции).
+  final int? collectionId;
 
-  /// Название коллекции.
-  final String collectionName;
+  /// Название коллекции (null для элементов без коллекции).
+  final String? collectionName;
 }

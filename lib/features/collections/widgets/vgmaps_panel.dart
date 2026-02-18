@@ -53,8 +53,8 @@ class VgMapsPanel extends ConsumerStatefulWidget {
     super.key,
   });
 
-  /// ID коллекции.
-  final int collectionId;
+  /// ID коллекции (null для uncategorized).
+  final int? collectionId;
 
   /// Колбэк при добавлении изображения на канвас.
   final VgMapsAddImageCallback onAddImage;

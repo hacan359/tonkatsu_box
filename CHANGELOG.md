@@ -7,6 +7,29 @@
 ## [Unreleased]
 
 ### Added
+- Добавлена фича «Move to Collection» — перемещение элементов между коллекциями и в/из uncategorized
+  - Метод `DatabaseService.updateItemCollectionId()` — обновление `collection_id` и `sort_order` элемента
+  - Метод `CollectionRepository.moveItemToCollection()` — перемещение с обработкой UNIQUE constraint
+  - Метод `CollectionItemsNotifier.moveItem()` — перемещение с инвалидацией всех связанных провайдеров
+  - Shared диалог `collection_picker_dialog.dart` — выбор коллекции с sealed class `CollectionChoice` (`ChosenCollection` / `WithoutCollection`), параметры `excludeCollectionId`, `showUncategorized`
+  - `PopupMenuButton` на экранах деталей (Game, Movie, TV Show, Anime) — пункты «Move to Collection» и «Remove» (заменяет одиночную кнопку Remove)
+  - `PopupMenuButton` на тайлах `_CollectionItemTile` в `CollectionScreen` — «Move» и «Remove» (заменяет одиночный `IconButton` Remove)
+- Добавлены тесты: `anime_detail_screen_test.dart` (31 тест), `collection_picker_dialog_test.dart` (12 тестов), `database_service_test.dart` (тесты updateItemCollectionId), дополнены `collection_repository_test.dart` (moveItemToCollection: success, duplicate, not found)
+
+### Changed
+- Рефакторинг `SearchScreen` — sealed class `CollectionChoice` и метод `_showCollectionSelectionDialog()` вынесены в shared `collection_picker_dialog.dart`, удалено ~80 строк дублирующего кода
+- Скрыта вкладка Board на экранах деталей для uncategorized-элементов (`collectionId == null`) — геттер `_hasCanvas` на 4 detail screens, `TabController(length: _hasCanvas ? 2 : 1)`
+- Инвалидация `uncategorizedItemCountProvider` при добавлении/удалении элементов в `CollectionItemsNotifier.addItem()` и `removeItem()`
+- Улучшен сброс базы данных (`DatabaseScreen._resetDatabase`) — добавлена инвалидация 7 провайдеров (`collectionsProvider`, `uncategorizedItemCountProvider`, `allItemsNotifierProvider`, `collectedGameIdsProvider`, `collectedMovieIdsProvider`, `collectedTvShowIdsProvider`, `collectedAnimationIdsProvider`) + навигация `pushReplacement(NavigationShell)` для полного сброса стеков всех табов
+- Обновлены провайдеры канваса, SteamGridDB панели, VGMaps панели и трекера эпизодов для поддержки nullable `collectionId`
+
+### Fixed
+- Исправлен crash `FileImage._loadAsync: Bad state: File is empty` — добавлен sync guard в `CachedImage` перед `Image.file()`: проверка `existsSync()` и `lengthSync() > 0` с fallback на сетевое изображение
+- Исправлена валидация кэша: `ImageCacheService.isImageCached()` теперь проверяет целостность файла через magic bytes (`_isValidImageFile`), а не только существование
+- Исправлено сохранение пустых файлов в кэш: `ImageCacheService.saveImageBytes()` отклоняет пустые данные (`bytes.isEmpty`)
+- Исправлен сброс БД не обновляющий UI — элементы оставались на экранах до перезапуска приложения
+
+### Added
 - Добавлен виджет `BreadcrumbAppBar` (`lib/shared/widgets/breadcrumb_app_bar.dart`) — навигационные хлебные крошки: логотип 20x20 + разделители `›` + кликабельные крошки. Поддержка `bottom` (TabBar), `actions`, горизонтальный скролл. Последняя крошка — жирная (w600), остальные кликабельные (w400)
 - Добавлен экран-хаб `SettingsScreen` — 4 карточки навигации: Credentials, Cache, Database, Debug (только kDebugMode). Заменяет монолитный экран настроек (~1118 строк)
 - Добавлены подэкраны настроек: `CredentialsScreen` (IGDB/SteamGridDB/TMDB API ключи), `CacheScreen` (кэш изображений), `DatabaseScreen` (export/import/reset), `DebugHubScreen` (3 debug-инструмента)

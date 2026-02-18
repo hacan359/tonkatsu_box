@@ -425,6 +425,94 @@ void main() {
       // Полный flow (errorBuilder → _deleteAndRedownload → Image.network)
       // проверяется вручную.
 
+      testWidgets('должен fallback на network при несуществующем файле',
+          (WidgetTester tester) async {
+        // Arrange — isLocal=true, но файл не существует (удалён clearCache)
+        when(() => mockCacheService.getImageUri(
+              type: any(named: 'type'),
+              imageId: any(named: 'imageId'),
+              remoteUrl: any(named: 'remoteUrl'),
+            )).thenAnswer((_) async => const ImageResult(
+              uri: '/tmp/nonexistent_file_12345.png',
+              isLocal: true,
+              isMissing: false,
+            ));
+        when(() => mockCacheService.deleteImage(any(), any()))
+            .thenAnswer((_) async {});
+        when(() => mockCacheService.downloadImage(
+              type: any(named: 'type'),
+              imageId: any(named: 'imageId'),
+              remoteUrl: any(named: 'remoteUrl'),
+            )).thenAnswer((_) async => true);
+
+        // Act
+        await tester.pumpWidget(buildTestWidget(
+          child: const CachedImage(
+            imageType: ImageType.gameCover,
+            imageId: '9608',
+            remoteUrl: 'https://example.com/image.png',
+            width: 60,
+            height: 80,
+          ),
+        ));
+        await tester.pump();
+        await tester.pump();
+
+        // Assert — Image показан (network fallback), не crash
+        expect(find.byType(Image), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      });
+
+      testWidgets('должен fallback на network при пустом файле (0 bytes)',
+          (WidgetTester tester) async {
+        // Arrange — создаём пустой файл
+        final Directory tempDir =
+            Directory.systemTemp.createTempSync('cached_image_empty_');
+        final File emptyFile = File('${tempDir.path}/empty.png');
+        emptyFile.writeAsBytesSync(<int>[]);
+
+        when(() => mockCacheService.getImageUri(
+              type: any(named: 'type'),
+              imageId: any(named: 'imageId'),
+              remoteUrl: any(named: 'remoteUrl'),
+            )).thenAnswer((_) async => ImageResult(
+              uri: emptyFile.path,
+              isLocal: true,
+              isMissing: false,
+            ));
+        when(() => mockCacheService.deleteImage(any(), any()))
+            .thenAnswer((_) async {});
+        when(() => mockCacheService.downloadImage(
+              type: any(named: 'type'),
+              imageId: any(named: 'imageId'),
+              remoteUrl: any(named: 'remoteUrl'),
+            )).thenAnswer((_) async => true);
+
+        // Act
+        await tester.pumpWidget(buildTestWidget(
+          child: const CachedImage(
+            imageType: ImageType.gameCover,
+            imageId: '9608',
+            remoteUrl: 'https://example.com/image.png',
+            width: 60,
+            height: 80,
+          ),
+        ));
+        await tester.pump();
+        await tester.pump();
+
+        // Assert — Image показан (network fallback), не crash
+        expect(find.byType(Image), findsOneWidget);
+        expect(tester.takeException(), isNull);
+
+        // Cleanup
+        try {
+          tempDir.deleteSync(recursive: true);
+        } on FileSystemException {
+          // Windows file lock
+        }
+      });
+
       testWidgets('должен использовать Image (file) при isLocal=true',
           (WidgetTester tester) async {
         // Arrange — создаём реальный валидный 1x1 PNG

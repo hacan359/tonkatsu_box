@@ -8,6 +8,7 @@ import '../../../core/services/export_service.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../core/services/xcoll_file.dart';
 import '../../../shared/widgets/breadcrumb_app_bar.dart';
+import '../../../shared/widgets/collection_picker_dialog.dart';
 import '../../../shared/widgets/cached_image.dart';
 import '../../../data/repositories/collection_repository.dart';
 import '../../../shared/constants/media_type_theme.dart';
@@ -48,8 +49,8 @@ class CollectionScreen extends ConsumerStatefulWidget {
     super.key,
   });
 
-  /// ID коллекции.
-  final int collectionId;
+  /// ID коллекции (null для uncategorized).
+  final int? collectionId;
 
   @override
   ConsumerState<CollectionScreen> createState() => _CollectionScreenState();
@@ -67,7 +68,16 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
 
   /// Реальная возможность редактирования с учётом режима просмотра.
   bool get _effectiveIsEditable =>
-      _collection != null && _collection!.isEditable && !_isViewModeLocked;
+      (_isUncategorized || (_collection != null && _collection!.isEditable)) &&
+      !_isViewModeLocked;
+
+  /// Может ли пользователь редактировать элементы.
+  bool get _canEdit =>
+      _isUncategorized || (_collection != null && _collection!.isEditable);
+
+  /// Название для хлебных крошек и заголовка.
+  String get _displayName =>
+      _isUncategorized ? 'Uncategorized' : (_collection?.name ?? '');
 
   @override
   void initState() {
@@ -84,9 +94,28 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     super.dispose();
   }
 
+  /// Является ли это экраном uncategorized элементов.
+  bool get _isUncategorized => widget.collectionId == null;
+
   Future<void> _loadCollection() async {
+    if (_isUncategorized) {
+      // Uncategorized — нет коллекции в БД
+      final SharedPreferences prefs = ref.read(sharedPreferencesProvider);
+      final bool savedGridMode = prefs.getBool(
+            '${SettingsKeys.collectionViewModePrefix}uncategorized',
+          ) ??
+          false;
+      if (mounted) {
+        setState(() {
+          _isGridMode = savedGridMode;
+          _collectionLoading = false;
+        });
+      }
+      return;
+    }
+
     final CollectionRepository repo = ref.read(collectionRepositoryProvider);
-    final Collection? collection = await repo.getById(widget.collectionId);
+    final Collection? collection = await repo.getById(widget.collectionId!);
     // Загружаем сохранённый режим отображения
     final SharedPreferences prefs = ref.read(sharedPreferencesProvider);
     final bool savedGridMode = prefs.getBool(
@@ -119,7 +148,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       );
     }
 
-    if (_collection == null) {
+    if (!_isUncategorized && _collection == null) {
       return Scaffold(
         backgroundColor: AppColors.background,
         appBar: BreadcrumbAppBar(
@@ -152,17 +181,17 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             label: 'Collections',
             onTap: () => Navigator.of(context).pop(),
           ),
-          BreadcrumbItem(label: _collection!.name),
+          BreadcrumbItem(label: _displayName),
         ],
         actions: <Widget>[
-          if (_collection!.isEditable && !_isCanvasMode)
+          if (_canEdit && !_isCanvasMode)
             IconButton(
               icon: const Icon(Icons.add),
               color: AppColors.textSecondary,
               tooltip: 'Add Items',
               onPressed: () => _addItems(context),
             ),
-          if (kCanvasEnabled)
+          if (kCanvasEnabled && !_isUncategorized)
             IconButton(
               icon: Icon(
                 _isCanvasMode ? Icons.list : Icons.dashboard,
@@ -175,7 +204,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                 });
               },
             ),
-          if (_collection!.isEditable && _isCanvasMode && kCanvasEnabled)
+          if (_canEdit && _isCanvasMode && kCanvasEnabled && !_isUncategorized)
             IconButton(
               icon: Icon(
                 _isViewModeLocked ? Icons.lock : Icons.lock_open,
@@ -200,50 +229,51 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                 }
               },
             ),
-          PopupMenuButton<String>(
-            iconColor: AppColors.textSecondary,
-            onSelected: (String value) => _handleMenuAction(value),
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              if (_collection!.isEditable)
+          if (!_isUncategorized)
+            PopupMenuButton<String>(
+              iconColor: AppColors.textSecondary,
+              onSelected: (String value) => _handleMenuAction(value),
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                if (_collection!.isEditable)
+                  const PopupMenuItem<String>(
+                    value: 'rename',
+                    child: ListTile(
+                      leading: Icon(Icons.edit),
+                      title: Text('Rename'),
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
                 const PopupMenuItem<String>(
-                  value: 'rename',
+                  value: 'export',
                   child: ListTile(
-                    leading: Icon(Icons.edit),
-                    title: Text('Rename'),
+                    leading: Icon(Icons.file_upload_outlined),
+                    title: Text('Export'),
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),
-              const PopupMenuItem<String>(
-                value: 'export',
-                child: ListTile(
-                  leading: Icon(Icons.file_upload_outlined),
-                  title: Text('Export'),
-                  contentPadding: EdgeInsets.zero,
-                ),
-              ),
-              if (_collection!.isFork)
+                if (_collection!.isFork)
+                  const PopupMenuItem<String>(
+                    value: 'revert',
+                    child: ListTile(
+                      leading: Icon(Icons.restore),
+                      title: Text('Revert to Original'),
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
+                const PopupMenuDivider(),
                 const PopupMenuItem<String>(
-                  value: 'revert',
+                  value: 'delete',
                   child: ListTile(
-                    leading: Icon(Icons.restore),
-                    title: Text('Revert to Original'),
+                    leading: Icon(Icons.delete, color: AppColors.error),
+                    title: Text(
+                      'Delete',
+                      style: TextStyle(color: AppColors.error),
+                    ),
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),
-              const PopupMenuDivider(),
-              const PopupMenuItem<String>(
-                value: 'delete',
-                child: ListTile(
-                  leading: Icon(Icons.delete, color: AppColors.error),
-                  title: Text(
-                    'Delete',
-                    style: TextStyle(color: AppColors.error),
-                  ),
-                  contentPadding: EdgeInsets.zero,
-                ),
-              ),
-            ],
-          ),
+              ],
+            ),
         ],
       ),
       body: _isCanvasMode
@@ -662,7 +692,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           ref
               .read(sharedPreferencesProvider)
               .setBool(
-                '${SettingsKeys.collectionViewModePrefix}${widget.collectionId}',
+                '${SettingsKeys.collectionViewModePrefix}${widget.collectionId ?? "uncategorized"}',
                 _isGridMode,
               );
         },
@@ -705,7 +735,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     final CollectionSortMode sortMode =
         ref.watch(collectionSortProvider(widget.collectionId));
     final bool isManualSort =
-        sortMode == CollectionSortMode.manual && _collection!.isEditable;
+        sortMode == CollectionSortMode.manual && _canEdit;
 
     if (isManualSort) {
       return _buildReorderableList(items);
@@ -723,8 +753,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           return _CollectionItemTile(
             key: ValueKey<int>(item.id),
             item: item,
-            isEditable: _collection!.isEditable,
-            onRemove: _collection!.isEditable
+            isEditable: _canEdit,
+            onMove: _canEdit ? () => _moveItem(item) : null,
+            onRemove: _canEdit
                 ? () => _removeItem(item)
                 : null,
             onTap: () => _showItemDetails(item),
@@ -890,10 +921,11 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         return _CollectionItemTile(
           key: ValueKey<int>(item.id),
           item: item,
-          isEditable: _collection!.isEditable,
+          isEditable: _canEdit,
           showDragHandle: true,
           dragIndex: index,
-          onRemove: _collection!.isEditable
+          onMove: _canEdit ? () => _moveItem(item) : null,
+          onRemove: _canEdit
               ? () => _removeItem(item)
               : null,
           onTap: () => _showItemDetails(item),
@@ -918,7 +950,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             const Text('No Items Yet', style: AppTypography.h2),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              _collection!.isEditable
+              _canEdit
                   ? 'Add items to start building your collection.'
                   : 'This collection is empty.',
               textAlign: TextAlign.center,
@@ -986,6 +1018,55 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     }
   }
 
+  Future<void> _moveItem(CollectionItem item) async {
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    final bool isUncategorized = widget.collectionId == null;
+
+    final CollectionChoice? choice = await showCollectionPickerDialog(
+      context: context,
+      ref: ref,
+      excludeCollectionId: widget.collectionId,
+      showUncategorized: !isUncategorized,
+      title: 'Move to Collection',
+    );
+    if (choice == null || !mounted) return;
+
+    final int? targetCollectionId;
+    final String targetName;
+    switch (choice) {
+      case ChosenCollection(:final Collection collection):
+        targetCollectionId = collection.id;
+        targetName = collection.name;
+      case WithoutCollection():
+        targetCollectionId = null;
+        targetName = 'Uncategorized';
+    }
+
+    final bool success = await ref
+        .read(
+          collectionItemsNotifierProvider(widget.collectionId).notifier,
+        )
+        .moveItem(
+          item.id,
+          targetCollectionId: targetCollectionId,
+          mediaType: item.mediaType,
+        );
+
+    if (!mounted) return;
+
+    if (success) {
+      messenger.showSnackBar(
+        SnackBar(content: Text('${item.itemName} moved to $targetName')),
+      );
+    } else {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('${item.itemName} already exists in $targetName'),
+        ),
+      );
+    }
+  }
+
   Future<void> _removeItem(CollectionItem item) async {
     final bool? confirmed = await showDialog<bool>(
       context: context,
@@ -1028,7 +1109,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   }
 
   void _showItemDetails(CollectionItem item) {
-    final String colName = _collection!.name;
+    final String colName = _displayName;
+    final bool isEditable = _canEdit;
     switch (item.mediaType) {
       case MediaType.game:
         Navigator.of(context).push(
@@ -1036,7 +1118,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             builder: (BuildContext context) => GameDetailScreen(
               collectionId: widget.collectionId,
               itemId: item.id,
-              isEditable: _collection!.isEditable,
+              isEditable: isEditable,
               collectionName: colName,
             ),
           ),
@@ -1047,7 +1129,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             builder: (BuildContext context) => MovieDetailScreen(
               collectionId: widget.collectionId,
               itemId: item.id,
-              isEditable: _collection!.isEditable,
+              isEditable: isEditable,
               collectionName: colName,
             ),
           ),
@@ -1058,7 +1140,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             builder: (BuildContext context) => TvShowDetailScreen(
               collectionId: widget.collectionId,
               itemId: item.id,
-              isEditable: _collection!.isEditable,
+              isEditable: isEditable,
               collectionName: colName,
             ),
           ),
@@ -1069,7 +1151,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             builder: (BuildContext context) => AnimeDetailScreen(
               collectionId: widget.collectionId,
               itemId: item.id,
-              isEditable: _collection!.isEditable,
+              isEditable: isEditable,
               collectionName: colName,
             ),
           ),
@@ -1156,6 +1238,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
 
     if (confirmed != true || !mounted) return;
 
+    final int? collId = widget.collectionId;
+    if (collId == null) return;
+
     // Сохраняем ссылки до async операций
     final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
     final Color errorColor = Theme.of(context).colorScheme.error;
@@ -1163,7 +1248,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     try {
       await ref
           .read(collectionsProvider.notifier)
-          .revertToOriginal(widget.collectionId);
+          .revertToOriginal(collId);
 
       // Обновляем список элементов после revert
       if (mounted) {
@@ -1419,6 +1504,7 @@ class _CollectionItemTile extends StatelessWidget {
     required this.isEditable,
     this.showDragHandle = false,
     this.dragIndex = 0,
+    this.onMove,
     this.onRemove,
     this.onTap,
   });
@@ -1427,6 +1513,7 @@ class _CollectionItemTile extends StatelessWidget {
   final bool isEditable;
   final bool showDragHandle;
   final int dragIndex;
+  final VoidCallback? onMove;
   final VoidCallback? onRemove;
   final VoidCallback? onTap;
 
@@ -1584,15 +1671,57 @@ class _CollectionItemTile extends StatelessWidget {
                     ),
                   ),
 
-                  // Удалить (если редактируемый)
-                  if (onRemove != null)
-                    IconButton(
+                  // Move / Remove меню
+                  if (onMove != null || onRemove != null)
+                    PopupMenuButton<String>(
                       icon: const Icon(
-                        Icons.remove_circle_outline,
-                        color: AppColors.error,
+                        Icons.more_vert,
+                        color: AppColors.textSecondary,
                       ),
-                      tooltip: 'Remove',
-                      onPressed: onRemove,
+                      padding: EdgeInsets.zero,
+                      onSelected: (String value) {
+                        switch (value) {
+                          case 'move':
+                            onMove?.call();
+                          case 'remove':
+                            onRemove?.call();
+                        }
+                      },
+                      itemBuilder: (BuildContext context) =>
+                          <PopupMenuEntry<String>>[
+                        if (onMove != null)
+                          const PopupMenuItem<String>(
+                            value: 'move',
+                            child: ListTile(
+                              leading:
+                                  Icon(Icons.drive_file_move_outlined),
+                              title: Text('Move'),
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                          ),
+                        if (onMove != null && onRemove != null)
+                          const PopupMenuDivider(),
+                        if (onRemove != null)
+                          PopupMenuItem<String>(
+                            value: 'remove',
+                            child: ListTile(
+                              leading: Icon(
+                                Icons.remove_circle_outline,
+                                color:
+                                    Theme.of(context).colorScheme.error,
+                              ),
+                              title: Text(
+                                'Remove',
+                                style: TextStyle(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .error,
+                                ),
+                              ),
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                          ),
+                      ],
                     ),
                 ],
               ),
