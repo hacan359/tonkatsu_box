@@ -13,7 +13,7 @@ class MockCanvasRepository extends Mock implements CanvasRepository {}
 
 class MockCollectionItemsNotifier extends CollectionItemsNotifier {
   @override
-  AsyncValue<List<CollectionItem>> build(int arg) {
+  AsyncValue<List<CollectionItem>> build(int? arg) {
     return const AsyncValue<List<CollectionItem>>.data(<CollectionItem>[]);
   }
 }

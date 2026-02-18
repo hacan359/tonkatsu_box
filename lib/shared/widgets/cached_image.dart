@@ -136,8 +136,15 @@ class _CachedImageState extends ConsumerState<CachedImage> {
 
         // Локальный файл
         if (result.isLocal && result.uri != null) {
+          final File localFile = File(result.uri!);
+          // Guard: файл мог быть удалён/опустошён между getImageUri и render
+          // (race condition при clearCache или параллельном скачивании).
+          if (!localFile.existsSync() || localFile.lengthSync() == 0) {
+            _deleteAndRedownload();
+            return _buildNetworkImage(widget.remoteUrl, context);
+          }
           return Image.file(
-            File(result.uri!),
+            localFile,
             width: widget.width,
             height: widget.height,
             fit: widget.fit,

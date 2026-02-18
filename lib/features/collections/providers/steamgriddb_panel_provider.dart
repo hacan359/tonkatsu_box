@@ -112,19 +112,19 @@ class SteamGridDbPanelState {
 
 /// Провайдер для управления боковой панелью SteamGridDB.
 final NotifierProviderFamily<SteamGridDbPanelNotifier, SteamGridDbPanelState,
-        int> steamGridDbPanelProvider =
+        int?> steamGridDbPanelProvider =
     NotifierProvider.family<SteamGridDbPanelNotifier, SteamGridDbPanelState,
-        int>(
+        int?>(
   SteamGridDbPanelNotifier.new,
 );
 
 /// Notifier для управления состоянием боковой панели SteamGridDB.
 class SteamGridDbPanelNotifier
-    extends FamilyNotifier<SteamGridDbPanelState, int> {
+    extends FamilyNotifier<SteamGridDbPanelState, int?> {
   late SteamGridDbApi _api;
 
   @override
-  SteamGridDbPanelState build(int arg) {
+  SteamGridDbPanelState build(int? arg) {
     _api = ref.watch(steamGridDbApiProvider);
     return const SteamGridDbPanelState();
   }

@@ -52,7 +52,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 16,
+        version: 17,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -246,6 +246,67 @@ class DatabaseService {
         // Колонка уже существует — ничего делать не нужно.
       }
     }
+    if (oldVersion < 17) {
+      await _migrateCollectionItemsNullable(db);
+    }
+  }
+
+  /// Пересоздаёт таблицу collection_items с nullable collection_id.
+  ///
+  /// SQLite не поддерживает ALTER COLUMN, поэтому пересоздаём таблицу.
+  Future<void> _migrateCollectionItemsNullable(Database db) async {
+    await db.execute('''
+      CREATE TABLE collection_items_new (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        collection_id INTEGER,
+        media_type TEXT NOT NULL DEFAULT 'game',
+        external_id INTEGER NOT NULL,
+        platform_id INTEGER,
+        current_season INTEGER DEFAULT 0,
+        current_episode INTEGER DEFAULT 0,
+        status TEXT DEFAULT 'not_started',
+        author_comment TEXT,
+        user_comment TEXT,
+        added_at INTEGER NOT NULL,
+        sort_order INTEGER NOT NULL DEFAULT 0,
+        started_at INTEGER,
+        completed_at INTEGER,
+        last_activity_at INTEGER,
+        user_rating INTEGER,
+        FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE
+      )
+    ''');
+
+    await db.execute('''
+      INSERT INTO collection_items_new
+      SELECT * FROM collection_items
+    ''');
+
+    await db.execute('DROP TABLE collection_items');
+    await db.execute(
+      'ALTER TABLE collection_items_new RENAME TO collection_items',
+    );
+
+    // Partial unique indexes
+    await db.execute('''
+      CREATE UNIQUE INDEX idx_ci_coll
+      ON collection_items(collection_id, media_type, external_id)
+      WHERE collection_id IS NOT NULL
+    ''');
+    await db.execute('''
+      CREATE UNIQUE INDEX idx_ci_uncat
+      ON collection_items(media_type, external_id)
+      WHERE collection_id IS NULL
+    ''');
+
+    await db.execute('''
+      CREATE INDEX idx_collection_items_collection
+      ON collection_items(collection_id)
+    ''');
+    await db.execute('''
+      CREATE INDEX idx_collection_items_type
+      ON collection_items(media_type)
+    ''');
   }
 
   Future<void> _migrateGameCanvas(Database db) async {
@@ -445,7 +506,7 @@ class DatabaseService {
     await db.execute('''
       CREATE TABLE collection_items (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        collection_id INTEGER NOT NULL,
+        collection_id INTEGER,
         media_type TEXT NOT NULL DEFAULT 'game',
         external_id INTEGER NOT NULL,
         platform_id INTEGER,
@@ -460,9 +521,21 @@ class DatabaseService {
         completed_at INTEGER,
         last_activity_at INTEGER,
         user_rating INTEGER,
-        FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE,
-        UNIQUE(collection_id, media_type, external_id)
+        FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE
       )
+    ''');
+
+    // Partial unique indexes: NULL-ы в SQLite не нарушают UNIQUE,
+    // поэтому нужны два отдельных индекса.
+    await db.execute('''
+      CREATE UNIQUE INDEX idx_ci_coll
+      ON collection_items(collection_id, media_type, external_id)
+      WHERE collection_id IS NOT NULL
+    ''');
+    await db.execute('''
+      CREATE UNIQUE INDEX idx_ci_uncat
+      ON collection_items(media_type, external_id)
+      WHERE collection_id IS NULL
     ''');
 
     await db.execute('''
@@ -1186,13 +1259,21 @@ class DatabaseService {
   // ==================== Collection Items ====================
 
   /// Возвращает все элементы в коллекции.
+  ///
+  /// Если [collectionId] == null, возвращает uncategorized элементы.
   Future<List<CollectionItem>> getCollectionItems(
-    int collectionId, {
+    int? collectionId, {
     MediaType? mediaType,
   }) async {
     final Database db = await database;
-    String where = 'collection_id = ?';
-    final List<Object?> whereArgs = <Object?>[collectionId];
+    String where;
+    final List<Object?> whereArgs = <Object?>[];
+    if (collectionId != null) {
+      where = 'collection_id = ?';
+      whereArgs.add(collectionId);
+    } else {
+      where = 'collection_id IS NULL';
+    }
     if (mediaType != null) {
       where += ' AND media_type = ?';
       whereArgs.add(mediaType.value);
@@ -1207,8 +1288,10 @@ class DatabaseService {
   }
 
   /// Возвращает элементы коллекции с подгруженными данными.
+  ///
+  /// Если [collectionId] == null, возвращает uncategorized элементы.
   Future<List<CollectionItem>> getCollectionItemsWithData(
-    int collectionId, {
+    int? collectionId, {
     MediaType? mediaType,
   }) async {
     final List<CollectionItem> items = await getCollectionItems(
@@ -1409,9 +1492,10 @@ class DatabaseService {
 
   /// Добавляет элемент в коллекцию.
   ///
+  /// Если [collectionId] == null, элемент добавляется как uncategorized.
   /// Возвращает ID созданной записи или null при конфликте.
   Future<int?> addItemToCollection({
-    required int collectionId,
+    required int? collectionId,
     required MediaType mediaType,
     required int externalId,
     int? platformId,
@@ -1446,12 +1530,18 @@ class DatabaseService {
   }
 
   /// Возвращает следующий sort_order для коллекции.
-  Future<int> getNextSortOrder(int collectionId) async {
+  ///
+  /// Если [collectionId] == null, возвращает sort_order для uncategorized.
+  Future<int> getNextSortOrder(int? collectionId) async {
     final Database db = await database;
+    final String where = collectionId != null
+        ? 'WHERE collection_id = ?'
+        : 'WHERE collection_id IS NULL';
+    final List<Object?> args =
+        collectionId != null ? <Object?>[collectionId] : <Object?>[];
     final List<Map<String, dynamic>> result = await db.rawQuery(
-      'SELECT MAX(sort_order) AS max_sort FROM collection_items '
-      'WHERE collection_id = ?',
-      <Object?>[collectionId],
+      'SELECT MAX(sort_order) AS max_sort FROM collection_items $where',
+      args,
     );
     final int maxSort = (result.first['max_sort'] as int?) ?? -1;
     return maxSort + 1;
@@ -1461,7 +1551,7 @@ class DatabaseService {
   ///
   /// Обновляет sort_order всех элементов в транзакции.
   Future<void> reorderItems(
-    int collectionId,
+    int? collectionId,
     List<int> orderedItemIds,
   ) async {
     final Database db = await database;
@@ -1620,15 +1710,54 @@ class DatabaseService {
     );
   }
 
+  /// Обновляет collection_id элемента (перемещает в другую коллекцию).
+  ///
+  /// Передайте [collectionId] = null для перемещения в uncategorized.
+  /// Также обновляет sort_order для целевой коллекции.
+  /// Возвращает true при успехе, false если элемент уже есть в целевой
+  /// коллекции (UNIQUE constraint).
+  Future<bool> updateItemCollectionId(int id, int? collectionId) async {
+    final Database db = await database;
+    final int newSortOrder = await getNextSortOrder(collectionId);
+    try {
+      await db.update(
+        'collection_items',
+        <String, dynamic>{
+          'collection_id': collectionId,
+          'sort_order': newSortOrder,
+        },
+        where: 'id = ?',
+        whereArgs: <Object?>[id],
+      );
+      return true;
+    } on DatabaseException catch (e) {
+      if (e.isUniqueConstraintError()) {
+        return false;
+      }
+      rethrow;
+    }
+  }
+
   /// Возвращает количество элементов в коллекции.
+  ///
+  /// Если [collectionId] == null, считает uncategorized элементы.
   Future<int> getCollectionItemCount(
-    int collectionId, {
+    int? collectionId, {
     MediaType? mediaType,
   }) async {
     final Database db = await database;
-    String sql =
-        'SELECT COUNT(*) as count FROM collection_items WHERE collection_id = ?';
-    final List<Object?> args = <Object?>[collectionId];
+    String sql;
+    final List<Object?> args = <Object?>[];
+    if (collectionId != null) {
+      sql =
+          'SELECT COUNT(*) as count FROM collection_items '
+          'WHERE collection_id = ?';
+      args.add(collectionId);
+    } else {
+      sql =
+          'SELECT COUNT(*) as count FROM collection_items '
+          'WHERE collection_id IS NULL';
+    }
     if (mediaType != null) {
       sql += ' AND media_type = ?';
       args.add(mediaType.value);
@@ -1638,13 +1767,19 @@ class DatabaseService {
   }
 
   /// Возвращает расширенную статистику по коллекции.
-  Future<Map<String, int>> getCollectionItemStats(int collectionId) async {
+  ///
+  /// Если [collectionId] == null, возвращает статистику uncategorized.
+  Future<Map<String, int>> getCollectionItemStats(int? collectionId) async {
     final Database db = await database;
+    final String where = collectionId != null
+        ? 'WHERE collection_id = ?'
+        : 'WHERE collection_id IS NULL';
+    final List<Object?> args =
+        collectionId != null ? <Object?>[collectionId] : <Object?>[];
     final List<Map<String, dynamic>> result = await db.rawQuery(
-      '''SELECT media_type, status, COUNT(*) as count FROM collection_items
-         WHERE collection_id = ?
-         GROUP BY media_type, status''',
-      <Object?>[collectionId],
+      'SELECT media_type, status, COUNT(*) as count FROM collection_items '
+      '$where GROUP BY media_type, status',
+      args,
     );
 
     final Map<String, int> stats = <String, int>{
@@ -1700,13 +1835,22 @@ class DatabaseService {
   }
 
   /// Удаляет все элементы из коллекции.
-  Future<void> clearCollectionItems(int collectionId) async {
+  ///
+  /// Если [collectionId] == null, удаляет uncategorized элементы.
+  Future<void> clearCollectionItems(int? collectionId) async {
     final Database db = await database;
-    await db.delete(
-      'collection_items',
-      where: 'collection_id = ?',
-      whereArgs: <Object?>[collectionId],
-    );
+    if (collectionId != null) {
+      await db.delete(
+        'collection_items',
+        where: 'collection_id = ?',
+        whereArgs: <Object?>[collectionId],
+      );
+    } else {
+      await db.delete(
+        'collection_items',
+        where: 'collection_id IS NULL',
+      );
+    }
   }
 
   // ==================== Canvas Items ====================
@@ -1974,6 +2118,7 @@ class DatabaseService {
   /// Возвращает информацию о нахождении элементов заданного типа в коллекциях.
   ///
   /// Результат: `Map` external_id -> список записей в коллекциях.
+  /// Элементы без коллекции (uncategorized) также включаются.
   Future<Map<int, List<CollectedItemInfo>>> getCollectedItemInfos(
     MediaType mediaType,
   ) async {
@@ -1981,7 +2126,7 @@ class DatabaseService {
     final List<Map<String, dynamic>> rows = await db.rawQuery('''
       SELECT ci.id, ci.external_id, ci.collection_id, c.name
       FROM collection_items ci
-      JOIN collections c ON c.id = ci.collection_id
+      LEFT JOIN collections c ON c.id = ci.collection_id
       WHERE ci.media_type = ?
       ORDER BY ci.added_at ASC
     ''', <Object?>[mediaType.value]);
@@ -1992,12 +2137,22 @@ class DatabaseService {
       final int externalId = row['external_id'] as int;
       final CollectedItemInfo info = CollectedItemInfo(
         recordId: row['id'] as int,
-        collectionId: row['collection_id'] as int,
-        collectionName: row['name'] as String,
+        collectionId: row['collection_id'] as int?,
+        collectionName: row['name'] as String?,
       );
       result.putIfAbsent(externalId, () => <CollectedItemInfo>[]).add(info);
     }
     return result;
+  }
+
+  /// Возвращает количество uncategorized элементов.
+  Future<int> getUncategorizedItemCount() async {
+    final Database db = await database;
+    final List<Map<String, dynamic>> result = await db.rawQuery(
+      'SELECT COUNT(*) as count FROM collection_items '
+      'WHERE collection_id IS NULL',
+    );
+    return result.first['count'] as int;
   }
 
   /// Очищает все данные из базы данных.

@@ -80,16 +80,16 @@ class VgMapsPanelState {
 }
 
 /// Провайдер для управления боковой панелью VGMaps Browser.
-final NotifierProviderFamily<VgMapsPanelNotifier, VgMapsPanelState, int>
+final NotifierProviderFamily<VgMapsPanelNotifier, VgMapsPanelState, int?>
     vgMapsPanelProvider =
-    NotifierProvider.family<VgMapsPanelNotifier, VgMapsPanelState, int>(
+    NotifierProvider.family<VgMapsPanelNotifier, VgMapsPanelState, int?>(
   VgMapsPanelNotifier.new,
 );
 
 /// Notifier для управления состоянием боковой панели VGMaps Browser.
-class VgMapsPanelNotifier extends FamilyNotifier<VgMapsPanelState, int> {
+class VgMapsPanelNotifier extends FamilyNotifier<VgMapsPanelState, int?> {
   @override
-  VgMapsPanelState build(int arg) {
+  VgMapsPanelState build(int? arg) {
     return const VgMapsPanelState();
   }
 

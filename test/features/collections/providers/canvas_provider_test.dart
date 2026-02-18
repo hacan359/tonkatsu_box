@@ -22,7 +22,7 @@ class MockCollectionItemsNotifier extends CollectionItemsNotifier {
   final AsyncValue<List<CollectionItem>> _initialState;
 
   @override
-  AsyncValue<List<CollectionItem>> build(int arg) {
+  AsyncValue<List<CollectionItem>> build(int? arg) {
     return _initialState;
   }
 

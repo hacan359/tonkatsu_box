@@ -40,7 +40,7 @@ class CollectionItem with Exportable {
   factory CollectionItem.fromDb(Map<String, dynamic> row) {
     return CollectionItem(
       id: row['id'] as int,
-      collectionId: row['collection_id'] as int,
+      collectionId: row['collection_id'] as int?,
       mediaType: MediaType.fromString(row['media_type'] as String),
       externalId: row['external_id'] as int,
       platformId: row['platform_id'] as int?,
@@ -82,7 +82,7 @@ class CollectionItem with Exportable {
   }) {
     return CollectionItem(
       id: row['id'] as int,
-      collectionId: row['collection_id'] as int,
+      collectionId: row['collection_id'] as int?,
       mediaType: MediaType.fromString(row['media_type'] as String),
       externalId: row['external_id'] as int,
       platformId: row['platform_id'] as int?,
@@ -122,7 +122,7 @@ class CollectionItem with Exportable {
   factory CollectionItem.fromExport(
     Map<String, dynamic> json, {
     int id = 0,
-    int collectionId = 0,
+    int? collectionId,
     DateTime? addedAt,
   }) {
     return CollectionItem(
@@ -145,8 +145,11 @@ class CollectionItem with Exportable {
   /// Уникальный идентификатор записи.
   final int id;
 
-  /// ID коллекции.
-  final int collectionId;
+  /// ID коллекции (null для элементов без коллекции).
+  final int? collectionId;
+
+  /// true если элемент не принадлежит ни одной коллекции.
+  bool get isUncategorized => collectionId == null;
 
   /// Тип медиа-контента.
   final MediaType mediaType;
@@ -370,6 +373,7 @@ class CollectionItem with Exportable {
   CollectionItem copyWith({
     int? id,
     int? collectionId,
+    bool clearCollectionId = false,
     MediaType? mediaType,
     int? externalId,
     int? platformId,
@@ -394,7 +398,8 @@ class CollectionItem with Exportable {
   }) {
     return CollectionItem(
       id: id ?? this.id,
-      collectionId: collectionId ?? this.collectionId,
+      collectionId:
+          clearCollectionId ? null : (collectionId ?? this.collectionId),
       mediaType: mediaType ?? this.mediaType,
       externalId: externalId ?? this.externalId,
       platformId: platformId ?? this.platformId,

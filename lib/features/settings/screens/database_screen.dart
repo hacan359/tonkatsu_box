@@ -9,7 +9,9 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/breadcrumb_app_bar.dart';
+import '../../../shared/navigation/navigation_shell.dart';
 import '../../collections/providers/collections_provider.dart';
+import '../../home/providers/all_items_provider.dart';
 import '../providers/settings_provider.dart';
 
 /// Экран управления базой данных.
@@ -214,11 +216,22 @@ class DatabaseScreen extends ConsumerWidget {
       await notifier.flushDatabase();
 
       ref.invalidate(collectionsProvider);
+      ref.invalidate(uncategorizedItemCountProvider);
+      ref.invalidate(allItemsNotifierProvider);
+      ref.invalidate(collectedGameIdsProvider);
+      ref.invalidate(collectedMovieIdsProvider);
+      ref.invalidate(collectedTvShowIdsProvider);
+      ref.invalidate(collectedAnimationIdsProvider);
 
       if (context.mounted) {
         context.showAppSnackBar('Database has been reset');
-        Navigator.of(context)
-            .popUntil((Route<dynamic> route) => route.isFirst);
+        // Заменяем NavigationShell целиком, чтобы сбросить стеки
+        // навигации всех табов (а не только текущего Settings).
+        Navigator.of(context, rootNavigator: true).pushReplacement(
+          MaterialPageRoute<void>(
+            builder: (_) => const NavigationShell(),
+          ),
+        );
       }
     }
   }

@@ -102,9 +102,11 @@ class CollectionsNotifier extends AsyncNotifier<List<Collection>> {
 }
 
 /// Провайдер для статистики коллекции.
-final FutureProviderFamily<CollectionStats, int> collectionStatsProvider =
-    FutureProvider.family<CollectionStats, int>(
-  (Ref ref, int collectionId) async {
+///
+/// Если ключ == null, возвращает статистику uncategorized элементов.
+final FutureProviderFamily<CollectionStats, int?> collectionStatsProvider =
+    FutureProvider.family<CollectionStats, int?>(
+  (Ref ref, int? collectionId) async {
     final CollectionRepository repository =
         ref.watch(collectionRepositoryProvider);
     return repository.getStats(collectionId);
@@ -114,29 +116,31 @@ final FutureProviderFamily<CollectionStats, int> collectionStatsProvider =
 // ==================== Collection Sort ====================
 
 /// Ключ SharedPreferences для режима сортировки коллекции.
-String _sortModeKey(int collectionId) =>
-    'collection_sort_mode_$collectionId';
+String _sortModeKey(int? collectionId) =>
+    'collection_sort_mode_${collectionId ?? "uncategorized"}';
 
 /// Ключ SharedPreferences для направления сортировки.
-String _sortDescKey(int collectionId) =>
-    'collection_sort_desc_$collectionId';
+String _sortDescKey(int? collectionId) =>
+    'collection_sort_desc_${collectionId ?? "uncategorized"}';
 
 /// Провайдер режима сортировки для конкретной коллекции.
-final NotifierProviderFamily<CollectionSortNotifier, CollectionSortMode, int>
+///
+/// Если ключ == null, используется для uncategorized элементов.
+final NotifierProviderFamily<CollectionSortNotifier, CollectionSortMode, int?>
     collectionSortProvider =
-    NotifierProvider.family<CollectionSortNotifier, CollectionSortMode, int>(
+    NotifierProvider.family<CollectionSortNotifier, CollectionSortMode, int?>(
   CollectionSortNotifier.new,
 );
 
 /// Notifier для режима сортировки коллекции.
-class CollectionSortNotifier extends FamilyNotifier<CollectionSortMode, int> {
+class CollectionSortNotifier extends FamilyNotifier<CollectionSortMode, int?> {
   @override
-  CollectionSortMode build(int arg) {
+  CollectionSortMode build(int? arg) {
     _loadFromPrefs(arg);
     return CollectionSortMode.addedDate;
   }
 
-  Future<void> _loadFromPrefs(int collectionId) async {
+  Future<void> _loadFromPrefs(int? collectionId) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? value = prefs.getString(_sortModeKey(collectionId));
     if (value != null) {
@@ -156,21 +160,23 @@ class CollectionSortNotifier extends FamilyNotifier<CollectionSortMode, int> {
 }
 
 /// Провайдер направления сортировки (descending) для конкретной коллекции.
-final NotifierProviderFamily<CollectionSortDescNotifier, bool, int>
+///
+/// Если ключ == null, используется для uncategorized элементов.
+final NotifierProviderFamily<CollectionSortDescNotifier, bool, int?>
     collectionSortDescProvider =
-    NotifierProvider.family<CollectionSortDescNotifier, bool, int>(
+    NotifierProvider.family<CollectionSortDescNotifier, bool, int?>(
   CollectionSortDescNotifier.new,
 );
 
 /// Notifier для направления сортировки (ascending/descending).
-class CollectionSortDescNotifier extends FamilyNotifier<bool, int> {
+class CollectionSortDescNotifier extends FamilyNotifier<bool, int?> {
   @override
-  bool build(int arg) {
+  bool build(int? arg) {
     _loadFromPrefs(arg);
     return false;
   }
 
-  Future<void> _loadFromPrefs(int collectionId) async {
+  Future<void> _loadFromPrefs(int? collectionId) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final bool? value = prefs.getBool(_sortDescKey(collectionId));
     if (value != null) {
@@ -196,21 +202,23 @@ class CollectionSortDescNotifier extends FamilyNotifier<bool, int> {
 // ==================== Collection Items ====================
 
 /// Провайдер для управления элементами в конкретной коллекции.
+///
+/// Если ключ == null, управляет uncategorized элементами.
 final NotifierProviderFamily<CollectionItemsNotifier,
-        AsyncValue<List<CollectionItem>>, int>
+        AsyncValue<List<CollectionItem>>, int?>
     collectionItemsNotifierProvider = NotifierProvider.family<
-        CollectionItemsNotifier, AsyncValue<List<CollectionItem>>, int>(
+        CollectionItemsNotifier, AsyncValue<List<CollectionItem>>, int?>(
   CollectionItemsNotifier.new,
 );
 
 /// Notifier для управления элементами коллекции (универсальный).
 class CollectionItemsNotifier
-    extends FamilyNotifier<AsyncValue<List<CollectionItem>>, int> {
+    extends FamilyNotifier<AsyncValue<List<CollectionItem>>, int?> {
   late CollectionRepository _repository;
-  late int _collectionId;
+  late int? _collectionId;
 
   @override
-  AsyncValue<List<CollectionItem>> build(int arg) {
+  AsyncValue<List<CollectionItem>> build(int? arg) {
     _collectionId = arg;
     _repository = ref.watch(collectionRepositoryProvider);
 
@@ -303,7 +311,37 @@ class CollectionItemsNotifier
 
     await refresh();
     _invalidateCollectedIds(mediaType);
+    ref.invalidate(uncategorizedItemCountProvider);
     ref.invalidate(allItemsNotifierProvider);
+    return true;
+  }
+
+  /// Перемещает элемент в другую коллекцию.
+  ///
+  /// Возвращает true при успехе, false если элемент уже есть в целевой
+  /// коллекции (дубликат).
+  Future<bool> moveItem(
+    int itemId, {
+    required int? targetCollectionId,
+    required MediaType mediaType,
+  }) async {
+    final bool success = await _repository.moveItemToCollection(
+      itemId,
+      targetCollectionId,
+    );
+    if (!success) return false;
+
+    // Обновляем текущую коллекцию (элемент исчез).
+    await refresh();
+
+    // Инвалидируем целевую коллекцию и статистики.
+    ref.invalidate(collectionItemsNotifierProvider(targetCollectionId));
+    ref.invalidate(collectionStatsProvider(targetCollectionId));
+    ref.invalidate(collectionStatsProvider(_collectionId));
+    ref.invalidate(uncategorizedItemCountProvider);
+    _invalidateCollectedIds(mediaType);
+    ref.invalidate(allItemsNotifierProvider);
+
     return true;
   }
 
@@ -314,6 +352,7 @@ class CollectionItemsNotifier
     if (mediaType != null) {
       _invalidateCollectedIds(mediaType);
     }
+    ref.invalidate(uncategorizedItemCountProvider);
     ref.invalidate(allItemsNotifierProvider);
   }
 
@@ -533,6 +572,14 @@ final FutureProvider<Map<int, List<CollectedItemInfo>>>
     FutureProvider<Map<int, List<CollectedItemInfo>>>((Ref ref) async {
   final DatabaseService db = ref.watch(databaseServiceProvider);
   return db.getCollectedItemInfos(MediaType.animation);
+});
+
+/// Провайдер для количества uncategorized элементов.
+final FutureProvider<int> uncategorizedItemCountProvider =
+    FutureProvider<int>((Ref ref) async {
+  final CollectionRepository repository =
+      ref.watch(collectionRepositoryProvider);
+  return repository.getUncategorizedCount();
 });
 
 /// Провайдер для собственных коллекций.

@@ -13,7 +13,7 @@ class TestVgMapsPanelNotifier extends VgMapsPanelNotifier {
   final VgMapsPanelState _initialState;
 
   @override
-  VgMapsPanelState build(int arg) {
+  VgMapsPanelState build(int? arg) {
     return _initialState;
   }
 }

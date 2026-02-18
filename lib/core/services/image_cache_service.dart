@@ -116,12 +116,14 @@ class ImageCacheService {
   /// Сохраняет байты изображения в кэш.
   ///
   /// Создаёт директорию при необходимости.
+  /// Отклоняет пустые данные (предотвращает создание 0-byte файлов).
   /// Возвращает true при успехе.
   Future<bool> saveImageBytes(
     ImageType type,
     String imageId,
     Uint8List bytes,
   ) async {
+    if (bytes.isEmpty) return false;
     try {
       final String path = await getLocalImagePath(type, imageId);
       final File file = File(path);
@@ -136,10 +138,11 @@ class ImageCacheService {
     }
   }
 
-  /// Проверяет есть ли изображение в кэше.
+  /// Проверяет есть ли валидное изображение в кэше.
   Future<bool> isImageCached(ImageType type, String imageId) async {
     final String path = await getLocalImagePath(type, imageId);
-    return File(path).existsSync();
+    final File file = File(path);
+    return file.existsSync() && _isValidImageFile(file);
   }
 
   /// Удаляет изображение из кэша.

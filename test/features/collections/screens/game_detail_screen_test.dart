@@ -20,7 +20,7 @@ void main() {
 
   CollectionItem createTestCollectionItem({
     int id = 1,
-    int collectionId = 1,
+    int? collectionId = 1,
     int externalId = 100,
     int? platformId = 18,
     ItemStatus status = ItemStatus.notStarted,
@@ -69,7 +69,7 @@ void main() {
   });
 
   Widget createTestWidget({
-    required int collectionId,
+    required int? collectionId,
     required int itemId,
     required bool isEditable,
     required List<CollectionItem> items,
@@ -533,6 +533,75 @@ void main() {
       // Содержимое вкладки Details должно быть видимым по умолчанию
       expect(find.text("Author's Review"), findsOneWidget);
       expect(find.text('Test author comment'), findsOneWidget);
+    });
+
+    group('uncategorized (collectionId == null)', () {
+      testWidgets('не должен показывать вкладку Board',
+          (WidgetTester tester) async {
+        const Game game = Game(id: 100, name: 'Test Game');
+        const Platform platform = Platform(id: 18, name: 'SNES');
+        final CollectionItem collectionItem = createTestCollectionItem(
+          collectionId: null,
+          game: game,
+          platform: platform,
+        );
+
+        await tester.pumpWidget(createTestWidget(
+          collectionId: null,
+          itemId: 1,
+          isEditable: true,
+          items: <CollectionItem>[collectionItem],
+        ));
+        await tester.pumpAndSettle();
+
+        // Только одна вкладка — Details
+        expect(find.byType(Tab), findsOneWidget);
+        expect(find.text('Details'), findsOneWidget);
+        expect(find.text('Board'), findsNothing);
+      });
+
+      testWidgets('не должен показывать иконку Board',
+          (WidgetTester tester) async {
+        const Game game = Game(id: 100, name: 'Test Game');
+        const Platform platform = Platform(id: 18, name: 'SNES');
+        final CollectionItem collectionItem = createTestCollectionItem(
+          collectionId: null,
+          game: game,
+          platform: platform,
+        );
+
+        await tester.pumpWidget(createTestWidget(
+          collectionId: null,
+          itemId: 1,
+          isEditable: true,
+          items: <CollectionItem>[collectionItem],
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.byIcon(Icons.dashboard_outlined), findsNothing);
+      });
+
+      testWidgets('не должен показывать замок',
+          (WidgetTester tester) async {
+        const Game game = Game(id: 100, name: 'Test Game');
+        const Platform platform = Platform(id: 18, name: 'SNES');
+        final CollectionItem collectionItem = createTestCollectionItem(
+          collectionId: null,
+          game: game,
+          platform: platform,
+        );
+
+        await tester.pumpWidget(createTestWidget(
+          collectionId: null,
+          itemId: 1,
+          isEditable: true,
+          items: <CollectionItem>[collectionItem],
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.byTooltip('Lock board'), findsNothing);
+        expect(find.byTooltip('Unlock board'), findsNothing);
+      });
     });
 
     group('замок канваса', () {

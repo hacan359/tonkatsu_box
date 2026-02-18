@@ -256,7 +256,9 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
             userRating: item.userRating,
             apiRating: item.apiRating,
             year: _yearFor(item),
-            subtitle: collectionNames[item.collectionId],
+            subtitle: item.isUncategorized
+                ? 'Uncategorized'
+                : collectionNames[item.collectionId!],
             status: item.status,
             onTap: () => _showItemDetails(item, collectionNames),
           );
@@ -323,14 +325,22 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     Map<int, String> collectionNames,
   ) {
     // Определяем isEditable из коллекции
-    final List<Collection>? collections =
-        ref.read(collectionsProvider).valueOrNull;
-    final Collection? collection = collections?.cast<Collection?>().firstWhere(
-      (Collection? c) => c?.id == item.collectionId,
-      orElse: () => null,
-    );
-    final bool isEditable = collection?.isEditable ?? false;
-    final String colName = collectionNames[item.collectionId] ?? '';
+    final bool isEditable;
+    final String colName;
+    if (item.isUncategorized) {
+      isEditable = true;
+      colName = 'Uncategorized';
+    } else {
+      final List<Collection>? collections =
+          ref.read(collectionsProvider).valueOrNull;
+      final Collection? collection =
+          collections?.cast<Collection?>().firstWhere(
+        (Collection? c) => c?.id == item.collectionId,
+        orElse: () => null,
+      );
+      isEditable = collection?.isEditable ?? false;
+      colName = collectionNames[item.collectionId!] ?? '';
+    }
 
     switch (item.mediaType) {
       case MediaType.game:

@@ -110,7 +110,7 @@ class _ImageDebugScreenState extends ConsumerState<ImageDebugScreen> {
 
   Widget _buildItemsList(ColorScheme colorScheme) {
     final AsyncValue<List<CollectionItem>> itemsAsync =
-        ref.watch(collectionItemsNotifierProvider(_selectedCollectionId!));
+        ref.watch(collectionItemsNotifierProvider(_selectedCollectionId));
 
     return itemsAsync.when(
       data: (List<CollectionItem> items) {

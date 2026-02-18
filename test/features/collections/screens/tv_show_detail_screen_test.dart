@@ -33,7 +33,7 @@ void main() {
 
   CollectionItem createTestCollectionItem({
     int id = 1,
-    int collectionId = 1,
+    int? collectionId = 1,
     int externalId = 200,
     ItemStatus status = ItemStatus.notStarted,
     int currentSeason = 0,
@@ -106,7 +106,7 @@ void main() {
   });
 
   Widget createTestWidget({
-    required int collectionId,
+    required int? collectionId,
     required int itemId,
     required bool isEditable,
     required List<CollectionItem> items,
@@ -1163,6 +1163,44 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.byType(MediaDetailView), findsOneWidget);
+      });
+    });
+
+    group('uncategorized (collectionId == null)', () {
+      testWidgets('не должен показывать вкладку Board',
+          (WidgetTester tester) async {
+        final TvShow tvShow = createTestTvShow();
+        final CollectionItem item =
+            createTestCollectionItem(collectionId: null, tvShow: tvShow);
+
+        await tester.pumpWidget(createTestWidget(
+          collectionId: null,
+          itemId: 1,
+          isEditable: true,
+          items: <CollectionItem>[item],
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(Tab), findsOneWidget);
+        expect(find.text('Details'), findsOneWidget);
+        expect(find.text('Board'), findsNothing);
+      });
+
+      testWidgets('не должен показывать иконку Board',
+          (WidgetTester tester) async {
+        final TvShow tvShow = createTestTvShow();
+        final CollectionItem item =
+            createTestCollectionItem(collectionId: null, tvShow: tvShow);
+
+        await tester.pumpWidget(createTestWidget(
+          collectionId: null,
+          itemId: 1,
+          isEditable: true,
+          items: <CollectionItem>[item],
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.byIcon(Icons.dashboard_outlined), findsNothing);
       });
     });
 

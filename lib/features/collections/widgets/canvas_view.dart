@@ -38,7 +38,7 @@ class CanvasView extends ConsumerStatefulWidget {
   });
 
   /// ID коллекции.
-  final int collectionId;
+  final int? collectionId;
 
   /// Можно ли редактировать (перемещать элементы).
   final bool isEditable;
@@ -63,7 +63,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
   bool get _isGameCanvas => widget.collectionItemId != null;
 
   /// Аргумент для [gameCanvasNotifierProvider].
-  ({int collectionId, int collectionItemId}) get _gameCanvasArg => (
+  ({int? collectionId, int collectionItemId}) get _gameCanvasArg => (
         collectionId: widget.collectionId,
         collectionItemId: widget.collectionItemId!,
       );
@@ -939,7 +939,7 @@ class _DraggableCanvasItem extends ConsumerStatefulWidget {
 
   final CanvasItem item;
   final bool isEditable;
-  final int collectionId;
+  final int? collectionId;
   final int? collectionItemId;
   final TransformationController transformationController;
 

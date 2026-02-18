@@ -359,6 +359,49 @@ void main() {
       });
     });
 
+    group('moveItemToCollection', () {
+      test('должен возвращать true при успешном перемещении', () async {
+        when(() => mockDb.updateItemCollectionId(10, 5))
+            .thenAnswer((_) async => true);
+
+        final bool result = await repository.moveItemToCollection(10, 5);
+
+        expect(result, isTrue);
+        verify(() => mockDb.updateItemCollectionId(10, 5)).called(1);
+      });
+
+      test('должен возвращать true при перемещении в uncategorized (null)',
+          () async {
+        when(() => mockDb.updateItemCollectionId(10, null))
+            .thenAnswer((_) async => true);
+
+        final bool result = await repository.moveItemToCollection(10, null);
+
+        expect(result, isTrue);
+        verify(() => mockDb.updateItemCollectionId(10, null)).called(1);
+      });
+
+      test('должен возвращать false при дубликате (UNIQUE constraint)',
+          () async {
+        when(() => mockDb.updateItemCollectionId(10, 5))
+            .thenAnswer((_) async => false);
+
+        final bool result = await repository.moveItemToCollection(10, 5);
+
+        expect(result, isFalse);
+        verify(() => mockDb.updateItemCollectionId(10, 5)).called(1);
+      });
+
+      test('должен делегировать вызов в DatabaseService', () async {
+        when(() => mockDb.updateItemCollectionId(any(), any()))
+            .thenAnswer((_) async => true);
+
+        await repository.moveItemToCollection(42, 7);
+
+        verify(() => mockDb.updateItemCollectionId(42, 7)).called(1);
+      });
+    });
+
     group('fork', () {
       test('должен создавать форк коллекции', () async {
         final Collection original = createTestCollection(

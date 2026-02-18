@@ -10,7 +10,9 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../core/database/database_service.dart';
 import '../../../shared/widgets/breadcrumb_app_bar.dart';
+import '../../../shared/widgets/collection_picker_dialog.dart';
 import '../../../data/repositories/canvas_repository.dart';
+import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
@@ -48,8 +50,8 @@ class AnimeDetailScreen extends ConsumerStatefulWidget {
     super.key,
   });
 
-  /// ID коллекции.
-  final int collectionId;
+  /// ID коллекции (null для uncategorized).
+  final int? collectionId;
 
   /// ID записи элемента в коллекции.
   final int itemId;
@@ -69,11 +71,13 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
   late TabController _tabController;
   bool _isViewModeLocked = false;
 
+  bool get _hasCanvas => kCanvasEnabled && widget.collectionId != null;
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(
-      length: kCanvasEnabled ? 2 : 1,
+      length: _hasCanvas ? 2 : 1,
       vsync: this,
     );
     _tabController.addListener(() {
@@ -119,6 +123,95 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
     );
   }
 
+  Future<void> _moveToCollection(CollectionItem item) async {
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    final NavigatorState navigator = Navigator.of(context);
+    final bool isUncategorized = widget.collectionId == null;
+
+    final CollectionChoice? choice = await showCollectionPickerDialog(
+      context: context,
+      ref: ref,
+      excludeCollectionId: widget.collectionId,
+      showUncategorized: !isUncategorized,
+      title: 'Move to Collection',
+    );
+    if (choice == null || !mounted) return;
+
+    final int? targetCollectionId;
+    final String targetName;
+    switch (choice) {
+      case ChosenCollection(:final Collection collection):
+        targetCollectionId = collection.id;
+        targetName = collection.name;
+      case WithoutCollection():
+        targetCollectionId = null;
+        targetName = 'Uncategorized';
+    }
+
+    final bool success = await ref
+        .read(
+          collectionItemsNotifierProvider(widget.collectionId).notifier,
+        )
+        .moveItem(
+          item.id,
+          targetCollectionId: targetCollectionId,
+          mediaType: item.mediaType,
+        );
+
+    if (!mounted) return;
+
+    if (success) {
+      messenger.showSnackBar(
+        SnackBar(content: Text('${item.itemName} moved to $targetName')),
+      );
+      navigator.pop();
+    } else {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('${item.itemName} already exists in $targetName'),
+        ),
+      );
+    }
+  }
+
+  Future<void> _removeFromCollection(CollectionItem item) async {
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Remove Item?'),
+        content: Text('Remove ${item.itemName} from this collection?'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    await ref
+        .read(
+          collectionItemsNotifierProvider(widget.collectionId).notifier,
+        )
+        .removeItem(item.id, mediaType: item.mediaType);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${item.itemName} removed')),
+      );
+      Navigator.of(context).pop();
+    }
+  }
+
   BreadcrumbAppBar _buildFallbackAppBar() {
     return BreadcrumbAppBar.collectionFallback(context, widget.collectionName);
   }
@@ -157,8 +250,51 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
           BreadcrumbItem(label: item.itemName),
         ],
         actions: <Widget>[
+          if (widget.isEditable)
+            PopupMenuButton<String>(
+              icon: const Icon(
+                Icons.more_vert,
+                color: AppColors.textSecondary,
+              ),
+              onSelected: (String value) {
+                switch (value) {
+                  case 'move':
+                    _moveToCollection(item);
+                  case 'remove':
+                    _removeFromCollection(item);
+                }
+              },
+              itemBuilder: (BuildContext context) =>
+                  <PopupMenuEntry<String>>[
+                const PopupMenuItem<String>(
+                  value: 'move',
+                  child: ListTile(
+                    leading: Icon(Icons.drive_file_move_outlined),
+                    title: Text('Move to Collection'),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                const PopupMenuDivider(),
+                PopupMenuItem<String>(
+                  value: 'remove',
+                  child: ListTile(
+                    leading: Icon(
+                      Icons.delete_outline,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                    title: Text(
+                      'Remove',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              ],
+            ),
           if (widget.isEditable &&
-              kCanvasEnabled &&
+              _hasCanvas &&
               _tabController.index == 1)
             IconButton(
               icon: Icon(
@@ -193,7 +329,7 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
               icon: Icon(Icons.info_outline),
               text: 'Details',
             ),
-            if (kCanvasEnabled)
+            if (_hasCanvas)
               const Tab(
                 icon: Icon(Icons.dashboard_outlined),
                 text: 'Board',
@@ -209,7 +345,7 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
               ? _buildTvShowDetails(item)
               : _buildMovieDetails(item),
           // Canvas tab (только desktop)
-          if (kCanvasEnabled) _buildCanvasTab(),
+          if (_hasCanvas) _buildCanvasTab(),
         ],
       ),
     );
@@ -406,7 +542,7 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
     TvShow? tvShow,
   ) {
     final int tmdbShowId = item.externalId;
-    final ({int collectionId, int showId}) trackerArg =
+    final ({int? collectionId, int showId}) trackerArg =
         (collectionId: widget.collectionId, showId: tmdbShowId);
 
     final EpisodeTrackerState trackerState =
@@ -461,7 +597,7 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
 
   // ==================== Canvas ====================
 
-  ({int collectionId, int collectionItemId}) get _canvasArg => (
+  ({int? collectionId, int collectionItemId}) get _canvasArg => (
         collectionId: widget.collectionId,
         collectionItemId: widget.itemId,
       );
@@ -679,7 +815,7 @@ class _AnimeSeasonsListWidget extends ConsumerStatefulWidget {
   });
 
   final int tmdbShowId;
-  final int collectionId;
+  final int? collectionId;
 
   @override
   ConsumerState<_AnimeSeasonsListWidget> createState() =>
@@ -760,7 +896,7 @@ class _AnimeSeasonsListWidgetState
     }
   }
 
-  ({int collectionId, int showId}) get _trackerArg => (
+  ({int? collectionId, int showId}) get _trackerArg => (
         collectionId: widget.collectionId,
         showId: widget.tmdbShowId,
       );
@@ -846,7 +982,7 @@ class _AnimeSeasonExpansionTile extends ConsumerWidget {
 
   final TvSeason season;
   final EpisodeTrackerState trackerState;
-  final ({int collectionId, int showId}) trackerArg;
+  final ({int? collectionId, int showId}) trackerArg;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -974,7 +1110,7 @@ class _AnimeEpisodeTile extends ConsumerWidget {
   final TvEpisode episode;
   final bool isWatched;
   final DateTime? watchedAt;
-  final ({int collectionId, int showId}) trackerArg;
+  final ({int? collectionId, int showId}) trackerArg;
 
   static const List<String> _months = <String>[
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
