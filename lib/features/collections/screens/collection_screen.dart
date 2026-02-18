@@ -19,6 +19,7 @@ import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/collection_sort_mode.dart';
 import '../../../shared/models/media_type.dart';
+import '../../../shared/models/platform.dart';
 import '../../../shared/navigation/navigation_shell.dart';
 import '../../../shared/widgets/dual_rating_badge.dart';
 import '../../../shared/widgets/media_poster_card.dart';
@@ -63,6 +64,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   bool _isGridMode = false;
   bool _isViewModeLocked = false;
   MediaType? _filterType;
+  int? _filterPlatformId;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
 
@@ -365,6 +367,10 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                 if ((statsAsync.valueOrNull?.total ?? 0) > 0)
                   _buildFilterRow(statsAsync),
 
+                // Чипсы платформ (только при фильтре Games)
+                if (_filterType == MediaType.game)
+                  _buildPlatformChipsRow(itemsAsync),
+
                 // Список элементов
                 Expanded(
                   child: itemsAsync.when(
@@ -443,6 +449,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         setState(() {
           _filterType =
               value == _filterAllKey ? null : MediaType.fromString(value);
+          _filterPlatformId = null;
         });
       },
       constraints: const BoxConstraints(),
@@ -700,6 +707,76 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     );
   }
 
+  Widget _buildPlatformChipsRow(
+    AsyncValue<List<CollectionItem>> itemsAsync,
+  ) {
+    final List<CollectionItem>? items = itemsAsync.valueOrNull;
+    if (items == null) return const SizedBox.shrink();
+
+    // Уникальные платформы из игр в этой коллекции
+    final Map<int, Platform> platformMap = <int, Platform>{};
+    for (final CollectionItem item in items) {
+      if (item.mediaType == MediaType.game &&
+          item.platformId != null &&
+          item.platformId != -1 &&
+          item.platform != null) {
+        platformMap[item.platformId!] = item.platform!;
+      }
+    }
+    if (platformMap.isEmpty) return const SizedBox.shrink();
+
+    final List<Platform> platforms = platformMap.values.toList()
+      ..sort((Platform a, Platform b) => a.name.compareTo(b.name));
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: <Widget>[
+            _buildPlatformChip(null, 'All'),
+            for (final Platform platform in platforms) ...<Widget>[
+              const SizedBox(width: AppSpacing.xs),
+              _buildPlatformChip(platform.id, platform.displayName),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlatformChip(int? platformId, String label) {
+    final bool selected = _filterPlatformId == platformId;
+    const Color accentColor = AppColors.gameAccent;
+
+    return ChoiceChip(
+      label: Text(
+        label,
+        style: AppTypography.caption.copyWith(
+          color: selected ? AppColors.background : AppColors.textTertiary,
+          fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+        ),
+      ),
+      selected: selected,
+      selectedColor: accentColor,
+      backgroundColor: AppColors.surface,
+      side: BorderSide(
+        color: selected
+            ? Colors.transparent
+            : accentColor.withAlpha(50),
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      visualDensity: VisualDensity.compact,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+      onSelected: (bool value) {
+        setState(() => _filterPlatformId = value ? platformId : null);
+      },
+    );
+  }
+
   /// Применяет фильтры по типу и поисковой строке.
   List<CollectionItem> _applyFilters(List<CollectionItem> items) {
     List<CollectionItem> result = items;
@@ -707,6 +784,14 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     if (_filterType != null) {
       result = result
           .where((CollectionItem item) => item.mediaType == _filterType)
+          .toList();
+    }
+
+    if (_filterPlatformId != null) {
+      result = result
+          .where(
+            (CollectionItem item) => item.platformId == _filterPlatformId,
+          )
           .toList();
     }
 
@@ -823,6 +908,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             userRating: item.userRating,
             apiRating: item.apiRating,
             year: _yearFor(item),
+            platformLabel: item.platform?.displayName,
             subtitle: _subtitleFor(item),
             status: item.status,
             onTap: () => _showItemDetails(item),
@@ -853,7 +939,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   static String? _subtitleFor(CollectionItem item) {
     switch (item.mediaType) {
       case MediaType.game:
-        return item.platform?.displayName;
+        return item.game?.genresString;
       case MediaType.movie:
         return item.movie?.genresString;
       case MediaType.tvShow:
@@ -1099,7 +1185,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     // Синхронизация канваса — удалить элемент
     ref
         .read(canvasNotifierProvider(widget.collectionId).notifier)
-        .removeMediaItem(item.mediaType, item.externalId);
+        .removeByCollectionItemId(item.id);
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

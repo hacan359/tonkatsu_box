@@ -56,15 +56,20 @@ Future<Database> _createTestDatabase() async {
           )
         ''');
 
-        // Partial unique indexes — аналог production-схемы.
+        // Partial unique indexes v18 — включают platform_id.
         await db.execute('''
           CREATE UNIQUE INDEX idx_ci_coll
-          ON collection_items(collection_id, media_type, external_id)
+          ON collection_items(
+            collection_id, media_type, external_id,
+            COALESCE(platform_id, -1)
+          )
           WHERE collection_id IS NOT NULL
         ''');
         await db.execute('''
           CREATE UNIQUE INDEX idx_ci_uncat
-          ON collection_items(media_type, external_id)
+          ON collection_items(
+            media_type, external_id, COALESCE(platform_id, -1)
+          )
           WHERE collection_id IS NULL
         ''');
       },
@@ -94,12 +99,14 @@ Future<int> _insertItem(
   required int externalId,
   String mediaType = 'game',
   int sortOrder = 0,
+  int? platformId,
 }) async {
   final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
   return db.insert('collection_items', <String, dynamic>{
     'collection_id': collectionId,
     'media_type': mediaType,
     'external_id': externalId,
+    'platform_id': platformId,
     'added_at': now,
     'sort_order': sortOrder,
   });
@@ -336,6 +343,292 @@ void main() {
         final bool result = await _updateItemCollectionId(db, itemId, collB);
 
         expect(result, isTrue);
+      });
+    });
+
+    // ==================== Multi-platform UNIQUE ====================
+
+    group('multi-platform UNIQUE index (v18)', () {
+      test(
+          'должен разрешать одну игру с разными платформами в одной коллекции',
+          () async {
+        final int coll = await _insertCollection(db, 'Games');
+
+        // Castlevania на SNES (platformId=19)
+        final int item1 = await _insertItem(
+          db,
+          collectionId: coll,
+          externalId: 1000,
+          platformId: 19,
+        );
+        // Castlevania на GBA (platformId=24)
+        final int item2 = await _insertItem(
+          db,
+          collectionId: coll,
+          externalId: 1000,
+          platformId: 24,
+        );
+
+        expect(item1, isNot(item2));
+
+        // Оба элемента существуют.
+        final Map<String, dynamic>? row1 = await _getItem(db, item1);
+        final Map<String, dynamic>? row2 = await _getItem(db, item2);
+        expect(row1, isNotNull);
+        expect(row2, isNotNull);
+        expect(row1!['platform_id'], 19);
+        expect(row2!['platform_id'], 24);
+      });
+
+      test(
+          'должен запрещать дубль одной игры с той же платформой в коллекции',
+          () async {
+        final int coll = await _insertCollection(db, 'Games');
+
+        await _insertItem(
+          db,
+          collectionId: coll,
+          externalId: 2000,
+          platformId: 19,
+        );
+
+        // Повторная вставка с тем же external_id + platform_id → ошибка.
+        expect(
+          () => _insertItem(
+            db,
+            collectionId: coll,
+            externalId: 2000,
+            platformId: 19,
+          ),
+          throwsA(isA<DatabaseException>()),
+        );
+      });
+
+      test(
+          'должен разрешать одну игру с NULL и не-NULL платформами',
+          () async {
+        final int coll = await _insertCollection(db, 'Games');
+
+        // Элемент без платформы (фильм, например).
+        final int item1 = await _insertItem(
+          db,
+          collectionId: coll,
+          externalId: 3000,
+          mediaType: 'movie',
+        );
+        // Тот же external_id, но как game с платформой.
+        final int item2 = await _insertItem(
+          db,
+          collectionId: coll,
+          externalId: 3000,
+          mediaType: 'game',
+          platformId: 19,
+        );
+
+        expect(item1, isNot(item2));
+      });
+
+      test(
+          'должен запрещать дубль с NULL платформой (фильмы) в коллекции',
+          () async {
+        final int coll = await _insertCollection(db, 'Movies');
+
+        await _insertItem(
+          db,
+          collectionId: coll,
+          externalId: 4000,
+          mediaType: 'movie',
+        );
+
+        // Повторная вставка: тот же movie, null platform → ошибка.
+        expect(
+          () => _insertItem(
+            db,
+            collectionId: coll,
+            externalId: 4000,
+            mediaType: 'movie',
+          ),
+          throwsA(isA<DatabaseException>()),
+        );
+      });
+
+      test(
+          'должен разрешать одну игру с разными платформами в uncategorized',
+          () async {
+        final int item1 = await _insertItem(
+          db,
+          collectionId: null,
+          externalId: 5000,
+          platformId: 19,
+        );
+        final int item2 = await _insertItem(
+          db,
+          collectionId: null,
+          externalId: 5000,
+          platformId: 24,
+        );
+
+        expect(item1, isNot(item2));
+      });
+
+      test(
+          'должен запрещать дубль с той же платформой в uncategorized',
+          () async {
+        await _insertItem(
+          db,
+          collectionId: null,
+          externalId: 6000,
+          platformId: 19,
+        );
+
+        expect(
+          () => _insertItem(
+            db,
+            collectionId: null,
+            externalId: 6000,
+            platformId: 19,
+          ),
+          throwsA(isA<DatabaseException>()),
+        );
+      });
+
+      test(
+          'должен корректно перемещать multi-platform элемент между коллекциями',
+          () async {
+        final int collA = await _insertCollection(db, 'Collection A');
+        final int collB = await _insertCollection(db, 'Collection B');
+
+        // Игра SNES в коллекции A.
+        final int itemId = await _insertItem(
+          db,
+          collectionId: collA,
+          externalId: 7000,
+          platformId: 19,
+        );
+
+        // Перемещаем в B.
+        final bool result = await _updateItemCollectionId(db, itemId, collB);
+        expect(result, isTrue);
+
+        final Map<String, dynamic>? item = await _getItem(db, itemId);
+        expect(item!['collection_id'], collB);
+        expect(item['platform_id'], 19);
+      });
+    });
+
+    // ==================== getUniquePlatformIds ====================
+
+    group('getUniquePlatformIds', () {
+      test('должен возвращать уникальные platform_id из игр', () async {
+        final int coll = await _insertCollection(db, 'Games');
+        await _insertItem(
+          db,
+          collectionId: coll,
+          externalId: 100,
+          platformId: 19,
+        );
+        await _insertItem(
+          db,
+          collectionId: coll,
+          externalId: 200,
+          platformId: 24,
+        );
+        await _insertItem(
+          db,
+          collectionId: coll,
+          externalId: 300,
+          platformId: 19, // дубль платформы
+        );
+
+        final List<Map<String, dynamic>> rows = await db.rawQuery('''
+          SELECT DISTINCT platform_id FROM collection_items
+          WHERE media_type = 'game'
+            AND platform_id IS NOT NULL
+            AND platform_id != -1
+            AND collection_id = ?
+          ORDER BY platform_id
+        ''', <Object?>[coll]);
+        final List<int> ids =
+            rows.map((Map<String, dynamic> r) => r['platform_id'] as int).toList();
+
+        expect(ids, <int>[19, 24]);
+      });
+
+      test('должен игнорировать элементы с NULL platform_id', () async {
+        final int coll = await _insertCollection(db, 'Mixed');
+        // Фильм без платформы.
+        await _insertItem(
+          db,
+          collectionId: coll,
+          externalId: 400,
+          mediaType: 'movie',
+        );
+        // Игра с платформой.
+        await _insertItem(
+          db,
+          collectionId: coll,
+          externalId: 500,
+          platformId: 33,
+        );
+
+        final List<Map<String, dynamic>> rows = await db.rawQuery('''
+          SELECT DISTINCT platform_id FROM collection_items
+          WHERE media_type = 'game'
+            AND platform_id IS NOT NULL
+            AND platform_id != -1
+            AND collection_id = ?
+          ORDER BY platform_id
+        ''', <Object?>[coll]);
+        final List<int> ids =
+            rows.map((Map<String, dynamic> r) => r['platform_id'] as int).toList();
+
+        expect(ids, <int>[33]);
+      });
+
+      test('должен возвращать пустой список для пустой коллекции', () async {
+        final int coll = await _insertCollection(db, 'Empty');
+
+        final List<Map<String, dynamic>> rows = await db.rawQuery('''
+          SELECT DISTINCT platform_id FROM collection_items
+          WHERE media_type = 'game'
+            AND platform_id IS NOT NULL
+            AND platform_id != -1
+            AND collection_id = ?
+          ORDER BY platform_id
+        ''', <Object?>[coll]);
+
+        expect(rows, isEmpty);
+      });
+
+      test('должен возвращать платформы из всех коллекций без фильтра',
+          () async {
+        final int collA = await _insertCollection(db, 'Collection A');
+        final int collB = await _insertCollection(db, 'Collection B');
+
+        await _insertItem(
+          db,
+          collectionId: collA,
+          externalId: 600,
+          platformId: 19,
+        );
+        await _insertItem(
+          db,
+          collectionId: collB,
+          externalId: 700,
+          platformId: 24,
+        );
+
+        final List<Map<String, dynamic>> rows = await db.rawQuery('''
+          SELECT DISTINCT platform_id FROM collection_items
+          WHERE media_type = 'game'
+            AND platform_id IS NOT NULL
+            AND platform_id != -1
+          ORDER BY platform_id
+        ''');
+        final List<int> ids =
+            rows.map((Map<String, dynamic> r) => r['platform_id'] as int).toList();
+
+        expect(ids, <int>[19, 24]);
       });
     });
   });

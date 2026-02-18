@@ -57,6 +57,7 @@
 - [x] Breadcrumb Navigation — BreadcrumbAppBar on all screens (logo + `›` separators + clickable crumbs). Logo above NavigationRail on desktop. collectionName parameter on detail screens for full path display
 - [x] Settings Restructuring — monolithic SettingsScreen (~1118 lines) split into hub + 4 sub-screens: CredentialsScreen, CacheScreen, DatabaseScreen, DebugHubScreen. Debug screens use breadcrumb navigation
 - [x] Move to Collection — move items between collections or to/from uncategorized. DB `updateItemCollectionId`, shared `CollectionPickerDialog`, PopupMenuButton on detail screens and collection tiles. Board tab hidden for uncategorized items
+- [x] Multi-platform Games — same game with different platforms (SNES, GBA, etc.) in one collection with independent progress/rating/notes. DB migration v18: UNIQUE index with `COALESCE(platform_id, -1)`. Canvas sync via `collectionItemId`. Platform filter chips on Home and CollectionScreen. Platform badge on poster cards
 
 ---
 

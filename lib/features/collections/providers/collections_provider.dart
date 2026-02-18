@@ -80,6 +80,7 @@ class CollectionsNotifier extends AsyncNotifier<List<Collection>> {
 
     // Инвалидируем связанные провайдеры
     ref.invalidate(collectionStatsProvider(id));
+    ref.invalidate(allItemsNotifierProvider);
   }
 
   /// Создаёт форк коллекции.

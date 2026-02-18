@@ -304,11 +304,9 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int?>
     // Если элементы ещё не загружены — пропускаем синхронизацию
     if (allItems == null) return;
 
-    // Строим множество ключей "тип:id" для текущих элементов коллекции
-    final Set<String> currentItemKeys = allItems
-        .map((CollectionItem i) =>
-            '${CanvasItemType.fromMediaType(i.mediaType).value}:${i.externalId}')
-        .toSet();
+    // Множество ID текущих элементов коллекции (уникальные PK)
+    final Set<int> currentItemIds =
+        allItems.map((CollectionItem i) => i.id).toSet();
 
     final List<CanvasItem> canvasItems =
         await _repository.getItems(collectionId);
@@ -316,26 +314,23 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int?>
     // Удаляем сиротские медиа-элементы (удалены из коллекции)
     for (final CanvasItem item in canvasItems) {
       if (item.itemType.isMediaItem &&
-          item.itemRefId != null &&
-          !currentItemKeys.contains('${item.itemType.value}:${item.itemRefId}')) {
+          item.collectionItemId != null &&
+          !currentItemIds.contains(item.collectionItemId)) {
         await _repository.deleteItem(item.id);
       }
     }
 
-    // Строим множество ключей для существующих медиа-элементов на канвасе
-    final Set<String> canvasItemKeys = canvasItems
-        .where(
-            (CanvasItem item) => item.itemType.isMediaItem && item.itemRefId != null)
-        .map((CanvasItem item) => '${item.itemType.value}:${item.itemRefId}')
+    // Множество collectionItemId для существующих медиа-элементов на канвасе
+    final Set<int> canvasCollectionItemIds = canvasItems
+        .where((CanvasItem item) =>
+            item.itemType.isMediaItem && item.collectionItemId != null)
+        .map((CanvasItem item) => item.collectionItemId!)
         .toSet();
 
     // Находим недостающие элементы
     final List<CollectionItem> missingItems = allItems
-        .where((CollectionItem i) {
-          final String key =
-              '${CanvasItemType.fromMediaType(i.mediaType).value}:${i.externalId}';
-          return !canvasItemKeys.contains(key);
-        })
+        .where((CollectionItem i) =>
+            !canvasCollectionItemIds.contains(i.id))
         .toList();
 
     if (missingItems.isEmpty) return;
@@ -384,6 +379,7 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int?>
       final CanvasItem item = CanvasItem(
         id: 0,
         collectionId: collectionId,
+        collectionItemId: missingItems[i].id,
         itemType: canvasType,
         itemRefId: missingItems[i].externalId,
         x: x,
@@ -396,6 +392,19 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int?>
 
       await _repository.createItem(item);
     }
+  }
+
+  /// Удаляет медиа-элемент с канваса по ID элемента коллекции.
+  ///
+  /// Обновляет state мгновенно и удаляет из БД.
+  void removeByCollectionItemId(int collectionItemId) {
+    state = state.copyWith(
+      items: state.items
+          .where((CanvasItem item) =>
+              item.collectionItemId != collectionItemId)
+          .toList(),
+    );
+    _repository.deleteByCollectionItemId(_collectionId!, collectionItemId);
   }
 
   /// Удаляет медиа-элемент с канваса по типу и ID.

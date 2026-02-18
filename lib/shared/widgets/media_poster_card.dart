@@ -47,6 +47,7 @@ class MediaPosterCard extends StatefulWidget {
     this.subtitle,
     this.mediaType,
     this.placeholderIcon,
+    this.platformLabel,
     this.onTap,
     this.onLongPress,
     super.key,
@@ -84,6 +85,9 @@ class MediaPosterCard extends StatefulWidget {
 
   /// Подзаголовок (жанр, платформа). Grid/compact only.
   final String? subtitle;
+
+  /// Краткое название платформы (SNES, GBA). Grid/compact only.
+  final String? platformLabel;
 
   /// Тип медиа — для цвета рамки и иконки placeholder (canvas).
   final MediaType? mediaType;
@@ -191,7 +195,9 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                   _buildGridPoster(),
                   SizedBox(height: _isCompact ? 2 : AppSpacing.xs),
                   _buildGridTitle(),
-                  if (widget.year != null || widget.subtitle != null)
+                  if (widget.year != null ||
+                      widget.subtitle != null ||
+                      widget.platformLabel != null)
                     Padding(
                       padding: EdgeInsets.only(top: _isCompact ? 1 : 2),
                       child: _buildGridSubtitle(),
@@ -328,6 +334,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
 
   Widget _buildGridSubtitle() {
     final List<String> parts = <String>[];
+    if (widget.platformLabel != null) parts.add(widget.platformLabel!);
     if (widget.year != null) parts.add(widget.year.toString());
     if (widget.subtitle != null) parts.add(widget.subtitle!);
 

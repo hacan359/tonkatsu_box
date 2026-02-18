@@ -3,10 +3,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/database/database_service.dart';
 import '../../../data/repositories/collection_repository.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/collection_sort_mode.dart';
+import '../../../shared/models/media_type.dart';
+import '../../../shared/models/platform.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../collections/providers/sort_utils.dart';
 import '../../settings/providers/settings_provider.dart';
@@ -137,6 +140,41 @@ class AllItemsNotifier extends Notifier<AsyncValue<List<CollectionItem>>> {
     await _loadItems(sortMode, isDescending: isDescending);
   }
 }
+
+// ==================== Platform Filter ====================
+
+/// Уникальные платформы из игр в коллекциях для фильтрации.
+///
+/// Извлекает platformId из всех игровых элементов и загружает
+/// модели [Platform] из БД. Отсортировано по имени.
+final FutureProvider<List<Platform>> allItemsPlatformsProvider =
+    FutureProvider<List<Platform>>((Ref ref) async {
+  final AsyncValue<List<CollectionItem>> itemsAsync =
+      ref.watch(allItemsNotifierProvider);
+  final List<CollectionItem>? items = itemsAsync.valueOrNull;
+  if (items == null) return <Platform>[];
+
+  final Set<int> uniqueIds = items
+      .where((CollectionItem i) =>
+          i.mediaType == MediaType.game &&
+          i.platformId != null &&
+          i.platformId != -1)
+      .map((CollectionItem i) => i.platformId!)
+      .toSet();
+
+  if (uniqueIds.isEmpty) return <Platform>[];
+
+  final DatabaseService db = ref.read(databaseServiceProvider);
+  final List<Platform> platforms = <Platform>[];
+  for (final int id in uniqueIds) {
+    final Platform? p = await db.getPlatformById(id);
+    if (p != null) platforms.add(p);
+  }
+  platforms.sort(
+    (Platform a, Platform b) => a.name.compareTo(b.name),
+  );
+  return platforms;
+});
 
 // ==================== Collection Names ====================
 

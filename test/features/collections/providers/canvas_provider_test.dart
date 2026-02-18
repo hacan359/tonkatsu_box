@@ -204,6 +204,7 @@ void main() {
         CanvasItem(
           id: 1,
           collectionId: collectionId,
+          collectionItemId: 1,
           itemType: CanvasItemType.game,
           itemRefId: 100,
           x: 50.0,
@@ -216,6 +217,7 @@ void main() {
         CanvasItem(
           id: 2,
           collectionId: collectionId,
+          collectionItemId: 2,
           itemType: CanvasItemType.game,
           itemRefId: 200,
           x: 250.0,
@@ -228,6 +230,7 @@ void main() {
         CanvasItem(
           id: 3,
           collectionId: collectionId,
+          collectionItemId: 3,
           itemType: CanvasItemType.game,
           itemRefId: 300,
           x: 450.0,
@@ -319,6 +322,7 @@ void main() {
             CanvasItem(
               id: i + 1,
               collectionId: collectionId,
+              collectionItemId: effectiveItems[i].id,
               itemType: CanvasItemType.game,
               itemRefId: effectiveItems[i].externalId,
               x: 100.0 + i * 184.0,
