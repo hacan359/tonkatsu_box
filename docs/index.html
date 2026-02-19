@@ -194,6 +194,35 @@
 
     .nav__links a:hover { color: var(--text-primary); }
 
+    .nav__lang {
+      display: flex;
+      gap: 4px;
+    }
+
+    .lang-btn {
+      font-family: var(--font-display);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 10px;
+      background: transparent;
+      color: var(--text-tertiary);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .lang-btn:hover {
+      color: var(--text-secondary);
+      border-color: rgba(255,255,255,0.15);
+    }
+
+    .lang-btn--active {
+      color: var(--text-primary);
+      background: var(--bg-surface-2);
+      border-color: rgba(255,255,255,0.15);
+    }
+
     .nav__cta {
       font-family: var(--font-display);
       font-size: 13px;
@@ -777,12 +806,16 @@
         Tonkatsu Box
       </a>
       <ul class="nav__links">
-        <li><a href="#features">Features</a></li>
-        <li><a href="#how-it-works">Get Started</a></li>
-        <li><a href="#sharing">Sharing</a></li>
-        <li><a href="https://github.com/hacan359/tonkatsu_box/tree/main/docs" target="_blank">Docs</a></li>
+        <li><a href="#features" data-i18n="nav_features">Features</a></li>
+        <li><a href="#how-it-works" data-i18n="nav_get_started">Get Started</a></li>
+        <li><a href="#sharing" data-i18n="nav_sharing">Sharing</a></li>
+        <li><a href="https://github.com/hacan359/tonkatsu_box/tree/main/docs" target="_blank" data-i18n="nav_docs">Docs</a></li>
       </ul>
-      <a href="https://github.com/hacan359/tonkatsu_box/releases" class="nav__cta" target="_blank">
+      <div class="nav__lang">
+        <button class="lang-btn lang-btn--active" data-lang="en">EN</button>
+        <button class="lang-btn" data-lang="ru">RU</button>
+      </div>
+      <a href="https://github.com/hacan359/tonkatsu_box/releases" class="nav__cta" target="_blank" data-i18n="nav_download">
         Download
       </a>
     </div>
@@ -793,10 +826,10 @@
     <div class="container">
       <div class="hero__content">
         <div class="hero__badge">
-          <span>v0.9.0</span> Open Source &middot; MIT License
+          <span>v0.9.0</span> <span data-i18n="hero_badge">Open Source &middot; MIT License</span>
         </div>
 
-        <h1 class="hero__title">
+        <h1 class="hero__title" data-i18n="hero_title">
           Your <span class="accent-game">games</span>,
           <span class="accent-movie">movies</span>,
           <span class="accent-tv">shows</span> &amp;
@@ -804,22 +837,22 @@
           — all in one box
         </h1>
 
-        <p class="hero__subtitle">
+        <p class="hero__subtitle" data-i18n="hero_subtitle">
           Build collections, track what you're playing and watching, create visual boards, rate your favorites, and share with friends.
         </p>
 
         <div class="hero__actions">
-          <a href="https://github.com/hacan359/tonkatsu_box/releases" class="btn btn--primary" target="_blank">
+          <a href="https://github.com/hacan359/tonkatsu_box/releases" class="btn btn--primary" target="_blank" data-i18n="hero_download">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Download
           </a>
-          <a href="https://github.com/hacan359/tonkatsu_box" class="btn btn--ghost" target="_blank">
+          <a href="https://github.com/hacan359/tonkatsu_box" class="btn btn--ghost" target="_blank" data-i18n="hero_source">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
             View Source
           </a>
         </div>
 
-        <p class="hero__platforms">Available for Windows & Android</p>
+        <p class="hero__platforms" data-i18n="hero_platforms">Available for Windows & Android</p>
       </div>
     </div>
   </section>
@@ -844,19 +877,19 @@
     <div class="media-tags reveal">
       <div class="media-tag media-tag--game">
         <div class="media-tag__dot"></div>
-        Retro Games
+        <span data-i18n="tag_games">Retro Games</span>
       </div>
       <div class="media-tag media-tag--movie">
         <div class="media-tag__dot"></div>
-        Movies
+        <span data-i18n="tag_movies">Movies</span>
       </div>
       <div class="media-tag media-tag--tv">
         <div class="media-tag__dot"></div>
-        TV Shows
+        <span data-i18n="tag_tv">TV Shows</span>
       </div>
       <div class="media-tag media-tag--anime">
         <div class="media-tag__dot"></div>
-        Anime
+        <span data-i18n="tag_anime">Anime</span>
       </div>
     </div>
   </div>
@@ -865,9 +898,9 @@
   <section id="features">
     <div class="container">
       <div class="features__header reveal">
-        <div class="section-label">Features</div>
-        <h2 class="section-title">Everything you need to<br>organize your media</h2>
-        <p class="section-subtitle">
+        <div class="section-label" data-i18n="features_label">Features</div>
+        <h2 class="section-title" data-i18n="features_title">Everything you need to<br>organize your media</h2>
+        <p class="section-subtitle" data-i18n="features_subtitle">
           Search hundreds of thousands of titles, organize them your way, and track your progress across games, movies, and anime.
         </p>
       </div>
@@ -875,48 +908,48 @@
       <div class="features__grid">
         <div class="feature-card feature-card--game reveal">
           <div class="feature-card__icon">🎮</div>
-          <h3 class="feature-card__title">Build Collections</h3>
-          <p class="feature-card__desc">
+          <h3 class="feature-card__title" data-i18n="feat_collections_title">Build Collections</h3>
+          <p class="feature-card__desc" data-i18n="feat_collections_desc">
             Create unlimited collections by platform, genre, or custom lists. Mix games, movies, and anime in a single collection. Switch between grid and list views.
           </p>
         </div>
 
         <div class="feature-card feature-card--movie reveal">
           <div class="feature-card__icon">🔍</div>
-          <h3 class="feature-card__title">Search & Discover</h3>
-          <p class="feature-card__desc">
+          <h3 class="feature-card__title" data-i18n="feat_search_title">Search & Discover</h3>
+          <p class="feature-card__desc" data-i18n="feat_search_desc">
             Find titles from IGDB and TMDB databases. Filter by year, genre, or platform. Add anything to your collections with one tap.
           </p>
         </div>
 
         <div class="feature-card feature-card--tv reveal">
           <div class="feature-card__icon">📊</div>
-          <h3 class="feature-card__title">Track Progress</h3>
-          <p class="feature-card__desc">
+          <h3 class="feature-card__title" data-i18n="feat_progress_title">Track Progress</h3>
+          <p class="feature-card__desc" data-i18n="feat_progress_desc">
             Mark items as In Progress, Completed, On Hold, or Dropped. Track individual episodes for TV shows and anime. Rate everything from 1 to 10 stars.
           </p>
         </div>
 
         <div class="feature-card feature-card--board reveal">
           <div class="feature-card__icon">🎨</div>
-          <h3 class="feature-card__title">Visual Boards</h3>
-          <p class="feature-card__desc">
+          <h3 class="feature-card__title" data-i18n="feat_boards_title">Visual Boards</h3>
+          <p class="feature-card__desc" data-i18n="feat_boards_desc">
             Arrange posters on a free-form canvas. Add text notes, images, and links. Draw connections between items. Browse artwork from SteamGridDB.
           </p>
         </div>
 
         <div class="feature-card feature-card--export reveal">
           <div class="feature-card__icon">📤</div>
-          <h3 class="feature-card__title">Share with Friends</h3>
-          <p class="feature-card__desc">
+          <h3 class="feature-card__title" data-i18n="feat_share_title">Share with Friends</h3>
+          <p class="feature-card__desc" data-i18n="feat_share_desc">
             Export collections as lightweight <code>.xcoll</code> or full offline <code>.xcollx</code> files. Friends can import and fork to create their own versions.
           </p>
         </div>
 
         <div class="feature-card feature-card--anime reveal">
           <div class="feature-card__icon">⭐</div>
-          <h3 class="feature-card__title">Rate & Review</h3>
-          <p class="feature-card__desc">
+          <h3 class="feature-card__title" data-i18n="feat_rate_title">Rate & Review</h3>
+          <p class="feature-card__desc" data-i18n="feat_rate_desc">
             Rate every title from 1–10 stars. Write personal notes and author reviews visible on export. Track when you started and finished each item.
           </p>
         </div>
@@ -928,9 +961,9 @@
   <section id="how-it-works">
     <div class="container">
       <div class="features__header reveal">
-        <div class="section-label">Get Started</div>
-        <h2 class="section-title">Up and running in minutes</h2>
-        <p class="section-subtitle">
+        <div class="section-label" data-i18n="steps_label">Get Started</div>
+        <h2 class="section-title" data-i18n="steps_title">Up and running in minutes</h2>
+        <p class="section-subtitle" data-i18n="steps_subtitle">
           Grab free API keys, install the app, and start building your collection.
         </p>
       </div>
@@ -938,22 +971,22 @@
       <div class="steps__grid">
         <div class="step reveal">
           <div class="step__number">01</div>
-          <h3 class="step__title">Get API Keys</h3>
-          <p class="step__desc">
+          <h3 class="step__title" data-i18n="step1_title">Get API Keys</h3>
+          <p class="step__desc" data-i18n="step1_desc">
             Register for free at <strong>IGDB</strong> (via Twitch) for games and <strong>TMDB</strong> for movies & TV. Optional: <strong>SteamGridDB</strong> for extra artwork.
           </p>
         </div>
         <div class="step reveal">
           <div class="step__number">02</div>
-          <h3 class="step__title">Install & Run</h3>
-          <p class="step__desc">
+          <h3 class="step__title" data-i18n="step2_title">Install & Run</h3>
+          <p class="step__desc" data-i18n="step2_desc">
             Download the latest release or build from source with Flutter. Available for <strong>Windows</strong> desktop and <strong>Android</strong>.
           </p>
         </div>
         <div class="step reveal">
           <div class="step__number">03</div>
-          <h3 class="step__title">Start Collecting</h3>
-          <p class="step__desc">
+          <h3 class="step__title" data-i18n="step3_title">Start Collecting</h3>
+          <p class="step__desc" data-i18n="step3_desc">
             Enter your API keys in Settings, search for your favorite titles, and organize them into collections. That's it!
           </p>
         </div>
@@ -965,9 +998,9 @@
   <section id="sharing">
     <div class="container">
       <div class="features__header reveal">
-        <div class="section-label">Sharing</div>
-        <h2 class="section-title">Share your taste</h2>
-        <p class="section-subtitle">
+        <div class="section-label" data-i18n="sharing_label">Sharing</div>
+        <h2 class="section-title" data-i18n="sharing_title">Share your taste</h2>
+        <p class="section-subtitle" data-i18n="sharing_subtitle">
           Export your collections and send them to friends. Two formats for different needs.
         </p>
       </div>
@@ -975,15 +1008,15 @@
       <div class="formats reveal">
         <div class="format-card">
           <div class="format-card__ext">.xcoll</div>
-          <div class="format-card__name">Light Export</div>
-          <p class="format-card__desc">
+          <div class="format-card__name" data-i18n="format_light_name">Light Export</div>
+          <p class="format-card__desc" data-i18n="format_light_desc">
             Small file with the list of items. Recipient needs internet to load images and details.
           </p>
         </div>
         <div class="format-card">
           <div class="format-card__ext">.xcollx</div>
-          <div class="format-card__name">Full Export</div>
-          <p class="format-card__desc">
+          <div class="format-card__name" data-i18n="format_full_name">Full Export</div>
+          <p class="format-card__desc" data-i18n="format_full_desc">
             Complete package with images, board layouts, and all media data. Works fully offline.
           </p>
         </div>
@@ -995,8 +1028,8 @@
   <section id="tech">
     <div class="container">
       <div class="features__header reveal">
-        <div class="section-label">Built With</div>
-        <h2 class="section-title">Open source, built to last</h2>
+        <div class="section-label" data-i18n="tech_label">Built With</div>
+        <h2 class="section-title" data-i18n="tech_title">Open source, built to last</h2>
       </div>
 
       <div class="tech-pills reveal">
@@ -1016,15 +1049,15 @@
   <!-- CTA -->
   <section class="cta-section">
     <div class="container reveal">
-      <div class="section-label">Ready?</div>
-      <h2 class="section-title">Start organizing your collection</h2>
-      <p class="section-subtitle">Free, open source, and yours to customize.</p>
+      <div class="section-label" data-i18n="cta_label">Ready?</div>
+      <h2 class="section-title" data-i18n="cta_title">Start organizing your collection</h2>
+      <p class="section-subtitle" data-i18n="cta_subtitle">Free, open source, and yours to customize.</p>
       <div class="hero__actions">
-        <a href="https://github.com/hacan359/tonkatsu_box/releases" class="btn btn--primary" target="_blank">
+        <a href="https://github.com/hacan359/tonkatsu_box/releases" class="btn btn--primary" target="_blank" data-i18n="cta_download">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Download Latest Release
         </a>
-        <a href="https://github.com/hacan359/tonkatsu_box" class="btn btn--ghost" target="_blank">
+        <a href="https://github.com/hacan359/tonkatsu_box" class="btn btn--ghost" target="_blank" data-i18n="cta_star">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
           Star on GitHub
         </a>
@@ -1041,9 +1074,9 @@
       </div>
       <ul class="footer__links">
         <li><a href="https://github.com/hacan359/tonkatsu_box" target="_blank">GitHub</a></li>
-        <li><a href="https://github.com/hacan359/tonkatsu_box/releases" target="_blank">Releases</a></li>
-        <li><a href="https://github.com/hacan359/tonkatsu_box/tree/main/docs" target="_blank">Docs</a></li>
-        <li><a href="https://github.com/hacan359/tonkatsu_box/issues" target="_blank">Issues</a></li>
+        <li><a href="https://github.com/hacan359/tonkatsu_box/releases" target="_blank" data-i18n="footer_releases">Releases</a></li>
+        <li><a href="https://github.com/hacan359/tonkatsu_box/tree/main/docs" target="_blank" data-i18n="nav_docs">Docs</a></li>
+        <li><a href="https://github.com/hacan359/tonkatsu_box/issues" target="_blank" data-i18n="footer_issues">Issues</a></li>
       </ul>
     </div>
   </footer>
@@ -1059,6 +1092,149 @@
     }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
 
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+
+  <!-- i18n -->
+  <script>
+    const translations = {
+      en: {
+        nav_features: 'Features',
+        nav_get_started: 'Get Started',
+        nav_sharing: 'Sharing',
+        nav_docs: 'Docs',
+        nav_download: 'Download',
+        hero_badge: 'Open Source \u00b7 MIT License',
+        hero_title: 'Your <span class="accent-game">games</span>, <span class="accent-movie">movies</span>, <span class="accent-tv">shows</span> &amp; <span class="accent-anime">anime</span><br>\u2014 all in one box',
+        hero_subtitle: 'Build collections, track what you\u2019re playing and watching, create visual boards, rate your favorites, and share with friends.',
+        hero_download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download',
+        hero_source: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg> View Source',
+        hero_platforms: 'Available for Windows & Android',
+        tag_games: 'Retro Games',
+        tag_movies: 'Movies',
+        tag_tv: 'TV Shows',
+        tag_anime: 'Anime',
+        features_label: 'Features',
+        features_title: 'Everything you need to<br>organize your media',
+        features_subtitle: 'Search hundreds of thousands of titles, organize them your way, and track your progress across games, movies, and anime.',
+        feat_collections_title: 'Build Collections',
+        feat_collections_desc: 'Create unlimited collections by platform, genre, or custom lists. Mix games, movies, and anime in a single collection. Switch between grid and list views.',
+        feat_search_title: 'Search & Discover',
+        feat_search_desc: 'Find titles from IGDB and TMDB databases. Filter by year, genre, or platform. Add anything to your collections with one tap.',
+        feat_progress_title: 'Track Progress',
+        feat_progress_desc: 'Mark items as In Progress, Completed, On Hold, or Dropped. Track individual episodes for TV shows and anime. Rate everything from 1 to 10 stars.',
+        feat_boards_title: 'Visual Boards',
+        feat_boards_desc: 'Arrange posters on a free-form canvas. Add text notes, images, and links. Draw connections between items. Browse artwork from SteamGridDB.',
+        feat_share_title: 'Share with Friends',
+        feat_share_desc: 'Export collections as lightweight <code>.xcoll</code> or full offline <code>.xcollx</code> files. Friends can import and fork to create their own versions.',
+        feat_rate_title: 'Rate & Review',
+        feat_rate_desc: 'Rate every title from 1\u201310 stars. Write personal notes and author reviews visible on export. Track when you started and finished each item.',
+        steps_label: 'Get Started',
+        steps_title: 'Up and running in minutes',
+        steps_subtitle: 'Grab free API keys, install the app, and start building your collection.',
+        step1_title: 'Get API Keys',
+        step1_desc: 'Register for free at <strong>IGDB</strong> (via Twitch) for games and <strong>TMDB</strong> for movies & TV. Optional: <strong>SteamGridDB</strong> for extra artwork.',
+        step2_title: 'Install & Run',
+        step2_desc: 'Download the latest release or build from source with Flutter. Available for <strong>Windows</strong> desktop and <strong>Android</strong>.',
+        step3_title: 'Start Collecting',
+        step3_desc: 'Enter your API keys in Settings, search for your favorite titles, and organize them into collections. That\u2019s it!',
+        sharing_label: 'Sharing',
+        sharing_title: 'Share your taste',
+        sharing_subtitle: 'Export your collections and send them to friends. Two formats for different needs.',
+        format_light_name: 'Light Export',
+        format_light_desc: 'Small file with the list of items. Recipient needs internet to load images and details.',
+        format_full_name: 'Full Export',
+        format_full_desc: 'Complete package with images, board layouts, and all media data. Works fully offline.',
+        tech_label: 'Built With',
+        tech_title: 'Open source, built to last',
+        cta_label: 'Ready?',
+        cta_title: 'Start organizing your collection',
+        cta_subtitle: 'Free, open source, and yours to customize.',
+        cta_download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download Latest Release',
+        cta_star: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg> Star on GitHub',
+        footer_releases: 'Releases',
+        footer_issues: 'Issues',
+      },
+      ru: {
+        nav_features: '\u0424\u0443\u043d\u043a\u0446\u0438\u0438',
+        nav_get_started: '\u041d\u0430\u0447\u0430\u0442\u044c',
+        nav_sharing: '\u0428\u0430\u0440\u0438\u043d\u0433',
+        nav_docs: '\u0414\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u0430\u0446\u0438\u044f',
+        nav_download: '\u0421\u043a\u0430\u0447\u0430\u0442\u044c',
+        hero_badge: '\u041e\u0442\u043a\u0440\u044b\u0442\u044b\u0439 \u043a\u043e\u0434 \u00b7 MIT License',
+        hero_title: '\u0412\u0430\u0448\u0438 <span class="accent-game">\u0438\u0433\u0440\u044b</span>, <span class="accent-movie">\u0444\u0438\u043b\u044c\u043c\u044b</span>, <span class="accent-tv">\u0441\u0435\u0440\u0438\u0430\u043b\u044b</span> \u0438 <span class="accent-anime">\u0430\u043d\u0438\u043c\u0435</span><br>\u2014 \u0432\u0441\u0451 \u0432 \u043e\u0434\u043d\u043e\u043c \u043c\u0435\u0441\u0442\u0435',
+        hero_subtitle: '\u0421\u043e\u0437\u0434\u0430\u0432\u0430\u0439\u0442\u0435 \u043a\u043e\u043b\u043b\u0435\u043a\u0446\u0438\u0438, \u043e\u0442\u0441\u043b\u0435\u0436\u0438\u0432\u0430\u0439\u0442\u0435 \u043f\u0440\u043e\u0433\u0440\u0435\u0441\u0441, \u0441\u043e\u0437\u0434\u0430\u0432\u0430\u0439\u0442\u0435 \u0432\u0438\u0437\u0443\u0430\u043b\u044c\u043d\u044b\u0435 \u0434\u043e\u0441\u043a\u0438, \u043e\u0446\u0435\u043d\u0438\u0432\u0430\u0439\u0442\u0435 \u043b\u044e\u0431\u0438\u043c\u043e\u0435 \u0438 \u0434\u0435\u043b\u0438\u0442\u0435\u0441\u044c \u0441 \u0434\u0440\u0443\u0437\u044c\u044f\u043c\u0438.',
+        hero_download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> \u0421\u043a\u0430\u0447\u0430\u0442\u044c',
+        hero_source: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg> \u0418\u0441\u0445\u043e\u0434\u043d\u044b\u0439 \u043a\u043e\u0434',
+        hero_platforms: '\u0414\u043e\u0441\u0442\u0443\u043f\u043d\u043e \u0434\u043b\u044f Windows \u0438 Android',
+        tag_games: '\u0420\u0435\u0442\u0440\u043e-\u0438\u0433\u0440\u044b',
+        tag_movies: '\u0424\u0438\u043b\u044c\u043c\u044b',
+        tag_tv: '\u0421\u0435\u0440\u0438\u0430\u043b\u044b',
+        tag_anime: '\u0410\u043d\u0438\u043c\u0435',
+        features_label: '\u0424\u0443\u043d\u043a\u0446\u0438\u0438',
+        features_title: '\u0412\u0441\u0451 \u0447\u0442\u043e \u043d\u0443\u0436\u043d\u043e \u0434\u043b\u044f<br>\u043e\u0440\u0433\u0430\u043d\u0438\u0437\u0430\u0446\u0438\u0438 \u043c\u0435\u0434\u0438\u0430',
+        features_subtitle: '\u0418\u0449\u0438\u0442\u0435 \u0441\u0440\u0435\u0434\u0438 \u0441\u043e\u0442\u0435\u043d \u0442\u044b\u0441\u044f\u0447 \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u0439, \u043e\u0440\u0433\u0430\u043d\u0438\u0437\u0443\u0439\u0442\u0435 \u043f\u043e-\u0441\u0432\u043e\u0435\u043c\u0443 \u0438 \u043e\u0442\u0441\u043b\u0435\u0436\u0438\u0432\u0430\u0439\u0442\u0435 \u043f\u0440\u043e\u0433\u0440\u0435\u0441\u0441 \u043f\u043e \u0438\u0433\u0440\u0430\u043c, \u0444\u0438\u043b\u044c\u043c\u0430\u043c \u0438 \u0430\u043d\u0438\u043c\u0435.',
+        feat_collections_title: '\u041a\u043e\u043b\u043b\u0435\u043a\u0446\u0438\u0438',
+        feat_collections_desc: '\u0421\u043e\u0437\u0434\u0430\u0432\u0430\u0439\u0442\u0435 \u043d\u0435\u043e\u0433\u0440\u0430\u043d\u0438\u0447\u0435\u043d\u043d\u043e\u0435 \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u043a\u043e\u043b\u043b\u0435\u043a\u0446\u0438\u0439 \u043f\u043e \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0435, \u0436\u0430\u043d\u0440\u0443 \u0438\u043b\u0438 \u0441\u0432\u043e\u0438\u043c \u0441\u043f\u0438\u0441\u043a\u0430\u043c. \u0421\u043c\u0435\u0448\u0438\u0432\u0430\u0439\u0442\u0435 \u0438\u0433\u0440\u044b, \u0444\u0438\u043b\u044c\u043c\u044b \u0438 \u0430\u043d\u0438\u043c\u0435 \u0432 \u043e\u0434\u043d\u043e\u0439 \u043a\u043e\u043b\u043b\u0435\u043a\u0446\u0438\u0438. \u041f\u0435\u0440\u0435\u043a\u043b\u044e\u0447\u0430\u0439\u0442\u0435\u0441\u044c \u043c\u0435\u0436\u0434\u0443 \u0441\u0435\u0442\u043a\u043e\u0439 \u0438 \u0441\u043f\u0438\u0441\u043a\u043e\u043c.',
+        feat_search_title: '\u041f\u043e\u0438\u0441\u043a',
+        feat_search_desc: '\u041d\u0430\u0445\u043e\u0434\u0438\u0442\u0435 \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u044f \u0432 \u0431\u0430\u0437\u0430\u0445 IGDB \u0438 TMDB. \u0424\u0438\u043b\u044c\u0442\u0440\u0443\u0439\u0442\u0435 \u043f\u043e \u0433\u043e\u0434\u0443, \u0436\u0430\u043d\u0440\u0443 \u0438\u043b\u0438 \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0435. \u0414\u043e\u0431\u0430\u0432\u043b\u044f\u0439\u0442\u0435 \u0432 \u043a\u043e\u043b\u043b\u0435\u043a\u0446\u0438\u044e \u043e\u0434\u043d\u0438\u043c \u043d\u0430\u0436\u0430\u0442\u0438\u0435\u043c.',
+        feat_progress_title: '\u041f\u0440\u043e\u0433\u0440\u0435\u0441\u0441',
+        feat_progress_desc: '\u041e\u0442\u043c\u0435\u0447\u0430\u0439\u0442\u0435 \u0441\u0442\u0430\u0442\u0443\u0441\u044b: \u0412 \u043f\u0440\u043e\u0446\u0435\u0441\u0441\u0435, \u041f\u0440\u043e\u0439\u0434\u0435\u043d\u043e, \u041e\u0442\u043b\u043e\u0436\u0435\u043d\u043e, \u0411\u0440\u043e\u0448\u0435\u043d\u043e. \u041e\u0442\u0441\u043b\u0435\u0436\u0438\u0432\u0430\u0439\u0442\u0435 \u044d\u043f\u0438\u0437\u043e\u0434\u044b \u0441\u0435\u0440\u0438\u0430\u043b\u043e\u0432 \u0438 \u0430\u043d\u0438\u043c\u0435. \u041e\u0446\u0435\u043d\u0438\u0432\u0430\u0439\u0442\u0435 \u043e\u0442 1 \u0434\u043e 10 \u0437\u0432\u0451\u0437\u0434.',
+        feat_boards_title: '\u0412\u0438\u0437\u0443\u0430\u043b\u044c\u043d\u044b\u0435 \u0434\u043e\u0441\u043a\u0438',
+        feat_boards_desc: '\u0420\u0430\u0441\u0441\u0442\u0430\u0432\u043b\u044f\u0439\u0442\u0435 \u043f\u043e\u0441\u0442\u0435\u0440\u044b \u043d\u0430 \u0441\u0432\u043e\u0431\u043e\u0434\u043d\u043e\u043c \u0445\u043e\u043b\u0441\u0442\u0435. \u0414\u043e\u0431\u0430\u0432\u043b\u044f\u0439\u0442\u0435 \u0437\u0430\u043c\u0435\u0442\u043a\u0438, \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f \u0438 \u0441\u0441\u044b\u043b\u043a\u0438. \u0420\u0438\u0441\u0443\u0439\u0442\u0435 \u0441\u0432\u044f\u0437\u0438 \u043c\u0435\u0436\u0434\u0443 \u044d\u043b\u0435\u043c\u0435\u043d\u0442\u0430\u043c\u0438. \u0410\u0440\u0442\u044b \u0438\u0437 SteamGridDB.',
+        feat_share_title: '\u0414\u0435\u043b\u0438\u0442\u0435\u0441\u044c \u0441 \u0434\u0440\u0443\u0437\u044c\u044f\u043c\u0438',
+        feat_share_desc: '\u042d\u043a\u0441\u043f\u043e\u0440\u0442\u0438\u0440\u0443\u0439\u0442\u0435 \u043a\u043e\u043b\u043b\u0435\u043a\u0446\u0438\u0438 \u043a\u0430\u043a \u043b\u0451\u0433\u043a\u0438\u0435 <code>.xcoll</code> \u0438\u043b\u0438 \u043f\u043e\u043b\u043d\u044b\u0435 <code>.xcollx</code> \u0444\u0430\u0439\u043b\u044b. \u0414\u0440\u0443\u0437\u044c\u044f \u043c\u043e\u0433\u0443\u0442 \u0438\u043c\u043f\u043e\u0440\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0438 \u0441\u043e\u0437\u0434\u0430\u0442\u044c \u0441\u0432\u043e\u044e \u0432\u0435\u0440\u0441\u0438\u044e.',
+        feat_rate_title: '\u041e\u0446\u0435\u043d\u043a\u0438 \u0438 \u043e\u0442\u0437\u044b\u0432\u044b',
+        feat_rate_desc: '\u041e\u0446\u0435\u043d\u0438\u0432\u0430\u0439\u0442\u0435 \u043e\u0442 1 \u0434\u043e 10 \u0437\u0432\u0451\u0437\u0434. \u041f\u0438\u0448\u0438\u0442\u0435 \u043b\u0438\u0447\u043d\u044b\u0435 \u0437\u0430\u043c\u0435\u0442\u043a\u0438 \u0438 \u0440\u0435\u0446\u0435\u043d\u0437\u0438\u0438, \u0432\u0438\u0434\u0438\u043c\u044b\u0435 \u043f\u0440\u0438 \u044d\u043a\u0441\u043f\u043e\u0440\u0442\u0435. \u041e\u0442\u0441\u043b\u0435\u0436\u0438\u0432\u0430\u0439\u0442\u0435 \u0434\u0430\u0442\u044b \u043d\u0430\u0447\u0430\u043b\u0430 \u0438 \u043e\u043a\u043e\u043d\u0447\u0430\u043d\u0438\u044f.',
+        steps_label: '\u041d\u0430\u0447\u0430\u043b\u043e \u0440\u0430\u0431\u043e\u0442\u044b',
+        steps_title: '\u0417\u0430\u043f\u0443\u0441\u043a \u0437\u0430 \u043d\u0435\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u043c\u0438\u043d\u0443\u0442',
+        steps_subtitle: '\u041f\u043e\u043b\u0443\u0447\u0438\u0442\u0435 \u0431\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u044b\u0435 API-\u043a\u043b\u044e\u0447\u0438, \u0443\u0441\u0442\u0430\u043d\u043e\u0432\u0438\u0442\u0435 \u043f\u0440\u0438\u043b\u043e\u0436\u0435\u043d\u0438\u0435 \u0438 \u043d\u0430\u0447\u043d\u0438\u0442\u0435 \u0441\u043e\u0431\u0438\u0440\u0430\u0442\u044c \u043a\u043e\u043b\u043b\u0435\u043a\u0446\u0438\u044e.',
+        step1_title: '\u041f\u043e\u043b\u0443\u0447\u0438\u0442\u0435 API-\u043a\u043b\u044e\u0447\u0438',
+        step1_desc: '\u0417\u0430\u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0438\u0440\u0443\u0439\u0442\u0435\u0441\u044c \u0431\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u043e \u043d\u0430 <strong>IGDB</strong> (\u0447\u0435\u0440\u0435\u0437 Twitch) \u0434\u043b\u044f \u0438\u0433\u0440 \u0438 <strong>TMDB</strong> \u0434\u043b\u044f \u0444\u0438\u043b\u044c\u043c\u043e\u0432 \u0438 \u0441\u0435\u0440\u0438\u0430\u043b\u043e\u0432. \u041e\u043f\u0446\u0438\u043e\u043d\u0430\u043b\u044c\u043d\u043e: <strong>SteamGridDB</strong> \u0434\u043b\u044f \u0430\u0440\u0442\u043e\u0432.',
+        step2_title: '\u0423\u0441\u0442\u0430\u043d\u043e\u0432\u0438\u0442\u0435',
+        step2_desc: '\u0421\u043a\u0430\u0447\u0430\u0439\u0442\u0435 \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439 \u0440\u0435\u043b\u0438\u0437 \u0438\u043b\u0438 \u0441\u043e\u0431\u0435\u0440\u0438\u0442\u0435 \u0438\u0437 \u0438\u0441\u0445\u043e\u0434\u043d\u0438\u043a\u043e\u0432 \u0447\u0435\u0440\u0435\u0437 Flutter. \u0414\u043e\u0441\u0442\u0443\u043f\u043d\u043e \u0434\u043b\u044f <strong>Windows</strong> \u0438 <strong>Android</strong>.',
+        step3_title: '\u0421\u043e\u0431\u0438\u0440\u0430\u0439\u0442\u0435!',
+        step3_desc: '\u0412\u0432\u0435\u0434\u0438\u0442\u0435 API-\u043a\u043b\u044e\u0447\u0438 \u0432 \u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0430\u0445, \u043d\u0430\u0439\u0434\u0438\u0442\u0435 \u043b\u044e\u0431\u0438\u043c\u044b\u0435 \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u044f \u0438 \u043e\u0440\u0433\u0430\u043d\u0438\u0437\u0443\u0439\u0442\u0435 \u0438\u0445 \u0432 \u043a\u043e\u043b\u043b\u0435\u043a\u0446\u0438\u0438. \u0412\u0441\u0451!',
+        sharing_label: '\u0428\u0430\u0440\u0438\u043d\u0433',
+        sharing_title: '\u0414\u0435\u043b\u0438\u0442\u0435\u0441\u044c \u0432\u043a\u0443\u0441\u0430\u043c\u0438',
+        sharing_subtitle: '\u042d\u043a\u0441\u043f\u043e\u0440\u0442\u0438\u0440\u0443\u0439\u0442\u0435 \u043a\u043e\u043b\u043b\u0435\u043a\u0446\u0438\u0438 \u0438 \u043e\u0442\u043f\u0440\u0430\u0432\u043b\u044f\u0439\u0442\u0435 \u0434\u0440\u0443\u0437\u044c\u044f\u043c. \u0414\u0432\u0430 \u0444\u043e\u0440\u043c\u0430\u0442\u0430 \u0434\u043b\u044f \u0440\u0430\u0437\u043d\u044b\u0445 \u0437\u0430\u0434\u0430\u0447.',
+        format_light_name: '\u041b\u0451\u0433\u043a\u0438\u0439 \u044d\u043a\u0441\u043f\u043e\u0440\u0442',
+        format_light_desc: '\u041d\u0435\u0431\u043e\u043b\u044c\u0448\u043e\u0439 \u0444\u0430\u0439\u043b \u0441\u043e \u0441\u043f\u0438\u0441\u043a\u043e\u043c \u044d\u043b\u0435\u043c\u0435\u043d\u0442\u043e\u0432. \u041f\u043e\u043b\u0443\u0447\u0430\u0442\u0435\u043b\u044e \u043d\u0443\u0436\u0435\u043d \u0438\u043d\u0442\u0435\u0440\u043d\u0435\u0442 \u0434\u043b\u044f \u0437\u0430\u0433\u0440\u0443\u0437\u043a\u0438 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0439.',
+        format_full_name: '\u041f\u043e\u043b\u043d\u044b\u0439 \u044d\u043a\u0441\u043f\u043e\u0440\u0442',
+        format_full_desc: '\u041f\u043e\u043b\u043d\u044b\u0439 \u043f\u0430\u043a\u0435\u0442 \u0441 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f\u043c\u0438, \u0434\u043e\u0441\u043a\u0430\u043c\u0438 \u0438 \u0432\u0441\u0435\u043c\u0438 \u0434\u0430\u043d\u043d\u044b\u043c\u0438. \u0420\u0430\u0431\u043e\u0442\u0430\u0435\u0442 \u043f\u043e\u043b\u043d\u043e\u0441\u0442\u044c\u044e \u043e\u0444\u0444\u043b\u0430\u0439\u043d.',
+        tech_label: '\u0422\u0435\u0445\u043d\u043e\u043b\u043e\u0433\u0438\u0438',
+        tech_title: '\u041e\u0442\u043a\u0440\u044b\u0442\u044b\u0439 \u043a\u043e\u0434, \u0441\u043e\u0437\u0434\u0430\u043d \u043d\u0430\u0434\u0451\u0436\u043d\u043e',
+        cta_label: '\u0413\u043e\u0442\u043e\u0432\u044b?',
+        cta_title: '\u041d\u0430\u0447\u043d\u0438\u0442\u0435 \u043e\u0440\u0433\u0430\u043d\u0438\u0437\u043e\u0432\u044b\u0432\u0430\u0442\u044c \u043a\u043e\u043b\u043b\u0435\u043a\u0446\u0438\u044e',
+        cta_subtitle: '\u0411\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u043e, \u043e\u0442\u043a\u0440\u044b\u0442\u044b\u0439 \u043a\u043e\u0434, \u043f\u043e\u043b\u043d\u043e\u0441\u0442\u044c\u044e \u0432\u0430\u0448.',
+        cta_download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> \u0421\u043a\u0430\u0447\u0430\u0442\u044c \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439 \u0440\u0435\u043b\u0438\u0437',
+        cta_star: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg> \u0417\u0432\u0435\u0437\u0434\u0430 \u043d\u0430 GitHub',
+        footer_releases: '\u0420\u0435\u043b\u0438\u0437\u044b',
+        footer_issues: '\u0417\u0430\u0434\u0430\u0447\u0438',
+      }
+    };
+
+    let currentLang = localStorage.getItem('lang') || 'en';
+
+    function setLang(lang) {
+      currentLang = lang;
+      localStorage.setItem('lang', lang);
+      document.documentElement.lang = lang;
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('lang-btn--active', btn.dataset.lang === lang);
+      });
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.dataset.i18n;
+        if (translations[lang] && translations[lang][key]) {
+          el.innerHTML = translations[lang][key];
+        }
+      });
+    }
+
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.addEventListener('click', () => setLang(btn.dataset.lang));
+    });
+
+    if (currentLang !== 'en') setLang(currentLang);
   </script>
 
   <!-- Structured Data for SEO -->

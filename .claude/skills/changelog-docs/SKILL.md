@@ -46,8 +46,8 @@ File `CHANGELOG.md` in the project root. Format: [Keep a Changelog](https://keep
 ```
 
 **Rules:**
-- Entries in Russian
-- Each entry starts with a verb: "Добавлен", "Изменён", "Исправлен", "Удалён"
+- Entries in English
+- Each entry starts with a past-tense verb: "Added", "Changed", "Fixed", "Removed"
 - Mention specific files/classes/methods
 - Group related changes together
 - Do not include intermediate fixes (lint fix, test fix) — only the final result

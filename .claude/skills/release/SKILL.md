@@ -137,11 +137,22 @@ Use the Edit tool to make the change.
 
 ---
 
+## Step 6.5: Update Version on Landing Page
+
+Update the version in `docs/index.html` in two places:
+
+1. **Hero badge** — find `<span>vOLD</span>` and replace with `<span>vX.Y.Z</span>`
+2. **JSON-LD structured data** — find `"softwareVersion": "OLD"` and replace with `"softwareVersion": "X.Y.Z"`
+
+Use the Edit tool to make both changes.
+
+---
+
 ## Step 7: Commit, Tag, Push
 
 ```bash
-# Stage the two changed files
-git add pubspec.yaml CHANGELOG.md
+# Stage the changed files
+git add pubspec.yaml CHANGELOG.md docs/index.html
 
 # Create commit
 git commit -m "release: vX.Y.Z"
