@@ -103,19 +103,13 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Extract changelog notes
-        id: changelog
         run: |
           VERSION="${{ github.ref_name }}"
           SEMVER="${VERSION#v}"
-          NOTES=$(sed -n "/^## \[${SEMVER}\]/,/^## \[/p" CHANGELOG.md | head -n -1)
-          if [ -z "$NOTES" ]; then
-            NOTES="Release ${VERSION}"
+          sed -n "/^## \[${SEMVER}\]/,/^## \[/p" CHANGELOG.md | head -n -1 > release_notes.md
+          if [ ! -s release_notes.md ]; then
+            echo "Release ${VERSION}" > release_notes.md
           fi
-          {
-            echo "notes<<EOF"
-            echo "$NOTES"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
 
       - name: Download Windows artifact
         uses: actions/download-artifact@v4
@@ -134,6 +128,6 @@ jobs:
           VERSION="${{ github.ref_name }}"
           gh release create "$VERSION" \
             --title "Tonkatsu Box $VERSION" \
-            --notes "${{ steps.changelog.outputs.notes }}" \
+            --notes-file release_notes.md \
             "tonkatsu-box-${VERSION}-windows.zip" \
             "tonkatsu-box-${VERSION}-android.apk"
