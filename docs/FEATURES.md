@@ -10,7 +10,7 @@ The app uses a forced dark theme (ThemeMode.dark) with a cinematic design system
 - **AppTypography** — Inter font with 8 text styles (h1–caption, posterTitle, posterSubtitle), negative letter-spacing on headings
 - **AppSpacing** — standardized spacing (4–32px), border radii (4–20px), poster aspect ratio (2:3), grid column counts
 - **AppTheme** — centralized ThemeData with styled AppBar, Card, Input, Dialog, BottomSheet, Chip, Button, NavigationRail, TabBar
-- **Adaptive navigation** — NavigationRail sidebar on desktop (≥800px), BottomNavigationBar on mobile (<800px), 4 tabs: Home, Collections, Search, Settings. Logo 48×48 above NavigationRail (desktop)
+- **Adaptive navigation** — NavigationRail sidebar on desktop (≥800px), BottomNavigationBar on mobile (<800px), 5 tabs: Home, Collections, Wishlist, Search, Settings. Logo 48×48 above NavigationRail (desktop)
 - **BreadcrumbAppBar** — unified navigation breadcrumbs on all screens: logo 20×20 + `›` separators + clickable crumbs. Last crumb is bold (w600), non-last crumbs are clickable and navigate back. Supports TabBar (bottom) and action buttons
 
 <details>
@@ -166,6 +166,21 @@ Applied to board card borders, collection item backgrounds, and tilted watermark
 
 ### Tiled Background
 A subtle gamepad pattern (`background_tile.png`) is repeated across the entire app via `MaterialApp.builder`. The tile is rendered at 3% opacity and 1.5x scale over the dark background, giving all screens a consistent textured look without per-screen configuration.
+
+## 📝 Wishlist
+
+Quick notes for content to find later when internet is available:
+
+- **Text notes** — save game/movie/TV show names for later search
+- **Optional media type hint** — tag notes as Game, Movie, TV Show, or Animation (ChoiceChip selector)
+- **Optional note** — additional context (platform, year, source of recommendation)
+- **Tap to search** — opens SearchScreen with pre-filled query and correct media tab
+- **Resolve/Unresolve** — mark items as found; resolved items show strikethrough text at 50% opacity, sorted to bottom
+- **Filter toggle** — show/hide resolved items
+- **Clear resolved** — bulk delete all resolved items with confirmation dialog
+- **Badge** — navigation icon shows count of active (unresolved) items
+- **Popup menu** — Search, Edit, Mark resolved/Unresolve, Delete per item
+- **FAB** — quick add via floating action button
 
 ## 📤 Sharing
 

@@ -25,7 +25,7 @@ Tonkatsu Box — кроссплатформенное приложение на 
 graph TB
     subgraph core ["🔧 Core"]
         api["API<br/><small>igdb_api, tmdb_api,<br/>steamgriddb_api</small>"]
-        database["Database<br/><small>database_service<br/>SQLite, 15 таблиц</small>"]
+        database["Database<br/><small>database_service<br/>SQLite, 16 таблиц</small>"]
         services["Services<br/><small>export, import,<br/>image_cache, config</small>"]
     end
 
@@ -37,12 +37,13 @@ graph TB
         collections["Collections<br/><small>home, collection,<br/>detail screens,<br/>canvas, panels</small>"]
         search["Search<br/><small>game, movie,<br/>tv show, animation</small>"]
         settings["Settings<br/><small>credentials, cache,<br/>database, debug</small>"]
+        wishlist["Wishlist<br/><small>quick notes for<br/>deferred search</small>"]
         home["Home<br/><small>all items grid</small>"]
         splash["Splash<br/><small>animated logo,<br/>DB pre-warming</small>"]
     end
 
     subgraph shared ["🧩 Shared"]
-        models["Models<br/><small>19 моделей:<br/>Game, Movie, TvShow,<br/>Collection, CanvasItem...</small>"]
+        models["Models<br/><small>20 моделей:<br/>Game, Movie, TvShow,<br/>Collection, CanvasItem,<br/>WishlistItem...</small>"]
         widgets["Widgets<br/><small>CachedImage, MediaPosterCard,<br/>BreadcrumbAppBar,<br/>StarRatingBar...</small>"]
         theme["Theme<br/><small>AppColors, AppTypography,<br/>AppSpacing, AppTheme</small>"]
         navigation["Navigation<br/><small>NavigationShell<br/>Rail / BottomBar</small>"]
@@ -101,7 +102,7 @@ lib/
 | `lib/core/api/steamgriddb_api.dart` | **SteamGridDB API клиент**. Bearer token авторизация. Методы: `searchGames()`, `getGrids()`, `getHeroes()`, `getLogos()`, `getIcons()` |
 | `lib/core/api/tmdb_api.dart` | **TMDB API клиент**. Bearer token авторизация. Методы: `searchMovies(query, {year})`, `searchTvShows(query, {firstAirDateYear})`, `multiSearch()`, `getMovieDetails()`, `getTvShowDetails()`, `getPopularMovies()`, `getPopularTvShows()`, `getMovieGenres()`, `getTvGenres()`, `getSeasonEpisodes(tmdbShowId, seasonNumber)` |
 | `lib/shared/constants/platform_features.dart` | **Флаги платформы**. `kCanvasEnabled` (true на всех платформах), `kVgMapsEnabled` (только Windows), `kScreenshotEnabled` (только Windows). VGMaps скрыт на не-Windows платформах |
-| `lib/core/database/database_service.dart` | **SQLite сервис**. Создание таблиц, миграции (версия 18), CRUD для всех сущностей. Использует `databaseFactory.openDatabase()` — кроссплатформенный вызов (FFI на desktop, нативный плагин на Android). Таблицы: `platforms`, `games`, `collections`, `collection_items`, `canvas_items`, `canvas_viewport`, `canvas_connections`, `game_canvas_viewport`, `movies_cache`, `tv_shows_cache`, `tv_seasons_cache`, `tv_episodes_cache`, `watched_episodes`, `tmdb_genres`. Миграция v14: `UPDATE collection_items SET status='in_progress' WHERE status='playing'`. Методы кэша жанров: `cacheTmdbGenres()`, `getTmdbGenreMap()`. Авторезолвинг числовых genre_ids при загрузке коллекций: `_resolveGenresIfNeeded<T>()`. `updateItemStatus` автоматически устанавливает даты активности при смене статуса. `updateItemActivityDates` для ручного обновления дат. Методы per-item canvas: `getGameCanvasItems`, `getGameCanvasConnections`, `getGameCanvasViewport`, `upsertGameCanvasViewport`. Методы эпизодов: `getEpisodesByShowAndSeason`, `upsertEpisodes`, `clearEpisodesByShow`, `getWatchedEpisodes` (возвращает `Map<(int, int), DateTime?>` с датами просмотра), `markEpisodeWatched`, `markEpisodeUnwatched`, `getWatchedEpisodeCount`, `markSeasonWatched`, `unmarkSeasonWatched`. Изоляция данных: коллекционные методы фильтруют `collection_item_id IS NULL`. Метод `clearAllData()` — очистка всех 15 таблиц в транзакции. Метод `updateItemCollectionId()` — обновление `collection_id` и `sort_order` элемента (для Move to Collection). Миграция v18: UNIQUE индексы расширены на `COALESCE(platform_id, -1)` для мультиплатформенных игр. Метод `getUniquePlatformIds()` — уникальные ID платформ из игровых элементов. Метод `deleteCanvasItemByCollectionItemId()` — удаление канвас-элемента по ID элемента коллекции |
+| `lib/core/database/database_service.dart` | **SQLite сервис**. Создание таблиц, миграции (версия 19), CRUD для всех сущностей. Использует `databaseFactory.openDatabase()` — кроссплатформенный вызов (FFI на desktop, нативный плагин на Android). Таблицы: `platforms`, `games`, `collections`, `collection_items`, `canvas_items`, `canvas_viewport`, `canvas_connections`, `game_canvas_viewport`, `movies_cache`, `tv_shows_cache`, `tv_seasons_cache`, `tv_episodes_cache`, `watched_episodes`, `tmdb_genres`, `wishlist`. Миграция v14: `UPDATE collection_items SET status='in_progress' WHERE status='playing'`. Методы кэша жанров: `cacheTmdbGenres()`, `getTmdbGenreMap()`. Авторезолвинг числовых genre_ids при загрузке коллекций: `_resolveGenresIfNeeded<T>()`. `updateItemStatus` автоматически устанавливает даты активности при смене статуса. `updateItemActivityDates` для ручного обновления дат. Методы per-item canvas: `getGameCanvasItems`, `getGameCanvasConnections`, `getGameCanvasViewport`, `upsertGameCanvasViewport`. Методы эпизодов: `getEpisodesByShowAndSeason`, `upsertEpisodes`, `clearEpisodesByShow`, `getWatchedEpisodes` (возвращает `Map<(int, int), DateTime?>` с датами просмотра), `markEpisodeWatched`, `markEpisodeUnwatched`, `getWatchedEpisodeCount`, `markSeasonWatched`, `unmarkSeasonWatched`. Изоляция данных: коллекционные методы фильтруют `collection_item_id IS NULL`. Метод `clearAllData()` — очистка всех 16 таблиц в транзакции. Метод `updateItemCollectionId()` — обновление `collection_id` и `sort_order` элемента (для Move to Collection). Миграция v18: UNIQUE индексы расширены на `COALESCE(platform_id, -1)` для мультиплатформенных игр. Метод `getUniquePlatformIds()` — уникальные ID платформ из игровых элементов. Метод `deleteCanvasItemByCollectionItemId()` — удаление канвас-элемента по ID элемента коллекции. Миграция v19: таблица `wishlist`. Методы wishlist: `addWishlistItem()`, `getWishlistItems()`, `getWishlistItemCount()`, `updateWishlistItem()`, `resolveWishlistItem()`, `unresolveWishlistItem()`, `deleteWishlistItem()`, `clearResolvedWishlistItems()` |
 | `lib/core/services/config_service.dart` | **Сервис конфигурации**. Экспорт/импорт 7 ключей SharedPreferences в JSON файл. Класс `ConfigResult` (success/failure/cancelled). Методы: `collectSettings()`, `applySettings()`, `exportToFile()`, `importFromFile()` |
 | `lib/core/services/image_cache_service.dart` | **Сервис кэширования изображений**. Enum `ImageType` (platformLogo, gameCover, moviePoster, tvShowPoster, canvasImage). Локальное хранение изображений в папках по типу. SharedPreferences для enable/disable и custom path. Валидация magic bytes (JPEG/PNG/WebP) при скачивании и при чтении из кэша. Безопасное удаление файлов (`_tryDelete`) при Windows file lock. Методы: `getImageUri()` (cache-first с fallback на remoteUrl + magic bytes проверка), `downloadImage()` (+ валидация), `downloadImages()`, `readImageBytes()`, `saveImageBytes()`, `clearCache()`, `getCacheSize()`, `getCachedCount()`. Провайдер `imageCacheServiceProvider` |
 | `lib/core/services/xcoll_file.dart` | **Модель файла экспорта/импорта**. Формат v2 (.xcoll/.xcollx, items + canvas + images). Классы: `XcollFile`, `ExportFormat` (light/full), `ExportCanvas`. Файлы v1 выбрасывают `FormatException` |
@@ -115,7 +116,7 @@ lib/
 ### 📦 Models (Модели данных)
 
 <details>
-<summary><strong>19 моделей</strong> — развернуть таблицу</summary>
+<summary><strong>20 моделей</strong> — развернуть таблицу</summary>
 
 | Файл | Назначение |
 |------|------------|
@@ -136,6 +137,7 @@ lib/
 | `lib/shared/models/canvas_item.dart` | **Модель элемента канваса**. Enum `CanvasItemType` (game/movie/tvShow/animation/text/image/link). Поля: id, collectionId, collectionItemId (null для коллекционного canvas, int для per-item), itemType, itemRefId, x, y, width, height, zIndex, data (JSON). Joined поля: `game: Game?`, `movie: Movie?`, `tvShow: TvShow?`. Статический метод `CanvasItemType.fromMediaType()`, геттер `isMediaItem` |
 | `lib/shared/models/canvas_viewport.dart` | **Модель viewport канваса**. Поля: collectionId, scale, offsetX, offsetY. Хранит зум и позицию камеры |
 | `lib/shared/models/canvas_connection.dart` | **Модель связи канваса**. Enum `ConnectionStyle` (solid/dashed/arrow). Поля: id, collectionId, collectionItemId (null для коллекционного canvas, int для per-item), fromItemId, toItemId, label, color (hex), style, createdAt |
+| `lib/shared/models/wishlist_item.dart` | **Модель элемента вишлиста**. Поля: id, text, mediaTypeHint (MediaType?), note, isResolved, createdAt, resolvedAt. Методы: `fromDb()`, `toDb()`, `copyWith()`. Геттер `hasNote` |
 
 </details>
 
@@ -205,13 +207,23 @@ lib/
 
 ---
 
+### 📝 Features: Wishlist (Вишлист)
+
+| Файл | Назначение |
+|------|------------|
+| `lib/features/wishlist/screens/wishlist_screen.dart` | **Экран вишлиста**. ListView с `_WishlistTile`, FAB для добавления, фильтр resolved (visibility toggle), clear resolved с confirmation. Popup menu: Search/Edit/Resolve/Delete. Тап на элемент → `SearchScreen(initialQuery)`. Resolved: opacity 0.5, strikethrough |
+| `lib/features/wishlist/widgets/add_wishlist_dialog.dart` | **Диалог создания/редактирования**. TextField для названия, ChoiceChip для типа медиа (None/Game/Movie/TV/Animation), TextField для заметки. Режим редактирования при `existing` != null |
+| `lib/features/wishlist/providers/wishlist_provider.dart` | **State management вишлиста**. `wishlistProvider` — AsyncNotifierProvider с оптимистичным обновлением. Методы: add, resolve, unresolve, updateItem, delete, clearResolved. Сортировка: active first → by createdAt DESC. `activeWishlistCountProvider` — Provider\<int\> для badge навигации |
+
+---
+
 ### 🔍 Features: Search (Поиск)
 
 #### Экраны
 
 | Файл | Назначение |
 |------|------------|
-| `lib/features/search/screens/search_screen.dart` | **Экран поиска**. TabBar с 4 табами: Games / Movies / TV Shows / Animation. Общее поле ввода с debounce, фильтр платформ (только Games), сортировка (SortSelector), фильтры медиа (год, жанры через MediaFilterSheet). Animation tab объединяет animated movies + TV shows (genre_id=16), исключая их из Movies/TV Shows табов. При `collectionId` — добавляет игры/фильмы/сериалы/анимацию в коллекцию через `collectionItemsNotifierProvider`. Bottom sheet с деталями |
+| `lib/features/search/screens/search_screen.dart` | **Экран поиска**. TabBar с 4 табами: Games / Movies / TV Shows / Animation. Общее поле ввода с debounce, фильтр платформ (только Games), сортировка (SortSelector), фильтры медиа (год, жанры через MediaFilterSheet). Animation tab объединяет animated movies + TV shows (genre_id=16), исключая их из Movies/TV Shows табов. При `collectionId` — добавляет игры/фильмы/сериалы/анимацию в коллекцию через `collectionItemsNotifierProvider`. Bottom sheet с деталями. Параметр `initialQuery` — предзаполнение поиска из Wishlist |
 
 <details>
 <summary><strong>Виджеты и провайдеры поиска</strong> — развернуть таблицу</summary>
@@ -259,7 +271,7 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/shared/navigation/navigation_shell.dart` | **NavigationShell**. Адаптивная навигация: `NavigationRail` (боковая панель) при ширине >= 800px, `BottomNavigationBar` при < 800px. 4 таба: Home (AllItemsScreen), Collections (HomeScreen), Search, Settings. Lazy IndexedStack — AllItemsScreen загружается eager, Collections/Search/Settings строятся при первом переключении на таб. Desktop: логотип 48x48 вынесен в Column выше Rail (не в Rail.leading) |
+| `lib/shared/navigation/navigation_shell.dart` | **NavigationShell**. Адаптивная навигация: `NavigationRail` (боковая панель) при ширине >= 800px, `BottomNavigationBar` при < 800px. 5 табов: Home (AllItemsScreen), Collections (HomeScreen), Wishlist (WishlistScreen), Search, Settings. Lazy IndexedStack — AllItemsScreen загружается eager, остальные строятся при первом переключении на таб. Badge на иконке Wishlist из `activeWishlistCountProvider`. Desktop: логотип 48x48 вынесен в Column выше Rail (не в Rail.leading) |
 
 <details>
 <summary><strong>Общие виджеты</strong> — развернуть таблицу</summary>
@@ -325,13 +337,14 @@ lib/
 | `lib/data/repositories/collection_repository.dart` | **Репозиторий коллекций**. CRUD коллекций и элементов. Форки с snapshot. Статистика (CollectionStats). `moveItemToCollection()` — перемещение элемента с обработкой UNIQUE constraint |
 | `lib/data/repositories/game_repository.dart` | **Репозиторий игр**. Поиск через API + кеширование в SQLite |
 | `lib/data/repositories/canvas_repository.dart` | **Репозиторий канваса**. CRUD для canvas_items, viewport и connections. Коллекционные методы: getItems, getItemsWithData (с joined Game/Movie/TvShow), createItem, updateItem, updateItemPosition, updateItemSize, updateItemData, updateItemZIndex, deleteItem, deleteMediaItem, deleteByCollectionItemId (удаление по ID элемента коллекции), hasCanvasItems, initializeCanvas, getConnections, createConnection, updateConnection, deleteConnection. Per-item методы: getGameCanvasItems, getGameCanvasItemsWithData, hasGameCanvasItems, getGameCanvasViewport, saveGameCanvasViewport, getGameCanvasConnections |
+| `lib/data/repositories/wishlist_repository.dart` | **Репозиторий вишлиста**. Тонкая обёртка над `DatabaseService`. Методы: `getAll()`, `getActiveCount()`, `add()`, `update()`, `resolve()`, `unresolve()`, `delete()`, `clearResolved()`. Провайдер `wishlistRepositoryProvider` |
 
 ---
 
 ## 🗄️ База данных
 
 > [!IMPORTANT]
-> SQLite через `sqflite_common_ffi` на desktop, нативный `sqflite` на Android. Текущая версия БД: **18**. Миграции инкрементальные (v1 -> v2 -> ... -> v18). Всего **15 таблиц**.
+> SQLite через `sqflite_common_ffi` на desktop, нативный `sqflite` на Android. Текущая версия БД: **19**. Миграции инкрементальные (v1 -> v2 -> ... -> v19). Всего **16 таблиц**.
 
 ### ER-диаграмма
 
@@ -354,6 +367,16 @@ erDiagram
     tv_shows_cache ||--o{ tv_episodes_cache : "содержит эпизоды"
 
     canvas_items ||--o{ canvas_connections : "from/to"
+
+    wishlist {
+        int id PK
+        text text
+        text media_type_hint
+        text note
+        int is_resolved
+        int created_at
+        int resolved_at
+    }
 
     games ||--o{ platforms : "platform_ids"
 
@@ -476,7 +499,7 @@ erDiagram
 ### SQL-схема таблиц
 
 <details>
-<summary><strong>Полная SQL-схема всех 15 таблиц</strong> — развернуть</summary>
+<summary><strong>Полная SQL-схема всех 16 таблиц</strong> — развернуть</summary>
 
 ```sql
 -- Платформы из IGDB (кеш)
@@ -662,6 +685,17 @@ CREATE TABLE game_canvas_viewport (
   offset_x REAL NOT NULL DEFAULT 0.0,
   offset_y REAL NOT NULL DEFAULT 0.0
 );
+
+-- Вишлист — заметки для отложенного поиска (v19)
+CREATE TABLE wishlist (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  text TEXT NOT NULL,
+  media_type_hint TEXT,          -- game/movie/tvShow/animation (nullable)
+  note TEXT,
+  is_resolved INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL,
+  resolved_at INTEGER
+);
 ```
 
 </details>
@@ -699,6 +733,9 @@ CREATE TABLE game_canvas_viewport (
 | `tvGenresProvider` | FutureProvider | Список жанров сериалов из TMDB (DB-first cache) |
 | `movieGenreMapProvider` | FutureProvider | Маппинг ID->имя жанров фильмов |
 | `tvGenreMapProvider` | FutureProvider | Маппинг ID->имя жанров сериалов |
+| `wishlistRepositoryProvider` | Provider | Репозиторий вишлиста |
+| `wishlistProvider` | AsyncNotifierProvider | Список элементов вишлиста (add/resolve/delete/clearResolved) |
+| `activeWishlistCountProvider` | Provider | Количество активных (не resolved) элементов вишлиста |
 
 </details>
 
@@ -727,10 +764,14 @@ CREATE TABLE game_canvas_viewport (
                                 |   |   +-> SearchScreen(collectionId)
                                 |   |       [добавление игр/фильмов/сериалов]
                                 |   |
-                                +-- Tab 2: SearchScreen()
+                                +-- Tab 2: WishlistScreen (Wishlist) [badge: active count]
+                                |   +-> SearchScreen(initialQuery)
+                                |       [поиск по заметке]
+                                |
+                                +-- Tab 3: SearchScreen()
                                 |   [просмотр игр/фильмов/сериалов]
                                 |
-                                +-- Tab 3: SettingsScreen()
+                                +-- Tab 4: SettingsScreen()
                                     [настройки]
                                     +-> SteamGridDbDebugScreen()
                                         [debug, только в debug сборке]

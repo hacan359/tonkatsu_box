@@ -9,6 +9,8 @@ import '../../features/collections/screens/home_screen.dart';
 import '../../features/home/screens/all_items_screen.dart';
 import '../../features/search/screens/search_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
+import '../../features/wishlist/providers/wishlist_provider.dart';
+import '../../features/wishlist/screens/wishlist_screen.dart';
 import '../gamepad/gamepad_action.dart';
 import '../gamepad/widgets/gamepad_listener.dart';
 import '../theme/app_assets.dart';
@@ -18,7 +20,7 @@ import '../theme/app_colors.dart';
 const double navigationBreakpoint = 800;
 
 /// Количество основных табов.
-const int _tabCount = 4;
+const int _tabCount = 5;
 
 /// Индексы вкладок навигации.
 enum NavTab {
@@ -27,6 +29,9 @@ enum NavTab {
 
   /// Коллекции.
   collections,
+
+  /// Вишлист (заметки для поиска).
+  wishlist,
 
   /// Поиск.
   search,
@@ -145,23 +150,28 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
                   fontSize: 12,
                 ),
                 labelType: NavigationRailLabelType.all,
-                destinations: const <NavigationRailDestination>[
-                  NavigationRailDestination(
+                destinations: <NavigationRailDestination>[
+                  const NavigationRailDestination(
                     icon: Icon(Icons.home_outlined),
                     selectedIcon: Icon(Icons.home),
                     label: Text('Main'),
                   ),
-                  NavigationRailDestination(
+                  const NavigationRailDestination(
                     icon: Icon(Icons.collections_bookmark_outlined),
                     selectedIcon: Icon(Icons.collections_bookmark),
                     label: Text('Collections'),
                   ),
                   NavigationRailDestination(
+                    icon: _buildWishlistIcon(Icons.bookmark_border),
+                    selectedIcon: _buildWishlistIcon(Icons.bookmark),
+                    label: const Text('Wishlist'),
+                  ),
+                  const NavigationRailDestination(
                     icon: Icon(Icons.search_outlined),
                     selectedIcon: Icon(Icons.search),
                     label: Text('Search'),
                   ),
-                  NavigationRailDestination(
+                  const NavigationRailDestination(
                     icon: Icon(Icons.settings_outlined),
                     selectedIcon: Icon(Icons.settings),
                     label: Text('Settings'),
@@ -190,23 +200,28 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
       selectedItemColor: AppColors.textPrimary,
       unselectedItemColor: AppColors.textTertiary,
       type: BottomNavigationBarType.fixed,
-      items: const <BottomNavigationBarItem>[
-        BottomNavigationBarItem(
+      items: <BottomNavigationBarItem>[
+        const BottomNavigationBarItem(
           icon: Icon(Icons.home_outlined),
           activeIcon: Icon(Icons.home),
           label: 'Main',
         ),
-        BottomNavigationBarItem(
+        const BottomNavigationBarItem(
           icon: Icon(Icons.collections_bookmark_outlined),
           activeIcon: Icon(Icons.collections_bookmark),
           label: 'Collections',
         ),
         BottomNavigationBarItem(
+          icon: _buildWishlistIcon(Icons.bookmark_border),
+          activeIcon: _buildWishlistIcon(Icons.bookmark),
+          label: 'Wishlist',
+        ),
+        const BottomNavigationBarItem(
           icon: Icon(Icons.search_outlined),
           activeIcon: Icon(Icons.search),
           label: 'Search',
         ),
-        BottomNavigationBarItem(
+        const BottomNavigationBarItem(
           icon: Icon(Icons.settings_outlined),
           activeIcon: Icon(Icons.settings),
           label: 'Settings',
@@ -231,6 +246,7 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
     final Widget screen = switch (NavTab.values[tabIndex]) {
       NavTab.home => const AllItemsScreen(),
       NavTab.collections => const HomeScreen(),
+      NavTab.wishlist => const WishlistScreen(),
       NavTab.search => const SearchScreen(),
       NavTab.settings => const SettingsScreen(),
     };
@@ -273,6 +289,17 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
       return true;
     }
     return false;
+  }
+
+  Widget _buildWishlistIcon(IconData icon) {
+    final int count = ref.watch(activeWishlistCountProvider);
+    if (count == 0) {
+      return Icon(icon);
+    }
+    return Badge(
+      label: Text('$count'),
+      child: Icon(icon),
+    );
   }
 
   void _onGamepadTabSwitch(GamepadAction action) {

@@ -632,4 +632,244 @@ void main() {
       });
     });
   });
+
+  group('Wishlist CRUD', () {
+    late Database db;
+
+    setUp(() async {
+      sqfliteFfiInit();
+      final DatabaseFactory factory = databaseFactoryFfi;
+      db = await factory.openDatabase(
+        inMemoryDatabasePath,
+        options: OpenDatabaseOptions(
+          version: 1,
+          singleInstance: false,
+          onCreate: (Database db, int version) async {
+            await db.execute('''
+              CREATE TABLE wishlist (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                text TEXT NOT NULL,
+                media_type_hint TEXT,
+                note TEXT,
+                is_resolved INTEGER NOT NULL DEFAULT 0,
+                created_at INTEGER NOT NULL,
+                resolved_at INTEGER
+              )
+            ''');
+          },
+        ),
+      );
+    });
+
+    tearDown(() async {
+      await db.close();
+    });
+
+    Future<int> insertWishlistItem(
+      String text, {
+      String? mediaTypeHint,
+      String? note,
+      int isResolved = 0,
+      int? resolvedAt,
+    }) async {
+      final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      return db.insert('wishlist', <String, dynamic>{
+        'text': text,
+        'media_type_hint': mediaTypeHint,
+        'note': note,
+        'is_resolved': isResolved,
+        'created_at': now,
+        'resolved_at': resolvedAt,
+      });
+    }
+
+    test('добавляет элемент в wishlist', () async {
+      final int id = await insertWishlistItem('Chrono Trigger');
+
+      expect(id, greaterThan(0));
+
+      final List<Map<String, dynamic>> rows = await db.query('wishlist');
+      expect(rows.length, 1);
+      expect(rows.first['text'], 'Chrono Trigger');
+      expect(rows.first['is_resolved'], 0);
+      expect(rows.first['media_type_hint'], null);
+    });
+
+    test('добавляет элемент с типом медиа и заметкой', () async {
+      await insertWishlistItem(
+        'The Matrix',
+        mediaTypeHint: 'movie',
+        note: 'Классика',
+      );
+
+      final List<Map<String, dynamic>> rows = await db.query('wishlist');
+      expect(rows.first['text'], 'The Matrix');
+      expect(rows.first['media_type_hint'], 'movie');
+      expect(rows.first['note'], 'Классика');
+    });
+
+    test('возвращает все элементы (включая resolved)', () async {
+      await insertWishlistItem('Game 1');
+      await insertWishlistItem('Game 2', isResolved: 1);
+      await insertWishlistItem('Game 3');
+
+      final List<Map<String, dynamic>> rows = await db.query('wishlist');
+      expect(rows.length, 3);
+    });
+
+    test('фильтрует только активные элементы', () async {
+      await insertWishlistItem('Active 1');
+      await insertWishlistItem('Resolved', isResolved: 1);
+      await insertWishlistItem('Active 2');
+
+      final List<Map<String, dynamic>> rows = await db.query(
+        'wishlist',
+        where: 'is_resolved = 0',
+      );
+      expect(rows.length, 2);
+    });
+
+    test('считает активные элементы', () async {
+      await insertWishlistItem('Active 1');
+      await insertWishlistItem('Resolved', isResolved: 1);
+      await insertWishlistItem('Active 2');
+
+      final List<Map<String, dynamic>> result = await db.rawQuery(
+        'SELECT COUNT(*) as count FROM wishlist WHERE is_resolved = 0',
+      );
+      expect(result.first['count'], 2);
+    });
+
+    test('считает все элементы', () async {
+      await insertWishlistItem('Item 1');
+      await insertWishlistItem('Item 2', isResolved: 1);
+
+      final List<Map<String, dynamic>> result = await db.rawQuery(
+        'SELECT COUNT(*) as count FROM wishlist',
+      );
+      expect(result.first['count'], 2);
+    });
+
+    test('обновляет текст элемента', () async {
+      final int id = await insertWishlistItem('Old Title');
+
+      await db.update(
+        'wishlist',
+        <String, dynamic>{'text': 'New Title'},
+        where: 'id = ?',
+        whereArgs: <Object?>[id],
+      );
+
+      final List<Map<String, dynamic>> rows = await db.query(
+        'wishlist',
+        where: 'id = ?',
+        whereArgs: <Object?>[id],
+      );
+      expect(rows.first['text'], 'New Title');
+    });
+
+    test('обновляет тип медиа', () async {
+      final int id = await insertWishlistItem('Test');
+
+      await db.update(
+        'wishlist',
+        <String, dynamic>{'media_type_hint': 'game'},
+        where: 'id = ?',
+        whereArgs: <Object?>[id],
+      );
+
+      final List<Map<String, dynamic>> rows = await db.query(
+        'wishlist',
+        where: 'id = ?',
+        whereArgs: <Object?>[id],
+      );
+      expect(rows.first['media_type_hint'], 'game');
+    });
+
+    test('помечает элемент как resolved', () async {
+      final int id = await insertWishlistItem('Chrono Trigger');
+      final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
+      await db.update(
+        'wishlist',
+        <String, dynamic>{'is_resolved': 1, 'resolved_at': now},
+        where: 'id = ?',
+        whereArgs: <Object?>[id],
+      );
+
+      final List<Map<String, dynamic>> rows = await db.query(
+        'wishlist',
+        where: 'id = ?',
+        whereArgs: <Object?>[id],
+      );
+      expect(rows.first['is_resolved'], 1);
+      expect(rows.first['resolved_at'], isNotNull);
+    });
+
+    test('снимает отметку resolved', () async {
+      final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      final int id = await insertWishlistItem(
+        'Chrono Trigger',
+        isResolved: 1,
+        resolvedAt: now,
+      );
+
+      await db.update(
+        'wishlist',
+        <String, dynamic>{'is_resolved': 0, 'resolved_at': null},
+        where: 'id = ?',
+        whereArgs: <Object?>[id],
+      );
+
+      final List<Map<String, dynamic>> rows = await db.query(
+        'wishlist',
+        where: 'id = ?',
+        whereArgs: <Object?>[id],
+      );
+      expect(rows.first['is_resolved'], 0);
+      expect(rows.first['resolved_at'], null);
+    });
+
+    test('удаляет элемент', () async {
+      final int id = await insertWishlistItem('To Delete');
+
+      await db.delete('wishlist', where: 'id = ?', whereArgs: <Object?>[id]);
+
+      final List<Map<String, dynamic>> rows = await db.query('wishlist');
+      expect(rows.isEmpty, true);
+    });
+
+    test('удаляет все resolved элементы', () async {
+      await insertWishlistItem('Active');
+      await insertWishlistItem('Resolved 1', isResolved: 1);
+      await insertWishlistItem('Resolved 2', isResolved: 1);
+
+      final int deleted = await db.delete(
+        'wishlist',
+        where: 'is_resolved = 1',
+      );
+
+      expect(deleted, 2);
+      final List<Map<String, dynamic>> rows = await db.query('wishlist');
+      expect(rows.length, 1);
+      expect(rows.first['text'], 'Active');
+    });
+
+    test('сортирует: активные первыми, по дате создания DESC', () async {
+      // Создаём с задержкой для разных created_at
+      await insertWishlistItem('Old Active');
+      await insertWishlistItem('Resolved', isResolved: 1);
+      await insertWishlistItem('New Active');
+
+      final List<Map<String, dynamic>> rows = await db.rawQuery(
+        'SELECT * FROM wishlist ORDER BY is_resolved ASC, created_at DESC',
+      );
+
+      expect(rows.length, 3);
+      // Активные первые (is_resolved=0), resolved в конце
+      expect(rows[0]['is_resolved'], 0);
+      expect(rows[1]['is_resolved'], 0);
+      expect(rows[2]['is_resolved'], 1);
+    });
+  });
 }

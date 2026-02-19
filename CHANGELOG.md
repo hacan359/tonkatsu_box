@@ -7,6 +7,21 @@
 ## [Unreleased]
 
 ### Added
+- Добавлена фича «Wishlist» — заметки для отложенного поиска контента (5-й таб навигации)
+  - Модель `WishlistItem` (`lib/shared/models/wishlist_item.dart`) с `fromDb()`, `toDb()`, `copyWith()`
+  - Таблица `wishlist` в SQLite, миграция v18→v19, 8 CRUD методов в `DatabaseService`
+  - `WishlistRepository` (`lib/data/repositories/wishlist_repository.dart`) — тонкая обёртка над БД
+  - `WishlistNotifier` (`wishlistProvider`) — AsyncNotifier с оптимистичным обновлением state
+  - `activeWishlistCountProvider` — счётчик активных (не resolved) элементов для badge
+  - `WishlistScreen` — ListView с FAB, popup menu (Search/Edit/Resolve/Delete), фильтр resolved, clear resolved
+  - `AddWishlistDialog` — создание/редактирование заметки с опциональным типом медиа (ChoiceChip: Game/Movie/TV/Animation)
+  - 5-й таб «Wishlist» в `NavigationShell` с Badge (количество активных заметок)
+  - Тап на заметку → переход в `SearchScreen` с предзаполненным запросом
+  - Resolved заметки: зачёркнутый текст, opacity 0.5, в конце списка
+  - Добавлены тесты: wishlist_item_test (10), database_service_test (+13 Wishlist CRUD), wishlist_repository_test (8), wishlist_provider_test (11), wishlist_screen_test (12), add_wishlist_dialog_test (10), navigation_shell_test (обновлены для 5 табов)
+- Добавлен параметр `initialQuery` в `SearchScreen` — предзаполнение поля поиска и автоматический запуск поиска при открытии из Wishlist
+
+### Added
 - Добавлен тайловый фон на всех экранах — `background_tile.png` (паттерн геймпада) зациклен через `ImageRepeat.repeat` с `opacity: 0.03` и `scale: 0.667` в `MaterialApp.builder`
   - Путь к ассету в `AppAssets.backgroundTile`
   - `scaffoldBackgroundColor` в теме изменён на `Colors.transparent` для прозрачности Scaffold-ов

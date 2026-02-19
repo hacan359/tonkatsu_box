@@ -25,6 +25,9 @@ Create as many collections as you want — by platform (SNES, PlayStation, PC), 
 ### 🔍 Search & Discover
 Find games, movies, TV shows, and anime from a database of hundreds of thousands of titles. Filter by year, genre, or platform. Add anything you find to your collections with one tap.
 
+### 📝 Wishlist
+No internet right now? Jot down the name of a game or movie to search for later. Tag it with a media type, add a note, and tap it when you're ready — the app opens search with the name pre-filled. Mark items as resolved when you've found them.
+
 ### 📊 Track Your Progress
 Mark items as Not Started, In Progress, Completed, On Hold, or Dropped. For TV shows and anime, track individual episodes with per-season checkboxes. Rate everything from 1 to 10 stars. See when you started and finished each item.
 

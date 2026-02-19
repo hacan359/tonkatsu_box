@@ -2,9 +2,9 @@
 
 # 🗺️ Roadmap
 
-![Progress](https://img.shields.io/badge/overall_progress-~85%25-brightgreen?style=for-the-badge)
+![Progress](https://img.shields.io/badge/overall_progress-~87%25-brightgreen?style=for-the-badge)
 
-> Approximate completion: **~85%** — Core features, canvas system, media integrations, Android Lite, and UI redesign are done. A few restoration tasks and future plans remain.
+> Approximate completion: **~87%** — Core features, canvas system, media integrations, Android Lite, UI redesign, and Wishlist are done. A few restoration tasks and future plans remain.
 
 ---
 
@@ -58,6 +58,7 @@
 - [x] Settings Restructuring — monolithic SettingsScreen (~1118 lines) split into hub + 4 sub-screens: CredentialsScreen, CacheScreen, DatabaseScreen, DebugHubScreen. Debug screens use breadcrumb navigation
 - [x] Move to Collection — move items between collections or to/from uncategorized. DB `updateItemCollectionId`, shared `CollectionPickerDialog`, PopupMenuButton on detail screens and collection tiles. Board tab hidden for uncategorized items
 - [x] Multi-platform Games — same game with different platforms (SNES, GBA, etc.) in one collection with independent progress/rating/notes. DB migration v18: UNIQUE index with `COALESCE(platform_id, -1)`. Canvas sync via `collectionItemId`. Platform filter chips on Home and CollectionScreen. Platform badge on poster cards
+- [x] Wishlist — quick notes for deferred content search. WishlistItem model, DB migration v19 (wishlist table), WishlistRepository, WishlistNotifier (AsyncNotifierProvider), WishlistScreen with FAB/popup menu/filter/clear resolved, AddWishlistDialog with optional media type hint, 5th navigation tab with badge (active count), tap-to-search integration with SearchScreen(initialQuery)
 
 ---
 
