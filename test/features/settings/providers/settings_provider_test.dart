@@ -217,6 +217,51 @@ void main() {
       });
     });
 
+    group('setTmdbLanguage', () {
+      test('должен сохранить язык в prefs и обновить состояние', () async {
+        when(() => mockDbService.clearTmdbGenres())
+            .thenAnswer((_) async {});
+
+        final ProviderContainer container = await createContainer();
+
+        final SettingsNotifier notifier =
+            container.read(settingsNotifierProvider.notifier);
+
+        await notifier.setTmdbLanguage('en-US');
+
+        final SettingsState state =
+            container.read(settingsNotifierProvider);
+
+        expect(state.tmdbLanguage, equals('en-US'));
+        expect(prefs.getString('tmdb_language'), equals('en-US'));
+        verify(() => mockTmdbApi.setLanguage('en-US')).called(1);
+        verify(() => mockDbService.clearTmdbGenres()).called(1);
+      });
+
+      test('должен использовать ru-RU по умолчанию', () async {
+        final ProviderContainer container = await createContainer();
+
+        final SettingsState state =
+            container.read(settingsNotifierProvider);
+
+        expect(state.tmdbLanguage, equals('ru-RU'));
+      });
+
+      test('должен загрузить язык из prefs при инициализации', () async {
+        final ProviderContainer container = await createContainer(
+          initialPrefs: <String, Object>{
+            'tmdb_language': 'en-US',
+          },
+        );
+
+        final SettingsState state =
+            container.read(settingsNotifierProvider);
+
+        expect(state.tmdbLanguage, equals('en-US'));
+        verify(() => mockTmdbApi.setLanguage('en-US')).called(1);
+      });
+    });
+
     group('setSteamGridDbApiKey', () {
       test('должен сохранить ключ в prefs и обновить состояние', () async {
         final ProviderContainer container = await createContainer();

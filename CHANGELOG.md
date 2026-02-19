@@ -6,6 +6,12 @@
 
 ## [Unreleased]
 
+### Added
+- Added TMDB content language setting (Russian / English) in Settings via SegmentedButton
+
+### Changed
+- Refactored `CollectionItem` media resolution: replaced 5 identical `switch(mediaType)` blocks with a single `_resolvedMedia` getter using Dart records
+
 ## [0.9.0] - 2026-02-19
 
 ### Added

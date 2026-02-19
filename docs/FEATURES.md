@@ -267,7 +267,8 @@ Each item in a collection has its own personal board:
 
 ### TMDB (Movies & TV Shows)
 - Movies, TV shows, animation from The Movie Database
-- Genre caching in SQLite (DB-first strategy)
+- Content language setting (Russian / English) — configurable in Settings
+- Genre caching in SQLite (DB-first strategy, auto-cleared on language change)
 - Season/episode data with lazy loading
 
 ### SteamGridDB (Artwork)
@@ -283,7 +284,7 @@ Settings is organized as a hub with an author name card and 4 sub-screens:
 
 | Screen | Description |
 |--------|-------------|
-| **Credentials** | IGDB, TMDB, SteamGridDB API keys |
+| **Credentials** | IGDB, TMDB, SteamGridDB API keys; TMDB content language (Russian/English) |
 | **Cache** | Image caching toggle, folder, stats, clear |
 | **Database** | Config export/import (.json), Reset Database |
 | **Debug** | IGDB Media, SteamGridDB, Gamepad (dev only) |
