@@ -14,6 +14,7 @@ import '../../../shared/widgets/section_header.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../providers/collections_provider.dart';
+import '../../settings/providers/settings_provider.dart';
 import '../widgets/collection_tile.dart';
 import '../widgets/create_collection_dialog.dart';
 import 'collection_screen.dart';
@@ -292,7 +293,7 @@ class HomeScreen extends ConsumerWidget {
   Future<void> _createCollection(BuildContext context, WidgetRef ref) async {
     final CreateCollectionResult? result = await CreateCollectionDialog.show(
       context,
-      defaultAuthor: 'User', // TODO: Get from settings
+      defaultAuthor: ref.read(settingsNotifierProvider).authorName,
     );
 
     if (result == null) return;
@@ -415,7 +416,7 @@ class HomeScreen extends ConsumerWidget {
     try {
       final Collection fork = await ref
           .read(collectionsProvider.notifier)
-          .fork(collection.id, 'User'); // TODO: Get from settings
+          .fork(collection.id, ref.read(settingsNotifierProvider).authorName);
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

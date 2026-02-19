@@ -1,5 +1,6 @@
 // Универсальный элемент коллекции (игра, фильм или сериал).
 
+import '../constants/app_strings.dart';
 import 'exportable.dart';
 import 'game.dart';
 import 'item_status.dart';
@@ -38,38 +39,7 @@ class CollectionItem with Exportable {
 
   /// Создаёт [CollectionItem] из записи базы данных.
   factory CollectionItem.fromDb(Map<String, dynamic> row) {
-    return CollectionItem(
-      id: row['id'] as int,
-      collectionId: row['collection_id'] as int?,
-      mediaType: MediaType.fromString(row['media_type'] as String),
-      externalId: row['external_id'] as int,
-      platformId: row['platform_id'] as int?,
-      currentSeason: (row['current_season'] as int?) ?? 0,
-      currentEpisode: (row['current_episode'] as int?) ?? 0,
-      sortOrder: (row['sort_order'] as int?) ?? 0,
-      status: ItemStatus.fromString(row['status'] as String),
-      authorComment: row['author_comment'] as String?,
-      userComment: row['user_comment'] as String?,
-      userRating: row['user_rating'] as int?,
-      addedAt: DateTime.fromMillisecondsSinceEpoch(
-        (row['added_at'] as int) * 1000,
-      ),
-      startedAt: row['started_at'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(
-              (row['started_at'] as int) * 1000,
-            )
-          : null,
-      completedAt: row['completed_at'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(
-              (row['completed_at'] as int) * 1000,
-            )
-          : null,
-      lastActivityAt: row['last_activity_at'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(
-              (row['last_activity_at'] as int) * 1000,
-            )
-          : null,
-    );
+    return CollectionItem.fromDbWithJoins(row);
   }
 
   /// Создаёт [CollectionItem] из записи БД с join-данными.
@@ -214,21 +184,21 @@ class CollectionItem with Exportable {
   String get itemName {
     switch (mediaType) {
       case MediaType.game:
-        return game?.name ?? 'Unknown Game';
+        return game?.name ?? AppStrings.unknownGame;
       case MediaType.movie:
-        return movie?.title ?? 'Unknown Movie';
+        return movie?.title ?? AppStrings.unknownMovie;
       case MediaType.tvShow:
-        return tvShow?.title ?? 'Unknown TV Show';
+        return tvShow?.title ?? AppStrings.unknownTvShow;
       case MediaType.animation:
         if (platformId == AnimationSource.tvShow) {
-          return tvShow?.title ?? 'Unknown Animation';
+          return tvShow?.title ?? AppStrings.unknownAnimation;
         }
-        return movie?.title ?? 'Unknown Animation';
+        return movie?.title ?? AppStrings.unknownAnimation;
     }
   }
 
   /// Название платформы или placeholder.
-  String get platformName => platform?.displayName ?? 'Unknown Platform';
+  String get platformName => platform?.displayName ?? AppStrings.unknownPlatform;
 
   /// Есть ли комментарий автора.
   bool get hasAuthorComment =>

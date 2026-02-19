@@ -81,6 +81,7 @@ class ConfigService {
     SettingsKeys.lastSync,
     SettingsKeys.steamGridDbApiKey,
     SettingsKeys.tmdbApiKey,
+    SettingsKeys.defaultAuthor,
   ];
 
   /// Ключи с int-значениями.

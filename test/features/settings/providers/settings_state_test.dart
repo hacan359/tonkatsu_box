@@ -17,6 +17,10 @@ void main() {
         SettingsKeys.tmdbApiKey,
         equals('tmdb_api_key'),
       );
+      expect(
+        SettingsKeys.defaultAuthor,
+        equals('default_author'),
+      );
     });
   });
 
@@ -50,6 +54,7 @@ void main() {
         expect(state.isLoading, isFalse);
         expect(state.steamGridDbApiKey, isNull);
         expect(state.tmdbApiKey, isNull);
+        expect(state.defaultAuthor, isNull);
       });
 
       test('должен создать со всеми полями', () {
@@ -219,6 +224,23 @@ void main() {
       });
     });
 
+    group('authorName', () {
+      test('должен вернуть "User" когда defaultAuthor null', () {
+        const SettingsState state = SettingsState();
+        expect(state.authorName, equals('User'));
+      });
+
+      test('должен вернуть "User" когда defaultAuthor пустой', () {
+        const SettingsState state = SettingsState(defaultAuthor: '');
+        expect(state.authorName, equals('User'));
+      });
+
+      test('должен вернуть имя когда defaultAuthor задан', () {
+        const SettingsState state = SettingsState(defaultAuthor: 'Hacan');
+        expect(state.authorName, equals('Hacan'));
+      });
+    });
+
     group('isApiReady', () {
       test('должен вернуть true когда есть credentials и валидный токен', () {
         final int futureExpiry =
@@ -340,6 +362,14 @@ void main() {
         expect(copy.tmdbApiKey, equals('new_tmdb_key'));
       });
 
+      test('должен копировать с изменением defaultAuthor', () {
+        const SettingsState original = SettingsState();
+        final SettingsState copy =
+            original.copyWith(defaultAuthor: 'NewAuthor');
+
+        expect(copy.defaultAuthor, equals('NewAuthor'));
+      });
+
       test('должен очистить errorMessage при clearError: true', () {
         const SettingsState original = SettingsState(errorMessage: 'Error');
         final SettingsState copy = original.copyWith(clearError: true);
@@ -367,6 +397,7 @@ void main() {
           isLoading: true,
           steamGridDbApiKey: 'sgdb_key',
           tmdbApiKey: 'tmdb_key',
+          defaultAuthor: 'TestAuthor',
         );
 
         final SettingsState copy = original.copyWith();
@@ -382,6 +413,7 @@ void main() {
         expect(copy.isLoading, equals(original.isLoading));
         expect(copy.steamGridDbApiKey, equals(original.steamGridDbApiKey));
         expect(copy.tmdbApiKey, equals(original.tmdbApiKey));
+        expect(copy.defaultAuthor, equals(original.defaultAuthor));
       });
     });
   });
