@@ -14,8 +14,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/hacan359/xerabora/actions/workflows/test.yml">
-    <img src="https://github.com/hacan359/xerabora/actions/workflows/test.yml/badge.svg" alt="Tests">
+  <a href="https://github.com/hacan359/tonkatsu_box/actions/workflows/test.yml">
+    <img src="https://github.com/hacan359/tonkatsu_box/actions/workflows/test.yml/badge.svg" alt="Tests">
   </a>
   <a href="LICENSE">
     <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT">
@@ -107,7 +107,7 @@ Enter it in the app under **Settings → Credentials**.
 ### Step 2: Install and run
 
 ```bash
-git clone https://github.com/hacan359/xerabora.git
+git clone https://github.com/hacan359/tonkatsu_box.git
 cd xerabora
 flutter pub get
 flutter run -d windows    # or: flutter run -d android
