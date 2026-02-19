@@ -1,109 +1,109 @@
 ---
 name: double-review
-description: Двухэтапное ревью кода с улучшениями и оптимизациями. Используй перед завершением любой задачи.
+description: Two-stage code review with improvements and optimizations. Use before finishing any task.
 ---
 
-# Двойное ревью кода
+# Double Code Review
 
-## Круг 1: Функциональность и корректность
+## Round 1: Functionality and Correctness
 
-### Чеклист:
+### Checklist:
 
-#### Логика
-- [ ] Код делает то, что требуется?
-- [ ] Все edge cases обработаны?
-- [ ] Нет логических ошибок?
-- [ ] Алгоритм корректен?
+#### Logic
+- [ ] Does the code do what is required?
+- [ ] Are all edge cases handled?
+- [ ] No logical errors?
+- [ ] Is the algorithm correct?
 
-#### Типизация
-- [ ] Нет `dynamic`?
-- [ ] Нет неявных типов в публичном API?
-- [ ] Nullable типы обработаны правильно?
-- [ ] Используется `final`/`const` где возможно?
+#### Typing
+- [ ] No `dynamic`?
+- [ ] No implicit types in public API?
+- [ ] Nullable types handled correctly?
+- [ ] `final`/`const` used where possible?
 
-#### Обработка ошибок
-- [ ] Все исключения перехвачены?
-- [ ] Ошибки логируются с контекстом?
-- [ ] Пользователь получает понятные сообщения?
-- [ ] Нет silent failures?
+#### Error Handling
+- [ ] All exceptions caught?
+- [ ] Errors logged with context?
+- [ ] User receives clear messages?
+- [ ] No silent failures?
 
-#### Безопасность
-- [ ] Нет SQL/XSS инъекций?
-- [ ] Данные валидируются на входе?
-- [ ] Чувствительные данные не логируются?
-- [ ] Нет хардкода секретов?
+#### Security
+- [ ] No SQL/XSS injections?
+- [ ] Input data is validated?
+- [ ] Sensitive data is not logged?
+- [ ] No hardcoded secrets?
 
-### Действия после Круга 1:
-1. Исправить все найденные проблемы
-2. Убедиться что тесты проходят
-3. Перейти к Кругу 2
-
----
-
-## Круг 2: Качество и производительность
-
-### Чеклист:
-
-#### Читаемость
-- [ ] Имена переменных понятные и описательные?
-- [ ] Функции не слишком длинные (< 30 строк)?
-- [ ] Классы имеют одну ответственность?
-- [ ] Код самодокументируемый?
-- [ ] Сложная логика прокомментирована?
-
-#### Дублирование
-- [ ] Нет copy-paste кода?
-- [ ] Общая логика вынесена в утилиты?
-- [ ] Нет повторяющихся магических значений?
-
-#### Производительность
-- [ ] Нет O(n²) где можно O(n)?
-- [ ] Нет лишних пересозданий объектов?
-- [ ] Тяжёлые вычисления кэшируются?
-- [ ] Нет утечек памяти (подписки, контроллеры)?
-
-#### Flutter специфика
-- [ ] Widgets используют `const` конструкторы?
-- [ ] Нет лишних rebuild?
-- [ ] Списки используют `ListView.builder`?
-- [ ] `dispose()` вызывается для контроллеров?
-
-#### Стиль кода
-- [ ] Соответствует Dart style guide?
-- [ ] `flutter analyze` без warnings?
-- [ ] Импорты организованы (dart, package, relative)?
-
-### Действия после Круга 2:
-1. Применить все оптимизации
-2. Убедиться что тесты всё ещё проходят
-3. Запустить `flutter analyze`
-4. Задача готова к коммиту
+### Actions After Round 1:
+1. Fix all found issues
+2. Ensure tests pass
+3. Proceed to Round 2
 
 ---
 
-## Формат отчёта
+## Round 2: Quality and Performance
 
-После каждого круга предоставь отчёт:
+### Checklist:
+
+#### Readability
+- [ ] Variable names are clear and descriptive?
+- [ ] Functions are not too long (< 30 lines)?
+- [ ] Classes have a single responsibility?
+- [ ] Code is self-documenting?
+- [ ] Complex logic is commented?
+
+#### Duplication
+- [ ] No copy-paste code?
+- [ ] Shared logic extracted into utilities?
+- [ ] No repeated magic values?
+
+#### Performance
+- [ ] No O(n²) where O(n) is possible?
+- [ ] No unnecessary object recreation?
+- [ ] Heavy computations are cached?
+- [ ] No memory leaks (subscriptions, controllers)?
+
+#### Flutter Specifics
+- [ ] Widgets use `const` constructors?
+- [ ] No unnecessary rebuilds?
+- [ ] Lists use `ListView.builder`?
+- [ ] `dispose()` called for controllers?
+
+#### Code Style
+- [ ] Follows Dart style guide?
+- [ ] `flutter analyze` has no warnings?
+- [ ] Imports organized (dart, package, relative)?
+
+### Actions After Round 2:
+1. Apply all optimizations
+2. Ensure tests still pass
+3. Run `flutter analyze`
+4. Task is ready to commit
+
+---
+
+## Report Format
+
+After each round, provide a report:
 
 ```
-## Ревью Круг [1/2]
+## Review Round [1/2]
 
-### Найденные проблемы:
-1. [Критично] Описание проблемы
-   - Файл: path/to/file.dart:123
-   - Исправление: ...
+### Issues Found:
+1. [Critical] Issue description
+   - File: path/to/file.dart:123
+   - Fix: ...
 
-2. [Важно] Описание проблемы
-   - Файл: path/to/file.dart:45
-   - Исправление: ...
+2. [Important] Issue description
+   - File: path/to/file.dart:45
+   - Fix: ...
 
-3. [Рекомендация] Описание улучшения
-   - Файл: path/to/file.dart:78
-   - Предложение: ...
+3. [Suggestion] Improvement description
+   - File: path/to/file.dart:78
+   - Suggestion: ...
 
-### Исправлено в этом круге:
-- Исправление 1
-- Исправление 2
+### Fixed in This Round:
+- Fix 1
+- Fix 2
 
-### Статус: [Переход к Кругу 2 / Готово к коммиту]
+### Status: [Proceeding to Round 2 / Ready to commit]
 ```

@@ -1,69 +1,69 @@
 ---
 name: optimize
-description: Оптимизация кода по производительности, памяти и читаемости. Используй для улучшения существующего кода.
+description: Code optimization for performance, memory, and readability. Use to improve existing code.
 ---
 
-# Оптимизация кода
+# Code Optimization
 
-## Процесс оптимизации
+## Optimization Process
 
-### 1. Профилирование (найти узкие места)
+### 1. Profiling (Find Bottlenecks)
 
 #### Flutter DevTools:
 ```bash
 flutter run --profile
-# Открыть DevTools и проанализировать:
+# Open DevTools and analyze:
 # - CPU Profiler
 # - Memory
 # - Performance overlay
 ```
 
-#### Метрики для отслеживания:
-- Время рендеринга фреймов (< 16ms для 60fps)
-- Использование памяти
-- Количество rebuild виджетов
-- Время запуска приложения
+#### Metrics to Track:
+- Frame rendering time (< 16ms for 60fps)
+- Memory usage
+- Widget rebuild count
+- App startup time
 
-### 2. Оптимизация алгоритмов
+### 2. Algorithm Optimization
 
-#### Сложность:
-| Было | Стало | Пример |
-|------|-------|--------|
-| O(n²) | O(n log n) | Сортировка |
-| O(n²) | O(n) | Вложенные циклы → Map/Set |
-| O(n) | O(1) | Линейный поиск → HashMap |
+#### Complexity:
+| Before | After | Example |
+|--------|-------|---------|
+| O(n²) | O(n log n) | Sorting |
+| O(n²) | O(n) | Nested loops → Map/Set |
+| O(n) | O(1) | Linear search → HashMap |
 
-#### Примеры:
+#### Examples:
 ```dart
-// ПЛОХО: O(n²)
+// BAD: O(n²)
 for (final item in list1) {
   if (list2.contains(item)) { ... }
 }
 
-// ХОРОШО: O(n)
+// GOOD: O(n)
 final set2 = list2.toSet();
 for (final item in list1) {
   if (set2.contains(item)) { ... }
 }
 ```
 
-### 3. Оптимизация памяти
+### 3. Memory Optimization
 
-#### Избегать:
-- Создание объектов в циклах
-- Копирование больших коллекций
-- Удержание ссылок на неиспользуемые объекты
-- Утечки через подписки и listeners
+#### Avoid:
+- Creating objects in loops
+- Copying large collections
+- Holding references to unused objects
+- Leaks through subscriptions and listeners
 
-#### Решения:
+#### Solutions:
 ```dart
-// Переиспользовать объекты
-final _dateFormat = DateFormat('yyyy-MM-dd'); // Один раз
+// Reuse objects
+final _dateFormat = DateFormat('yyyy-MM-dd'); // Once
 
-// Использовать const
+// Use const
 const _defaultPadding = EdgeInsets.all(16);
 
-// Отписываться в dispose
+// Unsubscribe in dispose
 @override
 void dispose() {
   _subscription.cancel();
@@ -72,80 +72,80 @@ void dispose() {
 }
 ```
 
-### 4. Оптимизация Flutter виджетов
+### 4. Flutter Widget Optimization
 
-#### Уменьшить rebuild:
+#### Reduce Rebuilds:
 ```dart
-// ПЛОХО: весь список перестраивается
+// BAD: entire list rebuilds
 ListView(
   children: items.map((i) => ItemWidget(i)).toList(),
 )
 
-// ХОРОШО: только видимые элементы
+// GOOD: only visible items
 ListView.builder(
   itemCount: items.length,
   itemBuilder: (context, index) => ItemWidget(items[index]),
 )
 ```
 
-#### Использовать const:
+#### Use const:
 ```dart
-// ПЛОХО
+// BAD
 return Container(
-  padding: EdgeInsets.all(16),  // Создаётся каждый build
+  padding: EdgeInsets.all(16),  // Created every build
   child: Text('Hello'),
 );
 
-// ХОРОШО
+// GOOD
 return const Padding(
   padding: EdgeInsets.all(16),
   child: Text('Hello'),
 );
 ```
 
-#### Разделять виджеты:
+#### Split Widgets:
 ```dart
-// ПЛОХО: весь виджет перестраивается при изменении counter
+// BAD: entire widget rebuilds when counter changes
 class MyWidget extends StatefulWidget {
   Widget build(context) {
     return Column(
       children: [
-        Text('Counter: $counter'),  // Меняется
-        HeavyWidget(),              // Не меняется, но перестраивается
+        Text('Counter: $counter'),  // Changes
+        HeavyWidget(),              // Doesn't change but rebuilds
       ],
     );
   }
 }
 
-// ХОРОШО: вынести неизменяемое
+// GOOD: extract immutable parts
 class MyWidget extends StatefulWidget {
   Widget build(context) {
     return Column(
       children: [
         CounterText(counter: counter),
-        const HeavyWidget(),  // Не перестраивается
+        const HeavyWidget(),  // Doesn't rebuild
       ],
     );
   }
 }
 ```
 
-### 5. Оптимизация async операций
+### 5. Async Operations Optimization
 
-#### Параллельное выполнение:
+#### Parallel Execution:
 ```dart
-// ПЛОХО: последовательно
+// BAD: sequential
 final users = await fetchUsers();
 final posts = await fetchPosts();
 
-// ХОРОШО: параллельно
+// GOOD: parallel
 final results = await Future.wait([
   fetchUsers(),
   fetchPosts(),
 ]);
 ```
 
-#### Кэширование:
+#### Caching:
 ```dart
 class CachedRepository {
   final Map<String, User> _cache = {};
@@ -161,7 +161,7 @@ class CachedRepository {
 }
 ```
 
-#### Debounce для частых вызовов:
+#### Debounce for Frequent Calls:
 ```dart
 Timer? _debounce;
 
@@ -173,25 +173,25 @@ void onSearchChanged(String query) {
 }
 ```
 
-### 6. Checklist оптимизации
+### 6. Optimization Checklist
 
-- [ ] Нет O(n²) алгоритмов где можно лучше
-- [ ] Нет создания объектов в build()
-- [ ] const используется везде где возможно
-- [ ] ListView.builder для длинных списков
-- [ ] Подписки отменяются в dispose()
-- [ ] Тяжёлые вычисления вынесены из UI thread
-- [ ] Изображения оптимизированы (размер, кэш)
-- [ ] Нет лишних setState/rebuild
+- [ ] No O(n²) algorithms where better is possible
+- [ ] No object creation in build()
+- [ ] const used everywhere possible
+- [ ] ListView.builder for long lists
+- [ ] Subscriptions cancelled in dispose()
+- [ ] Heavy computations moved off UI thread
+- [ ] Images optimized (size, cache)
+- [ ] No unnecessary setState/rebuild
 
-### 7. Валидация
+### 7. Validation
 
-После оптимизации:
+After optimization:
 ```bash
-# Проверить что ничего не сломалось
+# Verify nothing is broken
 flutter test
 
-# Проверить производительность
+# Check performance
 flutter run --profile
-# Использовать Performance overlay (P в консоли)
+# Use Performance overlay (P in console)
 ```
