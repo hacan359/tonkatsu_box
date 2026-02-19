@@ -43,6 +43,7 @@ class SearchScreen extends ConsumerStatefulWidget {
     this.onGameSelected,
     this.collectionId,
     this.initialTabIndex,
+    this.initialQuery,
     super.key,
   });
 
@@ -54,6 +55,9 @@ class SearchScreen extends ConsumerStatefulWidget {
 
   /// Начальный индекс таба (0=TV, 1=Games).
   final int? initialTabIndex;
+
+  /// Начальный запрос поиска (предзаполняет поле и запускает поиск).
+  final String? initialQuery;
 
   @override
   ConsumerState<SearchScreen> createState() => _SearchScreenState();
@@ -87,9 +91,16 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     _tabController.addListener(_onTabChanged);
     _loadPlatforms();
     _searchController.addListener(_onControllerChanged);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _searchFocus.requestFocus();
-    });
+    if (widget.initialQuery != null && widget.initialQuery!.isNotEmpty) {
+      _searchController.text = widget.initialQuery!;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _onSearchSubmit();
+      });
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _searchFocus.requestFocus();
+      });
+    }
   }
 
   void _onControllerChanged() {

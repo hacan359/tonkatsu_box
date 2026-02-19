@@ -6,14 +6,15 @@
 //
 // Ленивая инициализация табов:
 // NavigationShell использует IndexedStack с ленивой загрузкой — Collections,
-// SearchScreen и SettingsScreen строятся только при первом переключении на таб.
-// AllItemsScreen (Home) загружается сразу.
+// WishlistScreen, SearchScreen и SettingsScreen строятся только при первом
+// переключении на таб. AllItemsScreen (Home) загружается сразу.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
+import 'package:xerabora/features/wishlist/providers/wishlist_provider.dart';
 import 'package:xerabora/shared/navigation/navigation_shell.dart';
 
 void main() {
@@ -26,16 +27,20 @@ void main() {
       expect(NavTab.collections.index, equals(1));
     });
 
-    test('search имеет index 2', () {
-      expect(NavTab.search.index, equals(2));
+    test('wishlist имеет index 2', () {
+      expect(NavTab.wishlist.index, equals(2));
     });
 
-    test('settings имеет index 3', () {
-      expect(NavTab.settings.index, equals(3));
+    test('search имеет index 3', () {
+      expect(NavTab.search.index, equals(3));
     });
 
-    test('содержит 4 значения', () {
-      expect(NavTab.values.length, equals(4));
+    test('settings имеет index 4', () {
+      expect(NavTab.settings.index, equals(4));
+    });
+
+    test('содержит 5 значений', () {
+      expect(NavTab.values.length, equals(5));
     });
 
     test('все значения уникальны', () {
@@ -72,6 +77,7 @@ void main() {
       return ProviderScope(
         overrides: <Override>[
           sharedPreferencesProvider.overrideWithValue(prefs),
+          activeWishlistCountProvider.overrideWithValue(0),
         ],
         child: MaterialApp(
           home: MediaQuery(
@@ -97,14 +103,14 @@ void main() {
         expect(find.byType(BottomNavigationBar), findsNothing);
       });
 
-      testWidgets('Rail содержит 4 destination',
+      testWidgets('Rail содержит 5 destination',
           (WidgetTester tester) async {
         await tester.pumpWidget(createShell(width: 1024));
         await tester.pump();
 
         final NavigationRail rail =
             tester.widget<NavigationRail>(find.byType(NavigationRail));
-        expect(rail.destinations.length, equals(4));
+        expect(rail.destinations.length, equals(5));
       });
 
       testWidgets('переключение таба через Rail',
@@ -116,12 +122,12 @@ void main() {
             tester.widget<NavigationRail>(find.byType(NavigationRail));
         expect(railBefore.selectedIndex, equals(0));
 
-        railBefore.onDestinationSelected!(3);
+        railBefore.onDestinationSelected!(4);
         await tester.pump();
 
         final NavigationRail railAfter =
             tester.widget<NavigationRail>(find.byType(NavigationRail));
-        expect(railAfter.selectedIndex, equals(3));
+        expect(railAfter.selectedIndex, equals(4));
       });
     });
 
@@ -135,7 +141,7 @@ void main() {
         expect(find.byType(NavigationRail), findsNothing);
       });
 
-      testWidgets('BottomBar содержит 4 items',
+      testWidgets('BottomBar содержит 5 items',
           (WidgetTester tester) async {
         await tester.pumpWidget(createShell(width: 400));
         await tester.pump();
@@ -143,7 +149,7 @@ void main() {
         final BottomNavigationBar bar =
             tester.widget<BottomNavigationBar>(
                 find.byType(BottomNavigationBar));
-        expect(bar.items.length, equals(4));
+        expect(bar.items.length, equals(5));
       });
 
       testWidgets('переключение таба через BottomBar',
@@ -156,13 +162,13 @@ void main() {
                 find.byType(BottomNavigationBar));
         expect(barBefore.currentIndex, equals(0));
 
-        barBefore.onTap!(3);
+        barBefore.onTap!(4);
         await tester.pump();
 
         final BottomNavigationBar barAfter =
             tester.widget<BottomNavigationBar>(
                 find.byType(BottomNavigationBar));
-        expect(barAfter.currentIndex, equals(3));
+        expect(barAfter.currentIndex, equals(4));
       });
     });
 
@@ -185,7 +191,7 @@ void main() {
         // Переключаемся на Settings (index 3)
         final NavigationRail rail =
             tester.widget<NavigationRail>(find.byType(NavigationRail));
-        rail.onDestinationSelected!(3);
+        rail.onDestinationSelected!(4);
         await tester.pump();
         await tester.pump(); // Navigator initial route transition
 
@@ -212,7 +218,7 @@ void main() {
         final BottomNavigationBar bar =
             tester.widget<BottomNavigationBar>(
                 find.byType(BottomNavigationBar));
-        bar.onTap!(3);
+        bar.onTap!(4);
         await tester.pump();
         await tester.pump();
 
@@ -251,7 +257,7 @@ void main() {
         // Переключаемся на Settings
         final NavigationRail rail =
             tester.widget<NavigationRail>(find.byType(NavigationRail));
-        rail.onDestinationSelected!(3);
+        rail.onDestinationSelected!(4);
         await tester.pump();
         await tester.pump();
 
@@ -271,7 +277,7 @@ void main() {
         // Повторное нажатие на Settings (index 3) — pop к корню
         final NavigationRail railAfterPush =
             tester.widget<NavigationRail>(find.byType(NavigationRail));
-        railAfterPush.onDestinationSelected!(3);
+        railAfterPush.onDestinationSelected!(4);
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 300));
 
@@ -301,7 +307,7 @@ void main() {
         // Переключаемся на Settings
         final NavigationRail rail =
             tester.widget<NavigationRail>(find.byType(NavigationRail));
-        rail.onDestinationSelected!(3);
+        rail.onDestinationSelected!(4);
         await tester.pump();
         await tester.pump();
 
