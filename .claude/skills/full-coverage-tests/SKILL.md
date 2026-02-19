@@ -1,37 +1,37 @@
 ---
 name: full-coverage-tests
-description: Создаёт unit тесты с 100% покрытием кода. Используй после написания любого кода или по запросу пользователя.
+description: Creates unit tests with 100% code coverage. Use after writing any code or when requested by user.
 ---
 
-# Создание тестов с 100% покрытием
+# Creating Tests with 100% Coverage
 
-## Процесс
+## Process
 
-### 1. Анализ кода
-- Прочитай весь код который нужно покрыть тестами
-- Выдели все публичные методы и функции
-- Найди все условные ветви (if/else/switch/try-catch)
-- Определи граничные случаи
+### 1. Code Analysis
+- Read all the code that needs test coverage
+- Identify all public methods and functions
+- Find all conditional branches (if/else/switch/try-catch)
+- Determine edge cases
 
-### 2. Структура тестов
+### 2. Test Structure
 ```dart
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('ИмяКласса', () {
-    late ИмяКласса sut; // System Under Test
+  group('ClassName', () {
+    late ClassName sut; // System Under Test
 
     setUp(() {
-      sut = ИмяКласса();
+      sut = ClassName();
     });
 
-    group('имяМетода', () {
-      test('должен вернуть X когда Y', () {
+    group('methodName', () {
+      test('should return X when Y', () {
         // Arrange
         final input = ...;
 
         // Act
-        final result = sut.имяМетода(input);
+        final result = sut.methodName(input);
 
         // Assert
         expect(result, equals(expected));
@@ -41,62 +41,62 @@ void main() {
 }
 ```
 
-### 3. Что покрывать (чеклист)
+### 3. What to Cover (Checklist)
 
-#### Для каждой функции/метода:
-- [ ] Happy path (успешный сценарий)
-- [ ] Пустые входные данные (null, [], '')
-- [ ] Граничные значения (0, -1, maxInt)
-- [ ] Невалидные входные данные
-- [ ] Все ветви if/else
-- [ ] Все case в switch
-- [ ] Обработка исключений (try-catch)
+#### For each function/method:
+- [ ] Happy path (successful scenario)
+- [ ] Empty input (null, [], '')
+- [ ] Boundary values (0, -1, maxInt)
+- [ ] Invalid input
+- [ ] All if/else branches
+- [ ] All switch cases
+- [ ] Exception handling (try-catch)
 
-#### Для async кода:
-- [ ] Успешное выполнение
-- [ ] Таймаут
-- [ ] Ошибка сети/API
-- [ ] Отмена операции
+#### For async code:
+- [ ] Successful execution
+- [ ] Timeout
+- [ ] Network/API error
+- [ ] Operation cancellation
 
-#### Для UI (Widget tests):
-- [ ] Рендеринг в разных состояниях
-- [ ] Взаимодействие пользователя (tap, scroll, input)
-- [ ] Отображение ошибок
-- [ ] Loading состояния
+#### For UI (Widget tests):
+- [ ] Rendering in different states
+- [ ] User interaction (tap, scroll, input)
+- [ ] Error display
+- [ ] Loading states
 
-### 4. Моки и стабы
+### 4. Mocks and Stubs
 ```dart
-// Используй mocktail для моков
+// Use mocktail for mocks
 import 'package:mocktail/mocktail.dart';
 
 class MockUserRepository extends Mock implements UserRepository {}
 
-// В тесте
+// In tests
 final mockRepo = MockUserRepository();
 when(() => mockRepo.getUser(any())).thenAnswer((_) async => testUser);
 ```
 
-### 5. Проверка покрытия
+### 5. Coverage Verification
 ```bash
-# Запустить тесты с покрытием
+# Run tests with coverage
 flutter test --coverage
 
-# Сгенерировать HTML отчёт (опционально)
+# Generate HTML report (optional)
 genhtml coverage/lcov.info -o coverage/html
 ```
 
-### 6. Критерии завершения
-- Все тесты проходят (`flutter test`)
-- Покрытие строк >= 100%
-- Покрытие ветвей >= 100%
-- Нет пропущенных edge cases
+### 6. Completion Criteria
+- All tests pass (`flutter test`)
+- Line coverage >= 100%
+- Branch coverage >= 100%
+- No missed edge cases
 
-## Naming convention для тестов
+## Test Naming Convention
 ```
-должен [ожидаемый результат] когда [условие]
+should [expected result] when [condition]
 ```
 
-Примеры:
-- `должен вернуть пустой список когда данных нет`
-- `должен выбросить исключение когда id невалидный`
-- `должен показать loading когда данные загружаются`
+Examples:
+- `should return empty list when no data exists`
+- `should throw exception when id is invalid`
+- `should show loading when data is being fetched`

@@ -1,31 +1,31 @@
 ---
 name: changelog-docs
-description: Документирование изменений в CHANGELOG.md и актуализация docs/. Запускай последним, после завершения работы, тестов и ревью.
+description: Documents changes in CHANGELOG.md and updates docs/. Run last, after completing work, tests, and review.
 ---
 
-# Документирование изменений и актуализация документации
+# Documenting Changes and Updating Documentation
 
-Запускается **последним**, после завершения всей работы, тестов и ревью.
+Run **last**, after all work, tests, and review are complete.
 
-## Порядок выполнения
+## Execution Order
 
-### 1. Сбор изменений
+### 1. Collect Changes
 
-Определи все изменения в текущей сессии:
+Identify all changes in the current session:
 ```bash
 git diff --name-status HEAD
 git diff --stat HEAD
 ```
 
-Если изменения уже закоммичены (ветка отличается от main):
+If changes are already committed (branch differs from main):
 ```bash
 git log main..HEAD --oneline
 git diff --name-status main..HEAD
 ```
 
-### 2. Обновление CHANGELOG.md
+### 2. Update CHANGELOG.md
 
-Файл `CHANGELOG.md` в корне проекта. Формат [Keep a Changelog](https://keepachangelog.com/):
+File `CHANGELOG.md` in the project root. Format: [Keep a Changelog](https://keepachangelog.com/):
 
 ```markdown
 # Changelog
@@ -33,59 +33,59 @@ git diff --name-status main..HEAD
 ## [Unreleased]
 
 ### Added
-- Новые фичи и файлы
+- New features and files
 
 ### Changed
-- Изменения в существующем коде
+- Changes to existing code
 
 ### Fixed
-- Исправления багов
+- Bug fixes
 
 ### Removed
-- Удалённые файлы и функции
+- Deleted files and functions
 ```
 
-**Правила:**
-- Записи на русском языке
-- Каждая запись начинается с глагола: "Добавлен", "Изменён", "Исправлен", "Удалён"
-- Указывать конкретные файлы/классы/методы
-- Группировать связанные изменения
-- Не включать промежуточные исправления (lint fix, test fix) — только финальный результат
-- Если CHANGELOG.md не существует — создать с заголовком и секцией [Unreleased]
+**Rules:**
+- Entries in Russian
+- Each entry starts with a verb: "Добавлен", "Изменён", "Исправлен", "Удалён"
+- Mention specific files/classes/methods
+- Group related changes together
+- Do not include intermediate fixes (lint fix, test fix) — only the final result
+- If CHANGELOG.md doesn't exist — create it with a header and [Unreleased] section
 
-### 3. Актуализация docs/
+### 3. Update docs/
 
-Проверь каждый файл в `docs/` на соответствие текущему состоянию кода:
+Check each file in `docs/` against the current state of the code:
 
-| Файл | Что проверить |
+| File | What to check |
 |------|--------------|
-| `ARCHITECTURE.md` | Новые модули, провайдеры, модели, API клиенты, экраны |
-| `FEATURES.md` | Новые пользовательские возможности |
-| `GETTING_STARTED.md` | Новые шаги настройки (новые API ключи, конфигурация) |
-| `ROADMAP.md` | Отметить выполненные пункты, добавить новые планы |
-| `CONTRIBUTING.md` | Изменения в процессе разработки |
-| `RCOLL_FORMAT.md` | Изменения формата экспорта/импорта |
+| `ARCHITECTURE.md` | New modules, providers, models, API clients, screens |
+| `FEATURES.md` | New user-facing features |
+| `GETTING_STARTED.md` | New setup steps (new API keys, configuration) |
+| `ROADMAP.md` | Mark completed items, add new plans |
+| `CONTRIBUTING.md` | Changes to development process |
+| `RCOLL_FORMAT.md` | Changes to export/import format |
 
-**Правила обновления:**
-- Добавлять только то, что реально изменилось
-- Сохранять существующий стиль и форматирование документа
-- Не переписывать весь файл — точечные правки
-- Документация на английском (как существующие docs)
-- Если файл не затронут изменениями — не трогать
+**Update rules:**
+- Only add what actually changed
+- Preserve existing style and formatting of the document
+- Don't rewrite the entire file — make targeted edits
+- Documentation in English (matching existing docs)
+- If a file is not affected by changes — don't touch it
 
-### 4. Верификация
+### 4. Verification
 
 ```bash
 powershell.exe -Command "cd D:\CODE\xerabora; flutter analyze"
 powershell.exe -Command "cd D:\CODE\xerabora; flutter test"
 ```
 
-## Чеклист перед завершением
+## Checklist Before Finishing
 
-- [ ] CHANGELOG.md актуален
-- [ ] docs/ARCHITECTURE.md отражает новые компоненты
-- [ ] docs/FEATURES.md содержит новые возможности
-- [ ] docs/GETTING_STARTED.md актуален (если добавлены новые настройки)
-- [ ] docs/ROADMAP.md обновлён (если пункты выполнены)
-- [ ] `flutter analyze` без warnings
-- [ ] `flutter test` все тесты проходят
+- [ ] CHANGELOG.md is up to date
+- [ ] docs/ARCHITECTURE.md reflects new components
+- [ ] docs/FEATURES.md contains new features
+- [ ] docs/GETTING_STARTED.md is current (if new settings were added)
+- [ ] docs/ROADMAP.md is updated (if items were completed)
+- [ ] `flutter analyze` has no warnings
+- [ ] `flutter test` — all tests pass
