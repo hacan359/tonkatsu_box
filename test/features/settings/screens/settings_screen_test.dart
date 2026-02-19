@@ -156,23 +156,38 @@ void main() {
         );
       });
 
-      testWidgets('shows chevron_right trailing icons for all tiles',
+      testWidgets('shows Author name tile with edit icon',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        final Iterable<ListTile> tiles = tester.widgetList<ListTile>(
+        final Finder authorTile = find.ancestor(
+          of: find.text('Author name'),
+          matching: find.byType(ListTile),
+        );
+        expect(authorTile, findsOneWidget);
+
+        final ListTile tile = tester.widget<ListTile>(authorTile);
+        final Icon? trailingIcon = tile.trailing as Icon?;
+        expect(trailingIcon!.icon, equals(Icons.edit));
+
+        // Дефолтное имя автора
+        expect(find.text('User'), findsOneWidget);
+      });
+
+      testWidgets('shows chevron_right trailing icons for navigation tiles',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        // 5 плиток всего: Author name + Credentials + Cache + Database + Debug
+        final Iterable<ListTile> allTiles = tester.widgetList<ListTile>(
           find.byType(ListTile),
         );
+        expect(allTiles.length, equals(5));
 
-        // В debug mode должно быть 4 плитки (Credentials, Cache, Database, Debug)
-        expect(tiles.length, equals(4));
-
-        for (final ListTile tile in tiles) {
-          final Icon? trailingIcon = tile.trailing as Icon?;
-          expect(trailingIcon, isNotNull);
-          expect(trailingIcon!.icon, equals(Icons.chevron_right));
-        }
+        // 4 навигационные плитки имеют chevron_right
+        expect(find.byIcon(Icons.chevron_right), findsNWidgets(4));
       });
     });
 
@@ -250,6 +265,32 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(tester.takeException(), isNull);
+      });
+
+      testWidgets('Author name tile opens edit dialog', (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        final Finder authorTile = find.ancestor(
+          of: find.text('Author name'),
+          matching: find.byType(ListTile),
+        );
+
+        await tester.tap(authorTile);
+        await tester.pumpAndSettle();
+
+        expect(find.text('Author name'), findsNWidgets(2)); // tile + dialog title
+        expect(find.text('Save'), findsOneWidget);
+        expect(find.text('Cancel'), findsOneWidget);
+      });
+
+      testWidgets('Author name shows custom name when set', (WidgetTester tester) async {
+        await prefs.setString(SettingsKeys.defaultAuthor, 'Hacan');
+
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        expect(find.text('Hacan'), findsOneWidget);
       });
     });
 

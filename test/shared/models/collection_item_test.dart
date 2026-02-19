@@ -101,6 +101,51 @@ void main() {
         expect(item.userComment, isNull);
       });
 
+      test('fromDb должен делегировать в fromDbWithJoins', () {
+        final Map<String, dynamic> row = <String, dynamic>{
+          'id': 1,
+          'collection_id': 10,
+          'media_type': 'game',
+          'external_id': 1942,
+          'platform_id': 48,
+          'current_season': 2,
+          'current_episode': 5,
+          'sort_order': 3,
+          'status': 'completed',
+          'author_comment': 'Шедевр RPG',
+          'user_comment': 'Прошёл на 100%',
+          'user_rating': 9,
+          'added_at': testAddedAtUnix,
+          'started_at': testAddedAtUnix,
+          'completed_at': testAddedAtUnix,
+          'last_activity_at': testAddedAtUnix,
+        };
+
+        final CollectionItem fromDb = CollectionItem.fromDb(row);
+        final CollectionItem fromJoins = CollectionItem.fromDbWithJoins(row);
+
+        expect(fromDb.id, fromJoins.id);
+        expect(fromDb.collectionId, fromJoins.collectionId);
+        expect(fromDb.mediaType, fromJoins.mediaType);
+        expect(fromDb.externalId, fromJoins.externalId);
+        expect(fromDb.platformId, fromJoins.platformId);
+        expect(fromDb.currentSeason, fromJoins.currentSeason);
+        expect(fromDb.currentEpisode, fromJoins.currentEpisode);
+        expect(fromDb.sortOrder, fromJoins.sortOrder);
+        expect(fromDb.status, fromJoins.status);
+        expect(fromDb.authorComment, fromJoins.authorComment);
+        expect(fromDb.userComment, fromJoins.userComment);
+        expect(fromDb.userRating, fromJoins.userRating);
+        expect(fromDb.addedAt, fromJoins.addedAt);
+        expect(fromDb.startedAt, fromJoins.startedAt);
+        expect(fromDb.completedAt, fromJoins.completedAt);
+        expect(fromDb.lastActivityAt, fromJoins.lastActivityAt);
+        expect(fromDb.game, isNull);
+        expect(fromDb.movie, isNull);
+        expect(fromDb.tvShow, isNull);
+        expect(fromDb.platform, isNull);
+      });
+
       test('должен обработать null в необязательных полях', () {
         final Map<String, dynamic> row = <String, dynamic>{
           'id': 3,

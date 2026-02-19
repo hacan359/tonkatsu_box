@@ -20,6 +20,16 @@
   - Resolved заметки: зачёркнутый текст, opacity 0.5, в конце списка
   - Добавлены тесты: wishlist_item_test (10), database_service_test (+13 Wishlist CRUD), wishlist_repository_test (8), wishlist_provider_test (11), wishlist_screen_test (12), add_wishlist_dialog_test (10), navigation_shell_test (обновлены для 5 табов)
 - Добавлен параметр `initialQuery` в `SearchScreen` — предзаполнение поля поиска и автоматический запуск поиска при открытии из Wishlist
+- Добавлена настройка «Author name» в Settings — имя автора по умолчанию для новых и форкнутых коллекций
+  - Поле `defaultAuthor` в `SettingsKeys`, `SettingsState`, `SettingsNotifier`
+  - Карточка с диалогом редактирования на экране Settings
+  - Замена хардкода `'User'` в `home_screen.dart` на `settings.authorName`
+  - Экспорт/импорт ключа через `ConfigService`
+- Добавлен файл `LICENSE` (MIT, 2025, hacan359)
+- Добавлен `toString()` в `CollectedItemInfo` для удобства отладки
+
+### Changed
+- Рефакторинг `CollectionItem.fromDb()` — делегирует в `fromDbWithJoins()`, убрано ~30 строк дублирования
 
 ### Added
 - Добавлен тайловый фон на всех экранах — `background_tile.png` (паттерн геймпада) зациклен через `ImageRepeat.repeat` с `opacity: 0.03` и `scale: 0.667` в `MaterialApp.builder`

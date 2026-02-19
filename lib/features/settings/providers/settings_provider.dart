@@ -24,6 +24,9 @@ abstract class SettingsKeys {
 
   /// Префикс для сохранения режима отображения коллекции (grid/list).
   static const String collectionViewModePrefix = 'collection_view_mode_';
+
+  /// Имя автора по умолчанию для новых и форкнутых коллекций.
+  static const String defaultAuthor = 'default_author';
 }
 
 /// Состояние настроек IGDB.
@@ -41,6 +44,7 @@ class SettingsState {
     this.isLoading = false,
     this.steamGridDbApiKey,
     this.tmdbApiKey,
+    this.defaultAuthor,
   });
 
   /// Client ID для IGDB API.
@@ -75,6 +79,14 @@ class SettingsState {
 
   /// API ключ для TMDB.
   final String? tmdbApiKey;
+
+  /// Имя автора по умолчанию.
+  final String? defaultAuthor;
+
+  /// Возвращает имя автора (или 'User' если не задано).
+  String get authorName => (defaultAuthor != null && defaultAuthor!.isNotEmpty)
+      ? defaultAuthor!
+      : 'User';
 
   /// Проверяет наличие API ключа TMDB.
   bool get hasTmdbKey => tmdbApiKey != null && tmdbApiKey!.isNotEmpty;
@@ -114,6 +126,7 @@ class SettingsState {
     bool clearError = false,
     String? steamGridDbApiKey,
     String? tmdbApiKey,
+    String? defaultAuthor,
   }) {
     return SettingsState(
       clientId: clientId ?? this.clientId,
@@ -127,6 +140,7 @@ class SettingsState {
       isLoading: isLoading ?? this.isLoading,
       steamGridDbApiKey: steamGridDbApiKey ?? this.steamGridDbApiKey,
       tmdbApiKey: tmdbApiKey ?? this.tmdbApiKey,
+      defaultAuthor: defaultAuthor ?? this.defaultAuthor,
     );
   }
 }
@@ -190,6 +204,8 @@ class SettingsNotifier extends Notifier<SettingsState> {
     final String? steamGridDbApiKey =
         _prefs.getString(SettingsKeys.steamGridDbApiKey);
     final String? tmdbApiKey = _prefs.getString(SettingsKeys.tmdbApiKey);
+    final String? defaultAuthor =
+        _prefs.getString(SettingsKeys.defaultAuthor);
 
     final SettingsState loadedState = SettingsState(
       clientId: clientId,
@@ -199,6 +215,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
       lastSync: lastSync,
       steamGridDbApiKey: steamGridDbApiKey,
       tmdbApiKey: tmdbApiKey,
+      defaultAuthor: defaultAuthor,
     );
 
     // Устанавливаем credentials в API, если они есть
@@ -405,6 +422,17 @@ class SettingsNotifier extends Notifier<SettingsState> {
     state = state.copyWith(tmdbApiKey: apiKey);
   }
 
+  /// Сохраняет имя автора по умолчанию.
+  Future<void> setDefaultAuthor(String author) async {
+    final String trimmed = author.trim();
+    if (trimmed.isNotEmpty) {
+      await _prefs.setString(SettingsKeys.defaultAuthor, trimmed);
+    } else {
+      await _prefs.remove(SettingsKeys.defaultAuthor);
+    }
+    state = state.copyWith(defaultAuthor: trimmed);
+  }
+
   /// Экспортирует конфигурацию в файл.
   Future<ConfigResult> exportConfig() async {
     final ConfigService configService = ref.read(configServiceProvider);
@@ -444,6 +472,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await _prefs.remove(SettingsKeys.lastSync);
     await _prefs.remove(SettingsKeys.steamGridDbApiKey);
     await _prefs.remove(SettingsKeys.tmdbApiKey);
+    await _prefs.remove(SettingsKeys.defaultAuthor);
 
     _igdbApi.clearCredentials();
     _steamGridDbApi.clearApiKey();

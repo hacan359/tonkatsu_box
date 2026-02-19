@@ -20,4 +20,10 @@ class CollectedItemInfo {
 
   /// Название коллекции (null для элементов без коллекции).
   final String? collectionName;
+
+  @override
+  String toString() =>
+      'CollectedItemInfo(recordId: $recordId, '
+      'collectionId: $collectionId, '
+      'collectionName: $collectionName)';
 }

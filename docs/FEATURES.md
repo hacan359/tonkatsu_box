@@ -277,7 +277,9 @@ Each item in a collection has its own personal board:
 
 ## ⚙️ Settings
 
-Settings is organized as a hub with 4 sub-screens:
+Settings is organized as a hub with an author name card and 4 sub-screens:
+
+- **Author name** — configurable default author for new and forked collections (editable via inline dialog)
 
 | Screen | Description |
 |--------|-------------|
