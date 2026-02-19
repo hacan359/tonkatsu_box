@@ -100,7 +100,6 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
           _handleBack();
         },
         child: Scaffold(
-          backgroundColor: AppColors.background,
           body: useRail ? _buildRailLayout() : _buildContent(),
           bottomNavigationBar: useRail ? null : _buildBottomNav(),
         ),

@@ -54,7 +54,6 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final bool isDescending = ref.watch(allItemsSortDescProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: const BreadcrumbAppBar(
         crumbs: <BreadcrumbItem>[
           BreadcrumbItem(label: 'Main'),

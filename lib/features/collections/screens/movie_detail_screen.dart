@@ -94,7 +94,6 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
         final CollectionItem? item = _findItem(items);
         if (item == null) {
           return Scaffold(
-            backgroundColor: AppColors.background,
             appBar: _buildFallbackAppBar(),
             body: const Center(child: Text('Movie not found')),
           );
@@ -102,12 +101,10 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
         return _buildContent(item);
       },
       loading: () => Scaffold(
-        backgroundColor: AppColors.background,
         appBar: _buildFallbackAppBar(),
         body: const Center(child: CircularProgressIndicator()),
       ),
       error: (Object error, StackTrace stack) => Scaffold(
-        backgroundColor: AppColors.background,
         appBar: _buildFallbackAppBar(),
         body: Center(child: Text('Error: $error')),
       ),
@@ -221,7 +218,6 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
     _currentItemName = item.itemName;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: BreadcrumbAppBar(
         crumbs: <BreadcrumbItem>[
           BreadcrumbItem(

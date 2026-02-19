@@ -25,8 +25,8 @@ void main() {
       );
     });
 
-    test('scaffoldBackgroundColor должен быть AppColors.background', () {
-      expect(theme.scaffoldBackgroundColor, equals(AppColors.background));
+    test('scaffoldBackgroundColor должен быть transparent (тайловый фон в builder)', () {
+      expect(theme.scaffoldBackgroundColor, equals(Colors.transparent));
     });
 
     group('ColorScheme', () {

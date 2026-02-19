@@ -7,6 +7,16 @@
 ## [Unreleased]
 
 ### Added
+- Добавлен тайловый фон на всех экранах — `background_tile.png` (паттерн геймпада) зациклен через `ImageRepeat.repeat` с `opacity: 0.03` и `scale: 0.667` в `MaterialApp.builder`
+  - Путь к ассету в `AppAssets.backgroundTile`
+  - `scaffoldBackgroundColor` в теме изменён на `Colors.transparent` для прозрачности Scaffold-ов
+  - Удалён явный `backgroundColor: AppColors.background` с 16 экранов (28 Scaffold-ов)
+- Обновлены иконки приложения (Android + Windows) через `flutter_launcher_icons`
+
+### Fixed
+- Исправлен crash `Null check operator used on a null value` в `CanvasNotifier.removeByCollectionItemId()` и `removeMediaItem()` — добавлен null-guard для `_collectionId`
+
+### Added
 - Добавлена поддержка мультиплатформенных игр — одна и та же игра может быть добавлена в коллекцию с разными платформами (SNES, GBA и т.д.) с независимым прогрессом, рейтингом и заметками
   - Миграция БД v17→v18: UNIQUE индексы `collection_items` расширены на `COALESCE(platform_id, -1)` для различения записей по платформе
   - Метод `DatabaseService.getUniquePlatformIds()` — получение уникальных ID платформ из игровых элементов (опционально по коллекции)

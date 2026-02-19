@@ -137,7 +137,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   Widget build(BuildContext context) {
     if (_collectionLoading) {
       return Scaffold(
-        backgroundColor: AppColors.background,
         appBar: BreadcrumbAppBar(
           crumbs: <BreadcrumbItem>[
             BreadcrumbItem(
@@ -152,7 +151,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
 
     if (!_isUncategorized && _collection == null) {
       return Scaffold(
-        backgroundColor: AppColors.background,
         appBar: BreadcrumbAppBar(
           crumbs: <BreadcrumbItem>[
             BreadcrumbItem(
@@ -176,7 +174,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         ref.watch(collectionStatsProvider(widget.collectionId));
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: BreadcrumbAppBar(
         crumbs: <BreadcrumbItem>[
           BreadcrumbItem(

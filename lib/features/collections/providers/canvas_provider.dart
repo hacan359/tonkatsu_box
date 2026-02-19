@@ -398,19 +398,23 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int?>
   ///
   /// Обновляет state мгновенно и удаляет из БД.
   void removeByCollectionItemId(int collectionItemId) {
+    if (_collectionId == null) return;
+    final int collectionId = _collectionId!;
     state = state.copyWith(
       items: state.items
           .where((CanvasItem item) =>
               item.collectionItemId != collectionItemId)
           .toList(),
     );
-    _repository.deleteByCollectionItemId(_collectionId!, collectionItemId);
+    _repository.deleteByCollectionItemId(collectionId, collectionItemId);
   }
 
   /// Удаляет медиа-элемент с канваса по типу и ID.
   ///
   /// Обновляет state мгновенно и удаляет из БД.
   void removeMediaItem(MediaType mediaType, int externalId) {
+    if (_collectionId == null) return;
+    final int collectionId = _collectionId!;
     final CanvasItemType canvasType =
         CanvasItemType.fromMediaType(mediaType);
     state = state.copyWith(
@@ -420,7 +424,7 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int?>
                   item.itemRefId == externalId))
           .toList(),
     );
-    _repository.deleteMediaItem(_collectionId!, canvasType, externalId);
+    _repository.deleteMediaItem(collectionId, canvasType, externalId);
   }
 
   /// Удаляет элемент игры с канваса по igdbId.

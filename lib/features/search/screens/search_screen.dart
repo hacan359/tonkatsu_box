@@ -788,7 +788,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
     if (!isApiReady) {
       return Scaffold(
-        backgroundColor: AppColors.background,
         appBar: const BreadcrumbAppBar(
           crumbs: <BreadcrumbItem>[
             BreadcrumbItem(label: 'Search'),
@@ -828,7 +827,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       resizeToAvoidBottomInset: !isLandscape,
       appBar: BreadcrumbAppBar(
         crumbs: const <BreadcrumbItem>[

@@ -79,7 +79,6 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
     final SettingsState settings = ref.watch(settingsNotifierProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: BreadcrumbAppBar(
         crumbs: <BreadcrumbItem>[
           BreadcrumbItem(

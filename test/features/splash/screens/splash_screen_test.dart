@@ -64,13 +64,14 @@ void main() {
       );
     });
 
-    testWidgets('Scaffold имеет правильный цвет фона',
+    testWidgets('Scaffold имеет прозрачный фон (тайловый фон в builder)',
         (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget());
 
       final Scaffold scaffold =
           tester.widget<Scaffold>(find.byType(Scaffold).first);
-      expect(scaffold.backgroundColor, isNotNull);
+      // Scaffold прозрачный — фон задаётся через MaterialApp.builder
+      expect(scaffold.backgroundColor, isNull);
     });
   });
 

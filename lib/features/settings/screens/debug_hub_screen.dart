@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/breadcrumb_app_bar.dart';
 import '../providers/settings_provider.dart';
@@ -23,7 +22,6 @@ class DebugHubScreen extends ConsumerWidget {
     final SettingsState settings = ref.watch(settingsNotifierProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: BreadcrumbAppBar(
         crumbs: <BreadcrumbItem>[
           BreadcrumbItem(

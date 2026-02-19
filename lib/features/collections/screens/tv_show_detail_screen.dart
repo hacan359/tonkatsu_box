@@ -102,7 +102,6 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
         final CollectionItem? item = _findItem(items);
         if (item == null) {
           return Scaffold(
-            backgroundColor: AppColors.background,
             appBar: _buildFallbackAppBar(),
             body: const Center(child: Text('TV Show not found')),
           );
@@ -110,12 +109,10 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
         return _buildContent(item);
       },
       loading: () => Scaffold(
-        backgroundColor: AppColors.background,
         appBar: _buildFallbackAppBar(),
         body: const Center(child: CircularProgressIndicator()),
       ),
       error: (Object error, StackTrace stack) => Scaffold(
-        backgroundColor: AppColors.background,
         appBar: _buildFallbackAppBar(),
         body: Center(child: Text('Error: $error')),
       ),
@@ -229,7 +226,6 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
     _currentItemName = item.itemName;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: BreadcrumbAppBar(
         crumbs: <BreadcrumbItem>[
           BreadcrumbItem(
