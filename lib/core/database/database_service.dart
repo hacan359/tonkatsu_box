@@ -940,6 +940,12 @@ class DatabaseService {
     });
   }
 
+  /// Очищает весь кэш жанров TMDB (все типы).
+  Future<void> clearTmdbGenres() async {
+    final Database db = await database;
+    await db.delete('tmdb_genres');
+  }
+
   /// Возвращает маппинг ID → имя жанров из кэша.
   ///
   /// [type] — тип медиа: `'movie'` или `'tv'`.

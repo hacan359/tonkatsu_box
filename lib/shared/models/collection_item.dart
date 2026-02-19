@@ -180,21 +180,72 @@ class CollectionItem with Exportable {
   /// ID в IGDB (для игр). Алиас для [externalId].
   int get igdbId => externalId;
 
-  /// Название элемента (игра, фильм, сериал или анимация).
-  String get itemName {
+  /// Унифицированные поля текущего медиа-элемента.
+  ///
+  /// Позволяет избежать дублирования switch(mediaType) в каждом геттере.
+  /// IGDB рейтинг нормализуется к 0–10 (IGDB хранит 0–100).
+  ({
+    String? name,
+    String? coverUrl,
+    String? thumbUrl,
+    String? description,
+    double? rating,
+  }) get _resolvedMedia {
     switch (mediaType) {
       case MediaType.game:
-        return game?.name ?? AppStrings.unknownGame;
+        return (
+          name: game?.name,
+          coverUrl: game?.coverUrl,
+          thumbUrl: game?.coverUrl,
+          description: game?.summary,
+          rating: game?.rating != null ? game!.rating! / 10 : null,
+        );
       case MediaType.movie:
-        return movie?.title ?? AppStrings.unknownMovie;
+        return (
+          name: movie?.title,
+          coverUrl: movie?.posterUrl,
+          thumbUrl: movie?.posterThumbUrl,
+          description: movie?.overview,
+          rating: movie?.rating,
+        );
       case MediaType.tvShow:
-        return tvShow?.title ?? AppStrings.unknownTvShow;
+        return (
+          name: tvShow?.title,
+          coverUrl: tvShow?.posterUrl,
+          thumbUrl: tvShow?.posterThumbUrl,
+          description: tvShow?.overview,
+          rating: tvShow?.rating,
+        );
       case MediaType.animation:
-        if (platformId == AnimationSource.tvShow) {
-          return tvShow?.title ?? AppStrings.unknownAnimation;
+        final bool isTvBased = platformId == AnimationSource.tvShow;
+        if (isTvBased) {
+          return (
+            name: tvShow?.title,
+            coverUrl: tvShow?.posterUrl,
+            thumbUrl: tvShow?.posterThumbUrl,
+            description: tvShow?.overview,
+            rating: tvShow?.rating,
+          );
         }
-        return movie?.title ?? AppStrings.unknownAnimation;
+        return (
+          name: movie?.title,
+          coverUrl: movie?.posterUrl,
+          thumbUrl: movie?.posterThumbUrl,
+          description: movie?.overview,
+          rating: movie?.rating,
+        );
     }
+  }
+
+  /// Название элемента (игра, фильм, сериал или анимация).
+  String get itemName {
+    final String fallback = switch (mediaType) {
+      MediaType.game => AppStrings.unknownGame,
+      MediaType.movie => AppStrings.unknownMovie,
+      MediaType.tvShow => AppStrings.unknownTvShow,
+      MediaType.animation => AppStrings.unknownAnimation,
+    };
+    return _resolvedMedia.name ?? fallback;
   }
 
   /// Название платформы или placeholder.
@@ -211,77 +262,19 @@ class CollectionItem with Exportable {
   bool get isCompleted => status == ItemStatus.completed;
 
   /// URL постера/обложки (полный размер).
-  String? get coverUrl {
-    switch (mediaType) {
-      case MediaType.game:
-        return game?.coverUrl;
-      case MediaType.movie:
-        return movie?.posterUrl;
-      case MediaType.tvShow:
-        return tvShow?.posterUrl;
-      case MediaType.animation:
-        if (platformId == AnimationSource.tvShow) {
-          return tvShow?.posterUrl;
-        }
-        return movie?.posterUrl;
-    }
-  }
+  String? get coverUrl => _resolvedMedia.coverUrl;
 
   /// API рейтинг, нормализованный к шкале 0–10.
   ///
-  /// IGDB хранит рейтинг 0–100, поэтому делим на 10.
+  /// IGDB хранит рейтинг 0–100, нормализация выполняется в [_resolvedMedia].
   /// TMDB уже хранит 0–10.
-  double? get apiRating {
-    switch (mediaType) {
-      case MediaType.game:
-        final double? raw = game?.rating;
-        if (raw == null) return null;
-        return raw / 10;
-      case MediaType.movie:
-        return movie?.rating;
-      case MediaType.tvShow:
-        return tvShow?.rating;
-      case MediaType.animation:
-        if (platformId == AnimationSource.tvShow) {
-          return tvShow?.rating;
-        }
-        return movie?.rating;
-    }
-  }
+  double? get apiRating => _resolvedMedia.rating;
 
   /// Описание элемента (summary для игр, overview для фильмов/сериалов).
-  String? get itemDescription {
-    switch (mediaType) {
-      case MediaType.game:
-        return game?.summary;
-      case MediaType.movie:
-        return movie?.overview;
-      case MediaType.tvShow:
-        return tvShow?.overview;
-      case MediaType.animation:
-        if (platformId == AnimationSource.tvShow) {
-          return tvShow?.overview;
-        }
-        return movie?.overview;
-    }
-  }
+  String? get itemDescription => _resolvedMedia.description;
 
   /// URL маленького постера/обложки для thumbnail-ов.
-  String? get thumbnailUrl {
-    switch (mediaType) {
-      case MediaType.game:
-        return game?.coverUrl;
-      case MediaType.movie:
-        return movie?.posterThumbUrl;
-      case MediaType.tvShow:
-        return tvShow?.posterThumbUrl;
-      case MediaType.animation:
-        if (platformId == AnimationSource.tvShow) {
-          return tvShow?.posterThumbUrl;
-        }
-        return movie?.posterThumbUrl;
-    }
-  }
+  String? get thumbnailUrl => _resolvedMedia.thumbUrl;
 
   // -- Exportable контракт --
 

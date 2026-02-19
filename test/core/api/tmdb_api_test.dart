@@ -1852,6 +1852,48 @@ void main() {
       });
     });
 
+    // ----- setLanguage -----
+
+    group('setLanguage', () {
+      test('должен изменить язык', () {
+        expect(sut.language, equals('ru-RU'));
+
+        sut.setLanguage('en-US');
+
+        expect(sut.language, equals('en-US'));
+      });
+
+      test('должен использовать новый язык в запросах', () {
+        sut.setApiKey(testApiKey);
+        sut.setLanguage('en-US');
+
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer(
+          (_) async => Response<dynamic>(
+            requestOptions: RequestOptions(path: ''),
+            statusCode: 200,
+            data: <String, dynamic>{
+              'results': <dynamic>[],
+              'total_results': 0,
+            },
+          ),
+        );
+
+        sut.searchMovies('test');
+
+        final Map<String, dynamic> captured = verify(
+          () => mockDio.get<dynamic>(
+            any(),
+            queryParameters: captureAny(named: 'queryParameters'),
+          ),
+        ).captured.first as Map<String, dynamic>;
+
+        expect(captured['language'], equals('en-US'));
+      });
+    });
+
     // ----- Конструктор -----
 
     group('конструктор', () {

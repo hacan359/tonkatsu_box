@@ -108,14 +108,24 @@ class MultiSearchResult {
 /// Документация: https://developers.themoviedb.org/3
 class TmdbApi {
   /// Создаёт экземпляр [TmdbApi].
-  TmdbApi({Dio? dio, this.language = 'ru-RU'}) : _dio = dio ?? Dio();
+  TmdbApi({Dio? dio, String language = 'ru-RU'})
+      : _dio = dio ?? Dio(),
+        _language = language;
 
   static const String _baseUrl = 'https://api.themoviedb.org/3';
 
   final Dio _dio;
 
-  /// Язык для локализации ответов.
-  final String language;
+  /// Язык для локализации ответов TMDB API.
+  String _language;
+
+  /// Текущий язык для локализации ответов.
+  String get language => _language;
+
+  /// Устанавливает язык для локализации ответов.
+  void setLanguage(String language) {
+    _language = language;
+  }
 
   String? _apiKey;
 

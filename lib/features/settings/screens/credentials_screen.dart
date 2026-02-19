@@ -487,6 +487,37 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
               onSubmitted: (_) => _saveTmdbKey(),
             ),
             const SizedBox(height: AppSpacing.sm),
+            const Row(
+              children: <Widget>[
+                Icon(Icons.language, size: 20),
+                SizedBox(width: AppSpacing.sm),
+                Text('Content Language', style: AppTypography.body),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            SizedBox(
+              width: double.infinity,
+              child: SegmentedButton<String>(
+                segments: const <ButtonSegment<String>>[
+                  ButtonSegment<String>(
+                    value: 'ru-RU',
+                    label: Text('Русский'),
+                  ),
+                  ButtonSegment<String>(
+                    value: 'en-US',
+                    label: Text('English'),
+                  ),
+                ],
+                selected: <String>{settings.tmdbLanguage},
+                onSelectionChanged: (Set<String> selection) {
+                  ref
+                      .read(settingsNotifierProvider.notifier)
+                      .setTmdbLanguage(selection.first);
+                },
+                showSelectedIcon: false,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
             Row(
               children: <Widget>[
                 Icon(

@@ -28,6 +28,12 @@ abstract class SettingsKeys {
 
   /// Имя автора по умолчанию для новых и форкнутых коллекций.
   static const String defaultAuthor = 'default_author';
+
+  /// Язык контента TMDB API (ru-RU или en-US).
+  static const String tmdbLanguage = 'tmdb_language';
+
+  /// Язык контента TMDB по умолчанию.
+  static const String tmdbLanguageDefault = 'ru-RU';
 }
 
 /// Состояние настроек IGDB.
@@ -46,6 +52,7 @@ class SettingsState {
     this.steamGridDbApiKey,
     this.tmdbApiKey,
     this.defaultAuthor,
+    this.tmdbLanguage = SettingsKeys.tmdbLanguageDefault,
   });
 
   /// Client ID для IGDB API.
@@ -83,6 +90,9 @@ class SettingsState {
 
   /// Имя автора по умолчанию.
   final String? defaultAuthor;
+
+  /// Язык контента TMDB API.
+  final String tmdbLanguage;
 
   /// Возвращает имя автора (или [AppStrings.defaultAuthor] если не задано).
   String get authorName => (defaultAuthor != null && defaultAuthor!.isNotEmpty)
@@ -128,6 +138,7 @@ class SettingsState {
     String? steamGridDbApiKey,
     String? tmdbApiKey,
     String? defaultAuthor,
+    String? tmdbLanguage,
   }) {
     return SettingsState(
       clientId: clientId ?? this.clientId,
@@ -142,6 +153,7 @@ class SettingsState {
       steamGridDbApiKey: steamGridDbApiKey ?? this.steamGridDbApiKey,
       tmdbApiKey: tmdbApiKey ?? this.tmdbApiKey,
       defaultAuthor: defaultAuthor ?? this.defaultAuthor,
+      tmdbLanguage: tmdbLanguage ?? this.tmdbLanguage,
     );
   }
 }
@@ -207,6 +219,9 @@ class SettingsNotifier extends Notifier<SettingsState> {
     final String? tmdbApiKey = _prefs.getString(SettingsKeys.tmdbApiKey);
     final String? defaultAuthor =
         _prefs.getString(SettingsKeys.defaultAuthor);
+    final String tmdbLanguage =
+        _prefs.getString(SettingsKeys.tmdbLanguage) ??
+            SettingsKeys.tmdbLanguageDefault;
 
     final SettingsState loadedState = SettingsState(
       clientId: clientId,
@@ -217,6 +232,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
       steamGridDbApiKey: steamGridDbApiKey,
       tmdbApiKey: tmdbApiKey,
       defaultAuthor: defaultAuthor,
+      tmdbLanguage: tmdbLanguage,
     );
 
     // Устанавливаем credentials в API, если они есть
@@ -228,6 +244,9 @@ class SettingsNotifier extends Notifier<SettingsState> {
     if (steamGridDbApiKey != null && steamGridDbApiKey.isNotEmpty) {
       _steamGridDbApi.setApiKey(steamGridDbApiKey);
     }
+
+    // Устанавливаем язык контента TMDB
+    _tmdbApi.setLanguage(tmdbLanguage);
 
     // Устанавливаем TMDB API ключ, если есть
     if (tmdbApiKey != null && tmdbApiKey.isNotEmpty) {
@@ -421,6 +440,17 @@ class SettingsNotifier extends Notifier<SettingsState> {
     }
 
     state = state.copyWith(tmdbApiKey: apiKey);
+  }
+
+  /// Устанавливает язык контента TMDB API.
+  ///
+  /// Очищает кэш жанров (т.к. названия локализованы) и перезагружает их.
+  Future<void> setTmdbLanguage(String language) async {
+    await _prefs.setString(SettingsKeys.tmdbLanguage, language);
+    _tmdbApi.setLanguage(language);
+    await _dbService.clearTmdbGenres();
+    state = state.copyWith(tmdbLanguage: language);
+    _preloadTmdbGenres();
   }
 
   /// Сохраняет имя автора по умолчанию.

@@ -82,6 +82,7 @@ class ConfigService {
     SettingsKeys.steamGridDbApiKey,
     SettingsKeys.tmdbApiKey,
     SettingsKeys.defaultAuthor,
+    SettingsKeys.tmdbLanguage,
   ];
 
   /// Ключи с int-значениями.

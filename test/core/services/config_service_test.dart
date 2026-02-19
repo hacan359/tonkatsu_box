@@ -82,6 +82,7 @@ void main() {
         await prefs.setString(SettingsKeys.accessToken, 'my_token');
         await prefs.setString(SettingsKeys.steamGridDbApiKey, 'sgdb_key');
         await prefs.setString(SettingsKeys.tmdbApiKey, 'tmdb_key');
+        await prefs.setString(SettingsKeys.tmdbLanguage, 'en-US');
 
         final Map<String, Object> config = sut.collectSettings();
 
@@ -90,6 +91,7 @@ void main() {
         expect(config[SettingsKeys.accessToken], equals('my_token'));
         expect(config[SettingsKeys.steamGridDbApiKey], equals('sgdb_key'));
         expect(config[SettingsKeys.tmdbApiKey], equals('tmdb_key'));
+        expect(config[SettingsKeys.tmdbLanguage], equals('en-US'));
       });
 
       test('должен собрать int ключи', () async {
@@ -102,7 +104,7 @@ void main() {
         expect(config[SettingsKeys.lastSync], equals(9876543210));
       });
 
-      test('должен собрать все 7 ключей + версию', () async {
+      test('должен собрать все 8 ключей + версию', () async {
         await prefs.setString(SettingsKeys.clientId, 'id');
         await prefs.setString(SettingsKeys.clientSecret, 'secret');
         await prefs.setString(SettingsKeys.accessToken, 'token');
@@ -110,10 +112,11 @@ void main() {
         await prefs.setInt(SettingsKeys.lastSync, 200);
         await prefs.setString(SettingsKeys.steamGridDbApiKey, 'sgdb');
         await prefs.setString(SettingsKeys.tmdbApiKey, 'tmdb');
+        await prefs.setString(SettingsKeys.tmdbLanguage, 'en-US');
 
         final Map<String, Object> config = sut.collectSettings();
 
-        expect(config.length, equals(8)); // 7 ключей + версия
+        expect(config.length, equals(9)); // 8 ключей + версия
       });
 
       test('не должен включать неустановленные ключи', () async {
@@ -196,7 +199,7 @@ void main() {
         expect(prefs.getInt(SettingsKeys.tokenExpires), equals(1234567890));
       });
 
-      test('должен применить все 7 настроек', () async {
+      test('должен применить все 8 настроек', () async {
         final int applied = await sut.applySettings(<String, Object?>{
           SettingsKeys.clientId: 'id',
           SettingsKeys.clientSecret: 'secret',
@@ -205,9 +208,10 @@ void main() {
           SettingsKeys.lastSync: 200,
           SettingsKeys.steamGridDbApiKey: 'sgdb',
           SettingsKeys.tmdbApiKey: 'tmdb',
+          SettingsKeys.tmdbLanguage: 'en-US',
         });
 
-        expect(applied, equals(7));
+        expect(applied, equals(8));
       });
 
       test('должен перезаписать существующие значения', () async {

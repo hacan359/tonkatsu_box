@@ -63,7 +63,7 @@ For searching movies and TV shows:
 2. Enter your IGDB Client ID and Client Secret
 3. Click **Verify Connection**
 4. Platforms will sync automatically
-5. (Optional) Enter your TMDB API Key in the **TMDB API** section for movie/TV show search
+5. (Optional) Enter your TMDB API Key in the **TMDB API** section for movie/TV show search. Choose content language (Russian or English) below the key field
 6. (Optional) Enter your SteamGridDB API Key in the **SteamGridDB API** section
 7. You're ready to create collections!
 
