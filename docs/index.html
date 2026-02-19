@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- SEO Meta Tags -->
+  <title>Tonkatsu Box — Organize Games, Movies, TV Shows & Anime Collections</title>
+  <meta name="description" content="Free open-source app to build and manage collections of retro games, movies, TV shows, and anime. Track progress, rate favorites, create visual boards, and share with friends. Windows & Android.">
+  <meta name="keywords" content="game collection manager, retro game organizer, movie tracker, TV show tracker, anime tracker, IGDB, TMDB, collection app, backlog tracker, game library, Flutter app, open source">
+  <meta name="author" content="hacan359">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://hacan359.github.io/tonkatsu_box/">
+
+  <!-- Open Graph / Social -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Tonkatsu Box — Your Media Collection Manager">
+  <meta property="og:description" content="Organize retro games, movies, TV shows & anime. Track progress, create visual boards, share collections. Free & open source.">
+  <meta property="og:url" content="https://hacan359.github.io/tonkatsu_box/">
+  <!-- <meta property="og:image" content="https://hacan359.github.io/tonkatsu_box/assets/og-image.png"> -->
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Tonkatsu Box — Your Media Collection Manager">
+  <meta name="twitter:description" content="Organize retro games, movies, TV shows & anime. Free & open source.">
+
+  <!-- Favicon -->
+  <!-- <link rel="icon" type="image/png" href="assets/favicon.png"> -->
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ═══════════════════════════════════════
+       CSS Variables — matches app theme
+       ═══════════════════════════════════════ */
+    :root {
+      --bg-deep:       #050508;
+      --bg-primary:    #0A0A0F;
+      --bg-surface:    #141418;
+      --bg-surface-2:  #1C1C22;
+      --bg-surface-3:  #242430;
+
+      --text-primary:  #F0F0F5;
+      --text-secondary:#9898A8;
+      --text-tertiary: #5C5C6E;
+
+      --game-accent:   #4FC3F7;
+      --movie-accent:  #EF5350;
+      --tv-accent:     #66BB6A;
+      --anime-accent:  #CE93D8;
+
+      --glow-game:     rgba(79, 195, 247, 0.15);
+      --glow-movie:    rgba(239, 83, 80, 0.15);
+      --glow-tv:       rgba(102, 187, 106, 0.15);
+      --glow-anime:    rgba(206, 147, 216, 0.15);
+
+      --font-display:  'Space Mono', monospace;
+      --font-body:     'DM Sans', system-ui, sans-serif;
+
+      --radius-sm:     8px;
+      --radius-md:     12px;
+      --radius-lg:     20px;
+      --radius-xl:     28px;
+    }
+
+    /* ═══════════════════════════════════════
+       Reset & Base
+       ═══════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+
+    /* ═══════════════════════════════════════
+       Background Effects
+       ═══════════════════════════════════════ */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-glow {
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      filter: blur(150px);
+      opacity: 0.3;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-glow--blue  { background: var(--game-accent);  top: -200px; left: -100px; }
+    .bg-glow--red   { background: var(--movie-accent); top: 400px;  right: -200px; opacity: 0.15; }
+    .bg-glow--green  { background: var(--tv-accent);   top: 1200px; left: -200px; opacity: 0.12; }
+    .bg-glow--purple { background: var(--anime-accent); top: 2000px; right: -100px; opacity: 0.15; }
+
+    /* ═══════════════════════════════════════
+       Layout
+       ═══════════════════════════════════════ */
+    .container {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    section {
+      padding: 100px 0;
+    }
+
+    /* ═══════════════════════════════════════
+       Nav
+       ═══════════════════════════════════════ */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 16px 0;
+      background: rgba(5, 5, 8, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      transition: background 0.3s;
+    }
+
+    .nav .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav__brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: -0.5px;
+    }
+
+    .nav__logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      /* Replace with actual logo */
+      background: linear-gradient(135deg, var(--game-accent), var(--anime-accent));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .nav__links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav__links a {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      transition: color 0.2s;
+    }
+
+    .nav__links a:hover { color: var(--text-primary); }
+
+    .nav__cta {
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 700;
+      padding: 10px 20px;
+      background: var(--text-primary);
+      color: var(--bg-deep);
+      border-radius: var(--radius-sm);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .nav__cta:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px rgba(255,255,255,0.15);
+    }
+
+    /* ═══════════════════════════════════════
+       Hero
+       ═══════════════════════════════════════ */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding-top: 80px;
+    }
+
+    .hero__content {
+      text-align: center;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .hero__badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: var(--bg-surface);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+      animation: fadeInUp 0.8s ease-out;
+    }
+
+    .hero__badge span {
+      color: var(--game-accent);
+      font-family: var(--font-display);
+      font-size: 12px;
+    }
+
+    .hero__title {
+      font-family: var(--font-display);
+      font-size: clamp(40px, 7vw, 72px);
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: -2px;
+      margin-bottom: 24px;
+      animation: fadeInUp 0.8s ease-out 0.1s both;
+    }
+
+    .hero__title .accent-game   { color: var(--game-accent); }
+    .hero__title .accent-movie  { color: var(--movie-accent); }
+    .hero__title .accent-tv     { color: var(--tv-accent); }
+    .hero__title .accent-anime  { color: var(--anime-accent); }
+
+    .hero__subtitle {
+      font-size: 18px;
+      color: var(--text-secondary);
+      max-width: 560px;
+      margin: 0 auto 40px;
+      line-height: 1.7;
+      animation: fadeInUp 0.8s ease-out 0.2s both;
+    }
+
+    .hero__actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      animation: fadeInUp 0.8s ease-out 0.3s both;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 28px;
+      border-radius: var(--radius-md);
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 700;
+      transition: all 0.25s ease;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn--primary {
+      background: var(--text-primary);
+      color: var(--bg-deep);
+    }
+
+    .btn--primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(255,255,255,0.2);
+    }
+
+    .btn--ghost {
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .btn--ghost:hover {
+      color: var(--text-primary);
+      border-color: rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .hero__platforms {
+      margin-top: 24px;
+      font-size: 13px;
+      color: var(--text-tertiary);
+      animation: fadeInUp 0.8s ease-out 0.4s both;
+    }
+
+    /* ═══════════════════════════════════════
+       Screenshot Showcase
+       ═══════════════════════════════════════ */
+    .showcase {
+      margin-top: -40px;
+      animation: fadeInUp 1s ease-out 0.5s both;
+    }
+
+    .showcase__frame {
+      max-width: 960px;
+      margin: 0 auto;
+      background: var(--bg-surface);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      box-shadow:
+        0 4px 6px rgba(0,0,0,0.3),
+        0 20px 60px rgba(0,0,0,0.5),
+        0 0 100px rgba(79, 195, 247, 0.05);
+    }
+
+    .showcase__titlebar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 20px;
+      background: var(--bg-surface-2);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .showcase__dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--bg-surface-3);
+    }
+
+    .showcase__dot:nth-child(1) { background: #ff5f57; }
+    .showcase__dot:nth-child(2) { background: #ffbd2e; }
+    .showcase__dot:nth-child(3) { background: #28c840; }
+
+    .showcase__placeholder {
+      aspect-ratio: 16 / 9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      color: var(--text-tertiary);
+      font-size: 15px;
+      background:
+        radial-gradient(ellipse at center, rgba(79,195,247,0.04), transparent 70%),
+        var(--bg-primary);
+    }
+
+    .showcase__placeholder-icon {
+      font-size: 48px;
+      opacity: 0.3;
+    }
+
+    /* ═══════════════════════════════════════
+       Media Type Tags
+       ═══════════════════════════════════════ */
+    .media-tags {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 48px 0;
+    }
+
+    .media-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 100px;
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      border: 1px solid;
+    }
+
+    .media-tag--game   { color: var(--game-accent);  border-color: rgba(79,195,247,0.25);  background: var(--glow-game); }
+    .media-tag--movie  { color: var(--movie-accent); border-color: rgba(239,83,80,0.25);   background: var(--glow-movie); }
+    .media-tag--tv     { color: var(--tv-accent);    border-color: rgba(102,187,106,0.25); background: var(--glow-tv); }
+    .media-tag--anime  { color: var(--anime-accent); border-color: rgba(206,147,216,0.25); background: var(--glow-anime); }
+
+    .media-tag__dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    /* ═══════════════════════════════════════
+       Features
+       ═══════════════════════════════════════ */
+    .features__header {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+
+    .section-label {
+      font-family: var(--font-display);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--game-accent);
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(28px, 4vw, 42px);
+      font-weight: 700;
+      letter-spacing: -1px;
+      line-height: 1.15;
+    }
+
+    .section-subtitle {
+      font-size: 16px;
+      color: var(--text-secondary);
+      margin-top: 16px;
+      max-width: 520px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .features__grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .feature-card {
+      padding: 32px;
+      background: var(--bg-surface);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: var(--radius-lg);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent, var(--game-accent)), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .feature-card:hover {
+      border-color: rgba(255,255,255,0.08);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+    }
+
+    .feature-card:hover::before { opacity: 1; }
+
+    .feature-card--game   { --accent: var(--game-accent); }
+    .feature-card--movie  { --accent: var(--movie-accent); }
+    .feature-card--tv     { --accent: var(--tv-accent); }
+    .feature-card--anime  { --accent: var(--anime-accent); }
+    .feature-card--export { --accent: #FFB74D; }
+    .feature-card--board  { --accent: #90CAF9; }
+
+    .feature-card__icon {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-md);
+      font-size: 24px;
+      margin-bottom: 20px;
+      background: rgba(255,255,255,0.04);
+    }
+
+    .feature-card__title {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: -0.3px;
+    }
+
+    .feature-card__desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    /* ═══════════════════════════════════════
+       How It Works
+       ═══════════════════════════════════════ */
+    .steps__grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      margin-top: 64px;
+    }
+
+    .step {
+      text-align: center;
+      position: relative;
+    }
+
+    .step__number {
+      font-family: var(--font-display);
+      font-size: 64px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.04);
+      line-height: 1;
+      margin-bottom: -16px;
+      position: relative;
+      z-index: 0;
+    }
+
+    .step__title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .step__desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    .step__connector {
+      display: none;
+    }
+
+    /* ═══════════════════════════════════════
+       Formats / Export
+       ═══════════════════════════════════════ */
+    .formats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      margin-top: 48px;
+      max-width: 720px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .format-card {
+      padding: 28px;
+      background: var(--bg-surface);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius-lg);
+      text-align: center;
+    }
+
+    .format-card__ext {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, var(--game-accent), var(--anime-accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .format-card__name {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .format-card__desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* ═══════════════════════════════════════
+       Tech Stack
+       ═══════════════════════════════════════ */
+    .tech-pills {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 40px;
+    }
+
+    .tech-pill {
+      padding: 10px 20px;
+      background: var(--bg-surface);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 100px;
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+    }
+
+    .tech-pill:hover {
+      color: var(--text-primary);
+      border-color: rgba(255,255,255,0.15);
+    }
+
+    /* ═══════════════════════════════════════
+       CTA Section
+       ═══════════════════════════════════════ */
+    .cta-section {
+      text-align: center;
+      padding: 120px 0;
+    }
+
+    .cta-section .section-title {
+      margin-bottom: 16px;
+    }
+
+    .cta-section .section-subtitle {
+      margin-bottom: 40px;
+    }
+
+    /* ═══════════════════════════════════════
+       Footer
+       ═══════════════════════════════════════ */
+    .footer {
+      border-top: 1px solid rgba(255,255,255,0.04);
+      padding: 40px 0;
+    }
+
+    .footer .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer__left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text-tertiary);
+    }
+
+    .footer__links {
+      display: flex;
+      gap: 24px;
+      list-style: none;
+    }
+
+    .footer__links a {
+      font-size: 13px;
+      color: var(--text-tertiary);
+      transition: color 0.2s;
+    }
+
+    .footer__links a:hover { color: var(--text-secondary); }
+
+    /* ═══════════════════════════════════════
+       Animations
+       ═══════════════════════════════════════ */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ═══════════════════════════════════════
+       Responsive
+       ═══════════════════════════════════════ */
+    @media (max-width: 768px) {
+      .nav__links { display: none; }
+
+      .features__grid {
+        grid-template-columns: 1fr;
+      }
+
+      .steps__grid {
+        grid-template-columns: 1fr;
+        gap: 48px;
+      }
+
+      .formats {
+        grid-template-columns: 1fr;
+      }
+
+      .footer .container {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+      }
+
+      section {
+        padding: 64px 0;
+      }
+    }
+
+    @media (max-width: 1024px) and (min-width: 769px) {
+      .features__grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Effects -->
+  <div class="bg-grid"></div>
+  <div class="bg-glow bg-glow--blue"></div>
+  <div class="bg-glow bg-glow--red"></div>
+  <div class="bg-glow bg-glow--green"></div>
+  <div class="bg-glow bg-glow--purple"></div>
+
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="container">
+      <a href="#" class="nav__brand">
+        <div class="nav__logo">🍱</div>
+        Tonkatsu Box
+      </a>
+      <ul class="nav__links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how-it-works">Get Started</a></li>
+        <li><a href="#sharing">Sharing</a></li>
+        <li><a href="https://github.com/hacan359/tonkatsu_box/tree/main/docs" target="_blank">Docs</a></li>
+      </ul>
+      <a href="https://github.com/hacan359/tonkatsu_box/releases" class="nav__cta" target="_blank">
+        Download
+      </a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero__content">
+        <div class="hero__badge">
+          <span>v0.9.0</span> Open Source &middot; MIT License
+        </div>
+
+        <h1 class="hero__title">
+          Your <span class="accent-game">games</span>,
+          <span class="accent-movie">movies</span>,
+          <span class="accent-tv">shows</span> &amp;
+          <span class="accent-anime">anime</span><br>
+          — all in one box
+        </h1>
+
+        <p class="hero__subtitle">
+          Build collections, track what you're playing and watching, create visual boards, rate your favorites, and share with friends.
+        </p>
+
+        <div class="hero__actions">
+          <a href="https://github.com/hacan359/tonkatsu_box/releases" class="btn btn--primary" target="_blank">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download
+          </a>
+          <a href="https://github.com/hacan359/tonkatsu_box" class="btn btn--ghost" target="_blank">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+            View Source
+          </a>
+        </div>
+
+        <p class="hero__platforms">Available for Windows & Android</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screenshot Showcase -->
+  <section class="showcase">
+    <div class="container">
+      <div class="showcase__frame">
+        <div class="showcase__titlebar">
+          <div class="showcase__dot"></div>
+          <div class="showcase__dot"></div>
+          <div class="showcase__dot"></div>
+        </div>
+        <!-- 
+          Replace this placeholder with an actual screenshot:
+          <img src="assets/screenshot-main.png" alt="Tonkatsu Box — collection manager showing game, movie and anime collections with poster grid view" loading="lazy">
+        -->
+        <div class="showcase__placeholder">
+          <div class="showcase__placeholder-icon">📸</div>
+          <span>Add your app screenshot here</span>
+          <span style="font-size: 12px; color: var(--text-tertiary);">
+            Recommended: 1920×1080 PNG of the main collection view
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Media Type Tags -->
+  <div class="container">
+    <div class="media-tags reveal">
+      <div class="media-tag media-tag--game">
+        <div class="media-tag__dot"></div>
+        Retro Games
+      </div>
+      <div class="media-tag media-tag--movie">
+        <div class="media-tag__dot"></div>
+        Movies
+      </div>
+      <div class="media-tag media-tag--tv">
+        <div class="media-tag__dot"></div>
+        TV Shows
+      </div>
+      <div class="media-tag media-tag--anime">
+        <div class="media-tag__dot"></div>
+        Anime
+      </div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <section id="features">
+    <div class="container">
+      <div class="features__header reveal">
+        <div class="section-label">Features</div>
+        <h2 class="section-title">Everything you need to<br>organize your media</h2>
+        <p class="section-subtitle">
+          Search hundreds of thousands of titles, organize them your way, and track your progress across games, movies, and anime.
+        </p>
+      </div>
+
+      <div class="features__grid">
+        <div class="feature-card feature-card--game reveal">
+          <div class="feature-card__icon">🎮</div>
+          <h3 class="feature-card__title">Build Collections</h3>
+          <p class="feature-card__desc">
+            Create unlimited collections by platform, genre, or custom lists. Mix games, movies, and anime in a single collection. Switch between grid and list views.
+          </p>
+        </div>
+
+        <div class="feature-card feature-card--movie reveal">
+          <div class="feature-card__icon">🔍</div>
+          <h3 class="feature-card__title">Search & Discover</h3>
+          <p class="feature-card__desc">
+            Find titles from IGDB and TMDB databases. Filter by year, genre, or platform. Add anything to your collections with one tap.
+          </p>
+        </div>
+
+        <div class="feature-card feature-card--tv reveal">
+          <div class="feature-card__icon">📊</div>
+          <h3 class="feature-card__title">Track Progress</h3>
+          <p class="feature-card__desc">
+            Mark items as In Progress, Completed, On Hold, or Dropped. Track individual episodes for TV shows and anime. Rate everything from 1 to 10 stars.
+          </p>
+        </div>
+
+        <div class="feature-card feature-card--board reveal">
+          <div class="feature-card__icon">🎨</div>
+          <h3 class="feature-card__title">Visual Boards</h3>
+          <p class="feature-card__desc">
+            Arrange posters on a free-form canvas. Add text notes, images, and links. Draw connections between items. Browse artwork from SteamGridDB.
+          </p>
+        </div>
+
+        <div class="feature-card feature-card--export reveal">
+          <div class="feature-card__icon">📤</div>
+          <h3 class="feature-card__title">Share with Friends</h3>
+          <p class="feature-card__desc">
+            Export collections as lightweight <code>.xcoll</code> or full offline <code>.xcollx</code> files. Friends can import and fork to create their own versions.
+          </p>
+        </div>
+
+        <div class="feature-card feature-card--anime reveal">
+          <div class="feature-card__icon">⭐</div>
+          <h3 class="feature-card__title">Rate & Review</h3>
+          <p class="feature-card__desc">
+            Rate every title from 1–10 stars. Write personal notes and author reviews visible on export. Track when you started and finished each item.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section id="how-it-works">
+    <div class="container">
+      <div class="features__header reveal">
+        <div class="section-label">Get Started</div>
+        <h2 class="section-title">Up and running in minutes</h2>
+        <p class="section-subtitle">
+          Grab free API keys, install the app, and start building your collection.
+        </p>
+      </div>
+
+      <div class="steps__grid">
+        <div class="step reveal">
+          <div class="step__number">01</div>
+          <h3 class="step__title">Get API Keys</h3>
+          <p class="step__desc">
+            Register for free at <strong>IGDB</strong> (via Twitch) for games and <strong>TMDB</strong> for movies & TV. Optional: <strong>SteamGridDB</strong> for extra artwork.
+          </p>
+        </div>
+        <div class="step reveal">
+          <div class="step__number">02</div>
+          <h3 class="step__title">Install & Run</h3>
+          <p class="step__desc">
+            Download the latest release or build from source with Flutter. Available for <strong>Windows</strong> desktop and <strong>Android</strong>.
+          </p>
+        </div>
+        <div class="step reveal">
+          <div class="step__number">03</div>
+          <h3 class="step__title">Start Collecting</h3>
+          <p class="step__desc">
+            Enter your API keys in Settings, search for your favorite titles, and organize them into collections. That's it!
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sharing / Export -->
+  <section id="sharing">
+    <div class="container">
+      <div class="features__header reveal">
+        <div class="section-label">Sharing</div>
+        <h2 class="section-title">Share your taste</h2>
+        <p class="section-subtitle">
+          Export your collections and send them to friends. Two formats for different needs.
+        </p>
+      </div>
+
+      <div class="formats reveal">
+        <div class="format-card">
+          <div class="format-card__ext">.xcoll</div>
+          <div class="format-card__name">Light Export</div>
+          <p class="format-card__desc">
+            Small file with the list of items. Recipient needs internet to load images and details.
+          </p>
+        </div>
+        <div class="format-card">
+          <div class="format-card__ext">.xcollx</div>
+          <div class="format-card__name">Full Export</div>
+          <p class="format-card__desc">
+            Complete package with images, board layouts, and all media data. Works fully offline.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tech Stack -->
+  <section id="tech">
+    <div class="container">
+      <div class="features__header reveal">
+        <div class="section-label">Built With</div>
+        <h2 class="section-title">Open source, built to last</h2>
+      </div>
+
+      <div class="tech-pills reveal">
+        <span class="tech-pill">Flutter 3.38+</span>
+        <span class="tech-pill">Dart 3.10+</span>
+        <span class="tech-pill">Riverpod</span>
+        <span class="tech-pill">SQLite</span>
+        <span class="tech-pill">Material Design 3</span>
+        <span class="tech-pill">IGDB API</span>
+        <span class="tech-pill">TMDB API</span>
+        <span class="tech-pill">SteamGridDB</span>
+        <span class="tech-pill">MIT License</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="container reveal">
+      <div class="section-label">Ready?</div>
+      <h2 class="section-title">Start organizing your collection</h2>
+      <p class="section-subtitle">Free, open source, and yours to customize.</p>
+      <div class="hero__actions">
+        <a href="https://github.com/hacan359/tonkatsu_box/releases" class="btn btn--primary" target="_blank">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download Latest Release
+        </a>
+        <a href="https://github.com/hacan359/tonkatsu_box" class="btn btn--ghost" target="_blank">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          Star on GitHub
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__left">
+        <div class="nav__logo" style="width:24px;height:24px;font-size:14px;border-radius:6px;">🍱</div>
+        Tonkatsu Box &middot; MIT License
+      </div>
+      <ul class="footer__links">
+        <li><a href="https://github.com/hacan359/tonkatsu_box" target="_blank">GitHub</a></li>
+        <li><a href="https://github.com/hacan359/tonkatsu_box/releases" target="_blank">Releases</a></li>
+        <li><a href="https://github.com/hacan359/tonkatsu_box/tree/main/docs" target="_blank">Docs</a></li>
+        <li><a href="https://github.com/hacan359/tonkatsu_box/issues" target="_blank">Issues</a></li>
+      </ul>
+    </div>
+  </footer>
+
+  <!-- Scroll Reveal -->
+  <script>
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+
+  <!-- Structured Data for SEO -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Tonkatsu Box",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Windows, Android",
+    "description": "Free open-source app to organize collections of retro games, movies, TV shows, and anime. Track progress, create visual boards, and share with friends.",
+    "url": "https://hacan359.github.io/tonkatsu_box/",
+    "downloadUrl": "https://github.com/hacan359/tonkatsu_box/releases",
+    "softwareVersion": "0.9.0",
+    "author": {
+      "@type": "Person",
+      "name": "hacan359",
+      "url": "https://github.com/hacan359"
+    },
+    "license": "https://opensource.org/licenses/MIT",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  }
+  </script>
+</body>
+</html>
