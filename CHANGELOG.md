@@ -6,6 +6,8 @@
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-02-19
+
 ### Added
 - Добавлена фича «Wishlist» — заметки для отложенного поиска контента (5-й таб навигации)
   - Модель `WishlistItem` (`lib/shared/models/wishlist_item.dart`) с `fromDb()`, `toDb()`, `copyWith()`
