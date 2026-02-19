@@ -7,7 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/services/export_service.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../core/services/xcoll_file.dart';
-import '../../../shared/widgets/breadcrumb_app_bar.dart';
+import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
+import '../../../shared/widgets/breadcrumb_scope.dart';
 import '../../../shared/widgets/collection_picker_dialog.dart';
 import '../../../shared/widgets/cached_image.dart';
 import '../../../data/repositories/collection_repository.dart';
@@ -136,33 +137,25 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   @override
   Widget build(BuildContext context) {
     if (_collectionLoading) {
-      return Scaffold(
-        appBar: BreadcrumbAppBar(
-          crumbs: <BreadcrumbItem>[
-            BreadcrumbItem(
-              label: 'Collections',
-              onTap: () => Navigator.of(context).pop(),
-            ),
-          ],
+      return const BreadcrumbScope(
+        label: '...',
+        child: Scaffold(
+          appBar: AutoBreadcrumbAppBar(),
+          body: Center(child: CircularProgressIndicator()),
         ),
-        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     if (!_isUncategorized && _collection == null) {
-      return Scaffold(
-        appBar: BreadcrumbAppBar(
-          crumbs: <BreadcrumbItem>[
-            BreadcrumbItem(
-              label: 'Collections',
-              onTap: () => Navigator.of(context).pop(),
+      return BreadcrumbScope(
+        label: 'Not found',
+        child: Scaffold(
+          appBar: const AutoBreadcrumbAppBar(),
+          body: Center(
+            child: Text(
+              'Collection not found',
+              style: AppTypography.body.copyWith(color: AppColors.textSecondary),
             ),
-          ],
-        ),
-        body: Center(
-          child: Text(
-            'Collection not found',
-            style: AppTypography.body.copyWith(color: AppColors.textSecondary),
           ),
         ),
       );
@@ -173,15 +166,10 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     final AsyncValue<CollectionStats> statsAsync =
         ref.watch(collectionStatsProvider(widget.collectionId));
 
-    return Scaffold(
-      appBar: BreadcrumbAppBar(
-        crumbs: <BreadcrumbItem>[
-          BreadcrumbItem(
-            label: 'Collections',
-            onTap: () => Navigator.of(context).pop(),
-          ),
-          BreadcrumbItem(label: _displayName),
-        ],
+    return BreadcrumbScope(
+      label: _displayName,
+      child: Scaffold(
+      appBar: AutoBreadcrumbAppBar(
         actions: <Widget>[
           if (_canEdit && !_isCanvasMode)
             IconButton(
@@ -381,6 +369,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                 ),
               ],
             ),
+    ),
     );
   }
 
@@ -1198,44 +1187,52 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       case MediaType.game:
         Navigator.of(context).push(
           MaterialPageRoute<void>(
-            builder: (BuildContext context) => GameDetailScreen(
-              collectionId: widget.collectionId,
-              itemId: item.id,
-              isEditable: isEditable,
-              collectionName: colName,
+            builder: (BuildContext context) => BreadcrumbScope(
+              label: colName,
+              child: GameDetailScreen(
+                collectionId: widget.collectionId,
+                itemId: item.id,
+                isEditable: isEditable,
+              ),
             ),
           ),
         );
       case MediaType.movie:
         Navigator.of(context).push(
           MaterialPageRoute<void>(
-            builder: (BuildContext context) => MovieDetailScreen(
-              collectionId: widget.collectionId,
-              itemId: item.id,
-              isEditable: isEditable,
-              collectionName: colName,
+            builder: (BuildContext context) => BreadcrumbScope(
+              label: colName,
+              child: MovieDetailScreen(
+                collectionId: widget.collectionId,
+                itemId: item.id,
+                isEditable: isEditable,
+              ),
             ),
           ),
         );
       case MediaType.tvShow:
         Navigator.of(context).push(
           MaterialPageRoute<void>(
-            builder: (BuildContext context) => TvShowDetailScreen(
-              collectionId: widget.collectionId,
-              itemId: item.id,
-              isEditable: isEditable,
-              collectionName: colName,
+            builder: (BuildContext context) => BreadcrumbScope(
+              label: colName,
+              child: TvShowDetailScreen(
+                collectionId: widget.collectionId,
+                itemId: item.id,
+                isEditable: isEditable,
+              ),
             ),
           ),
         );
       case MediaType.animation:
         Navigator.of(context).push(
           MaterialPageRoute<void>(
-            builder: (BuildContext context) => AnimeDetailScreen(
-              collectionId: widget.collectionId,
-              itemId: item.id,
-              isEditable: isEditable,
-              collectionName: colName,
+            builder: (BuildContext context) => BreadcrumbScope(
+              label: colName,
+              child: AnimeDetailScreen(
+                collectionId: widget.collectionId,
+                itemId: item.id,
+                isEditable: isEditable,
+              ),
             ),
           ),
         );

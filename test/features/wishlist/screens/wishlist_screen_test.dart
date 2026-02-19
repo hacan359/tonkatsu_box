@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:xerabora/data/repositories/wishlist_repository.dart';
 import 'package:xerabora/features/wishlist/screens/wishlist_screen.dart';
+import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/wishlist_item.dart';
 
@@ -50,7 +51,10 @@ void main() {
       ],
       child: MaterialApp(
         theme: ThemeData.dark(),
-        home: const WishlistScreen(),
+        home: const BreadcrumbScope(
+          label: 'Wishlist',
+          child: WishlistScreen(),
+        ),
       ),
     );
   }

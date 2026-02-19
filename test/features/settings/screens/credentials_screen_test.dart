@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/features/settings/screens/credentials_screen.dart';
+import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 import 'package:xerabora/shared/widgets/source_badge.dart';
 
 void main() {
@@ -22,7 +23,10 @@ void main() {
           sharedPreferencesProvider.overrideWithValue(prefs),
         ],
         child: MaterialApp(
-          home: CredentialsScreen(isInitialSetup: isInitialSetup),
+          home: BreadcrumbScope(
+            label: 'Settings',
+            child: CredentialsScreen(isInitialSetup: isInitialSetup),
+          ),
         ),
       );
     }

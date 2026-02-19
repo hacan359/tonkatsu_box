@@ -3,12 +3,17 @@
 import 'package:flutter/material.dart';
 
 import '../navigation/navigation_shell.dart';
-import '../theme/app_assets.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 
 /// Высота toolbar для breadcrumb AppBar.
-const double kBreadcrumbToolbarHeight = 40;
+const double kBreadcrumbToolbarHeight = 44;
+
+/// Максимальная ширина текста текущей (последней) крошки.
+const double _currentCrumbMaxWidth = 300;
+
+/// Максимальная ширина текста промежуточной крошки.
+const double _crumbMaxWidth = 180;
 
 /// Элемент хлебных крошек.
 class BreadcrumbItem {
@@ -27,42 +32,25 @@ class BreadcrumbItem {
 
 /// AppBar с хлебными крошками.
 ///
-/// Отображает путь навигации: `/ › Collections › My Games › Zelda` (desktop)
-/// или `[logo] › Collections › My Games › Zelda` (mobile).
-/// Последний элемент — текущая страница (чуть жирнее, без onTap).
+/// Отображает путь навигации: `/ > Collections > My Games > Zelda` (desktop)
+/// или `← > Collections > My Games > Zelda` (mobile).
+/// Последний элемент — текущая страница (жирнее, без onTap).
 /// Остальные — кликабельные с ховер-эффектом для навигации назад.
 ///
-/// Поддерживает [bottom] для TabBar и [actions] для кнопок справа.
+/// На мобильном при длинных путях (>2 крошек) промежуточные сворачиваются в `…`.
+///
+/// Поддерживает [bottom] для TabBar, [actions] для кнопок справа,
+/// и [accentColor] для тонкой линии-акцента снизу.
 class BreadcrumbAppBar extends StatelessWidget implements PreferredSizeWidget {
   /// Создаёт [BreadcrumbAppBar].
   const BreadcrumbAppBar({
     required this.crumbs,
     this.actions,
     this.bottom,
+    this.accentColor,
     super.key,
   });
 
-  /// Создаёт fallback AppBar для detail screen коллекции (loading/error).
-  ///
-  /// Показывает `Collections › {collectionName}` с навигацией назад.
-  factory BreadcrumbAppBar.collectionFallback(
-    BuildContext context,
-    String collectionName,
-  ) {
-    return BreadcrumbAppBar(
-      crumbs: <BreadcrumbItem>[
-        BreadcrumbItem(
-          label: 'Collections',
-          onTap: () => Navigator.of(context)
-              .popUntil((Route<dynamic> route) => route.isFirst),
-        ),
-        BreadcrumbItem(
-          label: collectionName,
-          onTap: () => Navigator.of(context).pop(),
-        ),
-      ],
-    );
-  }
 
   /// Элементы хлебных крошек (без корня — он добавляется автоматически).
   final List<BreadcrumbItem> crumbs;
@@ -73,6 +61,9 @@ class BreadcrumbAppBar extends StatelessWidget implements PreferredSizeWidget {
   /// Нижний виджет (например, TabBar).
   final PreferredSizeWidget? bottom;
 
+  /// Цвет акцентной линии снизу. Null — без линии.
+  final Color? accentColor;
+
   @override
   Size get preferredSize {
     final double bottomHeight = bottom?.preferredSize.height ?? 0;
@@ -81,7 +72,7 @@ class BreadcrumbAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppBar(
+    final Widget appBar = AppBar(
       backgroundColor: AppColors.background,
       surfaceTintColor: Colors.transparent,
       toolbarHeight: kBreadcrumbToolbarHeight,
@@ -90,6 +81,21 @@ class BreadcrumbAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: _BreadcrumbRow(crumbs: crumbs),
       actions: actions,
       bottom: bottom,
+    );
+
+    if (accentColor == null) {
+      return appBar;
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: accentColor!.withAlpha(50),
+          ),
+        ),
+      ),
+      child: appBar,
     );
   }
 }
@@ -104,6 +110,10 @@ class _BreadcrumbRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isDesktop =
         MediaQuery.sizeOf(context).width >= navigationBreakpoint;
+    final bool canPop = Navigator.of(context).canPop();
+
+    // Определяем отображаемые крошки: на мобильном >2 — сворачиваем
+    final List<_CrumbEntry> entries = _buildEntries(isDesktop);
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -111,7 +121,7 @@ class _BreadcrumbRow extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          // Корень: `/` на desktop, логотип-ссылка на mobile
+          // Корень: `/` на desktop, ← на mobile (если есть куда вернуться)
           if (isDesktop)
             Text(
               '/',
@@ -120,49 +130,79 @@ class _BreadcrumbRow extends StatelessWidget {
                 fontWeight: FontWeight.w300,
               ),
             )
-          else
-            InkWell(
-              onTap: () => Navigator.of(context)
-                  .popUntil((Route<dynamic> route) => route.isFirst),
-              borderRadius: BorderRadius.circular(4),
-              splashColor: Colors.transparent,
-              highlightColor: Colors.transparent,
-              child: Image.asset(
-                AppAssets.logo,
-                width: 20,
-                height: 20,
-              ),
+          else if (canPop)
+            IconButton(
+              icon: const Icon(Icons.chevron_left, size: 20),
+              onPressed: () => Navigator.of(context).pop(),
+              padding: EdgeInsets.zero,
+              constraints:
+                  const BoxConstraints(minWidth: 28, minHeight: 28),
+              color: AppColors.textTertiary,
             ),
           // Крошки
-          for (int i = 0; i < crumbs.length; i++) ...<Widget>[
+          for (final _CrumbEntry entry in entries) ...<Widget>[
             _buildSeparator(),
-            _buildCrumb(crumbs[i], isLast: i == crumbs.length - 1),
+            if (entry.isEllipsis)
+              Text(
+                '…',
+                style: AppTypography.body.copyWith(
+                  fontSize: 13,
+                  color: AppColors.textTertiary,
+                ),
+              )
+            else
+              _buildCrumb(entry.item!, isLast: entry.isLast),
           ],
         ],
       ),
     );
   }
 
+  /// Строит список отображаемых элементов с учётом коллапса на мобильном.
+  List<_CrumbEntry> _buildEntries(bool isDesktop) {
+    if (crumbs.isEmpty) return <_CrumbEntry>[];
+
+    // На мобильном при >2 крошек: [first] … [last]
+    if (!isDesktop && crumbs.length > 2) {
+      return <_CrumbEntry>[
+        _CrumbEntry(item: crumbs.first, isLast: false),
+        const _CrumbEntry.ellipsis(),
+        _CrumbEntry(item: crumbs.last, isLast: true),
+      ];
+    }
+
+    return <_CrumbEntry>[
+      for (int i = 0; i < crumbs.length; i++)
+        _CrumbEntry(item: crumbs[i], isLast: i == crumbs.length - 1),
+    ];
+  }
+
   Widget _buildSeparator() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 6),
-      child: Text(
-        '›',
-        style: AppTypography.body.copyWith(
-          color: AppColors.textTertiary,
-          fontWeight: FontWeight.w300,
-        ),
+      padding: const EdgeInsets.symmetric(horizontal: 2),
+      child: Icon(
+        Icons.chevron_right,
+        size: 14,
+        color: AppColors.textTertiary.withAlpha(128),
       ),
     );
   }
 
   Widget _buildCrumb(BreadcrumbItem item, {required bool isLast}) {
     if (isLast || item.onTap == null) {
-      return Text(
-        item.label,
-        style: AppTypography.body.copyWith(
-          color: AppColors.textSecondary,
-          fontWeight: FontWeight.w500,
+      return ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: isLast ? _currentCrumbMaxWidth : _crumbMaxWidth,
+        ),
+        child: Text(
+          item.label,
+          style: AppTypography.body.copyWith(
+            fontSize: 13,
+            color: isLast ? AppColors.textPrimary : AppColors.textSecondary,
+            fontWeight: isLast ? FontWeight.w600 : FontWeight.w500,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
       );
     }
@@ -171,7 +211,26 @@ class _BreadcrumbRow extends StatelessWidget {
   }
 }
 
-/// Кликабельная крошка с ховер-эффектом.
+/// Запись крошки для отображения (может быть реальной или `…`).
+class _CrumbEntry {
+  const _CrumbEntry({this.item, required this.isLast}) : isEllipsis = false;
+
+  const _CrumbEntry.ellipsis()
+      : item = null,
+        isLast = false,
+        isEllipsis = true;
+
+  /// Элемент крошки. Null для `…`.
+  final BreadcrumbItem? item;
+
+  /// Является ли последним (текущим) элементом.
+  final bool isLast;
+
+  /// Является ли многоточием (сворачивание промежуточных крошек).
+  final bool isEllipsis;
+}
+
+/// Кликабельная крошка с ховер-эффектом (pill-фон).
 class _HoverCrumb extends StatefulWidget {
   const _HoverCrumb({required this.item});
 
@@ -183,22 +242,65 @@ class _HoverCrumb extends StatefulWidget {
 
 class _HoverCrumbState extends State<_HoverCrumb> {
   bool _isHovered = false;
+  late final FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode(debugLabel: 'BreadcrumbCrumb');
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: GestureDetector(
-        onTap: widget.item.onTap,
-        child: Text(
-          widget.item.label,
-          style: AppTypography.body.copyWith(
-            color: _isHovered
-                ? AppColors.textPrimary
-                : AppColors.textTertiary,
-            fontWeight: FontWeight.w400,
+    return Actions(
+      actions: <Type, Action<Intent>>{
+        ActivateIntent: CallbackAction<ActivateIntent>(
+          onInvoke: (ActivateIntent intent) {
+            widget.item.onTap?.call();
+            return null;
+          },
+        ),
+      },
+      child: Focus(
+        focusNode: _focusNode,
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          onEnter: (_) => setState(() => _isHovered = true),
+          onExit: (_) => setState(() => _isHovered = false),
+          child: GestureDetector(
+            onTap: widget.item.onTap,
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+              decoration: BoxDecoration(
+                color: _isHovered
+                    ? AppColors.surfaceLight
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: ConstrainedBox(
+                constraints:
+                    const BoxConstraints(maxWidth: _crumbMaxWidth),
+                child: Text(
+                  widget.item.label,
+                  style: AppTypography.body.copyWith(
+                    fontSize: 13,
+                    color: _isHovered
+                        ? AppColors.textPrimary
+                        : AppColors.textTertiary,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
           ),
         ),
       ),

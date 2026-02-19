@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 
+import 'app_assets.dart';
 import 'app_colors.dart';
 import 'app_spacing.dart';
 import 'app_typography.dart';
@@ -31,6 +32,12 @@ abstract final class AppTheme {
       onError: AppColors.textPrimary,
     ),
     scaffoldBackgroundColor: Colors.transparent,
+    pageTransitionsTheme: const PageTransitionsTheme(
+      builders: <TargetPlatform, PageTransitionsBuilder>{
+        TargetPlatform.windows: _OpaquePageTransitionsBuilder(),
+        TargetPlatform.android: _OpaquePageTransitionsBuilder(),
+      },
+    ),
     appBarTheme: const AppBarTheme(
       centerTitle: false,
       elevation: 0,
@@ -146,4 +153,46 @@ abstract final class AppTheme {
       indicatorColor: AppColors.gameAccent,
     ),
   );
+}
+
+/// Обёртка для [ZoomPageTransitionsBuilder], делающая каждую страницу непрозрачной.
+///
+/// Каждый route оборачивается в [DecoratedBox] с тайловым фоном —
+/// это предотвращает просвечивание контента двух страниц друг через друга
+/// при переходе (scaffold'ы прозрачные для отображения фона из builder).
+class _OpaquePageTransitionsBuilder extends PageTransitionsBuilder {
+  const _OpaquePageTransitionsBuilder();
+
+  static const ZoomPageTransitionsBuilder _delegate =
+      ZoomPageTransitionsBuilder();
+
+  static const BoxDecoration _tiledDecoration = BoxDecoration(
+    color: AppColors.background,
+    image: DecorationImage(
+      image: AssetImage(AppAssets.backgroundTile),
+      repeat: ImageRepeat.repeat,
+      opacity: 0.03,
+      scale: 0.667,
+    ),
+  );
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    return _delegate.buildTransitions(
+      route,
+      context,
+      animation,
+      secondaryAnimation,
+      DecoratedBox(
+        decoration: _tiledDecoration,
+        child: child,
+      ),
+    );
+  }
 }

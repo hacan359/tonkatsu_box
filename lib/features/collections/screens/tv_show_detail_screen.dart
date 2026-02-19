@@ -9,7 +9,8 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../core/database/database_service.dart';
-import '../../../shared/widgets/breadcrumb_app_bar.dart';
+import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
+import '../../../shared/widgets/breadcrumb_scope.dart';
 import '../../../shared/widgets/collection_picker_dialog.dart';
 import '../../../data/repositories/canvas_repository.dart';
 import '../../../shared/models/collection.dart';
@@ -44,7 +45,6 @@ class TvShowDetailScreen extends ConsumerStatefulWidget {
     required this.collectionId,
     required this.itemId,
     required this.isEditable,
-    required this.collectionName,
     super.key,
   });
 
@@ -56,9 +56,6 @@ class TvShowDetailScreen extends ConsumerStatefulWidget {
 
   /// Можно ли редактировать комментарий автора.
   final bool isEditable;
-
-  /// Имя коллекции для хлебных крошек.
-  final String collectionName;
 
   @override
   ConsumerState<TvShowDetailScreen> createState() =>
@@ -101,20 +98,29 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
       data: (List<CollectionItem> items) {
         final CollectionItem? item = _findItem(items);
         if (item == null) {
-          return Scaffold(
-            appBar: _buildFallbackAppBar(),
-            body: const Center(child: Text('TV Show not found')),
+          return const BreadcrumbScope(
+            label: '...',
+            child: Scaffold(
+              appBar: AutoBreadcrumbAppBar(),
+              body: Center(child: Text('TV Show not found')),
+            ),
           );
         }
         return _buildContent(item);
       },
-      loading: () => Scaffold(
-        appBar: _buildFallbackAppBar(),
-        body: const Center(child: CircularProgressIndicator()),
+      loading: () => const BreadcrumbScope(
+        label: 'Loading...',
+        child: Scaffold(
+          appBar: AutoBreadcrumbAppBar(),
+          body: Center(child: CircularProgressIndicator()),
+        ),
       ),
-      error: (Object error, StackTrace stack) => Scaffold(
-        appBar: _buildFallbackAppBar(),
-        body: Center(child: Text('Error: $error')),
+      error: (Object error, StackTrace stack) => BreadcrumbScope(
+        label: 'Error',
+        child: Scaffold(
+          appBar: const AutoBreadcrumbAppBar(),
+          body: Center(child: Text('Error: $error')),
+        ),
       ),
     );
   }
@@ -208,10 +214,6 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
     }
   }
 
-  BreadcrumbAppBar _buildFallbackAppBar() {
-    return BreadcrumbAppBar.collectionFallback(context, widget.collectionName);
-  }
-
   CollectionItem? _findItem(List<CollectionItem> items) {
     for (final CollectionItem item in items) {
       if (item.id == widget.itemId) {
@@ -225,21 +227,11 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
     final TvShow? tvShow = item.tvShow;
     _currentItemName = item.itemName;
 
-    return Scaffold(
-      appBar: BreadcrumbAppBar(
-        crumbs: <BreadcrumbItem>[
-          BreadcrumbItem(
-            label: 'Collections',
-            onTap: () => Navigator.of(context)
-                .popUntil((Route<dynamic> route) => route.isFirst),
-          ),
-          BreadcrumbItem(
-            label: widget.collectionName,
-            onTap: () => Navigator.of(context).pop(),
-          ),
-          BreadcrumbItem(label: item.itemName),
-        ],
-        actions: <Widget>[
+    return BreadcrumbScope(
+      label: item.itemName,
+      child: Scaffold(
+        appBar: AutoBreadcrumbAppBar(
+          actions: <Widget>[
           if (widget.isEditable)
             PopupMenuButton<String>(
               icon: const Icon(
@@ -378,6 +370,7 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
           // Canvas tab (только desktop)
           if (_hasCanvas) _buildCanvasTab(),
         ],
+      ),
       ),
     );
   }

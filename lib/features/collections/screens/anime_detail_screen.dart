@@ -9,7 +9,8 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../core/database/database_service.dart';
-import '../../../shared/widgets/breadcrumb_app_bar.dart';
+import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
+import '../../../shared/widgets/breadcrumb_scope.dart';
 import '../../../shared/widgets/collection_picker_dialog.dart';
 import '../../../data/repositories/canvas_repository.dart';
 import '../../../shared/models/collection.dart';
@@ -46,7 +47,6 @@ class AnimeDetailScreen extends ConsumerStatefulWidget {
     required this.collectionId,
     required this.itemId,
     required this.isEditable,
-    required this.collectionName,
     super.key,
   });
 
@@ -58,9 +58,6 @@ class AnimeDetailScreen extends ConsumerStatefulWidget {
 
   /// Можно ли редактировать комментарий автора.
   final bool isEditable;
-
-  /// Имя коллекции для хлебных крошек.
-  final String collectionName;
 
   @override
   ConsumerState<AnimeDetailScreen> createState() => _AnimeDetailScreenState();
@@ -102,20 +99,29 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
       data: (List<CollectionItem> items) {
         final CollectionItem? item = _findItem(items);
         if (item == null) {
-          return Scaffold(
-            appBar: _buildFallbackAppBar(),
-            body: const Center(child: Text('Animation not found')),
+          return const BreadcrumbScope(
+            label: '...',
+            child: Scaffold(
+              appBar: AutoBreadcrumbAppBar(),
+              body: Center(child: Text('Animation not found')),
+            ),
           );
         }
         return _buildContent(item);
       },
-      loading: () => Scaffold(
-        appBar: _buildFallbackAppBar(),
-        body: const Center(child: CircularProgressIndicator()),
+      loading: () => const BreadcrumbScope(
+        label: '...',
+        child: Scaffold(
+          appBar: AutoBreadcrumbAppBar(),
+          body: Center(child: CircularProgressIndicator()),
+        ),
       ),
-      error: (Object error, StackTrace stack) => Scaffold(
-        appBar: _buildFallbackAppBar(),
-        body: Center(child: Text('Error: $error')),
+      error: (Object error, StackTrace stack) => BreadcrumbScope(
+        label: 'Error',
+        child: Scaffold(
+          appBar: const AutoBreadcrumbAppBar(),
+          body: Center(child: Text('Error: $error')),
+        ),
       ),
     );
   }
@@ -209,10 +215,6 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
     }
   }
 
-  BreadcrumbAppBar _buildFallbackAppBar() {
-    return BreadcrumbAppBar.collectionFallback(context, widget.collectionName);
-  }
-
   CollectionItem? _findItem(List<CollectionItem> items) {
     for (final CollectionItem item in items) {
       if (item.id == widget.itemId) {
@@ -231,118 +233,109 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
     _currentItemName = item.itemName;
     final bool isTvShow = _isTvShowSource(item);
 
-    return Scaffold(
-      appBar: BreadcrumbAppBar(
-        crumbs: <BreadcrumbItem>[
-          BreadcrumbItem(
-            label: 'Collections',
-            onTap: () => Navigator.of(context)
-                .popUntil((Route<dynamic> route) => route.isFirst),
-          ),
-          BreadcrumbItem(
-            label: widget.collectionName,
-            onTap: () => Navigator.of(context).pop(),
-          ),
-          BreadcrumbItem(label: item.itemName),
-        ],
-        actions: <Widget>[
-          if (widget.isEditable)
-            PopupMenuButton<String>(
-              icon: const Icon(
-                Icons.more_vert,
-                color: AppColors.textSecondary,
-              ),
-              onSelected: (String value) {
-                switch (value) {
-                  case 'move':
-                    _moveToCollection(item);
-                  case 'remove':
-                    _removeFromCollection(item);
-                }
-              },
-              itemBuilder: (BuildContext context) =>
-                  <PopupMenuEntry<String>>[
-                const PopupMenuItem<String>(
-                  value: 'move',
-                  child: ListTile(
-                    leading: Icon(Icons.drive_file_move_outlined),
-                    title: Text('Move to Collection'),
-                    contentPadding: EdgeInsets.zero,
-                  ),
+    return BreadcrumbScope(
+      label: item.itemName,
+      child: Scaffold(
+        appBar: AutoBreadcrumbAppBar(
+          actions: <Widget>[
+            if (widget.isEditable)
+              PopupMenuButton<String>(
+                icon: const Icon(
+                  Icons.more_vert,
+                  color: AppColors.textSecondary,
                 ),
-                const PopupMenuDivider(),
-                PopupMenuItem<String>(
-                  value: 'remove',
-                  child: ListTile(
-                    leading: Icon(
-                      Icons.delete_outline,
-                      color: Theme.of(context).colorScheme.error,
+                onSelected: (String value) {
+                  switch (value) {
+                    case 'move':
+                      _moveToCollection(item);
+                    case 'remove':
+                      _removeFromCollection(item);
+                  }
+                },
+                itemBuilder: (BuildContext context) =>
+                    <PopupMenuEntry<String>>[
+                  const PopupMenuItem<String>(
+                    value: 'move',
+                    child: ListTile(
+                      leading: Icon(Icons.drive_file_move_outlined),
+                      title: Text('Move to Collection'),
+                      contentPadding: EdgeInsets.zero,
                     ),
-                    title: Text(
-                      'Remove',
-                      style: TextStyle(
+                  ),
+                  const PopupMenuDivider(),
+                  PopupMenuItem<String>(
+                    value: 'remove',
+                    child: ListTile(
+                      leading: Icon(
+                        Icons.delete_outline,
                         color: Theme.of(context).colorScheme.error,
                       ),
+                      title: Text(
+                        'Remove',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                      contentPadding: EdgeInsets.zero,
                     ),
-                    contentPadding: EdgeInsets.zero,
                   ),
-                ),
-              ],
-            ),
-          if (widget.isEditable &&
-              _hasCanvas &&
-              _tabController.index == 1)
-            IconButton(
-              icon: Icon(
-                _isViewModeLocked ? Icons.lock : Icons.lock_open,
+                ],
               ),
-              color: _isViewModeLocked
-                  ? AppColors.warning
-                  : AppColors.textSecondary,
-              tooltip:
-                  _isViewModeLocked ? 'Unlock board' : 'Lock board',
-              onPressed: () {
-                setState(() {
-                  _isViewModeLocked = !_isViewModeLocked;
-                });
-                if (_isViewModeLocked) {
-                  ref
-                      .read(steamGridDbPanelProvider(widget.collectionId)
-                          .notifier)
-                      .closePanel();
-                  ref
-                      .read(vgMapsPanelProvider(widget.collectionId)
-                          .notifier)
-                      .closePanel();
-                }
-              },
-            ),
-        ],
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: <Tab>[
-            const Tab(
-              icon: Icon(Icons.info_outline),
-              text: 'Details',
-            ),
-            if (_hasCanvas)
-              const Tab(
-                icon: Icon(Icons.dashboard_outlined),
-                text: 'Board',
+            if (widget.isEditable &&
+                _hasCanvas &&
+                _tabController.index == 1)
+              IconButton(
+                icon: Icon(
+                  _isViewModeLocked ? Icons.lock : Icons.lock_open,
+                ),
+                color: _isViewModeLocked
+                    ? AppColors.warning
+                    : AppColors.textSecondary,
+                tooltip:
+                    _isViewModeLocked ? 'Unlock board' : 'Lock board',
+                onPressed: () {
+                  setState(() {
+                    _isViewModeLocked = !_isViewModeLocked;
+                  });
+                  if (_isViewModeLocked) {
+                    ref
+                        .read(steamGridDbPanelProvider(widget.collectionId)
+                            .notifier)
+                        .closePanel();
+                    ref
+                        .read(vgMapsPanelProvider(widget.collectionId)
+                            .notifier)
+                        .closePanel();
+                  }
+                },
               ),
           ],
+          bottom: TabBar(
+            controller: _tabController,
+            tabs: <Tab>[
+              const Tab(
+                icon: Icon(Icons.info_outline),
+                text: 'Details',
+              ),
+              if (_hasCanvas)
+                const Tab(
+                  icon: Icon(Icons.dashboard_outlined),
+                  text: 'Board',
+                ),
+            ],
+          ),
         ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: <Widget>[
-          // Details tab — адаптивный по типу источника
-          isTvShow
-              ? _buildTvShowDetails(item)
-              : _buildMovieDetails(item),
-          // Canvas tab (только desktop)
-          if (_hasCanvas) _buildCanvasTab(),
-        ],
+        body: TabBarView(
+          controller: _tabController,
+          children: <Widget>[
+            // Details tab — адаптивный по типу источника
+            isTvShow
+                ? _buildTvShowDetails(item)
+                : _buildMovieDetails(item),
+            // Canvas tab (только desktop)
+            if (_hasCanvas) _buildCanvasTab(),
+          ],
+        ),
       ),
     );
   }

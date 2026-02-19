@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/features/settings/screens/database_screen.dart';
+import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 
 void main() {
   group('DatabaseScreen', () {
@@ -19,7 +20,12 @@ void main() {
         overrides: <Override>[
           sharedPreferencesProvider.overrideWithValue(prefs),
         ],
-        child: const MaterialApp(home: DatabaseScreen()),
+        child: const MaterialApp(
+          home: BreadcrumbScope(
+            label: 'Settings',
+            child: DatabaseScreen(),
+          ),
+        ),
       );
     }
 

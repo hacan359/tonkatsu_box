@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/features/settings/screens/cache_screen.dart';
+import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 
 void main() {
   group('CacheScreen', () {
@@ -21,7 +22,12 @@ void main() {
         overrides: <Override>[
           sharedPreferencesProvider.overrideWithValue(prefs),
         ],
-        child: const MaterialApp(home: CacheScreen()),
+        child: const MaterialApp(
+          home: BreadcrumbScope(
+            label: 'Settings',
+            child: CacheScreen(),
+          ),
+        ),
       );
     }
 

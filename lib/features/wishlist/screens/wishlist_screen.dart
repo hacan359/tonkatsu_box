@@ -9,7 +9,7 @@ import '../../../shared/models/wishlist_item.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
-import '../../../shared/widgets/breadcrumb_app_bar.dart';
+import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
 import '../../search/screens/search_screen.dart';
 import '../providers/wishlist_provider.dart';
 import '../widgets/add_wishlist_dialog.dart';
@@ -35,10 +35,7 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
         ref.watch(wishlistProvider);
 
     return Scaffold(
-      appBar: BreadcrumbAppBar(
-        crumbs: const <BreadcrumbItem>[
-          BreadcrumbItem(label: 'Wishlist'),
-        ],
+      appBar: AutoBreadcrumbAppBar(
         actions: <Widget>[
           IconButton(
             icon: Icon(

@@ -15,7 +15,8 @@ import '../../../shared/navigation/navigation_shell.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
-import '../../../shared/widgets/breadcrumb_app_bar.dart';
+import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
+import '../../../shared/widgets/breadcrumb_scope.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../collections/screens/anime_detail_screen.dart';
@@ -54,11 +55,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final bool isDescending = ref.watch(allItemsSortDescProvider);
 
     return Scaffold(
-      appBar: const BreadcrumbAppBar(
-        crumbs: <BreadcrumbItem>[
-          BreadcrumbItem(label: 'Main'),
-        ],
-      ),
+      appBar: const AutoBreadcrumbAppBar(),
       body: Column(
         children: <Widget>[
           _buildChipsRow(itemsAsync, currentSort, isDescending),
@@ -540,44 +537,52 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
       case MediaType.game:
         Navigator.of(context).push(
           MaterialPageRoute<void>(
-            builder: (BuildContext context) => GameDetailScreen(
-              collectionId: item.collectionId,
-              itemId: item.id,
-              isEditable: isEditable,
-              collectionName: colName,
+            builder: (BuildContext context) => BreadcrumbScope(
+              label: colName,
+              child: GameDetailScreen(
+                collectionId: item.collectionId,
+                itemId: item.id,
+                isEditable: isEditable,
+              ),
             ),
           ),
         );
       case MediaType.movie:
         Navigator.of(context).push(
           MaterialPageRoute<void>(
-            builder: (BuildContext context) => MovieDetailScreen(
-              collectionId: item.collectionId,
-              itemId: item.id,
-              isEditable: isEditable,
-              collectionName: colName,
+            builder: (BuildContext context) => BreadcrumbScope(
+              label: colName,
+              child: MovieDetailScreen(
+                collectionId: item.collectionId,
+                itemId: item.id,
+                isEditable: isEditable,
+              ),
             ),
           ),
         );
       case MediaType.tvShow:
         Navigator.of(context).push(
           MaterialPageRoute<void>(
-            builder: (BuildContext context) => TvShowDetailScreen(
-              collectionId: item.collectionId,
-              itemId: item.id,
-              isEditable: isEditable,
-              collectionName: colName,
+            builder: (BuildContext context) => BreadcrumbScope(
+              label: colName,
+              child: TvShowDetailScreen(
+                collectionId: item.collectionId,
+                itemId: item.id,
+                isEditable: isEditable,
+              ),
             ),
           ),
         );
       case MediaType.animation:
         Navigator.of(context).push(
           MaterialPageRoute<void>(
-            builder: (BuildContext context) => AnimeDetailScreen(
-              collectionId: item.collectionId,
-              itemId: item.id,
-              isEditable: isEditable,
-              collectionName: colName,
+            builder: (BuildContext context) => BreadcrumbScope(
+              label: colName,
+              child: AnimeDetailScreen(
+                collectionId: item.collectionId,
+                itemId: item.id,
+                isEditable: isEditable,
+              ),
             ),
           ),
         );

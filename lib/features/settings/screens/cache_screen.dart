@@ -10,7 +10,8 @@ import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
-import '../../../shared/widgets/breadcrumb_app_bar.dart';
+import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
+import '../../../shared/widgets/breadcrumb_scope.dart';
 
 /// Экран настроек кэширования изображений.
 ///
@@ -48,16 +49,10 @@ class _CacheScreenState extends ConsumerState<CacheScreen> {
     final ImageCacheService cacheService =
         ref.read(imageCacheServiceProvider);
 
-    return Scaffold(
-      appBar: BreadcrumbAppBar(
-        crumbs: <BreadcrumbItem>[
-          BreadcrumbItem(
-            label: 'Settings',
-            onTap: () => Navigator.of(context).pop(),
-          ),
-          const BreadcrumbItem(label: 'Cache'),
-        ],
-      ),
+    return BreadcrumbScope(
+      label: 'Cache',
+      child: Scaffold(
+      appBar: const AutoBreadcrumbAppBar(),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: Card(
@@ -160,6 +155,7 @@ class _CacheScreenState extends ConsumerState<CacheScreen> {
           ),
         ),
       ),
+    ),
     );
   }
 

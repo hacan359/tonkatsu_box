@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/features/settings/screens/debug_hub_screen.dart';
+import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 
 void main() {
   group('DebugHubScreen', () {
@@ -19,7 +20,12 @@ void main() {
         overrides: <Override>[
           sharedPreferencesProvider.overrideWithValue(prefs),
         ],
-        child: const MaterialApp(home: DebugHubScreen()),
+        child: const MaterialApp(
+          home: BreadcrumbScope(
+            label: 'Settings',
+            child: DebugHubScreen(),
+          ),
+        ),
       );
     }
 
@@ -110,7 +116,8 @@ void main() {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.chevron_right), findsNWidgets(3));
+      // 3 ListTile chevrons + 2 breadcrumb separators
+      expect(find.byIcon(Icons.chevron_right), findsNWidgets(5));
     });
   });
 }

@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/image_cache_service.dart';
 import '../../../shared/theme/app_colors.dart';
-import '../../../shared/widgets/breadcrumb_app_bar.dart';
+import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
+import '../../../shared/widgets/breadcrumb_scope.dart';
 import '../../../shared/widgets/collection_picker_dialog.dart';
 import '../../../data/repositories/canvas_repository.dart';
 import '../../../shared/models/collection.dart';
@@ -35,7 +36,6 @@ class GameDetailScreen extends ConsumerStatefulWidget {
     required this.collectionId,
     required this.itemId,
     required this.isEditable,
-    required this.collectionName,
     super.key,
   });
 
@@ -47,9 +47,6 @@ class GameDetailScreen extends ConsumerStatefulWidget {
 
   /// Можно ли редактировать комментарий автора.
   final bool isEditable;
-
-  /// Имя коллекции для хлебных крошек.
-  final String collectionName;
 
   @override
   ConsumerState<GameDetailScreen> createState() => _GameDetailScreenState();
@@ -65,10 +62,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(
-      length: _hasCanvas ? 2 : 1,
-      vsync: this,
-    );
+    _tabController = TabController(length: _hasCanvas ? 2 : 1, vsync: this);
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
         setState(() {});
@@ -84,27 +78,37 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
 
   @override
   Widget build(BuildContext context) {
-    final AsyncValue<List<CollectionItem>> itemsAsync =
-        ref.watch(collectionItemsNotifierProvider(widget.collectionId));
+    final AsyncValue<List<CollectionItem>> itemsAsync = ref.watch(
+      collectionItemsNotifierProvider(widget.collectionId),
+    );
 
     return itemsAsync.when(
       data: (List<CollectionItem> items) {
         final CollectionItem? item = _findItem(items);
         if (item == null) {
-          return Scaffold(
-            appBar: _buildFallbackAppBar(),
-            body: const Center(child: Text('Game not found')),
+          return const BreadcrumbScope(
+            label: '...',
+            child: Scaffold(
+              appBar: AutoBreadcrumbAppBar(),
+              body: Center(child: Text('Game not found')),
+            ),
           );
         }
         return _buildContent(item);
       },
-      loading: () => Scaffold(
-        appBar: _buildFallbackAppBar(),
-        body: const Center(child: CircularProgressIndicator()),
+      loading: () => const BreadcrumbScope(
+        label: '...',
+        child: Scaffold(
+          appBar: AutoBreadcrumbAppBar(),
+          body: Center(child: CircularProgressIndicator()),
+        ),
       ),
-      error: (Object error, StackTrace stack) => Scaffold(
-        appBar: _buildFallbackAppBar(),
-        body: Center(child: Text('Error: $error')),
+      error: (Object error, StackTrace stack) => BreadcrumbScope(
+        label: '...',
+        child: Scaffold(
+          appBar: const AutoBreadcrumbAppBar(),
+          body: Center(child: Text('Error: $error')),
+        ),
       ),
     );
   }
@@ -135,9 +139,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
     }
 
     final bool success = await ref
-        .read(
-          collectionItemsNotifierProvider(widget.collectionId).notifier,
-        )
+        .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
         .moveItem(
           item.id,
           targetCollectionId: targetCollectionId,
@@ -185,21 +187,15 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
     if (confirmed != true || !mounted) return;
 
     await ref
-        .read(
-          collectionItemsNotifierProvider(widget.collectionId).notifier,
-        )
+        .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
         .removeItem(item.id, mediaType: item.mediaType);
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${item.itemName} removed')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('${item.itemName} removed')));
       Navigator.of(context).pop();
     }
-  }
-
-  BreadcrumbAppBar _buildFallbackAppBar() {
-    return BreadcrumbAppBar.collectionFallback(context, widget.collectionName);
   }
 
   CollectionItem? _findItem(List<CollectionItem> items) {
@@ -215,157 +211,138 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
     final Game? game = collectionItem.game;
     _currentItemName = collectionItem.itemName;
 
-    return Scaffold(
-      appBar: BreadcrumbAppBar(
-        crumbs: <BreadcrumbItem>[
-          BreadcrumbItem(
-            label: 'Collections',
-            onTap: () => Navigator.of(context)
-                .popUntil((Route<dynamic> route) => route.isFirst),
-          ),
-          BreadcrumbItem(
-            label: widget.collectionName,
-            onTap: () => Navigator.of(context).pop(),
-          ),
-          BreadcrumbItem(label: collectionItem.itemName),
-        ],
-        actions: <Widget>[
-          if (widget.isEditable)
-            PopupMenuButton<String>(
-              icon: const Icon(
-                Icons.more_vert,
-                color: AppColors.textSecondary,
-              ),
-              onSelected: (String value) {
-                switch (value) {
-                  case 'move':
-                    _moveToCollection(collectionItem);
-                  case 'remove':
-                    _removeFromCollection(collectionItem);
-                }
-              },
-              itemBuilder: (BuildContext context) =>
-                  <PopupMenuEntry<String>>[
-                const PopupMenuItem<String>(
-                  value: 'move',
-                  child: ListTile(
-                    leading: Icon(Icons.drive_file_move_outlined),
-                    title: Text('Move to Collection'),
-                    contentPadding: EdgeInsets.zero,
-                  ),
+    return BreadcrumbScope(
+      label: collectionItem.itemName,
+      child: Scaffold(
+        appBar: AutoBreadcrumbAppBar(
+          actions: <Widget>[
+            if (widget.isEditable)
+              PopupMenuButton<String>(
+                icon: const Icon(
+                  Icons.more_vert,
+                  color: AppColors.textSecondary,
                 ),
-                const PopupMenuDivider(),
-                PopupMenuItem<String>(
-                  value: 'remove',
-                  child: ListTile(
-                    leading: Icon(
-                      Icons.delete_outline,
-                      color: Theme.of(context).colorScheme.error,
+                onSelected: (String value) {
+                  switch (value) {
+                    case 'move':
+                      _moveToCollection(collectionItem);
+                    case 'remove':
+                      _removeFromCollection(collectionItem);
+                  }
+                },
+                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                  const PopupMenuItem<String>(
+                    value: 'move',
+                    child: ListTile(
+                      leading: Icon(Icons.drive_file_move_outlined),
+                      title: Text('Move to Collection'),
+                      contentPadding: EdgeInsets.zero,
                     ),
-                    title: Text(
-                      'Remove',
-                      style: TextStyle(
+                  ),
+                  const PopupMenuDivider(),
+                  PopupMenuItem<String>(
+                    value: 'remove',
+                    child: ListTile(
+                      leading: Icon(
+                        Icons.delete_outline,
                         color: Theme.of(context).colorScheme.error,
                       ),
+                      title: Text(
+                        'Remove',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                      contentPadding: EdgeInsets.zero,
                     ),
-                    contentPadding: EdgeInsets.zero,
                   ),
-                ),
-              ],
-            ),
-          if (widget.isEditable &&
-              _hasCanvas &&
-              _tabController.index == 1)
-            IconButton(
-              icon: Icon(
-                _isViewModeLocked ? Icons.lock : Icons.lock_open,
+                ],
               ),
-              color: _isViewModeLocked
-                  ? AppColors.warning
-                  : AppColors.textSecondary,
-              tooltip:
-                  _isViewModeLocked ? 'Unlock board' : 'Lock board',
-              onPressed: () {
-                setState(() {
-                  _isViewModeLocked = !_isViewModeLocked;
-                });
-                if (_isViewModeLocked) {
-                  ref
-                      .read(steamGridDbPanelProvider(widget.collectionId)
-                          .notifier)
-                      .closePanel();
-                  ref
-                      .read(vgMapsPanelProvider(widget.collectionId)
-                          .notifier)
-                      .closePanel();
-                }
-              },
-            ),
-        ],
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: <Tab>[
-            const Tab(
-              icon: Icon(Icons.info_outline),
-              text: 'Details',
-            ),
-            if (_hasCanvas)
-              const Tab(
-                icon: Icon(Icons.dashboard_outlined),
-                text: 'Board',
+            if (widget.isEditable && _hasCanvas && _tabController.index == 1)
+              IconButton(
+                icon: Icon(_isViewModeLocked ? Icons.lock : Icons.lock_open),
+                color: _isViewModeLocked
+                    ? AppColors.warning
+                    : AppColors.textSecondary,
+                tooltip: _isViewModeLocked ? 'Unlock board' : 'Lock board',
+                onPressed: () {
+                  setState(() {
+                    _isViewModeLocked = !_isViewModeLocked;
+                  });
+                  if (_isViewModeLocked) {
+                    ref
+                        .read(
+                          steamGridDbPanelProvider(
+                            widget.collectionId,
+                          ).notifier,
+                        )
+                        .closePanel();
+                    ref
+                        .read(vgMapsPanelProvider(widget.collectionId).notifier)
+                        .closePanel();
+                  }
+                },
               ),
           ],
-        ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: <Widget>[
-          // Details tab
-          MediaDetailView(
-            title: collectionItem.itemName,
-            coverUrl: game?.coverUrl,
-            placeholderIcon: Icons.videogame_asset,
-            source: DataSource.igdb,
-            typeIcon: Icons.sports_esports,
-            typeLabel: collectionItem.platformName,
-            infoChips: _buildInfoChips(game),
-            description: game?.summary,
-            cacheImageType: ImageType.gameCover,
-            cacheImageId: widget.itemId.toString(),
-            statusWidget: StatusChipRow(
-              status: collectionItem.status,
-              mediaType: MediaType.game,
-              onChanged: (ItemStatus status) =>
-                  _updateStatus(collectionItem.id, status),
-            ),
-            extraSections: <Widget>[
-              ActivityDatesSection(
-                addedAt: collectionItem.addedAt,
-                startedAt: collectionItem.startedAt,
-                completedAt: collectionItem.completedAt,
-                lastActivityAt: collectionItem.lastActivityAt,
-                isEditable: widget.isEditable,
-                onDateChanged: (String type, DateTime date) =>
-                    _updateActivityDate(collectionItem.id, type, date),
-              ),
+          bottom: TabBar(
+            controller: _tabController,
+            tabs: <Tab>[
+              const Tab(icon: Icon(Icons.info_outline), text: 'Details'),
+              if (_hasCanvas)
+                const Tab(icon: Icon(Icons.dashboard_outlined), text: 'Board'),
             ],
-            authorComment: collectionItem.authorComment,
-            userComment: collectionItem.userComment,
-            hasAuthorComment: collectionItem.hasAuthorComment,
-            hasUserComment: collectionItem.hasUserComment,
-            isEditable: widget.isEditable,
-            onAuthorCommentSave: (String? text) =>
-                _saveAuthorComment(collectionItem.id, text),
-            onUserCommentSave: (String? text) =>
-                _saveUserComment(collectionItem.id, text),
-            userRating: collectionItem.userRating,
-            onUserRatingChanged: (int? rating) =>
-                _updateUserRating(collectionItem.id, rating),
-            embedded: true,
           ),
-          // Canvas tab (только desktop)
-          if (_hasCanvas) _buildCanvasTab(),
-        ],
+        ),
+        body: TabBarView(
+          controller: _tabController,
+          children: <Widget>[
+            // Details tab
+            MediaDetailView(
+              title: collectionItem.itemName,
+              coverUrl: game?.coverUrl,
+              placeholderIcon: Icons.videogame_asset,
+              source: DataSource.igdb,
+              typeIcon: Icons.sports_esports,
+              typeLabel: collectionItem.platformName,
+              infoChips: _buildInfoChips(game),
+              description: game?.summary,
+              cacheImageType: ImageType.gameCover,
+              cacheImageId: widget.itemId.toString(),
+              statusWidget: StatusChipRow(
+                status: collectionItem.status,
+                mediaType: MediaType.game,
+                onChanged: (ItemStatus status) =>
+                    _updateStatus(collectionItem.id, status),
+              ),
+              extraSections: <Widget>[
+                ActivityDatesSection(
+                  addedAt: collectionItem.addedAt,
+                  startedAt: collectionItem.startedAt,
+                  completedAt: collectionItem.completedAt,
+                  lastActivityAt: collectionItem.lastActivityAt,
+                  isEditable: widget.isEditable,
+                  onDateChanged: (String type, DateTime date) =>
+                      _updateActivityDate(collectionItem.id, type, date),
+                ),
+              ],
+              authorComment: collectionItem.authorComment,
+              userComment: collectionItem.userComment,
+              hasAuthorComment: collectionItem.hasAuthorComment,
+              hasUserComment: collectionItem.hasUserComment,
+              isEditable: widget.isEditable,
+              onAuthorCommentSave: (String? text) =>
+                  _saveAuthorComment(collectionItem.id, text),
+              onUserCommentSave: (String? text) =>
+                  _saveUserComment(collectionItem.id, text),
+              userRating: collectionItem.userRating,
+              onUserRatingChanged: (int? rating) =>
+                  _updateUserRating(collectionItem.id, rating),
+              embedded: true,
+            ),
+            // Canvas tab (только desktop)
+            if (_hasCanvas) _buildCanvasTab(),
+          ],
+        ),
       ),
     );
   }
@@ -373,31 +350,35 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
   List<MediaDetailChip> _buildInfoChips(Game? game) {
     final List<MediaDetailChip> chips = <MediaDetailChip>[];
     if (game?.releaseYear != null) {
-      chips.add(MediaDetailChip(
-        icon: Icons.calendar_today_outlined,
-        text: game!.releaseYear.toString(),
-      ));
+      chips.add(
+        MediaDetailChip(
+          icon: Icons.calendar_today_outlined,
+          text: game!.releaseYear.toString(),
+        ),
+      );
     }
     if (game?.formattedRating != null) {
-      chips.add(MediaDetailChip(
-        icon: Icons.star,
-        text: '${game!.formattedRating}/10',
-        iconColor: AppColors.ratingStar,
-      ));
+      chips.add(
+        MediaDetailChip(
+          icon: Icons.star,
+          text: '${game!.formattedRating}/10',
+          iconColor: AppColors.ratingStar,
+        ),
+      );
     }
     if (game?.genres != null && game!.genres!.isNotEmpty) {
-      chips.add(MediaDetailChip(
-        icon: Icons.category_outlined,
-        text: game.genresString!,
-      ));
+      chips.add(
+        MediaDetailChip(
+          icon: Icons.category_outlined,
+          text: game.genresString!,
+        ),
+      );
     }
     return chips;
   }
 
-  ({int? collectionId, int collectionItemId}) get _canvasArg => (
-        collectionId: widget.collectionId,
-        collectionItemId: widget.itemId,
-      );
+  ({int? collectionId, int collectionItemId}) get _canvasArg =>
+      (collectionId: widget.collectionId, collectionItemId: widget.itemId);
 
   Widget _buildCanvasTab() {
     return Row(
@@ -411,11 +392,11 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
         ),
         // Боковая панель SteamGridDB
         Consumer(
-          builder:
-              (BuildContext context, WidgetRef ref, Widget? child) {
+          builder: (BuildContext context, WidgetRef ref, Widget? child) {
             final bool isPanelOpen = ref.watch(
-              steamGridDbPanelProvider(widget.collectionId)
-                  .select((SteamGridDbPanelState s) => s.isOpen),
+              steamGridDbPanelProvider(
+                widget.collectionId,
+              ).select((SteamGridDbPanelState s) => s.isOpen),
             );
             return AnimatedContainer(
               duration: const Duration(milliseconds: 200),
@@ -425,9 +406,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
               decoration: BoxDecoration(
                 border: isPanelOpen
                     ? const Border(
-                        left: BorderSide(
-                          color: AppColors.surfaceBorder,
-                        ),
+                        left: BorderSide(color: AppColors.surfaceBorder),
                       )
                     : null,
               ),
@@ -447,11 +426,11 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
         ),
         // Боковая панель VGMaps Browser
         Consumer(
-          builder:
-              (BuildContext context, WidgetRef ref, Widget? child) {
+          builder: (BuildContext context, WidgetRef ref, Widget? child) {
             final bool isPanelOpen = ref.watch(
-              vgMapsPanelProvider(widget.collectionId)
-                  .select((VgMapsPanelState s) => s.isOpen),
+              vgMapsPanelProvider(
+                widget.collectionId,
+              ).select((VgMapsPanelState s) => s.isOpen),
             );
             return AnimatedContainer(
               duration: const Duration(milliseconds: 200),
@@ -461,9 +440,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
               decoration: BoxDecoration(
                 border: isPanelOpen
                     ? const Border(
-                        left: BorderSide(
-                          color: AppColors.surfaceBorder,
-                        ),
+                        left: BorderSide(color: AppColors.surfaceBorder),
                       )
                     : null,
               ),
@@ -495,15 +472,14 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
 
     if (image.width > 0 && image.height > 0) {
       final double aspectRatio = image.width / image.height;
-      targetWidth =
-          image.width.toDouble() > maxWidth ? maxWidth : image.width.toDouble();
+      targetWidth = image.width.toDouble() > maxWidth
+          ? maxWidth
+          : image.width.toDouble();
       targetHeight = targetWidth / aspectRatio;
     }
 
-    final double centerX =
-        CanvasRepository.initialCenterX - targetWidth / 2;
-    final double centerY =
-        CanvasRepository.initialCenterY - targetHeight / 2;
+    final double centerX = CanvasRepository.initialCenterX - targetWidth / 2;
+    final double centerY = CanvasRepository.initialCenterY - targetHeight / 2;
 
     ref
         .read(gameCanvasNotifierProvider(_canvasArg).notifier)
@@ -532,15 +508,12 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
 
     if (width != null && height != null && width > 0 && height > 0) {
       final double aspectRatio = width / height;
-      targetWidth =
-          width.toDouble() > maxWidth ? maxWidth : width.toDouble();
+      targetWidth = width.toDouble() > maxWidth ? maxWidth : width.toDouble();
       targetHeight = targetWidth / aspectRatio;
     }
 
-    final double centerX =
-        CanvasRepository.initialCenterX - targetWidth / 2;
-    final double centerY =
-        CanvasRepository.initialCenterY - targetHeight / 2;
+    final double centerX = CanvasRepository.initialCenterX - targetWidth / 2;
+    final double centerY = CanvasRepository.initialCenterY - targetHeight / 2;
 
     ref
         .read(gameCanvasNotifierProvider(_canvasArg).notifier)
@@ -569,8 +542,9 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
   }
 
   Future<void> _updateActivityDate(int id, String type, DateTime date) async {
-    final CollectionItemsNotifier notifier =
-        ref.read(collectionItemsNotifierProvider(widget.collectionId).notifier);
+    final CollectionItemsNotifier notifier = ref.read(
+      collectionItemsNotifierProvider(widget.collectionId).notifier,
+    );
     if (type == 'started') {
       await notifier.updateActivityDates(
         id,

@@ -8,7 +8,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/media_type.dart';
-import '../../../shared/widgets/breadcrumb_app_bar.dart';
+import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
+import '../../../shared/widgets/breadcrumb_scope.dart';
 import '../../collections/providers/collections_provider.dart';
 
 /// Debug-экран для проверки URL изображений.
@@ -52,21 +53,10 @@ class _ImageDebugScreenState extends ConsumerState<ImageDebugScreen> {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
 
-    return Scaffold(
-      appBar: BreadcrumbAppBar(
-        crumbs: <BreadcrumbItem>[
-          BreadcrumbItem(
-            label: 'Settings',
-            onTap: () => Navigator.of(context)
-                .popUntil((Route<dynamic> route) => route.isFirst),
-          ),
-          BreadcrumbItem(
-            label: 'Debug',
-            onTap: () => Navigator.of(context).pop(),
-          ),
-          const BreadcrumbItem(label: 'IGDB Media'),
-        ],
-      ),
+    return BreadcrumbScope(
+      label: 'IGDB Media',
+      child: Scaffold(
+      appBar: const AutoBreadcrumbAppBar(),
       body: Column(
         children: <Widget>[
           // Выбор коллекции
@@ -105,6 +95,7 @@ class _ImageDebugScreenState extends ConsumerState<ImageDebugScreen> {
           ),
         ],
       ),
+    ),
     );
   }
 

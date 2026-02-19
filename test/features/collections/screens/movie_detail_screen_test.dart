@@ -10,6 +10,7 @@ import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/movie.dart';
+import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 import 'package:xerabora/shared/widgets/media_detail_view.dart';
 import 'package:xerabora/shared/widgets/source_badge.dart';
 
@@ -96,11 +97,13 @@ void main() {
         ),
       ],
       child: MaterialApp(
-        home: MovieDetailScreen(
-          collectionId: collectionId,
-          collectionName: 'Test Collection',
-          itemId: itemId,
-          isEditable: isEditable,
+        home: BreadcrumbScope(
+          label: 'Test Collection',
+          child: MovieDetailScreen(
+            collectionId: collectionId,
+            itemId: itemId,
+            isEditable: isEditable,
+          ),
         ),
       ),
     );
@@ -798,11 +801,13 @@ void main() {
             ),
           ],
           child: const MaterialApp(
-            home: MovieDetailScreen(
-              collectionId: 1,
-              collectionName: 'Test Collection',
-              itemId: 1,
-              isEditable: true,
+            home: BreadcrumbScope(
+              label: 'Test Collection',
+              child: MovieDetailScreen(
+                collectionId: 1,
+                itemId: 1,
+                isEditable: true,
+              ),
             ),
           ),
         );
@@ -827,11 +832,13 @@ void main() {
             ),
           ],
           child: const MaterialApp(
-            home: MovieDetailScreen(
-              collectionId: 1,
-              collectionName: 'Test Collection',
-              itemId: 1,
-              isEditable: true,
+            home: BreadcrumbScope(
+              label: 'Test Collection',
+              child: MovieDetailScreen(
+                collectionId: 1,
+                itemId: 1,
+                isEditable: true,
+              ),
             ),
           ),
         );

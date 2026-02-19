@@ -8,9 +8,26 @@
 
 ### Added
 - Added TMDB content language setting (Russian / English) in Settings via SegmentedButton
+- Added `BreadcrumbScope` InheritedWidget (`lib/shared/widgets/breadcrumb_scope.dart`) — accumulates breadcrumb labels up the widget tree via `visitAncestorElements`
+- Added `AutoBreadcrumbAppBar` (`lib/shared/widgets/auto_breadcrumb_app_bar.dart`) — reads `BreadcrumbScope` chain and generates clickable breadcrumb navigation automatically
+- Added tab root `BreadcrumbScope` in `NavigationShell._buildTabNavigator()` — provides root label ('Main', 'Collections', 'Wishlist', 'Search', 'Settings') to all routes
+- Added tests for `BreadcrumbScope` (6 tests) and `AutoBreadcrumbAppBar` (8 tests)
+
+### Fixed
+- Fixed route transition overlap: transparent Scaffold backgrounds caused content of both pages to show through each other during navigation. Added `_OpaquePageTransitionsBuilder` in `PageTransitionsTheme` — each route now gets its own opaque `DecoratedBox` with tiled background, preventing bleed-through
+- Added `cacheWidth`/`cacheHeight` to `Image.file()` in `CachedImage` and `memCacheWidth: 300` to `MediaPosterCard` — reduces decoded image memory for poster cards
 
 ### Changed
 - Refactored `CollectionItem` media resolution: replaced 5 identical `switch(mediaType)` blocks with a single `_resolvedMedia` getter using Dart records
+- Redesigned `BreadcrumbAppBar` visual style: height 40→44px, font 12→13px, `›` separator → `Icons.chevron_right` (14px, 50% opacity), last crumb w600/textPrimary, hover pill effect (surfaceLight background, borderRadius 6), mobile collapse (>2 crumbs → first…last), mobile back button (← instead of logo), text overflow ellipsis (maxWidth 300 current / 180 intermediate), `accentColor` parameter for accent border-bottom, gamepad support (`Actions > Focus` with `FocusNode` dispose)
+- Migrated all 20 screens from manual breadcrumb assembly to `BreadcrumbScope` + `AutoBreadcrumbAppBar`: Settings (8 screens), Collections (6 screens), Home, Search, Wishlist tabs
+- Removed `collectionName` parameter from detail screens (`GameDetailScreen`, `MovieDetailScreen`, `TvShowDetailScreen`, `AnimeDetailScreen`) — breadcrumb labels now come from scope chain
+- Updated 12 test files to wrap screens in `BreadcrumbScope` and adapt to new separator icon
+
+### Removed
+- Removed `BreadcrumbAppBar.collectionFallback()` factory constructor — replaced by `AutoBreadcrumbAppBar` with `BreadcrumbScope`
+- Removed `_buildFallbackAppBar()` methods from all 4 detail screens
+- Removed `DecoratedBox` from `MaterialApp.builder` in `app.dart` — tiled background now applied per-route via `PageTransitionsTheme`
 
 ## [0.9.0] - 2026-02-19
 

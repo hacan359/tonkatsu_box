@@ -1,152 +1,155 @@
 [← Back to README](../README.md)
 
-# 🍞 Breadcrumb Navigation
+# Breadcrumb Navigation
 
 ## Overview
 
-All screens use `BreadcrumbAppBar` — a unified navigation bar with breadcrumb trail. It replaces the standard `AppBar` and provides consistent navigation across the app.
+All screens use `AutoBreadcrumbAppBar` — an automatic navigation bar that reads breadcrumb labels from the widget tree via `BreadcrumbScope` InheritedWidget. This eliminates manual crumb assembly and removes data coupling (e.g., passing `collectionName` just for breadcrumbs).
+
+## Architecture: BreadcrumbScope
+
+**File:** `lib/shared/widgets/breadcrumb_scope.dart`
+
+`BreadcrumbScope` is an `InheritedWidget` that holds a single `label` string. Each screen wraps its content in a scope, and `AutoBreadcrumbAppBar` collects all scope labels from the widget tree automatically.
+
+### Three levels of scope:
+
+1. **Tab root scope** — set in `NavigationShell._buildTabNavigator()`, **above** the Navigator. Visible to all routes via ancestor traversal.
+
+2. **Screen's own scope** — each screen wraps its Scaffold in `BreadcrumbScope(label: ownLabel)`.
+
+3. **Push scope** — when pushing a child route, the parent wraps it in a scope with its own label:
+
+```dart
+Navigator.of(context).push(MaterialPageRoute(
+  builder: (_) => BreadcrumbScope(
+    label: 'Debug',              // parent screen's label
+    child: SteamGridDbDebugScreen(),
+  ),
+));
+```
+
+`visitAncestorElements` from the child finds: `'Settings'` (NavigationShell) → `'Debug'` (push builder) → `'SteamGridDB'` (screen's own scope).
+
+## Widget: `AutoBreadcrumbAppBar`
+
+**File:** `lib/shared/widgets/auto_breadcrumb_app_bar.dart`
+
+```dart
+BreadcrumbScope(
+  label: 'Credentials',
+  child: Scaffold(
+    appBar: const AutoBreadcrumbAppBar(),
+    body: ...,
+  ),
+)
+```
+
+Navigation is automatic:
+- **First crumb** → `popUntil(isFirst)` (returns to tab root)
+- **Intermediate crumbs** → `pop()` N times
+- **Last crumb** (current) → no interaction
+
+Parameters: `actions`, `bottom` (TabBar), `accentColor` (accent border-bottom).
 
 ## Widget: `BreadcrumbAppBar`
 
 **File:** `lib/shared/widgets/breadcrumb_app_bar.dart`
 
-```dart
-BreadcrumbAppBar(
-  crumbs: <BreadcrumbItem>[
-    BreadcrumbItem(label: 'Settings', onTap: () => Navigator.of(context).pop()),
-    BreadcrumbItem(label: 'Credentials'), // last — no onTap
-  ],
-  actions: <Widget>[...],   // optional action buttons on the right
-  bottom: tabBar,           // optional TabBar below breadcrumbs
-)
-```
+Low-level widget used by `AutoBreadcrumbAppBar`. Accepts explicit `crumbs` list. Normally not used directly.
 
 ---
 
 ## Adaptive Root Element
 
-The root element (leftmost) adapts to screen size:
-
 | Screen Width | Root Element | Behavior |
 |---|---|---|
-| >= 800px (desktop) | `/` text | Static, no interaction (logo is visible above NavigationRail) |
-| < 800px (mobile) | App logo 20x20 | Tappable — navigates to home (pops to root route) |
+| >= 800px (desktop) | `/` text | Static |
+| < 800px (mobile) | `←` back button | Pops to previous route (if `canPop`) |
 
 ---
 
 ## Styling
 
-| Element | Font Size | Font Weight | Color | Hover Color |
-|---|---|---|---|---|
-| Active crumb (last) | 12px (body) | w500 | textSecondary (#B0B0B0) | — |
-| Clickable crumbs | 12px (body) | w400 | textTertiary (#707070) | textPrimary (#FFFFFF) |
-| Separator `›` | 12px (body) | w300 | textTertiary (#707070) | — |
-| Root `/` (desktop) | 12px (body) | w300 | textTertiary (#707070) | — |
+| Element | Font Size | Font Weight | Color |
+|---|---|---|---|
+| Current crumb (last) | 13px | w600 | textPrimary (#FFFFFF) |
+| Clickable crumbs | 13px | w400 | textTertiary (#707070) |
+| Separator `>` | Icon 14px | — | textTertiary @ 50% alpha |
+| Root `/` (desktop) | 13px | w300 | textTertiary (#707070) |
 
-- Clickable crumbs have a **hover effect**: color changes to white (`textPrimary`) on mouse enter
-- Clickable crumbs show `SystemMouseCursors.click` cursor
-- The last crumb is always non-interactive (even if `onTap` is provided)
-
----
-
-## Navigation Patterns
-
-### Tab Screens (root level)
-
-Single crumb, no `onTap`:
-
-```dart
-// AllItemsScreen, HomeScreen, SearchScreen, SettingsScreen
-BreadcrumbAppBar(
-  crumbs: <BreadcrumbItem>[
-    BreadcrumbItem(label: 'Settings'),
-  ],
-)
-```
-
-### One Level Deep
-
-Two crumbs, first is clickable:
-
-```dart
-// CredentialsScreen, CacheScreen, DatabaseScreen, DebugHubScreen
-BreadcrumbAppBar(
-  crumbs: <BreadcrumbItem>[
-    BreadcrumbItem(label: 'Settings', onTap: () => Navigator.of(context).pop()),
-    BreadcrumbItem(label: 'Credentials'),
-  ],
-)
-```
-
-### Two Levels Deep
-
-Three crumbs. Use `popUntil(isFirst)` for the root crumb:
-
-```dart
-// CollectionScreen -> Detail Screen
-BreadcrumbAppBar(
-  crumbs: <BreadcrumbItem>[
-    BreadcrumbItem(
-      label: 'Collections',
-      onTap: () => Navigator.of(context).popUntil((route) => route.isFirst),
-    ),
-    BreadcrumbItem(
-      label: collectionName,
-      onTap: () => Navigator.of(context).pop(),
-    ),
-    BreadcrumbItem(label: itemName),
-  ],
-  bottom: tabBar, // detail screens have TabBar
-)
-```
-
-### Three Levels Deep (Debug Screens)
-
-```dart
-// Settings > Debug > SteamGridDB
-BreadcrumbAppBar(
-  crumbs: <BreadcrumbItem>[
-    BreadcrumbItem(
-      label: 'Settings',
-      onTap: () => Navigator.of(context).popUntil((route) => route.isFirst),
-    ),
-    BreadcrumbItem(
-      label: 'Debug',
-      onTap: () => Navigator.of(context).pop(),
-    ),
-    BreadcrumbItem(label: 'SteamGridDB'),
-  ],
-  bottom: tabBar, // SteamGridDB has 5 tabs
-)
-```
+- **Hover effect:** pill background (`surfaceLight`, borderRadius 6) + text color → textPrimary
+- **Overflow:** maxWidth 300px (current crumb), 180px (others), `TextOverflow.ellipsis`
+- **Mobile collapse:** >2 crumbs → `[first] > … > [last]`
+- **Gamepad:** `Actions > Focus > MouseRegion > GestureDetector` with `FocusNode` (disposed)
 
 ---
 
-## With TabBar
+## Migration Patterns
 
-Pass a `TabBar` as `bottom`. The `preferredSize` automatically includes the TabBar height:
+### Tab Root Screen (Level 0)
+
+Tab root scope comes from `NavigationShell`. Screen only needs `AutoBreadcrumbAppBar`:
 
 ```dart
-BreadcrumbAppBar(
-  crumbs: crumbs,
-  bottom: const TabBar(
-    tabs: <Tab>[Tab(text: 'Tab 1'), Tab(text: 'Tab 2')],
+// SettingsScreen, HomeScreen, AllItemsScreen, SearchScreen, WishlistScreen
+Scaffold(
+  appBar: const AutoBreadcrumbAppBar(),
+  body: ...,
+)
+```
+
+### One Level Deep (Level 1)
+
+Screen wraps in its own scope:
+
+```dart
+// CredentialsScreen, CacheScreen, DatabaseScreen, DebugHubScreen, CollectionScreen
+BreadcrumbScope(
+  label: 'Credentials',
+  child: Scaffold(
+    appBar: const AutoBreadcrumbAppBar(),
+    body: ...,
   ),
 )
 ```
 
-## With Action Buttons
+### Two Levels Deep (Level 2)
 
-Pass widgets to `actions` for buttons on the right side of the bar:
+Parent wraps push builder in its scope label. Screen adds its own scope:
 
 ```dart
-BreadcrumbAppBar(
-  crumbs: crumbs,
-  actions: <Widget>[
-    IconButton(icon: Icon(Icons.add), onPressed: _addItem),
-    IconButton(icon: Icon(Icons.lock), onPressed: _toggleLock),
-  ],
+// In DebugHubScreen:
+Navigator.of(context).push(MaterialPageRoute(
+  builder: (_) => const BreadcrumbScope(
+    label: 'Debug',
+    child: SteamGridDbDebugScreen(),
+  ),
+));
+
+// In SteamGridDbDebugScreen:
+BreadcrumbScope(
+  label: 'SteamGridDB',
+  child: Scaffold(
+    appBar: const AutoBreadcrumbAppBar(bottom: TabBar(...)),
+    body: ...,
+  ),
 )
+```
+
+### Detail Screens (Dynamic Label)
+
+Loading state uses `'...'`, loaded state uses item name:
+
+```dart
+// In GameDetailScreen:
+return BreadcrumbScope(
+  label: collectionItem.itemName,  // dynamic label
+  child: Scaffold(
+    appBar: AutoBreadcrumbAppBar(actions: [...]),
+    body: ...,
+  ),
+);
 ```
 
 ---
@@ -154,34 +157,36 @@ BreadcrumbAppBar(
 ## Technical Details
 
 > [!NOTE]
-> - **Height:** `kBreadcrumbToolbarHeight = 40` (+ TabBar if present)
+> - **Height:** `kBreadcrumbToolbarHeight = 44` (+ TabBar if present)
 > - **Horizontal scroll:** long breadcrumb trails wrap in `SingleChildScrollView`
-> - **No back button:** `automaticallyImplyLeading: false` — navigation is via crumbs only
+> - **No back button on desktop:** `automaticallyImplyLeading: false` — navigation is via crumbs only
 > - **Background:** `AppColors.background` (#0A0A0A)
 > - **Breakpoint:** uses `navigationBreakpoint` (800px) from `navigation_shell.dart`
+> - **Rebuild:** `dependOnInheritedWidgetOfExactType` triggers rebuild when nearest scope label changes (loading → loaded)
 
 > [!TIP]
-> When adding a new screen, always use `BreadcrumbAppBar` instead of the standard `AppBar`. The last crumb in the list represents the current screen and should **not** have an `onTap` handler.
+> When adding a new screen, wrap it in `BreadcrumbScope(label: 'ScreenName')` and use `AutoBreadcrumbAppBar`. If the screen is pushed from another screen, the parent should wrap the push builder in `BreadcrumbScope(label: parentLabel)`.
 
 ---
 
-## All Screens Using BreadcrumbAppBar
+## All Screens Using AutoBreadcrumbAppBar
 
-| Screen | Crumbs |
-|---|---|
-| AllItemsScreen | `Main` |
-| HomeScreen | `Collections` |
-| CollectionScreen | `Collections › {name}` |
-| GameDetailScreen | `Collections › {collection} › {game}` |
-| MovieDetailScreen | `Collections › {collection} › {movie}` |
-| TvShowDetailScreen | `Collections › {collection} › {show}` |
-| AnimeDetailScreen | `Collections › {collection} › {anime}` |
-| SearchScreen | `Search` |
-| SettingsScreen | `Settings` |
-| CredentialsScreen | `Settings › Credentials` |
-| CacheScreen | `Settings › Cache` |
-| DatabaseScreen | `Settings › Database` |
-| DebugHubScreen | `Settings › Debug` |
-| ImageDebugScreen | `Settings › Debug › IGDB Media` |
-| SteamGridDbDebugScreen | `Settings › Debug › SteamGridDB` |
-| GamepadDebugScreen | `Settings › Debug › Gamepad` |
+| Screen | Crumbs | Scope Source |
+|---|---|---|
+| AllItemsScreen | `Main` | NavigationShell |
+| HomeScreen | `Collections` | NavigationShell |
+| CollectionScreen | `Collections > {name}` | NavigationShell + own |
+| GameDetailScreen | `Collections > {collection} > {game}` | NavigationShell + push + own |
+| MovieDetailScreen | `Collections > {collection} > {movie}` | NavigationShell + push + own |
+| TvShowDetailScreen | `Collections > {collection} > {show}` | NavigationShell + push + own |
+| AnimeDetailScreen | `Collections > {collection} > {anime}` | NavigationShell + push + own |
+| SearchScreen | `Search` | NavigationShell |
+| WishlistScreen | `Wishlist` | NavigationShell |
+| SettingsScreen | `Settings` | NavigationShell |
+| CredentialsScreen | `Settings > Credentials` | NavigationShell + own |
+| CacheScreen | `Settings > Cache` | NavigationShell + own |
+| DatabaseScreen | `Settings > Database` | NavigationShell + own |
+| DebugHubScreen | `Settings > Debug` | NavigationShell + own |
+| ImageDebugScreen | `Settings > Debug > IGDB Media` | NavigationShell + push + own |
+| SteamGridDbDebugScreen | `Settings > Debug > SteamGridDB` | NavigationShell + push + own |
+| GamepadDebugScreen | `Settings > Debug > Gamepad` | NavigationShell + push + own |

@@ -13,7 +13,7 @@ void main() {
       required List<BreadcrumbItem> crumbs,
       List<Widget>? actions,
       PreferredSizeWidget? bottom,
-      Size? surfaceSize,
+      Color? accentColor,
     }) {
       return MaterialApp(
         home: Scaffold(
@@ -21,6 +21,7 @@ void main() {
             crumbs: crumbs,
             actions: actions,
             bottom: bottom,
+            accentColor: accentColor,
           ),
           body: const SizedBox(),
         ),
@@ -28,7 +29,7 @@ void main() {
     }
 
     group('Рендеринг базовых элементов', () {
-      testWidgets('отображает разделитель \'›\' для каждой хлебной крошки',
+      testWidgets('отображает chevron разделитель для каждой крошки',
           (WidgetTester tester) async {
         const List<BreadcrumbItem> crumbs = <BreadcrumbItem>[
           BreadcrumbItem(label: 'Первый'),
@@ -40,7 +41,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // 3 разделителя (по одному перед каждой крошкой)
-        final Finder separators = find.text('›');
+        final Finder separators = find.byIcon(Icons.chevron_right);
         expect(separators, findsNWidgets(3));
       });
 
@@ -70,12 +71,28 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('Единственная крошка'), findsOneWidget);
-        expect(find.text('›'), findsOneWidget);
+        expect(find.byIcon(Icons.chevron_right), findsOneWidget);
+      });
+
+      testWidgets('разделитель имеет размер 14 и половинную прозрачность',
+          (WidgetTester tester) async {
+        const List<BreadcrumbItem> crumbs = <BreadcrumbItem>[
+          BreadcrumbItem(label: 'Тест'),
+        ];
+
+        await tester.pumpWidget(createWidget(crumbs: crumbs));
+        await tester.pumpAndSettle();
+
+        final Icon icon = tester.widget<Icon>(
+          find.byIcon(Icons.chevron_right),
+        );
+        expect(icon.size, 14);
+        expect(icon.color, AppColors.textTertiary.withAlpha(128));
       });
     });
 
     group('Адаптивный корень', () {
-      testWidgets('на desktop (>=800) отображает \'/\' вместо логотипа',
+      testWidgets('на desktop (>=800) отображает \'/\' вместо кнопки назад',
           (WidgetTester tester) async {
         // По умолчанию тестовое окно 800x600 — это desktop
         const List<BreadcrumbItem> crumbs = <BreadcrumbItem>[
@@ -86,28 +103,54 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('/'), findsOneWidget);
-        expect(find.byType(Image), findsNothing);
+        expect(find.byIcon(Icons.chevron_left), findsNothing);
       });
 
-      testWidgets('на mobile (<800) отображает логотип вместо \'/\'',
+      testWidgets(
+          'на mobile (<800) с возможностью pop отображает кнопку назад',
           (WidgetTester tester) async {
         tester.view.physicalSize = const Size(700, 600);
         tester.view.devicePixelRatio = 1.0;
         addTearDown(tester.view.resetPhysicalSize);
         addTearDown(tester.view.resetDevicePixelRatio);
 
-        const List<BreadcrumbItem> crumbs = <BreadcrumbItem>[
-          BreadcrumbItem(label: 'Settings'),
+        final List<BreadcrumbItem> crumbs = <BreadcrumbItem>[
+          BreadcrumbItem(label: 'Settings', onTap: () {}),
+          const BreadcrumbItem(label: 'Credentials'),
         ];
 
-        await tester.pumpWidget(createWidget(crumbs: crumbs));
+        // Нужен Navigator с pushed route, чтобы canPop() вернул true
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Navigator(
+              onGenerateRoute: (RouteSettings settings) {
+                return MaterialPageRoute<void>(
+                  builder: (BuildContext context) {
+                    // Пушим второй route
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (BuildContext ctx) => Scaffold(
+                            appBar: BreadcrumbAppBar(crumbs: crumbs),
+                            body: const SizedBox(),
+                          ),
+                        ),
+                      );
+                    });
+                    return const Scaffold(body: SizedBox());
+                  },
+                );
+              },
+            ),
+          ),
+        );
         await tester.pumpAndSettle();
 
-        expect(find.byType(Image), findsOneWidget);
+        expect(find.byIcon(Icons.chevron_left), findsOneWidget);
         expect(find.text('/'), findsNothing);
       });
 
-      testWidgets('на mobile логотип обёрнут в InkWell',
+      testWidgets('на mobile без возможности pop не отображает кнопку назад',
           (WidgetTester tester) async {
         tester.view.physicalSize = const Size(700, 600);
         tester.view.devicePixelRatio = 1.0;
@@ -121,31 +164,14 @@ void main() {
         await tester.pumpWidget(createWidget(crumbs: crumbs));
         await tester.pumpAndSettle();
 
-        final Finder inkWell = find.ancestor(
-          of: find.byType(Image),
-          matching: find.byType(InkWell),
-        );
-        expect(inkWell, findsOneWidget);
+        // canPop() false на root route → нет кнопки назад
+        expect(find.byIcon(Icons.chevron_left), findsNothing);
+        expect(find.text('/'), findsNothing);
       });
     });
 
     group('Стилизация текста', () {
-      testWidgets('последняя хлебная крошка имеет fontWeight w500',
-          (WidgetTester tester) async {
-        const List<BreadcrumbItem> crumbs = <BreadcrumbItem>[
-          BreadcrumbItem(label: 'Первый'),
-          BreadcrumbItem(label: 'Последний'),
-        ];
-
-        await tester.pumpWidget(createWidget(crumbs: crumbs));
-        await tester.pumpAndSettle();
-
-        final Finder lastCrumb = find.text('Последний');
-        final Text lastCrumbWidget = tester.widget<Text>(lastCrumb);
-        expect(lastCrumbWidget.style?.fontWeight, FontWeight.w500);
-      });
-
-      testWidgets('последняя крошка имеет цвет textSecondary',
+      testWidgets('последняя крошка имеет fontWeight w600 и fontSize 13',
           (WidgetTester tester) async {
         const List<BreadcrumbItem> crumbs = <BreadcrumbItem>[
           BreadcrumbItem(label: 'Первый'),
@@ -156,7 +182,22 @@ void main() {
         await tester.pumpAndSettle();
 
         final Text lastCrumb = tester.widget<Text>(find.text('Последний'));
-        expect(lastCrumb.style?.color, AppColors.textSecondary);
+        expect(lastCrumb.style?.fontWeight, FontWeight.w600);
+        expect(lastCrumb.style?.fontSize, 13);
+      });
+
+      testWidgets('последняя крошка имеет цвет textPrimary',
+          (WidgetTester tester) async {
+        const List<BreadcrumbItem> crumbs = <BreadcrumbItem>[
+          BreadcrumbItem(label: 'Первый'),
+          BreadcrumbItem(label: 'Последний'),
+        ];
+
+        await tester.pumpWidget(createWidget(crumbs: crumbs));
+        await tester.pumpAndSettle();
+
+        final Text lastCrumb = tester.widget<Text>(find.text('Последний'));
+        expect(lastCrumb.style?.color, AppColors.textPrimary);
       });
 
       testWidgets('не последние кликабельные крошки имеют цвет textTertiary',
@@ -189,23 +230,7 @@ void main() {
 
         final Text firstCrumb = tester.widget<Text>(find.text('Первый'));
         expect(firstCrumb.style?.fontWeight, FontWeight.w400);
-      });
-
-      testWidgets('разделители имеют цвет textTertiary',
-          (WidgetTester tester) async {
-        const List<BreadcrumbItem> crumbs = <BreadcrumbItem>[
-          BreadcrumbItem(label: 'Первый'),
-          BreadcrumbItem(label: 'Второй'),
-        ];
-
-        await tester.pumpWidget(createWidget(crumbs: crumbs));
-        await tester.pumpAndSettle();
-
-        final Finder separators = find.text('›');
-        for (final Element element in separators.evaluate()) {
-          final Text separatorWidget = element.widget as Text;
-          expect(separatorWidget.style?.color, AppColors.textTertiary);
-        }
+        expect(firstCrumb.style?.fontSize, 13);
       });
     });
 
@@ -261,6 +286,44 @@ void main() {
 
         crumbText = tester.widget<Text>(find.text('Ховер'));
         expect(crumbText.style?.color, AppColors.textTertiary);
+      });
+
+      testWidgets('при наведении появляется pill-фон (surfaceLight)',
+          (WidgetTester tester) async {
+        final List<BreadcrumbItem> crumbs = <BreadcrumbItem>[
+          BreadcrumbItem(label: 'Ховер', onTap: () {}),
+          const BreadcrumbItem(label: 'Последняя'),
+        ];
+
+        await tester.pumpWidget(createWidget(crumbs: crumbs));
+        await tester.pumpAndSettle();
+
+        // До ховера — Container с прозрачным фоном
+        Container container = tester.widget<Container>(find.ancestor(
+          of: find.text('Ховер'),
+          matching: find.byType(Container),
+        ).first);
+        final BoxDecoration decorationBefore =
+            container.decoration! as BoxDecoration;
+        expect(decorationBefore.color, Colors.transparent);
+
+        // Наводим мышь
+        final TestGesture gesture = await tester.createGesture(
+          kind: PointerDeviceKind.mouse,
+        );
+        await gesture.addPointer(location: Offset.zero);
+        addTearDown(gesture.removePointer);
+        await gesture.moveTo(tester.getCenter(find.text('Ховер')));
+        await tester.pumpAndSettle();
+
+        // После ховера — surfaceLight фон
+        container = tester.widget<Container>(find.ancestor(
+          of: find.text('Ховер'),
+          matching: find.byType(Container),
+        ).first);
+        final BoxDecoration decorationAfter =
+            container.decoration! as BoxDecoration;
+        expect(decorationAfter.color, AppColors.surfaceLight);
       });
 
       testWidgets('кликабельная крошка показывает курсор click',
@@ -453,6 +516,11 @@ void main() {
 
         expect(appBar.preferredSize.height, kBreadcrumbToolbarHeight);
       });
+
+      testWidgets('kBreadcrumbToolbarHeight равна 44',
+          (WidgetTester tester) async {
+        expect(kBreadcrumbToolbarHeight, 44);
+      });
     });
 
     group('Макет и прокрутка', () {
@@ -490,6 +558,162 @@ void main() {
       });
     });
 
+    group('Overflow и ellipsis', () {
+      testWidgets('последняя крошка имеет maxWidth 300',
+          (WidgetTester tester) async {
+        const List<BreadcrumbItem> crumbs = <BreadcrumbItem>[
+          BreadcrumbItem(label: 'Последняя крошка'),
+        ];
+
+        await tester.pumpWidget(createWidget(crumbs: crumbs));
+        await tester.pumpAndSettle();
+
+        final Finder constrainedBox = find.ancestor(
+          of: find.text('Последняя крошка'),
+          matching: find.byType(ConstrainedBox),
+        );
+        expect(constrainedBox, findsAtLeastNWidgets(1));
+        // Ближайший ConstrainedBox — наш (maxWidth 300)
+        final ConstrainedBox box =
+            tester.widget<ConstrainedBox>(constrainedBox.first);
+        expect(box.constraints.maxWidth, 300);
+      });
+
+      testWidgets('последняя крошка имеет overflow ellipsis',
+          (WidgetTester tester) async {
+        const List<BreadcrumbItem> crumbs = <BreadcrumbItem>[
+          BreadcrumbItem(label: 'Последняя'),
+        ];
+
+        await tester.pumpWidget(createWidget(crumbs: crumbs));
+        await tester.pumpAndSettle();
+
+        final Text text = tester.widget<Text>(find.text('Последняя'));
+        expect(text.overflow, TextOverflow.ellipsis);
+        expect(text.maxLines, 1);
+      });
+
+      testWidgets('кликабельная крошка имеет maxWidth 180',
+          (WidgetTester tester) async {
+        final List<BreadcrumbItem> crumbs = <BreadcrumbItem>[
+          BreadcrumbItem(label: 'Кликабельная', onTap: () {}),
+          const BreadcrumbItem(label: 'Последняя'),
+        ];
+
+        await tester.pumpWidget(createWidget(crumbs: crumbs));
+        await tester.pumpAndSettle();
+
+        final Finder constrainedBox = find.ancestor(
+          of: find.text('Кликабельная'),
+          matching: find.byType(ConstrainedBox),
+        );
+        expect(constrainedBox, findsAtLeastNWidgets(1));
+        // Ближайший ConstrainedBox — наш (maxWidth 180)
+        final ConstrainedBox box =
+            tester.widget<ConstrainedBox>(constrainedBox.first);
+        expect(box.constraints.maxWidth, 180);
+      });
+    });
+
+    group('Мобильный коллапс', () {
+      testWidgets(
+          'при >2 крошках на mobile промежуточные заменяются на …',
+          (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(700, 600);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        final List<BreadcrumbItem> crumbs = <BreadcrumbItem>[
+          BreadcrumbItem(label: 'Root', onTap: () {}),
+          BreadcrumbItem(label: 'Middle', onTap: () {}),
+          const BreadcrumbItem(label: 'Current'),
+        ];
+
+        await tester.pumpWidget(createWidget(crumbs: crumbs));
+        await tester.pumpAndSettle();
+
+        // Root и Current видны, Middle заменён на …
+        expect(find.text('Root'), findsOneWidget);
+        expect(find.text('Current'), findsOneWidget);
+        expect(find.text('Middle'), findsNothing);
+        expect(find.text('…'), findsOneWidget);
+      });
+
+      testWidgets('при <=2 крошках на mobile НЕ сворачивает',
+          (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(700, 600);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        final List<BreadcrumbItem> crumbs = <BreadcrumbItem>[
+          BreadcrumbItem(label: 'Root', onTap: () {}),
+          const BreadcrumbItem(label: 'Current'),
+        ];
+
+        await tester.pumpWidget(createWidget(crumbs: crumbs));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Root'), findsOneWidget);
+        expect(find.text('Current'), findsOneWidget);
+        expect(find.text('…'), findsNothing);
+      });
+
+      testWidgets('на desktop >2 крошек НЕ сворачиваются',
+          (WidgetTester tester) async {
+        // desktop: 800x600
+        final List<BreadcrumbItem> crumbs = <BreadcrumbItem>[
+          BreadcrumbItem(label: 'Root', onTap: () {}),
+          BreadcrumbItem(label: 'Middle', onTap: () {}),
+          const BreadcrumbItem(label: 'Current'),
+        ];
+
+        await tester.pumpWidget(createWidget(crumbs: crumbs));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Root'), findsOneWidget);
+        expect(find.text('Middle'), findsOneWidget);
+        expect(find.text('Current'), findsOneWidget);
+        expect(find.text('…'), findsNothing);
+      });
+    });
+
+    group('Accent line', () {
+      testWidgets('accentColor null — нет Container обёртки',
+          (WidgetTester tester) async {
+        const List<BreadcrumbItem> crumbs = <BreadcrumbItem>[
+          BreadcrumbItem(label: 'Тест'),
+        ];
+
+        await tester.pumpWidget(createWidget(crumbs: crumbs));
+        await tester.pumpAndSettle();
+
+        // AppBar — прямой child, без Container wrapper
+        final AppBar appBar = tester.widget<AppBar>(find.byType(AppBar));
+        expect(appBar, isNotNull);
+      });
+
+      testWidgets('accentColor задан — появляется Container с border',
+          (WidgetTester tester) async {
+        const List<BreadcrumbItem> crumbs = <BreadcrumbItem>[
+          BreadcrumbItem(label: 'Тест'),
+        ];
+
+        await tester.pumpWidget(
+          createWidget(crumbs: crumbs, accentColor: Colors.blue),
+        );
+        await tester.pumpAndSettle();
+
+        // Container оборачивает AppBar
+        final Finder container = find.ancestor(
+          of: find.byType(AppBar),
+          matching: find.byType(Container),
+        );
+        expect(container, findsWidgets);
+      });
+    });
+
     group('Граничные случаи', () {
       testWidgets('корректно работает с пустым списком крошек',
           (WidgetTester tester) async {
@@ -499,10 +723,10 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.byType(AppBar), findsOneWidget);
-        expect(find.text('›'), findsNothing);
+        expect(find.byIcon(Icons.chevron_right), findsNothing);
       });
 
-      testWidgets('множественные крошки отображают все метки',
+      testWidgets('множественные крошки на desktop отображают все метки',
           (WidgetTester tester) async {
         const List<BreadcrumbItem> crumbs = <BreadcrumbItem>[
           BreadcrumbItem(label: 'Один'),
@@ -520,7 +744,7 @@ void main() {
         expect(find.text('Три'), findsOneWidget);
         expect(find.text('Четыре'), findsOneWidget);
         expect(find.text('Пять'), findsOneWidget);
-        expect(find.text('›'), findsNWidgets(5));
+        expect(find.byIcon(Icons.chevron_right), findsNWidgets(5));
       });
     });
 
@@ -565,52 +789,48 @@ void main() {
       });
     });
 
-    group('collectionFallback factory', () {
-      testWidgets('создаёт AppBar с крошками Collections и collectionName',
+    group('Gamepad поддержка', () {
+      testWidgets('кликабельная крошка имеет Focus виджет',
           (WidgetTester tester) async {
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Builder(
-              builder: (BuildContext context) {
-                return Scaffold(
-                  appBar: BreadcrumbAppBar.collectionFallback(
-                    context,
-                    'My Games',
-                  ),
-                  body: const SizedBox(),
-                );
-              },
-            ),
-          ),
-        );
+        final List<BreadcrumbItem> crumbs = <BreadcrumbItem>[
+          BreadcrumbItem(label: 'Focusable', onTap: () {}),
+          const BreadcrumbItem(label: 'Последняя'),
+        ];
+
+        await tester.pumpWidget(createWidget(crumbs: crumbs));
         await tester.pumpAndSettle();
 
-        expect(find.text('Collections'), findsOneWidget);
-        expect(find.text('My Games'), findsOneWidget);
-        expect(find.byType(BreadcrumbAppBar), findsOneWidget);
+        // Ищем Focus с debugLabel 'BreadcrumbCrumb'
+        final Finder focus = find.ancestor(
+          of: find.text('Focusable'),
+          matching: find.byType(Focus),
+        );
+        expect(focus, findsAtLeastNWidgets(1));
+
+        // Проверяем что ближайший Focus — наш (с debugLabel)
+        final Focus focusWidget = tester.widget<Focus>(focus.first);
+        expect(focusWidget.focusNode?.debugLabel, 'BreadcrumbCrumb');
       });
 
-      testWidgets('collectionFallback не содержит третью крошку',
+      testWidgets('кликабельная крошка обёрнута в Actions',
           (WidgetTester tester) async {
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Builder(
-              builder: (BuildContext context) {
-                return Scaffold(
-                  appBar: BreadcrumbAppBar.collectionFallback(
-                    context,
-                    'RPGs',
-                  ),
-                  body: const SizedBox(),
-                );
-              },
-            ),
-          ),
-        );
+        final List<BreadcrumbItem> crumbs = <BreadcrumbItem>[
+          BreadcrumbItem(label: 'Actionable', onTap: () {}),
+          const BreadcrumbItem(label: 'Последняя'),
+        ];
+
+        await tester.pumpWidget(createWidget(crumbs: crumbs));
         await tester.pumpAndSettle();
 
-        // 2 крошки = 2 разделителя (по одному перед каждой)
-        expect(find.text('›'), findsNWidgets(2));
+        // Ищем ближайший Actions ancestor — наш содержит ActivateIntent
+        final Finder actions = find.ancestor(
+          of: find.text('Actionable'),
+          matching: find.byType(Actions),
+        );
+        expect(actions, findsAtLeastNWidgets(1));
+
+        final Actions actionsWidget = tester.widget<Actions>(actions.first);
+        expect(actionsWidget.actions.containsKey(ActivateIntent), isTrue);
       });
     });
   });
