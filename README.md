@@ -13,9 +13,21 @@
   <a href="#"><img src="https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android"></a>
 </p>
 
+<p align="center">
+  <a href="https://github.com/hacan359/xerabora/actions/workflows/test.yml">
+    <img src="https://github.com/hacan359/xerabora/actions/workflows/test.yml/badge.svg" alt="Tests">
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT">
+  </a>
+  <a href="https://flutter.dev">
+    <img src="https://img.shields.io/badge/Flutter-3.38+-02569B?logo=flutter&logoColor=white" alt="Flutter 3.38+">
+  </a>
+</p>
+
 ---
 
-Tonkatsu Box helps you build and manage collections of retro games, movies, TV shows, and anime. Search for titles, organize them into collections, track what you're playing or watching, rate your favorites, and share collections with friends.
+Tonkatsu Box is a free, open-source collection manager for retro games, movies, TV shows, and anime. Search IGDB and TMDB databases with hundreds of thousands of titles, organize them into custom collections, track your backlog and progress, rate everything from 1 to 10, create visual boards with drag-and-drop, and share collections with friends. Available for Windows and Android.
 
 ## What You Can Do
 

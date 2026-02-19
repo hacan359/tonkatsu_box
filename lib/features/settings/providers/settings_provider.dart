@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../shared/constants/app_strings.dart';
 import '../../../core/api/igdb_api.dart';
 import '../../../core/api/steamgriddb_api.dart';
 import '../../../core/api/tmdb_api.dart';
@@ -83,10 +84,10 @@ class SettingsState {
   /// Имя автора по умолчанию.
   final String? defaultAuthor;
 
-  /// Возвращает имя автора (или 'User' если не задано).
+  /// Возвращает имя автора (или [AppStrings.defaultAuthor] если не задано).
   String get authorName => (defaultAuthor != null && defaultAuthor!.isNotEmpty)
       ? defaultAuthor!
-      : 'User';
+      : AppStrings.defaultAuthor;
 
   /// Проверяет наличие API ключа TMDB.
   bool get hasTmdbKey => tmdbApiKey != null && tmdbApiKey!.isNotEmpty;

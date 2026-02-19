@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/image_cache_service.dart';
 import '../../../data/repositories/canvas_repository.dart';
+import '../../../shared/constants/app_strings.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/models/canvas_connection.dart';
 import '../../../shared/models/canvas_item.dart';
@@ -859,21 +860,21 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
 
     switch (item.itemType) {
       case CanvasItemType.game:
-        title = item.game?.name ?? 'Unknown Game';
+        title = item.game?.name ?? AppStrings.unknownGame;
         imageUrl = item.game?.coverUrl;
         cacheImageType = ImageType.gameCover;
         cacheImageId = (item.game?.id ?? 0).toString();
         mediaType = MediaType.game;
         placeholderIcon = Icons.videogame_asset;
       case CanvasItemType.movie:
-        title = item.movie?.title ?? 'Unknown Movie';
+        title = item.movie?.title ?? AppStrings.unknownMovie;
         imageUrl = item.movie?.posterThumbUrl;
         cacheImageType = ImageType.moviePoster;
         cacheImageId = (item.movie?.tmdbId ?? 0).toString();
         mediaType = MediaType.movie;
         placeholderIcon = Icons.movie_outlined;
       case CanvasItemType.tvShow:
-        title = item.tvShow?.title ?? 'Unknown TV Show';
+        title = item.tvShow?.title ?? AppStrings.unknownTvShow;
         imageUrl = item.tvShow?.posterThumbUrl;
         cacheImageType = ImageType.tvShowPoster;
         cacheImageId = (item.tvShow?.tmdbId ?? 0).toString();
@@ -882,7 +883,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
       case CanvasItemType.animation:
         title = item.movie?.title ??
             item.tvShow?.title ??
-            'Unknown Animation';
+            AppStrings.unknownAnimation;
         if (item.tvShow != null) {
           imageUrl = item.tvShow?.posterThumbUrl;
           cacheImageType = ImageType.tvShowPoster;
