@@ -6,6 +6,8 @@
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-02-20
+
 ### Added
 - **Welcome Wizard** — 4-step onboarding shown on first launch (`lib/features/welcome/`)
   - Step 1 «Welcome»: app capabilities, media types, works-without-keys section
