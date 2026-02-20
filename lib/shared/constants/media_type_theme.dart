@@ -3,22 +3,24 @@
 import 'package:flutter/material.dart';
 
 import '../models/media_type.dart';
+import '../theme/app_colors.dart';
 
 /// Цвета и иконки для визуального разделения типов медиа.
 ///
-/// 🎮 Игры — синий, 🎬 Фильмы — красный, 📺 Сериалы — зелёный.
+/// 🎮 Игры — индиго, 🎬 Фильмы — оранжевый, 📺 Сериалы — лаймовый,
+/// 🎞️ Анимация — пурпурный.
 abstract final class MediaTypeTheme {
-  /// Цвет для игр (синий).
-  static const Color gameColor = Color(0xFF2196F3);
+  /// Цвет для игр.
+  static const Color gameColor = AppColors.gameAccent;
 
-  /// Цвет для фильмов (красный).
-  static const Color movieColor = Color(0xFFF44336);
+  /// Цвет для фильмов.
+  static const Color movieColor = AppColors.movieAccent;
 
-  /// Цвет для сериалов (зелёный).
-  static const Color tvShowColor = Color(0xFF4CAF50);
+  /// Цвет для сериалов.
+  static const Color tvShowColor = AppColors.tvShowAccent;
 
-  /// Цвет для анимации (фиолетовый).
-  static const Color animationColor = Color(0xFF9C27B0);
+  /// Цвет для анимации.
+  static const Color animationColor = AppColors.animationAccent;
 
   /// Возвращает иконку для типа медиа.
   static IconData iconFor(MediaType type) => switch (type) {
