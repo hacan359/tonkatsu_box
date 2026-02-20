@@ -165,5 +165,26 @@ void main() {
         expect(icon.size, equals(20));
       });
     });
+
+    group('visual polish', () {
+      testWidgets('has custom hoverColor', (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget(title: 'Title'));
+        final ListTile tile = tester.widget<ListTile>(find.byType(ListTile));
+        expect(tile.hoverColor, isNotNull);
+        expect(tile.hoverColor!.a, closeTo(0.37, 0.01));
+      });
+
+      testWidgets('has rounded shape', (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget(title: 'Title'));
+        final ListTile tile = tester.widget<ListTile>(find.byType(ListTile));
+        expect(tile.shape, isA<RoundedRectangleBorder>());
+        final RoundedRectangleBorder shape =
+            tile.shape! as RoundedRectangleBorder;
+        expect(
+          shape.borderRadius,
+          equals(BorderRadius.circular(6)),
+        );
+      });
+    });
   });
 }

@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 
+import '../../../shared/theme/app_colors.dart';
+
 /// Строка настройки с заголовком, подзаголовком и trailing виджетом.
 class SettingsRow extends StatelessWidget {
   /// Создаёт [SettingsRow].
@@ -49,6 +51,10 @@ class SettingsRow extends StatelessWidget {
         ListTile(
           contentPadding: EdgeInsets.zero,
           dense: compact,
+          hoverColor: AppColors.surfaceLight.withValues(alpha: 0.37),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(6),
+          ),
           leading: icon != null ? Icon(icon, size: compact ? 18 : 20) : null,
           title: Text(title),
           subtitle: subtitle != null

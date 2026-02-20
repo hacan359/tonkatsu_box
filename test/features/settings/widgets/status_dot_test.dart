@@ -16,78 +16,139 @@ void main() {
     );
   }
 
+  /// Finds the circular badge Container inside StatusDot.
+  Finder findBadge() {
+    return find.descendant(
+      of: find.byType(StatusDot),
+      matching: find.byWidgetPredicate(
+        (Widget w) =>
+            w is Container &&
+            w.decoration is BoxDecoration &&
+            (w.decoration! as BoxDecoration).shape == BoxShape.circle,
+      ),
+    );
+  }
+
+  BoxDecoration getBadgeDecoration(WidgetTester tester) {
+    final Container container = tester.widget<Container>(findBadge());
+    return container.decoration! as BoxDecoration;
+  }
+
   group('StatusDot', () {
     group('StatusType rendering', () {
-      testWidgets('success shows check_circle icon with success color',
+      testWidgets('success shows ✓ symbol with success color',
           (WidgetTester tester) async {
         await tester.pumpWidget(
           createWidget(label: 'OK', type: StatusType.success),
         );
 
-        expect(find.byIcon(Icons.check_circle), findsOneWidget);
-        final Icon icon =
-            tester.widget<Icon>(find.byIcon(Icons.check_circle));
-        expect(icon.color, equals(AppColors.success));
+        expect(find.text('✓'), findsOneWidget);
+        final BoxDecoration decoration = getBadgeDecoration(tester);
+        expect(
+          (decoration.border! as Border).top.color,
+          equals(AppColors.success),
+        );
         expect(find.text('OK'), findsOneWidget);
       });
 
-      testWidgets('warning shows warning_amber icon with warning color',
+      testWidgets('warning shows ! symbol with warning color',
           (WidgetTester tester) async {
         await tester.pumpWidget(
           createWidget(label: 'Warning', type: StatusType.warning),
         );
 
-        expect(find.byIcon(Icons.warning_amber), findsOneWidget);
-        final Icon icon =
-            tester.widget<Icon>(find.byIcon(Icons.warning_amber));
-        expect(icon.color, equals(AppColors.warning));
+        expect(find.text('!'), findsOneWidget);
+        final BoxDecoration decoration = getBadgeDecoration(tester);
+        expect(
+          (decoration.border! as Border).top.color,
+          equals(AppColors.warning),
+        );
       });
 
-      testWidgets('error shows error icon with error color',
+      testWidgets('error shows ✕ symbol with error color',
           (WidgetTester tester) async {
         await tester.pumpWidget(
           createWidget(label: 'Error', type: StatusType.error),
         );
 
-        expect(find.byIcon(Icons.error), findsOneWidget);
-        final Icon icon = tester.widget<Icon>(find.byIcon(Icons.error));
-        expect(icon.color, equals(AppColors.error));
+        expect(find.text('✕'), findsOneWidget);
+        final BoxDecoration decoration = getBadgeDecoration(tester);
+        expect(
+          (decoration.border! as Border).top.color,
+          equals(AppColors.error),
+        );
       });
 
-      testWidgets('inactive shows help_outline icon with tertiary color',
+      testWidgets('inactive shows ? symbol with tertiary color',
           (WidgetTester tester) async {
         await tester.pumpWidget(
           createWidget(label: 'Unknown', type: StatusType.inactive),
         );
 
-        expect(find.byIcon(Icons.help_outline), findsOneWidget);
-        final Icon icon =
-            tester.widget<Icon>(find.byIcon(Icons.help_outline));
-        expect(icon.color, equals(AppColors.textTertiary));
+        expect(find.text('?'), findsOneWidget);
+        final BoxDecoration decoration = getBadgeDecoration(tester);
+        expect(
+          (decoration.border! as Border).top.color,
+          equals(AppColors.textTertiary),
+        );
       });
     });
 
-    group('compact mode', () {
-      testWidgets('normal mode uses 18px icon size',
+    group('badge decoration', () {
+      testWidgets('has circle shape', (WidgetTester tester) async {
+        await tester.pumpWidget(
+          createWidget(label: 'OK', type: StatusType.success),
+        );
+
+        final BoxDecoration decoration = getBadgeDecoration(tester);
+        expect(decoration.shape, equals(BoxShape.circle));
+      });
+
+      testWidgets('has semi-transparent background',
           (WidgetTester tester) async {
         await tester.pumpWidget(
           createWidget(label: 'OK', type: StatusType.success),
         );
 
-        final Icon icon =
-            tester.widget<Icon>(find.byIcon(Icons.check_circle));
-        expect(icon.size, equals(18));
+        final BoxDecoration decoration = getBadgeDecoration(tester);
+        expect(decoration.color, isNotNull);
+        // 12% opacity background
+        expect(decoration.color!.a, closeTo(0.12, 0.01));
       });
 
-      testWidgets('compact mode uses 16px icon size',
-          (WidgetTester tester) async {
+      testWidgets('has 1.5px border width', (WidgetTester tester) async {
         await tester.pumpWidget(
-          createWidget(label: 'OK', type: StatusType.success, compact: true),
+          createWidget(label: 'OK', type: StatusType.success),
         );
 
-        final Icon icon =
-            tester.widget<Icon>(find.byIcon(Icons.check_circle));
-        expect(icon.size, equals(16));
+        final BoxDecoration decoration = getBadgeDecoration(tester);
+        final Border border = decoration.border! as Border;
+        expect(border.top.width, equals(1.5));
+      });
+    });
+
+    group('compact mode', () {
+      testWidgets('normal mode uses 18px badge size',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(
+          createWidget(label: 'OK', type: StatusType.success),
+        );
+
+        final Container container = tester.widget<Container>(findBadge());
+        expect(container.constraints?.maxWidth, equals(18));
+        expect(container.constraints?.maxHeight, equals(18));
+      });
+
+      testWidgets('compact mode uses 16px badge size',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(
+          createWidget(
+              label: 'OK', type: StatusType.success, compact: true),
+        );
+
+        final Container container = tester.widget<Container>(findBadge());
+        expect(container.constraints?.maxWidth, equals(16));
+        expect(container.constraints?.maxHeight, equals(16));
       });
     });
 

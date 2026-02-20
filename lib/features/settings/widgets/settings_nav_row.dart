@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 
+import '../../../shared/theme/app_colors.dart';
+
 /// Навигационная строка настроек: иконка, заголовок, chevron.
 class SettingsNavRow extends StatelessWidget {
   /// Создаёт [SettingsNavRow].
@@ -45,10 +47,21 @@ class SettingsNavRow extends StatelessWidget {
         ListTile(
           contentPadding: EdgeInsets.zero,
           dense: compact,
-          leading: Icon(icon, size: compact ? 18 : 20),
+          hoverColor: AppColors.surfaceLight.withValues(alpha: 0.37),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(6),
+          ),
+          leading: Icon(
+            icon,
+            size: compact ? 18 : 20,
+            color: AppColors.textSecondary,
+          ),
           title: Text(title),
           subtitle: subtitle != null ? Text(subtitle!) : null,
-          trailing: const Icon(Icons.chevron_right),
+          trailing: const Icon(
+            Icons.chevron_right,
+            color: AppColors.textTertiary,
+          ),
           onTap: enabled ? onTap : null,
           enabled: enabled,
         ),

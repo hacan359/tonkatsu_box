@@ -42,17 +42,37 @@ class StatusDot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (Color color, IconData icon) = switch (type) {
-      StatusType.success => (AppColors.success, Icons.check_circle),
-      StatusType.warning => (AppColors.warning, Icons.warning_amber),
-      StatusType.error => (AppColors.error, Icons.error),
-      StatusType.inactive => (AppColors.textTertiary, Icons.help_outline),
+    final (Color color, String symbol) = switch (type) {
+      StatusType.success => (AppColors.success, '✓'),
+      StatusType.warning => (AppColors.warning, '!'),
+      StatusType.error => (AppColors.error, '✕'),
+      StatusType.inactive => (AppColors.textTertiary, '?'),
     };
+    final double sz = compact ? 16 : 18;
 
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        Icon(icon, color: color, size: compact ? 16 : 18),
+        Container(
+          width: sz,
+          height: sz,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: color.withValues(alpha: 0.12),
+            border: Border.all(color: color, width: 1.5),
+          ),
+          child: Center(
+            child: Text(
+              symbol,
+              style: TextStyle(
+                fontSize: 8,
+                fontWeight: FontWeight.w800,
+                color: color,
+                height: 1,
+              ),
+            ),
+          ),
+        ),
         SizedBox(width: compact ? AppSpacing.xs : AppSpacing.sm),
         Flexible(
           child: Text(

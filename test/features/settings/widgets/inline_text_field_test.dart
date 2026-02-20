@@ -201,8 +201,9 @@ void main() {
       testWidgets('normal height is 42', (WidgetTester tester) async {
         await tester.pumpWidget(createWidget(value: 'test'));
 
-        final Container container = tester.widget<Container>(
-          find.byType(Container).last,
+        final AnimatedContainer container =
+            tester.widget<AnimatedContainer>(
+          find.byType(AnimatedContainer).last,
         );
         expect(container.constraints?.maxHeight, equals(42.0));
       });
@@ -212,8 +213,9 @@ void main() {
           createWidget(value: 'test', compact: true),
         );
 
-        final Container container = tester.widget<Container>(
-          find.byType(Container).last,
+        final AnimatedContainer container =
+            tester.widget<AnimatedContainer>(
+          find.byType(AnimatedContainer).last,
         );
         expect(container.constraints?.maxHeight, equals(38.0));
       });

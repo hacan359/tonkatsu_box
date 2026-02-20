@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/settings/widgets/settings_nav_row.dart';
+import 'package:xerabora/shared/theme/app_colors.dart';
 
 void main() {
   Widget createWidget({
@@ -143,6 +144,44 @@ void main() {
         await tester.pumpWidget(createWidget(title: 'Title'));
         final ListTile tile = tester.widget<ListTile>(find.byType(ListTile));
         expect(tile.contentPadding, equals(EdgeInsets.zero));
+      });
+    });
+
+    group('visual polish', () {
+      testWidgets('has custom hoverColor', (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget(title: 'Title'));
+        final ListTile tile = tester.widget<ListTile>(find.byType(ListTile));
+        expect(tile.hoverColor, isNotNull);
+        expect(tile.hoverColor!.a, closeTo(0.37, 0.01));
+      });
+
+      testWidgets('has rounded shape', (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget(title: 'Title'));
+        final ListTile tile = tester.widget<ListTile>(find.byType(ListTile));
+        expect(tile.shape, isA<RoundedRectangleBorder>());
+        final RoundedRectangleBorder shape =
+            tile.shape! as RoundedRectangleBorder;
+        expect(
+          shape.borderRadius,
+          equals(BorderRadius.circular(6)),
+        );
+      });
+
+      testWidgets('leading icon uses textSecondary color',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(
+          createWidget(title: 'Title', icon: Icons.key),
+        );
+        final Icon icon = tester.widget<Icon>(find.byIcon(Icons.key));
+        expect(icon.color, equals(AppColors.textSecondary));
+      });
+
+      testWidgets('chevron uses textTertiary color',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget(title: 'Title'));
+        final Icon chevron =
+            tester.widget<Icon>(find.byIcon(Icons.chevron_right));
+        expect(chevron.color, equals(AppColors.textTertiary));
       });
     });
   });

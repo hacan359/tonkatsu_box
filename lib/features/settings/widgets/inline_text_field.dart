@@ -137,14 +137,17 @@ class _InlineTextFieldState extends State<InlineTextField> {
             focusNode: _tapFocusNode,
             child: GestureDetector(
               onTap: _editing ? null : _startEditing,
-              child: Container(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
                 height: height,
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                 decoration: BoxDecoration(
                   color: AppColors.surfaceLight,
                   borderRadius: _borderRadius,
                   border: Border.all(
-                    color: _editing ? AppColors.brand : AppColors.surfaceBorder,
+                    color: _editing
+                        ? AppColors.brand.withValues(alpha: 0.5)
+                        : AppColors.surfaceBorder,
                   ),
                 ),
                 child: Row(

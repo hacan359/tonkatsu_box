@@ -336,8 +336,8 @@ void main() {
 
         // StatusDot: connection + steamgriddb + tmdb
         expect(find.byType(StatusDot), findsAtLeastNWidgets(1));
-        // Default is inactive — help_outline icon
-        expect(find.byIcon(Icons.help_outline), findsAtLeastNWidgets(1));
+        // Default is inactive — ? symbol in circular badge
+        expect(find.text('?'), findsAtLeastNWidgets(1));
       });
 
       testWidgets('должен показывать иконку платформ',
