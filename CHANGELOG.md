@@ -6,6 +6,12 @@
 
 ## [Unreleased]
 
+### Changed
+- Replaced `AddWishlistSheet` (bottom sheet) with `AddWishlistForm` — full-page form screen with `AutoBreadcrumbAppBar`, breadcrumb navigation ("Add" / "Edit"), and TextButton action in AppBar
+- Added title validation (minimum 2 characters) with inline `errorText` that clears on input in `AddWishlistForm`
+- Added `showCheckmark: false` to media type `ChoiceChip`s — fixes checkmark overlapping the avatar icon
+- Added `runSpacing` to media type chips `Wrap` for better multi-line layout
+
 ### Added
 - Added 5 reusable settings widgets (`lib/features/settings/widgets/`): `SettingsSection` (Card with header, icon, trailing), `SettingsRow` (ListTile wrapper), `SettingsNavRow` (navigation row with chevron), `StatusDot` (icon + label indicator), `InlineTextField` (tap-to-edit with blur/Enter commit, visibility toggle, gamepad D-pad support)
 - Added compact mode (width < 600) across all 5 settings screens — responsive padding, icon sizes, gap spacing

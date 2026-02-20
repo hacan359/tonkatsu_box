@@ -5,8 +5,8 @@ import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/wishlist_item.dart';
 
 void main() {
-  group('AddWishlistDialog', () {
-    Future<void> pumpDialog(
+  group('AddWishlistForm', () {
+    Future<void> pumpForm(
       WidgetTester tester, {
       WishlistItem? existing,
     }) async {
@@ -18,7 +18,7 @@ void main() {
               builder: (BuildContext context) {
                 return ElevatedButton(
                   onPressed: () {
-                    AddWishlistDialog.show(context, existing: existing);
+                    AddWishlistForm.show(context, existing: existing);
                   },
                   child: const Text('Open'),
                 );
@@ -32,17 +32,16 @@ void main() {
     }
 
     group('режим создания', () {
-      testWidgets('должен показывать заголовок Add to Wishlist',
+      testWidgets('должен показывать кнопку Add в AppBar',
           (WidgetTester tester) async {
-        await pumpDialog(tester);
+        await pumpForm(tester);
 
-        expect(find.text('Add to Wishlist'), findsOneWidget);
-        expect(find.text('Add'), findsOneWidget);
+        expect(find.widgetWithText(TextButton, 'Add'), findsOneWidget);
       });
 
       testWidgets('должен показывать пустые поля',
           (WidgetTester tester) async {
-        await pumpDialog(tester);
+        await pumpForm(tester);
 
         final TextField titleField = tester.widget<TextField>(
           find.widgetWithText(TextField, '').first,
@@ -52,7 +51,7 @@ void main() {
 
       testWidgets('должен показывать чипы типов медиа',
           (WidgetTester tester) async {
-        await pumpDialog(tester);
+        await pumpForm(tester);
 
         expect(find.text('Any'), findsOneWidget);
         expect(find.text('Game'), findsOneWidget);
@@ -63,34 +62,55 @@ void main() {
 
       testWidgets('не должен отправлять пустой текст',
           (WidgetTester tester) async {
-        await pumpDialog(tester);
+        await pumpForm(tester);
 
-        await tester.tap(find.text('Add'));
+        await tester.tap(find.widgetWithText(TextButton, 'Add'));
         await tester.pumpAndSettle();
 
-        // Диалог не закрылся
-        expect(find.text('Add to Wishlist'), findsOneWidget);
+        // Экран не закрылся, показывается ошибка.
+        expect(find.byType(TextField), findsWidgets);
+        expect(find.text('At least 2 characters'), findsOneWidget);
       });
 
-      testWidgets('должен закрываться при Cancel',
+      testWidgets('не должен отправлять текст из 1 символа',
           (WidgetTester tester) async {
-        await pumpDialog(tester);
+        await pumpForm(tester);
 
-        await tester.tap(find.text('Cancel'));
+        await tester.enterText(
+          find.widgetWithText(TextField, '').first,
+          'A',
+        );
+        await tester.tap(find.widgetWithText(TextButton, 'Add'));
         await tester.pumpAndSettle();
 
-        expect(find.text('Add to Wishlist'), findsNothing);
+        expect(find.text('At least 2 characters'), findsOneWidget);
+      });
+
+      testWidgets('ошибка исчезает при вводе текста',
+          (WidgetTester tester) async {
+        await pumpForm(tester);
+
+        // Вызываем ошибку.
+        await tester.tap(find.widgetWithText(TextButton, 'Add'));
+        await tester.pumpAndSettle();
+        expect(find.text('At least 2 characters'), findsOneWidget);
+
+        // Начинаем вводить — ошибка исчезает.
+        await tester.enterText(
+          find.widgetWithText(TextField, '').first,
+          'Te',
+        );
+        await tester.pumpAndSettle();
+        expect(find.text('At least 2 characters'), findsNothing);
       });
 
       testWidgets('должен выбирать тип медиа',
           (WidgetTester tester) async {
-        await pumpDialog(tester);
+        await pumpForm(tester);
 
-        // Нажимаем на Game чип
         await tester.tap(find.text('Game'));
         await tester.pumpAndSettle();
 
-        // Game чип должен быть selected
         final ChoiceChip gameChip = tester.widget<ChoiceChip>(
           find.ancestor(
             of: find.text('Game'),
@@ -102,13 +122,11 @@ void main() {
 
       testWidgets('должен снимать выбор при повторном нажатии на Any',
           (WidgetTester tester) async {
-        await pumpDialog(tester);
+        await pumpForm(tester);
 
-        // Выбираем Game
         await tester.tap(find.text('Game'));
         await tester.pumpAndSettle();
 
-        // Нажимаем Any — снимает выбор
         await tester.tap(find.text('Any'));
         await tester.pumpAndSettle();
 
@@ -119,6 +137,91 @@ void main() {
           ),
         );
         expect(anyChip.selected, true);
+      });
+
+      testWidgets('чипы не показывают checkmark',
+          (WidgetTester tester) async {
+        await pumpForm(tester);
+
+        await tester.tap(find.text('Game'));
+        await tester.pumpAndSettle();
+
+        final ChoiceChip gameChip = tester.widget<ChoiceChip>(
+          find.ancestor(
+            of: find.text('Game'),
+            matching: find.byType(ChoiceChip),
+          ),
+        );
+        expect(gameChip.showCheckmark, false);
+      });
+
+      testWidgets('кнопка Add — TextButton в AppBar',
+          (WidgetTester tester) async {
+        await pumpForm(tester);
+
+        expect(
+          find.widgetWithText(TextButton, 'Add'),
+          findsOneWidget,
+        );
+      });
+
+      testWidgets('должен закрыться при отправке валидного текста',
+          (WidgetTester tester) async {
+        await pumpForm(tester);
+
+        await tester.enterText(
+          find.widgetWithText(TextField, '').first,
+          'Chrono Trigger',
+        );
+        await tester.tap(find.widgetWithText(TextButton, 'Add'));
+        await tester.pumpAndSettle();
+
+        // Форма закрылась — вернулись на предыдущий экран.
+        expect(find.widgetWithText(TextButton, 'Add'), findsNothing);
+        expect(find.text('Open'), findsOneWidget);
+      });
+
+      testWidgets('должен отправить note если заполнена',
+          (WidgetTester tester) async {
+        await pumpForm(tester);
+
+        // Заполняем Title.
+        await tester.enterText(
+          find.widgetWithText(TextField, '').first,
+          'Chrono Trigger',
+        );
+        // Заполняем Note.
+        final Finder noteField = find.widgetWithText(TextField, '').last;
+        await tester.enterText(noteField, 'SNES RPG');
+
+        await tester.tap(find.widgetWithText(TextButton, 'Add'));
+        await tester.pumpAndSettle();
+
+        // Форма закрылась.
+        expect(find.text('Open'), findsOneWidget);
+      });
+
+      testWidgets('onChanged не вызывает setState если ошибки нет',
+          (WidgetTester tester) async {
+        await pumpForm(tester);
+
+        // Вводим текст без предварительной ошибки — не должно падать.
+        await tester.enterText(
+          find.widgetWithText(TextField, '').first,
+          'Test',
+        );
+        await tester.pumpAndSettle();
+
+        // Ошибки не было и нет.
+        expect(find.text('At least 2 characters'), findsNothing);
+      });
+
+      testWidgets('показывает breadcrumb Add',
+          (WidgetTester tester) async {
+        await pumpForm(tester);
+
+        // Breadcrumb "Add" от BreadcrumbScope.
+        expect(find.text('Add'), findsWidgets);
       });
     });
 
@@ -131,31 +234,30 @@ void main() {
         createdAt: DateTime(2024, 6, 15),
       );
 
-      testWidgets('должен показывать заголовок Edit',
+      testWidgets('должен показывать кнопку Save',
           (WidgetTester tester) async {
-        await pumpDialog(tester, existing: existing);
+        await pumpForm(tester, existing: existing);
 
-        expect(find.text('Edit Wishlist Item'), findsOneWidget);
         expect(find.text('Save'), findsOneWidget);
       });
 
       testWidgets('должен предзаполнять текст',
           (WidgetTester tester) async {
-        await pumpDialog(tester, existing: existing);
+        await pumpForm(tester, existing: existing);
 
         expect(find.text('Chrono Trigger'), findsOneWidget);
       });
 
       testWidgets('должен предзаполнять заметку',
           (WidgetTester tester) async {
-        await pumpDialog(tester, existing: existing);
+        await pumpForm(tester, existing: existing);
 
         expect(find.text('SNES RPG'), findsOneWidget);
       });
 
       testWidgets('должен предвыбирать тип медиа',
           (WidgetTester tester) async {
-        await pumpDialog(tester, existing: existing);
+        await pumpForm(tester, existing: existing);
 
         final ChoiceChip gameChip = tester.widget<ChoiceChip>(
           find.ancestor(
@@ -164,6 +266,13 @@ void main() {
           ),
         );
         expect(gameChip.selected, true);
+      });
+
+      testWidgets('показывает breadcrumb Edit',
+          (WidgetTester tester) async {
+        await pumpForm(tester, existing: existing);
+
+        expect(find.text('Edit'), findsWidgets);
       });
     });
   });

@@ -146,7 +146,7 @@ void main() {
         expect(find.byType(FloatingActionButton), findsOneWidget);
       });
 
-      testWidgets('должен открывать диалог при нажатии на FAB',
+      testWidgets('должен открывать форму при нажатии на FAB',
           (WidgetTester tester) async {
         when(() => mockRepo.getAll())
             .thenAnswer((_) async => <WishlistItem>[]);
@@ -157,7 +157,9 @@ void main() {
         await tester.tap(find.byType(FloatingActionButton));
         await tester.pumpAndSettle();
 
-        expect(find.text('Add to Wishlist'), findsOneWidget);
+        // Открылась страница-форма с полем Title.
+        expect(find.widgetWithText(TextField, ''), findsWidgets);
+        expect(find.widgetWithText(TextButton, 'Add'), findsOneWidget);
       });
     });
 

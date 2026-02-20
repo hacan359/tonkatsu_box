@@ -128,7 +128,7 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
   }
 
   Future<void> _addItem(BuildContext context) async {
-    final WishlistDialogResult? result = await AddWishlistDialog.show(context);
+    final WishlistDialogResult? result = await AddWishlistForm.show(context);
     if (result == null || !mounted) return;
 
     await ref.read(wishlistProvider.notifier).add(
@@ -139,7 +139,7 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
   }
 
   Future<void> _editItem(BuildContext context, WishlistItem item) async {
-    final WishlistDialogResult? result = await AddWishlistDialog.show(
+    final WishlistDialogResult? result = await AddWishlistForm.show(
       context,
       existing: item,
     );
