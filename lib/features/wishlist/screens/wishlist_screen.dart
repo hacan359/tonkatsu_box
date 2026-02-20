@@ -43,6 +43,7 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
                   ? Icons.visibility
                   : Icons.visibility_off,
             ),
+            color: AppColors.textSecondary,
             tooltip: _showResolved ? 'Hide resolved' : 'Show resolved',
             onPressed: () {
               setState(() {
@@ -52,6 +53,7 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.delete_sweep),
+            color: AppColors.textSecondary,
             tooltip: 'Clear resolved',
             onPressed: () => _confirmClearResolved(context),
           ),
