@@ -169,6 +169,18 @@ Flutter 3.38+ / Dart 3.10+ · Riverpod · SQLite · Dio · Material Design 3
 
 Contributions are welcome! See the [Contributing Guide](docs/CONTRIBUTING.md) for details.
 
+## Code Signing Policy
+
+Windows binaries are signed with a certificate provided by [SignPath Foundation](https://signpath.org).
+
+Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org).
+
+**Team roles:**
+- Committers and reviewers: [hacan359](https://github.com/hacan359)
+- Approvers: [hacan359](https://github.com/hacan359)
+
+**Privacy policy:** This program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it. The application uses third-party APIs (IGDB, TMDB, SteamGridDB) only when the user explicitly initiates a search or data fetch.
+
 ## License
 
 MIT
