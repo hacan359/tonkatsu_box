@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/shared/constants/media_type_theme.dart';
 import 'package:xerabora/shared/models/media_type.dart';
+import 'package:xerabora/shared/theme/app_colors.dart';
 
 void main() {
   group('MediaTypeTheme', () {
@@ -76,20 +77,20 @@ void main() {
     });
 
     group('константы цветов', () {
-      test('gameColor должен быть синим (0xFF2196F3)', () {
-        expect(MediaTypeTheme.gameColor, const Color(0xFF2196F3));
+      test('gameColor должен быть AppColors.gameAccent', () {
+        expect(MediaTypeTheme.gameColor, AppColors.gameAccent);
       });
 
-      test('movieColor должен быть красным (0xFFF44336)', () {
-        expect(MediaTypeTheme.movieColor, const Color(0xFFF44336));
+      test('movieColor должен быть AppColors.movieAccent', () {
+        expect(MediaTypeTheme.movieColor, AppColors.movieAccent);
       });
 
-      test('tvShowColor должен быть зелёным (0xFF4CAF50)', () {
-        expect(MediaTypeTheme.tvShowColor, const Color(0xFF4CAF50));
+      test('tvShowColor должен быть AppColors.tvShowAccent', () {
+        expect(MediaTypeTheme.tvShowColor, AppColors.tvShowAccent);
       });
 
-      test('animationColor должен быть фиолетовым (0xFF9C27B0)', () {
-        expect(MediaTypeTheme.animationColor, const Color(0xFF9C27B0));
+      test('animationColor должен быть AppColors.animationAccent', () {
+        expect(MediaTypeTheme.animationColor, AppColors.animationAccent);
       });
     });
   });

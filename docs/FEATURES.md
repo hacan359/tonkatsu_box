@@ -6,7 +6,7 @@
 
 The app uses a forced dark theme (ThemeMode.dark) with a cinematic design system:
 
-- **AppColors** — deep dark palette (#0A0A0A background), rating colors (green/yellow/red), accent colors per media type
+- **AppColors** — deep dark palette (#0A0A0A background), brand accent (#EF7B44 orange) for UI elements, distinct accent per media type (indigo games, orange movies, lime TV shows, purple animation), rating colors (green/yellow/red)
 - **AppTypography** — Inter font with 8 text styles (h1–caption, posterTitle, posterSubtitle), negative letter-spacing on headings
 - **AppSpacing** — standardized spacing (4–32px), border radii (4–20px), poster aspect ratio (2:3), grid column counts
 - **AppTheme** — centralized ThemeData with styled AppBar, Card, Input, Dialog, BottomSheet, Chip, Button, NavigationRail, TabBar

@@ -53,7 +53,7 @@ class DatabaseScreen extends ConsumerWidget {
             const Row(
               children: <Widget>[
                 Icon(Icons.settings_backup_restore,
-                    color: AppColors.gameAccent),
+                    color: AppColors.brand),
                 SizedBox(width: AppSpacing.sm),
                 Flexible(
                   child: Text(

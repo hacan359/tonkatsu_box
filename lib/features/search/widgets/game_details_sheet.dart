@@ -167,7 +167,7 @@ class GameDetailsSheet extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        Icon(icon, size: 16, color: icon == Icons.star ? AppColors.ratingStar : AppColors.gameAccent),
+        Icon(icon, size: 16, color: icon == Icons.star ? AppColors.ratingStar : AppColors.brand),
         const SizedBox(width: AppSpacing.xs),
         Text(label),
       ],

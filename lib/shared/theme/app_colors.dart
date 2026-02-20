@@ -32,19 +32,30 @@ abstract final class AppColors {
   /// Третичный текст (неактивные элементы, подсказки).
   static const Color textTertiary = Color(0xFF707070);
 
+  // ==================== Brand / App Accent ====================
+
+  /// Основной акцентный цвет приложения (оранжевый).
+  static const Color brand = Color(0xFFEF7B44);
+
+  /// Светлый вариант brand (hover, highlighted).
+  static const Color brandLight = Color(0xFFF79D72);
+
+  /// Бледный вариант brand (фоновые заливки).
+  static const Color brandPale = Color(0xFFF7B596);
+
   // ==================== Акценты по типам медиа ====================
 
-  /// Акцентный цвет для игр (синий).
-  static const Color gameAccent = Color(0xFF64B5F6);
+  /// Акцентный цвет для игр (индиго).
+  static const Color gameAccent = Color(0xFF707DD2);
 
-  /// Акцентный цвет для фильмов (оранжево-красный).
-  static const Color movieAccent = Color(0xFFFF8A65);
+  /// Акцентный цвет для фильмов (оранжевый).
+  static const Color movieAccent = Color(0xFFEF7B44);
 
-  /// Акцентный цвет для сериалов (зелёный).
-  static const Color tvShowAccent = Color(0xFF81C784);
+  /// Акцентный цвет для сериалов (лаймовый).
+  static const Color tvShowAccent = Color(0xFFB1E140);
 
-  /// Акцентный цвет для анимации (светло-фиолетовый).
-  static const Color animationAccent = Color(0xFFCE93D8);
+  /// Акцентный цвет для анимации (пурпурный).
+  static const Color animationAccent = Color(0xFFA86ED4);
 
   // ==================== Семантические цвета ====================
 

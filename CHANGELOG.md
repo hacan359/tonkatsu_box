@@ -7,6 +7,8 @@
 ## [Unreleased]
 
 ### Added
+- Added `AppColors.brand` (#EF7B44), `brandLight`, `brandPale` as the dedicated app accent palette, separate from media-type accents
+- Added `theme-color` meta tag (#EF7B44) to landing page (`docs/index.html`)
 - Added TMDB content language setting (Russian / English) in Settings via SegmentedButton
 - Added `BreadcrumbScope` InheritedWidget (`lib/shared/widgets/breadcrumb_scope.dart`) — accumulates breadcrumb labels up the widget tree via `visitAncestorElements`
 - Added `AutoBreadcrumbAppBar` (`lib/shared/widgets/auto_breadcrumb_app_bar.dart`) — reads `BreadcrumbScope` chain and generates clickable breadcrumb navigation automatically
@@ -18,6 +20,11 @@
 - Added `cacheWidth`/`cacheHeight` to `Image.file()` in `CachedImage` and `memCacheWidth: 300` to `MediaPosterCard` — reduces decoded image memory for poster cards
 
 ### Changed
+- Recolored app palette: introduced `AppColors.brand` (#EF7B44) as the primary UI accent, replacing `gameAccent` in 15 screens/widgets (theme, navigation, snackbar, focus indicator, chips, progress bars, settings headers)
+- Updated media accent colors: games #707DD2 (indigo), movies #EF7B44 (orange), TV shows #B1E140 (lime), animation #A86ED4 (purple)
+- Unified `MediaTypeTheme` to delegate to `AppColors` constants — was hardcoded Material colors (#2196F3, #F44336, #4CAF50, #9C27B0)
+- Recolored landing page (`docs/index.html`): new CSS variables (`--brand`, `--brand-light`, `--brand-pale`), updated media accent colors, CTA buttons, glow effects, showcase shadows, media-tag borders, section labels
+- Updated Wishlist appbar icon colors to `AppColors.textSecondary` (was default white)
 - Refactored `CollectionItem` media resolution: replaced 5 identical `switch(mediaType)` blocks with a single `_resolvedMedia` getter using Dart records
 - Redesigned `BreadcrumbAppBar` visual style: height 40→44px, font 12→13px, `›` separator → `Icons.chevron_right` (14px, 50% opacity), last crumb w600/textPrimary, hover pill effect (surfaceLight background, borderRadius 6), mobile collapse (>2 crumbs → first…last), mobile back button (← instead of logo), text overflow ellipsis (maxWidth 300 current / 180 intermediate), `accentColor` parameter for accent border-bottom, gamepad support (`Actions > Focus` with `FocusNode` dispose)
 - Migrated all 20 screens from manual breadcrumb assembly to `BreadcrumbScope` + `AutoBreadcrumbAppBar`: Settings (8 screens), Collections (6 screens), Home, Search, Wishlist tabs
@@ -25,6 +32,7 @@
 - Updated 12 test files to wrap screens in `BreadcrumbScope` and adapt to new separator icon
 
 ### Removed
+- Removed decorative logo watermark from Collections screen (`home_screen.dart`) — Stack with 300×300 logo at 4% opacity
 - Removed `BreadcrumbAppBar.collectionFallback()` factory constructor — replaced by `AutoBreadcrumbAppBar` with `BreadcrumbScope`
 - Removed `_buildFallbackAppBar()` methods from all 4 detail screens
 - Removed `DecoratedBox` from `MaterialApp.builder` in `app.dart` — tiled background now applied per-route via `PageTransitionsTheme`

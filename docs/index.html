@@ -24,6 +24,9 @@
   <meta name="twitter:title" content="Tonkatsu Box — Your Media Collection Manager">
   <meta name="twitter:description" content="Organize retro games, movies, TV shows & anime. Free & open source.">
 
+  <!-- Theme Color -->
+  <meta name="theme-color" content="#EF7B44">
+
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="assets/favicon.png">
 
@@ -47,15 +50,18 @@
       --text-secondary:#9898A8;
       --text-tertiary: #5C5C6E;
 
-      --game-accent:   #4FC3F7;
-      --movie-accent:  #EF5350;
-      --tv-accent:     #66BB6A;
-      --anime-accent:  #CE93D8;
+      --brand:         #EF7B44;
+      --brand-light:   #F79D72;
+      --brand-pale:    #F7B596;
+      --game-accent:   #707DD2;
+      --movie-accent:  #EF7B44;
+      --tv-accent:     #B1E140;
+      --anime-accent:  #A86ED4;
 
-      --glow-game:     rgba(79, 195, 247, 0.15);
-      --glow-movie:    rgba(239, 83, 80, 0.15);
-      --glow-tv:       rgba(102, 187, 106, 0.15);
-      --glow-anime:    rgba(206, 147, 216, 0.15);
+      --glow-game:     rgba(112, 125, 210, 0.15);
+      --glow-movie:    rgba(239, 123, 68, 0.15);
+      --glow-tv:       rgba(177, 225, 64, 0.15);
+      --glow-anime:    rgba(168, 110, 212, 0.15);
 
       --font-display:  'Space Mono', monospace;
       --font-body:     'DM Sans', system-ui, sans-serif;
@@ -228,7 +234,7 @@
       font-size: 13px;
       font-weight: 700;
       padding: 10px 20px;
-      background: var(--text-primary);
+      background: var(--brand);
       color: var(--bg-deep);
       border-radius: var(--radius-sm);
       transition: transform 0.2s, box-shadow 0.2s;
@@ -236,7 +242,7 @@
 
     .nav__cta:hover {
       transform: translateY(-1px);
-      box-shadow: 0 4px 20px rgba(255,255,255,0.15);
+      box-shadow: 0 4px 20px rgba(239, 123, 68, 0.3);
     }
 
     /* ═══════════════════════════════════════
@@ -271,7 +277,7 @@
     }
 
     .hero__badge span {
-      color: var(--game-accent);
+      color: var(--brand);
       font-family: var(--font-display);
       font-size: 12px;
     }
@@ -324,13 +330,13 @@
     }
 
     .btn--primary {
-      background: var(--text-primary);
+      background: var(--brand);
       color: var(--bg-deep);
     }
 
     .btn--primary:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 30px rgba(255,255,255,0.2);
+      box-shadow: 0 8px 30px rgba(239, 123, 68, 0.3);
     }
 
     .btn--ghost {
@@ -375,7 +381,7 @@
       box-shadow:
         0 4px 6px rgba(0,0,0,0.3),
         0 20px 60px rgba(0,0,0,0.5),
-        0 0 100px rgba(79, 195, 247, 0.05);
+        0 0 100px rgba(239, 123, 68, 0.05);
     }
 
     .showcase__titlebar {
@@ -408,7 +414,7 @@
       color: var(--text-tertiary);
       font-size: 15px;
       background:
-        radial-gradient(ellipse at center, rgba(79,195,247,0.04), transparent 70%),
+        radial-gradient(ellipse at center, rgba(239,123,68,0.04), transparent 70%),
         var(--bg-primary);
     }
 
@@ -441,10 +447,10 @@
       border: 1px solid;
     }
 
-    .media-tag--game   { color: var(--game-accent);  border-color: rgba(79,195,247,0.25);  background: var(--glow-game); }
-    .media-tag--movie  { color: var(--movie-accent); border-color: rgba(239,83,80,0.25);   background: var(--glow-movie); }
-    .media-tag--tv     { color: var(--tv-accent);    border-color: rgba(102,187,106,0.25); background: var(--glow-tv); }
-    .media-tag--anime  { color: var(--anime-accent); border-color: rgba(206,147,216,0.25); background: var(--glow-anime); }
+    .media-tag--game   { color: var(--game-accent);  border-color: rgba(112,125,210,0.25);  background: var(--glow-game); }
+    .media-tag--movie  { color: var(--movie-accent); border-color: rgba(239,123,68,0.25);   background: var(--glow-movie); }
+    .media-tag--tv     { color: var(--tv-accent);    border-color: rgba(177,225,64,0.25);  background: var(--glow-tv); }
+    .media-tag--anime  { color: var(--anime-accent); border-color: rgba(168,110,212,0.25); background: var(--glow-anime); }
 
     .media-tag__dot {
       width: 8px;
@@ -467,7 +473,7 @@
       font-weight: 700;
       letter-spacing: 2px;
       text-transform: uppercase;
-      color: var(--game-accent);
+      color: var(--brand);
       margin-bottom: 16px;
     }
 

@@ -163,7 +163,7 @@ class CollectionTile extends ConsumerWidget {
           value: stats.completionPercent / 100,
           minHeight: 4,
           backgroundColor: AppColors.surfaceLight,
-          valueColor: const AlwaysStoppedAnimation<Color>(AppColors.gameAccent),
+          valueColor: const AlwaysStoppedAnimation<Color>(AppColors.brand),
         ),
       ),
     );

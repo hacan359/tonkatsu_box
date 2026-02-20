@@ -33,7 +33,7 @@ class GamepadFocusIndicator extends ConsumerWidget {
   /// Радиус скругления рамки.
   final double? borderRadius;
 
-  /// Цвет рамки фокуса (по умолчанию [AppColors.gameAccent]).
+  /// Цвет рамки фокуса (по умолчанию [AppColors.brand]).
   final Color? focusColor;
 
   @override
@@ -57,7 +57,7 @@ class GamepadFocusIndicator extends ConsumerWidget {
               borderRadius: BorderRadius.circular(radius),
               border: hasFocus
                   ? Border.all(
-                      color: focusColor ?? AppColors.gameAccent,
+                      color: focusColor ?? AppColors.brand,
                       width: 2,
                     )
                   : null,

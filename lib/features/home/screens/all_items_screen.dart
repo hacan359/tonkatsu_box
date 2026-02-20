@@ -261,7 +261,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
 
   Widget _buildPlatformChip(int? platformId, String label) {
     final bool selected = _filterPlatformId == platformId;
-    const Color accentColor = AppColors.gameAccent;
+    const Color accentColor = AppColors.brand;
 
     return ChoiceChip(
       label: Text(
