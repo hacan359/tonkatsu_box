@@ -180,7 +180,8 @@ Quick notes for content to find later when internet is available:
 - **Clear resolved** — bulk delete all resolved items with confirmation dialog
 - **Badge** — navigation icon shows count of active (unresolved) items
 - **Popup menu** — Search, Edit, Mark resolved/Unresolve, Delete per item
-- **FAB** — quick add via floating action button
+- **FAB** — quick add via floating action button, opens full-page form with breadcrumb navigation
+- **Full-page form** — add/edit items on a dedicated screen (not popup), with title validation (min 2 chars), media type chips (no checkmark overlap), and optional note field
 
 ## 📤 Sharing
 

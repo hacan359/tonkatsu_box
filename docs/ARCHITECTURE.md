@@ -212,7 +212,7 @@ lib/
 | Файл | Назначение |
 |------|------------|
 | `lib/features/wishlist/screens/wishlist_screen.dart` | **Экран вишлиста**. ListView с `_WishlistTile`, FAB для добавления, фильтр resolved (visibility toggle), clear resolved с confirmation. Popup menu: Search/Edit/Resolve/Delete. Тап на элемент → `SearchScreen(initialQuery)`. Resolved: opacity 0.5, strikethrough |
-| `lib/features/wishlist/widgets/add_wishlist_dialog.dart` | **Диалог создания/редактирования**. TextField для названия, ChoiceChip для типа медиа (None/Game/Movie/TV/Animation), TextField для заметки. Режим редактирования при `existing` != null |
+| `lib/features/wishlist/widgets/add_wishlist_dialog.dart` | **Экран-форма создания/редактирования** (`AddWishlistForm`). Full-page form with `AutoBreadcrumbAppBar`, title validation (min 2 chars), ChoiceChip для типа медиа (showCheckmark: false), TextField для заметки. Breadcrumb "Add"/"Edit". Режим редактирования при `existing` != null |
 | `lib/features/wishlist/providers/wishlist_provider.dart` | **State management вишлиста**. `wishlistProvider` — AsyncNotifierProvider с оптимистичным обновлением. Методы: add, resolve, unresolve, updateItem, delete, clearResolved. Сортировка: active first → by createdAt DESC. `activeWishlistCountProvider` — Provider\<int\> для badge навигации |
 
 ---
