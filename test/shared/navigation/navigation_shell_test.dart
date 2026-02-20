@@ -73,7 +73,7 @@ void main() {
       prefs = await SharedPreferences.getInstance();
     });
 
-    Widget createShell({double width = 1024}) {
+    Widget createShell({double width = 1024, NavTab? initialTab}) {
       return ProviderScope(
         overrides: <Override>[
           sharedPreferencesProvider.overrideWithValue(prefs),
@@ -82,7 +82,7 @@ void main() {
         child: MaterialApp(
           home: MediaQuery(
             data: MediaQueryData(size: Size(width, 768)),
-            child: const NavigationShell(),
+            child: NavigationShell(initialTab: initialTab),
           ),
         ),
       );
@@ -283,6 +283,57 @@ void main() {
 
         // Видим SettingsScreen с Cache (корневой экран таба)
         expect(find.text('Cache'), findsOneWidget);
+      });
+    });
+
+    group('initialTab parameter', () {
+      testWidgets('opens on Settings tab when initialTab is settings',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(
+          createShell(width: 1024, initialTab: NavTab.settings),
+        );
+        await tester.pump();
+        await tester.pump();
+
+        final NavigationRail rail =
+            tester.widget<NavigationRail>(find.byType(NavigationRail));
+        expect(rail.selectedIndex, equals(NavTab.settings.index));
+      });
+
+      testWidgets('Settings tab is initialized when used as initialTab',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(
+          createShell(width: 1024, initialTab: NavTab.settings),
+        );
+        await tester.pump();
+        await tester.pump();
+
+        // Settings content should be visible
+        expect(find.text('Credentials'), findsOneWidget);
+      });
+
+      testWidgets('defaults to home tab when initialTab is null',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createShell(width: 1024));
+        await tester.pump();
+
+        final NavigationRail rail =
+            tester.widget<NavigationRail>(find.byType(NavigationRail));
+        expect(rail.selectedIndex, equals(NavTab.home.index));
+      });
+
+      testWidgets('initialTab works with BottomBar on mobile',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(
+          createShell(width: 400, initialTab: NavTab.settings),
+        );
+        await tester.pump();
+        await tester.pump();
+
+        final BottomNavigationBar bar =
+            tester.widget<BottomNavigationBar>(
+                find.byType(BottomNavigationBar));
+        expect(bar.currentIndex, equals(NavTab.settings.index));
       });
     });
 

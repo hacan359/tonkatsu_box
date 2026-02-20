@@ -104,6 +104,9 @@ Enter it in the app under **Settings → Credentials**.
 
 </details>
 
+> [!TIP]
+> On first launch, the app will walk you through a **Welcome Wizard** that explains everything — you can also revisit it later from **Settings → Welcome Guide**.
+
 ### Step 2: Install and run
 
 ```bash
@@ -155,6 +158,8 @@ For developers and contributors:
 | [Features](docs/FEATURES.md) | Detailed feature list |
 | [Architecture](docs/ARCHITECTURE.md) | Project structure, models, database |
 | [Getting Started](docs/GETTING_STARTED.md) | Developer setup guide |
+| [API Keys Guide](docs/guides/API_KEYS.md) | Detailed API key registration instructions |
+| [How It Works](docs/guides/HOW_IT_WORKS.md) | App structure, quick start, sharing |
 | [Roadmap](docs/ROADMAP.md) | Development progress and future plans |
 | [Export Format](docs/RCOLL_FORMAT.md) | `.xcoll` / `.xcollx` file format spec |
 | [Gamepad Support](docs/GAMEPAD.md) | Xbox controller / D-pad navigation |

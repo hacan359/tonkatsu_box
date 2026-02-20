@@ -52,10 +52,22 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        expect(find.byType(SettingsSection), findsNWidgets(2));
+        expect(find.byType(SettingsSection), findsAtLeastNWidgets(2));
         expect(find.text('Profile'), findsOneWidget);
         // "Settings" appears both as breadcrumb label and section title
         expect(find.text('Settings'), findsAtLeastNWidgets(1));
+      });
+
+      testWidgets('shows Help section after scrolling',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        // Scroll down to reveal Help section
+        await tester.drag(find.byType(ListView), const Offset(0, -300));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Help'), findsOneWidget);
       });
 
       testWidgets('shows InlineTextField for author name',
@@ -165,7 +177,8 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        // 4 SettingsNavRow (Credentials + Cache + Database + Debug)
+        // 4 visible SettingsNavRow (Credentials + Cache + Database + Debug)
+        // Welcome Guide is below the fold
         expect(find.byType(SettingsNavRow), findsNWidgets(4));
 
         // 4 nav row chevrons + 1 breadcrumb separator
@@ -274,6 +287,72 @@ void main() {
         );
 
         await tester.tap(debugTile);
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+      });
+    });
+
+    group('Help section', () {
+      testWidgets('shows Help section with help_outline icon',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        // Scroll down to reveal Help section
+        await tester.drag(find.byType(ListView), const Offset(0, -300));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Help'), findsOneWidget);
+        expect(find.byIcon(Icons.help_outline), findsOneWidget);
+      });
+
+      testWidgets('shows Welcome Guide nav row',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        await tester.drag(find.byType(ListView), const Offset(0, -300));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Welcome Guide'), findsOneWidget);
+        expect(
+          find.text('Getting started with Tonkatsu Box'),
+          findsOneWidget,
+        );
+      });
+
+      testWidgets('Welcome Guide has school icon',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        await tester.drag(find.byType(ListView), const Offset(0, -300));
+        await tester.pumpAndSettle();
+
+        final Finder welcomeTile = find.ancestor(
+          of: find.text('Welcome Guide'),
+          matching: find.byType(ListTile),
+        );
+        final ListTile tile = tester.widget<ListTile>(welcomeTile);
+        final Icon? leadingIcon = tile.leading as Icon?;
+        expect(leadingIcon!.icon, equals(Icons.school));
+      });
+
+      testWidgets('Welcome Guide tile is tappable',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        await tester.drag(find.byType(ListView), const Offset(0, -300));
+        await tester.pumpAndSettle();
+
+        final Finder welcomeTile = find.ancestor(
+          of: find.text('Welcome Guide'),
+          matching: find.byType(ListTile),
+        );
+
+        await tester.tap(welcomeTile);
         await tester.pumpAndSettle();
 
         expect(tester.takeException(), isNull);

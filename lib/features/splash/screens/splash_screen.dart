@@ -2,8 +2,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/database/database_service.dart';
+import '../../../features/settings/providers/settings_provider.dart';
+import '../../../features/welcome/screens/welcome_screen.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/navigation/navigation_shell.dart';
 import '../../../shared/theme/app_assets.dart';
@@ -89,12 +92,22 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     });
   }
 
-  /// Навигирует на главный экран когда оба условия выполнены:
+  /// Навигирует на нужный экран когда оба условия выполнены:
   /// анимация завершена И база данных открыта.
+  ///
+  /// При первом запуске (welcome_completed == false) → [WelcomeScreen].
+  /// При повторном запуске → [NavigationShell].
   void _tryNavigate() {
     if (_animationDone && _dbDone && !_navigated && mounted) {
       _navigated = true;
-      _navigateToHome();
+      final SharedPreferences prefs = ref.read(sharedPreferencesProvider);
+      final bool welcomeCompleted =
+          prefs.getBool(kWelcomeCompletedKey) ?? false;
+      if (welcomeCompleted) {
+        _navigateToHome();
+      } else {
+        _navigateToWelcome();
+      }
     }
   }
 
@@ -119,6 +132,31 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           return FadeTransition(opacity: animation, child: child);
         },
         transitionDuration: Duration(milliseconds: kIsMobile ? 200 : 500),
+      ),
+    );
+  }
+
+  void _navigateToWelcome() {
+    if (!mounted) return;
+
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder<void>(
+        pageBuilder: (
+          BuildContext context,
+          Animation<double> animation,
+          Animation<double> secondaryAnimation,
+        ) {
+          return const WelcomeScreen();
+        },
+        transitionsBuilder: (
+          BuildContext context,
+          Animation<double> animation,
+          Animation<double> secondaryAnimation,
+          Widget child,
+        ) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+        transitionDuration: const Duration(milliseconds: 500),
       ),
     );
   }

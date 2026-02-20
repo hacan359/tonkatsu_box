@@ -10,6 +10,7 @@ import 'package:xerabora/data/repositories/collection_repository.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/shared/models/collection.dart';
 import 'package:xerabora/features/splash/screens/splash_screen.dart';
+import 'package:xerabora/features/welcome/screens/welcome_screen.dart';
 import 'package:xerabora/shared/navigation/navigation_shell.dart';
 
 class MockCollectionRepository extends Mock implements CollectionRepository {}
@@ -73,7 +74,9 @@ void main() {
 
     testWidgets('должен показывать NavigationShell после splash анимации',
         (WidgetTester tester) async {
-      SharedPreferences.setMockInitialValues(<String, Object>{});
+      SharedPreferences.setMockInitialValues(<String, Object>{
+        kWelcomeCompletedKey: true,
+      });
       final SharedPreferences prefs = await SharedPreferences.getInstance();
 
       await tester.pumpWidget(
@@ -93,6 +96,30 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(NavigationShell), findsOneWidget);
+    });
+
+    testWidgets('должен показывать WelcomeScreen при первом запуске',
+        (WidgetTester tester) async {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: <Override>[
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            collectionRepositoryProvider.overrideWithValue(mockRepo),
+            databaseServiceProvider.overrideWithValue(mockDb),
+          ],
+          child: const TonkatsuBoxApp(),
+        ),
+      );
+
+      // Прокручиваем анимацию splash (2с контроллер)
+      await tester.pump(const Duration(seconds: 2));
+      // Завершаем анимацию перехода (fade 500мс)
+      await tester.pumpAndSettle();
+
+      expect(find.byType(WelcomeScreen), findsOneWidget);
     });
 
     testWidgets('должен использовать Material 3', (WidgetTester tester) async {
