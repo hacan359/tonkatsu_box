@@ -15,6 +15,9 @@ import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
 import '../../../shared/widgets/breadcrumb_scope.dart';
 import '../../../shared/widgets/source_badge.dart';
 import '../providers/settings_provider.dart';
+import '../widgets/inline_text_field.dart';
+import '../widgets/settings_section.dart';
+import '../widgets/status_dot.dart';
 
 /// URL для получения API ключей IGDB.
 const String _twitchConsoleUrl = 'https://dev.twitch.tv/console/apps';
@@ -38,258 +41,146 @@ class CredentialsScreen extends ConsumerStatefulWidget {
 }
 
 class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
-  final TextEditingController _clientIdController = TextEditingController();
-  final TextEditingController _clientSecretController = TextEditingController();
-  final TextEditingController _steamGridDbKeyController =
-      TextEditingController();
-  final TextEditingController _tmdbKeyController = TextEditingController();
-  final FocusNode _clientIdFocus = FocusNode();
-  final FocusNode _clientSecretFocus = FocusNode();
-
-  bool _obscureSecret = true;
-  bool _obscureSteamGridDbKey = true;
-  bool _obscureTmdbKey = true;
+  String _clientId = '';
+  String _clientSecret = '';
+  String _steamGridDbApiKey = '';
+  String _tmdbApiKey = '';
 
   @override
   void initState() {
     super.initState();
-    _loadExistingCredentials();
-  }
-
-  void _loadExistingCredentials() {
     final SettingsState settings = ref.read(settingsNotifierProvider);
-    _clientIdController.text = settings.clientId ?? '';
-    _clientSecretController.text = settings.clientSecret ?? '';
-    _steamGridDbKeyController.text = settings.steamGridDbApiKey ?? '';
-    _tmdbKeyController.text = settings.tmdbApiKey ?? '';
-  }
-
-  @override
-  void dispose() {
-    _clientIdController.dispose();
-    _clientSecretController.dispose();
-    _steamGridDbKeyController.dispose();
-    _tmdbKeyController.dispose();
-    _clientIdFocus.dispose();
-    _clientSecretFocus.dispose();
-    super.dispose();
+    _clientId = settings.clientId ?? '';
+    _clientSecret = settings.clientSecret ?? '';
+    _steamGridDbApiKey = settings.steamGridDbApiKey ?? '';
+    _tmdbApiKey = settings.tmdbApiKey ?? '';
   }
 
   @override
   Widget build(BuildContext context) {
     final SettingsState settings = ref.watch(settingsNotifierProvider);
+    final bool compact = MediaQuery.sizeOf(context).width < 600;
 
     return BreadcrumbScope(
       label: 'Credentials',
       child: Scaffold(
-      appBar: const AutoBreadcrumbAppBar(),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            if (widget.isInitialSetup) ...<Widget>[
-              _buildWelcomeSection(),
-              const SizedBox(height: AppSpacing.xl),
+        appBar: const AutoBreadcrumbAppBar(),
+        body: SingleChildScrollView(
+          padding: EdgeInsets.all(compact ? AppSpacing.sm : AppSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              if (widget.isInitialSetup) ...<Widget>[
+                _buildWelcomeSection(compact),
+                const SizedBox(height: AppSpacing.xl),
+              ],
+              _buildIgdbSection(settings, compact),
+              SizedBox(height: compact ? AppSpacing.sm : AppSpacing.lg),
+              _buildStatusSection(settings, compact),
+              SizedBox(height: compact ? AppSpacing.sm : AppSpacing.lg),
+              _buildActionsSection(settings),
+              SizedBox(height: compact ? AppSpacing.sm : AppSpacing.lg),
+              _buildSteamGridDbSection(settings, compact),
+              SizedBox(height: compact ? AppSpacing.sm : AppSpacing.lg),
+              _buildTmdbSection(settings, compact),
+              if (settings.errorMessage != null) ...<Widget>[
+                SizedBox(height: compact ? AppSpacing.sm : AppSpacing.md),
+                _buildErrorSection(settings.errorMessage!, compact),
+              ],
             ],
-            _buildIgdbSection(settings),
-            const SizedBox(height: AppSpacing.lg),
-            _buildStatusSection(settings),
-            const SizedBox(height: AppSpacing.lg),
-            _buildActionsSection(settings),
-            const SizedBox(height: AppSpacing.lg),
-            _buildSteamGridDbSection(settings),
-            const SizedBox(height: AppSpacing.lg),
-            _buildTmdbSection(settings),
-            if (settings.errorMessage != null) ...<Widget>[
-              const SizedBox(height: AppSpacing.md),
-              _buildErrorSection(settings.errorMessage!),
-            ],
-          ],
+          ),
         ),
       ),
-    ),
     );
   }
 
   // ==================== Welcome ====================
 
-  Widget _buildWelcomeSection() {
-    return Card(
-      color: AppColors.brand.withAlpha(30),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            const Row(
-              children: <Widget>[
-                Icon(Icons.waving_hand, color: AppColors.brand),
-                SizedBox(width: AppSpacing.sm),
-                Flexible(
-                  child: Text(
-                    'Welcome to Tonkatsu Box!',
-                    style: AppTypography.h2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            const Text(
-              'To get started, you need to set up your IGDB API credentials. '
-              'Get your Client ID and Client Secret from the Twitch Developer Console.',
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            TextButton.icon(
-              onPressed: () {
-                Clipboard.setData(
-                  const ClipboardData(text: _twitchConsoleUrl),
-                );
-                context.showAppSnackBar(
-                  'URL copied: $_twitchConsoleUrl',
-                );
-              },
-              icon: const Icon(Icons.copy, size: 16),
-              label: const Text('Copy Twitch Console URL'),
-            ),
-          ],
+  Widget _buildWelcomeSection(bool compact) {
+    return SettingsSection(
+      title: 'Welcome to Tonkatsu Box!',
+      icon: Icons.waving_hand,
+      iconColor: AppColors.brand,
+      compact: compact,
+      children: <Widget>[
+        const Text(
+          'To get started, you need to set up your IGDB API credentials. '
+          'Get your Client ID and Client Secret from the Twitch Developer Console.',
         ),
-      ),
+        const SizedBox(height: AppSpacing.sm),
+        TextButton.icon(
+          onPressed: () {
+            Clipboard.setData(
+              const ClipboardData(text: _twitchConsoleUrl),
+            );
+            context.showAppSnackBar(
+              'URL copied: $_twitchConsoleUrl',
+            );
+          },
+          icon: const Icon(Icons.copy, size: 16),
+          label: const Text('Copy Twitch Console URL'),
+        ),
+      ],
     );
   }
 
   // ==================== IGDB ====================
 
-  Widget _buildIgdbSection(SettingsState settings) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            const Row(
-              children: <Widget>[
-                SourceBadge(
-                  source: DataSource.igdb,
-                  size: SourceBadgeSize.large,
-                ),
-                SizedBox(width: AppSpacing.sm),
-                Flexible(
-                  child: Text(
-                    'IGDB API Credentials',
-                    style: AppTypography.h3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.md),
-            TextField(
-              controller: _clientIdController,
-              focusNode: _clientIdFocus,
-              decoration: const InputDecoration(
-                labelText: 'Client ID',
-                hintText: 'Enter your Twitch Client ID',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.key),
-              ),
-              textInputAction: TextInputAction.next,
-              onSubmitted: (_) => _clientSecretFocus.requestFocus(),
-              enabled: !settings.isLoading,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            TextField(
-              controller: _clientSecretController,
-              focusNode: _clientSecretFocus,
-              decoration: InputDecoration(
-                labelText: 'Client Secret',
-                hintText: 'Enter your Twitch Client Secret',
-                border: const OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.lock),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscureSecret ? Icons.visibility : Icons.visibility_off,
-                  ),
-                  onPressed: () {
-                    setState(() => _obscureSecret = !_obscureSecret);
-                  },
-                ),
-              ),
-              obscureText: _obscureSecret,
-              textInputAction: TextInputAction.done,
-              onSubmitted: (_) => _verifyConnection(),
-              enabled: !settings.isLoading,
-            ),
-          ],
-        ),
+  Widget _buildIgdbSection(SettingsState settings, bool compact) {
+    return SettingsSection(
+      title: 'IGDB API Credentials',
+      trailing: const SourceBadge(
+        source: DataSource.igdb,
+        size: SourceBadgeSize.large,
       ),
+      compact: compact,
+      children: <Widget>[
+        InlineTextField(
+          label: 'Client ID',
+          value: _clientId,
+          placeholder: 'Enter your Twitch Client ID',
+          compact: compact,
+          onChanged: (String value) => setState(() => _clientId = value),
+        ),
+        SizedBox(height: compact ? AppSpacing.sm : AppSpacing.md),
+        InlineTextField(
+          label: 'Client Secret',
+          value: _clientSecret,
+          placeholder: 'Enter your Twitch Client Secret',
+          obscureText: true,
+          compact: compact,
+          onChanged: (String value) =>
+              setState(() => _clientSecret = value),
+        ),
+      ],
     );
   }
 
-  Widget _buildStatusSection(SettingsState settings) {
-    final IconData statusIcon;
-    final Color statusColor;
-    final String statusText;
-
-    switch (settings.connectionStatus) {
-      case ConnectionStatus.connected:
-        statusIcon = Icons.check_circle;
-        statusColor = Colors.green;
-        statusText = 'Connected';
-      case ConnectionStatus.error:
-        statusIcon = Icons.error;
-        statusColor = Colors.red;
-        statusText = 'Connection Error';
-      case ConnectionStatus.checking:
-        statusIcon = Icons.sync;
-        statusColor = Colors.orange;
-        statusText = 'Checking...';
-      case ConnectionStatus.unknown:
-        statusIcon = Icons.help_outline;
-        statusColor = Colors.grey;
-        statusText = 'Not Connected';
-    }
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            const Text('Connection Status', style: AppTypography.h3),
-            const SizedBox(height: AppSpacing.md),
-            Row(
-              children: <Widget>[
-                Icon(statusIcon, color: statusColor, size: 28),
-                const SizedBox(width: AppSpacing.sm),
-                Text(
-                  statusText,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: statusColor,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.md),
-            _buildInfoRow(
-              'Platforms synced',
-              settings.platformCount.toString(),
-              Icons.videogame_asset,
-            ),
-            if (settings.lastSync != null) ...<Widget>[
-              const SizedBox(height: AppSpacing.sm),
-              _buildInfoRow(
-                'Last sync',
-                _formatTimestamp(settings.lastSync!),
-                Icons.schedule,
-              ),
-            ],
-          ],
+  Widget _buildStatusSection(SettingsState settings, bool compact) {
+    return SettingsSection(
+      title: 'Connection Status',
+      compact: compact,
+      children: <Widget>[
+        StatusDot(
+          label: _connectionLabel(settings.connectionStatus),
+          type: _connectionStatusType(settings.connectionStatus),
+          compact: compact,
         ),
-      ),
+        const SizedBox(height: AppSpacing.md),
+        _buildInfoRow(
+          'Platforms synced',
+          settings.platformCount.toString(),
+          Icons.videogame_asset,
+        ),
+        if (settings.lastSync != null) ...<Widget>[
+          const SizedBox(height: AppSpacing.sm),
+          _buildInfoRow(
+            'Last sync',
+            _formatTimestamp(settings.lastSync!),
+            Icons.schedule,
+          ),
+        ],
+      ],
     );
   }
 
@@ -349,236 +240,132 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
 
   // ==================== SteamGridDB ====================
 
-  Widget _buildSteamGridDbSection(SettingsState settings) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            const Row(
-              children: <Widget>[
-                SourceBadge(
-                  source: DataSource.steamGridDb,
-                  size: SourceBadgeSize.large,
-                ),
-                SizedBox(width: AppSpacing.sm),
-                Flexible(
-                  child: Text(
-                    'SteamGridDB API',
-                    style: AppTypography.h3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.md),
-            TextField(
-              controller: _steamGridDbKeyController,
-              decoration: InputDecoration(
-                labelText: 'API Key',
-                hintText: 'Enter your SteamGridDB API key',
-                border: const OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.vpn_key),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscureSteamGridDbKey
-                        ? Icons.visibility
-                        : Icons.visibility_off,
-                  ),
-                  onPressed: () {
-                    setState(
-                        () => _obscureSteamGridDbKey = !_obscureSteamGridDbKey);
-                  },
-                ),
-              ),
-              obscureText: _obscureSteamGridDbKey,
-              textInputAction: TextInputAction.done,
-              onSubmitted: (_) => _saveSteamGridDbKey(),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Row(
-              children: <Widget>[
-                Icon(
-                  settings.hasSteamGridDbKey
-                      ? Icons.check_circle
-                      : Icons.help_outline,
-                  color: settings.hasSteamGridDbKey
-                      ? AppColors.success
-                      : AppColors.textTertiary,
-                  size: 20,
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Text(
-                  settings.hasSteamGridDbKey ? 'API key saved' : 'No API key',
-                  style: AppTypography.body.copyWith(
-                    color: settings.hasSteamGridDbKey
-                        ? AppColors.success
-                        : AppColors.textTertiary,
-                  ),
-                ),
-                const Spacer(),
-                SizedBox(
-                  width: 100,
-                  height: 40,
-                  child: FilledButton(
-                    onPressed: _saveSteamGridDbKey,
-                    child: const Text('Save'),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+  Widget _buildSteamGridDbSection(SettingsState settings, bool compact) {
+    return SettingsSection(
+      title: 'SteamGridDB API',
+      trailing: const SourceBadge(
+        source: DataSource.steamGridDb,
+        size: SourceBadgeSize.large,
       ),
+      compact: compact,
+      children: <Widget>[
+        InlineTextField(
+          label: 'API Key',
+          value: _steamGridDbApiKey,
+          placeholder: 'Enter your SteamGridDB API key',
+          obscureText: true,
+          compact: compact,
+          onChanged: (String value) =>
+              setState(() => _steamGridDbApiKey = value),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        _buildSaveRow(
+          hasKey: settings.hasSteamGridDbKey,
+          compact: compact,
+          onSave: _saveSteamGridDbKey,
+        ),
+      ],
     );
   }
 
   // ==================== TMDB ====================
 
-  Widget _buildTmdbSection(SettingsState settings) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildTmdbSection(SettingsState settings, bool compact) {
+    return SettingsSection(
+      title: 'TMDB API (Movies & TV)',
+      trailing: const SourceBadge(
+        source: DataSource.tmdb,
+        size: SourceBadgeSize.large,
+      ),
+      compact: compact,
+      children: <Widget>[
+        InlineTextField(
+          label: 'API Key',
+          value: _tmdbApiKey,
+          placeholder: 'Enter your TMDB API key (v3)',
+          obscureText: true,
+          compact: compact,
+          onChanged: (String value) => setState(() => _tmdbApiKey = value),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        const Row(
           children: <Widget>[
-            const Row(
-              children: <Widget>[
-                SourceBadge(
-                  source: DataSource.tmdb,
-                  size: SourceBadgeSize.large,
-                ),
-                SizedBox(width: AppSpacing.sm),
-                Flexible(
-                  child: Text(
-                    'TMDB API (Movies & TV)',
-                    style: AppTypography.h3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.md),
-            TextField(
-              controller: _tmdbKeyController,
-              decoration: InputDecoration(
-                labelText: 'API Key',
-                hintText: 'Enter your TMDB API key (v3)',
-                border: const OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.vpn_key),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscureTmdbKey
-                        ? Icons.visibility
-                        : Icons.visibility_off,
-                  ),
-                  onPressed: () {
-                    setState(() => _obscureTmdbKey = !_obscureTmdbKey);
-                  },
-                ),
-              ),
-              obscureText: _obscureTmdbKey,
-              textInputAction: TextInputAction.done,
-              onSubmitted: (_) => _saveTmdbKey(),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            const Row(
-              children: <Widget>[
-                Icon(Icons.language, size: 20),
-                SizedBox(width: AppSpacing.sm),
-                Text('Content Language', style: AppTypography.body),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            SizedBox(
-              width: double.infinity,
-              child: SegmentedButton<String>(
-                segments: const <ButtonSegment<String>>[
-                  ButtonSegment<String>(
-                    value: 'ru-RU',
-                    label: Text('Русский'),
-                  ),
-                  ButtonSegment<String>(
-                    value: 'en-US',
-                    label: Text('English'),
-                  ),
-                ],
-                selected: <String>{settings.tmdbLanguage},
-                onSelectionChanged: (Set<String> selection) {
-                  ref
-                      .read(settingsNotifierProvider.notifier)
-                      .setTmdbLanguage(selection.first);
-                },
-                showSelectedIcon: false,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Row(
-              children: <Widget>[
-                Icon(
-                  settings.hasTmdbKey
-                      ? Icons.check_circle
-                      : Icons.help_outline,
-                  color: settings.hasTmdbKey
-                      ? AppColors.success
-                      : AppColors.textTertiary,
-                  size: 20,
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Text(
-                  settings.hasTmdbKey ? 'API key saved' : 'No API key',
-                  style: AppTypography.body.copyWith(
-                    color: settings.hasTmdbKey
-                        ? AppColors.success
-                        : AppColors.textTertiary,
-                  ),
-                ),
-                const Spacer(),
-                SizedBox(
-                  width: 100,
-                  height: 40,
-                  child: FilledButton(
-                    onPressed: _saveTmdbKey,
-                    child: const Text('Save'),
-                  ),
-                ),
-              ],
-            ),
+            Icon(Icons.language, size: 20),
+            SizedBox(width: AppSpacing.sm),
+            Text('Content Language', style: AppTypography.body),
           ],
         ),
-      ),
+        const SizedBox(height: AppSpacing.xs),
+        SizedBox(
+          width: double.infinity,
+          child: SegmentedButton<String>(
+            segments: const <ButtonSegment<String>>[
+              ButtonSegment<String>(
+                value: 'ru-RU',
+                label: Text('Русский'),
+              ),
+              ButtonSegment<String>(
+                value: 'en-US',
+                label: Text('English'),
+              ),
+            ],
+            selected: <String>{settings.tmdbLanguage},
+            onSelectionChanged: (Set<String> selection) {
+              ref
+                  .read(settingsNotifierProvider.notifier)
+                  .setTmdbLanguage(selection.first);
+            },
+            showSelectedIcon: false,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        _buildSaveRow(
+          hasKey: settings.hasTmdbKey,
+          compact: compact,
+          onSave: _saveTmdbKey,
+        ),
+      ],
     );
   }
 
   // ==================== Error ====================
 
-  Widget _buildErrorSection(String errorMessage) {
-    return Card(
-      color: AppColors.error.withAlpha(30),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.sm),
-        child: Row(
-          children: <Widget>[
-            const Icon(Icons.warning_amber, color: AppColors.error),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: Text(
-                errorMessage,
-                style: AppTypography.body.copyWith(color: AppColors.error),
-              ),
-            ),
-          ],
+  Widget _buildErrorSection(String errorMessage, bool compact) {
+    return SettingsSection(
+      title: 'Error',
+      icon: Icons.warning_amber,
+      iconColor: AppColors.error,
+      compact: compact,
+      children: <Widget>[
+        Text(
+          errorMessage,
+          style: AppTypography.body.copyWith(color: AppColors.error),
         ),
-      ),
+      ],
     );
   }
+
+  // ==================== Helpers ====================
+
+  StatusType _connectionStatusType(ConnectionStatus status) => switch (status) {
+        ConnectionStatus.connected => StatusType.success,
+        ConnectionStatus.error => StatusType.error,
+        ConnectionStatus.checking => StatusType.warning,
+        ConnectionStatus.unknown => StatusType.inactive,
+      };
+
+  String _connectionLabel(ConnectionStatus status) => switch (status) {
+        ConnectionStatus.connected => 'Connected',
+        ConnectionStatus.error => 'Connection Error',
+        ConnectionStatus.checking => 'Checking...',
+        ConnectionStatus.unknown => 'Not Connected',
+      };
 
   // ==================== Actions ====================
 
   Future<void> _verifyConnection() async {
-    final String clientId = _clientIdController.text.trim();
-    final String clientSecret = _clientSecretController.text.trim();
+    final String clientId = _clientId.trim();
+    final String clientSecret = _clientSecret.trim();
 
     if (clientId.isEmpty || clientSecret.isEmpty) {
       context.showAppSnackBar(
@@ -641,47 +428,86 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
             ))
         .toList();
 
-    final int downloaded = await cacheService.downloadImages(
-      type: ImageType.platformLogo,
-      tasks: tasks,
+    try {
+      final int downloaded = await cacheService.downloadImages(
+        type: ImageType.platformLogo,
+        tasks: tasks,
+      );
+
+      messenger.hideCurrentSnackBar();
+      if (mounted) {
+        context.showAppSnackBar('Downloaded $downloaded logos');
+      }
+    } on Exception {
+      messenger.hideCurrentSnackBar();
+      if (mounted) {
+        context.showAppSnackBar('Failed to download logos', isError: true);
+      }
+    }
+  }
+
+  /// Строка с StatusDot + кнопкой Save для API ключей.
+  Widget _buildSaveRow({
+    required bool hasKey,
+    required bool compact,
+    required VoidCallback onSave,
+  }) {
+    return Row(
+      children: <Widget>[
+        StatusDot(
+          label: hasKey ? 'API key saved' : 'No API key',
+          type: hasKey ? StatusType.success : StatusType.inactive,
+          compact: compact,
+        ),
+        const Spacer(),
+        SizedBox(
+          width: 100,
+          height: 40,
+          child: FilledButton(
+            onPressed: onSave,
+            child: const Text('Save'),
+          ),
+        ),
+      ],
     );
-
-    messenger.hideCurrentSnackBar();
-    if (mounted) {
-      context.showAppSnackBar('Downloaded $downloaded logos');
-    }
   }
 
-  Future<void> _saveSteamGridDbKey() async {
-    final String apiKey = _steamGridDbKeyController.text.trim();
+  Future<void> _saveSteamGridDbKey() => _saveApiKey(
+        value: _steamGridDbApiKey,
+        emptyMessage: 'Please enter a SteamGridDB API key',
+        setter: ref.read(settingsNotifierProvider.notifier).setSteamGridDbApiKey,
+        successMessage: 'API key saved',
+      );
+
+  Future<void> _saveTmdbKey() => _saveApiKey(
+        value: _tmdbApiKey,
+        emptyMessage: 'Please enter a TMDB API key',
+        setter: ref.read(settingsNotifierProvider.notifier).setTmdbApiKey,
+        successMessage: 'TMDB API key saved',
+      );
+
+  Future<void> _saveApiKey({
+    required String value,
+    required String emptyMessage,
+    required Future<void> Function(String) setter,
+    required String successMessage,
+  }) async {
+    final String apiKey = value.trim();
     if (apiKey.isEmpty) {
-      context.showAppSnackBar('Please enter a SteamGridDB API key', isError: true);
+      context.showAppSnackBar(emptyMessage, isError: true);
       return;
     }
 
-    await ref.read(settingsNotifierProvider.notifier).setSteamGridDbApiKey(apiKey);
+    await setter(apiKey);
 
     if (mounted) {
-      context.showAppSnackBar('API key saved');
-    }
-  }
-
-  Future<void> _saveTmdbKey() async {
-    final String apiKey = _tmdbKeyController.text.trim();
-    if (apiKey.isEmpty) {
-      context.showAppSnackBar('Please enter a TMDB API key', isError: true);
-      return;
-    }
-
-    await ref.read(settingsNotifierProvider.notifier).setTmdbApiKey(apiKey);
-
-    if (mounted) {
-      context.showAppSnackBar('TMDB API key saved');
+      context.showAppSnackBar(successMessage);
     }
   }
 
   String _formatTimestamp(int timestamp) {
-    final DateTime date = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
+    final DateTime date =
+        DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
     final DateTime now = DateTime.now();
     final Duration diff = now.difference(date);
 

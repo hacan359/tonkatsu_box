@@ -1,4 +1,4 @@
-// Тесты для SettingsScreen (hub с 4 плитками навигации).
+// Тесты для SettingsScreen (hub с секциями Profile и Settings).
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +7,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/features/settings/screens/settings_screen.dart';
+import 'package:xerabora/features/settings/widgets/inline_text_field.dart';
+import 'package:xerabora/features/settings/widgets/settings_nav_row.dart';
+import 'package:xerabora/features/settings/widgets/settings_section.dart';
 import 'package:xerabora/shared/widgets/auto_breadcrumb_app_bar.dart';
 import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 
@@ -34,120 +37,117 @@ void main() {
 
   group('SettingsScreen', () {
     group('UI components', () {
-      testWidgets('shows breadcrumb with Settings label', (WidgetTester tester) async {
+      testWidgets('shows breadcrumb with Settings label',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
         expect(find.byType(AutoBreadcrumbAppBar), findsOneWidget);
-        expect(find.text('Settings'), findsOneWidget);
+        // "Settings" appears in breadcrumb and as section title
+        expect(find.text('Settings'), findsAtLeastNWidgets(1));
       });
 
-      testWidgets('shows Credentials tile with correct icon and subtitle',
+      testWidgets('shows Profile and Settings sections',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
+
+        expect(find.byType(SettingsSection), findsNWidgets(2));
+        expect(find.text('Profile'), findsOneWidget);
+        // "Settings" appears both as breadcrumb label and section title
+        expect(find.text('Settings'), findsAtLeastNWidgets(1));
+      });
+
+      testWidgets('shows InlineTextField for author name',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        expect(find.byType(InlineTextField), findsOneWidget);
+        expect(find.text('Author name'), findsOneWidget);
+        // Default author name
+        expect(find.text('User'), findsOneWidget);
+      });
+
+      testWidgets('shows Credentials nav row with correct icon and subtitle',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        expect(find.text('Credentials'), findsOneWidget);
+        expect(
+          find.text('IGDB, SteamGridDB, TMDB API keys'),
+          findsOneWidget,
+        );
 
         final Finder credentialsTile = find.ancestor(
           of: find.text('Credentials'),
           matching: find.byType(ListTile),
         );
-
-        expect(credentialsTile, findsOneWidget);
-        expect(
-          find.descendant(
-            of: credentialsTile,
-            matching: find.text('IGDB, SteamGridDB, TMDB API keys'),
-          ),
-          findsOneWidget,
-        );
-
-        // Проверяем leading icon
         final ListTile tile = tester.widget<ListTile>(credentialsTile);
         final Icon? leadingIcon = tile.leading as Icon?;
-        expect(leadingIcon, isNotNull);
         expect(leadingIcon!.icon, equals(Icons.key));
       });
 
-      testWidgets('shows Cache tile with correct icon and subtitle',
+      testWidgets('shows Cache nav row with correct icon and subtitle',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
+
+        expect(find.text('Cache'), findsOneWidget);
+        expect(find.text('Image cache settings'), findsOneWidget);
 
         final Finder cacheTile = find.ancestor(
           of: find.text('Cache'),
           matching: find.byType(ListTile),
         );
-
-        expect(cacheTile, findsOneWidget);
-        expect(
-          find.descendant(
-            of: cacheTile,
-            matching: find.text('Image cache settings'),
-          ),
-          findsOneWidget,
-        );
-
         final ListTile tile = tester.widget<ListTile>(cacheTile);
         final Icon? leadingIcon = tile.leading as Icon?;
-        expect(leadingIcon, isNotNull);
         expect(leadingIcon!.icon, equals(Icons.cached));
       });
 
-      testWidgets('shows Database tile with correct icon and subtitle',
+      testWidgets('shows Database nav row with correct icon and subtitle',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
+
+        expect(find.text('Database'), findsOneWidget);
+        expect(find.text('Export, import, reset'), findsOneWidget);
 
         final Finder databaseTile = find.ancestor(
           of: find.text('Database'),
           matching: find.byType(ListTile),
         );
-
-        expect(databaseTile, findsOneWidget);
-        expect(
-          find.descendant(
-            of: databaseTile,
-            matching: find.text('Export, import, reset'),
-          ),
-          findsOneWidget,
-        );
-
         final ListTile tile = tester.widget<ListTile>(databaseTile);
         final Icon? leadingIcon = tile.leading as Icon?;
-        expect(leadingIcon, isNotNull);
         expect(leadingIcon!.icon, equals(Icons.storage));
       });
 
-      testWidgets('shows Debug tile with correct icon and subtitle when in debug mode',
+      testWidgets(
+          'shows Debug nav row with correct icon and subtitle when in debug mode',
           (WidgetTester tester) async {
-        // В тестах kDebugMode всегда true
         expect(kDebugMode, isTrue);
 
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        final Finder debugTile = find.ancestor(
-          of: find.text('Debug'),
-          matching: find.byType(ListTile),
-        );
-
-        expect(debugTile, findsOneWidget);
-
-        // Без SteamGridDB ключа показывает предупреждение
+        expect(find.text('Debug'), findsOneWidget);
         expect(
           find.text('Set SteamGridDB key first for some tools'),
           findsOneWidget,
         );
 
+        final Finder debugTile = find.ancestor(
+          of: find.text('Debug'),
+          matching: find.byType(ListTile),
+        );
         final ListTile tile = tester.widget<ListTile>(debugTile);
         final Icon? leadingIcon = tile.leading as Icon?;
-        expect(leadingIcon, isNotNull);
         expect(leadingIcon!.icon, equals(Icons.bug_report));
       });
 
-      testWidgets('Debug tile subtitle changes when SteamGridDB key is set',
+      testWidgets('Debug nav row subtitle changes when SteamGridDB key is set',
           (WidgetTester tester) async {
-        // Устанавливаем SteamGridDB ключ
         await prefs.setString(SettingsKeys.steamGridDbApiKey, 'test-key');
 
         await tester.pumpWidget(createWidget());
@@ -160,43 +160,50 @@ void main() {
         );
       });
 
-      testWidgets('shows Author name tile with edit icon',
+      testWidgets('shows chevron_right trailing icons for nav rows',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        final Finder authorTile = find.ancestor(
-          of: find.text('Author name'),
-          matching: find.byType(ListTile),
-        );
-        expect(authorTile, findsOneWidget);
+        // 4 SettingsNavRow (Credentials + Cache + Database + Debug)
+        expect(find.byType(SettingsNavRow), findsNWidgets(4));
 
-        final ListTile tile = tester.widget<ListTile>(authorTile);
-        final Icon? trailingIcon = tile.trailing as Icon?;
-        expect(trailingIcon!.icon, equals(Icons.edit));
-
-        // Дефолтное имя автора
-        expect(find.text('User'), findsOneWidget);
+        // 4 nav row chevrons + 1 breadcrumb separator
+        expect(find.byIcon(Icons.chevron_right), findsNWidgets(5));
       });
 
-      testWidgets('shows chevron_right trailing icons for navigation tiles',
+      testWidgets('Author name shows custom name when set',
+          (WidgetTester tester) async {
+        await prefs.setString(SettingsKeys.defaultAuthor, 'Hacan');
+
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        expect(find.text('Hacan'), findsOneWidget);
+      });
+    });
+
+    group('Section icons', () {
+      testWidgets('shows person icon for Profile section',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        // 5 плиток всего: Author name + Credentials + Cache + Database + Debug
-        final Iterable<ListTile> allTiles = tester.widgetList<ListTile>(
-          find.byType(ListTile),
-        );
-        expect(allTiles.length, equals(5));
+        expect(find.byIcon(Icons.person), findsOneWidget);
+      });
 
-        // 4 навигационные плитки имеют chevron_right + 1 breadcrumb separator
-        expect(find.byIcon(Icons.chevron_right), findsNWidgets(5));
+      testWidgets('shows tune icon for Settings section',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        expect(find.byIcon(Icons.tune), findsOneWidget);
       });
     });
 
     group('Navigation', () {
-      testWidgets('all tiles have onTap callback', (WidgetTester tester) async {
+      testWidgets('nav rows have onTap callbacks',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
@@ -204,12 +211,15 @@ void main() {
           find.byType(ListTile),
         );
 
+        // All ListTile instances (from SettingsNavRow) should have onTap
         for (final ListTile tile in tiles) {
-          expect(tile.onTap, isNotNull, reason: 'Tile "${tile.title}" should have onTap');
+          expect(tile.onTap, isNotNull,
+              reason: 'Tile "${tile.title}" should have onTap');
         }
       });
 
-      testWidgets('Credentials tile is tappable', (WidgetTester tester) async {
+      testWidgets('Credentials tile is tappable',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
@@ -218,11 +228,9 @@ void main() {
           matching: find.byType(ListTile),
         );
 
-        // Tap не должен вызвать ошибку (навигация работает)
         await tester.tap(credentialsTile);
         await tester.pumpAndSettle();
 
-        // После навигации SettingsScreen в стеке, но перекрыт новым экраном
         expect(tester.takeException(), isNull);
       });
 
@@ -270,43 +278,19 @@ void main() {
 
         expect(tester.takeException(), isNull);
       });
-
-      testWidgets('Author name tile opens edit dialog', (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        final Finder authorTile = find.ancestor(
-          of: find.text('Author name'),
-          matching: find.byType(ListTile),
-        );
-
-        await tester.tap(authorTile);
-        await tester.pumpAndSettle();
-
-        expect(find.text('Author name'), findsNWidgets(2)); // tile + dialog title
-        expect(find.text('Save'), findsOneWidget);
-        expect(find.text('Cancel'), findsOneWidget);
-      });
-
-      testWidgets('Author name shows custom name when set', (WidgetTester tester) async {
-        await prefs.setString(SettingsKeys.defaultAuthor, 'Hacan');
-
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        expect(find.text('Hacan'), findsOneWidget);
-      });
     });
 
     group('Error handling', () {
-      testWidgets('does not show error card by default', (WidgetTester tester) async {
+      testWidgets('does not show error section by default',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.warning_amber), findsNothing);
+        // Only Profile + Settings sections, no Error section
+        expect(find.byType(SettingsSection), findsNWidgets(2));
       });
 
-      testWidgets('shows error card when errorMessage is set',
+      testWidgets('shows error section when errorMessage is set',
           (WidgetTester tester) async {
         const String errorMessage = 'Test error message';
 
@@ -318,16 +302,25 @@ void main() {
                 () => _TestSettingsNotifier(errorMessage),
               ),
             ],
-            child: const MaterialApp(home: SettingsScreen()),
+            child: const MaterialApp(
+              home: BreadcrumbScope(
+                label: 'Settings',
+                child: SettingsScreen(),
+              ),
+            ),
           ),
         );
         await tester.pumpAndSettle();
 
+        // Scroll down to make error section visible
+        await tester.drag(find.byType(ListView), const Offset(0, -300));
+        await tester.pumpAndSettle();
+
+        // Error section should show warning icon and error text
         expect(find.byIcon(Icons.warning_amber), findsOneWidget);
         expect(find.text(errorMessage), findsOneWidget);
       });
     });
-
   });
 }
 
@@ -339,6 +332,7 @@ class _TestSettingsNotifier extends SettingsNotifier {
 
   @override
   SettingsState build() {
+    ref.watch(sharedPreferencesProvider);
     return SettingsState(errorMessage: _errorMessage);
   }
 }

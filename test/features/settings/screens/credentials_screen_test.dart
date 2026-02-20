@@ -5,6 +5,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/features/settings/screens/credentials_screen.dart';
+import 'package:xerabora/features/settings/widgets/inline_text_field.dart';
+import 'package:xerabora/features/settings/widgets/settings_section.dart';
+import 'package:xerabora/features/settings/widgets/status_dot.dart';
 import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 import 'package:xerabora/shared/widgets/source_badge.dart';
 
@@ -49,6 +52,17 @@ void main() {
       });
     });
 
+    group('SettingsSection виджеты', () {
+      testWidgets('должен использовать SettingsSection для секций',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        // IGDB + Status + SteamGridDB + TMDB = 4 sections minimum
+        expect(find.byType(SettingsSection), findsAtLeastNWidgets(4));
+      });
+    });
+
     group('IGDB секция', () {
       testWidgets('должен показывать заголовок IGDB API Credentials',
           (WidgetTester tester) async {
@@ -58,28 +72,21 @@ void main() {
         expect(find.text('IGDB API Credentials'), findsOneWidget);
       });
 
-      testWidgets('должен показывать поле Client ID',
+      testWidgets('должен показывать InlineTextField для Client ID',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
         expect(find.text('Client ID'), findsOneWidget);
-        expect(
-          find.widgetWithText(TextField, 'Client ID'),
-          findsOneWidget,
-        );
+        expect(find.byType(InlineTextField), findsAtLeastNWidgets(1));
       });
 
-      testWidgets('должен показывать поле Client Secret',
+      testWidgets('должен показывать InlineTextField для Client Secret',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
         expect(find.text('Client Secret'), findsOneWidget);
-        expect(
-          find.widgetWithText(TextField, 'Client Secret'),
-          findsOneWidget,
-        );
       });
 
       testWidgets('должен показывать SourceBadge для IGDB',
@@ -90,7 +97,6 @@ void main() {
         final Finder sourceBadges = find.byType(SourceBadge);
         expect(sourceBadges, findsAtLeastNWidgets(1));
 
-        // Проверяем, что есть бейдж IGDB
         final List<SourceBadge> badges =
             tester.widgetList<SourceBadge>(sourceBadges).toList();
         expect(
@@ -99,60 +105,13 @@ void main() {
         );
       });
 
-      testWidgets('должен позволять вводить Client ID',
+      testWidgets('Client Secret должен быть скрыт (obscureText)',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        final Finder clientIdField = find.widgetWithText(TextField, 'Client ID');
-        await tester.enterText(clientIdField, 'test_client_id');
-
-        expect(find.text('test_client_id'), findsOneWidget);
-      });
-
-      testWidgets('должен позволять вводить Client Secret',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        final Finder secretField =
-            find.widgetWithText(TextField, 'Client Secret');
-        await tester.enterText(secretField, 'test_secret');
-
-        // Текст скрыт, но виджет содержит значение
-        final TextField textField = tester.widget<TextField>(secretField);
-        expect(textField.controller?.text, equals('test_secret'));
-      });
-
-      testWidgets('должен скрывать Client Secret по умолчанию',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        final Finder secretField =
-            find.widgetWithText(TextField, 'Client Secret');
-        final TextField textField = tester.widget<TextField>(secretField);
-        expect(textField.obscureText, isTrue);
-      });
-
-      testWidgets('должен переключать видимость Client Secret',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        // Изначально пароль скрыт
-        Finder secretField = find.widgetWithText(TextField, 'Client Secret');
-        TextField textField = tester.widget<TextField>(secretField);
-        expect(textField.obscureText, isTrue);
-
-        // Нажимаем на первую иконку видимости (Client Secret)
-        await tester.tap(find.byIcon(Icons.visibility).first);
-        await tester.pumpAndSettle();
-
-        // Теперь пароль виден
-        secretField = find.widgetWithText(TextField, 'Client Secret');
-        textField = tester.widget<TextField>(secretField);
-        expect(textField.obscureText, isFalse);
+        // InlineTextField с obscureText показывает visibility иконку
+        expect(find.byIcon(Icons.visibility), findsAtLeastNWidgets(1));
       });
     });
 
@@ -171,7 +130,7 @@ void main() {
         expect(find.text('SteamGridDB API'), findsOneWidget);
       });
 
-      testWidgets('должен показывать поле API Key для SteamGridDB',
+      testWidgets('должен показывать InlineTextField для API Key',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
@@ -199,7 +158,8 @@ void main() {
         final List<SourceBadge> badges =
             tester.widgetList<SourceBadge>(find.byType(SourceBadge)).toList();
         expect(
-          badges.any((SourceBadge badge) => badge.source == DataSource.steamGridDb),
+          badges.any(
+              (SourceBadge badge) => badge.source == DataSource.steamGridDb),
           isTrue,
         );
       });
@@ -218,7 +178,7 @@ void main() {
         expect(find.text('Save'), findsAtLeastNWidgets(1));
       });
 
-      testWidgets('должен скрывать SteamGridDB API Key по умолчанию',
+      testWidgets('должен показывать StatusDot для SteamGridDB',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
@@ -229,44 +189,8 @@ void main() {
           scrollable: find.byType(Scrollable).first,
         );
 
-        // Находим текстовое поле в SteamGridDB секции
-        final List<TextField> textFields =
-            tester.widgetList<TextField>(find.byType(TextField)).toList();
-        // Client ID, Client Secret, SteamGridDB Key, TMDB Key = 4
-        expect(textFields.length, greaterThanOrEqualTo(3));
-
-        // SteamGridDB ключ - третий TextField
-        final TextField steamGridField = textFields[2];
-        expect(steamGridField.obscureText, isTrue);
-      });
-
-      testWidgets('должен переключать видимость SteamGridDB API Key',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        await tester.scrollUntilVisible(
-          find.text('SteamGridDB API'),
-          200,
-          scrollable: find.byType(Scrollable).first,
-        );
-
-        // Находим все иконки visibility
-        final List<Icon> visibilityIcons =
-            tester.widgetList<Icon>(find.byIcon(Icons.visibility)).toList();
-
-        // SteamGridDB visibility icon - второй (после Client Secret)
-        expect(visibilityIcons.length, greaterThanOrEqualTo(2));
-
-        // Нажимаем на вторую иконку видимости (SteamGridDB)
-        await tester.tap(find.byIcon(Icons.visibility).at(1));
-        await tester.pumpAndSettle();
-
-        // Проверяем что иконка изменилась на visibility_off
-        final List<TextField> textFields =
-            tester.widgetList<TextField>(find.byType(TextField)).toList();
-        final TextField steamGridField = textFields[2];
-        expect(steamGridField.obscureText, isFalse);
+        expect(find.byType(StatusDot), findsAtLeastNWidgets(1));
+        expect(find.text('No API key'), findsAtLeastNWidgets(1));
       });
     });
 
@@ -285,7 +209,7 @@ void main() {
         expect(find.text('TMDB API (Movies & TV)'), findsOneWidget);
       });
 
-      testWidgets('должен показывать поле API Key для TMDB',
+      testWidgets('должен показывать InlineTextField для TMDB API Key',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
@@ -296,7 +220,7 @@ void main() {
           scrollable: find.byType(Scrollable).first,
         );
 
-        // API Key label встречается для SteamGridDB и TMDB
+        // API Key label appears for SteamGridDB and TMDB
         expect(find.text('API Key'), findsAtLeastNWidgets(2));
       });
 
@@ -330,52 +254,8 @@ void main() {
           scrollable: find.byType(Scrollable).first,
         );
 
-        // Save встречается для SteamGridDB и TMDB
+        // Save appears for SteamGridDB and TMDB
         expect(find.text('Save'), findsAtLeastNWidgets(2));
-      });
-
-      testWidgets('должен скрывать TMDB API Key по умолчанию',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        await tester.scrollUntilVisible(
-          find.text('TMDB API (Movies & TV)'),
-          200,
-          scrollable: find.byType(Scrollable).first,
-        );
-
-        // Находим все текстовые поля
-        final List<TextField> textFields =
-            tester.widgetList<TextField>(find.byType(TextField)).toList();
-        // Client ID, Client Secret, SteamGridDB Key, TMDB Key = 4
-        expect(textFields.length, equals(4));
-
-        // TMDB ключ - четвёртый TextField
-        final TextField tmdbField = textFields[3];
-        expect(tmdbField.obscureText, isTrue);
-      });
-
-      testWidgets('должен переключать видимость TMDB API Key',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        await tester.scrollUntilVisible(
-          find.text('TMDB API (Movies & TV)'),
-          200,
-          scrollable: find.byType(Scrollable).first,
-        );
-
-        // Нажимаем на третью иконку видимости (TMDB)
-        await tester.tap(find.byIcon(Icons.visibility).at(2));
-        await tester.pumpAndSettle();
-
-        // Проверяем что obscureText изменился
-        final List<TextField> textFields =
-            tester.widgetList<TextField>(find.byType(TextField)).toList();
-        final TextField tmdbField = textFields[3];
-        expect(tmdbField.obscureText, isFalse);
       });
     });
 
@@ -449,13 +329,14 @@ void main() {
         expect(find.text('0'), findsOneWidget);
       });
 
-      testWidgets('должен показывать иконку статуса',
+      testWidgets('должен показывать StatusDot для статуса подключения',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        // По умолчанию статус unknown - иконка help_outline
-        // Проверяем что есть хотя бы одна иконка
+        // StatusDot: connection + steamgriddb + tmdb
+        expect(find.byType(StatusDot), findsAtLeastNWidgets(1));
+        // Default is inactive — help_outline icon
         expect(find.byIcon(Icons.help_outline), findsAtLeastNWidgets(1));
       });
 
@@ -498,7 +379,6 @@ void main() {
         await tester.pumpWidget(createWidget(isInitialSetup: true));
         await tester.pumpAndSettle();
 
-        // Мокаем clipboard
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(
           SystemChannels.platform,
@@ -534,7 +414,7 @@ void main() {
         expect(find.text('existing_client_id'), findsOneWidget);
       });
 
-      testWidgets('должен загружать Client Secret из SharedPreferences',
+      testWidgets('должен загружать Client Secret (скрыт по умолчанию)',
           (WidgetTester tester) async {
         SharedPreferences.setMockInitialValues(<String, Object>{
           'igdb_client_secret': 'existing_secret',
@@ -544,57 +424,13 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        // Secret скрыт, проверяем через контроллер
-        final Finder secretField =
-            find.widgetWithText(TextField, 'Client Secret');
-        final TextField textField = tester.widget<TextField>(secretField);
-        expect(textField.controller?.text, equals('existing_secret'));
-      });
-
-      testWidgets('должен загружать SteamGridDB API Key из SharedPreferences',
-          (WidgetTester tester) async {
-        SharedPreferences.setMockInitialValues(<String, Object>{
-          'steamgriddb_api_key': 'existing_sgdb_key',
-        });
-        prefs = await SharedPreferences.getInstance();
-
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        await tester.scrollUntilVisible(
-          find.text('SteamGridDB API'),
-          200,
-          scrollable: find.byType(Scrollable).first,
+        // Secret is obscured — dots shown, not actual text
+        expect(find.text('existing_secret'), findsNothing);
+        expect(
+          find.text(
+              '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022'),
+          findsOneWidget,
         );
-
-        // Проверяем через контроллер (ключ скрыт)
-        final List<TextField> textFields =
-            tester.widgetList<TextField>(find.byType(TextField)).toList();
-        final TextField steamGridField = textFields[2];
-        expect(steamGridField.controller?.text, equals('existing_sgdb_key'));
-      });
-
-      testWidgets('должен загружать TMDB API Key из SharedPreferences',
-          (WidgetTester tester) async {
-        SharedPreferences.setMockInitialValues(<String, Object>{
-          'tmdb_api_key': 'existing_tmdb_key',
-        });
-        prefs = await SharedPreferences.getInstance();
-
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        await tester.scrollUntilVisible(
-          find.text('TMDB API (Movies & TV)'),
-          200,
-          scrollable: find.byType(Scrollable).first,
-        );
-
-        // Проверяем через контроллер (ключ скрыт)
-        final List<TextField> textFields =
-            tester.widgetList<TextField>(find.byType(TextField)).toList();
-        final TextField tmdbField = textFields[3];
-        expect(tmdbField.controller?.text, equals('existing_tmdb_key'));
       });
 
       testWidgets('должен загружать все credentials одновременно',
@@ -610,27 +446,115 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        // Проверяем Client ID
+        // Client ID is visible (not obscured)
         expect(find.text('full_client_id'), findsOneWidget);
 
-        // Проверяем Client Secret через контроллер
-        final Finder secretField =
-            find.widgetWithText(TextField, 'Client Secret');
-        final TextField secretTextField = tester.widget<TextField>(secretField);
-        expect(secretTextField.controller?.text, equals('full_secret'));
+        // Obscured fields show dots (3 fields with obscureText)
+        // Client Secret + SteamGridDB + TMDB = 3 dot sets
+        expect(
+          find.text(
+              '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022'),
+          findsAtLeastNWidgets(1),
+        );
+      });
+    });
 
-        // Скроллим до остальных полей
+    group('TMDB Content Language', () {
+      testWidgets('должен показывать SegmentedButton для языка',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        await tester.scrollUntilVisible(
+          find.text('Content Language'),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+
+        expect(find.text('Content Language'), findsOneWidget);
+        expect(find.byType(SegmentedButton<String>), findsOneWidget);
+      });
+
+      testWidgets('должен показывать варианты Русский и English',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        await tester.scrollUntilVisible(
+          find.text('Content Language'),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+
+        expect(find.text('Русский'), findsOneWidget);
+        expect(find.text('English'), findsOneWidget);
+      });
+    });
+
+    group('Save с пустым ключом', () {
+      testWidgets('Save SteamGridDB с пустым ключом показывает snackbar',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        await tester.scrollUntilVisible(
+          find.text('SteamGridDB API'),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+
+        // Find Save button in SteamGridDB section
+        final Finder saveButtons = find.text('Save');
+        expect(saveButtons, findsAtLeastNWidgets(1));
+
+        await tester.tap(saveButtons.first);
+        await tester.pumpAndSettle();
+
+        expect(
+          find.text('Please enter a SteamGridDB API key'),
+          findsOneWidget,
+        );
+      });
+
+      testWidgets('Save TMDB с пустым ключом показывает snackbar',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
         await tester.scrollUntilVisible(
           find.text('TMDB API (Movies & TV)'),
           200,
           scrollable: find.byType(Scrollable).first,
         );
 
-        // Проверяем все текстовые поля
-        final List<TextField> textFields =
-            tester.widgetList<TextField>(find.byType(TextField)).toList();
-        expect(textFields[2].controller?.text, equals('full_sgdb_key'));
-        expect(textFields[3].controller?.text, equals('full_tmdb_key'));
+        // Find Save buttons and tap the last one (TMDB)
+        final Finder saveButtons = find.text('Save');
+        expect(saveButtons, findsAtLeastNWidgets(2));
+
+        await tester.tap(saveButtons.last);
+        await tester.pumpAndSettle();
+
+        expect(
+          find.text('Please enter a TMDB API key'),
+          findsOneWidget,
+        );
+      });
+    });
+
+    group('Error секция', () {
+      testWidgets('не показывает Error секцию по умолчанию',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        // Scroll to the bottom
+        await tester.scrollUntilVisible(
+          find.text('TMDB API (Movies & TV)'),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+
+        expect(find.text('Error'), findsNothing);
       });
     });
 

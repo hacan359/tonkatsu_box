@@ -318,13 +318,25 @@ lib/
 
 ### ⚙️ Features: Settings (Настройки)
 
+#### Widgets (`lib/features/settings/widgets/`)
+
 | Файл | Назначение |
 |------|------------|
-| `lib/features/settings/screens/settings_screen.dart` | **Хаб настроек**. 4 навигационные плитки: Credentials, Cache, Database, Debug (только kDebugMode). Карточка ошибки при `settings.errorMessage` |
-| `lib/features/settings/screens/credentials_screen.dart` | **Учётные данные API**. Ввод IGDB Client ID/Secret, SteamGridDB API key, TMDB API key, выбор языка контента TMDB (ru-RU/en-US). Кнопки Verify/Refresh Platforms. Секция Welcome при начальной настройке |
-| `lib/features/settings/screens/cache_screen.dart` | **Настройки кэша**. Toggle включения кэша, выбор папки, статистика (файлы/размер), очистка кэша |
-| `lib/features/settings/screens/database_screen.dart` | **Управление БД**. Export/Import Config (JSON). Danger Zone: Reset Database с диалогом подтверждения |
-| `lib/features/settings/screens/debug_hub_screen.dart` | **Хаб отладки** (только kDebugMode). 3 плитки: IGDB Media, SteamGridDB, Gamepad. SteamGridDB недоступен без API ключа |
+| `settings_section.dart` | **Секция настроек**. `Card > Padding > Column` с заголовком (иконка + title + trailing), подзаголовком и дочерними виджетами. Compact mode (sm vs md padding/gap) |
+| `settings_row.dart` | **Строка настройки**. Обёртка над `ListTile` с optional divider, icon, trailing widget. `contentPadding: EdgeInsets.zero`, compact dense mode |
+| `settings_nav_row.dart` | **Навигационная строка**. `ListTile` с leading icon, subtitle и `trailing: Icons.chevron_right`. Compact icon size (18/20) |
+| `status_dot.dart` | **Индикатор статуса**. `StatusType` enum (success/warning/error/inactive) → иконка + цветной текст. Compact icon size (16/18) |
+| `inline_text_field.dart` | **Inline текстовое поле**. Tap → edit mode (TextField), blur/Enter → commit. Visibility toggle для obscured полей. D-pad/gamepad поддержка через `Actions > Focus > ActivateIntent` |
+
+#### Screens (`lib/features/settings/screens/`)
+
+| Файл | Назначение |
+|------|------------|
+| `lib/features/settings/screens/settings_screen.dart` | **Хаб настроек**. `SettingsSection(Profile)` с `InlineTextField` для author name + `SettingsSection(Settings)` с 4 `SettingsNavRow`: Credentials, Cache, Database, Debug (только kDebugMode). Секция ошибки при `settings.errorMessage` |
+| `lib/features/settings/screens/credentials_screen.dart` | **Учётные данные API**. `InlineTextField` для IGDB Client ID/Secret, SteamGridDB API key, TMDB API key. Выбор языка контента TMDB (ru-RU/en-US) через `SegmentedButton`. `StatusDot` для статуса подключения. Кнопки Verify/Refresh Platforms. Секция Welcome при начальной настройке |
+| `lib/features/settings/screens/cache_screen.dart` | **Настройки кэша**. `SettingsSection` с `SettingsRow`(Switch) для toggle кэша, выбор папки, статистика (файлы/размер), очистка кэша |
+| `lib/features/settings/screens/database_screen.dart` | **Управление БД**. `SettingsSection(Configuration)` с Export/Import Config (JSON). `SettingsSection(Danger Zone)` с Reset Database и диалогом подтверждения |
+| `lib/features/settings/screens/debug_hub_screen.dart` | **Хаб отладки** (только kDebugMode). `SettingsSection` с 3 `SettingsNavRow`: SteamGridDB, Image Debug, Gamepad. SteamGridDB недоступен без API ключа |
 | `lib/features/settings/screens/steamgriddb_debug_screen.dart` | **Debug-экран SteamGridDB**. 5 табов: Search, Grids, Heroes, Logos, Icons. Тестирование всех API эндпоинтов |
 | `lib/features/settings/screens/image_debug_screen.dart` | **Debug-экран IGDB Media**. Проверка URL изображений в коллекциях: постеры, thumbnail, превью |
 | `lib/features/settings/screens/gamepad_debug_screen.dart` | **Debug-экран Gamepad**. Raw events от Gamepads.events + filtered events от GamepadService в двух колонках |

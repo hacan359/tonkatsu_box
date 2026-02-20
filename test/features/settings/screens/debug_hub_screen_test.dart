@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/features/settings/screens/debug_hub_screen.dart';
+import 'package:xerabora/features/settings/widgets/settings_nav_row.dart';
+import 'package:xerabora/features/settings/widgets/settings_section.dart';
 import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 
 void main() {
@@ -118,6 +120,64 @@ void main() {
 
       // 3 ListTile chevrons + 2 breadcrumb separators
       expect(find.byIcon(Icons.chevron_right), findsNWidgets(5));
+    });
+
+    testWidgets('Использует SettingsSection виджет',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SettingsSection), findsOneWidget);
+    });
+
+    testWidgets('Использует 3 SettingsNavRow виджета',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SettingsNavRow), findsNWidgets(3));
+    });
+
+    testWidgets('Показывает заголовок Debug Tools',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.text('Debug Tools'), findsOneWidget);
+    });
+
+    testWidgets('Image Debug Panel показывает subtitle',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.text('Check poster URLs and loading'), findsOneWidget);
+    });
+
+    testWidgets('Gamepad Debug Panel показывает subtitle',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.text('Test controller input events'), findsOneWidget);
+    });
+
+    testWidgets('SteamGridDB показывает Test API endpoints при наличии ключа',
+        (WidgetTester tester) async {
+      await prefs.setString('steamgriddb_api_key', 'test_key');
+
+      await tester.pumpWidget(createWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.text('Test API endpoints'), findsOneWidget);
+    });
+
+    testWidgets('Показывает иконку bug_report в секции',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.bug_report), findsOneWidget);
     });
   });
 }
