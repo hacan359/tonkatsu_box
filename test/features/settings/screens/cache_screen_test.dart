@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/features/settings/screens/cache_screen.dart';
+import 'package:xerabora/features/settings/widgets/settings_section.dart';
 import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 
 void main() {
@@ -46,6 +47,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Image Cache'), findsOneWidget);
+      expect(find.byType(SettingsSection), findsOneWidget);
     });
 
     testWidgets('Показывает переключатель Offline mode',
@@ -54,17 +56,19 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Offline mode'), findsOneWidget);
-      expect(find.byType(SwitchListTile), findsOneWidget);
+      expect(find.byType(Switch), findsOneWidget);
     });
 
-    testWidgets('Показывает метку Cache folder', (WidgetTester tester) async {
+    testWidgets('Показывает метку Cache folder',
+        (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
       expect(find.text('Cache folder'), findsOneWidget);
     });
 
-    testWidgets('Показывает метку Cache size', (WidgetTester tester) async {
+    testWidgets('Показывает метку Cache size',
+        (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
@@ -76,12 +80,11 @@ void main() {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
-      final Finder switchTile = find.byType(SwitchListTile);
-      expect(switchTile, findsOneWidget);
+      final Finder switchFinder = find.byType(Switch);
+      expect(switchFinder, findsOneWidget);
 
-      final SwitchListTile tile =
-          tester.widget<SwitchListTile>(switchTile);
-      expect(tile.value, false);
+      final Switch switchWidget = tester.widget<Switch>(switchFinder);
+      expect(switchWidget.value, false);
     });
 
     testWidgets('Показывает иконки', (WidgetTester tester) async {
@@ -91,6 +94,25 @@ void main() {
       expect(find.byIcon(Icons.folder), findsOneWidget);
       expect(find.byIcon(Icons.folder_open), findsOneWidget);
       expect(find.byIcon(Icons.delete_outline), findsOneWidget);
+    });
+
+    testWidgets('Offline mode показывает subtitle',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Save images locally for offline use'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('Показывает статистику кэша 0 files',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('0 files'), findsOneWidget);
     });
   });
 }

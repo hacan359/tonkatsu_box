@@ -7,6 +7,8 @@
 ## [Unreleased]
 
 ### Added
+- Added 5 reusable settings widgets (`lib/features/settings/widgets/`): `SettingsSection` (Card with header, icon, trailing), `SettingsRow` (ListTile wrapper), `SettingsNavRow` (navigation row with chevron), `StatusDot` (icon + label indicator), `InlineTextField` (tap-to-edit with blur/Enter commit, visibility toggle, gamepad D-pad support)
+- Added compact mode (width < 600) across all 5 settings screens — responsive padding, icon sizes, gap spacing
 - Added `AppColors.brand` (#EF7B44), `brandLight`, `brandPale` as the dedicated app accent palette, separate from media-type accents
 - Added `theme-color` meta tag (#EF7B44) to landing page (`docs/index.html`)
 - Added TMDB content language setting (Russian / English) in Settings via SegmentedButton
@@ -16,10 +18,15 @@
 - Added tests for `BreadcrumbScope` (6 tests) and `AutoBreadcrumbAppBar` (8 tests)
 
 ### Fixed
+- Fixed missing `mounted` check after async operations in `CacheScreen` (3 `setState` calls after `await`)
+- Fixed SnackBar leak in `CredentialsScreen._downloadLogosIfEnabled()` — added try/catch around download to properly hide progress SnackBar on exception
 - Fixed route transition overlap: transparent Scaffold backgrounds caused content of both pages to show through each other during navigation. Added `_OpaquePageTransitionsBuilder` in `PageTransitionsTheme` — each route now gets its own opaque `DecoratedBox` with tiled background, preventing bleed-through
 - Added `cacheWidth`/`cacheHeight` to `Image.file()` in `CachedImage` and `memCacheWidth: 300` to `MediaPosterCard` — reduces decoded image memory for poster cards
 
 ### Changed
+- Refactored 5 settings screens (`settings_screen`, `credentials_screen`, `cache_screen`, `database_screen`, `debug_hub_screen`) to use shared `SettingsSection`, `SettingsNavRow`, `SettingsRow`, `StatusDot`, `InlineTextField` widgets — net reduction ~200 lines, eliminated manual `Card > Padding > Column > Row` patterns
+- Replaced AlertDialog for author name editing with inline `InlineTextField` on `SettingsScreen`
+- Replaced 4 `TextEditingController` + 2 `FocusNode` + 3 obscure booleans in `CredentialsScreen` with 4 local String variables — `InlineTextField` manages its own state
 - Recolored app palette: introduced `AppColors.brand` (#EF7B44) as the primary UI accent, replacing `gameAccent` in 15 screens/widgets (theme, navigation, snackbar, focus indicator, chips, progress bars, settings headers)
 - Updated media accent colors: games #707DD2 (indigo), movies #EF7B44 (orange), TV shows #B1E140 (lime), animation #A86ED4 (purple)
 - Unified `MediaTypeTheme` to delegate to `AppColors` constants — was hardcoded Material colors (#2196F3, #F44336, #4CAF50, #9C27B0)

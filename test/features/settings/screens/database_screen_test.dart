@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/features/settings/screens/database_screen.dart';
+import 'package:xerabora/features/settings/widgets/settings_section.dart';
+import 'package:xerabora/shared/theme/app_colors.dart';
 import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 
 void main() {
@@ -127,6 +129,65 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byIcon(Icons.settings_backup_restore), findsOneWidget);
+    });
+
+    testWidgets('Configuration секция показывает subtitle',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Export or import your API keys and settings.'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('Danger Zone показывает описание',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pumpAndSettle();
+
+      expect(
+        find.textContaining('Clears all collections'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('Показывает 2 SettingsSection виджета',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byType(SettingsSection),
+        findsNWidgets(2),
+      );
+    });
+
+    testWidgets('Reset Database диалог содержит текст предупреждения',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Reset Database'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.textContaining('permanently delete'),
+        findsOneWidget,
+      );
+      expect(find.text('Cancel'), findsOneWidget);
+      expect(find.text('Reset'), findsOneWidget);
+    });
+
+    testWidgets('Danger Zone иконка имеет error цвет',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pumpAndSettle();
+
+      final Icon warningIcon =
+          tester.widget<Icon>(find.byIcon(Icons.warning_amber));
+      expect(warningIcon.color, equals(AppColors.error));
     });
   });
 }

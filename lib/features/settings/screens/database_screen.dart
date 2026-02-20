@@ -14,6 +14,7 @@ import '../../../shared/navigation/navigation_shell.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../providers/settings_provider.dart';
+import '../widgets/settings_section.dart';
 
 /// Экран управления базой данных.
 ///
@@ -24,128 +25,103 @@ class DatabaseScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final bool compact = MediaQuery.sizeOf(context).width < 600;
+
     return BreadcrumbScope(
       label: 'Database',
       child: Scaffold(
-      appBar: const AutoBreadcrumbAppBar(),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            _buildConfigSection(context, ref),
-            const SizedBox(height: AppSpacing.lg),
-            _buildDangerZoneSection(context, ref),
-          ],
-        ),
-      ),
-    ),
-    );
-  }
-
-  Widget _buildConfigSection(BuildContext context, WidgetRef ref) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            const Row(
-              children: <Widget>[
-                Icon(Icons.settings_backup_restore,
-                    color: AppColors.brand),
-                SizedBox(width: AppSpacing.sm),
-                Flexible(
-                  child: Text(
-                    'Configuration',
-                    style: AppTypography.h3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            const Text(
-              'Export or import your API keys and settings.',
-              style: AppTypography.bodySmall,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            LayoutBuilder(
-              builder: (BuildContext context, BoxConstraints constraints) {
-                final Widget exportButton = OutlinedButton.icon(
-                  onPressed: () => _exportConfig(context, ref),
-                  icon: const Icon(Icons.upload, size: 18),
-                  label: const Text('Export Config'),
-                );
-                final Widget importButton = OutlinedButton.icon(
-                  onPressed: () => _importConfig(context, ref),
-                  icon: const Icon(Icons.download, size: 18),
-                  label: const Text('Import Config'),
-                );
-                if (constraints.maxWidth < 400) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: <Widget>[
-                      exportButton,
-                      const SizedBox(height: AppSpacing.sm),
-                      importButton,
-                    ],
-                  );
-                }
-                return Row(
-                  children: <Widget>[
-                    Expanded(child: exportButton),
-                    const SizedBox(width: AppSpacing.sm),
-                    Expanded(child: importButton),
-                  ],
-                );
-              },
-            ),
-          ],
+        appBar: const AutoBreadcrumbAppBar(),
+        body: SingleChildScrollView(
+          padding: EdgeInsets.all(compact ? AppSpacing.sm : AppSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              _buildConfigSection(context, ref, compact),
+              SizedBox(height: compact ? AppSpacing.sm : AppSpacing.lg),
+              _buildDangerZoneSection(context, ref, compact),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildDangerZoneSection(BuildContext context, WidgetRef ref) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Row(
+  Widget _buildConfigSection(
+    BuildContext context,
+    WidgetRef ref,
+    bool compact,
+  ) {
+    return SettingsSection(
+      title: 'Configuration',
+      icon: Icons.settings_backup_restore,
+      subtitle: 'Export or import your API keys and settings.',
+      compact: compact,
+      children: <Widget>[
+        LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            final Widget exportButton = OutlinedButton.icon(
+              onPressed: () => _exportConfig(context, ref),
+              icon: const Icon(Icons.upload, size: 18),
+              label: const Text('Export Config'),
+            );
+            final Widget importButton = OutlinedButton.icon(
+              onPressed: () => _importConfig(context, ref),
+              icon: const Icon(Icons.download, size: 18),
+              label: const Text('Import Config'),
+            );
+            if (constraints.maxWidth < 400) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  exportButton,
+                  const SizedBox(height: AppSpacing.sm),
+                  importButton,
+                ],
+              );
+            }
+            return Row(
               children: <Widget>[
-                const Icon(Icons.warning_amber, color: AppColors.error),
+                Expanded(child: exportButton),
                 const SizedBox(width: AppSpacing.sm),
-                Text(
-                  'Danger Zone',
-                  style: AppTypography.h3.copyWith(color: AppColors.error),
-                ),
+                Expanded(child: importButton),
               ],
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            const Text(
-              'Clears all collections, games, movies, TV shows and board data. '
-              'Settings and API keys will be preserved.',
-              style: AppTypography.bodySmall,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () => _resetDatabase(context, ref),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.error,
-                  side: const BorderSide(color: AppColors.error),
-                ),
-                icon: const Icon(Icons.delete_forever, size: 18),
-                label: const Text('Reset Database'),
-              ),
-            ),
-          ],
+            );
+          },
         ),
-      ),
+      ],
+    );
+  }
+
+  Widget _buildDangerZoneSection(
+    BuildContext context,
+    WidgetRef ref,
+    bool compact,
+  ) {
+    return SettingsSection(
+      title: 'Danger Zone',
+      icon: Icons.warning_amber,
+      iconColor: AppColors.error,
+      compact: compact,
+      children: <Widget>[
+        const Text(
+          'Clears all collections, games, movies, TV shows and board data. '
+          'Settings and API keys will be preserved.',
+          style: AppTypography.bodySmall,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: () => _resetDatabase(context, ref),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.error,
+              side: const BorderSide(color: AppColors.error),
+            ),
+            icon: const Icon(Icons.delete_forever, size: 18),
+            label: const Text('Reset Database'),
+          ),
+        ),
+      ],
     );
   }
 
@@ -220,8 +196,6 @@ class DatabaseScreen extends ConsumerWidget {
 
       if (context.mounted) {
         context.showAppSnackBar('Database has been reset');
-        // Заменяем NavigationShell целиком, чтобы сбросить стеки
-        // навигации всех табов (а не только текущего Settings).
         Navigator.of(context, rootNavigator: true).pushReplacement(
           MaterialPageRoute<void>(
             builder: (_) => const NavigationShell(),

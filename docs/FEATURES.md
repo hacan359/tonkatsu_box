@@ -278,16 +278,21 @@ Each item in a collection has its own personal board:
 
 ## ⚙️ Settings
 
-Settings is organized as a hub with an author name card and 4 sub-screens:
+Settings is organized as a hub with an inline author name field and 4 sub-screens. All screens support **compact mode** (responsive layout for screens < 600px width).
 
-- **Author name** — configurable default author for new and forked collections (editable via inline dialog)
+Built with 5 reusable widgets: `SettingsSection`, `SettingsRow`, `SettingsNavRow`, `StatusDot`, `InlineTextField`.
+
+- **Author name** — configurable default author for new and forked collections (editable inline via tap-to-edit field)
+- **Inline editing** — API keys and author name use `InlineTextField` (tap to edit, blur/Enter to save, no dialogs)
+- **Status indicators** — `StatusDot` shows connection status, API key presence with color-coded icons
+- **Gamepad support** — all inline fields support D-pad navigation and A-button activation
 
 | Screen | Description |
 |--------|-------------|
-| **Credentials** | IGDB, TMDB, SteamGridDB API keys; TMDB content language (Russian/English) |
+| **Credentials** | IGDB, TMDB, SteamGridDB API keys via inline fields; TMDB content language (Russian/English); connection status with StatusDot; Verify/Refresh buttons |
 | **Cache** | Image caching toggle, folder, stats, clear |
-| **Database** | Config export/import (.json), Reset Database |
-| **Debug** | IGDB Media, SteamGridDB, Gamepad (dev only) |
+| **Database** | Config export/import (.json), Reset Database with confirmation |
+| **Debug** | SteamGridDB, Image Debug, Gamepad (dev only) |
 
 > [!WARNING]
 > **Reset Database** clears all collections, items, and board data. API keys and settings are preserved. This action cannot be undone.
