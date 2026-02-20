@@ -446,11 +446,11 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 8),
         decoration: BoxDecoration(
           color: _filterType != null
-              ? AppColors.gameAccent.withAlpha(30)
+              ? AppColors.brand.withAlpha(30)
               : AppColors.surfaceLight,
           borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
           border: _filterType != null
-              ? Border.all(color: AppColors.gameAccent.withAlpha(100))
+              ? Border.all(color: AppColors.brand.withAlpha(100))
               : null,
         ),
         child: Row(
@@ -460,7 +460,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
               Icons.filter_list,
               size: 16,
               color: _filterType != null
-                  ? AppColors.gameAccent
+                  ? AppColors.brand
                   : AppColors.textSecondary,
             ),
             const SizedBox(width: 4),
@@ -468,7 +468,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
               label,
               style: AppTypography.bodySmall.copyWith(
                 color: _filterType != null
-                    ? AppColors.gameAccent
+                    ? AppColors.brand
                     : AppColors.textPrimary,
               ),
             ),
@@ -477,7 +477,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
               Icons.arrow_drop_down,
               size: 16,
               color: _filterType != null
-                  ? AppColors.gameAccent
+                  ? AppColors.brand
                   : AppColors.textSecondary,
             ),
           ],
@@ -511,7 +511,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       child: Row(
         children: <Widget>[
           if (selected)
-            const Icon(Icons.check, size: 18, color: AppColors.gameAccent)
+            const Icon(Icons.check, size: 18, color: AppColors.brand)
           else
             const SizedBox(width: 18),
           const SizedBox(width: AppSpacing.sm),
@@ -627,7 +627,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                   const Icon(
                     Icons.check,
                     size: 18,
-                    color: AppColors.gameAccent,
+                    color: AppColors.brand,
                   )
                 else
                   const SizedBox(width: 18),
@@ -733,7 +733,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
 
   Widget _buildPlatformChip(int? platformId, String label) {
     final bool selected = _filterPlatformId == platformId;
-    const Color accentColor = AppColors.gameAccent;
+    const Color accentColor = AppColors.brand;
 
     return ChoiceChip(
       label: Text(

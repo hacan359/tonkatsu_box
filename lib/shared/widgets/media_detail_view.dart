@@ -60,7 +60,7 @@ class MediaDetailView extends StatelessWidget {
     this.embedded = false,
     this.cacheImageType,
     this.cacheImageId,
-    this.accentColor = AppColors.gameAccent,
+    this.accentColor = AppColors.brand,
     super.key,
   });
 

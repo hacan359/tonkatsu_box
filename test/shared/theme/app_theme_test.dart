@@ -30,8 +30,8 @@ void main() {
     });
 
     group('ColorScheme', () {
-      test('primary должен быть gameAccent', () {
-        expect(theme.colorScheme.primary, equals(AppColors.gameAccent));
+      test('primary должен быть brand', () {
+        expect(theme.colorScheme.primary, equals(AppColors.brand));
       });
 
       test('surface должен быть AppColors.surface', () {
@@ -112,8 +112,8 @@ void main() {
     });
 
     group('TabBarTheme', () {
-      test('indicatorColor должен быть gameAccent', () {
-        expect(theme.tabBarTheme.indicatorColor, equals(AppColors.gameAccent));
+      test('indicatorColor должен быть brand', () {
+        expect(theme.tabBarTheme.indicatorColor, equals(AppColors.brand));
       });
     });
   });

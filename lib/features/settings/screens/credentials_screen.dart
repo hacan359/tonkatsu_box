@@ -116,7 +116,7 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
 
   Widget _buildWelcomeSection() {
     return Card(
-      color: AppColors.gameAccent.withAlpha(30),
+      color: AppColors.brand.withAlpha(30),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
@@ -124,7 +124,7 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
           children: <Widget>[
             const Row(
               children: <Widget>[
-                Icon(Icons.waving_hand, color: AppColors.gameAccent),
+                Icon(Icons.waving_hand, color: AppColors.brand),
                 SizedBox(width: AppSpacing.sm),
                 Flexible(
                   child: Text(

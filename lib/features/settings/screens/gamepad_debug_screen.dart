@@ -121,7 +121,7 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
                 title: 'Raw Events (Gamepads.events)',
                 events: _rawEvents,
                 scrollController: _rawScrollController,
-                color: AppColors.gameAccent,
+                color: AppColors.brand,
               ),
             ),
             const SizedBox(width: AppSpacing.md),

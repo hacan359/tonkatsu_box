@@ -134,7 +134,7 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
                 selectedIndex: _selectedIndex,
                 onDestinationSelected: _onDestinationSelected,
                 backgroundColor: AppColors.surface,
-                indicatorColor: AppColors.gameAccent.withAlpha(30),
+                indicatorColor: AppColors.brand.withAlpha(30),
                 selectedIconTheme: const IconThemeData(
                   color: AppColors.textPrimary,
                 ),

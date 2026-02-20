@@ -18,7 +18,7 @@ abstract final class AppTheme {
     useMaterial3: true,
     fontFamily: AppTypography.fontFamily,
     colorScheme: const ColorScheme.dark(
-      primary: AppColors.gameAccent,
+      primary: AppColors.brand,
       onPrimary: AppColors.background,
       secondary: AppColors.movieAccent,
       onSecondary: AppColors.background,
@@ -68,7 +68,7 @@ abstract final class AppTheme {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        borderSide: const BorderSide(color: AppColors.gameAccent),
+        borderSide: const BorderSide(color: AppColors.brand),
       ),
       labelStyle: const TextStyle(color: AppColors.textSecondary),
       hintStyle: const TextStyle(color: AppColors.textTertiary),
@@ -87,7 +87,7 @@ abstract final class AppTheme {
     ),
     chipTheme: ChipThemeData(
       backgroundColor: AppColors.surfaceLight,
-      selectedColor: AppColors.gameAccent.withAlpha(51),
+      selectedColor: AppColors.brand.withAlpha(51),
       side: const BorderSide(color: AppColors.surfaceBorder),
       labelStyle: const TextStyle(
         color: AppColors.textPrimary,
@@ -116,7 +116,7 @@ abstract final class AppTheme {
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-        foregroundColor: AppColors.gameAccent,
+        foregroundColor: AppColors.brand,
       ),
     ),
     dividerTheme: const DividerThemeData(
@@ -145,12 +145,12 @@ abstract final class AppTheme {
       indicatorColor: AppColors.surfaceLight,
     ),
     progressIndicatorTheme: const ProgressIndicatorThemeData(
-      color: AppColors.gameAccent,
+      color: AppColors.brand,
     ),
     tabBarTheme: const TabBarThemeData(
       labelColor: AppColors.textPrimary,
       unselectedLabelColor: AppColors.textTertiary,
-      indicatorColor: AppColors.gameAccent,
+      indicatorColor: AppColors.brand,
     ),
   );
 }

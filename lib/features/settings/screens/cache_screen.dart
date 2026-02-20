@@ -63,7 +63,7 @@ class _CacheScreenState extends ConsumerState<CacheScreen> {
               children: <Widget>[
                 const Row(
                   children: <Widget>[
-                    Icon(Icons.folder, color: AppColors.gameAccent),
+                    Icon(Icons.folder, color: AppColors.brand),
                     SizedBox(width: AppSpacing.sm),
                     Flexible(
                       child: Text(

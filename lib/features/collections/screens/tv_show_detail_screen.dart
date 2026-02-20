@@ -439,7 +439,7 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
         // Заголовок и общий прогресс
         Row(
           children: <Widget>[
-            const Icon(Icons.playlist_add_check, size: 20, color: AppColors.gameAccent),
+            const Icon(Icons.playlist_add_check, size: 20, color: AppColors.brand),
             const SizedBox(width: AppSpacing.sm),
             Text(
               'Episode Progress',
@@ -890,7 +890,7 @@ class _SeasonExpansionTile extends ConsumerWidget {
       childrenPadding: const EdgeInsets.only(bottom: AppSpacing.sm),
       leading: Icon(
         allWatched ? Icons.check_circle : Icons.circle_outlined,
-        color: allWatched ? AppColors.gameAccent : AppColors.surfaceBorder,
+        color: allWatched ? AppColors.brand : AppColors.surfaceBorder,
         size: 20,
       ),
       title: Text(

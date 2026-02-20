@@ -65,7 +65,7 @@ class ActivityDatesSection extends StatelessWidget {
             Icon(
               Icons.calendar_month_outlined,
               size: 20,
-              color: AppColors.gameAccent,
+              color: AppColors.brand,
             ),
             SizedBox(width: AppSpacing.sm),
             Text(
@@ -175,7 +175,7 @@ class _DateRow extends StatelessWidget {
           const Icon(
             Icons.edit_outlined,
             size: 14,
-            color: AppColors.gameAccent,
+            color: AppColors.brand,
           ),
         ],
       ],
