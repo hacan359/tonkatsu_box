@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/theme/app_spacing.dart';
-import '../../../shared/widgets/breadcrumb_app_bar.dart';
+import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
+import '../../../shared/widgets/breadcrumb_scope.dart';
 import '../providers/settings_provider.dart';
 import 'gamepad_debug_screen.dart';
 import 'image_debug_screen.dart';
@@ -21,16 +22,10 @@ class DebugHubScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final SettingsState settings = ref.watch(settingsNotifierProvider);
 
-    return Scaffold(
-      appBar: BreadcrumbAppBar(
-        crumbs: <BreadcrumbItem>[
-          BreadcrumbItem(
-            label: 'Settings',
-            onTap: () => Navigator.of(context).pop(),
-          ),
-          const BreadcrumbItem(label: 'Debug'),
-        ],
-      ),
+    return BreadcrumbScope(
+      label: 'Debug',
+      child: Scaffold(
+      appBar: const AutoBreadcrumbAppBar(),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.lg),
         children: <Widget>[
@@ -51,7 +46,10 @@ class DebugHubScreen extends ConsumerWidget {
                     Navigator.of(context).push(
                       MaterialPageRoute<void>(
                         builder: (BuildContext context) =>
-                            const SteamGridDbDebugScreen(),
+                            const BreadcrumbScope(
+                          label: 'Debug',
+                          child: SteamGridDbDebugScreen(),
+                        ),
                       ),
                     );
                   },
@@ -66,7 +64,10 @@ class DebugHubScreen extends ConsumerWidget {
                     Navigator.of(context).push(
                       MaterialPageRoute<void>(
                         builder: (BuildContext context) =>
-                            const ImageDebugScreen(),
+                            const BreadcrumbScope(
+                          label: 'Debug',
+                          child: ImageDebugScreen(),
+                        ),
                       ),
                     );
                   },
@@ -81,7 +82,10 @@ class DebugHubScreen extends ConsumerWidget {
                     Navigator.of(context).push(
                       MaterialPageRoute<void>(
                         builder: (BuildContext context) =>
-                            const GamepadDebugScreen(),
+                            const BreadcrumbScope(
+                          label: 'Debug',
+                          child: GamepadDebugScreen(),
+                        ),
                       ),
                     );
                   },
@@ -91,6 +95,7 @@ class DebugHubScreen extends ConsumerWidget {
           ),
         ],
       ),
+    ),
     );
   }
 }

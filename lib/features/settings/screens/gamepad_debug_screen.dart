@@ -11,7 +11,8 @@ import '../../../shared/gamepad/gamepad_provider.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
-import '../../../shared/widgets/breadcrumb_app_bar.dart';
+import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
+import '../../../shared/widgets/breadcrumb_scope.dart';
 
 /// Максимальное количество событий в логе.
 const int _maxEvents = 100;
@@ -92,20 +93,10 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: BreadcrumbAppBar(
-        crumbs: <BreadcrumbItem>[
-          BreadcrumbItem(
-            label: 'Settings',
-            onTap: () => Navigator.of(context)
-                .popUntil((Route<dynamic> route) => route.isFirst),
-          ),
-          BreadcrumbItem(
-            label: 'Debug',
-            onTap: () => Navigator.of(context).pop(),
-          ),
-          const BreadcrumbItem(label: 'Gamepad'),
-        ],
+    return BreadcrumbScope(
+      label: 'Gamepad',
+      child: Scaffold(
+      appBar: AutoBreadcrumbAppBar(
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.delete_outline),
@@ -146,6 +137,7 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 

@@ -8,7 +8,8 @@ import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
-import '../../../shared/widgets/breadcrumb_app_bar.dart';
+import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
+import '../../../shared/widgets/breadcrumb_scope.dart';
 import '../../../shared/navigation/navigation_shell.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../home/providers/all_items_provider.dart';
@@ -23,16 +24,10 @@ class DatabaseScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      appBar: BreadcrumbAppBar(
-        crumbs: <BreadcrumbItem>[
-          BreadcrumbItem(
-            label: 'Settings',
-            onTap: () => Navigator.of(context).pop(),
-          ),
-          const BreadcrumbItem(label: 'Database'),
-        ],
-      ),
+    return BreadcrumbScope(
+      label: 'Database',
+      child: Scaffold(
+      appBar: const AutoBreadcrumbAppBar(),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
@@ -44,6 +39,7 @@ class DatabaseScreen extends ConsumerWidget {
           ],
         ),
       ),
+    ),
     );
   }
 

@@ -15,6 +15,7 @@ import '../gamepad/gamepad_action.dart';
 import '../gamepad/widgets/gamepad_listener.dart';
 import '../theme/app_assets.dart';
 import '../theme/app_colors.dart';
+import '../widgets/breadcrumb_scope.dart';
 
 /// Порог ширины для переключения NavigationRail ↔ BottomNavigationBar.
 const double navigationBreakpoint = 800;
@@ -243,6 +244,13 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
   }
 
   Widget _buildTabNavigator(int tabIndex) {
+    final String tabLabel = switch (NavTab.values[tabIndex]) {
+      NavTab.home => 'Main',
+      NavTab.collections => 'Collections',
+      NavTab.wishlist => 'Wishlist',
+      NavTab.search => 'Search',
+      NavTab.settings => 'Settings',
+    };
     final Widget screen = switch (NavTab.values[tabIndex]) {
       NavTab.home => const AllItemsScreen(),
       NavTab.collections => const HomeScreen(),
@@ -251,13 +259,16 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
       NavTab.settings => const SettingsScreen(),
     };
 
-    return Navigator(
-      key: _navigatorKeys[tabIndex],
-      onGenerateRoute: (RouteSettings settings) {
-        return MaterialPageRoute<void>(
-          builder: (BuildContext context) => screen,
-        );
-      },
+    return BreadcrumbScope(
+      label: tabLabel,
+      child: Navigator(
+        key: _navigatorKeys[tabIndex],
+        onGenerateRoute: (RouteSettings settings) {
+          return MaterialPageRoute<void>(
+            builder: (BuildContext context) => screen,
+          );
+        },
+      ),
     );
   }
 

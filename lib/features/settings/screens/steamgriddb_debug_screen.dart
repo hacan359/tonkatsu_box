@@ -6,7 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/api/steamgriddb_api.dart';
 import '../../../shared/models/steamgriddb_game.dart';
 import '../../../shared/models/steamgriddb_image.dart';
-import '../../../shared/widgets/breadcrumb_app_bar.dart';
+import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
+import '../../../shared/widgets/breadcrumb_scope.dart';
 
 /// Экран отладки SteamGridDB API.
 ///
@@ -123,23 +124,13 @@ class _SteamGridDbDebugScreenState
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
+    return BreadcrumbScope(
+      label: 'SteamGridDB',
+      child: DefaultTabController(
       length: 5,
       child: Scaffold(
-        appBar: BreadcrumbAppBar(
-          crumbs: <BreadcrumbItem>[
-            BreadcrumbItem(
-              label: 'Settings',
-              onTap: () => Navigator.of(context)
-                  .popUntil((Route<dynamic> route) => route.isFirst),
-            ),
-            BreadcrumbItem(
-              label: 'Debug',
-              onTap: () => Navigator.of(context).pop(),
-            ),
-            const BreadcrumbItem(label: 'SteamGridDB'),
-          ],
-          bottom: const TabBar(
+        appBar: const AutoBreadcrumbAppBar(
+          bottom: TabBar(
             isScrollable: true,
             tabs: <Widget>[
               Tab(text: 'Search'),
@@ -160,6 +151,7 @@ class _SteamGridDbDebugScreenState
           ],
         ),
       ),
+    ),
     );
   }
 

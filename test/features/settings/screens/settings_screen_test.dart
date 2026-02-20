@@ -7,7 +7,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/features/settings/screens/settings_screen.dart';
-import 'package:xerabora/shared/widgets/breadcrumb_app_bar.dart';
+import 'package:xerabora/shared/widgets/auto_breadcrumb_app_bar.dart';
+import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 
 void main() {
   late SharedPreferences prefs;
@@ -23,7 +24,10 @@ void main() {
         sharedPreferencesProvider.overrideWithValue(prefs),
       ],
       child: const MaterialApp(
-        home: SettingsScreen(),
+        home: BreadcrumbScope(
+          label: 'Settings',
+          child: SettingsScreen(),
+        ),
       ),
     );
   }
@@ -34,7 +38,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        expect(find.byType(BreadcrumbAppBar), findsOneWidget);
+        expect(find.byType(AutoBreadcrumbAppBar), findsOneWidget);
         expect(find.text('Settings'), findsOneWidget);
       });
 
@@ -186,8 +190,8 @@ void main() {
         );
         expect(allTiles.length, equals(5));
 
-        // 4 навигационные плитки имеют chevron_right
-        expect(find.byIcon(Icons.chevron_right), findsNWidgets(4));
+        // 4 навигационные плитки имеют chevron_right + 1 breadcrumb separator
+        expect(find.byIcon(Icons.chevron_right), findsNWidgets(5));
       });
     });
 

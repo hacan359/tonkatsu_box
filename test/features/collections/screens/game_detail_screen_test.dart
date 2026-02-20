@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:xerabora/data/repositories/collection_repository.dart';
 import 'package:xerabora/features/collections/screens/game_detail_screen.dart';
+import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/game.dart';
 import 'package:xerabora/shared/models/item_status.dart';
@@ -82,11 +83,13 @@ void main() {
         collectionRepositoryProvider.overrideWithValue(mockRepo),
       ],
       child: MaterialApp(
-        home: GameDetailScreen(
-          collectionId: collectionId,
-          collectionName: 'Test Collection',
-          itemId: itemId,
-          isEditable: isEditable,
+        home: BreadcrumbScope(
+          label: 'Test Collection',
+          child: GameDetailScreen(
+            collectionId: collectionId,
+            itemId: itemId,
+            isEditable: isEditable,
+          ),
         ),
       ),
     );

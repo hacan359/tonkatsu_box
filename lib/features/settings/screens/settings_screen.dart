@@ -7,7 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/constants/app_strings.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
-import '../../../shared/widgets/breadcrumb_app_bar.dart';
+import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
 import '../providers/settings_provider.dart';
 import 'cache_screen.dart';
 import 'credentials_screen.dart';
@@ -71,11 +71,7 @@ class SettingsScreen extends ConsumerWidget {
     final SettingsState settings = ref.watch(settingsNotifierProvider);
 
     return Scaffold(
-      appBar: const BreadcrumbAppBar(
-        crumbs: <BreadcrumbItem>[
-          BreadcrumbItem(label: 'Settings'),
-        ],
-      ),
+      appBar: const AutoBreadcrumbAppBar(),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.lg),
         children: <Widget>[

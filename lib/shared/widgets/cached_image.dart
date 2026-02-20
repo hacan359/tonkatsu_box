@@ -148,6 +148,8 @@ class _CachedImageState extends ConsumerState<CachedImage> {
             width: widget.width,
             height: widget.height,
             fit: widget.fit,
+            cacheWidth: widget.memCacheWidth,
+            cacheHeight: widget.memCacheHeight,
             errorBuilder:
                 (BuildContext ctx, Object error, StackTrace? stack) {
               // Файл повреждён — удалить из кэша, перекачать, показать из сети

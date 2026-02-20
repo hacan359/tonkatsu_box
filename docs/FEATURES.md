@@ -11,7 +11,7 @@ The app uses a forced dark theme (ThemeMode.dark) with a cinematic design system
 - **AppSpacing** — standardized spacing (4–32px), border radii (4–20px), poster aspect ratio (2:3), grid column counts
 - **AppTheme** — centralized ThemeData with styled AppBar, Card, Input, Dialog, BottomSheet, Chip, Button, NavigationRail, TabBar
 - **Adaptive navigation** — NavigationRail sidebar on desktop (≥800px), BottomNavigationBar on mobile (<800px), 5 tabs: Home, Collections, Wishlist, Search, Settings. Logo 48×48 above NavigationRail (desktop)
-- **BreadcrumbAppBar** — unified navigation breadcrumbs on all screens: logo 20×20 + `›` separators + clickable crumbs. Last crumb is bold (w600), non-last crumbs are clickable and navigate back. Supports TabBar (bottom) and action buttons
+- **Breadcrumb Navigation** — automatic breadcrumb trail via `BreadcrumbScope` InheritedWidget + `AutoBreadcrumbAppBar`. Height 44px, chevron_right separators (14px, 50% alpha), hover pill effect, last crumb w600/textPrimary, overflow ellipsis (300/180px), mobile collapse (>2 crumbs → first…last), mobile back button, gamepad support, optional `accentColor` border-bottom. Tab root scope from NavigationShell, screen/push scopes from each screen
 
 <details>
 <summary><b>UI Components</b></summary>
@@ -165,7 +165,7 @@ Tap any item to see full details. Screens have one or two tabs:
 Applied to board card borders, collection item backgrounds, and tilted watermark icons (200px, 6% opacity, rotated -17°).
 
 ### Tiled Background
-A subtle gamepad pattern (`background_tile.png`) is repeated across the entire app via `MaterialApp.builder`. The tile is rendered at 3% opacity and 1.5x scale over the dark background, giving all screens a consistent textured look without per-screen configuration.
+A subtle gamepad pattern (`background_tile.png`) is repeated across the entire app via `PageTransitionsTheme`. Each route is wrapped in an opaque `DecoratedBox` with the tile at 3% opacity and 1.5x scale over the dark background (`_OpaquePageTransitionsBuilder`). This prevents content bleed-through during route transitions while giving all screens a consistent textured look.
 
 ## 📝 Wishlist
 

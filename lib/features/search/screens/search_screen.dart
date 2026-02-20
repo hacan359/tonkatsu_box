@@ -18,7 +18,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/navigation/navigation_shell.dart';
-import '../../../shared/widgets/breadcrumb_app_bar.dart';
+import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
 import '../../../shared/widgets/collection_picker_dialog.dart';
 import '../../../shared/widgets/cached_image.dart' as app_cached;
 import '../../../shared/widgets/media_poster_card.dart';
@@ -799,11 +799,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
     if (!isApiReady) {
       return Scaffold(
-        appBar: const BreadcrumbAppBar(
-          crumbs: <BreadcrumbItem>[
-            BreadcrumbItem(label: 'Search'),
-          ],
-        ),
+        appBar: const AutoBreadcrumbAppBar(),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.xl),
@@ -839,10 +835,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
     return Scaffold(
       resizeToAvoidBottomInset: !isLandscape,
-      appBar: BreadcrumbAppBar(
-        crumbs: const <BreadcrumbItem>[
-          BreadcrumbItem(label: 'Search'),
-        ],
+      appBar: AutoBreadcrumbAppBar(
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,

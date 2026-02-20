@@ -16,6 +16,7 @@ import 'package:xerabora/shared/models/movie.dart';
 import 'package:xerabora/shared/models/tv_season.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
 import 'package:xerabora/shared/widgets/media_detail_view.dart';
+import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 import 'package:xerabora/shared/widgets/source_badge.dart';
 
 class MockCollectionRepository extends Mock implements CollectionRepository {}
@@ -139,11 +140,13 @@ void main() {
         tmdbApiProvider.overrideWithValue(mockTmdbApi),
       ],
       child: MaterialApp(
-        home: AnimeDetailScreen(
-          collectionId: collectionId,
-          collectionName: 'Test Collection',
-          itemId: itemId,
-          isEditable: isEditable,
+        home: BreadcrumbScope(
+          label: 'Test Collection',
+          child: AnimeDetailScreen(
+            collectionId: collectionId,
+            itemId: itemId,
+            isEditable: isEditable,
+          ),
         ),
       ),
     );

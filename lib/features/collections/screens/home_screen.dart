@@ -8,7 +8,7 @@ import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
-import '../../../shared/widgets/breadcrumb_app_bar.dart';
+import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
 import '../../../shared/widgets/hero_collection_card.dart';
 import '../../../shared/widgets/section_header.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
@@ -33,10 +33,7 @@ class HomeScreen extends ConsumerWidget {
     final bool isLandscape = isLandscapeMobile(context);
 
     return Scaffold(
-      appBar: BreadcrumbAppBar(
-        crumbs: const <BreadcrumbItem>[
-          BreadcrumbItem(label: 'Collections'),
-        ],
+      appBar: AutoBreadcrumbAppBar(
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.add, size: isLandscape ? 20 : null),
