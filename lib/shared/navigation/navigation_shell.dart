@@ -57,21 +57,30 @@ enum NavTab {
 /// - B — назад (pop внутри таба или переключение на Home)
 class NavigationShell extends ConsumerStatefulWidget {
   /// Создаёт [NavigationShell].
-  const NavigationShell({super.key});
+  ///
+  /// [initialTab] позволяет открыть приложение на конкретном табе
+  /// (например, Settings после Welcome Wizard).
+  const NavigationShell({this.initialTab, super.key});
+
+  /// Начальный таб при открытии. Если null — [NavTab.home].
+  final NavTab? initialTab;
 
   @override
   ConsumerState<NavigationShell> createState() => _NavigationShellState();
 }
 
 class _NavigationShellState extends ConsumerState<NavigationShell> {
-  int _selectedIndex = NavTab.home.index;
+  late int _selectedIndex = widget.initialTab?.index ?? NavTab.home.index;
 
   /// Табы, которые уже были посещены и инициализированы.
   ///
   /// HomeScreen строится сразу, остальные — при первом переключении.
   /// Это предотвращает тяжёлую инициализацию SearchScreen (4 DB-запроса,
   /// загрузка платформ) и SettingsScreen при старте приложения.
-  final Set<int> _initializedTabs = <int>{NavTab.home.index};
+  late final Set<int> _initializedTabs = <int>{
+    NavTab.home.index,
+    if (widget.initialTab != null) widget.initialTab!.index,
+  };
 
   /// Ключи Navigator для каждого таба (nested navigation).
   ///

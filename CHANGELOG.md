@@ -6,7 +6,22 @@
 
 ## [Unreleased]
 
+### Added
+- **Welcome Wizard** — 4-step onboarding shown on first launch (`lib/features/welcome/`)
+  - Step 1 «Welcome»: app capabilities, media types, works-without-keys section
+  - Step 2 «API Keys»: IGDB (required), TMDB (recommended), SteamGridDB (optional) instructions with external links
+  - Step 3 «How it works»: app structure (5 tabs), Quick Start (5 steps), sharing formats (.xcoll/.xcollx)
+  - Step 4 «Ready!»: CTA buttons — «Go to Settings» (→ NavigationShell with Settings tab) or «Skip» (→ Home)
+  - PageView with swipe, step indicators, progress bar, Skip link, Back/Next navigation, dot indicators
+  - `kWelcomeCompletedKey` flag saved in SharedPreferences
+  - Re-openable from Settings → Help → «Welcome Guide» (with `fromSettings: true` → pop on finish)
+- Added `initialTab` parameter to `NavigationShell` — allows opening app on a specific tab (used by Welcome Wizard → Settings)
+- Added «Help» section in `SettingsScreen` with «Welcome Guide» navigation row (icon: `Icons.school`)
+- Added `docs/guides/` — source-of-truth markdown for wizard content: `WELCOME.md`, `API_KEYS.md`, `HOW_IT_WORKS.md`
+- Added 173 tests for Welcome Wizard: `welcome_screen_test.dart` (32 tests), `step_indicator_test.dart` (16 tests), `welcome_step_intro_test.dart` (14 tests), `welcome_step_api_keys_test.dart` (20 tests), `welcome_step_how_it_works_test.dart` (16 tests), `welcome_step_ready_test.dart` (13 tests), plus updates to `settings_screen_test.dart`, `navigation_shell_test.dart`, `app_test.dart`
+
 ### Changed
+- Modified `SplashScreen._tryNavigate()` to check `welcome_completed` flag — routes to `WelcomeScreen` on first launch, `NavigationShell` on subsequent launches
 - Replaced `AddWishlistSheet` (bottom sheet) with `AddWishlistForm` — full-page form screen with `AutoBreadcrumbAppBar`, breadcrumb navigation ("Add" / "Edit"), and TextButton action in AppBar
 - Added title validation (minimum 2 characters) with inline `errorText` that clears on input in `AddWishlistForm`
 - Added `showCheckmark: false` to media type `ChoiceChip`s — fixes checkmark overlapping the avatar icon

@@ -12,6 +12,7 @@ import '../providers/settings_provider.dart';
 import '../widgets/inline_text_field.dart';
 import '../widgets/settings_nav_row.dart';
 import '../widgets/settings_section.dart';
+import '../../welcome/screens/welcome_screen.dart';
 import 'cache_screen.dart';
 import 'credentials_screen.dart';
 import 'database_screen.dart';
@@ -119,6 +120,28 @@ class SettingsScreen extends ConsumerWidget {
                     );
                   },
                 ),
+            ],
+          ),
+          SizedBox(height: compact ? AppSpacing.sm : AppSpacing.md),
+          SettingsSection(
+            title: 'Help',
+            icon: Icons.help_outline,
+            compact: compact,
+            children: <Widget>[
+              SettingsNavRow(
+                title: 'Welcome Guide',
+                icon: Icons.school,
+                subtitle: 'Getting started with Tonkatsu Box',
+                compact: compact,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (BuildContext context) =>
+                          const WelcomeScreen(fromSettings: true),
+                    ),
+                  );
+                },
+              ),
             ],
           ),
           if (settings.errorMessage != null) ...<Widget>[
