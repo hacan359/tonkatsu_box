@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:xerabora/core/services/update_service.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/features/wishlist/providers/wishlist_provider.dart';
 import 'package:xerabora/shared/navigation/navigation_shell.dart';
@@ -78,6 +79,9 @@ void main() {
         overrides: <Override>[
           sharedPreferencesProvider.overrideWithValue(prefs),
           activeWishlistCountProvider.overrideWithValue(0),
+          updateCheckProvider.overrideWith(
+            (Ref ref) async => null,
+          ),
         ],
         child: MaterialApp(
           home: MediaQuery(

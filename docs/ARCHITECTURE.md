@@ -108,6 +108,7 @@ lib/
 | `lib/core/services/xcoll_file.dart` | **Модель файла экспорта/импорта**. Формат v2 (.xcoll/.xcollx, items + canvas + images). Классы: `XcollFile`, `ExportFormat` (light/full), `ExportCanvas`. Файлы v1 выбрасывают `FormatException` |
 | `lib/core/services/export_service.dart` | **Сервис экспорта**. Создаёт XcollFile из коллекции. Режимы: v2 light (.xcoll — ID элементов), v2 full (.xcollx — + canvas + per-item canvas + base64 обложки). Зависимости: `CanvasRepository`, `ImageCacheService`. Методы: `createLightExport()`, `createFullExport()`, `exportToFile()` |
 | `lib/core/services/import_service.dart` | **Сервис импорта**. Импортирует XcollFile в коллекцию. items + canvas (viewport/items/connections) + per-item canvas + восстановление обложек из base64. Прогресс через `ImportStage` enum и `ImportProgressCallback`. Зависимости: `DatabaseService`, `CanvasRepository`, `GameRepository`, `ImageCacheService` |
+| `lib/core/services/update_service.dart` | **Сервис проверки обновлений**. Класс `UpdateInfo` (currentVersion, latestVersion, releaseUrl, hasUpdate, releaseNotes). Класс `UpdateService` — запрос GitHub Releases API, semver сравнение (`isNewer()`), 24-часовой throttle через SharedPreferences. Провайдеры: `updateServiceProvider`, `updateCheckProvider` (FutureProvider) |
 
 </details>
 
@@ -297,6 +298,7 @@ lib/
 | `lib/shared/widgets/source_badge.dart` | **Бейдж источника данных**. Enum `DataSource` (igdb, tmdb, steamGridDb, vgMaps). Размеры: small, medium, large. Цветовая маркировка и текстовая метка |
 | `lib/shared/widgets/media_type_badge.dart` | **Бейдж типа медиа**. Цветная иконка по `MediaType`: синий (игры), красный (фильмы), зелёный (сериалы) |
 | `lib/shared/widgets/collection_picker_dialog.dart` | **Диалог выбора коллекции**. Sealed class `CollectionChoice` (`ChosenCollection(int id)` / `WithoutCollection`). Функция `showCollectionPickerDialog()` — диалог со списком коллекций. Параметры: `excludeCollectionId` (скрыть текущую), `showUncategorized` (показать "Without Collection"), `title` (заголовок). Используется в Search (добавление) и Detail Screens (перемещение) |
+| `lib/shared/widgets/update_banner.dart` | **Баннер обновления**. `UpdateBanner` (ConsumerWidget) — читает `updateCheckProvider`, показывает баннер при наличии новой версии. `_UpdateBannerContent` (StatefulWidget) — dismiss state, кнопка "Update" (url_launcher), крестик закрытия. Стиль: AppColors.brand |
 
 </details>
 

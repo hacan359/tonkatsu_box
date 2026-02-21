@@ -298,6 +298,16 @@ Built with 5 reusable widgets: `SettingsSection`, `SettingsRow`, `SettingsNavRow
 > [!WARNING]
 > **Reset Database** clears all collections, items, and board data. API keys and settings are preserved. This action cannot be undone.
 
+## 🔄 Update Checker
+
+On app launch, queries the GitHub Releases API for the latest version. Shows a dismissible banner at the bottom of the screen (below content, above navigation bar on mobile) when a newer version is available.
+
+- **Semver comparison** — compares major.minor.patch
+- **24-hour throttle** — caches result in SharedPreferences; skips API call if checked within the last 24 hours
+- **Silent errors** — network failures are swallowed; banner simply doesn't appear
+- **Dismiss** — close button hides the banner until next app launch
+- **Update button** — opens the GitHub release page in the default browser
+
 ## 📴 Offline Mode
 
 After initial setup, most features work offline: browse collections, update status, add comments. Only search requires internet.
