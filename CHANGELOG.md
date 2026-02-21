@@ -6,6 +6,8 @@
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-02-21
+
 ### Added
 - Added update checker — queries GitHub Releases API on app launch and shows a dismissible banner when a newer version is available (`lib/core/services/update_service.dart`, `lib/shared/widgets/update_banner.dart`)
   - `UpdateService` with semver comparison, 24-hour throttle via SharedPreferences, and silent error handling
