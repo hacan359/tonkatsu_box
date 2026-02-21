@@ -55,6 +55,9 @@ dependencies:
   # URL
   url_launcher: ^6.2.0
 
+  # App Info
+  package_info_plus: ^8.0.0
+
   # WebView
   webview_windows: ^0.4.0
 

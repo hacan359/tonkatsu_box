@@ -16,6 +16,7 @@ import '../gamepad/widgets/gamepad_listener.dart';
 import '../theme/app_assets.dart';
 import '../theme/app_colors.dart';
 import '../widgets/breadcrumb_scope.dart';
+import '../widgets/update_banner.dart';
 
 /// Порог ширины для переключения NavigationRail ↔ BottomNavigationBar.
 const double navigationBreakpoint = 800;
@@ -115,7 +116,14 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
           _handleBack();
         },
         child: Scaffold(
-          body: useRail ? _buildRailLayout() : _buildContent(),
+          body: useRail
+              ? _buildRailLayout()
+              : Column(
+                  children: <Widget>[
+                    Expanded(child: _buildContent()),
+                    const UpdateBanner(),
+                  ],
+                ),
           bottomNavigationBar: useRail ? null : _buildBottomNav(),
         ),
       ),
@@ -197,7 +205,14 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
           width: 1,
           color: AppColors.surfaceBorder,
         ),
-        Expanded(child: _buildContent()),
+        Expanded(
+          child: Column(
+            children: <Widget>[
+              Expanded(child: _buildContent()),
+              const UpdateBanner(),
+            ],
+          ),
+        ),
       ],
     );
   }

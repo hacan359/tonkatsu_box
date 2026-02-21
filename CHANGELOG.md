@@ -6,6 +6,14 @@
 
 ## [Unreleased]
 
+### Added
+- Added update checker — queries GitHub Releases API on app launch and shows a dismissible banner when a newer version is available (`lib/core/services/update_service.dart`, `lib/shared/widgets/update_banner.dart`)
+  - `UpdateService` with semver comparison, 24-hour throttle via SharedPreferences, and silent error handling
+  - `UpdateBanner` widget embedded in `NavigationShell` (both desktop and mobile layouts)
+  - "Update" button opens the release page via `url_launcher`; dismiss button hides the banner until next launch
+- Added `package_info_plus` dependency for reading current app version
+- Added 27 tests: `update_service_test.dart` (19 tests — semver, throttle, cache, errors), `update_banner_test.dart` (8 tests — show/hide/dismiss/loading/error states)
+
 ### Changed
 - Replaced debug signing with release keystore for Android APK (`android/app/build.gradle.kts`)
   - Signing config reads from environment variables (CI) with fallback to `key.properties` (local)
