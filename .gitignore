@@ -51,4 +51,9 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Release signing (never commit keys or passwords)
+*.jks
+*.keystore
+
 /dev/

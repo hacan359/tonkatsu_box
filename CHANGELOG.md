@@ -6,6 +6,14 @@
 
 ## [Unreleased]
 
+### Changed
+- Replaced debug signing with release keystore for Android APK (`android/app/build.gradle.kts`)
+  - Signing config reads from environment variables (CI) with fallback to `key.properties` (local)
+  - All future APK updates install over previous versions without uninstalling
+- Changed `applicationId` and `namespace` from `com.example.xerabora` to `com.hacan359.tonkatsubox`
+- Moved `MainActivity.kt` to `com.hacan359.tonkatsubox` package
+- Updated `release.yml` CI workflow to decode keystore from GitHub Secrets and pass signing env variables
+
 ## [0.10.0] - 2026-02-20
 
 ### Added

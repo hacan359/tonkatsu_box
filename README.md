@@ -118,6 +118,8 @@ flutter run -d windows    # or: flutter run -d android
 
 > [!NOTE]
 > You'll need [Flutter SDK](https://flutter.dev/docs/get-started/install) installed. Windows builds require the Windows desktop development tools, Android builds require the Android SDK.
+>
+> Android release builds require a signing keystore. See the [Contributing Guide](docs/CONTRIBUTING.md#android-release-builds) for setup instructions.
 
 ### Step 3: Enter your API keys
 
