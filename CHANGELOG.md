@@ -6,6 +6,8 @@
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-02-22
+
 ### Added
 - Unified SnackBar notification system — `SnackType` enum (success/error/info), `context.showSnack()` extension with auto-hide, typed icons and colored borders, `loading` parameter for progress indication, `context.hideSnack()` for manual dismissal (`snackbar_extension.dart`)
 - Added 17 new tests for `SnackBarExtension`: all 3 types with icons/colors/borders, loading mode, auto-hide, action, duration, text style, SnackBar properties, `hideSnack()` (`snackbar_extension_test.dart`)
