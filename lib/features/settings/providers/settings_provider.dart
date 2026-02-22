@@ -464,6 +464,22 @@ class SettingsNotifier extends Notifier<SettingsState> {
     state = state.copyWith(defaultAuthor: trimmed);
   }
 
+  /// Проверяет валидность TMDB API ключа.
+  ///
+  /// Возвращает `true` если ключ работает.
+  Future<bool> validateTmdbKey() async {
+    if (!state.hasTmdbKey) return false;
+    return _tmdbApi.validateApiKey(state.tmdbApiKey!);
+  }
+
+  /// Проверяет валидность SteamGridDB API ключа.
+  ///
+  /// Возвращает `true` если ключ работает.
+  Future<bool> validateSteamGridDbKey() async {
+    if (!state.hasSteamGridDbKey) return false;
+    return _steamGridDbApi.validateApiKey(state.steamGridDbApiKey!);
+  }
+
   /// Экспортирует конфигурацию в файл.
   Future<ConfigResult> exportConfig() async {
     final ConfigService configService = ref.read(configServiceProvider);

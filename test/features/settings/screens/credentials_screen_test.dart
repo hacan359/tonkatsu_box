@@ -541,6 +541,80 @@ void main() {
       });
     });
 
+    group('Кнопка Test', () {
+      testWidgets('не показывает кнопку Test без API ключа',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        await tester.scrollUntilVisible(
+          find.text('SteamGridDB API'),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+
+        expect(find.text('Test'), findsNothing);
+      });
+
+      testWidgets('показывает кнопку Test когда SteamGridDB ключ сохранён',
+          (WidgetTester tester) async {
+        SharedPreferences.setMockInitialValues(<String, Object>{
+          'steamgriddb_api_key': 'saved_key',
+        });
+        prefs = await SharedPreferences.getInstance();
+
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        await tester.scrollUntilVisible(
+          find.text('SteamGridDB API'),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+
+        expect(find.text('Test'), findsAtLeastNWidgets(1));
+      });
+
+      testWidgets('показывает кнопку Test когда TMDB ключ сохранён',
+          (WidgetTester tester) async {
+        SharedPreferences.setMockInitialValues(<String, Object>{
+          'tmdb_api_key': 'saved_key',
+        });
+        prefs = await SharedPreferences.getInstance();
+
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        await tester.scrollUntilVisible(
+          find.text('TMDB API (Movies & TV)'),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+
+        expect(find.text('Test'), findsAtLeastNWidgets(1));
+      });
+
+      testWidgets('показывает 2 кнопки Test когда оба ключа сохранены',
+          (WidgetTester tester) async {
+        SharedPreferences.setMockInitialValues(<String, Object>{
+          'steamgriddb_api_key': 'sgdb_key',
+          'tmdb_api_key': 'tmdb_key',
+        });
+        prefs = await SharedPreferences.getInstance();
+
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        await tester.scrollUntilVisible(
+          find.text('TMDB API (Movies & TV)'),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+
+        expect(find.text('Test'), findsNWidgets(2));
+      });
+    });
+
     group('Error секция', () {
       testWidgets('не показывает Error секцию по умолчанию',
           (WidgetTester tester) async {

@@ -25,6 +25,7 @@ import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../settings/providers/settings_provider.dart';
+import '../../settings/screens/credentials_screen.dart';
 import '../models/media_search_item.dart';
 import '../models/tv_sub_filter.dart';
 import '../providers/game_search_provider.dart';
@@ -794,44 +795,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
   @override
   Widget build(BuildContext context) {
-    final bool isApiReady = ref.watch(hasValidApiKeyProvider);
     final bool isLandscape = isLandscapeMobile(context);
-
-    if (!isApiReady) {
-      return Scaffold(
-        appBar: const AutoBreadcrumbAppBar(),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.xl),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Icon(
-                  Icons.search_off,
-                  size: isLandscape ? 40 : 64,
-                  color: AppColors.textTertiary.withAlpha(100),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Text(
-                  'Search unavailable',
-                  style: AppTypography.h2.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  'Configure IGDB API keys in Settings to enable search.',
-                  style: AppTypography.body.copyWith(
-                    color: AppColors.textTertiary,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
 
     return Scaffold(
       resizeToAvoidBottomInset: !isLandscape,
@@ -1224,6 +1188,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   }
 
   Widget _buildMediaResults(MediaSearchState searchState) {
+    final SettingsState settings = ref.watch(settingsNotifierProvider);
+    if (!settings.hasTmdbKey) {
+      return _buildMissingApiKeyState(
+        'TMDB API key required',
+        'Configure your TMDB API key in Settings to search movies and TV shows.',
+      );
+    }
+
     if (searchState.error != null) {
       return _buildErrorState(searchState.error!, onRetry: () {
         ref
@@ -1363,6 +1335,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   }
 
   Widget _buildGameResults(GameSearchState searchState) {
+    final SettingsState settings = ref.watch(settingsNotifierProvider);
+    if (!settings.isApiReady) {
+      return _buildMissingApiKeyState(
+        'IGDB API keys required',
+        'Configure your IGDB credentials in Settings to search games.',
+      );
+    }
+
     if (searchState.error != null) {
       return _buildErrorState(searchState.error!, onRetry: () {
         ref
@@ -1503,7 +1483,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     );
   }
 
-  Widget _buildErrorState(String error, {required VoidCallback onRetry}) {
+  Widget _buildMissingApiKeyState(String title, String message) {
     final bool isLandscape = isLandscapeMobile(context);
     return Center(
       child: SingleChildScrollView(
@@ -1512,23 +1492,93 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Icon(
-              Icons.error_outline,
+              Icons.key_off,
+              size: isLandscape ? 32 : 64,
+              color: AppColors.textTertiary.withAlpha(100),
+            ),
+            SizedBox(height: isLandscape ? AppSpacing.sm : AppSpacing.md),
+            Text(
+              title,
+              style: AppTypography.h3.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              message,
+              style: AppTypography.body.copyWith(
+                color: AppColors.textTertiary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            FilledButton.icon(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (BuildContext context) =>
+                        const CredentialsScreen(),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.settings),
+              label: const Text('Go to Settings'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Проверяет, является ли ошибка сетевой (а не API).
+  bool _isNetworkError(String error) {
+    final String lower = error.toLowerCase();
+    return lower.contains('connection') ||
+        lower.contains('timeout') ||
+        lower.contains('socket') ||
+        lower.contains('network') ||
+        lower.contains('internet') ||
+        lower.contains('resolve host') ||
+        lower.contains('unknown host') ||
+        lower.contains('dns');
+  }
+
+  Widget _buildErrorState(String error, {required VoidCallback onRetry}) {
+    final bool isLandscape = isLandscapeMobile(context);
+    final bool isNetwork = _isNetworkError(error);
+
+    final IconData icon =
+        isNetwork ? Icons.wifi_off : Icons.error_outline;
+    final String title =
+        isNetwork ? 'No internet connection' : 'Search failed';
+    final String subtitle = isNetwork
+        ? 'Check your internet connection and try again.'
+        : error;
+
+    return Center(
+      child: SingleChildScrollView(
+        padding: EdgeInsets.all(isLandscape ? AppSpacing.md : AppSpacing.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(
+              icon,
               size: isLandscape ? 32 : 64,
               color: AppColors.error,
             ),
             SizedBox(height: isLandscape ? AppSpacing.sm : AppSpacing.md),
             Text(
-              'Search failed',
+              title,
               style: AppTypography.h3.copyWith(
-                    color: AppColors.error,
-                  ),
+                color: AppColors.error,
+              ),
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              error,
+              subtitle,
               style: AppTypography.body.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+                color: AppColors.textSecondary,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.lg),

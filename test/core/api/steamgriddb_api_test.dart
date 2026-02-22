@@ -555,6 +555,100 @@ void main() {
       });
     });
 
+    group('validateApiKey', () {
+      test('возвращает true при 200 ответе', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              options: any(named: 'options'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'data': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final bool result = await sut.validateApiKey('valid_key');
+
+        expect(result, isTrue);
+      });
+
+      test('возвращает false при DioException', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              options: any(named: 'options'),
+            )).thenThrow(DioException(
+          response: Response<dynamic>(
+            statusCode: 401,
+            requestOptions: RequestOptions(),
+          ),
+          requestOptions: RequestOptions(),
+        ));
+
+        final bool result = await sut.validateApiKey('invalid_key');
+
+        expect(result, isFalse);
+      });
+
+      test('вызывает правильный URL и передаёт Bearer header', () async {
+        String? capturedUrl;
+        Options? capturedOptions;
+
+        when(() => mockDio.get<dynamic>(
+              any(),
+              options: any(named: 'options'),
+            )).thenAnswer((Invocation invocation) async {
+          capturedUrl = invocation.positionalArguments[0] as String;
+          capturedOptions = invocation.namedArguments[#options] as Options;
+          return Response<dynamic>(
+            data: <String, dynamic>{'data': <dynamic>[]},
+            statusCode: 200,
+            requestOptions: RequestOptions(),
+          );
+        });
+
+        await sut.validateApiKey('my_key');
+
+        expect(capturedUrl, contains('/search/autocomplete/test'));
+        expect(
+          capturedOptions?.headers?['Authorization'],
+          equals('Bearer my_key'),
+        );
+      });
+
+      test('не требует установленного API ключа', () async {
+        // validateApiKey принимает ключ как параметр, не нужен setApiKey
+        when(() => mockDio.get<dynamic>(
+              any(),
+              options: any(named: 'options'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{'data': <dynamic>[]},
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final SteamGridDbApi freshApi = SteamGridDbApi(dio: mockDio);
+        final bool result = await freshApi.validateApiKey('any_key');
+
+        expect(result, isTrue);
+        freshApi.dispose();
+      });
+
+      test('возвращает false при сетевой ошибке', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              options: any(named: 'options'),
+            )).thenThrow(DioException(
+          type: DioExceptionType.connectionError,
+          requestOptions: RequestOptions(),
+        ));
+
+        final bool result = await sut.validateApiKey('key');
+
+        expect(result, isFalse);
+      });
+    });
+
     group('dispose', () {
       test('закрывает Dio клиент', () {
         when(() => mockDio.close()).thenAnswer((_) async {});

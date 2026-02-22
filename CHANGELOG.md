@@ -7,12 +7,19 @@
 ## [Unreleased]
 
 ### Added
+- Auto-sync platforms on IGDB verify — `_verifyConnection()` now automatically calls `syncPlatforms()` and `_downloadLogosIfEnabled()` after successful connection (`credentials_screen.dart`)
+- API key validation — `SteamGridDbApi.validateApiKey()` method for testing SteamGridDB API keys; `SettingsNotifier.validateTmdbKey()` and `validateSteamGridDbKey()` methods (`steamgriddb_api.dart`, `settings_provider.dart`)
+- "Test" button in credentials screen — `_buildSaveRow()` now accepts optional `onValidate` callback; Test buttons shown for SteamGridDB and TMDB when API key is saved (`credentials_screen.dart`)
+- Per-tab API key checks in search — Games tab checks IGDB credentials, Movies/TV/Animation tabs check TMDB key; missing key shows `_buildMissingApiKeyState()` with "Go to Settings" button (`search_screen.dart`)
+- Smart error handling in search — `_isNetworkError()` detects connection/timeout/socket errors and shows "No internet connection" with `wifi_off` icon; API errors show error text with Retry button (`search_screen.dart`)
+- Added 16 new tests: `validateApiKey` (5), `validateTmdbKey`/`validateSteamGridDbKey` (7), Test button visibility (4)
 - Auto-delete empty collection prompt — after moving the last item out, a dialog asks whether to delete the now-empty collection (`game_detail_screen.dart`, `movie_detail_screen.dart`, `tv_show_detail_screen.dart`, `anime_detail_screen.dart`, `collection_screen.dart`)
 - Board connection edge anchoring — connections now attach to the nearest edge center (top/bottom/left/right) instead of the item center (`CanvasConnectionPainter._getEdgePoint()`)
 - Multi-page TMDB search — initial search loads 3 pages in parallel (~60 results) for movies and TV shows (`MediaSearchNotifier._fetchMoviePages()`, `_fetchTvShowPages()`)
 - Added 6 new tests: canvas sync by (type, refId), orphan deletion without collectionItemId, non-media item preservation, edge point directions, drag offset edge points, diagonal edge selection
 
 ### Changed
+- Search screen no longer blocks all tabs when IGDB keys are missing — each tab independently checks its required API key (`search_screen.dart`)
 - Simplified import — imported collections are now created as `CollectionType.own` (fully editable) instead of `CollectionType.imported` (`import_service.dart`)
 - Removed fork system — deleted `fork()`, `revertToOriginal()` from `CollectionRepository` and `CollectionsNotifier`; removed "Create Copy" and "Revert to Original" UI actions; all collections now use unified folder icon and gameAccent color
 - Home screen shows a flat list of all collections instead of grouping by type (own/forked/imported)
