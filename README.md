@@ -29,13 +29,36 @@
 
 Tonkatsu Box is a free, open-source collection manager for retro games, movies, TV shows, and anime. Search IGDB and TMDB databases with hundreds of thousands of titles, organize them into custom collections, track your backlog and progress, rate everything from 1 to 10, create visual boards with drag-and-drop, and share collections with friends. Available for Windows and Android.
 
+<p align="center">
+  <img src="docs/screenshots/screenshot-main.jpg" width="800" alt="Main screen — all items with poster grid, ratings and filters">
+</p>
+
 ## What You Can Do
 
 ### 🎮 Build Collections
 Create as many collections as you want — by platform (SNES, PlayStation, PC), genre (RPGs, Sci-Fi), or your own lists (Backlog, Favorites, Couch co-op night). Mix games, movies and anime in a single collection. Switch between list and poster grid view.
 
 ### 🔍 Search & Discover
-Find games, movies, TV shows, and anime from a database of hundreds of thousands of titles. Filter by year, genre, or platform. Add anything you find to your collections with one tap.
+Two search tabs — **Games** and **TV** — each with their own filters:
+
+**Games** (powered by IGDB):
+- Filter by platform — select one or multiple platforms from a searchable list (NES, SNES, PlayStation, PC, and hundreds more)
+- Sort by relevance, release date, or IGDB rating
+- Pick the exact platform version when adding a game to your collection
+
+**Movies, TV Shows & Anime** (powered by TMDB):
+- Filter by type — All, Movies, TV Shows, or Animation
+- Sort by relevance, release date, or rating
+- Anime is detected automatically by genre — both animated movies and animated series
+
+Results load as you scroll with automatic pagination. Each card shows the poster, title, year, rating, and top genres at a glance.
+
+<p align="center">
+  <img src="docs/screenshots/screenshot-search.jpg" width="800" alt="Search results for Fallout games with ratings">
+</p>
+<p align="center">
+  <img src="docs/screenshots/screenshot-search-platform.jpg" width="800" alt="Game search with platform selection and filtering">
+</p>
 
 ### 📝 Wishlist
 No internet right now? Jot down the name of a game or movie to search for later. Tag it with a media type, add a note, and tap it when you're ready — the app opens search with the name pre-filled. Mark items as resolved when you've found them.
@@ -43,8 +66,19 @@ No internet right now? Jot down the name of a game or movie to search for later.
 ### 📊 Track Your Progress
 Mark items as Not Started, In Progress, Completed, On Hold, or Dropped. For TV shows and anime, track individual episodes with per-season checkboxes. Rate everything from 1 to 10 stars. See when you started and finished each item.
 
+<p align="center">
+  <img src="docs/screenshots/screenshot-detail.jpg" width="800" alt="TV show detail with status, rating and notes">
+</p>
+<p align="center">
+  <img src="docs/screenshots/screenshot-episodes.jpg" width="800" alt="Episode tracking with per-season progress">
+</p>
+
 ### 🎨 Visual Boards
 Arrange your collection on a free-form board — drag posters around, add text notes, images, and links. Draw connections between items. Browse high-quality game artwork from SteamGridDB and add it to your boards. Each item can also have its own personal board.
+
+<p align="center">
+  <img src="docs/screenshots/screenshot-board.jpg" width="800" alt="Visual board with Fallout games organized by category">
+</p>
 
 ### 📤 Share with Friends
 Export your collections as `.xcoll` (lightweight) or `.xcollx` (full offline copy with all images and data). Friends can import them and fork to create their own version.
