@@ -754,6 +754,142 @@
     }
 
     /* ═══════════════════════════════════════
+       Screenshot Sliders
+       ═══════════════════════════════════════ */
+    .screenshot-slider {
+      position: relative;
+      max-width: 900px;
+      margin: 0 auto;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      box-shadow:
+        0 4px 6px rgba(0,0,0,0.3),
+        0 20px 60px rgba(0,0,0,0.5);
+      background: var(--bg-surface);
+    }
+
+    .slider-track {
+      position: relative;
+      width: 100%;
+    }
+
+    .slider-track img {
+      width: 100%;
+      display: block;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .slider-track img.active {
+      opacity: 1;
+      position: relative;
+    }
+
+    .slider-prev,
+    .slider-next {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(10, 10, 15, 0.7);
+      color: var(--text-primary);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 1.4rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, opacity 0.2s;
+      opacity: 0;
+      z-index: 2;
+    }
+
+    .screenshot-slider:hover .slider-prev,
+    .screenshot-slider:hover .slider-next {
+      opacity: 1;
+    }
+
+    .slider-prev { left: 12px; }
+    .slider-next { right: 12px; }
+
+    .slider-prev:hover,
+    .slider-next:hover {
+      background: rgba(10, 10, 15, 0.9);
+      border-color: rgba(255,255,255,0.2);
+    }
+
+    .slider-dots {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 0;
+      background: var(--bg-surface);
+    }
+
+    .slider-dots button {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: none;
+      background: var(--bg-surface-3);
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+      padding: 0;
+    }
+
+    .slider-dots button.active {
+      background: var(--brand);
+      transform: scale(1.2);
+    }
+
+    .slider-dots button:hover {
+      background: var(--brand-light);
+    }
+
+    .slider-caption {
+      text-align: center;
+      color: var(--text-tertiary);
+      font-size: 13px;
+      padding: 0 16px 16px;
+      background: var(--bg-surface);
+    }
+
+    .slider-section {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 64px 24px;
+      text-align: center;
+    }
+
+    .slider-section .section-label {
+      margin-bottom: 12px;
+    }
+
+    .slider-section .section-title {
+      margin-bottom: 12px;
+    }
+
+    .slider-section .section-subtitle {
+      margin-bottom: 40px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    @media (max-width: 640px) {
+      .slider-prev, .slider-next {
+        width: 32px;
+        height: 32px;
+        font-size: 1.1rem;
+        opacity: 1;
+      }
+    }
+
+    /* ═══════════════════════════════════════
        Animations
        ═══════════════════════════════════════ */
     @keyframes fadeInUp {
@@ -883,20 +1019,23 @@
     </div>
   </section>
 
-  <!-- Screenshot Showcase (uncomment when screenshots are ready)
-  <section class="showcase">
+  <!-- Screenshot Showcase: Organize -->
+  <section class="showcase" style="animation: fadeInUp 1s ease-out 0.5s both; margin-top: -40px;">
     <div class="container">
-      <div class="showcase__frame">
-        <div class="showcase__titlebar">
-          <div class="showcase__dot"></div>
-          <div class="showcase__dot"></div>
-          <div class="showcase__dot"></div>
+      <div class="screenshot-slider" data-autoplay="5000">
+        <div class="slider-track">
+          <img src="screenshots/01-main-all.jpg" alt="Main screen — all items with poster grid and ratings" loading="lazy">
+          <img src="screenshots/02-main-games-filtered.jpg" alt="Games filtered by PC platform" loading="lazy">
+          <img src="screenshots/03-collections-list.jpg" alt="Collections list with thumbnails" loading="lazy">
+          <img src="screenshots/04-collection-grid.jpg" alt="Collection grid view with ratings and search" loading="lazy">
         </div>
-        <img src="assets/screenshot-main.png" alt="Tonkatsu Box — collection manager showing game, movie and anime collections with poster grid view" loading="lazy">
+        <button class="slider-prev" aria-label="Previous">&#8249;</button>
+        <button class="slider-next" aria-label="Next">&#8250;</button>
+        <div class="slider-dots"></div>
+        <div class="slider-caption" data-i18n="slider_organize_caption">Create collections, filter by type and platform, browse as grid or list</div>
       </div>
     </div>
   </section>
-  -->
 
   <!-- Media Type Tags -->
   <div class="container">
@@ -982,6 +1121,40 @@
       </div>
     </div>
   </section>
+
+  <!-- Screenshot Sliders: Search & Track -->
+  <div class="slider-section reveal">
+    <div class="section-label" data-i18n="slider_search_label">Search</div>
+    <h2 class="section-title" data-i18n="slider_search_title">Search &amp; Discover</h2>
+    <p class="section-subtitle" data-i18n="slider_search_subtitle">Search IGDB and TMDB databases with hundreds of thousands of titles</p>
+    <div class="screenshot-slider" data-autoplay="5000">
+      <div class="slider-track">
+        <img src="screenshots/07-search-movies.jpg" alt="Search movies and TV shows" loading="lazy">
+        <img src="screenshots/09-search-games.jpg" alt="Search games across platforms" loading="lazy">
+      </div>
+      <button class="slider-prev" aria-label="Previous">&#8249;</button>
+      <button class="slider-next" aria-label="Next">&#8250;</button>
+      <div class="slider-dots"></div>
+      <div class="slider-caption" data-i18n="slider_search_caption">Search IGDB and TMDB databases with hundreds of thousands of titles</div>
+    </div>
+  </div>
+
+  <div class="slider-section reveal">
+    <div class="section-label" data-i18n="slider_track_label">Track</div>
+    <h2 class="section-title" data-i18n="slider_track_title">Track &amp; Visualize</h2>
+    <p class="section-subtitle" data-i18n="slider_track_subtitle">Rate, track progress, organize on visual boards, save ideas in wishlist</p>
+    <div class="screenshot-slider" data-autoplay="5000">
+      <div class="slider-track">
+        <img src="screenshots/06-item-details.jpg" alt="Item details with status, rating and notes" loading="lazy">
+        <img src="screenshots/05-collection-board.jpg" alt="Visual board with game posters" loading="lazy">
+        <img src="screenshots/10-wishlist.jpg" alt="Wishlist with tagged media types" loading="lazy">
+      </div>
+      <button class="slider-prev" aria-label="Previous">&#8249;</button>
+      <button class="slider-next" aria-label="Next">&#8250;</button>
+      <div class="slider-dots"></div>
+      <div class="slider-caption" data-i18n="slider_track_caption">Rate, track progress, organize on visual boards, save ideas in wishlist</div>
+    </div>
+  </div>
 
   <!-- How It Works -->
   <section id="how-it-works">
@@ -1127,6 +1300,78 @@
     </div>
   </footer>
 
+  <!-- Screenshot Sliders -->
+  <script>
+    document.querySelectorAll('.screenshot-slider').forEach(function(slider) {
+      var track = slider.querySelector('.slider-track');
+      var images = track.querySelectorAll('img');
+      var prevBtn = slider.querySelector('.slider-prev');
+      var nextBtn = slider.querySelector('.slider-next');
+      var dotsContainer = slider.querySelector('.slider-dots');
+      var autoplayDelay = parseInt(slider.dataset.autoplay, 10) || 5000;
+      var current = 0;
+      var timer = null;
+
+      images[0].classList.add('active');
+
+      for (var i = 0; i < images.length; i++) {
+        var dot = document.createElement('button');
+        dot.setAttribute('aria-label', 'Slide ' + (i + 1));
+        if (i === 0) dot.classList.add('active');
+        dot.dataset.index = i;
+        dotsContainer.appendChild(dot);
+      }
+      var dots = dotsContainer.querySelectorAll('button');
+
+      function goTo(index) {
+        images[current].classList.remove('active');
+        dots[current].classList.remove('active');
+        current = (index + images.length) % images.length;
+        images[current].classList.add('active');
+        dots[current].classList.add('active');
+      }
+
+      function next() { goTo(current + 1); }
+      function prev() { goTo(current - 1); }
+
+      function startAutoplay() {
+        stopAutoplay();
+        timer = setInterval(next, autoplayDelay);
+      }
+      function stopAutoplay() {
+        if (timer) { clearInterval(timer); timer = null; }
+      }
+
+      prevBtn.addEventListener('click', function() { prev(); startAutoplay(); });
+      nextBtn.addEventListener('click', function() { next(); startAutoplay(); });
+
+      dotsContainer.addEventListener('click', function(e) {
+        if (e.target.tagName === 'BUTTON' && e.target.dataset.index !== undefined) {
+          goTo(parseInt(e.target.dataset.index, 10));
+          startAutoplay();
+        }
+      });
+
+      slider.addEventListener('mouseenter', stopAutoplay);
+      slider.addEventListener('mouseleave', startAutoplay);
+
+      var touchStartX = 0;
+      slider.addEventListener('touchstart', function(e) {
+        touchStartX = e.changedTouches[0].screenX;
+        stopAutoplay();
+      }, { passive: true });
+      slider.addEventListener('touchend', function(e) {
+        var diff = touchStartX - e.changedTouches[0].screenX;
+        if (Math.abs(diff) > 50) {
+          if (diff > 0) { next(); } else { prev(); }
+        }
+        startAutoplay();
+      }, { passive: true });
+
+      startAutoplay();
+    });
+  </script>
+
   <!-- Scroll Reveal -->
   <script>
     const observer = new IntersectionObserver((entries) => {
@@ -1197,6 +1442,15 @@
         cta_subtitle: 'Free, open source, and yours to customize.',
         cta_download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download Latest Release',
         cta_star: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg> Star on GitHub',
+        slider_organize_caption: 'Create collections, filter by type and platform, browse as grid or list',
+        slider_search_label: 'Search',
+        slider_search_title: 'Search &amp; Discover',
+        slider_search_subtitle: 'Search IGDB and TMDB databases with hundreds of thousands of titles',
+        slider_search_caption: 'Search IGDB and TMDB databases with hundreds of thousands of titles',
+        slider_track_label: 'Track',
+        slider_track_title: 'Track &amp; Visualize',
+        slider_track_subtitle: 'Rate, track progress, organize on visual boards, save ideas in wishlist',
+        slider_track_caption: 'Rate, track progress, organize on visual boards, save ideas in wishlist',
         footer_releases: 'Releases',
         footer_api_guide: 'API Keys Guide',
         footer_issues: 'Issues',
@@ -1259,6 +1513,15 @@
         cta_subtitle: '\u0411\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u043e, \u043e\u0442\u043a\u0440\u044b\u0442\u044b\u0439 \u043a\u043e\u0434, \u043f\u043e\u043b\u043d\u043e\u0441\u0442\u044c\u044e \u0432\u0430\u0448.',
         cta_download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> \u0421\u043a\u0430\u0447\u0430\u0442\u044c \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439 \u0440\u0435\u043b\u0438\u0437',
         cta_star: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg> \u0417\u0432\u0435\u0437\u0434\u0430 \u043d\u0430 GitHub',
+        slider_organize_caption: 'Коллекции, фильтры по типу и платформе, сетка и список',
+        slider_search_label: 'Поиск',
+        slider_search_title: 'Поиск и открытия',
+        slider_search_subtitle: 'Ищите в базах IGDB и TMDB среди сотен тысяч названий',
+        slider_search_caption: 'Ищите в базах IGDB и TMDB среди сотен тысяч названий',
+        slider_track_label: 'Прогресс',
+        slider_track_title: 'Отслеживание и визуализация',
+        slider_track_subtitle: 'Оценки, прогресс, визуальные доски, вишлист',
+        slider_track_caption: 'Оценки, прогресс, визуальные доски, вишлист',
         footer_releases: '\u0420\u0435\u043b\u0438\u0437\u044b',
         footer_api_guide: '\u0413\u0430\u0439\u0434 \u043f\u043e API \u043a\u043b\u044e\u0447\u0430\u043c',
         footer_issues: '\u0417\u0430\u0434\u0430\u0447\u0438',
