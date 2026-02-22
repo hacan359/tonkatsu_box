@@ -133,9 +133,12 @@ class DatabaseScreen extends ConsumerWidget {
     if (!context.mounted) return;
 
     if (result.success) {
-      context.showAppSnackBar('Config exported to ${result.filePath}');
+      context.showSnack(
+        'Config exported to ${result.filePath}',
+        type: SnackType.success,
+      );
     } else if (result.error != null) {
-      context.showAppSnackBar(result.error!, isError: true);
+      context.showSnack(result.error!, type: SnackType.error);
     }
   }
 
@@ -147,9 +150,12 @@ class DatabaseScreen extends ConsumerWidget {
     if (!context.mounted) return;
 
     if (result.success) {
-      context.showAppSnackBar('Config imported successfully');
+      context.showSnack(
+        'Config imported successfully',
+        type: SnackType.success,
+      );
     } else if (result.error != null) {
-      context.showAppSnackBar(result.error!, isError: true);
+      context.showSnack(result.error!, type: SnackType.error);
     }
   }
 
@@ -195,7 +201,10 @@ class DatabaseScreen extends ConsumerWidget {
       ref.invalidate(collectedAnimationIdsProvider);
 
       if (context.mounted) {
-        context.showAppSnackBar('Database has been reset');
+        context.showSnack(
+          'Database has been reset',
+          type: SnackType.success,
+        );
         Navigator.of(context, rootNavigator: true).pushReplacement(
           MaterialPageRoute<void>(
             builder: (_) => const NavigationShell(),

@@ -75,7 +75,7 @@ lib/
 ├── core/                     # Ядро (API, БД)
 ├── data/                     # Репозитории
 ├── features/                 # Фичи (экраны, виджеты)
-└── shared/                   # Общие модели
+└── shared/                   # Общие модели, extensions, тема
 ```
 
 ---
@@ -307,6 +307,7 @@ lib/
 | Файл | Назначение |
 |------|------------|
 | `lib/shared/constants/media_type_theme.dart` | **Тема типов медиа**. Цвета и иконки для визуального разделения: `colorFor(MediaType)`, `iconFor(MediaType)`. Делегирует к `AppColors`: gameColor (indigo), movieColor (orange), tvShowColor (lime), animationColor (purple) |
+| `lib/shared/extensions/snackbar_extension.dart` | **Unified SnackBar extension**. `SnackType` enum (success/error/info), `context.showSnack()` с auto-hide, цветными иконками и рамками, `loading` параметром. `context.hideSnack()` для ручного скрытия. Единая точка управления всеми уведомлениями в приложении. Адаптивная ширина: 360px на desktop, full-width на mobile (`kIsMobile`) |
 
 ---
 
@@ -830,7 +831,7 @@ CollectionRepository.addItem()
        |
 DatabaseService.addItemToCollection()
        |
-SnackBar "Game added to collection"
+context.showSnack("Game added", type: SnackType.success)
 ```
 
 ### 2a. Поиск фильмов/сериалов
@@ -865,7 +866,7 @@ CollectionRepository.addItem()
        |
 DatabaseService.insertCollectionItem()
        |
-SnackBar "Movie/TV show added to collection"
+context.showSnack("Added", type: SnackType.success)
 ```
 
 ### 3. Canvas (визуальный холст)
@@ -929,7 +930,7 @@ CollectionScreen._addSteamGridDbImage()
        |
 canvasNotifierProvider.addImageItem(centerX, centerY, {url})
        |
-SnackBar "Image added to canvas"
+context.showSnack("Image added to board", type: SnackType.success)
 ```
 
 ### 6. Изменение статуса

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../core/api/tmdb_api.dart';
 import '../../../core/database/database_service.dart';
@@ -228,7 +229,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   }
 
   Future<void> _addGameToCollection(Game game) async {
-    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
     final String gameName = game.name;
 
     final int? platformId = await _showPlatformSelectionDialog(game);
@@ -245,19 +245,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     if (mounted) {
       if (success) {
         _cacheImage(ImageType.gameCover, game.id.toString(), game.coverUrl);
-        messenger.showSnackBar(
-          SnackBar(content: Text('$gameName added to collection')),
-        );
+        context.showSnack('$gameName added to collection', type: SnackType.success);
       } else {
-        messenger.showSnackBar(
-          const SnackBar(content: Text('Game already in collection')),
-        );
+        context.showSnack('Game already in collection', type: SnackType.info);
       }
     }
   }
 
   Future<void> _addGameToAnyCollection(Game game) async {
-    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
     final String gameName = game.name;
 
     final CollectionChoice? choice =
@@ -293,17 +288,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     if (mounted) {
       if (success) {
         _cacheImage(ImageType.gameCover, game.id.toString(), game.coverUrl);
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text('$gameName added to $collectionName'),
-          ),
-        );
+        context.showSnack('$gameName added to $collectionName', type: SnackType.success);
       } else {
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text('$gameName already in $collectionName'),
-          ),
-        );
+        context.showSnack('$gameName already in $collectionName', type: SnackType.info);
       }
     }
   }
@@ -383,7 +370,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   }
 
   Future<void> _addMovieToCollection(Movie movie) async {
-    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
     final String title = movie.title;
 
     final bool success = await ref
@@ -401,19 +387,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           movie.tmdbId.toString(),
           movie.posterUrl,
         );
-        messenger.showSnackBar(
-          SnackBar(content: Text('$title added to collection')),
-        );
+        context.showSnack('$title added to collection', type: SnackType.success);
       } else {
-        messenger.showSnackBar(
-          const SnackBar(content: Text('Movie already in collection')),
-        );
+        context.showSnack('Movie already in collection', type: SnackType.info);
       }
     }
   }
 
   Future<void> _addMovieToAnyCollection(Movie movie) async {
-    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
     final String title = movie.title;
 
     final CollectionChoice? choice =
@@ -449,23 +430,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           movie.tmdbId.toString(),
           movie.posterUrl,
         );
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text('$title added to $collectionName'),
-          ),
-        );
+        context.showSnack('$title added to $collectionName', type: SnackType.success);
       } else {
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text('$title already in $collectionName'),
-          ),
-        );
+        context.showSnack('$title already in $collectionName', type: SnackType.info);
       }
     }
   }
 
   Future<void> _addTvShowToCollection(TvShow tvShow) async {
-    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
     final String title = tvShow.title;
 
     final bool success = await ref
@@ -484,19 +456,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           tvShow.posterUrl,
         );
         _preloadSeasons(tvShow.tmdbId);
-        messenger.showSnackBar(
-          SnackBar(content: Text('$title added to collection')),
-        );
+        context.showSnack('$title added to collection', type: SnackType.success);
       } else {
-        messenger.showSnackBar(
-          const SnackBar(content: Text('TV show already in collection')),
-        );
+        context.showSnack('TV show already in collection', type: SnackType.info);
       }
     }
   }
 
   Future<void> _addTvShowToAnyCollection(TvShow tvShow) async {
-    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
     final String title = tvShow.title;
 
     final CollectionChoice? choice =
@@ -533,17 +500,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           tvShow.posterUrl,
         );
         _preloadSeasons(tvShow.tmdbId);
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text('$title added to $collectionName'),
-          ),
-        );
+        context.showSnack('$title added to $collectionName', type: SnackType.success);
       } else {
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text('$title already in $collectionName'),
-          ),
-        );
+        context.showSnack('$title already in $collectionName', type: SnackType.info);
       }
     }
   }
@@ -551,7 +510,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   // ==================== Animation actions ====================
 
   Future<void> _addAnimationMovieToCollection(Movie movie) async {
-    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
     final String title = movie.title;
 
     final bool success = await ref
@@ -570,19 +528,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           movie.tmdbId.toString(),
           movie.posterUrl,
         );
-        messenger.showSnackBar(
-          SnackBar(content: Text('$title added to collection')),
-        );
+        context.showSnack('$title added to collection', type: SnackType.success);
       } else {
-        messenger.showSnackBar(
-          const SnackBar(content: Text('Already in collection')),
-        );
+        context.showSnack('Already in collection', type: SnackType.info);
       }
     }
   }
 
   Future<void> _addAnimationTvShowToCollection(TvShow tvShow) async {
-    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
     final String title = tvShow.title;
 
     final bool success = await ref
@@ -602,19 +555,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           tvShow.posterUrl,
         );
         _preloadSeasons(tvShow.tmdbId);
-        messenger.showSnackBar(
-          SnackBar(content: Text('$title added to collection')),
-        );
+        context.showSnack('$title added to collection', type: SnackType.success);
       } else {
-        messenger.showSnackBar(
-          const SnackBar(content: Text('Already in collection')),
-        );
+        context.showSnack('Already in collection', type: SnackType.info);
       }
     }
   }
 
   Future<void> _addAnimationMovieToAnyCollection(Movie movie) async {
-    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
     final String title = movie.title;
 
     final CollectionChoice? choice =
@@ -651,23 +599,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           movie.tmdbId.toString(),
           movie.posterUrl,
         );
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text('$title added to $collectionName'),
-          ),
-        );
+        context.showSnack('$title added to $collectionName', type: SnackType.success);
       } else {
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text('$title already in $collectionName'),
-          ),
-        );
+        context.showSnack('$title already in $collectionName', type: SnackType.info);
       }
     }
   }
 
   Future<void> _addAnimationTvShowToAnyCollection(TvShow tvShow) async {
-    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
     final String title = tvShow.title;
 
     final CollectionChoice? choice =
@@ -705,17 +644,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           tvShow.posterUrl,
         );
         _preloadSeasons(tvShow.tmdbId);
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text('$title added to $collectionName'),
-          ),
-        );
+        context.showSnack('$title added to $collectionName', type: SnackType.success);
       } else {
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text('$title already in $collectionName'),
-          ),
-        );
+        context.showSnack('$title already in $collectionName', type: SnackType.info);
       }
     }
   }

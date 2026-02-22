@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/steamgriddb_api.dart';
+import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/models/steamgriddb_game.dart';
 import '../../../shared/models/steamgriddb_image.dart';
 import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
@@ -217,7 +218,7 @@ class _SteamGridDbDebugScreenState
                           : null,
                       onTap: () {
                         _gameIdController.text = game.id.toString();
-                        _showSnackBar(
+                        context.showSnack(
                           'Game ID ${game.id} copied to image tabs',
                         );
                       },
@@ -413,13 +414,6 @@ class _SteamGridDbDebugScreenState
           ),
         ),
       ),
-    );
-  }
-
-  void _showSnackBar(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
     );
   }
 }

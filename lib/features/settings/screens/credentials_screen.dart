@@ -113,7 +113,7 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
             Clipboard.setData(
               const ClipboardData(text: _twitchConsoleUrl),
             );
-            context.showAppSnackBar(
+            context.showSnack(
               'URL copied: $_twitchConsoleUrl',
             );
           },
@@ -370,9 +370,9 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
     final String clientSecret = _clientSecret.trim();
 
     if (clientId.isEmpty || clientSecret.isEmpty) {
-      context.showAppSnackBar(
+      context.showSnack(
         'Please enter both Client ID and Client Secret',
-        isError: true,
+        type: SnackType.error,
       );
       return;
     }
@@ -390,12 +390,15 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
       final bool syncOk = await notifier.syncPlatforms();
       if (mounted) {
         if (syncOk) {
-          context.showAppSnackBar('Connected & platforms synced!');
+          context.showSnack(
+            'Connected & platforms synced!',
+            type: SnackType.success,
+          );
           await _downloadLogosIfEnabled();
         } else {
-          context.showAppSnackBar(
+          context.showSnack(
             'Connected, but platform sync failed',
-            isError: true,
+            type: SnackType.error,
           );
         }
       }
@@ -408,7 +411,10 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
     final bool success = await notifier.syncPlatforms();
 
     if (success && mounted) {
-      context.showAppSnackBar('Platforms synced successfully!');
+      context.showSnack(
+        'Platforms synced successfully!',
+        type: SnackType.success,
+      );
       await _downloadLogosIfEnabled();
     }
   }
@@ -425,12 +431,10 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
 
     if (!mounted) return;
 
-    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
-    messenger.showSnackBar(
-      const SnackBar(
-        content: Text('Downloading platform logos...'),
-        duration: Duration(seconds: 60),
-      ),
+    context.showSnack(
+      'Downloading platform logos...',
+      loading: true,
+      duration: const Duration(seconds: 60),
     );
 
     final List<ImageDownloadTask> tasks = platforms
@@ -447,14 +451,18 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
         tasks: tasks,
       );
 
-      messenger.hideCurrentSnackBar();
       if (mounted) {
-        context.showAppSnackBar('Downloaded $downloaded logos');
+        context.showSnack(
+          'Downloaded $downloaded logos',
+          type: SnackType.success,
+        );
       }
     } on Exception {
-      messenger.hideCurrentSnackBar();
       if (mounted) {
-        context.showAppSnackBar('Failed to download logos', isError: true);
+        context.showSnack(
+          'Failed to download logos',
+          type: SnackType.error,
+        );
       }
     }
   }
@@ -503,9 +511,12 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
     final bool valid = await notifier.validateSteamGridDbKey();
     if (mounted) {
       if (valid) {
-        context.showAppSnackBar('SteamGridDB API key is valid');
+        context.showSnack(
+          'SteamGridDB API key is valid',
+          type: SnackType.success,
+        );
       } else {
-        context.showAppSnackBar('SteamGridDB API key is invalid', isError: true);
+        context.showSnack('SteamGridDB API key is invalid', type: SnackType.error);
       }
     }
   }
@@ -516,9 +527,12 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
     final bool valid = await notifier.validateTmdbKey();
     if (mounted) {
       if (valid) {
-        context.showAppSnackBar('TMDB API key is valid');
+        context.showSnack(
+          'TMDB API key is valid',
+          type: SnackType.success,
+        );
       } else {
-        context.showAppSnackBar('TMDB API key is invalid', isError: true);
+        context.showSnack('TMDB API key is invalid', type: SnackType.error);
       }
     }
   }
@@ -545,14 +559,14 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
   }) async {
     final String apiKey = value.trim();
     if (apiKey.isEmpty) {
-      context.showAppSnackBar(emptyMessage, isError: true);
+      context.showSnack(emptyMessage, type: SnackType.error);
       return;
     }
 
     await setter(apiKey);
 
     if (mounted) {
-      context.showAppSnackBar(successMessage);
+      context.showSnack(successMessage, type: SnackType.success);
     }
   }
 

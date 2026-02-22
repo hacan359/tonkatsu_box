@@ -7,6 +7,8 @@
 ## [Unreleased]
 
 ### Added
+- Unified SnackBar notification system — `SnackType` enum (success/error/info), `context.showSnack()` extension with auto-hide, typed icons and colored borders, `loading` parameter for progress indication, `context.hideSnack()` for manual dismissal (`snackbar_extension.dart`)
+- Added 17 new tests for `SnackBarExtension`: all 3 types with icons/colors/borders, loading mode, auto-hide, action, duration, text style, SnackBar properties, `hideSnack()` (`snackbar_extension_test.dart`)
 - Auto-sync platforms on IGDB verify — `_verifyConnection()` now automatically calls `syncPlatforms()` and `_downloadLogosIfEnabled()` after successful connection (`credentials_screen.dart`)
 - API key validation — `SteamGridDbApi.validateApiKey()` method for testing SteamGridDB API keys; `SettingsNotifier.validateTmdbKey()` and `validateSteamGridDbKey()` methods (`steamgriddb_api.dart`, `settings_provider.dart`)
 - "Test" button in credentials screen — `_buildSaveRow()` now accepts optional `onValidate` callback; Test buttons shown for SteamGridDB and TMDB when API key is saved (`credentials_screen.dart`)
@@ -19,6 +21,8 @@
 - Added 6 new tests: canvas sync by (type, refId), orphan deletion without collectionItemId, non-media item preservation, edge point directions, drag offset edge points, diagonal edge selection
 
 ### Changed
+- Migrated all 85 SnackBar calls across 13 files to unified `context.showSnack()` extension — removed all direct `ScaffoldMessenger.of(context).showSnackBar()` calls, `messenger` variables, and `_showSnackBar()` helpers (`home_screen.dart`, `collection_screen.dart`, `search_screen.dart`, `credentials_screen.dart`, `database_screen.dart`, `cache_screen.dart`, `welcome_step_api_keys.dart`, 4 detail screens, 2 debug screens)
+- Simplified `snackBarTheme` in `AppTheme` — removed redundant backgroundColor, contentTextStyle, shape (now controlled by extension)
 - Search screen no longer blocks all tabs when IGDB keys are missing — each tab independently checks its required API key (`search_screen.dart`)
 - Simplified import — imported collections are now created as `CollectionType.own` (fully editable) instead of `CollectionType.imported` (`import_service.dart`)
 - Removed fork system — deleted `fork()`, `revertToOriginal()` from `CollectionRepository` and `CollectionsNotifier`; removed "Create Copy" and "Revert to Original" UI actions; all collections now use unified folder icon and gameAccent color
@@ -34,6 +38,8 @@
 - Fixed canvas not displaying items added to collection — `_syncCanvasWithItems()` was setting `collectionItemId` on created items, but `getCanvasItems()` SQL query filters by `collection_item_id IS NULL`, making them invisible. Items are now created without `collectionItemId`, consistent with `initializeCanvas()`
 
 ### Removed
+- Removed `_showSnackBar()` private helper method from `SteamGridDbDebugScreen`
+- Removed all direct `ScaffoldMessenger` usage from feature screens (13 files) — replaced by `snackbar_extension.dart`
 - Removed `CollectionRepository.fork()` and `revertToOriginal()` methods
 - Removed `CollectionsNotifier.fork()` and `revertToOriginal()` methods
 - Removed `importedCollectionsProvider` and `forkedCollectionsProvider`

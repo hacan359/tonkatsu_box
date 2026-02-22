@@ -330,7 +330,7 @@ class _LinkCard extends StatelessWidget {
     if (!launched && context.mounted) {
       await Clipboard.setData(ClipboardData(text: url));
       if (context.mounted) {
-        context.showAppSnackBar('URL copied to clipboard');
+        context.showSnack('URL copied to clipboard');
       }
     }
   }
