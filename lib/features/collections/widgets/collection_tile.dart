@@ -72,7 +72,6 @@ class CollectionTile extends ConsumerWidget {
                         error: (Object error, StackTrace stack) =>
                             _buildErrorStats(),
                       ),
-                      if (collection.type != CollectionType.imported)
                         statsAsync.when(
                           data: (CollectionStats stats) =>
                               _buildProgressBar(stats),
@@ -98,36 +97,21 @@ class CollectionTile extends ConsumerWidget {
   }
 
   Widget _buildIcon() {
-    final IconData icon;
-    final Color color;
-
-    switch (collection.type) {
-      case CollectionType.own:
-        icon = Icons.folder;
-        color = AppColors.gameAccent;
-      case CollectionType.imported:
-        icon = Icons.download;
-        color = AppColors.movieAccent;
-      case CollectionType.fork:
-        icon = Icons.fork_right;
-        color = AppColors.tvShowAccent;
-    }
-
     return Container(
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        color: color.withAlpha(25),
+        color: AppColors.gameAccent.withAlpha(25),
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
       ),
-      child: Icon(icon, color: color),
+      child: const Icon(Icons.folder, color: AppColors.gameAccent),
     );
   }
 
   Widget _buildStatsRow(CollectionStats stats) {
     return Text(
       '${stats.total} item${stats.total != 1 ? 's' : ''}'
-      '${collection.type != CollectionType.imported ? ' · ${stats.completionPercentFormatted} completed' : ''}',
+      ' · ${stats.completionPercentFormatted} completed',
       style: AppTypography.bodySmall,
     );
   }

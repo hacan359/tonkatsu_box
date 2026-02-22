@@ -562,5 +562,139 @@ void main() {
         recorder.endRecording();
       });
     });
+
+    group('edge point calculation (через hitTest)', () {
+      // Тесты проверяют _getEdgePoint косвенно через hitTestConnection,
+      // т.к. метод приватный. HitTest использует edge points для линий.
+
+      test('should use right edge when target is to the right', () {
+        // Item 1 at (0,0) size 100x100, center (50,50)
+        // Item 2 at (200,0) size 100x100, center (250,50)
+        // Edge points: right of item1 (100,50) → left of item2 (200,50)
+        // Line goes from (100,50) to (200,50) — horizontal at y=50
+        final List<CanvasItem> items = createTestItems();
+        final CanvasConnectionPainter painter = CanvasConnectionPainter(
+          connections: <CanvasConnection>[
+            CanvasConnection(
+              id: 1,
+              collectionId: 10,
+              fromItemId: 1,
+              toItemId: 2,
+              createdAt: testDate,
+            ),
+          ],
+          items: items,
+        );
+
+        // Midpoint between edges: (150, 50)
+        expect(painter.hitTestConnection(const Offset(150, 50)), 1);
+        // Point between items at y=50 should still hit
+        expect(painter.hitTestConnection(const Offset(120, 50)), 1);
+        // Point far above the line should not hit
+        expect(painter.hitTestConnection(const Offset(150, 20)), isNull);
+      });
+
+      test('should use bottom edge when target is below', () {
+        // Item 1 at (0,0) size 100x100, center (50,50)
+        // Item 3 at (0,200) size 100x50, center (50,225)
+        // Edge points: bottom of item1 (50,100) → top of item3 (50,200)
+        final List<CanvasItem> items = createTestItems();
+        final CanvasConnectionPainter painter = CanvasConnectionPainter(
+          connections: <CanvasConnection>[
+            CanvasConnection(
+              id: 1,
+              collectionId: 10,
+              fromItemId: 1,
+              toItemId: 3,
+              createdAt: testDate,
+            ),
+          ],
+          items: items,
+        );
+
+        // Midpoint of vertical line: (50, 150)
+        expect(painter.hitTestConnection(const Offset(50, 150)), 1);
+        // Point to the right should not hit
+        expect(painter.hitTestConnection(const Offset(100, 150)), isNull);
+      });
+
+      test('should use correct edge with drag offsets', () {
+        // Item 1 at (0,0), dragged by (50, 0) → effective pos (50,0)
+        // Item 2 at (200,0) → center (250,50)
+        // Item 1 effective center: (50+50,50) = (100,50)
+        // Edge: right of item1 (50+100,50) = (150,50) → left of item2 (200,50)
+        final List<CanvasItem> items = createTestItems();
+        final CanvasConnectionPainter painter = CanvasConnectionPainter(
+          connections: <CanvasConnection>[
+            CanvasConnection(
+              id: 1,
+              collectionId: 10,
+              fromItemId: 1,
+              toItemId: 2,
+              createdAt: testDate,
+            ),
+          ],
+          items: items,
+          dragOffsets: const <int, Offset>{1: Offset(50, 0)},
+        );
+
+        // Line now from (150,50) to (200,50)
+        // Midpoint: (175, 50)
+        expect(painter.hitTestConnection(const Offset(175, 50)), 1);
+        // Original position (100, 50) — now outside the line
+        expect(painter.hitTestConnection(const Offset(100, 50)), isNull);
+      });
+
+      test('should handle diagonal connection with correct edge selection', () {
+        // Item 1 at (0,0) size 100x100, center (50,50)
+        // Item at (200,200) — далеко по диагонали
+        final List<CanvasItem> items = <CanvasItem>[
+          CanvasItem(
+            id: 1,
+            collectionId: 10,
+            itemType: CanvasItemType.game,
+            x: 0,
+            y: 0,
+            width: 100,
+            height: 100,
+            zIndex: 0,
+            createdAt: testDate,
+          ),
+          CanvasItem(
+            id: 2,
+            collectionId: 10,
+            itemType: CanvasItemType.game,
+            x: 200,
+            y: 200,
+            width: 100,
+            height: 100,
+            zIndex: 1,
+            createdAt: testDate,
+          ),
+        ];
+
+        final CanvasConnectionPainter painter = CanvasConnectionPainter(
+          connections: <CanvasConnection>[
+            CanvasConnection(
+              id: 1,
+              collectionId: 10,
+              fromItemId: 1,
+              toItemId: 2,
+              createdAt: testDate,
+            ),
+          ],
+          items: items,
+        );
+
+        // For a 1:1 aspect ratio item, diagonal → picks bottom/top edge
+        // (dx.abs()*height vs dy.abs()*width — equal, falls to else/vertical)
+        // Item1 center (50,50), Item2 center (250,250)
+        // dx=200, dy=200, both equal → vertical edge
+        // Item1 bottom: (50,100), Item2 top: (250,200)
+        // Line from (50,100) to (250,200)
+        // Midpoint approximately (150, 150)
+        expect(painter.hitTestConnection(const Offset(150, 150)), 1);
+      });
+    });
   });
 }

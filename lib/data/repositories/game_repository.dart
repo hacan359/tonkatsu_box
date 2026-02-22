@@ -42,7 +42,7 @@ class GameRepository {
   Future<List<Game>> searchGames({
     required String query,
     List<int>? platformIds,
-    int limit = 20,
+    int limit = 50,
     int offset = 0,
   }) async {
     // Поиск через IGDB API

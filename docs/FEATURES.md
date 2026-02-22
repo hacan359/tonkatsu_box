@@ -58,7 +58,7 @@ Create unlimited collections organized however you want:
 - **Type filter** — filter items by type (All/Games/Movies/TV Shows/Animation) with item count badges
 - **Platform filter** — when "Games" is selected, a second row of ChoiceChips shows platforms from current collection items. Resets when switching media types
 - **Search** — filter items by name within a collection
-- **Move to Collection** — move items between collections or to/from uncategorized via PopupMenuButton on detail screens and collection tiles
+- **Move to Collection** — move items between collections or to/from uncategorized via PopupMenuButton on detail screens and collection tiles. Prompts to delete the source collection when it becomes empty
 
 ### Collection Sorting
 
@@ -191,8 +191,8 @@ Metadata + element IDs. Tiny file size. Recipients fetch data from APIs on impor
 ### Full Export (`.xcollx`)
 Everything: board data, base64 covers, embedded media data (Game/Movie/TvShow/TvSeason/TvEpisode), all episodes. Fully self-contained — import without internet.
 
-### Forking
-Create your own editable copy of any imported collection. Add or remove items. Revert to original anytime.
+### Import
+Imported collections are fully editable — they behave the same as your own collections.
 
 ## 🎨 Board (Visual Board)
 
@@ -222,7 +222,7 @@ Visualize your collection on a free-form board, or create a personal board for e
 - **Text blocks** — configurable font size (Small 12 / Medium 16 / Large 24 / Title 32)
 - **Images** — from URL or local file (base64 encoded)
 - **Links** — clickable with custom labels (double-click to open)
-- **Resize** — drag bottom-right handle (min 50×50, max 2000×2000)
+- **Resize** — drag bottom-right handle (min 50×50, max 5000×5000)
 - **Z-index** — Bring to Front / Send to Back
 
 </details>
@@ -234,6 +234,8 @@ Draw visual lines between any two board elements:
 - Three styles: solid, dashed, arrow
 - 8 colors (gray, red, orange, yellow, green, blue, purple, black)
 - Optional text labels at midpoint
+- Edge anchoring — lines attach to the nearest edge center (top/bottom/left/right)
+- Rendered on top of items (click-through via IgnorePointer)
 - Create via context menu → Connect → tap target
 - Auto-delete when connected element is removed
 
@@ -283,7 +285,7 @@ Settings is organized as a hub with an inline author name field and 4 sub-screen
 
 Built with 5 reusable widgets: `SettingsSection`, `SettingsRow`, `SettingsNavRow`, `StatusDot`, `InlineTextField`.
 
-- **Author name** — configurable default author for new and forked collections (editable inline via tap-to-edit field)
+- **Author name** — configurable default author for new collections (editable inline via tap-to-edit field)
 - **Inline editing** — API keys and author name use `InlineTextField` (tap to edit, blur/Enter to save, no dialogs)
 - **Status indicators** — `StatusDot` shows connection status, API key presence with color-coded icons
 - **Gamepad support** — all inline fields support D-pad navigation and A-button activation

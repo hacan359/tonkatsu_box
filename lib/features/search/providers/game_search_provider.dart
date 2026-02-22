@@ -6,7 +6,7 @@ import '../../../shared/models/game.dart';
 import '../../../shared/models/search_sort.dart';
 
 /// Количество результатов на одну страницу.
-const int _gamePageSize = 20;
+const int _gamePageSize = 50;
 
 /// Состояние поиска игр.
 class GameSearchState {

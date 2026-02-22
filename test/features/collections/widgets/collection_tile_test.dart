@@ -85,7 +85,7 @@ void main() {
       expect(find.byIcon(Icons.folder), findsOneWidget);
     });
 
-    testWidgets('должен отображать иконку download для imported коллекции',
+    testWidgets('должен отображать иконку folder для imported коллекции',
         (WidgetTester tester) async {
       final Collection collection = createTestCollection(type: CollectionType.imported);
       const CollectionStats stats = CollectionStats.empty;
@@ -96,10 +96,10 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.download), findsOneWidget);
+      expect(find.byIcon(Icons.folder), findsOneWidget);
     });
 
-    testWidgets('должен отображать иконку fork для fork коллекции',
+    testWidgets('должен отображать иконку folder для fork коллекции',
         (WidgetTester tester) async {
       final Collection collection = createTestCollection(type: CollectionType.fork);
       const CollectionStats stats = CollectionStats.empty;
@@ -110,7 +110,7 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.fork_right), findsOneWidget);
+      expect(find.byIcon(Icons.folder), findsOneWidget);
     });
 
     testWidgets('должен отображать статистику', (WidgetTester tester) async {
@@ -155,7 +155,7 @@ void main() {
       expect(find.textContaining('1 item'), findsOneWidget);
     });
 
-    testWidgets('не должен показывать процент для imported коллекции',
+    testWidgets('должен показывать процент для imported коллекции',
         (WidgetTester tester) async {
       final Collection collection = createTestCollection(type: CollectionType.imported);
       const CollectionStats stats = CollectionStats(
@@ -174,8 +174,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.textContaining('10 items'), findsOneWidget);
-      // Для imported не должно быть процента
-      expect(find.textContaining('completed'), findsNothing);
+      expect(find.textContaining('completed'), findsOneWidget);
     });
 
     testWidgets('должен вызывать onTap при нажатии', (WidgetTester tester) async {

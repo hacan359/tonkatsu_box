@@ -238,15 +238,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),
-                if (_collection!.isFork)
-                  const PopupMenuItem<String>(
-                    value: 'revert',
-                    child: ListTile(
-                      leading: Icon(Icons.restore),
-                      title: Text('Revert to Original'),
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                  ),
                 const PopupMenuDivider(),
                 const PopupMenuItem<String>(
                   value: 'delete',
@@ -1114,7 +1105,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         targetName = 'Uncategorized';
     }
 
-    final bool success = await ref
+    final ({bool success, bool sourceEmpty}) result = await ref
         .read(
           collectionItemsNotifierProvider(widget.collectionId).notifier,
         )
@@ -1126,16 +1117,52 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
 
     if (!mounted) return;
 
-    if (success) {
+    if (result.success) {
       messenger.showSnackBar(
         SnackBar(content: Text('${item.itemName} moved to $targetName')),
       );
+
+      if (result.sourceEmpty && widget.collectionId != null) {
+        await _promptDeleteEmptyCollection();
+      }
     } else {
       messenger.showSnackBar(
         SnackBar(
           content: Text('${item.itemName} already exists in $targetName'),
         ),
       );
+    }
+  }
+
+  Future<void> _promptDeleteEmptyCollection() async {
+    if (!mounted) return;
+    final NavigatorState navigator = Navigator.of(context);
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Empty Collection'),
+        content: const Text(
+          'This collection is now empty. Delete it?',
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Keep'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      await ref
+          .read(collectionsProvider.notifier)
+          .delete(widget.collectionId!);
+      if (mounted) {
+        navigator.pop();
+      }
     }
   }
 
@@ -1283,74 +1310,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         _renameCollection(context);
       case 'export':
         _exportCollection();
-      case 'revert':
-        _revertToOriginal();
       case 'delete':
         _deleteCollection();
-    }
-  }
-
-  Future<void> _revertToOriginal() async {
-    final bool? confirmed = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) => AlertDialog(
-        scrollable: true,
-        title: const Text('Revert to Original?'),
-        content: const Text(
-          'This will restore the collection to its original state. '
-          'All your changes will be lost.',
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-            child: const Text('Revert'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed != true || !mounted) return;
-
-    final int? collId = widget.collectionId;
-    if (collId == null) return;
-
-    // Сохраняем ссылки до async операций
-    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
-    final Color errorColor = Theme.of(context).colorScheme.error;
-
-    try {
-      await ref
-          .read(collectionsProvider.notifier)
-          .revertToOriginal(collId);
-
-      // Обновляем список элементов после revert
-      if (mounted) {
-        await ref
-            .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
-            .refresh();
-      }
-
-      if (mounted) {
-        messenger.showSnackBar(
-          const SnackBar(content: Text('Reverted to original')),
-        );
-      }
-    } on Exception catch (e) {
-      if (mounted) {
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text('Failed to revert: $e'),
-            backgroundColor: errorColor,
-          ),
-        );
-      }
     }
   }
 

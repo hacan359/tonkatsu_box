@@ -15,7 +15,6 @@
 - [x] Collection management
 - [x] Progress tracking
 - [x] Import/Export (.xcoll/.xcollx)
-- [x] Forking collections
 - [x] Comments system
 - [x] SteamGridDB integration (API client, debug panel)
 - [x] Offline image caching
