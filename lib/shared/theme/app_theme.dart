@@ -123,13 +123,9 @@ abstract final class AppTheme {
       color: AppColors.surfaceBorder,
       thickness: 1,
     ),
-    snackBarTheme: SnackBarThemeData(
-      backgroundColor: AppColors.surfaceLight,
-      contentTextStyle: const TextStyle(color: AppColors.textPrimary),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-      ),
+    snackBarTheme: const SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
+      elevation: 4,
     ),
     popupMenuTheme: PopupMenuThemeData(
       color: AppColors.surface,

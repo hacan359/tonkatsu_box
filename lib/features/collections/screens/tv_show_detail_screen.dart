@@ -12,6 +12,7 @@ import '../../../core/database/database_service.dart';
 import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
 import '../../../shared/widgets/breadcrumb_scope.dart';
 import '../../../shared/widgets/collection_picker_dialog.dart';
+import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../data/repositories/canvas_repository.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
@@ -126,7 +127,6 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
   }
 
   Future<void> _moveToCollection(CollectionItem item) async {
-    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
     final NavigatorState navigator = Navigator.of(context);
     final bool isUncategorized = widget.collectionId == null;
 
@@ -163,8 +163,9 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
     if (!mounted) return;
 
     if (result.success) {
-      messenger.showSnackBar(
-        SnackBar(content: Text('${item.itemName} moved to $targetName')),
+      context.showSnack(
+        '${item.itemName} moved to $targetName',
+        type: SnackType.success,
       );
       if (result.sourceEmpty && widget.collectionId != null) {
         final bool? confirmed = await showDialog<bool>(
@@ -192,11 +193,7 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
       }
       if (mounted) navigator.pop();
     } else {
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text('${item.itemName} already exists in $targetName'),
-        ),
-      );
+      context.showSnack('${item.itemName} already exists in $targetName');
     }
   }
 
@@ -231,9 +228,7 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
         .removeItem(item.id, mediaType: item.mediaType);
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${item.itemName} removed')),
-      );
+      context.showSnack('${item.itemName} removed', type: SnackType.success);
       Navigator.of(context).pop();
     }
   }
@@ -622,12 +617,7 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
         );
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Image added to board'),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      context.showSnack('Image added to board', type: SnackType.success);
     }
   }
 
@@ -659,12 +649,7 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
         );
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Map added to board'),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      context.showSnack('Map added to board', type: SnackType.success);
     }
   }
 

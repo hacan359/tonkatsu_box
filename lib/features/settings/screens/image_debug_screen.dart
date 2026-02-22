@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/media_type.dart';
@@ -329,12 +330,7 @@ class _ImageDebugTile extends StatelessWidget {
             tooltip: 'Copy URL',
             onPressed: () {
               Clipboard.setData(ClipboardData(text: url));
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('URL copied'),
-                  duration: Duration(seconds: 1),
-                ),
-              );
+              context.showSnack('URL copied');
             },
           ),
       ],

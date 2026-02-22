@@ -154,7 +154,7 @@ class _CacheScreenState extends ConsumerState<CacheScreen> {
       if (!mounted) return;
       _refreshFutures();
       setState(() {});
-      context.showAppSnackBar('Cache folder updated');
+      context.showSnack('Cache folder updated', type: SnackType.success);
     }
   }
 
@@ -186,7 +186,7 @@ class _CacheScreenState extends ConsumerState<CacheScreen> {
       if (!mounted) return;
       _refreshFutures();
       setState(() {});
-      context.showAppSnackBar('Cache cleared');
+      context.showSnack('Cache cleared', type: SnackType.success);
     }
   }
 }

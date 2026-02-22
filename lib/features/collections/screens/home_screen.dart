@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/import_service.dart';
 import '../../../shared/constants/platform_features.dart';
+import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -246,12 +247,7 @@ class HomeScreen extends ConsumerWidget {
       }
     } on Exception catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to create collection: $e'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
+        context.showSnack('Failed to create collection: $e', type: SnackType.error);
       }
     }
   }
@@ -318,18 +314,11 @@ class HomeScreen extends ConsumerWidget {
       await ref.read(collectionsProvider.notifier).rename(collection.id, newName);
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Collection renamed')),
-        );
+        context.showSnack('Collection renamed', type: SnackType.success);
       }
     } on Exception catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to rename: $e'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
+        context.showSnack('Failed to rename: $e', type: SnackType.error);
       }
     }
   }
@@ -348,18 +337,11 @@ class HomeScreen extends ConsumerWidget {
       await ref.read(collectionsProvider.notifier).delete(collection.id);
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Collection deleted')),
-        );
+        context.showSnack('Collection deleted', type: SnackType.success);
       }
     } on Exception catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to delete: $e'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
+        context.showSnack('Failed to delete: $e', type: SnackType.error);
       }
     }
   }
@@ -408,23 +390,15 @@ class HomeScreen extends ConsumerWidget {
       ref.invalidate(collectionsProvider);
       ref.invalidate(allItemsNotifierProvider);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Imported "${result.collection!.name}" with ${result.itemsImported} items',
-          ),
-        ),
+      context.showSnack(
+        'Imported "${result.collection!.name}" with ${result.itemsImported} items',
+        type: SnackType.success,
       );
 
       // Переходим к импортированной коллекции
       _navigateToCollection(context, result.collection!);
     } else if (!result.isCancelled && result.error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result.error!),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
+      context.showSnack(result.error!, type: SnackType.error);
     }
   }
 }

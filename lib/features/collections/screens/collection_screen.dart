@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/services/export_service.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../core/services/xcoll_file.dart';
+import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
 import '../../../shared/widgets/breadcrumb_scope.dart';
 import '../../../shared/widgets/collection_picker_dialog.dart';
@@ -1082,7 +1083,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   }
 
   Future<void> _moveItem(CollectionItem item) async {
-    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
     final bool isUncategorized = widget.collectionId == null;
 
     final CollectionChoice? choice = await showCollectionPickerDialog(
@@ -1118,19 +1118,16 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     if (!mounted) return;
 
     if (result.success) {
-      messenger.showSnackBar(
-        SnackBar(content: Text('${item.itemName} moved to $targetName')),
+      context.showSnack(
+        '${item.itemName} moved to $targetName',
+        type: SnackType.success,
       );
 
       if (result.sourceEmpty && widget.collectionId != null) {
         await _promptDeleteEmptyCollection();
       }
     } else {
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text('${item.itemName} already exists in $targetName'),
-        ),
-      );
+      context.showSnack('${item.itemName} already exists in $targetName');
     }
   }
 
@@ -1201,9 +1198,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         .removeByCollectionItemId(item.id);
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${item.itemName} removed')),
-      );
+      context.showSnack('${item.itemName} removed', type: SnackType.success);
     }
   }
 
@@ -1269,10 +1264,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   Future<void> _renameCollection(BuildContext context) async {
     if (_collection == null) return;
 
-    // Сохраняем ScaffoldMessenger и colorScheme до async операции
-    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
-    final Color errorColor = Theme.of(context).colorScheme.error;
-
     final String? newName =
         await RenameCollectionDialog.show(context, _collection!.name);
 
@@ -1287,19 +1278,12 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         _collection = _collection!.copyWith(name: newName);
       });
 
-      if (mounted) {
-        messenger.showSnackBar(
-          const SnackBar(content: Text('Collection renamed')),
-        );
+      if (context.mounted) {
+        context.showSnack('Collection renamed', type: SnackType.success);
       }
     } on Exception catch (e) {
-      if (mounted) {
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text('Failed to rename: $e'),
-            backgroundColor: errorColor,
-          ),
-        );
+      if (context.mounted) {
+        context.showSnack('Failed to rename: $e', type: SnackType.error);
       }
     }
   }
@@ -1328,18 +1312,11 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
 
       if (mounted) {
         Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Collection deleted')),
-        );
+        context.showSnack('Collection deleted', type: SnackType.success);
       }
     } on Exception catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to delete: $e'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
+        context.showSnack('Failed to delete: $e', type: SnackType.error);
       }
     }
   }
@@ -1375,12 +1352,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         );
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Image added to board'),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      context.showSnack('Image added to board', type: SnackType.success);
     }
   }
 
@@ -1414,12 +1386,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         );
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Map added to board'),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      context.showSnack('Map added to board', type: SnackType.success);
     }
   }
 
@@ -1433,9 +1400,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     final List<CollectionItem>? items = itemsAsync.valueOrNull;
     if (items == null) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Items not loaded yet')),
-        );
+        context.showSnack('Items not loaded yet', type: SnackType.error);
       }
       return;
     }
@@ -1448,23 +1413,12 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
 
     // Показываем индикатор
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: <Widget>[
-              const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-              const SizedBox(width: 12),
-              Text(format == ExportFormat.full
-                  ? 'Preparing full export...'
-                  : 'Preparing export...'),
-            ],
-          ),
-          duration: const Duration(seconds: 1),
-        ),
+      context.showSnack(
+        format == ExportFormat.full
+            ? 'Preparing full export...'
+            : 'Preparing export...',
+        loading: true,
+        duration: const Duration(seconds: 30),
       );
     }
 
@@ -1474,26 +1428,22 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
 
     if (!mounted) return;
 
-    // Скрываем предыдущий snackbar
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
     if (result.success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Exported to ${result.filePath}'),
-          action: SnackBarAction(
-            label: 'OK',
-            onPressed: () {},
-          ),
+      context.showSnack(
+        'Exported to ${result.filePath}',
+        type: SnackType.success,
+        action: SnackBarAction(
+          label: 'OK',
+          onPressed: () {},
         ),
       );
     } else if (!result.isCancelled) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result.error ?? 'Export failed'),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
+      context.showSnack(
+        result.error ?? 'Export failed',
+        type: SnackType.error,
       );
+    } else {
+      context.hideSnack();
     }
   }
 
