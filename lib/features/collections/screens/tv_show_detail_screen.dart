@@ -150,7 +150,7 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
         targetName = 'Uncategorized';
     }
 
-    final bool success = await ref
+    final ({bool success, bool sourceEmpty}) result = await ref
         .read(
           collectionItemsNotifierProvider(widget.collectionId).notifier,
         )
@@ -162,11 +162,35 @@ class _TvShowDetailScreenState extends ConsumerState<TvShowDetailScreen>
 
     if (!mounted) return;
 
-    if (success) {
+    if (result.success) {
       messenger.showSnackBar(
         SnackBar(content: Text('${item.itemName} moved to $targetName')),
       );
-      navigator.pop();
+      if (result.sourceEmpty && widget.collectionId != null) {
+        final bool? confirmed = await showDialog<bool>(
+          context: context,
+          builder: (BuildContext context) => AlertDialog(
+            title: const Text('Empty Collection'),
+            content: const Text('This collection is now empty. Delete it?'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Keep'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Delete'),
+              ),
+            ],
+          ),
+        );
+        if (confirmed == true && mounted) {
+          await ref
+              .read(collectionsProvider.notifier)
+              .delete(widget.collectionId!);
+        }
+      }
+      if (mounted) navigator.pop();
     } else {
       messenger.showSnackBar(
         SnackBar(

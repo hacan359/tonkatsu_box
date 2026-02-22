@@ -158,7 +158,7 @@ void main() {
         expect(find.byIcon(Icons.folder), findsOneWidget);
       });
 
-      testWidgets('должен показывать иконку типа imported',
+      testWidgets('должен показывать иконку folder для imported',
           (WidgetTester tester) async {
         final Collection collection =
             createTestCollection(type: CollectionType.imported);
@@ -171,7 +171,7 @@ void main() {
         await tester.pump();
         await tester.pump();
 
-        expect(find.byIcon(Icons.download), findsOneWidget);
+        expect(find.byIcon(Icons.folder), findsOneWidget);
       });
 
       testWidgets('должен содержать ClipRRect для скругления',
@@ -228,7 +228,7 @@ void main() {
         expect(find.byIcon(Icons.folder), findsOneWidget);
       });
 
-      testWidgets('должен показывать fallback иконку для imported',
+      testWidgets('должен показывать fallback иконку folder для imported',
           (WidgetTester tester) async {
         final Collection collection =
             createTestCollection(type: CollectionType.imported);
@@ -242,7 +242,7 @@ void main() {
         await tester.pump();
         await tester.pump();
 
-        expect(find.byIcon(Icons.download), findsOneWidget);
+        expect(find.byIcon(Icons.folder), findsOneWidget);
       });
 
       testWidgets('должен показывать название коллекции',
@@ -279,17 +279,17 @@ void main() {
         );
       });
 
-      test('imported → movieAccent', () {
+      test('imported → gameAccent', () {
         expect(
           HeroCollectionCard.accentForType(CollectionType.imported),
-          equals(AppColors.movieAccent),
+          equals(AppColors.gameAccent),
         );
       });
 
-      test('fork → tvShowAccent', () {
+      test('fork → gameAccent', () {
         expect(
           HeroCollectionCard.accentForType(CollectionType.fork),
-          equals(AppColors.tvShowAccent),
+          equals(AppColors.gameAccent),
         );
       });
     });
@@ -302,17 +302,17 @@ void main() {
         );
       });
 
-      test('imported → download', () {
+      test('imported → folder', () {
         expect(
           HeroCollectionCard.iconForType(CollectionType.imported),
-          equals(Icons.download),
+          equals(Icons.folder),
         );
       });
 
-      test('fork → fork_right', () {
+      test('fork → folder', () {
         expect(
           HeroCollectionCard.iconForType(CollectionType.fork),
-          equals(Icons.fork_right),
+          equals(Icons.folder),
         );
       });
     });
@@ -362,7 +362,7 @@ void main() {
         expect(find.text('1 item · 0% completed'), findsOneWidget);
       });
 
-      testWidgets('imported не должен показывать процент',
+      testWidgets('imported должен показывать процент',
           (WidgetTester tester) async {
         final Collection collection =
             createTestCollection(type: CollectionType.imported);
@@ -382,8 +382,7 @@ void main() {
         await tester.pump();
         await tester.pump();
 
-        expect(find.text('10 items'), findsOneWidget);
-        expect(find.textContaining('completed'), findsNothing);
+        expect(find.text('10 items · 50% completed'), findsOneWidget);
       });
     });
 
@@ -411,7 +410,7 @@ void main() {
         expect(find.byType(LinearProgressIndicator), findsOneWidget);
       });
 
-      testWidgets('не должен показывать прогресс-бар для imported',
+      testWidgets('должен показывать прогресс-бар для imported',
           (WidgetTester tester) async {
         final Collection collection =
             createTestCollection(type: CollectionType.imported);
@@ -431,7 +430,7 @@ void main() {
         await tester.pump();
         await tester.pump();
 
-        expect(find.byType(LinearProgressIndicator), findsNothing);
+        expect(find.byType(LinearProgressIndicator), findsOneWidget);
       });
 
       testWidgets('не должен показывать прогресс-бар при total = 0',

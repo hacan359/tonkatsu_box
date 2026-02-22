@@ -946,7 +946,7 @@ void main() {
         expect(find.byIcon(Icons.lock_open), findsOneWidget);
       });
 
-      testWidgets('не должен показывать замок для imported коллекции',
+      testWidgets('должен показывать замок для imported коллекции',
           (WidgetTester tester) async {
         final Collection importedCollection = Collection(
           id: 1,
@@ -965,9 +965,8 @@ void main() {
         await tester.tap(find.byTooltip('Switch to Board'));
         await pumpScreen(tester);
 
-        // Замок не виден (imported — не editable)
-        expect(find.byTooltip('Lock board'), findsNothing);
-        expect(find.byTooltip('Unlock board'), findsNothing);
+        // Замок виден (imported теперь editable)
+        expect(find.byTooltip('Lock board'), findsOneWidget);
       });
 
       testWidgets('должен переключать состояние замка',

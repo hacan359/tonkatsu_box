@@ -83,23 +83,6 @@ class CollectionsNotifier extends AsyncNotifier<List<Collection>> {
     ref.invalidate(allItemsNotifierProvider);
   }
 
-  /// Создаёт форк коллекции.
-  Future<Collection> fork(int collectionId, String author) async {
-    final Collection forked = await _repository.fork(collectionId, author);
-
-    // Обновляем список
-    await refresh();
-
-    return forked;
-  }
-
-  /// Откатывает форк к оригиналу.
-  Future<void> revertToOriginal(int collectionId) async {
-    await _repository.revertToOriginal(collectionId);
-
-    // Инвалидируем связанные провайдеры
-    ref.invalidate(collectionStatsProvider(collectionId));
-  }
 }
 
 /// Провайдер для статистики коллекции.
@@ -319,9 +302,10 @@ class CollectionItemsNotifier
 
   /// Перемещает элемент в другую коллекцию.
   ///
-  /// Возвращает true при успехе, false если элемент уже есть в целевой
-  /// коллекции (дубликат).
-  Future<bool> moveItem(
+  /// Возвращает `({success: true, sourceEmpty: ...})` при успехе,
+  /// `({success: false, sourceEmpty: false})` если элемент уже есть
+  /// в целевой коллекции (дубликат).
+  Future<({bool success, bool sourceEmpty})> moveItem(
     int itemId, {
     required int? targetCollectionId,
     required MediaType mediaType,
@@ -330,10 +314,14 @@ class CollectionItemsNotifier
       itemId,
       targetCollectionId,
     );
-    if (!success) return false;
+    if (!success) return (success: false, sourceEmpty: false);
 
     // Обновляем текущую коллекцию (элемент исчез).
     await refresh();
+
+    // Проверяем, пуста ли исходная коллекция после переноса.
+    final bool sourceEmpty = _collectionId != null &&
+        (state.valueOrNull?.isEmpty ?? false);
 
     // Инвалидируем целевую коллекцию и статистики.
     ref.invalidate(collectionItemsNotifierProvider(targetCollectionId));
@@ -343,7 +331,7 @@ class CollectionItemsNotifier
     _invalidateCollectedIds(mediaType);
     ref.invalidate(allItemsNotifierProvider);
 
-    return true;
+    return (success: true, sourceEmpty: sourceEmpty);
   }
 
   /// Удаляет элемент из коллекции.
@@ -594,24 +582,3 @@ final Provider<List<Collection>> ownCollectionsProvider =
       <Collection>[];
 });
 
-/// Провайдер для импортированных коллекций.
-final Provider<List<Collection>> importedCollectionsProvider =
-    Provider<List<Collection>>((Ref ref) {
-  final AsyncValue<List<Collection>> allCollections =
-      ref.watch(collectionsProvider);
-  return allCollections.valueOrNull
-          ?.where((Collection c) => c.type == CollectionType.imported)
-          .toList() ??
-      <Collection>[];
-});
-
-/// Провайдер для форков.
-final Provider<List<Collection>> forkedCollectionsProvider =
-    Provider<List<Collection>>((Ref ref) {
-  final AsyncValue<List<Collection>> allCollections =
-      ref.watch(collectionsProvider);
-  return allCollections.valueOrNull
-          ?.where((Collection c) => c.type == CollectionType.fork)
-          .toList() ??
-      <Collection>[];
-});

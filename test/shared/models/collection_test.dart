@@ -142,33 +142,9 @@ void main() {
         expect(collection.isEditable, true);
       });
 
-      test('должен возвращать false для imported коллекции', () {
-        final Collection collection = createTestCollection(type: CollectionType.imported);
-        expect(collection.isEditable, false);
-      });
-    });
-
-    group('isFork', () {
-      test('должен возвращать true для fork коллекции', () {
-        final Collection collection = createTestCollection(type: CollectionType.fork);
-        expect(collection.isFork, true);
-      });
-
-      test('должен возвращать false для own коллекции', () {
-        final Collection collection = createTestCollection(type: CollectionType.own);
-        expect(collection.isFork, false);
-      });
-    });
-
-    group('isImported', () {
       test('должен возвращать true для imported коллекции', () {
         final Collection collection = createTestCollection(type: CollectionType.imported);
-        expect(collection.isImported, true);
-      });
-
-      test('должен возвращать false для own коллекции', () {
-        final Collection collection = createTestCollection(type: CollectionType.own);
-        expect(collection.isImported, false);
+        expect(collection.isEditable, true);
       });
     });
 

@@ -631,40 +631,48 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
                         child: Stack(
                           clipBehavior: Clip.none,
                           children: <Widget>[
-                            // Связи рисуются под элементами.
+                            for (final CanvasItem item in sortedItems)
+                              _buildCanvasItem(item, isConnecting),
+                            // Связи рисуются поверх элементов.
+                            // IgnorePointer позволяет кликать сквозь связи.
                             // ValueListenableBuilder изолирует перерисовку
                             // связей от остальных элементов канваса.
                             if (canvasState.connections.isNotEmpty ||
                                 isConnecting)
                               Positioned.fill(
-                                child: ValueListenableBuilder<Map<int, Offset>>(
-                                  valueListenable: _dragOffsetsNotifier,
-                                  builder: (
-                                    BuildContext context,
-                                    Map<int, Offset> dragOffsets,
-                                    Widget? child,
-                                  ) {
-                                    return CustomPaint(
-                                      painter: CanvasConnectionPainter(
-                                        connections: canvasState.connections,
-                                        items: canvasState.items,
-                                        connectingFrom: connectingFromItem,
-                                        mousePosition: _mouseCanvasPosition,
-                                        labelStyle: TextStyle(
-                                          fontSize: 11,
-                                          color: colorScheme.onSurface,
+                                child: IgnorePointer(
+                                  child: ValueListenableBuilder<
+                                      Map<int, Offset>>(
+                                    valueListenable: _dragOffsetsNotifier,
+                                    builder: (
+                                      BuildContext context,
+                                      Map<int, Offset> dragOffsets,
+                                      Widget? child,
+                                    ) {
+                                      return CustomPaint(
+                                        painter: CanvasConnectionPainter(
+                                          connections:
+                                              canvasState.connections,
+                                          items: canvasState.items,
+                                          connectingFrom:
+                                              connectingFromItem,
+                                          mousePosition:
+                                              _mouseCanvasPosition,
+                                          labelStyle: TextStyle(
+                                            fontSize: 11,
+                                            color: colorScheme.onSurface,
+                                          ),
+                                          labelBackgroundColor:
+                                              colorScheme
+                                                  .surfaceContainerLow
+                                                  .withAlpha(220),
+                                          dragOffsets: dragOffsets,
                                         ),
-                                        labelBackgroundColor:
-                                            colorScheme.surfaceContainerLow
-                                                .withAlpha(220),
-                                        dragOffsets: dragOffsets,
-                                      ),
-                                    );
-                                  },
+                                      );
+                                    },
+                                  ),
                                 ),
                               ),
-                            for (final CanvasItem item in sortedItems)
-                              _buildCanvasItem(item, isConnecting),
                           ],
                         ),
                       ),
@@ -998,7 +1006,7 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
   static const double _minItemSize = 50;
 
   /// Максимальный размер элемента.
-  static const double _maxItemSize = 2000;
+  static const double _maxItemSize = 5000;
 
   /// Мобильная платформа (тач вместо мыши, слабее GPU).
   static final bool _isMobile = kIsMobile;

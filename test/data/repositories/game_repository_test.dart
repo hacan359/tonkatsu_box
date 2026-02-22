@@ -78,7 +78,7 @@ void main() {
         verify(() => mockApi.searchGames(
               query: 'zelda',
               platformIds: <int>[130, 48],
-              limit: 20,
+              limit: 50,
             )).called(1);
       });
 

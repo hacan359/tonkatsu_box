@@ -97,13 +97,9 @@ class Collection with Exportable {
   final String? forkedFromName;
 
   /// Возвращает true, если коллекция редактируемая.
-  bool get isEditable => type == CollectionType.own || type == CollectionType.fork;
-
-  /// Возвращает true, если коллекция является форком.
-  bool get isFork => type == CollectionType.fork;
-
-  /// Возвращает true, если коллекция импортирована.
-  bool get isImported => type == CollectionType.imported;
+  ///
+  /// Все коллекции редактируемые (импортированные ведут себя как обычные).
+  bool get isEditable => true;
 
   // -- Exportable контракт --
 

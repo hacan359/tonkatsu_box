@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:xerabora/data/repositories/canvas_repository.dart';
+import 'package:xerabora/data/repositories/collection_repository.dart';
 import 'package:xerabora/features/collections/providers/canvas_provider.dart';
 import 'package:xerabora/features/collections/providers/collections_provider.dart';
 import 'package:xerabora/shared/models/canvas_connection.dart';
@@ -15,6 +16,8 @@ import 'package:xerabora/shared/models/media_type.dart';
 
 // Моки
 class MockCanvasRepository extends Mock implements CanvasRepository {}
+
+class MockCollectionRepository extends Mock implements CollectionRepository {}
 
 class MockCollectionItemsNotifier extends CollectionItemsNotifier {
   MockCollectionItemsNotifier(this._initialState);
@@ -190,6 +193,7 @@ void main() {
 
   group('CanvasNotifier', () {
     late MockCanvasRepository mockRepository;
+    late MockCollectionRepository mockCollectionRepo;
     final DateTime testDate = DateTime(2024, 6, 15);
     const int collectionId = 1;
 
@@ -199,6 +203,11 @@ void main() {
 
     setUp(() {
       mockRepository = MockCanvasRepository();
+      mockCollectionRepo = MockCollectionRepository();
+
+      // По умолчанию — пустой список при fallback загрузке из repository
+      when(() => mockCollectionRepo.getItemsWithData(any()))
+          .thenAnswer((_) async => <CollectionItem>[]);
 
       testItems = <CanvasItem>[
         CanvasItem(
@@ -283,6 +292,7 @@ void main() {
       return ProviderContainer(
         overrides: <Override>[
           canvasRepositoryProvider.overrideWithValue(mockRepository),
+          collectionRepositoryProvider.overrideWithValue(mockCollectionRepo),
           collectionItemsNotifierProvider
               .overrideWith(() => MockCollectionItemsNotifier(initialItemsState)),
         ],
@@ -564,12 +574,126 @@ void main() {
           container.read(canvasNotifierProvider(collectionId));
           await Future<void>.delayed(Duration.zero);
 
-          verify(() => mockRepository.createItem(any())).called(1);
+          final VerificationResult verification =
+              verify(() => mockRepository.createItem(captureAny()));
+          verification.called(1);
+          final CanvasItem createdItem =
+              verification.captured.first as CanvasItem;
+          // Элементы канваса коллекции НЕ должны иметь collectionItemId
+          // (getCanvasItems фильтрует по collection_item_id IS NULL)
+          expect(createdItem.collectionItemId, isNull);
+          expect(createdItem.itemRefId, 400);
+          expect(createdItem.itemType, CanvasItemType.game);
         },
       );
 
       test(
-        'должен пропустить синхронизацию когда игры ещё не загружены',
+        'должен удалить сиротский элемент без collectionItemId по (type, refId)',
+        () async {
+          // Canvas item с collectionItemId=null (как создаёт initializeCanvas)
+          // но externalId=300 больше нет в коллекции
+          final List<CanvasItem> canvasItemsNoCollId = <CanvasItem>[
+            CanvasItem(
+              id: 1,
+              collectionId: collectionId,
+              itemType: CanvasItemType.game,
+              itemRefId: 100,
+              x: 50.0,
+              y: 100.0,
+              width: 160,
+              height: 220,
+              zIndex: 0,
+              createdAt: testDate,
+            ),
+            CanvasItem(
+              id: 2,
+              collectionId: collectionId,
+              itemType: CanvasItemType.game,
+              itemRefId: 999, // Нет в коллекции
+              x: 250.0,
+              y: 100.0,
+              width: 160,
+              height: 220,
+              zIndex: 1,
+              createdAt: testDate,
+            ),
+          ];
+          final List<CollectionItem> oneItem = <CollectionItem>[
+            testCollectionItems[0], // externalId=100
+          ];
+
+          when(() => mockRepository.hasCanvasItems(collectionId))
+              .thenAnswer((_) async => true);
+          when(() => mockRepository.getItems(collectionId))
+              .thenAnswer((_) async => canvasItemsNoCollId);
+          when(() => mockRepository.getItemsWithData(collectionId))
+              .thenAnswer((_) async => canvasItemsNoCollId);
+          when(() => mockRepository.getViewport(collectionId))
+              .thenAnswer((_) async => null);
+          when(() => mockRepository.getConnections(collectionId))
+              .thenAnswer((_) async => const <CanvasConnection>[]);
+          when(() => mockRepository.deleteItem(any()))
+              .thenAnswer((_) async {});
+
+          final ProviderContainer container = createContainer(
+            itemsState: AsyncData<List<CollectionItem>>(oneItem),
+          );
+          addTearDown(container.dispose);
+
+          container.read(canvasNotifierProvider(collectionId));
+          await Future<void>.delayed(Duration.zero);
+
+          // Элемент с itemRefId=999 (game) должен быть удалён
+          verify(() => mockRepository.deleteItem(2)).called(1);
+          verifyNever(() => mockRepository.deleteItem(1));
+        },
+      );
+
+      test(
+        'должен не удалять текстовые/image/link элементы при sync',
+        () async {
+          // Canvas содержит текстовый элемент — он не связан с коллекцией
+          final List<CanvasItem> canvasWithText = <CanvasItem>[
+            testItems[0], // game, refId=100
+            CanvasItem(
+              id: 10,
+              collectionId: collectionId,
+              itemType: CanvasItemType.text,
+              x: 0,
+              y: 0,
+              zIndex: 5,
+              createdAt: testDate,
+            ),
+          ];
+
+          when(() => mockRepository.hasCanvasItems(collectionId))
+              .thenAnswer((_) async => true);
+          when(() => mockRepository.getItems(collectionId))
+              .thenAnswer((_) async => canvasWithText);
+          when(() => mockRepository.getItemsWithData(collectionId))
+              .thenAnswer((_) async => canvasWithText);
+          when(() => mockRepository.getViewport(collectionId))
+              .thenAnswer((_) async => null);
+          when(() => mockRepository.getConnections(collectionId))
+              .thenAnswer((_) async => const <CanvasConnection>[]);
+
+          final ProviderContainer container = createContainer(
+            itemsState: AsyncData<List<CollectionItem>>(
+              <CollectionItem>[testCollectionItems[0]],
+            ),
+          );
+          addTearDown(container.dispose);
+
+          container.read(canvasNotifierProvider(collectionId));
+          await Future<void>.delayed(Duration.zero);
+
+          // Текстовый элемент НЕ должен быть удалён
+          verifyNever(() => mockRepository.deleteItem(10));
+        },
+      );
+
+      test(
+        'должен загрузить items из repository при AsyncLoading в провайдере',
         () async {
           when(() => mockRepository.hasCanvasItems(collectionId))
               .thenAnswer((_) async => true);
@@ -581,6 +705,10 @@ void main() {
               .thenAnswer((_) async => null);
           when(() => mockRepository.getConnections(collectionId))
               .thenAnswer((_) async => const <CanvasConnection>[]);
+          // Fallback: при AsyncLoading загружаем из collection repository
+          // Возвращаем полный список, чтобы sync не удалял сиротские items
+          when(() => mockCollectionRepo.getItemsWithData(collectionId))
+              .thenAnswer((_) async => testCollectionItems);
 
           final ProviderContainer container = createContainer(
             itemsState:
@@ -591,10 +719,10 @@ void main() {
           container.read(canvasNotifierProvider(collectionId));
           await Future<void>.delayed(Duration.zero);
 
-          // getItems вызывается для syncCanvasWithGames, но т.к. items == null
-          // синхронизация пропускается и getItems НЕ вызывается
-          // (hasCanvasItems -> true -> _syncCanvasWithGames -> items == null -> return)
-          // Далее getItemsWithData вызывается для загрузки
+          // sync загружает items через fallback из collection repository
+          verify(() => mockCollectionRepo.getItemsWithData(collectionId))
+              .called(1);
+          // getItemsWithData на canvas repository вызывается для загрузки canvas items
           verify(() => mockRepository.getItemsWithData(collectionId)).called(1);
           verifyNever(() => mockRepository.deleteItem(any()));
         },

@@ -73,22 +73,11 @@ class HomeScreen extends ConsumerWidget {
       return _buildEmptyState(context);
     }
 
-    // Группируем по типу
-    final List<Collection> ownCollections = collections
-        .where((Collection c) => c.type == CollectionType.own)
-        .toList();
-    final List<Collection> forkCollections = collections
-        .where((Collection c) => c.type == CollectionType.fork)
-        .toList();
-    final List<Collection> importedCollections = collections
-        .where((Collection c) => c.type == CollectionType.imported)
-        .toList();
-
-    // Первые N own коллекций как Hero, остальные как Tile
+    // Первые N коллекций как Hero, остальные как Tile
     final List<Collection> heroCollections =
-        ownCollections.take(_maxHeroCards).toList();
+        collections.take(_maxHeroCards).toList();
     final List<Collection> tileCollections =
-        ownCollections.skip(_maxHeroCards).toList();
+        collections.skip(_maxHeroCards).toList();
 
     final bool isLandscape = isLandscapeMobile(context);
 
@@ -120,7 +109,7 @@ class HomeScreen extends ConsumerWidget {
                 )),
           ],
 
-          // Остальные own коллекции
+          // Остальные коллекции
           if (tileCollections.isNotEmpty) ...<Widget>[
             Padding(
               padding: const EdgeInsets.only(
@@ -128,46 +117,10 @@ class HomeScreen extends ConsumerWidget {
                 bottom: AppSpacing.sm,
               ),
               child: SectionHeader(
-                title: 'My Collections (${ownCollections.length})',
+                title: 'Collections (${collections.length})',
               ),
             ),
             ...tileCollections.map((Collection c) => CollectionTile(
-                  collection: c,
-                  onTap: () => _navigateToCollection(context, c),
-                  onLongPress: () => _showCollectionOptions(context, ref, c),
-                )),
-          ],
-
-          // Форки
-          if (forkCollections.isNotEmpty) ...<Widget>[
-            Padding(
-              padding: const EdgeInsets.only(
-                top: AppSpacing.lg,
-                bottom: AppSpacing.sm,
-              ),
-              child: SectionHeader(
-                title: 'Forked (${forkCollections.length})',
-              ),
-            ),
-            ...forkCollections.map((Collection c) => CollectionTile(
-                  collection: c,
-                  onTap: () => _navigateToCollection(context, c),
-                  onLongPress: () => _showCollectionOptions(context, ref, c),
-                )),
-          ],
-
-          // Импортированные
-          if (importedCollections.isNotEmpty) ...<Widget>[
-            Padding(
-              padding: const EdgeInsets.only(
-                top: AppSpacing.lg,
-                bottom: AppSpacing.sm,
-              ),
-              child: SectionHeader(
-                title: 'Imported (${importedCollections.length})',
-              ),
-            ),
-            ...importedCollections.map((Collection c) => CollectionTile(
                   collection: c,
                   onTap: () => _navigateToCollection(context, c),
                   onLongPress: () => _showCollectionOptions(context, ref, c),
@@ -331,15 +284,6 @@ class HomeScreen extends ConsumerWidget {
                   await _renameCollection(context, ref, collection);
                 },
               ),
-            if (collection.type == CollectionType.imported)
-              ListTile(
-                leading: const Icon(Icons.fork_right),
-                title: const Text('Create Copy'),
-                onTap: () async {
-                  Navigator.of(context).pop();
-                  await _forkCollection(context, ref, collection);
-                },
-              ),
             ListTile(
               leading: Icon(
                 Icons.delete,
@@ -383,34 +327,6 @@ class HomeScreen extends ConsumerWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to rename: $e'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
-      }
-    }
-  }
-
-  Future<void> _forkCollection(
-    BuildContext context,
-    WidgetRef ref,
-    Collection collection,
-  ) async {
-    try {
-      final Collection fork = await ref
-          .read(collectionsProvider.notifier)
-          .fork(collection.id, ref.read(settingsNotifierProvider).authorName);
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Collection copied')),
-        );
-        _navigateToCollection(context, fork);
-      }
-    } on Exception catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to copy: $e'),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );

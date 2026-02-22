@@ -136,7 +136,7 @@ void main() {
       expect(find.byType(HeroCollectionCard), findsOneWidget);
     });
 
-    testWidgets('должен показывать секцию Imported для импортированных',
+    testWidgets('должен показывать imported коллекцию в общем списке',
         (WidgetTester tester) async {
       final List<Collection> collections = <Collection>[
         Collection(
@@ -159,10 +159,12 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      expect(find.textContaining('Imported ('), findsOneWidget);
+      // Обе коллекции видны как Hero-карточки
+      expect(find.byType(HeroCollectionCard), findsNWidgets(2));
+      expect(find.text('Imported Collection'), findsOneWidget);
     });
 
-    testWidgets('должен показывать секцию My Collections при > 3 own',
+    testWidgets('должен показывать секцию Collections при > 3 коллекциях',
         (WidgetTester tester) async {
       final List<Collection> collections = List<Collection>.generate(
         5,
@@ -181,7 +183,7 @@ void main() {
 
       // 3 Hero + секция с остальными 2
       expect(find.byType(HeroCollectionCard), findsNWidgets(3));
-      expect(find.textContaining('My Collections (5)'), findsOneWidget);
+      expect(find.textContaining('Collections (5)'), findsOneWidget);
     });
   });
 }

@@ -155,6 +155,9 @@ class MediaSearchNotifier extends Notifier<MediaSearchState> {
   /// Минимальная длина запроса для поиска.
   static const int minQueryLength = 2;
 
+  /// Количество страниц TMDB для начальной загрузки.
+  static const int _initialPageCount = 3;
+
   @override
   MediaSearchState build() {
     _tmdbApi = ref.watch(tmdbApiProvider);
@@ -202,6 +205,56 @@ class MediaSearchNotifier extends Notifier<MediaSearchState> {
     state = state.copyWith(subFilter: filter);
   }
 
+  /// Загружает несколько страниц фильмов параллельно.
+  Future<({List<Movie> movies, int lastPage, bool hasMore})>
+      _fetchMoviePages(String query, int startPage, int pageCount) async {
+    final List<Future<TmdbPagedResult<Movie>>> futures =
+        <Future<TmdbPagedResult<Movie>>>[
+      for (int p = startPage; p < startPage + pageCount; p++)
+        _tmdbApi.searchMoviesPaged(query, page: p),
+    ];
+    final List<TmdbPagedResult<Movie>> results = await Future.wait(futures);
+
+    final List<Movie> allMovies = <Movie>[];
+    int lastPage = startPage;
+    bool hasMore = false;
+
+    for (final TmdbPagedResult<Movie> result in results) {
+      if (result.results.isEmpty) break;
+      allMovies.addAll(result.results);
+      lastPage = result.page;
+      hasMore = result.hasMore;
+      if (!hasMore) break;
+    }
+
+    return (movies: allMovies, lastPage: lastPage, hasMore: hasMore);
+  }
+
+  /// Загружает несколько страниц сериалов параллельно.
+  Future<({List<TvShow> tvShows, int lastPage, bool hasMore})>
+      _fetchTvShowPages(String query, int startPage, int pageCount) async {
+    final List<Future<TmdbPagedResult<TvShow>>> futures =
+        <Future<TmdbPagedResult<TvShow>>>[
+      for (int p = startPage; p < startPage + pageCount; p++)
+        _tmdbApi.searchTvShowsPaged(query, page: p),
+    ];
+    final List<TmdbPagedResult<TvShow>> results = await Future.wait(futures);
+
+    final List<TvShow> allTvShows = <TvShow>[];
+    int lastPage = startPage;
+    bool hasMore = false;
+
+    for (final TmdbPagedResult<TvShow> result in results) {
+      if (result.results.isEmpty) break;
+      allTvShows.addAll(result.results);
+      lastPage = result.page;
+      hasMore = result.hasMore;
+      if (!hasMore) break;
+    }
+
+    return (tvShows: allTvShows, lastPage: lastPage, hasMore: hasMore);
+  }
+
   Future<void> _performSearch(
     String query, {
     required bool append,
@@ -219,6 +272,9 @@ class MediaSearchNotifier extends Notifier<MediaSearchState> {
       int moviePage = append ? state.currentMoviePage + 1 : 1;
       int tvPage = append ? state.currentTvPage + 1 : 1;
 
+      // При начальном поиске загружаем _initialPageCount страниц параллельно.
+      final int pageCount = append ? 1 : _initialPageCount;
+
       switch (state.subFilter) {
         case TvSubFilter.all:
           // Ищем параллельно в фильмах и сериалах
@@ -229,15 +285,13 @@ class MediaSearchNotifier extends Notifier<MediaSearchState> {
 
           final List<Future<Object>> futures = <Future<Object>>[];
           if (shouldFetchMovies) {
-            futures.add(_tmdbApi.searchMoviesPaged(
-              query,
-              page: append ? moviePage : 1,
+            futures.add(_fetchMoviePages(
+              query, append ? moviePage : 1, pageCount,
             ));
           }
           if (shouldFetchTvShows) {
-            futures.add(_tmdbApi.searchTvShowsPaged(
-              query,
-              page: append ? tvPage : 1,
+            futures.add(_fetchTvShowPages(
+              query, append ? tvPage : 1, pageCount,
             ));
           }
 
@@ -245,44 +299,45 @@ class MediaSearchNotifier extends Notifier<MediaSearchState> {
 
           int resultIndex = 0;
           if (shouldFetchMovies) {
-            final TmdbPagedResult<Movie> movieResult =
-                results[resultIndex] as TmdbPagedResult<Movie>;
+            final ({List<Movie> movies, int lastPage, bool hasMore}) mr =
+                results[resultIndex]
+                    as ({List<Movie> movies, int lastPage, bool hasMore});
             resultIndex++;
             final List<Movie> resolved =
-                await _resolveMovieGenres(movieResult.results);
+                await _resolveMovieGenres(mr.movies);
             if (resolved.isNotEmpty) {
               await _db.upsertMovies(resolved);
             }
             for (final Movie movie in resolved) {
               newItems.add(MediaSearchItem.fromMovie(movie));
             }
-            hasMoreMovies = movieResult.hasMore;
-            moviePage = movieResult.page;
+            hasMoreMovies = mr.hasMore;
+            moviePage = mr.lastPage;
           }
           if (shouldFetchTvShows) {
-            final TmdbPagedResult<TvShow> tvResult =
-                results[resultIndex] as TmdbPagedResult<TvShow>;
+            final ({List<TvShow> tvShows, int lastPage, bool hasMore}) tr =
+                results[resultIndex]
+                    as ({List<TvShow> tvShows, int lastPage, bool hasMore});
             final List<TvShow> resolved =
-                await _resolveTvShowGenres(tvResult.results);
+                await _resolveTvShowGenres(tr.tvShows);
             if (resolved.isNotEmpty) {
               await _db.upsertTvShows(resolved);
             }
             for (final TvShow tvShow in resolved) {
               newItems.add(MediaSearchItem.fromTvShow(tvShow));
             }
-            hasMoreTvShows = tvResult.hasMore;
-            tvPage = tvResult.page;
+            hasMoreTvShows = tr.hasMore;
+            tvPage = tr.lastPage;
           }
 
         case TvSubFilter.movies:
           // Только фильмы, исключая анимацию
-          final TmdbPagedResult<Movie> movieResult =
-              await _tmdbApi.searchMoviesPaged(
-            query,
-            page: append ? moviePage : 1,
+          final ({List<Movie> movies, int lastPage, bool hasMore}) mr =
+              await _fetchMoviePages(
+            query, append ? moviePage : 1, pageCount,
           );
           final List<Movie> withoutAnimation =
-              _excludeAnimationMovies(movieResult.results);
+              _excludeAnimationMovies(mr.movies);
           final List<Movie> resolved =
               await _resolveMovieGenres(withoutAnimation);
           if (resolved.isNotEmpty) {
@@ -291,18 +346,17 @@ class MediaSearchNotifier extends Notifier<MediaSearchState> {
           for (final Movie movie in resolved) {
             newItems.add(MediaSearchItem.fromMovie(movie));
           }
-          hasMoreMovies = movieResult.hasMore;
-          moviePage = movieResult.page;
+          hasMoreMovies = mr.hasMore;
+          moviePage = mr.lastPage;
 
         case TvSubFilter.tvShows:
           // Только сериалы, исключая анимацию
-          final TmdbPagedResult<TvShow> tvResult =
-              await _tmdbApi.searchTvShowsPaged(
-            query,
-            page: append ? tvPage : 1,
+          final ({List<TvShow> tvShows, int lastPage, bool hasMore}) tr =
+              await _fetchTvShowPages(
+            query, append ? tvPage : 1, pageCount,
           );
           final List<TvShow> withoutAnimation =
-              _excludeAnimationTvShows(tvResult.results);
+              _excludeAnimationTvShows(tr.tvShows);
           final List<TvShow> resolved =
               await _resolveTvShowGenres(withoutAnimation);
           if (resolved.isNotEmpty) {
@@ -311,8 +365,8 @@ class MediaSearchNotifier extends Notifier<MediaSearchState> {
           for (final TvShow tvShow in resolved) {
             newItems.add(MediaSearchItem.fromTvShow(tvShow));
           }
-          hasMoreTvShows = tvResult.hasMore;
-          tvPage = tvResult.page;
+          hasMoreTvShows = tr.hasMore;
+          tvPage = tr.lastPage;
 
         case TvSubFilter.animation:
           // Параллельно ищем анимацию среди фильмов и сериалов
@@ -323,15 +377,13 @@ class MediaSearchNotifier extends Notifier<MediaSearchState> {
 
           final List<Future<Object>> futures = <Future<Object>>[];
           if (shouldFetchMovies) {
-            futures.add(_tmdbApi.searchMoviesPaged(
-              query,
-              page: append ? moviePage : 1,
+            futures.add(_fetchMoviePages(
+              query, append ? moviePage : 1, pageCount,
             ));
           }
           if (shouldFetchTvShows) {
-            futures.add(_tmdbApi.searchTvShowsPaged(
-              query,
-              page: append ? tvPage : 1,
+            futures.add(_fetchTvShowPages(
+              query, append ? tvPage : 1, pageCount,
             ));
           }
 
@@ -339,11 +391,12 @@ class MediaSearchNotifier extends Notifier<MediaSearchState> {
 
           int resultIndex = 0;
           if (shouldFetchMovies) {
-            final TmdbPagedResult<Movie> movieResult =
-                results[resultIndex] as TmdbPagedResult<Movie>;
+            final ({List<Movie> movies, int lastPage, bool hasMore}) mr =
+                results[resultIndex]
+                    as ({List<Movie> movies, int lastPage, bool hasMore});
             resultIndex++;
             final List<Movie> animOnly =
-                _filterAnimationOnlyMovies(movieResult.results);
+                _filterAnimationOnlyMovies(mr.movies);
             final List<Movie> resolved =
                 await _resolveMovieGenres(animOnly);
             if (resolved.isNotEmpty) {
@@ -352,14 +405,15 @@ class MediaSearchNotifier extends Notifier<MediaSearchState> {
             for (final Movie movie in resolved) {
               newItems.add(MediaSearchItem.fromMovie(movie));
             }
-            hasMoreMovies = movieResult.hasMore;
-            moviePage = movieResult.page;
+            hasMoreMovies = mr.hasMore;
+            moviePage = mr.lastPage;
           }
           if (shouldFetchTvShows) {
-            final TmdbPagedResult<TvShow> tvResult =
-                results[resultIndex] as TmdbPagedResult<TvShow>;
+            final ({List<TvShow> tvShows, int lastPage, bool hasMore}) tr =
+                results[resultIndex]
+                    as ({List<TvShow> tvShows, int lastPage, bool hasMore});
             final List<TvShow> animOnly =
-                _filterAnimationOnlyTvShows(tvResult.results);
+                _filterAnimationOnlyTvShows(tr.tvShows);
             final List<TvShow> resolved =
                 await _resolveTvShowGenres(animOnly);
             if (resolved.isNotEmpty) {
@@ -368,8 +422,8 @@ class MediaSearchNotifier extends Notifier<MediaSearchState> {
             for (final TvShow tvShow in resolved) {
               newItems.add(MediaSearchItem.fromTvShow(tvShow));
             }
-            hasMoreTvShows = tvResult.hasMore;
-            tvPage = tvResult.page;
+            hasMoreTvShows = tr.hasMore;
+            tvPage = tr.lastPage;
           }
       }
 

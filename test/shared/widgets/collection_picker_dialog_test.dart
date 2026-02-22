@@ -201,7 +201,7 @@ void main() {
     });
 
     testWidgets(
-        'должен скрывать imported (не-editable) коллекции',
+        'должен показывать imported коллекции (теперь editable)',
         (WidgetTester tester) async {
       await _openDialog(
         tester,
@@ -216,8 +216,8 @@ void main() {
 
       // Own коллекция видна.
       expect(find.text('Collection A'), findsOneWidget);
-      // Imported (не-editable) скрыта.
-      expect(find.text('Imported'), findsNothing);
+      // Imported теперь editable и видна.
+      expect(find.text('Imported'), findsOneWidget);
     });
 
     testWidgets(

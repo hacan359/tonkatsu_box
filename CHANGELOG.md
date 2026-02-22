@@ -6,6 +6,34 @@
 
 ## [Unreleased]
 
+### Added
+- Auto-delete empty collection prompt — after moving the last item out, a dialog asks whether to delete the now-empty collection (`game_detail_screen.dart`, `movie_detail_screen.dart`, `tv_show_detail_screen.dart`, `anime_detail_screen.dart`, `collection_screen.dart`)
+- Board connection edge anchoring — connections now attach to the nearest edge center (top/bottom/left/right) instead of the item center (`CanvasConnectionPainter._getEdgePoint()`)
+- Multi-page TMDB search — initial search loads 3 pages in parallel (~60 results) for movies and TV shows (`MediaSearchNotifier._fetchMoviePages()`, `_fetchTvShowPages()`)
+- Added 6 new tests: canvas sync by (type, refId), orphan deletion without collectionItemId, non-media item preservation, edge point directions, drag offset edge points, diagonal edge selection
+
+### Changed
+- Simplified import — imported collections are now created as `CollectionType.own` (fully editable) instead of `CollectionType.imported` (`import_service.dart`)
+- Removed fork system — deleted `fork()`, `revertToOriginal()` from `CollectionRepository` and `CollectionsNotifier`; removed "Create Copy" and "Revert to Original" UI actions; all collections now use unified folder icon and gameAccent color
+- Home screen shows a flat list of all collections instead of grouping by type (own/forked/imported)
+- `Collection.isEditable` now always returns `true`; removed `isFork` and `isImported` getters
+- `moveItem()` returns `({bool success, bool sourceEmpty})` record type instead of `bool`
+- Board connections rendered on top of items with `IgnorePointer` (previously rendered underneath)
+- Increased max board element size from 2000 to 5000 (`_DraggableCanvasItemState._maxItemSize`)
+- Increased IGDB search page size from 20 to 50 (`GameSearchNotifier._gamePageSize`, `GameRepository` default limit)
+- Canvas sync now matches items by `(itemType, itemRefId)` pair instead of `collectionItemId`, fixing a bug where newly synced items were invisible due to `getCanvasItems` filtering by `collection_item_id IS NULL`
+
+### Fixed
+- Fixed canvas not displaying items added to collection — `_syncCanvasWithItems()` was setting `collectionItemId` on created items, but `getCanvasItems()` SQL query filters by `collection_item_id IS NULL`, making them invisible. Items are now created without `collectionItemId`, consistent with `initializeCanvas()`
+
+### Removed
+- Removed `CollectionRepository.fork()` and `revertToOriginal()` methods
+- Removed `CollectionsNotifier.fork()` and `revertToOriginal()` methods
+- Removed `importedCollectionsProvider` and `forkedCollectionsProvider`
+- Removed "Revert to Original" menu option from `CollectionScreen`
+- Removed "Create Copy" option from `HomeScreen` collection context menu
+- Removed Imported/Forked section headers from `HomeScreen`
+
 ## [0.11.0] - 2026-02-21
 
 ### Added

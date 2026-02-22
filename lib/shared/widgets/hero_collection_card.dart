@@ -64,27 +64,25 @@ class HeroCollectionCard extends ConsumerWidget {
   /// Максимум обложек на фоне backdrop.
   static const int _backdropMaxCovers = 4;
 
-  /// Возвращает цвет акцента по типу коллекции.
+  /// Возвращает цвет акцента коллекции.
   static Color accentForType(CollectionType type) {
+    // Все коллекции используют единый акцент после удаления fork/imported.
     switch (type) {
       case CollectionType.own:
-        return AppColors.gameAccent;
       case CollectionType.imported:
-        return AppColors.movieAccent;
       case CollectionType.fork:
-        return AppColors.tvShowAccent;
+        return AppColors.gameAccent;
     }
   }
 
-  /// Возвращает иконку по типу коллекции.
+  /// Возвращает иконку коллекции.
   static IconData iconForType(CollectionType type) {
+    // Все коллекции используют единую иконку после удаления fork/imported.
     switch (type) {
       case CollectionType.own:
-        return Icons.folder;
       case CollectionType.imported:
-        return Icons.download;
       case CollectionType.fork:
-        return Icons.fork_right;
+        return Icons.folder;
     }
   }
 
@@ -462,7 +460,7 @@ class HeroCollectionCard extends ConsumerWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        if (collection.type != CollectionType.imported && stats.total > 0)
+        if (stats.total > 0)
           Padding(
             padding: const EdgeInsets.only(top: AppSpacing.xs),
             child: ClipRRect(
@@ -482,9 +480,6 @@ class HeroCollectionCard extends ConsumerWidget {
   String _buildStatsText(CollectionStats stats) {
     final String items =
         '${stats.total} item${stats.total != 1 ? 's' : ''}';
-    if (collection.type == CollectionType.imported) {
-      return items;
-    }
     return '$items · ${stats.completionPercentFormatted} completed';
   }
 

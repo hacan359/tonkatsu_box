@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/repositories/canvas_repository.dart';
+import '../../../data/repositories/collection_repository.dart';
 import '../../../shared/models/canvas_connection.dart';
 import '../../../shared/models/canvas_item.dart';
 import '../../../shared/models/canvas_viewport.dart';
@@ -171,6 +172,7 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int?>
   late int? _collectionId;
   Timer? _viewportSaveTimer;
   Timer? _positionSaveTimer;
+  bool _isSyncing = false;
 
   @override
   CanvasState build(int? arg) {
@@ -250,10 +252,13 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int?>
     if (_collectionId == null) return;
     final int collectionId = _collectionId!;
     try {
+      // Пробуем получить из провайдера, иначе загружаем из БД напрямую
       final AsyncValue<List<CollectionItem>> itemsAsync =
           ref.read(collectionItemsNotifierProvider(collectionId));
-      final List<CollectionItem> allItems =
-          itemsAsync.valueOrNull ?? <CollectionItem>[];
+      final List<CollectionItem> allItems = itemsAsync.valueOrNull ??
+          await ref.read(collectionRepositoryProvider).getItemsWithData(
+                collectionId,
+              );
 
       final List<CanvasItem> items =
           await _repository.initializeCanvas(collectionId, allItems);
@@ -275,17 +280,25 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int?>
   /// Синхронизирует канвас с элементами коллекции и перезагружает.
   ///
   /// Вызывается реактивно при изменении элементов коллекции.
+  /// Защита от конкурентных вызовов через [_isSyncing].
   Future<void> _syncAndReload() async {
-    if (_collectionId == null) return;
+    if (_collectionId == null || _isSyncing) return;
+    _isSyncing = true;
     final int collectionId = _collectionId!;
     try {
       await _syncCanvasWithItems();
+    } catch (_) {
+      // Sync может упасть, но reload всё равно нужен
+    }
+    try {
+      // Перезагружаем элементы канваса даже если sync упал
       final List<CanvasItem> items =
           await _repository.getItemsWithData(collectionId);
       state = state.copyWith(items: items);
     } catch (_) {
-      // Ошибки синхронизации не критичны — при следующем открытии
-      // канваса данные будут синхронизированы в _loadCanvas
+      // Ошибка перезагрузки — оставляем текущий state
+    } finally {
+      _isSyncing = false;
     }
   }
 
@@ -294,44 +307,54 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int?>
   /// Двусторонняя синхронизация:
   /// - Удаляет элементы канваса для удалённых из коллекции
   /// - Создаёт элементы канваса для новых элементов в коллекции
+  ///
+  /// Матчинг выполняется по паре (itemType, itemRefId), т.к. элементы
+  /// канваса коллекции имеют `collection_item_id = NULL` (в отличие от
+  /// game canvas, где `collection_item_id` указывает на конкретный элемент).
   Future<void> _syncCanvasWithItems() async {
     if (_collectionId == null) return;
     final int collectionId = _collectionId!;
+    // Получаем элементы из провайдера или напрямую из БД
     final AsyncValue<List<CollectionItem>> itemsAsync =
         ref.read(collectionItemsNotifierProvider(collectionId));
-    final List<CollectionItem>? allItems = itemsAsync.valueOrNull;
-
-    // Если элементы ещё не загружены — пропускаем синхронизацию
-    if (allItems == null) return;
-
-    // Множество ID текущих элементов коллекции (уникальные PK)
-    final Set<int> currentItemIds =
-        allItems.map((CollectionItem i) => i.id).toSet();
+    final List<CollectionItem> allItems = itemsAsync.valueOrNull ??
+        await ref.read(collectionRepositoryProvider).getItemsWithData(
+              collectionId,
+            );
 
     final List<CanvasItem> canvasItems =
         await _repository.getItems(collectionId);
 
+    // Строим множество ключей (type, refId) для элементов коллекции
+    final Set<(String, int)> collectionMediaKeys = <(String, int)>{
+      for (final CollectionItem ci in allItems)
+        (CanvasItemType.fromMediaType(ci.mediaType).value, ci.externalId),
+    };
+
     // Удаляем сиротские медиа-элементы (удалены из коллекции)
     for (final CanvasItem item in canvasItems) {
-      if (item.itemType.isMediaItem &&
-          item.collectionItemId != null &&
-          !currentItemIds.contains(item.collectionItemId)) {
-        await _repository.deleteItem(item.id);
+      if (item.itemType.isMediaItem && item.itemRefId != null) {
+        final (String, int) key = (item.itemType.value, item.itemRefId!);
+        if (!collectionMediaKeys.contains(key)) {
+          await _repository.deleteItem(item.id);
+        }
       }
     }
 
-    // Множество collectionItemId для существующих медиа-элементов на канвасе
-    final Set<int> canvasCollectionItemIds = canvasItems
-        .where((CanvasItem item) =>
-            item.itemType.isMediaItem && item.collectionItemId != null)
-        .map((CanvasItem item) => item.collectionItemId!)
-        .toSet();
+    // Строим множество ключей (type, refId) для существующих canvas-элементов
+    final Set<(String, int)> canvasMediaKeys = <(String, int)>{
+      for (final CanvasItem item in canvasItems)
+        if (item.itemType.isMediaItem && item.itemRefId != null)
+          (item.itemType.value, item.itemRefId!),
+    };
 
     // Находим недостающие элементы
     final List<CollectionItem> missingItems = allItems
-        .where((CollectionItem i) =>
-            !canvasCollectionItemIds.contains(i.id))
-        .toList();
+        .where((CollectionItem i) {
+      final String typeValue =
+          CanvasItemType.fromMediaType(i.mediaType).value;
+      return !canvasMediaKeys.contains((typeValue, i.externalId));
+    }).toList();
 
     if (missingItems.isEmpty) return;
 
@@ -376,10 +399,11 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int?>
       final CanvasItemType canvasType =
           CanvasItemType.fromMediaType(missingItems[i].mediaType);
 
+      // НЕ устанавливаем collectionItemId — элементы канваса коллекции
+      // хранятся с collection_item_id = NULL (getCanvasItems фильтрует по этому)
       final CanvasItem item = CanvasItem(
         id: 0,
         collectionId: collectionId,
-        collectionItemId: missingItems[i].id,
         itemType: canvasType,
         itemRefId: missingItems[i].externalId,
         x: x,

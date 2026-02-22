@@ -76,8 +76,10 @@ class CanvasConnectionPainter extends CustomPainter {
       final CanvasItem? toItem = itemMap[conn.toItemId];
       if (fromItem == null || toItem == null) continue;
 
-      final Offset from = _getItemCenter(fromItem);
-      final Offset to = _getItemCenter(toItem);
+      final Offset fromCenter = _getItemCenter(fromItem);
+      final Offset toCenter = _getItemCenter(toItem);
+      final Offset from = _getEdgePoint(fromItem, toCenter);
+      final Offset to = _getEdgePoint(toItem, fromCenter);
       final Color lineColor = _parseColor(conn.color);
 
       _drawConnection(canvas, from, to, lineColor, conn.style);
@@ -89,7 +91,7 @@ class CanvasConnectionPainter extends CustomPainter {
 
     // Временная линия при создании связи
     if (connectingFrom != null && mousePosition != null) {
-      final Offset from = _getItemCenter(connectingFrom!);
+      final Offset from = _getEdgePoint(connectingFrom!, mousePosition!);
       _drawDashedLine(
         canvas,
         from,
@@ -218,6 +220,47 @@ class CanvasConnectionPainter extends CustomPainter {
     );
   }
 
+  /// Вычисляет точку на ближайшем краю прямоугольника item,
+  /// направленную к [target].
+  ///
+  /// Возвращает центр ближайшей стороны (top/bottom/left/right).
+  Offset _getEdgePoint(CanvasItem item, Offset target) {
+    final double width =
+        item.width ?? CanvasRepository.defaultCardWidth;
+    final double height =
+        item.height ?? CanvasRepository.defaultCardHeight;
+    final Offset offset = dragOffsets[item.id] ?? Offset.zero;
+
+    final double left = item.x + offset.dx;
+    final double top = item.y + offset.dy;
+    final double cx = left + width / 2;
+    final double cy = top + height / 2;
+
+    final double dx = target.dx - cx;
+    final double dy = target.dy - cy;
+
+    // Self-connection или совпадающие центры — возвращаем центр
+    if (dx == 0 && dy == 0) {
+      return Offset(cx, cy);
+    }
+
+    // Определяем ближайшую сторону по направлению к target
+    // Сравниваем пропорции dx/width и dy/height
+    if (dx.abs() * height > dy.abs() * width) {
+      // Горизонтальная сторона ближе (left или right)
+      if (dx > 0) {
+        return Offset(left + width, cy); // Правый край
+      }
+      return Offset(left, cy); // Левый край
+    } else {
+      // Вертикальная сторона ближе (top или bottom)
+      if (dy > 0) {
+        return Offset(cx, top + height); // Нижний край
+      }
+      return Offset(cx, top); // Верхний край
+    }
+  }
+
   /// Парсит hex-строку цвета.
   static Color _parseColor(String hex) {
     try {
@@ -247,8 +290,10 @@ class CanvasConnectionPainter extends CustomPainter {
       final CanvasItem? toItem = itemMap[conn.toItemId];
       if (fromItem == null || toItem == null) continue;
 
-      final Offset from = _getItemCenter(fromItem);
-      final Offset to = _getItemCenter(toItem);
+      final Offset fromCenter = _getItemCenter(fromItem);
+      final Offset toCenter = _getItemCenter(toItem);
+      final Offset from = _getEdgePoint(fromItem, toCenter);
+      final Offset to = _getEdgePoint(toItem, fromCenter);
 
       final double distance = _pointToLineDistance(point, from, to);
       if (distance <= hitTestThreshold) {

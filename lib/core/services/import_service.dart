@@ -298,7 +298,7 @@ class ImportService {
       final Collection collection = await _repository.create(
         name: xcoll.name,
         author: xcoll.author,
-        type: CollectionType.imported,
+        type: CollectionType.own,
       );
 
       onProgress?.call(const ImportProgress(
