@@ -87,6 +87,8 @@ Search across multiple media types via tabbed interface:
 
 - **Sorting** — by relevance, date, or rating (toggle ascending/descending)
 - **Filtering** — by release year (1900–2100), genres (multi-select), active filter chips
+- **Per-tab API key checks** — each tab independently checks its required API key (IGDB for Games, TMDB for Movies/TV/Animation); missing key shows "Go to Settings" button
+- **Smart error handling** — network errors (connection/timeout/socket) show "No internet connection" with retry; API errors show the error message with retry
 
 ## 📊 Progress Tracking
 
@@ -292,7 +294,7 @@ Built with 5 reusable widgets: `SettingsSection`, `SettingsRow`, `SettingsNavRow
 
 | Screen | Description |
 |--------|-------------|
-| **Credentials** | IGDB, TMDB, SteamGridDB API keys via inline fields; TMDB content language (Russian/English); connection status with StatusDot; Verify/Refresh buttons |
+| **Credentials** | IGDB, TMDB, SteamGridDB API keys via inline fields; TMDB content language (Russian/English); connection status with StatusDot; Verify/Refresh buttons; "Test" buttons for TMDB and SteamGridDB API key validation; auto-sync platforms on IGDB verify |
 | **Cache** | Image caching toggle, folder, stats, clear |
 | **Database** | Config export/import (.json), Reset Database with confirmation |
 | **Debug** | SteamGridDB, Image Debug, Gamepad (dev only) |

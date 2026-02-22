@@ -263,6 +263,7 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
           hasKey: settings.hasSteamGridDbKey,
           compact: compact,
           onSave: _saveSteamGridDbKey,
+          onValidate: _validateSteamGridDbKey,
         ),
       ],
     );
@@ -323,6 +324,7 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
           hasKey: settings.hasTmdbKey,
           compact: compact,
           onSave: _saveTmdbKey,
+          onValidate: _validateTmdbKey,
         ),
       ],
     );
@@ -385,7 +387,18 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
     final bool success = await notifier.verifyConnection();
 
     if (success && mounted) {
-      context.showAppSnackBar('Connection verified successfully!');
+      final bool syncOk = await notifier.syncPlatforms();
+      if (mounted) {
+        if (syncOk) {
+          context.showAppSnackBar('Connected & platforms synced!');
+          await _downloadLogosIfEnabled();
+        } else {
+          context.showAppSnackBar(
+            'Connected, but platform sync failed',
+            isError: true,
+          );
+        }
+      }
     }
   }
 
@@ -446,11 +459,12 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
     }
   }
 
-  /// Строка с StatusDot + кнопкой Save для API ключей.
+  /// Строка с StatusDot + кнопкой Save (+ опциональной кнопкой Test) для API ключей.
   Widget _buildSaveRow({
     required bool hasKey,
     required bool compact,
     required VoidCallback onSave,
+    Future<void> Function()? onValidate,
   }) {
     return Row(
       children: <Widget>[
@@ -460,6 +474,17 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
           compact: compact,
         ),
         const Spacer(),
+        if (hasKey && onValidate != null) ...<Widget>[
+          SizedBox(
+            width: 80,
+            height: 40,
+            child: OutlinedButton(
+              onPressed: onValidate,
+              child: const Text('Test'),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+        ],
         SizedBox(
           width: 100,
           height: 40,
@@ -470,6 +495,32 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
         ),
       ],
     );
+  }
+
+  Future<void> _validateSteamGridDbKey() async {
+    final SettingsNotifier notifier =
+        ref.read(settingsNotifierProvider.notifier);
+    final bool valid = await notifier.validateSteamGridDbKey();
+    if (mounted) {
+      if (valid) {
+        context.showAppSnackBar('SteamGridDB API key is valid');
+      } else {
+        context.showAppSnackBar('SteamGridDB API key is invalid', isError: true);
+      }
+    }
+  }
+
+  Future<void> _validateTmdbKey() async {
+    final SettingsNotifier notifier =
+        ref.read(settingsNotifierProvider.notifier);
+    final bool valid = await notifier.validateTmdbKey();
+    if (mounted) {
+      if (valid) {
+        context.showAppSnackBar('TMDB API key is valid');
+      } else {
+        context.showAppSnackBar('TMDB API key is invalid', isError: true);
+      }
+    }
   }
 
   Future<void> _saveSteamGridDbKey() => _saveApiKey(

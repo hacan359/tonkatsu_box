@@ -52,6 +52,25 @@ class SteamGridDbApi {
     _apiKey = null;
   }
 
+  /// Проверяет валидность API ключа.
+  ///
+  /// Выполняет тестовый запрос к API. Возвращает `true` если ключ валиден.
+  Future<bool> validateApiKey(String apiKey) async {
+    try {
+      final Response<dynamic> response = await _dio.get<dynamic>(
+        '$_baseUrl/search/autocomplete/test',
+        options: Options(
+          headers: <String, dynamic>{
+            'Authorization': 'Bearer $apiKey',
+          },
+        ),
+      );
+      return response.statusCode == 200;
+    } on DioException {
+      return false;
+    }
+  }
+
   /// Ищет игры по названию.
   ///
   /// [term] — строка поиска.

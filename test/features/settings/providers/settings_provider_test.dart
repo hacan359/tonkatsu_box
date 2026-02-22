@@ -385,6 +385,124 @@ void main() {
       });
     });
 
+    group('validateTmdbKey', () {
+      test('возвращает true при валидном ключе', () async {
+        when(() => mockTmdbApi.validateApiKey('valid_key'))
+            .thenAnswer((_) async => true);
+
+        final ProviderContainer container = await createContainer(
+          initialPrefs: <String, Object>{
+            'tmdb_api_key': 'valid_key',
+          },
+        );
+
+        final SettingsNotifier notifier =
+            container.read(settingsNotifierProvider.notifier);
+
+        final bool result = await notifier.validateTmdbKey();
+
+        expect(result, isTrue);
+        verify(() => mockTmdbApi.validateApiKey('valid_key')).called(1);
+      });
+
+      test('возвращает false при невалидном ключе', () async {
+        when(() => mockTmdbApi.validateApiKey('bad_key'))
+            .thenAnswer((_) async => false);
+
+        final ProviderContainer container = await createContainer(
+          initialPrefs: <String, Object>{
+            'tmdb_api_key': 'bad_key',
+          },
+        );
+
+        final SettingsNotifier notifier =
+            container.read(settingsNotifierProvider.notifier);
+
+        final bool result = await notifier.validateTmdbKey();
+
+        expect(result, isFalse);
+      });
+
+      test('возвращает false когда TMDB ключ не задан', () async {
+        final ProviderContainer container = await createContainer();
+
+        final SettingsNotifier notifier =
+            container.read(settingsNotifierProvider.notifier);
+
+        final bool result = await notifier.validateTmdbKey();
+
+        expect(result, isFalse);
+        verifyNever(() => mockTmdbApi.validateApiKey(any()));
+      });
+
+      test('возвращает false когда TMDB ключ пуст', () async {
+        final ProviderContainer container = await createContainer(
+          initialPrefs: <String, Object>{
+            'tmdb_api_key': '',
+          },
+        );
+
+        final SettingsNotifier notifier =
+            container.read(settingsNotifierProvider.notifier);
+
+        final bool result = await notifier.validateTmdbKey();
+
+        expect(result, isFalse);
+        verifyNever(() => mockTmdbApi.validateApiKey(any()));
+      });
+    });
+
+    group('validateSteamGridDbKey', () {
+      test('возвращает true при валидном ключе', () async {
+        when(() => mockSteamGridDbApi.validateApiKey('valid_key'))
+            .thenAnswer((_) async => true);
+
+        final ProviderContainer container = await createContainer(
+          initialPrefs: <String, Object>{
+            'steamgriddb_api_key': 'valid_key',
+          },
+        );
+
+        final SettingsNotifier notifier =
+            container.read(settingsNotifierProvider.notifier);
+
+        final bool result = await notifier.validateSteamGridDbKey();
+
+        expect(result, isTrue);
+        verify(() => mockSteamGridDbApi.validateApiKey('valid_key')).called(1);
+      });
+
+      test('возвращает false при невалидном ключе', () async {
+        when(() => mockSteamGridDbApi.validateApiKey('bad_key'))
+            .thenAnswer((_) async => false);
+
+        final ProviderContainer container = await createContainer(
+          initialPrefs: <String, Object>{
+            'steamgriddb_api_key': 'bad_key',
+          },
+        );
+
+        final SettingsNotifier notifier =
+            container.read(settingsNotifierProvider.notifier);
+
+        final bool result = await notifier.validateSteamGridDbKey();
+
+        expect(result, isFalse);
+      });
+
+      test('возвращает false когда SteamGridDB ключ не задан', () async {
+        final ProviderContainer container = await createContainer();
+
+        final SettingsNotifier notifier =
+            container.read(settingsNotifierProvider.notifier);
+
+        final bool result = await notifier.validateSteamGridDbKey();
+
+        expect(result, isFalse);
+        verifyNever(() => mockSteamGridDbApi.validateApiKey(any()));
+      });
+    });
+
     group('setCredentials', () {
       test('должен сохранить credentials в prefs и обновить состояние',
           () async {
