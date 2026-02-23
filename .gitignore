@@ -39,6 +39,9 @@ migrate_working_dir/
 # Flutter auto-generated plugin registrations
 windows/flutter/generated_plugin_registrant.cc
 windows/flutter/generated_plugins.cmake
+linux/flutter/generated_plugin_registrant.cc
+linux/flutter/generated_plugin_registrant.h
+linux/flutter/generated_plugins.cmake
 android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
 
 # Symbolication related
