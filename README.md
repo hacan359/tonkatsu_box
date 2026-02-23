@@ -10,6 +10,7 @@
 
 <p align="center">
   <a href="#"><img src="https://img.shields.io/badge/Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Windows"></a>
+  <a href="#"><img src="https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black" alt="Linux"></a>
   <a href="#"><img src="https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android"></a>
 </p>
 
@@ -27,7 +28,7 @@
 
 ---
 
-Tonkatsu Box is a free, open-source collection manager for retro games, movies, TV shows, and anime. Search IGDB and TMDB databases with hundreds of thousands of titles, organize them into custom collections, track your backlog and progress, rate everything from 1 to 10, create visual boards with drag-and-drop, and share collections with friends. Available for Windows and Android.
+Tonkatsu Box is a free, open-source collection manager for retro games, movies, TV shows, and anime. Search IGDB and TMDB databases with hundreds of thousands of titles, organize them into custom collections, track your backlog and progress, rate everything from 1 to 10, create visual boards with drag-and-drop, and share collections with friends. Available for Windows, Linux, and Android.
 
 <p align="center">
   <img src="docs/screenshots/01-main-all.jpg" width="800" alt="Main screen — browse all your games, movies, TV shows and anime">
@@ -155,7 +156,7 @@ Enter it in the app under **Settings → Credentials**.
 git clone https://github.com/hacan359/tonkatsu_box.git
 cd xerabora
 flutter pub get
-flutter run -d windows    # or: flutter run -d android
+flutter run -d windows    # or: flutter run -d linux / -d android
 ```
 
 > [!NOTE]
@@ -185,13 +186,15 @@ Open the app → go to **Settings** → **Credentials** and paste your API keys.
 
 ## Platforms
 
-| | Windows | Android |
-|---|:---:|:---:|
-| Collections & search | ✅ | ✅ |
-| Progress & episode tracking | ✅ | ✅ |
-| Visual boards | ✅ | ✅ |
-| VGMaps browser (level maps) | ✅ | — |
-| Export & import | ✅ | ✅ |
+| | Windows | Linux | Android |
+|---|:---:|:---:|:---:|
+| Collections & search | ✅ | ✅ | ✅ |
+| Progress & episode tracking | ✅ | ✅ | ✅ |
+| Visual boards | ✅ | ✅ | ✅ |
+| VGMaps browser (level maps) | ✅ | — | — |
+| Export & import | ✅ | ✅ | ✅ |
+
+> **Note:** Linux support is experimental — the build is included in releases but has not been extensively tested yet.
 
 ## Documentation
 
