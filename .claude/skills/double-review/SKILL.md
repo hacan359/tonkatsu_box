@@ -33,6 +33,18 @@ description: Two-stage code review with improvements and optimizations. Use befo
 - [ ] Sensitive data is not logged?
 - [ ] No hardcoded secrets?
 
+#### Cross-Platform Compatibility
+- [ ] No hardcoded Windows paths (`C:\`, `AppData`, backslashes)?
+- [ ] File paths use `package:path` (`p.join()`) instead of string concatenation?
+- [ ] `Platform.isWindows` / `Platform.isAndroid` checks have correct fallthrough for all supported platforms (Windows, Linux, Android)?
+- [ ] Windows-only plugins (`webview_windows`) are guarded by `kVgMapsEnabled` or `Platform.isWindows` — never instantiated on other platforms?
+- [ ] Non-federated plugin imports don't cause compilation failures on other platforms?
+- [ ] SQLite initialization covers all desktop platforms (`Platform.isWindows || Platform.isLinux || Platform.isMacOS`)?
+- [ ] File picker logic correctly distinguishes mobile (`Platform.isAndroid || Platform.isIOS`) from desktop (Windows + Linux + macOS)?
+- [ ] Native runner files (window title, binary name, application ID) are consistent across platforms?
+- [ ] CI workflows include `--dart-define` secrets for ALL platform build jobs (Windows, Android, Linux)?
+- [ ] Generated scaffolding (`flutter create`) values match project identity (not default package name)?
+
 ### Actions After Round 1:
 1. Fix all found issues
 2. Ensure tests pass
