@@ -48,6 +48,7 @@ dependencies:
 
   # UI
   cached_network_image: ^3.3.1
+  flutter_svg: ^2.0.10
 
   # File Operations
   file_picker: ^10.0.0
@@ -90,6 +91,7 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/credits/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

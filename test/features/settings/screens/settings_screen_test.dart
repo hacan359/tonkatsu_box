@@ -359,6 +359,111 @@ void main() {
       });
     });
 
+    group('About section', () {
+      testWidgets('shows About section after scrolling',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        await tester.drag(find.byType(ListView), const Offset(0, -400));
+        await tester.pumpAndSettle();
+
+        expect(find.text('About'), findsOneWidget);
+        expect(find.byIcon(Icons.info_outline), findsOneWidget);
+      });
+
+      testWidgets('shows Version nav row',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        await tester.drag(find.byType(ListView), const Offset(0, -400));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Version'), findsOneWidget);
+      });
+
+      testWidgets('shows version placeholder before PackageInfo loads',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        // Только pump() — не ждём async _loadVersion
+        await tester.pump();
+
+        await tester.drag(find.byType(ListView), const Offset(0, -400));
+        await tester.pump();
+
+        // До загрузки PackageInfo subtitle = '...'
+        expect(find.text('...'), findsOneWidget);
+      });
+
+      testWidgets('shows Credits & Licenses nav row',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        await tester.drag(find.byType(ListView), const Offset(0, -400));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Credits & Licenses'), findsOneWidget);
+        expect(
+          find.text('TMDB, IGDB, SteamGridDB, open-source licenses'),
+          findsOneWidget,
+        );
+      });
+
+      testWidgets('Credits & Licenses tile is tappable',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        await tester.drag(find.byType(ListView), const Offset(0, -400));
+        await tester.pumpAndSettle();
+
+        final Finder creditsTile = find.ancestor(
+          of: find.text('Credits & Licenses'),
+          matching: find.byType(ListTile),
+        );
+
+        await tester.tap(creditsTile);
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+      });
+
+      testWidgets('Version has tag icon', (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        await tester.drag(find.byType(ListView), const Offset(0, -400));
+        await tester.pumpAndSettle();
+
+        final Finder versionTile = find.ancestor(
+          of: find.text('Version'),
+          matching: find.byType(ListTile),
+        );
+        final ListTile tile = tester.widget<ListTile>(versionTile);
+        final Icon? leadingIcon = tile.leading as Icon?;
+        expect(leadingIcon!.icon, equals(Icons.tag));
+      });
+
+      testWidgets('Credits & Licenses has favorite_outline icon',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        await tester.drag(find.byType(ListView), const Offset(0, -400));
+        await tester.pumpAndSettle();
+
+        final Finder creditsTile = find.ancestor(
+          of: find.text('Credits & Licenses'),
+          matching: find.byType(ListTile),
+        );
+        final ListTile tile = tester.widget<ListTile>(creditsTile);
+        final Icon? leadingIcon = tile.leading as Icon?;
+        expect(leadingIcon!.icon, equals(Icons.favorite_outline));
+      });
+    });
+
     group('Error handling', () {
       testWidgets('does not show error section by default',
           (WidgetTester tester) async {
@@ -391,8 +496,8 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // Scroll down to make error section visible
-        await tester.drag(find.byType(ListView), const Offset(0, -300));
+        // Scroll down to make error section visible (past About section)
+        await tester.drag(find.byType(ListView), const Offset(0, -600));
         await tester.pumpAndSettle();
 
         // Error section should show warning icon and error text

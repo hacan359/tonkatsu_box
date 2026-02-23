@@ -336,8 +336,9 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/features/settings/screens/settings_screen.dart` | **Хаб настроек**. `SettingsSection(Profile)` с `InlineTextField` для author name + `SettingsSection(Settings)` с 4 `SettingsNavRow`: Credentials, Cache, Database, Debug (только kDebugMode). Секция ошибки при `settings.errorMessage` |
+| `lib/features/settings/screens/settings_screen.dart` | **Хаб настроек**. `SettingsSection(Profile)` с `InlineTextField` для author name + `SettingsSection(Settings)` с 4 `SettingsNavRow`: Credentials, Cache, Database, Debug (только kDebugMode). `SettingsSection(Help)` с Welcome Guide. `SettingsSection(About)` с Version (из `PackageInfo`) и Credits & Licenses. Секция ошибки при `settings.errorMessage` |
 | `lib/features/settings/screens/credentials_screen.dart` | **Учётные данные API**. `InlineTextField` для IGDB Client ID/Secret, SteamGridDB API key, TMDB API key. Выбор языка контента TMDB (ru-RU/en-US) через `SegmentedButton`. `StatusDot` для статуса подключения. Кнопки Verify/Refresh Platforms. Секция Welcome при начальной настройке |
+| `lib/features/settings/screens/credits_screen.dart` | **Атрибуция API-провайдеров**. Data Providers секция: TMDB (обязательная атрибуция), IGDB, SteamGridDB — SVG логотипы + disclaimer + внешние ссылки. Open Source секция: MIT лицензия, ссылка GitHub, кнопка `showLicensePage()` |
 | `lib/features/settings/screens/cache_screen.dart` | **Настройки кэша**. `SettingsSection` с `SettingsRow`(Switch) для toggle кэша, выбор папки, статистика (файлы/размер), очистка кэша |
 | `lib/features/settings/screens/database_screen.dart` | **Управление БД**. `SettingsSection(Configuration)` с Export/Import Config (JSON). `SettingsSection(Danger Zone)` с Reset Database и диалогом подтверждения |
 | `lib/features/settings/screens/debug_hub_screen.dart` | **Хаб отладки** (только kDebugMode). `SettingsSection` с 3 `SettingsNavRow`: SteamGridDB, Image Debug, Gamepad. SteamGridDB недоступен без API ключа |
