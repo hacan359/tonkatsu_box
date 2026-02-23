@@ -28,6 +28,7 @@ The app uses a forced dark theme (ThemeMode.dark) with a cinematic design system
 | Platform | Features |
 |----------|----------|
 | **Windows** | Full version: Board, VGMaps Browser, SteamGridDB panel, all features |
+| **Linux** | Full version: same as Windows except VGMaps Browser (no WebView) |
 | **Android** | Full version: collections, search, details, episode tracker, Board, export/import |
 
 > [!NOTE]

@@ -6,6 +6,17 @@
 
 ## [Unreleased]
 
+### Added
+- Built-in API tokens for TMDB and SteamGridDB via `--dart-define` — `ApiDefaults` class with `String.fromEnvironment` for compile-time key injection (`api_defaults.dart`)
+- Three-tier API key fallback in `SettingsNotifier._loadFromPrefs()` — user key (SharedPreferences) → built-in key (dart-define) → null (`settings_provider.dart`)
+- `isTmdbKeyBuiltIn` / `isSteamGridDbKeyBuiltIn` getters on `SettingsState` for detecting active built-in keys
+- `resetTmdbApiKeyToDefault()` / `resetSteamGridDbApiKeyToDefault()` methods on `SettingsNotifier` to revert to built-in keys
+- "Using built-in key" status indicator and "Reset" button in credentials screen when built-in key is active (`credentials_screen.dart`)
+- Hint recommending own API keys for better rate limits, shown when built-in key is active
+- `--dart-define=TMDB_API_KEY` and `--dart-define=STEAMGRIDDB_API_KEY` in CI release workflow for Windows and Android builds (`release.yml`)
+- `.env` / `.env.local` added to `.gitignore` for local development keys
+- 13 new tests: `ApiDefaults` constants, built-in key fallback logic, `isTmdbKeyBuiltIn`/`isSteamGridDbKeyBuiltIn`, `resetTmdbApiKeyToDefault`/`resetSteamGridDbApiKeyToDefault`
+
 ## [0.12.0] - 2026-02-22
 
 ### Added
