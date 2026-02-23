@@ -4,10 +4,10 @@
 
 ## Requirements
 
-- Windows 10 or 11 (or Android 8+)
+- Windows 10+ / Linux / Android 8+
 - Internet connection (for initial setup and search)
 - IGDB API credentials (for game search)
-- TMDB API key (optional, for movie/TV show search)
+- TMDB and SteamGridDB API keys come built-in — no setup needed for movie/TV search and game artwork
 
 ---
 
@@ -44,10 +44,10 @@ Detailed instructions: [docs/guides/API_KEYS.md](guides/API_KEYS.md)
 5. Click **Create**
 6. Copy your **Client ID** and generate a **Client Secret**
 
-### TMDB (Recommended — Movies, TV & Anime)
+### TMDB (Optional — Movies, TV & Anime)
 
 > [!NOTE]
-> TMDB is **recommended**. It enables searching for movies, TV shows, and animation.
+> TMDB comes with a **built-in API key** — movie/TV search works out of the box. For better rate limits, we recommend using your own key.
 
 1. Go to [themoviedb.org](https://www.themoviedb.org)
 2. Create an account or log in
@@ -58,7 +58,7 @@ Detailed instructions: [docs/guides/API_KEYS.md](guides/API_KEYS.md)
 ### SteamGridDB (Optional — Game artwork)
 
 > [!NOTE]
-> SteamGridDB is **optional**. It provides high-quality game artwork for the canvas board.
+> SteamGridDB comes with a **built-in API key** — game artwork works out of the box. For better rate limits, we recommend using your own key.
 
 1. Go to [steamgriddb.com](https://www.steamgriddb.com)
 2. Create an account or log in

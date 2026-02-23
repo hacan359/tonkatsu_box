@@ -42,7 +42,10 @@ jobs:
         run: flutter pub get
 
       - name: Build Windows release
-        run: flutter build windows --release
+        run: >
+          flutter build windows --release
+          --dart-define=TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}
+          --dart-define=STEAMGRIDDB_API_KEY=${{ secrets.STEAMGRIDDB_API_KEY }}
 
       - name: Archive Windows build
         run: |
@@ -88,7 +91,10 @@ jobs:
           KEYSTORE_PATH: ${{ runner.temp }}/tonkatsu-box-release.jks
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-        run: flutter build apk --release
+        run: >
+          flutter build apk --release
+          --dart-define=TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}
+          --dart-define=STEAMGRIDDB_API_KEY=${{ secrets.STEAMGRIDDB_API_KEY }}
 
       - name: Rename APK
         run: |
