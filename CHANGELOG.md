@@ -7,6 +7,11 @@
 ## [Unreleased]
 
 ### Added
+- Linux desktop build support — GTK runner (`linux/`), `build-linux` CI job with `ninja-build` + `libgtk-3-dev`, `.tar.gz` artifact in GitHub Releases (`release.yml`)
+- `--dart-define=TMDB_API_KEY` and `--dart-define=STEAMGRIDDB_API_KEY` in CI release workflow for Linux build (`release.yml`)
+- Platform safety guards for VgMapsPanel — `Platform.isWindows` check in `initState()` and `build()` prevents WebView initialization on non-Windows platforms (`vgmaps_panel.dart`)
+- `kVgMapsEnabled` gate around VgMapsPanel Consumer in all 5 detail screens — prevents unnecessary provider watching on non-Windows platforms (`game_detail_screen.dart`, `movie_detail_screen.dart`, `tv_show_detail_screen.dart`, `anime_detail_screen.dart`, `collection_screen.dart`)
+- 8 new tests for `platform_features.dart`: `kCanvasEnabled`, `kVgMapsEnabled`, `kScreenshotEnabled`, `kIsMobile`, `isLandscapeMobile` (`platform_features_test.dart`)
 - Built-in API tokens for TMDB and SteamGridDB via `--dart-define` — `ApiDefaults` class with `String.fromEnvironment` for compile-time key injection (`api_defaults.dart`)
 - Three-tier API key fallback in `SettingsNotifier._loadFromPrefs()` — user key (SharedPreferences) → built-in key (dart-define) → null (`settings_provider.dart`)
 - `isTmdbKeyBuiltIn` / `isSteamGridDbKeyBuiltIn` getters on `SettingsState` for detecting active built-in keys
@@ -16,6 +21,9 @@
 - `--dart-define=TMDB_API_KEY` and `--dart-define=STEAMGRIDDB_API_KEY` in CI release workflow for Windows and Android builds (`release.yml`)
 - `.env` / `.env.local` added to `.gitignore` for local development keys
 - 13 new tests: `ApiDefaults` constants, built-in key fallback logic, `isTmdbKeyBuiltIn`/`isSteamGridDbKeyBuiltIn`, `resetTmdbApiKeyToDefault`/`resetSteamGridDbApiKeyToDefault`
+
+### Changed
+- Linux runner window title set to "Tonkatsu Box", binary name to `tonkatsu_box`, application ID to `com.hacan359.tonkatsubox` (`linux/CMakeLists.txt`, `linux/runner/my_application.cc`)
 
 ## [0.12.0] - 2026-02-22
 

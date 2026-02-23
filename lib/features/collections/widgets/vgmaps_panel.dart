@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
@@ -77,7 +78,11 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
   @override
   void initState() {
     super.initState();
-    _initWebView();
+    // webview_windows работает только на Windows.
+    // На других платформах не инициализируем WebView.
+    if (Platform.isWindows) {
+      _initWebView();
+    }
   }
 
   @override
@@ -337,6 +342,11 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
 
   @override
   Widget build(BuildContext context) {
+    // Safety guard: не рендерим на non-Windows платформах.
+    if (!Platform.isWindows) {
+      return const SizedBox.shrink();
+    }
+
     final VgMapsPanelState panelState =
         ref.watch(vgMapsPanelProvider(widget.collectionId));
     final ThemeData theme = Theme.of(context);

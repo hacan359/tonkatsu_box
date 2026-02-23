@@ -655,40 +655,42 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
             );
           },
         ),
-        Consumer(
-          builder:
-              (BuildContext context, WidgetRef ref, Widget? child) {
-            final bool isPanelOpen = ref.watch(
-              vgMapsPanelProvider(widget.collectionId)
-                  .select((VgMapsPanelState s) => s.isOpen),
-            );
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: isPanelOpen ? 500 : 0,
-              curve: Curves.easeInOut,
-              clipBehavior: Clip.hardEdge,
-              decoration: BoxDecoration(
-                border: isPanelOpen
-                    ? const Border(
-                        left: BorderSide(
-                          color: AppColors.surfaceBorder,
+        // VGMaps Browser (Windows only)
+        if (kVgMapsEnabled)
+          Consumer(
+            builder:
+                (BuildContext context, WidgetRef ref, Widget? child) {
+              final bool isPanelOpen = ref.watch(
+                vgMapsPanelProvider(widget.collectionId)
+                    .select((VgMapsPanelState s) => s.isOpen),
+              );
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: isPanelOpen ? 500 : 0,
+                curve: Curves.easeInOut,
+                clipBehavior: Clip.hardEdge,
+                decoration: BoxDecoration(
+                  border: isPanelOpen
+                      ? const Border(
+                          left: BorderSide(
+                            color: AppColors.surfaceBorder,
+                          ),
+                        )
+                      : null,
+                ),
+                child: isPanelOpen
+                    ? OverflowBox(
+                        maxWidth: 500,
+                        alignment: Alignment.centerLeft,
+                        child: VgMapsPanel(
+                          collectionId: widget.collectionId,
+                          onAddImage: _addVgMapsImage,
                         ),
                       )
-                    : null,
-              ),
-              child: isPanelOpen
-                  ? OverflowBox(
-                      maxWidth: 500,
-                      alignment: Alignment.centerLeft,
-                      child: VgMapsPanel(
-                        collectionId: widget.collectionId,
-                        onAddImage: _addVgMapsImage,
-                      ),
-                    )
-                  : const SizedBox.shrink(),
-            );
-          },
-        ),
+                    : const SizedBox.shrink(),
+              );
+            },
+          ),
       ],
     );
   }
