@@ -139,13 +139,13 @@ jobs:
         run: |
           VERSION="${{ github.ref_name }}"
           cd build/linux/x64/release/bundle
-          tar czf "$GITHUB_WORKSPACE/tonkatsu-box-${VERSION}-linux.tar.gz" .
+          tar czf "$GITHUB_WORKSPACE/tonkatsu-box-${VERSION}-linux-experimental.tar.gz" .
 
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
         with:
           name: linux-build
-          path: tonkatsu-box-${{ github.ref_name }}-linux.tar.gz
+          path: tonkatsu-box-${{ github.ref_name }}-linux-experimental.tar.gz
           retention-days: 1
 
   create-release:
@@ -191,4 +191,4 @@ jobs:
             --notes-file release_notes.md \
             "tonkatsu-box-${VERSION}-windows.zip" \
             "tonkatsu-box-${VERSION}-android.apk" \
-            "tonkatsu-box-${VERSION}-linux.tar.gz"
+            "tonkatsu-box-${VERSION}-linux-experimental.tar.gz"
