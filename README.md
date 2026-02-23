@@ -233,6 +233,12 @@ Free code signing provided by [SignPath.io](https://signpath.io), certificate by
 
 **Privacy policy:** This program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it. The application uses third-party APIs (IGDB, TMDB, SteamGridDB) only when the user explicitly initiates a search or data fetch.
 
+## Credits
+
+- Movie, TV show, and anime data provided by [TMDB](https://www.themoviedb.org/). This product uses the TMDB API but is not endorsed or certified by TMDB.
+- Game data provided by [IGDB](https://www.igdb.com/).
+- Artwork provided by [SteamGridDB](https://www.steamgriddb.com/).
+
 ## License
 
 MIT

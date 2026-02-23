@@ -3,6 +3,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../../shared/constants/app_strings.dart';
 import '../../../shared/theme/app_colors.dart';
@@ -15,18 +16,41 @@ import '../widgets/settings_section.dart';
 import '../../welcome/screens/welcome_screen.dart';
 import 'cache_screen.dart';
 import 'credentials_screen.dart';
+import 'credits_screen.dart';
 import 'database_screen.dart';
 import 'debug_hub_screen.dart';
 
 /// Хаб настроек приложения.
 ///
 /// Содержит ссылки на подразделы: Credentials, Cache, Database, Debug.
-class SettingsScreen extends ConsumerWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   /// Создаёт [SettingsScreen].
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  String _appVersion = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    final PackageInfo info = await PackageInfo.fromPlatform();
+    if (mounted) {
+      setState(() {
+        _appVersion = info.version;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final SettingsState settings = ref.watch(settingsNotifierProvider);
     final bool compact = MediaQuery.sizeOf(context).width < 600;
 
@@ -138,6 +162,36 @@ class SettingsScreen extends ConsumerWidget {
                     MaterialPageRoute<void>(
                       builder: (BuildContext context) =>
                           const WelcomeScreen(fromSettings: true),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+          SizedBox(height: compact ? AppSpacing.sm : AppSpacing.md),
+          SettingsSection(
+            title: 'About',
+            icon: Icons.info_outline,
+            compact: compact,
+            children: <Widget>[
+              SettingsNavRow(
+                title: 'Version',
+                icon: Icons.tag,
+                subtitle: _appVersion.isNotEmpty ? _appVersion : '...',
+                compact: compact,
+                onTap: () {},
+              ),
+              SettingsNavRow(
+                title: 'Credits & Licenses',
+                icon: Icons.favorite_outline,
+                subtitle: 'TMDB, IGDB, SteamGridDB, open-source licenses',
+                compact: compact,
+                showDivider: true,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (BuildContext context) =>
+                          const CreditsScreen(),
                     ),
                   );
                 },

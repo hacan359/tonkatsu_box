@@ -6,6 +6,16 @@
 
 ## [Unreleased]
 
+### Added
+- Credits screen with API provider attribution — TMDB (mandatory), IGDB, SteamGridDB logos + disclaimer text + external links, Open Source section with MIT license info and `showLicensePage()` button (`credits_screen.dart`)
+- "About" section in Settings — app version from `PackageInfo` and "Credits & Licenses" navigation row (`settings_screen.dart`)
+- `flutter_svg` dependency for rendering SVG logos in Credits screen (`pubspec.yaml`)
+- SVG logos for TMDB, IGDB, SteamGridDB in `assets/credits/` (app) and `docs/assets/` (landing page)
+- Footer attribution on landing page — "Data by" with TMDB, IGDB, SteamGridDB logo links, localized for EN/RU (`docs/index.html`)
+- Credits section in README with TMDB disclaimer, IGDB, SteamGridDB attribution (`README.md`)
+- 19 widget tests for `CreditsScreen`: attribution texts, provider links, Open Source section, compact layout, licenses button (`credits_screen_test.dart`)
+- 7 new tests for `SettingsScreen` About section: section visibility, Version/Credits nav rows, icons, tappability, version placeholder (`settings_screen_test.dart`)
+
 ## [0.13.0] - 2026-02-23
 
 ### Added

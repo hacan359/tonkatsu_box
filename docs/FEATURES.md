@@ -284,7 +284,7 @@ Each item in a collection has its own personal board:
 
 ## ⚙️ Settings
 
-Settings is organized as a hub with an inline author name field and 4 sub-screens. All screens support **compact mode** (responsive layout for screens < 600px width).
+Settings is organized as a hub with an inline author name field, 4 sub-screens, and an About section. All screens support **compact mode** (responsive layout for screens < 600px width).
 
 Built with 5 reusable widgets: `SettingsSection`, `SettingsRow`, `SettingsNavRow`, `StatusDot`, `InlineTextField`.
 
@@ -299,6 +299,7 @@ Built with 5 reusable widgets: `SettingsSection`, `SettingsRow`, `SettingsNavRow
 | **Cache** | Image caching toggle, folder, stats, clear |
 | **Database** | Config export/import (.json), Reset Database with confirmation |
 | **Debug** | SteamGridDB, Image Debug, Gamepad (dev only) |
+| **Credits** | API provider attribution (TMDB mandatory, IGDB, SteamGridDB) with SVG logos, external links, Open Source section with MIT license info and Flutter `showLicensePage()` |
 
 > [!WARNING]
 > **Reset Database** clears all collections, items, and board data. API keys and settings are preserved. This action cannot be undone.
