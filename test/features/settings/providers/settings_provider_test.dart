@@ -9,6 +9,7 @@ import 'package:xerabora/core/api/steamgriddb_api.dart';
 import 'package:xerabora/core/api/tmdb_api.dart';
 import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
+import 'package:xerabora/shared/constants/api_defaults.dart';
 
 // Моки
 class MockIgdbApi extends Mock implements IgdbApi {}
@@ -111,7 +112,9 @@ void main() {
         final SettingsState state =
             container.read(settingsNotifierProvider);
 
-        expect(state.tmdbApiKey, equals(''));
+        // Пустая строка в prefs == нет пользовательского ключа →
+        // fallback на built-in (в тестах built-in отсутствует) → null
+        expect(state.tmdbApiKey, isNull);
         verifyNever(() => mockTmdbApi.setApiKey(any()));
       });
 
@@ -525,6 +528,175 @@ void main() {
         expect(prefs.getString('igdb_client_secret'), equals('new_csecret'));
         expect(state.errorMessage, isNull);
       });
+    });
+
+    group('built-in API key fallback', () {
+      // ПРИМЕЧАНИЕ: В тестах String.fromEnvironment всегда возвращает '',
+      // поэтому ApiDefaults.hasTmdbKey == false.
+      // Тесты проверяют fallback-цепочку: user → built-in → null.
+
+      test('при отсутствии user key и built-in key — tmdbApiKey == null',
+          () async {
+        final ProviderContainer container = await createContainer();
+
+        final SettingsState state =
+            container.read(settingsNotifierProvider);
+
+        expect(state.tmdbApiKey, isNull);
+        expect(state.hasTmdbKey, isFalse);
+        expect(state.isTmdbKeyBuiltIn, isFalse);
+      });
+
+      test('при наличии user key — использует user key', () async {
+        final ProviderContainer container = await createContainer(
+          initialPrefs: <String, Object>{
+            'tmdb_api_key': 'user_key_123',
+          },
+        );
+
+        final SettingsState state =
+            container.read(settingsNotifierProvider);
+
+        expect(state.tmdbApiKey, equals('user_key_123'));
+        expect(state.hasTmdbKey, isTrue);
+        expect(state.isTmdbKeyBuiltIn, isFalse);
+      });
+
+      test('isTmdbKeyBuiltIn false когда built-in ключ отсутствует', () async {
+        final ProviderContainer container = await createContainer(
+          initialPrefs: <String, Object>{
+            'tmdb_api_key': 'any_key',
+          },
+        );
+
+        final SettingsState state =
+            container.read(settingsNotifierProvider);
+
+        // В тестах ApiDefaults.hasTmdbKey == false, поэтому isTmdbKeyBuiltIn
+        // всегда false
+        expect(state.isTmdbKeyBuiltIn, isFalse);
+      });
+
+      test('isSteamGridDbKeyBuiltIn false когда built-in ключ отсутствует',
+          () async {
+        final ProviderContainer container = await createContainer(
+          initialPrefs: <String, Object>{
+            'steamgriddb_api_key': 'any_key',
+          },
+        );
+
+        final SettingsState state =
+            container.read(settingsNotifierProvider);
+
+        expect(state.isSteamGridDbKeyBuiltIn, isFalse);
+      });
+
+      test('при пустом SteamGridDB key в prefs — fallback на null', () async {
+        final ProviderContainer container = await createContainer(
+          initialPrefs: <String, Object>{
+            'steamgriddb_api_key': '',
+          },
+        );
+
+        final SettingsState state =
+            container.read(settingsNotifierProvider);
+
+        expect(state.steamGridDbApiKey, isNull);
+        expect(state.hasSteamGridDbKey, isFalse);
+      });
+    });
+
+    group('resetTmdbApiKeyToDefault', () {
+      test('должен удалить user key из prefs', () async {
+        final ProviderContainer container = await createContainer(
+          initialPrefs: <String, Object>{
+            'tmdb_api_key': 'user_key',
+          },
+        );
+
+        final SettingsNotifier notifier =
+            container.read(settingsNotifierProvider.notifier);
+
+        await notifier.resetTmdbApiKeyToDefault();
+
+        expect(prefs.getString('tmdb_api_key'), isNull);
+      });
+
+      test('должен очистить API клиент когда built-in ключ отсутствует',
+          () async {
+        final ProviderContainer container = await createContainer(
+          initialPrefs: <String, Object>{
+            'tmdb_api_key': 'user_key',
+          },
+        );
+
+        final SettingsNotifier notifier =
+            container.read(settingsNotifierProvider.notifier);
+
+        await notifier.resetTmdbApiKeyToDefault();
+
+        // В тестах ApiDefaults.hasTmdbKey == false
+        verify(() => mockTmdbApi.clearApiKey()).called(1);
+
+        final SettingsState state =
+            container.read(settingsNotifierProvider);
+        expect(state.tmdbApiKey, equals(''));
+      });
+    });
+
+    group('resetSteamGridDbApiKeyToDefault', () {
+      test('должен удалить user key из prefs', () async {
+        final ProviderContainer container = await createContainer(
+          initialPrefs: <String, Object>{
+            'steamgriddb_api_key': 'user_key',
+          },
+        );
+
+        final SettingsNotifier notifier =
+            container.read(settingsNotifierProvider.notifier);
+
+        await notifier.resetSteamGridDbApiKeyToDefault();
+
+        expect(prefs.getString('steamgriddb_api_key'), isNull);
+      });
+
+      test('должен очистить API клиент когда built-in ключ отсутствует',
+          () async {
+        final ProviderContainer container = await createContainer(
+          initialPrefs: <String, Object>{
+            'steamgriddb_api_key': 'user_key',
+          },
+        );
+
+        final SettingsNotifier notifier =
+            container.read(settingsNotifierProvider.notifier);
+
+        await notifier.resetSteamGridDbApiKeyToDefault();
+
+        verify(() => mockSteamGridDbApi.clearApiKey()).called(1);
+
+        final SettingsState state =
+            container.read(settingsNotifierProvider);
+        expect(state.steamGridDbApiKey, equals(''));
+      });
+    });
+  });
+
+  group('ApiDefaults', () {
+    test('tmdbApiKey пустая строка в тестах (без --dart-define)', () {
+      expect(ApiDefaults.tmdbApiKey, isEmpty);
+    });
+
+    test('steamGridDbApiKey пустая строка в тестах', () {
+      expect(ApiDefaults.steamGridDbApiKey, isEmpty);
+    });
+
+    test('hasTmdbKey false в тестах', () {
+      expect(ApiDefaults.hasTmdbKey, isFalse);
+    });
+
+    test('hasSteamGridDbKey false в тестах', () {
+      expect(ApiDefaults.hasSteamGridDbKey, isFalse);
     });
   });
 }

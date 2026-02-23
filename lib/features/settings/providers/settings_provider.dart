@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../shared/constants/api_defaults.dart';
 import '../../../shared/constants/app_strings.dart';
 import '../../../core/api/igdb_api.dart';
 import '../../../core/api/steamgriddb_api.dart';
@@ -105,6 +106,18 @@ class SettingsState {
   /// Проверяет наличие API ключа SteamGridDB.
   bool get hasSteamGridDbKey =>
       steamGridDbApiKey != null && steamGridDbApiKey!.isNotEmpty;
+
+  /// Проверяет, используется ли встроенный TMDB ключ (не пользовательский).
+  bool get isTmdbKeyBuiltIn =>
+      hasTmdbKey &&
+      ApiDefaults.hasTmdbKey &&
+      tmdbApiKey == ApiDefaults.tmdbApiKey;
+
+  /// Проверяет, используется ли встроенный SteamGridDB ключ.
+  bool get isSteamGridDbKeyBuiltIn =>
+      hasSteamGridDbKey &&
+      ApiDefaults.hasSteamGridDbKey &&
+      steamGridDbApiKey == ApiDefaults.steamGridDbApiKey;
 
   /// Проверяет наличие сохранённых учётных данных.
   bool get hasCredentials =>
@@ -214,9 +227,22 @@ class SettingsNotifier extends Notifier<SettingsState> {
     final String? accessToken = _prefs.getString(SettingsKeys.accessToken);
     final int? tokenExpires = _prefs.getInt(SettingsKeys.tokenExpires);
     final int? lastSync = _prefs.getInt(SettingsKeys.lastSync);
-    final String? steamGridDbApiKey =
+    // SteamGridDB: user key → built-in key → null
+    final String? userSteamGridDbKey =
         _prefs.getString(SettingsKeys.steamGridDbApiKey);
-    final String? tmdbApiKey = _prefs.getString(SettingsKeys.tmdbApiKey);
+    final String? steamGridDbApiKey =
+        (userSteamGridDbKey != null && userSteamGridDbKey.isNotEmpty)
+            ? userSteamGridDbKey
+            : (ApiDefaults.hasSteamGridDbKey
+                ? ApiDefaults.steamGridDbApiKey
+                : null);
+
+    // TMDB: user key → built-in key → null
+    final String? userTmdbKey = _prefs.getString(SettingsKeys.tmdbApiKey);
+    final String? tmdbApiKey =
+        (userTmdbKey != null && userTmdbKey.isNotEmpty)
+            ? userTmdbKey
+            : (ApiDefaults.hasTmdbKey ? ApiDefaults.tmdbApiKey : null);
     final String? defaultAuthor =
         _prefs.getString(SettingsKeys.defaultAuthor);
     final String tmdbLanguage =
@@ -451,6 +477,37 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await _dbService.clearTmdbGenres();
     state = state.copyWith(tmdbLanguage: language);
     _preloadTmdbGenres();
+  }
+
+  /// Сбрасывает TMDB API ключ на встроенный.
+  ///
+  /// Удаляет пользовательский ключ из SharedPreferences.
+  /// Если есть встроенный ключ — использует его, иначе очищает.
+  Future<void> resetTmdbApiKeyToDefault() async {
+    await _prefs.remove(SettingsKeys.tmdbApiKey);
+    if (ApiDefaults.hasTmdbKey) {
+      _tmdbApi.setApiKey(ApiDefaults.tmdbApiKey);
+      state = state.copyWith(tmdbApiKey: ApiDefaults.tmdbApiKey);
+      _preloadTmdbGenres();
+    } else {
+      _tmdbApi.clearApiKey();
+      state = state.copyWith(tmdbApiKey: '');
+    }
+  }
+
+  /// Сбрасывает SteamGridDB API ключ на встроенный.
+  ///
+  /// Удаляет пользовательский ключ из SharedPreferences.
+  /// Если есть встроенный ключ — использует его, иначе очищает.
+  Future<void> resetSteamGridDbApiKeyToDefault() async {
+    await _prefs.remove(SettingsKeys.steamGridDbApiKey);
+    if (ApiDefaults.hasSteamGridDbKey) {
+      _steamGridDbApi.setApiKey(ApiDefaults.steamGridDbApiKey);
+      state = state.copyWith(steamGridDbApiKey: ApiDefaults.steamGridDbApiKey);
+    } else {
+      _steamGridDbApi.clearApiKey();
+      state = state.copyWith(steamGridDbApiKey: '');
+    }
   }
 
   /// Сохраняет имя автора по умолчанию.
