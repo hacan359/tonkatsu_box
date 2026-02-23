@@ -14,6 +14,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
 import '../../../shared/widgets/breadcrumb_scope.dart';
 import '../../../shared/widgets/source_badge.dart';
+import '../../../shared/constants/api_defaults.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/inline_text_field.dart';
 import '../widgets/settings_section.dart';
@@ -52,8 +53,12 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
     final SettingsState settings = ref.read(settingsNotifierProvider);
     _clientId = settings.clientId ?? '';
     _clientSecret = settings.clientSecret ?? '';
-    _steamGridDbApiKey = settings.steamGridDbApiKey ?? '';
-    _tmdbApiKey = settings.tmdbApiKey ?? '';
+    // Не загружаем встроенные ключи в текстовые поля —
+    // показываем пустое поле с placeholder "Using built-in key"
+    _steamGridDbApiKey =
+        settings.isSteamGridDbKeyBuiltIn ? '' : (settings.steamGridDbApiKey ?? '');
+    _tmdbApiKey =
+        settings.isTmdbKeyBuiltIn ? '' : (settings.tmdbApiKey ?? '');
   }
 
   @override
@@ -252,7 +257,9 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
         InlineTextField(
           label: 'API Key',
           value: _steamGridDbApiKey,
-          placeholder: 'Enter your SteamGridDB API key',
+          placeholder: settings.isSteamGridDbKeyBuiltIn
+              ? 'Using built-in key'
+              : 'Enter your SteamGridDB API key',
           obscureText: true,
           compact: compact,
           onChanged: (String value) =>
@@ -261,10 +268,14 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
         const SizedBox(height: AppSpacing.sm),
         _buildSaveRow(
           hasKey: settings.hasSteamGridDbKey,
+          isBuiltIn: settings.isSteamGridDbKeyBuiltIn,
+          hasDefault: ApiDefaults.hasSteamGridDbKey,
           compact: compact,
           onSave: _saveSteamGridDbKey,
           onValidate: _validateSteamGridDbKey,
+          onReset: _resetSteamGridDbKey,
         ),
+        if (settings.isSteamGridDbKeyBuiltIn) _buildOwnKeyHint(),
       ],
     );
   }
@@ -283,7 +294,9 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
         InlineTextField(
           label: 'API Key',
           value: _tmdbApiKey,
-          placeholder: 'Enter your TMDB API key (v3)',
+          placeholder: settings.isTmdbKeyBuiltIn
+              ? 'Using built-in key'
+              : 'Enter your TMDB API key (v3)',
           obscureText: true,
           compact: compact,
           onChanged: (String value) => setState(() => _tmdbApiKey = value),
@@ -322,11 +335,38 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
         const SizedBox(height: AppSpacing.sm),
         _buildSaveRow(
           hasKey: settings.hasTmdbKey,
+          isBuiltIn: settings.isTmdbKeyBuiltIn,
+          hasDefault: ApiDefaults.hasTmdbKey,
           compact: compact,
           onSave: _saveTmdbKey,
           onValidate: _validateTmdbKey,
+          onReset: _resetTmdbKey,
         ),
+        if (settings.isTmdbKeyBuiltIn) _buildOwnKeyHint(),
       ],
+    );
+  }
+
+  // ==================== Hints ====================
+
+  Widget _buildOwnKeyHint() {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.sm),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          const Icon(Icons.info_outline, size: 16, color: AppColors.textTertiary),
+          const SizedBox(width: AppSpacing.xs),
+          Expanded(
+            child: Text(
+              'For better rate limits we recommend using your own API key.',
+              style: AppTypography.caption.copyWith(
+                color: AppColors.textTertiary,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -467,21 +507,39 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
     }
   }
 
-  /// Строка с StatusDot + кнопкой Save (+ опциональной кнопкой Test) для API ключей.
+  /// Строка с StatusDot + кнопками Save/Test/Reset для API ключей.
   Widget _buildSaveRow({
     required bool hasKey,
     required bool compact,
     required VoidCallback onSave,
+    bool isBuiltIn = false,
+    bool hasDefault = false,
     Future<void> Function()? onValidate,
+    VoidCallback? onReset,
   }) {
     return Row(
       children: <Widget>[
         StatusDot(
-          label: hasKey ? 'API key saved' : 'No API key',
+          label: isBuiltIn
+              ? 'Using built-in key'
+              : hasKey
+                  ? 'API key saved'
+                  : 'No API key',
           type: hasKey ? StatusType.success : StatusType.inactive,
           compact: compact,
         ),
         const Spacer(),
+        if (hasKey && !isBuiltIn && hasDefault && onReset != null) ...<Widget>[
+          SizedBox(
+            width: 80,
+            height: 40,
+            child: OutlinedButton(
+              onPressed: onReset,
+              child: const Text('Reset'),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+        ],
         if (hasKey && onValidate != null) ...<Widget>[
           SizedBox(
             width: 80,
@@ -535,6 +593,18 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
         context.showSnack('TMDB API key is invalid', type: SnackType.error);
       }
     }
+  }
+
+  void _resetSteamGridDbKey() {
+    ref.read(settingsNotifierProvider.notifier).resetSteamGridDbApiKeyToDefault();
+    setState(() => _steamGridDbApiKey = '');
+    context.showSnack('Reset to built-in key', type: SnackType.success);
+  }
+
+  void _resetTmdbKey() {
+    ref.read(settingsNotifierProvider.notifier).resetTmdbApiKeyToDefault();
+    setState(() => _tmdbApiKey = '');
+    context.showSnack('Reset to built-in key', type: SnackType.success);
   }
 
   Future<void> _saveSteamGridDbKey() => _saveApiKey(

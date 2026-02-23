@@ -107,7 +107,7 @@ Connect your ROM library with RetroAchievements:
 
 - [x] Android support (Lite — collections, search, details, no Canvas)
 - [ ] macOS support
-- [ ] Linux support
+- [x] Linux support
 
 ---
 

@@ -59,4 +59,8 @@ app.*.map.json
 *.jks
 *.keystore
 
+# Local environment variables (API keys for --dart-define)
+.env
+.env.local
+
 /dev/
