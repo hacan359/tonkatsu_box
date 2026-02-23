@@ -6,6 +6,8 @@
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-02-23
+
 ### Added
 - Linux desktop build support — GTK runner (`linux/`), `build-linux` CI job with `ninja-build` + `libgtk-3-dev`, `.tar.gz` artifact in GitHub Releases (`release.yml`)
 - `--dart-define=TMDB_API_KEY` and `--dart-define=STEAMGRIDDB_API_KEY` in CI release workflow for Linux build (`release.yml`)
