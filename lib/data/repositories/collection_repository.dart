@@ -168,6 +168,21 @@ class CollectionRepository {
     return _db.getAllCollectionItemsWithData(mediaType: mediaType);
   }
 
+  /// Находит элемент коллекции по типу медиа и внешнему ID.
+  ///
+  /// Возвращает null если элемент не найден.
+  Future<CollectionItem?> findItem({
+    required int? collectionId,
+    required MediaType mediaType,
+    required int externalId,
+  }) async {
+    return _db.findCollectionItem(
+      collectionId: collectionId,
+      mediaType: mediaType,
+      externalId: externalId,
+    );
+  }
+
   /// Добавляет элемент в коллекцию.
   ///
   /// Если [collectionId] == null, добавляет как uncategorized.

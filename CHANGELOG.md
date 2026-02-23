@@ -15,6 +15,15 @@
 - Credits section in README with TMDB disclaimer, IGDB, SteamGridDB attribution (`README.md`)
 - 19 widget tests for `CreditsScreen`: attribution texts, provider links, Open Source section, compact layout, licenses button (`credits_screen_test.dart`)
 - 7 new tests for `SettingsScreen` About section: section visibility, Version/Credits nav rows, icons, tappability, version placeholder (`settings_screen_test.dart`)
+- Trakt.tv ZIP import — offline import from Trakt data export: watched movies/shows → collection items, ratings → userRating, watchlist → planned/wishlist, watched episodes → episode tracker. Animation detection via TMDB genres. Conflict resolution (status hierarchy, ratings only if null, episodes merge). `TraktZipImportService` with `validateZip()` and `importFromZip()` methods, progress reporting via `ImportProgress` (`trakt_zip_import_service.dart`)
+- Trakt Import screen — file picker, ZIP validation preview (username, counts), import options (watched/ratings/watchlist checkboxes), target collection selector (new or existing), progress dialog with `ValueNotifier` + `LinearProgressIndicator` (`trakt_import_screen.dart`)
+- "Trakt Import" navigation row in Settings screen (`settings_screen.dart`)
+- `archive` dependency (^4.0.2) for cross-platform ZIP extraction (`pubspec.yaml`)
+- `DatabaseService.findCollectionItem()` — lookup by (collectionId, mediaType, externalId) for import conflict resolution (`database_service.dart`)
+- `CollectionRepository.findItem()` — wrapper over `findCollectionItem` (`collection_repository.dart`)
+- 69 unit tests for `TraktZipImportService`: models, ZIP validation, full import cycle with conflict resolution, animation detection, ratings, watchlist, episodes, progress callbacks (`trakt_zip_import_service_test.dart`)
+- 12 widget tests for `TraktImportScreen`: UI structure, breadcrumbs, compact layout, button types, no preview/options before file selection (`trakt_import_screen_test.dart`)
+- 2 new tests for `SettingsScreen`: Trakt Import nav row visibility and tappability (`settings_screen_test.dart`)
 
 ## [0.13.0] - 2026-02-23
 

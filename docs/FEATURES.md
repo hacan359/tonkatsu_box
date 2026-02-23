@@ -299,10 +299,29 @@ Built with 5 reusable widgets: `SettingsSection`, `SettingsRow`, `SettingsNavRow
 | **Cache** | Image caching toggle, folder, stats, clear |
 | **Database** | Config export/import (.json), Reset Database with confirmation |
 | **Debug** | SteamGridDB, Image Debug, Gamepad (dev only) |
+| **Trakt Import** | Offline import from Trakt.tv ZIP data export |
 | **Credits** | API provider attribution (TMDB mandatory, IGDB, SteamGridDB) with SVG logos, external links, Open Source section with MIT license info and Flutter `showLicensePage()` |
 
 > [!WARNING]
 > **Reset Database** clears all collections, items, and board data. API keys and settings are preserved. This action cannot be undone.
+
+### Trakt.tv ZIP Import
+
+Import your data from a Trakt.tv offline export (ZIP archive) without OAuth or API access:
+
+- **File picker** — select the ZIP file exported from trakt.tv/users/YOU/data
+- **ZIP validation** — verifies archive structure, extracts username and content counts
+- **Preview** — shows username, watched movies/shows, rated movies/shows, watchlist count before importing
+- **Import options** — checkboxes for watched items, ratings, and watchlist (all enabled by default)
+- **Target collection** — create a new collection or import into an existing one
+- **Watched items** — movies and TV shows added as completed with `completedAt` date from Trakt
+- **Ratings** — Trakt ratings (1–10) applied as `userRating` (only if no existing rating)
+- **Watchlist** — items added as `planned` status or to Wishlist if no TMDB match
+- **Episode tracking** — watched episodes imported into the episode tracker
+- **Animation detection** — movies/shows with Animation genre automatically categorized as `MediaType.animation`
+- **Conflict resolution** — existing items updated only when Trakt status is "higher" (completed > inProgress > planned); `dropped` status is never overwritten
+- **Progress dialog** — real-time progress with stage description, item counter, and linear progress bar
+- **TMDB integration** — each Trakt item is fetched from TMDB by `ids.tmdb` for full metadata and caching
 
 ## 🔄 Update Checker
 

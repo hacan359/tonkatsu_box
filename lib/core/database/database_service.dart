@@ -1543,6 +1543,39 @@ class DatabaseService {
     return CollectionItem.fromDb(rows.first);
   }
 
+  /// Находит элемент коллекции по типу медиа и внешнему ID.
+  ///
+  /// Возвращает null если элемент не найден в указанной коллекции.
+  Future<CollectionItem?> findCollectionItem({
+    required int? collectionId,
+    required MediaType mediaType,
+    required int externalId,
+  }) async {
+    final Database db = await database;
+    String where;
+    final List<Object?> whereArgs = <Object?>[];
+
+    if (collectionId != null) {
+      where = 'collection_id = ? AND media_type = ? AND external_id = ?';
+      whereArgs.addAll(
+        <Object?>[collectionId, mediaType.value, externalId],
+      );
+    } else {
+      where = 'collection_id IS NULL AND media_type = ? AND external_id = ?';
+      whereArgs.addAll(<Object?>[mediaType.value, externalId]);
+    }
+
+    final List<Map<String, dynamic>> rows = await db.query(
+      'collection_items',
+      where: where,
+      whereArgs: whereArgs,
+      limit: 1,
+    );
+
+    if (rows.isEmpty) return null;
+    return CollectionItem.fromDb(rows.first);
+  }
+
   /// Добавляет элемент в коллекцию.
   ///
   /// Если [collectionId] == null, элемент добавляется как uncategorized.

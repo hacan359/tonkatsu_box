@@ -28,7 +28,7 @@
 
 ---
 
-Tonkatsu Box is a free, open-source collection manager for retro games, movies, TV shows, and anime. Search IGDB and TMDB databases with hundreds of thousands of titles, organize them into custom collections, track your backlog and progress, rate everything from 1 to 10, create visual boards with drag-and-drop, and share collections with friends. Available for Windows, Linux, and Android.
+Tonkatsu Box is a free, open-source collection manager for retro games, movies, TV shows, and anime. Search IGDB and TMDB databases with hundreds of thousands of titles, organize them into custom collections, track your backlog and progress, rate everything from 1 to 10, create visual boards with drag-and-drop, import your watch history from Trakt.tv, and share collections with friends. Available for Windows, Linux, and Android.
 
 <p align="center">
   <img src="docs/screenshots/01-main-all.jpg" width="800" alt="Main screen — browse all your games, movies, TV shows and anime">
@@ -184,6 +184,16 @@ Open the app → go to **Settings** → **Credentials** and paste your API keys.
 2. Select a `.xcoll` or `.xcollx` file
 3. The collection appears in your list — you can browse it as read-only or **fork** it to make your own editable copy
 
+### Importing from Trakt.tv
+
+Already tracking movies and TV shows on [Trakt.tv](https://trakt.tv)? Import your data in one step:
+
+1. Export your data at **trakt.tv/users/YOU/data** (you'll get a ZIP file)
+2. Go to **Settings** → **Trakt Import** → select the ZIP file
+3. Preview your data (watched movies/shows, ratings, watchlist), choose import options, and hit **Start Import**
+
+The importer brings in your watched items (as completed), ratings (1–10), watchlist (as planned), and even individual watched episodes — all matched to TMDB metadata. Animated content is automatically detected and categorized as anime.
+
 ## Platforms
 
 | | Windows | Linux | Android |
@@ -193,6 +203,7 @@ Open the app → go to **Settings** → **Credentials** and paste your API keys.
 | Visual boards | ✅ | ✅ | ✅ |
 | VGMaps browser (level maps) | ✅ | — | — |
 | Export & import | ✅ | ✅ | ✅ |
+| Trakt.tv import | ✅ | ✅ | ✅ |
 
 > **Note:** Linux support is experimental — the build is included in releases but has not been extensively tested yet.
 

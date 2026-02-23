@@ -53,6 +53,9 @@ dependencies:
   # File Operations
   file_picker: ^10.0.0
 
+  # Archive
+  archive: ^4.0.2
+
   # URL
   url_launcher: ^6.2.0
 

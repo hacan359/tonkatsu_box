@@ -18,6 +18,7 @@ import 'cache_screen.dart';
 import 'credentials_screen.dart';
 import 'credits_screen.dart';
 import 'database_screen.dart';
+import 'trakt_import_screen.dart';
 import 'debug_hub_screen.dart';
 
 /// Хаб настроек приложения.
@@ -122,6 +123,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     MaterialPageRoute<void>(
                       builder: (BuildContext context) =>
                           const DatabaseScreen(),
+                    ),
+                  );
+                },
+              ),
+              SettingsNavRow(
+                title: 'Trakt Import',
+                icon: Icons.movie_filter,
+                subtitle: 'Import from Trakt.tv ZIP export',
+                compact: compact,
+                showDivider: true,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (BuildContext context) =>
+                          const TraktImportScreen(),
                     ),
                   );
                 },
