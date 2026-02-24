@@ -15,7 +15,6 @@
   "statusCompleted": "Завершено",
   "statusDropped": "Брошено",
   "statusPlanned": "Запланировано",
-  "statusOnHold": "Отложено",
 
   "mediaTypeGame": "Игра",
   "mediaTypeMovie": "Фильм",

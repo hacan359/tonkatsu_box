@@ -65,7 +65,7 @@ Create unlimited collections organized however you want:
 
 Sort items within a collection:
 - **Date Added** (default) — newest items first
-- **Status** — active items first: In Progress → Planned → Not Started → On Hold → Completed → Dropped
+- **Status** — active items first: In Progress → Planned → Not Started → Completed → Dropped
 - **Name** — alphabetical A to Z
 - **Rating** — highest user rating first, unrated at the end
 - **Manual** — custom drag-and-drop order with drag handle icon
@@ -100,7 +100,6 @@ Track status for each item in your collection:
 | Not Started | ⬜ | Default status |
 | In Progress | 🎮 / 📺 | Currently playing/watching |
 | Completed | ✅ | Finished |
-| On Hold | ⏸️ | Paused (TV shows only) |
 | Dropped | ❌ | Abandoned |
 | Planned | 📋 | Want to play/watch |
 

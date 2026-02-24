@@ -45,9 +45,6 @@ class SEn extends S {
   String get statusPlanned => 'Planned';
 
   @override
-  String get statusOnHold => 'On Hold';
-
-  @override
   String get mediaTypeGame => 'Game';
 
   @override

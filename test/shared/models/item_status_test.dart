@@ -8,8 +8,8 @@ import 'package:xerabora/shared/theme/app_colors.dart';
 void main() {
   group('ItemStatus', () {
     group('значения enum', () {
-      test('должен содержать 6 значений', () {
-        expect(ItemStatus.values.length, 6);
+      test('должен содержать 5 значений', () {
+        expect(ItemStatus.values.length, 5);
       });
 
       test('должен содержать все статусы', () {
@@ -18,7 +18,6 @@ void main() {
         expect(ItemStatus.values, contains(ItemStatus.completed));
         expect(ItemStatus.values, contains(ItemStatus.dropped));
         expect(ItemStatus.values, contains(ItemStatus.planned));
-        expect(ItemStatus.values, contains(ItemStatus.onHold));
       });
     });
 
@@ -43,9 +42,6 @@ void main() {
         expect(ItemStatus.planned.value, 'planned');
       });
 
-      test('onHold должен иметь значение "on_hold"', () {
-        expect(ItemStatus.onHold.value, 'on_hold');
-      });
     });
 
     group('fromString', () {
@@ -79,10 +75,10 @@ void main() {
         expect(result, ItemStatus.planned);
       });
 
-      test('должен вернуть onHold для "on_hold"', () {
+      test('должен вернуть notStarted для "on_hold" (удалённый статус)', () {
         final ItemStatus result = ItemStatus.fromString('on_hold');
 
-        expect(result, ItemStatus.onHold);
+        expect(result, ItemStatus.notStarted);
       });
 
       test('должен вернуть notStarted для неизвестного значения', () {
@@ -148,12 +144,6 @@ void main() {
         );
       });
 
-      test('onHold должен отображаться как "On Hold"', () {
-        expect(
-          ItemStatus.onHold.displayLabel(MediaType.tvShow),
-          'On Hold',
-        );
-      });
     });
 
     group('color', () {
@@ -175,10 +165,6 @@ void main() {
 
       test('planned должен возвращать statusPlanned', () {
         expect(ItemStatus.planned.color, AppColors.statusPlanned);
-      });
-
-      test('onHold должен возвращать statusOnHold', () {
-        expect(ItemStatus.onHold.color, AppColors.statusOnHold);
       });
 
       test('каждый статус должен возвращать ненулевой цвет', () {
@@ -220,10 +206,6 @@ void main() {
         expect(ItemStatus.planned.icon.isNotEmpty, isTrue);
       });
 
-      test('onHold должен иметь иконку', () {
-        expect(ItemStatus.onHold.icon, isA<String>());
-        expect(ItemStatus.onHold.icon.isNotEmpty, isTrue);
-      });
     });
 
     group('statusSortPriority', () {
@@ -239,16 +221,12 @@ void main() {
         expect(ItemStatus.notStarted.statusSortPriority, 2);
       });
 
-      test('onHold должен иметь приоритет 3', () {
-        expect(ItemStatus.onHold.statusSortPriority, 3);
+      test('completed должен иметь приоритет 3', () {
+        expect(ItemStatus.completed.statusSortPriority, 3);
       });
 
-      test('completed должен иметь приоритет 4', () {
-        expect(ItemStatus.completed.statusSortPriority, 4);
-      });
-
-      test('dropped должен иметь приоритет 5', () {
-        expect(ItemStatus.dropped.statusSortPriority, 5);
+      test('dropped должен иметь приоритет 4', () {
+        expect(ItemStatus.dropped.statusSortPriority, 4);
       });
 
       test('inProgress должен иметь наименьший приоритет (первый в списке)', () {
@@ -278,7 +256,6 @@ void main() {
           ItemStatus.inProgress,
           ItemStatus.planned,
           ItemStatus.notStarted,
-          ItemStatus.onHold,
           ItemStatus.completed,
           ItemStatus.dropped,
         ]);

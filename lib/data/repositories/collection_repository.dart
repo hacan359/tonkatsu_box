@@ -24,7 +24,6 @@ class CollectionStats {
     required this.notStarted,
     required this.dropped,
     required this.planned,
-    this.onHold = 0,
     this.gameCount = 0,
     this.movieCount = 0,
     this.tvShowCount = 0,
@@ -48,9 +47,6 @@ class CollectionStats {
 
   /// Количество запланированных.
   final int planned;
-
-  /// Количество на паузе.
-  final int onHold;
 
   /// Количество игр.
   final int gameCount;
@@ -284,7 +280,6 @@ class CollectionRepository {
       notStarted: raw['notStarted'] ?? 0,
       dropped: raw['dropped'] ?? 0,
       planned: raw['planned'] ?? 0,
-      onHold: raw['onHold'] ?? 0,
       gameCount: raw['gameCount'] ?? 0,
       movieCount: raw['movieCount'] ?? 0,
       tvShowCount: raw['tvShowCount'] ?? 0,

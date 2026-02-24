@@ -53,7 +53,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 19,
+        version: 20,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -256,6 +256,13 @@ class DatabaseService {
     }
     if (oldVersion < 19) {
       await _createWishlistTable(db);
+    }
+    if (oldVersion < 20) {
+      // Migrate on_hold status to not_started (onHold removed from ItemStatus).
+      await db.execute(
+        "UPDATE collection_items SET status = 'not_started' "
+        "WHERE status = 'on_hold'",
+      );
     }
   }
 
@@ -1901,7 +1908,6 @@ class DatabaseService {
       'notStarted': 0,
       'dropped': 0,
       'planned': 0,
-      'onHold': 0,
       'gameCount': 0,
       'movieCount': 0,
       'tvShowCount': 0,
@@ -1938,8 +1944,6 @@ class DatabaseService {
           stats['dropped'] = (stats['dropped'] ?? 0) + count;
         case 'planned':
           stats['planned'] = (stats['planned'] ?? 0) + count;
-        case 'on_hold':
-          stats['onHold'] = (stats['onHold'] ?? 0) + count;
       }
     }
 

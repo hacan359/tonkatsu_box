@@ -100,8 +100,8 @@ final databaseServiceProvider = Provider<DatabaseService>((ref) => DatabaseServi
 - API ключи хранятся в SharedPreferences, читаются через `SettingsNotifier`
 
 ### База данных (`lib/core/database/database_service.dart`)
-- SQLite через sqflite_common_ffi, 15 таблиц, текущая версия БД: 14
-- Миграции в `_onUpgrade()` — инкрементальные (v1 → v2 → ... → v14)
+- SQLite через sqflite_common_ffi, 16 таблиц, текущая версия БД: 20
+- Миграции в `_onUpgrade()` — инкрементальные (v1 → v2 → ... → v20)
 - Провайдер: `databaseServiceProvider`
 
 ### Тесты (`test/`)

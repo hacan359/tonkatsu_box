@@ -83,15 +83,6 @@ void main() {
         expect(find.byType(Positioned), findsOneWidget);
       });
 
-      testWidgets('должен рендерить для onHold',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget(
-          status: ItemStatus.onHold,
-          mediaType: MediaType.tvShow,
-        ));
-
-        expect(find.byType(Positioned), findsOneWidget);
-      });
     });
 
     group('содержимое', () {
@@ -151,15 +142,6 @@ void main() {
         expect(find.textContaining('Planned'), findsOneWidget);
       });
 
-      testWidgets('должен содержать текст "On Hold"',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget(
-          status: ItemStatus.onHold,
-          mediaType: MediaType.tvShow,
-        ));
-
-        expect(find.textContaining('On Hold'), findsOneWidget);
-      });
     });
 
     group('цвет', () {

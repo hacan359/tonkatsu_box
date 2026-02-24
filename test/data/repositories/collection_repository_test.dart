@@ -329,7 +329,6 @@ void main() {
             'notStarted': 2,
             'dropped': 1,
             'planned': 0,
-            'onHold': 0,
             'gameCount': 8,
             'movieCount': 1,
             'tvShowCount': 1,

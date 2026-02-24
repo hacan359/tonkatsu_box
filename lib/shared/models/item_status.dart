@@ -23,10 +23,7 @@ enum ItemStatus {
   dropped('dropped'),
 
   /// Запланирован.
-  planned('planned'),
-
-  /// На паузе (для сериалов).
-  onHold('on_hold');
+  planned('planned');
 
   const ItemStatus(this.value);
 
@@ -56,8 +53,6 @@ enum ItemStatus {
         return 'Dropped';
       case ItemStatus.planned:
         return 'Planned';
-      case ItemStatus.onHold:
-        return 'On Hold';
     }
   }
 
@@ -74,8 +69,6 @@ enum ItemStatus {
         return AppColors.statusDropped;
       case ItemStatus.planned:
         return AppColors.statusPlanned;
-      case ItemStatus.onHold:
-        return AppColors.statusOnHold;
     }
   }
 
@@ -92,8 +85,6 @@ enum ItemStatus {
         return '\u23F8\uFE0F'; // ⏸️
       case ItemStatus.planned:
         return '\uD83D\uDCCB'; // 📋
-      case ItemStatus.onHold:
-        return '\uD83D\uDD50'; // 🕐
     }
   }
 
@@ -113,8 +104,6 @@ enum ItemStatus {
         return l.statusDropped;
       case ItemStatus.planned:
         return l.statusPlanned;
-      case ItemStatus.onHold:
-        return l.statusOnHold;
     }
   }
 
@@ -133,12 +122,10 @@ enum ItemStatus {
         return 1;
       case ItemStatus.notStarted:
         return 2;
-      case ItemStatus.onHold:
-        return 3;
       case ItemStatus.completed:
-        return 4;
+        return 3;
       case ItemStatus.dropped:
-        return 5;
+        return 4;
     }
   }
 }

@@ -29,7 +29,7 @@ void main() {
 
   group('StatusChipRow', () {
     group('количество чипов', () {
-      testWidgets('для game должен показывать 5 чипов (без onHold)',
+      testWidgets('для game должен показывать 5 чипов',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget(
           status: ItemStatus.notStarted,
@@ -42,10 +42,9 @@ void main() {
         expect(find.text('Completed'), findsOneWidget);
         expect(find.text('Dropped'), findsOneWidget);
         expect(find.text('Planned'), findsOneWidget);
-        expect(find.text('On Hold'), findsNothing);
       });
 
-      testWidgets('для movie должен показывать 5 чипов (без onHold)',
+      testWidgets('для movie должен показывать 5 чипов',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget(
           status: ItemStatus.notStarted,
@@ -57,10 +56,9 @@ void main() {
         expect(find.text('Completed'), findsOneWidget);
         expect(find.text('Dropped'), findsOneWidget);
         expect(find.text('Planned'), findsOneWidget);
-        expect(find.text('On Hold'), findsNothing);
       });
 
-      testWidgets('для tvShow должен показывать 6 чипов (с onHold)',
+      testWidgets('для tvShow должен показывать 5 чипов',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget(
           status: ItemStatus.notStarted,
@@ -72,7 +70,6 @@ void main() {
         expect(find.text('Completed'), findsOneWidget);
         expect(find.text('Dropped'), findsOneWidget);
         expect(find.text('Planned'), findsOneWidget);
-        expect(find.text('On Hold'), findsOneWidget);
       });
     });
 

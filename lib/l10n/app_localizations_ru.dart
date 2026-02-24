@@ -45,9 +45,6 @@ class SRu extends S {
   String get statusPlanned => 'Запланировано';
 
   @override
-  String get statusOnHold => 'Отложено';
-
-  @override
   String get mediaTypeGame => 'Игра';
 
   @override

@@ -169,12 +169,6 @@ abstract class S {
   /// **'Planned'**
   String get statusPlanned;
 
-  /// No description provided for @statusOnHold.
-  ///
-  /// In en, this message translates to:
-  /// **'On Hold'**
-  String get statusOnHold;
-
   /// No description provided for @mediaTypeGame.
   ///
   /// In en, this message translates to:

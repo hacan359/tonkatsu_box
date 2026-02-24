@@ -15,7 +15,6 @@
   "statusCompleted": "Completed",
   "statusDropped": "Dropped",
   "statusPlanned": "Planned",
-  "statusOnHold": "On Hold",
 
   "mediaTypeGame": "Game",
   "mediaTypeMovie": "Movie",

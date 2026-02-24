@@ -14,9 +14,7 @@ import '../../../shared/theme/app_typography.dart';
 /// Все доступные статусы видны сразу. Выбранный чип выделен цветом
 /// и жирным текстом. Тап на чип вызывает [onChanged].
 ///
-/// Доступные статусы зависят от [mediaType]:
-/// - Для сериалов: все 6 статусов (включая [ItemStatus.onHold])
-/// - Для игр/фильмов: 5 статусов (без [ItemStatus.onHold])
+/// Все 5 статусов отображаются для всех типов медиа.
 class StatusChipRow extends StatelessWidget {
   /// Создаёт [StatusChipRow].
   const StatusChipRow({
@@ -29,28 +27,18 @@ class StatusChipRow extends StatelessWidget {
   /// Текущий выбранный статус.
   final ItemStatus status;
 
-  /// Тип медиа (влияет на метки и доступные статусы).
+  /// Тип медиа (влияет на метки статусов).
   final MediaType mediaType;
 
   /// Callback при изменении статуса.
   final void Function(ItemStatus) onChanged;
-
-  /// Доступные статусы в зависимости от типа медиа.
-  List<ItemStatus> get _availableStatuses {
-    if (mediaType == MediaType.tvShow) {
-      return ItemStatus.values;
-    }
-    return ItemStatus.values
-        .where((ItemStatus s) => s != ItemStatus.onHold)
-        .toList();
-  }
 
   @override
   Widget build(BuildContext context) {
     return Wrap(
       spacing: AppSpacing.sm,
       runSpacing: AppSpacing.sm,
-      children: _availableStatuses.map((ItemStatus s) {
+      children: ItemStatus.values.map((ItemStatus s) {
         final bool isSelected = s == status;
         return _StatusChip(
           status: s,

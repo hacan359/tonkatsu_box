@@ -7,6 +7,9 @@
 ## [Unreleased]
 
 ### Changed
+- Removed `ItemStatus.onHold` status — simplified from 6 to 5 statuses (notStarted, inProgress, completed, dropped, planned). DB migration v20 converts existing `on_hold` items to `not_started`. Removed `onHold` from `CollectionStats`, `StatusChipRow` filtering, `AppColors.statusOnHold`, Trakt import priority mapping, and `statusOnHold` ARB keys (`item_status.dart`, `database_service.dart`, `collection_repository.dart`, `status_chip_row.dart`, `app_colors.dart`, `trakt_zip_import_service.dart`)
+
+### Changed
 - Unified 4 detail screens (`GameDetailScreen`, `MovieDetailScreen`, `TvShowDetailScreen`, `AnimeDetailScreen`) into single `ItemDetailScreen` — media type determined from `CollectionItem.mediaType`, UI configured via `_MediaConfig` class (`item_detail_screen.dart`)
 - Replaced TabBar (Details/Board tabs) with Board toggle IconButton in AppBar — `Icons.dashboard` (active) / `Icons.dashboard_outlined` (inactive), no more `SingleTickerProviderStateMixin` or `TabController`
 - Extracted episode tracker into shared `EpisodeTrackerSection` widget with `accentColor` parameter — reused for TV Show and Animation (tvShow source) (`episode_tracker_section.dart`)
