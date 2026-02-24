@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/collections/widgets/create_collection_dialog.dart';
+import 'package:xerabora/l10n/app_localizations.dart';
 
 void main() {
   Widget buildTestWidget({
     required Widget child,
   }) {
     return MaterialApp(
+      localizationsDelegates: S.localizationsDelegates,
+      supportedLocales: S.supportedLocales,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
       ),
@@ -103,6 +106,8 @@ void main() {
       CreateCollectionResult? result;
 
       await tester.pumpWidget(MaterialApp(
+        localizationsDelegates: S.localizationsDelegates,
+        supportedLocales: S.supportedLocales,
         home: Builder(
           builder: (BuildContext context) => Scaffold(
             body: ElevatedButton(
@@ -128,6 +133,8 @@ void main() {
       CreateCollectionResult? result;
 
       await tester.pumpWidget(MaterialApp(
+        localizationsDelegates: S.localizationsDelegates,
+        supportedLocales: S.supportedLocales,
         home: Builder(
           builder: (BuildContext context) => Scaffold(
             body: ElevatedButton(
@@ -157,6 +164,8 @@ void main() {
       CreateCollectionResult? result;
 
       await tester.pumpWidget(MaterialApp(
+        localizationsDelegates: S.localizationsDelegates,
+        supportedLocales: S.supportedLocales,
         home: Builder(
           builder: (BuildContext context) => Scaffold(
             body: ElevatedButton(
@@ -183,6 +192,8 @@ void main() {
 
     testWidgets('статический метод show должен передавать defaultAuthor', (WidgetTester tester) async {
       await tester.pumpWidget(MaterialApp(
+        localizationsDelegates: S.localizationsDelegates,
+        supportedLocales: S.supportedLocales,
         home: Builder(
           builder: (BuildContext context) => Scaffold(
             body: ElevatedButton(
@@ -259,6 +270,8 @@ void main() {
       String? result;
 
       await tester.pumpWidget(MaterialApp(
+        localizationsDelegates: S.localizationsDelegates,
+        supportedLocales: S.supportedLocales,
         home: Builder(
           builder: (BuildContext context) => Scaffold(
             body: ElevatedButton(
@@ -284,6 +297,8 @@ void main() {
       String? result;
 
       await tester.pumpWidget(MaterialApp(
+        localizationsDelegates: S.localizationsDelegates,
+        supportedLocales: S.supportedLocales,
         home: Builder(
           builder: (BuildContext context) => Scaffold(
             body: ElevatedButton(
@@ -310,6 +325,8 @@ void main() {
       String? result;
 
       await tester.pumpWidget(MaterialApp(
+        localizationsDelegates: S.localizationsDelegates,
+        supportedLocales: S.supportedLocales,
         home: Builder(
           builder: (BuildContext context) => Scaffold(
             body: ElevatedButton(
@@ -347,8 +364,8 @@ void main() {
         child: const DeleteCollectionDialog(collectionName: 'My Collection'),
       ));
 
-      // RichText содержит название коллекции - ищем по типу
-      expect(find.byType(RichText), findsWidgets);
+      // Текст содержит название коллекции
+      expect(find.textContaining('My Collection'), findsOneWidget);
     });
 
     testWidgets('должен отображать предупреждение', (WidgetTester tester) async {
@@ -373,6 +390,8 @@ void main() {
       bool? result;
 
       await tester.pumpWidget(MaterialApp(
+        localizationsDelegates: S.localizationsDelegates,
+        supportedLocales: S.supportedLocales,
         home: Builder(
           builder: (BuildContext context) => Scaffold(
             body: ElevatedButton(
@@ -398,6 +417,8 @@ void main() {
       bool? result;
 
       await tester.pumpWidget(MaterialApp(
+        localizationsDelegates: S.localizationsDelegates,
+        supportedLocales: S.supportedLocales,
         home: Builder(
           builder: (BuildContext context) => Scaffold(
             body: ElevatedButton(
@@ -423,6 +444,8 @@ void main() {
       bool? result;
 
       await tester.pumpWidget(MaterialApp(
+        localizationsDelegates: S.localizationsDelegates,
+        supportedLocales: S.supportedLocales,
         home: Builder(
           builder: (BuildContext context) => Scaffold(
             body: ElevatedButton(

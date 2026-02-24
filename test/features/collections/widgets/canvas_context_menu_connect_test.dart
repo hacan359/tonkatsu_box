@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/collections/widgets/canvas_context_menu.dart';
+import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/models/canvas_item.dart';
 
 void main() {
@@ -23,6 +24,8 @@ void main() {
         (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: Builder(
               builder: (BuildContext context) {
@@ -57,6 +60,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: Builder(
               builder: (BuildContext context) {
@@ -96,6 +101,8 @@ void main() {
         MediaQuery(
           data: const MediaQueryData(size: Size(800, 600)),
           child: MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: Scaffold(
               body: SizedBox(
                 width: 800,
@@ -135,6 +142,8 @@ void main() {
         MediaQuery(
           data: const MediaQueryData(size: Size(800, 600)),
           child: MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: Scaffold(
               body: SizedBox(
                 width: 800,
@@ -180,6 +189,8 @@ void main() {
         MediaQuery(
           data: const MediaQueryData(size: Size(800, 600)),
           child: MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: Scaffold(
               body: SizedBox(
                 width: 800,
@@ -222,6 +233,8 @@ void main() {
         MediaQuery(
           data: const MediaQueryData(size: Size(800, 600)),
           child: MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: Scaffold(
               body: SizedBox(
                 width: 800,
@@ -273,6 +286,8 @@ void main() {
         MediaQuery(
           data: const MediaQueryData(size: Size(800, 600)),
           child: MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: Scaffold(
               body: SizedBox(
                 width: 800,

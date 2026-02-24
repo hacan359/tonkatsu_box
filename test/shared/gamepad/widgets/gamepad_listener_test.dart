@@ -1,3 +1,4 @@
+import 'package:xerabora/l10n/app_localizations.dart';
 // Тесты для GamepadListener — маппинг событий и поведение с TextField.
 //
 // Платформенная проверка: GamepadListener подписывается на events
@@ -92,6 +93,8 @@ void main() {
         gamepadServiceProvider.overrideWithValue(gamepadService),
       ],
       child: MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
         home: GamepadListener(
           onConfirm: onConfirm,
           onBack: onBack,
@@ -291,6 +294,8 @@ void main() {
           gamepadServiceProvider.overrideWithValue(service),
         ],
         child: MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
           home: GamepadListener(
             child: Scaffold(
               body: TextField(focusNode: textFieldFocus),
@@ -327,6 +332,8 @@ void main() {
           gamepadServiceProvider.overrideWithValue(service),
         ],
         child: MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
           home: GamepadListener(
             onConfirm: () => confirmed = true,
             child: Scaffold(
@@ -360,6 +367,8 @@ void main() {
           gamepadServiceProvider.overrideWithValue(service),
         ],
         child: MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
           home: GamepadListener(
             onNavigate: (GamepadAction action) => receivedAction = action,
             child: Scaffold(
@@ -395,6 +404,8 @@ void main() {
           gamepadServiceProvider.overrideWithValue(service),
         ],
         child: MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
           home: GamepadListener(
             child: Scaffold(
               body: Column(
@@ -439,6 +450,8 @@ void main() {
           gamepadServiceProvider.overrideWithValue(service),
         ],
         child: MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
           home: GamepadListener(
             onTabSwitch: (GamepadAction action) => receivedAction = action,
             child: Scaffold(
@@ -498,6 +511,8 @@ void main() {
           gamepadServiceProvider.overrideWithValue(service),
         ],
         child: MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
           home: Consumer(
             builder: (BuildContext context, WidgetRef ref, Widget? child) {
               capturedRef = ref;

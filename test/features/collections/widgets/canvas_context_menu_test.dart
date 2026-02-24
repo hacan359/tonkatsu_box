@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/collections/widgets/canvas_context_menu.dart';
+import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/models/canvas_item.dart';
 
 void main() {
   group('CanvasContextMenu', () {
     Widget buildTestApp({required Widget child}) {
-      return MaterialApp(home: Scaffold(body: child));
+      return MaterialApp(
+        localizationsDelegates: S.localizationsDelegates,
+        supportedLocales: S.supportedLocales,
+        home: Scaffold(body: child),
+      );
     }
 
     group('showCanvasMenu', () {

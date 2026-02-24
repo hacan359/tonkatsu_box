@@ -5,6 +5,7 @@ import 'package:xerabora/features/collections/providers/canvas_provider.dart';
 import 'package:xerabora/features/collections/providers/steamgriddb_panel_provider.dart';
 import 'package:xerabora/features/collections/providers/vgmaps_panel_provider.dart';
 import 'package:xerabora/features/collections/widgets/canvas_view.dart';
+import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/constants/platform_features.dart';
 import 'package:xerabora/shared/models/canvas_item.dart';
 import 'package:xerabora/shared/models/game.dart';
@@ -77,6 +78,8 @@ void main() {
             .overrideWith(() => _TestVgMapsPanelNotifier()),
       ],
       child: MaterialApp(
+        localizationsDelegates: S.localizationsDelegates,
+        supportedLocales: S.supportedLocales,
         home: Scaffold(
           body: SizedBox(
             width: 800,

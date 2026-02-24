@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/import_service.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/models/collection.dart';
@@ -31,6 +32,7 @@ class HomeScreen extends ConsumerWidget {
     final AsyncValue<List<Collection>> collectionsAsync =
         ref.watch(collectionsProvider);
     final bool isLandscape = isLandscapeMobile(context);
+    final S l = S.of(context);
 
     return Scaffold(
       appBar: AutoBreadcrumbAppBar(
@@ -38,13 +40,13 @@ class HomeScreen extends ConsumerWidget {
           IconButton(
             icon: Icon(Icons.add, size: isLandscape ? 20 : null),
             color: AppColors.textSecondary,
-            tooltip: 'New Collection',
+            tooltip: l.collectionsNewCollection,
             onPressed: () => _createCollection(context, ref),
           ),
           IconButton(
             icon: Icon(Icons.file_download_outlined, size: isLandscape ? 20 : null),
             color: AppColors.textSecondary,
-            tooltip: 'Import Collection',
+            tooltip: l.collectionsImportCollection,
             onPressed: () => _importCollection(context, ref),
           ),
         ],
@@ -118,7 +120,7 @@ class HomeScreen extends ConsumerWidget {
                 bottom: AppSpacing.sm,
               ),
               child: SectionHeader(
-                title: 'Collections (${collections.length})',
+                title: S.of(context).collectionsCount(collections.length),
               ),
             ),
             ...tileCollections.map((Collection c) => CollectionTile(
@@ -144,6 +146,7 @@ class HomeScreen extends ConsumerWidget {
   }
 
   Widget _buildEmptyState(BuildContext context) {
+    final S l = S.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xl),
@@ -156,10 +159,10 @@ class HomeScreen extends ConsumerWidget {
               color: AppColors.textTertiary.withAlpha(120),
             ),
             const SizedBox(height: AppSpacing.lg),
-            const Text('No Collections Yet', style: AppTypography.h2),
+            Text(l.collectionsNoCollectionsYet, style: AppTypography.h2),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Create your first collection to start tracking\nyour gaming journey.',
+              l.collectionsNoCollectionsHint,
               textAlign: TextAlign.center,
               style: AppTypography.body.copyWith(
                 color: AppColors.textSecondary,
@@ -172,6 +175,7 @@ class HomeScreen extends ConsumerWidget {
   }
 
   Widget _buildErrorState(BuildContext context, WidgetRef ref, Object error) {
+    final S l = S.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xl),
@@ -185,7 +189,7 @@ class HomeScreen extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              'Failed to load collections',
+              l.collectionsFailedToLoad,
               style: AppTypography.h3.copyWith(color: AppColors.error),
             ),
             const SizedBox(height: AppSpacing.sm),
@@ -198,7 +202,7 @@ class HomeScreen extends ConsumerWidget {
             FilledButton.icon(
               onPressed: () => ref.invalidate(collectionsProvider),
               icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              label: Text(l.retry),
             ),
           ],
         ),
@@ -247,7 +251,7 @@ class HomeScreen extends ConsumerWidget {
       }
     } on Exception catch (e) {
       if (context.mounted) {
-        context.showSnack('Failed to create collection: $e', type: SnackType.error);
+        context.showSnack(S.of(context).collectionsFailedToCreate('$e'), type: SnackType.error);
       }
     }
   }
@@ -259,44 +263,47 @@ class HomeScreen extends ConsumerWidget {
   ) {
     showModalBottomSheet<void>(
       context: context,
-      builder: (BuildContext context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            ListTile(
-              leading: const Icon(Icons.open_in_new),
-              title: const Text('Open'),
-              onTap: () {
-                Navigator.of(context).pop();
-                _navigateToCollection(context, collection);
-              },
-            ),
-            if (collection.isEditable)
+      builder: (BuildContext context) {
+        final S l = S.of(context);
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
               ListTile(
-                leading: const Icon(Icons.edit),
-                title: const Text('Rename'),
-                onTap: () async {
+                leading: const Icon(Icons.open_in_new),
+                title: Text(l.open),
+                onTap: () {
                   Navigator.of(context).pop();
-                  await _renameCollection(context, ref, collection);
+                  _navigateToCollection(context, collection);
                 },
               ),
-            ListTile(
-              leading: Icon(
-                Icons.delete,
-                color: Theme.of(context).colorScheme.error,
+              if (collection.isEditable)
+                ListTile(
+                  leading: const Icon(Icons.edit),
+                  title: Text(l.rename),
+                  onTap: () async {
+                    Navigator.of(context).pop();
+                    await _renameCollection(context, ref, collection);
+                  },
+                ),
+              ListTile(
+                leading: Icon(
+                  Icons.delete,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+                title: Text(
+                  l.delete,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  await _deleteCollection(context, ref, collection);
+                },
               ),
-              title: Text(
-                'Delete',
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-              onTap: () async {
-                Navigator.of(context).pop();
-                await _deleteCollection(context, ref, collection);
-              },
-            ),
-          ],
-        ),
-      ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -314,11 +321,11 @@ class HomeScreen extends ConsumerWidget {
       await ref.read(collectionsProvider.notifier).rename(collection.id, newName);
 
       if (context.mounted) {
-        context.showSnack('Collection renamed', type: SnackType.success);
+        context.showSnack(S.of(context).collectionsRenamed, type: SnackType.success);
       }
     } on Exception catch (e) {
       if (context.mounted) {
-        context.showSnack('Failed to rename: $e', type: SnackType.error);
+        context.showSnack(S.of(context).collectionsFailedToRename('$e'), type: SnackType.error);
       }
     }
   }
@@ -337,11 +344,11 @@ class HomeScreen extends ConsumerWidget {
       await ref.read(collectionsProvider.notifier).delete(collection.id);
 
       if (context.mounted) {
-        context.showSnack('Collection deleted', type: SnackType.success);
+        context.showSnack(S.of(context).collectionsDeleted, type: SnackType.success);
       }
     } on Exception catch (e) {
       if (context.mounted) {
-        context.showSnack('Failed to delete: $e', type: SnackType.error);
+        context.showSnack(S.of(context).collectionsFailedToDelete('$e'), type: SnackType.error);
       }
     }
   }
@@ -391,7 +398,7 @@ class HomeScreen extends ConsumerWidget {
       ref.invalidate(allItemsNotifierProvider);
 
       context.showSnack(
-        'Imported "${result.collection!.name}" with ${result.itemsImported} items',
+        S.of(context).collectionsImported(result.collection!.name, result.itemsImported ?? 0),
         type: SnackType.success,
       );
 
@@ -418,6 +425,7 @@ class _UncategorizedTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final S l = S.of(context);
     return Card(
       color: AppColors.surface,
       clipBehavior: Clip.antiAlias,
@@ -453,14 +461,14 @@ class _UncategorizedTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      'Uncategorized',
+                      l.collectionsUncategorized,
                       style: AppTypography.h3.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '$count item${count != 1 ? 's' : ''}',
+                      l.collectionsUncategorizedItems(count),
                       style: AppTypography.bodySmall.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -494,7 +502,7 @@ class _ImportProgressDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       scrollable: true,
-      title: const Text('Importing Collection'),
+      title: Text(S.of(context).collectionsImporting),
       content: ValueListenableBuilder<ImportProgress?>(
         valueListenable: progressNotifier,
         builder: (BuildContext context, ImportProgress? progress, Widget? child) {
@@ -544,7 +552,7 @@ class _ImportProgressDialog extends StatelessWidget {
             if (snapshot.connectionState == ConnectionState.done) {
               return FilledButton(
                 onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('Done'),
+                child: Text(S.of(context).done),
               );
             }
             return const SizedBox.shrink();

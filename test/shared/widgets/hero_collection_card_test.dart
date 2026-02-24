@@ -1,3 +1,4 @@
+import 'package:xerabora/l10n/app_localizations.dart';
 // Тесты для HeroCollectionCard.
 
 import 'package:flutter/material.dart';
@@ -85,6 +86,8 @@ void main() {
             .overrideWith((Ref ref) async => stats),
       ],
       child: MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
         home: Scaffold(
           body: HeroCollectionCard(
             collection: collection,
@@ -538,6 +541,8 @@ void main() {
                 .overrideWith((Ref ref) async => stats),
           ],
           child: MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: MediaQuery(
               data: MediaQueryData(size: Size(screenWidth, 600)),
               child: Scaffold(

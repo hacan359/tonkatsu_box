@@ -1,5 +1,7 @@
 // Модель сортировки результатов поиска.
 
+import '../../l10n/app_localizations.dart';
+
 /// Поле сортировки.
 enum SearchSortField {
   /// По релевантности (совпадение с запросом).
@@ -18,6 +20,30 @@ enum SearchSortField {
 
   /// Полное отображаемое название.
   final String displayLabel;
+
+  /// Локализованный короткий лейбл.
+  String localizedShortLabel(S l) {
+    switch (this) {
+      case SearchSortField.relevance:
+        return l.searchSortRelevanceShort;
+      case SearchSortField.date:
+        return l.searchSortDateShort;
+      case SearchSortField.rating:
+        return l.searchSortRatingShort;
+    }
+  }
+
+  /// Локализованное полное отображаемое название.
+  String localizedDisplayLabel(S l) {
+    switch (this) {
+      case SearchSortField.relevance:
+        return l.searchSortRelevanceDisplay;
+      case SearchSortField.date:
+        return l.searchSortDateDisplay;
+      case SearchSortField.rating:
+        return l.searchSortRatingDisplay;
+    }
+  }
 }
 
 /// Направление сортировки.

@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../models/collection.dart';
 import '../../features/collections/providers/collections_provider.dart';
 
@@ -39,8 +40,9 @@ Future<CollectionChoice?> showCollectionPickerDialog({
   required WidgetRef ref,
   int? excludeCollectionId,
   bool showUncategorized = true,
-  String title = 'Choose Collection',
+  String? title,
 }) async {
+  final String resolvedTitle = title ?? S.of(context).chooseCollection;
   final AsyncValue<List<Collection>> collectionsAsync =
       ref.read(collectionsProvider);
 
@@ -56,7 +58,7 @@ Future<CollectionChoice?> showCollectionPickerDialog({
   return showDialog<CollectionChoice>(
     context: context,
     builder: (BuildContext context) => AlertDialog(
-      title: Text(title),
+      title: Text(resolvedTitle),
       content: SizedBox(
         width: double.maxFinite,
         child: ListView.builder(
@@ -67,8 +69,8 @@ Future<CollectionChoice?> showCollectionPickerDialog({
             if (showUncategorized && index == 0) {
               return ListTile(
                 leading: const Icon(Icons.inbox_outlined),
-                title: const Text('Without Collection'),
-                subtitle: const Text('Uncategorized'),
+                title: Text(S.of(context).withoutCollection),
+                subtitle: Text(S.of(context).collectionsUncategorized),
                 onTap: () => Navigator.of(context)
                     .pop(const WithoutCollection()),
               );
@@ -94,7 +96,7 @@ Future<CollectionChoice?> showCollectionPickerDialog({
       actions: <Widget>[
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(S.of(context).cancel),
         ),
       ],
     ),

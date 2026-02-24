@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/services/image_cache_service.dart';
+import '../../l10n/app_localizations.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
@@ -148,11 +149,11 @@ class MediaDetailView extends StatelessWidget {
         _buildHeader(),
         if (statusWidget != null) ...<Widget>[
           const SizedBox(height: AppSpacing.md),
-          _buildStatusSection(),
+          _buildStatusSection(context),
         ],
         if (onUserRatingChanged != null) ...<Widget>[
           const SizedBox(height: AppSpacing.md),
-          _buildUserRatingSection(),
+          _buildUserRatingSection(context),
         ],
         const SizedBox(height: AppSpacing.md),
         _buildUserNotesSection(context),
@@ -337,12 +338,12 @@ class MediaDetailView extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusSection() {
+  Widget _buildStatusSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(
-          'Status',
+          S.of(context).detailStatus,
           style: AppTypography.h3.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 6),
@@ -351,7 +352,7 @@ class MediaDetailView extends StatelessWidget {
     );
   }
 
-  Widget _buildUserRatingSection() {
+  Widget _buildUserRatingSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -364,13 +365,13 @@ class MediaDetailView extends StatelessWidget {
             ),
             const SizedBox(width: 6),
             Text(
-              'My Rating',
+              S.of(context).detailMyRating,
               style: AppTypography.h3.copyWith(fontWeight: FontWeight.w600),
             ),
             if (userRating != null) ...<Widget>[
               const SizedBox(width: AppSpacing.sm),
               Text(
-                '$userRating/10',
+                S.of(context).detailRatingValue(userRating!),
                 style: AppTypography.bodySmall.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -396,7 +397,7 @@ class MediaDetailView extends StatelessWidget {
         tilePadding: EdgeInsets.zero,
         childrenPadding: EdgeInsets.zero,
         title: Text(
-          'Activity & Progress',
+          S.of(context).detailActivityProgress,
           style: AppTypography.h3.copyWith(fontWeight: FontWeight.w600),
         ),
         iconColor: AppColors.textSecondary,
@@ -412,6 +413,7 @@ class MediaDetailView extends StatelessWidget {
   }
 
   Widget _buildAuthorCommentSection(BuildContext context) {
+    final S l = S.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -427,7 +429,7 @@ class MediaDetailView extends StatelessWidget {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  "Author's Review",
+                  l.detailAuthorReview,
                   style: AppTypography.h3.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
@@ -438,19 +440,19 @@ class MediaDetailView extends StatelessWidget {
               TextButton.icon(
                 onPressed: () => _editComment(
                   context,
-                  title: "Edit Author's Review",
-                  hint: 'Write your review...',
+                  title: l.detailEditAuthorReview,
+                  hint: l.detailWriteReviewHint,
                   initialValue: authorComment,
                   onSave: onAuthorCommentSave,
                 ),
                 icon: const Icon(Icons.edit, size: 14),
-                label: const Text('Edit'),
+                label: Text(l.edit),
               ),
           ],
         ),
         const SizedBox(height: 2),
         Text(
-          'Visible to others when shared. Your review of this title.',
+          l.detailReviewVisibility,
           style: AppTypography.caption.copyWith(
             color: AppColors.textTertiary,
           ),
@@ -476,8 +478,8 @@ class MediaDetailView extends StatelessWidget {
                 )
               : Text(
                   isEditable
-                      ? 'No review yet. Tap Edit to add one.'
-                      : 'No review from the author.',
+                      ? l.detailNoReviewEditable
+                      : l.detailNoReviewReadonly,
                   style: AppTypography.body.copyWith(
                     color: AppColors.textTertiary,
                     fontStyle: FontStyle.italic,
@@ -489,6 +491,7 @@ class MediaDetailView extends StatelessWidget {
   }
 
   Widget _buildUserNotesSection(BuildContext context) {
+    final S l = S.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -504,7 +507,7 @@ class MediaDetailView extends StatelessWidget {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  'My Notes',
+                  l.detailMyNotes,
                   style: AppTypography.h3.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
@@ -514,13 +517,13 @@ class MediaDetailView extends StatelessWidget {
             TextButton.icon(
               onPressed: () => _editComment(
                 context,
-                title: 'Edit My Notes',
-                hint: 'Write your personal notes...',
+                title: l.detailEditMyNotes,
+                hint: l.detailWriteNotesHint,
                 initialValue: userComment,
                 onSave: onUserCommentSave,
               ),
               icon: const Icon(Icons.edit, size: 14),
-              label: const Text('Edit'),
+              label: Text(l.edit),
             ),
           ],
         ),
@@ -541,7 +544,7 @@ class MediaDetailView extends StatelessWidget {
                   style: AppTypography.body.copyWith(height: 1.5),
                 )
               : Text(
-                  'No notes yet. Tap Edit to add your personal notes.',
+                  l.detailNoNotesYet,
                   style: AppTypography.body.copyWith(
                     color: AppColors.textTertiary,
                     fontStyle: FontStyle.italic,
@@ -579,11 +582,11 @@ class MediaDetailView extends StatelessWidget {
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel'),
+            child: Text(S.of(ctx).cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(controller.text),
-            child: const Text('Save'),
+            child: Text(S.of(ctx).save),
           ),
         ],
       ),

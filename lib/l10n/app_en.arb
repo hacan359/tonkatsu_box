@@ -1,0 +1,823 @@
+{
+  "@@locale": "en",
+
+  "appName": "Tonkatsu Box",
+
+  "navMain": "Main",
+  "navCollections": "Collections",
+  "navWishlist": "Wishlist",
+  "navSearch": "Search",
+  "navSettings": "Settings",
+
+  "statusNotStarted": "Not Started",
+  "statusPlaying": "Playing",
+  "statusWatching": "Watching",
+  "statusCompleted": "Completed",
+  "statusDropped": "Dropped",
+  "statusPlanned": "Planned",
+  "statusOnHold": "On Hold",
+
+  "mediaTypeGame": "Game",
+  "mediaTypeMovie": "Movie",
+  "mediaTypeTvShow": "TV Show",
+  "mediaTypeAnimation": "Animation",
+
+  "sortManualDisplay": "Manual",
+  "sortManualShort": "Manual",
+  "sortManualDesc": "Custom order",
+  "sortDateDisplay": "Date Added",
+  "sortDateShort": "Date",
+  "sortDateDesc": "Newest first",
+  "sortStatusDisplay": "Status",
+  "sortStatusShort": "Status",
+  "sortStatusDesc": "Active first",
+  "sortNameDisplay": "Name",
+  "sortNameShort": "A-Z",
+  "sortNameDesc": "A to Z",
+  "sortRatingDisplay": "My Rating",
+  "sortRatingShort": "Rating",
+  "sortRatingDesc": "Highest first",
+
+  "searchSortRelevanceShort": "Rel",
+  "searchSortRelevanceDisplay": "Relevance",
+  "searchSortDateShort": "Date",
+  "searchSortDateDisplay": "Date",
+  "searchSortRatingShort": "Rate",
+  "searchSortRatingDisplay": "Rating",
+
+  "cancel": "Cancel",
+  "create": "Create",
+  "save": "Save",
+  "add": "Add",
+  "delete": "Delete",
+  "rename": "Rename",
+  "retry": "Retry",
+  "edit": "Edit",
+  "done": "Done",
+  "clear": "Clear",
+  "reset": "Reset",
+  "search": "Search",
+  "open": "Open",
+  "remove": "Remove",
+  "back": "Back",
+  "next": "Next",
+  "skip": "Skip",
+  "update": "Update",
+  "test": "Test",
+  "close": "Close",
+  "keep": "Keep",
+  "change": "Change",
+
+  "settingsProfile": "Profile",
+  "settingsAuthorName": "Author name",
+  "settingsSettings": "Settings",
+  "settingsCredentials": "Credentials",
+  "settingsCredentialsSubtitle": "IGDB, SteamGridDB, TMDB API keys",
+  "settingsCache": "Cache",
+  "settingsCacheSubtitle": "Image cache settings",
+  "settingsDatabase": "Database",
+  "settingsDatabaseSubtitle": "Export, import, reset",
+  "settingsTraktImport": "Trakt Import",
+  "settingsTraktImportSubtitle": "Import from Trakt.tv ZIP export",
+  "settingsDebug": "Debug",
+  "settingsDebugSubtitle": "Developer tools",
+  "settingsDebugSubtitleNoKey": "Set SteamGridDB key first for some tools",
+  "settingsHelp": "Help",
+  "settingsWelcomeGuide": "Welcome Guide",
+  "settingsWelcomeGuideSubtitle": "Getting started with Tonkatsu Box",
+  "settingsAbout": "About",
+  "settingsVersion": "Version",
+  "settingsCreditsLicenses": "Credits & Licenses",
+  "settingsCreditsLicensesSubtitle": "TMDB, IGDB, SteamGridDB, open-source licenses",
+  "settingsError": "Error",
+  "settingsAppLanguage": "App Language",
+
+  "credentialsTitle": "Credentials",
+  "credentialsWelcome": "Welcome to Tonkatsu Box!",
+  "credentialsWelcomeHint": "To get started, you need to set up your IGDB API credentials. Get your Client ID and Client Secret from the Twitch Developer Console.",
+  "credentialsCopyTwitchUrl": "Copy Twitch Console URL",
+  "credentialsUrlCopied": "URL copied: {url}",
+  "@credentialsUrlCopied": {
+    "placeholders": {
+      "url": {"type": "String"}
+    }
+  },
+  "credentialsIgdbSection": "IGDB API Credentials",
+  "credentialsClientId": "Client ID",
+  "credentialsClientIdHint": "Enter your Twitch Client ID",
+  "credentialsClientSecret": "Client Secret",
+  "credentialsClientSecretHint": "Enter your Twitch Client Secret",
+  "credentialsConnectionStatus": "Connection Status",
+  "credentialsPlatformsSynced": "Platforms synced",
+  "credentialsLastSync": "Last sync",
+  "credentialsVerifyConnection": "Verify Connection",
+  "credentialsRefreshPlatforms": "Refresh Platforms",
+  "credentialsSteamGridDbSection": "SteamGridDB API",
+  "credentialsApiKey": "API Key",
+  "credentialsUsingBuiltInKey": "Using built-in key",
+  "credentialsEnterSteamGridDbKey": "Enter your SteamGridDB API key",
+  "credentialsTmdbSection": "TMDB API (Movies & TV)",
+  "credentialsEnterTmdbKey": "Enter your TMDB API key (v3)",
+  "credentialsContentLanguage": "Content Language",
+  "credentialsOwnKeyHint": "For better rate limits we recommend using your own API key.",
+  "credentialsConnected": "Connected",
+  "credentialsConnectionError": "Connection Error",
+  "credentialsChecking": "Checking...",
+  "credentialsNotConnected": "Not Connected",
+  "credentialsEnterBoth": "Please enter both Client ID and Client Secret",
+  "credentialsConnectedSynced": "Connected & platforms synced!",
+  "credentialsConnectedSyncFailed": "Connected, but platform sync failed",
+  "credentialsPlatformsSyncedOk": "Platforms synced successfully!",
+  "credentialsDownloadingLogos": "Downloading platform logos...",
+  "credentialsDownloadedLogos": "Downloaded {count} logos",
+  "@credentialsDownloadedLogos": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "credentialsFailedDownloadLogos": "Failed to download logos",
+  "credentialsApiKeySaved": "API key saved",
+  "credentialsNoApiKey": "No API key",
+  "credentialsResetToBuiltIn": "Reset to built-in key",
+  "credentialsSteamGridDbKeyValid": "SteamGridDB API key is valid",
+  "credentialsSteamGridDbKeyInvalid": "SteamGridDB API key is invalid",
+  "credentialsTmdbKeyValid": "TMDB API key is valid",
+  "credentialsTmdbKeyInvalid": "TMDB API key is invalid",
+  "credentialsEnterSteamGridDbKeyError": "Please enter a SteamGridDB API key",
+  "credentialsEnterTmdbKeyError": "Please enter a TMDB API key",
+  "credentialsTmdbKeySaved": "TMDB API key saved",
+
+  "timeAgo": "{value} {unit} ago",
+  "@timeAgo": {
+    "placeholders": {
+      "value": {"type": "int"},
+      "unit": {"type": "String"}
+    }
+  },
+  "timeUnitDays": "{count, plural, =1{day} other{days}}",
+  "@timeUnitDays": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "timeUnitHours": "{count, plural, =1{hour} other{hours}}",
+  "@timeUnitHours": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "timeUnitMinutes": "{count, plural, =1{minute} other{minutes}}",
+  "@timeUnitMinutes": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "timeJustNow": "Just now",
+
+  "cacheTitle": "Cache",
+  "cacheImageCache": "Image Cache",
+  "cacheOfflineMode": "Offline mode",
+  "cacheOfflineModeSubtitle": "Save images locally for offline use",
+  "cacheCacheFolder": "Cache folder",
+  "cacheSelectFolder": "Select folder",
+  "cacheCacheSize": "Cache size",
+  "cacheClearCache": "Clear cache",
+  "cacheClearCacheTitle": "Clear cache?",
+  "cacheClearCacheMessage": "This will delete all locally saved images. They will be downloaded again during the next sync.",
+  "cacheFolderUpdated": "Cache folder updated",
+  "cacheCleared": "Cache cleared",
+  "cacheSelectFolderDialog": "Select cache folder for images",
+  "cacheCacheStats": "{count} files, {size}",
+  "@cacheCacheStats": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "size": {"type": "String"}
+    }
+  },
+
+  "databaseTitle": "Database",
+  "databaseConfiguration": "Configuration",
+  "databaseConfigSubtitle": "Export or import your API keys and settings.",
+  "databaseExportConfig": "Export Config",
+  "databaseImportConfig": "Import Config",
+  "databaseDangerZone": "Danger Zone",
+  "databaseDangerZoneMessage": "Clears all collections, games, movies, TV shows and board data. Settings and API keys will be preserved.",
+  "databaseResetDatabase": "Reset Database",
+  "databaseResetTitle": "Reset Database?",
+  "databaseResetMessage": "This will permanently delete all your collections, games, movies, TV shows, episode progress, and board data.\n\nYour API keys and settings will be preserved.\n\nThis action cannot be undone.",
+  "databaseConfigExported": "Config exported to {path}",
+  "@databaseConfigExported": {
+    "placeholders": {
+      "path": {"type": "String"}
+    }
+  },
+  "databaseConfigImported": "Config imported successfully",
+  "databaseReset": "Database has been reset",
+
+  "traktTitle": "Trakt Import",
+  "traktImportFrom": "Import from Trakt.tv",
+  "traktImportDescription": "Download your data from trakt.tv/users/YOU/data and select the ZIP file below.",
+  "traktZipFile": "ZIP File",
+  "traktSelectZipFile": "Select ZIP File",
+  "traktSelectZipExport": "Select Trakt ZIP Export",
+  "traktPreview": "Preview",
+  "traktUser": "Trakt user: {username}",
+  "@traktUser": {
+    "placeholders": {
+      "username": {"type": "String"}
+    }
+  },
+  "traktWatchedMovies": "Watched movies",
+  "traktWatchedShows": "Watched shows",
+  "traktRatedMovies": "Rated movies",
+  "traktRatedShows": "Rated shows",
+  "traktWatchlist": "Watchlist",
+  "traktOptions": "Options",
+  "traktImportWatched": "Import watched items",
+  "traktImportWatchedDesc": "Movies and TV shows as completed",
+  "traktImportRatings": "Import ratings",
+  "traktImportRatingsDesc": "Apply user ratings (1-10)",
+  "traktImportWatchlist": "Import watchlist",
+  "traktImportWatchlistDesc": "Add as planned or to wishlist",
+  "traktTargetCollection": "Target collection",
+  "traktCreateNew": "Create new collection",
+  "traktUseExisting": "Use existing collection",
+  "traktNoCollections": "No collections available",
+  "traktSelectCollection": "Select collection",
+  "traktErrorLoadingCollections": "Error loading collections",
+  "traktStartImport": "Start Import",
+  "traktInvalidExport": "Invalid Trakt export",
+  "traktImportedItems": "Imported {count} items",
+  "@traktImportedItems": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "traktImporting": "Importing from Trakt",
+
+  "creditsTitle": "Credits",
+  "creditsDataProviders": "Data Providers",
+  "creditsTmdbAttribution": "This product uses the TMDB API but is not endorsed or certified by TMDB.",
+  "creditsIgdbAttribution": "Game data provided by IGDB.",
+  "creditsSteamGridDbAttribution": "Artwork provided by SteamGridDB.",
+  "creditsOpenSource": "Open Source",
+  "creditsOpenSourceDesc": "Tonkatsu Box is free and open source software, released under the MIT License.",
+  "creditsViewLicenses": "View Open Source Licenses",
+
+  "collectionsNewCollection": "New Collection",
+  "collectionsImportCollection": "Import Collection",
+  "collectionsNoCollectionsYet": "No Collections Yet",
+  "collectionsNoCollectionsHint": "Create your first collection to start tracking\nyour gaming journey.",
+  "collectionsFailedToLoad": "Failed to load collections",
+  "collectionsCount": "Collections ({count})",
+  "@collectionsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "collectionsUncategorized": "Uncategorized",
+  "collectionsUncategorizedItems": "{count, plural, =1{1 item} other{{count} items}}",
+  "@collectionsUncategorizedItems": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "collectionsRenamed": "Collection renamed",
+  "collectionsFailedToRename": "Failed to rename: {error}",
+  "@collectionsFailedToRename": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "collectionsDeleted": "Collection deleted",
+  "collectionsFailedToDelete": "Failed to delete: {error}",
+  "@collectionsFailedToDelete": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "collectionsFailedToCreate": "Failed to create collection: {error}",
+  "@collectionsFailedToCreate": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "collectionsImported": "Imported \"{name}\" with {count} items",
+  "@collectionsImported": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "count": {"type": "int"}
+    }
+  },
+  "collectionsImporting": "Importing Collection",
+
+  "collectionNotFound": "Collection not found",
+  "collectionAddItems": "Add Items",
+  "collectionSwitchToList": "Switch to List",
+  "collectionSwitchToBoard": "Switch to Board",
+  "collectionUnlockBoard": "Unlock board",
+  "collectionLockBoard": "Lock board",
+  "collectionExport": "Export",
+  "collectionNoItemsYet": "No Items Yet",
+  "collectionEmpty": "Empty Collection",
+  "collectionDeleteEmptyPrompt": "This collection is now empty. Delete it?",
+  "collectionRemoveItemTitle": "Remove Item?",
+  "collectionRemoveItemMessage": "Remove {name} from this collection?",
+  "@collectionRemoveItemMessage": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "collectionMoveToCollection": "Move to Collection",
+  "collectionExportFormat": "Export Format",
+  "collectionChooseExportFormat": "Choose export format:",
+  "collectionExportLight": "Light (.xcoll)",
+  "collectionExportLightDesc": "Items only, smaller file",
+  "collectionExportFull": "Full (.xcollx)",
+  "collectionExportFullDesc": "With images & canvas — works offline",
+  "collectionFilterAll": "All",
+  "collectionFilterByType": "Filter by type",
+  "collectionFilterGames": "Games",
+  "collectionFilterMovies": "Movies",
+  "collectionFilterTvShows": "TV Shows",
+  "collectionFilterAnimation": "Animation",
+
+  "collectionItemMovedTo": "{name} moved to {collection}",
+  "@collectionItemMovedTo": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "collection": {"type": "String"}
+    }
+  },
+  "collectionItemAlreadyExists": "{name} already exists in {collection}",
+  "@collectionItemAlreadyExists": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "collection": {"type": "String"}
+    }
+  },
+  "collectionItemRemoved": "{name} removed",
+  "@collectionItemRemoved": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+
+  "detailsTab": "Details",
+  "boardTab": "Board",
+  "imageAddedToBoard": "Image added to board",
+  "mapAddedToBoard": "Map added to board",
+  "loading": "Loading...",
+
+  "gameNotFound": "Game not found",
+  "movieNotFound": "Movie not found",
+  "tvShowNotFound": "TV Show not found",
+  "animationNotFound": "Animation not found",
+  "animatedMovie": "Animated Movie",
+  "animatedSeries": "Animated Series",
+
+  "runtimeHoursMinutes": "{hours}h {minutes}m",
+  "@runtimeHoursMinutes": {
+    "placeholders": {
+      "hours": {"type": "int"},
+      "minutes": {"type": "int"}
+    }
+  },
+  "runtimeHours": "{hours}h",
+  "@runtimeHours": {
+    "placeholders": {
+      "hours": {"type": "int"}
+    }
+  },
+  "runtimeMinutes": "{minutes}m",
+  "@runtimeMinutes": {
+    "placeholders": {
+      "minutes": {"type": "int"}
+    }
+  },
+
+  "totalSeasons": "{count, plural, =1{1 season} other{{count} seasons}}",
+  "@totalSeasons": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "totalEpisodes": "{count} ep",
+  "@totalEpisodes": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "episodeProgress": "Episode Progress",
+  "episodesWatchedOf": "{watched}/{total} watched",
+  "@episodesWatchedOf": {
+    "placeholders": {
+      "watched": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "episodesWatched": "{count} watched",
+  "@episodesWatched": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "seasonEpisodesProgress": "{watched}/{total} episodes",
+  "@seasonEpisodesProgress": {
+    "placeholders": {
+      "watched": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "noSeasonData": "No season data available",
+  "refreshFromTmdb": "Refresh from TMDB",
+  "markAllWatched": "Mark all watched",
+  "unmarkAll": "Unmark all",
+  "noEpisodesFound": "No episodes found",
+  "episodeWatchedDate": "watched {date}",
+  "@episodeWatchedDate": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+
+  "createCollectionTitle": "New Collection",
+  "createCollectionNameLabel": "Collection Name",
+  "createCollectionNameHint": "e.g., SNES Classics",
+  "createCollectionEnterName": "Please enter a name",
+  "createCollectionNameTooShort": "Name must be at least 2 characters",
+  "createCollectionAuthor": "Author",
+  "createCollectionAuthorHint": "Your name or username",
+  "createCollectionEnterAuthor": "Please enter an author name",
+  "renameCollectionTitle": "Rename Collection",
+  "deleteCollectionTitle": "Delete Collection?",
+  "deleteCollectionMessage": "Are you sure you want to delete {name}?\n\nThis action cannot be undone.",
+  "@deleteCollectionMessage": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+
+  "canvasAddText": "Add Text",
+  "canvasAddImage": "Add Image",
+  "canvasAddLink": "Add Link",
+  "canvasFindImages": "Find images...",
+  "canvasBrowseMaps": "Browse maps...",
+  "canvasConnect": "Connect",
+  "canvasBringToFront": "Bring to Front",
+  "canvasSendToBack": "Send to Back",
+  "canvasEditConnection": "Edit Connection",
+  "canvasDeleteConnection": "Delete Connection",
+  "canvasDeleteElement": "Delete element",
+  "canvasDeleteElementMessage": "Are you sure you want to delete this element?",
+  "canvasAddToBoard": "Add to Board",
+
+  "addTextTitle": "Add Text",
+  "editTextTitle": "Edit Text",
+  "textContentLabel": "Text content",
+  "fontSizeLabel": "Font size",
+  "fontSizeSmall": "Small",
+  "fontSizeMedium": "Medium",
+  "fontSizeLarge": "Large",
+  "fontSizeTitle": "Title",
+
+  "addImageTitle": "Add Image",
+  "editImageTitle": "Edit Image",
+  "imageFromUrl": "From URL",
+  "imageFromFile": "From File",
+  "imageUrlLabel": "Image URL",
+  "imageUrlHint": "https://example.com/image.png",
+  "imageChooseFile": "Choose File",
+  "imageChooseAnother": "Choose Another",
+
+  "addLinkTitle": "Add Link",
+  "editLinkTitle": "Edit Link",
+  "linkUrlLabel": "URL",
+  "linkUrlHint": "https://example.com",
+  "linkLabelOptional": "Label (optional)",
+  "linkLabelHint": "My Link",
+
+  "connectionColorGray": "Gray",
+  "connectionColorRed": "Red",
+  "connectionColorOrange": "Orange",
+  "connectionColorYellow": "Yellow",
+  "connectionColorGreen": "Green",
+  "connectionColorBlue": "Blue",
+  "connectionColorPurple": "Purple",
+  "connectionColorBlack": "Black",
+  "connectionColorWhite": "White",
+  "editConnectionTitle": "Edit Connection",
+  "connectionLabelHint": "e.g. depends on, related to...",
+  "connectionColorLabel": "Color",
+  "connectionStyleLabel": "Style",
+  "connectionStyleSolid": "Solid",
+  "connectionStyleDashed": "Dashed",
+  "connectionStyleArrow": "Arrow",
+
+  "searchTabTv": "TV",
+  "searchTabGames": "Games",
+  "searchHintTv": "Search TV...",
+  "searchHintGames": "Search games...",
+  "searchSelectPlatform": "Select Platform",
+  "searchAddToCollection": "Add to Collection",
+  "searchAddedToCollection": "{name} added to collection",
+  "@searchAddedToCollection": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "searchAddedToNamed": "{name} added to {collection}",
+  "@searchAddedToNamed": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "collection": {"type": "String"}
+    }
+  },
+  "searchAlreadyInCollection": "{name} already in collection",
+  "@searchAlreadyInCollection": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "searchAlreadyInNamed": "{name} already in {collection}",
+  "@searchAlreadyInNamed": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "collection": {"type": "String"}
+    }
+  },
+  "searchGoToSettings": "Go to Settings",
+  "searchDescription": "Description",
+
+  "platformFilterTitle": "Select Platforms",
+  "platformFilterClearAll": "Clear All",
+  "platformFilterSearchHint": "Search platforms...",
+  "platformFilterSelected": "{count} selected",
+  "@platformFilterSelected": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "platformFilterCount": "{count} platforms",
+  "@platformFilterCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "platformFilterShowAll": "Show All",
+  "platformFilterApply": "Apply ({count})",
+  "@platformFilterApply": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "platformFilterNone": "No platforms found",
+  "platformFilterTryDifferent": "Try a different search term",
+
+  "wishlistHideResolved": "Hide resolved",
+  "wishlistShowResolved": "Show resolved",
+  "wishlistClearResolved": "Clear resolved",
+  "wishlistEmpty": "No wishlist items yet",
+  "wishlistEmptyHint": "Tap + to add something to find later",
+  "wishlistDeleteItem": "Delete item",
+  "wishlistDeletePrompt": "Delete \"{name}\" from wishlist?",
+  "@wishlistDeletePrompt": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "wishlistClearResolvedTitle": "Clear resolved",
+  "wishlistClearResolvedMessage": "{count, plural, =1{Delete 1 resolved item?} other{Delete {count} resolved items?}}",
+  "@wishlistClearResolvedMessage": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "wishlistMarkResolved": "Mark resolved",
+  "wishlistUnresolve": "Unresolve",
+
+  "wishlistAddTitle": "Add",
+  "wishlistEditTitle": "Edit",
+  "wishlistTitleLabel": "Title",
+  "wishlistTitleHint": "Game, movie, or TV show name...",
+  "wishlistTitleMinChars": "At least 2 characters",
+  "wishlistTypeOptional": "Type (optional)",
+  "wishlistTypeAny": "Any",
+  "wishlistNoteOptional": "Note (optional)",
+  "wishlistNoteHint": "Platform, year, who recommended...",
+
+  "welcomeStepWelcome": "Welcome",
+  "welcomeStepApiKeys": "API Keys",
+  "welcomeStepHowItWorks": "How it works",
+  "welcomeStepReady": "Ready!",
+
+  "welcomeTitle": "Welcome to Tonkatsu Box",
+  "welcomeSubtitle": "Organize your collections of retro games,\nmovies, TV shows & anime",
+  "welcomeWhatYouCanDo": "What you can do",
+  "welcomeFeatureCollections": "Create collections by platform, genre, or any theme",
+  "welcomeFeatureSearch": "Search games, movies, TV shows & anime via APIs",
+  "welcomeFeatureTracking": "Track progress, rate 1-10, add notes",
+  "welcomeFeatureBoards": "Visual canvas boards with artwork",
+  "welcomeFeatureExport": "Export & import — share collections with friends",
+  "welcomeWorksWithoutKeys": "Works without API keys",
+  "welcomeChipCollections": "Collections",
+  "welcomeChipWishlist": "Wishlist",
+  "welcomeChipImport": "Import .xcoll",
+  "welcomeChipCanvas": "Canvas boards",
+  "welcomeChipRatings": "Ratings & notes",
+  "welcomeApiKeysHint": "API keys are only needed for searching new games, movies & TV shows. You can import collections and work with them offline.",
+  "welcomeChipGames": "Games (IGDB)",
+  "welcomeChipMovies": "Movies (TMDB)",
+  "welcomeChipTvShows": "TV Shows (TMDB)",
+  "welcomeChipAnime": "Anime (TMDB)",
+
+  "welcomeApiTitle": "Getting API Keys",
+  "welcomeApiFreeHint": "Free registration, takes 2-3 minutes each",
+  "welcomeApiIgdbTag": "IGDB",
+  "welcomeApiIgdbDesc": "Game search",
+  "welcomeApiRequired": "REQUIRED",
+  "welcomeApiTmdbTag": "TMDB",
+  "welcomeApiTmdbDesc": "Movies, TV & Anime",
+  "welcomeApiRecommended": "RECOMMENDED",
+  "welcomeApiSgdbTag": "SGDB",
+  "welcomeApiSgdbDesc": "Game artwork for boards",
+  "welcomeApiOptional": "OPTIONAL",
+  "welcomeApiEnterKeysHint": "Enter keys in Settings → Credentials after setup",
+
+  "welcomeHowTitle": "How it works",
+  "welcomeHowAppStructure": "App structure",
+  "welcomeHowMainDesc": "All items from all collections in one view. Filter by type, sort by rating.",
+  "welcomeHowCollectionsDesc": "Your collections. Create, organize, manage. Grid or list view per collection.",
+  "welcomeHowWishlistDesc": "Quick list of items to check out later. No API needed.",
+  "welcomeHowSearchDesc": "Find games, movies & TV shows via API. Add to any collection.",
+  "welcomeHowSettingsDesc": "API keys, cache, database export/import, debug tools.",
+  "welcomeHowQuickStart": "Quick Start",
+  "welcomeHowStep1": "Go to Settings → Credentials, enter API keys",
+  "welcomeHowStep2": "Click Verify Connection, wait for platforms sync",
+  "welcomeHowStep3": "Go to Collections → + New Collection",
+  "welcomeHowStep4": "Name it, then Add Items → Search → Add",
+  "welcomeHowStep5": "Rate, track progress, add notes — you're set!",
+  "welcomeHowSharing": "Sharing",
+  "welcomeHowSharingDesc1": "Export collections as ",
+  "welcomeHowSharingDesc2": " (light, metadata only) or ",
+  "welcomeHowSharingDesc3": " (full, with images & canvas — works offline). Import from friends — no API needed!",
+
+  "welcomeReadyTitle": "You're all set!",
+  "welcomeReadyMessage": "Head to Settings → Credentials to enter your API keys, or start by importing a collection.",
+  "welcomeReadyGoToSettings": "Go to Settings",
+  "welcomeReadySkip": "Skip — explore on my own",
+  "welcomeReadyReturnHint": "You can always return here from Settings",
+
+  "updateAvailable": "Update available: v{version}",
+  "@updateAvailable": {
+    "placeholders": {
+      "version": {"type": "String"}
+    }
+  },
+  "updateCurrent": "Current: v{version}",
+  "@updateCurrent": {
+    "placeholders": {
+      "version": {"type": "String"}
+    }
+  },
+
+  "chooseCollection": "Choose Collection",
+  "withoutCollection": "Without Collection",
+
+  "detailStatus": "Status",
+  "detailMyRating": "My Rating",
+  "detailRatingValue": "{rating}/10",
+  "@detailRatingValue": {
+    "placeholders": {
+      "rating": {"type": "int"}
+    }
+  },
+  "detailActivityProgress": "Activity & Progress",
+  "detailAuthorReview": "Author's Review",
+  "detailEditAuthorReview": "Edit Author's Review",
+  "detailWriteReviewHint": "Write your review...",
+  "detailReviewVisibility": "Visible to others when shared. Your review of this title.",
+  "detailNoReviewEditable": "No review yet. Tap Edit to add one.",
+  "detailNoReviewReadonly": "No review from the author.",
+  "detailMyNotes": "My Notes",
+  "detailEditMyNotes": "Edit My Notes",
+  "detailWriteNotesHint": "Write your personal notes...",
+  "detailNoNotesYet": "No notes yet. Tap Edit to add your personal notes.",
+  "detailNoNotesReadonly": "No notes from the author.",
+
+  "unknownGame": "Unknown Game",
+  "unknownMovie": "Unknown Movie",
+  "unknownTvShow": "Unknown TV Show",
+  "unknownAnimation": "Unknown Animation",
+  "unknownPlatform": "Unknown Platform",
+  "defaultAuthor": "User",
+
+  "errorPrefix": "Error: {error}",
+  "@errorPrefix": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+
+  "allItemsAll": "All",
+  "allItemsGames": "Games",
+  "allItemsMovies": "Movies",
+  "allItemsTvShows": "TV Shows",
+  "allItemsAnimation": "Animation",
+  "allItemsRatingAsc": "Rating ↑",
+  "allItemsRatingDesc": "Rating ↓",
+  "allItemsRating": "Rating",
+  "allItemsNoItems": "No items yet",
+  "allItemsNoMatch": "No items match filter",
+  "allItemsAddViaCollections": "Add items via Collections tab",
+  "allItemsFailedToLoad": "Failed to load items",
+
+  "debugIgdbMedia": "IGDB Media",
+  "debugSteamGridDb": "SteamGridDB",
+  "debugGamepad": "Gamepad",
+  "debugClearLogs": "Clear logs",
+  "debugRawEvents": "Raw Events (Gamepads.events)",
+  "debugServiceEvents": "Service Events (filtered)",
+  "debugEventsCount": "{count} events",
+  "@debugEventsCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "debugPressButton": "Press any button\non the gamepad...",
+  "debugSearchGames": "Search games",
+  "debugEnterGameName": "Enter game name",
+  "debugEnterGameNameHint": "Enter a game name to search",
+  "debugGameId": "Game ID",
+  "debugEnterGameId": "Enter SteamGridDB game ID",
+  "debugLoadTab": "Load {tabName}",
+  "@debugLoadTab": {
+    "placeholders": {
+      "tabName": {"type": "String"}
+    }
+  },
+  "debugEnterGameIdHint": "Enter a game ID and press Load {tabName}",
+  "@debugEnterGameIdHint": {
+    "placeholders": {
+      "tabName": {"type": "String"}
+    }
+  },
+  "debugNoImagesFound": "No images found",
+  "debugSearchTab": "Search",
+  "debugGridsTab": "Grids",
+  "debugHeroesTab": "Heroes",
+  "debugLogosTab": "Logos",
+  "debugIconsTab": "Icons",
+
+  "collectionTileStats": "{count, plural, =1{1 item} other{{count} items}} · {percent} completed",
+  "@collectionTileStats": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "percent": {"type": "String"}
+    }
+  },
+  "collectionTileError": "Error loading stats",
+
+  "activityDatesTitle": "Activity Dates",
+  "activityDatesAdded": "Added",
+  "activityDatesStarted": "Started",
+  "activityDatesCompleted": "Completed",
+  "activityDatesLastActivity": "Last Activity",
+  "activityDatesSelectStart": "Select start date",
+  "activityDatesSelectCompletion": "Select completion date",
+
+  "canvasFailedToLoad": "Failed to load board",
+  "canvasBoardEmpty": "Board is empty",
+  "canvasBoardEmptyHint": "Add items to the collection first",
+  "canvasCenterView": "Center view",
+  "canvasResetPositions": "Reset positions",
+  "canvasVgmapsBrowser": "VGMaps Browser",
+  "canvasSteamGridDbImages": "SteamGridDB Images",
+
+  "steamGridDbPanelTitle": "SteamGridDB",
+  "steamGridDbClosePanel": "Close panel",
+  "steamGridDbSearchHint": "Search game...",
+  "steamGridDbNoApiKey": "SteamGridDB API key not set. Configure it in Settings.",
+  "steamGridDbBackToSearch": "Back to search",
+  "steamGridDbGrids": "Grids",
+  "steamGridDbHeroes": "Heroes",
+  "steamGridDbLogos": "Logos",
+  "steamGridDbIcons": "Icons",
+  "steamGridDbNoResults": "No results found",
+  "steamGridDbSearchFirst": "Search for a game first",
+
+  "vgmapsClosePanel": "Close panel",
+  "vgmapsBack": "Back",
+  "vgmapsForward": "Forward",
+  "vgmapsHome": "Home",
+  "vgmapsReload": "Reload",
+  "vgmapsCaptureImage": "Capture map image",
+  "vgmapsSearchHint": "Search game on VGMaps...",
+  "vgmapsDismiss": "Dismiss",
+  "vgmapsFailedInit": "Failed to initialize WebView: {error}",
+  "@vgmapsFailedInit": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  }
+}

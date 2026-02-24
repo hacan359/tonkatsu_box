@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/theme/app_colors.dart';
@@ -105,7 +106,7 @@ class _StatusChip extends StatelessWidget {
             ),
             const SizedBox(width: AppSpacing.xs),
             Text(
-              status.displayLabel(mediaType),
+              status.localizedLabel(S.of(context), mediaType),
               style: AppTypography.bodySmall.copyWith(
                 color: isSelected ? statusColor : AppColors.textSecondary,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,

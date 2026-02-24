@@ -1,31 +1,58 @@
 import 'package:flutter/material.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/models/canvas_connection.dart';
 
 // Диалог редактирования свойств связи на канвасе.
 
 /// Доступные цвета для связей.
 const List<_ColorOption> _colorOptions = <_ColorOption>[
-  _ColorOption(label: 'Gray', hex: '#666666', color: Color(0xFF666666)),
-  _ColorOption(label: 'Red', hex: '#E53935', color: Color(0xFFE53935)),
-  _ColorOption(label: 'Orange', hex: '#FB8C00', color: Color(0xFFFB8C00)),
-  _ColorOption(label: 'Yellow', hex: '#FDD835', color: Color(0xFFFDD835)),
-  _ColorOption(label: 'Green', hex: '#43A047', color: Color(0xFF43A047)),
-  _ColorOption(label: 'Blue', hex: '#1E88E5', color: Color(0xFF1E88E5)),
-  _ColorOption(label: 'Purple', hex: '#8E24AA', color: Color(0xFF8E24AA)),
-  _ColorOption(label: 'Black', hex: '#212121', color: Color(0xFF212121)),
-  _ColorOption(label: 'White', hex: '#FFFFFF', color: Color(0xFFFFFFFF)),
+  _ColorOption(labelKey: 'gray', hex: '#666666', color: Color(0xFF666666)),
+  _ColorOption(labelKey: 'red', hex: '#E53935', color: Color(0xFFE53935)),
+  _ColorOption(labelKey: 'orange', hex: '#FB8C00', color: Color(0xFFFB8C00)),
+  _ColorOption(labelKey: 'yellow', hex: '#FDD835', color: Color(0xFFFDD835)),
+  _ColorOption(labelKey: 'green', hex: '#43A047', color: Color(0xFF43A047)),
+  _ColorOption(labelKey: 'blue', hex: '#1E88E5', color: Color(0xFF1E88E5)),
+  _ColorOption(labelKey: 'purple', hex: '#8E24AA', color: Color(0xFF8E24AA)),
+  _ColorOption(labelKey: 'black', hex: '#212121', color: Color(0xFF212121)),
+  _ColorOption(labelKey: 'white', hex: '#FFFFFF', color: Color(0xFFFFFFFF)),
 ];
 
 class _ColorOption {
   const _ColorOption({
-    required this.label,
+    required this.labelKey,
     required this.hex,
     required this.color,
   });
-  final String label;
+  final String labelKey;
   final String hex;
   final Color color;
+
+  /// Возвращает локализованную метку цвета.
+  String localizedLabel(S l) {
+    switch (labelKey) {
+      case 'gray':
+        return l.connectionColorGray;
+      case 'red':
+        return l.connectionColorRed;
+      case 'orange':
+        return l.connectionColorOrange;
+      case 'yellow':
+        return l.connectionColorYellow;
+      case 'green':
+        return l.connectionColorGreen;
+      case 'blue':
+        return l.connectionColorBlue;
+      case 'purple':
+        return l.connectionColorPurple;
+      case 'black':
+        return l.connectionColorBlack;
+      case 'white':
+        return l.connectionColorWhite;
+      default:
+        return labelKey;
+    }
+  }
 }
 
 /// Диалог для редактирования label, цвета и стиля связи.
@@ -111,9 +138,10 @@ class _EditConnectionDialogState extends State<EditConnectionDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final S l = S.of(context);
     return AlertDialog(
       scrollable: true,
-      title: const Text('Edit Connection'),
+      title: Text(l.editConnectionTitle),
       content: SizedBox(
         width: 400,
         child: SingleChildScrollView(
@@ -123,17 +151,17 @@ class _EditConnectionDialogState extends State<EditConnectionDialog> {
             children: <Widget>[
             TextField(
               controller: _labelController,
-              decoration: const InputDecoration(
-                labelText: 'Label (optional)',
-                border: OutlineInputBorder(),
-                hintText: 'e.g. depends on, related to...',
+              decoration: InputDecoration(
+                labelText: l.linkLabelOptional,
+                border: const OutlineInputBorder(),
+                hintText: l.connectionLabelHint,
               ),
               autofocus: true,
               onSubmitted: (_) => _submit(),
             ),
             const SizedBox(height: 16),
             Text(
-              'Color',
+              l.connectionColorLabel,
               style: Theme.of(context).textTheme.titleSmall,
             ),
             const SizedBox(height: 8),
@@ -144,7 +172,7 @@ class _EditConnectionDialogState extends State<EditConnectionDialog> {
                   .map((_ColorOption option) => _ColorButton(
                         color: option.color,
                         isSelected: option.hex == _selectedColor,
-                        tooltip: option.label,
+                        tooltip: option.localizedLabel(l),
                         onTap: () {
                           setState(() => _selectedColor = option.hex);
                         },
@@ -153,26 +181,26 @@ class _EditConnectionDialogState extends State<EditConnectionDialog> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Style',
+              l.connectionStyleLabel,
               style: Theme.of(context).textTheme.titleSmall,
             ),
             const SizedBox(height: 8),
             SegmentedButton<ConnectionStyle>(
-              segments: const <ButtonSegment<ConnectionStyle>>[
+              segments: <ButtonSegment<ConnectionStyle>>[
                 ButtonSegment<ConnectionStyle>(
                   value: ConnectionStyle.solid,
-                  label: Text('Solid'),
-                  icon: Icon(Icons.horizontal_rule, size: 18),
+                  label: Text(l.connectionStyleSolid),
+                  icon: const Icon(Icons.horizontal_rule, size: 18),
                 ),
                 ButtonSegment<ConnectionStyle>(
                   value: ConnectionStyle.dashed,
-                  label: Text('Dashed'),
-                  icon: Icon(Icons.more_horiz, size: 18),
+                  label: Text(l.connectionStyleDashed),
+                  icon: const Icon(Icons.more_horiz, size: 18),
                 ),
                 ButtonSegment<ConnectionStyle>(
                   value: ConnectionStyle.arrow,
-                  label: Text('Arrow'),
-                  icon: Icon(Icons.arrow_forward, size: 18),
+                  label: Text(l.connectionStyleArrow),
+                  icon: const Icon(Icons.arrow_forward, size: 18),
                 ),
               ],
               selected: <ConnectionStyle>{_selectedStyle},
@@ -187,11 +215,11 @@ class _EditConnectionDialogState extends State<EditConnectionDialog> {
       actions: <Widget>[
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(l.cancel),
         ),
         FilledButton(
           onPressed: _submit,
-          child: const Text('Save'),
+          child: Text(l.save),
         ),
       ],
     );

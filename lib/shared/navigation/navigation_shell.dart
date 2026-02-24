@@ -17,6 +17,7 @@ import '../theme/app_assets.dart';
 import '../theme/app_colors.dart';
 import '../widgets/breadcrumb_scope.dart';
 import '../widgets/update_banner.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Порог ширины для переключения NavigationRail ↔ BottomNavigationBar.
 const double navigationBreakpoint = 800;
@@ -92,6 +93,17 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
     _tabCount,
     (_) => GlobalKey<NavigatorState>(),
   );
+
+  /// Кэшированные Navigator-виджеты для каждого таба.
+  ///
+  /// При смене локали MaterialApp перестраивает всё дерево.
+  /// Без кэша каждый вызов [_buildTabNavigator] создаёт новый
+  /// экземпляр Navigator, что может привести к потере истории
+  /// маршрутов (`_history.isNotEmpty` assertion).
+  /// Кэширование гарантирует, что Flutter получает тот же widget instance
+  /// и не трогает NavigatorState.
+  final List<Widget?> _navigatorWidgets =
+      List<Widget?>.filled(_tabCount, null);
 
   @override
   Widget build(BuildContext context) {
@@ -169,30 +181,30 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
                 ),
                 labelType: NavigationRailLabelType.all,
                 destinations: <NavigationRailDestination>[
-                  const NavigationRailDestination(
-                    icon: Icon(Icons.home_outlined),
-                    selectedIcon: Icon(Icons.home),
-                    label: Text('Main'),
+                  NavigationRailDestination(
+                    icon: const Icon(Icons.home_outlined),
+                    selectedIcon: const Icon(Icons.home),
+                    label: Text(S.of(context).navMain),
                   ),
-                  const NavigationRailDestination(
-                    icon: Icon(Icons.collections_bookmark_outlined),
-                    selectedIcon: Icon(Icons.collections_bookmark),
-                    label: Text('Collections'),
+                  NavigationRailDestination(
+                    icon: const Icon(Icons.collections_bookmark_outlined),
+                    selectedIcon: const Icon(Icons.collections_bookmark),
+                    label: Text(S.of(context).navCollections),
                   ),
                   NavigationRailDestination(
                     icon: _buildWishlistIcon(Icons.bookmark_border),
                     selectedIcon: _buildWishlistIcon(Icons.bookmark),
-                    label: const Text('Wishlist'),
+                    label: Text(S.of(context).navWishlist),
                   ),
-                  const NavigationRailDestination(
-                    icon: Icon(Icons.search_outlined),
-                    selectedIcon: Icon(Icons.search),
-                    label: Text('Search'),
+                  NavigationRailDestination(
+                    icon: const Icon(Icons.search_outlined),
+                    selectedIcon: const Icon(Icons.search),
+                    label: Text(S.of(context).navSearch),
                   ),
-                  const NavigationRailDestination(
-                    icon: Icon(Icons.settings_outlined),
-                    selectedIcon: Icon(Icons.settings),
-                    label: Text('Settings'),
+                  NavigationRailDestination(
+                    icon: const Icon(Icons.settings_outlined),
+                    selectedIcon: const Icon(Icons.settings),
+                    label: Text(S.of(context).navSettings),
                   ),
                 ],
               ),
@@ -226,30 +238,30 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
       unselectedItemColor: AppColors.textTertiary,
       type: BottomNavigationBarType.fixed,
       items: <BottomNavigationBarItem>[
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.home_outlined),
-          activeIcon: Icon(Icons.home),
-          label: 'Main',
+        BottomNavigationBarItem(
+          icon: const Icon(Icons.home_outlined),
+          activeIcon: const Icon(Icons.home),
+          label: S.of(context).navMain,
         ),
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.collections_bookmark_outlined),
-          activeIcon: Icon(Icons.collections_bookmark),
-          label: 'Collections',
+        BottomNavigationBarItem(
+          icon: const Icon(Icons.collections_bookmark_outlined),
+          activeIcon: const Icon(Icons.collections_bookmark),
+          label: S.of(context).navCollections,
         ),
         BottomNavigationBarItem(
           icon: _buildWishlistIcon(Icons.bookmark_border),
           activeIcon: _buildWishlistIcon(Icons.bookmark),
-          label: 'Wishlist',
+          label: S.of(context).navWishlist,
         ),
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.search_outlined),
-          activeIcon: Icon(Icons.search),
-          label: 'Search',
+        BottomNavigationBarItem(
+          icon: const Icon(Icons.search_outlined),
+          activeIcon: const Icon(Icons.search),
+          label: S.of(context).navSearch,
         ),
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.settings_outlined),
-          activeIcon: Icon(Icons.settings),
-          label: 'Settings',
+        BottomNavigationBarItem(
+          icon: const Icon(Icons.settings_outlined),
+          activeIcon: const Icon(Icons.settings),
+          label: S.of(context).navSettings,
         ),
       ],
     );
@@ -269,30 +281,35 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
 
   Widget _buildTabNavigator(int tabIndex) {
     final String tabLabel = switch (NavTab.values[tabIndex]) {
-      NavTab.home => 'Main',
-      NavTab.collections => 'Collections',
-      NavTab.wishlist => 'Wishlist',
-      NavTab.search => 'Search',
-      NavTab.settings => 'Settings',
+      NavTab.home => S.of(context).navMain,
+      NavTab.collections => S.of(context).navCollections,
+      NavTab.wishlist => S.of(context).navWishlist,
+      NavTab.search => S.of(context).navSearch,
+      NavTab.settings => S.of(context).navSettings,
     };
-    final Widget screen = switch (NavTab.values[tabIndex]) {
-      NavTab.home => const AllItemsScreen(),
-      NavTab.collections => const HomeScreen(),
-      NavTab.wishlist => const WishlistScreen(),
-      NavTab.search => const SearchScreen(),
-      NavTab.settings => const SettingsScreen(),
-    };
+
+    // Кэшируем Navigator — тот же widget instance при rebuild
+    // гарантирует, что Flutter не пересоздаёт NavigatorState
+    // и не теряет историю маршрутов.
+    _navigatorWidgets[tabIndex] ??= Navigator(
+      key: _navigatorKeys[tabIndex],
+      onGenerateRoute: (RouteSettings settings) {
+        final Widget screen = switch (NavTab.values[tabIndex]) {
+          NavTab.home => const AllItemsScreen(),
+          NavTab.collections => const HomeScreen(),
+          NavTab.wishlist => const WishlistScreen(),
+          NavTab.search => const SearchScreen(),
+          NavTab.settings => const SettingsScreen(),
+        };
+        return MaterialPageRoute<void>(
+          builder: (BuildContext context) => screen,
+        );
+      },
+    );
 
     return BreadcrumbScope(
       label: tabLabel,
-      child: Navigator(
-        key: _navigatorKeys[tabIndex],
-        onGenerateRoute: (RouteSettings settings) {
-          return MaterialPageRoute<void>(
-            builder: (BuildContext context) => screen,
-          );
-        },
-      ),
+      child: _navigatorWidgets[tabIndex]!,
     );
   }
 

@@ -282,12 +282,26 @@ Each item in a collection has its own personal board:
 - Side panel for adding images to boards
 - Debug panel for testing (dev builds only)
 
+## 🌐 Localization
+
+Full English and Russian localization with runtime language switching:
+
+- **App Language** — switchable in Settings via SegmentedButton (English / Русский); persisted across sessions
+- **521 localized strings** — all UI text: navigation, screens, dialogs, buttons, tooltips, error messages, empty states
+- **ICU plurals** — Russian plural forms (`=0`, `=1`, `few`, `other`) for item counts, episode counts, etc.
+- **Context-aware status labels** — "Playing" (games) vs "Watching" (movies/TV) adapts to both language and media type
+- **Content Language** — TMDB content language (movie/show metadata) is independent of app UI language
+
+> [!NOTE]
+> App Language controls all UI text. Content Language (in Settings → Credentials) controls the language of movie/TV show data fetched from TMDB.
+
 ## ⚙️ Settings
 
 Settings is organized as a hub with an inline author name field, 4 sub-screens, and an About section. All screens support **compact mode** (responsive layout for screens < 600px width).
 
 Built with 5 reusable widgets: `SettingsSection`, `SettingsRow`, `SettingsNavRow`, `StatusDot`, `InlineTextField`.
 
+- **App Language** — switch between English and Russian via SegmentedButton
 - **Author name** — configurable default author for new collections (editable inline via tap-to-edit field)
 - **Inline editing** — API keys and author name use `InlineTextField` (tap to edit, blur/Enter to save, no dialogs)
 - **Status indicators** — `StatusDot` shows connection status, API key presence with color-coded icons

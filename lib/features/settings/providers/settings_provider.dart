@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../shared/constants/api_defaults.dart';
-import '../../../shared/constants/app_strings.dart';
 import '../../../core/api/igdb_api.dart';
 import '../../../core/api/steamgriddb_api.dart';
 import '../../../core/api/tmdb_api.dart';
@@ -35,6 +34,12 @@ abstract class SettingsKeys {
 
   /// Язык контента TMDB по умолчанию.
   static const String tmdbLanguageDefault = 'ru-RU';
+
+  /// Язык интерфейса приложения (en / ru).
+  static const String appLanguage = 'app_language';
+
+  /// Язык интерфейса по умолчанию.
+  static const String appLanguageDefault = 'en';
 }
 
 /// Состояние настроек IGDB.
@@ -54,6 +59,7 @@ class SettingsState {
     this.tmdbApiKey,
     this.defaultAuthor,
     this.tmdbLanguage = SettingsKeys.tmdbLanguageDefault,
+    this.appLanguage = SettingsKeys.appLanguageDefault,
   });
 
   /// Client ID для IGDB API.
@@ -95,10 +101,13 @@ class SettingsState {
   /// Язык контента TMDB API.
   final String tmdbLanguage;
 
-  /// Возвращает имя автора (или [AppStrings.defaultAuthor] если не задано).
+  /// Язык интерфейса приложения (en / ru).
+  final String appLanguage;
+
+  /// Возвращает имя автора (или 'User' если не задано).
   String get authorName => (defaultAuthor != null && defaultAuthor!.isNotEmpty)
       ? defaultAuthor!
-      : AppStrings.defaultAuthor;
+      : 'User';
 
   /// Проверяет наличие API ключа TMDB.
   bool get hasTmdbKey => tmdbApiKey != null && tmdbApiKey!.isNotEmpty;
@@ -152,6 +161,7 @@ class SettingsState {
     String? tmdbApiKey,
     String? defaultAuthor,
     String? tmdbLanguage,
+    String? appLanguage,
   }) {
     return SettingsState(
       clientId: clientId ?? this.clientId,
@@ -167,6 +177,7 @@ class SettingsState {
       tmdbApiKey: tmdbApiKey ?? this.tmdbApiKey,
       defaultAuthor: defaultAuthor ?? this.defaultAuthor,
       tmdbLanguage: tmdbLanguage ?? this.tmdbLanguage,
+      appLanguage: appLanguage ?? this.appLanguage,
     );
   }
 }
@@ -248,6 +259,9 @@ class SettingsNotifier extends Notifier<SettingsState> {
     final String tmdbLanguage =
         _prefs.getString(SettingsKeys.tmdbLanguage) ??
             SettingsKeys.tmdbLanguageDefault;
+    final String appLanguage =
+        _prefs.getString(SettingsKeys.appLanguage) ??
+            SettingsKeys.appLanguageDefault;
 
     final SettingsState loadedState = SettingsState(
       clientId: clientId,
@@ -259,6 +273,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
       tmdbApiKey: tmdbApiKey,
       defaultAuthor: defaultAuthor,
       tmdbLanguage: tmdbLanguage,
+      appLanguage: appLanguage,
     );
 
     // Устанавливаем credentials в API, если они есть
@@ -477,6 +492,12 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await _dbService.clearTmdbGenres();
     state = state.copyWith(tmdbLanguage: language);
     _preloadTmdbGenres();
+  }
+
+  /// Устанавливает язык интерфейса приложения.
+  Future<void> setAppLanguage(String language) async {
+    await _prefs.setString(SettingsKeys.appLanguage, language);
+    state = state.copyWith(appLanguage: language);
   }
 
   /// Сбрасывает TMDB API ключ на встроенный.

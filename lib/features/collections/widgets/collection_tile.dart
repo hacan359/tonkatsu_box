@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/repositories/collection_repository.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -67,10 +68,10 @@ class CollectionTile extends ConsumerWidget {
                       const SizedBox(height: AppSpacing.xs),
                       statsAsync.when(
                         data: (CollectionStats stats) =>
-                            _buildStatsRow(stats),
+                            _buildStatsRow(stats, S.of(context)),
                         loading: () => _buildLoadingStats(),
                         error: (Object error, StackTrace stack) =>
-                            _buildErrorStats(),
+                            _buildErrorStats(S.of(context)),
                       ),
                         statsAsync.when(
                           data: (CollectionStats stats) =>
@@ -108,10 +109,9 @@ class CollectionTile extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatsRow(CollectionStats stats) {
+  Widget _buildStatsRow(CollectionStats stats, S l) {
     return Text(
-      '${stats.total} item${stats.total != 1 ? 's' : ''}'
-      ' · ${stats.completionPercentFormatted} completed',
+      l.collectionTileStats(stats.total, stats.completionPercentFormatted),
       style: AppTypography.bodySmall,
     );
   }
@@ -129,9 +129,9 @@ class CollectionTile extends ConsumerWidget {
     );
   }
 
-  Widget _buildErrorStats() {
+  Widget _buildErrorStats(S l) {
     return Text(
-      'Error loading stats',
+      l.collectionTileError,
       style: AppTypography.caption.copyWith(color: AppColors.error),
     );
   }

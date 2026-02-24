@@ -1,3 +1,4 @@
+import 'package:xerabora/l10n/app_localizations.dart';
 // Тесты для WelcomeStepApiKeys — шаг 2 Welcome Wizard.
 
 import 'package:flutter/material.dart';
@@ -8,6 +9,8 @@ import 'package:xerabora/shared/theme/app_colors.dart';
 void main() {
   Widget createWidget() {
     return const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
       home: Scaffold(
         body: WelcomeStepApiKeys(),
       ),

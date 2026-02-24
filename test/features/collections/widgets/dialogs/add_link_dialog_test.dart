@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/collections/widgets/dialogs/add_link_dialog.dart';
+import 'package:xerabora/l10n/app_localizations.dart';
 
 void main() {
   group('AddLinkDialog', () {
@@ -10,6 +11,8 @@ void main() {
       String? initialLabel,
     }) {
       return MaterialApp(
+        localizationsDelegates: S.localizationsDelegates,
+        supportedLocales: S.supportedLocales,
         home: Scaffold(
           body: Builder(
             builder: (BuildContext context) {

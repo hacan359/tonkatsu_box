@@ -1,3 +1,4 @@
+import 'package:xerabora/l10n/app_localizations.dart';
 // Тесты для UpdateBanner — баннер уведомления об обновлении.
 
 import 'dart:async';
@@ -36,6 +37,8 @@ void main() {
         ),
       ],
       child: const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
         home: Scaffold(
           body: Column(
             children: <Widget>[
@@ -116,6 +119,8 @@ void main() {
             ),
           ],
           child: const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: Scaffold(
               body: Column(
                 children: <Widget>[

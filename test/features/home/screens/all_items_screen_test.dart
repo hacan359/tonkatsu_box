@@ -12,6 +12,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/data/repositories/collection_repository.dart';
 import 'package:xerabora/features/home/screens/all_items_screen.dart';
+import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/shared/models/collection.dart';
@@ -137,6 +138,8 @@ void main() {
         sharedPreferencesProvider.overrideWithValue(prefs),
       ],
       child: const MaterialApp(
+        localizationsDelegates: S.localizationsDelegates,
+        supportedLocales: S.supportedLocales,
         home: BreadcrumbScope(
           label: 'Main',
           child: AllItemsScreen(),

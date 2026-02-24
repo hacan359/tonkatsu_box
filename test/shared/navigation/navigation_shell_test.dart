@@ -1,3 +1,4 @@
+import 'package:xerabora/l10n/app_localizations.dart';
 // Тесты для NavigationShell.
 //
 // Nested navigation:
@@ -84,6 +85,8 @@ void main() {
           ),
         ],
         child: MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
           home: MediaQuery(
             data: MediaQueryData(size: Size(width, 768)),
             child: NavigationShell(initialTab: initialTab),

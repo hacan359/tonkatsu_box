@@ -1,3 +1,4 @@
+import 'package:xerabora/l10n/app_localizations.dart';
 // Виджет-тесты для MediaPosterCard.
 
 import 'package:flutter/material.dart';
@@ -28,6 +29,8 @@ void main() {
     VoidCallback? onLongPress,
   }) {
     return MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
       home: Scaffold(
         body: SizedBox(
           width: 150,

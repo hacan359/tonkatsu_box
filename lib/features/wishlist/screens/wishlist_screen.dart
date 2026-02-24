@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/wishlist_item.dart';
@@ -31,6 +32,7 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final S l = S.of(context);
     final AsyncValue<List<WishlistItem>> itemsAsync =
         ref.watch(wishlistProvider);
 
@@ -44,7 +46,7 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
                   : Icons.visibility_off,
             ),
             color: AppColors.textSecondary,
-            tooltip: _showResolved ? 'Hide resolved' : 'Show resolved',
+            tooltip: _showResolved ? l.wishlistHideResolved : l.wishlistShowResolved,
             onPressed: () {
               setState(() {
                 _showResolved = !_showResolved;
@@ -54,7 +56,7 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
           IconButton(
             icon: const Icon(Icons.delete_sweep),
             color: AppColors.textSecondary,
-            tooltip: 'Clear resolved',
+            tooltip: l.wishlistClearResolved,
             onPressed: () => _confirmClearResolved(context),
           ),
         ],
@@ -62,7 +64,7 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
       body: itemsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (Object error, StackTrace stack) => Center(
-          child: Text('Error: $error'),
+          child: Text(S.of(context).errorPrefix(error.toString())),
         ),
         data: (List<WishlistItem> items) {
           final List<WishlistItem> filtered = _showResolved
@@ -99,6 +101,8 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
   }
 
   Widget _buildEmptyState(BuildContext context) {
+    final S l = S.of(context);
+
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -110,14 +114,14 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
-            'No wishlist items yet',
+            l.wishlistEmpty,
             style: AppTypography.body.copyWith(
               color: AppColors.textTertiary,
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'Tap + to add something to find later',
+            l.wishlistEmptyHint,
             style: AppTypography.bodySmall.copyWith(
               color: AppColors.textTertiary.withValues(alpha: 0.7),
             ),
@@ -164,19 +168,20 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
   }
 
   Future<void> _deleteItem(BuildContext context, WishlistItem item) async {
+    final S l = S.of(context);
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
-        title: const Text('Delete item'),
-        content: Text('Delete "${item.text}" from wishlist?'),
+        title: Text(l.wishlistDeleteItem),
+        content: Text(l.wishlistDeletePrompt(item.text)),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Delete'),
+            child: Text(l.delete),
           ),
         ],
       ),
@@ -199,6 +204,7 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
   }
 
   Future<void> _confirmClearResolved(BuildContext context) async {
+    final S l = S.of(context);
     final int resolvedCount = ref
             .read(wishlistProvider)
             .valueOrNull
@@ -211,18 +217,16 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
-        title: const Text('Clear resolved'),
-        content: Text(
-          'Delete $resolvedCount resolved item${resolvedCount == 1 ? '' : 's'}?',
-        ),
+        title: Text(l.wishlistClearResolvedTitle),
+        content: Text(l.wishlistClearResolvedMessage(resolvedCount)),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Clear'),
+            child: Text(l.clear),
           ),
         ],
       ),
@@ -251,6 +255,8 @@ class _WishlistTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final S l = S.of(context);
+
     return Opacity(
       opacity: item.isResolved ? 0.5 : 1.0,
       child: ListTile(
@@ -276,20 +282,20 @@ class _WishlistTile extends StatelessWidget {
             }
           },
           itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-            const PopupMenuItem<String>(
+            PopupMenuItem<String>(
               value: 'search',
               child: ListTile(
-                leading: Icon(Icons.search),
-                title: Text('Search'),
+                leading: const Icon(Icons.search),
+                title: Text(l.search),
                 contentPadding: EdgeInsets.zero,
                 dense: true,
               ),
             ),
-            const PopupMenuItem<String>(
+            PopupMenuItem<String>(
               value: 'edit',
               child: ListTile(
-                leading: Icon(Icons.edit),
-                title: Text('Edit'),
+                leading: const Icon(Icons.edit),
+                title: Text(l.edit),
                 contentPadding: EdgeInsets.zero,
                 dense: true,
               ),
@@ -300,17 +306,17 @@ class _WishlistTile extends StatelessWidget {
                 leading: Icon(
                   item.isResolved ? Icons.undo : Icons.check_circle_outline,
                 ),
-                title: Text(item.isResolved ? 'Unresolve' : 'Mark resolved'),
+                title: Text(item.isResolved ? l.wishlistUnresolve : l.wishlistMarkResolved),
                 contentPadding: EdgeInsets.zero,
                 dense: true,
               ),
             ),
             const PopupMenuDivider(),
-            const PopupMenuItem<String>(
+            PopupMenuItem<String>(
               value: 'delete',
               child: ListTile(
-                leading: Icon(Icons.delete, color: Colors.red),
-                title: Text('Delete', style: TextStyle(color: Colors.red)),
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: Text(l.delete, style: const TextStyle(color: Colors.red)),
                 contentPadding: EdgeInsets.zero,
                 dense: true,
               ),
@@ -338,13 +344,13 @@ class _WishlistTile extends StatelessWidget {
       parts.add(item.note!);
     }
     if (item.mediaTypeHint != null && !item.hasNote) {
-      parts.add(item.mediaTypeHint!.displayLabel);
+      parts.add(item.mediaTypeHint!.localizedLabel(S.of(context)));
     }
 
     if (parts.isEmpty) return null;
 
     return Text(
-      parts.join(' · '),
+      parts.join(' \u00b7 '),
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
     );

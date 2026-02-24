@@ -34,6 +34,7 @@ void main() {
 
       mockDb = MockDatabaseService();
       when(() => mockDb.database).thenAnswer((_) async => MockDatabase());
+      when(() => mockDb.getPlatformCount()).thenAnswer((_) async => 0);
     });
 
     testWidgets('должен рендерить MaterialApp', (WidgetTester tester) async {

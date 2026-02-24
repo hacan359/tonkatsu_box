@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/tmdb_api.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -100,11 +101,11 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
       data: (List<CollectionItem> items) {
         final CollectionItem? item = _findItem(items);
         if (item == null) {
-          return const BreadcrumbScope(
+          return BreadcrumbScope(
             label: '...',
             child: Scaffold(
-              appBar: AutoBreadcrumbAppBar(),
-              body: Center(child: Text('Animation not found')),
+              appBar: const AutoBreadcrumbAppBar(),
+              body: Center(child: Text(S.of(context).animationNotFound)),
             ),
           );
         }
@@ -118,16 +119,19 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
         ),
       ),
       error: (Object error, StackTrace stack) => BreadcrumbScope(
-        label: 'Error',
+        label: '...',
         child: Scaffold(
           appBar: const AutoBreadcrumbAppBar(),
-          body: Center(child: Text('Error: $error')),
+          body: Center(
+            child: Text(S.of(context).errorPrefix(error.toString())),
+          ),
         ),
       ),
     );
   }
 
   Future<void> _moveToCollection(CollectionItem item) async {
+    final S l = S.of(context);
     final NavigatorState navigator = Navigator.of(context);
     final bool isUncategorized = widget.collectionId == null;
 
@@ -136,7 +140,7 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
       ref: ref,
       excludeCollectionId: widget.collectionId,
       showUncategorized: !isUncategorized,
-      title: 'Move to Collection',
+      title: l.collectionMoveToCollection,
     );
     if (choice == null || !mounted) return;
 
@@ -148,7 +152,7 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
         targetName = collection.name;
       case WithoutCollection():
         targetCollectionId = null;
-        targetName = 'Uncategorized';
+        targetName = l.collectionsUncategorized;
     }
 
     final ({bool success, bool sourceEmpty}) result = await ref
@@ -165,23 +169,23 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
 
     if (result.success) {
       context.showSnack(
-        '${item.itemName} moved to $targetName',
+        S.of(context).collectionItemMovedTo(item.itemName, targetName),
         type: SnackType.success,
       );
       if (result.sourceEmpty && widget.collectionId != null) {
         final bool? confirmed = await showDialog<bool>(
           context: context,
           builder: (BuildContext context) => AlertDialog(
-            title: const Text('Empty Collection'),
-            content: const Text('This collection is now empty. Delete it?'),
+            title: Text(S.of(context).collectionEmpty),
+            content: Text(S.of(context).collectionDeleteEmptyPrompt),
             actions: <Widget>[
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('Keep'),
+                child: Text(S.of(context).keep),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text('Delete'),
+                child: Text(S.of(context).delete),
               ),
             ],
           ),
@@ -194,7 +198,9 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
       }
       if (mounted) navigator.pop();
     } else {
-      context.showSnack('${item.itemName} already exists in $targetName');
+      context.showSnack(
+        S.of(context).collectionItemAlreadyExists(item.itemName, targetName),
+      );
     }
   }
 
@@ -202,19 +208,19 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
-        title: const Text('Remove Item?'),
-        content: Text('Remove ${item.itemName} from this collection?'),
+        title: Text(S.of(context).collectionRemoveItemTitle),
+        content: Text(S.of(context).collectionRemoveItemMessage(item.itemName)),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(S.of(context).cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
-            child: const Text('Remove'),
+            child: Text(S.of(context).remove),
           ),
         ],
       ),
@@ -229,7 +235,10 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
         .removeItem(item.id, mediaType: item.mediaType);
 
     if (mounted) {
-      context.showSnack('${item.itemName} removed', type: SnackType.success);
+      context.showSnack(
+        S.of(context).collectionItemRemoved(item.itemName),
+        type: SnackType.success,
+      );
       Navigator.of(context).pop();
     }
   }
@@ -273,11 +282,11 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
                 },
                 itemBuilder: (BuildContext context) =>
                     <PopupMenuEntry<String>>[
-                  const PopupMenuItem<String>(
+                  PopupMenuItem<String>(
                     value: 'move',
                     child: ListTile(
-                      leading: Icon(Icons.drive_file_move_outlined),
-                      title: Text('Move to Collection'),
+                      leading: const Icon(Icons.drive_file_move_outlined),
+                      title: Text(S.of(context).collectionMoveToCollection),
                       contentPadding: EdgeInsets.zero,
                     ),
                   ),
@@ -290,7 +299,7 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
                         color: Theme.of(context).colorScheme.error,
                       ),
                       title: Text(
-                        'Remove',
+                        S.of(context).remove,
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.error,
                         ),
@@ -310,8 +319,9 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
                 color: _isViewModeLocked
                     ? AppColors.warning
                     : AppColors.textSecondary,
-                tooltip:
-                    _isViewModeLocked ? 'Unlock board' : 'Lock board',
+                tooltip: _isViewModeLocked
+                    ? S.of(context).collectionUnlockBoard
+                    : S.of(context).collectionLockBoard,
                 onPressed: () {
                   setState(() {
                     _isViewModeLocked = !_isViewModeLocked;
@@ -332,14 +342,14 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
           bottom: TabBar(
             controller: _tabController,
             tabs: <Tab>[
-              const Tab(
-                icon: Icon(Icons.info_outline),
-                text: 'Details',
+              Tab(
+                icon: const Icon(Icons.info_outline),
+                text: S.of(context).detailsTab,
               ),
               if (_hasCanvas)
-                const Tab(
-                  icon: Icon(Icons.dashboard_outlined),
-                  text: 'Board',
+                Tab(
+                  icon: const Icon(Icons.dashboard_outlined),
+                  text: S.of(context).boardTab,
                 ),
             ],
           ),
@@ -370,7 +380,7 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
       placeholderIcon: Icons.animation,
       source: DataSource.tmdb,
       typeIcon: Icons.animation,
-      typeLabel: 'Animated Movie',
+      typeLabel: S.of(context).animatedMovie,
       infoChips: _buildMovieInfoChips(movie),
       description: movie?.overview,
       cacheImageType: ImageType.moviePoster,
@@ -440,14 +450,15 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
   }
 
   String _formatRuntime(int minutes) {
+    final S l = S.of(context);
     final int hours = minutes ~/ 60;
     final int mins = minutes % 60;
     if (hours > 0 && mins > 0) {
-      return '${hours}h ${mins}m';
+      return l.runtimeHoursMinutes(hours, mins);
     } else if (hours > 0) {
-      return '${hours}h';
+      return l.runtimeHours(hours);
     }
-    return '${mins}m';
+    return l.runtimeMinutes(mins);
   }
 
   // ==================== TvShow-like Details ====================
@@ -461,7 +472,7 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
       placeholderIcon: Icons.animation,
       source: DataSource.tmdb,
       typeIcon: Icons.animation,
-      typeLabel: 'Animated Series',
+      typeLabel: S.of(context).animatedSeries,
       infoChips: _buildTvShowInfoChips(tvShow),
       description: tvShow?.overview,
       cacheImageType: ImageType.tvShowPoster,
@@ -502,6 +513,7 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
   }
 
   List<MediaDetailChip> _buildTvShowInfoChips(TvShow? tvShow) {
+    final S l = S.of(context);
     final List<MediaDetailChip> chips = <MediaDetailChip>[];
     if (tvShow?.firstAirYear != null) {
       chips.add(MediaDetailChip(
@@ -512,14 +524,13 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
     if (tvShow?.totalSeasons != null) {
       chips.add(MediaDetailChip(
         icon: Icons.video_library_outlined,
-        text:
-            '${tvShow!.totalSeasons} season${tvShow.totalSeasons != 1 ? 's' : ''}',
+        text: l.totalSeasons(tvShow!.totalSeasons!),
       ));
     }
     if (tvShow?.totalEpisodes != null) {
       chips.add(MediaDetailChip(
         icon: Icons.playlist_play,
-        text: '${tvShow!.totalEpisodes} ep',
+        text: l.totalEpisodes(tvShow!.totalEpisodes!),
       ));
     }
     if (tvShow?.formattedRating != null) {
@@ -559,6 +570,7 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
     final int totalEpisodes = tvShow?.totalEpisodes ?? 0;
     final int watchedCount = trackerState.totalWatchedCount;
 
+    final S l = S.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -567,7 +579,7 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
             const Icon(Icons.playlist_add_check, size: 20, color: AppColors.animationAccent),
             const SizedBox(width: AppSpacing.sm),
             Text(
-              'Episode Progress',
+              l.episodeProgress,
               style: AppTypography.h3.copyWith(
                 fontWeight: FontWeight.w600,
               ),
@@ -575,8 +587,8 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
             const Spacer(),
             Text(
               totalEpisodes > 0
-                  ? '$watchedCount/$totalEpisodes watched'
-                  : '$watchedCount watched',
+                  ? l.episodesWatchedOf(watchedCount, totalEpisodes)
+                  : l.episodesWatched(watchedCount),
               style: AppTypography.bodySmall.copyWith(
                 color: AppColors.textSecondary,
               ),
@@ -728,7 +740,7 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
         );
 
     if (mounted) {
-      context.showSnack('Image added to board', type: SnackType.success);
+      context.showSnack(S.of(context).imageAddedToBoard, type: SnackType.success);
     }
   }
 
@@ -760,7 +772,7 @@ class _AnimeDetailScreenState extends ConsumerState<AnimeDetailScreen>
         );
 
     if (mounted) {
-      context.showSnack('Map added to board', type: SnackType.success);
+      context.showSnack(S.of(context).mapAddedToBoard, type: SnackType.success);
     }
   }
 
@@ -917,7 +929,7 @@ class _AnimeSeasonsListWidgetState
         children: <Widget>[
           Expanded(
             child: Text(
-              'No season data available',
+              S.of(context).noSeasonData,
               style: AppTypography.bodySmall.copyWith(
                 color: AppColors.textSecondary,
               ),
@@ -925,7 +937,7 @@ class _AnimeSeasonsListWidgetState
           ),
           IconButton(
             icon: const Icon(Icons.refresh, size: 18),
-            tooltip: 'Refresh from TMDB',
+            tooltip: S.of(context).refreshFromTmdb,
             onPressed: _refreshing ? null : _refreshSeasons,
             constraints: const BoxConstraints(),
             padding: const EdgeInsets.all(4),
@@ -953,7 +965,7 @@ class _AnimeSeasonsListWidgetState
                 )
               : IconButton(
                   icon: const Icon(Icons.refresh, size: 18),
-                  tooltip: 'Refresh from TMDB',
+                  tooltip: S.of(context).refreshFromTmdb,
                   onPressed: _refreshSeasons,
                   constraints: const BoxConstraints(),
                   padding: const EdgeInsets.all(4),
@@ -986,6 +998,7 @@ class _AnimeSeasonExpansionTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final S l = S.of(context);
     final int seasonNum = season.seasonNumber;
     final int episodeCount = season.episodeCount ?? 0;
     final int watchedCount = trackerState.watchedCountForSeason(seasonNum);
@@ -997,8 +1010,8 @@ class _AnimeSeasonExpansionTile extends ConsumerWidget {
     final String seasonTitle =
         season.name ?? 'Season $seasonNum';
     final String subtitle = episodeCount > 0
-        ? '$watchedCount/$episodeCount episodes'
-        : '$watchedCount watched';
+        ? l.seasonEpisodesProgress(watchedCount, episodeCount)
+        : l.episodesWatched(watchedCount);
 
     return ExpansionTile(
       tilePadding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
@@ -1030,7 +1043,7 @@ class _AnimeSeasonExpansionTile extends ConsumerWidget {
                   : Icons.done_all,
               size: 18,
             ),
-            tooltip: allWatched ? 'Unmark all' : 'Mark all watched',
+            tooltip: allWatched ? l.unmarkAll : l.markAllWatched,
             onPressed: () {
               if (episodes == null || episodes.isEmpty) {
                 ref
@@ -1087,7 +1100,7 @@ class _AnimeSeasonExpansionTile extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Text(
-              'No episodes found',
+              l.noEpisodesFound,
               style: AppTypography.bodySmall.copyWith(
                 color: AppColors.textSecondary,
               ),
@@ -1130,7 +1143,9 @@ class _AnimeEpisodeTile extends ConsumerWidget {
     }
     if (isWatched && watchedAt != null) {
       subtitleParts.add(
-        'watched ${_months[watchedAt!.month - 1]} ${watchedAt!.day}',
+        S.of(context).episodeWatchedDate(
+          '${_months[watchedAt!.month - 1]} ${watchedAt!.day}',
+        ),
       );
     }
 

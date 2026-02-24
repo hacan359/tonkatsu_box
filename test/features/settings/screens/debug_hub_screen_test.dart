@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/features/settings/screens/debug_hub_screen.dart';
+import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/features/settings/widgets/settings_nav_row.dart';
 import 'package:xerabora/features/settings/widgets/settings_section.dart';
 import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
@@ -23,6 +24,8 @@ void main() {
           sharedPreferencesProvider.overrideWithValue(prefs),
         ],
         child: const MaterialApp(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
           home: BreadcrumbScope(
             label: 'Settings',
             child: DebugHubScreen(),

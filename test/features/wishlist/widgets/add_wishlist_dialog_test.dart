@@ -1,3 +1,4 @@
+import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/wishlist/widgets/add_wishlist_dialog.dart';
@@ -12,6 +13,8 @@ void main() {
     }) async {
       await tester.pumpWidget(
         MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
           theme: ThemeData.dark(),
           home: Scaffold(
             body: Builder(

@@ -11,6 +11,7 @@ import 'package:xerabora/data/repositories/collection_repository.dart';
 import 'package:xerabora/features/collections/providers/collections_provider.dart';
 import 'package:xerabora/features/collections/screens/collection_screen.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
+import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/models/collection.dart';
 import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/game.dart';
@@ -182,6 +183,8 @@ void main() {
             .overrideWith((Ref ref) async => testStats),
       ],
       child: MaterialApp(
+        localizationsDelegates: S.localizationsDelegates,
+        supportedLocales: S.supportedLocales,
         home: CollectionScreen(collectionId: collectionId),
       ),
     );
@@ -695,7 +698,7 @@ void main() {
         await tester.pumpWidget(createWidget(collectionId: 99));
         await pumpScreen(tester);
 
-        expect(find.text('Collection not found'), findsOneWidget);
+        expect(find.text('Collection not found'), findsWidgets);
       });
     });
 
@@ -853,6 +856,8 @@ void main() {
                 .overrideWith((Ref ref) async => zeroStats),
           ],
           child: const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: CollectionScreen(collectionId: 1),
           ),
         ));

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -19,6 +20,8 @@ class WelcomeStepApiKeys extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final S l = S.of(context);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
@@ -33,14 +36,14 @@ class WelcomeStepApiKeys extends StatelessWidget {
               children: <Widget>[
                 const Icon(Icons.key, size: 36, color: AppColors.brand),
                 const SizedBox(height: 8),
-                const Text(
-                  'Getting API Keys',
+                Text(
+                  l.welcomeApiTitle,
                   style: AppTypography.h2,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Free registration, takes 2-3 minutes each',
+                  l.welcomeApiFreeHint,
                   style: AppTypography.bodySmall.copyWith(
                     color: AppColors.textTertiary,
                   ),
@@ -52,13 +55,13 @@ class WelcomeStepApiKeys extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
 
           // IGDB
-          const _ApiSection(
-            tag: 'IGDB',
+          _ApiSection(
+            tag: l.welcomeApiIgdbTag,
             tagColor: AppColors.gameAccent,
-            title: 'Game search',
-            badge: 'REQUIRED',
+            title: l.welcomeApiIgdbDesc,
+            badge: l.welcomeApiRequired,
             badgeColor: AppColors.brand,
-            steps: <String>[
+            steps: const <String>[
               'Go to dev.twitch.tv/console',
               'Log in with Twitch (create account if needed)',
               'Register Your Application\n'
@@ -73,13 +76,13 @@ class WelcomeStepApiKeys extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
 
           // TMDB
-          const _ApiSection(
-            tag: 'TMDB',
+          _ApiSection(
+            tag: l.welcomeApiTmdbTag,
             tagColor: AppColors.brand,
-            title: 'Movies, TV & Anime',
-            badge: 'RECOMMENDED',
+            title: l.welcomeApiTmdbDesc,
+            badge: l.welcomeApiRecommended,
             badgeColor: AppColors.textTertiary,
-            steps: <String>[
+            steps: const <String>[
               'Go to themoviedb.org',
               'Create free account → Settings → API',
               'Request API Key (Developer type)',
@@ -93,13 +96,13 @@ class WelcomeStepApiKeys extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
 
           // SteamGridDB
-          const _ApiSection(
-            tag: 'SGDB',
+          _ApiSection(
+            tag: l.welcomeApiSgdbTag,
             tagColor: _sgdbColor,
-            title: 'Game artwork for boards',
-            badge: 'OPTIONAL',
+            title: l.welcomeApiSgdbDesc,
+            badge: l.welcomeApiOptional,
             badgeColor: AppColors.textTertiary,
-            steps: <String>[
+            steps: const <String>[
               'Go to steamgriddb.com',
               'Create account → Preferences → API',
               'Copy API Key',
@@ -121,7 +124,7 @@ class WelcomeStepApiKeys extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
             ),
             child: Text(
-              'Enter keys in Settings → Credentials after setup',
+              l.welcomeApiEnterKeysHint,
               style: AppTypography.body.copyWith(color: AppColors.brandLight),
               textAlign: TextAlign.center,
             ),

@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
 import '../../../shared/widgets/breadcrumb_scope.dart';
@@ -26,7 +27,7 @@ class DebugHubScreen extends ConsumerWidget {
     final bool compact = MediaQuery.sizeOf(context).width < 600;
 
     return BreadcrumbScope(
-      label: 'Debug',
+      label: S.of(context).settingsDebug,
       child: Scaffold(
         appBar: const AutoBreadcrumbAppBar(),
         body: ListView(

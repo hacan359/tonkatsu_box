@@ -75,7 +75,7 @@ Detailed instructions: [docs/guides/API_KEYS.md](guides/API_KEYS.md)
 | **Collections** | Your collections. Grid or list view per collection. |
 | **Wishlist** | Quick list of items to check out later. No API needed. |
 | **Search** | Find games, movies & TV shows via API. Add to any collection. |
-| **Settings** | API keys, cache, database export/import, debug tools. |
+| **Settings** | Language, API keys, cache, database export/import, debug tools. |
 
 More details: [docs/guides/HOW_IT_WORKS.md](guides/HOW_IT_WORKS.md)
 
@@ -95,13 +95,14 @@ You can revisit the wizard anytime from **Settings → Welcome Guide**.
 ### Manual setup
 
 1. Start Tonkatsu Box
-2. Go to **Settings → Credentials**
-3. Enter your IGDB Client ID and Client Secret
-4. Click **Verify Connection**
-5. Platforms will sync automatically
-6. (Optional) Enter your TMDB API Key for movie/TV show search
-7. (Optional) Enter your SteamGridDB API Key for game artwork
-8. You're ready to create collections!
+2. (Optional) Switch app language in **Settings → Language** (English / Русский)
+3. Go to **Settings → Credentials**
+4. Enter your IGDB Client ID and Client Secret
+5. Click **Verify Connection**
+6. Platforms will sync automatically
+7. (Optional) Enter your TMDB API Key for movie/TV show search
+8. (Optional) Enter your SteamGridDB API Key for game artwork
+9. You're ready to create collections!
 
 > [!TIP]
 > All API keys can be changed later in **Settings → Credentials**.

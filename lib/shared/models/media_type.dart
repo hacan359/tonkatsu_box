@@ -1,5 +1,7 @@
 // Тип медиа-контента в коллекции.
 
+import '../../l10n/app_localizations.dart';
+
 /// Тип медиа-контента.
 enum MediaType {
   /// Игра (IGDB).
@@ -42,6 +44,20 @@ enum MediaType {
         return 'TV Show';
       case MediaType.animation:
         return 'Animation';
+    }
+  }
+
+  /// Локализованное отображаемое название.
+  String localizedLabel(S l) {
+    switch (this) {
+      case MediaType.game:
+        return l.mediaTypeGame;
+      case MediaType.movie:
+        return l.mediaTypeMovie;
+      case MediaType.tvShow:
+        return l.mediaTypeTvShow;
+      case MediaType.animation:
+        return l.mediaTypeAnimation;
     }
   }
 }

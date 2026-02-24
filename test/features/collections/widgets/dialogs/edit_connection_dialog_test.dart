@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/collections/widgets/dialogs/edit_connection_dialog.dart';
+import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/models/canvas_connection.dart';
 
 void main() {
@@ -13,6 +14,8 @@ void main() {
     }) async {
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: Builder(
               builder: (BuildContext context) {
@@ -89,6 +92,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: Builder(
               builder: (BuildContext context) {
@@ -123,6 +128,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: Builder(
               builder: (BuildContext context) {
@@ -169,6 +176,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: Builder(
               builder: (BuildContext context) {

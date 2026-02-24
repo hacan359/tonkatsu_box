@@ -1,3 +1,4 @@
+import 'package:xerabora/l10n/app_localizations.dart';
 // Тесты для виджета BreadcrumbAppBar.
 
 import 'package:flutter/gestures.dart';
@@ -16,6 +17,8 @@ void main() {
       Color? accentColor,
     }) {
       return MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
         home: Scaffold(
           appBar: BreadcrumbAppBar(
             crumbs: crumbs,
@@ -122,6 +125,8 @@ void main() {
         // Нужен Navigator с pushed route, чтобы canPop() вернул true
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: Navigator(
               onGenerateRoute: (RouteSettings settings) {
                 return MaterialPageRoute<void>(
@@ -462,6 +467,8 @@ void main() {
 
         await tester.pumpWidget(
           const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: DefaultTabController(
               length: 2,
               child: Scaffold(

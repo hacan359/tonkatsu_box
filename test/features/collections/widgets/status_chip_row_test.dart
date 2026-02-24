@@ -1,3 +1,4 @@
+import 'package:xerabora/l10n/app_localizations.dart';
 // Тесты для StatusChipRow.
 
 import 'package:flutter/material.dart';
@@ -14,6 +15,8 @@ void main() {
     void Function(ItemStatus)? onChanged,
   }) {
     return MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
       home: Scaffold(
         body: StatusChipRow(
           status: status,

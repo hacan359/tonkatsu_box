@@ -1,3 +1,4 @@
+import 'package:xerabora/l10n/app_localizations.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -57,6 +58,8 @@ void main() {
         imageCacheServiceProvider.overrideWithValue(mockCacheService),
       ],
       child: MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
         home: Scaffold(
           body: SizedBox(
             width: 400,

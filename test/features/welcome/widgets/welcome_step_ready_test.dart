@@ -1,3 +1,4 @@
+import 'package:xerabora/l10n/app_localizations.dart';
 // Тесты для WelcomeStepReady — шаг 4 Welcome Wizard.
 
 import 'package:flutter/material.dart';
@@ -11,6 +12,8 @@ void main() {
     VoidCallback? onSkip,
   }) {
     return MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
       home: Scaffold(
         body: WelcomeStepReady(
           onGoToSettings: onGoToSettings ?? () {},

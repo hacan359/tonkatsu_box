@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/config_service.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -28,7 +29,7 @@ class DatabaseScreen extends ConsumerWidget {
     final bool compact = MediaQuery.sizeOf(context).width < 600;
 
     return BreadcrumbScope(
-      label: 'Database',
+      label: S.of(context).databaseTitle,
       child: Scaffold(
         appBar: const AutoBreadcrumbAppBar(),
         body: SingleChildScrollView(
@@ -51,10 +52,11 @@ class DatabaseScreen extends ConsumerWidget {
     WidgetRef ref,
     bool compact,
   ) {
+    final S l10n = S.of(context);
     return SettingsSection(
-      title: 'Configuration',
+      title: l10n.databaseConfiguration,
       icon: Icons.settings_backup_restore,
-      subtitle: 'Export or import your API keys and settings.',
+      subtitle: l10n.databaseConfigSubtitle,
       compact: compact,
       children: <Widget>[
         LayoutBuilder(
@@ -62,12 +64,12 @@ class DatabaseScreen extends ConsumerWidget {
             final Widget exportButton = OutlinedButton.icon(
               onPressed: () => _exportConfig(context, ref),
               icon: const Icon(Icons.upload, size: 18),
-              label: const Text('Export Config'),
+              label: Text(l10n.databaseExportConfig),
             );
             final Widget importButton = OutlinedButton.icon(
               onPressed: () => _importConfig(context, ref),
               icon: const Icon(Icons.download, size: 18),
-              label: const Text('Import Config'),
+              label: Text(l10n.databaseImportConfig),
             );
             if (constraints.maxWidth < 400) {
               return Column(
@@ -97,15 +99,15 @@ class DatabaseScreen extends ConsumerWidget {
     WidgetRef ref,
     bool compact,
   ) {
+    final S l10n = S.of(context);
     return SettingsSection(
-      title: 'Danger Zone',
+      title: l10n.databaseDangerZone,
       icon: Icons.warning_amber,
       iconColor: AppColors.error,
       compact: compact,
       children: <Widget>[
-        const Text(
-          'Clears all collections, games, movies, TV shows and board data. '
-          'Settings and API keys will be preserved.',
+        Text(
+          l10n.databaseDangerZoneMessage,
           style: AppTypography.bodySmall,
         ),
         const SizedBox(height: AppSpacing.sm),
@@ -118,7 +120,7 @@ class DatabaseScreen extends ConsumerWidget {
               side: const BorderSide(color: AppColors.error),
             ),
             icon: const Icon(Icons.delete_forever, size: 18),
-            label: const Text('Reset Database'),
+            label: Text(l10n.databaseResetDatabase),
           ),
         ),
       ],
@@ -134,7 +136,7 @@ class DatabaseScreen extends ConsumerWidget {
 
     if (result.success) {
       context.showSnack(
-        'Config exported to ${result.filePath}',
+        S.of(context).databaseConfigExported(result.filePath ?? ''),
         type: SnackType.success,
       );
     } else if (result.error != null) {
@@ -151,7 +153,7 @@ class DatabaseScreen extends ConsumerWidget {
 
     if (result.success) {
       context.showSnack(
-        'Config imported successfully',
+        S.of(context).databaseConfigImported,
         type: SnackType.success,
       );
     } else if (result.error != null) {
@@ -160,28 +162,24 @@ class DatabaseScreen extends ConsumerWidget {
   }
 
   Future<void> _resetDatabase(BuildContext context, WidgetRef ref) async {
+    final S l10n = S.of(context);
     final bool? confirm = await showDialog<bool>(
       context: context,
-      builder: (BuildContext context) => AlertDialog(
+      builder: (BuildContext dialogContext) => AlertDialog(
         scrollable: true,
-        title: const Text('Reset Database?'),
-        content: const Text(
-          'This will permanently delete all your collections, games, '
-          'movies, TV shows, episode progress, and board data.\n\n'
-          'Your API keys and settings will be preserved.\n\n'
-          'This action cannot be undone.',
-        ),
+        title: Text(l10n.databaseResetTitle),
+        content: Text(l10n.databaseResetMessage),
         actions: <Widget>[
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.cancel),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             style: TextButton.styleFrom(
               foregroundColor: AppColors.error,
             ),
-            child: const Text('Reset'),
+            child: Text(l10n.reset),
           ),
         ],
       ),
@@ -202,7 +200,7 @@ class DatabaseScreen extends ConsumerWidget {
 
       if (context.mounted) {
         context.showSnack(
-          'Database has been reset',
+          S.of(context).databaseReset,
           type: SnackType.success,
         );
         Navigator.of(context, rootNavigator: true).pushReplacement(

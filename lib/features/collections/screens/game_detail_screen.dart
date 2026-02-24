@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/image_cache_service.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
 import '../../../shared/widgets/breadcrumb_scope.dart';
@@ -87,11 +88,11 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
       data: (List<CollectionItem> items) {
         final CollectionItem? item = _findItem(items);
         if (item == null) {
-          return const BreadcrumbScope(
+          return BreadcrumbScope(
             label: '...',
             child: Scaffold(
-              appBar: AutoBreadcrumbAppBar(),
-              body: Center(child: Text('Game not found')),
+              appBar: const AutoBreadcrumbAppBar(),
+              body: Center(child: Text(S.of(context).gameNotFound)),
             ),
           );
         }
@@ -108,13 +109,16 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
         label: '...',
         child: Scaffold(
           appBar: const AutoBreadcrumbAppBar(),
-          body: Center(child: Text('Error: $error')),
+          body: Center(
+            child: Text(S.of(context).errorPrefix(error.toString())),
+          ),
         ),
       ),
     );
   }
 
   Future<void> _moveToCollection(CollectionItem item) async {
+    final S l = S.of(context);
     final NavigatorState navigator = Navigator.of(context);
     final bool isUncategorized = widget.collectionId == null;
 
@@ -123,7 +127,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
       ref: ref,
       excludeCollectionId: widget.collectionId,
       showUncategorized: !isUncategorized,
-      title: 'Move to Collection',
+      title: l.collectionMoveToCollection,
     );
     if (choice == null || !mounted) return;
 
@@ -135,7 +139,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
         targetName = collection.name;
       case WithoutCollection():
         targetCollectionId = null;
-        targetName = 'Uncategorized';
+        targetName = l.collectionsUncategorized;
     }
 
     final ({bool success, bool sourceEmpty}) result = await ref
@@ -150,23 +154,23 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
 
     if (result.success) {
       context.showSnack(
-        '${item.itemName} moved to $targetName',
+        S.of(context).collectionItemMovedTo(item.itemName, targetName),
         type: SnackType.success,
       );
       if (result.sourceEmpty && widget.collectionId != null) {
         final bool? confirmed = await showDialog<bool>(
           context: context,
           builder: (BuildContext context) => AlertDialog(
-            title: const Text('Empty Collection'),
-            content: const Text('This collection is now empty. Delete it?'),
+            title: Text(S.of(context).collectionEmpty),
+            content: Text(S.of(context).collectionDeleteEmptyPrompt),
             actions: <Widget>[
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('Keep'),
+                child: Text(S.of(context).keep),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text('Delete'),
+                child: Text(S.of(context).delete),
               ),
             ],
           ),
@@ -179,7 +183,9 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
       }
       if (mounted) navigator.pop();
     } else {
-      context.showSnack('${item.itemName} already exists in $targetName');
+      context.showSnack(
+        S.of(context).collectionItemAlreadyExists(item.itemName, targetName),
+      );
     }
   }
 
@@ -187,19 +193,19 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
-        title: const Text('Remove Item?'),
-        content: Text('Remove ${item.itemName} from this collection?'),
+        title: Text(S.of(context).collectionRemoveItemTitle),
+        content: Text(S.of(context).collectionRemoveItemMessage(item.itemName)),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(S.of(context).cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
-            child: const Text('Remove'),
+            child: Text(S.of(context).remove),
           ),
         ],
       ),
@@ -212,7 +218,10 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
         .removeItem(item.id, mediaType: item.mediaType);
 
     if (mounted) {
-      context.showSnack('${item.itemName} removed', type: SnackType.success);
+      context.showSnack(
+        S.of(context).collectionItemRemoved(item.itemName),
+        type: SnackType.success,
+      );
       Navigator.of(context).pop();
     }
   }
@@ -250,11 +259,11 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                   }
                 },
                 itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                  const PopupMenuItem<String>(
+                  PopupMenuItem<String>(
                     value: 'move',
                     child: ListTile(
-                      leading: Icon(Icons.drive_file_move_outlined),
-                      title: Text('Move to Collection'),
+                      leading: const Icon(Icons.drive_file_move_outlined),
+                      title: Text(S.of(context).collectionMoveToCollection),
                       contentPadding: EdgeInsets.zero,
                     ),
                   ),
@@ -267,7 +276,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                         color: Theme.of(context).colorScheme.error,
                       ),
                       title: Text(
-                        'Remove',
+                        S.of(context).remove,
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.error,
                         ),
@@ -283,7 +292,9 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                 color: _isViewModeLocked
                     ? AppColors.warning
                     : AppColors.textSecondary,
-                tooltip: _isViewModeLocked ? 'Unlock board' : 'Lock board',
+                tooltip: _isViewModeLocked
+                    ? S.of(context).collectionUnlockBoard
+                    : S.of(context).collectionLockBoard,
                 onPressed: () {
                   setState(() {
                     _isViewModeLocked = !_isViewModeLocked;
@@ -306,9 +317,9 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
           bottom: TabBar(
             controller: _tabController,
             tabs: <Tab>[
-              const Tab(icon: Icon(Icons.info_outline), text: 'Details'),
+              Tab(icon: const Icon(Icons.info_outline), text: S.of(context).detailsTab),
               if (_hasCanvas)
-                const Tab(icon: Icon(Icons.dashboard_outlined), text: 'Board'),
+                Tab(icon: const Icon(Icons.dashboard_outlined), text: S.of(context).boardTab),
             ],
           ),
         ),
@@ -512,7 +523,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
         );
 
     if (mounted) {
-      context.showSnack('Image added to board', type: SnackType.success);
+      context.showSnack(S.of(context).imageAddedToBoard, type: SnackType.success);
     }
   }
 
@@ -541,7 +552,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
         );
 
     if (mounted) {
-      context.showSnack('Map added to board', type: SnackType.success);
+      context.showSnack(S.of(context).mapAddedToBoard, type: SnackType.success);
     }
   }
 

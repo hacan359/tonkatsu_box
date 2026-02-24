@@ -1,3 +1,4 @@
+import 'package:xerabora/l10n/app_localizations.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
@@ -33,6 +34,8 @@ void main() {
         imageCacheServiceProvider.overrideWithValue(mockCacheService),
       ],
       child: MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
         home: Scaffold(
           body: constrainedWidth != null || constrainedHeight != null
               ? SizedBox(

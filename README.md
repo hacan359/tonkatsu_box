@@ -28,7 +28,7 @@
 
 ---
 
-Tonkatsu Box is a free, open-source collection manager for retro games, movies, TV shows, and anime. Search IGDB and TMDB databases with hundreds of thousands of titles, organize them into custom collections, track your backlog and progress, rate everything from 1 to 10, create visual boards with drag-and-drop, import your watch history from Trakt.tv, and share collections with friends. Available for Windows, Linux, and Android.
+Tonkatsu Box is a free, open-source collection manager for retro games, movies, TV shows, and anime. Search IGDB and TMDB databases with hundreds of thousands of titles, organize them into custom collections, track your backlog and progress, rate everything from 1 to 10, create visual boards with drag-and-drop, import your watch history from Trakt.tv, and share collections with friends. Available for Windows, Linux, and Android in English and Russian.
 
 <p align="center">
   <img src="docs/screenshots/01-main-all.jpg" width="800" alt="Main screen — browse all your games, movies, TV shows and anime">
@@ -88,6 +88,9 @@ Arrange your collection on a free-form board — drag posters around, add text n
 <p align="center">
   <img src="docs/screenshots/05-collection-board.jpg" width="800" alt="Visual board with game posters and connections">
 </p>
+
+### 🌐 English & Russian
+The entire interface is available in English and Russian with runtime language switching. Switch anytime in **Settings → Language** — all menus, statuses, labels, and messages update instantly without restarting the app.
 
 ### 📤 Share with Friends
 Export your collections as `.xcoll` (lightweight) or `.xcollx` (full offline copy with all images and data). Friends can import them and fork to create their own version.
@@ -204,6 +207,7 @@ The importer brings in your watched items (as completed), ratings (1–10), watc
 | VGMaps browser (level maps) | ✅ | — | — |
 | Export & import | ✅ | ✅ | ✅ |
 | Trakt.tv import | ✅ | ✅ | ✅ |
+| Language (EN / RU) | ✅ | ✅ | ✅ |
 
 > **Note:** Linux support is experimental — the build is included in releases but has not been extensively tested yet.
 

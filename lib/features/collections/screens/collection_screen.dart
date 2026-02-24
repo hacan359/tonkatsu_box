@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/services/export_service.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../core/services/xcoll_file.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
 import '../../../shared/widgets/breadcrumb_scope.dart';
@@ -80,8 +81,15 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       _isUncategorized || (_collection != null && _collection!.isEditable);
 
   /// Название для хлебных крошек и заголовка.
+  ///
+  /// Примечание: для uncategorized используется нелокализованная строка,
+  /// так как контекст недоступен в getter. Локализация применяется в UI.
   String get _displayName =>
       _isUncategorized ? 'Uncategorized' : (_collection?.name ?? '');
+
+  /// Локализованное название для UI-элементов.
+  String _localizedDisplayName(BuildContext context) =>
+      _isUncategorized ? S.of(context).collectionsUncategorized : (_collection?.name ?? '');
 
   @override
   void initState() {
@@ -149,12 +157,12 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
 
     if (!_isUncategorized && _collection == null) {
       return BreadcrumbScope(
-        label: 'Not found',
+        label: S.of(context).collectionNotFound,
         child: Scaffold(
           appBar: const AutoBreadcrumbAppBar(),
           body: Center(
             child: Text(
-              'Collection not found',
+              S.of(context).collectionNotFound,
               style: AppTypography.body.copyWith(color: AppColors.textSecondary),
             ),
           ),
@@ -167,8 +175,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     final AsyncValue<CollectionStats> statsAsync =
         ref.watch(collectionStatsProvider(widget.collectionId));
 
+    final S l = S.of(context);
     return BreadcrumbScope(
-      label: _displayName,
+      label: _localizedDisplayName(context),
       child: Scaffold(
       appBar: AutoBreadcrumbAppBar(
         actions: <Widget>[
@@ -176,7 +185,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             IconButton(
               icon: const Icon(Icons.add),
               color: AppColors.textSecondary,
-              tooltip: 'Add Items',
+              tooltip: l.collectionAddItems,
               onPressed: () => _addItems(context),
             ),
           if (kCanvasEnabled && !_isUncategorized)
@@ -185,7 +194,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                 _isCanvasMode ? Icons.list : Icons.dashboard,
               ),
               color: AppColors.textSecondary,
-              tooltip: _isCanvasMode ? 'Switch to List' : 'Switch to Board',
+              tooltip: _isCanvasMode ? l.collectionSwitchToList : l.collectionSwitchToBoard,
               onPressed: () {
                 setState(() {
                   _isCanvasMode = !_isCanvasMode;
@@ -200,7 +209,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
               color: _isViewModeLocked
                   ? AppColors.warning
                   : AppColors.textSecondary,
-              tooltip: _isViewModeLocked ? 'Unlock board' : 'Lock board',
+              tooltip: _isViewModeLocked ? l.collectionUnlockBoard : l.collectionLockBoard,
               onPressed: () {
                 setState(() {
                   _isViewModeLocked = !_isViewModeLocked;
@@ -221,37 +230,40 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             PopupMenuButton<String>(
               iconColor: AppColors.textSecondary,
               onSelected: (String value) => _handleMenuAction(value),
-              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              itemBuilder: (BuildContext context) {
+                final S ml = S.of(context);
+                return <PopupMenuEntry<String>>[
                 if (_collection!.isEditable)
-                  const PopupMenuItem<String>(
+                  PopupMenuItem<String>(
                     value: 'rename',
                     child: ListTile(
-                      leading: Icon(Icons.edit),
-                      title: Text('Rename'),
+                      leading: const Icon(Icons.edit),
+                      title: Text(ml.rename),
                       contentPadding: EdgeInsets.zero,
                     ),
                   ),
-                const PopupMenuItem<String>(
+                PopupMenuItem<String>(
                   value: 'export',
                   child: ListTile(
-                    leading: Icon(Icons.file_upload_outlined),
-                    title: Text('Export'),
+                    leading: const Icon(Icons.file_upload_outlined),
+                    title: Text(ml.collectionExport),
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),
                 const PopupMenuDivider(),
-                const PopupMenuItem<String>(
+                PopupMenuItem<String>(
                   value: 'delete',
                   child: ListTile(
-                    leading: Icon(Icons.delete, color: AppColors.error),
+                    leading: const Icon(Icons.delete, color: AppColors.error),
                     title: Text(
-                      'Delete',
-                      style: TextStyle(color: AppColors.error),
+                      ml.delete,
+                      style: const TextStyle(color: AppColors.error),
                     ),
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),
-              ],
+              ];
+              },
             ),
         ],
       ),
@@ -409,9 +421,10 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   static const double _filterRowHeight = 32;
 
   Widget _buildMediaTypeDropdown(CollectionStats? stats) {
+    final S l = S.of(context);
     String label;
     if (_filterType == null) {
-      label = 'All';
+      label = l.collectionFilterAll;
     } else {
       final int? count = switch (_filterType!) {
         MediaType.game => stats?.gameCount,
@@ -419,11 +432,11 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         MediaType.tvShow => stats?.tvShowCount,
         MediaType.animation => stats?.animationCount,
       };
-      label = '${_filterType!.displayLabel}${count != null ? ' ($count)' : ''}';
+      label = '${_filterType!.localizedLabel(l)}${count != null ? ' ($count)' : ''}';
     }
 
     return PopupMenuButton<String>(
-      tooltip: 'Filter by type',
+      tooltip: l.collectionFilterByType,
       onSelected: (String value) {
         setState(() {
           _filterType =
@@ -476,17 +489,20 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           ],
         ),
       ),
-      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-        _buildMediaTypeMenuItem(_filterAllKey, 'All', stats?.total),
-        _buildMediaTypeMenuItem(
-            MediaType.game.value, 'Games', stats?.gameCount),
-        _buildMediaTypeMenuItem(
-            MediaType.movie.value, 'Movies', stats?.movieCount),
-        _buildMediaTypeMenuItem(
-            MediaType.tvShow.value, 'TV Shows', stats?.tvShowCount),
-        _buildMediaTypeMenuItem(
-            MediaType.animation.value, 'Animation', stats?.animationCount),
-      ],
+      itemBuilder: (BuildContext context) {
+        final S ml = S.of(context);
+        return <PopupMenuEntry<String>>[
+          _buildMediaTypeMenuItem(_filterAllKey, ml.collectionFilterAll, stats?.total),
+          _buildMediaTypeMenuItem(
+              MediaType.game.value, ml.collectionFilterGames, stats?.gameCount),
+          _buildMediaTypeMenuItem(
+              MediaType.movie.value, ml.collectionFilterMovies, stats?.movieCount),
+          _buildMediaTypeMenuItem(
+              MediaType.tvShow.value, ml.collectionFilterTvShows, stats?.tvShowCount),
+          _buildMediaTypeMenuItem(
+              MediaType.animation.value, ml.collectionFilterAnimation, stats?.animationCount),
+        ];
+      },
     );
   }
 
@@ -598,7 +614,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Text(
-              currentSort.shortLabel,
+              currentSort.localizedShortLabel(S.of(context)),
               style: AppTypography.bodySmall,
             ),
             const SizedBox(width: 2),
@@ -610,52 +626,55 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           ],
         ),
       ),
-      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-        ...CollectionSortMode.values.map(
-          (CollectionSortMode mode) => PopupMenuItem<String>(
-            value: mode.value,
+      itemBuilder: (BuildContext context) {
+        final S sl = S.of(context);
+        return <PopupMenuEntry<String>>[
+          ...CollectionSortMode.values.map(
+            (CollectionSortMode mode) => PopupMenuItem<String>(
+              value: mode.value,
+              child: Row(
+                children: <Widget>[
+                  if (mode == currentSort)
+                    const Icon(
+                      Icons.check,
+                      size: 18,
+                      color: AppColors.brand,
+                    )
+                  else
+                    const SizedBox(width: 18),
+                  const SizedBox(width: AppSpacing.sm),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Text(mode.localizedDisplayLabel(sl)),
+                      Text(
+                        mode.localizedDescription(sl),
+                        style: AppTypography.caption,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const PopupMenuDivider(),
+          PopupMenuItem<String>(
+            value: 'toggle_direction',
             child: Row(
               children: <Widget>[
-                if (mode == currentSort)
-                  const Icon(
-                    Icons.check,
-                    size: 18,
-                    color: AppColors.brand,
-                  )
-                else
-                  const SizedBox(width: 18),
-                const SizedBox(width: AppSpacing.sm),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Text(mode.displayLabel),
-                    Text(
-                      mode.description,
-                      style: AppTypography.caption,
-                    ),
-                  ],
+                Icon(
+                  isDescending ? Icons.arrow_downward : Icons.arrow_upward,
+                  size: 18,
+                  color: AppColors.textSecondary,
                 ),
+                const SizedBox(width: AppSpacing.sm),
+                Text(isDescending ? 'Descending' : 'Ascending'),
               ],
             ),
           ),
-        ),
-        const PopupMenuDivider(),
-        PopupMenuItem<String>(
-          value: 'toggle_direction',
-          child: Row(
-            children: <Widget>[
-              Icon(
-                isDescending ? Icons.arrow_downward : Icons.arrow_upward,
-                size: 18,
-                color: AppColors.textSecondary,
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Text(isDescending ? 'Descending' : 'Ascending'),
-            ],
-          ),
-        ),
-      ],
+        ];
+      },
     );
   }
 
@@ -713,7 +732,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         scrollDirection: Axis.horizontal,
         child: Row(
           children: <Widget>[
-            _buildPlatformChip(null, 'All'),
+            _buildPlatformChip(null, S.of(context).collectionFilterAll),
             for (final Platform platform in platforms) ...<Widget>[
               const SizedBox(width: AppSpacing.xs),
               _buildPlatformChip(platform.id, platform.displayName),
@@ -1000,6 +1019,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   }
 
   Widget _buildEmptyState() {
+    final S l = S.of(context);
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.xl),
@@ -1012,7 +1032,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
               color: AppColors.textTertiary.withAlpha(120),
             ),
             const SizedBox(height: AppSpacing.md),
-            const Text('No Items Yet', style: AppTypography.h2),
+            Text(l.collectionNoItemsYet, style: AppTypography.h2),
             const SizedBox(height: AppSpacing.sm),
             Text(
               _canEdit
@@ -1030,6 +1050,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   }
 
   Widget _buildErrorState(BuildContext context, Object error) {
+    final S l = S.of(context);
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.xl),
@@ -1043,7 +1064,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              'Failed to load items',
+              l.collectionsFailedToLoad,
               style: AppTypography.h3.copyWith(color: AppColors.error),
             ),
             const SizedBox(height: AppSpacing.sm),
@@ -1059,7 +1080,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                       .notifier)
                   .refresh(),
               icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              label: Text(l.retry),
             ),
           ],
         ),
@@ -1085,13 +1106,14 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
 
   Future<void> _moveItem(CollectionItem item) async {
     final bool isUncategorized = widget.collectionId == null;
+    final S l = S.of(context);
 
     final CollectionChoice? choice = await showCollectionPickerDialog(
       context: context,
       ref: ref,
       excludeCollectionId: widget.collectionId,
       showUncategorized: !isUncategorized,
-      title: 'Move to Collection',
+      title: l.collectionMoveToCollection,
     );
     if (choice == null || !mounted) return;
 
@@ -1103,7 +1125,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         targetName = collection.name;
       case WithoutCollection():
         targetCollectionId = null;
-        targetName = 'Uncategorized';
+        targetName = S.of(context).collectionsUncategorized;
     }
 
     final ({bool success, bool sourceEmpty}) result = await ref
@@ -1120,7 +1142,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
 
     if (result.success) {
       context.showSnack(
-        '${item.itemName} moved to $targetName',
+        S.of(context).collectionItemMovedTo(item.itemName, targetName),
         type: SnackType.success,
       );
 
@@ -1128,7 +1150,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         await _promptDeleteEmptyCollection();
       }
     } else {
-      context.showSnack('${item.itemName} already exists in $targetName');
+      context.showSnack(S.of(context).collectionItemAlreadyExists(item.itemName, targetName));
     }
   }
 
@@ -1137,22 +1159,23 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     final NavigatorState navigator = Navigator.of(context);
     final bool? confirmed = await showDialog<bool>(
       context: context,
-      builder: (BuildContext context) => AlertDialog(
-        title: const Text('Empty Collection'),
-        content: const Text(
-          'This collection is now empty. Delete it?',
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Keep'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
+      builder: (BuildContext context) {
+        final S dl = S.of(context);
+        return AlertDialog(
+          title: Text(dl.collectionEmpty),
+          content: Text(dl.collectionDeleteEmptyPrompt),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(dl.keep),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(dl.delete),
+            ),
+          ],
+        );
+      },
     );
     if (confirmed == true && mounted) {
       await ref
@@ -1167,24 +1190,27 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   Future<void> _removeItem(CollectionItem item) async {
     final bool? confirmed = await showDialog<bool>(
       context: context,
-      builder: (BuildContext context) => AlertDialog(
-        scrollable: true,
-        title: const Text('Remove Item?'),
-        content: Text('Remove ${item.itemName} from this collection?'),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
+      builder: (BuildContext context) {
+        final S dl = S.of(context);
+        return AlertDialog(
+          scrollable: true,
+          title: Text(dl.collectionRemoveItemTitle),
+          content: Text(dl.collectionRemoveItemMessage(item.itemName)),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(dl.cancel),
             ),
-            child: const Text('Remove'),
-          ),
-        ],
-      ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.error,
+              ),
+              child: Text(dl.remove),
+            ),
+          ],
+        );
+      },
     );
 
     if (confirmed != true || !mounted) return;
@@ -1199,7 +1225,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         .removeByCollectionItemId(item.id);
 
     if (mounted) {
-      context.showSnack('${item.itemName} removed', type: SnackType.success);
+      context.showSnack(S.of(context).collectionItemRemoved(item.itemName), type: SnackType.success);
     }
   }
 
@@ -1280,11 +1306,11 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       });
 
       if (context.mounted) {
-        context.showSnack('Collection renamed', type: SnackType.success);
+        context.showSnack(S.of(context).collectionsRenamed, type: SnackType.success);
       }
     } on Exception catch (e) {
       if (context.mounted) {
-        context.showSnack('Failed to rename: $e', type: SnackType.error);
+        context.showSnack(S.of(context).collectionsFailedToRename('$e'), type: SnackType.error);
       }
     }
   }
@@ -1313,11 +1339,11 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
 
       if (mounted) {
         Navigator.of(context).pop();
-        context.showSnack('Collection deleted', type: SnackType.success);
+        context.showSnack(S.of(context).collectionsDeleted, type: SnackType.success);
       }
     } on Exception catch (e) {
       if (mounted) {
-        context.showSnack('Failed to delete: $e', type: SnackType.error);
+        context.showSnack(S.of(context).collectionsFailedToDelete('$e'), type: SnackType.error);
       }
     }
   }
@@ -1353,7 +1379,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         );
 
     if (mounted) {
-      context.showSnack('Image added to board', type: SnackType.success);
+      context.showSnack(S.of(context).imageAddedToBoard, type: SnackType.success);
     }
   }
 
@@ -1387,7 +1413,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         );
 
     if (mounted) {
-      context.showSnack('Map added to board', type: SnackType.success);
+      context.showSnack(S.of(context).mapAddedToBoard, type: SnackType.success);
     }
   }
 
@@ -1451,39 +1477,40 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   Future<ExportFormat?> _showExportFormatDialog() {
     return showDialog<ExportFormat>(
       context: context,
-      builder: (BuildContext dialogContext) => AlertDialog(
-        scrollable: true,
-        title: const Text('Export Format'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            const Text('Choose export format:'),
-            const SizedBox(height: 16),
-            ListTile(
-              leading: const Icon(Icons.description_outlined),
-              title: const Text('Light (.xcoll)'),
-              subtitle: const Text('Items only, smaller file'),
-              onTap: () =>
-                  Navigator.of(dialogContext).pop(ExportFormat.light),
-            ),
-            ListTile(
-              leading: const Icon(Icons.folder_zip_outlined),
-              title: const Text('Full (.xcollx)'),
-              subtitle: const Text(
-                'Items + board + covers + media (offline)',
+      builder: (BuildContext dialogContext) {
+        final S dl = S.of(dialogContext);
+        return AlertDialog(
+          scrollable: true,
+          title: Text(dl.collectionExportFormat),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text(dl.collectionChooseExportFormat),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(Icons.description_outlined),
+                title: Text(dl.collectionExportLight),
+                subtitle: Text(dl.collectionExportLightDesc),
+                onTap: () =>
+                    Navigator.of(dialogContext).pop(ExportFormat.light),
               ),
-              onTap: () =>
-                  Navigator.of(dialogContext).pop(ExportFormat.full),
+              ListTile(
+                leading: const Icon(Icons.folder_zip_outlined),
+                title: Text(dl.collectionExportFull),
+                subtitle: Text(dl.collectionExportFullDesc),
+                onTap: () =>
+                    Navigator.of(dialogContext).pop(ExportFormat.full),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(dl.cancel),
             ),
           ],
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancel'),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -1679,41 +1706,43 @@ class _CollectionItemTile extends StatelessWidget {
                             onRemove?.call();
                         }
                       },
-                      itemBuilder: (BuildContext context) =>
-                          <PopupMenuEntry<String>>[
-                        if (onMove != null)
-                          const PopupMenuItem<String>(
-                            value: 'move',
-                            child: ListTile(
-                              leading:
-                                  Icon(Icons.drive_file_move_outlined),
-                              title: Text('Move'),
-                              contentPadding: EdgeInsets.zero,
-                            ),
-                          ),
-                        if (onMove != null && onRemove != null)
-                          const PopupMenuDivider(),
-                        if (onRemove != null)
-                          PopupMenuItem<String>(
-                            value: 'remove',
-                            child: ListTile(
-                              leading: Icon(
-                                Icons.remove_circle_outline,
-                                color:
-                                    Theme.of(context).colorScheme.error,
+                      itemBuilder: (BuildContext context) {
+                        final S ml = S.of(context);
+                        return <PopupMenuEntry<String>>[
+                          if (onMove != null)
+                            PopupMenuItem<String>(
+                              value: 'move',
+                              child: ListTile(
+                                leading:
+                                    const Icon(Icons.drive_file_move_outlined),
+                                title: Text(ml.collectionMoveToCollection),
+                                contentPadding: EdgeInsets.zero,
                               ),
-                              title: Text(
-                                'Remove',
-                                style: TextStyle(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .error,
+                            ),
+                          if (onMove != null && onRemove != null)
+                            const PopupMenuDivider(),
+                          if (onRemove != null)
+                            PopupMenuItem<String>(
+                              value: 'remove',
+                              child: ListTile(
+                                leading: Icon(
+                                  Icons.remove_circle_outline,
+                                  color:
+                                      Theme.of(context).colorScheme.error,
                                 ),
+                                title: Text(
+                                  ml.remove,
+                                  style: TextStyle(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .error,
+                                  ),
+                                ),
+                                contentPadding: EdgeInsets.zero,
                               ),
-                              contentPadding: EdgeInsets.zero,
                             ),
-                          ),
-                      ],
+                        ];
+                      },
                     ),
                 ],
               ),

@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gamepads/gamepads.dart';
 
 import '../../../core/services/gamepad_service.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/gamepad/gamepad_provider.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -93,14 +94,15 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final S l = S.of(context);
     return BreadcrumbScope(
-      label: 'Gamepad',
+      label: l.debugGamepad,
       child: Scaffold(
       appBar: AutoBreadcrumbAppBar(
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.delete_outline),
-            tooltip: 'Clear logs',
+            tooltip: l.debugClearLogs,
             onPressed: () {
               setState(() {
                 _rawEvents.clear();
@@ -118,7 +120,7 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
             // Raw events
             Expanded(
               child: _buildEventColumn(
-                title: 'Raw Events (Gamepads.events)',
+                title: l.debugRawEvents,
                 events: _rawEvents,
                 scrollController: _rawScrollController,
                 color: AppColors.brand,
@@ -128,7 +130,7 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
             // Service events
             Expanded(
               child: _buildEventColumn(
-                title: 'Service Events (filtered)',
+                title: l.debugServiceEvents,
                 events: _serviceEvents,
                 scrollController: _serviceScrollController,
                 color: AppColors.tvShowAccent,
@@ -170,7 +172,7 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
             ),
             const Spacer(),
             Text(
-              '${events.length} events',
+              S.of(context).debugEventsCount(events.length),
               style: AppTypography.bodySmall.copyWith(
                 color: AppColors.textTertiary,
               ),
@@ -188,7 +190,7 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
             child: events.isEmpty
                 ? Center(
                     child: Text(
-                      'Нажмите любую кнопку\nна геймпаде...',
+                      S.of(context).debugPressButton,
                       textAlign: TextAlign.center,
                       style: AppTypography.bodySmall.copyWith(
                         color: AppColors.textTertiary,

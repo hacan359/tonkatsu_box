@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/game.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -131,7 +132,7 @@ class GameDetailsSheet extends StatelessWidget {
               if (game.summary != null) ...<Widget>[
                 const SizedBox(height: AppSpacing.lg),
                 Text(
-                  'Description',
+                  S.of(context).searchDescription,
                   style: AppTypography.h3.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
@@ -153,7 +154,7 @@ class GameDetailsSheet extends StatelessWidget {
                     onAddToCollection();
                   },
                   icon: const Icon(Icons.add),
-                  label: const Text('Add to Collection'),
+                  label: Text(S.of(context).searchAddToCollection),
                 ),
               ),
             ],

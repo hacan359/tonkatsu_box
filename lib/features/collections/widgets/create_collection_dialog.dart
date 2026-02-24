@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
-import '../../../shared/theme/app_typography.dart';
 
 /// Результат диалога создания коллекции.
 class CreateCollectionResult {
@@ -86,8 +86,9 @@ class _CreateCollectionDialogState extends State<CreateCollectionDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final S l = S.of(context);
     return AlertDialog(
-      title: const Text('New Collection'),
+      title: Text(l.createCollectionTitle),
       scrollable: true,
       content: Form(
         key: _formKey,
@@ -97,18 +98,18 @@ class _CreateCollectionDialogState extends State<CreateCollectionDialog> {
             TextFormField(
               controller: _nameController,
               focusNode: _nameFocus,
-              decoration: const InputDecoration(
-                labelText: 'Collection Name',
-                hintText: 'e.g., SNES Classics',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l.createCollectionNameLabel,
+                hintText: l.createCollectionNameHint,
+                border: const OutlineInputBorder(),
               ),
               textInputAction: TextInputAction.next,
               validator: (String? value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Please enter a name';
+                  return l.createCollectionEnterName;
                 }
                 if (value.trim().length < 2) {
-                  return 'Name must be at least 2 characters';
+                  return l.createCollectionNameTooShort;
                 }
                 return null;
               },
@@ -116,16 +117,16 @@ class _CreateCollectionDialogState extends State<CreateCollectionDialog> {
             const SizedBox(height: AppSpacing.md),
             TextFormField(
               controller: _authorController,
-              decoration: const InputDecoration(
-                labelText: 'Author',
-                hintText: 'Your name or username',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l.createCollectionAuthor,
+                hintText: l.createCollectionAuthorHint,
+                border: const OutlineInputBorder(),
               ),
               textInputAction: TextInputAction.done,
               onFieldSubmitted: (_) => _submit(),
               validator: (String? value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Please enter an author name';
+                  return l.createCollectionEnterAuthor;
                 }
                 return null;
               },
@@ -136,11 +137,11 @@ class _CreateCollectionDialogState extends State<CreateCollectionDialog> {
       actions: <Widget>[
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(l.cancel),
         ),
         FilledButton(
           onPressed: _submit,
-          child: const Text('Create'),
+          child: Text(l.create),
         ),
       ],
     );
@@ -205,26 +206,27 @@ class _RenameCollectionDialogState extends State<RenameCollectionDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final S l = S.of(context);
     return AlertDialog(
-      title: const Text('Rename Collection'),
+      title: Text(l.renameCollectionTitle),
       scrollable: true,
       content: Form(
         key: _formKey,
         child: TextFormField(
           controller: _controller,
           focusNode: _focusNode,
-          decoration: const InputDecoration(
-            labelText: 'Collection Name',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            labelText: l.createCollectionNameLabel,
+            border: const OutlineInputBorder(),
           ),
           textInputAction: TextInputAction.done,
           onFieldSubmitted: (_) => _submit(),
           validator: (String? value) {
             if (value == null || value.trim().isEmpty) {
-              return 'Please enter a name';
+              return l.createCollectionEnterName;
             }
             if (value.trim().length < 2) {
-              return 'Name must be at least 2 characters';
+              return l.createCollectionNameTooShort;
             }
             return null;
           },
@@ -233,11 +235,11 @@ class _RenameCollectionDialogState extends State<RenameCollectionDialog> {
       actions: <Widget>[
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(l.cancel),
         ),
         FilledButton(
           onPressed: _submit,
-          child: const Text('Rename'),
+          child: Text(l.rename),
         ),
       ],
     );
@@ -268,28 +270,15 @@ class DeleteCollectionDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final S l = S.of(context);
     return AlertDialog(
-      title: const Text('Delete Collection?'),
+      title: Text(l.deleteCollectionTitle),
       scrollable: true,
-      content: RichText(
-        text: TextSpan(
-          style: AppTypography.body,
-          children: <TextSpan>[
-            const TextSpan(text: 'Are you sure you want to delete '),
-            TextSpan(
-              text: collectionName,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const TextSpan(
-              text: '?\n\nThis action cannot be undone.',
-            ),
-          ],
-        ),
-      ),
+      content: Text(l.deleteCollectionMessage(collectionName)),
       actions: <Widget>[
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('Cancel'),
+          child: Text(l.cancel),
         ),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(true),
@@ -297,7 +286,7 @@ class DeleteCollectionDialog extends StatelessWidget {
             backgroundColor: AppColors.error,
             foregroundColor: Colors.white,
           ),
-          child: const Text('Delete'),
+          child: Text(l.delete),
         ),
       ],
     );

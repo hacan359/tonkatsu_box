@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../theme/app_colors.dart';
 import 'media_type.dart';
 
@@ -98,6 +99,28 @@ enum ItemStatus {
 
   /// Отображаемый текст с иконкой.
   String displayText(MediaType mediaType) => '$icon ${displayLabel(mediaType)}';
+
+  /// Локализованная метка с учётом типа медиа.
+  String localizedLabel(S l, MediaType mediaType) {
+    switch (this) {
+      case ItemStatus.notStarted:
+        return l.statusNotStarted;
+      case ItemStatus.inProgress:
+        return mediaType == MediaType.game ? l.statusPlaying : l.statusWatching;
+      case ItemStatus.completed:
+        return l.statusCompleted;
+      case ItemStatus.dropped:
+        return l.statusDropped;
+      case ItemStatus.planned:
+        return l.statusPlanned;
+      case ItemStatus.onHold:
+        return l.statusOnHold;
+    }
+  }
+
+  /// Локализованный текст с иконкой.
+  String localizedText(S l, MediaType mediaType) =>
+      '$icon ${localizedLabel(l, mediaType)}';
 
   /// Приоритет для сортировки по статусу (меньше = выше в списке).
   ///

@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/features/settings/screens/settings_screen.dart';
+import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/features/settings/widgets/inline_text_field.dart';
 import 'package:xerabora/features/settings/widgets/settings_nav_row.dart';
 import 'package:xerabora/features/settings/widgets/settings_section.dart';
@@ -27,6 +28,8 @@ void main() {
         sharedPreferencesProvider.overrideWithValue(prefs),
       ],
       child: const MaterialApp(
+        localizationsDelegates: S.localizationsDelegates,
+        supportedLocales: S.supportedLocales,
         home: BreadcrumbScope(
           label: 'Settings',
           child: SettingsScreen(),
@@ -519,8 +522,9 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        // Only Profile + Settings sections, no Error section
-        expect(find.byType(SettingsSection), findsNWidgets(2));
+        // Profile + Language + Settings visible; Help + About below fold
+        // No Error section should be present
+        expect(find.byIcon(Icons.warning_amber), findsNothing);
       });
 
       testWidgets('shows error section when errorMessage is set',
@@ -536,6 +540,8 @@ void main() {
               ),
             ],
             child: const MaterialApp(
+              localizationsDelegates: S.localizationsDelegates,
+              supportedLocales: S.supportedLocales,
               home: BreadcrumbScope(
                 label: 'Settings',
                 child: SettingsScreen(),
@@ -545,8 +551,8 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // Scroll down to make error section visible (past About section)
-        await tester.drag(find.byType(ListView), const Offset(0, -600));
+        // Scroll down to make error section visible (past all sections)
+        await tester.drag(find.byType(ListView), const Offset(0, -1200));
         await tester.pumpAndSettle();
 
         // Error section should show warning icon and error text

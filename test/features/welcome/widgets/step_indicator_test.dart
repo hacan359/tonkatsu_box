@@ -1,3 +1,4 @@
+import 'package:xerabora/l10n/app_localizations.dart';
 // Тесты для StepIndicator — индикатор шага Welcome Wizard.
 
 import 'package:flutter/material.dart';
@@ -15,6 +16,8 @@ void main() {
     VoidCallback? onTap,
   }) {
     return MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
       home: Scaffold(
         body: StepIndicator(
           number: number,

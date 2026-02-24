@@ -1,3 +1,4 @@
+import 'package:xerabora/l10n/app_localizations.dart';
 // Тесты для unified SnackBar extension.
 
 import 'package:flutter/material.dart';
@@ -23,6 +24,8 @@ void main() {
     testWidgets('shows SnackBar with message text', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: Builder(
               builder: (BuildContext context) {
@@ -46,6 +49,8 @@ void main() {
         (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: Builder(
               builder: (BuildContext context) {
@@ -76,6 +81,8 @@ void main() {
         (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: Builder(
               builder: (BuildContext context) {
@@ -106,6 +113,8 @@ void main() {
         (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: Builder(
               builder: (BuildContext context) {
@@ -133,6 +142,8 @@ void main() {
         (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: Builder(
               builder: (BuildContext context) {
@@ -165,6 +176,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: Builder(
               builder: (BuildContext context) {
@@ -193,6 +206,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: Builder(
               builder: (BuildContext context) {
@@ -223,6 +238,8 @@ void main() {
     testWidgets('uses custom duration', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: Builder(
               builder: (BuildContext context) {
@@ -253,6 +270,8 @@ void main() {
     testWidgets('message text has correct style', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: Builder(
               builder: (BuildContext context) {
@@ -280,6 +299,8 @@ void main() {
         (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: Builder(
               builder: (BuildContext context) {
@@ -309,6 +330,8 @@ void main() {
         (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: Builder(
               builder: (BuildContext context) {
@@ -341,6 +364,8 @@ void main() {
         (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: Builder(
               builder: (BuildContext context) {
@@ -373,6 +398,8 @@ void main() {
         (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: Builder(
               builder: (BuildContext context) {
@@ -406,6 +433,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: Builder(
               builder: (BuildContext context) {
@@ -437,6 +466,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: Builder(
               builder: (BuildContext context) {

@@ -4,6 +4,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
 
@@ -55,7 +56,7 @@ class StatusRibbon extends StatelessWidget {
             ],
           ),
           child: Text(
-            '${status.icon} ${status.displayLabel(mediaType)}',
+            '${status.icon} ${status.localizedLabel(S.of(context), mediaType)}',
             style: const TextStyle(
               color: Colors.white,
               fontSize: 8,

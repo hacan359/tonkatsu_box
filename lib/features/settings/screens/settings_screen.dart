@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-import '../../../shared/constants/app_strings.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
@@ -61,14 +61,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         padding: EdgeInsets.all(compact ? AppSpacing.sm : AppSpacing.lg),
         children: <Widget>[
           SettingsSection(
-            title: 'Profile',
+            title: S.of(context).settingsProfile,
             icon: Icons.person,
             compact: compact,
             children: <Widget>[
               InlineTextField(
-                label: 'Author name',
+                label: S.of(context).settingsAuthorName,
                 value: settings.authorName,
-                placeholder: AppStrings.defaultAuthor,
+                placeholder: 'User',
                 compact: compact,
                 onChanged: (String value) {
                   ref
@@ -80,14 +80,45 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           SizedBox(height: compact ? AppSpacing.sm : AppSpacing.md),
           SettingsSection(
-            title: 'Settings',
+            title: S.of(context).settingsAppLanguage,
+            icon: Icons.language,
+            compact: compact,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: AppSpacing.sm,
+                ),
+                child: SegmentedButton<String>(
+                  segments: const <ButtonSegment<String>>[
+                    ButtonSegment<String>(
+                      value: 'en',
+                      label: Text('English'),
+                    ),
+                    ButtonSegment<String>(
+                      value: 'ru',
+                      label: Text('Русский'),
+                    ),
+                  ],
+                  selected: <String>{settings.appLanguage},
+                  onSelectionChanged: (Set<String> selected) {
+                    ref
+                        .read(settingsNotifierProvider.notifier)
+                        .setAppLanguage(selected.first);
+                  },
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: compact ? AppSpacing.sm : AppSpacing.md),
+          SettingsSection(
+            title: S.of(context).settingsSettings,
             icon: Icons.tune,
             compact: compact,
             children: <Widget>[
               SettingsNavRow(
-                title: 'Credentials',
+                title: S.of(context).settingsCredentials,
                 icon: Icons.key,
-                subtitle: 'IGDB, SteamGridDB, TMDB API keys',
+                subtitle: S.of(context).settingsCredentialsSubtitle,
                 compact: compact,
                 onTap: () {
                   Navigator.of(context).push(
@@ -99,9 +130,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 },
               ),
               SettingsNavRow(
-                title: 'Cache',
+                title: S.of(context).settingsCache,
                 icon: Icons.cached,
-                subtitle: 'Image cache settings',
+                subtitle: S.of(context).settingsCacheSubtitle,
                 compact: compact,
                 showDivider: true,
                 onTap: () {
@@ -113,9 +144,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 },
               ),
               SettingsNavRow(
-                title: 'Database',
+                title: S.of(context).settingsDatabase,
                 icon: Icons.storage,
-                subtitle: 'Export, import, reset',
+                subtitle: S.of(context).settingsDatabaseSubtitle,
                 compact: compact,
                 showDivider: true,
                 onTap: () {
@@ -128,9 +159,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 },
               ),
               SettingsNavRow(
-                title: 'Trakt Import',
+                title: S.of(context).settingsTraktImport,
                 icon: Icons.movie_filter,
-                subtitle: 'Import from Trakt.tv ZIP export',
+                subtitle: S.of(context).settingsTraktImportSubtitle,
                 compact: compact,
                 showDivider: true,
                 onTap: () {
@@ -144,11 +175,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               if (kDebugMode)
                 SettingsNavRow(
-                  title: 'Debug',
+                  title: S.of(context).settingsDebug,
                   icon: Icons.bug_report,
                   subtitle: settings.hasSteamGridDbKey
-                      ? 'Developer tools'
-                      : 'Set SteamGridDB key first for some tools',
+                      ? S.of(context).settingsDebugSubtitle
+                      : S.of(context).settingsDebugSubtitleNoKey,
                   compact: compact,
                   showDivider: true,
                   onTap: () {
@@ -164,14 +195,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           SizedBox(height: compact ? AppSpacing.sm : AppSpacing.md),
           SettingsSection(
-            title: 'Help',
+            title: S.of(context).settingsHelp,
             icon: Icons.help_outline,
             compact: compact,
             children: <Widget>[
               SettingsNavRow(
-                title: 'Welcome Guide',
+                title: S.of(context).settingsWelcomeGuide,
                 icon: Icons.school,
-                subtitle: 'Getting started with Tonkatsu Box',
+                subtitle: S.of(context).settingsWelcomeGuideSubtitle,
                 compact: compact,
                 onTap: () {
                   Navigator.of(context).push(
@@ -186,21 +217,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           SizedBox(height: compact ? AppSpacing.sm : AppSpacing.md),
           SettingsSection(
-            title: 'About',
+            title: S.of(context).settingsAbout,
             icon: Icons.info_outline,
             compact: compact,
             children: <Widget>[
               SettingsNavRow(
-                title: 'Version',
+                title: S.of(context).settingsVersion,
                 icon: Icons.tag,
                 subtitle: _appVersion.isNotEmpty ? _appVersion : '...',
                 compact: compact,
                 onTap: () {},
               ),
               SettingsNavRow(
-                title: 'Credits & Licenses',
+                title: S.of(context).settingsCreditsLicenses,
                 icon: Icons.favorite_outline,
-                subtitle: 'TMDB, IGDB, SteamGridDB, open-source licenses',
+                subtitle: S.of(context).settingsCreditsLicensesSubtitle,
                 compact: compact,
                 showDivider: true,
                 onTap: () {
@@ -217,7 +248,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           if (settings.errorMessage != null) ...<Widget>[
             SizedBox(height: compact ? AppSpacing.sm : AppSpacing.md),
             SettingsSection(
-              title: 'Error',
+              title: S.of(context).settingsError,
               icon: Icons.warning_amber,
               iconColor: AppColors.error,
               compact: compact,

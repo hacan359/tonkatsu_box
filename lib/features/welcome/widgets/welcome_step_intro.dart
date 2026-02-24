@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -14,6 +15,8 @@ class WelcomeStepIntro extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final S l = S.of(context);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
@@ -29,14 +32,13 @@ class WelcomeStepIntro extends StatelessWidget {
                 Image.asset(AppAssets.logo, width: 80, height: 80),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  'Welcome to Tonkatsu Box',
+                  l.welcomeTitle,
                   style: AppTypography.h1.copyWith(fontSize: 22),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Organize your collections of retro games,\n'
-                  'movies, TV shows & anime',
+                  l.welcomeSubtitle,
                   style: AppTypography.body.copyWith(
                     color: AppColors.textSecondary,
                     fontSize: 13,
@@ -50,32 +52,32 @@ class WelcomeStepIntro extends StatelessWidget {
 
           // What you can do
           _buildCard(
-            title: 'What you can do',
+            title: l.welcomeWhatYouCanDo,
             child: Column(
               children: <Widget>[
                 _featureRow(
                   icon: Icons.inventory_2_outlined,
-                  text: 'Create collections by platform, genre, or any theme',
+                  text: l.welcomeFeatureCollections,
                   color: AppColors.gameAccent,
                 ),
                 _featureRow(
                   icon: Icons.search,
-                  text: 'Search games, movies, TV shows & anime via APIs',
+                  text: l.welcomeFeatureSearch,
                   color: AppColors.brand,
                 ),
                 _featureRow(
                   icon: Icons.bar_chart,
-                  text: 'Track progress, rate 1-10, add notes',
+                  text: l.welcomeFeatureTracking,
                   color: AppColors.tvShowAccent,
                 ),
                 _featureRow(
                   icon: Icons.palette_outlined,
-                  text: 'Visual canvas boards with artwork',
+                  text: l.welcomeFeatureBoards,
                   color: AppColors.animationAccent,
                 ),
                 _featureRow(
                   icon: Icons.upload_outlined,
-                  text: 'Export & import — share collections with friends',
+                  text: l.welcomeFeatureExport,
                   color: AppColors.success,
                 ),
               ],
@@ -104,7 +106,7 @@ class WelcomeStepIntro extends StatelessWidget {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      'Works without API keys',
+                      l.welcomeWorksWithoutKeys,
                       style: AppTypography.body.copyWith(
                         fontWeight: FontWeight.w600,
                         color: AppColors.success,
@@ -113,22 +115,20 @@ class WelcomeStepIntro extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: AppSpacing.sm),
-                const Wrap(
+                Wrap(
                   spacing: 6,
                   runSpacing: 6,
                   children: <Widget>[
-                    _FeatureChip(label: 'Collections'),
-                    _FeatureChip(label: 'Wishlist'),
-                    _FeatureChip(label: 'Import .xcoll'),
-                    _FeatureChip(label: 'Canvas boards'),
-                    _FeatureChip(label: 'Ratings & notes'),
+                    _FeatureChip(label: l.welcomeChipCollections),
+                    _FeatureChip(label: l.welcomeChipWishlist),
+                    _FeatureChip(label: l.welcomeChipImport),
+                    _FeatureChip(label: l.welcomeChipCanvas),
+                    _FeatureChip(label: l.welcomeChipRatings),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  'API keys are only needed for searching new games, '
-                  'movies & TV shows. You can import collections and '
-                  'work with them offline.',
+                  l.welcomeApiKeysHint,
                   style: AppTypography.bodySmall.copyWith(
                     color: AppColors.textTertiary,
                   ),
@@ -139,25 +139,25 @@ class WelcomeStepIntro extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
 
           // Media types
-          const Wrap(
+          Wrap(
             spacing: 6,
             runSpacing: 6,
             alignment: WrapAlignment.center,
             children: <Widget>[
               _MediaChip(
-                label: 'Games (IGDB)',
+                label: l.welcomeChipGames,
                 color: AppColors.gameAccent,
               ),
               _MediaChip(
-                label: 'Movies (TMDB)',
+                label: l.welcomeChipMovies,
                 color: AppColors.movieAccent,
               ),
               _MediaChip(
-                label: 'TV Shows (TMDB)',
+                label: l.welcomeChipTvShows,
                 color: AppColors.tvShowAccent,
               ),
               _MediaChip(
-                label: 'Anime (TMDB)',
+                label: l.welcomeChipAnime,
                 color: AppColors.animationAccent,
               ),
             ],

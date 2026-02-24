@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/collections/providers/collections_provider.dart';
+import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/features/collections/screens/movie_detail_screen.dart';
 import 'package:xerabora/features/collections/widgets/status_chip_row.dart';
 import 'package:xerabora/shared/models/collection_item.dart';
@@ -97,6 +98,8 @@ void main() {
         ),
       ],
       child: MaterialApp(
+        localizationsDelegates: S.localizationsDelegates,
+        supportedLocales: S.supportedLocales,
         home: BreadcrumbScope(
           label: 'Test Collection',
           child: MovieDetailScreen(
@@ -801,6 +804,8 @@ void main() {
             ),
           ],
           child: const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: BreadcrumbScope(
               label: 'Test Collection',
               child: MovieDetailScreen(
@@ -832,6 +837,8 @@ void main() {
             ),
           ],
           child: const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: BreadcrumbScope(
               label: 'Test Collection',
               child: MovieDetailScreen(

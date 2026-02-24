@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../core/api/tmdb_api.dart';
@@ -243,11 +244,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         );
 
     if (mounted) {
+      final S l = S.of(context);
       if (success) {
         _cacheImage(ImageType.gameCover, game.id.toString(), game.coverUrl);
-        context.showSnack('$gameName added to collection', type: SnackType.success);
+        context.showSnack(l.searchAddedToCollection(gameName), type: SnackType.success);
       } else {
-        context.showSnack('Game already in collection', type: SnackType.info);
+        context.showSnack(l.searchAlreadyInCollection(gameName), type: SnackType.info);
       }
     }
   }
@@ -255,11 +257,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   Future<void> _addGameToAnyCollection(Game game) async {
     final String gameName = game.name;
 
+    final S l = S.of(context);
     final CollectionChoice? choice =
         await showCollectionPickerDialog(
             context: context,
             ref: ref,
-            title: 'Add to Collection',
+            title: l.searchAddToCollection,
           );
     if (choice == null || !mounted) return;
 
@@ -271,7 +274,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         collectionName = collection.name;
       case WithoutCollection():
         collectionId = null;
-        collectionName = 'Uncategorized';
+        collectionName = l.collectionsUncategorized;
     }
 
     final int? platformId = await _showPlatformSelectionDialog(game);
@@ -288,9 +291,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     if (mounted) {
       if (success) {
         _cacheImage(ImageType.gameCover, game.id.toString(), game.coverUrl);
-        context.showSnack('$gameName added to $collectionName', type: SnackType.success);
+        context.showSnack(l.searchAddedToNamed(gameName, collectionName), type: SnackType.success);
       } else {
-        context.showSnack('$gameName already in $collectionName', type: SnackType.info);
+        context.showSnack(l.searchAlreadyInNamed(gameName, collectionName), type: SnackType.info);
       }
     }
   }
@@ -381,15 +384,16 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         );
 
     if (mounted) {
+      final S l = S.of(context);
       if (success) {
         _cacheImage(
           ImageType.moviePoster,
           movie.tmdbId.toString(),
           movie.posterUrl,
         );
-        context.showSnack('$title added to collection', type: SnackType.success);
+        context.showSnack(l.searchAddedToCollection(title), type: SnackType.success);
       } else {
-        context.showSnack('Movie already in collection', type: SnackType.info);
+        context.showSnack(l.searchAlreadyInCollection(title), type: SnackType.info);
       }
     }
   }
@@ -397,11 +401,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   Future<void> _addMovieToAnyCollection(Movie movie) async {
     final String title = movie.title;
 
+    final S l = S.of(context);
     final CollectionChoice? choice =
         await showCollectionPickerDialog(
             context: context,
             ref: ref,
-            title: 'Add to Collection',
+            title: l.searchAddToCollection,
           );
     if (choice == null || !mounted) return;
 
@@ -413,7 +418,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         collectionName = collection.name;
       case WithoutCollection():
         collectionId = null;
-        collectionName = 'Uncategorized';
+        collectionName = l.collectionsUncategorized;
     }
 
     final bool success = await ref
@@ -430,9 +435,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           movie.tmdbId.toString(),
           movie.posterUrl,
         );
-        context.showSnack('$title added to $collectionName', type: SnackType.success);
+        context.showSnack(l.searchAddedToNamed(title, collectionName), type: SnackType.success);
       } else {
-        context.showSnack('$title already in $collectionName', type: SnackType.info);
+        context.showSnack(l.searchAlreadyInNamed(title, collectionName), type: SnackType.info);
       }
     }
   }
@@ -449,6 +454,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         );
 
     if (mounted) {
+      final S l = S.of(context);
       if (success) {
         _cacheImage(
           ImageType.tvShowPoster,
@@ -456,9 +462,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           tvShow.posterUrl,
         );
         _preloadSeasons(tvShow.tmdbId);
-        context.showSnack('$title added to collection', type: SnackType.success);
+        context.showSnack(l.searchAddedToCollection(title), type: SnackType.success);
       } else {
-        context.showSnack('TV show already in collection', type: SnackType.info);
+        context.showSnack(l.searchAlreadyInCollection(title), type: SnackType.info);
       }
     }
   }
@@ -466,11 +472,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   Future<void> _addTvShowToAnyCollection(TvShow tvShow) async {
     final String title = tvShow.title;
 
+    final S l = S.of(context);
     final CollectionChoice? choice =
         await showCollectionPickerDialog(
             context: context,
             ref: ref,
-            title: 'Add to Collection',
+            title: l.searchAddToCollection,
           );
     if (choice == null || !mounted) return;
 
@@ -482,7 +489,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         collectionName = collection.name;
       case WithoutCollection():
         collectionId = null;
-        collectionName = 'Uncategorized';
+        collectionName = l.collectionsUncategorized;
     }
 
     final bool success = await ref
@@ -500,9 +507,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           tvShow.posterUrl,
         );
         _preloadSeasons(tvShow.tmdbId);
-        context.showSnack('$title added to $collectionName', type: SnackType.success);
+        context.showSnack(l.searchAddedToNamed(title, collectionName), type: SnackType.success);
       } else {
-        context.showSnack('$title already in $collectionName', type: SnackType.info);
+        context.showSnack(l.searchAlreadyInNamed(title, collectionName), type: SnackType.info);
       }
     }
   }
@@ -522,15 +529,16 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         );
 
     if (mounted) {
+      final S l = S.of(context);
       if (success) {
         _cacheImage(
           ImageType.moviePoster,
           movie.tmdbId.toString(),
           movie.posterUrl,
         );
-        context.showSnack('$title added to collection', type: SnackType.success);
+        context.showSnack(l.searchAddedToCollection(title), type: SnackType.success);
       } else {
-        context.showSnack('Already in collection', type: SnackType.info);
+        context.showSnack(l.searchAlreadyInCollection(title), type: SnackType.info);
       }
     }
   }
@@ -548,6 +556,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         );
 
     if (mounted) {
+      final S l = S.of(context);
       if (success) {
         _cacheImage(
           ImageType.tvShowPoster,
@@ -555,9 +564,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           tvShow.posterUrl,
         );
         _preloadSeasons(tvShow.tmdbId);
-        context.showSnack('$title added to collection', type: SnackType.success);
+        context.showSnack(l.searchAddedToCollection(title), type: SnackType.success);
       } else {
-        context.showSnack('Already in collection', type: SnackType.info);
+        context.showSnack(l.searchAlreadyInCollection(title), type: SnackType.info);
       }
     }
   }
@@ -565,11 +574,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   Future<void> _addAnimationMovieToAnyCollection(Movie movie) async {
     final String title = movie.title;
 
+    final S l = S.of(context);
     final CollectionChoice? choice =
         await showCollectionPickerDialog(
             context: context,
             ref: ref,
-            title: 'Add to Collection',
+            title: l.searchAddToCollection,
           );
     if (choice == null || !mounted) return;
 
@@ -581,7 +591,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         collectionName = collection.name;
       case WithoutCollection():
         collectionId = null;
-        collectionName = 'Uncategorized';
+        collectionName = l.collectionsUncategorized;
     }
 
     final bool success = await ref
@@ -599,9 +609,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           movie.tmdbId.toString(),
           movie.posterUrl,
         );
-        context.showSnack('$title added to $collectionName', type: SnackType.success);
+        context.showSnack(l.searchAddedToNamed(title, collectionName), type: SnackType.success);
       } else {
-        context.showSnack('$title already in $collectionName', type: SnackType.info);
+        context.showSnack(l.searchAlreadyInNamed(title, collectionName), type: SnackType.info);
       }
     }
   }
@@ -609,11 +619,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   Future<void> _addAnimationTvShowToAnyCollection(TvShow tvShow) async {
     final String title = tvShow.title;
 
+    final S l = S.of(context);
     final CollectionChoice? choice =
         await showCollectionPickerDialog(
             context: context,
             ref: ref,
-            title: 'Add to Collection',
+            title: l.searchAddToCollection,
           );
     if (choice == null || !mounted) return;
 
@@ -625,7 +636,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         collectionName = collection.name;
       case WithoutCollection():
         collectionId = null;
-        collectionName = 'Uncategorized';
+        collectionName = l.collectionsUncategorized;
     }
 
     final bool success = await ref
@@ -644,9 +655,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           tvShow.posterUrl,
         );
         _preloadSeasons(tvShow.tmdbId);
-        context.showSnack('$title added to $collectionName', type: SnackType.success);
+        context.showSnack(l.searchAddedToNamed(title, collectionName), type: SnackType.success);
       } else {
-        context.showSnack('$title already in $collectionName', type: SnackType.info);
+        context.showSnack(l.searchAlreadyInNamed(title, collectionName), type: SnackType.info);
       }
     }
   }
@@ -668,7 +679,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       context: context,
       builder: (BuildContext context) => AlertDialog(
         scrollable: true,
-        title: const Text('Select Platform'),
+        title: Text(S.of(context).searchSelectPlatform),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: platformIds.map((int id) {
@@ -685,7 +696,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(S.of(context).cancel),
           ),
         ],
       ),
@@ -726,6 +737,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
   @override
   Widget build(BuildContext context) {
+    final S l = S.of(context);
     final bool isLandscape = isLandscapeMobile(context);
 
     return Scaffold(
@@ -743,9 +755,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                   Tab(icon: Icon(Icons.tv, size: 18)),
                   Tab(icon: Icon(Icons.videogame_asset, size: 18)),
                 ]
-              : const <Widget>[
-                  Tab(icon: Icon(Icons.tv), text: 'TV'),
-                  Tab(icon: Icon(Icons.videogame_asset), text: 'Games'),
+              : <Widget>[
+                  Tab(icon: const Icon(Icons.tv), text: l.searchTabTv),
+                  Tab(icon: const Icon(Icons.videogame_asset), text: l.searchTabGames),
                 ],
         ),
       ),
@@ -839,6 +851,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
   /// Компактное поле поиска (стиль collection_screen).
   Widget _buildCompactSearchField() {
+    final S l = S.of(context);
     final bool hasText = _searchController.text.isNotEmpty;
     return TextField(
       controller: _searchController,
@@ -847,7 +860,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         color: AppColors.textPrimary,
       ),
       decoration: InputDecoration(
-        hintText: _activeTabIndex == 0 ? 'Search TV...' : 'Search games...',
+        hintText: _activeTabIndex == 0 ? l.searchHintTv : l.searchHintGames,
         hintStyle: AppTypography.bodySmall.copyWith(
           color: AppColors.textTertiary,
         ),
@@ -1012,7 +1025,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
             ),
             const SizedBox(width: 2),
             Text(
-              currentSort.field.shortLabel,
+              currentSort.field.localizedShortLabel(S.of(context)),
               style: AppTypography.bodySmall,
             ),
             const SizedBox(width: 2),
@@ -1036,7 +1049,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                   else
                     const SizedBox(width: 16),
                   const SizedBox(width: AppSpacing.sm),
-                  Text(field.displayLabel),
+                  Text(field.localizedDisplayLabel(S.of(context))),
                 ],
               ),
             ),
@@ -1453,7 +1466,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                 );
               },
               icon: const Icon(Icons.settings),
-              label: const Text('Go to Settings'),
+              label: Text(S.of(context).searchGoToSettings),
             ),
           ],
         ),

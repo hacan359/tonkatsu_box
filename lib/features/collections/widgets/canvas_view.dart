@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/image_cache_service.dart';
 import '../../../data/repositories/canvas_repository.dart';
-import '../../../shared/constants/app_strings.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/models/canvas_connection.dart';
 import '../../../shared/models/canvas_item.dart';
@@ -468,7 +468,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Failed to load board',
+              S.of(context).canvasFailedToLoad,
               style: theme.textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
@@ -476,7 +476,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
               onPressed: () {
                 _readNotifier().refresh();
               },
-              child: const Text('Retry'),
+              child: Text(S.of(context).retry),
             ),
           ],
         ),
@@ -495,14 +495,14 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Board is empty',
+              S.of(context).canvasBoardEmpty,
               style: theme.textTheme.titleMedium?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),
             ),
             const SizedBox(height: 8),
             Text(
-              'Add items to the collection first',
+              S.of(context).canvasBoardEmptyHint,
               style: theme.textTheme.bodyMedium?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),
@@ -706,7 +706,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
                                   .notifier)
                               .togglePanel();
                         },
-                        tooltip: 'VGMaps Browser',
+                        tooltip: S.of(context).canvasVgmapsBrowser,
                         child: const Icon(Icons.map),
                       ),
                     ),
@@ -729,7 +729,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
                                   .notifier)
                               .togglePanel();
                         },
-                        tooltip: 'SteamGridDB Images',
+                        tooltip: S.of(context).canvasSteamGridDbImages,
                         child: const Icon(Icons.image_search),
                       ),
                     ),
@@ -743,7 +743,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
                         canvasState.items,
                       );
                     },
-                    tooltip: 'Center view',
+                    tooltip: S.of(context).canvasCenterView,
                     child: const Icon(Icons.fit_screen),
                   ),
                   const SizedBox(height: 8),
@@ -763,7 +763,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
                         );
                       });
                     },
-                    tooltip: 'Reset positions',
+                    tooltip: S.of(context).canvasResetPositions,
                     child: const Icon(Icons.grid_view),
                   ),
                 ],
@@ -868,21 +868,21 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
 
     switch (item.itemType) {
       case CanvasItemType.game:
-        title = item.game?.name ?? AppStrings.unknownGame;
+        title = item.game?.name ?? S.of(context).unknownGame;
         imageUrl = item.game?.coverUrl;
         cacheImageType = ImageType.gameCover;
         cacheImageId = (item.game?.id ?? 0).toString();
         mediaType = MediaType.game;
         placeholderIcon = Icons.videogame_asset;
       case CanvasItemType.movie:
-        title = item.movie?.title ?? AppStrings.unknownMovie;
+        title = item.movie?.title ?? S.of(context).unknownMovie;
         imageUrl = item.movie?.posterThumbUrl;
         cacheImageType = ImageType.moviePoster;
         cacheImageId = (item.movie?.tmdbId ?? 0).toString();
         mediaType = MediaType.movie;
         placeholderIcon = Icons.movie_outlined;
       case CanvasItemType.tvShow:
-        title = item.tvShow?.title ?? AppStrings.unknownTvShow;
+        title = item.tvShow?.title ?? S.of(context).unknownTvShow;
         imageUrl = item.tvShow?.posterThumbUrl;
         cacheImageType = ImageType.tvShowPoster;
         cacheImageId = (item.tvShow?.tmdbId ?? 0).toString();
@@ -891,7 +891,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
       case CanvasItemType.animation:
         title = item.movie?.title ??
             item.tvShow?.title ??
-            AppStrings.unknownAnimation;
+            S.of(context).unknownAnimation;
         if (item.tvShow != null) {
           imageUrl = item.tvShow?.posterThumbUrl;
           cacheImageType = ImageType.tvShowPoster;
