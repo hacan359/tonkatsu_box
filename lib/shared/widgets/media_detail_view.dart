@@ -12,6 +12,24 @@ import 'cached_image.dart';
 import 'source_badge.dart';
 import 'star_rating_bar.dart';
 
+/// Колбэк для изменения даты активности.
+///
+/// [type] — тип даты ('started' или 'completed'),
+/// [date] — выбранная дата.
+typedef OnActivityDateChanged = Future<void> Function(
+  String type,
+  DateTime date,
+);
+
+/// Форматирует [DateTime] в короткую строку (например, "Jan 15").
+String _formatActivityDate(DateTime date) {
+  const List<String> months = <String>[
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  ];
+  return '${months[date.month - 1]} ${date.day}';
+}
+
 /// Чип с иконкой и текстом для отображения метаинформации.
 class MediaDetailChip {
   /// Создаёт [MediaDetailChip].
@@ -56,6 +74,11 @@ class MediaDetailView extends StatelessWidget {
     this.userComment,
     this.userRating,
     this.onUserRatingChanged,
+    this.addedAt,
+    this.startedAt,
+    this.completedAt,
+    this.lastActivityAt,
+    this.onActivityDateChanged,
     this.hasAuthorComment = false,
     this.hasUserComment = false,
     this.embedded = false,
@@ -107,6 +130,21 @@ class MediaDetailView extends StatelessWidget {
   /// Колбэк при изменении пользовательского рейтинга.
   final ValueChanged<int?>? onUserRatingChanged;
 
+  /// Дата добавления элемента (readonly).
+  final DateTime? addedAt;
+
+  /// Дата начала.
+  final DateTime? startedAt;
+
+  /// Дата завершения.
+  final DateTime? completedAt;
+
+  /// Дата последней активности (readonly).
+  final DateTime? lastActivityAt;
+
+  /// Колбэк при изменении даты активности (Started/Completed).
+  final OnActivityDateChanged? onActivityDateChanged;
+
   /// Есть ли рецензия автора.
   final bool hasAuthorComment;
 
@@ -154,6 +192,10 @@ class MediaDetailView extends StatelessWidget {
         if (onUserRatingChanged != null) ...<Widget>[
           const SizedBox(height: AppSpacing.md),
           _buildUserRatingSection(context),
+        ],
+        if (addedAt != null) ...<Widget>[
+          const SizedBox(height: AppSpacing.sm),
+          _buildActivityDatesRow(context),
         ],
         const SizedBox(height: AppSpacing.md),
         _buildUserNotesSection(context),
@@ -388,6 +430,123 @@ class MediaDetailView extends StatelessWidget {
     );
   }
 
+  Widget _buildActivityDatesRow(BuildContext context) {
+    final S l = S.of(context);
+    return Wrap(
+      spacing: AppSpacing.md,
+      runSpacing: AppSpacing.xs,
+      children: <Widget>[
+        _buildDateChip(
+          icon: Icons.add_circle_outline,
+          label: l.activityDatesAdded,
+          date: addedAt,
+        ),
+        _buildDateChip(
+          icon: Icons.play_circle_outline,
+          label: l.activityDatesStarted,
+          date: startedAt,
+          editable: onActivityDateChanged != null,
+          onTap: onActivityDateChanged != null
+              ? () => _pickActivityDate(context, 'started', startedAt)
+              : null,
+        ),
+        _buildDateChip(
+          icon: Icons.check_circle_outline,
+          label: l.activityDatesCompleted,
+          date: completedAt,
+          editable: onActivityDateChanged != null,
+          onTap: onActivityDateChanged != null
+              ? () => _pickActivityDate(context, 'completed', completedAt)
+              : null,
+        ),
+        if (lastActivityAt != null)
+          _buildDateChip(
+            icon: Icons.update,
+            label: l.activityDatesLastActivity,
+            date: lastActivityAt,
+          ),
+      ],
+    );
+  }
+
+  Widget _buildDateChip({
+    required IconData icon,
+    required String label,
+    DateTime? date,
+    bool editable = false,
+    VoidCallback? onTap,
+  }) {
+    final Widget content = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Icon(icon, size: 14, color: AppColors.textSecondary),
+        const SizedBox(width: 4),
+        Text(
+          '$label: ',
+          style: AppTypography.caption.copyWith(
+            color: AppColors.textTertiary,
+          ),
+        ),
+        Text(
+          date != null ? _formatActivityDate(date) : '\u2014',
+          style: AppTypography.bodySmall.copyWith(
+            color: date != null
+                ? AppColors.textSecondary
+                : AppColors.textTertiary,
+          ),
+        ),
+        if (editable) ...<Widget>[
+          const SizedBox(width: 2),
+          const Icon(
+            Icons.edit_outlined,
+            size: 12,
+            color: AppColors.brand,
+          ),
+        ],
+      ],
+    );
+
+    if (editable && onTap != null) {
+      return InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2),
+          child: content,
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: content,
+    );
+  }
+
+  Future<void> _pickActivityDate(
+    BuildContext context,
+    String type,
+    DateTime? current,
+  ) async {
+    final DateTime initialDate = current ?? DateTime.now();
+    final DateTime firstDate = DateTime(1980);
+    final DateTime lastDate = DateTime.now().add(const Duration(days: 365));
+
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: firstDate,
+      lastDate: lastDate,
+      helpText: type == 'started'
+          ? S.of(context).activityDatesSelectStart
+          : S.of(context).activityDatesSelectCompletion,
+    );
+
+    if (picked != null && context.mounted) {
+      await onActivityDateChanged!(type, picked);
+    }
+  }
+
   Widget _buildExtraSectionsExpansion(BuildContext context) {
     return Theme(
       data: Theme.of(context).copyWith(
@@ -442,7 +601,7 @@ class MediaDetailView extends StatelessWidget {
               ),
             ),
             if (isEditable)
-              TextButton.icon(
+              IconButton(
                 onPressed: () => _editComment(
                   context,
                   title: l.detailEditAuthorReview,
@@ -450,8 +609,10 @@ class MediaDetailView extends StatelessWidget {
                   initialValue: authorComment,
                   onSave: onAuthorCommentSave,
                 ),
-                icon: const Icon(Icons.edit, size: 14),
-                label: Text(l.edit),
+                icon: const Icon(Icons.edit, size: 18),
+                iconSize: 18,
+                visualDensity: VisualDensity.compact,
+                tooltip: l.edit,
               ),
           ],
         ),
@@ -524,7 +685,7 @@ class MediaDetailView extends StatelessWidget {
                 ],
               ),
             ),
-            TextButton.icon(
+            IconButton(
               onPressed: () => _editComment(
                 context,
                 title: l.detailEditMyNotes,
@@ -532,8 +693,10 @@ class MediaDetailView extends StatelessWidget {
                 initialValue: userComment,
                 onSave: onUserCommentSave,
               ),
-              icon: const Icon(Icons.edit, size: 14),
-              label: Text(l.edit),
+              icon: const Icon(Icons.edit, size: 18),
+              iconSize: 18,
+              visualDensity: VisualDensity.compact,
+              tooltip: l.edit,
             ),
           ],
         ),

@@ -26,7 +26,6 @@ import '../providers/canvas_provider.dart';
 import '../providers/collections_provider.dart';
 import '../providers/steamgriddb_panel_provider.dart';
 import '../providers/vgmaps_panel_provider.dart';
-import '../widgets/activity_dates_section.dart';
 import '../widgets/canvas_view.dart';
 import '../widgets/episode_tracker_section.dart';
 import '../widgets/status_chip_row.dart';
@@ -389,16 +388,15 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         onChanged: (ItemStatus status) =>
             _updateStatus(item.id, status, item.mediaType),
       ),
+      addedAt: item.addedAt,
+      startedAt: item.startedAt,
+      completedAt: item.completedAt,
+      lastActivityAt: item.lastActivityAt,
+      onActivityDateChanged: widget.isEditable
+          ? (String type, DateTime date) =>
+              _updateActivityDate(item.id, type, date)
+          : null,
       extraSections: <Widget>[
-        ActivityDatesSection(
-          addedAt: item.addedAt,
-          startedAt: item.startedAt,
-          completedAt: item.completedAt,
-          lastActivityAt: item.lastActivityAt,
-          isEditable: widget.isEditable,
-          onDateChanged: (String type, DateTime date) =>
-              _updateActivityDate(item.id, type, date),
-        ),
         if (config.hasEpisodeTracker)
           EpisodeTrackerSection(
             collectionId: widget.collectionId,
