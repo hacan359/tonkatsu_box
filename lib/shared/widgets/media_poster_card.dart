@@ -296,9 +296,10 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                     color: widget.status!.color,
                     shape: BoxShape.circle,
                   ),
-                  child: Text(
-                    widget.status!.icon,
-                    style: TextStyle(fontSize: _isCompact ? 7 : 10),
+                  child: Icon(
+                    widget.status!.materialIcon,
+                    size: _isCompact ? 8 : 12,
+                    color: Colors.white,
                   ),
                 ),
               ),

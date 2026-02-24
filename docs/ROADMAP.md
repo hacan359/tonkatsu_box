@@ -78,13 +78,13 @@
 - [x] Settings — adaptive Export/Import buttons
 - [x] MediaCard — poster 64×96
 - [x] Image caching — eager download on add, magic bytes validation, Windows file lock fix
-- [x] StatusChipRow + StatusRibbon — modern chip-based status selection on detail screens, diagonal ribbon on list cards
+- [x] StatusChipRow + StatusRibbon — piano-style segmented status bar (icon-only, flat color, full-width), Material icon ribbon on list cards, Material icon badge on poster cards
 
 ### 📋 UI Restoration (remaining)
 
 - [x] Canvas mode restoration — Board toggle IconButton in AppBar, CanvasView + SteamGridDB/VGMaps panels in unified `ItemDetailScreen`
 - [x] Episode Tracker restoration — shared `EpisodeTrackerSection` widget with `accentColor`, used for TV Show and Animation (tvShow source) in `ItemDetailScreen`
-- [x] Activity Dates restoration — `ActivityDatesSection` in `ItemDetailScreen` for all media types
+- [x] Activity Dates restoration — inline compact horizontal `Wrap` under My Rating with editable Started/Completed date chips
 - [ ] Search filters restoration — Platform Filter, Media Filter, Sort Selector
 
 ---

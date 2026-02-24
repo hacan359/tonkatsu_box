@@ -1,4 +1,3 @@
-import 'package:xerabora/l10n/app_localizations.dart';
 // Тесты для StatusRibbon.
 
 import 'package:flutter/material.dart';
@@ -13,8 +12,6 @@ void main() {
     MediaType mediaType = MediaType.game,
   }) {
     return MaterialApp(
-            localizationsDelegates: S.localizationsDelegates,
-            supportedLocales: S.supportedLocales,
       home: Scaffold(
         body: Card(
           clipBehavior: Clip.antiAlias,
@@ -82,66 +79,47 @@ void main() {
 
         expect(find.byType(Positioned), findsOneWidget);
       });
-
     });
 
     group('содержимое', () {
-      testWidgets('должен содержать emoji статуса',
+      testWidgets('должен содержать Material-иконку статуса',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget(
           status: ItemStatus.inProgress,
         ));
 
-        expect(find.textContaining(ItemStatus.inProgress.icon), findsOneWidget);
+        expect(
+          find.byIcon(ItemStatus.inProgress.materialIcon),
+          findsOneWidget,
+        );
       });
 
-      testWidgets('должен содержать текст метки для game',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget(
-          status: ItemStatus.inProgress,
-          mediaType: MediaType.game,
-        ));
-
-        expect(find.textContaining('Playing'), findsOneWidget);
-      });
-
-      testWidgets('должен содержать текст метки для movie',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget(
-          status: ItemStatus.inProgress,
-          mediaType: MediaType.movie,
-        ));
-
-        expect(find.textContaining('Watching'), findsOneWidget);
-      });
-
-      testWidgets('должен содержать текст "Completed"',
+      testWidgets('должен показывать иконку completed',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget(
           status: ItemStatus.completed,
         ));
 
-        expect(find.textContaining('Completed'), findsOneWidget);
+        expect(find.byIcon(Icons.check_circle), findsOneWidget);
       });
 
-      testWidgets('должен содержать текст "Dropped"',
+      testWidgets('должен показывать иконку dropped',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget(
           status: ItemStatus.dropped,
         ));
 
-        expect(find.textContaining('Dropped'), findsOneWidget);
+        expect(find.byIcon(Icons.pause_circle_filled), findsOneWidget);
       });
 
-      testWidgets('должен содержать текст "Planned"',
+      testWidgets('должен показывать иконку planned',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget(
           status: ItemStatus.planned,
         ));
 
-        expect(find.textContaining('Planned'), findsOneWidget);
+        expect(find.byIcon(Icons.bookmark), findsOneWidget);
       });
-
     });
 
     group('цвет', () {
@@ -151,7 +129,6 @@ void main() {
           status: ItemStatus.completed,
         ));
 
-        // Ищем Container с цветом statusCompleted
         final Finder containers = find.byType(Container);
         bool foundColoredContainer = false;
         for (final Element element in containers.evaluate()) {
@@ -168,6 +145,17 @@ void main() {
         expect(foundColoredContainer, isTrue,
             reason: 'Should have container with status color');
       });
+
+      testWidgets('иконка должна быть белой', (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget(
+          status: ItemStatus.completed,
+        ));
+
+        final Icon icon = tester.widget<Icon>(
+          find.byIcon(Icons.check_circle),
+        );
+        expect(icon.color, Colors.white);
+      });
     });
 
     group('Transform', () {
@@ -178,20 +166,6 @@ void main() {
         ));
 
         expect(find.byType(Transform), findsWidgets);
-      });
-    });
-
-    group('текст', () {
-      testWidgets('текст должен быть белым',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget(
-          status: ItemStatus.completed,
-        ));
-
-        final Text text = tester.widget<Text>(
-          find.textContaining('Completed'),
-        );
-        expect(text.style?.color, Colors.white);
       });
     });
   });

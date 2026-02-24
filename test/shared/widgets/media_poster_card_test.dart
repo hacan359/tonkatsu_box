@@ -152,14 +152,14 @@ void main() {
         expect(find.byIcon(Icons.check), findsNothing);
       });
 
-      testWidgets('должен показать статус-эмодзи (inProgress)',
+      testWidgets('должен показать иконку статуса (inProgress)',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildCard(
           status: ItemStatus.inProgress,
         ));
         await tester.pumpAndSettle();
 
-        expect(find.text(ItemStatus.inProgress.icon), findsOneWidget);
+        expect(find.byIcon(ItemStatus.inProgress.materialIcon), findsOneWidget);
       });
 
       testWidgets('не должен показывать статус notStarted',
@@ -169,7 +169,7 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        expect(find.text(ItemStatus.notStarted.icon), findsNothing);
+        expect(find.byIcon(ItemStatus.notStarted.materialIcon), findsNothing);
       });
 
       testWidgets('не должен показывать статус null',
@@ -177,10 +177,10 @@ void main() {
         await tester.pumpWidget(buildCard());
         await tester.pumpAndSettle();
 
-        // Никаких статус-эмодзи
+        // Никаких статус-иконок
         for (final ItemStatus status in ItemStatus.values) {
           if (status != ItemStatus.notStarted) {
-            expect(find.text(status.icon), findsNothing);
+            expect(find.byIcon(status.materialIcon), findsNothing);
           }
         }
       });
@@ -414,7 +414,7 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        expect(find.text(ItemStatus.inProgress.icon), findsNothing);
+        expect(find.byIcon(ItemStatus.inProgress.materialIcon), findsNothing);
       });
 
       testWidgets('не должен показывать год/подзаголовок на canvas',
@@ -519,12 +519,12 @@ void main() {
       for (final ItemStatus status in ItemStatus.values) {
         if (status == ItemStatus.notStarted) continue;
 
-        testWidgets('должен показать эмодзи для $status',
+        testWidgets('должен показать иконку для $status',
             (WidgetTester tester) async {
           await tester.pumpWidget(buildCard(status: status));
           await tester.pumpAndSettle();
 
-          expect(find.text(status.icon), findsOneWidget);
+          expect(find.byIcon(status.materialIcon), findsOneWidget);
         });
       }
     });

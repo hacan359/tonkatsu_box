@@ -155,7 +155,7 @@ void main() {
       expect(find.text('SNES'), findsOneWidget);
     });
 
-    testWidgets('должен отображать статус Playing для inProgress',
+    testWidgets('должен отображать StatusChipRow с иконками статусов',
         (WidgetTester tester) async {
       const Game game = Game(id: 100, name: 'Test Game');
       const Platform platform = Platform(id: 18, name: 'SNES');
@@ -173,8 +173,7 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.text('Status'), findsOneWidget);
-      expect(find.textContaining('Playing'), findsOneWidget);
+      expect(find.byIcon(Icons.play_arrow_rounded), findsOneWidget);
     });
 
     testWidgets('должен отображать описание игры',
@@ -760,7 +759,7 @@ void main() {
         expect(dropdown.mediaType, MediaType.movie);
       });
 
-      testWidgets('должен показывать Watching для inProgress',
+      testWidgets('должен показывать иконку play для inProgress',
           (WidgetTester tester) async {
         final Movie movie = createTestMovie();
         final CollectionItem item = createMovieItem(
@@ -776,8 +775,7 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        expect(find.text('Watching'), findsOneWidget);
-        expect(find.text('Playing'), findsNothing);
+        expect(find.byIcon(Icons.play_arrow_rounded), findsOneWidget);
       });
     });
 

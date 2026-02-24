@@ -381,17 +381,7 @@ class MediaDetailView extends StatelessWidget {
   }
 
   Widget _buildStatusSection(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text(
-          S.of(context).detailStatus,
-          style: AppTypography.h3.copyWith(fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 6),
-        statusWidget!,
-      ],
-    );
+    return statusWidget!;
   }
 
   Widget _buildUserRatingSection(BuildContext context) {

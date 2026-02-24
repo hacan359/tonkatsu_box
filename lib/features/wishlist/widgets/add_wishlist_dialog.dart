@@ -162,7 +162,7 @@ class _AddWishlistFormState extends State<AddWishlistForm> {
               spacing: AppSpacing.xs,
               runSpacing: AppSpacing.xs,
               children: <Widget>[
-                _buildMediaTypeChip(null, l.wishlistTypeAny, Icons.bookmark_border),
+                _buildMediaTypeChip(null, l.wishlistTypeAny, Icons.collections_bookmark_outlined),
                 ...MediaType.values.map(
                   (MediaType type) => _buildMediaTypeChip(
                     type,

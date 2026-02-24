@@ -1,5 +1,6 @@
 // Тесты для модели ItemStatus
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
@@ -174,38 +175,34 @@ void main() {
       });
     });
 
-    group('icon', () {
-      test('каждый статус должен иметь непустую иконку', () {
+    group('materialIcon', () {
+      test('каждый статус должен иметь уникальную иконку', () {
+        final Set<IconData> icons = <IconData>{};
         for (final ItemStatus status in ItemStatus.values) {
-          expect(status.icon, isNotEmpty, reason: '${status.name} icon');
+          expect(icons.add(status.materialIcon), isTrue,
+              reason: '${status.name} materialIcon should be unique');
         }
       });
 
-      test('notStarted должен иметь иконку', () {
-        expect(ItemStatus.notStarted.icon, isA<String>());
-        expect(ItemStatus.notStarted.icon.isNotEmpty, isTrue);
+      test('notStarted → radio_button_unchecked', () {
+        expect(ItemStatus.notStarted.materialIcon, Icons.radio_button_unchecked);
       });
 
-      test('inProgress должен иметь иконку', () {
-        expect(ItemStatus.inProgress.icon, isA<String>());
-        expect(ItemStatus.inProgress.icon.isNotEmpty, isTrue);
+      test('inProgress → play_arrow_rounded', () {
+        expect(ItemStatus.inProgress.materialIcon, Icons.play_arrow_rounded);
       });
 
-      test('completed должен иметь иконку', () {
-        expect(ItemStatus.completed.icon, isA<String>());
-        expect(ItemStatus.completed.icon.isNotEmpty, isTrue);
+      test('completed → check_circle', () {
+        expect(ItemStatus.completed.materialIcon, Icons.check_circle);
       });
 
-      test('dropped должен иметь иконку', () {
-        expect(ItemStatus.dropped.icon, isA<String>());
-        expect(ItemStatus.dropped.icon.isNotEmpty, isTrue);
+      test('dropped → pause_circle_filled', () {
+        expect(ItemStatus.dropped.materialIcon, Icons.pause_circle_filled);
       });
 
-      test('planned должен иметь иконку', () {
-        expect(ItemStatus.planned.icon, isA<String>());
-        expect(ItemStatus.planned.icon.isNotEmpty, isTrue);
+      test('planned → bookmark', () {
+        expect(ItemStatus.planned.materialIcon, Icons.bookmark);
       });
-
     });
 
     group('statusSortPriority', () {
@@ -281,40 +278,5 @@ void main() {
       });
     });
 
-    group('displayText', () {
-      test('должен содержать иконку и метку для game inProgress', () {
-        final String result =
-            ItemStatus.inProgress.displayText(MediaType.game);
-
-        expect(result, contains(ItemStatus.inProgress.icon));
-        expect(result, contains('Playing'));
-      });
-
-      test('должен содержать иконку и метку для movie inProgress', () {
-        final String result =
-            ItemStatus.inProgress.displayText(MediaType.movie);
-
-        expect(result, contains(ItemStatus.inProgress.icon));
-        expect(result, contains('Watching'));
-      });
-
-      test('должен содержать иконку и метку для completed', () {
-        final String result =
-            ItemStatus.completed.displayText(MediaType.game);
-
-        expect(result, contains(ItemStatus.completed.icon));
-        expect(result, contains('Completed'));
-      });
-
-      test('должен возвращать строку формата "icon label"', () {
-        final String result =
-            ItemStatus.notStarted.displayText(MediaType.game);
-        final String expectedIcon = ItemStatus.notStarted.icon;
-        final String expectedLabel =
-            ItemStatus.notStarted.displayLabel(MediaType.game);
-
-        expect(result, '$expectedIcon $expectedLabel');
-      });
-    });
   });
 }

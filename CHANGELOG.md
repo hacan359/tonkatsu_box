@@ -7,9 +7,14 @@
 ## [Unreleased]
 
 ### Changed
+- Redesigned `StatusChipRow` from Wrap of chip-buttons to "piano-style" segmented bar — full-width `Row` of `Expanded` segments, flat color fill, icon-only (no text, no borders, no rounded corners), tooltip with localized label (`status_chip_row.dart`)
+- Replaced emoji status icons with Material icons across the app — `ItemStatus.icon` (emoji String) replaced by `materialIcon` (IconData): `radio_button_unchecked` (notStarted), `play_arrow_rounded` (inProgress), `check_circle` (completed), `pause_circle_filled` (dropped), `bookmark` (planned) (`item_status.dart`)
+- Updated `StatusRibbon` to show Material icon instead of emoji + text — icon-only diagonal ribbon on collection cards (`status_ribbon.dart`)
+- Updated `MediaPosterCard` status badge to use Material `Icon` instead of emoji `Text` (`media_poster_card.dart`)
+- Swapped navigation icons — Collections uses `bookmark_border`/`bookmark`, Wishlist uses `collections_bookmark_outlined`/`collections_bookmark` (`navigation_shell.dart`, `home_screen.dart`, `collection_screen.dart`, `wishlist_screen.dart`, `add_wishlist_dialog.dart`, `welcome_step_how_it_works.dart`, `trakt_import_screen.dart`)
+- Changed edit buttons in Author's Review and My Notes from `TextButton.icon` to `IconButton` — icon-only pencil, no "Edit" text (`media_detail_view.dart`)
+- Moved Activity Dates from collapsed `ExpansionTile` to always-visible compact horizontal `Wrap` under My Rating — editable Started/Completed with `DatePicker`, readonly Added/Last Activity (`media_detail_view.dart`, `item_detail_screen.dart`)
 - Removed `ItemStatus.onHold` status — simplified from 6 to 5 statuses (notStarted, inProgress, completed, dropped, planned). DB migration v20 converts existing `on_hold` items to `not_started`. Removed `onHold` from `CollectionStats`, `StatusChipRow` filtering, `AppColors.statusOnHold`, Trakt import priority mapping, and `statusOnHold` ARB keys (`item_status.dart`, `database_service.dart`, `collection_repository.dart`, `status_chip_row.dart`, `app_colors.dart`, `trakt_zip_import_service.dart`)
-
-### Changed
 - Unified 4 detail screens (`GameDetailScreen`, `MovieDetailScreen`, `TvShowDetailScreen`, `AnimeDetailScreen`) into single `ItemDetailScreen` — media type determined from `CollectionItem.mediaType`, UI configured via `_MediaConfig` class (`item_detail_screen.dart`)
 - Replaced TabBar (Details/Board tabs) with Board toggle IconButton in AppBar — `Icons.dashboard` (active) / `Icons.dashboard_outlined` (inactive), no more `SingleTickerProviderStateMixin` or `TabController`
 - Extracted episode tracker into shared `EpisodeTrackerSection` widget with `accentColor` parameter — reused for TV Show and Animation (tvShow source) (`episode_tracker_section.dart`)
@@ -24,6 +29,8 @@
 - `GameDetailScreen` (`game_detail_screen.dart`, 601 lines), `MovieDetailScreen` (`movie_detail_screen.dart`, 638 lines), `TvShowDetailScreen` (`tv_show_detail_screen.dart`, 1082 lines), `AnimeDetailScreen` (`anime_detail_screen.dart`, 1185 lines) — replaced by unified `ItemDetailScreen`
 - `detailsTab` ARB key — no longer needed after TabBar removal
 - 4 old detail screen test files (`game_detail_screen_test.dart`, `movie_detail_screen_test.dart`, `tv_show_detail_screen_test.dart`, `anime_detail_screen_test.dart`)
+- `ItemStatus.icon` emoji getter, `displayText()` and `localizedText()` methods — replaced by `materialIcon` getter (`item_status.dart`)
+- Private `_statusIcon()` function from `status_chip_row.dart` — icon mapping moved to `ItemStatus.materialIcon`
 
 ### Added
 - Full i18n localization (English / Russian) — Flutter `gen_l10n` infrastructure with 521 ARB keys, ICU MessageFormat plurals for Russian (`=0`, `=1`, `few`, `other`), output class `S` with `nullable-getter: false` (`l10n.yaml`, `lib/l10n/app_en.arb`, `lib/l10n/app_ru.arb`)

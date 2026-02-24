@@ -190,23 +190,23 @@ void main() {
     });
 
     group('Status Section', () {
-      testWidgets('должен отображать секцию статуса когда statusWidget != null',
+      testWidgets('должен отображать statusWidget когда не null',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(
           statusWidget: const Text('Playing'),
         ));
         await tester.pumpAndSettle();
 
-        expect(find.text('Status'), findsOneWidget);
         expect(find.text('Playing'), findsOneWidget);
       });
 
-      testWidgets('не должен отображать секцию статуса когда statusWidget == null',
+      testWidgets('не должен отображать statusWidget когда null',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
-        expect(find.text('Status'), findsNothing);
+        // Нет statusWidget — нет секции статуса
+        expect(find.text('Playing'), findsNothing);
       });
     });
 
@@ -605,7 +605,6 @@ void main() {
         expect(find.text('Platform'), findsOneWidget);
         expect(find.text('9.0'), findsOneWidget);
         expect(find.text('Test description'), findsOneWidget);
-        expect(find.text('Status'), findsOneWidget);
         expect(find.text('Status Widget'), findsOneWidget);
         expect(find.text("Author's Review"), findsOneWidget);
         expect(find.text('Author text'), findsOneWidget);
