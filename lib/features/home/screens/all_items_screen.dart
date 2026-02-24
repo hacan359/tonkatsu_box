@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/image_cache_service.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/models/collection.dart';
@@ -114,18 +115,18 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         child: Row(
           children: <Widget>[
             // Media type chips
-            _buildMediaChip(null, 'All', total),
+            _buildMediaChip(null, S.of(context).allItemsAll, total),
             const SizedBox(width: AppSpacing.xs),
-            _buildMediaChip(MediaType.game, 'Games', counts[MediaType.game]),
-            const SizedBox(width: AppSpacing.xs),
-            _buildMediaChip(
-                MediaType.movie, 'Movies', counts[MediaType.movie]),
+            _buildMediaChip(MediaType.game, S.of(context).allItemsGames, counts[MediaType.game]),
             const SizedBox(width: AppSpacing.xs),
             _buildMediaChip(
-                MediaType.tvShow, 'TV Shows', counts[MediaType.tvShow]),
+                MediaType.movie, S.of(context).allItemsMovies, counts[MediaType.movie]),
             const SizedBox(width: AppSpacing.xs),
             _buildMediaChip(
-                MediaType.animation, 'Animation', counts[MediaType.animation]),
+                MediaType.tvShow, S.of(context).allItemsTvShows, counts[MediaType.tvShow]),
+            const SizedBox(width: AppSpacing.xs),
+            _buildMediaChip(
+                MediaType.animation, S.of(context).allItemsAnimation, counts[MediaType.animation]),
 
             const SizedBox(width: AppSpacing.md),
 
@@ -200,8 +201,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
       ),
       label: Text(
         isRatingSort
-            ? (isDescending ? 'Rating ↑' : 'Rating ↓')
-            : 'Rating',
+            ? (isDescending ? S.of(context).allItemsRatingAsc : S.of(context).allItemsRatingDesc)
+            : S.of(context).allItemsRating,
         style: AppTypography.bodySmall.copyWith(
           color: isRatingSort ? AppColors.ratingStar : AppColors.textSecondary,
           fontWeight: isRatingSort ? FontWeight.w600 : FontWeight.normal,
@@ -248,7 +249,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         scrollDirection: Axis.horizontal,
         child: Row(
           children: <Widget>[
-            _buildPlatformChip(null, 'All'),
+            _buildPlatformChip(null, S.of(context).collectionFilterAll),
             for (final Platform platform in platforms) ...<Widget>[
               const SizedBox(width: AppSpacing.xs),
               _buildPlatformChip(platform.id, platform.displayName),
@@ -330,7 +331,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
 
     // Группируем элементы по коллекциям (сохраняя порядок появления)
     final List<_CollectionGroup> groups =
-        _groupByCollection(items, collectionNames);
+        _groupByCollection(items, collectionNames, S.of(context).collectionsUncategorized);
 
     return RefreshIndicator(
       onRefresh: () =>
@@ -398,6 +399,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   static List<_CollectionGroup> _groupByCollection(
     List<CollectionItem> items,
     Map<int, String> collectionNames,
+    String uncategorizedLabel,
   ) {
     final Map<int?, _CollectionGroup> map = <int?, _CollectionGroup>{};
     final List<int?> order = <int?>[];
@@ -406,7 +408,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
       if (!map.containsKey(colId)) {
         final String name = colId != null
             ? (collectionNames[colId] ?? 'Unknown')
-            : 'Uncategorized';
+            : uncategorizedLabel;
         map[colId] = _CollectionGroup(name: name, items: <CollectionItem>[]);
         order.add(colId);
       }
@@ -471,14 +473,14 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
           const SizedBox(height: AppSpacing.md),
           Text(
             noItemsAtAll
-                ? 'No items yet'
-                : 'No items match filter',
+                ? S.of(context).allItemsNoItems
+                : S.of(context).allItemsNoMatch,
             style: AppTypography.h2.copyWith(color: AppColors.textTertiary),
           ),
           if (noItemsAtAll) ...<Widget>[
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Add items via Collections tab',
+              S.of(context).allItemsAddViaCollections,
               style: AppTypography.body
                   .copyWith(color: AppColors.textTertiary),
             ),
@@ -496,7 +498,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
           const Icon(Icons.error_outline, size: 64, color: AppColors.error),
           const SizedBox(height: AppSpacing.md),
           Text(
-            'Failed to load items',
+            S.of(context).allItemsFailedToLoad,
             style: AppTypography.h2.copyWith(color: AppColors.textTertiary),
           ),
           const SizedBox(height: AppSpacing.md),
@@ -504,7 +506,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
             onPressed: () =>
                 ref.read(allItemsNotifierProvider.notifier).refresh(),
             icon: const Icon(Icons.refresh),
-            label: const Text('Retry'),
+            label: Text(S.of(context).retry),
           ),
         ],
       ),
@@ -520,7 +522,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final String colName;
     if (item.isUncategorized) {
       isEditable = true;
-      colName = 'Uncategorized';
+      colName = S.of(context).collectionsUncategorized;
     } else {
       final List<Collection>? collections =
           ref.read(collectionsProvider).valueOrNull;

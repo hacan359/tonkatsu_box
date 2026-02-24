@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../features/settings/providers/settings_provider.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/navigation/navigation_shell.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -38,11 +39,11 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
 
   static const int _totalSteps = 4;
 
-  static const List<String> _stepLabels = <String>[
-    'Welcome',
-    'API Keys',
-    'How it works',
-    'Ready!',
+  List<String> _stepLabels(S l) => <String>[
+    l.welcomeStepWelcome,
+    l.welcomeStepApiKeys,
+    l.welcomeStepHowItWorks,
+    l.welcomeStepReady,
   ];
 
   @override
@@ -91,6 +92,9 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
   }
 
   Widget _buildStepBar(bool compact) {
+    final S l = S.of(context);
+    final List<String> labels = _stepLabels(l);
+
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
       decoration: BoxDecoration(
@@ -109,7 +113,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
               children: List<Widget>.generate(_totalSteps, (int index) {
                 return StepIndicator(
                   number: index + 1,
-                  label: _stepLabels[index],
+                  label: labels[index],
                   isActive: index == _currentPage,
                   isDone: index < _currentPage,
                   showLabel: !compact || index == _currentPage,
@@ -121,9 +125,9 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
           if (_currentPage < _totalSteps - 1)
             GestureDetector(
               onTap: () => _goToPage(_totalSteps - 1),
-              child: const Text(
-                'Skip',
-                style: TextStyle(
+              child: Text(
+                l.skip,
+                style: const TextStyle(
                   fontSize: 11,
                   color: AppColors.textTertiary,
                 ),
@@ -146,6 +150,8 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
   }
 
   Widget _buildBottomNav() {
+    final S l = S.of(context);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
@@ -167,12 +173,12 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
               disabledForegroundColor: AppColors.textTertiary.withAlpha(60),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             ),
-            child: const Row(
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                Icon(Icons.arrow_back, size: 14),
-                SizedBox(width: 4),
-                Text('Back', style: TextStyle(fontSize: 12)),
+                const Icon(Icons.arrow_back, size: 14),
+                const SizedBox(width: 4),
+                Text(l.back, style: const TextStyle(fontSize: 12)),
               ],
             ),
           ),
@@ -218,19 +224,19 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                   color: AppColors.brand,
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     Text(
-                      'Next',
-                      style: TextStyle(
+                      l.next,
+                      style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: Colors.black,
                       ),
                     ),
-                    SizedBox(width: 4),
-                    Icon(Icons.arrow_forward, size: 14, color: Colors.black),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.arrow_forward, size: 14, color: Colors.black),
                   ],
                 ),
               ),

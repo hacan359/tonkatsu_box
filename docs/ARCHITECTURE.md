@@ -75,6 +75,7 @@ lib/
 ├── core/                     # Ядро (API, БД)
 ├── data/                     # Репозитории
 ├── features/                 # Фичи (экраны, виджеты)
+├── l10n/                     # Локализация (ARB файлы, gen_l10n)
 └── shared/                   # Общие модели, extensions, тема
 ```
 
@@ -87,7 +88,10 @@ lib/
 | Файл | Назначение |
 |------|------------|
 | `lib/main.dart` | Инициализация Flutter, SQLite, SharedPreferences. Запуск приложения через `ProviderScope` |
-| `lib/app.dart` | Корневой виджет `TonkatsuBoxApp`. Настройка темы (Material 3), роутинг на основе состояния API |
+| `lib/app.dart` | Корневой виджет `TonkatsuBoxApp`. Настройка темы (Material 3), локализация (`locale`, `localizationsDelegates`), роутинг на основе состояния API |
+| `l10n.yaml` | Конфигурация Flutter `gen_l10n`: `arb-dir: lib/l10n`, output class `S`, `nullable-getter: false` |
+| `lib/l10n/app_en.arb` | Английские строки (521 ключ) — шаблон для генерации |
+| `lib/l10n/app_ru.arb` | Русские переводы (521 ключ) с ICU plural forms |
 
 ---
 
@@ -347,7 +351,7 @@ lib/
 | `lib/features/settings/screens/image_debug_screen.dart` | **Debug-экран IGDB Media**. Проверка URL изображений в коллекциях: постеры, thumbnail, превью |
 | `lib/features/settings/screens/gamepad_debug_screen.dart` | **Debug-экран Gamepad**. Raw events от Gamepads.events + filtered events от GamepadService в двух колонках |
 | `lib/features/settings/screens/trakt_import_screen.dart` | **Экран импорта Trakt.tv**. ConsumerStatefulWidget с BreadcrumbScope + AutoBreadcrumbAppBar. Секции: Instructions (инструкция), File Picker (выбор ZIP через FilePicker), Preview (username, counts по типам), Options (CheckboxListTile × 3 для watched/ratings/watchlist, RadioGroup для новой/существующей коллекции, DropdownButtonFormField). FilledButton "Start Import". Progress dialog с ValueNotifier + ValueListenableBuilder + LinearProgressIndicator. После импорта: invalidate providers, showSnack, Navigator.pop |
-| `lib/features/settings/providers/settings_provider.dart` | **State настроек**. Хранение IGDB, SteamGridDB, TMDB credentials в SharedPreferences, валидация токена, синхронизация платформ. Методы: `exportConfig()`, `importConfig()`, `flushDatabase()`, `setTmdbLanguage(language)`, `validateTmdbKey()`, `validateSteamGridDbKey()` |
+| `lib/features/settings/providers/settings_provider.dart` | **State настроек**. Хранение IGDB, SteamGridDB, TMDB credentials в SharedPreferences, валидация токена, синхронизация платформ. Методы: `exportConfig()`, `importConfig()`, `flushDatabase()`, `setTmdbLanguage(language)`, `setAppLanguage(locale)`, `validateTmdbKey()`, `validateSteamGridDbKey()` |
 
 ---
 

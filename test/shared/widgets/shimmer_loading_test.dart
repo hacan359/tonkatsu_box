@@ -1,3 +1,4 @@
+import 'package:xerabora/l10n/app_localizations.dart';
 // Тесты для ShimmerLoading виджетов.
 
 import 'package:flutter/material.dart';
@@ -10,6 +11,8 @@ void main() {
         (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: ShimmerBox(width: 100, height: 50),
           ),
@@ -23,6 +26,8 @@ void main() {
         (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: ShimmerBox(width: 100, height: 50),
           ),
@@ -36,6 +41,8 @@ void main() {
         (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: ShimmerBox(width: 100, height: 50),
           ),
@@ -54,6 +61,8 @@ void main() {
     testWidgets('должен рендериться', (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: SizedBox(
               width: 200,
@@ -71,6 +80,8 @@ void main() {
         (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: SizedBox(
               width: 200,
@@ -89,6 +100,8 @@ void main() {
     testWidgets('должен рендериться', (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: ShimmerListTile(),
           ),
@@ -102,6 +115,8 @@ void main() {
         (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
           home: Scaffold(
             body: ShimmerListTile(),
           ),

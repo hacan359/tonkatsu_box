@@ -1,3 +1,4 @@
+import 'package:xerabora/l10n/app_localizations.dart';
 // Тесты для RatingBadge.
 
 import 'package:flutter/material.dart';
@@ -32,6 +33,8 @@ void main() {
           (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: Scaffold(
               body: RatingBadge(rating: 8.5),
             ),
@@ -45,6 +48,8 @@ void main() {
           (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: Scaffold(
               body: RatingBadge(rating: 0),
             ),
@@ -58,6 +63,8 @@ void main() {
           (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: Scaffold(
               body: RatingBadge(rating: 7),
             ),
@@ -71,6 +78,8 @@ void main() {
           (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: Scaffold(
               body: RatingBadge(rating: 9.0),
             ),

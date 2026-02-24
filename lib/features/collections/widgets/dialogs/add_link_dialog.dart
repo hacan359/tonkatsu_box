@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../l10n/app_localizations.dart';
+
 // Диалог добавления/редактирования ссылки на канвасе.
 
 /// Диалог для ввода URL и метки ссылки.
@@ -79,9 +81,10 @@ class _AddLinkDialogState extends State<AddLinkDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final S l = S.of(context);
     return AlertDialog(
       scrollable: true,
-      title: Text(_isEditing ? 'Edit Link' : 'Add Link'),
+      title: Text(_isEditing ? l.editLinkTitle : l.addLinkTitle),
       content: SizedBox(
         width: 400,
         child: SingleChildScrollView(
@@ -90,10 +93,10 @@ class _AddLinkDialogState extends State<AddLinkDialog> {
             children: <Widget>[
             TextField(
               controller: _urlController,
-              decoration: const InputDecoration(
-                labelText: 'URL',
-                hintText: 'https://example.com',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l.linkUrlLabel,
+                hintText: l.linkUrlHint,
+                border: const OutlineInputBorder(),
               ),
               autofocus: true,
               onChanged: (_) => setState(() {}),
@@ -102,10 +105,10 @@ class _AddLinkDialogState extends State<AddLinkDialog> {
             const SizedBox(height: 16),
             TextField(
               controller: _labelController,
-              decoration: const InputDecoration(
-                labelText: 'Label (optional)',
-                hintText: 'My Link',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l.linkLabelOptional,
+                hintText: l.linkLabelHint,
+                border: const OutlineInputBorder(),
               ),
               onSubmitted: (_) => _submit(),
             ),
@@ -116,11 +119,11 @@ class _AddLinkDialogState extends State<AddLinkDialog> {
       actions: <Widget>[
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(l.cancel),
         ),
         FilledButton(
           onPressed: _canSubmit ? _submit : null,
-          child: Text(_isEditing ? 'Save' : 'Add'),
+          child: Text(_isEditing ? l.save : l.add),
         ),
       ],
     );

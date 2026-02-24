@@ -10,6 +10,7 @@ import 'package:xerabora/core/api/tmdb_api.dart';
 import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/data/repositories/collection_repository.dart';
 import 'package:xerabora/features/collections/screens/tv_show_detail_screen.dart';
+import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
@@ -123,6 +124,8 @@ void main() {
         tmdbApiProvider.overrideWithValue(mockTmdbApi),
       ],
       child: MaterialApp(
+        localizationsDelegates: S.localizationsDelegates,
+        supportedLocales: S.supportedLocales,
         home: TvShowDetailScreen(
           collectionId: collectionId,
           itemId: itemId,
@@ -956,6 +959,8 @@ void main() {
               databaseServiceProvider.overrideWithValue(mockDb),
             ],
             child: const MaterialApp(
+              localizationsDelegates: S.localizationsDelegates,
+              supportedLocales: S.supportedLocales,
               home: TvShowDetailScreen(
                 collectionId: 1,
                 itemId: 1,
@@ -987,6 +992,8 @@ void main() {
               databaseServiceProvider.overrideWithValue(mockDb),
             ],
             child: const MaterialApp(
+              localizationsDelegates: S.localizationsDelegates,
+              supportedLocales: S.supportedLocales,
               home: TvShowDetailScreen(
                 collectionId: 1,
                 itemId: 1,

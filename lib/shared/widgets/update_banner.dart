@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/services/update_service.dart';
+import '../../l10n/app_localizations.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
@@ -73,14 +74,14 @@ class _UpdateBannerContentState extends State<_UpdateBannerContent> {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Text(
-                  'Update available: v${widget.info.latestVersion}',
+                  S.of(context).updateAvailable(widget.info.latestVersion),
                   style: AppTypography.body.copyWith(
                     color: AppColors.brand,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 Text(
-                  'Current: v${widget.info.currentVersion}',
+                  S.of(context).updateCurrent(widget.info.currentVersion),
                   style: AppTypography.bodySmall,
                 ),
               ],
@@ -93,7 +94,7 @@ class _UpdateBannerContentState extends State<_UpdateBannerContent> {
                 mode: LaunchMode.externalApplication,
               );
             },
-            child: const Text('Update'),
+            child: Text(S.of(context).update),
           ),
           IconButton(
             icon: const Icon(Icons.close, size: 16),

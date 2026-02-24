@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/steamgriddb_api.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/models/steamgriddb_game.dart';
 import '../../../shared/models/steamgriddb_image.dart';
@@ -125,20 +126,21 @@ class _SteamGridDbDebugScreenState
 
   @override
   Widget build(BuildContext context) {
+    final S l = S.of(context);
     return BreadcrumbScope(
-      label: 'SteamGridDB',
+      label: l.debugSteamGridDb,
       child: DefaultTabController(
       length: 5,
       child: Scaffold(
-        appBar: const AutoBreadcrumbAppBar(
+        appBar: AutoBreadcrumbAppBar(
           bottom: TabBar(
             isScrollable: true,
             tabs: <Widget>[
-              Tab(text: 'Search'),
-              Tab(text: 'Grids'),
-              Tab(text: 'Heroes'),
-              Tab(text: 'Logos'),
-              Tab(text: 'Icons'),
+              Tab(text: l.debugSearchTab),
+              Tab(text: l.debugGridsTab),
+              Tab(text: l.debugHeroesTab),
+              Tab(text: l.debugLogosTab),
+              Tab(text: l.debugIconsTab),
             ],
           ),
         ),
@@ -157,6 +159,7 @@ class _SteamGridDbDebugScreenState
   }
 
   Widget _buildSearchTab() {
+    final S l = S.of(context);
     return Column(
       children: <Widget>[
         Padding(
@@ -164,8 +167,8 @@ class _SteamGridDbDebugScreenState
           child: TextField(
             controller: _searchController,
             decoration: InputDecoration(
-              labelText: 'Search games',
-              hintText: 'Enter game name',
+              labelText: l.debugSearchGames,
+              hintText: l.debugEnterGameName,
               border: const OutlineInputBorder(),
               prefixIcon: const Icon(Icons.search),
               suffixIcon: _isSearching
@@ -190,10 +193,10 @@ class _SteamGridDbDebugScreenState
           _buildErrorCard(_searchError!),
         Expanded(
           child: _searchResults.isEmpty && !_isSearching
-              ? const Center(
+              ? Center(
                   child: Text(
-                    'Enter a game name to search',
-                    style: TextStyle(color: Colors.grey),
+                    l.debugEnterGameNameHint,
+                    style: const TextStyle(color: Colors.grey),
                   ),
                 )
               : ListView.builder(
@@ -231,11 +234,12 @@ class _SteamGridDbDebugScreenState
   }
 
   Widget _buildImageTab(int tabIndex) {
+    final S l = S.of(context);
     final String tabName = switch (tabIndex) {
-      1 => 'Grids',
-      2 => 'Heroes',
-      3 => 'Logos',
-      4 => 'Icons',
+      1 => l.debugGridsTab,
+      2 => l.debugHeroesTab,
+      3 => l.debugLogosTab,
+      4 => l.debugIconsTab,
       _ => '',
     };
 
@@ -248,11 +252,11 @@ class _SteamGridDbDebugScreenState
               Expanded(
                 child: TextField(
                   controller: _gameIdController,
-                  decoration: const InputDecoration(
-                    labelText: 'Game ID',
-                    hintText: 'Enter SteamGridDB game ID',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.tag),
+                  decoration: InputDecoration(
+                    labelText: l.debugGameId,
+                    hintText: l.debugEnterGameId,
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.tag),
                   ),
                   keyboardType: TextInputType.number,
                   textInputAction: TextInputAction.done,
@@ -276,7 +280,7 @@ class _SteamGridDbDebugScreenState
                           ),
                         )
                       : const Icon(Icons.download),
-                  label: Text('Load $tabName'),
+                  label: Text(l.debugLoadTab(tabName)),
                 ),
               ),
             ],
@@ -288,15 +292,15 @@ class _SteamGridDbDebugScreenState
           child: _images.isEmpty && _lastImageTab != tabIndex
               ? Center(
                   child: Text(
-                    'Enter a game ID and press Load $tabName',
+                    l.debugEnterGameIdHint(tabName),
                     style: const TextStyle(color: Colors.grey),
                   ),
                 )
               : _images.isEmpty && !_isLoadingImages
-                  ? const Center(
+                  ? Center(
                       child: Text(
-                        'No images found',
-                        style: TextStyle(color: Colors.grey),
+                        l.debugNoImagesFound,
+                        style: const TextStyle(color: Colors.grey),
                       ),
                     )
                   : _lastImageTab == tabIndex
@@ -316,7 +320,7 @@ class _SteamGridDbDebugScreenState
                         )
                       : Center(
                           child: Text(
-                            'Enter a game ID and press Load $tabName',
+                            l.debugEnterGameIdHint(tabName),
                             style: const TextStyle(color: Colors.grey),
                           ),
                         ),

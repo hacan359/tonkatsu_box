@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/steamgriddb_game.dart';
 import '../../../shared/models/steamgriddb_image.dart';
 import '../../settings/providers/settings_provider.dart';
@@ -48,6 +49,23 @@ class _SteamGridDbPanelState extends ConsumerState<SteamGridDbPanel> {
       _searchController.text = widget.collectionName;
     }
     _hasPreFilled = true;
+  }
+
+  String _localizedImageTypeLabel(
+    BuildContext context,
+    SteamGridDbImageType type,
+  ) {
+    final S l10n = S.of(context);
+    switch (type) {
+      case SteamGridDbImageType.grids:
+        return l10n.steamGridDbGrids;
+      case SteamGridDbImageType.heroes:
+        return l10n.steamGridDbHeroes;
+      case SteamGridDbImageType.logos:
+        return l10n.steamGridDbLogos;
+      case SteamGridDbImageType.icons:
+        return l10n.steamGridDbIcons;
+    }
   }
 
   void _performSearch() {
@@ -110,7 +128,7 @@ class _SteamGridDbPanelState extends ConsumerState<SteamGridDbPanel> {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'SteamGridDB',
+              S.of(context).steamGridDbPanelTitle,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
               ),
@@ -118,7 +136,7 @@ class _SteamGridDbPanelState extends ConsumerState<SteamGridDbPanel> {
           ),
           IconButton(
             icon: const Icon(Icons.close, size: 20),
-            tooltip: 'Close panel',
+            tooltip: S.of(context).steamGridDbClosePanel,
             onPressed: () => ref
                 .read(steamGridDbPanelProvider(widget.collectionId).notifier)
                 .closePanel(),
@@ -135,14 +153,14 @@ class _SteamGridDbPanelState extends ConsumerState<SteamGridDbPanel> {
       child: TextField(
         controller: _searchController,
         decoration: InputDecoration(
-          hintText: 'Search game...',
+          hintText: S.of(context).steamGridDbSearchHint,
           isDense: true,
           border: const OutlineInputBorder(),
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           suffixIcon: IconButton(
             icon: const Icon(Icons.search, size: 20),
-            tooltip: 'Search',
+            tooltip: S.of(context).search,
             onPressed: _performSearch,
           ),
         ),
@@ -165,7 +183,7 @@ class _SteamGridDbPanelState extends ConsumerState<SteamGridDbPanel> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'SteamGridDB API key not set. Configure it in Settings.',
+                  S.of(context).steamGridDbNoApiKey,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: colorScheme.onErrorContainer,
                   ),
@@ -189,7 +207,7 @@ class _SteamGridDbPanelState extends ConsumerState<SteamGridDbPanel> {
         children: <Widget>[
           IconButton(
             icon: const Icon(Icons.arrow_back, size: 20),
-            tooltip: 'Back to search',
+            tooltip: S.of(context).steamGridDbBackToSearch,
             onPressed: () {
               ref
                   .read(
@@ -228,7 +246,7 @@ class _SteamGridDbPanelState extends ConsumerState<SteamGridDbPanel> {
               (SteamGridDbImageType type) => ButtonSegment<SteamGridDbImageType>(
                 value: type,
                 label: Text(
-                  type.label,
+                  _localizedImageTypeLabel(context, type),
                   style: const TextStyle(fontSize: 12),
                 ),
               ),
@@ -357,7 +375,7 @@ class _SteamGridDbPanelState extends ConsumerState<SteamGridDbPanel> {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Text(
-            'No images found',
+            S.of(context).steamGridDbNoResults,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: colorScheme.onSurfaceVariant,
             ),
@@ -401,7 +419,7 @@ class _SteamGridDbPanelState extends ConsumerState<SteamGridDbPanel> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Search for a game to browse images',
+              S.of(context).steamGridDbSearchFirst,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurfaceVariant,

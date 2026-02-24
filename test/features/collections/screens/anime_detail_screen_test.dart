@@ -16,6 +16,7 @@ import 'package:xerabora/shared/models/movie.dart';
 import 'package:xerabora/shared/models/tv_season.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
 import 'package:xerabora/shared/widgets/media_detail_view.dart';
+import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 import 'package:xerabora/shared/widgets/source_badge.dart';
 
@@ -140,6 +141,8 @@ void main() {
         tmdbApiProvider.overrideWithValue(mockTmdbApi),
       ],
       child: MaterialApp(
+        localizationsDelegates: S.localizationsDelegates,
+        supportedLocales: S.supportedLocales,
         home: BreadcrumbScope(
           label: 'Test Collection',
           child: AnimeDetailScreen(

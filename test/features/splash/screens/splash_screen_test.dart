@@ -1,3 +1,4 @@
+import 'package:xerabora/l10n/app_localizations.dart';
 // Тесты для SplashScreen.
 //
 // SplashScreen — ConsumerStatefulWidget с анимированным логотипом.
@@ -38,6 +39,8 @@ void main() {
         databaseServiceProvider.overrideWithValue(mockDb),
       ],
       child: const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
         home: SplashScreen(),
       ),
     );

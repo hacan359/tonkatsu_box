@@ -1,3 +1,4 @@
+import 'package:xerabora/l10n/app_localizations.dart';
 // Тесты для showCollectionPickerDialog.
 //
 // Диалог выбора коллекции: отображает список коллекций,
@@ -103,6 +104,8 @@ Widget _buildTestWidget({
       ),
     ],
     child: MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
       home: Scaffold(
         body: _DialogTester(
           onResult: onResult ?? _ignoreResult,

@@ -5,6 +5,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:xerabora/data/repositories/collection_repository.dart';
 import 'package:xerabora/features/collections/providers/collections_provider.dart';
 import 'package:xerabora/features/collections/widgets/collection_tile.dart';
+import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/models/collection.dart';
 
 class MockCollectionRepository extends Mock implements CollectionRepository {}
@@ -39,6 +40,8 @@ void main() {
             .overrideWith((Ref ref) async => stats),
       ],
       child: MaterialApp(
+        localizationsDelegates: S.localizationsDelegates,
+        supportedLocales: S.supportedLocales,
         home: Scaffold(
           body: CollectionTile(
             collection: collection,

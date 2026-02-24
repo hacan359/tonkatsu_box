@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/image_cache_service.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -51,13 +52,13 @@ class _CacheScreenState extends ConsumerState<CacheScreen> {
     final bool compact = MediaQuery.sizeOf(context).width < 600;
 
     return BreadcrumbScope(
-      label: 'Cache',
+      label: S.of(context).cacheTitle,
       child: Scaffold(
         appBar: const AutoBreadcrumbAppBar(),
         body: SingleChildScrollView(
           padding: EdgeInsets.all(compact ? AppSpacing.sm : AppSpacing.lg),
           child: SettingsSection(
-            title: 'Image Cache',
+            title: S.of(context).cacheImageCache,
             icon: Icons.folder,
             compact: compact,
             children: <Widget>[
@@ -68,8 +69,8 @@ class _CacheScreenState extends ConsumerState<CacheScreen> {
                     (BuildContext context, AsyncSnapshot<bool> snapshot) {
                   final bool enabled = snapshot.data ?? false;
                   return SettingsRow(
-                    title: 'Offline mode',
-                    subtitle: 'Save images locally for offline use',
+                    title: S.of(context).cacheOfflineMode,
+                    subtitle: S.of(context).cacheOfflineModeSubtitle,
                     compact: compact,
                     trailing: Switch(
                       value: enabled,
@@ -93,7 +94,7 @@ class _CacheScreenState extends ConsumerState<CacheScreen> {
                       (BuildContext context, AsyncSnapshot<String> snapshot) {
                     final String path = snapshot.data ?? 'Loading...';
                     return SettingsRow(
-                      title: 'Cache folder',
+                      title: S.of(context).cacheCacheFolder,
                       subtitle: path,
                       showDivider: true,
                       compact: compact,
@@ -101,7 +102,7 @@ class _CacheScreenState extends ConsumerState<CacheScreen> {
                         icon: const Icon(Icons.folder_open),
                         onPressed: () =>
                             _selectCacheFolder(cacheService),
-                        tooltip: 'Select folder',
+                        tooltip: S.of(context).cacheSelectFolder,
                       ),
                     );
                   },
@@ -115,14 +116,14 @@ class _CacheScreenState extends ConsumerState<CacheScreen> {
                   final int count = snapshot.data?.$1 ?? 0;
                   final int size = snapshot.data?.$2 ?? 0;
                   return SettingsRow(
-                    title: 'Cache size',
+                    title: S.of(context).cacheCacheSize,
                     subtitle:
-                        '$count files, ${cacheService.formatSize(size)}',
+                        S.of(context).cacheCacheStats(count, cacheService.formatSize(size)),
                     showDivider: true,
                     compact: compact,
                     trailing: IconButton(
                       icon: const Icon(Icons.delete_outline, size: 18),
-                      tooltip: 'Clear cache',
+                      tooltip: S.of(context).cacheClearCache,
                       onPressed: count > 0
                           ? () => _clearCache(cacheService)
                           : null,
@@ -146,7 +147,7 @@ class _CacheScreenState extends ConsumerState<CacheScreen> {
   Future<void> _selectCacheFolder(ImageCacheService cacheService) async {
     final String? selectedDirectory =
         await FilePicker.platform.getDirectoryPath(
-      dialogTitle: 'Select cache folder for images',
+      dialogTitle: S.of(context).cacheSelectFolderDialog,
     );
 
     if (selectedDirectory != null) {
@@ -154,28 +155,26 @@ class _CacheScreenState extends ConsumerState<CacheScreen> {
       if (!mounted) return;
       _refreshFutures();
       setState(() {});
-      context.showSnack('Cache folder updated', type: SnackType.success);
+      context.showSnack(S.of(context).cacheFolderUpdated, type: SnackType.success);
     }
   }
 
   Future<void> _clearCache(ImageCacheService cacheService) async {
+    final S l10n = S.of(context);
     final bool? confirm = await showDialog<bool>(
       context: context,
-      builder: (BuildContext context) => AlertDialog(
+      builder: (BuildContext dialogContext) => AlertDialog(
         scrollable: true,
-        title: const Text('Clear cache?'),
-        content: const Text(
-          'This will delete all locally saved images. '
-          'They will be downloaded again during the next sync.',
-        ),
+        title: Text(l10n.cacheClearCacheTitle),
+        content: Text(l10n.cacheClearCacheMessage),
         actions: <Widget>[
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.cancel),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Clear'),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(l10n.clear),
           ),
         ],
       ),
@@ -186,7 +185,7 @@ class _CacheScreenState extends ConsumerState<CacheScreen> {
       if (!mounted) return;
       _refreshFutures();
       setState(() {});
-      context.showSnack('Cache cleared', type: SnackType.success);
+      context.showSnack(S.of(context).cacheCleared, type: SnackType.success);
     }
   }
 }

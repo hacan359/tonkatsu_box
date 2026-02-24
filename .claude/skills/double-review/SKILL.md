@@ -89,7 +89,57 @@ description: Two-stage code review with improvements and optimizations. Use befo
 1. Apply all optimizations
 2. Ensure tests still pass
 3. Run `flutter analyze`
-4. Task is ready to commit
+4. Proceed to Round 3
+
+---
+
+## Round 3: Localization Completeness
+
+### Checklist:
+
+#### No Hardcoded UI Strings
+- [ ] No user-visible string literals in `lib/` (buttons, labels, titles, tooltips, hints, error messages, empty states, dialog text)?
+- [ ] Every UI string uses `S.of(context).key` or `l.key` (where `final S l = S.of(context);`)?
+- [ ] Enum display labels use localized extension methods (`localizedLabel(S l, ...)`) instead of hardcoded `displayLabel`?
+- [ ] SnackBar messages use localized strings?
+- [ ] AlertDialog titles, content, and action labels are localized?
+
+#### ARB File Consistency
+- [ ] Every key used in code exists in both `lib/l10n/app_en.arb` and `lib/l10n/app_ru.arb`?
+- [ ] No orphan keys in ARB files (keys that exist in ARB but are never used in code)?
+- [ ] Placeholder parameters (`{name}`, `{count}`, `{error}`) match between EN and RU?
+- [ ] Russian plurals use correct ICU forms (`=0`, `=1`, `few`, `other`) where applicable?
+
+#### Context-Aware Labels
+- [ ] Status labels adapt to media type (e.g., "Playing" for games vs "Watching" for movies/TV)?
+- [ ] Media type labels are localized via `MediaType.localizedLabel(S l)`?
+- [ ] Sort mode labels use `localizedDisplayLabel(S l)` / `localizedShortLabel(S l)`?
+
+#### Exceptions (Allowed Without Localization)
+- [ ] Debug screens (`*_debug_screen.dart`) — technical labels (API field names, JSON keys) may stay in English
+- [ ] Log messages and `debugPrint` — not user-facing, English is OK
+- [ ] Model field names, enum `.name`, serialization values — internal, not displayed
+- [ ] Test assertions — string matchers may use English (they match against EN locale)
+
+### How to Check:
+
+```bash
+# Search for suspicious string literals in UI code (excluding imports, comments, keys):
+grep -rn "Text(\s*'" lib/features/ lib/shared/widgets/ --include="*.dart" | grep -v "import\|//\|test\|\.arb"
+
+# Search for displayLabel calls that should be localizedLabel:
+grep -rn "\.displayLabel" lib/ --include="*.dart"
+
+# Verify ARB key count matches:
+grep -c '"@' lib/l10n/app_en.arb lib/l10n/app_ru.arb
+```
+
+### Actions After Round 3:
+1. Add missing keys to both ARB files (EN and RU)
+2. Replace hardcoded strings with `S.of(context).key`
+3. Run `flutter gen-l10n` if ARB files changed
+4. Run `flutter analyze` and `flutter test`
+5. Task is ready to commit
 
 ---
 
@@ -98,7 +148,7 @@ description: Two-stage code review with improvements and optimizations. Use befo
 After each round, provide a report:
 
 ```
-## Review Round [1/2]
+## Review Round [1/2/3]
 
 ### Issues Found:
 1. [Critical] Issue description
@@ -117,5 +167,5 @@ After each round, provide a report:
 - Fix 1
 - Fix 2
 
-### Status: [Proceeding to Round 2 / Ready to commit]
+### Status: [Proceeding to Round 2 / Proceeding to Round 3 / Ready to commit]
 ```

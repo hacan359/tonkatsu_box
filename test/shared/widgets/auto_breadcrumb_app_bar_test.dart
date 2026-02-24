@@ -1,3 +1,4 @@
+import 'package:xerabora/l10n/app_localizations.dart';
 // Тесты для AutoBreadcrumbAppBar.
 
 import 'package:flutter/material.dart';
@@ -13,6 +14,8 @@ void main() {
           (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: Scaffold(
               appBar: AutoBreadcrumbAppBar(),
               body: SizedBox(),
@@ -31,6 +34,8 @@ void main() {
           (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: BreadcrumbScope(
               label: 'Settings',
               child: Scaffold(
@@ -55,6 +60,8 @@ void main() {
           (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: BreadcrumbScope(
               label: 'Settings',
               child: BreadcrumbScope(
@@ -91,6 +98,8 @@ void main() {
           (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: BreadcrumbScope(
               label: 'Settings',
               child: BreadcrumbScope(
@@ -139,6 +148,8 @@ void main() {
           (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: BreadcrumbScope(
               label: 'Settings',
               child: Scaffold(
@@ -164,6 +175,8 @@ void main() {
           (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: DefaultTabController(
               length: 2,
               child: BreadcrumbScope(
@@ -220,6 +233,8 @@ void main() {
           (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: BreadcrumbScope(
               label: 'TabRoot',
               child: Navigator(

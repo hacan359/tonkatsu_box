@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/search/widgets/platform_filter_sheet.dart';
+import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/models/platform.dart';
 
 void main() {
@@ -19,6 +20,8 @@ void main() {
     void Function(List<int>)? onApply,
   }) {
     return MaterialApp(
+      localizationsDelegates: S.localizationsDelegates,
+      supportedLocales: S.supportedLocales,
       home: Scaffold(
         body: Builder(
           builder: (BuildContext context) {

@@ -1,3 +1,4 @@
+import 'package:xerabora/l10n/app_localizations.dart';
 // Виджет-тесты для DualRatingBadge.
 
 import 'package:flutter/material.dart';
@@ -13,6 +14,8 @@ void main() {
     bool inline = false,
   }) {
     return MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
       home: Scaffold(
         body: DualRatingBadge(
           userRating: userRating,

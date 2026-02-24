@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/image_cache_service.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/platform.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -98,6 +99,7 @@ class _PlatformFilterSheetState extends ConsumerState<PlatformFilterSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final S l = S.of(context);
     final List<Platform> filtered = _filteredPlatforms;
 
     return DraggableScrollableSheet(
@@ -126,15 +128,15 @@ class _PlatformFilterSheetState extends ConsumerState<PlatformFilterSheet> {
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
               child: Row(
                 children: <Widget>[
-                  const Text(
-                    'Select Platforms',
+                  Text(
+                    l.platformFilterTitle,
                     style: AppTypography.h2,
                   ),
                   const Spacer(),
                   if (_selectedIds.isNotEmpty)
                     TextButton(
                       onPressed: _clearAll,
-                      child: const Text('Clear All'),
+                      child: Text(l.platformFilterClearAll),
                     ),
                 ],
               ),
@@ -149,7 +151,7 @@ class _PlatformFilterSheetState extends ConsumerState<PlatformFilterSheet> {
                 controller: _searchController,
                 focusNode: _searchFocus,
                 decoration: InputDecoration(
-                  hintText: 'Search platforms...',
+                  hintText: l.platformFilterSearchHint,
                   prefixIcon: const Icon(Icons.search),
                   suffixIcon: _searchQuery.isNotEmpty
                       ? IconButton(
@@ -178,14 +180,14 @@ class _PlatformFilterSheetState extends ConsumerState<PlatformFilterSheet> {
               child: Row(
                 children: <Widget>[
                   Text(
-                    '${_selectedIds.length} selected',
+                    l.platformFilterSelected(_selectedIds.length),
                     style: AppTypography.bodySmall.copyWith(
                       color: AppColors.textSecondary,
                     ),
                   ),
                   const Spacer(),
                   Text(
-                    '${filtered.length} platforms',
+                    l.platformFilterCount(filtered.length),
                     style: AppTypography.bodySmall.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -244,7 +246,7 @@ class _PlatformFilterSheetState extends ConsumerState<PlatformFilterSheet> {
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () => Navigator.of(context).pop(),
-                        child: const Text('Cancel'),
+                        child: Text(l.cancel),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -252,8 +254,8 @@ class _PlatformFilterSheetState extends ConsumerState<PlatformFilterSheet> {
                       child: FilledButton(
                         onPressed: _apply,
                         child: Text(_selectedIds.isEmpty
-                            ? 'Show All'
-                            : 'Apply (${_selectedIds.length})'),
+                            ? l.platformFilterShowAll
+                            : l.platformFilterApply(_selectedIds.length)),
                       ),
                     ),
                   ],
@@ -283,6 +285,8 @@ class _PlatformFilterSheetState extends ConsumerState<PlatformFilterSheet> {
   }
 
   Widget _buildEmptyState() {
+    final S l = S.of(context);
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -294,14 +298,14 @@ class _PlatformFilterSheetState extends ConsumerState<PlatformFilterSheet> {
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
-            'No platforms found',
+            l.platformFilterNone,
             style: AppTypography.body.copyWith(
               color: AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'Try a different search term',
+            l.platformFilterTryDifferent,
             style: AppTypography.body.copyWith(
               color: AppColors.textSecondary.withAlpha(179),
             ),

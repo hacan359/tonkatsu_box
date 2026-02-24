@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/canvas_item.dart';
 
 // Контекстные меню для канваса.
@@ -24,6 +25,7 @@ class CanvasContextMenu {
     VoidCallback? onFindImages,
     VoidCallback? onBrowseMaps,
   }) async {
+    final S l = S.of(context);
     final String? value = await showMenu<String>(
       context: context,
       position: RelativeRect.fromLTRB(
@@ -33,57 +35,57 @@ class CanvasContextMenu {
         position.dy,
       ),
       items: <PopupMenuEntry<String>>[
-        const PopupMenuItem<String>(
+        PopupMenuItem<String>(
           value: 'add_text',
           child: Row(
             children: <Widget>[
-              Icon(Icons.text_fields, size: 20),
-              SizedBox(width: 12),
-              Text('Add Text'),
+              const Icon(Icons.text_fields, size: 20),
+              const SizedBox(width: 12),
+              Text(l.canvasAddText),
             ],
           ),
         ),
-        const PopupMenuItem<String>(
+        PopupMenuItem<String>(
           value: 'add_image',
           child: Row(
             children: <Widget>[
-              Icon(Icons.image_outlined, size: 20),
-              SizedBox(width: 12),
-              Text('Add Image'),
+              const Icon(Icons.image_outlined, size: 20),
+              const SizedBox(width: 12),
+              Text(l.canvasAddImage),
             ],
           ),
         ),
-        const PopupMenuItem<String>(
+        PopupMenuItem<String>(
           value: 'add_link',
           child: Row(
             children: <Widget>[
-              Icon(Icons.link, size: 20),
-              SizedBox(width: 12),
-              Text('Add Link'),
+              const Icon(Icons.link, size: 20),
+              const SizedBox(width: 12),
+              Text(l.canvasAddLink),
             ],
           ),
         ),
         if (onFindImages != null || onBrowseMaps != null) ...<PopupMenuEntry<String>>[
           const PopupMenuDivider(),
           if (onFindImages != null)
-            const PopupMenuItem<String>(
+            PopupMenuItem<String>(
               value: 'find_images',
               child: Row(
                 children: <Widget>[
-                  Icon(Icons.image_search, size: 20),
-                  SizedBox(width: 12),
-                  Text('Find images...'),
+                  const Icon(Icons.image_search, size: 20),
+                  const SizedBox(width: 12),
+                  Text(l.canvasFindImages),
                 ],
               ),
             ),
           if (onBrowseMaps != null)
-            const PopupMenuItem<String>(
+            PopupMenuItem<String>(
               value: 'browse_maps',
               child: Row(
                 children: <Widget>[
-                  Icon(Icons.map, size: 20),
-                  SizedBox(width: 12),
-                  Text('Browse maps...'),
+                  const Icon(Icons.map, size: 20),
+                  const SizedBox(width: 12),
+                  Text(l.canvasBrowseMaps),
                 ],
               ),
             ),
@@ -121,6 +123,7 @@ class CanvasContextMenu {
     VoidCallback? onConnect,
   }) async {
     final bool showEdit = !itemType.isMediaItem;
+    final S l = S.of(context);
 
     final String? value = await showMenu<String>(
       context: context,
@@ -132,55 +135,55 @@ class CanvasContextMenu {
       ),
       items: <PopupMenuEntry<String>>[
         if (showEdit)
-          const PopupMenuItem<String>(
+          PopupMenuItem<String>(
             value: 'edit',
             child: Row(
               children: <Widget>[
-                Icon(Icons.edit_outlined, size: 20),
-                SizedBox(width: 12),
-                Text('Edit'),
+                const Icon(Icons.edit_outlined, size: 20),
+                const SizedBox(width: 12),
+                Text(l.edit),
               ],
             ),
           ),
-        const PopupMenuItem<String>(
+        PopupMenuItem<String>(
           value: 'delete',
           child: Row(
             children: <Widget>[
-              Icon(Icons.delete_outlined, size: 20),
-              SizedBox(width: 12),
-              Text('Delete'),
+              const Icon(Icons.delete_outlined, size: 20),
+              const SizedBox(width: 12),
+              Text(l.delete),
             ],
           ),
         ),
         const PopupMenuDivider(),
-        const PopupMenuItem<String>(
+        PopupMenuItem<String>(
           value: 'connect',
           child: Row(
             children: <Widget>[
-              Icon(Icons.timeline, size: 20),
-              SizedBox(width: 12),
-              Text('Connect'),
+              const Icon(Icons.timeline, size: 20),
+              const SizedBox(width: 12),
+              Text(l.canvasConnect),
             ],
           ),
         ),
         const PopupMenuDivider(),
-        const PopupMenuItem<String>(
+        PopupMenuItem<String>(
           value: 'bring_to_front',
           child: Row(
             children: <Widget>[
-              Icon(Icons.flip_to_front, size: 20),
-              SizedBox(width: 12),
-              Text('Bring to Front'),
+              const Icon(Icons.flip_to_front, size: 20),
+              const SizedBox(width: 12),
+              Text(l.canvasBringToFront),
             ],
           ),
         ),
-        const PopupMenuItem<String>(
+        PopupMenuItem<String>(
           value: 'send_to_back',
           child: Row(
             children: <Widget>[
-              Icon(Icons.flip_to_back, size: 20),
-              SizedBox(width: 12),
-              Text('Send to Back'),
+              const Icon(Icons.flip_to_back, size: 20),
+              const SizedBox(width: 12),
+              Text(l.canvasSendToBack),
             ],
           ),
         ),
@@ -210,6 +213,7 @@ class CanvasContextMenu {
     required VoidCallback onEdit,
     required VoidCallback onDelete,
   }) async {
+    final S l = S.of(context);
     final String? value = await showMenu<String>(
       context: context,
       position: RelativeRect.fromLTRB(
@@ -218,14 +222,14 @@ class CanvasContextMenu {
         position.dx,
         position.dy,
       ),
-      items: const <PopupMenuEntry<String>>[
+      items: <PopupMenuEntry<String>>[
         PopupMenuItem<String>(
           value: 'edit',
           child: Row(
             children: <Widget>[
-              Icon(Icons.edit_outlined, size: 20),
-              SizedBox(width: 12),
-              Text('Edit Connection'),
+              const Icon(Icons.edit_outlined, size: 20),
+              const SizedBox(width: 12),
+              Text(l.canvasEditConnection),
             ],
           ),
         ),
@@ -233,9 +237,9 @@ class CanvasContextMenu {
           value: 'delete',
           child: Row(
             children: <Widget>[
-              Icon(Icons.delete_outlined, size: 20),
-              SizedBox(width: 12),
-              Text('Delete Connection'),
+              const Icon(Icons.delete_outlined, size: 20),
+              const SizedBox(width: 12),
+              Text(l.canvasDeleteConnection),
             ],
           ),
         ),
@@ -260,20 +264,19 @@ class CanvasContextMenu {
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
+        final S dl = S.of(context);
         return AlertDialog(
           scrollable: true,
-          title: const Text('Delete element'),
-          content: const Text(
-            'Are you sure you want to delete this element?',
-          ),
+          title: Text(dl.canvasDeleteElement),
+          content: Text(dl.canvasDeleteElementMessage),
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
+              child: Text(dl.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Delete'),
+              child: Text(dl.delete),
             ),
           ],
         );

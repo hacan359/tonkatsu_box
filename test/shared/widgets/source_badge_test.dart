@@ -1,3 +1,4 @@
+import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/shared/widgets/source_badge.dart';
@@ -8,6 +9,8 @@ void main() {
     SourceBadgeSize size = SourceBadgeSize.small,
   }) {
     return MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
       home: Scaffold(
         body: SourceBadge(
           source: source,
@@ -177,6 +180,8 @@ void main() {
           (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: Scaffold(
               body: SourceBadge(source: DataSource.igdb),
             ),

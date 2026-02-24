@@ -1,3 +1,4 @@
+import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,6 +32,8 @@ Widget buildTestWidget({
       ),
     ],
     child: MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
       home: Scaffold(
         body: SizedBox(
           width: 500,

@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -13,6 +14,8 @@ class WelcomeStepHowItWorks extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final S l = S.of(context);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
@@ -21,18 +24,18 @@ class WelcomeStepHowItWorks extends StatelessWidget {
       child: Column(
         children: <Widget>[
           // Header
-          const Padding(
-            padding: EdgeInsets.only(top: 12, bottom: 8),
+          Padding(
+            padding: const EdgeInsets.only(top: 12, bottom: 8),
             child: Column(
               children: <Widget>[
-                Icon(
+                const Icon(
                   Icons.menu_book,
                   size: 36,
                   color: AppColors.brand,
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Text(
-                  'How it works',
+                  l.welcomeHowTitle,
                   style: AppTypography.h2,
                   textAlign: TextAlign.center,
                 ),
@@ -43,39 +46,34 @@ class WelcomeStepHowItWorks extends StatelessWidget {
 
           // App structure
           _buildCard(
-            title: 'App structure',
+            title: l.welcomeHowAppStructure,
             child: Column(
               children: <Widget>[
                 _tabRow(
                   icon: Icons.home,
-                  tab: 'Main',
-                  desc: 'All items from all collections in one view. '
-                      'Filter by type, sort by rating.',
+                  tab: l.navMain,
+                  desc: l.welcomeHowMainDesc,
                   showDivider: false,
                 ),
                 _tabRow(
                   icon: Icons.collections_bookmark,
-                  tab: 'Collections',
-                  desc: 'Your collections. Create, organize, manage. '
-                      'Grid or list view per collection.',
+                  tab: l.navCollections,
+                  desc: l.welcomeHowCollectionsDesc,
                 ),
                 _tabRow(
                   icon: Icons.bookmark,
-                  tab: 'Wishlist',
-                  desc: 'Quick list of items to check out later. '
-                      'No API needed.',
+                  tab: l.navWishlist,
+                  desc: l.welcomeHowWishlistDesc,
                 ),
                 _tabRow(
                   icon: Icons.search,
-                  tab: 'Search',
-                  desc: 'Find games, movies & TV shows via API. '
-                      'Add to any collection.',
+                  tab: l.navSearch,
+                  desc: l.welcomeHowSearchDesc,
                 ),
                 _tabRow(
                   icon: Icons.settings,
-                  tab: 'Settings',
-                  desc: 'API keys, cache, database export/import, '
-                      'debug tools.',
+                  tab: l.navSettings,
+                  desc: l.welcomeHowSettingsDesc,
                 ),
               ],
             ),
@@ -84,28 +82,28 @@ class WelcomeStepHowItWorks extends StatelessWidget {
 
           // Quick Start
           _buildCard(
-            title: 'Quick Start',
-            child: const Column(
+            title: l.welcomeHowQuickStart,
+            child: Column(
               children: <Widget>[
                 _QuickStartStep(
                   number: 1,
-                  text: 'Go to Settings → Credentials, enter API keys',
+                  text: l.welcomeHowStep1,
                 ),
                 _QuickStartStep(
                   number: 2,
-                  text: 'Click Verify Connection, wait for platforms sync',
+                  text: l.welcomeHowStep2,
                 ),
                 _QuickStartStep(
                   number: 3,
-                  text: 'Go to Collections → + New Collection',
+                  text: l.welcomeHowStep3,
                 ),
                 _QuickStartStep(
                   number: 4,
-                  text: 'Name it, then Add Items → Search → Add',
+                  text: l.welcomeHowStep4,
                 ),
                 _QuickStartStep(
                   number: 5,
-                  text: "Rate, track progress, add notes — you're set!",
+                  text: l.welcomeHowStep5,
                 ),
               ],
             ),
@@ -133,7 +131,7 @@ class WelcomeStepHowItWorks extends StatelessWidget {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      'Sharing',
+                      l.welcomeHowSharing,
                       style: AppTypography.h3.copyWith(
                         fontSize: 13,
                         color: AppColors.tvShowAccent,
@@ -148,14 +146,11 @@ class WelcomeStepHowItWorks extends StatelessWidget {
                       color: AppColors.textSecondary,
                     ),
                     children: <InlineSpan>[
-                      const TextSpan(text: 'Export collections as '),
+                      TextSpan(text: l.welcomeHowSharingDesc1),
                       _codeSpan('.xcoll'),
-                      const TextSpan(text: ' (light, metadata only) or '),
+                      TextSpan(text: l.welcomeHowSharingDesc2),
                       _codeSpan('.xcollx'),
-                      const TextSpan(
-                        text: ' (full, with images & canvas — works offline). '
-                            'Import from friends — no API needed!',
-                      ),
+                      TextSpan(text: l.welcomeHowSharingDesc3),
                     ],
                   ),
                 ),

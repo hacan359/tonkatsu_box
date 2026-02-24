@@ -1,3 +1,4 @@
+import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/shared/constants/media_type_theme.dart';
@@ -11,6 +12,8 @@ void main() {
     double iconSize = 12,
   }) {
     return MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
       home: Scaffold(
         body: MediaTypeBadge(
           mediaType: mediaType,

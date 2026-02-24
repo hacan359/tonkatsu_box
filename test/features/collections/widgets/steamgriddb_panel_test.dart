@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/collections/providers/steamgriddb_panel_provider.dart';
 import 'package:xerabora/features/collections/widgets/steamgriddb_panel.dart';
+import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/shared/models/steamgriddb_game.dart';
 import 'package:xerabora/shared/models/steamgriddb_image.dart';
@@ -71,6 +72,8 @@ Widget buildTestWidget({
       ),
     ],
     child: MaterialApp(
+      localizationsDelegates: S.localizationsDelegates,
+      supportedLocales: S.supportedLocales,
       home: Scaffold(
         body: SizedBox(
           width: 320,
@@ -162,6 +165,8 @@ void main() {
             ),
           ],
           child: const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: Scaffold(
               body: SizedBox(
                 width: 320,
@@ -420,7 +425,7 @@ void main() {
           ),
         ));
 
-        expect(find.text('No images found'), findsOneWidget);
+        expect(find.text('No results found'), findsOneWidget);
       });
 
       testWidgets('should call onAddImage when image tapped',
@@ -453,7 +458,7 @@ void main() {
           panelState: const SteamGridDbPanelState(isOpen: true),
         ));
 
-        expect(find.text('Search for a game to browse images'), findsOneWidget);
+        expect(find.text('Search for a game first'), findsOneWidget);
       });
     });
   });

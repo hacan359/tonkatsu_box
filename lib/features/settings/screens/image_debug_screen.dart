@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
@@ -55,7 +56,7 @@ class _ImageDebugScreenState extends ConsumerState<ImageDebugScreen> {
     final ColorScheme colorScheme = theme.colorScheme;
 
     return BreadcrumbScope(
-      label: 'IGDB Media',
+      label: S.of(context).debugIgdbMedia,
       child: Scaffold(
       appBar: const AutoBreadcrumbAppBar(),
       body: Column(
@@ -185,7 +186,7 @@ class _ImageDebugTile extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    item.mediaType.displayLabel,
+                    item.mediaType.localizedLabel(S.of(context)),
                     style: theme.textTheme.labelSmall,
                   ),
                 ),

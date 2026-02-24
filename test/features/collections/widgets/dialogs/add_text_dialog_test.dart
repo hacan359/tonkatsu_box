@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/collections/widgets/dialogs/add_text_dialog.dart';
+import 'package:xerabora/l10n/app_localizations.dart';
 
 void main() {
   group('AddTextDialog', () {
@@ -10,6 +11,8 @@ void main() {
       double? initialFontSize,
     }) {
       return MaterialApp(
+        localizationsDelegates: S.localizationsDelegates,
+        supportedLocales: S.supportedLocales,
         home: Scaffold(
           body: Builder(
             builder: (BuildContext context) {

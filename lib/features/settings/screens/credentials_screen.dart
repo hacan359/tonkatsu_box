@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/database_service.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../shared/models/platform.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
@@ -67,7 +68,7 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
     final bool compact = MediaQuery.sizeOf(context).width < 600;
 
     return BreadcrumbScope(
-      label: 'Credentials',
+      label: S.of(context).credentialsTitle,
       child: Scaffold(
         appBar: const AutoBreadcrumbAppBar(),
         body: SingleChildScrollView(
@@ -103,14 +104,13 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
 
   Widget _buildWelcomeSection(bool compact) {
     return SettingsSection(
-      title: 'Welcome to Tonkatsu Box!',
+      title: S.of(context).credentialsWelcome,
       icon: Icons.waving_hand,
       iconColor: AppColors.brand,
       compact: compact,
       children: <Widget>[
-        const Text(
-          'To get started, you need to set up your IGDB API credentials. '
-          'Get your Client ID and Client Secret from the Twitch Developer Console.',
+        Text(
+          S.of(context).credentialsWelcomeHint,
         ),
         const SizedBox(height: AppSpacing.sm),
         TextButton.icon(
@@ -119,11 +119,11 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
               const ClipboardData(text: _twitchConsoleUrl),
             );
             context.showSnack(
-              'URL copied: $_twitchConsoleUrl',
+              S.of(context).credentialsUrlCopied(_twitchConsoleUrl),
             );
           },
           icon: const Icon(Icons.copy, size: 16),
-          label: const Text('Copy Twitch Console URL'),
+          label: Text(S.of(context).credentialsCopyTwitchUrl),
         ),
       ],
     );
@@ -133,7 +133,7 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
 
   Widget _buildIgdbSection(SettingsState settings, bool compact) {
     return SettingsSection(
-      title: 'IGDB API Credentials',
+      title: S.of(context).credentialsIgdbSection,
       trailing: const SourceBadge(
         source: DataSource.igdb,
         size: SourceBadgeSize.large,
@@ -141,17 +141,17 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
       compact: compact,
       children: <Widget>[
         InlineTextField(
-          label: 'Client ID',
+          label: S.of(context).credentialsClientId,
           value: _clientId,
-          placeholder: 'Enter your Twitch Client ID',
+          placeholder: S.of(context).credentialsClientIdHint,
           compact: compact,
           onChanged: (String value) => setState(() => _clientId = value),
         ),
         SizedBox(height: compact ? AppSpacing.sm : AppSpacing.md),
         InlineTextField(
-          label: 'Client Secret',
+          label: S.of(context).credentialsClientSecret,
           value: _clientSecret,
-          placeholder: 'Enter your Twitch Client Secret',
+          placeholder: S.of(context).credentialsClientSecretHint,
           obscureText: true,
           compact: compact,
           onChanged: (String value) =>
@@ -163,7 +163,7 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
 
   Widget _buildStatusSection(SettingsState settings, bool compact) {
     return SettingsSection(
-      title: 'Connection Status',
+      title: S.of(context).credentialsConnectionStatus,
       compact: compact,
       children: <Widget>[
         StatusDot(
@@ -173,14 +173,14 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
         ),
         const SizedBox(height: AppSpacing.md),
         _buildInfoRow(
-          'Platforms synced',
+          S.of(context).credentialsPlatformsSynced,
           settings.platformCount.toString(),
           Icons.videogame_asset,
         ),
         if (settings.lastSync != null) ...<Widget>[
           const SizedBox(height: AppSpacing.sm),
           _buildInfoRow(
-            'Last sync',
+            S.of(context).credentialsLastSync,
             _formatTimestamp(settings.lastSync!),
             Icons.schedule,
           ),
@@ -223,7 +223,7 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
                   ),
                 )
               : const Icon(Icons.verified_user),
-          label: const Text('Verify Connection'),
+          label: Text(S.of(context).credentialsVerifyConnection),
         ),
         const SizedBox(height: AppSpacing.sm),
         OutlinedButton.icon(
@@ -237,7 +237,7 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : const Icon(Icons.sync),
-          label: const Text('Refresh Platforms'),
+          label: Text(S.of(context).credentialsRefreshPlatforms),
         ),
       ],
     );
@@ -247,7 +247,7 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
 
   Widget _buildSteamGridDbSection(SettingsState settings, bool compact) {
     return SettingsSection(
-      title: 'SteamGridDB API',
+      title: S.of(context).credentialsSteamGridDbSection,
       trailing: const SourceBadge(
         source: DataSource.steamGridDb,
         size: SourceBadgeSize.large,
@@ -255,11 +255,11 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
       compact: compact,
       children: <Widget>[
         InlineTextField(
-          label: 'API Key',
+          label: S.of(context).credentialsApiKey,
           value: _steamGridDbApiKey,
           placeholder: settings.isSteamGridDbKeyBuiltIn
-              ? 'Using built-in key'
-              : 'Enter your SteamGridDB API key',
+              ? S.of(context).credentialsUsingBuiltInKey
+              : S.of(context).credentialsEnterSteamGridDbKey,
           obscureText: true,
           compact: compact,
           onChanged: (String value) =>
@@ -284,7 +284,7 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
 
   Widget _buildTmdbSection(SettingsState settings, bool compact) {
     return SettingsSection(
-      title: 'TMDB API (Movies & TV)',
+      title: S.of(context).credentialsTmdbSection,
       trailing: const SourceBadge(
         source: DataSource.tmdb,
         size: SourceBadgeSize.large,
@@ -292,21 +292,21 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
       compact: compact,
       children: <Widget>[
         InlineTextField(
-          label: 'API Key',
+          label: S.of(context).credentialsApiKey,
           value: _tmdbApiKey,
           placeholder: settings.isTmdbKeyBuiltIn
-              ? 'Using built-in key'
-              : 'Enter your TMDB API key (v3)',
+              ? S.of(context).credentialsUsingBuiltInKey
+              : S.of(context).credentialsEnterTmdbKey,
           obscureText: true,
           compact: compact,
           onChanged: (String value) => setState(() => _tmdbApiKey = value),
         ),
         const SizedBox(height: AppSpacing.sm),
-        const Row(
+        Row(
           children: <Widget>[
-            Icon(Icons.language, size: 20),
-            SizedBox(width: AppSpacing.sm),
-            Text('Content Language', style: AppTypography.body),
+            const Icon(Icons.language, size: 20),
+            const SizedBox(width: AppSpacing.sm),
+            Text(S.of(context).credentialsContentLanguage, style: AppTypography.body),
           ],
         ),
         const SizedBox(height: AppSpacing.xs),
@@ -359,7 +359,7 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
           const SizedBox(width: AppSpacing.xs),
           Expanded(
             child: Text(
-              'For better rate limits we recommend using your own API key.',
+              S.of(context).credentialsOwnKeyHint,
               style: AppTypography.caption.copyWith(
                 color: AppColors.textTertiary,
               ),
@@ -374,7 +374,7 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
 
   Widget _buildErrorSection(String errorMessage, bool compact) {
     return SettingsSection(
-      title: 'Error',
+      title: S.of(context).settingsError,
       icon: Icons.warning_amber,
       iconColor: AppColors.error,
       compact: compact,
@@ -397,10 +397,10 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
       };
 
   String _connectionLabel(ConnectionStatus status) => switch (status) {
-        ConnectionStatus.connected => 'Connected',
-        ConnectionStatus.error => 'Connection Error',
-        ConnectionStatus.checking => 'Checking...',
-        ConnectionStatus.unknown => 'Not Connected',
+        ConnectionStatus.connected => S.of(context).credentialsConnected,
+        ConnectionStatus.error => S.of(context).credentialsConnectionError,
+        ConnectionStatus.checking => S.of(context).credentialsChecking,
+        ConnectionStatus.unknown => S.of(context).credentialsNotConnected,
       };
 
   // ==================== Actions ====================
@@ -411,7 +411,7 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
 
     if (clientId.isEmpty || clientSecret.isEmpty) {
       context.showSnack(
-        'Please enter both Client ID and Client Secret',
+        S.of(context).credentialsEnterBoth,
         type: SnackType.error,
       );
       return;
@@ -431,13 +431,13 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
       if (mounted) {
         if (syncOk) {
           context.showSnack(
-            'Connected & platforms synced!',
+            S.of(context).credentialsConnectedSynced,
             type: SnackType.success,
           );
           await _downloadLogosIfEnabled();
         } else {
           context.showSnack(
-            'Connected, but platform sync failed',
+            S.of(context).credentialsConnectedSyncFailed,
             type: SnackType.error,
           );
         }
@@ -452,7 +452,7 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
 
     if (success && mounted) {
       context.showSnack(
-        'Platforms synced successfully!',
+        S.of(context).credentialsPlatformsSyncedOk,
         type: SnackType.success,
       );
       await _downloadLogosIfEnabled();
@@ -472,7 +472,7 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
     if (!mounted) return;
 
     context.showSnack(
-      'Downloading platform logos...',
+      S.of(context).credentialsDownloadingLogos,
       loading: true,
       duration: const Duration(seconds: 60),
     );
@@ -493,14 +493,14 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
 
       if (mounted) {
         context.showSnack(
-          'Downloaded $downloaded logos',
+          S.of(context).credentialsDownloadedLogos(downloaded),
           type: SnackType.success,
         );
       }
     } on Exception {
       if (mounted) {
         context.showSnack(
-          'Failed to download logos',
+          S.of(context).credentialsFailedDownloadLogos,
           type: SnackType.error,
         );
       }
@@ -521,10 +521,10 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
       children: <Widget>[
         StatusDot(
           label: isBuiltIn
-              ? 'Using built-in key'
+              ? S.of(context).credentialsUsingBuiltInKey
               : hasKey
-                  ? 'API key saved'
-                  : 'No API key',
+                  ? S.of(context).credentialsApiKeySaved
+                  : S.of(context).credentialsNoApiKey,
           type: hasKey ? StatusType.success : StatusType.inactive,
           compact: compact,
         ),
@@ -535,7 +535,7 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
             height: 40,
             child: OutlinedButton(
               onPressed: onReset,
-              child: const Text('Reset'),
+              child: Text(S.of(context).reset),
             ),
           ),
           const SizedBox(width: AppSpacing.sm),
@@ -546,7 +546,7 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
             height: 40,
             child: OutlinedButton(
               onPressed: onValidate,
-              child: const Text('Test'),
+              child: Text(S.of(context).test),
             ),
           ),
           const SizedBox(width: AppSpacing.sm),
@@ -556,7 +556,7 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
           height: 40,
           child: FilledButton(
             onPressed: onSave,
-            child: const Text('Save'),
+            child: Text(S.of(context).save),
           ),
         ),
       ],
@@ -570,11 +570,11 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
     if (mounted) {
       if (valid) {
         context.showSnack(
-          'SteamGridDB API key is valid',
+          S.of(context).credentialsSteamGridDbKeyValid,
           type: SnackType.success,
         );
       } else {
-        context.showSnack('SteamGridDB API key is invalid', type: SnackType.error);
+        context.showSnack(S.of(context).credentialsSteamGridDbKeyInvalid, type: SnackType.error);
       }
     }
   }
@@ -586,11 +586,11 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
     if (mounted) {
       if (valid) {
         context.showSnack(
-          'TMDB API key is valid',
+          S.of(context).credentialsTmdbKeyValid,
           type: SnackType.success,
         );
       } else {
-        context.showSnack('TMDB API key is invalid', type: SnackType.error);
+        context.showSnack(S.of(context).credentialsTmdbKeyInvalid, type: SnackType.error);
       }
     }
   }
@@ -598,27 +598,27 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
   void _resetSteamGridDbKey() {
     ref.read(settingsNotifierProvider.notifier).resetSteamGridDbApiKeyToDefault();
     setState(() => _steamGridDbApiKey = '');
-    context.showSnack('Reset to built-in key', type: SnackType.success);
+    context.showSnack(S.of(context).credentialsResetToBuiltIn, type: SnackType.success);
   }
 
   void _resetTmdbKey() {
     ref.read(settingsNotifierProvider.notifier).resetTmdbApiKeyToDefault();
     setState(() => _tmdbApiKey = '');
-    context.showSnack('Reset to built-in key', type: SnackType.success);
+    context.showSnack(S.of(context).credentialsResetToBuiltIn, type: SnackType.success);
   }
 
   Future<void> _saveSteamGridDbKey() => _saveApiKey(
         value: _steamGridDbApiKey,
-        emptyMessage: 'Please enter a SteamGridDB API key',
+        emptyMessage: S.of(context).credentialsEnterSteamGridDbKeyError,
         setter: ref.read(settingsNotifierProvider.notifier).setSteamGridDbApiKey,
-        successMessage: 'API key saved',
+        successMessage: S.of(context).credentialsApiKeySaved,
       );
 
   Future<void> _saveTmdbKey() => _saveApiKey(
         value: _tmdbApiKey,
-        emptyMessage: 'Please enter a TMDB API key',
+        emptyMessage: S.of(context).credentialsEnterTmdbKeyError,
         setter: ref.read(settingsNotifierProvider.notifier).setTmdbApiKey,
-        successMessage: 'TMDB API key saved',
+        successMessage: S.of(context).credentialsTmdbKeySaved,
       );
 
   Future<void> _saveApiKey({
@@ -645,15 +645,16 @@ class _CredentialsScreenState extends ConsumerState<CredentialsScreen> {
         DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
     final DateTime now = DateTime.now();
     final Duration diff = now.difference(date);
+    final S l10n = S.of(context);
 
     if (diff.inDays > 0) {
-      return '${diff.inDays} day${diff.inDays > 1 ? 's' : ''} ago';
+      return l10n.timeAgo(diff.inDays, l10n.timeUnitDays(diff.inDays));
     } else if (diff.inHours > 0) {
-      return '${diff.inHours} hour${diff.inHours > 1 ? 's' : ''} ago';
+      return l10n.timeAgo(diff.inHours, l10n.timeUnitHours(diff.inHours));
     } else if (diff.inMinutes > 0) {
-      return '${diff.inMinutes} minute${diff.inMinutes > 1 ? 's' : ''} ago';
+      return l10n.timeAgo(diff.inMinutes, l10n.timeUnitMinutes(diff.inMinutes));
     } else {
-      return 'Just now';
+      return l10n.timeJustNow;
     }
   }
 }

@@ -1,3 +1,4 @@
+import 'package:xerabora/l10n/app_localizations.dart';
 // Виджет-тесты для StarRatingBar.
 
 import 'package:flutter/material.dart';
@@ -12,6 +13,8 @@ void main() {
     required ValueChanged<int?> onChanged,
   }) {
     return MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
       home: Scaffold(
         body: StarRatingBar(
           rating: rating,

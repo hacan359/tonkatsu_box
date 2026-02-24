@@ -1,3 +1,4 @@
+import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/collections/widgets/canvas_link_item.dart';
@@ -27,6 +28,8 @@ void main() {
 
     Widget buildWidget(CanvasItem item) {
       return MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
         home: Scaffold(
           body: SizedBox(
             width: 400,

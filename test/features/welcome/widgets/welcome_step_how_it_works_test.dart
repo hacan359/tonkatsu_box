@@ -1,3 +1,4 @@
+import 'package:xerabora/l10n/app_localizations.dart';
 // Тесты для WelcomeStepHowItWorks — шаг 3 Welcome Wizard.
 
 import 'package:flutter/material.dart';
@@ -7,6 +8,8 @@ import 'package:xerabora/features/welcome/widgets/welcome_step_how_it_works.dart
 void main() {
   Widget createWidget() {
     return const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
       home: Scaffold(
         body: WelcomeStepHowItWorks(),
       ),

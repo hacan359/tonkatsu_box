@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -36,14 +37,13 @@ class WelcomeStepReady extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              "You're all set!",
+              S.of(context).welcomeReadyTitle,
               style: AppTypography.h1.copyWith(fontSize: 22),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Head to Settings → Credentials to enter your API keys, '
-              'or start by importing a collection.',
+              S.of(context).welcomeReadyMessage,
               style: AppTypography.body.copyWith(
                 color: AppColors.textSecondary,
                 fontSize: 13,
@@ -71,12 +71,12 @@ class WelcomeStepReady extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    Text('Go to Settings'),
-                    SizedBox(width: 4),
-                    Icon(Icons.arrow_forward, size: 16),
+                    Text(S.of(context).welcomeReadyGoToSettings),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.arrow_forward, size: 16),
                   ],
                 ),
               ),
@@ -102,13 +102,13 @@ class WelcomeStepReady extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                child: const Text('Skip — explore on my own'),
+                child: Text(S.of(context).welcomeReadySkip),
               ),
             ),
             const SizedBox(height: AppSpacing.md),
 
             Text(
-              'You can always return here from Settings',
+              S.of(context).welcomeReadyReturnHint,
               style: AppTypography.bodySmall.copyWith(
                 color: AppColors.textTertiary,
               ),

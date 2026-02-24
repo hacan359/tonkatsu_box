@@ -7,6 +7,21 @@
 ## [Unreleased]
 
 ### Added
+- Full i18n localization (English / Russian) — Flutter `gen_l10n` infrastructure with 521 ARB keys, ICU MessageFormat plurals for Russian (`=0`, `=1`, `few`, `other`), output class `S` with `nullable-getter: false` (`l10n.yaml`, `lib/l10n/app_en.arb`, `lib/l10n/app_ru.arb`)
+- App Language setting — `SettingsNotifier.setAppLanguage()` with `SegmentedButton` (English / Русский) in Settings, persisted via SharedPreferences, applied to `MaterialApp.locale` in `app.dart` (`settings_provider.dart`, `settings_screen.dart`, `app.dart`)
+- Localized extension methods on enums — `ItemStatus.localizedLabel(S, MediaType)`, `MediaType.localizedLabel(S)`, `CollectionSortMode.localizedDisplayLabel(S)` / `localizedShortLabel(S)` / `localizedDescription(S)`, `SearchSortField.localizedShortLabel(S)` / `localizedDisplayLabel(S)` (`item_status.dart`, `media_type.dart`, `collection_sort_mode.dart`, `search_sort.dart`)
+- `flutter_localizations` and `intl` dependencies (`pubspec.yaml`)
+- Localization delegates added to all ~64 test files for `MaterialApp` compatibility
+
+### Changed
+- Replaced all hardcoded English UI strings (~50 files) with `S.of(context).key` calls — navigation labels, screen titles, buttons, dialogs, tooltips, error messages, empty states, form hints
+- `StatusChipRow` and `StatusRibbon` now use `localizedLabel(S.of(context), mediaType)` instead of `displayLabel(mediaType)` (`status_chip_row.dart`, `status_ribbon.dart`)
+- Cached Navigator widget instances in `NavigationShell._navigatorWidgets` to prevent route history loss during locale-triggered rebuilds (`navigation_shell.dart`)
+
+### Removed
+- `AppStrings` constants class — all values inlined or replaced by l10n keys (`app_strings.dart`, `app_strings_test.dart`)
+
+### Added
 - Credits screen with API provider attribution — TMDB (mandatory), IGDB, SteamGridDB logos + disclaimer text + external links, Open Source section with MIT license info and `showLicensePage()` button (`credits_screen.dart`)
 - "About" section in Settings — app version from `PackageInfo` and "Credits & Licenses" navigation row (`settings_screen.dart`)
 - `flutter_svg` dependency for rendering SVG logos in Credits screen (`pubspec.yaml`)

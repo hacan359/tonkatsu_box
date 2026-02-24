@@ -1,3 +1,4 @@
+import 'package:xerabora/l10n/app_localizations.dart';
 // Тесты для BreadcrumbScope InheritedWidget.
 
 import 'package:flutter/material.dart';
@@ -13,6 +14,8 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: BreadcrumbScope(
               label: 'Settings',
               child: Builder(
@@ -35,6 +38,8 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: BreadcrumbScope(
               label: 'Settings',
               child: BreadcrumbScope(
@@ -63,6 +68,8 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: Builder(
               builder: (BuildContext context) {
                 result = BreadcrumbScope.of(context);
@@ -82,6 +89,8 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: BreadcrumbScope(
               label: 'Root',
               child: Navigator(
@@ -147,6 +156,8 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
             home: ValueListenableBuilder<String>(
               valueListenable: labelNotifier,
               builder: (BuildContext context, String label, Widget? child) {

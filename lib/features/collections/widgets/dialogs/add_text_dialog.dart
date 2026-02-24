@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../l10n/app_localizations.dart';
+
 // Диалог добавления/редактирования текстового блока на канвасе.
 
 /// Диалог для ввода текста и выбора размера шрифта.
@@ -43,16 +45,32 @@ class AddTextDialog extends StatefulWidget {
 
 /// Доступные размеры шрифта.
 const List<_FontSizeOption> _fontSizeOptions = <_FontSizeOption>[
-  _FontSizeOption(label: 'Small', size: 12),
-  _FontSizeOption(label: 'Medium', size: 16),
-  _FontSizeOption(label: 'Large', size: 24),
-  _FontSizeOption(label: 'Title', size: 32),
+  _FontSizeOption(labelKey: 'small', size: 12),
+  _FontSizeOption(labelKey: 'medium', size: 16),
+  _FontSizeOption(labelKey: 'large', size: 24),
+  _FontSizeOption(labelKey: 'title', size: 32),
 ];
 
 class _FontSizeOption {
-  const _FontSizeOption({required this.label, required this.size});
-  final String label;
+  const _FontSizeOption({required this.labelKey, required this.size});
+  final String labelKey;
   final double size;
+
+  /// Возвращает локализованную метку.
+  String localizedLabel(S l) {
+    switch (labelKey) {
+      case 'small':
+        return l.fontSizeSmall;
+      case 'medium':
+        return l.fontSizeMedium;
+      case 'large':
+        return l.fontSizeLarge;
+      case 'title':
+        return l.fontSizeTitle;
+      default:
+        return labelKey;
+    }
+  }
 }
 
 class _AddTextDialogState extends State<AddTextDialog> {
@@ -93,9 +111,10 @@ class _AddTextDialogState extends State<AddTextDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final S l = S.of(context);
     return AlertDialog(
       scrollable: true,
-      title: Text(_isEditing ? 'Edit Text' : 'Add Text'),
+      title: Text(_isEditing ? l.editTextTitle : l.addTextTitle),
       content: SizedBox(
         width: 400,
         child: SingleChildScrollView(
@@ -105,9 +124,9 @@ class _AddTextDialogState extends State<AddTextDialog> {
             children: <Widget>[
               TextField(
                 controller: _contentController,
-                decoration: const InputDecoration(
-                  labelText: 'Text content',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l.textContentLabel,
+                  border: const OutlineInputBorder(),
                   alignLabelWithHint: true,
                 ),
                 maxLines: 3,
@@ -118,16 +137,16 @@ class _AddTextDialogState extends State<AddTextDialog> {
               const SizedBox(height: 16),
               DropdownButtonFormField<double>(
                 initialValue: _selectedFontSize,
-                decoration: const InputDecoration(
-                  labelText: 'Font size',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l.fontSizeLabel,
+                  border: const OutlineInputBorder(),
                 ),
                 items: _fontSizeOptions
                     .map(
                       (_FontSizeOption option) => DropdownMenuItem<double>(
                         value: option.size,
                         child:
-                            Text('${option.label} (${option.size.toInt()}px)'),
+                            Text('${option.localizedLabel(l)} (${option.size.toInt()}px)'),
                       ),
                     )
                     .toList(),
@@ -144,11 +163,11 @@ class _AddTextDialogState extends State<AddTextDialog> {
       actions: <Widget>[
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(l.cancel),
         ),
         FilledButton(
           onPressed: _submit,
-          child: Text(_isEditing ? 'Save' : 'Add'),
+          child: Text(_isEditing ? l.save : l.add),
         ),
       ],
     );

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/import_service.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../core/services/trakt_zip_import_service.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/models/collection.dart';
@@ -46,7 +47,7 @@ class _TraktImportScreenState extends ConsumerState<TraktImportScreen> {
     final bool compact = MediaQuery.sizeOf(context).width < 600;
 
     return BreadcrumbScope(
-      label: 'Trakt Import',
+      label: S.of(context).traktTitle,
       child: Scaffold(
         appBar: const AutoBreadcrumbAppBar(),
         body: SingleChildScrollView(
@@ -74,10 +75,9 @@ class _TraktImportScreenState extends ConsumerState<TraktImportScreen> {
 
   Widget _buildInstructionsSection(BuildContext context, bool compact) {
     return SettingsSection(
-      title: 'Import from Trakt.tv',
+      title: S.of(context).traktImportFrom,
       icon: Icons.info_outline,
-      subtitle: 'Download your data from trakt.tv/users/YOU/data '
-          'and select the ZIP file below.',
+      subtitle: S.of(context).traktImportDescription,
       compact: compact,
       children: const <Widget>[],
     );
@@ -85,7 +85,7 @@ class _TraktImportScreenState extends ConsumerState<TraktImportScreen> {
 
   Widget _buildFilePickerSection(BuildContext context, bool compact) {
     return SettingsSection(
-      title: 'ZIP File',
+      title: S.of(context).traktZipFile,
       icon: Icons.folder_zip,
       compact: compact,
       children: <Widget>[
@@ -111,7 +111,7 @@ class _TraktImportScreenState extends ConsumerState<TraktImportScreen> {
                 ),
                 TextButton(
                   onPressed: _pickFile,
-                  child: const Text('Change'),
+                  child: Text(S.of(context).change),
                 ),
               ],
             ),
@@ -125,7 +125,7 @@ class _TraktImportScreenState extends ConsumerState<TraktImportScreen> {
                 OutlinedButton.icon(
                   onPressed: _pickFile,
                   icon: const Icon(Icons.folder_open),
-                  label: const Text('Select ZIP File'),
+                  label: Text(S.of(context).traktSelectZipFile),
                 ),
                 if (_validationError != null) ...<Widget>[
                   const SizedBox(height: AppSpacing.sm),
@@ -146,35 +146,36 @@ class _TraktImportScreenState extends ConsumerState<TraktImportScreen> {
   Widget _buildPreviewSection(BuildContext context, bool compact) {
     final TraktZipInfo info = _zipInfo!;
 
+    final S l10n = S.of(context);
     return SettingsSection(
-      title: 'Preview',
+      title: l10n.traktPreview,
       icon: Icons.preview,
-      subtitle: 'Trakt user: ${info.username}',
+      subtitle: l10n.traktUser(info.username),
       compact: compact,
       children: <Widget>[
         _buildPreviewRow(
           Icons.movie,
-          'Watched movies',
+          l10n.traktWatchedMovies,
           info.watchedMovieCount,
         ),
         _buildPreviewRow(
           Icons.tv,
-          'Watched shows',
+          l10n.traktWatchedShows,
           info.watchedShowCount,
         ),
         _buildPreviewRow(
           Icons.star,
-          'Rated movies',
+          l10n.traktRatedMovies,
           info.ratedMovieCount,
         ),
         _buildPreviewRow(
           Icons.star_half,
-          'Rated shows',
+          l10n.traktRatedShows,
           info.ratedShowCount,
         ),
         _buildPreviewRow(
           Icons.bookmark,
-          'Watchlist',
+          l10n.traktWatchlist,
           info.watchlistCount,
         ),
       ],
@@ -209,14 +210,15 @@ class _TraktImportScreenState extends ConsumerState<TraktImportScreen> {
     final AsyncValue<List<Collection>> collectionsAsync =
         ref.watch(collectionsProvider);
 
+    final S l10n = S.of(context);
     return SettingsSection(
-      title: 'Options',
+      title: l10n.traktOptions,
       icon: Icons.tune,
       compact: compact,
       children: <Widget>[
         CheckboxListTile(
-          title: const Text('Import watched items'),
-          subtitle: const Text('Movies and TV shows as completed'),
+          title: Text(l10n.traktImportWatched),
+          subtitle: Text(l10n.traktImportWatchedDesc),
           value: _importWatched,
           dense: true,
           onChanged: (bool? value) {
@@ -224,8 +226,8 @@ class _TraktImportScreenState extends ConsumerState<TraktImportScreen> {
           },
         ),
         CheckboxListTile(
-          title: const Text('Import ratings'),
-          subtitle: const Text('Apply user ratings (1-10)'),
+          title: Text(l10n.traktImportRatings),
+          subtitle: Text(l10n.traktImportRatingsDesc),
           value: _importRatings,
           dense: true,
           onChanged: (bool? value) {
@@ -233,8 +235,8 @@ class _TraktImportScreenState extends ConsumerState<TraktImportScreen> {
           },
         ),
         CheckboxListTile(
-          title: const Text('Import watchlist'),
-          subtitle: const Text('Add as planned or to wishlist'),
+          title: Text(l10n.traktImportWatchlist),
+          subtitle: Text(l10n.traktImportWatchlistDesc),
           value: _importWatchlist,
           dense: true,
           onChanged: (bool? value) {
@@ -245,7 +247,7 @@ class _TraktImportScreenState extends ConsumerState<TraktImportScreen> {
         Padding(
           padding: const EdgeInsets.all(AppSpacing.sm),
           child: Text(
-            'Target collection',
+            l10n.traktTargetCollection,
             style: AppTypography.bodySmall.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -260,16 +262,16 @@ class _TraktImportScreenState extends ConsumerState<TraktImportScreen> {
               if (value) _selectedCollectionId = null;
             });
           },
-          child: const Column(
+          child: Column(
             children: <Widget>[
               ListTile(
-                title: Text('Create new collection'),
-                leading: Radio<bool>(value: true),
+                title: Text(l10n.traktCreateNew),
+                leading: const Radio<bool>(value: true),
                 dense: true,
               ),
               ListTile(
-                title: Text('Use existing collection'),
-                leading: Radio<bool>(value: false),
+                title: Text(l10n.traktUseExisting),
+                leading: const Radio<bool>(value: false),
                 dense: true,
               ),
             ],
@@ -282,7 +284,7 @@ class _TraktImportScreenState extends ConsumerState<TraktImportScreen> {
               data: (List<Collection> collections) {
                 if (collections.isEmpty) {
                   return Text(
-                    'No collections available',
+                    l10n.traktNoCollections,
                     style: AppTypography.bodySmall.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -290,7 +292,7 @@ class _TraktImportScreenState extends ConsumerState<TraktImportScreen> {
                 }
                 return DropdownButtonFormField<int>(
                   initialValue: _selectedCollectionId,
-                  hint: const Text('Select collection'),
+                  hint: Text(l10n.traktSelectCollection),
                   isExpanded: true,
                   items: collections.map((Collection c) {
                     return DropdownMenuItem<int>(
@@ -305,7 +307,7 @@ class _TraktImportScreenState extends ConsumerState<TraktImportScreen> {
               },
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (Object e, StackTrace s) => Text(
-                'Error loading collections',
+                l10n.traktErrorLoadingCollections,
                 style: AppTypography.bodySmall.copyWith(
                   color: AppColors.statusDropped,
                 ),
@@ -329,7 +331,7 @@ class _TraktImportScreenState extends ConsumerState<TraktImportScreen> {
       child: FilledButton.icon(
         onPressed: canImport && hasTarget ? _startImport : null,
         icon: const Icon(Icons.download),
-        label: const Text('Start Import'),
+        label: Text(S.of(context).traktStartImport),
       ),
     );
   }
@@ -337,7 +339,7 @@ class _TraktImportScreenState extends ConsumerState<TraktImportScreen> {
   Future<void> _pickFile() async {
     final bool useAny = Platform.isAndroid;
     final FilePickerResult? result = await FilePicker.platform.pickFiles(
-      dialogTitle: 'Select Trakt ZIP Export',
+      dialogTitle: S.of(context).traktSelectZipExport,
       type: useAny ? FileType.any : FileType.custom,
       allowedExtensions: useAny ? null : <String>['zip'],
       allowMultiple: false,
@@ -370,7 +372,7 @@ class _TraktImportScreenState extends ConsumerState<TraktImportScreen> {
       } else {
         _zipInfo = null;
         _zipPath = null;
-        _validationError = info.error ?? 'Invalid Trakt export';
+        _validationError = info.error ?? S.of(context).traktInvalidExport;
       }
     });
   }
@@ -420,7 +422,7 @@ class _TraktImportScreenState extends ConsumerState<TraktImportScreen> {
       ref.invalidate(allItemsNotifierProvider);
 
       final StringBuffer message = StringBuffer(
-        'Imported ${result.itemsImported} items',
+        S.of(context).traktImportedItems(result.itemsImported),
       );
       if (result.itemsUpdated > 0) {
         message.write(', updated ${result.itemsUpdated}');
@@ -457,7 +459,7 @@ class _TraktImportProgressDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       scrollable: true,
-      title: const Text('Importing from Trakt'),
+      title: Text(S.of(context).traktImporting),
       content: ValueListenableBuilder<ImportProgress?>(
         valueListenable: progressNotifier,
         builder:
@@ -509,7 +511,7 @@ class _TraktImportProgressDialog extends StatelessWidget {
             if (snapshot.connectionState == ConnectionState.done) {
               return FilledButton(
                 onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('Done'),
+                child: Text(S.of(context).done),
               );
             }
             return const SizedBox.shrink();

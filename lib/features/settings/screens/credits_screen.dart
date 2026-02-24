@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -29,23 +30,23 @@ class CreditsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool compact = MediaQuery.sizeOf(context).width < 600;
 
+    final S l10n = S.of(context);
     return BreadcrumbScope(
-      label: 'Credits',
+      label: l10n.creditsTitle,
       child: Scaffold(
         appBar: const AutoBreadcrumbAppBar(),
         body: ListView(
           padding: EdgeInsets.all(compact ? AppSpacing.sm : AppSpacing.lg),
           children: <Widget>[
             _SectionHeader(
-              title: 'Data Providers',
+              title: l10n.creditsDataProviders,
               compact: compact,
             ),
             SizedBox(height: compact ? AppSpacing.sm : AppSpacing.md),
             _ProviderCard(
               logoAsset: 'assets/credits/tmdb_logo.svg',
               logoWidth: compact ? 100.0 : 120.0,
-              description: 'This product uses the TMDB API but is not '
-                  'endorsed or certified by TMDB.',
+              description: l10n.creditsTmdbAttribution,
               linkLabel: 'themoviedb.org',
               url: _tmdbUrl,
               accentColor: DataSource.tmdb.color,
@@ -55,7 +56,7 @@ class CreditsScreen extends StatelessWidget {
             _ProviderCard(
               logoAsset: 'assets/credits/igdb_logo.svg',
               logoWidth: compact ? 80.0 : 100.0,
-              description: 'Game data provided by IGDB.',
+              description: l10n.creditsIgdbAttribution,
               linkLabel: 'igdb.com',
               url: _igdbUrl,
               accentColor: DataSource.igdb.color,
@@ -65,7 +66,7 @@ class CreditsScreen extends StatelessWidget {
             _ProviderCard(
               logoAsset: 'assets/credits/steamgriddb_logo.svg',
               logoWidth: compact ? 120.0 : 150.0,
-              description: 'Artwork provided by SteamGridDB.',
+              description: l10n.creditsSteamGridDbAttribution,
               linkLabel: 'steamgriddb.com',
               url: _steamGridDbUrl,
               accentColor: DataSource.steamGridDb.color,
@@ -73,7 +74,7 @@ class CreditsScreen extends StatelessWidget {
             ),
             SizedBox(height: compact ? AppSpacing.lg : AppSpacing.xl),
             _SectionHeader(
-              title: 'Open Source',
+              title: l10n.creditsOpenSource,
               compact: compact,
             ),
             SizedBox(height: compact ? AppSpacing.sm : AppSpacing.md),
@@ -198,8 +199,7 @@ class _OpenSourceCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(
-            'Tonkatsu Box is free and open source software, '
-            'released under the MIT License.',
+            S.of(context).creditsOpenSourceDesc,
             style: AppTypography.body.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -241,7 +241,7 @@ class _OpenSourceCard extends StatelessWidget {
                 );
               },
               icon: const Icon(Icons.description_outlined, size: 18),
-              label: const Text('View Open Source Licenses'),
+              label: Text(S.of(context).creditsViewLicenses),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.textSecondary,
                 side: const BorderSide(color: AppColors.surfaceBorder),

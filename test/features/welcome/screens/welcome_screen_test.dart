@@ -1,3 +1,4 @@
+import 'package:xerabora/l10n/app_localizations.dart';
 // Тесты для WelcomeScreen — 4-шаговый онбординг wizard.
 
 import 'package:flutter/material.dart';
@@ -26,6 +27,8 @@ void main() {
         sharedPreferencesProvider.overrideWithValue(prefs),
       ],
       child: MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
         home: WelcomeScreen(fromSettings: fromSettings),
       ),
     );
@@ -347,6 +350,8 @@ void main() {
               sharedPreferencesProvider.overrideWithValue(prefs),
             ],
             child: const MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
               home: MediaQuery(
                 data: MediaQueryData(
                   size: Size(500, 800),
@@ -420,6 +425,8 @@ void main() {
               sharedPreferencesProvider.overrideWithValue(prefs),
             ],
             child: MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
               home: Builder(
                 builder: (BuildContext context) {
                   return ElevatedButton(
@@ -469,6 +476,8 @@ void main() {
               sharedPreferencesProvider.overrideWithValue(prefs),
             ],
             child: MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
               home: Builder(
                 builder: (BuildContext context) {
                   return ElevatedButton(

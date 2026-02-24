@@ -1,6 +1,5 @@
 // Универсальный элемент коллекции (игра, фильм или сериал).
 
-import '../constants/app_strings.dart';
 import 'exportable.dart';
 import 'game.dart';
 import 'item_status.dart';
@@ -240,16 +239,16 @@ class CollectionItem with Exportable {
   /// Название элемента (игра, фильм, сериал или анимация).
   String get itemName {
     final String fallback = switch (mediaType) {
-      MediaType.game => AppStrings.unknownGame,
-      MediaType.movie => AppStrings.unknownMovie,
-      MediaType.tvShow => AppStrings.unknownTvShow,
-      MediaType.animation => AppStrings.unknownAnimation,
+      MediaType.game => 'Unknown Game',
+      MediaType.movie => 'Unknown Movie',
+      MediaType.tvShow => 'Unknown TV Show',
+      MediaType.animation => 'Unknown Animation',
     };
     return _resolvedMedia.name ?? fallback;
   }
 
   /// Название платформы или placeholder.
-  String get platformName => platform?.displayName ?? AppStrings.unknownPlatform;
+  String get platformName => platform?.displayName ?? 'Unknown Platform';
 
   /// Есть ли комментарий автора.
   bool get hasAuthorComment =>

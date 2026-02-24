@@ -1,3 +1,4 @@
+import 'package:xerabora/l10n/app_localizations.dart';
 // Тесты для StatusRibbon.
 
 import 'package:flutter/material.dart';
@@ -12,6 +13,8 @@ void main() {
     MediaType mediaType = MediaType.game,
   }) {
     return MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
       home: Scaffold(
         body: Card(
           clipBehavior: Clip.antiAlias,

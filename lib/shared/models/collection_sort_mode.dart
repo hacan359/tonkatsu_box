@@ -1,5 +1,7 @@
 // Режим сортировки элементов коллекции.
 
+import '../../l10n/app_localizations.dart';
+
 /// Режим сортировки элементов в коллекции.
 enum CollectionSortMode {
   /// Ручной порядок (drag-and-drop, sort_order ASC).
@@ -46,5 +48,53 @@ enum CollectionSortMode {
       }
     }
     return CollectionSortMode.addedDate;
+  }
+
+  /// Локализованное отображаемое название.
+  String localizedDisplayLabel(S l) {
+    switch (this) {
+      case CollectionSortMode.manual:
+        return l.sortManualDisplay;
+      case CollectionSortMode.addedDate:
+        return l.sortDateDisplay;
+      case CollectionSortMode.status:
+        return l.sortStatusDisplay;
+      case CollectionSortMode.name:
+        return l.sortNameDisplay;
+      case CollectionSortMode.rating:
+        return l.sortRatingDisplay;
+    }
+  }
+
+  /// Локализованный короткий лейбл.
+  String localizedShortLabel(S l) {
+    switch (this) {
+      case CollectionSortMode.manual:
+        return l.sortManualShort;
+      case CollectionSortMode.addedDate:
+        return l.sortDateShort;
+      case CollectionSortMode.status:
+        return l.sortStatusShort;
+      case CollectionSortMode.name:
+        return l.sortNameShort;
+      case CollectionSortMode.rating:
+        return l.sortRatingShort;
+    }
+  }
+
+  /// Локализованное описание порядка сортировки.
+  String localizedDescription(S l) {
+    switch (this) {
+      case CollectionSortMode.manual:
+        return l.sortManualDesc;
+      case CollectionSortMode.addedDate:
+        return l.sortDateDesc;
+      case CollectionSortMode.status:
+        return l.sortStatusDesc;
+      case CollectionSortMode.name:
+        return l.sortNameDesc;
+      case CollectionSortMode.rating:
+        return l.sortRatingDesc;
+    }
   }
 }

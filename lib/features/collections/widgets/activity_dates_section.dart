@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -60,16 +61,16 @@ class ActivityDatesSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        const Row(
+        Row(
           children: <Widget>[
-            Icon(
+            const Icon(
               Icons.calendar_month_outlined,
               size: 20,
               color: AppColors.brand,
             ),
-            SizedBox(width: AppSpacing.sm),
+            const SizedBox(width: AppSpacing.sm),
             Text(
-              'Activity Dates',
+              S.of(context).activityDatesTitle,
               style: AppTypography.h3,
             ),
           ],
@@ -77,14 +78,14 @@ class ActivityDatesSection extends StatelessWidget {
         const SizedBox(height: 12),
         _DateRow(
           icon: Icons.add_circle_outline,
-          label: 'Added',
+          label: S.of(context).activityDatesAdded,
           date: addedAt,
           editable: false,
         ),
         const SizedBox(height: 6),
         _DateRow(
           icon: Icons.play_circle_outline,
-          label: 'Started',
+          label: S.of(context).activityDatesStarted,
           date: startedAt,
           editable: isEditable,
           onTap: () => _pickDate(context, 'started', startedAt),
@@ -92,7 +93,7 @@ class ActivityDatesSection extends StatelessWidget {
         const SizedBox(height: 6),
         _DateRow(
           icon: Icons.check_circle_outline,
-          label: 'Completed',
+          label: S.of(context).activityDatesCompleted,
           date: completedAt,
           editable: isEditable,
           onTap: () => _pickDate(context, 'completed', completedAt),
@@ -101,7 +102,7 @@ class ActivityDatesSection extends StatelessWidget {
           const SizedBox(height: 6),
           _DateRow(
             icon: Icons.update,
-            label: 'Last Activity',
+            label: S.of(context).activityDatesLastActivity,
             date: lastActivityAt,
             editable: false,
           ),
@@ -124,7 +125,9 @@ class ActivityDatesSection extends StatelessWidget {
       initialDate: initialDate,
       firstDate: firstDate,
       lastDate: lastDate,
-      helpText: type == 'started' ? 'Select start date' : 'Select completion date',
+      helpText: type == 'started'
+          ? S.of(context).activityDatesSelectStart
+          : S.of(context).activityDatesSelectCompletion,
     );
 
     if (picked != null && context.mounted) {

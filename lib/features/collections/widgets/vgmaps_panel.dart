@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:webview_windows/webview_windows.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../providers/vgmaps_panel_provider.dart';
 
 /// JS-скрипт для захвата изображения карты со страницы vgmaps.de.
@@ -143,7 +144,7 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
       if (mounted) {
         ref
             .read(vgMapsPanelProvider(widget.collectionId).notifier)
-            .setError('Failed to initialize WebView: $e');
+            .setError(S.of(context).vgmapsFailedInit(e.toString()));
       }
     }
   }
@@ -400,7 +401,7 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
           ),
           IconButton(
             icon: const Icon(Icons.close, size: 20),
-            tooltip: 'Close panel',
+            tooltip: S.of(context).vgmapsClosePanel,
             onPressed: () => ref
                 .read(vgMapsPanelProvider(widget.collectionId).notifier)
                 .closePanel(),
@@ -421,31 +422,31 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
         children: <Widget>[
           IconButton(
             icon: const Icon(Icons.arrow_back, size: 20),
-            tooltip: 'Back',
+            tooltip: S.of(context).vgmapsBack,
             onPressed: panelState.canGoBack ? _navigateBack : null,
             visualDensity: VisualDensity.compact,
           ),
           IconButton(
             icon: const Icon(Icons.arrow_forward, size: 20),
-            tooltip: 'Forward',
+            tooltip: S.of(context).vgmapsForward,
             onPressed: panelState.canGoForward ? _navigateForward : null,
             visualDensity: VisualDensity.compact,
           ),
           IconButton(
             icon: const Icon(Icons.home, size: 20),
-            tooltip: 'Home',
+            tooltip: S.of(context).vgmapsHome,
             onPressed: _navigateHome,
             visualDensity: VisualDensity.compact,
           ),
           IconButton(
             icon: const Icon(Icons.refresh, size: 20),
-            tooltip: 'Reload',
+            tooltip: S.of(context).vgmapsReload,
             onPressed: _reload,
             visualDensity: VisualDensity.compact,
           ),
           IconButton(
             icon: const Icon(Icons.download, size: 20),
-            tooltip: 'Capture map image',
+            tooltip: S.of(context).vgmapsCaptureImage,
             onPressed: _isWebViewReady ? _captureMapImage : null,
             visualDensity: VisualDensity.compact,
             color: colorScheme.primary,
@@ -457,14 +458,14 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
               child: TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
-                  hintText: 'Search game on VGMaps...',
+                  hintText: S.of(context).vgmapsSearchHint,
                   isDense: true,
                   border: const OutlineInputBorder(),
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.search, size: 16),
-                    tooltip: 'Search',
+                    tooltip: S.of(context).search,
                     onPressed: _performSearch,
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(
@@ -607,7 +608,7 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
           FilledButton.icon(
             onPressed: _handleAddToCanvas,
             icon: const Icon(Icons.add, size: 16),
-            label: const Text('Add to Board'),
+            label: Text(S.of(context).canvasAddToBoard),
             style: FilledButton.styleFrom(
               visualDensity: VisualDensity.compact,
               padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -619,7 +620,7 @@ class _VgMapsPanelState extends ConsumerState<VgMapsPanel> {
           // Закрыть
           IconButton(
             icon: const Icon(Icons.close, size: 16),
-            tooltip: 'Dismiss',
+            tooltip: S.of(context).vgmapsDismiss,
             onPressed: _dismissCapturedImage,
             visualDensity: VisualDensity.compact,
             padding: EdgeInsets.zero,

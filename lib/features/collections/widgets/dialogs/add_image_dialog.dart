@@ -5,6 +5,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../l10n/app_localizations.dart';
+
 // Диалог добавления изображения на канвас.
 //
 // Поддерживает два режима: URL и локальный файл (base64).
@@ -127,10 +129,11 @@ class _AddImageDialogState extends State<AddImageDialog> {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final S l = S.of(context);
 
     return AlertDialog(
       scrollable: true,
-      title: Text(_isEditing ? 'Edit Image' : 'Add Image'),
+      title: Text(_isEditing ? l.editImageTitle : l.addImageTitle),
       content: SizedBox(
         width: 400,
         child: SingleChildScrollView(
@@ -141,16 +144,16 @@ class _AddImageDialogState extends State<AddImageDialog> {
             // Выбор источника
             if (!_isEditing) ...<Widget>[
               SegmentedButton<_ImageSource>(
-                segments: const <ButtonSegment<_ImageSource>>[
+                segments: <ButtonSegment<_ImageSource>>[
                   ButtonSegment<_ImageSource>(
                     value: _ImageSource.url,
-                    label: Text('From URL'),
-                    icon: Icon(Icons.link),
+                    label: Text(l.imageFromUrl),
+                    icon: const Icon(Icons.link),
                   ),
                   ButtonSegment<_ImageSource>(
                     value: _ImageSource.file,
-                    label: Text('From File'),
-                    icon: Icon(Icons.folder_open),
+                    label: Text(l.imageFromFile),
+                    icon: const Icon(Icons.folder_open),
                   ),
                 ],
                 selected: <_ImageSource>{_source},
@@ -165,10 +168,10 @@ class _AddImageDialogState extends State<AddImageDialog> {
             if (_source == _ImageSource.url) ...<Widget>[
               TextField(
                 controller: _urlController,
-                decoration: const InputDecoration(
-                  labelText: 'Image URL',
-                  hintText: 'https://example.com/image.png',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l.imageUrlLabel,
+                  hintText: l.imageUrlHint,
+                  border: const OutlineInputBorder(),
                 ),
                 autofocus: true,
                 onChanged: (_) => setState(() {}),
@@ -227,7 +230,7 @@ class _AddImageDialogState extends State<AddImageDialog> {
               OutlinedButton.icon(
                 onPressed: _pickFile,
                 icon: const Icon(Icons.folder_open),
-                label: Text(_fileName != null ? 'Choose Another' : 'Choose File'),
+                label: Text(_fileName != null ? l.imageChooseAnother : l.imageChooseFile),
               ),
             ],
             ],
@@ -237,11 +240,11 @@ class _AddImageDialogState extends State<AddImageDialog> {
       actions: <Widget>[
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(l.cancel),
         ),
         FilledButton(
           onPressed: _canSubmit ? _submit : null,
-          child: Text(_isEditing ? 'Save' : 'Add'),
+          child: Text(_isEditing ? l.save : l.add),
         ),
       ],
     );

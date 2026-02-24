@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/wishlist_item.dart';
@@ -48,11 +49,12 @@ class AddWishlistForm extends StatefulWidget {
     BuildContext context, {
     WishlistItem? existing,
   }) {
+    final S l = S.of(context);
     final bool isEditing = existing != null;
     return Navigator.of(context).push<WishlistDialogResult>(
       MaterialPageRoute<WishlistDialogResult>(
         builder: (BuildContext context) => BreadcrumbScope(
-          label: isEditing ? 'Edit' : 'Add',
+          label: isEditing ? l.wishlistEditTitle : l.wishlistAddTitle,
           child: AddWishlistForm(existing: existing),
         ),
       ),
@@ -93,7 +95,7 @@ class _AddWishlistFormState extends State<AddWishlistForm> {
     final String text = _textController.text.trim();
     if (text.length < 2) {
       setState(() {
-        _titleError = 'At least 2 characters';
+        _titleError = S.of(context).wishlistTitleMinChars;
       });
       return;
     }
@@ -110,12 +112,14 @@ class _AddWishlistFormState extends State<AddWishlistForm> {
 
   @override
   Widget build(BuildContext context) {
+    final S l = S.of(context);
+
     return Scaffold(
       appBar: AutoBreadcrumbAppBar(
         actions: <Widget>[
           TextButton(
             onPressed: _submit,
-            child: Text(_isEditing ? 'Save' : 'Add'),
+            child: Text(_isEditing ? l.save : l.add),
           ),
         ],
       ),
@@ -130,8 +134,8 @@ class _AddWishlistFormState extends State<AddWishlistForm> {
               autofocus: true,
               textCapitalization: TextCapitalization.sentences,
               decoration: InputDecoration(
-                labelText: 'Title',
-                hintText: 'Game, movie, or TV show name...',
+                labelText: l.wishlistTitleLabel,
+                hintText: l.wishlistTitleHint,
                 border: const OutlineInputBorder(),
                 errorText: _titleError,
               ),
@@ -148,7 +152,7 @@ class _AddWishlistFormState extends State<AddWishlistForm> {
 
             // Media type chips.
             Text(
-              'Type (optional)',
+              l.wishlistTypeOptional,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: AppColors.textTertiary,
                   ),
@@ -158,11 +162,11 @@ class _AddWishlistFormState extends State<AddWishlistForm> {
               spacing: AppSpacing.xs,
               runSpacing: AppSpacing.xs,
               children: <Widget>[
-                _buildMediaTypeChip(null, 'Any', Icons.bookmark_border),
+                _buildMediaTypeChip(null, l.wishlistTypeAny, Icons.bookmark_border),
                 ...MediaType.values.map(
                   (MediaType type) => _buildMediaTypeChip(
                     type,
-                    type.displayLabel,
+                    type.localizedLabel(l),
                     MediaTypeTheme.iconFor(type),
                   ),
                 ),
@@ -175,10 +179,10 @@ class _AddWishlistFormState extends State<AddWishlistForm> {
               controller: _noteController,
               maxLines: 3,
               textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(
-                labelText: 'Note (optional)',
-                hintText: 'Platform, year, who recommended...',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l.wishlistNoteOptional,
+                hintText: l.wishlistNoteHint,
+                border: const OutlineInputBorder(),
               ),
             ),
           ],

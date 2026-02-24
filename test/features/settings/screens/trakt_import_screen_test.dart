@@ -1,3 +1,4 @@
+import 'package:xerabora/l10n/app_localizations.dart';
 // Тесты для TraktImportScreen (импорт из Trakt.tv ZIP).
 
 import 'package:flutter/material.dart';
@@ -34,6 +35,8 @@ void main() {
         ),
       ],
       child: MaterialApp(
+            localizationsDelegates: S.localizationsDelegates,
+            supportedLocales: S.supportedLocales,
         home: MediaQuery(
           data: MediaQueryData(size: Size(width, height)),
           child: const BreadcrumbScope(

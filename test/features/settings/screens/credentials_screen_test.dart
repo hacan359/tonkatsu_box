@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/features/settings/screens/credentials_screen.dart';
+import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/features/settings/widgets/inline_text_field.dart';
 import 'package:xerabora/features/settings/widgets/settings_section.dart';
 import 'package:xerabora/features/settings/widgets/status_dot.dart';
@@ -26,6 +27,8 @@ void main() {
           sharedPreferencesProvider.overrideWithValue(prefs),
         ],
         child: MaterialApp(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
           home: BreadcrumbScope(
             label: 'Settings',
             child: CredentialsScreen(isInitialSetup: isInitialSetup),
