@@ -284,7 +284,6 @@
   "collectionItemAlreadyExists": "{name} уже есть в {collection}",
   "collectionItemRemoved": "{name} удалён",
 
-  "detailsTab": "Детали",
   "boardTab": "Доска",
   "imageAddedToBoard": "Изображение добавлено на доску",
   "mapAddedToBoard": "Карта добавлена на доску",
@@ -308,6 +307,7 @@
     }
   },
   "totalEpisodes": "{count} эп",
+  "seasonName": "Сезон {number}",
   "episodeProgress": "Прогресс просмотра",
   "episodesWatchedOf": "Просмотрено {watched}/{total}",
   "episodesWatched": "Просмотрено: {count}",

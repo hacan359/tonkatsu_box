@@ -1537,12 +1537,6 @@ abstract class S {
   /// **'{name} removed'**
   String collectionItemRemoved(String name);
 
-  /// No description provided for @detailsTab.
-  ///
-  /// In en, this message translates to:
-  /// **'Details'**
-  String get detailsTab;
-
   /// No description provided for @boardTab.
   ///
   /// In en, this message translates to:
@@ -1632,6 +1626,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'{count} ep'**
   String totalEpisodes(int count);
+
+  /// No description provided for @seasonName.
+  ///
+  /// In en, this message translates to:
+  /// **'Season {number}'**
+  String seasonName(int number);
 
   /// No description provided for @episodeProgress.
   ///

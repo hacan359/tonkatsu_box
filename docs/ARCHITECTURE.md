@@ -160,11 +160,8 @@ lib/
 | `lib/features/home/providers/all_items_provider.dart` | **Провайдеры All Items**. `allItemsSortProvider` (NotifierProvider, SharedPreferences), `allItemsSortDescProvider` (NotifierProvider, SharedPreferences), `allItemsNotifierProvider` (загрузка + сортировка всех элементов), `collectionNamesProvider` (Map<int, String> из collectionsProvider), `allItemsPlatformsProvider` (FutureProvider — уникальные платформы из игровых элементов, сортировка по имени) |
 | `lib/features/collections/providers/sort_utils.dart` | **Утилита сортировки**. Top-level функция `applySortMode()` — shared логика сортировки по 5 режимам (manual, addedDate, status, name, rating). Используется в `CollectionItemsNotifier` и `AllItemsNotifier` |
 | `lib/features/collections/screens/home_screen.dart` | **Экран коллекций (Collections tab)**. Плоский список коллекций (первые N как Hero-карточки, остальные как Tile). AppBar с кнопкой "+" для создания и Import. Меню: rename, delete |
-| `lib/features/collections/screens/collection_screen.dart` | **Экран коллекции**. Заголовок со статистикой (прогресс-бар), список элементов. Кнопка "Add Items" открывает SearchScreen. Поддержка игр, фильмов, сериалов и анимации через `CollectionItem`/`collectionItemsNotifierProvider`. Навигация к `GameDetailScreen`/`MovieDetailScreen`/`TvShowDetailScreen`/`AnimeDetailScreen` по типу. Filter chips: All/Games/Movies/TV Shows/Animation. При выборе Games — второй ряд ChoiceChip с платформами (All + платформы из текущих элементов коллекции). Grid: `MediaPosterCard(variant: grid/compact)` с двойным рейтингом и `platformLabel` для игр. `_CollectionItemTile` — карточка с DualRatingBadge inline, описанием, заметками пользователя, большой полупрозрачной фоновой иконкой типа медиа |
-| `lib/features/collections/screens/game_detail_screen.dart` | **Экран деталей игры**. TabBar с 1-2 вкладками: Details (`MediaDetailView(embedded: true)` с info chips, StatusChipRow) и Board (если `_hasCanvas` — `collectionId != null`; CanvasView + боковые панели SteamGridDB/VGMaps). PopupMenuButton: Move to Collection, Remove. Использует `gameCanvasNotifierProvider` для per-item canvas |
-| `lib/features/collections/screens/movie_detail_screen.dart` | **Экран деталей фильма**. TabBar с 1-2 вкладками: Details + Board (если `_hasCanvas`). PopupMenuButton: Move to Collection, Remove. Использует `gameCanvasNotifierProvider` для per-item canvas |
-| `lib/features/collections/screens/tv_show_detail_screen.dart` | **Экран деталей сериала**. TabBar с 1-2 вкладками: Details (Episode Progress, StatusChipRow) + Board (если `_hasCanvas`). PopupMenuButton: Move to Collection, Remove. Виджеты `_SeasonsListWidget`, `_SeasonExpansionTile`, `_EpisodeTile`. Использует `episodeTrackerNotifierProvider` и `gameCanvasNotifierProvider` |
-| `lib/features/collections/screens/anime_detail_screen.dart` | **Экран деталей анимации**. Адаптивный: movie-like для `AnimationSource.movie`, tvShow-like для `AnimationSource.tvShow`. TabBar: Details + Board (если `_hasCanvas`). PopupMenuButton: Move to Collection, Remove. Accent color: `AppColors.animationAccent`. Приватные виджеты: `_AnimeSeasonsListWidget`, `_AnimeSeasonExpansionTile`, `_AnimeEpisodeTile`. Использует `episodeTrackerNotifierProvider` и `gameCanvasNotifierProvider` |
+| `lib/features/collections/screens/collection_screen.dart` | **Экран коллекции**. Заголовок со статистикой (прогресс-бар), список элементов. Кнопка "Add Items" открывает SearchScreen. Поддержка игр, фильмов, сериалов и анимации через `CollectionItem`/`collectionItemsNotifierProvider`. Навигация к `ItemDetailScreen` для всех типов. Filter chips: All/Games/Movies/TV Shows/Animation. При выборе Games — второй ряд ChoiceChip с платформами (All + платформы из текущих элементов коллекции). Grid: `MediaPosterCard(variant: grid/compact)` с двойным рейтингом и `platformLabel` для игр. `_CollectionItemTile` — карточка с DualRatingBadge inline, описанием, заметками пользователя, большой полупрозрачной фоновой иконкой типа медиа |
+| `lib/features/collections/screens/item_detail_screen.dart` | **Единый экран деталей элемента**. Заменяет 4 экрана (Game/Movie/TvShow/Anime). Определяет тип медиа из `CollectionItem.mediaType`, строит UI через `_MediaConfig`. Board toggle кнопка в AppBar (вместо TabBar): `Icons.dashboard` (active) / `Icons.dashboard_outlined` (inactive). Lock кнопка видна только на Canvas view. PopupMenuButton: Move to Collection, Remove. Боковые панели SteamGridDB/VGMaps на Canvas. `EpisodeTrackerSection` для TV Show и Animation (tvShow source). Использует `gameCanvasNotifierProvider`, `episodeTrackerNotifierProvider`, `steamGridDbPanelProvider`, `vgMapsPanelProvider` |
 
 <details>
 <summary><strong>Виджеты коллекций</strong> — развернуть таблицу</summary>
@@ -172,6 +169,7 @@ lib/
 | Файл | Назначение |
 |------|------------|
 | `lib/features/collections/widgets/activity_dates_section.dart` | **Секция дат активности**. StatelessWidget: Added (readonly), Started (editable), Completed (editable), Last Activity (readonly). DatePicker для ручного редактирования. `_DateRow` — приватный виджет строки с иконкой, меткой и датой. `OnDateChanged` typedef для callback |
+| `lib/features/collections/widgets/episode_tracker_section.dart` | **Секция Episode Tracker**. Прогресс просмотра сезонов/эпизодов. `EpisodeTrackerSection` (ConsumerWidget) с прогресс-баром и `SeasonsListWidget`. `SeasonExpansionTile` для каждого сезона с mark all/unmark all. `EpisodeTile` с чекбоксом и датой просмотра. Параметр `accentColor` для различения TV Show (`AppColors.tvShowAccent`) и Animation (`AppColors.animationAccent`). Загрузка сезонов из БД с fallback на TMDB API, кнопка Refresh |
 | `lib/features/collections/widgets/collection_tile.dart` | **Плитка коллекции**. Показывает имя, автора, тип, количество игр. Иконка удаления |
 | `lib/features/collections/widgets/create_collection_dialog.dart` | **Диалоги**. Создание, переименование, удаление коллекции |
 | `lib/features/collections/widgets/status_chip_row.dart` | **Ряд чипов выбора статуса**. Горизонтальный `Wrap` с кастомными chip-кнопками. Выбранный чип: цветной фон, жирный текст, цветная рамка. `onHold` только для сериалов. Используется на detail-экранах |
@@ -776,17 +774,11 @@ CREATE TABLE wishlist (
          |
          +--[Есть API ключ]--> NavigationShell (NavigationRail sidebar)
                                 +-- Tab 0: AllItemsScreen (Home)
-                                |   +-> GameDetailScreen(collectionId, itemId)
-                                |   +-> MovieDetailScreen(collectionId, itemId)
-                                |   +-> TvShowDetailScreen(collectionId, itemId)
-                                |   +-> AnimeDetailScreen(collectionId, itemId)
+                                |   +-> ItemDetailScreen(collectionId, itemId)
                                 |
                                 +-- Tab 1: HomeScreen (Collections)
                                 |   +-> CollectionScreen(collectionId)
-                                |   |   +-> GameDetailScreen(collectionId, itemId)
-                                |   |   +-> MovieDetailScreen(collectionId, itemId)
-                                |   |   +-> TvShowDetailScreen(collectionId, itemId)
-                                |   |   +-> AnimeDetailScreen(collectionId, itemId)
+                                |   |   +-> ItemDetailScreen(collectionId, itemId)
                                 |   |   +-> SearchScreen(collectionId)
                                 |   |       [добавление игр/фильмов/сериалов]
                                 |   |

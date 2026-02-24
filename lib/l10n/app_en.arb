@@ -363,7 +363,6 @@
     }
   },
 
-  "detailsTab": "Details",
   "boardTab": "Board",
   "imageAddedToBoard": "Image added to board",
   "mapAddedToBoard": "Map added to board",
@@ -406,6 +405,12 @@
   "@totalEpisodes": {
     "placeholders": {
       "count": {"type": "int"}
+    }
+  },
+  "seasonName": "Season {number}",
+  "@seasonName": {
+    "placeholders": {
+      "number": {"type": "int"}
     }
   },
   "episodeProgress": "Episode Progress",

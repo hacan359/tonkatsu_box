@@ -40,10 +40,7 @@ import '../widgets/create_collection_dialog.dart';
 import '../widgets/status_ribbon.dart';
 import '../widgets/steamgriddb_panel.dart';
 import '../widgets/vgmaps_panel.dart';
-import 'anime_detail_screen.dart';
-import 'game_detail_screen.dart';
-import 'movie_detail_screen.dart';
-import 'tv_show_detail_screen.dart';
+import 'item_detail_screen.dart';
 
 /// Экран детального просмотра коллекции.
 class CollectionScreen extends ConsumerStatefulWidget {
@@ -1232,60 +1229,18 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   void _showItemDetails(CollectionItem item) {
     final String colName = _displayName;
     final bool isEditable = _canEdit;
-    switch (item.mediaType) {
-      case MediaType.game:
-        Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (BuildContext context) => BreadcrumbScope(
-              label: colName,
-              child: GameDetailScreen(
-                collectionId: widget.collectionId,
-                itemId: item.id,
-                isEditable: isEditable,
-              ),
-            ),
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => BreadcrumbScope(
+          label: colName,
+          child: ItemDetailScreen(
+            collectionId: widget.collectionId,
+            itemId: item.id,
+            isEditable: isEditable,
           ),
-        );
-      case MediaType.movie:
-        Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (BuildContext context) => BreadcrumbScope(
-              label: colName,
-              child: MovieDetailScreen(
-                collectionId: widget.collectionId,
-                itemId: item.id,
-                isEditable: isEditable,
-              ),
-            ),
-          ),
-        );
-      case MediaType.tvShow:
-        Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (BuildContext context) => BreadcrumbScope(
-              label: colName,
-              child: TvShowDetailScreen(
-                collectionId: widget.collectionId,
-                itemId: item.id,
-                isEditable: isEditable,
-              ),
-            ),
-          ),
-        );
-      case MediaType.animation:
-        Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (BuildContext context) => BreadcrumbScope(
-              label: colName,
-              child: AnimeDetailScreen(
-                collectionId: widget.collectionId,
-                itemId: item.id,
-                isEditable: isEditable,
-              ),
-            ),
-          ),
-        );
-    }
+        ),
+      ),
+    );
   }
 
   Future<void> _renameCollection(BuildContext context) async {

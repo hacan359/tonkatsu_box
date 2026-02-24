@@ -6,6 +6,22 @@
 
 ## [Unreleased]
 
+### Changed
+- Unified 4 detail screens (`GameDetailScreen`, `MovieDetailScreen`, `TvShowDetailScreen`, `AnimeDetailScreen`) into single `ItemDetailScreen` — media type determined from `CollectionItem.mediaType`, UI configured via `_MediaConfig` class (`item_detail_screen.dart`)
+- Replaced TabBar (Details/Board tabs) with Board toggle IconButton in AppBar — `Icons.dashboard` (active) / `Icons.dashboard_outlined` (inactive), no more `SingleTickerProviderStateMixin` or `TabController`
+- Extracted episode tracker into shared `EpisodeTrackerSection` widget with `accentColor` parameter — reused for TV Show and Animation (tvShow source) (`episode_tracker_section.dart`)
+- Simplified navigation in `collection_screen.dart` and `all_items_screen.dart` — replaced 4-case media type switch with single `ItemDetailScreen` call
+- Unified 4 detail screen test files into single `item_detail_screen_test.dart`
+- Replaced hardcoded `'Season N'` fallback with localized `seasonName` ARB key, replaced `'min'` with `runtimeMinutes` in episode tracker (`episode_tracker_section.dart`)
+
+### Fixed
+- Fixed RenderFlex overflow in Author's Review and My Notes section headers on narrow screens — wrapped inner `Row` with `Expanded` + `Flexible` + `TextOverflow.ellipsis` (`media_detail_view.dart`)
+
+### Removed
+- `GameDetailScreen` (`game_detail_screen.dart`, 601 lines), `MovieDetailScreen` (`movie_detail_screen.dart`, 638 lines), `TvShowDetailScreen` (`tv_show_detail_screen.dart`, 1082 lines), `AnimeDetailScreen` (`anime_detail_screen.dart`, 1185 lines) — replaced by unified `ItemDetailScreen`
+- `detailsTab` ARB key — no longer needed after TabBar removal
+- 4 old detail screen test files (`game_detail_screen_test.dart`, `movie_detail_screen_test.dart`, `tv_show_detail_screen_test.dart`, `anime_detail_screen_test.dart`)
+
 ### Added
 - Full i18n localization (English / Russian) — Flutter `gen_l10n` infrastructure with 521 ARB keys, ICU MessageFormat plurals for Russian (`=0`, `=1`, `few`, `other`), output class `S` with `nullable-getter: false` (`l10n.yaml`, `lib/l10n/app_en.arb`, `lib/l10n/app_ru.arb`)
 - App Language setting — `SettingsNotifier.setAppLanguage()` with `SegmentedButton` (English / Русский) in Settings, persisted via SharedPreferences, applied to `MaterialApp.locale` in `app.dart` (`settings_provider.dart`, `settings_screen.dart`, `app.dart`)

@@ -259,7 +259,7 @@ Draw visual lines between any two board elements:
 ### Per-Item Board
 
 Each item in a collection has its own personal board:
-- Access via the **Board** tab on any detail screen
+- Access via the **Board** toggle button in the AppBar on any detail screen
 - Auto-initialized with the item's media card
 - Full board functionality with SteamGridDB and VGMaps panels
 - Completely isolated from the collection board

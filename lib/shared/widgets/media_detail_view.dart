@@ -120,7 +120,7 @@ class MediaDetailView extends StatelessWidget {
   ///
   /// Если true, виджет возвращает только контент без обёртки в Scaffold.
   /// Используется когда MediaDetailView встроен в другой экран (например,
-  /// в TabBarView на GameDetailScreen).
+  /// в ItemDetailScreen).
   final bool embedded;
 
   /// Тип изображения для локального кэширования.
@@ -420,21 +420,26 @@ class MediaDetailView extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
-            Row(
-              children: <Widget>[
-                const Icon(
-                  Icons.format_quote,
-                  size: 18,
-                  color: AppColors.movieAccent,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  l.detailAuthorReview,
-                  style: AppTypography.h3.copyWith(
-                    fontWeight: FontWeight.w600,
+            Expanded(
+              child: Row(
+                children: <Widget>[
+                  const Icon(
+                    Icons.format_quote,
+                    size: 18,
+                    color: AppColors.movieAccent,
                   ),
-                ),
-              ],
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      l.detailAuthorReview,
+                      style: AppTypography.h3.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
             ),
             if (isEditable)
               TextButton.icon(
@@ -498,21 +503,26 @@ class MediaDetailView extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
-            Row(
-              children: <Widget>[
-                Icon(
-                  Icons.note_alt_outlined,
-                  size: 18,
-                  color: accentColor,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  l.detailMyNotes,
-                  style: AppTypography.h3.copyWith(
-                    fontWeight: FontWeight.w600,
+            Expanded(
+              child: Row(
+                children: <Widget>[
+                  Icon(
+                    Icons.note_alt_outlined,
+                    size: 18,
+                    color: accentColor,
                   ),
-                ),
-              ],
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      l.detailMyNotes,
+                      style: AppTypography.h3.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
             ),
             TextButton.icon(
               onPressed: () => _editComment(

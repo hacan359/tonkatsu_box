@@ -812,9 +812,6 @@ class SEn extends S {
   }
 
   @override
-  String get detailsTab => 'Details';
-
-  @override
   String get boardTab => 'Board';
 
   @override
@@ -873,6 +870,11 @@ class SEn extends S {
   @override
   String totalEpisodes(int count) {
     return '$count ep';
+  }
+
+  @override
+  String seasonName(int number) {
+    return 'Season $number';
   }
 
   @override

@@ -37,7 +37,7 @@ lib/
 ├── features/
 │   ├── collections/       # Главная фича: коллекции, canvas (Board), детали
 │   │   ├── providers/     # canvas, collections, episode_tracker, steamgriddb/vgmaps panel
-│   │   ├── screens/       # home, collection, game/movie/tv_show/anime detail
+│   │   ├── screens/       # home, collection, item_detail (unified)
 │   │   └── widgets/       # canvas элементы, панели, диалоги, UI компоненты
 │   ├── search/            # Универсальный поиск (4 таба: Games/Movies/TV/Animation)
 │   │   ├── providers/     # game_search, media_search, genre

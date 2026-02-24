@@ -822,9 +822,6 @@ class SRu extends S {
   }
 
   @override
-  String get detailsTab => 'Детали';
-
-  @override
   String get boardTab => 'Доска';
 
   @override
@@ -884,6 +881,11 @@ class SRu extends S {
   @override
   String totalEpisodes(int count) {
     return '$count эп';
+  }
+
+  @override
+  String seasonName(int number) {
+    return 'Сезон $number';
   }
 
   @override
