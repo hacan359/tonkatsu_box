@@ -174,7 +174,7 @@ class _TraktImportScreenState extends ConsumerState<TraktImportScreen> {
           info.ratedShowCount,
         ),
         _buildPreviewRow(
-          Icons.bookmark,
+          Icons.collections_bookmark,
           l10n.traktWatchlist,
           info.watchlistCount,
         ),

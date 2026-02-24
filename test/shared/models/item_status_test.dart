@@ -1,5 +1,6 @@
 // Тесты для модели ItemStatus
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
@@ -8,8 +9,8 @@ import 'package:xerabora/shared/theme/app_colors.dart';
 void main() {
   group('ItemStatus', () {
     group('значения enum', () {
-      test('должен содержать 6 значений', () {
-        expect(ItemStatus.values.length, 6);
+      test('должен содержать 5 значений', () {
+        expect(ItemStatus.values.length, 5);
       });
 
       test('должен содержать все статусы', () {
@@ -18,7 +19,6 @@ void main() {
         expect(ItemStatus.values, contains(ItemStatus.completed));
         expect(ItemStatus.values, contains(ItemStatus.dropped));
         expect(ItemStatus.values, contains(ItemStatus.planned));
-        expect(ItemStatus.values, contains(ItemStatus.onHold));
       });
     });
 
@@ -43,9 +43,6 @@ void main() {
         expect(ItemStatus.planned.value, 'planned');
       });
 
-      test('onHold должен иметь значение "on_hold"', () {
-        expect(ItemStatus.onHold.value, 'on_hold');
-      });
     });
 
     group('fromString', () {
@@ -79,10 +76,10 @@ void main() {
         expect(result, ItemStatus.planned);
       });
 
-      test('должен вернуть onHold для "on_hold"', () {
+      test('должен вернуть notStarted для "on_hold" (удалённый статус)', () {
         final ItemStatus result = ItemStatus.fromString('on_hold');
 
-        expect(result, ItemStatus.onHold);
+        expect(result, ItemStatus.notStarted);
       });
 
       test('должен вернуть notStarted для неизвестного значения', () {
@@ -148,12 +145,6 @@ void main() {
         );
       });
 
-      test('onHold должен отображаться как "On Hold"', () {
-        expect(
-          ItemStatus.onHold.displayLabel(MediaType.tvShow),
-          'On Hold',
-        );
-      });
     });
 
     group('color', () {
@@ -177,10 +168,6 @@ void main() {
         expect(ItemStatus.planned.color, AppColors.statusPlanned);
       });
 
-      test('onHold должен возвращать statusOnHold', () {
-        expect(ItemStatus.onHold.color, AppColors.statusOnHold);
-      });
-
       test('каждый статус должен возвращать ненулевой цвет', () {
         for (final ItemStatus status in ItemStatus.values) {
           expect(status.color, isNotNull, reason: '${status.name} color');
@@ -188,41 +175,33 @@ void main() {
       });
     });
 
-    group('icon', () {
-      test('каждый статус должен иметь непустую иконку', () {
+    group('materialIcon', () {
+      test('каждый статус должен иметь уникальную иконку', () {
+        final Set<IconData> icons = <IconData>{};
         for (final ItemStatus status in ItemStatus.values) {
-          expect(status.icon, isNotEmpty, reason: '${status.name} icon');
+          expect(icons.add(status.materialIcon), isTrue,
+              reason: '${status.name} materialIcon should be unique');
         }
       });
 
-      test('notStarted должен иметь иконку', () {
-        expect(ItemStatus.notStarted.icon, isA<String>());
-        expect(ItemStatus.notStarted.icon.isNotEmpty, isTrue);
+      test('notStarted → radio_button_unchecked', () {
+        expect(ItemStatus.notStarted.materialIcon, Icons.radio_button_unchecked);
       });
 
-      test('inProgress должен иметь иконку', () {
-        expect(ItemStatus.inProgress.icon, isA<String>());
-        expect(ItemStatus.inProgress.icon.isNotEmpty, isTrue);
+      test('inProgress → play_arrow_rounded', () {
+        expect(ItemStatus.inProgress.materialIcon, Icons.play_arrow_rounded);
       });
 
-      test('completed должен иметь иконку', () {
-        expect(ItemStatus.completed.icon, isA<String>());
-        expect(ItemStatus.completed.icon.isNotEmpty, isTrue);
+      test('completed → check_circle', () {
+        expect(ItemStatus.completed.materialIcon, Icons.check_circle);
       });
 
-      test('dropped должен иметь иконку', () {
-        expect(ItemStatus.dropped.icon, isA<String>());
-        expect(ItemStatus.dropped.icon.isNotEmpty, isTrue);
+      test('dropped → pause_circle_filled', () {
+        expect(ItemStatus.dropped.materialIcon, Icons.pause_circle_filled);
       });
 
-      test('planned должен иметь иконку', () {
-        expect(ItemStatus.planned.icon, isA<String>());
-        expect(ItemStatus.planned.icon.isNotEmpty, isTrue);
-      });
-
-      test('onHold должен иметь иконку', () {
-        expect(ItemStatus.onHold.icon, isA<String>());
-        expect(ItemStatus.onHold.icon.isNotEmpty, isTrue);
+      test('planned → bookmark', () {
+        expect(ItemStatus.planned.materialIcon, Icons.bookmark);
       });
     });
 
@@ -239,16 +218,12 @@ void main() {
         expect(ItemStatus.notStarted.statusSortPriority, 2);
       });
 
-      test('onHold должен иметь приоритет 3', () {
-        expect(ItemStatus.onHold.statusSortPriority, 3);
+      test('completed должен иметь приоритет 3', () {
+        expect(ItemStatus.completed.statusSortPriority, 3);
       });
 
-      test('completed должен иметь приоритет 4', () {
-        expect(ItemStatus.completed.statusSortPriority, 4);
-      });
-
-      test('dropped должен иметь приоритет 5', () {
-        expect(ItemStatus.dropped.statusSortPriority, 5);
+      test('dropped должен иметь приоритет 4', () {
+        expect(ItemStatus.dropped.statusSortPriority, 4);
       });
 
       test('inProgress должен иметь наименьший приоритет (первый в списке)', () {
@@ -278,7 +253,6 @@ void main() {
           ItemStatus.inProgress,
           ItemStatus.planned,
           ItemStatus.notStarted,
-          ItemStatus.onHold,
           ItemStatus.completed,
           ItemStatus.dropped,
         ]);
@@ -304,40 +278,5 @@ void main() {
       });
     });
 
-    group('displayText', () {
-      test('должен содержать иконку и метку для game inProgress', () {
-        final String result =
-            ItemStatus.inProgress.displayText(MediaType.game);
-
-        expect(result, contains(ItemStatus.inProgress.icon));
-        expect(result, contains('Playing'));
-      });
-
-      test('должен содержать иконку и метку для movie inProgress', () {
-        final String result =
-            ItemStatus.inProgress.displayText(MediaType.movie);
-
-        expect(result, contains(ItemStatus.inProgress.icon));
-        expect(result, contains('Watching'));
-      });
-
-      test('должен содержать иконку и метку для completed', () {
-        final String result =
-            ItemStatus.completed.displayText(MediaType.game);
-
-        expect(result, contains(ItemStatus.completed.icon));
-        expect(result, contains('Completed'));
-      });
-
-      test('должен возвращать строку формата "icon label"', () {
-        final String result =
-            ItemStatus.notStarted.displayText(MediaType.game);
-        final String expectedIcon = ItemStatus.notStarted.icon;
-        final String expectedLabel =
-            ItemStatus.notStarted.displayLabel(MediaType.game);
-
-        expect(result, '$expectedIcon $expectedLabel');
-      });
-    });
   });
 }

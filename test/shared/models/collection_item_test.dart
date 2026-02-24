@@ -1850,7 +1850,7 @@ void main() {
           externalId: 1399,
           currentSeason: 5,
           currentEpisode: 16,
-          status: ItemStatus.onHold,
+          status: ItemStatus.inProgress,
           addedAt: testAddedAt,
         );
 

@@ -23,10 +23,7 @@ enum ItemStatus {
   dropped('dropped'),
 
   /// Запланирован.
-  planned('planned'),
-
-  /// На паузе (для сериалов).
-  onHold('on_hold');
+  planned('planned');
 
   const ItemStatus(this.value);
 
@@ -56,8 +53,6 @@ enum ItemStatus {
         return 'Dropped';
       case ItemStatus.planned:
         return 'Planned';
-      case ItemStatus.onHold:
-        return 'On Hold';
     }
   }
 
@@ -74,31 +69,24 @@ enum ItemStatus {
         return AppColors.statusDropped;
       case ItemStatus.planned:
         return AppColors.statusPlanned;
-      case ItemStatus.onHold:
-        return AppColors.statusOnHold;
     }
   }
 
-  /// Иконка статуса (эмодзи).
-  String get icon {
+  /// Material-иконка статуса.
+  IconData get materialIcon {
     switch (this) {
       case ItemStatus.notStarted:
-        return '\u2B1C'; // ⬜
+        return Icons.radio_button_unchecked;
       case ItemStatus.inProgress:
-        return '\uD83C\uDFAE'; // 🎮
+        return Icons.play_arrow_rounded;
       case ItemStatus.completed:
-        return '\u2705'; // ✅
+        return Icons.check_circle;
       case ItemStatus.dropped:
-        return '\u23F8\uFE0F'; // ⏸️
+        return Icons.pause_circle_filled;
       case ItemStatus.planned:
-        return '\uD83D\uDCCB'; // 📋
-      case ItemStatus.onHold:
-        return '\uD83D\uDD50'; // 🕐
+        return Icons.bookmark;
     }
   }
-
-  /// Отображаемый текст с иконкой.
-  String displayText(MediaType mediaType) => '$icon ${displayLabel(mediaType)}';
 
   /// Локализованная метка с учётом типа медиа.
   String localizedLabel(S l, MediaType mediaType) {
@@ -113,14 +101,8 @@ enum ItemStatus {
         return l.statusDropped;
       case ItemStatus.planned:
         return l.statusPlanned;
-      case ItemStatus.onHold:
-        return l.statusOnHold;
     }
   }
-
-  /// Локализованный текст с иконкой.
-  String localizedText(S l, MediaType mediaType) =>
-      '$icon ${localizedLabel(l, mediaType)}';
 
   /// Приоритет для сортировки по статусу (меньше = выше в списке).
   ///
@@ -133,12 +115,10 @@ enum ItemStatus {
         return 1;
       case ItemStatus.notStarted:
         return 2;
-      case ItemStatus.onHold:
-        return 3;
       case ItemStatus.completed:
-        return 4;
+        return 3;
       case ItemStatus.dropped:
-        return 5;
+        return 4;
     }
   }
 }

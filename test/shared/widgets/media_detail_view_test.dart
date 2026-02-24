@@ -23,6 +23,13 @@ void main() {
     bool isEditable = true,
     ValueChanged<String?>? onAuthorCommentSave,
     ValueChanged<String?>? onUserCommentSave,
+    int? userRating,
+    ValueChanged<int?>? onUserRatingChanged,
+    DateTime? addedAt,
+    DateTime? startedAt,
+    DateTime? completedAt,
+    DateTime? lastActivityAt,
+    OnActivityDateChanged? onActivityDateChanged,
   }) {
     return MaterialApp(
             localizationsDelegates: S.localizationsDelegates,
@@ -45,6 +52,13 @@ void main() {
         isEditable: isEditable,
         onAuthorCommentSave: onAuthorCommentSave ?? (_) {},
         onUserCommentSave: onUserCommentSave ?? (_) {},
+        userRating: userRating,
+        onUserRatingChanged: onUserRatingChanged,
+        addedAt: addedAt,
+        startedAt: startedAt,
+        completedAt: completedAt,
+        lastActivityAt: lastActivityAt,
+        onActivityDateChanged: onActivityDateChanged,
       ),
     );
   }
@@ -176,23 +190,23 @@ void main() {
     });
 
     group('Status Section', () {
-      testWidgets('должен отображать секцию статуса когда statusWidget != null',
+      testWidgets('должен отображать statusWidget когда не null',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(
           statusWidget: const Text('Playing'),
         ));
         await tester.pumpAndSettle();
 
-        expect(find.text('Status'), findsOneWidget);
         expect(find.text('Playing'), findsOneWidget);
       });
 
-      testWidgets('не должен отображать секцию статуса когда statusWidget == null',
+      testWidgets('не должен отображать statusWidget когда null',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
-        expect(find.text('Status'), findsNothing);
+        // Нет statusWidget — нет секции статуса
+        expect(find.text('Playing'), findsNothing);
       });
     });
 
@@ -280,8 +294,8 @@ void main() {
         await tester.pumpWidget(buildTestWidget(isEditable: true));
         await tester.pumpAndSettle();
 
-        // 2 кнопки Edit: author comment + user notes
-        expect(find.text('Edit'), findsNWidgets(2));
+        // 2 кнопки Edit (IconButton): author comment + user notes
+        expect(find.byIcon(Icons.edit), findsNWidgets(2));
       });
 
       testWidgets('не должен показывать кнопку Edit автора когда !isEditable',
@@ -289,8 +303,8 @@ void main() {
         await tester.pumpWidget(buildTestWidget(isEditable: false));
         await tester.pumpAndSettle();
 
-        // Только 1 кнопка Edit: user notes
-        expect(find.text('Edit'), findsOneWidget);
+        // Только 1 кнопка Edit (IconButton): user notes
+        expect(find.byIcon(Icons.edit), findsOneWidget);
       });
     });
 
@@ -330,21 +344,21 @@ void main() {
         await tester.pumpWidget(buildTestWidget(isEditable: false));
         await tester.pumpAndSettle();
 
-        // Кнопка Edit для заметок всегда видна
-        expect(find.text('Edit'), findsOneWidget);
+        // Кнопка Edit (IconButton) для заметок всегда видна
+        expect(find.byIcon(Icons.edit), findsOneWidget);
       });
     });
 
     group('Edit Dialog', () {
-      // Порядок секций: My Notes (first Edit) → Author's Review (last Edit)
+      // Порядок секций: My Notes (first edit icon) → Author's Review (last)
 
       testWidgets('должен открывать диалог при нажатии Edit заметок',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(isEditable: true));
         await tester.pumpAndSettle();
 
-        // My Notes is first section → first Edit button
-        await tester.tap(find.text('Edit').first);
+        // My Notes is first section → first edit icon
+        await tester.tap(find.byIcon(Icons.edit).first);
         await tester.pumpAndSettle();
 
         expect(find.text('Edit My Notes'), findsOneWidget);
@@ -357,8 +371,8 @@ void main() {
         await tester.pumpWidget(buildTestWidget(isEditable: true));
         await tester.pumpAndSettle();
 
-        // Author's Review is second section → last Edit button
-        await tester.tap(find.text('Edit').last);
+        // Author's Review is second section → last edit icon
+        await tester.tap(find.byIcon(Icons.edit).last);
         await tester.pumpAndSettle();
 
         expect(find.text("Edit Author's Review"), findsOneWidget);
@@ -369,7 +383,7 @@ void main() {
         await tester.pumpWidget(buildTestWidget(isEditable: true));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Edit').last);
+        await tester.tap(find.byIcon(Icons.edit).last);
         await tester.pumpAndSettle();
 
         await tester.tap(find.text('Cancel'));
@@ -387,8 +401,8 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Author's Review → last Edit button
-        await tester.tap(find.text('Edit').last);
+        // Author's Review → last edit icon
+        await tester.tap(find.byIcon(Icons.edit).last);
         await tester.pumpAndSettle();
 
         await tester.tap(find.text('Cancel'));
@@ -406,8 +420,8 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Author's Review → last Edit button
-        await tester.tap(find.text('Edit').last);
+        // Author's Review → last edit icon
+        await tester.tap(find.byIcon(Icons.edit).last);
         await tester.pumpAndSettle();
 
         await tester.enterText(find.byType(TextField), 'New comment');
@@ -426,8 +440,8 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Author's Review → last Edit button
-        await tester.tap(find.text('Edit').last);
+        // Author's Review → last edit icon
+        await tester.tap(find.byIcon(Icons.edit).last);
         await tester.pumpAndSettle();
 
         // Поле уже пустое, нажимаем Save
@@ -446,8 +460,8 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Author's Review → last Edit button
-        await tester.tap(find.text('Edit').last);
+        // Author's Review → last edit icon
+        await tester.tap(find.byIcon(Icons.edit).last);
         await tester.pumpAndSettle();
 
         final TextField textField =
@@ -464,8 +478,8 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // My Notes → first Edit button
-        await tester.tap(find.text('Edit').first);
+        // My Notes → first edit icon
+        await tester.tap(find.byIcon(Icons.edit).first);
         await tester.pumpAndSettle();
 
         await tester.enterText(find.byType(TextField), 'My note');
@@ -473,6 +487,95 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(savedValue, 'My note');
+      });
+    });
+
+    group('Activity Dates Row', () {
+      testWidgets('должен отображать даты когда addedAt задан',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(
+          addedAt: DateTime(2025, 1, 15),
+          startedAt: DateTime(2025, 2, 1),
+          completedAt: DateTime(2025, 3, 10),
+          lastActivityAt: DateTime(2025, 3, 12),
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Added: '), findsOneWidget);
+        expect(find.text('Jan 15'), findsOneWidget);
+        expect(find.text('Started: '), findsOneWidget);
+        expect(find.text('Feb 1'), findsOneWidget);
+        expect(find.text('Completed: '), findsOneWidget);
+        expect(find.text('Mar 10'), findsOneWidget);
+        expect(find.text('Last Activity: '), findsOneWidget);
+        expect(find.text('Mar 12'), findsOneWidget);
+      });
+
+      testWidgets('не должен отображать даты когда addedAt == null',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget());
+        await tester.pumpAndSettle();
+
+        expect(find.text('Added: '), findsNothing);
+        expect(find.text('Started: '), findsNothing);
+      });
+
+      testWidgets('должен показывать тире для null Started/Completed',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(
+          addedAt: DateTime(2025, 1, 15),
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Started: '), findsOneWidget);
+        expect(find.text('Completed: '), findsOneWidget);
+        // \u2014 — em dash
+        expect(find.text('\u2014'), findsNWidgets(2));
+      });
+
+      testWidgets('не должен показывать Last Activity когда null',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(
+          addedAt: DateTime(2025, 1, 15),
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Last Activity: '), findsNothing);
+      });
+
+      testWidgets('должен показывать иконки редактирования для editable дат',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(
+          addedAt: DateTime(2025, 1, 15),
+          onActivityDateChanged: (String type, DateTime date) async {},
+        ));
+        await tester.pumpAndSettle();
+
+        // 2 edit icons: Started + Completed
+        expect(find.byIcon(Icons.edit_outlined), findsNWidgets(2));
+      });
+
+      testWidgets('не должен показывать иконки редактирования без колбэка',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(
+          addedAt: DateTime(2025, 1, 15),
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.byIcon(Icons.edit_outlined), findsNothing);
+      });
+
+      testWidgets('должен оборачивать editable даты в InkWell',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(
+          addedAt: DateTime(2025, 1, 15),
+          onActivityDateChanged: (String type, DateTime date) async {},
+        ));
+        await tester.pumpAndSettle();
+
+        // 2 InkWell: Started + Completed
+        final Finder inkWells = find.byType(InkWell);
+        expect(inkWells, findsAtLeast(2));
       });
     });
 
@@ -493,6 +596,8 @@ void main() {
           userComment: 'User text',
           hasUserComment: true,
           isEditable: true,
+          addedAt: DateTime(2025, 6, 1),
+          startedAt: DateTime(2025, 6, 5),
         ));
         await tester.pumpAndSettle();
 
@@ -500,12 +605,16 @@ void main() {
         expect(find.text('Platform'), findsOneWidget);
         expect(find.text('9.0'), findsOneWidget);
         expect(find.text('Test description'), findsOneWidget);
-        expect(find.text('Status'), findsOneWidget);
         expect(find.text('Status Widget'), findsOneWidget);
         expect(find.text("Author's Review"), findsOneWidget);
         expect(find.text('Author text'), findsOneWidget);
         expect(find.text('My Notes'), findsOneWidget);
         expect(find.text('User text'), findsOneWidget);
+        // Activity dates row
+        expect(find.text('Added: '), findsOneWidget);
+        expect(find.text('Jun 1'), findsOneWidget);
+        expect(find.text('Started: '), findsOneWidget);
+        expect(find.text('Jun 5'), findsOneWidget);
         // Extra sections inside collapsed ExpansionTile
         expect(find.text('Activity & Progress'), findsOneWidget);
         await tester.tap(find.text('Activity & Progress'));

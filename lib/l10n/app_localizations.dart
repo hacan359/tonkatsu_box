@@ -169,12 +169,6 @@ abstract class S {
   /// **'Planned'**
   String get statusPlanned;
 
-  /// No description provided for @statusOnHold.
-  ///
-  /// In en, this message translates to:
-  /// **'On Hold'**
-  String get statusOnHold;
-
   /// No description provided for @mediaTypeGame.
   ///
   /// In en, this message translates to:
@@ -1537,12 +1531,6 @@ abstract class S {
   /// **'{name} removed'**
   String collectionItemRemoved(String name);
 
-  /// No description provided for @detailsTab.
-  ///
-  /// In en, this message translates to:
-  /// **'Details'**
-  String get detailsTab;
-
   /// No description provided for @boardTab.
   ///
   /// In en, this message translates to:
@@ -1632,6 +1620,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'{count} ep'**
   String totalEpisodes(int count);
+
+  /// No description provided for @seasonName.
+  ///
+  /// In en, this message translates to:
+  /// **'Season {number}'**
+  String seasonName(int number);
 
   /// No description provided for @episodeProgress.
   ///
@@ -2130,6 +2124,42 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Go to Settings'**
   String get searchGoToSettings;
+
+  /// No description provided for @searchMinCharsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Type at least 2 characters and press Enter'**
+  String get searchMinCharsHint;
+
+  /// No description provided for @searchNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No results found'**
+  String get searchNoResults;
+
+  /// No description provided for @searchNothingFoundFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing found for \"{query}\"'**
+  String searchNothingFoundFor(String query);
+
+  /// No description provided for @searchNoInternet.
+  ///
+  /// In en, this message translates to:
+  /// **'No internet connection'**
+  String get searchNoInternet;
+
+  /// No description provided for @searchFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Search failed'**
+  String get searchFailed;
+
+  /// No description provided for @searchCheckConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your internet connection and try again.'**
+  String get searchCheckConnection;
 
   /// No description provided for @searchDescription.
   ///

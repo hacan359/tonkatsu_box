@@ -117,7 +117,7 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      expect(find.byIcon(Icons.collections_bookmark_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.bookmark_border), findsOneWidget);
     });
 
     testWidgets('должен показывать коллекцию как HeroCollectionCard',

@@ -77,8 +77,8 @@ void main() {
         await tester.pumpWidget(createWidget());
 
         expect(find.byIcon(Icons.home), findsOneWidget);
-        expect(find.byIcon(Icons.collections_bookmark), findsOneWidget);
         expect(find.byIcon(Icons.bookmark), findsOneWidget);
+        expect(find.byIcon(Icons.collections_bookmark), findsOneWidget);
         expect(find.byIcon(Icons.search), findsOneWidget);
         expect(find.byIcon(Icons.settings), findsOneWidget);
       });

@@ -76,9 +76,6 @@ abstract final class AppColors {
   /// Цвет статуса "Completed".
   static const Color statusCompleted = success;
 
-  /// Цвет статуса "On Hold".
-  static const Color statusOnHold = warning;
-
   /// Цвет статуса "Dropped".
   static const Color statusDropped = error;
 

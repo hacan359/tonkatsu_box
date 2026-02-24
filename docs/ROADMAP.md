@@ -49,7 +49,7 @@
 - [x] Activity Dates — started_at, completed_at, last_activity_at for all collection items. Auto-set on status change. DatePicker for manual editing. Watched dates in episode tracker
 - [x] Canvas Lock — view-only mode toggle (lock icon in AppBar) for own/fork collections. Closes side panels when locked. Available on collection and per-item canvas
 - [x] View Mode Persistence — grid/list toggle saved per-collection in SharedPreferences
-- [x] Animation Tab — 4th search tab combining animated movies and TV shows from TMDB (genre Animation, ID=16). MediaType.animation enum, AnimationSource discriminator (movie=0, tvShow=1), adaptive AnimeDetailScreen, purple accent color, filter chip in collections, canvas support
+- [x] Animation Tab — 4th search tab combining animated movies and TV shows from TMDB (genre Animation, ID=16). MediaType.animation enum, AnimationSource discriminator (movie=0, tvShow=1), adaptive animation config in unified `ItemDetailScreen`, purple accent color, filter chip in collections, canvas support
 - [x] Legacy Removal — removed CollectionGame/GameStatus, collectionGamesNotifierProvider, v1 .rcoll format, 'playing' status mapping. DB migration v14. Unified on CollectionItem/ItemStatus only
 - [x] User Rating — userRating field (1-10) on CollectionItem, DB migration v15, StarRatingBar widget (10 clickable stars), My Rating section on detail screens, sort by rating. Author's Comment renamed to Author's Review with description subtitle
 - [x] Unified MediaPosterCard — single vertical poster card with 3 variants (grid/compact/canvas). DualRatingBadge (`★ 8 / 7.5`), enhanced list tiles (description, inline rating, user notes). Replaced 7 card widgets, deleted ~3600 lines of dead code
@@ -78,13 +78,13 @@
 - [x] Settings — adaptive Export/Import buttons
 - [x] MediaCard — poster 64×96
 - [x] Image caching — eager download on add, magic bytes validation, Windows file lock fix
-- [x] StatusChipRow + StatusRibbon — modern chip-based status selection on detail screens, diagonal ribbon on list cards
+- [x] StatusChipRow + StatusRibbon — piano-style segmented status bar (icon-only, flat color, full-width), Material icon ribbon on list cards, Material icon badge on poster cards
 
 ### 📋 UI Restoration (remaining)
 
-- [ ] Canvas mode restoration — Grid/Canvas toggle, CanvasView + SteamGridDB/VGMaps panels
-- [ ] Episode Tracker restoration — full episode tracker in TV Show detail screen
-- [ ] Activity Dates restoration — editable ActivityDatesSection in detail screens
+- [x] Canvas mode restoration — Board toggle IconButton in AppBar, CanvasView + SteamGridDB/VGMaps panels in unified `ItemDetailScreen`
+- [x] Episode Tracker restoration — shared `EpisodeTrackerSection` widget with `accentColor`, used for TV Show and Animation (tvShow source) in `ItemDetailScreen`
+- [x] Activity Dates restoration — inline compact horizontal `Wrap` under My Rating with editable Started/Completed date chips
 - [ ] Search filters restoration — Platform Filter, Media Filter, Sort Selector
 
 ---

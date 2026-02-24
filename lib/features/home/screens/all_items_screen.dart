@@ -20,10 +20,7 @@ import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
 import '../../../shared/widgets/breadcrumb_scope.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../collections/providers/collections_provider.dart';
-import '../../collections/screens/anime_detail_screen.dart';
-import '../../collections/screens/game_detail_screen.dart';
-import '../../collections/screens/movie_detail_screen.dart';
-import '../../collections/screens/tv_show_detail_screen.dart';
+import '../../collections/screens/item_detail_screen.dart';
 import '../providers/all_items_provider.dart';
 
 /// Экран всех элементов из всех коллекций.
@@ -535,60 +532,18 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
       colName = collectionNames[item.collectionId!] ?? '';
     }
 
-    switch (item.mediaType) {
-      case MediaType.game:
-        Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (BuildContext context) => BreadcrumbScope(
-              label: colName,
-              child: GameDetailScreen(
-                collectionId: item.collectionId,
-                itemId: item.id,
-                isEditable: isEditable,
-              ),
-            ),
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => BreadcrumbScope(
+          label: colName,
+          child: ItemDetailScreen(
+            collectionId: item.collectionId,
+            itemId: item.id,
+            isEditable: isEditable,
           ),
-        );
-      case MediaType.movie:
-        Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (BuildContext context) => BreadcrumbScope(
-              label: colName,
-              child: MovieDetailScreen(
-                collectionId: item.collectionId,
-                itemId: item.id,
-                isEditable: isEditable,
-              ),
-            ),
-          ),
-        );
-      case MediaType.tvShow:
-        Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (BuildContext context) => BreadcrumbScope(
-              label: colName,
-              child: TvShowDetailScreen(
-                collectionId: item.collectionId,
-                itemId: item.id,
-                isEditable: isEditable,
-              ),
-            ),
-          ),
-        );
-      case MediaType.animation:
-        Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (BuildContext context) => BreadcrumbScope(
-              label: colName,
-              child: AnimeDetailScreen(
-                collectionId: item.collectionId,
-                itemId: item.id,
-                isEditable: isEditable,
-              ),
-            ),
-          ),
-        );
-    }
+        ),
+      ),
+    );
   }
 
   // ==================== Helpers ====================

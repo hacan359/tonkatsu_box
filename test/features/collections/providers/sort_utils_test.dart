@@ -212,7 +212,6 @@ void main() {
           _makeItem(id: 3, name: 'Planned', status: ItemStatus.planned),
           _makeItem(id: 4, name: 'Not Started', status: ItemStatus.notStarted),
           _makeItem(id: 5, name: 'Dropped', status: ItemStatus.dropped),
-          _makeItem(id: 6, name: 'On Hold', status: ItemStatus.onHold),
         ];
 
         final List<CollectionItem> result = applySortMode(
@@ -221,11 +220,11 @@ void main() {
         );
 
         // Ожидаемый порядок по statusSortPriority:
-        // inProgress(0), planned(1), notStarted(2), onHold(3),
-        // completed(4), dropped(5)
+        // inProgress(0), planned(1), notStarted(2),
+        // completed(3), dropped(4)
         expect(
           result.map((CollectionItem i) => i.id).toList(),
-          <int>[2, 3, 4, 6, 1, 5],
+          <int>[2, 3, 4, 1, 5],
         );
       });
 

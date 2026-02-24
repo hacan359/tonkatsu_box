@@ -16,7 +16,7 @@ The app uses a forced dark theme (ThemeMode.dark) with a cinematic design system
 <details>
 <summary><b>UI Components</b></summary>
 
-- **MediaPosterCard** — unified vertical 2:3 poster card with 3 variants: grid (hover animation, dual rating badge, collection checkmark, status emoji, platform label for games), compact (smaller sizes for landscape), canvas (colored border by media type, no hover)
+- **MediaPosterCard** — unified vertical 2:3 poster card with 3 variants: grid (hover animation, dual rating badge, collection checkmark, status Material icon badge, platform label for games), compact (smaller sizes for landscape), canvas (colored border by media type, no hover)
 - **DualRatingBadge** — dual rating display `★ 8 / 7.5` (user rating + API rating) on poster cards and list items. Modes: badge (dark overlay on poster), compact (smaller), inline (no background, for list tiles)
 - **HeroCollectionCard** — large gradient collection card with progress bar and stats
 - **ShimmerLoading** — animated shimmer placeholders (ShimmerBox, ShimmerPosterCard, ShimmerListTile)
@@ -65,7 +65,7 @@ Create unlimited collections organized however you want:
 
 Sort items within a collection:
 - **Date Added** (default) — newest items first
-- **Status** — active items first: In Progress → Planned → Not Started → On Hold → Completed → Dropped
+- **Status** — active items first: In Progress → Planned → Not Started → Completed → Dropped
 - **Name** — alphabetical A to Z
 - **Rating** — highest user rating first, unrated at the end
 - **Manual** — custom drag-and-drop order with drag handle icon
@@ -95,16 +95,15 @@ Search across multiple media types via tabbed interface:
 
 Track status for each item in your collection:
 
-| Status | Emoji | Description |
-|--------|-------|-------------|
-| Not Started | ⬜ | Default status |
-| In Progress | 🎮 / 📺 | Currently playing/watching |
-| Completed | ✅ | Finished |
-| On Hold | ⏸️ | Paused (TV shows only) |
-| Dropped | ❌ | Abandoned |
-| Planned | 📋 | Want to play/watch |
+| Status | Icon | Description |
+|--------|------|-------------|
+| Not Started | `radio_button_unchecked` | Default status |
+| In Progress | `play_arrow_rounded` | Currently playing/watching |
+| Completed | `check_circle` | Finished |
+| Dropped | `pause_circle_filled` | Abandoned |
+| Planned | `bookmark` | Want to play/watch |
 
-Status display varies by context: horizontal chip row on detail screens, diagonal ribbon on list cards, emoji badge on grid cards.
+Status display varies by context: "piano-style" segmented bar on detail screens (full-width, icon-only colored segments with tooltips), diagonal icon ribbon on list cards, icon badge on grid poster cards.
 
 ### Episode Tracker (TV Shows & Animated Series)
 
@@ -117,10 +116,12 @@ Track viewing progress at the episode level:
 
 ### Activity Dates
 
+Displayed as a compact horizontal `Wrap` row directly under My Rating (always visible, not collapsed):
+
 - **Added** — auto-set when item is added (read-only)
-- **Started** — auto-set on status change to In Progress; editable via DatePicker
-- **Completed** — auto-set on status change to Completed; editable via DatePicker
-- **Last Activity** — auto-updated on any status change (read-only)
+- **Started** — auto-set on status change to In Progress; editable via DatePicker (tap the date chip)
+- **Completed** — auto-set on status change to Completed; editable via DatePicker (tap the date chip)
+- **Last Activity** — auto-updated on any status change (read-only, hidden when null)
 
 ### User Rating
 
@@ -135,7 +136,7 @@ Rate any item 1–10 with clickable stars. Tap again to clear. Collections can b
 
 Tap any item to see full details. Screens have one or two tabs:
 
-**Details tab** — poster with source badge, info chips, description, status chips, star rating, notes/review, activity dates
+**Details tab** — poster with source badge, info chips, description, status bar (piano-style segments), star rating, inline activity dates, notes/review
 
 **Board tab** — personal board for the item (hidden for uncategorized items)
 
@@ -259,7 +260,7 @@ Draw visual lines between any two board elements:
 ### Per-Item Board
 
 Each item in a collection has its own personal board:
-- Access via the **Board** tab on any detail screen
+- Access via the **Board** toggle button in the AppBar on any detail screen
 - Auto-initialized with the item's media card
 - Full board functionality with SteamGridDB and VGMaps panels
 - Completely isolated from the collection board

@@ -45,9 +45,6 @@ class SRu extends S {
   String get statusPlanned => 'Запланировано';
 
   @override
-  String get statusOnHold => 'Отложено';
-
-  @override
   String get mediaTypeGame => 'Игра';
 
   @override
@@ -822,9 +819,6 @@ class SRu extends S {
   }
 
   @override
-  String get detailsTab => 'Детали';
-
-  @override
   String get boardTab => 'Доска';
 
   @override
@@ -884,6 +878,11 @@ class SRu extends S {
   @override
   String totalEpisodes(int count) {
     return '$count эп';
+  }
+
+  @override
+  String seasonName(int number) {
+    return 'Сезон $number';
   }
 
   @override
@@ -1154,6 +1153,27 @@ class SRu extends S {
 
   @override
   String get searchGoToSettings => 'Перейти в настройки';
+
+  @override
+  String get searchMinCharsHint => 'Введите минимум 2 символа и нажмите Enter';
+
+  @override
+  String get searchNoResults => 'Ничего не найдено';
+
+  @override
+  String searchNothingFoundFor(String query) {
+    return 'Ничего не найдено по запросу «$query»';
+  }
+
+  @override
+  String get searchNoInternet => 'Нет подключения к интернету';
+
+  @override
+  String get searchFailed => 'Ошибка поиска';
+
+  @override
+  String get searchCheckConnection =>
+      'Проверьте подключение к интернету и попробуйте снова.';
 
   @override
   String get searchDescription => 'Описание';

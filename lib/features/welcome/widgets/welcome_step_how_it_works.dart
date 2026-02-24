@@ -56,12 +56,12 @@ class WelcomeStepHowItWorks extends StatelessWidget {
                   showDivider: false,
                 ),
                 _tabRow(
-                  icon: Icons.collections_bookmark,
+                  icon: Icons.bookmark,
                   tab: l.navCollections,
                   desc: l.welcomeHowCollectionsDesc,
                 ),
                 _tabRow(
-                  icon: Icons.bookmark,
+                  icon: Icons.collections_bookmark,
                   tab: l.navWishlist,
                   desc: l.welcomeHowWishlistDesc,
                 ),

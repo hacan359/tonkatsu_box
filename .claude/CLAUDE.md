@@ -37,7 +37,7 @@ lib/
 ├── features/
 │   ├── collections/       # Главная фича: коллекции, canvas (Board), детали
 │   │   ├── providers/     # canvas, collections, episode_tracker, steamgriddb/vgmaps panel
-│   │   ├── screens/       # home, collection, game/movie/tv_show/anime detail
+│   │   ├── screens/       # home, collection, item_detail (unified)
 │   │   └── widgets/       # canvas элементы, панели, диалоги, UI компоненты
 │   ├── search/            # Универсальный поиск (4 таба: Games/Movies/TV/Animation)
 │   │   ├── providers/     # game_search, media_search, genre
@@ -100,8 +100,8 @@ final databaseServiceProvider = Provider<DatabaseService>((ref) => DatabaseServi
 - API ключи хранятся в SharedPreferences, читаются через `SettingsNotifier`
 
 ### База данных (`lib/core/database/database_service.dart`)
-- SQLite через sqflite_common_ffi, 15 таблиц, текущая версия БД: 14
-- Миграции в `_onUpgrade()` — инкрементальные (v1 → v2 → ... → v14)
+- SQLite через sqflite_common_ffi, 16 таблиц, текущая версия БД: 20
+- Миграции в `_onUpgrade()` — инкрементальные (v1 → v2 → ... → v20)
 - Провайдер: `databaseServiceProvider`
 
 ### Тесты (`test/`)

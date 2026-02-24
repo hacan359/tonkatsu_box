@@ -45,9 +45,6 @@ class SEn extends S {
   String get statusPlanned => 'Planned';
 
   @override
-  String get statusOnHold => 'On Hold';
-
-  @override
   String get mediaTypeGame => 'Game';
 
   @override
@@ -812,9 +809,6 @@ class SEn extends S {
   }
 
   @override
-  String get detailsTab => 'Details';
-
-  @override
   String get boardTab => 'Board';
 
   @override
@@ -873,6 +867,11 @@ class SEn extends S {
   @override
   String totalEpisodes(int count) {
     return '$count ep';
+  }
+
+  @override
+  String seasonName(int number) {
+    return 'Season $number';
   }
 
   @override
@@ -1143,6 +1142,27 @@ class SEn extends S {
 
   @override
   String get searchGoToSettings => 'Go to Settings';
+
+  @override
+  String get searchMinCharsHint => 'Type at least 2 characters and press Enter';
+
+  @override
+  String get searchNoResults => 'No results found';
+
+  @override
+  String searchNothingFoundFor(String query) {
+    return 'Nothing found for \"$query\"';
+  }
+
+  @override
+  String get searchNoInternet => 'No internet connection';
+
+  @override
+  String get searchFailed => 'Search failed';
+
+  @override
+  String get searchCheckConnection =>
+      'Check your internet connection and try again.';
 
   @override
   String get searchDescription => 'Description';

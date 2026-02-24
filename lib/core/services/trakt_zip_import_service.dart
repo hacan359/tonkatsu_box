@@ -290,9 +290,8 @@ class TraktZipImportService {
   static const Map<ItemStatus, int> _statusPriority = <ItemStatus, int>{
     ItemStatus.notStarted: 0,
     ItemStatus.planned: 1,
-    ItemStatus.onHold: 2,
-    ItemStatus.inProgress: 3,
-    ItemStatus.completed: 4,
+    ItemStatus.inProgress: 2,
+    ItemStatus.completed: 3,
   };
 
   // ---------------------------------------------------------------------------

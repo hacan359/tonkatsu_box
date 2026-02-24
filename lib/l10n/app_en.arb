@@ -15,7 +15,6 @@
   "statusCompleted": "Completed",
   "statusDropped": "Dropped",
   "statusPlanned": "Planned",
-  "statusOnHold": "On Hold",
 
   "mediaTypeGame": "Game",
   "mediaTypeMovie": "Movie",
@@ -363,7 +362,6 @@
     }
   },
 
-  "detailsTab": "Details",
   "boardTab": "Board",
   "imageAddedToBoard": "Image added to board",
   "mapAddedToBoard": "Map added to board",
@@ -406,6 +404,12 @@
   "@totalEpisodes": {
     "placeholders": {
       "count": {"type": "int"}
+    }
+  },
+  "seasonName": "Season {number}",
+  "@seasonName": {
+    "placeholders": {
+      "number": {"type": "int"}
     }
   },
   "episodeProgress": "Episode Progress",
@@ -547,6 +551,17 @@
     }
   },
   "searchGoToSettings": "Go to Settings",
+  "searchMinCharsHint": "Type at least 2 characters and press Enter",
+  "searchNoResults": "No results found",
+  "searchNothingFoundFor": "Nothing found for \"{query}\"",
+  "@searchNothingFoundFor": {
+    "placeholders": {
+      "query": {"type": "String"}
+    }
+  },
+  "searchNoInternet": "No internet connection",
+  "searchFailed": "Search failed",
+  "searchCheckConnection": "Check your internet connection and try again.",
   "searchDescription": "Description",
 
   "platformFilterTitle": "Select Platforms",

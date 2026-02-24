@@ -28,141 +28,64 @@ void main() {
   }
 
   group('StatusChipRow', () {
-    group('количество чипов', () {
-      testWidgets('для game должен показывать 5 чипов (без onHold)',
+    group('сегменты', () {
+      testWidgets('должен показывать 5 сегментов с иконками',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget(
           status: ItemStatus.notStarted,
           mediaType: MediaType.game,
         ));
 
-        // 5 статусов: notStarted, inProgress, completed, dropped, planned
-        expect(find.text('Not Started'), findsOneWidget);
-        expect(find.text('Playing'), findsOneWidget);
-        expect(find.text('Completed'), findsOneWidget);
-        expect(find.text('Dropped'), findsOneWidget);
-        expect(find.text('Planned'), findsOneWidget);
-        expect(find.text('On Hold'), findsNothing);
+        expect(find.byIcon(Icons.radio_button_unchecked), findsOneWidget);
+        expect(find.byIcon(Icons.play_arrow_rounded), findsOneWidget);
+        expect(find.byIcon(Icons.check_circle), findsOneWidget);
+        expect(find.byIcon(Icons.pause_circle_filled), findsOneWidget);
+        expect(find.byIcon(Icons.bookmark), findsOneWidget);
       });
 
-      testWidgets('для movie должен показывать 5 чипов (без onHold)',
+      testWidgets('все сегменты одинаковой ширины (Expanded)',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget(
           status: ItemStatus.notStarted,
-          mediaType: MediaType.movie,
-        ));
-
-        expect(find.text('Not Started'), findsOneWidget);
-        expect(find.text('Watching'), findsOneWidget);
-        expect(find.text('Completed'), findsOneWidget);
-        expect(find.text('Dropped'), findsOneWidget);
-        expect(find.text('Planned'), findsOneWidget);
-        expect(find.text('On Hold'), findsNothing);
-      });
-
-      testWidgets('для tvShow должен показывать 6 чипов (с onHold)',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget(
-          status: ItemStatus.notStarted,
-          mediaType: MediaType.tvShow,
-        ));
-
-        expect(find.text('Not Started'), findsOneWidget);
-        expect(find.text('Watching'), findsOneWidget);
-        expect(find.text('Completed'), findsOneWidget);
-        expect(find.text('Dropped'), findsOneWidget);
-        expect(find.text('Planned'), findsOneWidget);
-        expect(find.text('On Hold'), findsOneWidget);
-      });
-    });
-
-    group('выбранный чип', () {
-      testWidgets('должен иметь цветной фон',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget(
-          status: ItemStatus.inProgress,
           mediaType: MediaType.game,
         ));
 
-        // Ищем AnimatedContainer с цветом statusInProgress
-        final Finder playingChip = find.ancestor(
-          of: find.text('Playing'),
-          matching: find.byType(AnimatedContainer),
-        );
-        expect(playingChip, findsOneWidget);
-
-        final AnimatedContainer container =
-            tester.widget<AnimatedContainer>(playingChip);
-        final BoxDecoration decoration =
-            container.decoration! as BoxDecoration;
-        expect(
-          decoration.border,
-          isA<Border>().having(
-            (Border b) => b.top.color,
-            'border color',
-            AppColors.statusInProgress,
-          ),
-        );
+        expect(find.byType(Expanded), findsNWidgets(5));
       });
+    });
 
-      testWidgets('должен иметь жирный текст',
+    group('выбранный сегмент', () {
+      testWidgets('должен иметь белую иконку',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget(
           status: ItemStatus.completed,
           mediaType: MediaType.game,
         ));
 
-        final Text completedText = tester.widget<Text>(
-          find.text('Completed'),
+        final Icon icon = tester.widget<Icon>(
+          find.byIcon(Icons.check_circle),
         );
-        expect(completedText.style?.fontWeight, FontWeight.w600);
+        expect(icon.color, Colors.white);
       });
     });
 
-    group('невыбранный чип', () {
-      testWidgets('должен иметь обычный текст',
+    group('невыбранный сегмент', () {
+      testWidgets('должен иметь приглушённую иконку',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget(
           status: ItemStatus.completed,
           mediaType: MediaType.game,
         ));
 
-        // "Not Started" — невыбранный
-        final Text notStartedText = tester.widget<Text>(
-          find.text('Not Started'),
+        final Icon icon = tester.widget<Icon>(
+          find.byIcon(Icons.radio_button_unchecked),
         );
-        expect(notStartedText.style?.fontWeight, FontWeight.normal);
-      });
-
-      testWidgets('должен иметь surfaceBorder рамку',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget(
-          status: ItemStatus.completed,
-          mediaType: MediaType.game,
-        ));
-
-        final Finder notStartedChip = find.ancestor(
-          of: find.text('Not Started'),
-          matching: find.byType(AnimatedContainer),
-        );
-
-        final AnimatedContainer container =
-            tester.widget<AnimatedContainer>(notStartedChip);
-        final BoxDecoration decoration =
-            container.decoration! as BoxDecoration;
-        expect(
-          decoration.border,
-          isA<Border>().having(
-            (Border b) => b.top.color,
-            'border color',
-            AppColors.surfaceBorder,
-          ),
-        );
+        expect(icon.color, AppColors.textSecondary.withAlpha(140));
       });
     });
 
-    group('тап на чип', () {
-      testWidgets('должен вызывать onChanged с правильным статусом',
+    group('тап на сегмент', () {
+      testWidgets('должен вызывать onChanged с inProgress',
           (WidgetTester tester) async {
         ItemStatus? changedTo;
 
@@ -172,11 +95,11 @@ void main() {
           onChanged: (ItemStatus s) => changedTo = s,
         ));
 
-        await tester.tap(find.text('Playing'));
+        await tester.tap(find.byIcon(Icons.play_arrow_rounded));
         expect(changedTo, ItemStatus.inProgress);
       });
 
-      testWidgets('должен вызывать onChanged при тапе на Completed',
+      testWidgets('должен вызывать onChanged с completed',
           (WidgetTester tester) async {
         ItemStatus? changedTo;
 
@@ -186,7 +109,7 @@ void main() {
           onChanged: (ItemStatus s) => changedTo = s,
         ));
 
-        await tester.tap(find.text('Completed'));
+        await tester.tap(find.byIcon(Icons.check_circle));
         expect(changedTo, ItemStatus.completed);
       });
 
@@ -200,60 +123,20 @@ void main() {
           onChanged: (ItemStatus s) => changedTo = s,
         ));
 
-        await tester.tap(find.text('Completed'));
+        await tester.tap(find.byIcon(Icons.check_circle));
         expect(changedTo, ItemStatus.completed);
       });
     });
 
-    group('emoji иконки', () {
-      testWidgets('каждый чип должен содержать emoji',
+    group('tooltip', () {
+      testWidgets('должен иметь Tooltip на каждом сегменте',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget(
           status: ItemStatus.notStarted,
-          mediaType: MediaType.tvShow,
-        ));
-
-        for (final ItemStatus status in ItemStatus.values) {
-          expect(
-            find.text(status.icon),
-            findsOneWidget,
-            reason: '${status.name} should have icon',
-          );
-        }
-      });
-    });
-
-    group('медиа-зависимые метки', () {
-      testWidgets('для game inProgress должен показывать "Playing"',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget(
-          status: ItemStatus.inProgress,
           mediaType: MediaType.game,
         ));
 
-        expect(find.text('Playing'), findsOneWidget);
-        expect(find.text('Watching'), findsNothing);
-      });
-
-      testWidgets('для movie inProgress должен показывать "Watching"',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget(
-          status: ItemStatus.inProgress,
-          mediaType: MediaType.movie,
-        ));
-
-        expect(find.text('Watching'), findsOneWidget);
-        expect(find.text('Playing'), findsNothing);
-      });
-
-      testWidgets('для tvShow inProgress должен показывать "Watching"',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget(
-          status: ItemStatus.inProgress,
-          mediaType: MediaType.tvShow,
-        ));
-
-        expect(find.text('Watching'), findsOneWidget);
+        expect(find.byType(Tooltip), findsNWidgets(5));
       });
     });
   });

@@ -1384,7 +1384,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
             if (!isLandscape) ...<Widget>[
               const SizedBox(height: AppSpacing.sm),
               Text(
-                'Type at least 2 characters and press Enter',
+                S.of(context).searchMinCharsHint,
                 style: AppTypography.body.copyWith(
                   color: AppColors.textSecondary.withAlpha(179),
                 ),
@@ -1410,13 +1410,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           ),
           SizedBox(height: isLandscape ? AppSpacing.sm : AppSpacing.md),
           Text(
-            'No results found',
+            S.of(context).searchNoResults,
             style: (isLandscape ? AppTypography.body : AppTypography.h3)
                 .copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'Nothing found for "$query"',
+            S.of(context).searchNothingFoundFor(query),
             style: AppTypography.bodySmall.copyWith(
               color: AppColors.textSecondary.withAlpha(179),
             ),
@@ -1494,9 +1494,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     final IconData icon =
         isNetwork ? Icons.wifi_off : Icons.error_outline;
     final String title =
-        isNetwork ? 'No internet connection' : 'Search failed';
+        isNetwork ? S.of(context).searchNoInternet : S.of(context).searchFailed;
     final String subtitle = isNetwork
-        ? 'Check your internet connection and try again.'
+        ? S.of(context).searchCheckConnection
         : error;
 
     return Center(
@@ -1529,7 +1529,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
             FilledButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              label: Text(S.of(context).retry),
             ),
           ],
         ),

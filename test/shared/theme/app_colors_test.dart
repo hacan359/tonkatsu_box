@@ -85,16 +85,11 @@ void main() {
       test('все статусные цвета должны быть определены', () {
         expect(AppColors.statusInProgress, isA<Color>());
         expect(AppColors.statusCompleted, isA<Color>());
-        expect(AppColors.statusOnHold, isA<Color>());
         expect(AppColors.statusDropped, isA<Color>());
       });
 
       test('statusCompleted должен совпадать с success', () {
         expect(AppColors.statusCompleted, equals(AppColors.success));
-      });
-
-      test('statusOnHold должен совпадать с warning', () {
-        expect(AppColors.statusOnHold, equals(AppColors.warning));
       });
 
       test('statusDropped должен совпадать с error', () {
