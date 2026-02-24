@@ -135,6 +135,39 @@ void main() {
         expect(leadingIcon!.icon, equals(Icons.storage));
       });
 
+      testWidgets('shows Trakt Import nav row text',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        expect(find.text('Trakt Import'), findsOneWidget);
+      });
+
+      testWidgets('shows "Import from Trakt.tv ZIP export" subtitle',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        expect(
+          find.text('Import from Trakt.tv ZIP export'),
+          findsOneWidget,
+        );
+      });
+
+      testWidgets('shows movie_filter icon for Trakt Import row',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        final Finder traktTile = find.ancestor(
+          of: find.text('Trakt Import'),
+          matching: find.byType(ListTile),
+        );
+        final ListTile tile = tester.widget<ListTile>(traktTile);
+        final Icon? leadingIcon = tile.leading as Icon?;
+        expect(leadingIcon!.icon, equals(Icons.movie_filter));
+      });
+
       testWidgets(
           'shows Debug nav row with correct icon and subtitle when in debug mode',
           (WidgetTester tester) async {
@@ -177,12 +210,12 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        // 4 visible SettingsNavRow (Credentials + Cache + Database + Debug)
-        // Welcome Guide is below the fold
-        expect(find.byType(SettingsNavRow), findsNWidgets(4));
+        // 5 visible SettingsNavRow (Credentials + Cache + Database
+        // + Trakt Import + Debug). Welcome Guide is below the fold.
+        expect(find.byType(SettingsNavRow), findsNWidgets(5));
 
-        // 4 nav row chevrons + 1 breadcrumb separator
-        expect(find.byIcon(Icons.chevron_right), findsNWidgets(5));
+        // 5 nav row chevrons + 1 breadcrumb separator
+        expect(find.byIcon(Icons.chevron_right), findsNWidgets(6));
       });
 
       testWidgets('Author name shows custom name when set',
@@ -272,6 +305,22 @@ void main() {
         );
 
         await tester.tap(databaseTile);
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+      });
+
+      testWidgets('Trakt Import tile is tappable',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        final Finder traktTile = find.ancestor(
+          of: find.text('Trakt Import'),
+          matching: find.byType(ListTile),
+        );
+
+        await tester.tap(traktTile);
         await tester.pumpAndSettle();
 
         expect(tester.takeException(), isNull);
