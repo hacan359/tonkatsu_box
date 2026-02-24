@@ -2125,6 +2125,42 @@ abstract class S {
   /// **'Go to Settings'**
   String get searchGoToSettings;
 
+  /// No description provided for @searchMinCharsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Type at least 2 characters and press Enter'**
+  String get searchMinCharsHint;
+
+  /// No description provided for @searchNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No results found'**
+  String get searchNoResults;
+
+  /// No description provided for @searchNothingFoundFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing found for \"{query}\"'**
+  String searchNothingFoundFor(String query);
+
+  /// No description provided for @searchNoInternet.
+  ///
+  /// In en, this message translates to:
+  /// **'No internet connection'**
+  String get searchNoInternet;
+
+  /// No description provided for @searchFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Search failed'**
+  String get searchFailed;
+
+  /// No description provided for @searchCheckConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your internet connection and try again.'**
+  String get searchCheckConnection;
+
   /// No description provided for @searchDescription.
   ///
   /// In en, this message translates to:

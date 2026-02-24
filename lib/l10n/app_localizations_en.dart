@@ -1144,6 +1144,27 @@ class SEn extends S {
   String get searchGoToSettings => 'Go to Settings';
 
   @override
+  String get searchMinCharsHint => 'Type at least 2 characters and press Enter';
+
+  @override
+  String get searchNoResults => 'No results found';
+
+  @override
+  String searchNothingFoundFor(String query) {
+    return 'Nothing found for \"$query\"';
+  }
+
+  @override
+  String get searchNoInternet => 'No internet connection';
+
+  @override
+  String get searchFailed => 'Search failed';
+
+  @override
+  String get searchCheckConnection =>
+      'Check your internet connection and try again.';
+
+  @override
   String get searchDescription => 'Description';
 
   @override
