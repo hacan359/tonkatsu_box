@@ -6,6 +6,8 @@
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-02-24
+
 ### Changed
 - Redesigned `StatusChipRow` from Wrap of chip-buttons to "piano-style" segmented bar — full-width `Row` of `Expanded` segments, flat color fill, icon-only (no text, no borders, no rounded corners), tooltip with localized label (`status_chip_row.dart`)
 - Replaced emoji status icons with Material icons across the app — `ItemStatus.icon` (emoji String) replaced by `materialIcon` (IconData): `radio_button_unchecked` (notStarted), `play_arrow_rounded` (inProgress), `check_circle` (completed), `pause_circle_filled` (dropped), `bookmark` (planned) (`item_status.dart`)
