@@ -22,7 +22,7 @@ void main() {
         expect(season.name, 'Season 1');
         expect(season.episodeCount, 7);
         expect(season.posterUrl,
-            'https://image.tmdb.org/t/p/w500/1BP4xYv9ZG4ZVHkL7ocOziBbSYH.jpg');
+            'https://image.tmdb.org/t/p/w342/1BP4xYv9ZG4ZVHkL7ocOziBbSYH.jpg');
         expect(season.airDate, '2008-01-20');
       });
 
@@ -112,7 +112,7 @@ void main() {
         expect(season.name, 'Specials');
         expect(season.episodeCount, 3);
         expect(season.posterUrl,
-            'https://image.tmdb.org/t/p/w500/specials.jpg');
+            'https://image.tmdb.org/t/p/w342/specials.jpg');
         expect(season.airDate, '2009-02-17');
       });
 

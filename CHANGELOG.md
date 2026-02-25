@@ -6,6 +6,29 @@
 
 ## [Unreleased]
 
+### Added
+- Discover feed on Search screen — shown when search field is empty. Horizontal poster rows for Trending, Top Rated Movies, Popular TV Shows, Upcoming, Anime, Top Rated TV Shows. Customizable via bottom sheet (toggle sections, hide owned items). Customize button in AppBar (`discover_feed.dart`, `discover_row.dart`, `discover_customize_sheet.dart`, `discover_provider.dart`)
+- Recommendations section on item detail screen — "Similar Movies" / "Similar TV Shows" from TMDB `/similar` endpoint, displayed as horizontal poster row below Activity & Progress. Tap to view details with "Add to Collection" button (`recommendations_section.dart`)
+- Reviews section on item detail screen — TMDB user reviews displayed as expandable cards with author, rating, date, and content (`reviews_section.dart`, `tmdb_review.dart`)
+- Show/hide recommendations toggle in Settings — `showRecommendations` boolean in SettingsState, SwitchListTile in Settings screen (`settings_provider.dart`, `settings_screen.dart`)
+- `ScrollableRowWithArrows` widget — overlay left/right arrow buttons for horizontal lists on desktop (width >= 600px), with gradient backgrounds and smooth scroll animation (`scrollable_row_with_arrows.dart`)
+- `HorizontalMouseScroll` widget — converts vertical mouse wheel events to horizontal scroll for horizontal lists (`horizontal_mouse_scroll.dart`)
+- `TmdbReview` model — TMDB review data with author, content, rating, URL, date (`tmdb_review.dart`)
+- TMDB API: `getMovieRecommendations()`, `getTvShowRecommendations()`, `getMovieReviews()`, `getTvShowReviews()`, `discoverMovies()`, `discoverTvShows()`, Discover list providers (trending, top rated, popular, upcoming, anime) (`tmdb_api.dart`, `discover_provider.dart`)
+- TMDB API: lazy-cached genre map resolution — `genre_ids` (numbers) resolved to `genres` (names) across all list endpoints (search, discover, recommendations, trending, popular, multiSearch) via `_ensureMovieGenreMap()` / `_ensureTvGenreMap()` / `_resolveGenreIds()`. Cache invalidated on language change and API key clear (`tmdb_api.dart`)
+- `MediaDetailsSheet`: added `genres` parameter — displays genre chips in the detail bottom sheet (`media_details_sheet.dart`)
+- `MediaDetailView`: added `recommendationSections` parameter — renders recommendation/review widgets outside the ExpansionTile, always visible (`media_detail_view.dart`)
+- Localization: 30+ new ARB keys for Discover, recommendations, reviews UI (EN + RU)
+- Tests: `discover_provider_test.dart`, `discover_row_test.dart`, `media_details_sheet_test.dart`, `tmdb_review_test.dart`, `horizontal_mouse_scroll_test.dart`, `scrollable_row_with_arrows_test.dart`, `settings_provider_show_recommendations_test.dart`
+
+### Changed
+- TMDB poster URL size reduced from `w500` to `w342` in `Movie.fromJson()`, `TvShow.fromJson()`, `TvSeason.fromJson()` — ~40% smaller downloads, sufficient for all poster display sizes (100–130px logical) (`movie.dart`, `tv_show.dart`, `tv_season.dart`)
+- `posterThumbUrl` getter now uses `RegExp(r'/w\d+')` instead of hardcoded `'/w500'` — works correctly with both new `w342` URLs and legacy `w500` URLs stored in database (`movie.dart`, `tv_show.dart`)
+
+### Fixed
+- Fixed poster image cache miss when opening detail sheet from Discover feed and Recommendations — was using `posterThumbUrl` (w154) while poster cards used `posterUrl` (w500), causing re-download. Now both use `posterUrl` for consistent caching (`discover_feed.dart`, `recommendations_section.dart`)
+- Fixed genres displaying as numeric IDs (e.g., "18, 53") instead of names (e.g., "Drama, Thriller") in Discover feed and Recommendations — TMDB list endpoints return `genre_ids` which were passed as-is to `Movie.fromJson()` (`tmdb_api.dart`)
+
 ## [0.14.0] - 2026-02-24
 
 ### Changed

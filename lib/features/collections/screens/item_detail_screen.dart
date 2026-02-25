@@ -10,6 +10,7 @@ import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
 import '../../../shared/widgets/breadcrumb_scope.dart';
 import '../../../shared/widgets/collection_picker_dialog.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
+import '../../../core/database/database_service.dart';
 import '../../../data/repositories/canvas_repository.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
@@ -28,8 +29,11 @@ import '../providers/steamgriddb_panel_provider.dart';
 import '../providers/vgmaps_panel_provider.dart';
 import '../widgets/canvas_view.dart';
 import '../widgets/episode_tracker_section.dart';
+import '../widgets/recommendations_section.dart';
+import '../widgets/reviews_section.dart';
 import '../widgets/status_chip_row.dart';
 import '../widgets/steamgriddb_panel.dart';
+import '../../settings/providers/settings_provider.dart';
 import '../widgets/vgmaps_panel.dart';
 
 /// Конфигурация медиа-типа для отображения в детальном экране.
@@ -371,6 +375,10 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
   }
 
   Widget _buildDetailView(CollectionItem item, _MediaConfig config) {
+    final SettingsState settings = ref.watch(settingsNotifierProvider);
+    final bool showRecs = settings.showRecommendations &&
+        item.mediaType != MediaType.game;
+
     return MediaDetailView(
       title: item.itemName,
       coverUrl: config.coverUrl,
@@ -403,6 +411,20 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
             externalId: item.externalId,
             tvShow: config.tvShow,
             accentColor: config.accentColor,
+          ),
+      ],
+      recommendationSections: <Widget>[
+        if (showRecs)
+          RecommendationsSection(
+            tmdbId: item.externalId,
+            mediaType: item.mediaType,
+            onAddMovie: _addMovieFromRecommendations,
+            onAddTvShow: _addTvShowFromRecommendations,
+          ),
+        if (showRecs)
+          ReviewsSection(
+            tmdbId: item.externalId,
+            mediaType: item.mediaType,
           ),
       ],
       authorComment: item.authorComment,
@@ -806,6 +828,96 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
 
     if (mounted) {
       context.showSnack(S.of(context).mapAddedToBoard, type: SnackType.success);
+    }
+  }
+
+  // ==================== Add from Recommendations ====================
+
+  Future<void> _addMovieFromRecommendations(Movie movie) async {
+    final S l = S.of(context);
+    final CollectionChoice? choice = await showCollectionPickerDialog(
+      context: context,
+      ref: ref,
+      title: l.searchAddToCollection,
+    );
+    if (choice == null || !mounted) return;
+
+    final int? collectionId;
+    final String collectionName;
+    switch (choice) {
+      case ChosenCollection(:final Collection collection):
+        collectionId = collection.id;
+        collectionName = collection.name;
+      case WithoutCollection():
+        collectionId = null;
+        collectionName = l.collectionsUncategorized;
+    }
+
+    await ref.read(databaseServiceProvider).upsertMovie(movie);
+
+    final bool success = await ref
+        .read(collectionItemsNotifierProvider(collectionId).notifier)
+        .addItem(
+          mediaType: MediaType.movie,
+          externalId: movie.tmdbId,
+        );
+
+    if (!mounted) return;
+
+    if (success) {
+      context.showSnack(
+        l.searchAddedToNamed(movie.title, collectionName),
+        type: SnackType.success,
+      );
+    } else {
+      context.showSnack(
+        l.searchAlreadyInNamed(movie.title, collectionName),
+        type: SnackType.info,
+      );
+    }
+  }
+
+  Future<void> _addTvShowFromRecommendations(TvShow tvShow) async {
+    final S l = S.of(context);
+    final CollectionChoice? choice = await showCollectionPickerDialog(
+      context: context,
+      ref: ref,
+      title: l.searchAddToCollection,
+    );
+    if (choice == null || !mounted) return;
+
+    final int? collectionId;
+    final String collectionName;
+    switch (choice) {
+      case ChosenCollection(:final Collection collection):
+        collectionId = collection.id;
+        collectionName = collection.name;
+      case WithoutCollection():
+        collectionId = null;
+        collectionName = l.collectionsUncategorized;
+    }
+
+    await ref.read(databaseServiceProvider).upsertTvShow(tvShow);
+
+    final bool success = await ref
+        .read(collectionItemsNotifierProvider(collectionId).notifier)
+        .addItem(
+          mediaType: MediaType.tvShow,
+          externalId: tvShow.tmdbId,
+        );
+
+    if (!mounted) return;
+
+    if (success) {
+      context.showSnack(
+        l.searchAddedToNamed(tvShow.title, collectionName),
+        type: SnackType.success,
+      );
+    } else {
+      context.showSnack(
+        l.searchAlreadyInNamed(tvShow.title, collectionName),
+        type: SnackType.info,
+      );
     }
   }
 

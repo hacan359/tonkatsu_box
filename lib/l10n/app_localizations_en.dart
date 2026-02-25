@@ -1768,4 +1768,70 @@ class SEn extends S {
   String vgmapsFailedInit(String error) {
     return 'Failed to initialize WebView: $error';
   }
+
+  @override
+  String get discoverTitle => 'Discover';
+
+  @override
+  String get discoverCustomize => 'Customize';
+
+  @override
+  String get discoverTrending => 'Trending This Week';
+
+  @override
+  String get discoverTopRatedMovies => 'Top Rated Movies';
+
+  @override
+  String get discoverTopRatedTvShows => 'Top Rated TV Shows';
+
+  @override
+  String get discoverPopularTvShows => 'Popular TV Shows';
+
+  @override
+  String get discoverUpcoming => 'Upcoming';
+
+  @override
+  String get discoverAnime => 'Anime';
+
+  @override
+  String get discoverCustomizeTitle => 'Customize Discover';
+
+  @override
+  String get discoverCustomizeHint => 'Choose which sections to show';
+
+  @override
+  String get discoverResetDefault => 'Reset to default';
+
+  @override
+  String get discoverAlreadyInCollection => 'Already in collection';
+
+  @override
+  String get discoverShowWithBadge => 'Show with badge';
+
+  @override
+  String get discoverHideCompletely => 'Hide completely';
+
+  @override
+  String get recommendationsTitle => 'Recommendations';
+
+  @override
+  String get reviewsTitle => 'Reviews';
+
+  @override
+  String reviewsShowAll(int count) {
+    return 'Show all $count reviews';
+  }
+
+  @override
+  String get reviewsReadMore => 'Read more';
+
+  @override
+  String get reviewsInEnglish => 'Reviews in English';
+
+  @override
+  String get settingsShowRecommendations => 'Recommendations';
+
+  @override
+  String get settingsShowRecommendationsSubtitle =>
+      'Show recommendations and reviews on item details';
 }

@@ -32,6 +32,8 @@ import '../models/media_search_item.dart';
 import '../models/tv_sub_filter.dart';
 import '../providers/game_search_provider.dart';
 import '../providers/media_search_provider.dart';
+import '../widgets/discover_customize_sheet.dart';
+import '../widgets/discover_feed.dart';
 import '../widgets/game_details_sheet.dart';
 import '../widgets/media_details_sheet.dart';
 import '../widgets/platform_filter_sheet.dart';
@@ -398,6 +400,20 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     }
   }
 
+  void _showDiscoverCustomizeSheet() {
+    final Size screenSize = MediaQuery.sizeOf(context);
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useRootNavigator: true,
+      constraints: BoxConstraints(
+        maxWidth: screenSize.width,
+        maxHeight: screenSize.height * 0.85,
+      ),
+      builder: (BuildContext _) => const DiscoverCustomizeSheet(),
+    );
+  }
+
   Future<void> _addMovieToAnyCollection(Movie movie) async {
     final String title = movie.title;
 
@@ -420,6 +436,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         collectionId = null;
         collectionName = l.collectionsUncategorized;
     }
+
+    // Кэшируем модель в БД, чтобы она была доступна при отображении
+    await ref.read(databaseServiceProvider).upsertMovie(movie);
 
     final bool success = await ref
         .read(collectionItemsNotifierProvider(collectionId).notifier)
@@ -491,6 +510,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         collectionId = null;
         collectionName = l.collectionsUncategorized;
     }
+
+    // Кэшируем модель в БД, чтобы она была доступна при отображении
+    await ref.read(databaseServiceProvider).upsertTvShow(tvShow);
 
     final bool success = await ref
         .read(collectionItemsNotifierProvider(collectionId).notifier)
@@ -740,9 +762,21 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     final S l = S.of(context);
     final bool isLandscape = isLandscapeMobile(context);
 
+    // Показываем кнопку Discover Customize на TV табе при пустом поиске.
+    final bool showDiscoverCustomize = _activeTabIndex == 0 &&
+        ref.watch(mediaSearchProvider).isEmpty;
+
     return Scaffold(
       resizeToAvoidBottomInset: !isLandscape,
       appBar: AutoBreadcrumbAppBar(
+        actions: <Widget>[
+          if (showDiscoverCustomize)
+            IconButton(
+              icon: const Icon(Icons.tune, size: 20),
+              tooltip: l.discoverCustomize,
+              onPressed: () => _showDiscoverCustomizeSheet(),
+            ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
@@ -1153,7 +1187,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     }
 
     if (searchState.isEmpty) {
-      return _buildEmptyState('Search for TV & Movies', Icons.tv);
+      return DiscoverFeed(
+        onAddMovie: (Movie movie) => _addMovieToAnyCollection(movie),
+        onAddTvShow: (TvShow tvShow) => _addTvShowToAnyCollection(tvShow),
+      );
     }
 
     if (!searchState.hasResults && searchState.query.isNotEmpty) {

@@ -620,5 +620,35 @@
     "placeholders": {
       "error": {"type": "String"}
     }
-  }
+  },
+
+  "discoverTitle": "Подборки",
+  "discoverCustomize": "Настроить",
+  "discoverTrending": "Тренды недели",
+  "discoverTopRatedMovies": "Лучшие фильмы",
+  "discoverTopRatedTvShows": "Лучшие сериалы",
+  "discoverPopularTvShows": "Популярные сериалы",
+  "discoverUpcoming": "Скоро в кино",
+  "discoverAnime": "Аниме",
+  "discoverCustomizeTitle": "Настроить подборки",
+  "discoverCustomizeHint": "Выберите какие секции показывать",
+  "discoverResetDefault": "По умолчанию",
+  "discoverAlreadyInCollection": "Уже в коллекции",
+  "discoverShowWithBadge": "Показывать с отметкой",
+  "discoverHideCompletely": "Скрывать",
+
+  "recommendationsTitle": "Рекомендации",
+
+  "reviewsTitle": "Отзывы",
+  "reviewsShowAll": "Все {count} отзывов",
+  "@reviewsShowAll": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "reviewsReadMore": "Читать далее",
+  "reviewsInEnglish": "Отзывы на английском",
+
+  "settingsShowRecommendations": "Рекомендации",
+  "settingsShowRecommendationsSubtitle": "Показывать рекомендации и отзывы на странице элемента"
 }

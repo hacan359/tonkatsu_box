@@ -19,7 +19,7 @@ class TvSeason {
     String? posterUrl;
     final String? posterPath = json['poster_path'] as String?;
     if (posterPath != null) {
-      posterUrl = 'https://image.tmdb.org/t/p/w500$posterPath';
+      posterUrl = 'https://image.tmdb.org/t/p/w342$posterPath';
     }
 
     return TvSeason(

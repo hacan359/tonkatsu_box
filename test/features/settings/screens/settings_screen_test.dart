@@ -67,7 +67,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Scroll down to reveal Help section
-        await tester.drag(find.byType(ListView), const Offset(0, -300));
+        await tester.drag(find.byType(ListView), const Offset(0, -500));
         await tester.pumpAndSettle();
 
         expect(find.text('Help'), findsOneWidget);
@@ -352,7 +352,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Scroll down to reveal Help section
-        await tester.drag(find.byType(ListView), const Offset(0, -300));
+        await tester.drag(find.byType(ListView), const Offset(0, -500));
         await tester.pumpAndSettle();
 
         expect(find.text('Help'), findsOneWidget);
@@ -364,7 +364,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        await tester.drag(find.byType(ListView), const Offset(0, -300));
+        await tester.drag(find.byType(ListView), const Offset(0, -500));
         await tester.pumpAndSettle();
 
         expect(find.text('Welcome Guide'), findsOneWidget);
@@ -379,7 +379,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        await tester.drag(find.byType(ListView), const Offset(0, -300));
+        await tester.drag(find.byType(ListView), const Offset(0, -500));
         await tester.pumpAndSettle();
 
         final Finder welcomeTile = find.ancestor(
@@ -396,7 +396,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        await tester.drag(find.byType(ListView), const Offset(0, -300));
+        await tester.drag(find.byType(ListView), const Offset(0, -500));
         await tester.pumpAndSettle();
 
         final Finder welcomeTile = find.ancestor(
@@ -417,7 +417,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        await tester.drag(find.byType(ListView), const Offset(0, -400));
+        await tester.drag(find.byType(ListView), const Offset(0, -500));
         await tester.pumpAndSettle();
 
         expect(find.text('About'), findsOneWidget);
@@ -429,7 +429,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        await tester.drag(find.byType(ListView), const Offset(0, -400));
+        await tester.drag(find.byType(ListView), const Offset(0, -500));
         await tester.pumpAndSettle();
 
         expect(find.text('Version'), findsOneWidget);
@@ -441,7 +441,7 @@ void main() {
         // Только pump() — не ждём async _loadVersion
         await tester.pump();
 
-        await tester.drag(find.byType(ListView), const Offset(0, -400));
+        await tester.drag(find.byType(ListView), const Offset(0, -500));
         await tester.pump();
 
         // До загрузки PackageInfo subtitle = '...'
@@ -453,7 +453,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        await tester.drag(find.byType(ListView), const Offset(0, -400));
+        await tester.drag(find.byType(ListView), const Offset(0, -500));
         await tester.pumpAndSettle();
 
         expect(find.text('Credits & Licenses'), findsOneWidget);
@@ -468,7 +468,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        await tester.drag(find.byType(ListView), const Offset(0, -400));
+        await tester.drag(find.byType(ListView), const Offset(0, -500));
         await tester.pumpAndSettle();
 
         final Finder creditsTile = find.ancestor(
@@ -486,7 +486,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        await tester.drag(find.byType(ListView), const Offset(0, -400));
+        await tester.drag(find.byType(ListView), const Offset(0, -500));
         await tester.pumpAndSettle();
 
         final Finder versionTile = find.ancestor(
@@ -503,7 +503,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        await tester.drag(find.byType(ListView), const Offset(0, -400));
+        await tester.drag(find.byType(ListView), const Offset(0, -500));
         await tester.pumpAndSettle();
 
         final Finder creditsTile = find.ancestor(

@@ -173,6 +173,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   );
                 },
               ),
+              SwitchListTile(
+                title: Text(S.of(context).settingsShowRecommendations),
+                subtitle: Text(
+                  S.of(context).settingsShowRecommendationsSubtitle,
+                ),
+                secondary: const Icon(Icons.recommend),
+                value: settings.showRecommendations,
+                onChanged: (bool value) {
+                  ref
+                      .read(settingsNotifierProvider.notifier)
+                      .setShowRecommendations(enabled: value);
+                },
+              ),
               if (kDebugMode)
                 SettingsNavRow(
                   title: S.of(context).settingsDebug,
