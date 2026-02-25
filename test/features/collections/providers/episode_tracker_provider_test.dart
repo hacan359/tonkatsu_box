@@ -8,7 +8,10 @@ import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/features/collections/providers/collections_provider.dart';
 import 'package:xerabora/features/collections/providers/episode_tracker_provider.dart';
 import 'package:xerabora/shared/models/collection_item.dart';
+import 'package:xerabora/shared/models/item_status.dart';
+import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/tv_episode.dart';
+import 'package:xerabora/shared/models/tv_show.dart';
 
 // Моки
 class MockDatabaseService extends Mock implements DatabaseService {}
@@ -19,6 +22,66 @@ class MockCollectionItemsNotifier extends CollectionItemsNotifier {
   @override
   AsyncValue<List<CollectionItem>> build(int? arg) {
     return const AsyncValue<List<CollectionItem>>.data(<CollectionItem>[]);
+  }
+}
+
+/// Mock CollectionItemsNotifier, который хранит заданный список items
+/// и записывает вызовы updateStatus для проверки.
+class TrackingCollectionItemsNotifier extends CollectionItemsNotifier {
+  TrackingCollectionItemsNotifier(this._items);
+
+  final List<CollectionItem> _items;
+
+  /// Записанные вызовы updateStatus: (id, status, mediaType).
+  final List<(int, ItemStatus, MediaType)> updateStatusCalls =
+      <(int, ItemStatus, MediaType)>[];
+
+  @override
+  AsyncValue<List<CollectionItem>> build(int? arg) {
+    return AsyncValue<List<CollectionItem>>.data(_items);
+  }
+
+  @override
+  Future<void> updateStatus(
+      int id, ItemStatus status, MediaType mediaType) async {
+    updateStatusCalls.add((id, status, mediaType));
+    // Зеркалим реальную логику CollectionItemsNotifier.updateStatus
+    final List<CollectionItem>? current = state.valueOrNull;
+    if (current != null) {
+      final DateTime now = DateTime.now();
+      state = AsyncData<List<CollectionItem>>(
+        current.map((CollectionItem i) {
+          if (i.id == id) {
+            if (status == ItemStatus.notStarted) {
+              return i.copyWith(
+                status: status,
+                clearStartedAt: true,
+                clearCompletedAt: true,
+                lastActivityAt: now,
+              );
+            }
+            if (status == ItemStatus.inProgress) {
+              return i.copyWith(
+                status: status,
+                startedAt: i.startedAt ?? now,
+                clearCompletedAt: true,
+                lastActivityAt: now,
+              );
+            }
+            if (status == ItemStatus.completed) {
+              return i.copyWith(
+                status: status,
+                startedAt: i.startedAt ?? now,
+                completedAt: now,
+                lastActivityAt: now,
+              );
+            }
+            return i.copyWith(status: status);
+          }
+          return i;
+        }).toList(),
+      );
+    }
   }
 }
 
@@ -93,6 +156,9 @@ void main() {
   setUp(() {
     mockDb = MockDatabaseService();
     mockTmdbApi = MockTmdbApi();
+    // Дефолтный мок getTvShow — возвращает null (не нашёл на TMDB)
+    when(() => mockTmdbApi.getTvShow(any()))
+        .thenAnswer((_) async => null);
   });
 
   ProviderContainer createContainer() {
@@ -884,6 +950,453 @@ void main() {
           () => mockDb.markSeasonWatched(any(), any(), any(), any()),
         );
         verifyNever(() => mockDb.unmarkSeasonWatched(any(), any(), any()));
+      });
+    });
+
+    group('_updateAutoStatus (через toggleEpisode)', () {
+      late TrackingCollectionItemsNotifier lastTracking;
+
+      /// Создаёт контейнер с TrackingCollectionItemsNotifier.
+      ProviderContainer createTrackingContainer(
+          List<CollectionItem> items) {
+        final ProviderContainer container = ProviderContainer(
+          overrides: <Override>[
+            databaseServiceProvider.overrideWithValue(mockDb),
+            tmdbApiProvider.overrideWithValue(mockTmdbApi),
+            collectionItemsNotifierProvider.overrideWith(
+              () {
+                lastTracking = TrackingCollectionItemsNotifier(items);
+                return lastTracking;
+              },
+            ),
+          ],
+        );
+        addTearDown(container.dispose);
+        return container;
+      }
+
+      CollectionItem createTvItem({
+        int id = 1,
+        ItemStatus status = ItemStatus.notStarted,
+        MediaType mediaType = MediaType.tvShow,
+        int totalEpisodes = 10,
+        int? totalSeasons,
+      }) {
+        return CollectionItem(
+          id: id,
+          collectionId: testCollectionId,
+          mediaType: mediaType,
+          externalId: testShowId,
+          status: status,
+          addedAt: DateTime(2024),
+          tvShow: TvShow(
+            tmdbId: testShowId,
+            title: 'Test Show',
+            posterUrl: null,
+            totalEpisodes: totalEpisodes,
+            totalSeasons: totalSeasons,
+          ),
+        );
+      }
+
+      test('должен перевести в inProgress при первом отмеченном эпизоде',
+          () async {
+        final CollectionItem item = createTvItem();
+        when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
+        when(() =>
+                mockDb.markEpisodeWatched(testCollectionId, testShowId, 1, 1))
+            .thenAnswer((_) async {});
+
+        final ProviderContainer container =
+            createTrackingContainer(<CollectionItem>[item]);
+        final EpisodeTrackerNotifier notifier =
+            container.read(episodeTrackerNotifierProvider(testArg).notifier);
+
+        await Future<void>.delayed(Duration.zero);
+        await notifier.toggleEpisode(1, 1);
+
+        expect(lastTracking.updateStatusCalls, hasLength(1));
+        expect(lastTracking.updateStatusCalls.first.$1, item.id);
+        expect(lastTracking.updateStatusCalls.first.$2, ItemStatus.inProgress);
+        expect(lastTracking.updateStatusCalls.first.$3, MediaType.tvShow);
+      });
+
+      test('должен перевести в inProgress при статусе planned', () async {
+        final CollectionItem item =
+            createTvItem(status: ItemStatus.planned);
+        when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
+        when(() =>
+                mockDb.markEpisodeWatched(testCollectionId, testShowId, 1, 1))
+            .thenAnswer((_) async {});
+
+        final ProviderContainer container =
+            createTrackingContainer(<CollectionItem>[item]);
+        final EpisodeTrackerNotifier notifier =
+            container.read(episodeTrackerNotifierProvider(testArg).notifier);
+
+        await Future<void>.delayed(Duration.zero);
+        await notifier.toggleEpisode(1, 1);
+
+        expect(lastTracking.updateStatusCalls, hasLength(1));
+        expect(lastTracking.updateStatusCalls.first.$2, ItemStatus.inProgress);
+      });
+
+      test('должен перевести в completed когда все эпизоды просмотрены',
+          () async {
+        final CollectionItem item =
+            createTvItem(totalEpisodes: 2, status: ItemStatus.notStarted);
+        // Уже просмотрен 1 эпизод (s1e1)
+        when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
+            .thenAnswer((_) async => <(int, int), DateTime?>{
+                  (1, 1): DateTime(2024),
+                });
+        when(() =>
+                mockDb.markEpisodeWatched(testCollectionId, testShowId, 1, 2))
+            .thenAnswer((_) async {});
+
+        final ProviderContainer container =
+            createTrackingContainer(<CollectionItem>[item]);
+        final EpisodeTrackerNotifier notifier =
+            container.read(episodeTrackerNotifierProvider(testArg).notifier);
+
+        await Future<void>.delayed(Duration.zero);
+        // Отмечаем второй — теперь 2/2
+        await notifier.toggleEpisode(1, 2);
+
+        // Сначала inProgress (notStarted → inProgress), потом completed
+        expect(lastTracking.updateStatusCalls, hasLength(2));
+        expect(lastTracking.updateStatusCalls[0].$2, ItemStatus.inProgress);
+        expect(lastTracking.updateStatusCalls[1].$2, ItemStatus.completed);
+      });
+
+      test('НЕ должен делать auto-complete если totalEpisodes == 0',
+          () async {
+        final CollectionItem item =
+            createTvItem(totalEpisodes: 0, status: ItemStatus.notStarted);
+        when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
+        when(() =>
+                mockDb.markEpisodeWatched(testCollectionId, testShowId, 1, 1))
+            .thenAnswer((_) async {});
+
+        final ProviderContainer container =
+            createTrackingContainer(<CollectionItem>[item]);
+        final EpisodeTrackerNotifier notifier =
+            container.read(episodeTrackerNotifierProvider(testArg).notifier);
+
+        await Future<void>.delayed(Duration.zero);
+        await notifier.toggleEpisode(1, 1);
+
+        // Только inProgress (notStarted → inProgress), без completed
+        expect(lastTracking.updateStatusCalls, hasLength(1));
+        expect(lastTracking.updateStatusCalls.first.$2, ItemStatus.inProgress);
+      });
+
+      test(
+          'должен делать auto-complete через fallback если totalEpisodes == 0 но все сезоны загружены',
+          () async {
+        // totalEpisodes=0 (TMDB не вернул), но totalSeasons=1,
+        // и сезон 1 загружен (3 эпизода)
+        final CollectionItem item = createTvItem(
+          totalEpisodes: 0,
+          totalSeasons: 1,
+          status: ItemStatus.notStarted,
+        );
+        when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
+        when(() => mockDb.getEpisodesByShowAndSeason(testShowId, 1))
+            .thenAnswer((_) async =>
+                <TvEpisode>[testEpisode1, testEpisode2, testEpisode3]);
+        when(() => mockDb.markSeasonWatched(
+              testCollectionId,
+              testShowId,
+              1,
+              <int>[1, 2, 3],
+            )).thenAnswer((_) async {});
+
+        final ProviderContainer container =
+            createTrackingContainer(<CollectionItem>[item]);
+        final EpisodeTrackerNotifier notifier =
+            container.read(episodeTrackerNotifierProvider(testArg).notifier);
+
+        await Future<void>.delayed(Duration.zero);
+
+        // Загружаем сезон и помечаем все эпизоды
+        await notifier.loadSeason(1);
+        await notifier.toggleSeason(1);
+
+        // inProgress + completed через fallback (3 загруженных == 3 просмотренных)
+        expect(lastTracking.updateStatusCalls, hasLength(2));
+        expect(lastTracking.updateStatusCalls[0].$2, ItemStatus.inProgress);
+        expect(lastTracking.updateStatusCalls[1].$2, ItemStatus.completed);
+
+        final List<CollectionItem>? items = container
+            .read(collectionItemsNotifierProvider(testCollectionId))
+            .valueOrNull;
+        final CollectionItem updatedItem = items!.firstWhere(
+          (CollectionItem ci) => ci.externalId == testShowId,
+        );
+        expect(updatedItem.completedAt, isNotNull);
+      });
+
+      test('должен сбрасывать в notStarted при снятии всех отметок',
+          () async {
+        final CollectionItem item =
+            createTvItem(status: ItemStatus.inProgress);
+        // 1 эпизод просмотрен
+        when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
+            .thenAnswer((_) async => <(int, int), DateTime?>{
+                  (1, 1): DateTime(2024),
+                });
+        when(() => mockDb.markEpisodeUnwatched(
+                testCollectionId, testShowId, 1, 1))
+            .thenAnswer((_) async {});
+
+        final ProviderContainer container =
+            createTrackingContainer(<CollectionItem>[item]);
+        final EpisodeTrackerNotifier notifier =
+            container.read(episodeTrackerNotifierProvider(testArg).notifier);
+
+        await Future<void>.delayed(Duration.zero);
+        // Снимаем единственный просмотренный
+        await notifier.toggleEpisode(1, 1);
+
+        expect(lastTracking.updateStatusCalls, hasLength(1));
+        expect(lastTracking.updateStatusCalls.first.$2, ItemStatus.notStarted);
+      });
+
+      test('должен перевести completed → inProgress при частичном снятии',
+          () async {
+        final CollectionItem item =
+            createTvItem(totalEpisodes: 3, status: ItemStatus.completed);
+        // 3 эпизода просмотрено
+        when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
+            .thenAnswer((_) async => <(int, int), DateTime?>{
+                  (1, 1): DateTime(2024),
+                  (1, 2): DateTime(2024),
+                  (1, 3): DateTime(2024),
+                });
+        when(() => mockDb.markEpisodeUnwatched(
+                testCollectionId, testShowId, 1, 3))
+            .thenAnswer((_) async {});
+
+        final ProviderContainer container =
+            createTrackingContainer(<CollectionItem>[item]);
+        final EpisodeTrackerNotifier notifier =
+            container.read(episodeTrackerNotifierProvider(testArg).notifier);
+
+        await Future<void>.delayed(Duration.zero);
+        // Снимаем один из трёх
+        await notifier.toggleEpisode(1, 3);
+
+        expect(lastTracking.updateStatusCalls, hasLength(1));
+        expect(lastTracking.updateStatusCalls.first.$2, ItemStatus.inProgress);
+      });
+
+      test('должен находить item по MediaType.animation', () async {
+        final CollectionItem item = createTvItem(
+          mediaType: MediaType.animation,
+        );
+        when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
+        when(() =>
+                mockDb.markEpisodeWatched(testCollectionId, testShowId, 1, 1))
+            .thenAnswer((_) async {});
+
+        final ProviderContainer container =
+            createTrackingContainer(<CollectionItem>[item]);
+        final EpisodeTrackerNotifier notifier =
+            container.read(episodeTrackerNotifierProvider(testArg).notifier);
+
+        await Future<void>.delayed(Duration.zero);
+        await notifier.toggleEpisode(1, 1);
+
+        expect(lastTracking.updateStatusCalls, hasLength(1));
+        expect(lastTracking.updateStatusCalls.first.$3, MediaType.animation);
+      });
+
+      test('не должен менять статус dropped при отметке эпизода', () async {
+        final CollectionItem item =
+            createTvItem(status: ItemStatus.dropped);
+        // 1 эпизод уже просмотрен
+        when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
+            .thenAnswer((_) async => <(int, int), DateTime?>{
+                  (1, 1): DateTime(2024),
+                });
+        when(() =>
+                mockDb.markEpisodeWatched(testCollectionId, testShowId, 1, 2))
+            .thenAnswer((_) async {});
+
+        final ProviderContainer container =
+            createTrackingContainer(<CollectionItem>[item]);
+        final EpisodeTrackerNotifier notifier =
+            container.read(episodeTrackerNotifierProvider(testArg).notifier);
+
+        await Future<void>.delayed(Duration.zero);
+        await notifier.toggleEpisode(1, 2);
+
+        // Dropped не должен автоматически меняться
+        expect(lastTracking.updateStatusCalls, isEmpty);
+      });
+
+      test('не должен менять статус если collectionId == null', () async {
+        when(() => mockDb.getWatchedEpisodes(any(), testShowId))
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
+
+        const ({int? collectionId, int showId}) uncatArg = (
+          collectionId: null,
+          showId: testShowId,
+        );
+        final ProviderContainer container =
+            createTrackingContainer(<CollectionItem>[]);
+        // Инициализируем провайдер с null collectionId
+        container.read(episodeTrackerNotifierProvider(uncatArg));
+
+        await Future<void>.delayed(Duration.zero);
+
+        // toggleEpisode не вызывается (collectionId == null → return в build)
+        // Нотификатор возвращает пустое состояние
+        expect(lastTracking.updateStatusCalls, isEmpty);
+      });
+
+      test(
+          'должен заполнять completedAt при пометке всех эпизодов всех сезонов через toggleSeason',
+          () async {
+        // Сезон 1: 3 эпизода, сезон 2: 2 эпизода = 5 итого
+        final CollectionItem item =
+            createTvItem(totalEpisodes: 5, status: ItemStatus.notStarted);
+
+        when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
+
+        // Загрузка сезонов из кеша БД
+        when(() => mockDb.getEpisodesByShowAndSeason(testShowId, 1))
+            .thenAnswer((_) async =>
+                <TvEpisode>[testEpisode1, testEpisode2, testEpisode3]);
+        when(() => mockDb.getEpisodesByShowAndSeason(testShowId, 2))
+            .thenAnswer(
+                (_) async => <TvEpisode>[testEpisode2s1, testEpisode2s2]);
+
+        // Моки для markSeasonWatched
+        when(() => mockDb.markSeasonWatched(
+              testCollectionId,
+              testShowId,
+              1,
+              <int>[1, 2, 3],
+            )).thenAnswer((_) async {});
+        when(() => mockDb.markSeasonWatched(
+              testCollectionId,
+              testShowId,
+              2,
+              <int>[1, 2],
+            )).thenAnswer((_) async {});
+
+        final ProviderContainer container =
+            createTrackingContainer(<CollectionItem>[item]);
+        final EpisodeTrackerNotifier notifier =
+            container.read(episodeTrackerNotifierProvider(testArg).notifier);
+
+        await Future<void>.delayed(Duration.zero);
+
+        // Загружаем оба сезона
+        await notifier.loadSeason(1);
+        await notifier.loadSeason(2);
+
+        // Отмечаем все эпизоды сезона 1
+        await notifier.toggleSeason(1);
+
+        // После сезона 1: 3/5 — должен стать inProgress
+        expect(lastTracking.updateStatusCalls, hasLength(1));
+        expect(lastTracking.updateStatusCalls[0].$2, ItemStatus.inProgress);
+
+        // Отмечаем все эпизоды сезона 2
+        await notifier.toggleSeason(2);
+
+        // После сезона 2: 5/5 — должен стать completed
+        expect(lastTracking.updateStatusCalls, hasLength(2));
+        expect(lastTracking.updateStatusCalls[1].$2, ItemStatus.completed);
+
+        // Проверяем, что completedAt заполнен в state
+        final List<CollectionItem>? items = container
+            .read(collectionItemsNotifierProvider(testCollectionId))
+            .valueOrNull;
+        expect(items, isNotNull);
+
+        final CollectionItem updatedItem = items!.firstWhere(
+          (CollectionItem ci) => ci.externalId == testShowId,
+        );
+        expect(updatedItem.status, ItemStatus.completed);
+        expect(updatedItem.completedAt, isNotNull);
+        expect(updatedItem.startedAt, isNotNull);
+      });
+
+      test(
+          'должен заполнять completedAt при пометке единственного сезона через toggleSeason',
+          () async {
+        // 1 сезон, 3 эпизода
+        final CollectionItem item =
+            createTvItem(totalEpisodes: 3, status: ItemStatus.notStarted);
+
+        when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
+        when(() => mockDb.getEpisodesByShowAndSeason(testShowId, 1))
+            .thenAnswer((_) async =>
+                <TvEpisode>[testEpisode1, testEpisode2, testEpisode3]);
+        when(() => mockDb.markSeasonWatched(
+              testCollectionId,
+              testShowId,
+              1,
+              <int>[1, 2, 3],
+            )).thenAnswer((_) async {});
+
+        final ProviderContainer container =
+            createTrackingContainer(<CollectionItem>[item]);
+        final EpisodeTrackerNotifier notifier =
+            container.read(episodeTrackerNotifierProvider(testArg).notifier);
+
+        await Future<void>.delayed(Duration.zero);
+
+        await notifier.loadSeason(1);
+        await notifier.toggleSeason(1);
+
+        // inProgress (notStarted → inProgress), затем completed (3/3)
+        expect(lastTracking.updateStatusCalls, hasLength(2));
+        expect(lastTracking.updateStatusCalls[0].$2, ItemStatus.inProgress);
+        expect(lastTracking.updateStatusCalls[1].$2, ItemStatus.completed);
+
+        // completedAt и startedAt заполнены
+        final List<CollectionItem>? items = container
+            .read(collectionItemsNotifierProvider(testCollectionId))
+            .valueOrNull;
+        expect(items, isNotNull);
+
+        final CollectionItem updatedItem = items!.firstWhere(
+          (CollectionItem ci) => ci.externalId == testShowId,
+        );
+        expect(updatedItem.status, ItemStatus.completed);
+        expect(updatedItem.completedAt, isNotNull);
+        expect(updatedItem.startedAt, isNotNull);
+      });
+
+      test('не должен менять статус если items == null', () async {
+        when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
+            .thenAnswer((_) async => <(int, int), DateTime?>{});
+        when(() =>
+                mockDb.markEpisodeWatched(testCollectionId, testShowId, 1, 1))
+            .thenAnswer((_) async {});
+
+        // Создаём контейнер с обычным mock (возвращает пустой список)
+        final ProviderContainer container = createContainer();
+        final EpisodeTrackerNotifier notifier =
+            container.read(episodeTrackerNotifierProvider(testArg).notifier);
+
+        await Future<void>.delayed(Duration.zero);
+        // toggleEpisode — item не будет найден (пустой список)
+        await notifier.toggleEpisode(1, 1);
+
+        // Не упал — просто ничего не сделал
       });
     });
   });

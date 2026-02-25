@@ -1701,10 +1701,15 @@ class DatabaseService {
     final bool hasStartedAt =
         rows.isNotEmpty && rows.first['started_at'] != null;
 
-    if (status == ItemStatus.inProgress && !hasStartedAt) {
-      updateData['started_at'] = now;
-    }
-    if (status == ItemStatus.completed) {
+    if (status == ItemStatus.notStarted) {
+      updateData['started_at'] = null;
+      updateData['completed_at'] = null;
+    } else if (status == ItemStatus.inProgress) {
+      updateData['completed_at'] = null;
+      if (!hasStartedAt) {
+        updateData['started_at'] = now;
+      }
+    } else if (status == ItemStatus.completed) {
       updateData['completed_at'] = now;
       if (!hasStartedAt) {
         updateData['started_at'] = now;
