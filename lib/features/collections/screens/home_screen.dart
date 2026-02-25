@@ -154,7 +154,7 @@ class HomeScreen extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Icon(
-              Icons.bookmark_border,
+              Icons.shelves,
               size: 80,
               color: AppColors.textTertiary.withAlpha(120),
             ),

@@ -108,7 +108,7 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           Icon(
-            Icons.collections_bookmark_outlined,
+            Icons.bookmark_border,
             size: 64,
             color: AppColors.textTertiary.withValues(alpha: 0.5),
           ),
@@ -335,7 +335,7 @@ class _WishlistTile extends StatelessWidget {
         color: MediaTypeTheme.colorFor(item.mediaTypeHint!),
       );
     }
-    return const Icon(Icons.collections_bookmark_outlined, color: AppColors.textTertiary);
+    return const Icon(Icons.bookmark_border, color: AppColors.textTertiary);
   }
 
   Widget? _buildSubtitle(BuildContext context) {
