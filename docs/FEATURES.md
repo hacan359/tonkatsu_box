@@ -126,9 +126,12 @@ Status display varies by context: "piano-style" segmented bar on detail screens 
 Track viewing progress at the episode level:
 - Episode progress bar with watched/total count
 - Expandable seasons with per-episode checkboxes
-- Season preloading on add, lazy episode loading on expand
+- Eager preloading of seasons and episodes on add (offline-ready)
 - Bulk "Mark all" / "Unmark all" per season
-- Auto-complete when all episodes are watched
+- Auto-status transitions: first episode → In Progress, all episodes → Completed, uncheck all → Not Started
+- Auto-date tracking: `started_at` set on first watch, `completed_at` set on all watched, dates cleared on reset
+- Reverse transitions: unchecking from Completed → In Progress, unchecking all → Not Started
+- On-demand TMDB detail fetch when `totalEpisodes`/`totalSeasons` missing from cache
 
 ### Activity Dates
 

@@ -872,4 +872,194 @@ void main() {
       expect(rows[2]['is_resolved'], 1);
     });
   });
+
+  group('updateItemStatus — логика дат', () {
+    late Database db;
+
+    setUp(() async {
+      db = await _createTestDatabase();
+    });
+
+    tearDown(() async {
+      await db.close();
+    });
+
+    /// Вставляет item с заданными started_at / completed_at.
+    Future<int> insertItemWithDates({
+      String status = 'not_started',
+      int? startedAt,
+      int? completedAt,
+    }) async {
+      final int collId = await _insertCollection(db, 'Test');
+      return db.insert('collection_items', <String, dynamic>{
+        'collection_id': collId,
+        'media_type': 'tv_show',
+        'external_id': 100,
+        'added_at': DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        'sort_order': 0,
+        'status': status,
+        'started_at': startedAt,
+        'completed_at': completedAt,
+      });
+    }
+
+    /// Зеркалит DatabaseService.updateItemStatus().
+    Future<void> updateItemStatus(int id, String status) async {
+      final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
+      final Map<String, dynamic> updateData = <String, dynamic>{
+        'status': status,
+        'last_activity_at': now,
+      };
+
+      final List<Map<String, dynamic>> rows = await db.query(
+        'collection_items',
+        columns: <String>['started_at'],
+        where: 'id = ?',
+        whereArgs: <Object?>[id],
+        limit: 1,
+      );
+
+      final bool hasStartedAt =
+          rows.isNotEmpty && rows.first['started_at'] != null;
+
+      if (status == 'not_started') {
+        updateData['started_at'] = null;
+        updateData['completed_at'] = null;
+      } else if (status == 'in_progress') {
+        updateData['completed_at'] = null;
+        if (!hasStartedAt) {
+          updateData['started_at'] = now;
+        }
+      } else if (status == 'completed') {
+        updateData['completed_at'] = now;
+        if (!hasStartedAt) {
+          updateData['started_at'] = now;
+        }
+      }
+
+      await db.update(
+        'collection_items',
+        updateData,
+        where: 'id = ?',
+        whereArgs: <Object?>[id],
+      );
+    }
+
+    Map<String, dynamic> getRow(List<Map<String, dynamic>> rows) => rows.first;
+
+    test('inProgress без started_at → ставит started_at', () async {
+      final int id = await insertItemWithDates();
+      await updateItemStatus(id, 'in_progress');
+
+      final List<Map<String, dynamic>> rows = await db.query(
+        'collection_items',
+        where: 'id = ?',
+        whereArgs: <Object?>[id],
+      );
+      final Map<String, dynamic> row = getRow(rows);
+
+      expect(row['status'], 'in_progress');
+      expect(row['started_at'], isNotNull);
+      expect(row['completed_at'], isNull);
+    });
+
+    test('inProgress с started_at → не перезаписывает started_at', () async {
+      final int oldStarted = DateTime(2024).millisecondsSinceEpoch ~/ 1000;
+      final int id = await insertItemWithDates(
+        status: 'in_progress',
+        startedAt: oldStarted,
+        completedAt: 999999,
+      );
+      await updateItemStatus(id, 'in_progress');
+
+      final List<Map<String, dynamic>> rows = await db.query(
+        'collection_items',
+        where: 'id = ?',
+        whereArgs: <Object?>[id],
+      );
+      final Map<String, dynamic> row = getRow(rows);
+
+      expect(row['started_at'], oldStarted);
+      expect(row['completed_at'], isNull);
+    });
+
+    test('completed → ставит completed_at и started_at (если null)', () async {
+      final int id = await insertItemWithDates();
+      await updateItemStatus(id, 'completed');
+
+      final List<Map<String, dynamic>> rows = await db.query(
+        'collection_items',
+        where: 'id = ?',
+        whereArgs: <Object?>[id],
+      );
+      final Map<String, dynamic> row = getRow(rows);
+
+      expect(row['status'], 'completed');
+      expect(row['started_at'], isNotNull);
+      expect(row['completed_at'], isNotNull);
+    });
+
+    test('completed с существующим started_at → не перезаписывает', () async {
+      final int oldStarted = DateTime(2024).millisecondsSinceEpoch ~/ 1000;
+      final int id = await insertItemWithDates(
+        status: 'in_progress',
+        startedAt: oldStarted,
+      );
+      await updateItemStatus(id, 'completed');
+
+      final List<Map<String, dynamic>> rows = await db.query(
+        'collection_items',
+        where: 'id = ?',
+        whereArgs: <Object?>[id],
+      );
+      final Map<String, dynamic> row = getRow(rows);
+
+      expect(row['started_at'], oldStarted);
+      expect(row['completed_at'], isNotNull);
+    });
+
+    test('notStarted → сбрасывает started_at и completed_at', () async {
+      final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      final int id = await insertItemWithDates(
+        status: 'completed',
+        startedAt: now,
+        completedAt: now,
+      );
+      await updateItemStatus(id, 'not_started');
+
+      final List<Map<String, dynamic>> rows = await db.query(
+        'collection_items',
+        where: 'id = ?',
+        whereArgs: <Object?>[id],
+      );
+      final Map<String, dynamic> row = getRow(rows);
+
+      expect(row['status'], 'not_started');
+      expect(row['started_at'], isNull);
+      expect(row['completed_at'], isNull);
+    });
+
+    test('inProgress → сбрасывает completed_at, сохраняет started_at', () async {
+      final int oldStarted = DateTime(2024).millisecondsSinceEpoch ~/ 1000;
+      final int oldCompleted = DateTime(2025).millisecondsSinceEpoch ~/ 1000;
+      final int id = await insertItemWithDates(
+        status: 'completed',
+        startedAt: oldStarted,
+        completedAt: oldCompleted,
+      );
+      await updateItemStatus(id, 'in_progress');
+
+      final List<Map<String, dynamic>> rows = await db.query(
+        'collection_items',
+        where: 'id = ?',
+        whereArgs: <Object?>[id],
+      );
+      final Map<String, dynamic> row = getRow(rows);
+
+      expect(row['status'], 'in_progress');
+      expect(row['started_at'], oldStarted);
+      expect(row['completed_at'], isNull);
+    });
+  });
 }

@@ -9,6 +9,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/movie.dart';
 import '../../../shared/models/tv_show.dart';
+import '../providers/collections_provider.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -102,6 +103,11 @@ class RecommendationsSection extends ConsumerWidget {
     final AsyncValue<List<Movie>> asyncRecs =
         ref.watch(_getMovieRecProvider(tmdbId));
 
+    final Set<int> ownedIds = <int>{
+      ...ref.watch(collectedMovieIdsProvider).valueOrNull?.keys ?? <int>[],
+      ...ref.watch(collectedAnimationIdsProvider).valueOrNull?.keys ?? <int>[],
+    };
+
     return asyncRecs.when(
       data: (List<Movie> movies) {
         if (movies.isEmpty) return const SizedBox.shrink();
@@ -118,6 +124,7 @@ class RecommendationsSection extends ConsumerWidget {
                   genres: m.genres,
                   icon: Icons.movie_outlined,
                   onAddToCollection: () => _showMovieDetails(context, m),
+                  isOwned: ownedIds.contains(m.tmdbId),
                 ),
               )
               .toList(),
@@ -131,6 +138,11 @@ class RecommendationsSection extends ConsumerWidget {
   Widget _buildTvRecommendations(BuildContext context, WidgetRef ref) {
     final AsyncValue<List<TvShow>> asyncRecs =
         ref.watch(_getTvRecProvider(tmdbId));
+
+    final Set<int> ownedIds = <int>{
+      ...ref.watch(collectedTvShowIdsProvider).valueOrNull?.keys ?? <int>[],
+      ...ref.watch(collectedAnimationIdsProvider).valueOrNull?.keys ?? <int>[],
+    };
 
     return asyncRecs.when(
       data: (List<TvShow> shows) {
@@ -148,6 +160,7 @@ class RecommendationsSection extends ConsumerWidget {
                   genres: s.genres,
                   icon: Icons.tv_outlined,
                   onAddToCollection: () => _showTvShowDetails(context, s),
+                  isOwned: ownedIds.contains(s.tmdbId),
                 ),
               )
               .toList(),
@@ -206,6 +219,7 @@ class _RecItem {
     this.rating,
     this.overview,
     this.genres,
+    this.isOwned = false,
   });
 
   final String title;
@@ -216,6 +230,7 @@ class _RecItem {
   final List<String>? genres;
   final IconData icon;
   final VoidCallback onAddToCollection;
+  final bool isOwned;
 }
 
 /// Горизонтальный ряд рекомендаций.
@@ -301,9 +316,24 @@ class _RecPosterCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                child: _buildPoster(),
+              child: Stack(
+                fit: StackFit.expand,
+                children: <Widget>[
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                    child: _buildPoster(),
+                  ),
+                  if (item.isOwned)
+                    const Positioned(
+                      top: 4,
+                      right: 4,
+                      child: Icon(
+                        Icons.check_circle,
+                        color: AppColors.success,
+                        size: 20,
+                      ),
+                    ),
+                ],
               ),
             ),
             const SizedBox(height: 4),

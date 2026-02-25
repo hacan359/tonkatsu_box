@@ -1,5 +1,6 @@
 // Горизонтальный список с кнопками-стрелками для десктопа.
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
@@ -85,9 +86,18 @@ class _ScrollableRowWithArrowsState extends State<ScrollableRowWithArrows> {
 
     return Stack(
       children: <Widget>[
-        HorizontalMouseScroll(
-          controller: widget.controller,
-          child: widget.child,
+        ScrollConfiguration(
+          behavior: ScrollConfiguration.of(context).copyWith(
+            scrollbars: false,
+            dragDevices: <PointerDeviceKind>{
+              PointerDeviceKind.touch,
+              PointerDeviceKind.mouse,
+            },
+          ),
+          child: HorizontalMouseScroll(
+            controller: widget.controller,
+            child: widget.child,
+          ),
         ),
         if (isDesktop && _showLeftArrow)
           Positioned(

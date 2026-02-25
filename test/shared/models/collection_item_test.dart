@@ -721,6 +721,80 @@ void main() {
         expect(copy.userComment, isNull);
       });
 
+      test('должен очищать startedAt через clearStartedAt', () {
+        final CollectionItem original = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.tvShow,
+          externalId: 1399,
+          status: ItemStatus.inProgress,
+          addedAt: testAddedAt,
+          startedAt: testAddedAt,
+        );
+
+        final CollectionItem copy = original.copyWith(clearStartedAt: true);
+
+        expect(copy.startedAt, isNull);
+        expect(copy.id, original.id);
+      });
+
+      test('должен очищать completedAt через clearCompletedAt', () {
+        final CollectionItem original = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.tvShow,
+          externalId: 1399,
+          status: ItemStatus.completed,
+          addedAt: testAddedAt,
+          startedAt: testAddedAt,
+          completedAt: testAddedAt,
+        );
+
+        final CollectionItem copy = original.copyWith(clearCompletedAt: true);
+
+        expect(copy.completedAt, isNull);
+        expect(copy.startedAt, original.startedAt);
+        expect(copy.id, original.id);
+      });
+
+      test('clearStartedAt должен иметь приоритет над startedAt', () {
+        final CollectionItem original = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.tvShow,
+          externalId: 1399,
+          status: ItemStatus.inProgress,
+          addedAt: testAddedAt,
+          startedAt: testAddedAt,
+        );
+
+        final CollectionItem copy = original.copyWith(
+          startedAt: DateTime(2025),
+          clearStartedAt: true,
+        );
+
+        expect(copy.startedAt, isNull);
+      });
+
+      test('clearCompletedAt должен иметь приоритет над completedAt', () {
+        final CollectionItem original = CollectionItem(
+          id: 1,
+          collectionId: 10,
+          mediaType: MediaType.tvShow,
+          externalId: 1399,
+          status: ItemStatus.completed,
+          addedAt: testAddedAt,
+          completedAt: testAddedAt,
+        );
+
+        final CollectionItem copy = original.copyWith(
+          completedAt: DateTime(2025),
+          clearCompletedAt: true,
+        );
+
+        expect(copy.completedAt, isNull);
+      });
+
       test('должен позволять изменять joined объекты', () {
         final CollectionItem original = CollectionItem(
           id: 1,

@@ -14,6 +14,7 @@ import '../../../shared/models/game.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/movie.dart';
 import '../../../shared/models/platform.dart';
+import '../../../shared/models/tv_episode.dart';
 import '../../../shared/models/tv_season.dart';
 import '../../../shared/models/tv_show.dart';
 import '../../../shared/theme/app_colors.dart';
@@ -199,23 +200,32 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     );
   }
 
-  void _preloadSeasons(int tmdbId) {
-    _preloadSeasonsAsync(tmdbId);
-  }
-
   Future<void> _preloadSeasonsAsync(int tmdbId) async {
     if (!mounted) return;
     try {
       final DatabaseService db = ref.read(databaseServiceProvider);
-      final List<TvSeason> cached = await db.getTvSeasonsByShowId(tmdbId);
-      if (cached.isNotEmpty) return;
       final TmdbApi tmdb = ref.read(tmdbApiProvider);
-      final List<TvSeason> seasons = await tmdb.getTvSeasons(tmdbId);
-      if (seasons.isNotEmpty) {
-        await db.upsertTvSeasons(seasons);
+
+      // 1. Сезоны: кэш → API → сохранить
+      List<TvSeason> seasons = await db.getTvSeasonsByShowId(tmdbId);
+      if (seasons.isEmpty) {
+        seasons = await tmdb.getTvSeasons(tmdbId);
+        if (seasons.isNotEmpty) await db.upsertTvSeasons(seasons);
+      }
+
+      // 2. Эпизоды каждого сезона: кэш → API → сохранить
+      for (final TvSeason season in seasons) {
+        if (!mounted) return;
+        final List<TvEpisode> cached =
+            await db.getEpisodesByShowAndSeason(tmdbId, season.seasonNumber);
+        if (cached.isEmpty) {
+          final List<TvEpisode> episodes =
+              await tmdb.getSeasonEpisodes(tmdbId, season.seasonNumber);
+          if (episodes.isNotEmpty) await db.upsertEpisodes(episodes);
+        }
       }
     } catch (_) {
-      // Не критично — сезоны загрузятся при просмотре деталей
+      // Не критично — загрузится при следующем открытии деталей с сетью
     }
   }
 
@@ -377,6 +387,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   Future<void> _addMovieToCollection(Movie movie) async {
     final String title = movie.title;
 
+    // Кэшируем модель в БД, чтобы она была доступна офлайн
+    await ref.read(databaseServiceProvider).upsertMovie(movie);
+
     final bool success = await ref
         .read(
             collectionItemsNotifierProvider(widget.collectionId).notifier)
@@ -437,7 +450,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         collectionName = l.collectionsUncategorized;
     }
 
-    // Кэшируем модель в БД, чтобы она была доступна при отображении
+    // Кэшируем модель в БД, чтобы она была доступна офлайн
     await ref.read(databaseServiceProvider).upsertMovie(movie);
 
     final bool success = await ref
@@ -464,6 +477,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   Future<void> _addTvShowToCollection(TvShow tvShow) async {
     final String title = tvShow.title;
 
+    // Кэшируем модель в БД, чтобы она была доступна офлайн
+    await ref.read(databaseServiceProvider).upsertTvShow(tvShow);
+
     final bool success = await ref
         .read(
             collectionItemsNotifierProvider(widget.collectionId).notifier)
@@ -480,8 +496,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           tvShow.tmdbId.toString(),
           tvShow.posterUrl,
         );
-        _preloadSeasons(tvShow.tmdbId);
-        context.showSnack(l.searchAddedToCollection(title), type: SnackType.success);
+        await _preloadSeasonsAsync(tvShow.tmdbId);
+        if (mounted) {
+          context.showSnack(l.searchAddedToCollection(title), type: SnackType.success);
+        }
       } else {
         context.showSnack(l.searchAlreadyInCollection(title), type: SnackType.info);
       }
@@ -511,7 +529,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         collectionName = l.collectionsUncategorized;
     }
 
-    // Кэшируем модель в БД, чтобы она была доступна при отображении
+    // Кэшируем модель в БД, чтобы она была доступна офлайн
     await ref.read(databaseServiceProvider).upsertTvShow(tvShow);
 
     final bool success = await ref
@@ -528,8 +546,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           tvShow.tmdbId.toString(),
           tvShow.posterUrl,
         );
-        _preloadSeasons(tvShow.tmdbId);
-        context.showSnack(l.searchAddedToNamed(title, collectionName), type: SnackType.success);
+        await _preloadSeasonsAsync(tvShow.tmdbId);
+        if (mounted) {
+          context.showSnack(l.searchAddedToNamed(title, collectionName), type: SnackType.success);
+        }
       } else {
         context.showSnack(l.searchAlreadyInNamed(title, collectionName), type: SnackType.info);
       }
@@ -540,6 +560,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
   Future<void> _addAnimationMovieToCollection(Movie movie) async {
     final String title = movie.title;
+
+    // Кэшируем модель в БД, чтобы она была доступна офлайн
+    await ref.read(databaseServiceProvider).upsertMovie(movie);
 
     final bool success = await ref
         .read(
@@ -568,6 +591,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   Future<void> _addAnimationTvShowToCollection(TvShow tvShow) async {
     final String title = tvShow.title;
 
+    // Кэшируем модель в БД, чтобы она была доступна офлайн
+    await ref.read(databaseServiceProvider).upsertTvShow(tvShow);
+
     final bool success = await ref
         .read(
             collectionItemsNotifierProvider(widget.collectionId).notifier)
@@ -585,8 +611,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           tvShow.tmdbId.toString(),
           tvShow.posterUrl,
         );
-        _preloadSeasons(tvShow.tmdbId);
-        context.showSnack(l.searchAddedToCollection(title), type: SnackType.success);
+        await _preloadSeasonsAsync(tvShow.tmdbId);
+        if (mounted) {
+          context.showSnack(l.searchAddedToCollection(title), type: SnackType.success);
+        }
       } else {
         context.showSnack(l.searchAlreadyInCollection(title), type: SnackType.info);
       }
@@ -615,6 +643,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         collectionId = null;
         collectionName = l.collectionsUncategorized;
     }
+
+    // Кэшируем модель в БД, чтобы она была доступна офлайн
+    await ref.read(databaseServiceProvider).upsertMovie(movie);
 
     final bool success = await ref
         .read(collectionItemsNotifierProvider(collectionId).notifier)
@@ -661,6 +692,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         collectionName = l.collectionsUncategorized;
     }
 
+    // Кэшируем модель в БД, чтобы она была доступна офлайн
+    await ref.read(databaseServiceProvider).upsertTvShow(tvShow);
+
     final bool success = await ref
         .read(collectionItemsNotifierProvider(collectionId).notifier)
         .addItem(
@@ -676,8 +710,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           tvShow.tmdbId.toString(),
           tvShow.posterUrl,
         );
-        _preloadSeasons(tvShow.tmdbId);
-        context.showSnack(l.searchAddedToNamed(title, collectionName), type: SnackType.success);
+        await _preloadSeasonsAsync(tvShow.tmdbId);
+        if (mounted) {
+          context.showSnack(l.searchAddedToNamed(title, collectionName), type: SnackType.success);
+        }
       } else {
         context.showSnack(l.searchAlreadyInNamed(title, collectionName), type: SnackType.info);
       }

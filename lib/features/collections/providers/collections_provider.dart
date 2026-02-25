@@ -372,11 +372,25 @@ class CollectionItemsNotifier
       state = AsyncData<List<CollectionItem>>(
         items.map((CollectionItem i) {
           if (i.id == id) {
+            if (status == ItemStatus.notStarted) {
+              return i.copyWith(
+                status: status,
+                clearStartedAt: true,
+                clearCompletedAt: true,
+                lastActivityAt: now,
+              );
+            }
+            if (status == ItemStatus.inProgress) {
+              return i.copyWith(
+                status: status,
+                startedAt: i.startedAt ?? now,
+                clearCompletedAt: true,
+                lastActivityAt: now,
+              );
+            }
+            // completed и другие статусы
             DateTime? newStartedAt = i.startedAt;
             DateTime? newCompletedAt = i.completedAt;
-            if (status == ItemStatus.inProgress && i.startedAt == null) {
-              newStartedAt = now;
-            }
             if (status == ItemStatus.completed) {
               newCompletedAt = now;
               newStartedAt ??= now;

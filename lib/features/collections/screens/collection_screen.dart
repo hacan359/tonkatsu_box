@@ -1024,7 +1024,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Icon(
-              Icons.bookmark_border,
+              Icons.shelves,
               size: 64,
               color: AppColors.textTertiary.withAlpha(120),
             ),

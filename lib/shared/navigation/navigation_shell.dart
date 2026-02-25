@@ -187,13 +187,13 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
                     label: Text(S.of(context).navMain),
                   ),
                   NavigationRailDestination(
-                    icon: const Icon(Icons.bookmark_border),
-                    selectedIcon: const Icon(Icons.bookmark),
+                    icon: const Icon(Icons.shelves),
+                    selectedIcon: const Icon(Icons.shelves),
                     label: Text(S.of(context).navCollections),
                   ),
                   NavigationRailDestination(
-                    icon: _buildWishlistIcon(Icons.collections_bookmark_outlined),
-                    selectedIcon: _buildWishlistIcon(Icons.collections_bookmark),
+                    icon: _buildWishlistIcon(Icons.bookmark_border),
+                    selectedIcon: _buildWishlistIcon(Icons.bookmark),
                     label: Text(S.of(context).navWishlist),
                   ),
                   NavigationRailDestination(
@@ -244,13 +244,13 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
           label: S.of(context).navMain,
         ),
         BottomNavigationBarItem(
-          icon: const Icon(Icons.bookmark_border),
-          activeIcon: const Icon(Icons.bookmark),
+          icon: const Icon(Icons.shelves),
+          activeIcon: const Icon(Icons.shelves),
           label: S.of(context).navCollections,
         ),
         BottomNavigationBarItem(
-          icon: _buildWishlistIcon(Icons.collections_bookmark_outlined),
-          activeIcon: _buildWishlistIcon(Icons.collections_bookmark),
+          icon: _buildWishlistIcon(Icons.bookmark_border),
+          activeIcon: _buildWishlistIcon(Icons.bookmark),
           label: S.of(context).navWishlist,
         ),
         BottomNavigationBarItem(

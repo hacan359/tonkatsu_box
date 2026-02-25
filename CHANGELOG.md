@@ -22,12 +22,28 @@
 - Tests: `discover_provider_test.dart`, `discover_row_test.dart`, `media_details_sheet_test.dart`, `tmdb_review_test.dart`, `horizontal_mouse_scroll_test.dart`, `scrollable_row_with_arrows_test.dart`, `settings_provider_show_recommendations_test.dart`
 
 ### Changed
+- Eager preload of seasons AND episodes when adding a TV show or animated series — `_preloadSeasonsAsync()` now fetches episodes for each season (cache → API → save), awaited before showing snackbar instead of fire-and-forget, guaranteeing offline access to episode tracker data (`search_screen.dart`)
+- All add-to-collection methods now call `upsertMovie()` / `upsertTvShow()` before `addItem()` — ensures media model is cached in DB for offline access. Previously only `_addMovieToAnyCollection` and `_addTvShowToAnyCollection` did this; now all 8 methods (movie, TV show, animation movie, animation TV show × direct/picker) are consistent (`search_screen.dart`)
 - TMDB poster URL size reduced from `w500` to `w342` in `Movie.fromJson()`, `TvShow.fromJson()`, `TvSeason.fromJson()` — ~40% smaller downloads, sufficient for all poster display sizes (100–130px logical) (`movie.dart`, `tv_show.dart`, `tv_season.dart`)
 - `posterThumbUrl` getter now uses `RegExp(r'/w\d+')` instead of hardcoded `'/w500'` — works correctly with both new `w342` URLs and legacy `w500` URLs stored in database (`movie.dart`, `tv_show.dart`)
+- Rewrote episode tracker auto-status logic (`_checkAutoComplete` → `_updateAutoStatus`) — now handles all transitions: notStarted ↔ inProgress ↔ completed, supports `MediaType.animation`, fetches TV details from TMDB API when cache is missing `totalEpisodes`/`totalSeasons` (`episode_tracker_provider.dart`)
+- Added `clearStartedAt` / `clearCompletedAt` flags to `CollectionItem.copyWith()` — allows resetting nullable date fields to null (`collection_item.dart`)
+- `DatabaseService.updateItemStatus()` now clears/sets dates based on status: `notStarted` clears both dates, `inProgress` clears `completedAt` and sets `startedAt` if missing (`database_service.dart`)
+- `CollectionItemsNotifier.updateStatus()` mirrors DB date logic in local state for instant UI updates (`collections_provider.dart`)
+- Owned badge (check_circle icon) now shown on Recommendations section, matching Discover feed behavior (`recommendations_section.dart`)
+- Mouse drag-to-scroll enabled in horizontal rows via `ScrollConfiguration` with `PointerDeviceKind.mouse`, scrollbar hidden (`scrollable_row_with_arrows.dart`)
+- Swapped navigation icons — Collections uses `shelves` icon, Wishlist uses `bookmark`/`bookmark_border` (across navigation, empty states, welcome screen, dialogs) (`navigation_shell.dart`, `home_screen.dart`, `collection_screen.dart`, `wishlist_screen.dart`, `add_wishlist_dialog.dart`, `welcome_step_how_it_works.dart`, `trakt_import_screen.dart`)
+- Removed all `debugPrint` diagnostic logging from episode tracker (`episode_tracker_provider.dart`, `episode_tracker_section.dart`)
 
 ### Fixed
+- Fixed `EpisodeTrackerSection` being rendered for uncategorized items (where `collectionId` is null) — episode tracking requires a real `collection_id` in the `watched_episodes` DB table, so the section is now hidden when `collectionId` is null (`item_detail_screen.dart`)
 - Fixed poster image cache miss when opening detail sheet from Discover feed and Recommendations — was using `posterThumbUrl` (w154) while poster cards used `posterUrl` (w500), causing re-download. Now both use `posterUrl` for consistent caching (`discover_feed.dart`, `recommendations_section.dart`)
 - Fixed genres displaying as numeric IDs (e.g., "18, 53") instead of names (e.g., "Drama, Thriller") in Discover feed and Recommendations — TMDB list endpoints return `genre_ids` which were passed as-is to `Movie.fromJson()` (`tmdb_api.dart`)
+- Fixed `completedAt` date not being set when marking all episodes as watched — TMDB search/list APIs don't return `number_of_episodes`/`number_of_seasons`, so cached TvShow had null values; now `_updateAutoStatus` fetches full TV details from `/tv/{id}` endpoint on first use and caches result (`episode_tracker_provider.dart`)
+- Fixed `started_at` not being set when first episode is marked as watched — auto-transition to `inProgress` now triggers `started_at` in both DB and local state (`episode_tracker_provider.dart`, `collections_provider.dart`, `database_service.dart`)
+- Fixed no reverse transition when unchecking all episodes — status now resets to `notStarted` with cleared dates; unchecking from `completed` transitions back to `inProgress` (`episode_tracker_provider.dart`)
+- Fixed episode tracker only searching for `MediaType.tvShow`, missing `MediaType.animation` items (`episode_tracker_provider.dart`)
+- Fixed Discover and genre caches not invalidating on TMDB language change — added `ref.watch(settingsNotifierProvider.select(...tmdbLanguage))` to all Discover providers and genre providers (`discover_provider.dart`, `genre_provider.dart`)
 
 ## [0.14.0] - 2026-02-24
 

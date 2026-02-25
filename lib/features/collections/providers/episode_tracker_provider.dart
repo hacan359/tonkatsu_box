@@ -1,5 +1,7 @@
 // Провайдер для трекинга просмотренных эпизодов сериала.
 
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/tmdb_api.dart';
@@ -8,6 +10,7 @@ import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/tv_episode.dart';
+import '../../../shared/models/tv_show.dart';
 import 'collections_provider.dart';
 
 /// Состояние трекера эпизодов.
@@ -98,6 +101,12 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
   late TmdbApi _tmdbApi;
   late int? _collectionId;
   late int _showId;
+
+  // Кэш данных о сериале, полученных из TMDB API (чтобы не делать запрос
+  // при каждом toggleEpisode/toggleSeason).
+  int? _cachedTotalEpisodes;
+  int? _cachedTotalSeasons;
+  bool _hasFetchedTotals = false;
 
   @override
   EpisodeTrackerState build(({int? collectionId, int showId}) arg) {
@@ -240,7 +249,7 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
       state = state.copyWith(watchedEpisodes: updated);
     }
 
-    await _checkAutoComplete();
+    unawaited(_updateAutoStatus());
   }
 
   /// Переключает отметку просмотра всех эпизодов сезона.
@@ -277,40 +286,101 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
       state = state.copyWith(watchedEpisodes: updated);
     }
 
-    await _checkAutoComplete();
+    unawaited(_updateAutoStatus());
   }
 
-  Future<void> _checkAutoComplete() async {
+  Future<void> _updateAutoStatus() async {
+    final int? collId = _collectionId;
+    if (collId == null) return;
+
     final int totalWatched = state.totalWatchedCount;
-    if (totalWatched == 0) return;
 
     final List<CollectionItem>? items = ref
-        .read(collectionItemsNotifierProvider(_collectionId))
+        .read(collectionItemsNotifierProvider(collId))
         .valueOrNull;
     if (items == null) return;
 
-    // Находим элемент сериала, чтобы узнать общее количество эпизодов
+    // Находим элемент сериала (tvShow или animation)
     CollectionItem? targetItem;
     for (final CollectionItem ci in items) {
-      if (ci.externalId == _showId && ci.mediaType == MediaType.tvShow) {
+      if (ci.externalId == _showId &&
+          (ci.mediaType == MediaType.tvShow ||
+           ci.mediaType == MediaType.animation)) {
         targetItem = ci;
         break;
       }
     }
     if (targetItem == null) return;
 
-    // Используем totalEpisodes из метаданных, а не количество загруженных
-    final int totalInShow = targetItem.tvShow?.totalEpisodes ?? 0;
-    final int total =
-        totalInShow > 0 ? totalInShow : state.totalEpisodeCount;
-    if (total == 0) return;
+    final ItemStatus currentStatus = targetItem.status;
+    int totalInShow = _cachedTotalEpisodes ??
+        targetItem.tvShow?.totalEpisodes ?? 0;
+    int totalSeasons = _cachedTotalSeasons ??
+        targetItem.tvShow?.totalSeasons ?? 0;
 
-    if (totalWatched >= total &&
-        targetItem.status != ItemStatus.completed) {
+    // Если в кэше нет totalEpisodes/totalSeasons — подгружаем из TMDB API
+    // (только один раз за сессию, чтобы не делать запрос при каждом toggle)
+    if ((totalInShow == 0 || totalSeasons == 0) && !_hasFetchedTotals) {
+      _hasFetchedTotals = true;
+      try {
+        final TvShow? freshShow = await _tmdbApi.getTvShow(_showId);
+        if (freshShow != null) {
+          await _db.upsertTvShow(freshShow);
+          totalInShow = freshShow.totalEpisodes ?? 0;
+          totalSeasons = freshShow.totalSeasons ?? 0;
+          _cachedTotalEpisodes = totalInShow;
+          _cachedTotalSeasons = totalSeasons;
+        }
+      } on Exception catch (_) {
+        // API недоступен — используем имеющиеся данные
+      }
+    }
+
+    // Fallback: если TMDB API тоже не вернул totalEpisodes,
+    // но все сезоны загружены — используем сумму загруженных эпизодов
+    if (totalInShow == 0 &&
+        totalSeasons > 0 &&
+        state.episodesBySeason.length >= totalSeasons) {
+      totalInShow = state.totalEpisodeCount;
+    }
+
+    // Все сняты → notStarted (если был inProgress или completed)
+    if (totalWatched == 0) {
+      if (currentStatus == ItemStatus.inProgress ||
+          currentStatus == ItemStatus.completed) {
+        await ref
+            .read(collectionItemsNotifierProvider(collId).notifier)
+            .updateStatus(
+                targetItem.id, ItemStatus.notStarted, targetItem.mediaType);
+      }
+      return;
+    }
+
+    // Все просмотрены → completed (только если totalInShow известен)
+    if (totalInShow > 0 && totalWatched >= totalInShow) {
+      if (currentStatus != ItemStatus.completed) {
+        await ref
+            .read(collectionItemsNotifierProvider(collId).notifier)
+            .updateStatus(
+                targetItem.id, ItemStatus.completed, targetItem.mediaType);
+      }
+      return;
+    }
+
+    // Есть просмотренные, но не все → inProgress
+    // (если был notStarted, planned или completed)
+    if (currentStatus == ItemStatus.notStarted ||
+        currentStatus == ItemStatus.planned) {
       await ref
-          .read(collectionItemsNotifierProvider(_collectionId).notifier)
+          .read(collectionItemsNotifierProvider(collId).notifier)
           .updateStatus(
-              targetItem.id, ItemStatus.completed, MediaType.tvShow);
+              targetItem.id, ItemStatus.inProgress, targetItem.mediaType);
+    } else if (currentStatus == ItemStatus.completed &&
+        totalInShow > 0 && totalWatched < totalInShow) {
+      await ref
+          .read(collectionItemsNotifierProvider(collId).notifier)
+          .updateStatus(
+              targetItem.id, ItemStatus.inProgress, targetItem.mediaType);
     }
   }
 }
