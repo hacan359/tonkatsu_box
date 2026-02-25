@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:xerabora/core/api/tmdb_api.dart';
 import 'package:xerabora/shared/models/movie.dart';
+import 'package:xerabora/shared/models/tmdb_review.dart';
 import 'package:xerabora/shared/models/tv_episode.dart';
 import 'package:xerabora/shared/models/tv_season.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
@@ -20,6 +21,11 @@ void main() {
   setUp(() {
     mockDio = MockDio();
     sut = TmdbApi(dio: mockDio);
+    // Предустанавливаем пустой кэш жанров, чтобы не было лишних запросов к API.
+    sut.setGenreCacheForTesting(
+      movieGenres: <int, String>{},
+      tvGenres: <int, String>{},
+    );
   });
 
   tearDown(() {
@@ -113,6 +119,26 @@ void main() {
       'air_date': airDate,
       'still_path': stillPath,
       'runtime': runtime,
+    };
+  }
+
+  Map<String, dynamic> createReviewJson({
+    String author = 'MovieFan42',
+    String content = 'Great movie, highly recommended!',
+    String createdAt = '2023-06-15T10:30:00.000Z',
+    String? avatarPath = '/abc123.jpg',
+    double? rating = 8.0,
+    String? url = 'https://www.themoviedb.org/review/abc123',
+  }) {
+    return <String, dynamic>{
+      'author': author,
+      'content': content,
+      'created_at': createdAt,
+      'author_details': <String, dynamic>{
+        'avatar_path': avatarPath,
+        'rating': rating,
+      },
+      'url': url,
     };
   }
 
@@ -1849,6 +1875,2395 @@ void main() {
         sut.dispose();
 
         verify(() => mockDio.close()).called(1);
+      });
+    });
+
+    // ----- getMovieRecommendations -----
+
+    group('getMovieRecommendations', () {
+      setUp(() {
+        sut.setApiKey(testApiKey);
+      });
+
+      test('должен вернуть список рекомендованных фильмов', () async {
+        final Map<String, dynamic> movie1 = createMovieJson();
+        final Map<String, dynamic> movie2 = createMovieJson(
+          id: 680,
+          title: 'Криминальное чтиво',
+        );
+
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[movie1, movie2],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<Movie> result = await sut.getMovieRecommendations(550);
+
+        expect(result, hasLength(2));
+        expect(result[0].tmdbId, equals(550));
+        expect(result[1].tmdbId, equals(680));
+      });
+
+      test('должен вызвать правильный URL', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.getMovieRecommendations(550);
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              captureAny(),
+              queryParameters: any(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final String url = verification.captured.first as String;
+        expect(url, contains('/movie/550/recommendations'));
+      });
+
+      test('должен передать page в queryParameters', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.getMovieRecommendations(550, page: 3);
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: captureAny(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final Map<String, dynamic> params =
+            verification.captured.first as Map<String, dynamic>;
+        expect(params['page'], equals(3));
+      });
+
+      test('должен вернуть пустой список при пустых результатах', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<Movie> result = await sut.getMovieRecommendations(550);
+
+        expect(result, isEmpty);
+      });
+
+      test('должен выбросить TmdbApiException если ключ не установлен', () {
+        sut.clearApiKey();
+
+        expect(
+          () => sut.getMovieRecommendations(550),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'API key not set',
+          )),
+        );
+      });
+
+      test('должен выбросить TmdbApiException при DioException', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenThrow(DioException(
+          response: Response<dynamic>(
+            statusCode: 401,
+            requestOptions: RequestOptions(),
+          ),
+          requestOptions: RequestOptions(),
+        ));
+
+        expect(
+          () => sut.getMovieRecommendations(550),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'Invalid API key',
+          )),
+        );
+      });
+
+      test('должен выбросить TmdbApiException при неуспешном статусе', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: null,
+              statusCode: 500,
+              requestOptions: RequestOptions(),
+            ));
+
+        expect(
+          () => sut.getMovieRecommendations(550),
+          throwsA(isA<TmdbApiException>()),
+        );
+      });
+    });
+
+    // ----- getSimilarMovies -----
+
+    group('getSimilarMovies', () {
+      setUp(() {
+        sut.setApiKey(testApiKey);
+      });
+
+      test('должен вернуть список похожих фильмов', () async {
+        final Map<String, dynamic> movie1 = createMovieJson();
+        final Map<String, dynamic> movie2 = createMovieJson(
+          id: 680,
+          title: 'Криминальное чтиво',
+        );
+
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[movie1, movie2],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<Movie> result = await sut.getSimilarMovies(550);
+
+        expect(result, hasLength(2));
+        expect(result[0].tmdbId, equals(550));
+        expect(result[1].tmdbId, equals(680));
+      });
+
+      test('должен вызвать правильный URL', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.getSimilarMovies(550);
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              captureAny(),
+              queryParameters: any(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final String url = verification.captured.first as String;
+        expect(url, contains('/movie/550/similar'));
+      });
+
+      test('должен вернуть пустой список при пустых результатах', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<Movie> result = await sut.getSimilarMovies(550);
+
+        expect(result, isEmpty);
+      });
+
+      test('должен выбросить TmdbApiException если ключ не установлен', () {
+        sut.clearApiKey();
+
+        expect(
+          () => sut.getSimilarMovies(550),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'API key not set',
+          )),
+        );
+      });
+
+      test('должен выбросить TmdbApiException при DioException', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenThrow(DioException(
+          response: Response<dynamic>(
+            statusCode: 429,
+            requestOptions: RequestOptions(),
+          ),
+          requestOptions: RequestOptions(),
+        ));
+
+        expect(
+          () => sut.getSimilarMovies(550),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'Rate limit exceeded. Please try again later',
+          )),
+        );
+      });
+
+      test('должен выбросить TmdbApiException при неуспешном статусе', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: null,
+              statusCode: 503,
+              requestOptions: RequestOptions(),
+            ));
+
+        expect(
+          () => sut.getSimilarMovies(550),
+          throwsA(isA<TmdbApiException>()),
+        );
+      });
+    });
+
+    // ----- getTvRecommendations -----
+
+    group('getTvRecommendations', () {
+      setUp(() {
+        sut.setApiKey(testApiKey);
+      });
+
+      test('должен вернуть список рекомендованных сериалов', () async {
+        final Map<String, dynamic> tvShow1 = createTvShowJson();
+        final Map<String, dynamic> tvShow2 = createTvShowJson(
+          id: 1399,
+          name: 'Игра престолов',
+        );
+
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[tvShow1, tvShow2],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<TvShow> result = await sut.getTvRecommendations(1396);
+
+        expect(result, hasLength(2));
+        expect(result[0].tmdbId, equals(1396));
+        expect(result[1].tmdbId, equals(1399));
+      });
+
+      test('должен вызвать правильный URL', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.getTvRecommendations(1396);
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              captureAny(),
+              queryParameters: any(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final String url = verification.captured.first as String;
+        expect(url, contains('/tv/1396/recommendations'));
+      });
+
+      test('должен передать page в queryParameters', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.getTvRecommendations(1396, page: 2);
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: captureAny(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final Map<String, dynamic> params =
+            verification.captured.first as Map<String, dynamic>;
+        expect(params['page'], equals(2));
+      });
+
+      test('должен вернуть пустой список при пустых результатах', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<TvShow> result = await sut.getTvRecommendations(1396);
+
+        expect(result, isEmpty);
+      });
+
+      test('должен выбросить TmdbApiException если ключ не установлен', () {
+        sut.clearApiKey();
+
+        expect(
+          () => sut.getTvRecommendations(1396),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'API key not set',
+          )),
+        );
+      });
+
+      test('должен выбросить TmdbApiException при DioException', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenThrow(DioException(
+          response: Response<dynamic>(
+            statusCode: 401,
+            requestOptions: RequestOptions(),
+          ),
+          requestOptions: RequestOptions(),
+        ));
+
+        expect(
+          () => sut.getTvRecommendations(1396),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'Invalid API key',
+          )),
+        );
+      });
+
+      test('должен выбросить TmdbApiException при неуспешном статусе', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: null,
+              statusCode: 500,
+              requestOptions: RequestOptions(),
+            ));
+
+        expect(
+          () => sut.getTvRecommendations(1396),
+          throwsA(isA<TmdbApiException>()),
+        );
+      });
+    });
+
+    // ----- getSimilarTvShows -----
+
+    group('getSimilarTvShows', () {
+      setUp(() {
+        sut.setApiKey(testApiKey);
+      });
+
+      test('должен вернуть список похожих сериалов', () async {
+        final Map<String, dynamic> tvShow1 = createTvShowJson();
+        final Map<String, dynamic> tvShow2 = createTvShowJson(
+          id: 1399,
+          name: 'Игра престолов',
+        );
+
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[tvShow1, tvShow2],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<TvShow> result = await sut.getSimilarTvShows(1396);
+
+        expect(result, hasLength(2));
+        expect(result[0].tmdbId, equals(1396));
+        expect(result[1].tmdbId, equals(1399));
+      });
+
+      test('должен вызвать правильный URL', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.getSimilarTvShows(1396);
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              captureAny(),
+              queryParameters: any(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final String url = verification.captured.first as String;
+        expect(url, contains('/tv/1396/similar'));
+      });
+
+      test('должен вернуть пустой список при пустых результатах', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<TvShow> result = await sut.getSimilarTvShows(1396);
+
+        expect(result, isEmpty);
+      });
+
+      test('должен выбросить TmdbApiException если ключ не установлен', () {
+        sut.clearApiKey();
+
+        expect(
+          () => sut.getSimilarTvShows(1396),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'API key not set',
+          )),
+        );
+      });
+
+      test('должен выбросить TmdbApiException при DioException', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenThrow(DioException(
+          response: Response<dynamic>(
+            statusCode: 429,
+            requestOptions: RequestOptions(),
+          ),
+          requestOptions: RequestOptions(),
+        ));
+
+        expect(
+          () => sut.getSimilarTvShows(1396),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'Rate limit exceeded. Please try again later',
+          )),
+        );
+      });
+
+      test('должен выбросить TmdbApiException при неуспешном статусе', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: null,
+              statusCode: 503,
+              requestOptions: RequestOptions(),
+            ));
+
+        expect(
+          () => sut.getSimilarTvShows(1396),
+          throwsA(isA<TmdbApiException>()),
+        );
+      });
+    });
+
+    // ----- getTrendingMovies -----
+
+    group('getTrendingMovies', () {
+      setUp(() {
+        sut.setApiKey(testApiKey);
+      });
+
+      test('должен вернуть список трендовых фильмов', () async {
+        final Map<String, dynamic> movie1 = createMovieJson();
+        final Map<String, dynamic> movie2 = createMovieJson(
+          id: 680,
+          title: 'Криминальное чтиво',
+        );
+
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[movie1, movie2],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<Movie> result = await sut.getTrendingMovies();
+
+        expect(result, hasLength(2));
+        expect(result[0].tmdbId, equals(550));
+        expect(result[1].tmdbId, equals(680));
+      });
+
+      test('должен использовать week по умолчанию в URL', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.getTrendingMovies();
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              captureAny(),
+              queryParameters: any(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final String url = verification.captured.first as String;
+        expect(url, contains('/trending/movie/week'));
+      });
+
+      test('должен использовать day в URL когда указано', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.getTrendingMovies(timeWindow: 'day');
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              captureAny(),
+              queryParameters: any(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final String url = verification.captured.first as String;
+        expect(url, contains('/trending/movie/day'));
+      });
+
+      test('должен передать page в queryParameters', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.getTrendingMovies(page: 5);
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: captureAny(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final Map<String, dynamic> params =
+            verification.captured.first as Map<String, dynamic>;
+        expect(params['page'], equals(5));
+      });
+
+      test('должен вернуть пустой список при пустых результатах', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<Movie> result = await sut.getTrendingMovies();
+
+        expect(result, isEmpty);
+      });
+
+      test('должен выбросить TmdbApiException если ключ не установлен', () {
+        sut.clearApiKey();
+
+        expect(
+          () => sut.getTrendingMovies(),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'API key not set',
+          )),
+        );
+      });
+
+      test('должен выбросить TmdbApiException при DioException', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenThrow(DioException(
+          response: Response<dynamic>(
+            statusCode: 401,
+            requestOptions: RequestOptions(),
+          ),
+          requestOptions: RequestOptions(),
+        ));
+
+        expect(
+          () => sut.getTrendingMovies(),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'Invalid API key',
+          )),
+        );
+      });
+
+      test('должен выбросить TmdbApiException при неуспешном статусе', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: null,
+              statusCode: 500,
+              requestOptions: RequestOptions(),
+            ));
+
+        expect(
+          () => sut.getTrendingMovies(),
+          throwsA(isA<TmdbApiException>()),
+        );
+      });
+    });
+
+    // ----- getTrendingTvShows -----
+
+    group('getTrendingTvShows', () {
+      setUp(() {
+        sut.setApiKey(testApiKey);
+      });
+
+      test('должен вернуть список трендовых сериалов', () async {
+        final Map<String, dynamic> tvShow1 = createTvShowJson();
+        final Map<String, dynamic> tvShow2 = createTvShowJson(
+          id: 1399,
+          name: 'Игра престолов',
+        );
+
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[tvShow1, tvShow2],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<TvShow> result = await sut.getTrendingTvShows();
+
+        expect(result, hasLength(2));
+        expect(result[0].tmdbId, equals(1396));
+        expect(result[1].tmdbId, equals(1399));
+      });
+
+      test('должен использовать week по умолчанию в URL', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.getTrendingTvShows();
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              captureAny(),
+              queryParameters: any(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final String url = verification.captured.first as String;
+        expect(url, contains('/trending/tv/week'));
+      });
+
+      test('должен использовать day в URL когда указано', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.getTrendingTvShows(timeWindow: 'day');
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              captureAny(),
+              queryParameters: any(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final String url = verification.captured.first as String;
+        expect(url, contains('/trending/tv/day'));
+      });
+
+      test('должен вернуть пустой список при пустых результатах', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<TvShow> result = await sut.getTrendingTvShows();
+
+        expect(result, isEmpty);
+      });
+
+      test('должен выбросить TmdbApiException если ключ не установлен', () {
+        sut.clearApiKey();
+
+        expect(
+          () => sut.getTrendingTvShows(),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'API key not set',
+          )),
+        );
+      });
+
+      test('должен выбросить TmdbApiException при DioException', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenThrow(DioException(
+          response: Response<dynamic>(
+            statusCode: 401,
+            requestOptions: RequestOptions(),
+          ),
+          requestOptions: RequestOptions(),
+        ));
+
+        expect(
+          () => sut.getTrendingTvShows(),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'Invalid API key',
+          )),
+        );
+      });
+
+      test('должен выбросить TmdbApiException при неуспешном статусе', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: null,
+              statusCode: 500,
+              requestOptions: RequestOptions(),
+            ));
+
+        expect(
+          () => sut.getTrendingTvShows(),
+          throwsA(isA<TmdbApiException>()),
+        );
+      });
+    });
+
+    // ----- getTopRatedMovies -----
+
+    group('getTopRatedMovies', () {
+      setUp(() {
+        sut.setApiKey(testApiKey);
+      });
+
+      test('должен вернуть список лучших фильмов', () async {
+        final Map<String, dynamic> movie1 = createMovieJson();
+        final Map<String, dynamic> movie2 = createMovieJson(
+          id: 680,
+          title: 'Криминальное чтиво',
+        );
+
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[movie1, movie2],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<Movie> result = await sut.getTopRatedMovies();
+
+        expect(result, hasLength(2));
+        expect(result[0].tmdbId, equals(550));
+        expect(result[1].tmdbId, equals(680));
+      });
+
+      test('должен вызвать правильный URL', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.getTopRatedMovies();
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              captureAny(),
+              queryParameters: any(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final String url = verification.captured.first as String;
+        expect(url, contains('/movie/top_rated'));
+      });
+
+      test('должен вернуть пустой список при пустых результатах', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<Movie> result = await sut.getTopRatedMovies();
+
+        expect(result, isEmpty);
+      });
+
+      test('должен выбросить TmdbApiException если ключ не установлен', () {
+        sut.clearApiKey();
+
+        expect(
+          () => sut.getTopRatedMovies(),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'API key not set',
+          )),
+        );
+      });
+
+      test('должен выбросить TmdbApiException при DioException', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenThrow(DioException(
+          response: Response<dynamic>(
+            statusCode: 401,
+            requestOptions: RequestOptions(),
+          ),
+          requestOptions: RequestOptions(),
+        ));
+
+        expect(
+          () => sut.getTopRatedMovies(),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'Invalid API key',
+          )),
+        );
+      });
+
+      test('должен выбросить TmdbApiException при неуспешном статусе', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: null,
+              statusCode: 500,
+              requestOptions: RequestOptions(),
+            ));
+
+        expect(
+          () => sut.getTopRatedMovies(),
+          throwsA(isA<TmdbApiException>()),
+        );
+      });
+    });
+
+    // ----- getUpcomingMovies -----
+
+    group('getUpcomingMovies', () {
+      setUp(() {
+        sut.setApiKey(testApiKey);
+      });
+
+      test('должен вернуть список предстоящих фильмов', () async {
+        final Map<String, dynamic> movie1 = createMovieJson();
+
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[movie1],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<Movie> result = await sut.getUpcomingMovies();
+
+        expect(result, hasLength(1));
+        expect(result[0].tmdbId, equals(550));
+      });
+
+      test('должен вызвать правильный URL', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.getUpcomingMovies();
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              captureAny(),
+              queryParameters: any(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final String url = verification.captured.first as String;
+        expect(url, contains('/movie/upcoming'));
+      });
+
+      test('должен вернуть пустой список при пустых результатах', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<Movie> result = await sut.getUpcomingMovies();
+
+        expect(result, isEmpty);
+      });
+
+      test('должен выбросить TmdbApiException если ключ не установлен', () {
+        sut.clearApiKey();
+
+        expect(
+          () => sut.getUpcomingMovies(),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'API key not set',
+          )),
+        );
+      });
+
+      test('должен выбросить TmdbApiException при DioException', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenThrow(DioException(
+          response: Response<dynamic>(
+            statusCode: 401,
+            requestOptions: RequestOptions(),
+          ),
+          requestOptions: RequestOptions(),
+        ));
+
+        expect(
+          () => sut.getUpcomingMovies(),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'Invalid API key',
+          )),
+        );
+      });
+
+      test('должен выбросить TmdbApiException при неуспешном статусе', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: null,
+              statusCode: 500,
+              requestOptions: RequestOptions(),
+            ));
+
+        expect(
+          () => sut.getUpcomingMovies(),
+          throwsA(isA<TmdbApiException>()),
+        );
+      });
+    });
+
+    // ----- getNowPlayingMovies -----
+
+    group('getNowPlayingMovies', () {
+      setUp(() {
+        sut.setApiKey(testApiKey);
+      });
+
+      test('должен вернуть список фильмов в прокате', () async {
+        final Map<String, dynamic> movie1 = createMovieJson();
+
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[movie1],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<Movie> result = await sut.getNowPlayingMovies();
+
+        expect(result, hasLength(1));
+        expect(result[0].tmdbId, equals(550));
+      });
+
+      test('должен вызвать правильный URL', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.getNowPlayingMovies();
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              captureAny(),
+              queryParameters: any(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final String url = verification.captured.first as String;
+        expect(url, contains('/movie/now_playing'));
+      });
+
+      test('должен вернуть пустой список при пустых результатах', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<Movie> result = await sut.getNowPlayingMovies();
+
+        expect(result, isEmpty);
+      });
+
+      test('должен выбросить TmdbApiException если ключ не установлен', () {
+        sut.clearApiKey();
+
+        expect(
+          () => sut.getNowPlayingMovies(),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'API key not set',
+          )),
+        );
+      });
+
+      test('должен выбросить TmdbApiException при DioException', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenThrow(DioException(
+          response: Response<dynamic>(
+            statusCode: 401,
+            requestOptions: RequestOptions(),
+          ),
+          requestOptions: RequestOptions(),
+        ));
+
+        expect(
+          () => sut.getNowPlayingMovies(),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'Invalid API key',
+          )),
+        );
+      });
+
+      test('должен выбросить TmdbApiException при неуспешном статусе', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: null,
+              statusCode: 500,
+              requestOptions: RequestOptions(),
+            ));
+
+        expect(
+          () => sut.getNowPlayingMovies(),
+          throwsA(isA<TmdbApiException>()),
+        );
+      });
+    });
+
+    // ----- getTopRatedTvShows -----
+
+    group('getTopRatedTvShows', () {
+      setUp(() {
+        sut.setApiKey(testApiKey);
+      });
+
+      test('должен вернуть список лучших сериалов', () async {
+        final Map<String, dynamic> tvShow1 = createTvShowJson();
+        final Map<String, dynamic> tvShow2 = createTvShowJson(
+          id: 1399,
+          name: 'Игра престолов',
+        );
+
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[tvShow1, tvShow2],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<TvShow> result = await sut.getTopRatedTvShows();
+
+        expect(result, hasLength(2));
+        expect(result[0].tmdbId, equals(1396));
+        expect(result[1].tmdbId, equals(1399));
+      });
+
+      test('должен вызвать правильный URL', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.getTopRatedTvShows();
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              captureAny(),
+              queryParameters: any(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final String url = verification.captured.first as String;
+        expect(url, contains('/tv/top_rated'));
+      });
+
+      test('должен вернуть пустой список при пустых результатах', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<TvShow> result = await sut.getTopRatedTvShows();
+
+        expect(result, isEmpty);
+      });
+
+      test('должен выбросить TmdbApiException если ключ не установлен', () {
+        sut.clearApiKey();
+
+        expect(
+          () => sut.getTopRatedTvShows(),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'API key not set',
+          )),
+        );
+      });
+
+      test('должен выбросить TmdbApiException при DioException', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenThrow(DioException(
+          response: Response<dynamic>(
+            statusCode: 401,
+            requestOptions: RequestOptions(),
+          ),
+          requestOptions: RequestOptions(),
+        ));
+
+        expect(
+          () => sut.getTopRatedTvShows(),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'Invalid API key',
+          )),
+        );
+      });
+
+      test('должен выбросить TmdbApiException при неуспешном статусе', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: null,
+              statusCode: 500,
+              requestOptions: RequestOptions(),
+            ));
+
+        expect(
+          () => sut.getTopRatedTvShows(),
+          throwsA(isA<TmdbApiException>()),
+        );
+      });
+    });
+
+    // ----- getOnTheAirTvShows -----
+
+    group('getOnTheAirTvShows', () {
+      setUp(() {
+        sut.setApiKey(testApiKey);
+      });
+
+      test('должен вернуть список сериалов на воздухе', () async {
+        final Map<String, dynamic> tvShow1 = createTvShowJson();
+
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[tvShow1],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<TvShow> result = await sut.getOnTheAirTvShows();
+
+        expect(result, hasLength(1));
+        expect(result[0].tmdbId, equals(1396));
+      });
+
+      test('должен вызвать правильный URL', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.getOnTheAirTvShows();
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              captureAny(),
+              queryParameters: any(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final String url = verification.captured.first as String;
+        expect(url, contains('/tv/on_the_air'));
+      });
+
+      test('должен вернуть пустой список при пустых результатах', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<TvShow> result = await sut.getOnTheAirTvShows();
+
+        expect(result, isEmpty);
+      });
+
+      test('должен выбросить TmdbApiException если ключ не установлен', () {
+        sut.clearApiKey();
+
+        expect(
+          () => sut.getOnTheAirTvShows(),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'API key not set',
+          )),
+        );
+      });
+
+      test('должен выбросить TmdbApiException при DioException', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenThrow(DioException(
+          response: Response<dynamic>(
+            statusCode: 429,
+            requestOptions: RequestOptions(),
+          ),
+          requestOptions: RequestOptions(),
+        ));
+
+        expect(
+          () => sut.getOnTheAirTvShows(),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'Rate limit exceeded. Please try again later',
+          )),
+        );
+      });
+
+      test('должен выбросить TmdbApiException при неуспешном статусе', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: null,
+              statusCode: 503,
+              requestOptions: RequestOptions(),
+            ));
+
+        expect(
+          () => sut.getOnTheAirTvShows(),
+          throwsA(isA<TmdbApiException>()),
+        );
+      });
+    });
+
+    // ----- discoverMovies -----
+
+    group('discoverMovies', () {
+      setUp(() {
+        sut.setApiKey(testApiKey);
+      });
+
+      test('должен вернуть список фильмов при успешном ответе', () async {
+        final Map<String, dynamic> movie1 = createMovieJson();
+        final Map<String, dynamic> movie2 = createMovieJson(
+          id: 680,
+          title: 'Криминальное чтиво',
+        );
+
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[movie1, movie2],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<Movie> result = await sut.discoverMovies();
+
+        expect(result, hasLength(2));
+        expect(result[0].tmdbId, equals(550));
+        expect(result[1].tmdbId, equals(680));
+      });
+
+      test('должен вызвать правильный URL', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.discoverMovies();
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              captureAny(),
+              queryParameters: any(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final String url = verification.captured.first as String;
+        expect(url, contains('/discover/movie'));
+      });
+
+      test('должен передать genreId в queryParameters как with_genres', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.discoverMovies(genreId: 28);
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: captureAny(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final Map<String, dynamic> params =
+            verification.captured.first as Map<String, dynamic>;
+        expect(params['with_genres'], equals(28));
+      });
+
+      test('должен передать year в queryParameters как primary_release_year', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.discoverMovies(year: 2024);
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: captureAny(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final Map<String, dynamic> params =
+            verification.captured.first as Map<String, dynamic>;
+        expect(params['primary_release_year'], equals(2024));
+      });
+
+      test('должен передать sortBy в queryParameters', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.discoverMovies(sortBy: 'vote_average.desc');
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: captureAny(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final Map<String, dynamic> params =
+            verification.captured.first as Map<String, dynamic>;
+        expect(params['sort_by'], equals('vote_average.desc'));
+      });
+
+      test('должен использовать popularity.desc по умолчанию для sortBy', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.discoverMovies();
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: captureAny(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final Map<String, dynamic> params =
+            verification.captured.first as Map<String, dynamic>;
+        expect(params['sort_by'], equals('popularity.desc'));
+      });
+
+      test('не должен передавать genreId когда не указан', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.discoverMovies();
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: captureAny(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final Map<String, dynamic> params =
+            verification.captured.first as Map<String, dynamic>;
+        expect(params.containsKey('with_genres'), isFalse);
+      });
+
+      test('не должен передавать year когда не указан', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.discoverMovies();
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: captureAny(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final Map<String, dynamic> params =
+            verification.captured.first as Map<String, dynamic>;
+        expect(params.containsKey('primary_release_year'), isFalse);
+      });
+
+      test('должен вернуть пустой список при пустых результатах', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<Movie> result = await sut.discoverMovies();
+
+        expect(result, isEmpty);
+      });
+
+      test('должен выбросить TmdbApiException если ключ не установлен', () {
+        sut.clearApiKey();
+
+        expect(
+          () => sut.discoverMovies(),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'API key not set',
+          )),
+        );
+      });
+
+      test('должен выбросить TmdbApiException при DioException', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenThrow(DioException(
+          response: Response<dynamic>(
+            statusCode: 401,
+            requestOptions: RequestOptions(),
+          ),
+          requestOptions: RequestOptions(),
+        ));
+
+        expect(
+          () => sut.discoverMovies(),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'Invalid API key',
+          )),
+        );
+      });
+
+      test('должен выбросить TmdbApiException при неуспешном статусе', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: null,
+              statusCode: 500,
+              requestOptions: RequestOptions(),
+            ));
+
+        expect(
+          () => sut.discoverMovies(),
+          throwsA(isA<TmdbApiException>()),
+        );
+      });
+    });
+
+    // ----- discoverTvShows -----
+
+    group('discoverTvShows', () {
+      setUp(() {
+        sut.setApiKey(testApiKey);
+      });
+
+      test('должен вернуть список сериалов при успешном ответе', () async {
+        final Map<String, dynamic> tvShow1 = createTvShowJson();
+        final Map<String, dynamic> tvShow2 = createTvShowJson(
+          id: 1399,
+          name: 'Игра престолов',
+        );
+
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[tvShow1, tvShow2],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<TvShow> result = await sut.discoverTvShows();
+
+        expect(result, hasLength(2));
+        expect(result[0].tmdbId, equals(1396));
+        expect(result[1].tmdbId, equals(1399));
+      });
+
+      test('должен вызвать правильный URL', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.discoverTvShows();
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              captureAny(),
+              queryParameters: any(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final String url = verification.captured.first as String;
+        expect(url, contains('/discover/tv'));
+      });
+
+      test('должен передать genreId в queryParameters как with_genres', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.discoverTvShows(genreId: 18);
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: captureAny(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final Map<String, dynamic> params =
+            verification.captured.first as Map<String, dynamic>;
+        expect(params['with_genres'], equals(18));
+      });
+
+      test('должен передать year в queryParameters как first_air_date_year', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.discoverTvShows(year: 2023);
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: captureAny(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final Map<String, dynamic> params =
+            verification.captured.first as Map<String, dynamic>;
+        expect(params['first_air_date_year'], equals(2023));
+      });
+
+      test('должен передать sortBy в queryParameters', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.discoverTvShows(sortBy: 'vote_average.desc');
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: captureAny(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final Map<String, dynamic> params =
+            verification.captured.first as Map<String, dynamic>;
+        expect(params['sort_by'], equals('vote_average.desc'));
+      });
+
+      test('должен использовать popularity.desc по умолчанию для sortBy', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.discoverTvShows();
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: captureAny(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final Map<String, dynamic> params =
+            verification.captured.first as Map<String, dynamic>;
+        expect(params['sort_by'], equals('popularity.desc'));
+      });
+
+      test('не должен передавать genreId когда не указан', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.discoverTvShows();
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: captureAny(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final Map<String, dynamic> params =
+            verification.captured.first as Map<String, dynamic>;
+        expect(params.containsKey('with_genres'), isFalse);
+      });
+
+      test('не должен передавать year когда не указан', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.discoverTvShows();
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: captureAny(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final Map<String, dynamic> params =
+            verification.captured.first as Map<String, dynamic>;
+        expect(params.containsKey('first_air_date_year'), isFalse);
+      });
+
+      test('должен вернуть пустой список при пустых результатах', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<TvShow> result = await sut.discoverTvShows();
+
+        expect(result, isEmpty);
+      });
+
+      test('должен выбросить TmdbApiException если ключ не установлен', () {
+        sut.clearApiKey();
+
+        expect(
+          () => sut.discoverTvShows(),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'API key not set',
+          )),
+        );
+      });
+
+      test('должен выбросить TmdbApiException при DioException', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenThrow(DioException(
+          response: Response<dynamic>(
+            statusCode: 401,
+            requestOptions: RequestOptions(),
+          ),
+          requestOptions: RequestOptions(),
+        ));
+
+        expect(
+          () => sut.discoverTvShows(),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'Invalid API key',
+          )),
+        );
+      });
+
+      test('должен выбросить TmdbApiException при неуспешном статусе', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: null,
+              statusCode: 500,
+              requestOptions: RequestOptions(),
+            ));
+
+        expect(
+          () => sut.discoverTvShows(),
+          throwsA(isA<TmdbApiException>()),
+        );
+      });
+    });
+
+    // ----- getMovieReviews -----
+
+    group('getMovieReviews', () {
+      setUp(() {
+        sut.setApiKey(testApiKey);
+      });
+
+      test('должен вернуть список отзывов к фильму', () async {
+        final Map<String, dynamic> review1 = createReviewJson();
+        final Map<String, dynamic> review2 = createReviewJson(
+          author: 'CinemaLover',
+          content: 'Excellent film!',
+          rating: 9.0,
+        );
+
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[review1, review2],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<TmdbReview> result = await sut.getMovieReviews(550);
+
+        expect(result, hasLength(2));
+        expect(result[0].author, equals('MovieFan42'));
+        expect(result[0].content, equals('Great movie, highly recommended!'));
+        expect(result[0].authorRating, equals(8.0));
+        expect(result[1].author, equals('CinemaLover'));
+        expect(result[1].content, equals('Excellent film!'));
+        expect(result[1].authorRating, equals(9.0));
+      });
+
+      test('должен вызвать правильный URL', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.getMovieReviews(550);
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              captureAny(),
+              queryParameters: any(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final String url = verification.captured.first as String;
+        expect(url, contains('/movie/550/reviews'));
+      });
+
+      test('должен использовать en-US как язык для отзывов', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.getMovieReviews(550);
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: captureAny(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final Map<String, dynamic> params =
+            verification.captured.first as Map<String, dynamic>;
+        expect(params['language'], equals('en-US'));
+      });
+
+      test('должен передать page в queryParameters', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.getMovieReviews(550, page: 2);
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: captureAny(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final Map<String, dynamic> params =
+            verification.captured.first as Map<String, dynamic>;
+        expect(params['page'], equals(2));
+      });
+
+      test('должен вернуть пустой список при пустых результатах', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<TmdbReview> result = await sut.getMovieReviews(550);
+
+        expect(result, isEmpty);
+      });
+
+      test('должен выбросить TmdbApiException если ключ не установлен', () {
+        sut.clearApiKey();
+
+        expect(
+          () => sut.getMovieReviews(550),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'API key not set',
+          )),
+        );
+      });
+
+      test('должен выбросить TmdbApiException при DioException', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenThrow(DioException(
+          response: Response<dynamic>(
+            statusCode: 401,
+            requestOptions: RequestOptions(),
+          ),
+          requestOptions: RequestOptions(),
+        ));
+
+        expect(
+          () => sut.getMovieReviews(550),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'Invalid API key',
+          )),
+        );
+      });
+
+      test('должен выбросить TmdbApiException при неуспешном статусе', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: null,
+              statusCode: 500,
+              requestOptions: RequestOptions(),
+            ));
+
+        expect(
+          () => sut.getMovieReviews(550),
+          throwsA(isA<TmdbApiException>()),
+        );
+      });
+    });
+
+    // ----- getTvReviews -----
+
+    group('getTvReviews', () {
+      setUp(() {
+        sut.setApiKey(testApiKey);
+      });
+
+      test('должен вернуть список отзывов к сериалу', () async {
+        final Map<String, dynamic> review1 = createReviewJson(
+          author: 'SeriesAddict',
+          content: 'Best show ever!',
+          rating: 10.0,
+        );
+
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[review1],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<TmdbReview> result = await sut.getTvReviews(1396);
+
+        expect(result, hasLength(1));
+        expect(result[0].author, equals('SeriesAddict'));
+        expect(result[0].content, equals('Best show ever!'));
+        expect(result[0].authorRating, equals(10.0));
+      });
+
+      test('должен вызвать правильный URL', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.getTvReviews(1396);
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              captureAny(),
+              queryParameters: any(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final String url = verification.captured.first as String;
+        expect(url, contains('/tv/1396/reviews'));
+      });
+
+      test('должен использовать en-US как язык для отзывов', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.getTvReviews(1396);
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: captureAny(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final Map<String, dynamic> params =
+            verification.captured.first as Map<String, dynamic>;
+        expect(params['language'], equals('en-US'));
+      });
+
+      test('должен передать page в queryParameters', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.getTvReviews(1396, page: 3);
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: captureAny(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final Map<String, dynamic> params =
+            verification.captured.first as Map<String, dynamic>;
+        expect(params['page'], equals(3));
+      });
+
+      test('должен вернуть пустой список при пустых результатах', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<TmdbReview> result = await sut.getTvReviews(1396);
+
+        expect(result, isEmpty);
+      });
+
+      test('должен выбросить TmdbApiException если ключ не установлен', () {
+        sut.clearApiKey();
+
+        expect(
+          () => sut.getTvReviews(1396),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'API key not set',
+          )),
+        );
+      });
+
+      test('должен выбросить TmdbApiException при DioException', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenThrow(DioException(
+          response: Response<dynamic>(
+            statusCode: 429,
+            requestOptions: RequestOptions(),
+          ),
+          requestOptions: RequestOptions(),
+        ));
+
+        expect(
+          () => sut.getTvReviews(1396),
+          throwsA(isA<TmdbApiException>().having(
+            (TmdbApiException e) => e.message,
+            'message',
+            'Rate limit exceeded. Please try again later',
+          )),
+        );
+      });
+
+      test('должен выбросить TmdbApiException при неуспешном статусе', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: null,
+              statusCode: 500,
+              requestOptions: RequestOptions(),
+            ));
+
+        expect(
+          () => sut.getTvReviews(1396),
+          throwsA(isA<TmdbApiException>()),
+        );
       });
     });
 

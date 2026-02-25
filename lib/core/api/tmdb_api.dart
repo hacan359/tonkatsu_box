@@ -1,9 +1,11 @@
 // API клиент для TMDB (TheMovieDB).
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../shared/models/movie.dart';
+import '../../shared/models/tmdb_review.dart';
 import '../../shared/models/tv_episode.dart';
 import '../../shared/models/tv_season.dart';
 import '../../shared/models/tv_show.dart';
@@ -123,20 +125,44 @@ class TmdbApi {
   String get language => _language;
 
   /// Устанавливает язык для локализации ответов.
+  ///
+  /// Сбрасывает кэш жанров, т.к. названия зависят от языка.
   void setLanguage(String language) {
+    if (_language != language) {
+      _movieGenreMap = null;
+      _tvGenreMap = null;
+    }
     _language = language;
   }
 
   String? _apiKey;
+
+  /// Кэш жанров фильмов: id → name.
+  Map<int, String>? _movieGenreMap;
+
+  /// Кэш жанров сериалов: id → name.
+  Map<int, String>? _tvGenreMap;
 
   /// Устанавливает API ключ для аутентификации.
   void setApiKey(String apiKey) {
     _apiKey = apiKey;
   }
 
-  /// Очищает API ключ.
+  /// Очищает API ключ и кэш жанров.
   void clearApiKey() {
     _apiKey = null;
+    _movieGenreMap = null;
+    _tvGenreMap = null;
+  }
+
+  /// Предустанавливает кэш маппинга жанров (только для тестов).
+  @visibleForTesting
+  void setGenreCacheForTesting({
+    Map<int, String>? movieGenres,
+    Map<int, String>? tvGenres,
+  }) {
+    _movieGenreMap = movieGenres;
+    _tvGenreMap = tvGenres;
   }
 
   /// Проверяет валидность API ключа.
@@ -192,20 +218,13 @@ class TmdbApi {
         queryParameters: params,
       );
 
-      if (response.statusCode != 200 || response.data == null) {
-        throw TmdbApiException(
-          'Failed to search movies',
-          statusCode: response.statusCode,
-        );
-      }
+      final List<Map<String, dynamic>> items =
+          _extractResults(response, 'Failed to search movies');
+      final Map<int, String> genreMap = await _ensureMovieGenreMap();
+      _resolveGenreIds(items, genreMap);
 
-      final Map<String, dynamic> data =
-          response.data as Map<String, dynamic>;
-      final List<dynamic> results = data['results'] as List<dynamic>;
-
-      return results
-          .map(
-              (dynamic item) => Movie.fromJson(item as Map<String, dynamic>))
+      return items
+          .map((Map<String, dynamic> json) => Movie.fromJson(json))
           .toList();
     } on DioException catch (e) {
       throw _handleDioException(e, 'Failed to search movies');
@@ -260,10 +279,15 @@ class TmdbApi {
       final int totalPages = (data['total_pages'] as int?) ?? 0;
       final int totalResults = (data['total_results'] as int?) ?? 0;
 
+      final List<Map<String, dynamic>> items = results
+          .map((dynamic item) => item as Map<String, dynamic>)
+          .toList();
+      final Map<int, String> genreMap = await _ensureMovieGenreMap();
+      _resolveGenreIds(items, genreMap);
+
       return TmdbPagedResult<Movie>(
-        results: results
-            .map((dynamic item) =>
-                Movie.fromJson(item as Map<String, dynamic>))
+        results: items
+            .map((Map<String, dynamic> json) => Movie.fromJson(json))
             .toList(),
         page: currentPage,
         totalPages: totalPages,
@@ -325,20 +349,13 @@ class TmdbApi {
         },
       );
 
-      if (response.statusCode != 200 || response.data == null) {
-        throw TmdbApiException(
-          'Failed to fetch popular movies',
-          statusCode: response.statusCode,
-        );
-      }
+      final List<Map<String, dynamic>> items =
+          _extractResults(response, 'Failed to fetch popular movies');
+      final Map<int, String> genreMap = await _ensureMovieGenreMap();
+      _resolveGenreIds(items, genreMap);
 
-      final Map<String, dynamic> data =
-          response.data as Map<String, dynamic>;
-      final List<dynamic> results = data['results'] as List<dynamic>;
-
-      return results
-          .map(
-              (dynamic item) => Movie.fromJson(item as Map<String, dynamic>))
+      return items
+          .map((Map<String, dynamic> json) => Movie.fromJson(json))
           .toList();
     } on DioException catch (e) {
       throw _handleDioException(e, 'Failed to fetch popular movies');
@@ -381,20 +398,13 @@ class TmdbApi {
         queryParameters: params,
       );
 
-      if (response.statusCode != 200 || response.data == null) {
-        throw TmdbApiException(
-          'Failed to search TV shows',
-          statusCode: response.statusCode,
-        );
-      }
+      final List<Map<String, dynamic>> items =
+          _extractResults(response, 'Failed to search TV shows');
+      final Map<int, String> genreMap = await _ensureTvGenreMap();
+      _resolveGenreIds(items, genreMap);
 
-      final Map<String, dynamic> data =
-          response.data as Map<String, dynamic>;
-      final List<dynamic> results = data['results'] as List<dynamic>;
-
-      return results
-          .map((dynamic item) =>
-              TvShow.fromJson(item as Map<String, dynamic>))
+      return items
+          .map((Map<String, dynamic> json) => TvShow.fromJson(json))
           .toList();
     } on DioException catch (e) {
       throw _handleDioException(e, 'Failed to search TV shows');
@@ -449,10 +459,15 @@ class TmdbApi {
       final int totalPages = (data['total_pages'] as int?) ?? 0;
       final int totalResults = (data['total_results'] as int?) ?? 0;
 
+      final List<Map<String, dynamic>> items = results
+          .map((dynamic item) => item as Map<String, dynamic>)
+          .toList();
+      final Map<int, String> genreMap = await _ensureTvGenreMap();
+      _resolveGenreIds(items, genreMap);
+
       return TmdbPagedResult<TvShow>(
-        results: results
-            .map((dynamic item) =>
-                TvShow.fromJson(item as Map<String, dynamic>))
+        results: items
+            .map((Map<String, dynamic> json) => TvShow.fromJson(json))
             .toList(),
         page: currentPage,
         totalPages: totalPages,
@@ -598,24 +613,200 @@ class TmdbApi {
         },
       );
 
-      if (response.statusCode != 200 || response.data == null) {
-        throw TmdbApiException(
-          'Failed to fetch popular TV shows',
-          statusCode: response.statusCode,
-        );
-      }
+      final List<Map<String, dynamic>> items =
+          _extractResults(response, 'Failed to fetch popular TV shows');
+      final Map<int, String> genreMap = await _ensureTvGenreMap();
+      _resolveGenreIds(items, genreMap);
 
-      final Map<String, dynamic> data =
-          response.data as Map<String, dynamic>;
-      final List<dynamic> results = data['results'] as List<dynamic>;
-
-      return results
-          .map((dynamic item) =>
-              TvShow.fromJson(item as Map<String, dynamic>))
+      return items
+          .map((Map<String, dynamic> json) => TvShow.fromJson(json))
           .toList();
     } on DioException catch (e) {
       throw _handleDioException(e, 'Failed to fetch popular TV shows');
     }
+  }
+
+  // ===== Рекомендации и похожие =====
+
+  /// Рекомендации к фильму.
+  ///
+  /// [tmdbId] — ID фильма.
+  /// [page] — номер страницы (по умолчанию 1).
+  Future<List<Movie>> getMovieRecommendations(int tmdbId, {int page = 1}) async {
+    return _fetchMovieList('$_baseUrl/movie/$tmdbId/recommendations', page: page);
+  }
+
+  /// Похожие фильмы.
+  ///
+  /// [tmdbId] — ID фильма.
+  /// [page] — номер страницы (по умолчанию 1).
+  Future<List<Movie>> getSimilarMovies(int tmdbId, {int page = 1}) async {
+    return _fetchMovieList('$_baseUrl/movie/$tmdbId/similar', page: page);
+  }
+
+  /// Рекомендации к сериалу.
+  ///
+  /// [tmdbId] — ID сериала.
+  /// [page] — номер страницы (по умолчанию 1).
+  Future<List<TvShow>> getTvRecommendations(int tmdbId, {int page = 1}) async {
+    return _fetchTvShowList('$_baseUrl/tv/$tmdbId/recommendations', page: page);
+  }
+
+  /// Похожие сериалы.
+  ///
+  /// [tmdbId] — ID сериала.
+  /// [page] — номер страницы (по умолчанию 1).
+  Future<List<TvShow>> getSimilarTvShows(int tmdbId, {int page = 1}) async {
+    return _fetchTvShowList('$_baseUrl/tv/$tmdbId/similar', page: page);
+  }
+
+  // ===== Trending =====
+
+  /// Трендовые фильмы.
+  ///
+  /// [timeWindow] — временное окно ('day' или 'week').
+  /// [page] — номер страницы (по умолчанию 1).
+  Future<List<Movie>> getTrendingMovies({
+    String timeWindow = 'week',
+    int page = 1,
+  }) async {
+    return _fetchMovieList(
+      '$_baseUrl/trending/movie/$timeWindow',
+      page: page,
+    );
+  }
+
+  /// Трендовые сериалы.
+  ///
+  /// [timeWindow] — временное окно ('day' или 'week').
+  /// [page] — номер страницы (по умолчанию 1).
+  Future<List<TvShow>> getTrendingTvShows({
+    String timeWindow = 'week',
+    int page = 1,
+  }) async {
+    return _fetchTvShowList(
+      '$_baseUrl/trending/tv/$timeWindow',
+      page: page,
+    );
+  }
+
+  // ===== Curated Lists =====
+
+  /// Лучшие фильмы всех времён.
+  Future<List<Movie>> getTopRatedMovies({int page = 1}) async {
+    return _fetchMovieList('$_baseUrl/movie/top_rated', page: page);
+  }
+
+  /// Скоро в кино.
+  Future<List<Movie>> getUpcomingMovies({int page = 1}) async {
+    return _fetchMovieList('$_baseUrl/movie/upcoming', page: page);
+  }
+
+  /// Сейчас в кинотеатрах.
+  Future<List<Movie>> getNowPlayingMovies({int page = 1}) async {
+    return _fetchMovieList('$_baseUrl/movie/now_playing', page: page);
+  }
+
+  /// Лучшие сериалы всех времён.
+  Future<List<TvShow>> getTopRatedTvShows({int page = 1}) async {
+    return _fetchTvShowList('$_baseUrl/tv/top_rated', page: page);
+  }
+
+  /// Сериалы, выходящие сейчас.
+  Future<List<TvShow>> getOnTheAirTvShows({int page = 1}) async {
+    return _fetchTvShowList('$_baseUrl/tv/on_the_air', page: page);
+  }
+
+  // ===== Discover =====
+
+  /// Discover фильмов с фильтрами.
+  Future<List<Movie>> discoverMovies({
+    int? genreId,
+    int? year,
+    String sortBy = 'popularity.desc',
+    int page = 1,
+  }) async {
+    _ensureApiKey();
+
+    try {
+      final Map<String, dynamic> params = <String, dynamic>{
+        'api_key': _apiKey,
+        'language': language,
+        'sort_by': sortBy,
+        'page': page,
+      };
+      if (genreId != null) params['with_genres'] = genreId;
+      if (year != null) params['primary_release_year'] = year;
+
+      final Response<dynamic> response = await _dio.get<dynamic>(
+        '$_baseUrl/discover/movie',
+        queryParameters: params,
+      );
+
+      final List<Map<String, dynamic>> items =
+          _extractResults(response, 'Failed to discover movies');
+      final Map<int, String> genreMap = await _ensureMovieGenreMap();
+      _resolveGenreIds(items, genreMap);
+
+      return items
+          .map((Map<String, dynamic> json) => Movie.fromJson(json))
+          .toList();
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'Failed to discover movies');
+    }
+  }
+
+  /// Discover сериалов с фильтрами.
+  Future<List<TvShow>> discoverTvShows({
+    int? genreId,
+    int? year,
+    String sortBy = 'popularity.desc',
+    int page = 1,
+  }) async {
+    _ensureApiKey();
+
+    try {
+      final Map<String, dynamic> params = <String, dynamic>{
+        'api_key': _apiKey,
+        'language': language,
+        'sort_by': sortBy,
+        'page': page,
+      };
+      if (genreId != null) params['with_genres'] = genreId;
+      if (year != null) params['first_air_date_year'] = year;
+
+      final Response<dynamic> response = await _dio.get<dynamic>(
+        '$_baseUrl/discover/tv',
+        queryParameters: params,
+      );
+
+      final List<Map<String, dynamic>> items =
+          _extractResults(response, 'Failed to discover TV shows');
+      final Map<int, String> genreMap = await _ensureTvGenreMap();
+      _resolveGenreIds(items, genreMap);
+
+      return items
+          .map((Map<String, dynamic> json) => TvShow.fromJson(json))
+          .toList();
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'Failed to discover TV shows');
+    }
+  }
+
+  // ===== Reviews =====
+
+  /// Отзывы к фильму.
+  ///
+  /// Всегда запрашивает на en-US (отзывов на других языках мало).
+  Future<List<TmdbReview>> getMovieReviews(int tmdbId, {int page = 1}) async {
+    return _fetchReviews('$_baseUrl/movie/$tmdbId/reviews', page: page);
+  }
+
+  /// Отзывы к сериалу.
+  ///
+  /// Всегда запрашивает на en-US (отзывов на других языках мало).
+  Future<List<TmdbReview>> getTvReviews(int tmdbId, {int page = 1}) async {
+    return _fetchReviews('$_baseUrl/tv/$tmdbId/reviews', page: page);
   }
 
   // ===== Общее =====
@@ -659,10 +850,30 @@ class TmdbApi {
           response.data as Map<String, dynamic>;
       final List<dynamic> results = data['results'] as List<dynamic>;
 
+      final List<Map<String, dynamic>> items = results
+          .map((dynamic item) => item as Map<String, dynamic>)
+          .toList();
+
+      // Резолвим жанры отдельно для фильмов и сериалов
+      final List<Map<String, dynamic>> movieItems = items
+          .where((Map<String, dynamic> j) => j['media_type'] == 'movie')
+          .toList();
+      final List<Map<String, dynamic>> tvItems = items
+          .where((Map<String, dynamic> j) => j['media_type'] == 'tv')
+          .toList();
+
+      if (movieItems.isNotEmpty) {
+        final Map<int, String> movieGenreMap = await _ensureMovieGenreMap();
+        _resolveGenreIds(movieItems, movieGenreMap);
+      }
+      if (tvItems.isNotEmpty) {
+        final Map<int, String> tvGenreMap = await _ensureTvGenreMap();
+        _resolveGenreIds(tvItems, tvGenreMap);
+      }
+
       final List<MultiSearchResult> searchResults = <MultiSearchResult>[];
 
-      for (final dynamic item in results) {
-        final Map<String, dynamic> json = item as Map<String, dynamic>;
+      for (final Map<String, dynamic> json in items) {
         final String? mediaType = json['media_type'] as String?;
 
         if (mediaType == 'movie') {
@@ -777,6 +988,160 @@ class TmdbApi {
     }
 
     return TmdbApiException(message, statusCode: statusCode);
+  }
+
+  // ===== Приватные хелперы =====
+
+  /// Загружает и кэширует маппинг жанров фильмов.
+  Future<Map<int, String>> _ensureMovieGenreMap() async {
+    if (_movieGenreMap != null) return _movieGenreMap!;
+    try {
+      final List<TmdbGenre> genres = await getMovieGenres();
+      _movieGenreMap = <int, String>{
+        for (final TmdbGenre g in genres) g.id: g.name,
+      };
+    } catch (_) {
+      _movieGenreMap = <int, String>{};
+    }
+    return _movieGenreMap!;
+  }
+
+  /// Загружает и кэширует маппинг жанров сериалов.
+  Future<Map<int, String>> _ensureTvGenreMap() async {
+    if (_tvGenreMap != null) return _tvGenreMap!;
+    try {
+      final List<TmdbGenre> genres = await getTvGenres();
+      _tvGenreMap = <int, String>{
+        for (final TmdbGenre g in genres) g.id: g.name,
+      };
+    } catch (_) {
+      _tvGenreMap = <int, String>{};
+    }
+    return _tvGenreMap!;
+  }
+
+  /// Резолвит `genre_ids` в `genres` (объекты с `name`) в JSON элементах.
+  void _resolveGenreIds(
+    List<Map<String, dynamic>> items,
+    Map<int, String> genreMap,
+  ) {
+    for (final Map<String, dynamic> item in items) {
+      if (item['genres'] != null) continue;
+      final List<dynamic>? genreIds = item['genre_ids'] as List<dynamic>?;
+      if (genreIds == null) continue;
+      item['genres'] = <Map<String, dynamic>>[
+        for (final dynamic id in genreIds)
+          if (genreMap.containsKey(id as int))
+            <String, dynamic>{'id': id, 'name': genreMap[id]},
+      ];
+      item.remove('genre_ids');
+    }
+  }
+
+  /// Загружает список фильмов из paged endpoint.
+  Future<List<Movie>> _fetchMovieList(String url, {int page = 1}) async {
+    _ensureApiKey();
+
+    try {
+      final Response<dynamic> response = await _dio.get<dynamic>(
+        url,
+        queryParameters: <String, dynamic>{
+          'api_key': _apiKey,
+          'language': language,
+          'page': page,
+        },
+      );
+
+      final List<Map<String, dynamic>> items =
+          _extractResults(response, 'Failed to fetch movies from $url');
+      final Map<int, String> genreMap = await _ensureMovieGenreMap();
+      _resolveGenreIds(items, genreMap);
+
+      return items.map((Map<String, dynamic> json) => Movie.fromJson(json)).toList();
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'Failed to fetch movies');
+    }
+  }
+
+  /// Загружает список сериалов из paged endpoint.
+  Future<List<TvShow>> _fetchTvShowList(String url, {int page = 1}) async {
+    _ensureApiKey();
+
+    try {
+      final Response<dynamic> response = await _dio.get<dynamic>(
+        url,
+        queryParameters: <String, dynamic>{
+          'api_key': _apiKey,
+          'language': language,
+          'page': page,
+        },
+      );
+
+      final List<Map<String, dynamic>> items =
+          _extractResults(response, 'Failed to fetch TV shows from $url');
+      final Map<int, String> genreMap = await _ensureTvGenreMap();
+      _resolveGenreIds(items, genreMap);
+
+      return items.map((Map<String, dynamic> json) => TvShow.fromJson(json)).toList();
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'Failed to fetch TV shows');
+    }
+  }
+
+  /// Загружает отзывы из paged endpoint.
+  Future<List<TmdbReview>> _fetchReviews(String url, {int page = 1}) async {
+    _ensureApiKey();
+
+    try {
+      final Response<dynamic> response = await _dio.get<dynamic>(
+        url,
+        queryParameters: <String, dynamic>{
+          'api_key': _apiKey,
+          'language': 'en-US',
+          'page': page,
+        },
+      );
+
+      return _parseResultsList<TmdbReview>(
+        response,
+        (Map<String, dynamic> json) => TmdbReview.fromJson(json),
+        'Failed to fetch reviews from $url',
+      );
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'Failed to fetch reviews');
+    }
+  }
+
+  /// Парсит стандартный paged response TMDB в список объектов.
+  List<T> _parseResultsList<T>(
+    Response<dynamic> response,
+    T Function(Map<String, dynamic>) fromJson,
+    String errorMessage,
+  ) {
+    final List<Map<String, dynamic>> items =
+        _extractResults(response, errorMessage);
+    return items.map(fromJson).toList();
+  }
+
+  /// Извлекает массив `results` из ответа TMDB API.
+  List<Map<String, dynamic>> _extractResults(
+    Response<dynamic> response,
+    String errorMessage,
+  ) {
+    if (response.statusCode != 200 || response.data == null) {
+      throw TmdbApiException(
+        errorMessage,
+        statusCode: response.statusCode,
+      );
+    }
+
+    final Map<String, dynamic> data =
+        response.data as Map<String, dynamic>;
+    final List<dynamic> results = data['results'] as List<dynamic>;
+
+    return results
+        .map((dynamic item) => item as Map<String, dynamic>)
+        .toList();
   }
 
   void _ensureApiKey() {

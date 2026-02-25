@@ -1787,4 +1787,70 @@ class SRu extends S {
   String vgmapsFailedInit(String error) {
     return 'Не удалось инициализировать WebView: $error';
   }
+
+  @override
+  String get discoverTitle => 'Подборки';
+
+  @override
+  String get discoverCustomize => 'Настроить';
+
+  @override
+  String get discoverTrending => 'Тренды недели';
+
+  @override
+  String get discoverTopRatedMovies => 'Лучшие фильмы';
+
+  @override
+  String get discoverTopRatedTvShows => 'Лучшие сериалы';
+
+  @override
+  String get discoverPopularTvShows => 'Популярные сериалы';
+
+  @override
+  String get discoverUpcoming => 'Скоро в кино';
+
+  @override
+  String get discoverAnime => 'Аниме';
+
+  @override
+  String get discoverCustomizeTitle => 'Настроить подборки';
+
+  @override
+  String get discoverCustomizeHint => 'Выберите какие секции показывать';
+
+  @override
+  String get discoverResetDefault => 'По умолчанию';
+
+  @override
+  String get discoverAlreadyInCollection => 'Уже в коллекции';
+
+  @override
+  String get discoverShowWithBadge => 'Показывать с отметкой';
+
+  @override
+  String get discoverHideCompletely => 'Скрывать';
+
+  @override
+  String get recommendationsTitle => 'Рекомендации';
+
+  @override
+  String get reviewsTitle => 'Отзывы';
+
+  @override
+  String reviewsShowAll(int count) {
+    return 'Все $count отзывов';
+  }
+
+  @override
+  String get reviewsReadMore => 'Читать далее';
+
+  @override
+  String get reviewsInEnglish => 'Отзывы на английском';
+
+  @override
+  String get settingsShowRecommendations => 'Рекомендации';
+
+  @override
+  String get settingsShowRecommendationsSubtitle =>
+      'Показывать рекомендации и отзывы на странице элемента';
 }

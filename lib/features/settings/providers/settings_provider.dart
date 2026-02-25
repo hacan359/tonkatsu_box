@@ -40,6 +40,9 @@ abstract class SettingsKeys {
 
   /// Язык интерфейса по умолчанию.
   static const String appLanguageDefault = 'en';
+
+  /// Показывать ли секцию рекомендаций на странице элемента.
+  static const String showRecommendations = 'show_recommendations';
 }
 
 /// Состояние настроек IGDB.
@@ -60,6 +63,7 @@ class SettingsState {
     this.defaultAuthor,
     this.tmdbLanguage = SettingsKeys.tmdbLanguageDefault,
     this.appLanguage = SettingsKeys.appLanguageDefault,
+    this.showRecommendations = true,
   });
 
   /// Client ID для IGDB API.
@@ -103,6 +107,9 @@ class SettingsState {
 
   /// Язык интерфейса приложения (en / ru).
   final String appLanguage;
+
+  /// Показывать ли секцию рекомендаций.
+  final bool showRecommendations;
 
   /// Возвращает имя автора (или 'User' если не задано).
   String get authorName => (defaultAuthor != null && defaultAuthor!.isNotEmpty)
@@ -162,6 +169,7 @@ class SettingsState {
     String? defaultAuthor,
     String? tmdbLanguage,
     String? appLanguage,
+    bool? showRecommendations,
   }) {
     return SettingsState(
       clientId: clientId ?? this.clientId,
@@ -178,6 +186,7 @@ class SettingsState {
       defaultAuthor: defaultAuthor ?? this.defaultAuthor,
       tmdbLanguage: tmdbLanguage ?? this.tmdbLanguage,
       appLanguage: appLanguage ?? this.appLanguage,
+      showRecommendations: showRecommendations ?? this.showRecommendations,
     );
   }
 }
@@ -262,6 +271,8 @@ class SettingsNotifier extends Notifier<SettingsState> {
     final String appLanguage =
         _prefs.getString(SettingsKeys.appLanguage) ??
             SettingsKeys.appLanguageDefault;
+    final bool showRecommendations =
+        _prefs.getBool(SettingsKeys.showRecommendations) ?? true;
 
     final SettingsState loadedState = SettingsState(
       clientId: clientId,
@@ -274,6 +285,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
       defaultAuthor: defaultAuthor,
       tmdbLanguage: tmdbLanguage,
       appLanguage: appLanguage,
+      showRecommendations: showRecommendations,
     );
 
     // Устанавливаем credentials в API, если они есть
@@ -500,6 +512,12 @@ class SettingsNotifier extends Notifier<SettingsState> {
     state = state.copyWith(appLanguage: language);
   }
 
+  /// Включает/выключает секцию рекомендаций.
+  Future<void> setShowRecommendations({required bool enabled}) async {
+    await _prefs.setBool(SettingsKeys.showRecommendations, enabled);
+    state = state.copyWith(showRecommendations: enabled);
+  }
+
   /// Сбрасывает TMDB API ключ на встроенный.
   ///
   /// Удаляет пользовательский ключ из SharedPreferences.
@@ -598,6 +616,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await _prefs.remove(SettingsKeys.steamGridDbApiKey);
     await _prefs.remove(SettingsKeys.tmdbApiKey);
     await _prefs.remove(SettingsKeys.defaultAuthor);
+    await _prefs.remove(SettingsKeys.showRecommendations);
 
     _igdbApi.clearCredentials();
     _steamGridDbApi.clearApiKey();

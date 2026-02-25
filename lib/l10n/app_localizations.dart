@@ -3252,6 +3252,132 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Failed to initialize WebView: {error}'**
   String vgmapsFailedInit(String error);
+
+  /// No description provided for @discoverTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discover'**
+  String get discoverTitle;
+
+  /// No description provided for @discoverCustomize.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize'**
+  String get discoverCustomize;
+
+  /// No description provided for @discoverTrending.
+  ///
+  /// In en, this message translates to:
+  /// **'Trending This Week'**
+  String get discoverTrending;
+
+  /// No description provided for @discoverTopRatedMovies.
+  ///
+  /// In en, this message translates to:
+  /// **'Top Rated Movies'**
+  String get discoverTopRatedMovies;
+
+  /// No description provided for @discoverTopRatedTvShows.
+  ///
+  /// In en, this message translates to:
+  /// **'Top Rated TV Shows'**
+  String get discoverTopRatedTvShows;
+
+  /// No description provided for @discoverPopularTvShows.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular TV Shows'**
+  String get discoverPopularTvShows;
+
+  /// No description provided for @discoverUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming'**
+  String get discoverUpcoming;
+
+  /// No description provided for @discoverAnime.
+  ///
+  /// In en, this message translates to:
+  /// **'Anime'**
+  String get discoverAnime;
+
+  /// No description provided for @discoverCustomizeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize Discover'**
+  String get discoverCustomizeTitle;
+
+  /// No description provided for @discoverCustomizeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose which sections to show'**
+  String get discoverCustomizeHint;
+
+  /// No description provided for @discoverResetDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset to default'**
+  String get discoverResetDefault;
+
+  /// No description provided for @discoverAlreadyInCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Already in collection'**
+  String get discoverAlreadyInCollection;
+
+  /// No description provided for @discoverShowWithBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Show with badge'**
+  String get discoverShowWithBadge;
+
+  /// No description provided for @discoverHideCompletely.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide completely'**
+  String get discoverHideCompletely;
+
+  /// No description provided for @recommendationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommendations'**
+  String get recommendationsTitle;
+
+  /// No description provided for @reviewsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews'**
+  String get reviewsTitle;
+
+  /// No description provided for @reviewsShowAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all {count} reviews'**
+  String reviewsShowAll(int count);
+
+  /// No description provided for @reviewsReadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Read more'**
+  String get reviewsReadMore;
+
+  /// No description provided for @reviewsInEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews in English'**
+  String get reviewsInEnglish;
+
+  /// No description provided for @settingsShowRecommendations.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommendations'**
+  String get settingsShowRecommendations;
+
+  /// No description provided for @settingsShowRecommendationsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Show recommendations and reviews on item details'**
+  String get settingsShowRecommendationsSubtitle;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

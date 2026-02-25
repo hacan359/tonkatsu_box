@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/core/api/tmdb_api.dart';
 import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/data/repositories/collection_repository.dart';
 import 'package:xerabora/features/collections/screens/item_detail_screen.dart';
 import 'package:xerabora/features/collections/widgets/status_chip_row.dart';
+import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/game.dart';
@@ -34,8 +36,11 @@ void main() {
   late MockCollectionRepository mockRepo;
   late MockDatabaseService mockDb;
   late MockTmdbApi mockTmdbApi;
+  late SharedPreferences prefs;
 
-  setUp(() {
+  setUp(() async {
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    prefs = await SharedPreferences.getInstance();
     mockRepo = MockCollectionRepository();
     mockDb = MockDatabaseService();
     mockTmdbApi = MockTmdbApi();
@@ -44,6 +49,8 @@ void main() {
         .thenAnswer((_) async => <TvSeason>[]);
     when(() => mockDb.getWatchedEpisodes(any(), any()))
         .thenAnswer((_) async => <(int, int), DateTime?>{});
+    when(() => mockDb.getPlatformCount())
+        .thenAnswer((_) async => 0);
     when(() => mockTmdbApi.getTvSeasons(any()))
         .thenAnswer((_) async => <TvSeason>[]);
 
@@ -67,6 +74,7 @@ void main() {
         collectionRepositoryProvider.overrideWithValue(mockRepo),
         databaseServiceProvider.overrideWithValue(mockDb),
         tmdbApiProvider.overrideWithValue(mockTmdbApi),
+        sharedPreferencesProvider.overrideWithValue(prefs),
       ],
       child: MaterialApp(
         localizationsDelegates: S.localizationsDelegates,

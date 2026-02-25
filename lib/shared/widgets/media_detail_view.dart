@@ -70,6 +70,7 @@ class MediaDetailView extends StatelessWidget {
     this.description,
     this.statusWidget,
     this.extraSections,
+    this.recommendationSections,
     this.authorComment,
     this.userComment,
     this.userRating,
@@ -117,6 +118,9 @@ class MediaDetailView extends StatelessWidget {
 
   /// Дополнительные секции (например, Progress для сериалов).
   final List<Widget>? extraSections;
+
+  /// Секции рекомендаций и отзывов (рендерятся после ExpansionTile, всегда видимы).
+  final List<Widget>? recommendationSections;
 
   /// Рецензия автора коллекции (видна другим пользователям при экспорте).
   final String? authorComment;
@@ -205,6 +209,12 @@ class MediaDetailView extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           _buildExtraSectionsExpansion(context),
         ],
+        if (recommendationSections != null &&
+            recommendationSections!.isNotEmpty)
+          for (final Widget section in recommendationSections!) ...<Widget>[
+            const SizedBox(height: AppSpacing.md),
+            section,
+          ],
         const SizedBox(height: AppSpacing.lg),
       ],
     );

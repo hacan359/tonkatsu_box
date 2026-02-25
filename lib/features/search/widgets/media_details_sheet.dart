@@ -12,7 +12,7 @@ class MediaDetailsSheet extends StatelessWidget {
   const MediaDetailsSheet({
     required this.title,
     required this.icon,
-    required this.onAddToCollection,
+    this.onAddToCollection,
     this.overview,
     this.year,
     this.rating,
@@ -46,8 +46,8 @@ class MediaDetailsSheet extends StatelessWidget {
   /// URL постера.
   final String? posterUrl;
 
-  /// Callback добавления в коллекцию.
-  final VoidCallback onAddToCollection;
+  /// Callback добавления в коллекцию (если null — кнопка не показывается).
+  final VoidCallback? onAddToCollection;
 
   @override
   Widget build(BuildContext context) {
@@ -170,19 +170,20 @@ class MediaDetailsSheet extends StatelessWidget {
                 ),
               ],
 
-              const SizedBox(height: AppSpacing.xl),
-
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    onAddToCollection();
-                  },
-                  icon: const Icon(Icons.add),
-                  label: Text(S.of(context).searchAddToCollection),
+              if (onAddToCollection != null) ...<Widget>[
+                const SizedBox(height: AppSpacing.xl),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      onAddToCollection!();
+                    },
+                    icon: const Icon(Icons.add),
+                    label: Text(S.of(context).searchAddToCollection),
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
         );

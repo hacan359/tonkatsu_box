@@ -834,5 +834,35 @@
     "placeholders": {
       "error": {"type": "String"}
     }
-  }
+  },
+
+  "discoverTitle": "Discover",
+  "discoverCustomize": "Customize",
+  "discoverTrending": "Trending This Week",
+  "discoverTopRatedMovies": "Top Rated Movies",
+  "discoverTopRatedTvShows": "Top Rated TV Shows",
+  "discoverPopularTvShows": "Popular TV Shows",
+  "discoverUpcoming": "Upcoming",
+  "discoverAnime": "Anime",
+  "discoverCustomizeTitle": "Customize Discover",
+  "discoverCustomizeHint": "Choose which sections to show",
+  "discoverResetDefault": "Reset to default",
+  "discoverAlreadyInCollection": "Already in collection",
+  "discoverShowWithBadge": "Show with badge",
+  "discoverHideCompletely": "Hide completely",
+
+  "recommendationsTitle": "Recommendations",
+
+  "reviewsTitle": "Reviews",
+  "reviewsShowAll": "Show all {count} reviews",
+  "@reviewsShowAll": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "reviewsReadMore": "Read more",
+  "reviewsInEnglish": "Reviews in English",
+
+  "settingsShowRecommendations": "Recommendations",
+  "settingsShowRecommendationsSubtitle": "Show recommendations and reviews on item details"
 }
