@@ -22,6 +22,8 @@
 - Tests: `discover_provider_test.dart`, `discover_row_test.dart`, `media_details_sheet_test.dart`, `tmdb_review_test.dart`, `horizontal_mouse_scroll_test.dart`, `scrollable_row_with_arrows_test.dart`, `settings_provider_show_recommendations_test.dart`
 
 ### Changed
+- Eager preload of seasons AND episodes when adding a TV show or animated series — `_preloadSeasonsAsync()` now fetches episodes for each season (cache → API → save), awaited before showing snackbar instead of fire-and-forget, guaranteeing offline access to episode tracker data (`search_screen.dart`)
+- All add-to-collection methods now call `upsertMovie()` / `upsertTvShow()` before `addItem()` — ensures media model is cached in DB for offline access. Previously only `_addMovieToAnyCollection` and `_addTvShowToAnyCollection` did this; now all 8 methods (movie, TV show, animation movie, animation TV show × direct/picker) are consistent (`search_screen.dart`)
 - TMDB poster URL size reduced from `w500` to `w342` in `Movie.fromJson()`, `TvShow.fromJson()`, `TvSeason.fromJson()` — ~40% smaller downloads, sufficient for all poster display sizes (100–130px logical) (`movie.dart`, `tv_show.dart`, `tv_season.dart`)
 - `posterThumbUrl` getter now uses `RegExp(r'/w\d+')` instead of hardcoded `'/w500'` — works correctly with both new `w342` URLs and legacy `w500` URLs stored in database (`movie.dart`, `tv_show.dart`)
 

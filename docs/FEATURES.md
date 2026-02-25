@@ -126,7 +126,7 @@ Status display varies by context: "piano-style" segmented bar on detail screens 
 Track viewing progress at the episode level:
 - Episode progress bar with watched/total count
 - Expandable seasons with per-episode checkboxes
-- Season preloading on add, lazy episode loading on expand
+- Eager preloading of seasons and episodes on add (offline-ready)
 - Bulk "Mark all" / "Unmark all" per season
 - Auto-complete when all episodes are watched
 
