@@ -32,6 +32,8 @@
 - `CollectionItemsNotifier.updateStatus()` mirrors DB date logic in local state for instant UI updates (`collections_provider.dart`)
 - Owned badge (check_circle icon) now shown on Recommendations section, matching Discover feed behavior (`recommendations_section.dart`)
 - Mouse drag-to-scroll enabled in horizontal rows via `ScrollConfiguration` with `PointerDeviceKind.mouse`, scrollbar hidden (`scrollable_row_with_arrows.dart`)
+- Swapped navigation icons — Collections uses `shelves` icon, Wishlist uses `bookmark`/`bookmark_border` (across navigation, empty states, welcome screen, dialogs) (`navigation_shell.dart`, `home_screen.dart`, `collection_screen.dart`, `wishlist_screen.dart`, `add_wishlist_dialog.dart`, `welcome_step_how_it_works.dart`, `trakt_import_screen.dart`)
+- Removed all `debugPrint` diagnostic logging from episode tracker (`episode_tracker_provider.dart`, `episode_tracker_section.dart`)
 
 ### Fixed
 - Fixed `EpisodeTrackerSection` being rendered for uncategorized items (where `collectionId` is null) — episode tracking requires a real `collection_id` in the `watched_episodes` DB table, so the section is now hidden when `collectionId` is null (`item_detail_screen.dart`)
