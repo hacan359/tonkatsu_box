@@ -91,6 +91,22 @@ Search across multiple media types via tabbed interface:
 - **Per-tab API key checks** — each tab independently checks its required API key (IGDB for Games, TMDB for Movies/TV/Animation); missing key shows "Go to Settings" button
 - **Smart error handling** — network errors (connection/timeout/socket) show "No internet connection" with retry; API errors show the error message with retry
 
+### Discover Feed
+
+When the search field is empty, a curated Discover feed is shown with horizontal poster rows:
+
+- **Trending** — interleaved trending movies and TV shows
+- **Top Rated Movies** — highest-rated movies from TMDB
+- **Popular TV Shows** — currently popular TV shows
+- **Upcoming** — upcoming movie releases
+- **Anime** — popular animated TV shows
+- **Top Rated TV Shows** — highest-rated TV shows
+- **Customize** — bottom sheet to toggle sections on/off and hide items already in collections
+- **Desktop scroll arrows** — left/right arrow buttons on hover for horizontal lists (width >= 600px)
+- **Mouse wheel scroll** — vertical mouse wheel events converted to horizontal scroll
+
+Tap any poster to view details with genre chips, overview, and "Add to Collection" button.
+
 ## 📊 Progress Tracking
 
 Track status for each item in your collection:
@@ -141,6 +157,14 @@ Tap any item to see full details. Screens have one or two tabs:
 **Board tab** — personal board for the item (hidden for uncategorized items)
 
 **Actions menu** (PopupMenuButton): "Move to Collection" and "Remove"
+
+### Recommendations & Reviews (Movies/TV Shows)
+
+Displayed below Activity & Progress section (always visible, not collapsed):
+
+- **Similar Movies / TV Shows** — horizontal poster row from TMDB `/similar` endpoint. Tap to view details with "Add to Collection" button
+- **TMDB Reviews** — expandable review cards with author name, rating badge, date, and content preview (3-line truncated, tap to expand)
+- **Toggle** — show/hide recommendations in Settings
 
 <details>
 <summary><b>Detail screen variants</b></summary>

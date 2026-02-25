@@ -27,7 +27,7 @@ class Movie {
     String? posterUrl;
     final String? posterPath = json['poster_path'] as String?;
     if (posterPath != null) {
-      posterUrl = 'https://image.tmdb.org/t/p/w500$posterPath';
+      posterUrl = 'https://image.tmdb.org/t/p/w342$posterPath';
     }
 
     // Извлекаем URL бэкдропа
@@ -132,7 +132,7 @@ class Movie {
   /// URL маленького постера (w154) для thumbnail-ов.
   String? get posterThumbUrl {
     if (posterUrl == null) return null;
-    return posterUrl!.replaceFirst('/w500', '/w154');
+    return posterUrl!.replaceFirst(RegExp(r'/w\d+'), '/w154');
   }
 
   /// URL среднего бэкдропа (w300) для экранов деталей.

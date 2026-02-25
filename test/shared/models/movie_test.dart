@@ -32,7 +32,7 @@ void main() {
         expect(movie.title, 'Inception');
         expect(movie.originalTitle, 'Inception');
         expect(movie.posterUrl,
-            'https://image.tmdb.org/t/p/w500/qmDpIHrmpJINaRKAfWQfftjCdyi.jpg');
+            'https://image.tmdb.org/t/p/w342/qmDpIHrmpJINaRKAfWQfftjCdyi.jpg');
         expect(movie.backdropUrl,
             'https://image.tmdb.org/t/p/w780/s3TBrRGB1iav7gFOCNx3H31MoES.jpg');
         expect(movie.overview, 'A thief who steals corporate secrets...');

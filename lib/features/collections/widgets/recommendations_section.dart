@@ -169,7 +169,7 @@ class RecommendationsSection extends ConsumerWidget {
         year: movie.releaseYear,
         rating: movie.formattedRating,
         genres: movie.genres,
-        posterUrl: movie.posterThumbUrl,
+        posterUrl: movie.posterUrl,
         onAddToCollection:
             onAddMovie != null ? () => onAddMovie!(movie) : null,
       ),
@@ -187,7 +187,7 @@ class RecommendationsSection extends ConsumerWidget {
         year: tvShow.firstAirYear,
         rating: tvShow.formattedRating,
         genres: tvShow.genres,
-        posterUrl: tvShow.posterThumbUrl,
+        posterUrl: tvShow.posterUrl,
         onAddToCollection:
             onAddTvShow != null ? () => onAddTvShow!(tvShow) : null,
       ),

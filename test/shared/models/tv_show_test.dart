@@ -33,7 +33,7 @@ void main() {
         expect(show.title, 'Breaking Bad');
         expect(show.originalTitle, 'Breaking Bad');
         expect(show.posterUrl,
-            'https://image.tmdb.org/t/p/w500/ggFHVNu6YYI5L9pCfOacjizRGt.jpg');
+            'https://image.tmdb.org/t/p/w342/ggFHVNu6YYI5L9pCfOacjizRGt.jpg');
         expect(show.backdropUrl,
             'https://image.tmdb.org/t/p/w780/tsRy63Mu5cu8etL1X7ZLyf7UP1M.jpg');
         expect(show.overview,
