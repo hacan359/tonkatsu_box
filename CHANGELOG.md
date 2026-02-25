@@ -34,6 +34,7 @@
 - Mouse drag-to-scroll enabled in horizontal rows via `ScrollConfiguration` with `PointerDeviceKind.mouse`, scrollbar hidden (`scrollable_row_with_arrows.dart`)
 
 ### Fixed
+- Fixed `EpisodeTrackerSection` being rendered for uncategorized items (where `collectionId` is null) — episode tracking requires a real `collection_id` in the `watched_episodes` DB table, so the section is now hidden when `collectionId` is null (`item_detail_screen.dart`)
 - Fixed poster image cache miss when opening detail sheet from Discover feed and Recommendations — was using `posterThumbUrl` (w154) while poster cards used `posterUrl` (w500), causing re-download. Now both use `posterUrl` for consistent caching (`discover_feed.dart`, `recommendations_section.dart`)
 - Fixed genres displaying as numeric IDs (e.g., "18, 53") instead of names (e.g., "Drama, Thriller") in Discover feed and Recommendations — TMDB list endpoints return `genre_ids` which were passed as-is to `Movie.fromJson()` (`tmdb_api.dart`)
 - Fixed `completedAt` date not being set when marking all episodes as watched — TMDB search/list APIs don't return `number_of_episodes`/`number_of_seasons`, so cached TvShow had null values; now `_updateAutoStatus` fetches full TV details from `/tv/{id}` endpoint on first use and caches result (`episode_tracker_provider.dart`)

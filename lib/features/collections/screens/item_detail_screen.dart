@@ -405,7 +405,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
               _updateActivityDate(item.id, type, date)
           : null,
       extraSections: <Widget>[
-        if (config.hasEpisodeTracker)
+        if (config.hasEpisodeTracker && widget.collectionId != null)
           EpisodeTrackerSection(
             collectionId: widget.collectionId,
             externalId: item.externalId,
