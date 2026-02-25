@@ -6,6 +6,8 @@
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-02-25
+
 ### Added
 - Discover feed on Search screen — shown when search field is empty. Horizontal poster rows for Trending, Top Rated Movies, Popular TV Shows, Upcoming, Anime, Top Rated TV Shows. Customizable via bottom sheet (toggle sections, hide owned items). Customize button in AppBar (`discover_feed.dart`, `discover_row.dart`, `discover_customize_sheet.dart`, `discover_provider.dart`)
 - Recommendations section on item detail screen — "Similar Movies" / "Similar TV Shows" from TMDB `/similar` endpoint, displayed as horizontal poster row below Activity & Progress. Tap to view details with "Add to Collection" button (`recommendations_section.dart`)
