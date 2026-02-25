@@ -1065,10 +1065,9 @@ void main() {
         // Отмечаем второй — теперь 2/2
         await notifier.toggleEpisode(1, 2);
 
-        // Сначала inProgress (notStarted → inProgress), потом completed
-        expect(lastTracking.updateStatusCalls, hasLength(2));
-        expect(lastTracking.updateStatusCalls[0].$2, ItemStatus.inProgress);
-        expect(lastTracking.updateStatusCalls[1].$2, ItemStatus.completed);
+        // Сразу completed (все эпизоды просмотрены)
+        expect(lastTracking.updateStatusCalls, hasLength(1));
+        expect(lastTracking.updateStatusCalls[0].$2, ItemStatus.completed);
       });
 
       test('НЕ должен делать auto-complete если totalEpisodes == 0',
@@ -1127,10 +1126,9 @@ void main() {
         await notifier.loadSeason(1);
         await notifier.toggleSeason(1);
 
-        // inProgress + completed через fallback (3 загруженных == 3 просмотренных)
-        expect(lastTracking.updateStatusCalls, hasLength(2));
-        expect(lastTracking.updateStatusCalls[0].$2, ItemStatus.inProgress);
-        expect(lastTracking.updateStatusCalls[1].$2, ItemStatus.completed);
+        // Сразу completed через fallback (3 загруженных == 3 просмотренных)
+        expect(lastTracking.updateStatusCalls, hasLength(1));
+        expect(lastTracking.updateStatusCalls[0].$2, ItemStatus.completed);
 
         final List<CollectionItem>? items = container
             .read(collectionItemsNotifierProvider(testCollectionId))
@@ -1361,10 +1359,9 @@ void main() {
         await notifier.loadSeason(1);
         await notifier.toggleSeason(1);
 
-        // inProgress (notStarted → inProgress), затем completed (3/3)
-        expect(lastTracking.updateStatusCalls, hasLength(2));
-        expect(lastTracking.updateStatusCalls[0].$2, ItemStatus.inProgress);
-        expect(lastTracking.updateStatusCalls[1].$2, ItemStatus.completed);
+        // Сразу completed (3/3 — все просмотрены)
+        expect(lastTracking.updateStatusCalls, hasLength(1));
+        expect(lastTracking.updateStatusCalls[0].$2, ItemStatus.completed);
 
         // completedAt и startedAt заполнены
         final List<CollectionItem>? items = container

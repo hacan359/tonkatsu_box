@@ -101,6 +101,11 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
   late int? _collectionId;
   late int _showId;
 
+  // Кэш данных о сериале, полученных из TMDB API (чтобы не делать запрос
+  // при каждом toggleEpisode/toggleSeason).
+  int? _cachedTotalEpisodes;
+  int? _cachedTotalSeasons;
+
   @override
   EpisodeTrackerState build(({int? collectionId, int showId}) arg) {
     _collectionId = arg.collectionId;
@@ -316,14 +321,18 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
     }
 
     final ItemStatus currentStatus = targetItem.status;
-    int totalInShow = targetItem.tvShow?.totalEpisodes ?? 0;
-    int totalSeasons = targetItem.tvShow?.totalSeasons ?? 0;
+    int totalInShow = _cachedTotalEpisodes ??
+        targetItem.tvShow?.totalEpisodes ?? 0;
+    int totalSeasons = _cachedTotalSeasons ??
+        targetItem.tvShow?.totalSeasons ?? 0;
 
     debugPrint(
       '[EpisodeTracker] showId=$_showId, '
       'tvShow=${targetItem.tvShow != null ? "present" : "NULL"}, '
       'totalEpisodes=${targetItem.tvShow?.totalEpisodes}, '
       'totalSeasons=${targetItem.tvShow?.totalSeasons}, '
+      'cachedEpisodes=$_cachedTotalEpisodes, '
+      'cachedSeasons=$_cachedTotalSeasons, '
       'totalInShow=$totalInShow, '
       'totalWatched=$totalWatched, '
       'currentStatus=$currentStatus, '
@@ -339,6 +348,9 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
           await _db.upsertTvShow(freshShow);
           totalInShow = freshShow.totalEpisodes ?? 0;
           totalSeasons = freshShow.totalSeasons ?? 0;
+          // Кэшируем, чтобы не обращаться к API при каждом toggle
+          _cachedTotalEpisodes = totalInShow;
+          _cachedTotalSeasons = totalSeasons;
           debugPrint(
             '[EpisodeTracker] fetched from API: '
             'totalEpisodes=$totalInShow, totalSeasons=$totalSeasons',
@@ -375,7 +387,23 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
       return;
     }
 
-    // Есть просмотренные → inProgress (если был notStarted или planned)
+    // Все просмотрены → completed (только если totalInShow известен)
+    if (totalInShow > 0 && totalWatched >= totalInShow) {
+      if (currentStatus != ItemStatus.completed) {
+        debugPrint(
+          '[EpisodeTracker] → completed '
+          '(totalWatched=$totalWatched >= totalInShow=$totalInShow)',
+        );
+        await ref
+            .read(collectionItemsNotifierProvider(collId).notifier)
+            .updateStatus(
+                targetItem.id, ItemStatus.completed, targetItem.mediaType);
+      }
+      return;
+    }
+
+    // Есть просмотренные, но не все → inProgress
+    // (если был notStarted, planned или completed)
     if (currentStatus == ItemStatus.notStarted ||
         currentStatus == ItemStatus.planned) {
       debugPrint('[EpisodeTracker] → inProgress (first watched)');
@@ -383,24 +411,7 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
           .read(collectionItemsNotifierProvider(collId).notifier)
           .updateStatus(
               targetItem.id, ItemStatus.inProgress, targetItem.mediaType);
-    }
-
-    // Все просмотрены → completed (только если totalInShow известен)
-    if (totalInShow > 0 && totalWatched >= totalInShow &&
-        currentStatus != ItemStatus.completed) {
-      debugPrint(
-        '[EpisodeTracker] → completed '
-        '(totalWatched=$totalWatched >= totalInShow=$totalInShow)',
-      );
-      await ref
-          .read(collectionItemsNotifierProvider(collId).notifier)
-          .updateStatus(
-              targetItem.id, ItemStatus.completed, targetItem.mediaType);
-      return;
-    }
-
-    // Был completed, но сняли часть → inProgress
-    if (currentStatus == ItemStatus.completed &&
+    } else if (currentStatus == ItemStatus.completed &&
         totalInShow > 0 && totalWatched < totalInShow) {
       debugPrint('[EpisodeTracker] → inProgress (was completed, unchecked some)');
       await ref
