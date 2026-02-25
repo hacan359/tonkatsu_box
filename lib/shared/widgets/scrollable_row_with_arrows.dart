@@ -85,9 +85,12 @@ class _ScrollableRowWithArrowsState extends State<ScrollableRowWithArrows> {
 
     return Stack(
       children: <Widget>[
-        HorizontalMouseScroll(
-          controller: widget.controller,
-          child: widget.child,
+        ScrollConfiguration(
+          behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+          child: HorizontalMouseScroll(
+            controller: widget.controller,
+            child: widget.child,
+          ),
         ),
         if (isDesktop && _showLeftArrow)
           Positioned(
