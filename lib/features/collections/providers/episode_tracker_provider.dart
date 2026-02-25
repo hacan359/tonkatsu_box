@@ -1,5 +1,7 @@
 // Провайдер для трекинга просмотренных эпизодов сериала.
 
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -105,6 +107,7 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
   // при каждом toggleEpisode/toggleSeason).
   int? _cachedTotalEpisodes;
   int? _cachedTotalSeasons;
+  bool _hasFetchedTotals = false;
 
   @override
   EpisodeTrackerState build(({int? collectionId, int showId}) arg) {
@@ -247,7 +250,7 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
       state = state.copyWith(watchedEpisodes: updated);
     }
 
-    await _updateAutoStatus();
+    unawaited(_updateAutoStatus());
   }
 
   /// Переключает отметку просмотра всех эпизодов сезона.
@@ -284,7 +287,7 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
       state = state.copyWith(watchedEpisodes: updated);
     }
 
-    await _updateAutoStatus();
+    unawaited(_updateAutoStatus());
   }
 
   Future<void> _updateAutoStatus() async {
@@ -341,14 +344,15 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
     );
 
     // Если в кэше нет totalEpisodes/totalSeasons — подгружаем из TMDB API
-    if (totalInShow == 0 || totalSeasons == 0) {
+    // (только один раз за сессию, чтобы не делать запрос при каждом toggle)
+    if ((totalInShow == 0 || totalSeasons == 0) && !_hasFetchedTotals) {
+      _hasFetchedTotals = true;
       try {
         final TvShow? freshShow = await _tmdbApi.getTvShow(_showId);
         if (freshShow != null) {
           await _db.upsertTvShow(freshShow);
           totalInShow = freshShow.totalEpisodes ?? 0;
           totalSeasons = freshShow.totalSeasons ?? 0;
-          // Кэшируем, чтобы не обращаться к API при каждом toggle
           _cachedTotalEpisodes = totalInShow;
           _cachedTotalSeasons = totalSeasons;
           debugPrint(

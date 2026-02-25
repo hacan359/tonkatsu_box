@@ -269,6 +269,7 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
         for (final TvSeason season in _seasons)
           if (season.seasonNumber > 0) // Пропускаем Specials (сезон 0)
             SeasonExpansionTile(
+              key: ValueKey<int>(season.seasonNumber),
               season: season,
               trackerState: trackerState,
               trackerArg: _trackerArg,
@@ -348,7 +349,7 @@ class SeasonExpansionTile extends ConsumerWidget {
               allWatched
                   ? Icons.remove_done
                   : Icons.done_all,
-              size: 18,
+              size: 20,
             ),
             tooltip: allWatched ? l.unmarkAll : l.markAllWatched,
             onPressed: () {
@@ -369,9 +370,6 @@ class SeasonExpansionTile extends ConsumerWidget {
                     .toggleSeason(seasonNum);
               }
             },
-            constraints: const BoxConstraints(),
-            padding: const EdgeInsets.all(4),
-            visualDensity: VisualDensity.compact,
           ),
           const Icon(Icons.expand_more, size: 20),
         ],

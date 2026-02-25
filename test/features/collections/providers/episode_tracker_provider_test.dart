@@ -1015,6 +1015,7 @@ void main() {
 
         await Future<void>.delayed(Duration.zero);
         await notifier.toggleEpisode(1, 1);
+        await Future<void>.delayed(Duration.zero);
 
         expect(lastTracking.updateStatusCalls, hasLength(1));
         expect(lastTracking.updateStatusCalls.first.$1, item.id);
@@ -1038,6 +1039,7 @@ void main() {
 
         await Future<void>.delayed(Duration.zero);
         await notifier.toggleEpisode(1, 1);
+        await Future<void>.delayed(Duration.zero);
 
         expect(lastTracking.updateStatusCalls, hasLength(1));
         expect(lastTracking.updateStatusCalls.first.$2, ItemStatus.inProgress);
@@ -1064,6 +1066,7 @@ void main() {
         await Future<void>.delayed(Duration.zero);
         // Отмечаем второй — теперь 2/2
         await notifier.toggleEpisode(1, 2);
+        await Future<void>.delayed(Duration.zero);
 
         // Сразу completed (все эпизоды просмотрены)
         expect(lastTracking.updateStatusCalls, hasLength(1));
@@ -1087,6 +1090,7 @@ void main() {
 
         await Future<void>.delayed(Duration.zero);
         await notifier.toggleEpisode(1, 1);
+        await Future<void>.delayed(Duration.zero);
 
         // Только inProgress (notStarted → inProgress), без completed
         expect(lastTracking.updateStatusCalls, hasLength(1));
@@ -1125,6 +1129,7 @@ void main() {
         // Загружаем сезон и помечаем все эпизоды
         await notifier.loadSeason(1);
         await notifier.toggleSeason(1);
+        await Future<void>.delayed(Duration.zero);
 
         // Сразу completed через fallback (3 загруженных == 3 просмотренных)
         expect(lastTracking.updateStatusCalls, hasLength(1));
@@ -1160,6 +1165,7 @@ void main() {
         await Future<void>.delayed(Duration.zero);
         // Снимаем единственный просмотренный
         await notifier.toggleEpisode(1, 1);
+        await Future<void>.delayed(Duration.zero);
 
         expect(lastTracking.updateStatusCalls, hasLength(1));
         expect(lastTracking.updateStatusCalls.first.$2, ItemStatus.notStarted);
@@ -1188,6 +1194,7 @@ void main() {
         await Future<void>.delayed(Duration.zero);
         // Снимаем один из трёх
         await notifier.toggleEpisode(1, 3);
+        await Future<void>.delayed(Duration.zero);
 
         expect(lastTracking.updateStatusCalls, hasLength(1));
         expect(lastTracking.updateStatusCalls.first.$2, ItemStatus.inProgress);
@@ -1210,6 +1217,7 @@ void main() {
 
         await Future<void>.delayed(Duration.zero);
         await notifier.toggleEpisode(1, 1);
+        await Future<void>.delayed(Duration.zero);
 
         expect(lastTracking.updateStatusCalls, hasLength(1));
         expect(lastTracking.updateStatusCalls.first.$3, MediaType.animation);
@@ -1234,6 +1242,7 @@ void main() {
 
         await Future<void>.delayed(Duration.zero);
         await notifier.toggleEpisode(1, 2);
+        await Future<void>.delayed(Duration.zero);
 
         // Dropped не должен автоматически меняться
         expect(lastTracking.updateStatusCalls, isEmpty);
@@ -1304,6 +1313,7 @@ void main() {
 
         // Отмечаем все эпизоды сезона 1
         await notifier.toggleSeason(1);
+        await Future<void>.delayed(Duration.zero);
 
         // После сезона 1: 3/5 — должен стать inProgress
         expect(lastTracking.updateStatusCalls, hasLength(1));
@@ -1311,6 +1321,7 @@ void main() {
 
         // Отмечаем все эпизоды сезона 2
         await notifier.toggleSeason(2);
+        await Future<void>.delayed(Duration.zero);
 
         // После сезона 2: 5/5 — должен стать completed
         expect(lastTracking.updateStatusCalls, hasLength(2));
@@ -1358,6 +1369,7 @@ void main() {
 
         await notifier.loadSeason(1);
         await notifier.toggleSeason(1);
+        await Future<void>.delayed(Duration.zero);
 
         // Сразу completed (3/3 — все просмотрены)
         expect(lastTracking.updateStatusCalls, hasLength(1));
@@ -1392,6 +1404,7 @@ void main() {
         await Future<void>.delayed(Duration.zero);
         // toggleEpisode — item не будет найден (пустой список)
         await notifier.toggleEpisode(1, 1);
+        await Future<void>.delayed(Duration.zero);
 
         // Не упал — просто ничего не сделал
       });
