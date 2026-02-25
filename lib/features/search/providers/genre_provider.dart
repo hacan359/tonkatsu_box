@@ -4,12 +4,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/tmdb_api.dart';
 import '../../../core/database/database_service.dart';
+import '../../settings/providers/settings_provider.dart';
 
 /// Провайдер жанров фильмов из TMDB.
 ///
 /// Загружает жанры из БД-кэша. Если кэш пуст — загружает из API и сохраняет.
+/// Инвалидируется при смене языка TMDB.
 final FutureProvider<List<TmdbGenre>> movieGenresProvider =
     FutureProvider<List<TmdbGenre>>((Ref ref) async {
+  // Пересчитать при смене языка TMDB
+  ref.watch(settingsNotifierProvider
+      .select((SettingsState s) => s.tmdbLanguage));
   final DatabaseService db = ref.watch(databaseServiceProvider);
   final TmdbApi api = ref.watch(tmdbApiProvider);
   return _loadGenres(db, api, 'movie', api.getMovieGenres);
@@ -18,8 +23,12 @@ final FutureProvider<List<TmdbGenre>> movieGenresProvider =
 /// Провайдер жанров сериалов из TMDB.
 ///
 /// Загружает жанры из БД-кэша. Если кэш пуст — загружает из API и сохраняет.
+/// Инвалидируется при смене языка TMDB.
 final FutureProvider<List<TmdbGenre>> tvGenresProvider =
     FutureProvider<List<TmdbGenre>>((Ref ref) async {
+  // Пересчитать при смене языка TMDB
+  ref.watch(settingsNotifierProvider
+      .select((SettingsState s) => s.tmdbLanguage));
   final DatabaseService db = ref.watch(databaseServiceProvider);
   final TmdbApi api = ref.watch(tmdbApiProvider);
   return _loadGenres(db, api, 'tv', api.getTvGenres);

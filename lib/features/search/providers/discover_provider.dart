@@ -203,6 +203,9 @@ List<TvShow> _resolveTvGenres(
 /// Трендовые фильмы.
 final FutureProvider<List<Movie>> discoverTrendingMoviesProvider =
     FutureProvider<List<Movie>>((Ref ref) async {
+  // Пересчитать при смене языка TMDB
+  ref.watch(settingsNotifierProvider
+      .select((SettingsState s) => s.tmdbLanguage));
   final TmdbApi tmdb = ref.watch(tmdbApiProvider);
   final Map<String, String> genreMap =
       await ref.watch(movieGenreMapProvider.future);
@@ -213,6 +216,8 @@ final FutureProvider<List<Movie>> discoverTrendingMoviesProvider =
 /// Трендовые сериалы.
 final FutureProvider<List<TvShow>> discoverTrendingTvShowsProvider =
     FutureProvider<List<TvShow>>((Ref ref) async {
+  ref.watch(settingsNotifierProvider
+      .select((SettingsState s) => s.tmdbLanguage));
   final TmdbApi tmdb = ref.watch(tmdbApiProvider);
   final Map<String, String> genreMap =
       await ref.watch(tvGenreMapProvider.future);
@@ -223,6 +228,8 @@ final FutureProvider<List<TvShow>> discoverTrendingTvShowsProvider =
 /// Лучшие фильмы.
 final FutureProvider<List<Movie>> discoverTopRatedMoviesProvider =
     FutureProvider<List<Movie>>((Ref ref) async {
+  ref.watch(settingsNotifierProvider
+      .select((SettingsState s) => s.tmdbLanguage));
   final TmdbApi tmdb = ref.watch(tmdbApiProvider);
   final Map<String, String> genreMap =
       await ref.watch(movieGenreMapProvider.future);
@@ -233,6 +240,8 @@ final FutureProvider<List<Movie>> discoverTopRatedMoviesProvider =
 /// Популярные сериалы.
 final FutureProvider<List<TvShow>> discoverPopularTvShowsProvider =
     FutureProvider<List<TvShow>>((Ref ref) async {
+  ref.watch(settingsNotifierProvider
+      .select((SettingsState s) => s.tmdbLanguage));
   final TmdbApi tmdb = ref.watch(tmdbApiProvider);
   final Map<String, String> genreMap =
       await ref.watch(tvGenreMapProvider.future);
@@ -243,6 +252,8 @@ final FutureProvider<List<TvShow>> discoverPopularTvShowsProvider =
 /// Скоро в кино.
 final FutureProvider<List<Movie>> discoverUpcomingMoviesProvider =
     FutureProvider<List<Movie>>((Ref ref) async {
+  ref.watch(settingsNotifierProvider
+      .select((SettingsState s) => s.tmdbLanguage));
   final TmdbApi tmdb = ref.watch(tmdbApiProvider);
   final Map<String, String> genreMap =
       await ref.watch(movieGenreMapProvider.future);
@@ -253,6 +264,8 @@ final FutureProvider<List<Movie>> discoverUpcomingMoviesProvider =
 /// Аниме (TV с жанром Animation = 16).
 final FutureProvider<List<TvShow>> discoverAnimeProvider =
     FutureProvider<List<TvShow>>((Ref ref) async {
+  ref.watch(settingsNotifierProvider
+      .select((SettingsState s) => s.tmdbLanguage));
   final TmdbApi tmdb = ref.watch(tmdbApiProvider);
   final Map<String, String> genreMap =
       await ref.watch(tvGenreMapProvider.future);
@@ -263,6 +276,8 @@ final FutureProvider<List<TvShow>> discoverAnimeProvider =
 /// Лучшие сериалы.
 final FutureProvider<List<TvShow>> discoverTopRatedTvShowsProvider =
     FutureProvider<List<TvShow>>((Ref ref) async {
+  ref.watch(settingsNotifierProvider
+      .select((SettingsState s) => s.tmdbLanguage));
   final TmdbApi tmdb = ref.watch(tmdbApiProvider);
   final Map<String, String> genreMap =
       await ref.watch(tvGenreMapProvider.future);
