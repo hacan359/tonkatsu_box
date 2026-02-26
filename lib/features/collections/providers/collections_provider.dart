@@ -412,6 +412,11 @@ class CollectionItemsNotifier
   }
 
   /// Обновляет даты активности элемента вручную.
+  ///
+  /// Автоматически синхронизирует статус:
+  /// - Установка [completedAt] → статус `completed` (с любого статуса).
+  /// - Установка [startedAt] → статус `inProgress` (если был `notStarted`
+  ///   или `planned`; `dropped`, `completed` и `inProgress` не меняются).
   Future<void> updateActivityDates(
     int id, {
     DateTime? startedAt,
@@ -428,6 +433,33 @@ class CollectionItemsNotifier
     // Локальное обновление
     final List<CollectionItem>? items = state.valueOrNull;
     if (items != null) {
+      // Определяем новый статус на основе устанавливаемых дат.
+      ItemStatus? newStatus;
+      MediaType? mediaType;
+
+      if (completedAt != null || startedAt != null) {
+        final CollectionItem? target =
+            items.where((CollectionItem i) => i.id == id).firstOrNull;
+        if (target != null) {
+          final ItemStatus currentStatus = target.status;
+          mediaType = target.mediaType;
+
+          if (completedAt != null && currentStatus != ItemStatus.completed) {
+            newStatus = ItemStatus.completed;
+          } else if (startedAt != null &&
+              completedAt == null &&
+              (currentStatus == ItemStatus.notStarted ||
+                  currentStatus == ItemStatus.planned)) {
+            newStatus = ItemStatus.inProgress;
+          }
+        }
+      }
+
+      // Сохраняем новый статус в БД.
+      if (newStatus != null && mediaType != null) {
+        await _repository.updateItemStatus(id, newStatus, mediaType: mediaType);
+      }
+
       state = AsyncData<List<CollectionItem>>(
         items.map((CollectionItem i) {
           if (i.id == id) {
@@ -435,11 +467,17 @@ class CollectionItemsNotifier
               startedAt: startedAt ?? i.startedAt,
               completedAt: completedAt ?? i.completedAt,
               lastActivityAt: lastActivityAt ?? i.lastActivityAt,
+              status: newStatus ?? i.status,
             );
           }
           return i;
         }).toList(),
       );
+
+      if (newStatus != null) {
+        ref.invalidate(collectionStatsProvider(_collectionId));
+        ref.invalidate(allItemsNotifierProvider);
+      }
     }
   }
 
