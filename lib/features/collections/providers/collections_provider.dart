@@ -7,8 +7,10 @@ import '../../../shared/models/collected_item_info.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/collection_sort_mode.dart';
+import '../../../shared/models/game.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
+import '../../../data/repositories/game_repository.dart';
 import '../../home/providers/all_items_provider.dart';
 import 'sort_utils.dart';
 
@@ -223,8 +225,33 @@ class CollectionItemsNotifier
   }) async {
     state = const AsyncLoading<List<CollectionItem>>();
     state = await AsyncValue.guard(() async {
-      final List<CollectionItem> items =
+      List<CollectionItem> items =
           await _repository.getItemsWithData(_collectionId);
+
+      // Дозагрузка платформ: если есть game-элементы с platformId, но без platform
+      final bool hasMissingPlatforms = items.any(
+        (CollectionItem item) =>
+            item.mediaType == MediaType.game &&
+            item.platformId != null &&
+            item.platform == null,
+      );
+      if (hasMissingPlatforms) {
+        final List<Game> gamesWithPlatforms = items
+            .where(
+              (CollectionItem item) =>
+                  item.mediaType == MediaType.game && item.game != null,
+            )
+            .map((CollectionItem item) => item.game!)
+            .toList();
+        if (gamesWithPlatforms.isNotEmpty) {
+          await ref
+              .read(gameRepositoryProvider)
+              .ensurePlatformsCached(gamesWithPlatforms);
+          // Перезагружаем items с подгруженными платформами
+          items = await _repository.getItemsWithData(_collectionId);
+        }
+      }
+
       return _applySortMode(items, sortMode, isDescending: isDescending);
     });
   }
@@ -412,6 +439,11 @@ class CollectionItemsNotifier
   }
 
   /// Обновляет даты активности элемента вручную.
+  ///
+  /// Автоматически синхронизирует статус:
+  /// - Установка [completedAt] → статус `completed` (с любого статуса).
+  /// - Установка [startedAt] → статус `inProgress` (если был `notStarted`
+  ///   или `planned`; `dropped`, `completed` и `inProgress` не меняются).
   Future<void> updateActivityDates(
     int id, {
     DateTime? startedAt,
@@ -428,6 +460,33 @@ class CollectionItemsNotifier
     // Локальное обновление
     final List<CollectionItem>? items = state.valueOrNull;
     if (items != null) {
+      // Определяем новый статус на основе устанавливаемых дат.
+      ItemStatus? newStatus;
+      MediaType? mediaType;
+
+      if (completedAt != null || startedAt != null) {
+        final CollectionItem? target =
+            items.where((CollectionItem i) => i.id == id).firstOrNull;
+        if (target != null) {
+          final ItemStatus currentStatus = target.status;
+          mediaType = target.mediaType;
+
+          if (completedAt != null && currentStatus != ItemStatus.completed) {
+            newStatus = ItemStatus.completed;
+          } else if (startedAt != null &&
+              completedAt == null &&
+              (currentStatus == ItemStatus.notStarted ||
+                  currentStatus == ItemStatus.planned)) {
+            newStatus = ItemStatus.inProgress;
+          }
+        }
+      }
+
+      // Сохраняем новый статус в БД.
+      if (newStatus != null && mediaType != null) {
+        await _repository.updateItemStatus(id, newStatus, mediaType: mediaType);
+      }
+
       state = AsyncData<List<CollectionItem>>(
         items.map((CollectionItem i) {
           if (i.id == id) {
@@ -435,11 +494,17 @@ class CollectionItemsNotifier
               startedAt: startedAt ?? i.startedAt,
               completedAt: completedAt ?? i.completedAt,
               lastActivityAt: lastActivityAt ?? i.lastActivityAt,
+              status: newStatus ?? i.status,
             );
           }
           return i;
         }).toList(),
       );
+
+      if (newStatus != null) {
+        ref.invalidate(collectionStatsProvider(_collectionId));
+        ref.invalidate(allItemsNotifierProvider);
+      }
     }
   }
 

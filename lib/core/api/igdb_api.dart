@@ -207,6 +207,54 @@ class IgdbApi {
     }
   }
 
+  /// Загружает платформы по конкретным ID из IGDB.
+  ///
+  /// В отличие от [fetchPlatforms], загружает только указанные платформы.
+  /// Throws [IgdbApiException] при ошибке запроса.
+  Future<List<Platform>> fetchPlatformsByIds(List<int> ids) async {
+    if (ids.isEmpty) return <Platform>[];
+    _ensureCredentials();
+
+    try {
+      final String idList = ids.join(',');
+      final Response<dynamic> response = await _dio.post<dynamic>(
+        '$_igdbBaseUrl/platforms',
+        options: Options(
+          headers: <String, dynamic>{
+            'Client-ID': _clientId,
+            'Authorization': 'Bearer $_accessToken',
+          },
+        ),
+        data:
+            'fields id,name,abbreviation,platform_logo.image_id; where id = ($idList); limit 500;',
+      );
+
+      if (response.statusCode != 200 || response.data == null) {
+        throw IgdbApiException(
+          'Failed to fetch platforms by IDs',
+          statusCode: response.statusCode,
+        );
+      }
+
+      final List<dynamic> data = response.data as List<dynamic>;
+      return data
+          .map((dynamic item) =>
+              Platform.fromJson(item as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (e) {
+      final int? statusCode = e.response?.statusCode;
+      String message = 'Failed to fetch platforms by IDs';
+
+      if (statusCode == 401) {
+        message = 'Invalid or expired access token';
+      } else if (statusCode == 429) {
+        message = 'Rate limit exceeded. Please try again later';
+      }
+
+      throw IgdbApiException(message, statusCode: statusCode);
+    }
+  }
+
   /// Поля игры для запросов к IGDB.
   static const String _gameFields = '''
     fields id, name, summary, rating, rating_count, first_release_date,

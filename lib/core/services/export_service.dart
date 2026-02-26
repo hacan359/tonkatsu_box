@@ -12,6 +12,7 @@ import '../../shared/models/canvas_viewport.dart';
 import '../../shared/models/collection.dart';
 import '../../shared/models/collection_item.dart';
 import '../../shared/models/media_type.dart';
+import '../../shared/models/platform.dart' as model;
 import '../../shared/models/tv_episode.dart';
 import '../../shared/models/tv_season.dart';
 import '../database/database_service.dart';
@@ -328,6 +329,7 @@ class ExportService {
     final Map<int, Map<String, dynamic>> tvShows =
         <int, Map<String, dynamic>>{};
     final Set<int> tvShowIds = <int>{};
+    final Set<int> platformIds = <int>{};
 
     for (final CollectionItem item in items) {
       switch (item.mediaType) {
@@ -336,6 +338,10 @@ class ExportService {
             final Map<String, dynamic> data = item.game!.toDb();
             data.remove('cached_at');
             games[item.externalId] = data;
+            // Собираем platformIds для экспорта
+            if (item.game!.platformIds != null) {
+              platformIds.addAll(item.game!.platformIds!);
+            }
           }
         case MediaType.movie:
           if (item.movie != null && !movies.containsKey(item.externalId)) {
@@ -390,11 +396,22 @@ class ExportService {
       }
     }
 
+    // Собираем платформы из кэша БД
+    final List<Map<String, dynamic>> allPlatforms = <Map<String, dynamic>>[];
+    if (_database != null && platformIds.isNotEmpty) {
+      final List<model.Platform> platforms =
+          await _database.getPlatformsByIds(platformIds.toList());
+      for (final model.Platform platform in platforms) {
+        allPlatforms.add(platform.toDb());
+      }
+    }
+
     if (games.isEmpty &&
         movies.isEmpty &&
         tvShows.isEmpty &&
         allSeasons.isEmpty &&
-        allEpisodes.isEmpty) {
+        allEpisodes.isEmpty &&
+        allPlatforms.isEmpty) {
       return const <String, dynamic>{};
     }
 
@@ -404,6 +421,7 @@ class ExportService {
       if (tvShows.isNotEmpty) 'tv_shows': tvShows.values.toList(),
       if (allSeasons.isNotEmpty) 'tv_seasons': allSeasons,
       if (allEpisodes.isNotEmpty) 'tv_episodes': allEpisodes,
+      if (allPlatforms.isNotEmpty) 'platforms': allPlatforms,
     };
   }
 

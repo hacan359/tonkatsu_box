@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/igdb_api.dart';
 import '../../core/database/database_service.dart';
 import '../../shared/models/game.dart';
+import '../../shared/models/platform.dart';
 
 /// Провайдер для репозитория игр.
 final Provider<GameRepository> gameRepositoryProvider =
@@ -56,6 +57,8 @@ class GameRepository {
     // Кешируем результаты
     if (games.isNotEmpty) {
       await _db.upsertGames(games);
+      // Автозагрузка платформ для найденных игр
+      await ensurePlatformsCached(games);
     }
 
     return games;
@@ -157,6 +160,42 @@ class GameRepository {
   /// Возвращает количество игр в кеше.
   Future<int> getCacheSize() async {
     return _db.getGameCount();
+  }
+
+  /// Проверяет, что платформы для указанных игр закешированы в БД.
+  ///
+  /// Собирает уникальные platformIds, проверяет, какие уже есть в кэше,
+  /// и загружает недостающие из IGDB API.
+  Future<void> ensurePlatformsCached(List<Game> games) async {
+    final Set<int> allPlatformIds = <int>{};
+    for (final Game game in games) {
+      if (game.platformIds != null) {
+        allPlatformIds.addAll(game.platformIds!);
+      }
+    }
+    if (allPlatformIds.isEmpty) return;
+
+    // Проверяем, какие уже есть в кэше
+    final List<Platform> cached =
+        await _db.getPlatformsByIds(allPlatformIds.toList());
+    final Set<int> cachedIds = <int>{
+      for (final Platform p in cached) p.id,
+    };
+
+    final List<int> missingIds =
+        allPlatformIds.where((int id) => !cachedIds.contains(id)).toList();
+    if (missingIds.isEmpty) return;
+
+    // Загружаем недостающие из IGDB
+    try {
+      final List<Platform> fetched =
+          await _api.fetchPlatformsByIds(missingIds);
+      if (fetched.isNotEmpty) {
+        await _db.upsertPlatforms(fetched);
+      }
+    } on Exception {
+      // Не критично — платформы подгрузятся при следующем запросе
+    }
   }
 
   /// Проверяет валидность кеша.

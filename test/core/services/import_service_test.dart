@@ -19,6 +19,7 @@ import 'package:xerabora/shared/models/collection.dart';
 import 'package:xerabora/shared/models/game.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/movie.dart';
+import 'package:xerabora/shared/models/platform.dart';
 import 'package:xerabora/shared/models/tv_episode.dart';
 import 'package:xerabora/shared/models/tv_season.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
@@ -47,6 +48,7 @@ void main() {
     registerFallbackValue(const <TvShow>[]);
     registerFallbackValue(const <TvSeason>[]);
     registerFallbackValue(const <TvEpisode>[]);
+    registerFallbackValue(const <Platform>[]);
     registerFallbackValue(CollectionType.own);
     registerFallbackValue(MediaType.game);
     registerFallbackValue(const CanvasViewport(collectionId: 0));
@@ -1986,6 +1988,7 @@ void main() {
         when(() => mockDb.upsertTvShows(any())).thenAnswer((_) async {});
         when(() => mockDb.upsertTvSeasons(any())).thenAnswer((_) async {});
         when(() => mockDb.upsertEpisodes(any())).thenAnswer((_) async {});
+        when(() => mockDb.upsertPlatforms(any())).thenAnswer((_) async {});
         when(() => mockImageCache.saveImageBytes(any(), any(), any()))
             .thenAnswer((_) async => true);
       }
@@ -2379,6 +2382,87 @@ void main() {
         expect(result.success, isTrue);
         verify(() => mockDb.upsertTvShows(any())).called(1);
         verifyNever(() => mockDb.upsertEpisodes(any()));
+      });
+
+      test('должен восстановить platforms из embedded media', () async {
+        setupDefaultMocksForMedia();
+
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.full,
+          name: 'With Platforms',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'game',
+              'external_id': 42,
+              'platform_id': 6,
+            },
+          ],
+          media: const <String, dynamic>{
+            'games': <Map<String, dynamic>>[
+              <String, dynamic>{
+                'id': 42,
+                'name': 'Test Game',
+              },
+            ],
+            'platforms': <Map<String, dynamic>>[
+              <String, dynamic>{
+                'id': 6,
+                'name': 'PC (Microsoft Windows)',
+                'abbreviation': 'PC',
+                'logo_image_id': null,
+                'synced_at': 1700000000,
+              },
+              <String, dynamic>{
+                'id': 48,
+                'name': 'PlayStation 4',
+                'abbreviation': 'PS4',
+                'logo_image_id': null,
+                'synced_at': 1700000000,
+              },
+            ],
+          },
+        );
+
+        final ImportResult result = await sutMedia.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        verify(() => mockDb.upsertPlatforms(any())).called(1);
+        verify(() => mockDb.upsertGames(any())).called(1);
+      });
+
+      test('должен пропустить восстановление platforms без данных', () async {
+        setupDefaultMocksForMedia();
+
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.full,
+          name: 'No Platforms',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'game',
+              'external_id': 42,
+            },
+          ],
+          media: const <String, dynamic>{
+            'games': <Map<String, dynamic>>[
+              <String, dynamic>{
+                'id': 42,
+                'name': 'Test Game',
+              },
+            ],
+          },
+        );
+
+        final ImportResult result = await sutMedia.importFromXcoll(xcoll);
+
+        expect(result.success, isTrue);
+        verify(() => mockDb.upsertGames(any())).called(1);
+        verifyNever(() => mockDb.upsertPlatforms(any()));
       });
     });
   });
