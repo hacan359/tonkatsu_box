@@ -16,6 +16,7 @@ import 'package:xerabora/shared/models/game.dart';
 import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/movie.dart';
+import 'package:xerabora/shared/models/platform.dart';
 import 'package:xerabora/shared/models/tv_episode.dart';
 import 'package:xerabora/shared/models/tv_season.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
@@ -1815,6 +1816,178 @@ void main() {
         // getEpisodesByShowId вызван только 1 раз (дедупликация через Set)
         verify(() => mockDatabase.getEpisodesByShowId(1399)).called(1);
         expect(xcoll.media.containsKey('tv_episodes'), isTrue);
+      });
+    });
+
+    group('platforms в full export', () {
+      late MockCanvasRepository mockCanvasRepo;
+      late MockImageCacheService mockImageCache;
+      late MockDatabaseService mockDatabase;
+
+      setUp(() {
+        mockCanvasRepo = MockCanvasRepository();
+        mockImageCache = MockImageCacheService();
+        mockDatabase = MockDatabaseService();
+
+        when(() => mockCanvasRepo.getViewport(any()))
+            .thenAnswer((_) async => null);
+        when(() => mockCanvasRepo.getItems(any()))
+            .thenAnswer((_) async => <CanvasItem>[]);
+        when(() => mockCanvasRepo.getConnections(any()))
+            .thenAnswer((_) async => <CanvasConnection>[]);
+        when(() => mockCanvasRepo.getGameCanvasItems(any()))
+            .thenAnswer((_) async => <CanvasItem>[]);
+        when(() => mockImageCache.readImageBytes(any(), any()))
+            .thenAnswer((_) async => null);
+      });
+
+      test('должен включить platforms для game элементов', () async {
+        const List<Platform> testPlatforms = <Platform>[
+          Platform(id: 6, name: 'PC (Microsoft Windows)', abbreviation: 'PC'),
+          Platform(id: 48, name: 'PlayStation 4', abbreviation: 'PS4'),
+        ];
+
+        when(() => mockDatabase.getPlatformsByIds(any()))
+            .thenAnswer((_) async => testPlatforms);
+
+        final ExportService sutMedia = ExportService(
+          canvasRepository: mockCanvasRepo,
+          imageCacheService: mockImageCache,
+          database: mockDatabase,
+        );
+
+        const Game testGame = Game(
+          id: 42,
+          name: 'Test Game',
+          platformIds: <int>[6, 48],
+        );
+
+        final Collection collection = createTestCollection();
+        final List<CollectionItem> items = <CollectionItem>[
+          createTestItem(
+            id: 1,
+            mediaType: MediaType.game,
+            externalId: 42,
+            game: testGame,
+          ),
+        ];
+
+        final XcollFile xcoll =
+            await sutMedia.createFullExport(collection, items, 1);
+
+        expect(xcoll.media.containsKey('platforms'), isTrue);
+        final List<dynamic> platforms =
+            xcoll.media['platforms'] as List<dynamic>;
+        expect(platforms.length, equals(2));
+        final Map<String, dynamic> p1 =
+            platforms[0] as Map<String, dynamic>;
+        expect(p1['id'], equals(6));
+        expect(p1['name'], equals('PC (Microsoft Windows)'));
+        expect(p1['abbreviation'], equals('PC'));
+      });
+
+      test('не должен включить platforms для игр без platformIds', () async {
+        final ExportService sutMedia = ExportService(
+          canvasRepository: mockCanvasRepo,
+          imageCacheService: mockImageCache,
+          database: mockDatabase,
+        );
+
+        const Game testGame = Game(id: 42, name: 'Test Game');
+
+        final Collection collection = createTestCollection();
+        final List<CollectionItem> items = <CollectionItem>[
+          createTestItem(
+            id: 1,
+            mediaType: MediaType.game,
+            externalId: 42,
+            game: testGame,
+          ),
+        ];
+
+        final XcollFile xcoll =
+            await sutMedia.createFullExport(collection, items, 1);
+
+        expect(xcoll.media.containsKey('platforms'), isFalse);
+        verifyNever(() => mockDatabase.getPlatformsByIds(any()));
+      });
+
+      test('не должен включить platforms без database', () async {
+        final ExportService sutMedia = ExportService(
+          canvasRepository: mockCanvasRepo,
+          imageCacheService: mockImageCache,
+        );
+
+        const Game testGame = Game(
+          id: 42,
+          name: 'Test Game',
+          platformIds: <int>[6],
+        );
+
+        final Collection collection = createTestCollection();
+        final List<CollectionItem> items = <CollectionItem>[
+          createTestItem(
+            id: 1,
+            mediaType: MediaType.game,
+            externalId: 42,
+            game: testGame,
+          ),
+        ];
+
+        final XcollFile xcoll =
+            await sutMedia.createFullExport(collection, items, 1);
+
+        expect(xcoll.media.containsKey('platforms'), isFalse);
+      });
+
+      test('должен дедуплицировать platformIds из разных игр', () async {
+        const List<Platform> testPlatforms = <Platform>[
+          Platform(id: 6, name: 'PC', abbreviation: 'PC'),
+          Platform(id: 48, name: 'PS4', abbreviation: 'PS4'),
+        ];
+
+        when(() => mockDatabase.getPlatformsByIds(any()))
+            .thenAnswer((_) async => testPlatforms);
+
+        final ExportService sutMedia = ExportService(
+          canvasRepository: mockCanvasRepo,
+          imageCacheService: mockImageCache,
+          database: mockDatabase,
+        );
+
+        const Game game1 = Game(
+          id: 42,
+          name: 'Game 1',
+          platformIds: <int>[6, 48],
+        );
+        const Game game2 = Game(
+          id: 43,
+          name: 'Game 2',
+          platformIds: <int>[48], // 48 уже есть в game1
+        );
+
+        final Collection collection = createTestCollection();
+        final List<CollectionItem> items = <CollectionItem>[
+          createTestItem(
+            id: 1,
+            mediaType: MediaType.game,
+            externalId: 42,
+            game: game1,
+          ),
+          createTestItem(
+            id: 2,
+            mediaType: MediaType.game,
+            externalId: 43,
+            game: game2,
+          ),
+        ];
+
+        final XcollFile xcoll =
+            await sutMedia.createFullExport(collection, items, 1);
+
+        expect(xcoll.media.containsKey('platforms'), isTrue);
+        // getPlatformsByIds вызван 1 раз с дедуплицированным списком
+        verify(() => mockDatabase.getPlatformsByIds(any())).called(1);
       });
     });
   });

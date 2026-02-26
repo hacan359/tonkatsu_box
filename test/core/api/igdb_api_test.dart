@@ -417,6 +417,148 @@ void main() {
       });
     });
 
+    group('fetchPlatformsByIds', () {
+      test('должен вернуть пустой список для пустых ids', () async {
+        final List<Platform> result = await sut.fetchPlatformsByIds(<int>[]);
+
+        expect(result, isEmpty);
+        verifyNever(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            ));
+      });
+
+      test('должен выбросить исключение без credentials', () {
+        expect(
+          () => sut.fetchPlatformsByIds(<int>[6, 48]),
+          throwsA(isA<IgdbApiException>().having(
+            (IgdbApiException e) => e.message,
+            'message',
+            'API credentials not set',
+          )),
+        );
+      });
+
+      test('должен вернуть платформы по ID', () async {
+        sut.setCredentials(
+          clientId: testClientId,
+          accessToken: testAccessToken,
+        );
+
+        final List<Map<String, dynamic>> responseData =
+            <Map<String, dynamic>>[
+          <String, dynamic>{
+            'id': 6,
+            'name': 'PC (Microsoft Windows)',
+            'abbreviation': 'PC',
+          },
+          <String, dynamic>{
+            'id': 48,
+            'name': 'PlayStation 4',
+            'abbreviation': 'PS4',
+          },
+        ];
+
+        when(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: responseData,
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<Platform> result =
+            await sut.fetchPlatformsByIds(<int>[6, 48]);
+
+        expect(result, hasLength(2));
+        expect(result[0].id, equals(6));
+        expect(result[0].abbreviation, equals('PC'));
+        expect(result[1].id, equals(48));
+        expect(result[1].abbreviation, equals('PS4'));
+      });
+
+      test('должен выбросить исключение при ошибке сервера', () async {
+        sut.setCredentials(
+          clientId: testClientId,
+          accessToken: testAccessToken,
+        );
+
+        when(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: null,
+              statusCode: 500,
+              requestOptions: RequestOptions(),
+            ));
+
+        expect(
+          () => sut.fetchPlatformsByIds(<int>[6]),
+          throwsA(isA<IgdbApiException>()),
+        );
+      });
+
+      test('должен выбросить исключение при 401', () async {
+        sut.setCredentials(
+          clientId: testClientId,
+          accessToken: testAccessToken,
+        );
+
+        when(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            )).thenThrow(DioException(
+          response: Response<dynamic>(
+            statusCode: 401,
+            requestOptions: RequestOptions(),
+          ),
+          requestOptions: RequestOptions(),
+        ));
+
+        expect(
+          () => sut.fetchPlatformsByIds(<int>[6]),
+          throwsA(isA<IgdbApiException>().having(
+            (IgdbApiException e) => e.message,
+            'message',
+            'Invalid or expired access token',
+          )),
+        );
+      });
+
+      test('должен выбросить исключение при 429', () async {
+        sut.setCredentials(
+          clientId: testClientId,
+          accessToken: testAccessToken,
+        );
+
+        when(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            )).thenThrow(DioException(
+          response: Response<dynamic>(
+            statusCode: 429,
+            requestOptions: RequestOptions(),
+          ),
+          requestOptions: RequestOptions(),
+        ));
+
+        expect(
+          () => sut.fetchPlatformsByIds(<int>[6]),
+          throwsA(isA<IgdbApiException>().having(
+            (IgdbApiException e) => e.message,
+            'message',
+            'Rate limit exceeded. Please try again later',
+          )),
+        );
+      });
+    });
+
     group('dispose', () {
       test('должен закрыть Dio клиент', () {
         when(() => mockDio.close()).thenReturn(null);

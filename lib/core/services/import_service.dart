@@ -15,6 +15,7 @@ import '../../shared/models/collection_item.dart';
 import '../../shared/models/game.dart';
 import '../../shared/models/media_type.dart';
 import '../../shared/models/movie.dart';
+import '../../shared/models/platform.dart' as model;
 import '../../shared/models/tv_episode.dart';
 import '../../shared/models/tv_season.dart';
 import '../../shared/models/tv_show.dart';
@@ -413,12 +414,15 @@ class ImportService {
         media['tv_seasons'] as List<dynamic>? ?? <dynamic>[];
     final List<dynamic> rawEpisodes =
         media['tv_episodes'] as List<dynamic>? ?? <dynamic>[];
+    final List<dynamic> rawPlatforms =
+        media['platforms'] as List<dynamic>? ?? <dynamic>[];
 
     final int total = rawGames.length +
         rawMovies.length +
         rawTvShows.length +
         rawSeasons.length +
-        rawEpisodes.length;
+        rawEpisodes.length +
+        rawPlatforms.length;
     final int cachedAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     int current = 0;
 
@@ -525,6 +529,23 @@ class ImportService {
         ));
       }
       await _database.upsertEpisodes(episodes);
+    }
+
+    // Восстановление платформ
+    if (rawPlatforms.isNotEmpty) {
+      final List<model.Platform> platforms = <model.Platform>[];
+      for (final dynamic raw in rawPlatforms) {
+        final Map<String, dynamic> row =
+            Map<String, dynamic>.from(raw as Map<String, dynamic>);
+        platforms.add(model.Platform.fromDb(row));
+        current++;
+        onProgress?.call(ImportProgress(
+          stage: ImportStage.restoringMedia,
+          current: current,
+          total: total,
+        ));
+      }
+      await _database.upsertPlatforms(platforms);
     }
   }
 

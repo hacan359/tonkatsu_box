@@ -4,6 +4,7 @@ import 'package:xerabora/core/api/igdb_api.dart';
 import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/data/repositories/game_repository.dart';
 import 'package:xerabora/shared/models/game.dart';
+import 'package:xerabora/shared/models/platform.dart';
 
 class MockIgdbApi extends Mock implements IgdbApi {}
 
@@ -20,6 +21,7 @@ void main() {
     registerFallbackValue(FakeGame());
     registerFallbackValue(<Game>[]);
     registerFallbackValue(<int>[]);
+    registerFallbackValue(<Platform>[]);
   });
 
   setUp(() {
@@ -43,6 +45,8 @@ void main() {
             )).thenAnswer((_) async => apiResults);
 
         when(() => mockDb.upsertGames(any())).thenAnswer((_) async {});
+        when(() => mockDb.getPlatformsByIds(any()))
+            .thenAnswer((_) async => <Platform>[]);
 
         final List<Game> result = await repository.searchGames(query: 'test');
 
@@ -281,6 +285,128 @@ void main() {
 
         expect(size, 150);
         verify(() => mockDb.getGameCount()).called(1);
+      });
+    });
+
+    group('ensurePlatformsCached', () {
+      test('does nothing for games without platformIds', () async {
+        const List<Game> games = <Game>[
+          Game(id: 1, name: 'No Platforms'),
+        ];
+
+        await repository.ensurePlatformsCached(games);
+
+        verifyNever(() => mockDb.getPlatformsByIds(any()));
+        verifyNever(() => mockApi.fetchPlatformsByIds(any()));
+      });
+
+      test('does nothing for empty games list', () async {
+        await repository.ensurePlatformsCached(<Game>[]);
+
+        verifyNever(() => mockDb.getPlatformsByIds(any()));
+      });
+
+      test('skips fetch when all platforms already cached', () async {
+        const List<Game> games = <Game>[
+          Game(id: 1, name: 'Game 1', platformIds: <int>[6, 48]),
+        ];
+
+        when(() => mockDb.getPlatformsByIds(any()))
+            .thenAnswer((_) async => const <Platform>[
+                  Platform(id: 6, name: 'PC'),
+                  Platform(id: 48, name: 'PS4'),
+                ]);
+
+        await repository.ensurePlatformsCached(games);
+
+        verify(() => mockDb.getPlatformsByIds(any())).called(1);
+        verifyNever(() => mockApi.fetchPlatformsByIds(any()));
+      });
+
+      test('fetches missing platforms from API', () async {
+        const List<Game> games = <Game>[
+          Game(id: 1, name: 'Game 1', platformIds: <int>[6, 48, 130]),
+        ];
+
+        when(() => mockDb.getPlatformsByIds(any()))
+            .thenAnswer((_) async => const <Platform>[
+                  Platform(id: 6, name: 'PC'),
+                ]);
+        when(() => mockApi.fetchPlatformsByIds(any()))
+            .thenAnswer((_) async => const <Platform>[
+                  Platform(id: 48, name: 'PS4'),
+                  Platform(id: 130, name: 'Switch'),
+                ]);
+        when(() => mockDb.upsertPlatforms(any())).thenAnswer((_) async {});
+
+        await repository.ensurePlatformsCached(games);
+
+        verify(() => mockDb.getPlatformsByIds(any())).called(1);
+        verify(() => mockApi.fetchPlatformsByIds(any())).called(1);
+        verify(() => mockDb.upsertPlatforms(any())).called(1);
+      });
+
+      test('collects unique platformIds across multiple games', () async {
+        const List<Game> games = <Game>[
+          Game(id: 1, name: 'Game 1', platformIds: <int>[6, 48]),
+          Game(id: 2, name: 'Game 2', platformIds: <int>[48, 130]),
+        ];
+
+        when(() => mockDb.getPlatformsByIds(any()))
+            .thenAnswer((_) async => <Platform>[]);
+        when(() => mockApi.fetchPlatformsByIds(any()))
+            .thenAnswer((_) async => const <Platform>[
+                  Platform(id: 6, name: 'PC'),
+                  Platform(id: 48, name: 'PS4'),
+                  Platform(id: 130, name: 'Switch'),
+                ]);
+        when(() => mockDb.upsertPlatforms(any())).thenAnswer((_) async {});
+
+        await repository.ensurePlatformsCached(games);
+
+        verify(() => mockDb.getPlatformsByIds(any())).called(1);
+        verify(() => mockApi.fetchPlatformsByIds(any())).called(1);
+      });
+
+      test('silently handles API errors', () async {
+        const List<Game> games = <Game>[
+          Game(id: 1, name: 'Game 1', platformIds: <int>[6]),
+        ];
+
+        when(() => mockDb.getPlatformsByIds(any()))
+            .thenAnswer((_) async => <Platform>[]);
+        when(() => mockApi.fetchPlatformsByIds(any()))
+            .thenThrow(Exception('Network error'));
+
+        // Не должен выбрасывать исключение
+        await repository.ensurePlatformsCached(games);
+
+        verify(() => mockApi.fetchPlatformsByIds(any())).called(1);
+        verifyNever(() => mockDb.upsertPlatforms(any()));
+      });
+    });
+
+    group('searchGames calls ensurePlatformsCached', () {
+      test('caches platforms after search with results', () async {
+        const List<Game> apiResults = <Game>[
+          Game(id: 1, name: 'Game 1', platformIds: <int>[6, 48]),
+        ];
+
+        when(() => mockApi.searchGames(
+              query: any(named: 'query'),
+              platformIds: any(named: 'platformIds'),
+              limit: any(named: 'limit'),
+            )).thenAnswer((_) async => apiResults);
+        when(() => mockDb.upsertGames(any())).thenAnswer((_) async {});
+        when(() => mockDb.getPlatformsByIds(any()))
+            .thenAnswer((_) async => const <Platform>[
+                  Platform(id: 6, name: 'PC'),
+                  Platform(id: 48, name: 'PS4'),
+                ]);
+
+        await repository.searchGames(query: 'test');
+
+        verify(() => mockDb.getPlatformsByIds(any())).called(1);
       });
     });
   });

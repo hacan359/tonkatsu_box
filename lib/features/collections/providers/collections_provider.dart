@@ -7,8 +7,10 @@ import '../../../shared/models/collected_item_info.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/collection_sort_mode.dart';
+import '../../../shared/models/game.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
+import '../../../data/repositories/game_repository.dart';
 import '../../home/providers/all_items_provider.dart';
 import 'sort_utils.dart';
 
@@ -223,8 +225,33 @@ class CollectionItemsNotifier
   }) async {
     state = const AsyncLoading<List<CollectionItem>>();
     state = await AsyncValue.guard(() async {
-      final List<CollectionItem> items =
+      List<CollectionItem> items =
           await _repository.getItemsWithData(_collectionId);
+
+      // Дозагрузка платформ: если есть game-элементы с platformId, но без platform
+      final bool hasMissingPlatforms = items.any(
+        (CollectionItem item) =>
+            item.mediaType == MediaType.game &&
+            item.platformId != null &&
+            item.platform == null,
+      );
+      if (hasMissingPlatforms) {
+        final List<Game> gamesWithPlatforms = items
+            .where(
+              (CollectionItem item) =>
+                  item.mediaType == MediaType.game && item.game != null,
+            )
+            .map((CollectionItem item) => item.game!)
+            .toList();
+        if (gamesWithPlatforms.isNotEmpty) {
+          await ref
+              .read(gameRepositoryProvider)
+              .ensurePlatformsCached(gamesWithPlatforms);
+          // Перезагружаем items с подгруженными платформами
+          items = await _repository.getItemsWithData(_collectionId);
+        }
+      }
+
       return _applySortMode(items, sortMode, isDescending: isDescending);
     });
   }

@@ -688,6 +688,22 @@ class DatabaseService {
     });
   }
 
+  /// Возвращает платформы по списку ID.
+  ///
+  /// Возвращает только те платформы, которые есть в базе данных.
+  Future<List<Platform>> getPlatformsByIds(List<int> ids) async {
+    if (ids.isEmpty) return <Platform>[];
+    final Database db = await database;
+    final String placeholders =
+        List<String>.filled(ids.length, '?').join(',');
+    final List<Map<String, dynamic>> rows = await db.query(
+      'platforms',
+      where: 'id IN ($placeholders)',
+      whereArgs: ids.cast<Object?>(),
+    );
+    return rows.map(Platform.fromDb).toList();
+  }
+
   /// Удаляет все платформы из базы данных.
   Future<void> clearPlatforms() async {
     final Database db = await database;
@@ -1435,17 +1451,10 @@ class DatabaseService {
     // Загружаем платформы
     Map<int, Platform> platformsMap = <int, Platform>{};
     if (platformIds.isNotEmpty) {
-      final Database db = await database;
-      final String placeholders =
-          List<String>.filled(platformIds.length, '?').join(',');
-      final List<Map<String, dynamic>> platformRows = await db.query(
-        'platforms',
-        where: 'id IN ($placeholders)',
-        whereArgs: platformIds.toList().cast<Object?>(),
-      );
+      final List<Platform> platforms =
+          await getPlatformsByIds(platformIds.toList());
       platformsMap = <int, Platform>{
-        for (final Map<String, dynamic> row in platformRows)
-          row['id'] as int: Platform.fromDb(row),
+        for (final Platform p in platforms) p.id: p,
       };
     }
 
