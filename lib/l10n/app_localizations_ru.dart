@@ -1853,4 +1853,11 @@ class SRu extends S {
   @override
   String get settingsShowRecommendationsSubtitle =>
       'Показывать рекомендации и отзывы на странице элемента';
+
+  @override
+  String get uncategorizedBanner =>
+      'Добавьте в коллекцию, чтобы открыть Доску и отслеживание серий';
+
+  @override
+  String get uncategorizedBannerAction => 'Добавить в коллекцию';
 }

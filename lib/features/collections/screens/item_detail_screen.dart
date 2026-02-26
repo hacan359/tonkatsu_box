@@ -5,7 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/constants/media_type_theme.dart';
 import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
 import '../../../shared/widgets/breadcrumb_scope.dart';
 import '../../../shared/widgets/collection_picker_dialog.dart';
@@ -14,7 +16,6 @@ import '../../../core/database/database_service.dart';
 import '../../../data/repositories/canvas_repository.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
-import '../../../shared/models/game.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/movie.dart';
@@ -405,6 +406,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
               _updateActivityDate(item.id, type, date)
           : null,
       extraSections: <Widget>[
+        if (widget.collectionId == null)
+          _buildUncategorizedBanner(item),
         if (config.hasEpisodeTracker && widget.collectionId != null)
           EpisodeTrackerSection(
             collectionId: widget.collectionId,
@@ -412,6 +415,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
             tvShow: config.tvShow,
             accentColor: config.accentColor,
           ),
+        if (config.hasEpisodeTracker && widget.collectionId == null)
+          _buildSeasonsInfo(item, config.accentColor),
       ],
       recommendationSections: <Widget>[
         if (showRecs)
@@ -447,202 +452,84 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
   // ==================== Media Config ====================
 
   _MediaConfig _getMediaConfig(CollectionItem item) {
+    return _MediaConfig(
+      coverUrl: item.thumbnailUrl,
+      placeholderIcon: item.placeholderIcon,
+      source: item.dataSource,
+      typeIcon: item.mediaType == MediaType.game
+          ? Icons.sports_esports
+          : item.placeholderIcon,
+      typeLabel: _typeLabel(item),
+      cacheImageType: item.imageType,
+      cacheImageId: item.externalId.toString(),
+      accentColor: MediaTypeTheme.colorFor(item.mediaType),
+      infoChips: _buildChips(item),
+      description: item.itemDescription,
+      hasEpisodeTracker: item.mediaType == MediaType.tvShow ||
+          (item.mediaType == MediaType.animation &&
+              item.platformId == AnimationSource.tvShow),
+      tvShow: item.tvShow,
+    );
+  }
+
+  String _typeLabel(CollectionItem item) {
+    final S l = S.of(context);
     return switch (item.mediaType) {
-      MediaType.game => _getGameConfig(item),
-      MediaType.movie => _getMovieConfig(item),
-      MediaType.tvShow => _getTvShowConfig(item),
-      MediaType.animation => _getAnimationConfig(item),
+      MediaType.game => item.platformName,
+      MediaType.movie => l.mediaTypeMovie,
+      MediaType.tvShow => l.mediaTypeTvShow,
+      MediaType.animation => item.platformId == AnimationSource.tvShow
+          ? l.animatedSeries
+          : l.animatedMovie,
     };
-  }
-
-  _MediaConfig _getGameConfig(CollectionItem item) {
-    final Game? game = item.game;
-    return _MediaConfig(
-      coverUrl: game?.coverUrl,
-      placeholderIcon: Icons.videogame_asset,
-      source: DataSource.igdb,
-      typeIcon: Icons.sports_esports,
-      typeLabel: item.platformName,
-      cacheImageType: ImageType.gameCover,
-      cacheImageId: widget.itemId.toString(),
-      accentColor: AppColors.brand,
-      infoChips: _buildGameChips(game),
-      description: game?.summary,
-      hasEpisodeTracker: false,
-    );
-  }
-
-  _MediaConfig _getMovieConfig(CollectionItem item) {
-    final Movie? movie = item.movie;
-    return _MediaConfig(
-      coverUrl: movie?.posterThumbUrl,
-      placeholderIcon: Icons.movie_outlined,
-      source: DataSource.tmdb,
-      typeIcon: Icons.movie_outlined,
-      typeLabel: S.of(context).mediaTypeMovie,
-      cacheImageType: ImageType.moviePoster,
-      cacheImageId: item.externalId.toString(),
-      accentColor: AppColors.movieAccent,
-      infoChips: _buildMovieChips(movie),
-      description: movie?.overview,
-      hasEpisodeTracker: false,
-    );
-  }
-
-  _MediaConfig _getTvShowConfig(CollectionItem item) {
-    final TvShow? tvShow = item.tvShow;
-    return _MediaConfig(
-      coverUrl: tvShow?.posterThumbUrl,
-      placeholderIcon: Icons.tv_outlined,
-      source: DataSource.tmdb,
-      typeIcon: Icons.tv_outlined,
-      typeLabel: S.of(context).mediaTypeTvShow,
-      cacheImageType: ImageType.tvShowPoster,
-      cacheImageId: item.externalId.toString(),
-      accentColor: AppColors.tvShowAccent,
-      infoChips: _buildTvShowChips(tvShow),
-      description: tvShow?.overview,
-      hasEpisodeTracker: true,
-      tvShow: tvShow,
-    );
-  }
-
-  _MediaConfig _getAnimationConfig(CollectionItem item) {
-    final bool isTvShow = item.platformId == AnimationSource.tvShow;
-    if (isTvShow) {
-      final TvShow? tvShow = item.tvShow;
-      return _MediaConfig(
-        coverUrl: tvShow?.posterThumbUrl,
-        placeholderIcon: Icons.animation,
-        source: DataSource.tmdb,
-        typeIcon: Icons.animation,
-        typeLabel: S.of(context).animatedSeries,
-        cacheImageType: ImageType.tvShowPoster,
-        cacheImageId: item.externalId.toString(),
-        accentColor: AppColors.animationAccent,
-        infoChips: _buildTvShowChips(tvShow),
-        description: tvShow?.overview,
-        hasEpisodeTracker: true,
-        tvShow: tvShow,
-      );
-    } else {
-      final Movie? movie = item.movie;
-      return _MediaConfig(
-        coverUrl: movie?.posterThumbUrl,
-        placeholderIcon: Icons.animation,
-        source: DataSource.tmdb,
-        typeIcon: Icons.animation,
-        typeLabel: S.of(context).animatedMovie,
-        cacheImageType: ImageType.moviePoster,
-        cacheImageId: item.externalId.toString(),
-        accentColor: AppColors.animationAccent,
-        infoChips: _buildMovieChips(movie),
-        description: movie?.overview,
-        hasEpisodeTracker: false,
-      );
-    }
   }
 
   // ==================== Info Chips ====================
 
-  List<MediaDetailChip> _buildGameChips(Game? game) {
-    final List<MediaDetailChip> chips = <MediaDetailChip>[];
-    if (game?.releaseYear != null) {
-      chips.add(
-        MediaDetailChip(
-          icon: Icons.calendar_today_outlined,
-          text: game!.releaseYear.toString(),
-        ),
-      );
-    }
-    if (game?.formattedRating != null) {
-      chips.add(
-        MediaDetailChip(
-          icon: Icons.star,
-          text: '${game!.formattedRating}/10',
-          iconColor: AppColors.ratingStar,
-        ),
-      );
-    }
-    if (game?.genres != null && game!.genres!.isNotEmpty) {
-      chips.add(
-        MediaDetailChip(
-          icon: Icons.category_outlined,
-          text: game.genresString!,
-        ),
-      );
-    }
-    return chips;
-  }
-
-  List<MediaDetailChip> _buildMovieChips(Movie? movie) {
-    final List<MediaDetailChip> chips = <MediaDetailChip>[];
-    if (movie?.releaseYear != null) {
-      chips.add(MediaDetailChip(
-        icon: Icons.calendar_today_outlined,
-        text: movie!.releaseYear.toString(),
-      ));
-    }
-    if (movie?.runtime != null) {
-      chips.add(MediaDetailChip(
-        icon: Icons.schedule_outlined,
-        text: _formatRuntime(movie!.runtime!),
-      ));
-    }
-    if (movie?.formattedRating != null) {
-      chips.add(MediaDetailChip(
-        icon: Icons.star,
-        text: '${movie!.formattedRating}/10',
-        iconColor: AppColors.ratingStar,
-      ));
-    }
-    if (movie?.genresString != null) {
-      chips.add(MediaDetailChip(
-        icon: Icons.category_outlined,
-        text: movie!.genresString!,
-      ));
-    }
-    return chips;
-  }
-
-  List<MediaDetailChip> _buildTvShowChips(TvShow? tvShow) {
+  List<MediaDetailChip> _buildChips(CollectionItem item) {
     final S l = S.of(context);
     final List<MediaDetailChip> chips = <MediaDetailChip>[];
-    if (tvShow?.firstAirYear != null) {
+    if (item.releaseYear != null) {
       chips.add(MediaDetailChip(
         icon: Icons.calendar_today_outlined,
-        text: tvShow!.firstAirYear.toString(),
+        text: item.releaseYear.toString(),
       ));
     }
-    if (tvShow?.totalSeasons != null) {
+    if (item.runtime != null) {
+      chips.add(MediaDetailChip(
+        icon: Icons.schedule_outlined,
+        text: _formatRuntime(item.runtime!),
+      ));
+    }
+    if (item.totalSeasons != null) {
       chips.add(MediaDetailChip(
         icon: Icons.video_library_outlined,
-        text: l.totalSeasons(tvShow!.totalSeasons!),
+        text: l.totalSeasons(item.totalSeasons!),
       ));
     }
-    if (tvShow?.totalEpisodes != null) {
+    if (item.totalEpisodes != null) {
       chips.add(MediaDetailChip(
         icon: Icons.playlist_play,
-        text: l.totalEpisodes(tvShow!.totalEpisodes!),
+        text: l.totalEpisodes(item.totalEpisodes!),
       ));
     }
-    if (tvShow?.formattedRating != null) {
+    if (item.formattedRating != null) {
       chips.add(MediaDetailChip(
         icon: Icons.star,
-        text: '${tvShow!.formattedRating}/10',
+        text: '${item.formattedRating}/10',
         iconColor: AppColors.ratingStar,
       ));
     }
-    if (tvShow?.status != null) {
+    if (item.mediaStatus != null) {
       chips.add(MediaDetailChip(
         icon: Icons.info_outline,
-        text: tvShow!.status!,
+        text: item.mediaStatus!,
       ));
     }
-    if (tvShow?.genresString != null) {
+    if (item.genresString != null) {
       chips.add(MediaDetailChip(
         icon: Icons.category_outlined,
-        text: tvShow!.genresString!,
+        text: item.genresString!,
       ));
     }
     return chips;
@@ -658,6 +545,89 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       return l.runtimeHours(hours);
     }
     return l.runtimeMinutes(mins);
+  }
+
+  // ==================== Uncategorized Helpers ====================
+
+  Widget _buildUncategorizedBanner(CollectionItem item) {
+    final S l = S.of(context);
+    return Card(
+      color: AppColors.surfaceLight,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+        side: const BorderSide(color: AppColors.surfaceBorder),
+      ),
+      margin: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
+        child: Row(
+          children: <Widget>[
+            const Icon(
+              Icons.info_outline,
+              color: AppColors.textSecondary,
+              size: 20,
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Text(
+                l.uncategorizedBanner,
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            TextButton(
+              onPressed: () => _moveToCollection(item),
+              child: Text(l.uncategorizedBannerAction),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSeasonsInfo(CollectionItem item, Color accentColor) {
+    final S l = S.of(context);
+    final int? seasons = item.totalSeasons;
+    final int? episodes = item.totalEpisodes;
+    if (seasons == null && episodes == null) {
+      return const SizedBox.shrink();
+    }
+    final StringBuffer buf = StringBuffer();
+    if (seasons != null) {
+      buf.write(l.totalSeasons(seasons));
+    }
+    if (seasons != null && episodes != null) {
+      buf.write(' \u2022 ');
+    }
+    if (episodes != null) {
+      buf.write(l.totalEpisodes(episodes));
+    }
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: Row(
+        children: <Widget>[
+          Icon(
+            Icons.video_library_outlined,
+            color: accentColor,
+            size: 20,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Text(
+            buf.toString(),
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   // ==================== Not Found ====================

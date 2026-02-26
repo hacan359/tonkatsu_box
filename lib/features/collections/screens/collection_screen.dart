@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/services/export_service.dart';
-import '../../../core/services/image_cache_service.dart';
 import '../../../core/services/xcoll_file.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
@@ -898,73 +897,19 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             variant: isLandscape ? CardVariant.compact : CardVariant.grid,
             title: item.itemName,
             imageUrl: item.thumbnailUrl ?? '',
-            cacheImageType: _imageTypeFor(item.mediaType, item.platformId),
+            cacheImageType: item.imageType,
             cacheImageId: item.externalId.toString(),
             userRating: item.userRating,
             apiRating: item.apiRating,
-            year: _yearFor(item),
+            year: item.releaseYear,
             platformLabel: item.platform?.displayName,
-            subtitle: _subtitleFor(item),
+            subtitle: item.genresString,
             status: item.status,
             onTap: () => _showItemDetails(item),
           );
         },
       ),
     );
-  }
-
-  /// Год выпуска элемента.
-  static int? _yearFor(CollectionItem item) {
-    switch (item.mediaType) {
-      case MediaType.game:
-        return item.game?.releaseYear;
-      case MediaType.movie:
-        return item.movie?.releaseYear;
-      case MediaType.tvShow:
-        return item.tvShow?.firstAirYear;
-      case MediaType.animation:
-        if (item.platformId == AnimationSource.tvShow) {
-          return item.tvShow?.firstAirYear;
-        }
-        return item.movie?.releaseYear;
-    }
-  }
-
-  /// Подзаголовок для grid-карточки.
-  static String? _subtitleFor(CollectionItem item) {
-    switch (item.mediaType) {
-      case MediaType.game:
-        return item.game?.genresString;
-      case MediaType.movie:
-        return item.movie?.genresString;
-      case MediaType.tvShow:
-        return item.tvShow?.genresString;
-      case MediaType.animation:
-        if (item.platformId == AnimationSource.tvShow) {
-          return item.tvShow?.genresString;
-        }
-        return item.movie?.genresString;
-    }
-  }
-
-  /// ImageType для кэширования по типу медиа.
-  ///
-  /// Для [MediaType.animation] использует [platformId] для определения
-  /// источника: [AnimationSource.tvShow] → tvShowPoster, иначе moviePoster.
-  static ImageType _imageTypeFor(MediaType mediaType, int? platformId) {
-    switch (mediaType) {
-      case MediaType.game:
-        return ImageType.gameCover;
-      case MediaType.movie:
-        return ImageType.moviePoster;
-      case MediaType.tvShow:
-        return ImageType.tvShowPoster;
-      case MediaType.animation:
-        if (platformId == AnimationSource.tvShow) {
-          return ImageType.tvShowPoster;
-        }
-        return ImageType.moviePoster;
-    }
   }
 
   Widget _buildReorderableList(List<CollectionItem> items) {
@@ -1718,96 +1663,27 @@ class _CollectionItemTile extends StatelessWidget {
       (item.apiRating != null && item.apiRating! > 0);
 
   String _getSubtitle() {
-    switch (item.mediaType) {
-      case MediaType.game:
-        return item.platformName;
-      case MediaType.movie:
-        final List<String> parts = <String>[];
-        if (item.movie?.releaseYear != null) {
-          parts.add(item.movie!.releaseYear.toString());
-        }
-        if (item.movie?.runtime != null) {
-          final int hours = item.movie!.runtime! ~/ 60;
-          final int mins = item.movie!.runtime! % 60;
-          if (hours > 0 && mins > 0) {
-            parts.add('${hours}h ${mins}m');
-          } else if (hours > 0) {
-            parts.add('${hours}h');
-          } else {
-            parts.add('${mins}m');
-          }
-        }
-        return parts.isNotEmpty ? parts.join(' \u2022 ') : 'Movie';
-      case MediaType.tvShow:
-        final List<String> parts = <String>[];
-        if (item.tvShow?.firstAirYear != null) {
-          parts.add(item.tvShow!.firstAirYear.toString());
-        }
-        if (item.tvShow?.totalSeasons != null) {
-          parts.add(
-            '${item.tvShow!.totalSeasons} season${item.tvShow!.totalSeasons != 1 ? 's' : ''}',
-          );
-        }
-        return parts.isNotEmpty ? parts.join(' \u2022 ') : 'TV Show';
-      case MediaType.animation:
-        if (item.platformId == AnimationSource.tvShow) {
-          final List<String> parts = <String>[];
-          if (item.tvShow?.firstAirYear != null) {
-            parts.add(item.tvShow!.firstAirYear.toString());
-          }
-          if (item.tvShow?.totalSeasons != null) {
-            parts.add(
-              '${item.tvShow!.totalSeasons} season${item.tvShow!.totalSeasons != 1 ? 's' : ''}',
-            );
-          }
-          return parts.isNotEmpty ? parts.join(' \u2022 ') : 'Animated Series';
-        }
-        final List<String> parts = <String>[];
-        if (item.movie?.releaseYear != null) {
-          parts.add(item.movie!.releaseYear.toString());
-        }
-        if (item.movie?.runtime != null) {
-          final int hours = item.movie!.runtime! ~/ 60;
-          final int mins = item.movie!.runtime! % 60;
-          if (hours > 0 && mins > 0) {
-            parts.add('${hours}h ${mins}m');
-          } else if (hours > 0) {
-            parts.add('${hours}h');
-          } else {
-            parts.add('${mins}m');
-          }
-        }
-        return parts.isNotEmpty ? parts.join(' \u2022 ') : 'Animated Movie';
+    if (item.mediaType == MediaType.game) return item.platformName;
+    final List<String> parts = <String>[];
+    if (item.releaseYear != null) parts.add(item.releaseYear.toString());
+    if (item.runtime != null) {
+      final int hours = item.runtime! ~/ 60;
+      final int mins = item.runtime! % 60;
+      if (hours > 0 && mins > 0) {
+        parts.add('${hours}h ${mins}m');
+      } else if (hours > 0) {
+        parts.add('${hours}h');
+      } else {
+        parts.add('${mins}m');
+      }
     }
-  }
-
-  IconData _getMediaTypeIcon() {
-    switch (item.mediaType) {
-      case MediaType.game:
-        return Icons.videogame_asset;
-      case MediaType.movie:
-        return Icons.movie_outlined;
-      case MediaType.tvShow:
-        return Icons.tv_outlined;
-      case MediaType.animation:
-        return Icons.animation;
+    if (item.totalSeasons != null) {
+      parts.add(
+        '${item.totalSeasons} season${item.totalSeasons != 1 ? 's' : ''}',
+      );
     }
-  }
-
-  ImageType _getImageTypeForCache() {
-    switch (item.mediaType) {
-      case MediaType.game:
-        return ImageType.gameCover;
-      case MediaType.movie:
-        return ImageType.moviePoster;
-      case MediaType.tvShow:
-        return ImageType.tvShowPoster;
-      case MediaType.animation:
-        if (item.platformId == AnimationSource.tvShow) {
-          return ImageType.tvShowPoster;
-        }
-        return ImageType.moviePoster;
-    }
+    if (parts.isNotEmpty) return parts.join(' \u2022 ');
+    return item.genresString ?? '';
   }
 
   Widget _buildCover() {
@@ -1818,7 +1694,7 @@ class _CollectionItemTile extends StatelessWidget {
         height: 72,
         child: item.thumbnailUrl != null
             ? CachedImage(
-                imageType: _getImageTypeForCache(),
+                imageType: item.imageType,
                 imageId: item.externalId.toString(),
                 remoteUrl: item.thumbnailUrl!,
                 fit: BoxFit.cover,
@@ -1841,7 +1717,7 @@ class _CollectionItemTile extends StatelessWidget {
     return Container(
       color: AppColors.surfaceLight,
       child: Icon(
-        _getMediaTypeIcon(),
+        item.placeholderIcon,
         color: AppColors.textSecondary,
       ),
     );

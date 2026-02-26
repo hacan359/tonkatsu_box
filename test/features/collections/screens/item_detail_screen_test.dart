@@ -1389,4 +1389,353 @@ void main() {
       expect(find.byIcon(Icons.dashboard_outlined), findsNothing);
     });
   });
+
+  // ==================== Uncategorized Banner ====================
+
+  group('ItemDetailScreen — Uncategorized Banner', () {
+    CollectionItem createGameItem({
+      int id = 1,
+      int? collectionId,
+      int externalId = 100,
+      int? platformId = 18,
+      ItemStatus status = ItemStatus.notStarted,
+      Game? game,
+      Platform? platform,
+    }) {
+      return CollectionItem(
+        id: id,
+        collectionId: collectionId,
+        mediaType: MediaType.game,
+        externalId: externalId,
+        platformId: platformId,
+        status: status,
+        addedAt: DateTime(2024),
+        game: game,
+        platform: platform,
+      );
+    }
+
+    CollectionItem createTvShowItem({
+      int id = 1,
+      int? collectionId,
+      int externalId = 200,
+      ItemStatus status = ItemStatus.notStarted,
+      TvShow? tvShow,
+    }) {
+      return CollectionItem(
+        id: id,
+        collectionId: collectionId,
+        mediaType: MediaType.tvShow,
+        externalId: externalId,
+        status: status,
+        addedAt: DateTime(2024),
+        tvShow: tvShow,
+      );
+    }
+
+    Future<void> expandExtraSections(WidgetTester tester) async {
+      final Finder tile = find.text('Activity & Progress');
+      await tester.ensureVisible(tile);
+      await tester.pumpAndSettle();
+      await tester.tap(tile);
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('должен показывать баннер для uncategorized игры',
+        (WidgetTester tester) async {
+      const Game game = Game(id: 100, name: 'Test Game');
+      const Platform platform = Platform(id: 18, name: 'SNES');
+      final CollectionItem item = createGameItem(
+        collectionId: null,
+        game: game,
+        platform: platform,
+      );
+
+      await tester.pumpWidget(createTestWidget(
+        collectionId: null,
+        itemId: 1,
+        isEditable: true,
+        items: <CollectionItem>[item],
+      ));
+      await tester.pumpAndSettle();
+
+      await expandExtraSections(tester);
+
+      expect(
+        find.text(
+          'Add to a collection to unlock Board and episode tracking',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Add to Collection'), findsOneWidget);
+    });
+
+    testWidgets('не должен показывать баннер для элемента в коллекции',
+        (WidgetTester tester) async {
+      const Game game = Game(id: 100, name: 'Test Game');
+      const Platform platform = Platform(id: 18, name: 'SNES');
+      final CollectionItem item = CollectionItem(
+        id: 1,
+        collectionId: 1,
+        mediaType: MediaType.game,
+        externalId: 100,
+        platformId: 18,
+        status: ItemStatus.notStarted,
+        addedAt: DateTime(2024),
+        game: game,
+        platform: platform,
+      );
+
+      await tester.pumpWidget(createTestWidget(
+        collectionId: 1,
+        itemId: 1,
+        isEditable: true,
+        items: <CollectionItem>[item],
+      ));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(
+          'Add to a collection to unlock Board and episode tracking',
+        ),
+        findsNothing,
+      );
+    });
+
+    testWidgets('должен показывать текст сезонов для uncategorized сериала',
+        (WidgetTester tester) async {
+      const TvShow tvShow = TvShow(
+        tmdbId: 200,
+        title: 'Breaking Bad',
+        totalSeasons: 5,
+        totalEpisodes: 62,
+      );
+      final CollectionItem item = createTvShowItem(
+        collectionId: null,
+        tvShow: tvShow,
+      );
+
+      await tester.pumpWidget(createTestWidget(
+        collectionId: null,
+        itemId: 1,
+        isEditable: true,
+        items: <CollectionItem>[item],
+      ));
+      await tester.pumpAndSettle();
+
+      await expandExtraSections(tester);
+
+      // Текст в _buildSeasonsInfo: "5 seasons • 62 ep"
+      expect(find.text('5 seasons \u2022 62 ep'), findsOneWidget);
+    });
+
+    testWidgets('не должен показывать текст сезонов для uncategorized игры',
+        (WidgetTester tester) async {
+      const Game game = Game(id: 100, name: 'Test Game');
+      const Platform platform = Platform(id: 18, name: 'SNES');
+      final CollectionItem item = createGameItem(
+        collectionId: null,
+        game: game,
+        platform: platform,
+      );
+
+      await tester.pumpWidget(createTestWidget(
+        collectionId: null,
+        itemId: 1,
+        isEditable: true,
+        items: <CollectionItem>[item],
+      ));
+      await tester.pumpAndSettle();
+
+      // Не должно быть Row с video_library_outlined в extraSections
+      // (video_library_outlined может быть в info chips, но не в extraSections)
+      expect(find.text('5 seasons \u2022 62 ep'), findsNothing);
+    });
+
+    testWidgets(
+        'должен показывать только сезоны если эпизодов нет',
+        (WidgetTester tester) async {
+      const TvShow tvShow = TvShow(
+        tmdbId: 200,
+        title: 'Test Show',
+        totalSeasons: 3,
+      );
+      final CollectionItem item = createTvShowItem(
+        collectionId: null,
+        tvShow: tvShow,
+      );
+
+      await tester.pumpWidget(createTestWidget(
+        collectionId: null,
+        itemId: 1,
+        isEditable: true,
+        items: <CollectionItem>[item],
+      ));
+      await tester.pumpAndSettle();
+
+      await expandExtraSections(tester);
+
+      // "3 seasons" в extraSections (без разделителя и ep)
+      expect(find.text('3 seasons'), findsWidgets);
+    });
+
+    testWidgets(
+        'должен показывать только эпизоды если сезонов нет',
+        (WidgetTester tester) async {
+      const TvShow tvShow = TvShow(
+        tmdbId: 200,
+        title: 'Test Show',
+        totalEpisodes: 24,
+      );
+      final CollectionItem item = createTvShowItem(
+        collectionId: null,
+        tvShow: tvShow,
+      );
+
+      await tester.pumpWidget(createTestWidget(
+        collectionId: null,
+        itemId: 1,
+        isEditable: true,
+        items: <CollectionItem>[item],
+      ));
+      await tester.pumpAndSettle();
+
+      await expandExtraSections(tester);
+
+      expect(find.text('24 ep'), findsWidgets);
+    });
+
+    testWidgets(
+        'не должен показывать текст сезонов если seasons и episodes оба null',
+        (WidgetTester tester) async {
+      const TvShow tvShow = TvShow(
+        tmdbId: 200,
+        title: 'Test Show',
+      );
+      final CollectionItem item = createTvShowItem(
+        collectionId: null,
+        tvShow: tvShow,
+      );
+
+      await tester.pumpWidget(createTestWidget(
+        collectionId: null,
+        itemId: 1,
+        isEditable: true,
+        items: <CollectionItem>[item],
+      ));
+      await tester.pumpAndSettle();
+
+      await expandExtraSections(tester);
+
+      // SizedBox.shrink — нет текста сезонов
+      expect(find.text('0 seasons'), findsNothing);
+      expect(find.text('0 ep'), findsNothing);
+    });
+
+    testWidgets(
+        'должен показывать баннер и текст сезонов для uncategorized анимации (tvShow source)',
+        (WidgetTester tester) async {
+      const TvShow tvShow = TvShow(
+        tmdbId: 300,
+        title: 'Attack on Titan',
+        totalSeasons: 4,
+        totalEpisodes: 87,
+      );
+      final CollectionItem item = CollectionItem(
+        id: 1,
+        collectionId: null,
+        mediaType: MediaType.animation,
+        externalId: 300,
+        platformId: AnimationSource.tvShow,
+        status: ItemStatus.notStarted,
+        addedAt: DateTime(2024),
+        tvShow: tvShow,
+      );
+
+      await tester.pumpWidget(createTestWidget(
+        collectionId: null,
+        itemId: 1,
+        isEditable: true,
+        items: <CollectionItem>[item],
+      ));
+      await tester.pumpAndSettle();
+
+      await expandExtraSections(tester);
+
+      // Баннер
+      expect(
+        find.text(
+          'Add to a collection to unlock Board and episode tracking',
+        ),
+        findsOneWidget,
+      );
+      // Текст сезонов
+      expect(find.text('4 seasons \u2022 87 ep'), findsOneWidget);
+    });
+
+    testWidgets(
+        'не должен показывать текст сезонов для uncategorized анимации (movie source)',
+        (WidgetTester tester) async {
+      final CollectionItem item = CollectionItem(
+        id: 1,
+        collectionId: null,
+        mediaType: MediaType.animation,
+        externalId: 400,
+        platformId: AnimationSource.movie,
+        status: ItemStatus.notStarted,
+        addedAt: DateTime(2024),
+        movie: const Movie(tmdbId: 400, title: 'Spirited Away'),
+      );
+
+      await tester.pumpWidget(createTestWidget(
+        collectionId: null,
+        itemId: 1,
+        isEditable: true,
+        items: <CollectionItem>[item],
+      ));
+      await tester.pumpAndSettle();
+
+      // Баннер есть (uncategorized)
+      await expandExtraSections(tester);
+      expect(
+        find.text(
+          'Add to a collection to unlock Board and episode tracking',
+        ),
+        findsOneWidget,
+      );
+      // Текст сезонов НЕ показывается (movie source — нет episode tracker)
+      expect(find.text('4 seasons \u2022 87 ep'), findsNothing);
+    });
+
+    testWidgets(
+        'не должен показывать текст сезонов для сериала в коллекции',
+        (WidgetTester tester) async {
+      const TvShow tvShow = TvShow(
+        tmdbId: 200,
+        title: 'Breaking Bad',
+        totalSeasons: 5,
+        totalEpisodes: 62,
+      );
+      final CollectionItem item = CollectionItem(
+        id: 1,
+        collectionId: 1,
+        mediaType: MediaType.tvShow,
+        externalId: 200,
+        status: ItemStatus.notStarted,
+        addedAt: DateTime(2024),
+        tvShow: tvShow,
+      );
+
+      await tester.pumpWidget(createTestWidget(
+        collectionId: 1,
+        itemId: 1,
+        isEditable: true,
+        items: <CollectionItem>[item],
+      ));
+      await tester.pumpAndSettle();
+
+      // В коллекции показывается EpisodeTrackerSection, не текст сезонов
+      expect(find.text('5 seasons \u2022 62 ep'), findsNothing);
+    });
+  });
 }

@@ -235,10 +235,7 @@ class ExportService {
     final Map<String, String> images = <String, String>{};
 
     for (final CollectionItem item in items) {
-      final ImageType imageType = _imageTypeForMedia(
-        item.mediaType,
-        platformId: item.platformId,
-      );
+      final ImageType imageType = item.imageType;
       final String imageId = item.externalId.toString();
       final String key = '${imageType.folder}/$imageId';
 
@@ -253,26 +250,6 @@ class ExportService {
     }
 
     return images;
-  }
-
-  /// Маппинг MediaType → ImageType для обложек.
-  ///
-  /// Для [MediaType.animation] использует [platformId] для определения
-  /// источника: [AnimationSource.tvShow] → tvShowPoster, иначе moviePoster.
-  ImageType _imageTypeForMedia(MediaType mediaType, {int? platformId}) {
-    switch (mediaType) {
-      case MediaType.game:
-        return ImageType.gameCover;
-      case MediaType.movie:
-        return ImageType.moviePoster;
-      case MediaType.tvShow:
-        return ImageType.tvShowPoster;
-      case MediaType.animation:
-        if (platformId == AnimationSource.tvShow) {
-          return ImageType.tvShowPoster;
-        }
-        return ImageType.moviePoster;
-    }
   }
 
   // ==================== Canvas Images ====================
