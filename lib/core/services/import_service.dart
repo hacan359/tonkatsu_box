@@ -537,6 +537,9 @@ class ImportService {
       for (final dynamic raw in rawPlatforms) {
         final Map<String, dynamic> row =
             Map<String, dynamic>.from(raw as Map<String, dynamic>);
+        if (!row.containsKey('synced_at') || row['synced_at'] == null) {
+          row['synced_at'] = cachedAt;
+        }
         platforms.add(model.Platform.fromDb(row));
         current++;
         onProgress?.call(ImportProgress(

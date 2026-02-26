@@ -7,6 +7,9 @@
 ## [Unreleased]
 
 ### Added
+- Auto-load platforms from IGDB when searching games and opening collections — eliminates "Unknown Platform" chips without manual "Sync Platforms". `IgdbApi.fetchPlatformsByIds()` fetches only needed platforms, `GameRepository.ensurePlatformsCached()` checks DB cache first and fetches missing ones, `CollectionItemsNotifier._loadItems()` triggers lazy load on first open (`igdb_api.dart`, `game_repository.dart`, `collections_provider.dart`)
+- Platforms included in full export/import (.xcollx) — `_collectMediaData()` collects platform IDs from game items and exports `Platform.toDb()` into `media['platforms']`, `_restoreEmbeddedMedia()` restores them via `Platform.fromDb()` → `upsertPlatforms()` for offline import (`export_service.dart`, `import_service.dart`)
+- `DatabaseService.getPlatformsByIds()` public method — parameterized `SELECT ... WHERE id IN (?)` query, replaces inline SQL in `_loadJoinedData()` (`database_service.dart`)
 - Unified media accessors on `CollectionItem` — `releaseYear`, `runtime`, `totalSeasons`, `totalEpisodes`, `genresString`, `genres`, `mediaStatus`, `formattedRating`, `dataSource`, `imageType`, `placeholderIcon` getters that resolve media-type-specific data (game/movie/tvShow/animation) through a single `_resolvedMedia` record. Eliminates switch-on-mediaType boilerplate in UI code (`collection_item.dart`)
 - Unified media accessors on `CanvasItem` — `mediaTitle`, `mediaThumbnailUrl`, `mediaImageType`, `mediaCacheId`, `mediaPlaceholderIcon` getters for canvas media elements (`canvas_item.dart`)
 - `DataSource` enum extracted to standalone model (`data_source.dart`), re-exported from `source_badge.dart` for backward compatibility
