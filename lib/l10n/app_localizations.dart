@@ -3378,6 +3378,18 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Show recommendations and reviews on item details'**
   String get settingsShowRecommendationsSubtitle;
+
+  /// No description provided for @uncategorizedBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to a collection to unlock Board and episode tracking'**
+  String get uncategorizedBanner;
+
+  /// No description provided for @uncategorizedBannerAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to Collection'**
+  String get uncategorizedBannerAction;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

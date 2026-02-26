@@ -650,5 +650,8 @@
   "reviewsInEnglish": "Отзывы на английском",
 
   "settingsShowRecommendations": "Рекомендации",
-  "settingsShowRecommendationsSubtitle": "Показывать рекомендации и отзывы на странице элемента"
+  "settingsShowRecommendationsSubtitle": "Показывать рекомендации и отзывы на странице элемента",
+
+  "uncategorizedBanner": "Добавьте в коллекцию, чтобы открыть Доску и отслеживание серий",
+  "uncategorizedBannerAction": "Добавить в коллекцию"
 }

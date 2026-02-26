@@ -3,13 +3,11 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/services/image_cache_service.dart';
 import '../../../data/repositories/canvas_repository.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/models/canvas_connection.dart';
 import '../../../shared/models/canvas_item.dart';
-import '../../../shared/models/media_type.dart';
 import '../providers/canvas_provider.dart';
 import 'canvas_connection_painter.dart';
 import 'canvas_context_menu.dart';
@@ -859,65 +857,22 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
 
   /// Создаёт [MediaPosterCard] для медиа-элемента канваса.
   Widget _buildMediaCard(CanvasItem item) {
-    final String title;
-    final String? imageUrl;
-    final ImageType cacheImageType;
-    final String cacheImageId;
-    final MediaType? mediaType;
-    final IconData placeholderIcon;
-
-    switch (item.itemType) {
-      case CanvasItemType.game:
-        title = item.game?.name ?? S.of(context).unknownGame;
-        imageUrl = item.game?.coverUrl;
-        cacheImageType = ImageType.gameCover;
-        cacheImageId = (item.game?.id ?? 0).toString();
-        mediaType = MediaType.game;
-        placeholderIcon = Icons.videogame_asset;
-      case CanvasItemType.movie:
-        title = item.movie?.title ?? S.of(context).unknownMovie;
-        imageUrl = item.movie?.posterThumbUrl;
-        cacheImageType = ImageType.moviePoster;
-        cacheImageId = (item.movie?.tmdbId ?? 0).toString();
-        mediaType = MediaType.movie;
-        placeholderIcon = Icons.movie_outlined;
-      case CanvasItemType.tvShow:
-        title = item.tvShow?.title ?? S.of(context).unknownTvShow;
-        imageUrl = item.tvShow?.posterThumbUrl;
-        cacheImageType = ImageType.tvShowPoster;
-        cacheImageId = (item.tvShow?.tmdbId ?? 0).toString();
-        mediaType = MediaType.tvShow;
-        placeholderIcon = Icons.tv_outlined;
-      case CanvasItemType.animation:
-        title = item.movie?.title ??
-            item.tvShow?.title ??
-            S.of(context).unknownAnimation;
-        if (item.tvShow != null) {
-          imageUrl = item.tvShow?.posterThumbUrl;
-          cacheImageType = ImageType.tvShowPoster;
-          cacheImageId = (item.tvShow?.tmdbId ?? 0).toString();
-        } else {
-          imageUrl = item.movie?.posterThumbUrl;
-          cacheImageType = ImageType.moviePoster;
-          cacheImageId = (item.movie?.tmdbId ?? 0).toString();
-        }
-        mediaType = MediaType.animation;
-        placeholderIcon = Icons.animation;
-      case CanvasItemType.text:
-      case CanvasItemType.image:
-      case CanvasItemType.link:
-        // Не должно попасть сюда — обрабатываются отдельно.
-        return const SizedBox.shrink();
-    }
+    final String fallback = switch (item.itemType) {
+      CanvasItemType.game => S.of(context).unknownGame,
+      CanvasItemType.movie => S.of(context).unknownMovie,
+      CanvasItemType.tvShow => S.of(context).unknownTvShow,
+      CanvasItemType.animation => S.of(context).unknownAnimation,
+      _ => '',
+    };
 
     return MediaPosterCard(
       variant: CardVariant.canvas,
-      title: title,
-      imageUrl: imageUrl ?? '',
-      cacheImageType: cacheImageType,
-      cacheImageId: cacheImageId,
-      mediaType: mediaType,
-      placeholderIcon: placeholderIcon,
+      title: item.mediaTitle ?? fallback,
+      imageUrl: item.mediaThumbnailUrl ?? '',
+      cacheImageType: item.mediaImageType,
+      cacheImageId: item.mediaCacheId,
+      mediaType: item.asMediaType,
+      placeholderIcon: item.mediaPlaceholderIcon,
     );
   }
 }

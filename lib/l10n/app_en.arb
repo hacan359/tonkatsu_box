@@ -864,5 +864,8 @@
   "reviewsInEnglish": "Reviews in English",
 
   "settingsShowRecommendations": "Recommendations",
-  "settingsShowRecommendationsSubtitle": "Show recommendations and reviews on item details"
+  "settingsShowRecommendationsSubtitle": "Show recommendations and reviews on item details",
+
+  "uncategorizedBanner": "Add to a collection to unlock Board and episode tracking",
+  "uncategorizedBannerAction": "Add to Collection"
 }

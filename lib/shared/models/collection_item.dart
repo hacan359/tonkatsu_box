@@ -1,5 +1,9 @@
 // Универсальный элемент коллекции (игра, фильм или сериал).
 
+import 'package:flutter/material.dart';
+
+import '../../core/services/image_cache_service.dart';
+import 'data_source.dart';
 import 'exportable.dart';
 import 'game.dart';
 import 'item_status.dart';
@@ -189,6 +193,17 @@ class CollectionItem with Exportable {
     String? thumbUrl,
     String? description,
     double? rating,
+    String? formattedRating,
+    int? releaseYear,
+    int? runtime,
+    int? totalSeasons,
+    int? totalEpisodes,
+    String? genresString,
+    List<String>? genres,
+    String? mediaStatus,
+    DataSource source,
+    ImageType imageType,
+    IconData placeholderIcon,
   }) get _resolvedMedia {
     switch (mediaType) {
       case MediaType.game:
@@ -198,6 +213,17 @@ class CollectionItem with Exportable {
           thumbUrl: game?.coverUrl,
           description: game?.summary,
           rating: game?.rating != null ? game!.rating! / 10 : null,
+          formattedRating: game?.formattedRating,
+          releaseYear: game?.releaseYear,
+          runtime: null,
+          totalSeasons: null,
+          totalEpisodes: null,
+          genresString: game?.genresString,
+          genres: game?.genres,
+          mediaStatus: null,
+          source: DataSource.igdb,
+          imageType: ImageType.gameCover,
+          placeholderIcon: Icons.videogame_asset,
         );
       case MediaType.movie:
         return (
@@ -206,6 +232,17 @@ class CollectionItem with Exportable {
           thumbUrl: movie?.posterThumbUrl,
           description: movie?.overview,
           rating: movie?.rating,
+          formattedRating: movie?.formattedRating,
+          releaseYear: movie?.releaseYear,
+          runtime: movie?.runtime,
+          totalSeasons: null,
+          totalEpisodes: null,
+          genresString: movie?.genresString,
+          genres: movie?.genres,
+          mediaStatus: null,
+          source: DataSource.tmdb,
+          imageType: ImageType.moviePoster,
+          placeholderIcon: Icons.movie_outlined,
         );
       case MediaType.tvShow:
         return (
@@ -214,6 +251,17 @@ class CollectionItem with Exportable {
           thumbUrl: tvShow?.posterThumbUrl,
           description: tvShow?.overview,
           rating: tvShow?.rating,
+          formattedRating: tvShow?.formattedRating,
+          releaseYear: tvShow?.firstAirYear,
+          runtime: null,
+          totalSeasons: tvShow?.totalSeasons,
+          totalEpisodes: tvShow?.totalEpisodes,
+          genresString: tvShow?.genresString,
+          genres: tvShow?.genres,
+          mediaStatus: tvShow?.status,
+          source: DataSource.tmdb,
+          imageType: ImageType.tvShowPoster,
+          placeholderIcon: Icons.tv_outlined,
         );
       case MediaType.animation:
         final bool isTvBased = platformId == AnimationSource.tvShow;
@@ -224,6 +272,17 @@ class CollectionItem with Exportable {
             thumbUrl: tvShow?.posterThumbUrl,
             description: tvShow?.overview,
             rating: tvShow?.rating,
+            formattedRating: tvShow?.formattedRating,
+            releaseYear: tvShow?.firstAirYear,
+            runtime: null,
+            totalSeasons: tvShow?.totalSeasons,
+            totalEpisodes: tvShow?.totalEpisodes,
+            genresString: tvShow?.genresString,
+            genres: tvShow?.genres,
+            mediaStatus: tvShow?.status,
+            source: DataSource.tmdb,
+            imageType: ImageType.tvShowPoster,
+            placeholderIcon: Icons.animation,
           );
         }
         return (
@@ -232,6 +291,17 @@ class CollectionItem with Exportable {
           thumbUrl: movie?.posterThumbUrl,
           description: movie?.overview,
           rating: movie?.rating,
+          formattedRating: movie?.formattedRating,
+          releaseYear: movie?.releaseYear,
+          runtime: movie?.runtime,
+          totalSeasons: null,
+          totalEpisodes: null,
+          genresString: movie?.genresString,
+          genres: movie?.genres,
+          mediaStatus: null,
+          source: DataSource.tmdb,
+          imageType: ImageType.moviePoster,
+          placeholderIcon: Icons.animation,
         );
     }
   }
@@ -274,6 +344,39 @@ class CollectionItem with Exportable {
 
   /// URL маленького постера/обложки для thumbnail-ов.
   String? get thumbnailUrl => _resolvedMedia.thumbUrl;
+
+  /// Год выпуска (Game.releaseYear / Movie.releaseYear / TvShow.firstAirYear).
+  int? get releaseYear => _resolvedMedia.releaseYear;
+
+  /// Длительность в минутах (только фильмы).
+  int? get runtime => _resolvedMedia.runtime;
+
+  /// Количество сезонов (только сериалы).
+  int? get totalSeasons => _resolvedMedia.totalSeasons;
+
+  /// Количество эпизодов (только сериалы).
+  int? get totalEpisodes => _resolvedMedia.totalEpisodes;
+
+  /// Жанры строкой ("Action, RPG").
+  String? get genresString => _resolvedMedia.genresString;
+
+  /// Жанры списком.
+  List<String>? get genres => _resolvedMedia.genres;
+
+  /// Форматированный рейтинг ("7.5").
+  String? get formattedRating => _resolvedMedia.formattedRating;
+
+  /// Статус медиа ("Returning Series" и т.п.).
+  String? get mediaStatus => _resolvedMedia.mediaStatus;
+
+  /// Источник данных (IGDB / TMDB).
+  DataSource get dataSource => _resolvedMedia.source;
+
+  /// Тип изображения для кэша.
+  ImageType get imageType => _resolvedMedia.imageType;
+
+  /// Иконка-заглушка.
+  IconData get placeholderIcon => _resolvedMedia.placeholderIcon;
 
   // -- Exportable контракт --
 

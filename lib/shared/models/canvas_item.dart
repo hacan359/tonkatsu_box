@@ -1,5 +1,8 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
+
+import '../../core/services/image_cache_service.dart';
 import 'exportable.dart';
 import 'game.dart';
 import 'media_type.dart';
@@ -181,6 +184,80 @@ class CanvasItem with Exportable {
 
   /// Данные сериала (joined, не сохраняются в БД).
   final TvShow? tvShow;
+
+  // -- Unified media accessors (для медиа-типов) --
+
+  /// Название медиа-элемента (game/movie/tvShow).
+  String? get mediaTitle {
+    return switch (itemType) {
+      CanvasItemType.game => game?.name,
+      CanvasItemType.movie => movie?.title,
+      CanvasItemType.tvShow => tvShow?.title,
+      CanvasItemType.animation => movie?.title ?? tvShow?.title,
+      _ => null,
+    };
+  }
+
+  /// URL thumbnail-а медиа-элемента.
+  String? get mediaThumbnailUrl {
+    return switch (itemType) {
+      CanvasItemType.game => game?.coverUrl,
+      CanvasItemType.movie => movie?.posterThumbUrl,
+      CanvasItemType.tvShow => tvShow?.posterThumbUrl,
+      CanvasItemType.animation => tvShow != null
+          ? tvShow?.posterThumbUrl
+          : movie?.posterThumbUrl,
+      _ => null,
+    };
+  }
+
+  /// ImageType для кэширования.
+  ImageType get mediaImageType {
+    return switch (itemType) {
+      CanvasItemType.game => ImageType.gameCover,
+      CanvasItemType.movie => ImageType.moviePoster,
+      CanvasItemType.tvShow => ImageType.tvShowPoster,
+      CanvasItemType.animation => tvShow != null
+          ? ImageType.tvShowPoster
+          : ImageType.moviePoster,
+      _ => ImageType.gameCover,
+    };
+  }
+
+  /// ID для кэширования изображения.
+  String get mediaCacheId {
+    return switch (itemType) {
+      CanvasItemType.game => (game?.id ?? 0).toString(),
+      CanvasItemType.movie => (movie?.tmdbId ?? 0).toString(),
+      CanvasItemType.tvShow => (tvShow?.tmdbId ?? 0).toString(),
+      CanvasItemType.animation => tvShow != null
+          ? (tvShow?.tmdbId ?? 0).toString()
+          : (movie?.tmdbId ?? 0).toString(),
+      _ => '0',
+    };
+  }
+
+  /// Иконка-заглушка для медиа-элемента.
+  IconData get mediaPlaceholderIcon {
+    return switch (itemType) {
+      CanvasItemType.game => Icons.videogame_asset,
+      CanvasItemType.movie => Icons.movie_outlined,
+      CanvasItemType.tvShow => Icons.tv_outlined,
+      CanvasItemType.animation => Icons.animation,
+      _ => Icons.note,
+    };
+  }
+
+  /// MediaType для медиа-элемента (null для text/image/link).
+  MediaType? get asMediaType {
+    return switch (itemType) {
+      CanvasItemType.game => MediaType.game,
+      CanvasItemType.movie => MediaType.movie,
+      CanvasItemType.tvShow => MediaType.tvShow,
+      CanvasItemType.animation => MediaType.animation,
+      _ => null,
+    };
+  }
 
   // -- Exportable контракт --
 

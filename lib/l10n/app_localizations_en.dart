@@ -1834,4 +1834,11 @@ class SEn extends S {
   @override
   String get settingsShowRecommendationsSubtitle =>
       'Show recommendations and reviews on item details';
+
+  @override
+  String get uncategorizedBanner =>
+      'Add to a collection to unlock Board and episode tracking';
+
+  @override
+  String get uncategorizedBannerAction => 'Add to Collection';
 }

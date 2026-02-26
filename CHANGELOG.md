@@ -6,6 +6,20 @@
 
 ## [Unreleased]
 
+### Added
+- Unified media accessors on `CollectionItem` — `releaseYear`, `runtime`, `totalSeasons`, `totalEpisodes`, `genresString`, `genres`, `mediaStatus`, `formattedRating`, `dataSource`, `imageType`, `placeholderIcon` getters that resolve media-type-specific data (game/movie/tvShow/animation) through a single `_resolvedMedia` record. Eliminates switch-on-mediaType boilerplate in UI code (`collection_item.dart`)
+- Unified media accessors on `CanvasItem` — `mediaTitle`, `mediaThumbnailUrl`, `mediaImageType`, `mediaCacheId`, `mediaPlaceholderIcon` getters for canvas media elements (`canvas_item.dart`)
+- `DataSource` enum extracted to standalone model (`data_source.dart`), re-exported from `source_badge.dart` for backward compatibility
+- Uncategorized info banner on item detail screen — informs user that Board and episode tracking require a collection, with "Add to Collection" action button (`item_detail_screen.dart`)
+- Seasons/episodes summary text for uncategorized TV shows and animated series — displays "X seasons • Y ep" as a simple text row instead of the full episode tracker (`item_detail_screen.dart`)
+- Localization: `uncategorizedBanner`, `uncategorizedBannerAction` keys (EN + RU)
+- Tests: 10 new widget tests for uncategorized banner and seasons info (`item_detail_screen_test.dart`)
+
+### Changed
+- `CollectionScreen` grid cards now use `CollectionItem` unified accessors (`item.imageType`, `item.releaseYear`, `item.genresString`) instead of local `_imageTypeFor()`, `_yearFor()`, `_subtitleFor()` helper methods — removed ~55 lines of switch boilerplate (`collection_screen.dart`)
+- `CanvasView` media card rendering now uses `CanvasItem` unified accessors instead of inline switch statements (`canvas_view.dart`)
+- `ExportService` now uses `CollectionItem.dataSource` accessor instead of switch-on-mediaType (`export_service.dart`)
+
 ## [0.15.0] - 2026-02-25
 
 ### Added

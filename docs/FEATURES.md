@@ -159,6 +159,8 @@ Tap any item to see full details. Screens have one or two tabs:
 
 **Board tab** — personal board for the item (hidden for uncategorized items)
 
+**Uncategorized banner** — when an item has no collection, an info banner appears in the "Activity & Progress" section explaining that Board and episode tracking require a collection, with an "Add to Collection" action button. For TV shows and animated series, a simple "X seasons • Y ep" text line replaces the full episode tracker
+
 **Actions menu** (PopupMenuButton): "Move to Collection" and "Remove"
 
 ### Recommendations & Reviews (Movies/TV Shows)
