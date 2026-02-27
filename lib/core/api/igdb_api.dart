@@ -419,6 +419,58 @@ class IgdbApi {
     }
   }
 
+  /// Получает топ игр по платформе, отсортированных по рейтингу.
+  ///
+  /// [platformId] — ID платформы IGDB (например, 19 = SNES).
+  /// [minRatingCount] — минимальное количество оценок (по умолчанию 20).
+  /// [limit] — максимальное количество результатов (по умолчанию 50).
+  ///
+  /// Возвращает список игр, отсортированных по рейтингу (убывание).
+  /// Throws [IgdbApiException] при ошибке запроса.
+  Future<List<Game>> getTopGamesByPlatform({
+    required int platformId,
+    int minRatingCount = 20,
+    int limit = 50,
+  }) async {
+    _ensureCredentials();
+
+    try {
+      final StringBuffer body = StringBuffer(_gameFields);
+      body.write(
+        ' where platforms = ($platformId)'
+        ' & rating_count >= $minRatingCount'
+        ' & rating != null;',
+      );
+      body.write(' sort rating desc;');
+      body.write(' limit $limit;');
+
+      final Response<dynamic> response = await _dio.post<dynamic>(
+        '$_igdbBaseUrl/games',
+        options: Options(
+          headers: <String, dynamic>{
+            'Client-ID': _clientId,
+            'Authorization': 'Bearer $_accessToken',
+          },
+        ),
+        data: body.toString(),
+      );
+
+      if (response.statusCode != 200 || response.data == null) {
+        throw IgdbApiException(
+          'Failed to fetch top games',
+          statusCode: response.statusCode,
+        );
+      }
+
+      final List<dynamic> data = response.data as List<dynamic>;
+      return data
+          .map((dynamic item) => Game.fromJson(item as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'Failed to fetch top games');
+    }
+  }
+
   /// Обрабатывает DioException и возвращает IgdbApiException.
   IgdbApiException _handleDioException(DioException e, String defaultMessage) {
     final int? statusCode = e.response?.statusCode;

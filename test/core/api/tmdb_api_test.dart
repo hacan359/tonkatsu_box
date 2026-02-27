@@ -3634,6 +3634,56 @@ void main() {
           throwsA(isA<TmdbApiException>()),
         );
       });
+
+      test('должен передать voteCountGte в queryParameters как vote_count.gte', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.discoverMovies(voteCountGte: 100);
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: captureAny(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final Map<String, dynamic> params =
+            verification.captured.first as Map<String, dynamic>;
+        expect(params['vote_count.gte'], equals(100));
+      });
+
+      test('не должен передать vote_count.gte когда voteCountGte == null', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.discoverMovies();
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: captureAny(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final Map<String, dynamic> params =
+            verification.captured.first as Map<String, dynamic>;
+        expect(params.containsKey('vote_count.gte'), isFalse);
+      });
     });
 
     // ----- discoverTvShows -----
@@ -3908,6 +3958,56 @@ void main() {
           () => sut.discoverTvShows(),
           throwsA(isA<TmdbApiException>()),
         );
+      });
+
+      test('должен передать voteCountGte в queryParameters как vote_count.gte', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.discoverTvShows(voteCountGte: 200);
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: captureAny(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final Map<String, dynamic> params =
+            verification.captured.first as Map<String, dynamic>;
+        expect(params['vote_count.gte'], equals(200));
+      });
+
+      test('не должен передать vote_count.gte когда voteCountGte == null', () async {
+        when(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'results': <Map<String, dynamic>>[],
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.discoverTvShows();
+
+        final VerificationResult verification = verify(() => mockDio.get<dynamic>(
+              any(),
+              queryParameters: captureAny(named: 'queryParameters'),
+            ));
+        verification.called(1);
+
+        final Map<String, dynamic> params =
+            verification.captured.first as Map<String, dynamic>;
+        expect(params.containsKey('vote_count.gte'), isFalse);
       });
     });
 
