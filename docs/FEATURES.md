@@ -155,7 +155,7 @@ Rate any item 1–10 with clickable stars. Tap again to clear. Collections can b
 
 Tap any item to see full details. Screens have one or two tabs:
 
-**Details tab** — poster with source badge, info chips, description, status bar (piano-style segments), star rating, inline activity dates, notes/review
+**Details tab** — poster with clickable source badge (opens IGDB/TMDB page), info chips, description, status bar (piano-style segments), star rating, inline activity dates, notes/review
 
 **Board tab** — personal board for the item (hidden for uncategorized items)
 
@@ -186,6 +186,7 @@ Displayed below Activity & Progress section (always visible, not collapsed):
 ### Source Badges
 - **IGDB** — purple badge on game cards/details
 - **TMDB** — teal badge on movie/TV show cards/details
+- On detail screens, tapping the source badge opens the item's IGDB/TMDB page in the system browser
 
 ### Media Type Colors
 | Type | Color | Accent |

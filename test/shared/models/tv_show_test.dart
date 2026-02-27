@@ -44,6 +44,7 @@ void main() {
         expect(show.totalEpisodes, 62);
         expect(show.rating, 8.912);
         expect(show.status, 'Ended');
+        expect(show.externalUrl, 'https://www.themoviedb.org/tv/1396');
         expect(show.cachedAt, isNotNull);
       });
 
@@ -67,6 +68,7 @@ void main() {
         expect(show.totalEpisodes, isNull);
         expect(show.rating, isNull);
         expect(show.status, isNull);
+        expect(show.externalUrl, 'https://www.themoviedb.org/tv/1396');
         expect(show.cachedAt, isNotNull);
       });
 
@@ -289,6 +291,7 @@ void main() {
           'total_episodes': 62,
           'rating': 8.9,
           'status': 'Ended',
+          'external_url': 'https://www.themoviedb.org/tv/1396',
           'cached_at': 1700000000,
         };
 
@@ -307,6 +310,7 @@ void main() {
         expect(show.totalEpisodes, 62);
         expect(show.rating, 8.9);
         expect(show.status, 'Ended');
+        expect(show.externalUrl, 'https://www.themoviedb.org/tv/1396');
         expect(show.cachedAt, 1700000000);
       });
 
@@ -324,6 +328,7 @@ void main() {
           'total_episodes': null,
           'rating': null,
           'status': null,
+          'external_url': null,
           'cached_at': null,
         };
 
@@ -341,6 +346,7 @@ void main() {
         expect(show.totalEpisodes, isNull);
         expect(show.rating, isNull);
         expect(show.status, isNull);
+        expect(show.externalUrl, isNull);
         expect(show.cachedAt, isNull);
       });
 
@@ -382,6 +388,7 @@ void main() {
           totalEpisodes: 62,
           rating: 8.9,
           status: 'Ended',
+          externalUrl: 'https://www.themoviedb.org/tv/1396',
           cachedAt: 1700000000,
         );
 
@@ -400,6 +407,7 @@ void main() {
         expect(db['total_episodes'], 62);
         expect(db['rating'], 8.9);
         expect(db['status'], 'Ended');
+        expect(db['external_url'], 'https://www.themoviedb.org/tv/1396');
         expect(db['cached_at'], 1700000000);
       });
 
@@ -423,6 +431,7 @@ void main() {
         expect(db['total_episodes'], isNull);
         expect(db['rating'], isNull);
         expect(db['status'], isNull);
+        expect(db['external_url'], isNull);
         expect(db['cached_at'], isNull);
       });
     });
@@ -442,6 +451,7 @@ void main() {
           totalEpisodes: 62,
           rating: 8.9,
           status: 'Ended',
+          externalUrl: 'https://www.themoviedb.org/tv/1396',
           cachedAt: 1700000000,
         );
 
@@ -460,6 +470,7 @@ void main() {
         expect(restored.totalEpisodes, original.totalEpisodes);
         expect(restored.rating, original.rating);
         expect(restored.status, original.status);
+        expect(restored.externalUrl, original.externalUrl);
         expect(restored.cachedAt, original.cachedAt);
       });
 
@@ -514,6 +525,7 @@ void main() {
           totalEpisodes: 62,
           rating: 8.9,
           status: 'Ended',
+          externalUrl: 'https://www.themoviedb.org/tv/1396',
           cachedAt: 1700000000,
         );
 
@@ -530,6 +542,7 @@ void main() {
         expect(copy.totalEpisodes, 62);
         expect(copy.rating, 8.9);
         expect(copy.status, 'Ended');
+        expect(copy.externalUrl, 'https://www.themoviedb.org/tv/1396');
         expect(copy.cachedAt, 1700000000);
       });
 
@@ -552,6 +565,7 @@ void main() {
           totalEpisodes: 30,
           rating: 7.5,
           status: 'Returning Series',
+          externalUrl: 'https://www.themoviedb.org/tv/2',
           cachedAt: 9999999,
         );
 
@@ -567,6 +581,7 @@ void main() {
         expect(copy.totalEpisodes, 30);
         expect(copy.rating, 7.5);
         expect(copy.status, 'Returning Series');
+        expect(copy.externalUrl, 'https://www.themoviedb.org/tv/2');
         expect(copy.cachedAt, 9999999);
       });
     });

@@ -7,6 +7,7 @@ void main() {
   Widget buildTestWidget({
     required DataSource source,
     SourceBadgeSize size = SourceBadgeSize.small,
+    VoidCallback? onTap,
   }) {
     return MaterialApp(
             localizationsDelegates: S.localizationsDelegates,
@@ -15,6 +16,7 @@ void main() {
         body: SourceBadge(
           source: source,
           size: size,
+          onTap: onTap,
         ),
       ),
     );
@@ -335,6 +337,69 @@ void main() {
           expect(find.byType(SourceBadge), findsOneWidget);
         });
       }
+    });
+
+    group('onTap', () {
+      testWidgets('не должен показывать иконку open_in_new без onTap',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(source: DataSource.igdb));
+
+        expect(find.byIcon(Icons.open_in_new), findsNothing);
+      });
+
+      testWidgets('должен показывать иконку open_in_new с onTap',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(
+          source: DataSource.igdb,
+          onTap: () {},
+        ));
+
+        expect(find.byIcon(Icons.open_in_new), findsOneWidget);
+      });
+
+      testWidgets('не должен оборачивать в InkWell без onTap',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(source: DataSource.igdb));
+
+        expect(find.byType(InkWell), findsNothing);
+      });
+
+      testWidgets('должен оборачивать в InkWell с onTap',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(
+          source: DataSource.igdb,
+          onTap: () {},
+        ));
+
+        expect(find.byType(InkWell), findsOneWidget);
+      });
+
+      testWidgets('должен вызывать onTap при нажатии',
+          (WidgetTester tester) async {
+        bool tapped = false;
+        await tester.pumpWidget(buildTestWidget(
+          source: DataSource.igdb,
+          onTap: () => tapped = true,
+        ));
+
+        await tester.tap(find.byType(InkWell));
+        expect(tapped, isTrue);
+      });
+
+      testWidgets('иконка open_in_new должна использовать цвет источника',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(
+          source: DataSource.tmdb,
+          size: SourceBadgeSize.medium,
+          onTap: () {},
+        ));
+
+        final Icon icon = tester.widget<Icon>(
+          find.byIcon(Icons.open_in_new),
+        );
+        expect(icon.color, DataSource.tmdb.color);
+        expect(icon.size, SourceBadgeSize.medium.fontSize);
+      });
     });
   });
 }

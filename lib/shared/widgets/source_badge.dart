@@ -10,11 +10,14 @@ export '../models/data_source.dart';
 ///
 /// Используется в карточках, экранах деталей и настройках
 /// для обозначения откуда получены данные.
+/// Если задан [onTap], бейдж становится кликабельным и показывает
+/// иконку внешней ссылки.
 class SourceBadge extends StatelessWidget {
   /// Создаёт [SourceBadge].
   const SourceBadge({
     required this.source,
     this.size = SourceBadgeSize.small,
+    this.onTap,
     super.key,
   });
 
@@ -24,9 +27,12 @@ class SourceBadge extends StatelessWidget {
   /// Размер бейджа.
   final SourceBadgeSize size;
 
+  /// Колбэк при нажатии (открытие внешней ссылки).
+  final VoidCallback? onTap;
+
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final Widget badge = Container(
       padding: EdgeInsets.symmetric(
         horizontal: size.horizontalPadding,
         vertical: size.verticalPadding,
@@ -39,17 +45,40 @@ class SourceBadge extends StatelessWidget {
           width: 0.5,
         ),
       ),
-      child: Text(
-        source.label,
-        style: TextStyle(
-          color: source.color,
-          fontSize: size.fontSize,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.5,
-          height: 1,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Text(
+            source.label,
+            style: TextStyle(
+              color: source.color,
+              fontSize: size.fontSize,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
+              height: 1,
+            ),
+          ),
+          if (onTap != null) ...<Widget>[
+            SizedBox(width: size.fontSize * 0.3),
+            Icon(
+              Icons.open_in_new,
+              size: size.fontSize,
+              color: source.color,
+            ),
+          ],
+        ],
       ),
     );
+
+    if (onTap != null) {
+      return InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(size.borderRadius),
+        child: badge,
+      );
+    }
+
+    return badge;
   }
 }
 

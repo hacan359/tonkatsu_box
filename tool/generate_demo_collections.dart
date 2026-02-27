@@ -226,7 +226,7 @@ Future<List<Map<String, dynamic>>> _fetchIgdbGames({
   int limit = 50,
 }) async {
   final String body = 'fields id, name, summary, rating, rating_count, '
-      'first_release_date, cover.image_id, genres.name, platforms; '
+      'first_release_date, cover.image_id, genres.name, platforms, url; '
       'where platforms = ($platformId) '
       '& rating_count >= 20 & rating != null; '
       'sort rating desc; '
@@ -287,6 +287,7 @@ Map<String, dynamic> _gameToDb(Map<String, dynamic> json) {
     'rating_count': json['rating_count'],
     'genres': genres,
     'platform_ids': platformIds,
+    'external_url': json['url'] as String?,
     'cached_at': cachedAt,
   };
 }
@@ -399,8 +400,10 @@ Map<String, dynamic> _movieToDb(Map<String, dynamic> json) {
 
   final int cachedAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
+  final int tmdbId = json['id'] as int;
+
   return <String, dynamic>{
-    'tmdb_id': json['id'],
+    'tmdb_id': tmdbId,
     'title': json['title'],
     'original_title': json['original_title'],
     'poster_url': posterUrl,
@@ -410,6 +413,7 @@ Map<String, dynamic> _movieToDb(Map<String, dynamic> json) {
     'release_year': releaseYear,
     'rating': (json['vote_average'] as num?)?.toDouble(),
     'runtime': json['runtime'],
+    'external_url': 'https://www.themoviedb.org/movie/$tmdbId',
     'cached_at': cachedAt,
   };
 }
@@ -442,8 +446,10 @@ Map<String, dynamic> _tvShowToDb(Map<String, dynamic> json) {
 
   final int cachedAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
+  final int tmdbId = json['id'] as int;
+
   return <String, dynamic>{
-    'tmdb_id': json['id'],
+    'tmdb_id': tmdbId,
     'title': json['name'] ?? json['title'],
     'original_title': json['original_name'] ?? json['original_title'],
     'poster_url': posterUrl,
@@ -455,6 +461,7 @@ Map<String, dynamic> _tvShowToDb(Map<String, dynamic> json) {
     'total_episodes': json['number_of_episodes'],
     'rating': (json['vote_average'] as num?)?.toDouble(),
     'status': json['status'],
+    'external_url': 'https://www.themoviedb.org/tv/$tmdbId',
     'cached_at': cachedAt,
   };
 }

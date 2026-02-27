@@ -20,6 +20,7 @@ class TvShow {
     this.totalEpisodes,
     this.rating,
     this.status,
+    this.externalUrl,
     this.cachedAt,
   });
 
@@ -58,8 +59,11 @@ class TvShow {
       genres = genreIds.map((dynamic id) => id.toString()).toList();
     }
 
+    // Конструируем URL страницы сериала на TMDB
+    final int tmdbId = json['id'] as int;
+
     return TvShow(
-      tmdbId: json['id'] as int,
+      tmdbId: tmdbId,
       title: (json['name'] ?? json['title']) as String,
       originalTitle:
           (json['original_name'] ?? json['original_title']) as String?,
@@ -72,6 +76,7 @@ class TvShow {
       totalEpisodes: json['number_of_episodes'] as int?,
       rating: (json['vote_average'] as num?)?.toDouble(),
       status: json['status'] as String?,
+      externalUrl: 'https://www.themoviedb.org/tv/$tmdbId',
       cachedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
     );
   }
@@ -98,6 +103,7 @@ class TvShow {
       totalEpisodes: row['total_episodes'] as int?,
       rating: row['rating'] as double?,
       status: row['status'] as String?,
+      externalUrl: row['external_url'] as String?,
       cachedAt: row['cached_at'] as int?,
     );
   }
@@ -138,6 +144,9 @@ class TvShow {
   /// Статус сериала (Returning Series, Ended, Canceled).
   final String? status;
 
+  /// URL страницы сериала на TMDB.
+  final String? externalUrl;
+
   /// Время кеширования (Unix timestamp).
   final int? cachedAt;
 
@@ -177,6 +186,7 @@ class TvShow {
       'total_episodes': totalEpisodes,
       'rating': rating,
       'status': status,
+      'external_url': externalUrl,
       'cached_at': cachedAt,
     };
   }
@@ -195,6 +205,7 @@ class TvShow {
     int? totalEpisodes,
     double? rating,
     String? status,
+    String? externalUrl,
     int? cachedAt,
   }) {
     return TvShow(
@@ -210,6 +221,7 @@ class TvShow {
       totalEpisodes: totalEpisodes ?? this.totalEpisodes,
       rating: rating ?? this.rating,
       status: status ?? this.status,
+      externalUrl: externalUrl ?? this.externalUrl,
       cachedAt: cachedAt ?? this.cachedAt,
     );
   }

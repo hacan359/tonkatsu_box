@@ -103,6 +103,7 @@ Map<String, dynamic> _gameToDb(Map<String, dynamic> json) {
     'rating_count': json['rating_count'],
     'genres': genres,
     'platform_ids': platformIds,
+    'external_url': json['url'] as String?,
     'cached_at': cachedAt,
   };
 }

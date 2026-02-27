@@ -51,6 +51,7 @@ class _MediaConfig {
     required this.infoChips,
     required this.description,
     required this.hasEpisodeTracker,
+    this.externalUrl,
     this.tvShow,
   });
 
@@ -65,6 +66,7 @@ class _MediaConfig {
   final List<MediaDetailChip> infoChips;
   final String? description;
   final bool hasEpisodeTracker;
+  final String? externalUrl;
   final TvShow? tvShow;
 }
 
@@ -383,6 +385,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     return MediaDetailView(
       title: item.itemName,
       coverUrl: config.coverUrl,
+      externalUrl: config.externalUrl,
       placeholderIcon: config.placeholderIcon,
       source: config.source,
       typeIcon: config.typeIcon,
@@ -452,6 +455,14 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
   // ==================== Media Config ====================
 
   _MediaConfig _getMediaConfig(CollectionItem item) {
+    // Извлекаем externalUrl из вложенной модели медиа
+    final String? externalUrl = switch (item.mediaType) {
+      MediaType.game => item.game?.externalUrl,
+      MediaType.movie || MediaType.animation => item.movie?.externalUrl
+          ?? item.tvShow?.externalUrl,
+      MediaType.tvShow => item.tvShow?.externalUrl,
+    };
+
     return _MediaConfig(
       coverUrl: item.thumbnailUrl,
       placeholderIcon: item.placeholderIcon,
@@ -468,6 +479,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       hasEpisodeTracker: item.mediaType == MediaType.tvShow ||
           (item.mediaType == MediaType.animation &&
               item.platformId == AnimationSource.tvShow),
+      externalUrl: externalUrl,
       tvShow: item.tvShow,
     );
   }

@@ -53,7 +53,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 20,
+        version: 21,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -106,6 +106,7 @@ class DatabaseService {
         rating_count INTEGER,
         genres TEXT,
         platform_ids TEXT,
+        external_url TEXT,
         cached_at INTEGER
       )
     ''');
@@ -262,6 +263,13 @@ class DatabaseService {
       await db.execute(
         "UPDATE collection_items SET status = 'not_started' "
         "WHERE status = 'on_hold'",
+      );
+    }
+    if (oldVersion < 21) {
+      await db.execute('ALTER TABLE games ADD COLUMN external_url TEXT');
+      await db.execute('ALTER TABLE movies_cache ADD COLUMN external_url TEXT');
+      await db.execute(
+        'ALTER TABLE tv_shows_cache ADD COLUMN external_url TEXT',
       );
     }
   }
@@ -502,6 +510,7 @@ class DatabaseService {
         release_year INTEGER,
         rating REAL,
         runtime INTEGER,
+        external_url TEXT,
         cached_at INTEGER
       )
     ''');
@@ -522,6 +531,7 @@ class DatabaseService {
         total_episodes INTEGER,
         rating REAL,
         status TEXT,
+        external_url TEXT,
         cached_at INTEGER
       )
     ''');

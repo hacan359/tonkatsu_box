@@ -2,6 +2,7 @@
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/services/image_cache_service.dart';
 import '../../l10n/app_localizations.dart';
@@ -66,6 +67,7 @@ class MediaDetailView extends StatelessWidget {
     required this.onAuthorCommentSave,
     required this.onUserCommentSave,
     this.coverUrl,
+    this.externalUrl,
     this.infoChips = const <MediaDetailChip>[],
     this.description,
     this.statusWidget,
@@ -94,6 +96,9 @@ class MediaDetailView extends StatelessWidget {
 
   /// URL обложки/постера.
   final String? coverUrl;
+
+  /// URL внешней страницы (IGDB/TMDB).
+  final String? externalUrl;
 
   /// Иконка-заглушка при отсутствии обложки.
   final IconData placeholderIcon;
@@ -256,6 +261,9 @@ class MediaDetailView extends StatelessWidget {
                   SourceBadge(
                     source: source,
                     size: SourceBadgeSize.medium,
+                    onTap: externalUrl != null
+                        ? () => _launchExternalUrl(externalUrl!)
+                        : null,
                   ),
                   const SizedBox(width: 6),
                   Icon(
@@ -767,5 +775,16 @@ class MediaDetailView extends StatelessWidget {
 
     if (result == null) return;
     onSave(result.isEmpty ? null : result);
+  }
+}
+
+Future<void> _launchExternalUrl(String url) async {
+  try {
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  } on Exception {
+    // Ссылка не критична для работы приложения.
   }
 }
