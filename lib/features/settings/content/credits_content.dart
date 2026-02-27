@@ -31,7 +31,7 @@ class CreditsContent extends StatelessWidget {
 
     final S l10n = S.of(context);
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         _SectionHeader(
           title: l10n.creditsDataProviders,
