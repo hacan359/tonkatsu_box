@@ -36,6 +36,9 @@
   "sortRatingDisplay": "My Rating",
   "sortRatingShort": "Rating",
   "sortRatingDesc": "Highest first",
+  "sortExternalRatingDisplay": "External Rating",
+  "sortExternalRatingShort": "IGDB/TMDB",
+  "sortExternalRatingDesc": "Highest first",
 
   "searchSortRelevanceShort": "Rel",
   "searchSortRelevanceDisplay": "Relevance",

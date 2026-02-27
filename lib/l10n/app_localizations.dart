@@ -283,6 +283,24 @@ abstract class S {
   /// **'Highest first'**
   String get sortRatingDesc;
 
+  /// No description provided for @sortExternalRatingDisplay.
+  ///
+  /// In en, this message translates to:
+  /// **'External Rating'**
+  String get sortExternalRatingDisplay;
+
+  /// No description provided for @sortExternalRatingShort.
+  ///
+  /// In en, this message translates to:
+  /// **'IGDB/TMDB'**
+  String get sortExternalRatingShort;
+
+  /// No description provided for @sortExternalRatingDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Highest first'**
+  String get sortExternalRatingDesc;
+
   /// No description provided for @searchSortRelevanceShort.
   ///
   /// In en, this message translates to:

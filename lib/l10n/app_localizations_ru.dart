@@ -102,6 +102,15 @@ class SRu extends S {
   String get sortRatingDesc => 'Сначала лучшие';
 
   @override
+  String get sortExternalRatingDisplay => 'Внешний рейтинг';
+
+  @override
+  String get sortExternalRatingShort => 'IGDB/TMDB';
+
+  @override
+  String get sortExternalRatingDesc => 'Сначала лучшие';
+
+  @override
   String get searchSortRelevanceShort => 'Рел';
 
   @override

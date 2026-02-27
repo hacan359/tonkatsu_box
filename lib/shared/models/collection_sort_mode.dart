@@ -17,7 +17,10 @@ enum CollectionSortMode {
   name('name', 'Name', 'A-Z', 'A to Z'),
 
   /// По пользовательскому рейтингу (userRating DESC, высшие первыми).
-  rating('rating', 'My Rating', 'Rating', 'Highest first');
+  rating('rating', 'My Rating', 'Rating', 'Highest first'),
+
+  /// По внешнему API-рейтингу (apiRating DESC, IGDB/TMDB).
+  externalRating('external_rating', 'External Rating', 'IGDB/TMDB', 'Highest first');
 
   const CollectionSortMode(
     this.value,
@@ -63,6 +66,8 @@ enum CollectionSortMode {
         return l.sortNameDisplay;
       case CollectionSortMode.rating:
         return l.sortRatingDisplay;
+      case CollectionSortMode.externalRating:
+        return l.sortExternalRatingDisplay;
     }
   }
 
@@ -79,6 +84,8 @@ enum CollectionSortMode {
         return l.sortNameShort;
       case CollectionSortMode.rating:
         return l.sortRatingShort;
+      case CollectionSortMode.externalRating:
+        return l.sortExternalRatingShort;
     }
   }
 
@@ -95,6 +102,8 @@ enum CollectionSortMode {
         return l.sortNameDesc;
       case CollectionSortMode.rating:
         return l.sortRatingDesc;
+      case CollectionSortMode.externalRating:
+        return l.sortExternalRatingDesc;
     }
   }
 }

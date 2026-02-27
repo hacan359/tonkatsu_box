@@ -36,6 +36,9 @@
   "sortRatingDisplay": "Мой рейтинг",
   "sortRatingShort": "Оценка",
   "sortRatingDesc": "Сначала лучшие",
+  "sortExternalRatingDisplay": "Внешний рейтинг",
+  "sortExternalRatingShort": "IGDB/TMDB",
+  "sortExternalRatingDesc": "Сначала лучшие",
 
   "searchSortRelevanceShort": "Рел",
   "searchSortRelevanceDisplay": "Релевантность",

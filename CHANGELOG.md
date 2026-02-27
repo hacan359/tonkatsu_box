@@ -7,6 +7,8 @@
 ## [Unreleased]
 
 ### Added
+- "External Rating" sort mode (`CollectionSortMode.externalRating`) — sorts collection items by IGDB/TMDB API rating (`apiRating`, normalized 0–10), highest first, unrated items at the end. Localized in EN and RU (`collection_sort_mode.dart`, `sort_utils.dart`, `app_en.arb`, `app_ru.arb`)
+- Tests: `externalRating` coverage in `collection_sort_mode_test.dart` (6 new tests) and `sort_utils_test.dart` (6 new tests)
 - `externalUrl` field on `Game`, `Movie`, `TvShow` models — stores the IGDB/TMDB page URL. `Game.fromJson()` reads `url` from IGDB API; `Movie.fromJson()` / `TvShow.fromJson()` construct `https://www.themoviedb.org/{movie|tv}/{id}`. Included in `toDb()`, `fromDb()`, `copyWith()`, `toJson()` (Game). Persisted in SQLite (`external_url TEXT` column), exported in `.xcollx` (`game.dart`, `movie.dart`, `tv_show.dart`)
 - Clickable `SourceBadge` — when `onTap` is provided, the badge shows an `open_in_new` icon and wraps in `InkWell`. Tapping opens the external URL in the system browser (`source_badge.dart`)
 - `externalUrl` parameter on `MediaDetailView` — passes URL to `SourceBadge.onTap` via `_launchExternalUrl()` using `url_launcher` (`media_detail_view.dart`)

@@ -6,8 +6,8 @@ import 'package:xerabora/shared/models/collection_sort_mode.dart';
 void main() {
   group('CollectionSortMode', () {
     group('значения enum', () {
-      test('должен содержать 5 значений', () {
-        expect(CollectionSortMode.values.length, 5);
+      test('должен содержать 6 значений', () {
+        expect(CollectionSortMode.values.length, 6);
       });
 
       test('должен содержать все режимы сортировки', () {
@@ -19,6 +19,10 @@ void main() {
         expect(CollectionSortMode.values, contains(CollectionSortMode.status));
         expect(CollectionSortMode.values, contains(CollectionSortMode.name));
         expect(CollectionSortMode.values, contains(CollectionSortMode.rating));
+        expect(
+          CollectionSortMode.values,
+          contains(CollectionSortMode.externalRating),
+        );
       });
     });
 
@@ -42,6 +46,10 @@ void main() {
       test('rating должен иметь значение "rating"', () {
         expect(CollectionSortMode.rating.value, 'rating');
       });
+
+      test('externalRating должен иметь значение "external_rating"', () {
+        expect(CollectionSortMode.externalRating.value, 'external_rating');
+      });
     });
 
     group('displayLabel', () {
@@ -63,6 +71,13 @@ void main() {
 
       test('rating должен отображаться как "My Rating"', () {
         expect(CollectionSortMode.rating.displayLabel, 'My Rating');
+      });
+
+      test('externalRating должен отображаться как "External Rating"', () {
+        expect(
+          CollectionSortMode.externalRating.displayLabel,
+          'External Rating',
+        );
       });
     });
 
@@ -86,6 +101,10 @@ void main() {
       test('rating должен иметь shortLabel "Rating"', () {
         expect(CollectionSortMode.rating.shortLabel, 'Rating');
       });
+
+      test('externalRating должен иметь shortLabel "IGDB/TMDB"', () {
+        expect(CollectionSortMode.externalRating.shortLabel, 'IGDB/TMDB');
+      });
     });
 
     group('description', () {
@@ -107,6 +126,10 @@ void main() {
 
       test('rating должен иметь описание "Highest first"', () {
         expect(CollectionSortMode.rating.description, 'Highest first');
+      });
+
+      test('externalRating должен иметь описание "Highest first"', () {
+        expect(CollectionSortMode.externalRating.description, 'Highest first');
       });
     });
 
@@ -143,6 +166,13 @@ void main() {
             CollectionSortMode.fromString('rating');
 
         expect(result, CollectionSortMode.rating);
+      });
+
+      test('должен вернуть externalRating для "external_rating"', () {
+        final CollectionSortMode result =
+            CollectionSortMode.fromString('external_rating');
+
+        expect(result, CollectionSortMode.externalRating);
       });
 
       test('должен вернуть addedDate для неизвестного значения', () {
