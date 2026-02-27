@@ -192,6 +192,9 @@ class SRu extends S {
   String get settingsAuthorName => 'Имя автора';
 
   @override
+  String get settingsAuthorPlaceholder => 'Пользователь';
+
+  @override
   String get settingsSettings => 'Настройки';
 
   @override
@@ -255,6 +258,25 @@ class SRu extends S {
 
   @override
   String get settingsAppLanguage => 'Язык приложения';
+
+  @override
+  String get settingsConnections => 'Подключения';
+
+  @override
+  String get settingsApiKeys => 'API ключи';
+
+  @override
+  String settingsApiKeysValue(int count) {
+    return '$count ключей';
+  }
+
+  @override
+  String get settingsData => 'Данные';
+
+  @override
+  String settingsCacheValue(String size) {
+    return '$size';
+  }
 
   @override
   String get credentialsTitle => 'Учётные данные';

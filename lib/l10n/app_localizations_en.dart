@@ -192,6 +192,9 @@ class SEn extends S {
   String get settingsAuthorName => 'Author name';
 
   @override
+  String get settingsAuthorPlaceholder => 'User';
+
+  @override
   String get settingsSettings => 'Settings';
 
   @override
@@ -256,6 +259,25 @@ class SEn extends S {
 
   @override
   String get settingsAppLanguage => 'App Language';
+
+  @override
+  String get settingsConnections => 'Connections';
+
+  @override
+  String get settingsApiKeys => 'API Keys';
+
+  @override
+  String settingsApiKeysValue(int count) {
+    return '$count keys';
+  }
+
+  @override
+  String get settingsData => 'Data';
+
+  @override
+  String settingsCacheValue(String size) {
+    return '$size';
+  }
 
   @override
   String get credentialsTitle => 'Credentials';

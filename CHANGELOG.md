@@ -7,6 +7,19 @@
 ## [Unreleased]
 
 ### Added
+- Settings redesign — two responsive layouts: mobile (< 800px) flat iOS-style list with `SettingsGroup`/`SettingsTile` and push-navigation, desktop (≥ 800px) sidebar + content panel with instant section switching (`settings_screen.dart`)
+- `SettingsGroup` widget — flat group with optional uppercase title, `surfaceLight` container, dividers between children (`settings_group.dart`)
+- `SettingsTile` widget — thin settings row (~44px) with title, optional value, trailing widget, and chevron icon (`settings_tile.dart`)
+- `SettingsSidebar` widget — desktop sidebar (200px) with selectable items, separator support, brand-color highlight (`settings_sidebar.dart`)
+- Content widgets extracted from Screen files for reuse in both mobile push-nav and desktop inline panel: `CredentialsContent`, `CacheContent`, `DatabaseContent`, `CreditsContent`, `TraktImportContent` (`lib/features/settings/content/`)
+- Localization: `settingsConnections`, `settingsApiKeys`, `settingsApiKeysValue`, `settingsData`, `settingsCacheValue` keys (EN + RU)
+- Tests: `settings_group_test.dart`, `settings_tile_test.dart`, `settings_sidebar_test.dart` — widget tests for new settings components
+
+### Changed
+- `SettingsScreen` rewritten with dual-layout architecture — mobile layout uses `SettingsGroup`/`SettingsTile` instead of `SettingsSection`/`SettingsNavRow`, desktop layout uses `SettingsSidebar` + content panel (`settings_screen.dart`)
+- `CredentialsScreen`, `CacheScreen`, `DatabaseScreen`, `CreditsScreen`, `TraktImportScreen` converted to thin wrappers delegating body to extracted Content widgets
+- `settings_screen_test.dart` rewritten for new widget structure (SettingsGroup/SettingsTile/SettingsSidebar), mobile/desktop layout tests
+- `navigation_shell_test.dart` updated — "Credentials" → "API Keys" label, `ListTile` → direct text finder for settings navigation tests
 - Auto-load platforms from IGDB when searching games and opening collections — eliminates "Unknown Platform" chips without manual "Sync Platforms". `IgdbApi.fetchPlatformsByIds()` fetches only needed platforms, `GameRepository.ensurePlatformsCached()` checks DB cache first and fetches missing ones, `CollectionItemsNotifier._loadItems()` triggers lazy load on first open (`igdb_api.dart`, `game_repository.dart`, `collections_provider.dart`)
 - Platforms included in full export/import (.xcollx) — `_collectMediaData()` collects platform IDs from game items and exports `Platform.toDb()` into `media['platforms']`, `_restoreEmbeddedMedia()` restores them via `Platform.fromDb()` → `upsertPlatforms()` for offline import (`export_service.dart`, `import_service.dart`)
 - `DatabaseService.getPlatformsByIds()` public method — parameterized `SELECT ... WHERE id IN (?)` query, replaces inline SQL in `_loadJoinedData()` (`database_service.dart`)

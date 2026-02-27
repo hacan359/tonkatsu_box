@@ -327,11 +327,14 @@ Full English and Russian localization with runtime language switching:
 
 ## ⚙️ Settings
 
-Settings is organized as a hub with an inline author name field, 4 sub-screens, and an About section. All screens support **compact mode** (responsive layout for screens < 600px width).
+Settings uses a **dual-layout** architecture with an 800px breakpoint:
 
-Built with 5 reusable widgets: `SettingsSection`, `SettingsRow`, `SettingsNavRow`, `StatusDot`, `InlineTextField`.
+- **Mobile (< 800px)** — flat iOS-style list with `SettingsGroup`/`SettingsTile` widgets. Uppercase group titles, thin rows (~44px), push-navigation to sub-screens
+- **Desktop (≥ 800px)** — sidebar (200px) + content panel (600px max). Instant section switching, no push-navigation
 
-- **App Language** — switch between English and Russian via SegmentedButton
+Sub-screen content is extracted into reusable Content widgets (`lib/features/settings/content/`) that work both inside Screen wrappers (mobile push) and inline in the desktop content panel.
+
+- **App Language** — mobile: language picker dialog; desktop: SegmentedButton (English/Русский)
 - **Author name** — configurable default author for new collections (editable inline via tap-to-edit field)
 - **Inline editing** — API keys and author name use `InlineTextField` (tap to edit, blur/Enter to save, no dialogs)
 - **Status indicators** — `StatusDot` shows connection status, API key presence with color-coded icons
