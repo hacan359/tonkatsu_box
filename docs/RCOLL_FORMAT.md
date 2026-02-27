@@ -101,7 +101,7 @@ Includes everything from light export plus `canvas`, `images`, and `media`:
   },
   "media": {
     "games": [
-      { "id": 1234, "name": "Game Name", "summary": "...", "cover_url": "//images.igdb.com/...", "genres": "Action|RPG", "rating": 85.5, ... }
+      { "id": 1234, "name": "Game Name", "summary": "...", "cover_url": "//images.igdb.com/...", "genres": "Action|RPG", "rating": 85.5, "external_url": "https://www.igdb.com/games/game-name", ... }
     ],
     "movies": [
       { "tmdb_id": 550, "title": "Movie Title", "overview": "...", "poster_url": "/poster.jpg", "genres": "[\"Action\",\"Drama\"]", "runtime": 139, ... }
@@ -174,9 +174,9 @@ Contains full Game/Movie/TvShow/TvSeason/TvEpisode data for offline import. Each
 
 | Field | Type | Description |
 |-------|------|-------------|
-| games | array | Game objects from IGDB (id, name, summary, cover_url, genres, rating, ...) |
-| movies | array | Movie objects from TMDB (tmdb_id, title, overview, poster_url, genres, runtime, ...) |
-| tv_shows | array | TvShow objects from TMDB (tmdb_id, title, total_seasons, total_episodes, genres, ...) |
+| games | array | Game objects from IGDB (id, name, summary, cover_url, genres, rating, external_url, ...) |
+| movies | array | Movie objects from TMDB (tmdb_id, title, overview, poster_url, genres, runtime, external_url, ...) |
+| tv_shows | array | TvShow objects from TMDB (tmdb_id, title, total_seasons, total_episodes, genres, external_url, ...) |
 | tv_seasons | array | TvSeason objects from TMDB (tmdb_show_id, season_number, name, episode_count, poster_url, air_date) |
 | tv_episodes | array | TvEpisode objects from TMDB (tmdb_show_id, season_number, episode_number, name, overview, air_date, still_url, runtime) |
 

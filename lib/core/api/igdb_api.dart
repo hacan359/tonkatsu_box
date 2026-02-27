@@ -258,7 +258,7 @@ class IgdbApi {
   /// Поля игры для запросов к IGDB.
   static const String _gameFields = '''
     fields id, name, summary, rating, rating_count, first_release_date,
-           cover.image_id, genres.name, platforms;
+           cover.image_id, genres.name, platforms, url;
   ''';
 
   /// Ищет игры по названию.

@@ -7,6 +7,17 @@
 ## [Unreleased]
 
 ### Added
+- `externalUrl` field on `Game`, `Movie`, `TvShow` models — stores the IGDB/TMDB page URL. `Game.fromJson()` reads `url` from IGDB API; `Movie.fromJson()` / `TvShow.fromJson()` construct `https://www.themoviedb.org/{movie|tv}/{id}`. Included in `toDb()`, `fromDb()`, `copyWith()`, `toJson()` (Game). Persisted in SQLite (`external_url TEXT` column), exported in `.xcollx` (`game.dart`, `movie.dart`, `tv_show.dart`)
+- Clickable `SourceBadge` — when `onTap` is provided, the badge shows an `open_in_new` icon and wraps in `InkWell`. Tapping opens the external URL in the system browser (`source_badge.dart`)
+- `externalUrl` parameter on `MediaDetailView` — passes URL to `SourceBadge.onTap` via `_launchExternalUrl()` using `url_launcher` (`media_detail_view.dart`)
+- `externalUrl` field on `_MediaConfig` in `ItemDetailScreen` — extracted from `game.externalUrl` / `movie.externalUrl` / `tvShow.externalUrl` and forwarded to `MediaDetailView` (`item_detail_screen.dart`)
+- Database migration v20 → v21 — `ALTER TABLE games/movies_cache/tv_shows_cache ADD COLUMN external_url TEXT` (`database_service.dart`)
+- `url` added to IGDB `_gameFields` query — fetched for all game endpoints (`igdb_api.dart`)
+- CLI scripts: `external_url` field added to `_gameToDb()`, `_movieToDb()`, `_tvShowToDb()` in `generate_demo_collections.dart` and `generate_all_snes.dart`
+- Demo Collections Generator — CLI scripts (`tool/generate_demo_collections.dart`, `tool/generate_all_snes.dart`) for generating `.xcollx` demo files from IGDB/TMDB APIs, with `tool/README.md` documentation
+- `DemoCollectionsScreen` — debug screen accessible from Developer Tools for generating demo collections with various platforms and media types (`demo_collections_screen.dart`)
+- `IgdbApi.getTopGamesByPlatform()` — fetches top-rated games for a specific platform from IGDB (`igdb_api.dart`)
+- Tests: `externalUrl` coverage in `game_test.dart`, `movie_test.dart`, `tv_show_test.dart`, `source_badge_test.dart` (onTap group), `media_detail_view_test.dart` (External URL group)
 - Settings redesign — two responsive layouts: mobile (< 800px) flat iOS-style list with `SettingsGroup`/`SettingsTile` and push-navigation, desktop (≥ 800px) sidebar + content panel with instant section switching (`settings_screen.dart`)
 - `SettingsGroup` widget — flat group with optional uppercase title, `surfaceLight` container, dividers between children (`settings_group.dart`)
 - `SettingsTile` widget — thin settings row (~44px) with title, optional value, trailing widget, and chevron icon (`settings_tile.dart`)

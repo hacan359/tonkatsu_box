@@ -42,6 +42,7 @@ void main() {
         expect(movie.rating, 8.364);
         expect(movie.runtime, 148);
         expect(movie.cachedAt, isNotNull);
+        expect(movie.externalUrl, 'https://www.themoviedb.org/movie/27205');
       });
 
       test('должен создать из минимального JSON (только id и title)', () {
@@ -63,6 +64,7 @@ void main() {
         expect(movie.rating, isNull);
         expect(movie.runtime, isNull);
         expect(movie.cachedAt, isNotNull);
+        expect(movie.externalUrl, 'https://www.themoviedb.org/movie/550');
       });
 
       test('должен обработать genre_ids вместо genres', () {
@@ -232,6 +234,7 @@ void main() {
           'rating': 8.4,
           'runtime': 148,
           'cached_at': 1700000000,
+          'external_url': 'https://www.themoviedb.org/movie/27205',
         };
 
         final Movie movie = Movie.fromDb(row);
@@ -248,6 +251,7 @@ void main() {
         expect(movie.rating, 8.4);
         expect(movie.runtime, 148);
         expect(movie.cachedAt, 1700000000);
+        expect(movie.externalUrl, 'https://www.themoviedb.org/movie/27205');
       });
 
       test('должен обработать null genres', () {
@@ -263,6 +267,7 @@ void main() {
           'rating': null,
           'runtime': null,
           'cached_at': null,
+          'external_url': null,
         };
 
         final Movie movie = Movie.fromDb(row);
@@ -278,6 +283,7 @@ void main() {
         expect(movie.rating, isNull);
         expect(movie.runtime, isNull);
         expect(movie.cachedAt, isNull);
+        expect(movie.externalUrl, isNull);
       });
 
       test('должен обработать пустую строку genres', () {
@@ -315,6 +321,7 @@ void main() {
           rating: 8.4,
           runtime: 148,
           cachedAt: 1700000000,
+          externalUrl: 'https://www.themoviedb.org/movie/27205',
         );
 
         final Map<String, dynamic> db = movie.toDb();
@@ -331,6 +338,7 @@ void main() {
         expect(db['rating'], 8.4);
         expect(db['runtime'], 148);
         expect(db['cached_at'], 1700000000);
+        expect(db['external_url'], 'https://www.themoviedb.org/movie/27205');
       });
 
       test('должен обработать null значения', () {
@@ -352,6 +360,7 @@ void main() {
         expect(db['rating'], isNull);
         expect(db['runtime'], isNull);
         expect(db['cached_at'], isNull);
+        expect(db['external_url'], isNull);
       });
     });
 
@@ -369,6 +378,7 @@ void main() {
           rating: 8.4,
           runtime: 148,
           cachedAt: 1700000000,
+          externalUrl: 'https://www.themoviedb.org/movie/27205',
         );
 
         final Map<String, dynamic> db = original.toDb();
@@ -385,6 +395,7 @@ void main() {
         expect(restored.rating, original.rating);
         expect(restored.runtime, original.runtime);
         expect(restored.cachedAt, original.cachedAt);
+        expect(restored.externalUrl, original.externalUrl);
       });
 
       test('должен сохранить и восстановить минимальные данные', () {
@@ -437,6 +448,7 @@ void main() {
           rating: 8.4,
           runtime: 148,
           cachedAt: 1700000000,
+          externalUrl: 'https://www.themoviedb.org/movie/27205',
         );
 
         final Movie copy = original.copyWith(title: 'Updated');
@@ -451,6 +463,7 @@ void main() {
         expect(copy.rating, 8.4);
         expect(copy.runtime, 148);
         expect(copy.cachedAt, 1700000000);
+        expect(copy.externalUrl, 'https://www.themoviedb.org/movie/27205');
       });
 
       test('должен позволить изменить все поля', () {
@@ -471,6 +484,7 @@ void main() {
           rating: 7.5,
           runtime: 120,
           cachedAt: 9999999,
+          externalUrl: 'https://www.themoviedb.org/movie/2',
         );
 
         expect(copy.tmdbId, 2);
@@ -484,6 +498,7 @@ void main() {
         expect(copy.rating, 7.5);
         expect(copy.runtime, 120);
         expect(copy.cachedAt, 9999999);
+        expect(copy.externalUrl, 'https://www.themoviedb.org/movie/2');
       });
     });
 

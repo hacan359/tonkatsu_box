@@ -13,6 +13,7 @@ class Game {
     this.ratingCount,
     this.genres,
     this.platformIds,
+    this.externalUrl,
     this.cachedAt,
   });
 
@@ -63,6 +64,7 @@ class Game {
       ratingCount: json['rating_count'] as int?,
       genres: genres,
       platformIds: platformIds,
+      externalUrl: json['url'] as String?,
       cachedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
     );
   }
@@ -101,6 +103,7 @@ class Game {
       ratingCount: row['rating_count'] as int?,
       genres: genres,
       platformIds: platformIds,
+      externalUrl: row['external_url'] as String?,
       cachedAt: row['cached_at'] as int?,
     );
   }
@@ -131,6 +134,9 @@ class Game {
 
   /// Список ID платформ.
   final List<int>? platformIds;
+
+  /// URL страницы игры на IGDB.
+  final String? externalUrl;
 
   /// Время кеширования (Unix timestamp).
   final int? cachedAt;
@@ -173,6 +179,7 @@ class Game {
       'rating_count': ratingCount,
       'genres': genres?.join('|'),
       'platform_ids': platformIds?.join(','),
+      'external_url': externalUrl,
       'cached_at': cachedAt,
     };
   }
@@ -191,6 +198,7 @@ class Game {
       'rating_count': ratingCount,
       'genres': genres,
       'platform_ids': platformIds,
+      'external_url': externalUrl,
     };
   }
 
@@ -205,6 +213,7 @@ class Game {
     int? ratingCount,
     List<String>? genres,
     List<int>? platformIds,
+    String? externalUrl,
     int? cachedAt,
   }) {
     return Game(
@@ -217,6 +226,7 @@ class Game {
       ratingCount: ratingCount ?? this.ratingCount,
       genres: genres ?? this.genres,
       platformIds: platformIds ?? this.platformIds,
+      externalUrl: externalUrl ?? this.externalUrl,
       cachedAt: cachedAt ?? this.cachedAt,
     );
   }

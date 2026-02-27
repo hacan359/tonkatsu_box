@@ -8,6 +8,7 @@ void main() {
   Widget buildTestWidget({
     String title = 'Test Title',
     String? coverUrl,
+    String? externalUrl,
     IconData placeholderIcon = Icons.videogame_asset,
     DataSource source = DataSource.igdb,
     IconData typeIcon = Icons.sports_esports,
@@ -37,6 +38,7 @@ void main() {
       home: MediaDetailView(
         title: title,
         coverUrl: coverUrl,
+        externalUrl: externalUrl,
         placeholderIcon: placeholderIcon,
         source: source,
         typeIcon: typeIcon,
@@ -129,6 +131,27 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('TV Show'), findsOneWidget);
+      });
+    });
+
+    group('External URL', () {
+      testWidgets('не должен показывать иконку open_in_new без externalUrl',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(source: DataSource.igdb));
+        await tester.pumpAndSettle();
+
+        expect(find.byIcon(Icons.open_in_new), findsNothing);
+      });
+
+      testWidgets('должен показывать иконку open_in_new с externalUrl',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(
+          source: DataSource.igdb,
+          externalUrl: 'https://www.igdb.com/games/test',
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.byIcon(Icons.open_in_new), findsOneWidget);
       });
     });
 

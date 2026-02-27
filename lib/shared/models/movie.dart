@@ -18,6 +18,7 @@ class Movie {
     this.releaseYear,
     this.rating,
     this.runtime,
+    this.externalUrl,
     this.cachedAt,
   });
 
@@ -57,8 +58,11 @@ class Movie {
       genres = genreIds.map((dynamic id) => id.toString()).toList();
     }
 
+    // Конструируем URL страницы фильма на TMDB
+    final int tmdbId = json['id'] as int;
+
     return Movie(
-      tmdbId: json['id'] as int,
+      tmdbId: tmdbId,
       title: json['title'] as String,
       originalTitle: json['original_title'] as String?,
       posterUrl: posterUrl,
@@ -68,6 +72,7 @@ class Movie {
       releaseYear: releaseYear,
       rating: (json['vote_average'] as num?)?.toDouble(),
       runtime: json['runtime'] as int?,
+      externalUrl: 'https://www.themoviedb.org/movie/$tmdbId',
       cachedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
     );
   }
@@ -92,6 +97,7 @@ class Movie {
       releaseYear: row['release_year'] as int?,
       rating: row['rating'] as double?,
       runtime: row['runtime'] as int?,
+      externalUrl: row['external_url'] as String?,
       cachedAt: row['cached_at'] as int?,
     );
   }
@@ -125,6 +131,9 @@ class Movie {
 
   /// Длительность в минутах.
   final int? runtime;
+
+  /// URL страницы фильма на TMDB.
+  final String? externalUrl;
 
   /// Время кеширования (Unix timestamp).
   final int? cachedAt;
@@ -163,6 +172,7 @@ class Movie {
       'release_year': releaseYear,
       'rating': rating,
       'runtime': runtime,
+      'external_url': externalUrl,
       'cached_at': cachedAt,
     };
   }
@@ -179,6 +189,7 @@ class Movie {
     int? releaseYear,
     double? rating,
     int? runtime,
+    String? externalUrl,
     int? cachedAt,
   }) {
     return Movie(
@@ -192,6 +203,7 @@ class Movie {
       releaseYear: releaseYear ?? this.releaseYear,
       rating: rating ?? this.rating,
       runtime: runtime ?? this.runtime,
+      externalUrl: externalUrl ?? this.externalUrl,
       cachedAt: cachedAt ?? this.cachedAt,
     );
   }

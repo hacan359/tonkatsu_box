@@ -20,6 +20,7 @@ void main() {
             <String, dynamic>{'name': 'Adventure'},
           ],
           'platforms': <int>[6, 48, 49],
+          'url': 'https://www.igdb.com/games/the-witcher-3-wild-hunt',
         };
 
         final Game game = Game.fromJson(json);
@@ -36,6 +37,7 @@ void main() {
         expect(game.releaseDate, isNotNull);
         expect(game.releaseDate!.year, 2015);
         expect(game.cachedAt, isNotNull);
+        expect(game.externalUrl, 'https://www.igdb.com/games/the-witcher-3-wild-hunt');
       });
 
       test('handles minimal JSON without optional fields', () {
@@ -55,6 +57,7 @@ void main() {
         expect(game.genres, isNull);
         expect(game.platformIds, isNull);
         expect(game.releaseDate, isNull);
+        expect(game.externalUrl, isNull);
       });
 
       test('handles cover without image_id', () {
@@ -85,6 +88,7 @@ void main() {
           'genres': 'RPG|Adventure',
           'platform_ids': '6,48,49',
           'cached_at': 1700000000,
+          'external_url': 'https://www.igdb.com/games/the-witcher-3',
         };
 
         final Game game = Game.fromDb(row);
@@ -98,6 +102,7 @@ void main() {
         expect(game.genres, <String>['RPG', 'Adventure']);
         expect(game.platformIds, <int>[6, 48, 49]);
         expect(game.cachedAt, 1700000000);
+        expect(game.externalUrl, 'https://www.igdb.com/games/the-witcher-3');
       });
 
       test('handles null and empty values', () {
@@ -112,6 +117,7 @@ void main() {
           'genres': '',
           'platform_ids': '',
           'cached_at': null,
+          'external_url': null,
         };
 
         final Game game = Game.fromDb(row);
@@ -120,6 +126,7 @@ void main() {
         expect(game.name, 'Simple Game');
         expect(game.genres, isNull);
         expect(game.platformIds, isNull);
+        expect(game.externalUrl, isNull);
       });
     });
 
@@ -136,6 +143,7 @@ void main() {
           genres: <String>['RPG', 'Adventure'],
           platformIds: <int>[6, 48, 49],
           cachedAt: 1700000000,
+          externalUrl: 'https://www.igdb.com/games/the-witcher-3',
         );
 
         final Map<String, dynamic> db = game.toDb();
@@ -149,6 +157,7 @@ void main() {
         expect(db['genres'], 'RPG|Adventure');
         expect(db['platform_ids'], '6,48,49');
         expect(db['cached_at'], 1700000000);
+        expect(db['external_url'], 'https://www.igdb.com/games/the-witcher-3');
       });
 
       test('handles null values', () {
@@ -164,6 +173,7 @@ void main() {
         expect(db['summary'], isNull);
         expect(db['genres'], isNull);
         expect(db['platform_ids'], isNull);
+        expect(db['external_url'], isNull);
       });
     });
 
@@ -179,6 +189,7 @@ void main() {
           ratingCount: 1500,
           genres: <String>['RPG', 'Adventure'],
           platformIds: <int>[6, 48, 49],
+          externalUrl: 'https://www.igdb.com/games/the-witcher-3',
         );
 
         final Map<String, dynamic> json = game.toJson();
@@ -187,6 +198,7 @@ void main() {
         expect(json['name'], 'The Witcher 3');
         expect(json['genres'], <String>['RPG', 'Adventure']);
         expect(json['platform_ids'], <int>[6, 48, 49]);
+        expect(json['external_url'], 'https://www.igdb.com/games/the-witcher-3');
       });
     });
 
@@ -264,11 +276,13 @@ void main() {
         final Game copy = original.copyWith(
           name: 'Updated',
           rating: 90.0,
+          externalUrl: 'https://www.igdb.com/games/updated',
         );
 
         expect(copy.id, 1);
         expect(copy.name, 'Updated');
         expect(copy.rating, 90.0);
+        expect(copy.externalUrl, 'https://www.igdb.com/games/updated');
       });
 
       test('preserves unchanged fields', () {
