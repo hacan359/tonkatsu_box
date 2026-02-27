@@ -16,6 +16,7 @@ CollectionItem _makeItem({
   ItemStatus status = ItemStatus.notStarted,
   int? userRating,
   DateTime? addedAt,
+  double? apiRating,
 }) {
   return CollectionItem(
     id: id,
@@ -26,7 +27,7 @@ CollectionItem _makeItem({
     sortOrder: sortOrder,
     userRating: userRating,
     addedAt: addedAt ?? DateTime(2024, 1, id),
-    game: Game(id: id * 100, name: name),
+    game: Game(id: id * 100, name: name, rating: apiRating),
   );
 }
 
@@ -407,6 +408,99 @@ void main() {
     });
 
     // ---------------------------------------------------------------
+    // External Rating sort
+    // ---------------------------------------------------------------
+    group('CollectionSortMode.externalRating', () {
+      test('по умолчанию высший внешний рейтинг первым', () {
+        final List<CollectionItem> items = <CollectionItem>[
+          _makeItem(id: 1, name: 'Low', apiRating: 30.0),
+          _makeItem(id: 2, name: 'High', apiRating: 95.0),
+          _makeItem(id: 3, name: 'Mid', apiRating: 70.0),
+        ];
+
+        final List<CollectionItem> result = applySortMode(
+          items,
+          CollectionSortMode.externalRating,
+        );
+
+        expect(
+          result.map((CollectionItem i) => i.id).toList(),
+          <int>[2, 3, 1],
+        );
+      });
+
+      test('null apiRating всегда в конце (по умолчанию)', () {
+        final List<CollectionItem> items = <CollectionItem>[
+          _makeItem(id: 1, name: 'No Rating'),
+          _makeItem(id: 2, name: 'Has Rating', apiRating: 50.0),
+          _makeItem(id: 3, name: 'Also No Rating'),
+        ];
+
+        final List<CollectionItem> result = applySortMode(
+          items,
+          CollectionSortMode.externalRating,
+        );
+
+        expect(result.first.id, 2);
+        expect(result[1].apiRating, isNull);
+        expect(result[2].apiRating, isNull);
+      });
+
+      test('isDescending=true — низший рейтинг первым, null в начале', () {
+        final List<CollectionItem> items = <CollectionItem>[
+          _makeItem(id: 1, name: 'Low', apiRating: 30.0),
+          _makeItem(id: 2, name: 'High', apiRating: 95.0),
+          _makeItem(id: 3, name: 'No Rating'),
+        ];
+
+        final List<CollectionItem> result = applySortMode(
+          items,
+          CollectionSortMode.externalRating,
+          isDescending: true,
+        );
+
+        expect(
+          result.map((CollectionItem i) => i.id).toList(),
+          <int>[3, 1, 2],
+        );
+      });
+
+      test('все null apiRating — стабильный порядок', () {
+        final List<CollectionItem> items = <CollectionItem>[
+          _makeItem(id: 1, name: 'A'),
+          _makeItem(id: 2, name: 'B'),
+          _makeItem(id: 3, name: 'C'),
+        ];
+
+        final List<CollectionItem> result = applySortMode(
+          items,
+          CollectionSortMode.externalRating,
+        );
+
+        expect(result.length, 3);
+      });
+
+      test('смешанные null и ненулевые apiRating корректно разделяются', () {
+        final List<CollectionItem> items = <CollectionItem>[
+          _makeItem(id: 1, name: 'A'),
+          _makeItem(id: 2, name: 'B', apiRating: 10.0),
+          _makeItem(id: 3, name: 'C'),
+          _makeItem(id: 4, name: 'D', apiRating: 90.0),
+        ];
+
+        final List<CollectionItem> result = applySortMode(
+          items,
+          CollectionSortMode.externalRating,
+        );
+
+        expect(result[0].id, 4);
+        expect(result[1].id, 2);
+        expect(result[2].apiRating, isNull);
+        expect(result[3].apiRating, isNull);
+      });
+    });
+
+    // ---------------------------------------------------------------
     // Пустой список
     // ---------------------------------------------------------------
     group('пустой список', () {
@@ -450,6 +544,15 @@ void main() {
         final List<CollectionItem> result = applySortMode(
           <CollectionItem>[],
           CollectionSortMode.rating,
+        );
+
+        expect(result, isEmpty);
+      });
+
+      test('externalRating возвращает пустой список', () {
+        final List<CollectionItem> result = applySortMode(
+          <CollectionItem>[],
+          CollectionSortMode.externalRating,
         );
 
         expect(result, isEmpty);

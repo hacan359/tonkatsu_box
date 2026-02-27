@@ -68,6 +68,7 @@ Sort items within a collection:
 - **Status** — active items first: In Progress → Planned → Not Started → Completed → Dropped
 - **Name** — alphabetical A to Z
 - **Rating** — highest user rating first, unrated at the end
+- **External Rating** — highest IGDB/TMDB API rating first, unrated at the end
 - **Manual** — custom drag-and-drop order with drag handle icon
 
 Sort mode is saved per collection and persists between sessions.

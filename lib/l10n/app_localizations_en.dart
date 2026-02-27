@@ -102,6 +102,15 @@ class SEn extends S {
   String get sortRatingDesc => 'Highest first';
 
   @override
+  String get sortExternalRatingDisplay => 'External Rating';
+
+  @override
+  String get sortExternalRatingShort => 'IGDB/TMDB';
+
+  @override
+  String get sortExternalRatingDesc => 'Highest first';
+
+  @override
   String get searchSortRelevanceShort => 'Rel';
 
   @override

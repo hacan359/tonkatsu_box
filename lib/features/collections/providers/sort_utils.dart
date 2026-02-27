@@ -47,6 +47,14 @@ List<CollectionItem> applySortMode(
         if (b.userRating == null) return -1;
         return b.userRating!.compareTo(a.userRating!);
       });
+    case CollectionSortMode.externalRating:
+      sorted.sort((CollectionItem a, CollectionItem b) {
+        // null рейтинг в конец
+        if (a.apiRating == null && b.apiRating == null) return 0;
+        if (a.apiRating == null) return 1;
+        if (b.apiRating == null) return -1;
+        return b.apiRating!.compareTo(a.apiRating!);
+      });
   }
   if (isDescending) {
     return sorted.reversed.toList();
