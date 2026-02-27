@@ -36,6 +36,10 @@
 - `CanvasView` media card rendering now uses `CanvasItem` unified accessors instead of inline switch statements (`canvas_view.dart`)
 - `ExportService` now uses `CollectionItem.dataSource` accessor instead of switch-on-mediaType (`export_service.dart`)
 
+### Removed
+- Removed SignPath code signing policy section from `README.md` (certificate info, team roles, privacy policy)
+- Removed SignPath code signing policy block, CSS styles, and i18n translations (EN + RU) from landing page (`docs/index.html`)
+
 ## [0.15.0] - 2026-02-25
 
 ### Added
