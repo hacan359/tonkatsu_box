@@ -69,6 +69,7 @@
 
   "settingsProfile": "Profile",
   "settingsAuthorName": "Author name",
+  "settingsAuthorPlaceholder": "User",
   "settingsSettings": "Settings",
   "settingsCredentials": "Credentials",
   "settingsCredentialsSubtitle": "IGDB, SteamGridDB, TMDB API keys",
@@ -90,6 +91,21 @@
   "settingsCreditsLicensesSubtitle": "TMDB, IGDB, SteamGridDB, open-source licenses",
   "settingsError": "Error",
   "settingsAppLanguage": "App Language",
+  "settingsConnections": "Connections",
+  "settingsApiKeys": "API Keys",
+  "settingsApiKeysValue": "{count} keys",
+  "@settingsApiKeysValue": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "settingsData": "Data",
+  "settingsCacheValue": "{size}",
+  "@settingsCacheValue": {
+    "placeholders": {
+      "size": {"type": "String"}
+    }
+  },
 
   "credentialsTitle": "Credentials",
   "credentialsWelcome": "Welcome to Tonkatsu Box!",

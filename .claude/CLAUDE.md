@@ -217,6 +217,19 @@ flutter test       # Все тесты проходят
 - Ленивая загрузка для больших списков (`ListView.builder`)
 - Кэшировать тяжелые вычисления
 
+### TextField в кастомных контейнерах:
+- Глобальная тема задаёт `filled: true` + `focusedBorder: brand` для всех `TextField`
+- Если `TextField` вложен в контейнер с собственной рамкой — **обязательно** отключить декорации, иначе двойная рамка:
+  ```dart
+  decoration: InputDecoration(
+    border: InputBorder.none,
+    focusedBorder: InputBorder.none,
+    enabledBorder: InputBorder.none,
+    filled: false,
+  ),
+  ```
+- Пример: `InlineTextField` (`lib/features/settings/widgets/inline_text_field.dart`)
+
 ### Платформо-зависимый код:
 - Проверять платформу через `platform_features.dart` (`kCanvasEnabled`, `kVgMapsEnabled`)
 - VGMaps / WebView2 — только Windows

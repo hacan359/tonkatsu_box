@@ -10,6 +10,13 @@ import '../../../shared/theme/app_typography.dart';
 ///
 /// Тап по полю включает режим ввода, blur или Enter сохраняет значение.
 /// Никаких AlertDialog — всё прямо на месте.
+///
+/// **Важно для кастомных контейнеров с TextField:**
+/// Глобальная тема (`AppTheme`) задаёт `filled: true` + `focusedBorder` для
+/// всех TextField. Если TextField вложен в контейнер с собственной рамкой,
+/// необходимо отключить декорации: `border: InputBorder.none`,
+/// `focusedBorder: InputBorder.none`, `enabledBorder: InputBorder.none`,
+/// `filled: false` — иначе будет двойная рамка.
 class InlineTextField extends StatefulWidget {
   /// Создаёт [InlineTextField].
   const InlineTextField({
@@ -161,7 +168,13 @@ class _InlineTextFieldState extends State<InlineTextField> {
                               style: AppTypography.body,
                               decoration: InputDecoration(
                                 hintText: widget.placeholder,
+                                hintStyle: AppTypography.body.copyWith(
+                                  color: AppColors.textTertiary,
+                                ),
                                 border: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                filled: false,
                                 isDense: true,
                                 contentPadding: EdgeInsets.zero,
                               ),

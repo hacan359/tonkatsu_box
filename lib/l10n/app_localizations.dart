@@ -463,6 +463,12 @@ abstract class S {
   /// **'Author name'**
   String get settingsAuthorName;
 
+  /// No description provided for @settingsAuthorPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'User'**
+  String get settingsAuthorPlaceholder;
+
   /// No description provided for @settingsSettings.
   ///
   /// In en, this message translates to:
@@ -588,6 +594,36 @@ abstract class S {
   /// In en, this message translates to:
   /// **'App Language'**
   String get settingsAppLanguage;
+
+  /// No description provided for @settingsConnections.
+  ///
+  /// In en, this message translates to:
+  /// **'Connections'**
+  String get settingsConnections;
+
+  /// No description provided for @settingsApiKeys.
+  ///
+  /// In en, this message translates to:
+  /// **'API Keys'**
+  String get settingsApiKeys;
+
+  /// No description provided for @settingsApiKeysValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} keys'**
+  String settingsApiKeysValue(int count);
+
+  /// No description provided for @settingsData.
+  ///
+  /// In en, this message translates to:
+  /// **'Data'**
+  String get settingsData;
+
+  /// No description provided for @settingsCacheValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{size}'**
+  String settingsCacheValue(String size);
 
   /// No description provided for @credentialsTitle.
   ///

@@ -202,13 +202,9 @@ void main() {
         await tester.pump();
         await tester.pump(); // Navigator initial route transition
 
-        // Нажимаем на Credentials
-        final Finder credentialsTile = find.ancestor(
-          of: find.text('Credentials'),
-          matching: find.byType(ListTile),
-        );
-        expect(credentialsTile, findsOneWidget);
-        await tester.tap(credentialsTile);
+        // Нажимаем на API Keys
+        expect(find.text('API Keys'), findsOneWidget);
+        await tester.tap(find.text('API Keys'));
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 300));
 
@@ -229,13 +225,9 @@ void main() {
         await tester.pump();
         await tester.pump();
 
-        // Нажимаем на Credentials
-        final Finder credentialsTile = find.ancestor(
-          of: find.text('Credentials'),
-          matching: find.byType(ListTile),
-        );
-        expect(credentialsTile, findsOneWidget);
-        await tester.tap(credentialsTile);
+        // Нажимаем на API Keys
+        expect(find.text('API Keys'), findsOneWidget);
+        await tester.tap(find.text('API Keys'));
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 300));
 
@@ -268,18 +260,13 @@ void main() {
         await tester.pump();
         await tester.pump();
 
-        // Push Credentials
-        final Finder credentialsTile = find.ancestor(
-          of: find.text('Credentials'),
-          matching: find.byType(ListTile),
-        );
-        await tester.tap(credentialsTile);
+        // Нажимаем на API Keys в sidebar
+        await tester.tap(find.text('API Keys'));
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 300));
 
-        // Credentials pushed — Settings items могут быть скрыты
-        // (зависит от transition, но Credentials visible)
-        expect(find.text('Credentials'), findsWidgets);
+        // API Keys selected — sidebar items stay visible on desktop
+        expect(find.text('API Keys'), findsWidgets);
 
         // Повторное нажатие на Settings (index 3) — pop к корню
         final NavigationRail railAfterPush =
@@ -316,7 +303,7 @@ void main() {
         await tester.pump();
 
         // Settings content should be visible
-        expect(find.text('Credentials'), findsOneWidget);
+        expect(find.text('API Keys'), findsOneWidget);
       });
 
       testWidgets('defaults to home tab when initialTab is null',
@@ -359,8 +346,8 @@ void main() {
         await tester.pumpWidget(createShell(width: 1024));
         await tester.pump();
 
-        // До переключения: нет Credentials
-        expect(find.text('Credentials'), findsNothing);
+        // До переключения: нет API Keys
+        expect(find.text('API Keys'), findsNothing);
 
         // Переключаемся на Settings
         final NavigationRail rail =
@@ -370,7 +357,7 @@ void main() {
         await tester.pump();
 
         // После переключения: Settings экран виден
-        expect(find.text('Credentials'), findsOneWidget);
+        expect(find.text('API Keys'), findsOneWidget);
       });
     });
   });

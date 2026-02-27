@@ -167,7 +167,7 @@ void main() {
         );
       });
 
-      testWidgets('должен показывать кнопку Save для SteamGridDB',
+      testWidgets('должен показывать StatusDot для SteamGridDB ключа',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
@@ -178,7 +178,7 @@ void main() {
           scrollable: find.byType(Scrollable).first,
         );
 
-        expect(find.text('Save'), findsAtLeastNWidgets(1));
+        expect(find.byType(StatusDot), findsAtLeastNWidgets(1));
       });
 
       testWidgets('должен показывать StatusDot для SteamGridDB',
@@ -246,7 +246,7 @@ void main() {
         );
       });
 
-      testWidgets('должен показывать кнопку Save для TMDB',
+      testWidgets('должен показывать StatusDot для TMDB ключа',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
@@ -257,8 +257,8 @@ void main() {
           scrollable: find.byType(Scrollable).first,
         );
 
-        // Save appears for SteamGridDB and TMDB
-        expect(find.text('Save'), findsAtLeastNWidgets(2));
+        // StatusDot appears for connection + SteamGridDB + TMDB
+        expect(find.byType(StatusDot), findsAtLeastNWidgets(2));
       });
     });
 
@@ -329,7 +329,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.textContaining('Platforms synced'), findsOneWidget);
-        expect(find.text('0'), findsOneWidget);
+        expect(find.textContaining(': 0'), findsOneWidget);
       });
 
       testWidgets('должен показывать StatusDot для статуса подключения',
@@ -494,8 +494,8 @@ void main() {
       });
     });
 
-    group('Save с пустым ключом', () {
-      testWidgets('Save SteamGridDB с пустым ключом показывает snackbar',
+    group('Автосохранение API ключей', () {
+      testWidgets('SteamGridDB InlineTextField показывает placeholder',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
@@ -506,20 +506,11 @@ void main() {
           scrollable: find.byType(Scrollable).first,
         );
 
-        // Find Save button in SteamGridDB section
-        final Finder saveButtons = find.text('Save');
-        expect(saveButtons, findsAtLeastNWidgets(1));
-
-        await tester.tap(saveButtons.first);
-        await tester.pumpAndSettle();
-
-        expect(
-          find.text('Please enter a SteamGridDB API key'),
-          findsOneWidget,
-        );
+        // InlineTextField for API key is present
+        expect(find.byType(InlineTextField), findsAtLeastNWidgets(1));
       });
 
-      testWidgets('Save TMDB с пустым ключом показывает snackbar',
+      testWidgets('TMDB InlineTextField показывает placeholder',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
@@ -530,17 +521,7 @@ void main() {
           scrollable: find.byType(Scrollable).first,
         );
 
-        // Find Save buttons and tap the last one (TMDB)
-        final Finder saveButtons = find.text('Save');
-        expect(saveButtons, findsAtLeastNWidgets(2));
-
-        await tester.tap(saveButtons.last);
-        await tester.pumpAndSettle();
-
-        expect(
-          find.text('Please enter a TMDB API key'),
-          findsOneWidget,
-        );
+        expect(find.byType(InlineTextField), findsAtLeastNWidgets(2));
       });
     });
 
@@ -556,7 +537,7 @@ void main() {
           scrollable: find.byType(Scrollable).first,
         );
 
-        expect(find.text('Test'), findsNothing);
+        expect(find.byTooltip('Test'), findsNothing);
       });
 
       testWidgets('показывает кнопку Test когда SteamGridDB ключ сохранён',
@@ -575,7 +556,7 @@ void main() {
           scrollable: find.byType(Scrollable).first,
         );
 
-        expect(find.text('Test'), findsAtLeastNWidgets(1));
+        expect(find.byTooltip('Test'), findsAtLeastNWidgets(1));
       });
 
       testWidgets('показывает кнопку Test когда TMDB ключ сохранён',
@@ -594,7 +575,7 @@ void main() {
           scrollable: find.byType(Scrollable).first,
         );
 
-        expect(find.text('Test'), findsAtLeastNWidgets(1));
+        expect(find.byTooltip('Test'), findsAtLeastNWidgets(1));
       });
 
       testWidgets('показывает 2 кнопки Test когда оба ключа сохранены',
@@ -614,7 +595,7 @@ void main() {
           scrollable: find.byType(Scrollable).first,
         );
 
-        expect(find.text('Test'), findsNWidgets(2));
+        expect(find.byTooltip('Test'), findsNWidgets(2));
       });
     });
 
