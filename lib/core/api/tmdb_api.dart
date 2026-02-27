@@ -723,6 +723,7 @@ class TmdbApi {
   Future<List<Movie>> discoverMovies({
     int? genreId,
     int? year,
+    int? voteCountGte,
     String sortBy = 'popularity.desc',
     int page = 1,
   }) async {
@@ -737,6 +738,7 @@ class TmdbApi {
       };
       if (genreId != null) params['with_genres'] = genreId;
       if (year != null) params['primary_release_year'] = year;
+      if (voteCountGte != null) params['vote_count.gte'] = voteCountGte;
 
       final Response<dynamic> response = await _dio.get<dynamic>(
         '$_baseUrl/discover/movie',
@@ -760,6 +762,7 @@ class TmdbApi {
   Future<List<TvShow>> discoverTvShows({
     int? genreId,
     int? year,
+    int? voteCountGte,
     String sortBy = 'popularity.desc',
     int page = 1,
   }) async {
@@ -774,6 +777,7 @@ class TmdbApi {
       };
       if (genreId != null) params['with_genres'] = genreId;
       if (year != null) params['first_air_date_year'] = year;
+      if (voteCountGte != null) params['vote_count.gte'] = voteCountGte;
 
       final Response<dynamic> response = await _dio.get<dynamic>(
         '$_baseUrl/discover/tv',

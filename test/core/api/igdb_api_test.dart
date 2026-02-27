@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:xerabora/core/api/igdb_api.dart';
+import 'package:xerabora/shared/models/game.dart';
 import 'package:xerabora/shared/models/platform.dart';
 
 class MockDio extends Mock implements Dio {}
@@ -550,6 +551,198 @@ void main() {
 
         expect(
           () => sut.fetchPlatformsByIds(<int>[6]),
+          throwsA(isA<IgdbApiException>().having(
+            (IgdbApiException e) => e.message,
+            'message',
+            'Rate limit exceeded. Please try again later',
+          )),
+        );
+      });
+    });
+
+    group('getTopGamesByPlatform', () {
+      test('должен выбросить исключение без credentials', () {
+        expect(
+          () => sut.getTopGamesByPlatform(platformId: 19),
+          throwsA(isA<IgdbApiException>().having(
+            (IgdbApiException e) => e.message,
+            'message',
+            'API credentials not set',
+          )),
+        );
+      });
+
+      test('должен вернуть список топ игр по платформе', () async {
+        sut.setCredentials(
+          clientId: testClientId,
+          accessToken: testAccessToken,
+        );
+
+        final List<Map<String, dynamic>> responseData = <Map<String, dynamic>>[
+          <String, dynamic>{
+            'id': 1,
+            'name': 'Super Mario World',
+            'rating': 95.0,
+            'rating_count': 500,
+          },
+          <String, dynamic>{
+            'id': 2,
+            'name': 'Chrono Trigger',
+            'rating': 93.0,
+            'rating_count': 400,
+          },
+        ];
+
+        when(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: responseData,
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<Game> result = await sut.getTopGamesByPlatform(
+          platformId: 19,
+          limit: 50,
+        );
+
+        expect(result, hasLength(2));
+        expect(result[0].id, equals(1));
+        expect(result[0].name, equals('Super Mario World'));
+        expect(result[1].id, equals(2));
+      });
+
+      test('должен отправить правильный body запроса', () async {
+        sut.setCredentials(
+          clientId: testClientId,
+          accessToken: testAccessToken,
+        );
+
+        String? capturedBody;
+
+        when(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            )).thenAnswer((Invocation invocation) async {
+          capturedBody = invocation.namedArguments[#data] as String?;
+          return Response<dynamic>(
+            data: <Map<String, dynamic>>[],
+            statusCode: 200,
+            requestOptions: RequestOptions(),
+          );
+        });
+
+        await sut.getTopGamesByPlatform(
+          platformId: 19,
+          minRatingCount: 30,
+          limit: 25,
+        );
+
+        expect(capturedBody, contains('platforms = (19)'));
+        expect(capturedBody, contains('rating_count >= 30'));
+        expect(capturedBody, contains('rating != null'));
+        expect(capturedBody, contains('sort rating desc'));
+        expect(capturedBody, contains('limit 25'));
+      });
+
+      test('должен обработать пустой ответ', () async {
+        sut.setCredentials(
+          clientId: testClientId,
+          accessToken: testAccessToken,
+        );
+
+        when(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <Map<String, dynamic>>[],
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<Game> result = await sut.getTopGamesByPlatform(
+          platformId: 19,
+        );
+
+        expect(result, isEmpty);
+      });
+
+      test('должен выбросить исключение при ошибке API', () async {
+        sut.setCredentials(
+          clientId: testClientId,
+          accessToken: testAccessToken,
+        );
+
+        when(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: null,
+              statusCode: 500,
+              requestOptions: RequestOptions(),
+            ));
+
+        expect(
+          () => sut.getTopGamesByPlatform(platformId: 19),
+          throwsA(isA<IgdbApiException>()),
+        );
+      });
+
+      test('должен обработать DioException 401', () async {
+        sut.setCredentials(
+          clientId: testClientId,
+          accessToken: testAccessToken,
+        );
+
+        when(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            )).thenThrow(DioException(
+          type: DioExceptionType.badResponse,
+          response: Response<dynamic>(
+            statusCode: 401,
+            requestOptions: RequestOptions(),
+          ),
+          requestOptions: RequestOptions(),
+        ));
+
+        expect(
+          () => sut.getTopGamesByPlatform(platformId: 19),
+          throwsA(isA<IgdbApiException>().having(
+            (IgdbApiException e) => e.message,
+            'message',
+            'Invalid or expired access token',
+          )),
+        );
+      });
+
+      test('должен обработать DioException 429', () async {
+        sut.setCredentials(
+          clientId: testClientId,
+          accessToken: testAccessToken,
+        );
+
+        when(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            )).thenThrow(DioException(
+          type: DioExceptionType.badResponse,
+          response: Response<dynamic>(
+            statusCode: 429,
+            requestOptions: RequestOptions(),
+          ),
+          requestOptions: RequestOptions(),
+        ));
+
+        expect(
+          () => sut.getTopGamesByPlatform(platformId: 19),
           throwsA(isA<IgdbApiException>().having(
             (IgdbApiException e) => e.message,
             'message',

@@ -121,8 +121,8 @@ void main() {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
-      // 3 ListTile chevrons + 2 breadcrumb separators
-      expect(find.byIcon(Icons.chevron_right), findsNWidgets(5));
+      // 4 ListTile chevrons + 2 breadcrumb separators
+      expect(find.byIcon(Icons.chevron_right), findsNWidgets(6));
     });
 
     testWidgets('Использует SettingsSection виджет',
@@ -138,7 +138,7 @@ void main() {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
-      expect(find.byType(SettingsNavRow), findsNWidgets(3));
+      expect(find.byType(SettingsNavRow), findsNWidgets(4));
     });
 
     testWidgets('Показывает заголовок Debug Tools',
@@ -181,6 +181,36 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byIcon(Icons.bug_report), findsOneWidget);
+    });
+
+    testWidgets('Показывает плитку Demo Collections Generator',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.text('Demo Collections Generator'), findsOneWidget);
+    });
+
+    testWidgets('Demo Collections отключена когда нет IGDB и TMDB ключей',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pumpAndSettle();
+
+      final Finder demoTile = find.ancestor(
+        of: find.text('Demo Collections Generator'),
+        matching: find.byType(ListTile),
+      );
+
+      final ListTile tile = tester.widget<ListTile>(demoTile);
+      expect(tile.enabled, false);
+    });
+
+    testWidgets('Demo Collections показывает иконку library_books',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.library_books), findsOneWidget);
     });
   });
 }

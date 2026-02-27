@@ -10,6 +10,7 @@ import '../../../shared/widgets/breadcrumb_scope.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/settings_nav_row.dart';
 import '../widgets/settings_section.dart';
+import 'demo_collections_screen.dart';
 import 'gamepad_debug_screen.dart';
 import 'image_debug_screen.dart';
 import 'steamgriddb_debug_screen.dart';
@@ -89,6 +90,27 @@ class DebugHubScreen extends ConsumerWidget {
                             const BreadcrumbScope(
                           label: 'Debug',
                           child: GamepadDebugScreen(),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                SettingsNavRow(
+                  title: 'Demo Collections Generator',
+                  icon: Icons.library_books,
+                  subtitle: settings.hasCredentials && settings.hasTmdbKey
+                      ? 'Generate .xcollx files for tonkatsu-collections'
+                      : 'Set IGDB + TMDB keys first',
+                  enabled: settings.hasCredentials && settings.hasTmdbKey,
+                  showDivider: true,
+                  compact: compact,
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (BuildContext context) =>
+                            const BreadcrumbScope(
+                          label: 'Debug',
+                          child: DemoCollectionsScreen(),
                         ),
                       ),
                     );
