@@ -1,11 +1,15 @@
-// Standalone CLI script to generate 10 demo .xcollx collection files.
+// Standalone CLI script to generate demo .xcollx / .xcoll collection files.
 //
 // Usage:
 //   dart tool/generate_demo_collections.dart \
 //     --igdb-client-id=<id> \
 //     --igdb-client-secret=<secret> \
 //     --tmdb-key=<key> \
-//     --output=<dir>
+//     --output=<dir> \
+//     [--format=both|full|light] \
+//     [--only-games] \
+//     [--only=<filename>] \
+//     [--limit=<n>]
 //
 // No Flutter dependencies — uses only dart:io and dart:convert.
 
@@ -13,7 +17,7 @@ import 'dart:convert';
 import 'dart:io';
 
 // ---------------------------------------------------------------------------
-// Config
+// Config — IGDB platform IDs
 // ---------------------------------------------------------------------------
 
 const int _kPlatformSnes = 19;
@@ -22,7 +26,24 @@ const int _kPlatformNes = 18;
 const int _kPlatformGenesis = 29;
 const int _kPlatformN64 = 4;
 const int _kPlatformGameBoy = 33;
+const int _kPlatformGba = 24;
+const int _kPlatformPs2 = 8;
+const int _kPlatformXbox = 11;
+const int _kPlatformGameCube = 21;
+const int _kPlatformXbox360 = 12;
+const int _kPlatformWii = 5;
+const int _kPlatformPs3 = 9;
+const int _kPlatformPc = 6;
+const int _kPlatformPs4 = 48;
+const int _kPlatformXboxOne = 49;
+const int _kPlatformSwitch = 130;
+const int _kPlatformPs5 = 167;
+
 const int _kTmdbAnimationGenreId = 16;
+
+// ---------------------------------------------------------------------------
+// Collection types & specs
+// ---------------------------------------------------------------------------
 
 enum CollectionType {
   igdbPlatform,
@@ -40,6 +61,7 @@ class CollectionSpec {
     required this.type,
     this.platformId,
     this.genreId,
+    this.minRatings = 20,
   });
 
   final String name;
@@ -48,9 +70,11 @@ class CollectionSpec {
   final CollectionType type;
   final int? platformId;
   final int? genreId;
+  final int minRatings;
 }
 
 const List<CollectionSpec> collections = <CollectionSpec>[
+  // --- Retro ---
   CollectionSpec(
     name: 'Top SNES Games',
     description: 'Top 50 highest rated Super Nintendo games of all time',
@@ -78,6 +102,7 @@ const List<CollectionSpec> collections = <CollectionSpec>[
     fileName: 'top_genesis_games',
     type: CollectionType.igdbPlatform,
     platformId: _kPlatformGenesis,
+    minRatings: 15,
   ),
   CollectionSpec(
     name: 'Top N64 Games',
@@ -85,6 +110,7 @@ const List<CollectionSpec> collections = <CollectionSpec>[
     fileName: 'top_n64_games',
     type: CollectionType.igdbPlatform,
     platformId: _kPlatformN64,
+    minRatings: 15,
   ),
   CollectionSpec(
     name: 'Top Game Boy Games',
@@ -92,7 +118,103 @@ const List<CollectionSpec> collections = <CollectionSpec>[
     fileName: 'top_gameboy_games',
     type: CollectionType.igdbPlatform,
     platformId: _kPlatformGameBoy,
+    minRatings: 10,
   ),
+  CollectionSpec(
+    name: 'Top GBA Games',
+    description: 'Top 50 highest rated Game Boy Advance games of all time',
+    fileName: 'top_gba_games',
+    type: CollectionType.igdbPlatform,
+    platformId: _kPlatformGba,
+    minRatings: 15,
+  ),
+  // --- 6th gen ---
+  CollectionSpec(
+    name: 'Top PS2 Games',
+    description: 'Top 50 highest rated PlayStation 2 games of all time',
+    fileName: 'top_ps2_games',
+    type: CollectionType.igdbPlatform,
+    platformId: _kPlatformPs2,
+  ),
+  CollectionSpec(
+    name: 'Top Xbox Games',
+    description: 'Top 50 highest rated Xbox games of all time',
+    fileName: 'top_xbox_games',
+    type: CollectionType.igdbPlatform,
+    platformId: _kPlatformXbox,
+    minRatings: 15,
+  ),
+  CollectionSpec(
+    name: 'Top GameCube Games',
+    description: 'Top 50 highest rated Nintendo GameCube games of all time',
+    fileName: 'top_gamecube_games',
+    type: CollectionType.igdbPlatform,
+    platformId: _kPlatformGameCube,
+    minRatings: 15,
+  ),
+  // --- 7th gen ---
+  CollectionSpec(
+    name: 'Top Xbox 360 Games',
+    description: 'Top 50 highest rated Xbox 360 games of all time',
+    fileName: 'top_xbox360_games',
+    type: CollectionType.igdbPlatform,
+    platformId: _kPlatformXbox360,
+  ),
+  CollectionSpec(
+    name: 'Top Wii Games',
+    description: 'Top 50 highest rated Nintendo Wii games of all time',
+    fileName: 'top_wii_games',
+    type: CollectionType.igdbPlatform,
+    platformId: _kPlatformWii,
+    minRatings: 15,
+  ),
+  CollectionSpec(
+    name: 'Top PS3 Games',
+    description: 'Top 50 highest rated PlayStation 3 games of all time',
+    fileName: 'top_ps3_games',
+    type: CollectionType.igdbPlatform,
+    platformId: _kPlatformPs3,
+  ),
+  // --- PC ---
+  CollectionSpec(
+    name: 'Top PC Games',
+    description: 'Top 50 highest rated PC (Windows) games of all time',
+    fileName: 'top_pc_games',
+    type: CollectionType.igdbPlatform,
+    platformId: _kPlatformPc,
+  ),
+  // --- 8th gen ---
+  CollectionSpec(
+    name: 'Top PS4 Games',
+    description: 'Top 50 highest rated PlayStation 4 games of all time',
+    fileName: 'top_ps4_games',
+    type: CollectionType.igdbPlatform,
+    platformId: _kPlatformPs4,
+  ),
+  CollectionSpec(
+    name: 'Top Xbox One Games',
+    description: 'Top 50 highest rated Xbox One games of all time',
+    fileName: 'top_xboxone_games',
+    type: CollectionType.igdbPlatform,
+    platformId: _kPlatformXboxOne,
+  ),
+  CollectionSpec(
+    name: 'Top Nintendo Switch Games',
+    description: 'Top 50 highest rated Nintendo Switch games of all time',
+    fileName: 'top_switch_games',
+    type: CollectionType.igdbPlatform,
+    platformId: _kPlatformSwitch,
+  ),
+  // --- 9th gen ---
+  CollectionSpec(
+    name: 'Top PS5 Games',
+    description: 'Top 50 highest rated PlayStation 5 games of all time',
+    fileName: 'top_ps5_games',
+    type: CollectionType.igdbPlatform,
+    platformId: _kPlatformPs5,
+    minRatings: 10,
+  ),
+  // --- TMDB ---
   CollectionSpec(
     name: 'Top Rated Movies',
     description: 'Top 50 highest rated movies of all time (TMDB)',
@@ -120,6 +242,12 @@ const List<CollectionSpec> collections = <CollectionSpec>[
     genreId: _kTmdbAnimationGenreId,
   ),
 ];
+
+// ---------------------------------------------------------------------------
+// Output format enum
+// ---------------------------------------------------------------------------
+
+enum OutputFormat { both, full, light }
 
 // ---------------------------------------------------------------------------
 // HTTP helpers
@@ -224,11 +352,12 @@ Future<List<Map<String, dynamic>>> _fetchIgdbGames({
   required String accessToken,
   required int platformId,
   int limit = 50,
+  int minRatings = 20,
 }) async {
   final String body = 'fields id, name, summary, rating, rating_count, '
       'first_release_date, cover.image_id, genres.name, platforms, url; '
       'where platforms = ($platformId) '
-      '& rating_count >= 20 & rating != null; '
+      '& rating_count >= $minRatings & rating != null; '
       'sort rating desc; '
       'limit $limit;';
 
@@ -507,7 +636,7 @@ Future<Map<String, String>> _downloadImages({
 }
 
 // ---------------------------------------------------------------------------
-// XcollFile builder
+// XcollFile builders
 // ---------------------------------------------------------------------------
 
 Map<String, dynamic> _buildXcollx({
@@ -530,14 +659,45 @@ Map<String, dynamic> _buildXcollx({
   };
 }
 
+Map<String, dynamic> _buildXcoll({
+  required String name,
+  required String description,
+  required List<Map<String, dynamic>> items,
+  required Map<String, dynamic> media,
+}) {
+  return <String, dynamic>{
+    'version': 2,
+    'format': 'light',
+    'name': name,
+    'author': 'Tonkatsu Box',
+    'created': DateTime.now().toUtc().toIso8601String(),
+    'description': description,
+    'items': items,
+    'media': media,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Collection generators
 // ---------------------------------------------------------------------------
 
-Future<Map<String, dynamic>> _generateGameCollection({
+class _CollectionData {
+  _CollectionData({
+    required this.items,
+    required this.media,
+    required this.imageUrlMap,
+  });
+
+  final List<Map<String, dynamic>> items;
+  final Map<String, dynamic> media;
+  final Map<String, String> imageUrlMap;
+}
+
+Future<_CollectionData> _fetchGameData({
   required CollectionSpec spec,
   required String clientId,
   required String accessToken,
+  int limit = 50,
 }) async {
   stdout.write('  Fetching top games for platform ${spec.platformId}...\n');
 
@@ -545,6 +705,8 @@ Future<Map<String, dynamic>> _generateGameCollection({
     clientId: clientId,
     accessToken: accessToken,
     platformId: spec.platformId!,
+    limit: limit,
+    minRatings: spec.minRatings,
   );
   stdout.write('  Got ${games.length} games\n');
 
@@ -564,7 +726,7 @@ Future<Map<String, dynamic>> _generateGameCollection({
     mediaGames.add(_gameToDb(game));
   }
 
-  // Download covers.
+  // Build cover URL map.
   final Map<String, String> urlMap = <String, String>{};
   for (final Map<String, dynamic> game in games) {
     final String? url = _gameCoverUrl(game);
@@ -572,23 +734,18 @@ Future<Map<String, dynamic>> _generateGameCollection({
       urlMap['game_covers/${game['id']}'] = url;
     }
   }
-  stdout.write('  Downloading ${urlMap.length} covers...\n');
-  final Map<String, String> images = await _downloadImages(urlMap: urlMap);
-  stdout.write('  Downloaded ${images.length} covers\n');
 
-  return _buildXcollx(
-    name: spec.name,
-    description: spec.description,
+  return _CollectionData(
     items: items,
-    images: images,
     media: <String, dynamic>{'games': mediaGames},
+    imageUrlMap: urlMap,
   );
 }
 
-Future<Map<String, dynamic>> _generateMovieCollection({
+Future<_CollectionData> _fetchMovieData({
   required CollectionSpec spec,
   required String tmdbKey,
-  required String mediaType, // 'movie' or 'animation'
+  required String mediaType,
 }) async {
   List<Map<String, dynamic>> movies;
 
@@ -618,7 +775,6 @@ Future<Map<String, dynamic>> _generateMovieCollection({
     mediaMovies.add(_movieToDb(m));
   }
 
-  // Download posters.
   final Map<String, String> urlMap = <String, String>{};
   for (final Map<String, dynamic> m in movies) {
     final String? url = _tmdbPosterUrl(m);
@@ -626,23 +782,18 @@ Future<Map<String, dynamic>> _generateMovieCollection({
       urlMap['movie_posters/${m['id']}'] = url;
     }
   }
-  stdout.write('  Downloading ${urlMap.length} posters...\n');
-  final Map<String, String> images = await _downloadImages(urlMap: urlMap);
-  stdout.write('  Downloaded ${images.length} posters\n');
 
-  return _buildXcollx(
-    name: spec.name,
-    description: spec.description,
+  return _CollectionData(
     items: items,
-    images: images,
     media: <String, dynamic>{'movies': mediaMovies},
+    imageUrlMap: urlMap,
   );
 }
 
-Future<Map<String, dynamic>> _generateTvShowCollection({
+Future<_CollectionData> _fetchTvShowData({
   required CollectionSpec spec,
   required String tmdbKey,
-  required String mediaType, // 'tv_show' or 'animation'
+  required String mediaType,
 }) async {
   List<Map<String, dynamic>> shows;
 
@@ -672,7 +823,6 @@ Future<Map<String, dynamic>> _generateTvShowCollection({
     mediaTvShows.add(_tvShowToDb(s));
   }
 
-  // Download posters.
   final Map<String, String> urlMap = <String, String>{};
   for (final Map<String, dynamic> s in shows) {
     final String? url = _tmdbPosterUrl(s);
@@ -680,17 +830,55 @@ Future<Map<String, dynamic>> _generateTvShowCollection({
       urlMap['tv_show_posters/${s['id']}'] = url;
     }
   }
-  stdout.write('  Downloading ${urlMap.length} posters...\n');
-  final Map<String, String> images = await _downloadImages(urlMap: urlMap);
-  stdout.write('  Downloaded ${images.length} posters\n');
 
-  return _buildXcollx(
-    name: spec.name,
-    description: spec.description,
+  return _CollectionData(
     items: items,
-    images: images,
     media: <String, dynamic>{'tv_shows': mediaTvShows},
+    imageUrlMap: urlMap,
   );
+}
+
+// ---------------------------------------------------------------------------
+// Write helpers
+// ---------------------------------------------------------------------------
+
+void _writeCollection({
+  required String outputDir,
+  required CollectionSpec spec,
+  required _CollectionData data,
+  required Map<String, String> images,
+  required OutputFormat format,
+}) {
+  const JsonEncoder encoder = JsonEncoder.withIndent('  ');
+
+  if (format == OutputFormat.full || format == OutputFormat.both) {
+    final Map<String, dynamic> xcollx = _buildXcollx(
+      name: spec.name,
+      description: spec.description,
+      items: data.items,
+      images: images,
+      media: data.media,
+    );
+    final String jsonString = encoder.convert(xcollx);
+    final String filePath = '$outputDir/${spec.fileName}.xcollx';
+    File(filePath).writeAsStringSync(jsonString);
+    final int sizeKb = jsonString.length ~/ 1024;
+    stdout.write('  SAVED: ${spec.fileName}.xcollx ($sizeKb KB)\n');
+  }
+
+  if (format == OutputFormat.light || format == OutputFormat.both) {
+    final Map<String, dynamic> xcoll = _buildXcoll(
+      name: spec.name,
+      description: spec.description,
+      items: data.items,
+      media: data.media,
+    );
+    final String jsonString = encoder.convert(xcoll);
+    final String filePath = '$outputDir/${spec.fileName}.xcoll';
+    File(filePath).writeAsStringSync(jsonString);
+    final int sizeKb = jsonString.length ~/ 1024;
+    stdout.write('  SAVED: ${spec.fileName}.xcoll ($sizeKb KB)\n');
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -704,6 +892,10 @@ String? _getArg(List<String> args, String name) {
     }
   }
   return Platform.environment[name.replaceAll('-', '_').toUpperCase()];
+}
+
+bool _hasFlag(List<String> args, String name) {
+  return args.contains('--$name');
 }
 
 // ---------------------------------------------------------------------------
@@ -720,21 +912,102 @@ Future<void> main(List<String> args) async {
   final String? outputDir =
       _getArg(args, 'output') ?? _getArg(args, 'output_dir');
 
-  if (igdbClientId == null ||
-      igdbClientSecret == null ||
-      tmdbKey == null ||
-      outputDir == null) {
-    stderr.write(
-      'Usage:\n'
-      '  dart tool/generate_demo_collections.dart \\\n'
-      '    --igdb-client-id=<id> \\\n'
-      '    --igdb-client-secret=<secret> \\\n'
-      '    --tmdb-key=<bearer_token> \\\n'
-      '    --output=<dir>\n'
-      '\n'
-      'Or set env vars: IGDB_CLIENT_ID, IGDB_CLIENT_SECRET, TMDB_KEY, OUTPUT_DIR\n',
-    );
+  // New CLI flags.
+  final String formatStr = _getArg(args, 'format') ?? 'both';
+  final bool onlyGames = _hasFlag(args, 'only-games');
+  final String? onlyCollection = _getArg(args, 'only');
+  final int limit = int.tryParse(_getArg(args, 'limit') ?? '') ?? 50;
+  final bool dryRun = _hasFlag(args, 'dry-run');
+
+  late final OutputFormat format;
+  switch (formatStr) {
+    case 'full':
+      format = OutputFormat.full;
+      break;
+    case 'light':
+      format = OutputFormat.light;
+      break;
+    default:
+      format = OutputFormat.both;
+  }
+
+  // When --only-games, TMDB keys are optional.
+  final bool needsIgdb = !onlyGames ||
+      collections.any((CollectionSpec s) => s.type == CollectionType.igdbPlatform);
+  final bool needsTmdb = !onlyGames;
+
+  if (igdbClientId == null || igdbClientSecret == null) {
+    if (needsIgdb) {
+      stderr.write(
+        'Missing IGDB credentials.\n'
+        'Usage:\n'
+        '  dart tool/generate_demo_collections.dart \\\n'
+        '    --igdb-client-id=<id> \\\n'
+        '    --igdb-client-secret=<secret> \\\n'
+        '    --tmdb-key=<bearer_token> \\\n'
+        '    --output=<dir> \\\n'
+        '    [--format=both|full|light] \\\n'
+        '    [--only-games] \\\n'
+        '    [--only=<filename>] \\\n'
+        '    [--limit=<n>] \\\n'
+        '    [--dry-run]\n'
+        '\n'
+        'Or set env vars: IGDB_CLIENT_ID, IGDB_CLIENT_SECRET, TMDB_KEY, OUTPUT_DIR\n',
+      );
+      exit(1);
+    }
+  }
+
+  if (tmdbKey == null && needsTmdb) {
+    stderr.write('Missing --tmdb-key (required unless --only-games is set).\n');
     exit(1);
+  }
+
+  if (outputDir == null) {
+    stderr.write('Missing --output=<dir>.\n');
+    exit(1);
+  }
+
+  // Filter collections.
+  List<CollectionSpec> toGenerate = collections.toList();
+
+  if (onlyGames) {
+    toGenerate = toGenerate
+        .where((CollectionSpec s) => s.type == CollectionType.igdbPlatform)
+        .toList();
+  }
+
+  if (onlyCollection != null) {
+    toGenerate = toGenerate
+        .where((CollectionSpec s) => s.fileName == onlyCollection)
+        .toList();
+    if (toGenerate.isEmpty) {
+      stderr.write('No collection with fileName "$onlyCollection" found.\n');
+      stderr.write('Available: ${collections.map((CollectionSpec s) => s.fileName).join(', ')}\n');
+      exit(1);
+    }
+  }
+
+  // Dry run mode.
+  if (dryRun) {
+    stdout.write('=== DRY RUN — Collections to generate ===\n');
+    stdout.write('Format: $formatStr\n');
+    stdout.write('Limit:  $limit items per collection\n');
+    stdout.write('Output: $outputDir\n\n');
+    for (int i = 0; i < toGenerate.length; i++) {
+      final CollectionSpec s = toGenerate[i];
+      stdout.write('  ${i + 1}. ${s.name} → ${s.fileName}');
+      if (format == OutputFormat.both) {
+        stdout.write(' (.xcollx + .xcoll)');
+      } else if (format == OutputFormat.full) {
+        stdout.write(' (.xcollx)');
+      } else {
+        stdout.write(' (.xcoll)');
+      }
+      stdout.write('\n');
+    }
+    stdout.write('\nTotal: ${toGenerate.length} collections\n');
+    exit(0);
   }
 
   // Ensure output dir exists.
@@ -745,76 +1018,93 @@ Future<void> main(List<String> args) async {
   }
 
   stdout.write('=== Demo Collections Generator ===\n');
-  stdout.write('Output: $outputDir\n\n');
+  stdout.write('Output: $outputDir\n');
+  stdout.write('Format: $formatStr\n');
+  stdout.write('Limit:  $limit items per collection\n');
+  stdout.write('Collections: ${toGenerate.length}\n\n');
 
-  // Get IGDB access token.
-  stdout.write('Authenticating with IGDB (Twitch)...\n');
-  final String igdbToken = await _getIgdbToken(igdbClientId, igdbClientSecret);
-  stdout.write('Got IGDB access token.\n\n');
+  // Get IGDB access token if needed.
+  String? igdbToken;
+  if (needsIgdb && igdbClientId != null && igdbClientSecret != null) {
+    stdout.write('Authenticating with IGDB (Twitch)...\n');
+    igdbToken = await _getIgdbToken(igdbClientId, igdbClientSecret);
+    stdout.write('Got IGDB access token.\n\n');
+  }
 
   int successCount = 0;
 
-  for (int i = 0; i < collections.length; i++) {
-    final CollectionSpec spec = collections[i];
-    stdout.write('--- [${i + 1}/${collections.length}] ${spec.name} ---\n');
+  for (int i = 0; i < toGenerate.length; i++) {
+    final CollectionSpec spec = toGenerate[i];
+    stdout.write('--- [${i + 1}/${toGenerate.length}] ${spec.name} ---\n');
 
     try {
-      late Map<String, dynamic> xcollx;
+      late _CollectionData data;
 
       switch (spec.type) {
         case CollectionType.igdbPlatform:
-          xcollx = await _generateGameCollection(
+          data = await _fetchGameData(
             spec: spec,
-            clientId: igdbClientId,
-            accessToken: igdbToken,
+            clientId: igdbClientId!,
+            accessToken: igdbToken!,
+            limit: limit,
           );
           break;
         case CollectionType.tmdbTopMovies:
-          xcollx = await _generateMovieCollection(
+          data = await _fetchMovieData(
             spec: spec,
-            tmdbKey: tmdbKey,
+            tmdbKey: tmdbKey!,
             mediaType: 'movie',
           );
           break;
         case CollectionType.tmdbAnimeMovies:
-          xcollx = await _generateMovieCollection(
+          data = await _fetchMovieData(
             spec: spec,
-            tmdbKey: tmdbKey,
+            tmdbKey: tmdbKey!,
             mediaType: 'animation',
           );
           break;
         case CollectionType.tmdbTopTvShows:
-          xcollx = await _generateTvShowCollection(
+          data = await _fetchTvShowData(
             spec: spec,
-            tmdbKey: tmdbKey,
+            tmdbKey: tmdbKey!,
             mediaType: 'tv_show',
           );
           break;
         case CollectionType.tmdbAnimeSeries:
-          xcollx = await _generateTvShowCollection(
+          data = await _fetchTvShowData(
             spec: spec,
-            tmdbKey: tmdbKey,
+            tmdbKey: tmdbKey!,
             mediaType: 'animation',
           );
           break;
       }
 
-      // Write file.
-      final String filePath = '$outputDir/${spec.fileName}.xcollx';
-      const JsonEncoder encoder = JsonEncoder.withIndent('  ');
-      final String jsonString = encoder.convert(xcollx);
-      File(filePath).writeAsStringSync(jsonString);
+      // Download images only if we need full format.
+      Map<String, String> images = <String, String>{};
+      if (format == OutputFormat.full || format == OutputFormat.both) {
+        stdout.write('  Downloading ${data.imageUrlMap.length} images...\n');
+        images = await _downloadImages(urlMap: data.imageUrlMap);
+        stdout.write('  Downloaded ${images.length} images\n');
+      }
 
-      final int sizeKb = jsonString.length ~/ 1024;
-      stdout.write('  SAVED: ${spec.fileName}.xcollx ($sizeKb KB)\n\n');
+      // Write files.
+      _writeCollection(
+        outputDir: outputDir,
+        spec: spec,
+        data: data,
+        images: images,
+        format: format,
+      );
+
       successCount++;
+      stdout.write('\n');
     } catch (e) {
       stderr.write('  ERROR: $e\n\n');
     }
   }
 
   stdout.write('===================================\n');
-  stdout.write('Done! $successCount/${collections.length} files generated.\n');
+  stdout.write('Done! $successCount/${toGenerate.length} collections generated.\n');
 
   _http.close();
 }

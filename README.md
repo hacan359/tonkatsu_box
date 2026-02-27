@@ -197,6 +197,10 @@ Already tracking movies and TV shows on [Trakt.tv](https://trakt.tv)? Import you
 
 The importer brings in your watched items (as completed), ratings (1–10), watchlist (as planned), and even individual watched episodes — all matched to TMDB metadata. Animated content is automatically detected and categorized as anime.
 
+### Demo Collections
+
+Want to try the app with pre-built content? Check out [**Tonkatsu Collections**](https://github.com/hacan359/tonkatsu-collections) — ready-made collections of top games for 18 platforms, movies, TV shows, and anime. Download a `.xcollx` file, import it from Settings → Import Collection, and everything works offline immediately.
+
 ## Platforms
 
 | | Windows | Linux | Android |
