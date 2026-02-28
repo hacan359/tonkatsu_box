@@ -6,6 +6,8 @@
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-02-28
+
 ### Added
 - Visual Novel support via VNDB API — 5th media type (`MediaType.visualNovel`). New model `VisualNovel` (`visual_novel.dart`) with `fromJson`/`fromDb`/`toDb`/`toExport`/`copyWith`, computed getters (rating10, numericId, releaseYear, lengthLabel, platformsString). `VndbTag` for genre tags
 - VNDB API client (`vndb_api.dart`) — public API (no auth, ~200 req/min). Methods: `searchVn()`, `browseVn()`, `getVnById()`, `getVnByIds()`, `fetchTags()`. Custom `VndbApiException` with rate limit handling
