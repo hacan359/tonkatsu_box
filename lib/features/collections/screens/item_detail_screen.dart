@@ -380,7 +380,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
   Widget _buildDetailView(CollectionItem item, _MediaConfig config) {
     final SettingsState settings = ref.watch(settingsNotifierProvider);
     final bool showRecs = settings.showRecommendations &&
-        item.mediaType != MediaType.game;
+        item.mediaType != MediaType.game &&
+        item.mediaType != MediaType.visualNovel;
 
     return MediaDetailView(
       title: item.itemName,
@@ -461,6 +462,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       MediaType.movie || MediaType.animation => item.movie?.externalUrl
           ?? item.tvShow?.externalUrl,
       MediaType.tvShow => item.tvShow?.externalUrl,
+      MediaType.visualNovel => item.visualNovel?.externalUrl,
     };
 
     return _MediaConfig(
@@ -493,6 +495,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       MediaType.animation => item.platformId == AnimationSource.tvShow
           ? l.animatedSeries
           : l.animatedMovie,
+      MediaType.visualNovel => l.mediaTypeVisualNovel,
     };
   }
 
@@ -651,6 +654,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       MediaType.movie => l.movieNotFound,
       MediaType.tvShow => l.tvShowNotFound,
       MediaType.animation => l.animationNotFound,
+      MediaType.visualNovel => l.visualNovelNotFound,
       null => l.gameNotFound,
     };
   }

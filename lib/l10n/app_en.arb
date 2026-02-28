@@ -20,6 +20,7 @@
   "mediaTypeMovie": "Movie",
   "mediaTypeTvShow": "TV Show",
   "mediaTypeAnimation": "Animation",
+  "mediaTypeVisualNovel": "Visual Novel",
 
   "sortManualDisplay": "Manual",
   "sortManualShort": "Manual",
@@ -278,6 +279,7 @@
   "creditsTmdbAttribution": "This product uses the TMDB API but is not endorsed or certified by TMDB.",
   "creditsIgdbAttribution": "Game data provided by IGDB.",
   "creditsSteamGridDbAttribution": "Artwork provided by SteamGridDB.",
+  "creditsVndbAttribution": "Visual novel data provided by VNDB.",
   "creditsOpenSource": "Open Source",
   "creditsOpenSourceDesc": "Tonkatsu Box is free and open source software, released under the MIT License.",
   "creditsViewLicenses": "View Open Source Licenses",
@@ -359,6 +361,7 @@
   "collectionFilterMovies": "Movies",
   "collectionFilterTvShows": "TV Shows",
   "collectionFilterAnimation": "Animation",
+  "collectionFilterVisualNovels": "Visual Novels",
 
   "collectionItemMovedTo": "{name} moved to {collection}",
   "@collectionItemMovedTo": {
@@ -390,6 +393,7 @@
   "movieNotFound": "Movie not found",
   "tvShowNotFound": "TV Show not found",
   "animationNotFound": "Animation not found",
+  "visualNovelNotFound": "Visual novel not found",
   "animatedMovie": "Animated Movie",
   "animatedSeries": "Animated Series",
 
@@ -543,6 +547,8 @@
   "searchHintTv": "Search TV...",
   "searchHintAnime": "Search anime...",
   "searchHintGames": "Search games...",
+  "searchHintVisualNovels": "Search visual novels...",
+  "searchSourceVisualNovels": "Visual Novels",
   "searchSelectPlatform": "Select Platform",
   "searchAddToCollection": "Add to Collection",
   "searchAddedToCollection": "{name} added to collection",
@@ -745,6 +751,7 @@
   "unknownMovie": "Unknown Movie",
   "unknownTvShow": "Unknown TV Show",
   "unknownAnimation": "Unknown Animation",
+  "unknownVisualNovel": "Unknown Visual Novel",
   "unknownPlatform": "Unknown Platform",
   "defaultAuthor": "User",
 
@@ -760,6 +767,7 @@
   "allItemsMovies": "Movies",
   "allItemsTvShows": "TV Shows",
   "allItemsAnimation": "Animation",
+  "allItemsVisualNovels": "Visual Novels",
   "allItemsRatingAsc": "Rating ↑",
   "allItemsRatingDesc": "Rating ↓",
   "allItemsRating": "Rating",
@@ -900,6 +908,7 @@
   "browseSortPopular": "Popular",
   "browseSortTopRated": "Top Rated",
   "browseSortNewest": "Newest",
+  "browseSortMostVoted": "Most Voted",
   "browseAnimeTypeSeries": "Series",
   "browseAnimeTypeMovies": "Movies",
   "browseEmptyFilters": "Choose a filter or search",

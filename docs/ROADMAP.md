@@ -87,6 +87,7 @@
 - [x] Episode Tracker restoration — shared `EpisodeTrackerSection` widget with `accentColor`, used for TV Show and Animation (tvShow source) in `ItemDetailScreen`
 - [x] Activity Dates restoration — inline compact horizontal `Wrap` under My Rating with editable Started/Completed date chips
 - [x] Search refactoring — pluggable SearchSource/SearchFilter architecture, Browse/Search mode, source dropdown, filter bar, BrowseGrid, in-collection markers, consistent card sizes
+- [x] VNDB Integration — Visual novels as 5th media type via VNDB API (public, no auth). VisualNovel model, VndbApi client (search, browse, getById, tags), VndbSource (genre filter by tags, 3 sort modes), VnDetailsSheet, DB migration v23 (visual_novels_cache, vndb_tags tables), export/import support, VNDB attribution in Credits
 
 ---
 

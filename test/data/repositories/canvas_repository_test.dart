@@ -11,6 +11,7 @@ import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/game.dart';
 import 'package:xerabora/shared/models/movie.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
+import 'package:xerabora/shared/models/visual_novel.dart';
 
 class MockDatabaseService extends Mock implements DatabaseService {}
 
@@ -251,6 +252,41 @@ void main() {
 
         expect(result.length, 1);
         expect(result[0].game, isNull);
+      });
+
+      test('should enrich visual novel items with data', () async {
+        final List<Map<String, dynamic>> rows = <Map<String, dynamic>>[
+          <String, dynamic>{
+            'id': 1,
+            'collection_id': 10,
+            'collection_item_id': null,
+            'item_type': 'visual_novel',
+            'item_ref_id': 17,
+            'x': 50.0,
+            'y': 100.0,
+            'width': 160.0,
+            'height': 220.0,
+            'z_index': 0,
+            'data': null,
+            'created_at': testTimestamp,
+          },
+        ];
+
+        const VisualNovel testVn = VisualNovel(
+          id: 'v17',
+          title: 'Ever17',
+          imageUrl: 'https://example.com/ever17.jpg',
+        );
+
+        when(() => mockDb.getCanvasItems(10)).thenAnswer((_) async => rows);
+        when(() => mockDb.getVisualNovelsByNumericIds(<int>[17]))
+            .thenAnswer((_) async => <VisualNovel>[testVn]);
+
+        final List<CanvasItem> result = await repository.getItemsWithData(10);
+
+        expect(result.length, 1);
+        expect(result[0].visualNovel, isNotNull);
+        expect(result[0].visualNovel!.title, 'Ever17');
       });
     });
 
@@ -638,6 +674,41 @@ void main() {
         expect(result[5].y, 2512.0); // 2268 + 1 * (220 + 24)
       });
 
+      test('should create canvas item with visualNovel type', () async {
+        const VisualNovel testVn = VisualNovel(
+          id: 'v17',
+          title: 'Ever17',
+        );
+        final List<CollectionItem> items = <CollectionItem>[
+          CollectionItem(
+            id: 1,
+            collectionId: 10,
+            mediaType: MediaType.visualNovel,
+            externalId: 17,
+            status: ItemStatus.notStarted,
+            addedAt: testDate,
+            visualNovel: testVn,
+          ),
+        ];
+
+        when(() => mockDb.insertCanvasItem(any())).thenAnswer((_) async => 1);
+        when(() => mockDb.upsertCanvasViewport(
+              collectionId: any(named: 'collectionId'),
+              scale: any(named: 'scale'),
+              offsetX: any(named: 'offsetX'),
+              offsetY: any(named: 'offsetY'),
+            )).thenAnswer((_) async {});
+
+        final List<CanvasItem> result =
+            await repository.initializeCanvas(10, items);
+
+        expect(result.length, 1);
+        expect(result[0].itemType, CanvasItemType.visualNovel);
+        expect(result[0].itemRefId, 17);
+        expect(result[0].visualNovel, isNotNull);
+        expect(result[0].visualNovel!.title, 'Ever17');
+      });
+
       test('should handle empty games list', () async {
         when(() => mockDb.upsertCanvasViewport(
               collectionId: any(named: 'collectionId'),
@@ -879,6 +950,74 @@ void main() {
         expect(result[0].tvShow, isNotNull);
         expect(result[0].tvShow!.title, 'Test Show');
         verify(() => mockDb.getTvShowsByTmdbIds(<int>[777])).called(1);
+      });
+
+      test('should enrich game canvas items with visualNovel data', () async {
+        final List<Map<String, dynamic>> rows = <Map<String, dynamic>>[
+          <String, dynamic>{
+            'id': 4,
+            'collection_id': 10,
+            'collection_item_id': 42,
+            'item_type': 'visual_novel',
+            'item_ref_id': 888,
+            'x': 600.0,
+            'y': 200.0,
+            'width': 160.0,
+            'height': 220.0,
+            'z_index': 0,
+            'data': null,
+            'created_at': testTimestamp,
+          },
+        ];
+
+        const VisualNovel testVn = VisualNovel(
+          id: 'v888',
+          title: 'Steins;Gate',
+          imageUrl: 'https://example.com/vn.jpg',
+        );
+
+        when(() => mockDb.getGameCanvasItems(42))
+            .thenAnswer((_) async => rows);
+        when(() => mockDb.getVisualNovelsByNumericIds(<int>[888]))
+            .thenAnswer((_) async => <VisualNovel>[testVn]);
+
+        final List<CanvasItem> result =
+            await repository.getGameCanvasItemsWithData(42);
+
+        expect(result.length, 1);
+        expect(result[0].visualNovel, isNotNull);
+        expect(result[0].visualNovel!.title, 'Steins;Gate');
+        verify(() => mockDb.getVisualNovelsByNumericIds(<int>[888])).called(1);
+      });
+
+      test('should handle missing visualNovel in database', () async {
+        final List<Map<String, dynamic>> rows = <Map<String, dynamic>>[
+          <String, dynamic>{
+            'id': 5,
+            'collection_id': 10,
+            'collection_item_id': 42,
+            'item_type': 'visual_novel',
+            'item_ref_id': 999,
+            'x': 600.0,
+            'y': 200.0,
+            'width': 160.0,
+            'height': 220.0,
+            'z_index': 0,
+            'data': null,
+            'created_at': testTimestamp,
+          },
+        ];
+
+        when(() => mockDb.getGameCanvasItems(42))
+            .thenAnswer((_) async => rows);
+        when(() => mockDb.getVisualNovelsByNumericIds(<int>[999]))
+            .thenAnswer((_) async => <VisualNovel>[]);
+
+        final List<CanvasItem> result =
+            await repository.getGameCanvasItemsWithData(42);
+
+        expect(result.length, 1);
+        expect(result[0].visualNovel, isNull);
       });
     });
 

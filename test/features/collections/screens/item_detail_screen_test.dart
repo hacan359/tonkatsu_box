@@ -22,6 +22,7 @@ import 'package:xerabora/shared/models/tv_season.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
 import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 import 'package:xerabora/shared/widgets/media_detail_view.dart';
+import 'package:xerabora/shared/models/visual_novel.dart';
 import 'package:xerabora/shared/widgets/source_badge.dart';
 
 class MockCollectionRepository extends Mock implements CollectionRepository {}
@@ -1387,6 +1388,245 @@ void main() {
 
       expect(find.byTooltip('Board'), findsNothing);
       expect(find.byIcon(Icons.dashboard_outlined), findsNothing);
+    });
+  });
+
+  // ==================== Visual Novel ====================
+
+  group('ItemDetailScreen — Visual Novel', () {
+    CollectionItem createVnItem({
+      int id = 1,
+      int? collectionId = 1,
+      int externalId = 500,
+      ItemStatus status = ItemStatus.notStarted,
+      String? authorComment,
+      String? userComment,
+      VisualNovel? visualNovel,
+    }) {
+      return CollectionItem(
+        id: id,
+        collectionId: collectionId,
+        mediaType: MediaType.visualNovel,
+        externalId: externalId,
+        status: status,
+        addedAt: testDate,
+        authorComment: authorComment,
+        userComment: userComment,
+        visualNovel: visualNovel,
+      );
+    }
+
+    VisualNovel createTestVn({
+      String id = 'v500',
+      String title = 'Steins;Gate',
+      String? altTitle,
+      String? description,
+      String? imageUrl,
+      double? rating,
+      int? voteCount,
+      String? released,
+      int? lengthMinutes,
+      List<String>? tags,
+      List<String>? developers,
+    }) {
+      return VisualNovel(
+        id: id,
+        title: title,
+        altTitle: altTitle,
+        description: description,
+        imageUrl: imageUrl,
+        rating: rating,
+        voteCount: voteCount,
+        released: released,
+        lengthMinutes: lengthMinutes,
+        tags: tags,
+        developers: developers,
+        externalUrl: 'https://vndb.org/$id',
+      );
+    }
+
+    testWidgets('должен отображать название VN',
+        (WidgetTester tester) async {
+      final VisualNovel vn = createTestVn(title: 'Steins;Gate');
+      final CollectionItem item = createVnItem(visualNovel: vn);
+
+      await tester.pumpWidget(createTestWidget(
+        collectionId: 1,
+        itemId: 1,
+        isEditable: true,
+        items: <CollectionItem>[item],
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Steins;Gate'), findsWidgets);
+    });
+
+    testWidgets('должен отображать тип Visual Novel',
+        (WidgetTester tester) async {
+      final VisualNovel vn = createTestVn();
+      final CollectionItem item = createVnItem(visualNovel: vn);
+
+      await tester.pumpWidget(createTestWidget(
+        collectionId: 1,
+        itemId: 1,
+        isEditable: true,
+        items: <CollectionItem>[item],
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Visual Novel'), findsOneWidget);
+    });
+
+    testWidgets('должен отображать SourceBadge VNDB',
+        (WidgetTester tester) async {
+      final VisualNovel vn = createTestVn();
+      final CollectionItem item = createVnItem(visualNovel: vn);
+
+      await tester.pumpWidget(createTestWidget(
+        collectionId: 1,
+        itemId: 1,
+        isEditable: true,
+        items: <CollectionItem>[item],
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SourceBadge), findsOneWidget);
+      expect(find.text('VNDB'), findsOneWidget);
+    });
+
+    testWidgets('должен показывать Visual Novel not found',
+        (WidgetTester tester) async {
+      final CollectionItem item = createVnItem(id: 2);
+
+      await tester.pumpWidget(createTestWidget(
+        collectionId: 1,
+        itemId: 999,
+        isEditable: true,
+        items: <CollectionItem>[item],
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('not found'), findsOneWidget);
+    });
+
+    testWidgets('не должен показывать Recommendations для VN',
+        (WidgetTester tester) async {
+      final VisualNovel vn = createTestVn();
+      final CollectionItem item = createVnItem(visualNovel: vn);
+
+      await tester.pumpWidget(createTestWidget(
+        collectionId: 1,
+        itemId: 1,
+        isEditable: true,
+        items: <CollectionItem>[item],
+      ));
+      await tester.pumpAndSettle();
+
+      // Recommendations и Reviews не должны отображаться для VN
+      expect(find.text('Recommendations'), findsNothing);
+      expect(find.text('Reviews'), findsNothing);
+    });
+
+    testWidgets('должен отображать StatusChipRow',
+        (WidgetTester tester) async {
+      final VisualNovel vn = createTestVn();
+      final CollectionItem item = createVnItem(
+        visualNovel: vn,
+        status: ItemStatus.inProgress,
+      );
+
+      await tester.pumpWidget(createTestWidget(
+        collectionId: 1,
+        itemId: 1,
+        isEditable: true,
+        items: <CollectionItem>[item],
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(StatusChipRow), findsOneWidget);
+    });
+
+    testWidgets('должен показывать MediaDetailView',
+        (WidgetTester tester) async {
+      final VisualNovel vn = createTestVn();
+      final CollectionItem item = createVnItem(visualNovel: vn);
+
+      await tester.pumpWidget(createTestWidget(
+        collectionId: 1,
+        itemId: 1,
+        isEditable: true,
+        items: <CollectionItem>[item],
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(MediaDetailView), findsOneWidget);
+    });
+
+    testWidgets('должен отображать placeholder когда visualNovel null',
+        (WidgetTester tester) async {
+      final CollectionItem item = createVnItem(visualNovel: null);
+
+      await tester.pumpWidget(createTestWidget(
+        collectionId: 1,
+        itemId: 1,
+        isEditable: true,
+        items: <CollectionItem>[item],
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.menu_book), findsWidgets);
+    });
+
+    group('Info chips', () {
+      testWidgets('должен отображать год выпуска',
+          (WidgetTester tester) async {
+        final VisualNovel vn = createTestVn(released: '2009-10-15');
+        final CollectionItem item = createVnItem(visualNovel: vn);
+
+        await tester.pumpWidget(createTestWidget(
+          collectionId: 1,
+          itemId: 1,
+          isEditable: true,
+          items: <CollectionItem>[item],
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.text('2009'), findsOneWidget);
+      });
+
+      testWidgets('должен отображать жанры (tags)',
+          (WidgetTester tester) async {
+        final VisualNovel vn = createTestVn(
+          tags: <String>['Sci-fi', 'Romance', 'Drama'],
+        );
+        final CollectionItem item = createVnItem(visualNovel: vn);
+
+        await tester.pumpWidget(createTestWidget(
+          collectionId: 1,
+          itemId: 1,
+          isEditable: true,
+          items: <CollectionItem>[item],
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Sci-fi, Romance, Drama'), findsOneWidget);
+      });
+
+      testWidgets('должен отображать рейтинг',
+          (WidgetTester tester) async {
+        final VisualNovel vn = createTestVn(rating: 91.0);
+        final CollectionItem item = createVnItem(visualNovel: vn);
+
+        await tester.pumpWidget(createTestWidget(
+          collectionId: 1,
+          itemId: 1,
+          isEditable: true,
+          items: <CollectionItem>[item],
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.text('9.1/10'), findsOneWidget);
+      });
     });
   });
 

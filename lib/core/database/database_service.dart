@@ -16,6 +16,7 @@ import '../../shared/models/platform.dart';
 import '../../shared/models/tv_episode.dart';
 import '../../shared/models/tv_season.dart';
 import '../../shared/models/tv_show.dart';
+import '../../shared/models/visual_novel.dart';
 import '../../shared/models/wishlist_item.dart';
 
 /// Провайдер для доступа к сервису базы данных.
@@ -53,7 +54,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 22,
+        version: 23,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -81,6 +82,8 @@ class DatabaseService {
     await _createTmdbGenresTable(db);
     await _createWishlistTable(db);
     await _createIgdbGenresTable(db);
+    await _createVisualNovelsCacheTable(db);
+    await _createVndbTagsTable(db);
   }
 
   Future<void> _createPlatformsTable(Database db) async {
@@ -280,6 +283,10 @@ class DatabaseService {
           name TEXT NOT NULL
         )
       ''');
+    }
+    if (oldVersion < 23) {
+      await _createVisualNovelsCacheTable(db);
+      await _createVndbTagsTable(db);
     }
   }
 
@@ -1479,6 +1486,7 @@ class DatabaseService {
     final List<int> gameIds = <int>[];
     final List<int> movieIds = <int>[];
     final List<int> tvShowIds = <int>[];
+    final List<int> vnIds = <int>[];
     final Set<int> platformIds = <int>{};
 
     for (final CollectionItem item in items) {
@@ -1498,6 +1506,8 @@ class DatabaseService {
           } else {
             movieIds.add(item.externalId);
           }
+        case MediaType.visualNovel:
+          vnIds.add(item.externalId);
       }
     }
 
@@ -1509,6 +1519,9 @@ class DatabaseService {
     final List<TvShow> tvShows = tvShowIds.isNotEmpty
         ? await getTvShowsByTmdbIds(tvShowIds)
         : <TvShow>[];
+    final List<VisualNovel> visualNovels = vnIds.isNotEmpty
+        ? await getVisualNovelsByNumericIds(vnIds)
+        : <VisualNovel>[];
 
     // Загружаем платформы
     Map<int, Platform> platformsMap = <int, Platform>{};
@@ -1544,6 +1557,9 @@ class DatabaseService {
     final Map<int, TvShow> tvShowsMap = <int, TvShow>{
       for (final TvShow t in resolvedTvShows) t.tmdbId: t,
     };
+    final Map<int, VisualNovel> vnMap = <int, VisualNovel>{
+      for (final VisualNovel vn in visualNovels) vn.numericId: vn,
+    };
 
     // Собираем результат
     return items.map((CollectionItem item) {
@@ -1564,6 +1580,8 @@ class DatabaseService {
             return item.copyWith(tvShow: tvShowsMap[item.externalId]);
           }
           return item.copyWith(movie: moviesMap[item.externalId]);
+        case MediaType.visualNovel:
+          return item.copyWith(visualNovel: vnMap[item.externalId]);
       }
     }).toList();
   }
@@ -1988,6 +2006,7 @@ class DatabaseService {
       'movieCount': 0,
       'tvShowCount': 0,
       'animationCount': 0,
+      'visualNovelCount': 0,
     };
 
     for (final Map<String, dynamic> row in result) {
@@ -2006,6 +2025,9 @@ class DatabaseService {
           stats['tvShowCount'] = (stats['tvShowCount'] ?? 0) + count;
         case 'animation':
           stats['animationCount'] = (stats['animationCount'] ?? 0) + count;
+        case 'visual_novel':
+          stats['visualNovelCount'] =
+              (stats['visualNovelCount'] ?? 0) + count;
       }
 
       // Подсчёт по статусам
@@ -2530,6 +2552,122 @@ class DatabaseService {
       // Wishlist
       await txn.delete('wishlist');
     });
+  }
+
+  // ==================== Visual Novels Cache ====================
+
+  Future<void> _createVisualNovelsCacheTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS visual_novels_cache (
+        id TEXT PRIMARY KEY,
+        numeric_id INTEGER NOT NULL,
+        title TEXT NOT NULL,
+        alt_title TEXT,
+        description TEXT,
+        image_url TEXT,
+        rating REAL,
+        vote_count INTEGER,
+        released TEXT,
+        length_minutes INTEGER,
+        length INTEGER,
+        tags TEXT,
+        developers TEXT,
+        platforms TEXT,
+        external_url TEXT,
+        updated_at INTEGER NOT NULL
+      )
+    ''');
+    await db.execute('''
+      CREATE INDEX IF NOT EXISTS idx_vn_numeric_id
+      ON visual_novels_cache(numeric_id)
+    ''');
+  }
+
+  Future<void> _createVndbTagsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS vndb_tags (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL
+      )
+    ''');
+  }
+
+  /// Сохраняет или обновляет визуальную новеллу в кэше.
+  Future<void> upsertVisualNovel(VisualNovel vn) async {
+    final Database db = await database;
+    await db.insert(
+      'visual_novels_cache',
+      vn.toDb(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  /// Сохраняет или обновляет список визуальных новелл.
+  Future<void> upsertVisualNovels(List<VisualNovel> vns) async {
+    if (vns.isEmpty) return;
+    final Database db = await database;
+    final Batch batch = db.batch();
+    for (final VisualNovel vn in vns) {
+      batch.insert(
+        'visual_novels_cache',
+        vn.toDb(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+    await batch.commit(noResult: true);
+  }
+
+  /// Получает визуальную новеллу по числовому ID.
+  Future<VisualNovel?> getVisualNovel(int numericId) async {
+    final Database db = await database;
+    final List<Map<String, dynamic>> rows = await db.query(
+      'visual_novels_cache',
+      where: 'numeric_id = ?',
+      whereArgs: <Object?>[numericId],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return VisualNovel.fromDb(rows.first);
+  }
+
+  /// Получает визуальные новеллы по списку числовых ID.
+  Future<List<VisualNovel>> getVisualNovelsByNumericIds(
+    List<int> numericIds,
+  ) async {
+    if (numericIds.isEmpty) return <VisualNovel>[];
+    final Database db = await database;
+    final String placeholders =
+        List<String>.filled(numericIds.length, '?').join(',');
+    final List<Map<String, dynamic>> rows = await db.rawQuery(
+      'SELECT * FROM visual_novels_cache WHERE numeric_id IN ($placeholders)',
+      numericIds,
+    );
+    return rows.map(VisualNovel.fromDb).toList();
+  }
+
+  /// Кэширует теги VNDB.
+  Future<void> cacheVndbTags(List<VndbTag> tags) async {
+    if (tags.isEmpty) return;
+    final Database db = await database;
+    final Batch batch = db.batch();
+    for (final VndbTag tag in tags) {
+      batch.insert(
+        'vndb_tags',
+        tag.toDb(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+    await batch.commit(noResult: true);
+  }
+
+  /// Получает кэшированные теги VNDB.
+  Future<List<VndbTag>> getVndbTags() async {
+    final Database db = await database;
+    final List<Map<String, dynamic>> rows = await db.query(
+      'vndb_tags',
+      orderBy: 'name ASC',
+    );
+    return rows.map(VndbTag.fromDb).toList();
   }
 
   /// Закрывает соединение с базой данных.

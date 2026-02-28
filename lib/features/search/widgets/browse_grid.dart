@@ -9,6 +9,7 @@ import '../../../shared/models/game.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/movie.dart';
 import '../../../shared/models/tv_show.dart';
+import '../../../shared/models/visual_novel.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -20,9 +21,10 @@ import '../../collections/providers/collections_provider.dart';
 import '../providers/browse_provider.dart';
 
 /// Множества ID элементов, которые уже есть в коллекциях.
-final FutureProvider<({Set<int> tmdbIds, Set<int> gameIds})>
+final FutureProvider<({Set<int> tmdbIds, Set<int> gameIds, Set<int> vnIds})>
     _collectedIdsProvider =
-    FutureProvider<({Set<int> tmdbIds, Set<int> gameIds})>((Ref ref) async {
+    FutureProvider<({Set<int> tmdbIds, Set<int> gameIds, Set<int> vnIds})>(
+        (Ref ref) async {
   final Map<int, List<CollectedItemInfo>> movies =
       await ref.watch(collectedMovieIdsProvider.future);
   final Map<int, List<CollectedItemInfo>> tvShows =
@@ -31,9 +33,12 @@ final FutureProvider<({Set<int> tmdbIds, Set<int> gameIds})>
       await ref.watch(collectedAnimationIdsProvider.future);
   final Map<int, List<CollectedItemInfo>> games =
       await ref.watch(collectedGameIdsProvider.future);
+  final Map<int, List<CollectedItemInfo>> visualNovels =
+      await ref.watch(collectedVisualNovelIdsProvider.future);
   return (
     tmdbIds: <int>{...movies.keys, ...tvShows.keys, ...animations.keys},
     gameIds: games.keys.toSet(),
+    vnIds: visualNovels.keys.toSet(),
   );
 });
 
@@ -167,12 +172,14 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     }
 
     // Collected IDs для маркировки "уже в коллекции"
-    final AsyncValue<({Set<int> tmdbIds, Set<int> gameIds})> collectedIds =
-        ref.watch(_collectedIdsProvider);
+    final AsyncValue<({Set<int> tmdbIds, Set<int> gameIds, Set<int> vnIds})>
+        collectedIds = ref.watch(_collectedIdsProvider);
     final Set<int> tmdbIds =
         collectedIds.valueOrNull?.tmdbIds ?? const <int>{};
     final Set<int> gameIds =
         collectedIds.valueOrNull?.gameIds ?? const <int>{};
+    final Set<int> vnIds =
+        collectedIds.valueOrNull?.vnIds ?? const <int>{};
 
     // Results grid
     final SliverGridDelegate gridDelegate = _buildGridDelegate(context);
@@ -192,7 +199,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         }
 
         final Object item = state.items[index];
-        return _buildCard(item, state.source.id, tmdbIds, gameIds);
+        return _buildCard(item, state.source.id, tmdbIds, gameIds, vnIds);
       },
     );
   }
@@ -202,6 +209,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     String sourceId,
     Set<int> tmdbIds,
     Set<int> gameIds,
+    Set<int> vnIds,
   ) {
     if (item is Movie) {
       return MediaPosterCard(
@@ -251,6 +259,22 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         mediaType: MediaType.game,
         isInCollection: gameIds.contains(item.id),
         onTap: () => widget.onItemTap(item, MediaType.game),
+      );
+    }
+
+    if (item is VisualNovel) {
+      return MediaPosterCard(
+        variant: CardVariant.grid,
+        title: item.title,
+        imageUrl: item.imageUrl ?? '',
+        cacheImageType: ImageType.vnCover,
+        cacheImageId: item.numericId.toString(),
+        apiRating: item.rating10,
+        year: item.releaseYear,
+        subtitle: item.genresString,
+        mediaType: MediaType.visualNovel,
+        isInCollection: vnIds.contains(item.numericId),
+        onTap: () => widget.onItemTap(item, MediaType.visualNovel),
       );
     }
 

@@ -124,6 +124,9 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
             const SizedBox(width: AppSpacing.xs),
             _buildMediaChip(
                 MediaType.animation, S.of(context).allItemsAnimation, counts[MediaType.animation]),
+            const SizedBox(width: AppSpacing.xs),
+            _buildMediaChip(
+                MediaType.visualNovel, S.of(context).allItemsVisualNovels, counts[MediaType.visualNovel]),
 
             const SizedBox(width: AppSpacing.md),
 
@@ -561,6 +564,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
           return item.tvShow?.firstAirYear;
         }
         return item.movie?.releaseYear;
+      case MediaType.visualNovel:
+        return item.visualNovel?.releaseYear;
     }
   }
 
@@ -577,6 +582,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
           return ImageType.tvShowPoster;
         }
         return ImageType.moviePoster;
+      case MediaType.visualNovel:
+        return ImageType.vnCover;
     }
   }
 }

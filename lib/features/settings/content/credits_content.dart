@@ -22,6 +22,7 @@ class CreditsContent extends StatelessWidget {
   static const String _tmdbUrl = 'https://www.themoviedb.org/';
   static const String _igdbUrl = 'https://www.igdb.com/';
   static const String _steamGridDbUrl = 'https://www.steamgriddb.com/';
+  static const String _vndbUrl = 'https://vndb.org/';
   static const String _githubUrl =
       'https://github.com/hacan359/tonkatsu_box';
 
@@ -65,6 +66,15 @@ class CreditsContent extends StatelessWidget {
           linkLabel: 'steamgriddb.com',
           url: _steamGridDbUrl,
           accentColor: DataSource.steamGridDb.color,
+          compact: compact,
+        ),
+        SizedBox(height: compact ? AppSpacing.sm : AppSpacing.md),
+        _TextLogoProviderCard(
+          logoText: 'VNDB',
+          description: l10n.creditsVndbAttribution,
+          linkLabel: 'vndb.org',
+          url: _vndbUrl,
+          accentColor: DataSource.vndb.color,
           compact: compact,
         ),
         SizedBox(height: compact ? AppSpacing.lg : AppSpacing.xl),
@@ -242,6 +252,83 @@ class _OpenSourceCard extends StatelessWidget {
                   borderRadius:
                       BorderRadius.circular(AppSpacing.radiusSm),
                 ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Карточка провайдера с текстовым логотипом (без SVG).
+class _TextLogoProviderCard extends StatelessWidget {
+  const _TextLogoProviderCard({
+    required this.logoText,
+    required this.description,
+    required this.linkLabel,
+    required this.url,
+    required this.accentColor,
+    required this.compact,
+  });
+
+  final String logoText;
+  final String description;
+  final String linkLabel;
+  final String url;
+  final Color accentColor;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(compact ? AppSpacing.sm : AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        border: Border.all(color: AppColors.surfaceBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            logoText,
+            style: AppTypography.h2.copyWith(
+              color: accentColor,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 2,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            description,
+            style: AppTypography.body.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          InkWell(
+            onTap: () => _launchUrl(url),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text(
+                    linkLabel,
+                    style: AppTypography.body.copyWith(
+                      color: accentColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.xs),
+                  Icon(
+                    Icons.open_in_new,
+                    size: 14,
+                    color: accentColor,
+                  ),
+                ],
               ),
             ),
           ),

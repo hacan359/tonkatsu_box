@@ -996,6 +996,7 @@ class GameCanvasNotifier
       game: collectionItem.game,
       movie: collectionItem.movie,
       tvShow: collectionItem.tvShow,
+      visualNovel: collectionItem.visualNovel,
     );
 
     await _repository.saveGameCanvasViewport(

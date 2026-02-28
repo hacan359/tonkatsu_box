@@ -49,7 +49,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Should show all source options
-      expect(find.byType(PopupMenuItem<String>), findsNWidgets(4));
+      expect(find.byType(PopupMenuItem<String>), findsNWidgets(5));
     });
 
     testWidgets('shows all registered sources in popup',

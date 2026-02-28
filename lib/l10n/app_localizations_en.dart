@@ -57,6 +57,9 @@ class SEn extends S {
   String get mediaTypeAnimation => 'Animation';
 
   @override
+  String get mediaTypeVisualNovel => 'Visual Novel';
+
+  @override
   String get sortManualDisplay => 'Manual';
 
   @override
@@ -673,6 +676,9 @@ class SEn extends S {
       'Artwork provided by SteamGridDB.';
 
   @override
+  String get creditsVndbAttribution => 'Visual novel data provided by VNDB.';
+
+  @override
   String get creditsOpenSource => 'Open Source';
 
   @override
@@ -825,6 +831,9 @@ class SEn extends S {
   String get collectionFilterAnimation => 'Animation';
 
   @override
+  String get collectionFilterVisualNovels => 'Visual Novels';
+
+  @override
   String collectionItemMovedTo(String name, String collection) {
     return '$name moved to $collection';
   }
@@ -862,6 +871,9 @@ class SEn extends S {
 
   @override
   String get animationNotFound => 'Animation not found';
+
+  @override
+  String get visualNovelNotFound => 'Visual novel not found';
 
   @override
   String get animatedMovie => 'Animated Movie';
@@ -1150,6 +1162,12 @@ class SEn extends S {
 
   @override
   String get searchHintGames => 'Search games...';
+
+  @override
+  String get searchHintVisualNovels => 'Search visual novels...';
+
+  @override
+  String get searchSourceVisualNovels => 'Visual Novels';
 
   @override
   String get searchSelectPlatform => 'Select Platform';
@@ -1572,6 +1590,9 @@ class SEn extends S {
   String get unknownAnimation => 'Unknown Animation';
 
   @override
+  String get unknownVisualNovel => 'Unknown Visual Novel';
+
+  @override
   String get unknownPlatform => 'Unknown Platform';
 
   @override
@@ -1596,6 +1617,9 @@ class SEn extends S {
 
   @override
   String get allItemsAnimation => 'Animation';
+
+  @override
+  String get allItemsVisualNovels => 'Visual Novels';
 
   @override
   String get allItemsRatingAsc => 'Rating ↑';
@@ -1908,6 +1932,9 @@ class SEn extends S {
 
   @override
   String get browseSortNewest => 'Newest';
+
+  @override
+  String get browseSortMostVoted => 'Most Voted';
 
   @override
   String get browseAnimeTypeSeries => 'Series';

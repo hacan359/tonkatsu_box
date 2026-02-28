@@ -57,6 +57,9 @@ abstract final class AppColors {
   /// Акцентный цвет для анимации (пурпурный).
   static const Color animationAccent = Color(0xFFA86ED4);
 
+  /// Акцентный цвет для визуальных новелл (синий).
+  static const Color visualNovelAccent = Color(0xFF2A5FC1);
+
   // ==================== Семантические цвета ====================
 
   /// Цвет успеха (completed, done).

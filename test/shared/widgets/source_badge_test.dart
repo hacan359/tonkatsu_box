@@ -44,7 +44,7 @@ void main() {
     });
 
     test('все значения enum перечислены', () {
-      expect(DataSource.values.length, 4);
+      expect(DataSource.values.length, 5);
     });
   });
 

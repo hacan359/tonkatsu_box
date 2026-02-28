@@ -64,6 +64,7 @@ class BrowseSortOption {
         'popular' => l.browseSortPopular,
         'top_rated' || 'rating' => l.browseSortTopRated,
         'newest' => l.browseSortNewest,
+        'most_voted' => l.browseSortMostVoted,
         _ => id,
       };
 

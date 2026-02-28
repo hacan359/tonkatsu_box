@@ -17,6 +17,7 @@ import '../../../shared/models/platform.dart';
 import '../../../shared/models/tv_episode.dart';
 import '../../../shared/models/tv_season.dart';
 import '../../../shared/models/tv_show.dart';
+import '../../../shared/models/visual_novel.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -31,6 +32,7 @@ import '../widgets/discover_feed.dart';
 import '../widgets/filter_bar.dart';
 import '../widgets/game_details_sheet.dart';
 import '../widgets/media_details_sheet.dart';
+import '../widgets/vn_details_sheet.dart';
 
 /// Экран поиска и просмотра контента.
 ///
@@ -183,6 +185,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       _onMovieTap(item, mediaType);
     } else if (item is TvShow) {
       _onTvShowTap(item, mediaType);
+    } else if (item is VisualNovel) {
+      _onVisualNovelTap(item);
     }
   }
 
@@ -768,6 +772,112 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   }
 
   // ==================== Detail sheets ====================
+
+  // ==================== Visual Novel actions ====================
+
+  void _onVisualNovelTap(VisualNovel vn) {
+    if (widget.collectionId != null) {
+      _addVisualNovelToCollection(vn);
+    } else {
+      _showVisualNovelDetails(vn);
+    }
+  }
+
+  Future<void> _addVisualNovelToCollection(VisualNovel vn) async {
+    final String title = vn.title;
+
+    await ref.read(databaseServiceProvider).upsertVisualNovel(vn);
+
+    final bool success = await ref
+        .read(
+            collectionItemsNotifierProvider(widget.collectionId).notifier)
+        .addItem(
+          mediaType: MediaType.visualNovel,
+          externalId: vn.numericId,
+        );
+
+    if (mounted) {
+      final S l = S.of(context);
+      if (success) {
+        _cacheImage(
+          ImageType.vnCover,
+          vn.numericId.toString(),
+          vn.imageUrl,
+        );
+        context.showSnack(
+          l.searchAddedToCollection(title),
+          type: SnackType.success,
+        );
+      } else {
+        context.showSnack(
+          l.searchAlreadyInCollection(title),
+          type: SnackType.info,
+        );
+      }
+    }
+  }
+
+  Future<void> _addVisualNovelToAnyCollection(VisualNovel vn) async {
+    final String title = vn.title;
+
+    final S l = S.of(context);
+    final CollectionChoice? choice = await showCollectionPickerDialog(
+      context: context,
+      ref: ref,
+      title: l.searchAddToCollection,
+    );
+    if (choice == null || !mounted) return;
+
+    final int? collectionId;
+    final String collectionName;
+    switch (choice) {
+      case ChosenCollection(:final Collection collection):
+        collectionId = collection.id;
+        collectionName = collection.name;
+      case WithoutCollection():
+        collectionId = null;
+        collectionName = l.collectionsUncategorized;
+    }
+
+    await ref.read(databaseServiceProvider).upsertVisualNovel(vn);
+
+    final bool success = await ref
+        .read(collectionItemsNotifierProvider(collectionId).notifier)
+        .addItem(
+          mediaType: MediaType.visualNovel,
+          externalId: vn.numericId,
+        );
+
+    if (mounted) {
+      if (success) {
+        _cacheImage(
+          ImageType.vnCover,
+          vn.numericId.toString(),
+          vn.imageUrl,
+        );
+        context.showSnack(
+          l.searchAddedToNamed(title, collectionName),
+          type: SnackType.success,
+        );
+      } else {
+        context.showSnack(
+          l.searchAlreadyInNamed(title, collectionName),
+          type: SnackType.info,
+        );
+      }
+    }
+  }
+
+  void _showVisualNovelDetails(VisualNovel vn) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) => VnDetailsSheet(
+        visualNovel: vn,
+        onAddToCollection: () => _addVisualNovelToAnyCollection(vn),
+      ),
+    );
+  }
 
   void _showGameDetails(Game game) {
     showModalBottomSheet<void>(

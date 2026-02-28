@@ -20,6 +20,7 @@ import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/platform.dart' as model;
+import 'package:xerabora/shared/models/visual_novel.dart';
 
 class MockCollectionRepository extends Mock implements CollectionRepository {}
 
@@ -80,6 +81,16 @@ void main() {
         name: 'Game Boy Advance',
         abbreviation: 'GBA',
       ),
+    ),
+    CollectionItem(
+      id: 5,
+      collectionId: 20,
+      mediaType: MediaType.visualNovel,
+      externalId: 500,
+      sortOrder: 1,
+      status: ItemStatus.notStarted,
+      addedAt: DateTime(2025, 5, 1),
+      visualNovel: const VisualNovel(id: 'v500', title: 'Steins;Gate'),
     ),
   ];
 
@@ -165,6 +176,7 @@ void main() {
       expect(find.text('Movies'), findsOneWidget);
       expect(find.text('TV Shows'), findsOneWidget);
       expect(find.text('Animation'), findsOneWidget);
+      expect(find.text('Visual Novels'), findsOneWidget);
     });
 
     testWidgets('показывает счётчики на чипсах после загрузки',
@@ -172,13 +184,14 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      // 4 элемента: 2 games, 1 movie, 1 tvShow
-      expect(find.text('All (4)'), findsOneWidget);
+      // 5 элементов: 2 games, 1 movie, 1 tvShow, 1 visualNovel
+      expect(find.text('All (5)'), findsOneWidget);
       expect(find.text('Games (2)'), findsOneWidget);
       expect(find.text('Movies (1)'), findsOneWidget);
       expect(find.text('TV Shows (1)'), findsOneWidget);
       // Animation = 0 → без счётчика
       expect(find.text('Animation'), findsOneWidget);
+      expect(find.text('Visual Novels (1)'), findsOneWidget);
     });
 
     testWidgets('показывает чипс Rating', (WidgetTester tester) async {
@@ -233,9 +246,9 @@ void main() {
 
       // Разделители с названиями коллекций и количеством
       // My Games: 3 элемента (id 1,2,4 — collectionId = 10)
-      // Watch List: 1 элемент (id 3 — collectionId = 20)
+      // Watch List: 2 элемента (id 3,5 — collectionId = 20)
       expect(find.text('My Games (3)'), findsOneWidget);
-      expect(find.text('Watch List (1)'), findsOneWidget);
+      expect(find.text('Watch List (2)'), findsOneWidget);
     });
 
     testWidgets('разделители обновляются при фильтрации',
@@ -277,8 +290,8 @@ void main() {
       await tester.tap(find.text('Games (2)'));
       await tester.pumpAndSettle();
 
-      // Затем нажимаем All (4) — медиа-тип All с общим количеством
-      await tester.tap(find.text('All (4)'));
+      // Затем нажимаем All (5) — медиа-тип All с общим количеством
+      await tester.tap(find.text('All (5)'));
       await tester.pumpAndSettle();
 
       expect(find.byType(CustomScrollView), findsOneWidget);
@@ -355,6 +368,44 @@ void main() {
       // Оба чипса видны, ни один не выбран (фильтр сброшен).
       expect(find.widgetWithText(ChoiceChip, 'SNES'), findsOneWidget);
       expect(find.widgetWithText(ChoiceChip, 'GBA'), findsOneWidget);
+    });
+  });
+
+  group('AllItemsScreen Visual Novel фильтр', () {
+    testWidgets('нажатие на Visual Novels фильтрует по типу',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      // VN чипс может быть за пределами экрана — прокручиваем
+      final Finder vnChip = find.text('Visual Novels (1)');
+      await tester.ensureVisible(vnChip);
+      await tester.pumpAndSettle();
+
+      await tester.tap(vnChip);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(CustomScrollView), findsOneWidget);
+      // Watch List видна (VN в collectionId 20)
+      expect(find.textContaining('Watch List'), findsOneWidget);
+      // My Games не видна (нет VN в collectionId 10)
+      expect(find.textContaining('My Games'), findsNothing);
+    });
+
+    testWidgets('при выборе Visual Novels не показывает чипсы платформ',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      final Finder vnChip = find.text('Visual Novels (1)');
+      await tester.ensureVisible(vnChip);
+      await tester.pumpAndSettle();
+
+      await tester.tap(vnChip);
+      await tester.pumpAndSettle();
+
+      expect(find.widgetWithText(ChoiceChip, 'SNES'), findsNothing);
+      expect(find.widgetWithText(ChoiceChip, 'GBA'), findsNothing);
     });
   });
 }

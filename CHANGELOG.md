@@ -7,6 +7,31 @@
 ## [Unreleased]
 
 ### Added
+- Visual Novel support via VNDB API — 5th media type (`MediaType.visualNovel`). New model `VisualNovel` (`visual_novel.dart`) with `fromJson`/`fromDb`/`toDb`/`toExport`/`copyWith`, computed getters (rating10, numericId, releaseYear, lengthLabel, platformsString). `VndbTag` for genre tags
+- VNDB API client (`vndb_api.dart`) — public API (no auth, ~200 req/min). Methods: `searchVn()`, `browseVn()`, `getVnById()`, `getVnByIds()`, `fetchTags()`. Custom `VndbApiException` with rate limit handling
+- `VndbSource` search source (`vndb_source.dart`) — pluggable source for Browse/Search with tag-based genre filter and 3 sort options (rating, released, votecount)
+- `VndbTagFilter` (`vndb_tag_filter.dart`) — async tag loading from VNDB API via `vndbTagsProvider` with DB cache
+- `VnDetailsSheet` (`vn_details_sheet.dart`) — bottom sheet with VN cover, alt title, rating, release year, length label, developers, platforms, tags, description, and "Add to Collection" button
+- `DataSource.vndb` — VNDB source badge (blue #2A5FC1) in `data_source.dart`
+- `ImageType.vnCover` — VN cover image caching in `image_cache_service.dart`
+- Database migration v22→v23 — `visual_novels_cache` and `vndb_tags` tables with CRUD methods
+- Visual Novel export/import — `visual_novels` array in `.xcollx` media section, VNDB API fetch on light import
+- VNDB attribution card in Credits screen (`credits_content.dart`)
+- `collectedVisualNovelIdsProvider` — tracks VN IDs across collections for in-collection markers
+- Localization: 7 new keys (EN + RU) — `mediaTypeVisualNovel`, `visualNovelNotFound`, `searchSourceVisualNovels`, `searchHintVisualNovels`, `browseSortMostVoted`, `collectionFilterVisualNovels`, `creditsVndbAttribution`
+- Tests: `visual_novel_test.dart` (42 tests), `vndb_api_test.dart` (20 tests). Updated existing tests for 5th media type
+
+### Changed
+- `MediaType` enum extended with `visualNovel` value — all exhaustive switches updated (`collection_screen`, `item_detail_screen`, `all_items_screen`, `canvas_item`, `hero_collection_card`)
+- `CollectionItem` extended with `VisualNovel? visualNovel` field and `_resolvedMedia` case for visual novels
+- `CollectionStats` extended with `visualNovelCount` field
+- `browse_grid.dart` — `_collectedIdsProvider` includes VN IDs
+- `search_sources.dart` — registered `VndbSource()` as 5th search source
+- `import_service.dart` — added `VndbApi` dependency and visual novel fetch/restore logic
+- `export_service.dart` — visual novels embedded in media section
+- `app_colors.dart` — added `vnAccent` color
+- `media_type_theme.dart` — added VN icon (Icons.menu_book) and color
+
 - Search refactoring — pluggable source architecture with `SearchSource` / `SearchFilter` abstractions (`search_source.dart`). Four sources: `TmdbMoviesSource`, `TmdbTvSource`, `TmdbAnimeSource`, `IgdbGamesSource` (`lib/features/search/sources/`). Five filter types: `TmdbGenreFilter`, `IgdbGenreFilter`, `YearFilter`, `IgdbPlatformFilter`, `AnimeTypeFilter` (`lib/features/search/filters/`)
 - Browse/Search mode — unified `BrowseNotifier` (`browse_provider.dart`) manages source switching, filter state, pagination, and search vs browse mode. Source dropdown + filter bar + sort dropdown in horizontal `FilterBar` (`filter_bar.dart`). Grid results in `BrowseGrid` (`browse_grid.dart`)
 - `IgdbApi.browseGames()` — discover games with genre/platform filters and sort options (`igdb_api.dart`)

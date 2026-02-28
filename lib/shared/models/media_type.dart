@@ -14,7 +14,10 @@ enum MediaType {
   tvShow('tv_show'),
 
   /// Анимация (TMDB) — анимационные фильмы и сериалы.
-  animation('animation');
+  animation('animation'),
+
+  /// Визуальная новелла (VNDB).
+  visualNovel('visual_novel');
 
   const MediaType(this.value);
 
@@ -44,6 +47,8 @@ enum MediaType {
         return 'TV Show';
       case MediaType.animation:
         return 'Animation';
+      case MediaType.visualNovel:
+        return 'Visual Novel';
     }
   }
 
@@ -58,6 +63,8 @@ enum MediaType {
         return l.mediaTypeTvShow;
       case MediaType.animation:
         return l.mediaTypeAnimation;
+      case MediaType.visualNovel:
+        return l.mediaTypeVisualNovel;
     }
   }
 }
