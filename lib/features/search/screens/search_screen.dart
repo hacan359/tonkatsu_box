@@ -1,3 +1,5 @@
+// Экран поиска и просмотра контента.
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,8 +9,6 @@ import '../../../shared/constants/platform_features.dart';
 import '../../../core/api/tmdb_api.dart';
 import '../../../core/database/database_service.dart';
 import '../../../core/services/image_cache_service.dart';
-import '../../../shared/models/collected_item_info.dart';
-import '../../../shared/models/search_sort.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/game.dart';
 import '../../../shared/models/media_type.dart';
@@ -20,29 +20,23 @@ import '../../../shared/models/tv_show.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
-import '../../../shared/navigation/navigation_shell.dart';
 import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
 import '../../../shared/widgets/collection_picker_dialog.dart';
 import '../../../shared/widgets/cached_image.dart' as app_cached;
-import '../../../shared/widgets/media_poster_card.dart';
-import '../../../shared/widgets/shimmer_loading.dart';
 import '../../collections/providers/collections_provider.dart';
-import '../../settings/providers/settings_provider.dart';
-import '../../settings/screens/credentials_screen.dart';
-import '../models/media_search_item.dart';
-import '../models/tv_sub_filter.dart';
-import '../providers/game_search_provider.dart';
-import '../providers/media_search_provider.dart';
+import '../providers/browse_provider.dart';
+import '../widgets/browse_grid.dart';
 import '../widgets/discover_customize_sheet.dart';
 import '../widgets/discover_feed.dart';
+import '../widgets/filter_bar.dart';
 import '../widgets/game_details_sheet.dart';
 import '../widgets/media_details_sheet.dart';
-import '../widgets/platform_filter_sheet.dart';
 
-/// Экран поиска игр, фильмов и сериалов.
+/// Экран поиска и просмотра контента.
 ///
-/// Позволяет искать контент через IGDB (игры) и TMDB (фильмы, сериалы)
-/// с возможностью добавления в коллекцию.
+/// Два режима:
+/// - Browse: фильтр-бар + Discover feed / Browse grid
+/// - Search: поле поиска + результаты
 class SearchScreen extends ConsumerStatefulWidget {
   /// Создаёт [SearchScreen].
   const SearchScreen({
@@ -59,7 +53,7 @@ class SearchScreen extends ConsumerStatefulWidget {
   /// ID коллекции для добавления элементов.
   final int? collectionId;
 
-  /// Начальный индекс таба (0=TV, 1=Games).
+  /// Начальный индекс таба (legacy, используется для выбора источника).
   final int? initialTabIndex;
 
   /// Начальный запрос поиска (предзаполняет поле и запускает поиск).
@@ -69,60 +63,31 @@ class SearchScreen extends ConsumerStatefulWidget {
   ConsumerState<SearchScreen> createState() => _SearchScreenState();
 }
 
-class _SearchScreenState extends ConsumerState<SearchScreen>
-    with SingleTickerProviderStateMixin {
+class _SearchScreenState extends ConsumerState<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocus = FocusNode();
-  late TabController _tabController;
 
-  List<Platform> _platforms = <Platform>[];
   Map<int, Platform> _platformMap = <int, Platform>{};
-  bool _platformsLoading = true;
-
-  /// Высота элементов FilterRow (единый стандарт с collection_screen).
-  static const double _filterRowHeight = 32;
-
-  /// Индекс активного таба.
-  int _activeTabIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    _activeTabIndex = widget.initialTabIndex ?? 0;
-    _tabController = TabController(
-      length: 2,
-      vsync: this,
-      initialIndex: _activeTabIndex,
-    );
-    _tabController.addListener(_onTabChanged);
     _loadPlatforms();
-    _searchController.addListener(_onControllerChanged);
+
+    // Совместимость: если передан initialTabIndex=1 (Games), выбираем games
+    if (widget.initialTabIndex == 1) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(browseProvider.notifier).setSource('games');
+      });
+    }
+
+    // Если передан начальный запрос — сразу входим в режим поиска
     if (widget.initialQuery != null && widget.initialQuery!.isNotEmpty) {
-      _searchController.text = widget.initialQuery!;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _onSearchSubmit();
+        ref.read(browseProvider.notifier).enterSearchMode();
+        _searchController.text = widget.initialQuery!;
+        ref.read(browseProvider.notifier).search(widget.initialQuery!);
       });
-    } else {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _searchFocus.requestFocus();
-      });
-    }
-  }
-
-  void _onControllerChanged() {
-    if (mounted) {
-      setState(() {});
-    }
-  }
-
-  void _onTabChanged() {
-    if (!_tabController.indexIsChanging) {
-      final int newIndex = _tabController.index;
-      if (_activeTabIndex == newIndex) return;
-      setState(() {
-        _activeTabIndex = newIndex;
-      });
-      // Не запускаем поиск — каждый таб хранит свои результаты
     }
   }
 
@@ -131,61 +96,43 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     final List<Platform> platforms = await db.getAllPlatforms();
     if (mounted) {
       setState(() {
-        _platforms = platforms;
         _platformMap = <int, Platform>{
           for (final Platform p in platforms) p.id: p,
         };
-        _platformsLoading = false;
       });
     }
   }
 
   @override
   void dispose() {
-    _tabController.removeListener(_onTabChanged);
-    _tabController.dispose();
-    _searchController.removeListener(_onControllerChanged);
     _searchController.dispose();
     _searchFocus.dispose();
     super.dispose();
   }
 
+  // ==================== Search mode ====================
+
+  void _enterSearchMode() {
+    ref.read(browseProvider.notifier).enterSearchMode();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _searchFocus.requestFocus();
+    });
+  }
+
+  void _exitSearchMode() {
+    _searchController.clear();
+    ref.read(browseProvider.notifier).exitSearchMode();
+  }
+
   void _onSearchSubmit() {
     final String query = _searchController.text;
     if (query.length < 2) return;
-
-    if (_activeTabIndex == 0) {
-      // TV tab
-      ref.read(mediaSearchProvider.notifier).search(query);
-    } else {
-      // Games tab
-      ref.read(gameSearchProvider.notifier).search(query);
-    }
+    ref.read(browseProvider.notifier).search(query);
   }
 
   void _onClearSearch() {
     _searchController.clear();
-    ref.read(gameSearchProvider.notifier).clear();
-    ref.read(mediaSearchProvider.notifier).clear();
     _searchFocus.requestFocus();
-  }
-
-  void _showPlatformFilterSheet() {
-    final GameSearchState state = ref.read(gameSearchProvider);
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      builder: (BuildContext context) => PlatformFilterSheet(
-        platforms: _platforms,
-        selectedIds: state.selectedPlatformIds,
-        onApply: (List<int> selectedIds) {
-          ref
-              .read(gameSearchProvider.notifier)
-              .setPlatformFilters(selectedIds);
-          Navigator.of(context).pop();
-        },
-      ),
-    );
   }
 
   // ==================== Image caching ====================
@@ -206,14 +153,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       final DatabaseService db = ref.read(databaseServiceProvider);
       final TmdbApi tmdb = ref.read(tmdbApiProvider);
 
-      // 1. Сезоны: кэш → API → сохранить
       List<TvSeason> seasons = await db.getTvSeasonsByShowId(tmdbId);
       if (seasons.isEmpty) {
         seasons = await tmdb.getTvSeasons(tmdbId);
         if (seasons.isNotEmpty) await db.upsertTvSeasons(seasons);
       }
 
-      // 2. Эпизоды каждого сезона: кэш → API → сохранить
       for (final TvSeason season in seasons) {
         if (!mounted) return;
         final List<TvEpisode> cached =
@@ -225,7 +170,19 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         }
       }
     } catch (_) {
-      // Не критично — загрузится при следующем открытии деталей с сетью
+      // Не критично
+    }
+  }
+
+  // ==================== Item tap handler ====================
+
+  void _onItemTap(Object item, MediaType mediaType) {
+    if (item is Game) {
+      _onGameTap(item);
+    } else if (item is Movie) {
+      _onMovieTap(item, mediaType);
+    } else if (item is TvShow) {
+      _onTvShowTap(item, mediaType);
     }
   }
 
@@ -247,6 +204,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     final int? platformId = await _showPlatformSelectionDialog(game);
     if (platformId == null || !mounted) return;
 
+    await ref.read(databaseServiceProvider).upsertGame(game);
+
     final bool success = await ref
         .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
         .addItem(
@@ -259,9 +218,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       final S l = S.of(context);
       if (success) {
         _cacheImage(ImageType.gameCover, game.id.toString(), game.coverUrl);
-        context.showSnack(l.searchAddedToCollection(gameName), type: SnackType.success);
+        context.showSnack(
+          l.searchAddedToCollection(gameName),
+          type: SnackType.success,
+        );
       } else {
-        context.showSnack(l.searchAlreadyInCollection(gameName), type: SnackType.info);
+        context.showSnack(
+          l.searchAlreadyInCollection(gameName),
+          type: SnackType.info,
+        );
       }
     }
   }
@@ -270,12 +235,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     final String gameName = game.name;
 
     final S l = S.of(context);
-    final CollectionChoice? choice =
-        await showCollectionPickerDialog(
-            context: context,
-            ref: ref,
-            title: l.searchAddToCollection,
-          );
+    final CollectionChoice? choice = await showCollectionPickerDialog(
+      context: context,
+      ref: ref,
+      title: l.searchAddToCollection,
+    );
     if (choice == null || !mounted) return;
 
     final int? collectionId;
@@ -292,6 +256,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     final int? platformId = await _showPlatformSelectionDialog(game);
     if (platformId == null || !mounted) return;
 
+    await ref.read(databaseServiceProvider).upsertGame(game);
+
     final bool success = await ref
         .read(collectionItemsNotifierProvider(collectionId).notifier)
         .addItem(
@@ -303,91 +269,57 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     if (mounted) {
       if (success) {
         _cacheImage(ImageType.gameCover, game.id.toString(), game.coverUrl);
-        context.showSnack(l.searchAddedToNamed(gameName, collectionName), type: SnackType.success);
+        context.showSnack(
+          l.searchAddedToNamed(gameName, collectionName),
+          type: SnackType.success,
+        );
       } else {
-        context.showSnack(l.searchAlreadyInNamed(gameName, collectionName), type: SnackType.info);
+        context.showSnack(
+          l.searchAlreadyInNamed(gameName, collectionName),
+          type: SnackType.info,
+        );
       }
     }
   }
 
-  // ==================== Media actions ====================
+  // ==================== Movie actions ====================
 
-  /// Определяет тип анимации: если MediaSearchItem.isAnimation, добавляем
-  /// как animation с правильным platformId.
-  void _onMediaItemTapForAnimation(MediaSearchItem item) {
-    if (item.type == MediaSearchItemType.movie) {
-      final Movie movie = item.movie!;
-      if (widget.collectionId != null) {
-        if (item.isAnimation) {
-          _addAnimationMovieToCollection(movie);
-        } else {
-          _addMovieToCollection(movie);
-        }
+  void _onMovieTap(Movie movie, MediaType mediaType) {
+    if (widget.collectionId != null) {
+      if (mediaType == MediaType.animation) {
+        _addAnimationMovieToCollection(movie);
       } else {
-        _showMediaItemDetails(item);
+        _addMovieToCollection(movie);
       }
     } else {
-      final TvShow tvShow = item.tvShow!;
-      if (widget.collectionId != null) {
-        if (item.isAnimation) {
-          _addAnimationTvShowToCollection(tvShow);
-        } else {
-          _addTvShowToCollection(tvShow);
-        }
-      } else {
-        _showMediaItemDetails(item);
-      }
+      _showMovieDetails(movie, mediaType);
     }
   }
 
-  void _showMediaItemDetails(MediaSearchItem item) {
-    if (item.type == MediaSearchItemType.movie) {
-      final Movie movie = item.movie!;
-      final bool isAnim = item.isAnimation;
-      showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        builder: (BuildContext context) => MediaDetailsSheet(
-          title: movie.title,
-          overview: movie.overview,
-          year: movie.releaseYear,
-          rating: movie.formattedRating,
-          genres: movie.genres,
-          icon: isAnim ? Icons.animation : Icons.movie,
-          extraInfo: movie.runtime != null ? '${movie.runtime} min' : null,
-          posterUrl: movie.posterUrl,
-          onAddToCollection: () => isAnim
-              ? _addAnimationMovieToAnyCollection(movie)
-              : _addMovieToAnyCollection(movie),
-        ),
-      );
-    } else {
-      final TvShow tvShow = item.tvShow!;
-      final bool isAnim = item.isAnimation;
-      showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        builder: (BuildContext context) => MediaDetailsSheet(
-          title: tvShow.title,
-          overview: tvShow.overview,
-          year: tvShow.firstAirYear,
-          rating: tvShow.formattedRating,
-          genres: tvShow.genres,
-          icon: isAnim ? Icons.animation : Icons.tv,
-          extraInfo: tvShow.status,
-          posterUrl: tvShow.posterUrl,
-          onAddToCollection: () => isAnim
-              ? _addAnimationTvShowToAnyCollection(tvShow)
-              : _addTvShowToAnyCollection(tvShow),
-        ),
-      );
-    }
+  void _showMovieDetails(Movie movie, MediaType mediaType) {
+    final bool isAnim = mediaType == MediaType.animation;
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) => MediaDetailsSheet(
+        title: movie.title,
+        overview: movie.overview,
+        year: movie.releaseYear,
+        rating: movie.formattedRating,
+        genres: movie.genres,
+        icon: isAnim ? Icons.animation : Icons.movie,
+        extraInfo: movie.runtime != null ? '${movie.runtime} min' : null,
+        posterUrl: movie.posterUrl,
+        onAddToCollection: () => isAnim
+            ? _addAnimationMovieToAnyCollection(movie)
+            : _addMovieToAnyCollection(movie),
+      ),
+    );
   }
 
   Future<void> _addMovieToCollection(Movie movie) async {
     final String title = movie.title;
 
-    // Кэшируем модель в БД, чтобы она была доступна офлайн
     await ref.read(databaseServiceProvider).upsertMovie(movie);
 
     final bool success = await ref
@@ -406,37 +338,28 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           movie.tmdbId.toString(),
           movie.posterUrl,
         );
-        context.showSnack(l.searchAddedToCollection(title), type: SnackType.success);
+        context.showSnack(
+          l.searchAddedToCollection(title),
+          type: SnackType.success,
+        );
       } else {
-        context.showSnack(l.searchAlreadyInCollection(title), type: SnackType.info);
+        context.showSnack(
+          l.searchAlreadyInCollection(title),
+          type: SnackType.info,
+        );
       }
     }
-  }
-
-  void _showDiscoverCustomizeSheet() {
-    final Size screenSize = MediaQuery.sizeOf(context);
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      useRootNavigator: true,
-      constraints: BoxConstraints(
-        maxWidth: screenSize.width,
-        maxHeight: screenSize.height * 0.85,
-      ),
-      builder: (BuildContext _) => const DiscoverCustomizeSheet(),
-    );
   }
 
   Future<void> _addMovieToAnyCollection(Movie movie) async {
     final String title = movie.title;
 
     final S l = S.of(context);
-    final CollectionChoice? choice =
-        await showCollectionPickerDialog(
-            context: context,
-            ref: ref,
-            title: l.searchAddToCollection,
-          );
+    final CollectionChoice? choice = await showCollectionPickerDialog(
+      context: context,
+      ref: ref,
+      title: l.searchAddToCollection,
+    );
     if (choice == null || !mounted) return;
 
     final int? collectionId;
@@ -450,7 +373,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         collectionName = l.collectionsUncategorized;
     }
 
-    // Кэшируем модель в БД, чтобы она была доступна офлайн
     await ref.read(databaseServiceProvider).upsertMovie(movie);
 
     final bool success = await ref
@@ -467,17 +389,57 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           movie.tmdbId.toString(),
           movie.posterUrl,
         );
-        context.showSnack(l.searchAddedToNamed(title, collectionName), type: SnackType.success);
+        context.showSnack(
+          l.searchAddedToNamed(title, collectionName),
+          type: SnackType.success,
+        );
       } else {
-        context.showSnack(l.searchAlreadyInNamed(title, collectionName), type: SnackType.info);
+        context.showSnack(
+          l.searchAlreadyInNamed(title, collectionName),
+          type: SnackType.info,
+        );
       }
     }
+  }
+
+  // ==================== TV Show actions ====================
+
+  void _onTvShowTap(TvShow tvShow, MediaType mediaType) {
+    if (widget.collectionId != null) {
+      if (mediaType == MediaType.animation) {
+        _addAnimationTvShowToCollection(tvShow);
+      } else {
+        _addTvShowToCollection(tvShow);
+      }
+    } else {
+      _showTvShowDetails(tvShow, mediaType);
+    }
+  }
+
+  void _showTvShowDetails(TvShow tvShow, MediaType mediaType) {
+    final bool isAnim = mediaType == MediaType.animation;
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) => MediaDetailsSheet(
+        title: tvShow.title,
+        overview: tvShow.overview,
+        year: tvShow.firstAirYear,
+        rating: tvShow.formattedRating,
+        genres: tvShow.genres,
+        icon: isAnim ? Icons.animation : Icons.tv,
+        extraInfo: tvShow.status,
+        posterUrl: tvShow.posterUrl,
+        onAddToCollection: () => isAnim
+            ? _addAnimationTvShowToAnyCollection(tvShow)
+            : _addTvShowToAnyCollection(tvShow),
+      ),
+    );
   }
 
   Future<void> _addTvShowToCollection(TvShow tvShow) async {
     final String title = tvShow.title;
 
-    // Кэшируем модель в БД, чтобы она была доступна офлайн
     await ref.read(databaseServiceProvider).upsertTvShow(tvShow);
 
     final bool success = await ref
@@ -498,10 +460,16 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         );
         await _preloadSeasonsAsync(tvShow.tmdbId);
         if (mounted) {
-          context.showSnack(l.searchAddedToCollection(title), type: SnackType.success);
+          context.showSnack(
+            l.searchAddedToCollection(title),
+            type: SnackType.success,
+          );
         }
       } else {
-        context.showSnack(l.searchAlreadyInCollection(title), type: SnackType.info);
+        context.showSnack(
+          l.searchAlreadyInCollection(title),
+          type: SnackType.info,
+        );
       }
     }
   }
@@ -510,12 +478,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     final String title = tvShow.title;
 
     final S l = S.of(context);
-    final CollectionChoice? choice =
-        await showCollectionPickerDialog(
-            context: context,
-            ref: ref,
-            title: l.searchAddToCollection,
-          );
+    final CollectionChoice? choice = await showCollectionPickerDialog(
+      context: context,
+      ref: ref,
+      title: l.searchAddToCollection,
+    );
     if (choice == null || !mounted) return;
 
     final int? collectionId;
@@ -529,7 +496,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         collectionName = l.collectionsUncategorized;
     }
 
-    // Кэшируем модель в БД, чтобы она была доступна офлайн
     await ref.read(databaseServiceProvider).upsertTvShow(tvShow);
 
     final bool success = await ref
@@ -548,10 +514,16 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         );
         await _preloadSeasonsAsync(tvShow.tmdbId);
         if (mounted) {
-          context.showSnack(l.searchAddedToNamed(title, collectionName), type: SnackType.success);
+          context.showSnack(
+            l.searchAddedToNamed(title, collectionName),
+            type: SnackType.success,
+          );
         }
       } else {
-        context.showSnack(l.searchAlreadyInNamed(title, collectionName), type: SnackType.info);
+        context.showSnack(
+          l.searchAlreadyInNamed(title, collectionName),
+          type: SnackType.info,
+        );
       }
     }
   }
@@ -561,7 +533,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   Future<void> _addAnimationMovieToCollection(Movie movie) async {
     final String title = movie.title;
 
-    // Кэшируем модель в БД, чтобы она была доступна офлайн
     await ref.read(databaseServiceProvider).upsertMovie(movie);
 
     final bool success = await ref
@@ -581,9 +552,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           movie.tmdbId.toString(),
           movie.posterUrl,
         );
-        context.showSnack(l.searchAddedToCollection(title), type: SnackType.success);
+        context.showSnack(
+          l.searchAddedToCollection(title),
+          type: SnackType.success,
+        );
       } else {
-        context.showSnack(l.searchAlreadyInCollection(title), type: SnackType.info);
+        context.showSnack(
+          l.searchAlreadyInCollection(title),
+          type: SnackType.info,
+        );
       }
     }
   }
@@ -591,7 +568,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   Future<void> _addAnimationTvShowToCollection(TvShow tvShow) async {
     final String title = tvShow.title;
 
-    // Кэшируем модель в БД, чтобы она была доступна офлайн
     await ref.read(databaseServiceProvider).upsertTvShow(tvShow);
 
     final bool success = await ref
@@ -613,10 +589,16 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         );
         await _preloadSeasonsAsync(tvShow.tmdbId);
         if (mounted) {
-          context.showSnack(l.searchAddedToCollection(title), type: SnackType.success);
+          context.showSnack(
+            l.searchAddedToCollection(title),
+            type: SnackType.success,
+          );
         }
       } else {
-        context.showSnack(l.searchAlreadyInCollection(title), type: SnackType.info);
+        context.showSnack(
+          l.searchAlreadyInCollection(title),
+          type: SnackType.info,
+        );
       }
     }
   }
@@ -625,12 +607,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     final String title = movie.title;
 
     final S l = S.of(context);
-    final CollectionChoice? choice =
-        await showCollectionPickerDialog(
-            context: context,
-            ref: ref,
-            title: l.searchAddToCollection,
-          );
+    final CollectionChoice? choice = await showCollectionPickerDialog(
+      context: context,
+      ref: ref,
+      title: l.searchAddToCollection,
+    );
     if (choice == null || !mounted) return;
 
     final int? collectionId;
@@ -644,7 +625,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         collectionName = l.collectionsUncategorized;
     }
 
-    // Кэшируем модель в БД, чтобы она была доступна офлайн
     await ref.read(databaseServiceProvider).upsertMovie(movie);
 
     final bool success = await ref
@@ -662,9 +642,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           movie.tmdbId.toString(),
           movie.posterUrl,
         );
-        context.showSnack(l.searchAddedToNamed(title, collectionName), type: SnackType.success);
+        context.showSnack(
+          l.searchAddedToNamed(title, collectionName),
+          type: SnackType.success,
+        );
       } else {
-        context.showSnack(l.searchAlreadyInNamed(title, collectionName), type: SnackType.info);
+        context.showSnack(
+          l.searchAlreadyInNamed(title, collectionName),
+          type: SnackType.info,
+        );
       }
     }
   }
@@ -673,12 +659,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     final String title = tvShow.title;
 
     final S l = S.of(context);
-    final CollectionChoice? choice =
-        await showCollectionPickerDialog(
-            context: context,
-            ref: ref,
-            title: l.searchAddToCollection,
-          );
+    final CollectionChoice? choice = await showCollectionPickerDialog(
+      context: context,
+      ref: ref,
+      title: l.searchAddToCollection,
+    );
     if (choice == null || !mounted) return;
 
     final int? collectionId;
@@ -692,7 +677,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         collectionName = l.collectionsUncategorized;
     }
 
-    // Кэшируем модель в БД, чтобы она была доступна офлайн
     await ref.read(databaseServiceProvider).upsertTvShow(tvShow);
 
     final bool success = await ref
@@ -712,10 +696,16 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         );
         await _preloadSeasonsAsync(tvShow.tmdbId);
         if (mounted) {
-          context.showSnack(l.searchAddedToNamed(title, collectionName), type: SnackType.success);
+          context.showSnack(
+            l.searchAddedToNamed(title, collectionName),
+            type: SnackType.success,
+          );
         }
       } else {
-        context.showSnack(l.searchAlreadyInNamed(title, collectionName), type: SnackType.info);
+        context.showSnack(
+          l.searchAlreadyInNamed(title, collectionName),
+          type: SnackType.info,
+        );
       }
     }
   }
@@ -790,17 +780,34 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     );
   }
 
+  void _showDiscoverCustomizeSheet() {
+    final Size screenSize = MediaQuery.sizeOf(context);
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useRootNavigator: true,
+      constraints: BoxConstraints(
+        maxWidth: screenSize.width,
+        maxHeight: screenSize.height * 0.85,
+      ),
+      builder: (BuildContext _) => const DiscoverCustomizeSheet(),
+    );
+  }
 
   // ==================== Build ====================
 
   @override
   Widget build(BuildContext context) {
-    final S l = S.of(context);
+    final BrowseState browseState = ref.watch(browseProvider);
     final bool isLandscape = isLandscapeMobile(context);
 
-    // Показываем кнопку Discover Customize на TV табе при пустом поиске.
-    final bool showDiscoverCustomize = _activeTabIndex == 0 &&
-        ref.watch(mediaSearchProvider).isEmpty;
+    // Discover Customize кнопка — только в Browse mode без фильтров
+    // когда источник поддерживает Discover (TMDB)
+    final bool showDiscoverCustomize = !browseState.isSearchMode &&
+        !browseState.hasFilters &&
+        (browseState.sourceId == 'movies' ||
+            browseState.sourceId == 'tv' ||
+            browseState.sourceId == 'anime');
 
     return Scaffold(
       resizeToAvoidBottomInset: !isLandscape,
@@ -809,737 +816,122 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           if (showDiscoverCustomize)
             IconButton(
               icon: const Icon(Icons.tune, size: 20),
-              tooltip: l.discoverCustomize,
-              onPressed: () => _showDiscoverCustomizeSheet(),
+              tooltip: S.of(context).discoverCustomize,
+              onPressed: _showDiscoverCustomizeSheet,
+            ),
+          if (!browseState.isSearchMode)
+            IconButton(
+              icon: const Icon(Icons.search, size: 22),
+              tooltip: S.of(context).navSearch,
+              onPressed: _enterSearchMode,
             ),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          isScrollable: true,
-          tabAlignment: TabAlignment.start,
-          labelPadding: isLandscape
-              ? const EdgeInsets.symmetric(horizontal: AppSpacing.sm)
-              : null,
-          tabs: isLandscape
-              ? const <Widget>[
-                  Tab(icon: Icon(Icons.tv, size: 18)),
-                  Tab(icon: Icon(Icons.videogame_asset, size: 18)),
-                ]
-              : <Widget>[
-                  Tab(icon: const Icon(Icons.tv), text: l.searchTabTv),
-                  Tab(icon: const Icon(Icons.videogame_asset), text: l.searchTabGames),
-                ],
-        ),
       ),
-      body: TabBarView(
-        controller: _tabController,
+      body: Column(
         children: <Widget>[
-          _buildTvTab(),
-          _buildGamesTab(),
+          // Фильтр-бар или поле поиска
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            child: browseState.isSearchMode
+                ? _buildSearchBar()
+                : const FilterBar(),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          // Контент
+          Expanded(
+            child: browseState.isSearchMode
+                ? _buildSearchContent(browseState)
+                : _buildBrowseContent(browseState),
+          ),
         ],
       ),
     );
   }
 
-  // ==================== FilterRow builders ====================
+  // ==================== Search bar ====================
 
-  /// Строит FilterRow для TV таба: [Search] [Type] [Sort].
-  Widget _buildTvFilterRow() {
-    final MediaSearchState mediaState = ref.watch(mediaSearchProvider);
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.sm,
-        AppSpacing.sm,
-        AppSpacing.sm,
-        0,
-      ),
-      child: SizedBox(
-        height: _filterRowHeight,
-        child: Row(
-          children: <Widget>[
-            // Поле поиска
-            Expanded(child: _buildCompactSearchField()),
-
-            const SizedBox(width: AppSpacing.xs),
-
-            // TvSubFilter dropdown
-            _buildTvSubFilterButton(mediaState),
-
-            const SizedBox(width: AppSpacing.xs),
-
-            // Sort dropdown
-            _buildSortDropdown(
-              currentSort: mediaState.currentSort,
-              onChanged: (SearchSort sort) {
-                ref.read(mediaSearchProvider.notifier).setSort(sort);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Строит FilterRow для Games таба: [Search] [Platform] [Sort].
-  Widget _buildGamesFilterRow() {
-    final GameSearchState gameState = ref.watch(gameSearchProvider);
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.sm,
-        AppSpacing.sm,
-        AppSpacing.sm,
-        0,
-      ),
-      child: SizedBox(
-        height: _filterRowHeight,
-        child: Row(
-          children: <Widget>[
-            // Поле поиска
-            Expanded(child: _buildCompactSearchField()),
-
-            const SizedBox(width: AppSpacing.xs),
-
-            // Platform filter button
-            _buildCompactPlatformButton(gameState),
-
-            const SizedBox(width: AppSpacing.xs),
-
-            // Sort dropdown
-            _buildSortDropdown(
-              currentSort: gameState.currentSort,
-              onChanged: (SearchSort sort) {
-                ref.read(gameSearchProvider.notifier).setSort(sort);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Компактное поле поиска (стиль collection_screen).
-  Widget _buildCompactSearchField() {
+  Widget _buildSearchBar() {
     final S l = S.of(context);
+    final BrowseState browseState = ref.watch(browseProvider);
     final bool hasText = _searchController.text.isNotEmpty;
-    return TextField(
-      controller: _searchController,
-      focusNode: _searchFocus,
-      style: AppTypography.bodySmall.copyWith(
-        color: AppColors.textPrimary,
-      ),
-      decoration: InputDecoration(
-        hintText: _activeTabIndex == 0 ? l.searchHintTv : l.searchHintGames,
-        hintStyle: AppTypography.bodySmall.copyWith(
-          color: AppColors.textTertiary,
-        ),
-        prefixIcon: const Icon(
-          Icons.search,
-          size: 18,
-          color: AppColors.textTertiary,
-        ),
-        suffixIcon: hasText
-            ? Row(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  IconButton(
-                    icon: const Icon(
-                      Icons.close,
-                      size: 16,
-                      color: AppColors.textTertiary,
-                    ),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(
-                      minWidth: 28,
-                      minHeight: 28,
-                    ),
-                    onPressed: _onClearSearch,
-                  ),
-                  Container(
-                    height: 24,
-                    width: 1,
-                    color: AppColors.textTertiary.withValues(alpha: 0.3),
-                  ),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.arrow_forward,
-                      size: 18,
-                      color: AppColors.textPrimary,
-                    ),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(
-                      minWidth: 32,
-                      minHeight: 32,
-                    ),
-                    tooltip: 'Search',
-                    onPressed: _onSearchSubmit,
-                  ),
-                ],
-              )
-            : null,
-        filled: true,
-        fillColor: AppColors.surfaceLight,
-        contentPadding: const EdgeInsets.symmetric(
-          vertical: AppSpacing.xs,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          borderSide: BorderSide.none,
-        ),
-      ),
-      textInputAction: TextInputAction.search,
-      onSubmitted: (_) => _onSearchSubmit(),
-    );
-  }
 
-  /// Кнопка TvSubFilter (dropdown).
-  Widget _buildTvSubFilterButton(MediaSearchState mediaState) {
-    return PopupMenuButton<TvSubFilter>(
-      onSelected: (TvSubFilter filter) {
-        ref.read(mediaSearchProvider.notifier).setSubFilter(filter);
-      },
-      initialValue: mediaState.subFilter,
-      tooltip: 'Type filter',
-      constraints: const BoxConstraints(minWidth: 120),
-      child: Container(
-        height: _filterRowHeight,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceLight,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.xs,
+      ),
+      child: SizedBox(
+        height: 36,
         child: Row(
-          mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Text(
-              mediaState.subFilter.label,
-              style: AppTypography.bodySmall,
+            // Back button
+            IconButton(
+              icon: const Icon(Icons.arrow_back, size: 20),
+              onPressed: _exitSearchMode,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(
+                minWidth: 36,
+                minHeight: 36,
+              ),
             ),
-            const SizedBox(width: 2),
-            const Icon(Icons.arrow_drop_down, size: 18),
-          ],
-        ),
-      ),
-      itemBuilder: (BuildContext context) => TvSubFilter.values
-          .map(
-            (TvSubFilter filter) => PopupMenuItem<TvSubFilter>(
-              value: filter,
-              child: Text(filter.label),
-            ),
-          )
-          .toList(),
-    );
-  }
-
-  /// Компактная кнопка Platform filter.
-  Widget _buildCompactPlatformButton(GameSearchState gameState) {
-    final int count = gameState.selectedPlatformIds.length;
-    final String label = count == 0 ? 'All' : '$count plat.';
-
-    return GestureDetector(
-      onTap: _platformsLoading ? null : _showPlatformFilterSheet,
-      child: Container(
-        height: _filterRowHeight,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceLight,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            const Icon(Icons.filter_list, size: 16),
             const SizedBox(width: AppSpacing.xs),
-            Text(label, style: AppTypography.bodySmall),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Единый Sort dropdown (одинаковый для обоих табов).
-  Widget _buildSortDropdown({
-    required SearchSort currentSort,
-    required ValueChanged<SearchSort> onChanged,
-  }) {
-    return PopupMenuButton<SearchSortField>(
-      onSelected: (SearchSortField field) {
-        if (field == currentSort.field) {
-          // Если тот же field — toggle order
-          onChanged(currentSort.toggleOrder());
-        } else {
-          onChanged(SearchSort(
-            field: field,
-            order: SearchSortOrder.descending,
-          ));
-        }
-      },
-      tooltip: 'Sort',
-      constraints: const BoxConstraints(minWidth: 130),
-      child: Container(
-        height: _filterRowHeight,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceLight,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Icon(
-              currentSort.order == SearchSortOrder.ascending
-                  ? Icons.arrow_upward
-                  : Icons.arrow_downward,
-              size: 14,
-            ),
-            const SizedBox(width: 2),
-            Text(
-              currentSort.field.localizedShortLabel(S.of(context)),
-              style: AppTypography.bodySmall,
-            ),
-            const SizedBox(width: 2),
-            const Icon(Icons.arrow_drop_down, size: 18),
-          ],
-        ),
-      ),
-      itemBuilder: (BuildContext context) => SearchSortField.values
-          .map(
-            (SearchSortField field) => PopupMenuItem<SearchSortField>(
-              value: field,
-              child: Row(
-                children: <Widget>[
-                  if (field == currentSort.field)
-                    Icon(
-                      currentSort.order == SearchSortOrder.ascending
-                          ? Icons.arrow_upward
-                          : Icons.arrow_downward,
-                      size: 16,
-                    )
-                  else
-                    const SizedBox(width: 16),
-                  const SizedBox(width: AppSpacing.sm),
-                  Text(field.localizedDisplayLabel(S.of(context))),
-                ],
-              ),
-            ),
-          )
-          .toList(),
-    );
-  }
-
-  // ==================== Grid helpers ====================
-
-  static const double _desktopMaxCardWidth = 150;
-
-  bool get _isDesktop {
-    final double screenWidth = MediaQuery.sizeOf(context).width;
-    return screenWidth >= navigationBreakpoint && !kIsMobile;
-  }
-
-  int get _gridCrossAxisCount {
-    final double screenWidth = MediaQuery.sizeOf(context).width;
-    final bool isLandscape = isLandscapeMobile(context);
-    if (isLandscape) {
-      return AppSpacing.gridColumnsDesktop;
-    } else if (screenWidth >= 500) {
-      return AppSpacing.gridColumnsTablet;
-    }
-    return AppSpacing.gridColumnsMobile;
-  }
-
-  SliverGridDelegate get _gridDelegate {
-    if (_isDesktop) {
-      return SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: _desktopMaxCardWidth,
-        crossAxisSpacing: _gridCrossAxisSpacing,
-        mainAxisSpacing: _gridMainAxisSpacing,
-        childAspectRatio: 0.55,
-      );
-    }
-    return SliverGridDelegateWithFixedCrossAxisCount(
-      crossAxisCount: _gridCrossAxisCount,
-      crossAxisSpacing: _gridCrossAxisSpacing,
-      mainAxisSpacing: _gridMainAxisSpacing,
-      childAspectRatio: 0.55,
-    );
-  }
-
-  double get _gridPadding =>
-      isLandscapeMobile(context) ? AppSpacing.sm : AppSpacing.md;
-
-  double get _gridCrossAxisSpacing =>
-      isLandscapeMobile(context) ? AppSpacing.sm : AppSpacing.md;
-
-  double get _gridMainAxisSpacing =>
-      isLandscapeMobile(context) ? AppSpacing.sm : AppSpacing.lg;
-
-  Widget _buildShimmerGrid() {
-    return GridView.builder(
-      padding: EdgeInsets.all(_gridPadding),
-      gridDelegate: _gridDelegate,
-      itemCount: _gridCrossAxisCount * 2,
-      itemBuilder: (BuildContext context, int index) {
-        return const ShimmerPosterCard();
-      },
-    );
-  }
-
-  // ==================== TV tab ====================
-
-  Widget _buildTvTab() {
-    final MediaSearchState searchState = ref.watch(mediaSearchProvider);
-
-    return Column(
-      children: <Widget>[
-        _buildTvFilterRow(),
-        const SizedBox(height: AppSpacing.xs),
-        Expanded(
-          child: _buildMediaResults(searchState),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMediaResults(MediaSearchState searchState) {
-    final SettingsState settings = ref.watch(settingsNotifierProvider);
-    if (!settings.hasTmdbKey) {
-      return _buildMissingApiKeyState(
-        'TMDB API key required',
-        'Configure your TMDB API key in Settings to search movies and TV shows.',
-      );
-    }
-
-    if (searchState.error != null) {
-      return _buildErrorState(searchState.error!, onRetry: () {
-        ref
-            .read(mediaSearchProvider.notifier)
-            .search(_searchController.text);
-      });
-    }
-
-    if (searchState.isLoading) {
-      return _buildShimmerGrid();
-    }
-
-    if (searchState.isEmpty) {
-      return DiscoverFeed(
-        onAddMovie: (Movie movie) => _addMovieToAnyCollection(movie),
-        onAddTvShow: (TvShow tvShow) => _addTvShowToAnyCollection(tvShow),
-      );
-    }
-
-    if (!searchState.hasResults && searchState.query.isNotEmpty) {
-      return _buildNoResults(searchState.query);
-    }
-
-    final Map<int, List<CollectedItemInfo>> collectedMovieInfos =
-        ref.watch(collectedMovieIdsProvider).valueOrNull ??
-            <int, List<CollectedItemInfo>>{};
-    final Map<int, List<CollectedItemInfo>> collectedTvShowInfos =
-        ref.watch(collectedTvShowIdsProvider).valueOrNull ??
-            <int, List<CollectedItemInfo>>{};
-    final Map<int, List<CollectedItemInfo>> collectedAnimationInfos =
-        ref.watch(collectedAnimationIdsProvider).valueOrNull ??
-            <int, List<CollectedItemInfo>>{};
-
-    final int itemCount = searchState.items.length;
-    final bool showLoader = searchState.isLoadingMore;
-
-    return NotificationListener<ScrollNotification>(
-      onNotification: (ScrollNotification notification) {
-        if (notification is ScrollUpdateNotification) {
-          final ScrollMetrics metrics = notification.metrics;
-          if (metrics.pixels > metrics.maxScrollExtent * 0.8) {
-            ref.read(mediaSearchProvider.notifier).loadMore();
-          }
-        }
-        return false;
-      },
-      child: GridView.builder(
-        padding: EdgeInsets.all(_gridPadding),
-        gridDelegate: _gridDelegate,
-        itemCount: itemCount + (showLoader ? _gridCrossAxisCount : 0),
-        itemBuilder: (BuildContext context, int index) {
-          if (index >= itemCount) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.all(AppSpacing.md),
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            );
-          }
-
-          final MediaSearchItem item = searchState.items[index];
-
-          // Определяем, есть ли в коллекции
-          bool isInCollection = false;
-          if (item.isAnimation) {
-            final List<CollectedItemInfo>? infos =
-                collectedAnimationInfos[item.tmdbId];
-            isInCollection = infos != null && infos.isNotEmpty;
-          } else if (item.type == MediaSearchItemType.movie) {
-            final List<CollectedItemInfo>? infos =
-                collectedMovieInfos[item.tmdbId];
-            isInCollection = infos != null && infos.isNotEmpty;
-          } else {
-            final List<CollectedItemInfo>? infos =
-                collectedTvShowInfos[item.tmdbId];
-            isInCollection = infos != null && infos.isNotEmpty;
-          }
-
-          final ImageType imageType =
-              item.type == MediaSearchItemType.movie
-                  ? ImageType.moviePoster
-                  : ImageType.tvShowPoster;
-
-          return MediaPosterCard(
-            key: ValueKey<String>(
-                '${item.type.name}_${item.tmdbId}'),
-            variant: isLandscapeMobile(context)
-                ? CardVariant.compact
-                : CardVariant.grid,
-            title: item.title,
-            imageUrl: item.posterUrl ?? '',
-            cacheImageType: imageType,
-            cacheImageId: item.tmdbId.toString(),
-            apiRating: item.rating,
-            year: item.year,
-            subtitle: _mediaSubtitle(item),
-            isInCollection: isInCollection,
-            onTap: () => _onMediaItemTapForAnimation(item),
-          );
-        },
-      ),
-    );
-  }
-
-  String? _mediaSubtitle(MediaSearchItem item) {
-    final List<String>? genres = item.genres;
-    if (item.isAnimation) {
-      final String typeLabel = item.type == MediaSearchItemType.movie
-          ? 'Movie'
-          : 'Series';
-      return '$typeLabel${_genreSuffix(genres)}';
-    }
-    return genres?.take(2).join(', ');
-  }
-
-  String _genreSuffix(List<String>? genres) {
-    if (genres == null || genres.isEmpty) return '';
-    final List<String> filtered = genres
-        .where((String g) => g != 'Animation' && g != '16')
-        .take(1)
-        .toList();
-    if (filtered.isEmpty) return '';
-    return ' \u2022 ${filtered.first}';
-  }
-
-  // ==================== Games tab ====================
-
-  Widget _buildGamesTab() {
-    final GameSearchState searchState = ref.watch(gameSearchProvider);
-
-    return Column(
-      children: <Widget>[
-        _buildGamesFilterRow(),
-        const SizedBox(height: AppSpacing.xs),
-        Expanded(
-          child: _buildGameResults(searchState),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildGameResults(GameSearchState searchState) {
-    final SettingsState settings = ref.watch(settingsNotifierProvider);
-    if (!settings.isApiReady) {
-      return _buildMissingApiKeyState(
-        'IGDB API keys required',
-        'Configure your IGDB credentials in Settings to search games.',
-      );
-    }
-
-    if (searchState.error != null) {
-      return _buildErrorState(searchState.error!, onRetry: () {
-        ref
-            .read(gameSearchProvider.notifier)
-            .search(_searchController.text);
-      });
-    }
-
-    if (searchState.isLoading) {
-      return _buildShimmerGrid();
-    }
-
-    if (searchState.isEmpty) {
-      return _buildEmptyState('Search for games', Icons.videogame_asset);
-    }
-
-    if (!searchState.hasResults && searchState.query.isNotEmpty) {
-      return _buildNoResults(searchState.query);
-    }
-
-    final Map<int, List<CollectedItemInfo>> collectedGameInfos =
-        ref.watch(collectedGameIdsProvider).valueOrNull ??
-            <int, List<CollectedItemInfo>>{};
-
-    final int itemCount = searchState.results.length;
-    final bool showLoader = searchState.isLoadingMore;
-
-    return NotificationListener<ScrollNotification>(
-      onNotification: (ScrollNotification notification) {
-        if (notification is ScrollUpdateNotification) {
-          final ScrollMetrics metrics = notification.metrics;
-          if (metrics.pixels > metrics.maxScrollExtent * 0.8) {
-            ref.read(gameSearchProvider.notifier).loadMore();
-          }
-        }
-        return false;
-      },
-      child: GridView.builder(
-        padding: EdgeInsets.all(_gridPadding),
-        gridDelegate: _gridDelegate,
-        itemCount: itemCount + (showLoader ? _gridCrossAxisCount : 0),
-        itemBuilder: (BuildContext context, int index) {
-          if (index >= itemCount) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.all(AppSpacing.md),
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            );
-          }
-
-          final Game game = searchState.results[index];
-          final List<CollectedItemInfo>? infos = collectedGameInfos[game.id];
-          return MediaPosterCard(
-            key: ValueKey<int>(game.id),
-            variant: isLandscapeMobile(context)
-                ? CardVariant.compact
-                : CardVariant.grid,
-            title: game.name,
-            imageUrl: game.coverUrl ?? '',
-            cacheImageType: ImageType.gameCover,
-            cacheImageId: game.id.toString(),
-            apiRating: game.rating != null ? game.rating! / 10 : null,
-            year: game.releaseYear,
-            subtitle: game.genres?.take(2).join(', '),
-            isInCollection: infos != null && infos.isNotEmpty,
-            onTap: () => _onGameTap(game),
-          );
-        },
-      ),
-    );
-  }
-
-  // ==================== Shared UI states ====================
-
-  Widget _buildEmptyState(String message, IconData icon) {
-    final bool isLandscape = isLandscapeMobile(context);
-    return Center(
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Icon(
-              icon,
-              size: isLandscape ? 32 : 64,
-              color: AppColors.textSecondary.withAlpha(128),
-            ),
-            SizedBox(height: isLandscape ? AppSpacing.sm : AppSpacing.md),
-            Text(
-              message,
-              style: (isLandscape ? AppTypography.body : AppTypography.h3)
-                  .copyWith(color: AppColors.textSecondary),
-              textAlign: TextAlign.center,
-            ),
-            if (!isLandscape) ...<Widget>[
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                S.of(context).searchMinCharsHint,
+            // Search field
+            Expanded(
+              child: TextField(
+                controller: _searchController,
+                focusNode: _searchFocus,
                 style: AppTypography.body.copyWith(
-                  color: AppColors.textSecondary.withAlpha(179),
+                  color: AppColors.textPrimary,
                 ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNoResults(String query) {
-    final bool isLandscape = isLandscapeMobile(context);
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Icon(
-            Icons.search_off,
-            size: isLandscape ? 32 : 64,
-            color: AppColors.textSecondary.withAlpha(128),
-          ),
-          SizedBox(height: isLandscape ? AppSpacing.sm : AppSpacing.md),
-          Text(
-            S.of(context).searchNoResults,
-            style: (isLandscape ? AppTypography.body : AppTypography.h3)
-                .copyWith(color: AppColors.textSecondary),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            S.of(context).searchNothingFoundFor(query),
-            style: AppTypography.bodySmall.copyWith(
-              color: AppColors.textSecondary.withAlpha(179),
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMissingApiKeyState(String title, String message) {
-    final bool isLandscape = isLandscapeMobile(context);
-    return Center(
-      child: SingleChildScrollView(
-        padding: EdgeInsets.all(isLandscape ? AppSpacing.md : AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Icon(
-              Icons.key_off,
-              size: isLandscape ? 32 : 64,
-              color: AppColors.textTertiary.withAlpha(100),
-            ),
-            SizedBox(height: isLandscape ? AppSpacing.sm : AppSpacing.md),
-            Text(
-              title,
-              style: AppTypography.h3.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              message,
-              style: AppTypography.body.copyWith(
-                color: AppColors.textTertiary,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            FilledButton.icon(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (BuildContext context) =>
-                        const CredentialsScreen(),
+                decoration: InputDecoration(
+                  hintText: browseState.source.searchHint(l),
+                  hintStyle: AppTypography.body.copyWith(
+                    color: AppColors.textTertiary,
                   ),
-                );
-              },
-              icon: const Icon(Icons.settings),
-              label: Text(S.of(context).searchGoToSettings),
+                  prefixIcon: const Icon(
+                    Icons.search,
+                    size: 18,
+                    color: AppColors.textTertiary,
+                  ),
+                  suffixIcon: hasText
+                      ? IconButton(
+                          icon: const Icon(
+                            Icons.close,
+                            size: 16,
+                            color: AppColors.textTertiary,
+                          ),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(
+                            minWidth: 28,
+                            minHeight: 28,
+                          ),
+                          onPressed: _onClearSearch,
+                        )
+                      : null,
+                  filled: true,
+                  fillColor: AppColors.surfaceLight,
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: AppSpacing.xs,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius:
+                        BorderRadius.circular(AppSpacing.radiusSm),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius:
+                        BorderRadius.circular(AppSpacing.radiusSm),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius:
+                        BorderRadius.circular(AppSpacing.radiusSm),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+                textInputAction: TextInputAction.search,
+                onSubmitted: (_) => _onSearchSubmit(),
+              ),
             ),
           ],
         ),
@@ -1547,62 +939,88 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     );
   }
 
-  /// Проверяет, является ли ошибка сетевой (а не API).
-  bool _isNetworkError(String error) {
-    final String lower = error.toLowerCase();
-    return lower.contains('connection') ||
-        lower.contains('timeout') ||
-        lower.contains('socket') ||
-        lower.contains('network') ||
-        lower.contains('internet') ||
-        lower.contains('resolve host') ||
-        lower.contains('unknown host') ||
-        lower.contains('dns');
+  // ==================== Browse content ====================
+
+  Widget _buildBrowseContent(BrowseState browseState) {
+    // Без фильтров → Discover feed (для TMDB источников)
+    if (!browseState.hasFilters) {
+      final String sourceId = browseState.sourceId;
+
+      // TMDB источники — показываем Discover feed
+      if (sourceId == 'movies' || sourceId == 'tv' || sourceId == 'anime') {
+        return DiscoverFeed(
+          onAddMovie: (Movie movie) => _addMovieToAnyCollection(movie),
+          onAddTvShow: (TvShow tvShow) => _addTvShowToAnyCollection(tvShow),
+        );
+      }
+
+      // Другие источники без Discover — пустое состояние
+      return _buildEmptyFilterState();
+    }
+
+    // С фильтрами → Browse grid
+    return BrowseGrid(onItemTap: _onItemTap);
   }
 
-  Widget _buildErrorState(String error, {required VoidCallback onRetry}) {
-    final bool isLandscape = isLandscapeMobile(context);
-    final bool isNetwork = _isNetworkError(error);
+  // ==================== Search content ====================
 
-    final IconData icon =
-        isNetwork ? Icons.wifi_off : Icons.error_outline;
-    final String title =
-        isNetwork ? S.of(context).searchNoInternet : S.of(context).searchFailed;
-    final String subtitle = isNetwork
-        ? S.of(context).searchCheckConnection
-        : error;
+  Widget _buildSearchContent(BrowseState browseState) {
+    if (browseState.searchQuery.isEmpty && browseState.items.isEmpty) {
+      return _buildEmptySearchState();
+    }
 
+    // Результаты через BrowseGrid
+    return BrowseGrid(onItemTap: _onItemTap);
+  }
+
+  // ==================== Empty states ====================
+
+  Widget _buildEmptyFilterState() {
+    final S l = S.of(context);
     return Center(
-      child: SingleChildScrollView(
-        padding: EdgeInsets.all(isLandscape ? AppSpacing.md : AppSpacing.xl),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Icon(
-              icon,
-              size: isLandscape ? 32 : 64,
-              color: AppColors.error,
+            const Icon(
+              Icons.filter_alt_outlined,
+              size: 48,
+              color: AppColors.textTertiary,
             ),
-            SizedBox(height: isLandscape ? AppSpacing.sm : AppSpacing.md),
+            const SizedBox(height: AppSpacing.md),
             Text(
-              title,
-              style: AppTypography.h3.copyWith(
-                color: AppColors.error,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              subtitle,
+              l.browseEmptyFilters,
               style: AppTypography.body.copyWith(
                 color: AppColors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: AppSpacing.lg),
-            FilledButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
-              label: Text(S.of(context).retry),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptySearchState() {
+    final S l = S.of(context);
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            const Icon(
+              Icons.search,
+              size: 48,
+              color: AppColors.textTertiary,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              l.browseSearchHint,
+              style: AppTypography.body.copyWith(
+                color: AppColors.textSecondary,
+              ),
             ),
           ],
         ),

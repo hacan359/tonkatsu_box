@@ -9,6 +9,7 @@ import '../../../core/api/tmdb_api.dart';
 import '../../../shared/models/movie.dart';
 import '../../../shared/models/tv_show.dart';
 import '../../settings/providers/settings_provider.dart';
+import '../utils/genre_utils.dart';
 import 'genre_provider.dart';
 
 /// Ключи настроек Discover.
@@ -170,36 +171,6 @@ class DiscoverSettingsNotifier extends Notifier<DiscoverSettings> {
 
 // ===== Провайдеры данных =====
 
-/// Резолвит числовые genre_ids в читаемые названия жанров для фильмов.
-List<Movie> _resolveMovieGenres(
-  List<Movie> movies,
-  Map<String, String> genreMap,
-) {
-  if (genreMap.isEmpty) return movies;
-  return movies.map((Movie m) {
-    if (m.genres == null || m.genres!.isEmpty) return m;
-    final List<String> resolved = m.genres!
-        .map((String id) => genreMap[id] ?? id)
-        .toList();
-    return m.copyWith(genres: resolved);
-  }).toList();
-}
-
-/// Резолвит числовые genre_ids в читаемые названия жанров для сериалов.
-List<TvShow> _resolveTvGenres(
-  List<TvShow> shows,
-  Map<String, String> genreMap,
-) {
-  if (genreMap.isEmpty) return shows;
-  return shows.map((TvShow s) {
-    if (s.genres == null || s.genres!.isEmpty) return s;
-    final List<String> resolved = s.genres!
-        .map((String id) => genreMap[id] ?? id)
-        .toList();
-    return s.copyWith(genres: resolved);
-  }).toList();
-}
-
 /// Трендовые фильмы.
 final FutureProvider<List<Movie>> discoverTrendingMoviesProvider =
     FutureProvider<List<Movie>>((Ref ref) async {
@@ -210,7 +181,7 @@ final FutureProvider<List<Movie>> discoverTrendingMoviesProvider =
   final Map<String, String> genreMap =
       await ref.watch(movieGenreMapProvider.future);
   final List<Movie> movies = await tmdb.getTrendingMovies();
-  return _resolveMovieGenres(movies, genreMap);
+  return resolveMovieGenres(movies, genreMap);
 });
 
 /// Трендовые сериалы.
@@ -222,7 +193,7 @@ final FutureProvider<List<TvShow>> discoverTrendingTvShowsProvider =
   final Map<String, String> genreMap =
       await ref.watch(tvGenreMapProvider.future);
   final List<TvShow> shows = await tmdb.getTrendingTvShows();
-  return _resolveTvGenres(shows, genreMap);
+  return resolveTvGenres(shows, genreMap);
 });
 
 /// Лучшие фильмы.
@@ -234,7 +205,7 @@ final FutureProvider<List<Movie>> discoverTopRatedMoviesProvider =
   final Map<String, String> genreMap =
       await ref.watch(movieGenreMapProvider.future);
   final List<Movie> movies = await tmdb.getTopRatedMovies();
-  return _resolveMovieGenres(movies, genreMap);
+  return resolveMovieGenres(movies, genreMap);
 });
 
 /// Популярные сериалы.
@@ -246,7 +217,7 @@ final FutureProvider<List<TvShow>> discoverPopularTvShowsProvider =
   final Map<String, String> genreMap =
       await ref.watch(tvGenreMapProvider.future);
   final List<TvShow> shows = await tmdb.getPopularTvShows();
-  return _resolveTvGenres(shows, genreMap);
+  return resolveTvGenres(shows, genreMap);
 });
 
 /// Скоро в кино.
@@ -258,7 +229,7 @@ final FutureProvider<List<Movie>> discoverUpcomingMoviesProvider =
   final Map<String, String> genreMap =
       await ref.watch(movieGenreMapProvider.future);
   final List<Movie> movies = await tmdb.getUpcomingMovies();
-  return _resolveMovieGenres(movies, genreMap);
+  return resolveMovieGenres(movies, genreMap);
 });
 
 /// Аниме (TV с жанром Animation = 16).
@@ -270,7 +241,7 @@ final FutureProvider<List<TvShow>> discoverAnimeProvider =
   final Map<String, String> genreMap =
       await ref.watch(tvGenreMapProvider.future);
   final List<TvShow> shows = await tmdb.discoverTvShows(genreId: 16);
-  return _resolveTvGenres(shows, genreMap);
+  return resolveTvGenres(shows, genreMap);
 });
 
 /// Лучшие сериалы.
@@ -282,5 +253,5 @@ final FutureProvider<List<TvShow>> discoverTopRatedTvShowsProvider =
   final Map<String, String> genreMap =
       await ref.watch(tvGenreMapProvider.future);
   final List<TvShow> shows = await tmdb.getTopRatedTvShows();
-  return _resolveTvGenres(shows, genreMap);
+  return resolveTvGenres(shows, genreMap);
 });

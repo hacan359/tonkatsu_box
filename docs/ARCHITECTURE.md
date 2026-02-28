@@ -102,7 +102,7 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/core/api/igdb_api.dart` | **IGDB API клиент**. OAuth через Twitch, поиск игр, загрузка платформ. Методы: `getAccessToken()`, `searchGames()`, `fetchPlatforms()` |
+| `lib/core/api/igdb_api.dart` | **IGDB API клиент**. OAuth через Twitch, поиск игр, загрузка платформ, browse с фильтрами, жанры. Методы: `getAccessToken()`, `searchGames()`, `fetchPlatforms()`, `browseGames()`, `getGenres()`, `getTopGamesByPlatform()` |
 | `lib/core/api/steamgriddb_api.dart` | **SteamGridDB API клиент**. Bearer token авторизация. Методы: `searchGames()`, `getGrids()`, `getHeroes()`, `getLogos()`, `getIcons()`, `validateApiKey()` |
 | `lib/core/api/tmdb_api.dart` | **TMDB API клиент**. Bearer token авторизация. Методы: `searchMovies(query, {year})`, `searchTvShows(query, {firstAirDateYear})`, `multiSearch()`, `getMovieDetails()`, `getTvShowDetails()`, `getPopularMovies()`, `getPopularTvShows()`, `getMovieGenres()`, `getTvGenres()`, `getSeasonEpisodes(tmdbShowId, seasonNumber)`, `setLanguage(language)`, `getMovieRecommendations()`, `getTvShowRecommendations()`, `getMovieReviews()`, `getTvShowReviews()`, `discoverMovies()`, `discoverTvShows()`. Lazy-cached genre map (`_movieGenreMap`, `_tvGenreMap`) — resolves `genre_ids` to `genres` in all list endpoints. Cache cleared on `setLanguage()` and `clearApiKey()` |
 | `lib/shared/constants/platform_features.dart` | **Флаги платформы**. `kCanvasEnabled` (true на всех платформах), `kVgMapsEnabled` (только Windows), `kScreenshotEnabled` (только Windows). VGMaps скрыт на не-Windows платформах |
@@ -228,39 +228,93 @@ lib/
 
 ### 🔍 Features: Search (Поиск)
 
+#### Архитектура
+
+Поиск построен на pluggable-архитектуре с абстракциями `SearchSource` и `SearchFilter`:
+
+- **SearchSource** — описывает источник данных (IGDB, TMDB movies/tv/anime). Объявляет фильтры, сортировки, методы browse/search
+- **SearchFilter** — описывает один фильтр (жанр, год, платформа, тип). `cacheKey` различает фильтры с одинаковым `key` но разными наборами опций
+- **BrowseNotifier** — единый state manager для Browse/Search режимов с пагинацией и переключением источников
+
 #### Экраны
 
 | Файл | Назначение |
 |------|------------|
-| `lib/features/search/screens/search_screen.dart` | **Экран поиска**. TabBar с 4 табами: Games / Movies / TV Shows / Animation. Общее поле ввода с debounce, фильтр платформ (только Games), сортировка (SortSelector), фильтры медиа (год, жанры через MediaFilterSheet). Animation tab объединяет animated movies + TV shows (genre_id=16), исключая их из Movies/TV Shows табов. При `collectionId` — добавляет игры/фильмы/сериалы/анимацию в коллекцию через `collectionItemsNotifierProvider`. Bottom sheet с деталями. Параметр `initialQuery` — предзаполнение поиска из Wishlist |
+| `lib/features/search/screens/search_screen.dart` | **Экран поиска**. Два режима: Browse (FilterBar + Discover feed / BrowseGrid) и Search (поле поиска + BrowseGrid). SourceDropdown переключает между 4 источниками. При `collectionId` — добавляет элементы в коллекцию (с upsert в БД). Bottom sheet с деталями. `initialQuery` — предзаполнение из Wishlist |
 
 <details>
-<summary><strong>Виджеты и провайдеры поиска</strong> — развернуть таблицу</summary>
+<summary><strong>Модели и абстракции</strong> — развернуть таблицу</summary>
+
+| Файл | Назначение |
+|------|------------|
+| `lib/features/search/models/search_source.dart` | **Абстракции**. `SearchSource` (id, label, icon, filters, browse, search, sortOptions), `SearchFilter` (key, cacheKey, placeholder, options, allOption), `FilterOption`, `BrowseSortOption`, `BrowseResult` |
+
+</details>
+
+<details>
+<summary><strong>Источники данных (Sources)</strong> — развернуть таблицу</summary>
+
+| Файл | Назначение |
+|------|------------|
+| `lib/features/search/sources/tmdb_movies_source.dart` | **Фильмы TMDB**. Browse через discoverMoviesFiltered (исключая анимацию), search через searchMovies. Фильтры: жанр + год. Сортировка: popular/top_rated/newest |
+| `lib/features/search/sources/tmdb_tv_source.dart` | **Сериалы TMDB**. Browse через discoverTvShowsFiltered (исключая анимацию), search через searchTvShows. Фильтры: жанр + год. Сортировка: popular/top_rated/newest |
+| `lib/features/search/sources/tmdb_anime_source.dart` | **Анимация TMDB**. Объединяет animated movies + TV shows (genre_id=16). Фильтры: тип (series/movies) + жанр + год |
+| `lib/features/search/sources/igdb_games_source.dart` | **Игры IGDB**. Browse через browseGames, search через searchGames. Фильтры: жанр + платформа. Сортировка: popular/rating/newest |
+
+</details>
+
+<details>
+<summary><strong>Фильтры</strong> — развернуть таблицу</summary>
+
+| Файл | Назначение |
+|------|------------|
+| `lib/features/search/filters/tmdb_genre_filter.dart` | **Жанры TMDB**. `TmdbGenreFilter(type: 'movie'/'tv')`. cacheKey: `genre_movie`/`genre_tv`. Загрузка из movieGenresProvider/tvGenresProvider |
+| `lib/features/search/filters/igdb_genre_filter.dart` | **Жанры IGDB**. `IgdbGenreFilter`. cacheKey: `genre_igdb`. Модель `IgdbGenre`. Загрузка из igdbGenresProvider |
+| `lib/features/search/filters/year_filter.dart` | **Фильтр по году**. Группировка по декадам (2020s, 2010s, ..., Before 1970). Статические опции |
+| `lib/features/search/filters/igdb_platform_filter.dart` | **Фильтр по платформе IGDB**. Загрузка платформ из БД |
+| `lib/features/search/filters/anime_type_filter.dart` | **Фильтр типа анимации**. Series / Movies |
+
+</details>
+
+<details>
+<summary><strong>Виджеты поиска</strong> — развернуть таблицу</summary>
 
 #### Виджеты
 
 | Файл | Назначение |
 |------|------------|
-| ~~`lib/features/search/widgets/game_card.dart`~~ | **Удалён**. Заменён на `MediaPosterCard` в grid-сетке поиска |
-| ~~`lib/features/search/widgets/movie_card.dart`~~ | **Удалён**. Заменён на `MediaPosterCard` в grid-сетке поиска |
-| ~~`lib/features/search/widgets/tv_show_card.dart`~~ | **Удалён**. Заменён на `MediaPosterCard` в grid-сетке поиска |
-| `lib/features/search/widgets/animation_card.dart` | **Карточка анимации**. Обёртка над `MediaCard`: принимает `Movie?` или `TvShow?` + флаг `isMovie`. SourceBadge TMDB, бейдж "Movie"/"Series", subtitle (год, рейтинг, runtime или seasons) |
-| `lib/features/search/widgets/platform_filter_sheet.dart` | **Bottom sheet фильтра платформ**. Мультивыбор платформ с поиском. Кнопки Clear All / Apply |
-| `lib/features/search/widgets/sort_selector.dart` | **Селектор сортировки**. SegmentedButton с 3 опциями (Relevance, Date, Rating). Переключение направления при клике на активный сегмент. Визуальный индикатор |
-| `lib/features/search/widgets/media_filter_sheet.dart` | **Bottom sheet фильтров медиа**. DraggableScrollableSheet с фильтрами: Release Year (TextField), Genres (FilterChip). Кнопка Clear All |
+| `lib/features/search/widgets/browse_grid.dart` | **Грид результатов**. ConsumerStatefulWidget. Бесконечный скролл (пагинация). Grid delegate совпадает с CollectionScreen (maxCrossAxisExtent:150 на desktop, childAspectRatio:0.55). `_collectedIdsProvider` для маркировки "в коллекции" (зелёный чек). Shimmer-загрузка |
+| `lib/features/search/widgets/filter_bar.dart` | **Горизонтальная строка фильтров**. SourceDropdown + FilterDropdown-ы + SortDropdown. ValueKey по source+cacheKey для пересоздания при смене источника |
+| `lib/features/search/widgets/filter_dropdown.dart` | **Дропдаун фильтра**. `FilterDropdown` — PopupMenuButton с async-загрузкой опций, generation-based cancellation, sentinel для "All". `SortDropdown` — дропдаун сортировки |
+| `lib/features/search/widgets/source_dropdown.dart` | **Дропдаун источника**. Переключение между Movies/TV/Anime/Games с иконками |
 | `lib/features/search/widgets/media_details_sheet.dart` | **Bottom sheet деталей медиа**. DraggableScrollableSheet с постером, заголовком, годом, рейтингом, жанровыми чипами, описанием и кнопкой "Add to Collection" |
+| `lib/features/search/widgets/game_details_sheet.dart` | **Bottom sheet деталей игры**. Обложка, название, год, рейтинг, жанры, платформы, описание, кнопка "Add to Collection" |
 | `lib/features/search/widgets/discover_feed.dart` | **Лента Discover**. ConsumerWidget. Показывается при пустом поиске. Горизонтальные ряды: Trending, Top Rated Movies, Popular TV Shows, Upcoming, Anime, Top Rated TV Shows. Shimmer-загрузка. Скрытие элементов из коллекций через `_existingTmdbIdsProvider` |
 | `lib/features/search/widgets/discover_row.dart` | **Горизонтальный ряд постеров Discover**. `DiscoverItem` модель (title, tmdbId, posterUrl, year, rating, isOwned, isMovie). `DiscoverRow` StatefulWidget с `ScrollableRowWithArrows`. `_DiscoverPosterCard` — постер с рейтингом и отметкой коллекции |
 | `lib/features/search/widgets/discover_customize_sheet.dart` | **Bottom sheet настройки Discover**. Toggle секций (SwitchListTile), переключатель "Hide items in collections" |
+
+</details>
+
+<details>
+<summary><strong>Провайдеры поиска</strong> — развернуть таблицу</summary>
 
 #### Провайдеры
 
 | Файл | Назначение |
 |------|------------|
-| `lib/features/search/providers/game_search_provider.dart` | **State поиска игр**. Debounce 400ms, минимум 2 символа. Фильтр по платформам. Сортировка (relevance/date/rating). Состояние: query, results, isLoading, error, currentSort |
-| `lib/features/search/providers/media_search_provider.dart` | **State поиска фильмов/сериалов/анимации**. Debounce 400ms через TMDB API. Enum `MediaSearchTab` (movies, tvShows, animation). Animation tab: `Future.wait([searchMovies, searchTvShows])` -> фильтрация по genre_id=16. Movies/TV Shows табы исключают анимацию. Состояние: query, movieResults, tvShowResults, animationMovieResults, animationTvShowResults, isLoading, error, activeTab, currentSort, selectedYear, selectedGenreIds. Кэширование через `upsertMovies()`/`upsertTvShows()` |
-| `lib/features/search/providers/genre_provider.dart` | **Провайдеры жанров**. `movieGenresProvider`, `tvGenresProvider` — FutureProvider для кэширования списков жанров из TMDB API. `movieGenreMapProvider`, `tvGenreMapProvider` — маппинг ID->имя для быстрого резолвинга genre_ids. DB-first стратегия: загрузка из таблицы `tmdb_genres`, при пустом кэше — запрос к API и сохранение |
-| `lib/features/search/providers/discover_provider.dart` | **State Discover ленты**. `DiscoverSettings` (enabledSections, hideOwned). `DiscoverSectionId` enum (trending, topRatedMovies, popularTvShows, upcoming, anime, topRatedTvShows). `discoverSettingsProvider` (NotifierProvider, SharedPreferences). FutureProvider-ы для каждой секции: `discoverTrendingMoviesProvider`, `discoverTopRatedMoviesProvider`, `discoverPopularTvShowsProvider`, `discoverUpcomingMoviesProvider`, `discoverAnimeProvider`, `discoverTopRatedTvShowsProvider`, `discoverTrendingTvShowsProvider` |
+| `lib/features/search/providers/browse_provider.dart` | **State Browse/Search**. `BrowseState` (sourceId, filterValues, sortBy, items, pagination, isSearchMode, searchQuery, error). `BrowseNotifier` — NotifierProvider. Методы: setSource, setFilter, setSort, loadMore, enterSearchMode, exitSearchMode, search. Pagination через `BrowseResult.hasMore`. Сброс фильтров при смене источника |
+| `lib/features/search/providers/igdb_genre_provider.dart` | **Кэш жанров IGDB**. `igdbGenresProvider` — FutureProvider, загружает жанры через `IgdbApi.getGenres()` |
+| `lib/features/search/providers/genre_provider.dart` | **Провайдеры жанров TMDB**. `movieGenresProvider`, `tvGenresProvider` — FutureProvider для кэширования списков жанров из TMDB API. `movieGenreMapProvider`, `tvGenreMapProvider` — маппинг ID->имя. DB-first стратегия |
+| `lib/features/search/providers/discover_provider.dart` | **State Discover ленты**. `DiscoverSettings` (enabledSections, hideOwned). `DiscoverSectionId` enum. `discoverSettingsProvider` (NotifierProvider, SharedPreferences). FutureProvider-ы для каждой секции |
+
+</details>
+
+<details>
+<summary><strong>Утилиты поиска</strong> — развернуть таблицу</summary>
+
+| Файл | Назначение |
+|------|------------|
+| `lib/features/search/utils/genre_utils.dart` | **Утилиты жанров**. `isAnimationGenre()` — проверка genre string на анимацию |
 
 </details>
 

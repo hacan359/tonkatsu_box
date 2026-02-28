@@ -1151,7 +1151,13 @@ class SRu extends S {
   String get searchTabGames => 'Игры';
 
   @override
+  String get searchHintMovies => 'Поиск фильмов...';
+
+  @override
   String get searchHintTv => 'Поиск ТВ...';
+
+  @override
+  String get searchHintAnime => 'Поиск аниме...';
 
   @override
   String get searchHintGames => 'Поиск игр...';
@@ -1891,4 +1897,52 @@ class SRu extends S {
 
   @override
   String get uncategorizedBannerAction => 'Добавить в коллекцию';
+
+  @override
+  String get browseFilterGenre => 'Жанр';
+
+  @override
+  String get browseFilterYear => 'Год';
+
+  @override
+  String get browseFilterPlatform => 'Платформа';
+
+  @override
+  String get browseFilterType => 'Тип';
+
+  @override
+  String get browseFilterAll => 'Все';
+
+  @override
+  String get browseFilterAny => 'Любой';
+
+  @override
+  String get browseSort => 'Сортировка';
+
+  @override
+  String get browseSortPopular => 'Популярные';
+
+  @override
+  String get browseSortTopRated => 'Лучшие';
+
+  @override
+  String get browseSortNewest => 'Новинки';
+
+  @override
+  String get browseAnimeTypeSeries => 'Сериалы';
+
+  @override
+  String get browseAnimeTypeMovies => 'Фильмы';
+
+  @override
+  String get browseEmptyFilters => 'Выберите фильтр или выполните поиск';
+
+  @override
+  String get browseEmptyResults => 'Ничего не найдено';
+
+  @override
+  String get browseSearchHint => 'Поиск...';
+
+  @override
+  String get browseBackToBrowse => 'Назад к обзору';
 }

@@ -407,7 +407,9 @@
 
   "searchTabTv": "ТВ",
   "searchTabGames": "Игры",
+  "searchHintMovies": "Поиск фильмов...",
   "searchHintTv": "Поиск ТВ...",
+  "searchHintAnime": "Поиск аниме...",
   "searchHintGames": "Поиск игр...",
   "searchSelectPlatform": "Выбрать платформу",
   "searchAddToCollection": "Добавить в коллекцию",
@@ -672,5 +674,22 @@
   "settingsShowRecommendationsSubtitle": "Показывать рекомендации и отзывы на странице элемента",
 
   "uncategorizedBanner": "Добавьте в коллекцию, чтобы открыть Доску и отслеживание серий",
-  "uncategorizedBannerAction": "Добавить в коллекцию"
+  "uncategorizedBannerAction": "Добавить в коллекцию",
+
+  "browseFilterGenre": "Жанр",
+  "browseFilterYear": "Год",
+  "browseFilterPlatform": "Платформа",
+  "browseFilterType": "Тип",
+  "browseFilterAll": "Все",
+  "browseFilterAny": "Любой",
+  "browseSort": "Сортировка",
+  "browseSortPopular": "Популярные",
+  "browseSortTopRated": "Лучшие",
+  "browseSortNewest": "Новинки",
+  "browseAnimeTypeSeries": "Сериалы",
+  "browseAnimeTypeMovies": "Фильмы",
+  "browseEmptyFilters": "Выберите фильтр или выполните поиск",
+  "browseEmptyResults": "Ничего не найдено",
+  "browseSearchHint": "Поиск...",
+  "browseBackToBrowse": "Назад к обзору"
 }
