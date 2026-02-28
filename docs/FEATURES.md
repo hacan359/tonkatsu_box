@@ -75,26 +75,33 @@ Sort mode is saved per collection and persists between sessions.
 
 ## 🔍 Universal Search
 
-Search across multiple media types via tabbed interface:
+Browse and search across multiple media sources via pluggable source architecture:
 
-| Tab | Source | Features |
-|-----|--------|----------|
-| **Games** | IGDB | 200k+ titles, covers, genres, platform filter |
-| **Movies** | TMDB | Posters, genres, runtime, year/genre filter |
-| **TV Shows** | TMDB | Seasons/episodes, show status, year/genre filter |
-| **Animation** | TMDB | Combined animated movies + series, "Movie"/"Series" badge |
+| Source | API | Filters | Sort |
+|--------|-----|---------|------|
+| **Movies** | TMDB | Genre, Year (decades) | Popular, Top Rated, Newest |
+| **TV Shows** | TMDB | Genre, Year (decades) | Popular, Top Rated, Newest |
+| **Animation** | TMDB | Type (Series/Movies), Genre, Year | Popular, Top Rated, Newest |
+| **Games** | IGDB | Genre, Platform | Popular, Rating, Newest |
 
 > [!TIP]
-> The Animation tab automatically filters by genre Animation (ID=16). Movies and TV Shows tabs exclude animated content, so there's no overlap.
+> The Animation source automatically filters by genre Animation (ID=16). Movies and TV Shows sources exclude animated content, so there's no overlap.
 
-- **Sorting** — by relevance, date, or rating (toggle ascending/descending)
-- **Filtering** — by release year (1900–2100), genres (multi-select), active filter chips
-- **Per-tab API key checks** — each tab independently checks its required API key (IGDB for Games, TMDB for Movies/TV/Animation); missing key shows "Go to Settings" button
-- **Smart error handling** — network errors (connection/timeout/socket) show "No internet connection" with retry; API errors show the error message with retry
+Two modes:
+- **Browse mode** — source dropdown + filter bar + sort dropdown. When no filters are active, shows Discover feed (TMDB sources). With filters, shows paginated grid
+- **Search mode** — text search field with results in the same grid
+
+Features:
+- **Source switching** — dropdown to switch between Movies/TV/Anime/Games; filters reset on source change
+- **Filter bar** — horizontal scrollable row with genre/year/platform dropdowns and sort selector
+- **In-collection markers** — green checkmark badge on items already in any collection (`_collectedIdsProvider`)
+- **Consistent card sizes** — grid delegate matches collection screen (desktop: maxCrossAxisExtent 150px, childAspectRatio 0.55)
+- **Infinite scroll** — automatic pagination with shimmer loading indicators
+- **Smart error handling** — network errors show "No internet connection" with retry; API errors show the error message with retry
 
 ### Discover Feed
 
-When the search field is empty, a curated Discover feed is shown with horizontal poster rows:
+When in Browse mode without filters (TMDB sources), a curated Discover feed is shown with horizontal poster rows:
 
 - **Trending** — interleaved trending movies and TV shows
 - **Top Rated Movies** — highest-rated movies from TMDB

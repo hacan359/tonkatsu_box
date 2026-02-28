@@ -7,6 +7,33 @@
 ## [Unreleased]
 
 ### Added
+- Search refactoring — pluggable source architecture with `SearchSource` / `SearchFilter` abstractions (`search_source.dart`). Four sources: `TmdbMoviesSource`, `TmdbTvSource`, `TmdbAnimeSource`, `IgdbGamesSource` (`lib/features/search/sources/`). Five filter types: `TmdbGenreFilter`, `IgdbGenreFilter`, `YearFilter`, `IgdbPlatformFilter`, `AnimeTypeFilter` (`lib/features/search/filters/`)
+- Browse/Search mode — unified `BrowseNotifier` (`browse_provider.dart`) manages source switching, filter state, pagination, and search vs browse mode. Source dropdown + filter bar + sort dropdown in horizontal `FilterBar` (`filter_bar.dart`). Grid results in `BrowseGrid` (`browse_grid.dart`)
+- `IgdbApi.browseGames()` — discover games with genre/platform filters and sort options (`igdb_api.dart`)
+- `IgdbApi.getGenres()` — fetch all IGDB genres; `igdbGenresProvider` caches genre list (`igdb_genre_provider.dart`)
+- `TmdbApi` decade-based year filtering — `discoverMoviesFiltered()` and `discoverTvShowsFiltered()` accept `yearDecadeStart`/`yearDecadeEnd` for grouped year ranges (`tmdb_api.dart`)
+- `SearchFilter.cacheKey` — disambiguates filters with the same `key` but different option sets. `TmdbGenreFilter` → `genre_movie`/`genre_tv`, `IgdbGenreFilter` → `genre_igdb` (`search_source.dart`, `tmdb_genre_filter.dart`, `igdb_genre_filter.dart`)
+- "In collection" markers in Browse grid — `_collectedIdsProvider` aggregates collected TMDB/IGDB IDs across all collections, `BrowseGrid._buildCard()` passes `isInCollection: true` to `MediaPosterCard` for green checkmark badge (`browse_grid.dart`)
+- `SourceDropdown` widget — dropdown to switch between search sources with icons and labels (`source_dropdown.dart`)
+- `FilterDropdown` widget — generic popup menu dropdown for search filters with async option loading and generation-based cancellation (`filter_dropdown.dart`)
+- `GameDetailsSheet` widget — bottom sheet with game details, cover art, and "Add to Collection" button (`game_details_sheet.dart`)
+- Localization: 20 new keys for Browse/Search UI — source labels, filter placeholders, sort options, empty states (EN + RU)
+- Tests: 50+ new tests for search sources, filters (cacheKey coverage), browse_provider, browse_grid (isInCollection, grid delegate variants), filter_bar, filter_dropdown, source_dropdown
+
+### Changed
+- `SearchScreen` rewritten from 4-tab TabBarView to unified Browse/Search architecture — single source dropdown replaces TabBar, filters replace bottom sheets, BrowseGrid replaces per-tab grids (`search_screen.dart`)
+- `BrowseGrid` grid delegate now matches `CollectionScreen` — desktop (≥800px): `SliverGridDelegateWithMaxCrossAxisExtent(maxCrossAxisExtent: 150, childAspectRatio: 0.55)`, mobile/tablet: `SliverGridDelegateWithFixedCrossAxisCount(childAspectRatio: 0.55)` (`browse_grid.dart`)
+- `FilterDropdown.didUpdateWidget()` now compares `filter.cacheKey` instead of `filter.key` to correctly reload options when switching between movie/tv/game genre filters (`filter_dropdown.dart`)
+- `FilterBar` now applies `ValueKey('${source.id}_${filter.cacheKey}')` to each `FilterDropdown` — forces Flutter to recreate the widget when source changes (`filter_bar.dart`)
+- `DiscoverProvider` extracted discover section IDs and settings into standalone providers for reuse across Browse/Search modes (`discover_provider.dart`)
+- `DatabaseService.upsertGame()` improved null-safe merge logic for existing game records (`database_service.dart`)
+
+### Fixed
+- Games added via Browse/Search now persist data before collection insert — added `upsertGame()` call in `_addGameToCollection()` and `_addGameToAnyCollection()`, preventing "Unknown Game" entries in collections (`search_screen.dart`)
+
+### Removed
+- Removed `GameSearchNotifier`, `MediaSearchNotifier`, `SortSelector`, `PlatformFilterSheet`, `MediaFilterSheet` — replaced by `BrowseNotifier` and pluggable source/filter architecture
+
 - "External Rating" sort mode (`CollectionSortMode.externalRating`) — sorts collection items by IGDB/TMDB API rating (`apiRating`, normalized 0–10), highest first, unrated items at the end. Localized in EN and RU (`collection_sort_mode.dart`, `sort_utils.dart`, `app_en.arb`, `app_ru.arb`)
 - Tests: `externalRating` coverage in `collection_sort_mode_test.dart` (6 new tests) and `sort_utils_test.dart` (6 new tests)
 - `externalUrl` field on `Game`, `Movie`, `TvShow` models — stores the IGDB/TMDB page URL. `Game.fromJson()` reads `url` from IGDB API; `Movie.fromJson()` / `TvShow.fromJson()` construct `https://www.themoviedb.org/{movie|tv}/{id}`. Included in `toDb()`, `fromDb()`, `copyWith()`, `toJson()` (Game). Persisted in SQLite (`external_url TEXT` column), exported in `.xcollx` (`game.dart`, `movie.dart`, `tv_show.dart`)

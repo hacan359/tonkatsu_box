@@ -2125,11 +2125,23 @@ abstract class S {
   /// **'Games'**
   String get searchTabGames;
 
+  /// No description provided for @searchHintMovies.
+  ///
+  /// In en, this message translates to:
+  /// **'Search movies...'**
+  String get searchHintMovies;
+
   /// No description provided for @searchHintTv.
   ///
   /// In en, this message translates to:
   /// **'Search TV...'**
   String get searchHintTv;
+
+  /// No description provided for @searchHintAnime.
+  ///
+  /// In en, this message translates to:
+  /// **'Search anime...'**
+  String get searchHintAnime;
 
   /// No description provided for @searchHintGames.
   ///
@@ -3444,6 +3456,102 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Add to Collection'**
   String get uncategorizedBannerAction;
+
+  /// No description provided for @browseFilterGenre.
+  ///
+  /// In en, this message translates to:
+  /// **'Genre'**
+  String get browseFilterGenre;
+
+  /// No description provided for @browseFilterYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Year'**
+  String get browseFilterYear;
+
+  /// No description provided for @browseFilterPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Platform'**
+  String get browseFilterPlatform;
+
+  /// No description provided for @browseFilterType.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get browseFilterType;
+
+  /// No description provided for @browseFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get browseFilterAll;
+
+  /// No description provided for @browseFilterAny.
+  ///
+  /// In en, this message translates to:
+  /// **'Any'**
+  String get browseFilterAny;
+
+  /// No description provided for @browseSort.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort'**
+  String get browseSort;
+
+  /// No description provided for @browseSortPopular.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular'**
+  String get browseSortPopular;
+
+  /// No description provided for @browseSortTopRated.
+  ///
+  /// In en, this message translates to:
+  /// **'Top Rated'**
+  String get browseSortTopRated;
+
+  /// No description provided for @browseSortNewest.
+  ///
+  /// In en, this message translates to:
+  /// **'Newest'**
+  String get browseSortNewest;
+
+  /// No description provided for @browseAnimeTypeSeries.
+  ///
+  /// In en, this message translates to:
+  /// **'Series'**
+  String get browseAnimeTypeSeries;
+
+  /// No description provided for @browseAnimeTypeMovies.
+  ///
+  /// In en, this message translates to:
+  /// **'Movies'**
+  String get browseAnimeTypeMovies;
+
+  /// No description provided for @browseEmptyFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a filter or search'**
+  String get browseEmptyFilters;
+
+  /// No description provided for @browseEmptyResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No results found'**
+  String get browseEmptyResults;
+
+  /// No description provided for @browseSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search...'**
+  String get browseSearchHint;
+
+  /// No description provided for @browseBackToBrowse.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to browse'**
+  String get browseBackToBrowse;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

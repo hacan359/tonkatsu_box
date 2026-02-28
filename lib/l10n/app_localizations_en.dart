@@ -1140,7 +1140,13 @@ class SEn extends S {
   String get searchTabGames => 'Games';
 
   @override
+  String get searchHintMovies => 'Search movies...';
+
+  @override
   String get searchHintTv => 'Search TV...';
+
+  @override
+  String get searchHintAnime => 'Search anime...';
 
   @override
   String get searchHintGames => 'Search games...';
@@ -1872,4 +1878,52 @@ class SEn extends S {
 
   @override
   String get uncategorizedBannerAction => 'Add to Collection';
+
+  @override
+  String get browseFilterGenre => 'Genre';
+
+  @override
+  String get browseFilterYear => 'Year';
+
+  @override
+  String get browseFilterPlatform => 'Platform';
+
+  @override
+  String get browseFilterType => 'Type';
+
+  @override
+  String get browseFilterAll => 'All';
+
+  @override
+  String get browseFilterAny => 'Any';
+
+  @override
+  String get browseSort => 'Sort';
+
+  @override
+  String get browseSortPopular => 'Popular';
+
+  @override
+  String get browseSortTopRated => 'Top Rated';
+
+  @override
+  String get browseSortNewest => 'Newest';
+
+  @override
+  String get browseAnimeTypeSeries => 'Series';
+
+  @override
+  String get browseAnimeTypeMovies => 'Movies';
+
+  @override
+  String get browseEmptyFilters => 'Choose a filter or search';
+
+  @override
+  String get browseEmptyResults => 'No results found';
+
+  @override
+  String get browseSearchHint => 'Search...';
+
+  @override
+  String get browseBackToBrowse => 'Back to browse';
 }

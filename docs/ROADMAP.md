@@ -2,9 +2,9 @@
 
 # 🗺️ Roadmap
 
-![Progress](https://img.shields.io/badge/overall_progress-~87%25-brightgreen?style=for-the-badge)
+![Progress](https://img.shields.io/badge/overall_progress-~90%25-brightgreen?style=for-the-badge)
 
-> Approximate completion: **~87%** — Core features, canvas system, media integrations, Android Lite, UI redesign, and Wishlist are done. A few restoration tasks and future plans remain.
+> Approximate completion: **~90%** — Core features, canvas system, media integrations, Android Lite, UI redesign, Wishlist, and Search refactoring are done. Future plans remain.
 
 ---
 
@@ -81,12 +81,12 @@
 - [x] Image caching — eager download on add, magic bytes validation, Windows file lock fix
 - [x] StatusChipRow + StatusRibbon — piano-style segmented status bar (icon-only, flat color, full-width), Material icon ribbon on list cards, Material icon badge on poster cards
 
-### 📋 UI Restoration (remaining)
+### 📋 UI Restoration (completed)
 
 - [x] Canvas mode restoration — Board toggle IconButton in AppBar, CanvasView + SteamGridDB/VGMaps panels in unified `ItemDetailScreen`
 - [x] Episode Tracker restoration — shared `EpisodeTrackerSection` widget with `accentColor`, used for TV Show and Animation (tvShow source) in `ItemDetailScreen`
 - [x] Activity Dates restoration — inline compact horizontal `Wrap` under My Rating with editable Started/Completed date chips
-- [ ] Search filters restoration — Platform Filter, Media Filter, Sort Selector
+- [x] Search refactoring — pluggable SearchSource/SearchFilter architecture, Browse/Search mode, source dropdown, filter bar, BrowseGrid, in-collection markers, consistent card sizes
 
 ---
 

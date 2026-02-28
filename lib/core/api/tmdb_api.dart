@@ -720,9 +720,19 @@ class TmdbApi {
   // ===== Discover =====
 
   /// Discover фильмов с фильтрами.
+  ///
+  /// [genreId] — ID жанра (один жанр).
+  /// [genreIds] — строка жанров через запятую (например '16,28').
+  /// [year] — конкретный год выпуска.
+  /// [releaseDateGte] — дата начала диапазона (YYYY-MM-DD), для декад.
+  /// [releaseDateLte] — дата конца диапазона (YYYY-MM-DD), для декад.
+  /// [voteCountGte] — минимальное количество голосов.
   Future<List<Movie>> discoverMovies({
     int? genreId,
+    String? genreIds,
     int? year,
+    String? releaseDateGte,
+    String? releaseDateLte,
     int? voteCountGte,
     String sortBy = 'popularity.desc',
     int page = 1,
@@ -736,8 +746,18 @@ class TmdbApi {
         'sort_by': sortBy,
         'page': page,
       };
-      if (genreId != null) params['with_genres'] = genreId;
+      if (genreIds != null) {
+        params['with_genres'] = genreIds;
+      } else if (genreId != null) {
+        params['with_genres'] = genreId;
+      }
       if (year != null) params['primary_release_year'] = year;
+      if (releaseDateGte != null) {
+        params['primary_release_date.gte'] = releaseDateGte;
+      }
+      if (releaseDateLte != null) {
+        params['primary_release_date.lte'] = releaseDateLte;
+      }
       if (voteCountGte != null) params['vote_count.gte'] = voteCountGte;
 
       final Response<dynamic> response = await _dio.get<dynamic>(
@@ -759,10 +779,22 @@ class TmdbApi {
   }
 
   /// Discover сериалов с фильтрами.
+  ///
+  /// [genreId] — ID жанра (один жанр).
+  /// [genreIds] — строка жанров через запятую (например '16,10765').
+  /// [year] — конкретный год первого эфира.
+  /// [firstAirDateGte] — дата начала диапазона (YYYY-MM-DD), для декад.
+  /// [firstAirDateLte] — дата конца диапазона (YYYY-MM-DD), для декад.
+  /// [voteCountGte] — минимальное количество голосов.
+  /// [withoutGenreIds] — исключить жанры (например [16] для анимации).
   Future<List<TvShow>> discoverTvShows({
     int? genreId,
+    String? genreIds,
     int? year,
+    String? firstAirDateGte,
+    String? firstAirDateLte,
     int? voteCountGte,
+    List<int>? withoutGenreIds,
     String sortBy = 'popularity.desc',
     int page = 1,
   }) async {
@@ -775,9 +807,22 @@ class TmdbApi {
         'sort_by': sortBy,
         'page': page,
       };
-      if (genreId != null) params['with_genres'] = genreId;
+      if (genreIds != null) {
+        params['with_genres'] = genreIds;
+      } else if (genreId != null) {
+        params['with_genres'] = genreId;
+      }
       if (year != null) params['first_air_date_year'] = year;
+      if (firstAirDateGte != null) {
+        params['first_air_date.gte'] = firstAirDateGte;
+      }
+      if (firstAirDateLte != null) {
+        params['first_air_date.lte'] = firstAirDateLte;
+      }
       if (voteCountGte != null) params['vote_count.gte'] = voteCountGte;
+      if (withoutGenreIds != null && withoutGenreIds.isNotEmpty) {
+        params['without_genres'] = withoutGenreIds.join(',');
+      }
 
       final Response<dynamic> response = await _dio.get<dynamic>(
         '$_baseUrl/discover/tv',

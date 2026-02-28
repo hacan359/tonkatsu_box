@@ -539,7 +539,9 @@
 
   "searchTabTv": "TV",
   "searchTabGames": "Games",
+  "searchHintMovies": "Search movies...",
   "searchHintTv": "Search TV...",
+  "searchHintAnime": "Search anime...",
   "searchHintGames": "Search games...",
   "searchSelectPlatform": "Select Platform",
   "searchAddToCollection": "Add to Collection",
@@ -886,5 +888,22 @@
   "settingsShowRecommendationsSubtitle": "Show recommendations and reviews on item details",
 
   "uncategorizedBanner": "Add to a collection to unlock Board and episode tracking",
-  "uncategorizedBannerAction": "Add to Collection"
+  "uncategorizedBannerAction": "Add to Collection",
+
+  "browseFilterGenre": "Genre",
+  "browseFilterYear": "Year",
+  "browseFilterPlatform": "Platform",
+  "browseFilterType": "Type",
+  "browseFilterAll": "All",
+  "browseFilterAny": "Any",
+  "browseSort": "Sort",
+  "browseSortPopular": "Popular",
+  "browseSortTopRated": "Top Rated",
+  "browseSortNewest": "Newest",
+  "browseAnimeTypeSeries": "Series",
+  "browseAnimeTypeMovies": "Movies",
+  "browseEmptyFilters": "Choose a filter or search",
+  "browseEmptyResults": "No results found",
+  "browseSearchHint": "Search...",
+  "browseBackToBrowse": "Back to browse"
 }

@@ -53,7 +53,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 21,
+        version: 22,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -80,6 +80,7 @@ class DatabaseService {
     await _createWatchedEpisodesTable(db);
     await _createTmdbGenresTable(db);
     await _createWishlistTable(db);
+    await _createIgdbGenresTable(db);
   }
 
   Future<void> _createPlatformsTable(Database db) async {
@@ -271,6 +272,14 @@ class DatabaseService {
       await db.execute(
         'ALTER TABLE tv_shows_cache ADD COLUMN external_url TEXT',
       );
+    }
+    if (oldVersion < 22) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS igdb_genres (
+          id INTEGER PRIMARY KEY,
+          name TEXT NOT NULL
+        )
+      ''');
     }
   }
 
@@ -623,6 +632,15 @@ class DatabaseService {
     ''');
   }
 
+  Future<void> _createIgdbGenresTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS igdb_genres (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL
+      )
+    ''');
+  }
+
   /// Мигрирует данные из collection_games в collection_items.
   Future<void> _migrateCollectionGamesToItems(Database db) async {
     await db.execute('''
@@ -634,6 +652,40 @@ class DatabaseService {
         author_comment, user_comment, added_at
       FROM collection_games
     ''');
+  }
+
+  // ==================== IGDB Genres ====================
+
+  /// Возвращает все жанры IGDB из кэша.
+  Future<List<Map<String, dynamic>>> getIgdbGenres() async {
+    final Database db = await database;
+    final List<Map<String, dynamic>> rows = await db.query(
+      'igdb_genres',
+      orderBy: 'name ASC',
+    );
+    return rows;
+  }
+
+  /// Сохраняет жанры IGDB в кэш.
+  Future<void> cacheIgdbGenres(List<Map<String, dynamic>> genres) async {
+    final Database db = await database;
+    final Batch batch = db.batch();
+
+    // Очищаем старые данные
+    batch.delete('igdb_genres');
+
+    for (final Map<String, dynamic> genre in genres) {
+      batch.insert(
+        'igdb_genres',
+        <String, Object?>{
+          'id': genre['id'],
+          'name': genre['name'],
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+
+    await batch.commit(noResult: true);
   }
 
   // ==================== Platforms ====================

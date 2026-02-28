@@ -471,6 +471,122 @@ class IgdbApi {
     }
   }
 
+  /// Загружает список жанров из IGDB.
+  ///
+  /// Возвращает список жанров (обычно ~20 записей).
+  /// Throws [IgdbApiException] при ошибке запроса.
+  Future<List<Map<String, dynamic>>> fetchGenres() async {
+    _ensureCredentials();
+
+    try {
+      final Response<dynamic> response = await _dio.post<dynamic>(
+        '$_igdbBaseUrl/genres',
+        options: Options(
+          headers: <String, dynamic>{
+            'Client-ID': _clientId,
+            'Authorization': 'Bearer $_accessToken',
+          },
+        ),
+        data: 'fields id,name; limit 50; sort name asc;',
+      );
+
+      if (response.statusCode != 200 || response.data == null) {
+        throw IgdbApiException(
+          'Failed to fetch genres',
+          statusCode: response.statusCode,
+        );
+      }
+
+      final List<dynamic> data = response.data as List<dynamic>;
+      return data
+          .map((dynamic item) => item as Map<String, dynamic>)
+          .toList();
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'Failed to fetch genres');
+    }
+  }
+
+  /// Просматривает игры без текстового запроса (Browse mode).
+  ///
+  /// Фильтрует по жанру, платформе, году/декаде.
+  /// [sortBy] — строка сортировки IGDB (например 'rating desc').
+  /// [minRatingCount] — минимальное количество оценок.
+  /// Throws [IgdbApiException] при ошибке запроса.
+  Future<List<Game>> browseGames({
+    int? genreId,
+    int? platformId,
+    int? year,
+    (int, int)? decade,
+    String sortBy = 'rating desc',
+    int limit = 20,
+    int offset = 0,
+    int minRatingCount = 10,
+  }) async {
+    _ensureCredentials();
+
+    try {
+      final StringBuffer where =
+          StringBuffer('where rating_count > $minRatingCount');
+
+      if (genreId != null) {
+        where.write(' & genres = ($genreId)');
+      }
+      if (platformId != null) {
+        where.write(' & platforms = ($platformId)');
+      }
+      if (year != null) {
+        final int start =
+            DateTime(year).millisecondsSinceEpoch ~/ 1000;
+        final int end =
+            DateTime(year + 1).millisecondsSinceEpoch ~/ 1000;
+        where.write(
+          ' & first_release_date >= $start & first_release_date < $end',
+        );
+      } else if (decade != null) {
+        final int start =
+            DateTime(decade.$1).millisecondsSinceEpoch ~/ 1000;
+        final int end =
+            DateTime(decade.$2 + 1).millisecondsSinceEpoch ~/ 1000;
+        where.write(
+          ' & first_release_date >= $start & first_release_date < $end',
+        );
+      }
+
+      final StringBuffer body = StringBuffer(_gameFields);
+      body.write(' $where;');
+      body.write(' sort $sortBy;');
+      body.write(' limit $limit;');
+      if (offset > 0) {
+        body.write(' offset $offset;');
+      }
+
+      final Response<dynamic> response = await _dio.post<dynamic>(
+        '$_igdbBaseUrl/games',
+        options: Options(
+          headers: <String, dynamic>{
+            'Client-ID': _clientId,
+            'Authorization': 'Bearer $_accessToken',
+          },
+        ),
+        data: body.toString(),
+      );
+
+      if (response.statusCode != 200 || response.data == null) {
+        throw IgdbApiException(
+          'Failed to browse games',
+          statusCode: response.statusCode,
+        );
+      }
+
+      final List<dynamic> data = response.data as List<dynamic>;
+      return data
+          .map((dynamic item) => Game.fromJson(item as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'Failed to browse games');
+    }
+  }
+
   /// Обрабатывает DioException и возвращает IgdbApiException.
   IgdbApiException _handleDioException(DioException e, String defaultMessage) {
     final int? statusCode = e.response?.statusCode;
