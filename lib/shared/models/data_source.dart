@@ -14,7 +14,10 @@ enum DataSource {
   steamGridDb('SGDB', Color(0xFF3A9BDC)),
 
   /// VGMaps — карты из видеоигр.
-  vgMaps('VGMaps', Color(0xFFE57C23));
+  vgMaps('VGMaps', Color(0xFFE57C23)),
+
+  /// VNDB — база данных визуальных новелл.
+  vndb('VNDB', Color(0xFF2A5FC1));
 
   const DataSource(this.label, this.color);
 

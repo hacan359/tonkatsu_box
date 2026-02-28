@@ -57,6 +57,9 @@ class SRu extends S {
   String get mediaTypeAnimation => 'Анимация';
 
   @override
+  String get mediaTypeVisualNovel => 'Визуальная новелла';
+
+  @override
   String get sortManualDisplay => 'Вручную';
 
   @override
@@ -681,6 +684,10 @@ class SRu extends S {
       'Иллюстрации предоставлены SteamGridDB.';
 
   @override
+  String get creditsVndbAttribution =>
+      'Данные о визуальных новеллах предоставлены VNDB.';
+
+  @override
   String get creditsOpenSource => 'Открытый исходный код';
 
   @override
@@ -835,6 +842,9 @@ class SRu extends S {
   String get collectionFilterAnimation => 'Анимация';
 
   @override
+  String get collectionFilterVisualNovels => 'Визуальные новеллы';
+
+  @override
   String collectionItemMovedTo(String name, String collection) {
     return '$name перемещён в $collection';
   }
@@ -872,6 +882,9 @@ class SRu extends S {
 
   @override
   String get animationNotFound => 'Анимация не найдена';
+
+  @override
+  String get visualNovelNotFound => 'Визуальная новелла не найдена';
 
   @override
   String get animatedMovie => 'Мультфильм';
@@ -1161,6 +1174,12 @@ class SRu extends S {
 
   @override
   String get searchHintGames => 'Поиск игр...';
+
+  @override
+  String get searchHintVisualNovels => 'Поиск визуальных новелл...';
+
+  @override
+  String get searchSourceVisualNovels => 'Визуальные новеллы';
 
   @override
   String get searchSelectPlatform => 'Выбрать платформу';
@@ -1589,6 +1608,9 @@ class SRu extends S {
   String get unknownAnimation => 'Неизвестная анимация';
 
   @override
+  String get unknownVisualNovel => 'Неизвестная визуальная новелла';
+
+  @override
   String get unknownPlatform => 'Неизвестная платформа';
 
   @override
@@ -1613,6 +1635,9 @@ class SRu extends S {
 
   @override
   String get allItemsAnimation => 'Анимация';
+
+  @override
+  String get allItemsVisualNovels => 'Визуальные новеллы';
 
   @override
   String get allItemsRatingAsc => 'Оценка ↑';
@@ -1927,6 +1952,9 @@ class SRu extends S {
 
   @override
   String get browseSortNewest => 'Новинки';
+
+  @override
+  String get browseSortMostVoted => 'По голосам';
 
   @override
   String get browseAnimeTypeSeries => 'Сериалы';

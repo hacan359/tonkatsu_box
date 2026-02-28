@@ -28,7 +28,10 @@ enum ImageType {
   tvShowPoster('tv_show_posters'),
 
   /// Изображения с канваса (URL).
-  canvasImage('canvas_images');
+  canvasImage('canvas_images'),
+
+  /// Обложки визуальных новелл.
+  vnCover('vn_covers');
 
   const ImageType(this.folder);
 

@@ -427,6 +427,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         MediaType.movie => stats?.movieCount,
         MediaType.tvShow => stats?.tvShowCount,
         MediaType.animation => stats?.animationCount,
+        MediaType.visualNovel => stats?.visualNovelCount,
       };
       label = '${_filterType!.localizedLabel(l)}${count != null ? ' ($count)' : ''}';
     }
@@ -497,6 +498,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
               MediaType.tvShow.value, ml.collectionFilterTvShows, stats?.tvShowCount),
           _buildMediaTypeMenuItem(
               MediaType.animation.value, ml.collectionFilterAnimation, stats?.animationCount),
+          _buildMediaTypeMenuItem(
+              MediaType.visualNovel.value, ml.collectionFilterVisualNovels, stats?.visualNovelCount),
         ];
       },
     );

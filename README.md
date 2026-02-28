@@ -5,7 +5,7 @@
 <h1 align="center">Tonkatsu Box</h1>
 
 <p align="center">
-  <b>Organize your games, movies, TV shows, and anime — all in one place</b>
+  <b>Organize your games, movies, TV shows, anime, and visual novels — all in one place</b>
 </p>
 
 <p align="center">
@@ -28,16 +28,16 @@
 
 ---
 
-Tonkatsu Box is a free, open-source collection manager for retro games, movies, TV shows, and anime. Search IGDB and TMDB databases with hundreds of thousands of titles, organize them into custom collections, track your backlog and progress, rate everything from 1 to 10, create visual boards with drag-and-drop, import your watch history from Trakt.tv, and share collections with friends. Available for Windows, Linux, and Android in English and Russian.
+Tonkatsu Box is a free, open-source collection manager for retro games, movies, TV shows, anime, and visual novels. Search IGDB, TMDB, and VNDB databases with hundreds of thousands of titles, organize them into custom collections, track your backlog and progress, rate everything from 1 to 10, create visual boards with drag-and-drop, import your watch history from Trakt.tv, and share collections with friends. Available for Windows, Linux, and Android in English and Russian.
 
 <p align="center">
-  <img src="docs/screenshots/01-main-all.jpg" width="800" alt="Main screen — browse all your games, movies, TV shows and anime">
+  <img src="docs/screenshots/01-main-all.jpg" width="800" alt="Main screen — browse all your games, movies, TV shows, anime, and visual novels">
 </p>
 
 ## What You Can Do
 
 ### 🎮 Build Collections
-Create as many collections as you want — by platform (SNES, PlayStation, PC), genre (RPGs, Sci-Fi), or your own lists (Backlog, Favorites, Couch co-op night). Mix games, movies and anime in a single collection. Switch between list and poster grid view.
+Create as many collections as you want — by platform (SNES, PlayStation, PC), genre (RPGs, Sci-Fi), or your own lists (Backlog, Favorites, Couch co-op night). Mix games, movies, anime, and visual novels in a single collection. Switch between list and poster grid view.
 
 <p align="center">
   <img src="docs/screenshots/03-collections-list.jpg" width="800" alt="Collections list with thumbnails and progress">
@@ -47,7 +47,7 @@ Create as many collections as you want — by platform (SNES, PlayStation, PC), 
 </p>
 
 ### 🔍 Search & Discover
-Two search tabs — **Games** and **TV** — each with their own filters:
+Multiple search tabs — **Games**, **TV**, and **Visual Novels** — each with their own filters:
 
 **Games** (powered by IGDB):
 - Filter by platform — select one or multiple platforms from a searchable list (NES, SNES, PlayStation, PC, and hundreds more)
@@ -58,6 +58,11 @@ Two search tabs — **Games** and **TV** — each with their own filters:
 - Filter by type — All, Movies, TV Shows, or Animation
 - Sort by relevance, release date, or rating
 - Anime is detected automatically by genre — both animated movies and animated series
+
+**Visual Novels** (powered by VNDB):
+- Browse by genre/tag or search by title
+- Sort by rating, release date, or vote count
+- No API key required — VNDB is free and open
 
 Results load as you scroll with automatic pagination. Each card shows the poster, title, year, rating, and top genres at a glance.
 
@@ -99,7 +104,7 @@ Export your collections as `.xcoll` (lightweight) or `.xcollx` (full offline cop
 
 ### Step 1: Get your API keys
 
-The app uses free APIs to search for games, movies, and artwork. You'll need to register for API keys (it's free and takes a few minutes).
+The app uses free APIs to search for games, movies, visual novels, and artwork. You'll need to register for API keys (it's free and takes a few minutes). VNDB for visual novels works without any key.
 
 <details>
 <summary><b>🎮 IGDB — for searching games (required)</b></summary>
@@ -234,7 +239,7 @@ For developers and contributors:
 
 ## Tech Stack
 
-Flutter 3.38+ / Dart 3.10+ · Riverpod · SQLite · Dio · Material Design 3
+Flutter 3.38+ / Dart 3.10+ · Riverpod · SQLite · Dio · Material Design 3 · IGDB · TMDB · VNDB · SteamGridDB
 
 ## Contributing
 
@@ -244,6 +249,7 @@ Contributions are welcome! See the [Contributing Guide](docs/CONTRIBUTING.md) fo
 
 - Movie, TV show, and anime data provided by [TMDB](https://www.themoviedb.org/). This product uses the TMDB API but is not endorsed or certified by TMDB.
 - Game data provided by [IGDB](https://www.igdb.com/).
+- Visual novel data provided by [VNDB](https://vndb.org/).
 - Artwork provided by [SteamGridDB](https://www.steamgriddb.com/).
 
 ## License

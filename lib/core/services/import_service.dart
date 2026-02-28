@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/repositories/canvas_repository.dart';
@@ -19,8 +19,10 @@ import '../../shared/models/platform.dart' as model;
 import '../../shared/models/tv_episode.dart';
 import '../../shared/models/tv_season.dart';
 import '../../shared/models/tv_show.dart';
+import '../../shared/models/visual_novel.dart';
 import '../api/igdb_api.dart';
 import '../api/tmdb_api.dart';
+import '../api/vndb_api.dart';
 import '../database/database_service.dart';
 import 'image_cache_service.dart';
 import 'xcoll_file.dart';
@@ -32,6 +34,7 @@ final Provider<ImportService> importServiceProvider =
     repository: ref.watch(collectionRepositoryProvider),
     igdbApi: ref.watch(igdbApiProvider),
     tmdbApi: ref.watch(tmdbApiProvider),
+    vndbApi: ref.watch(vndbApiProvider),
     database: ref.watch(databaseServiceProvider),
     canvasRepository: ref.watch(canvasRepositoryProvider),
     imageCacheService: ref.watch(imageCacheServiceProvider),
@@ -128,6 +131,9 @@ enum ImportStage {
   /// Загрузка данных сериалов из TMDB.
   fetchingTvShows('Fetching TV show data...'),
 
+  /// Загрузка данных визуальных новелл из VNDB.
+  fetchingVisualNovels('Fetching visual novel data...'),
+
   /// Кэширование медиа-данных.
   cachingMedia('Caching media...'),
 
@@ -163,11 +169,13 @@ class ImportService {
     required IgdbApi igdbApi,
     required DatabaseService database,
     TmdbApi? tmdbApi,
+    VndbApi? vndbApi,
     CanvasRepository? canvasRepository,
     ImageCacheService? imageCacheService,
   })  : _repository = repository,
         _igdbApi = igdbApi,
         _tmdbApi = tmdbApi,
+        _vndbApi = vndbApi,
         _database = database,
         _canvasRepository = canvasRepository,
         _imageCacheService = imageCacheService;
@@ -175,6 +183,7 @@ class ImportService {
   final CollectionRepository _repository;
   final IgdbApi _igdbApi;
   final TmdbApi? _tmdbApi;
+  final VndbApi? _vndbApi;
   final DatabaseService _database;
   final CanvasRepository? _canvasRepository;
   final ImageCacheService? _imageCacheService;
@@ -416,13 +425,16 @@ class ImportService {
         media['tv_episodes'] as List<dynamic>? ?? <dynamic>[];
     final List<dynamic> rawPlatforms =
         media['platforms'] as List<dynamic>? ?? <dynamic>[];
+    final List<dynamic> rawVisualNovels =
+        media['visual_novels'] as List<dynamic>? ?? <dynamic>[];
 
     final int total = rawGames.length +
         rawMovies.length +
         rawTvShows.length +
         rawSeasons.length +
         rawEpisodes.length +
-        rawPlatforms.length;
+        rawPlatforms.length +
+        rawVisualNovels.length;
     final int cachedAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     int current = 0;
 
@@ -550,6 +562,26 @@ class ImportService {
       }
       await _database.upsertPlatforms(platforms);
     }
+
+    // Восстановление визуальных новелл
+    if (rawVisualNovels.isNotEmpty) {
+      final List<VisualNovel> visualNovels = <VisualNovel>[];
+      for (final dynamic raw in rawVisualNovels) {
+        final Map<String, dynamic> row =
+            Map<String, dynamic>.from(raw as Map<String, dynamic>);
+        if (!row.containsKey('updated_at') || row['updated_at'] == null) {
+          row['updated_at'] = cachedAt;
+        }
+        visualNovels.add(VisualNovel.fromDb(row));
+        current++;
+        onProgress?.call(ImportProgress(
+          stage: ImportStage.restoringMedia,
+          current: current,
+          total: total,
+        ));
+      }
+      await _database.upsertVisualNovels(visualNovels);
+    }
   }
 
   // ==================== Media Fetch (API) ====================
@@ -566,6 +598,7 @@ class ImportService {
     final List<Map<String, dynamic>> gameItems = <Map<String, dynamic>>[];
     final List<Map<String, dynamic>> movieItems = <Map<String, dynamic>>[];
     final List<Map<String, dynamic>> tvShowItems = <Map<String, dynamic>>[];
+    final List<Map<String, dynamic>> vnItems = <Map<String, dynamic>>[];
 
     for (final Map<String, dynamic> item in items) {
       final String mediaType = item['media_type'] as String;
@@ -583,6 +616,8 @@ class ImportService {
           } else {
             movieItems.add(item);
           }
+        case 'visual_novel':
+          vnItems.add(item);
       }
     }
 
@@ -667,8 +702,37 @@ class ImportService {
       }
     }
 
+    // Загрузка визуальных новелл из VNDB
+    final List<String> vnIds = vnItems
+        .where((Map<String, dynamic> i) => i['external_id'] != null)
+        .map((Map<String, dynamic> i) => 'v${i['external_id'] as int}')
+        .toList();
+    List<VisualNovel> visualNovels = <VisualNovel>[];
+
+    if (vnIds.isNotEmpty && _vndbApi != null) {
+      final VndbApi vndbApi = _vndbApi;
+      onProgress?.call(ImportProgress(
+        stage: ImportStage.fetchingVisualNovels,
+        current: 0,
+        total: vnIds.length,
+        message: 'Fetching ${vnIds.length} visual novels from VNDB...',
+      ));
+
+      try {
+        visualNovels = await vndbApi.getVnByIds(vnIds);
+      } on VndbApiException catch (e) {
+        debugPrint('Failed to fetch visual novels: ${e.message}');
+      }
+      onProgress?.call(ImportProgress(
+        stage: ImportStage.fetchingVisualNovels,
+        current: vnIds.length,
+        total: vnIds.length,
+      ));
+    }
+
     // Кэширование медиа-данных
-    final int totalMedia = games.length + movies.length + tvShows.length;
+    final int totalMedia =
+        games.length + movies.length + tvShows.length + visualNovels.length;
     onProgress?.call(ImportProgress(
       stage: ImportStage.cachingMedia,
       current: 0,
@@ -699,6 +763,16 @@ class ImportService {
     if (tvShows.isNotEmpty) {
       await _database.upsertTvShows(tvShows);
       cachedCount += tvShows.length;
+      onProgress?.call(ImportProgress(
+        stage: ImportStage.cachingMedia,
+        current: cachedCount,
+        total: totalMedia,
+      ));
+    }
+
+    if (visualNovels.isNotEmpty) {
+      await _database.upsertVisualNovels(visualNovels);
+      cachedCount += visualNovels.length;
       onProgress?.call(ImportProgress(
         stage: ImportStage.cachingMedia,
         current: cachedCount,

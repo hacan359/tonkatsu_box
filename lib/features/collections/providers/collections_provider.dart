@@ -382,6 +382,8 @@ class CollectionItemsNotifier
         ref.invalidate(collectedTvShowIdsProvider);
       case MediaType.animation:
         ref.invalidate(collectedAnimationIdsProvider);
+      case MediaType.visualNovel:
+        ref.invalidate(collectedVisualNovelIdsProvider);
     }
   }
 
@@ -640,6 +642,16 @@ final FutureProvider<Map<int, List<CollectedItemInfo>>>
     FutureProvider<Map<int, List<CollectedItemInfo>>>((Ref ref) async {
   final DatabaseService db = ref.watch(databaseServiceProvider);
   return db.getCollectedItemInfos(MediaType.animation);
+});
+
+/// Провайдер для информации о нахождении визуальных новелл в коллекциях.
+///
+/// Возвращает `Map` numeric_id -> список записей в коллекциях.
+final FutureProvider<Map<int, List<CollectedItemInfo>>>
+    collectedVisualNovelIdsProvider =
+    FutureProvider<Map<int, List<CollectedItemInfo>>>((Ref ref) async {
+  final DatabaseService db = ref.watch(databaseServiceProvider);
+  return db.getCollectedItemInfos(MediaType.visualNovel);
 });
 
 /// Провайдер для количества uncategorized элементов.

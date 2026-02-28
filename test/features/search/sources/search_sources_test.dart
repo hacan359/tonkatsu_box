@@ -5,11 +5,12 @@ import 'package:xerabora/features/search/sources/search_sources.dart';
 import 'package:xerabora/features/search/sources/tmdb_anime_source.dart';
 import 'package:xerabora/features/search/sources/tmdb_movies_source.dart';
 import 'package:xerabora/features/search/sources/tmdb_tv_source.dart';
+import 'package:xerabora/features/search/sources/vndb_source.dart';
 
 void main() {
   group('searchSources', () {
-    test('contains 4 sources', () {
-      expect(searchSources, hasLength(4));
+    test('contains 5 sources', () {
+      expect(searchSources, hasLength(5));
     });
 
     test('first source is TmdbMoviesSource', () {
@@ -28,6 +29,10 @@ void main() {
       expect(searchSources[3], isA<IgdbGamesSource>());
     });
 
+    test('fifth source is VndbSource', () {
+      expect(searchSources[4], isA<VndbSource>());
+    });
+
     test('all sources have unique ids', () {
       final Set<String> ids =
           searchSources.map((SearchSource s) => s.id).toSet();
@@ -37,7 +42,8 @@ void main() {
     test('source ids match expected values', () {
       final List<String> ids =
           searchSources.map((SearchSource s) => s.id).toList();
-      expect(ids, <String>['movies', 'tv', 'anime', 'games']);
+      expect(
+          ids, <String>['movies', 'tv', 'anime', 'games', 'visual_novels']);
     });
   });
 
@@ -60,6 +66,11 @@ void main() {
     test('returns correct source for "games"', () {
       final SearchSource source = getSearchSourceById('games');
       expect(source, isA<IgdbGamesSource>());
+    });
+
+    test('returns correct source for "visual_novels"', () {
+      final SearchSource source = getSearchSourceById('visual_novels');
+      expect(source, isA<VndbSource>());
     });
 
     test('returns first source for unknown id', () {

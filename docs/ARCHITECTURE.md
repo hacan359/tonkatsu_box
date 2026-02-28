@@ -4,14 +4,14 @@
 
 ## Обзор
 
-Tonkatsu Box — кроссплатформенное приложение на Flutter для управления коллекциями ретро-игр, фильмов и сериалов с интеграцией IGDB, TMDB и SteamGridDB API.
+Tonkatsu Box — кроссплатформенное приложение на Flutter для управления коллекциями ретро-игр, фильмов, сериалов и визуальных новелл с интеграцией IGDB, TMDB, SteamGridDB и VNDB API.
 
 | Слой | Технология |
 |------|------------|
 | UI | Flutter (Material 3) |
 | State | Riverpod |
 | Database | SQLite (sqflite_ffi на desktop, sqflite на Android) |
-| API | IGDB (Twitch OAuth), TMDB (Bearer token), SteamGridDB (Bearer token) |
+| API | IGDB (Twitch OAuth), TMDB (Bearer token), SteamGridDB (Bearer token), VNDB (public, no auth) |
 | Platform | Windows Desktop, Linux Desktop, Android (VGMaps недоступен) |
 
 > [!IMPORTANT]
@@ -24,7 +24,7 @@ Tonkatsu Box — кроссплатформенное приложение на 
 ```mermaid
 graph TB
     subgraph core ["🔧 Core"]
-        api["API<br/><small>igdb_api, tmdb_api,<br/>steamgriddb_api</small>"]
+        api["API<br/><small>igdb_api, tmdb_api,<br/>steamgriddb_api, vndb_api</small>"]
         database["Database<br/><small>database_service<br/>SQLite, 16 таблиц</small>"]
         services["Services<br/><small>export, import,<br/>image_cache, config</small>"]
     end
@@ -35,7 +35,7 @@ graph TB
 
     subgraph features ["🖥️ Features"]
         collections["Collections<br/><small>home, collection,<br/>detail screens,<br/>canvas, panels</small>"]
-        search["Search<br/><small>game, movie,<br/>tv show, animation</small>"]
+        search["Search<br/><small>game, movie,<br/>tv show, animation,<br/>visual novel</small>"]
         settings["Settings<br/><small>credentials, cache,<br/>database, debug</small>"]
         wishlist["Wishlist<br/><small>quick notes for<br/>deferred search</small>"]
         home["Home<br/><small>all items grid</small>"]
@@ -43,7 +43,7 @@ graph TB
     end
 
     subgraph shared ["🧩 Shared"]
-        models["Models<br/><small>21 модель:<br/>Game, Movie, TvShow,<br/>Collection, CanvasItem,<br/>WishlistItem, TmdbReview...</small>"]
+        models["Models<br/><small>22 модели:<br/>Game, Movie, TvShow,<br/>VisualNovel, Collection,<br/>CanvasItem, WishlistItem...</small>"]
         widgets["Widgets<br/><small>CachedImage, MediaPosterCard,<br/>BreadcrumbAppBar,<br/>StarRatingBar...</small>"]
         theme["Theme<br/><small>AppColors, AppTypography,<br/>AppSpacing, AppTheme</small>"]
         navigation["Navigation<br/><small>NavigationShell<br/>Rail / BottomBar</small>"]
@@ -104,6 +104,7 @@ lib/
 |------|------------|
 | `lib/core/api/igdb_api.dart` | **IGDB API клиент**. OAuth через Twitch, поиск игр, загрузка платформ, browse с фильтрами, жанры. Методы: `getAccessToken()`, `searchGames()`, `fetchPlatforms()`, `browseGames()`, `getGenres()`, `getTopGamesByPlatform()` |
 | `lib/core/api/steamgriddb_api.dart` | **SteamGridDB API клиент**. Bearer token авторизация. Методы: `searchGames()`, `getGrids()`, `getHeroes()`, `getLogos()`, `getIcons()`, `validateApiKey()` |
+| `lib/core/api/vndb_api.dart` | **VNDB API клиент**. Публичный API без авторизации (~200 req/min). Методы: `searchVn()`, `browseVn()`, `getVnById()`, `getVnByIds()`, `fetchTags()`. Провайдер: `vndbApiProvider` |
 | `lib/core/api/tmdb_api.dart` | **TMDB API клиент**. Bearer token авторизация. Методы: `searchMovies(query, {year})`, `searchTvShows(query, {firstAirDateYear})`, `multiSearch()`, `getMovieDetails()`, `getTvShowDetails()`, `getPopularMovies()`, `getPopularTvShows()`, `getMovieGenres()`, `getTvGenres()`, `getSeasonEpisodes(tmdbShowId, seasonNumber)`, `setLanguage(language)`, `getMovieRecommendations()`, `getTvShowRecommendations()`, `getMovieReviews()`, `getTvShowReviews()`, `discoverMovies()`, `discoverTvShows()`. Lazy-cached genre map (`_movieGenreMap`, `_tvGenreMap`) — resolves `genre_ids` to `genres` in all list endpoints. Cache cleared on `setLanguage()` and `clearApiKey()` |
 | `lib/shared/constants/platform_features.dart` | **Флаги платформы**. `kCanvasEnabled` (true на всех платформах), `kVgMapsEnabled` (только Windows), `kScreenshotEnabled` (только Windows). VGMaps скрыт на не-Windows платформах |
 | `lib/shared/constants/api_defaults.dart` | **Встроенные API ключи**. `ApiDefaults` — `abstract final class` с `String.fromEnvironment` для TMDB и SteamGridDB ключей, инжектируемых при сборке через `--dart-define`. Геттеры `hasTmdbKey`, `hasSteamGridDbKey`. Используется в `SettingsNotifier._loadFromPrefs()` как fallback: user key → built-in → null |
@@ -123,7 +124,7 @@ lib/
 ### 📦 Models (Модели данных)
 
 <details>
-<summary><strong>21 модель</strong> — развернуть таблицу</summary>
+<summary><strong>22 модели</strong> — развернуть таблицу</summary>
 
 | Файл | Назначение |
 |------|------------|
@@ -134,8 +135,9 @@ lib/
 | `lib/shared/models/steamgriddb_game.dart` | **Модель SteamGridDB игры**. Поля: id, name, types, verified. Метод: `fromJson()` |
 | `lib/shared/models/steamgriddb_image.dart` | **Модель SteamGridDB изображения**. Поля: id, score, style, url, thumb, width, height, mime, author. Свойство `dimensions` |
 | `lib/shared/models/collection_item.dart` | **Модель универсального элемента коллекции**. Поля: id, collectionId, mediaType, externalId, platformId, sortOrder, status, authorComment, userComment, userRating (1-10), addedAt, startedAt, completedAt, lastActivityAt. Методы: `fromDb()`, `toDb()`, `copyWith()` (с sentinel-флагами `clearAuthorComment`, `clearUserComment`, `clearUserRating`). Геттеры: `apiRating` (нормализованный 0-10: IGDB rating/10, TMDB as-is, учитывает AnimationSource), `itemDescription` (game.summary / movie.overview / tvShow.overview). **Unified media accessors** через `_resolvedMedia` record: `releaseYear`, `runtime`, `totalSeasons`, `totalEpisodes`, `genresString`, `genres`, `mediaStatus`, `formattedRating`, `dataSource`, `imageType`, `placeholderIcon` — устраняют switch-on-mediaType в UI. `sortOrder` используется для ручной сортировки drag-and-drop. Даты хранятся как Unix seconds |
-| `lib/shared/models/data_source.dart` | **Enum источника данных**. `DataSource` (igdb, tmdb, steamGridDb, vgMaps) — извлечён из `source_badge.dart`. Поля: `label`, `color`. Реэкспортируется из `source_badge.dart` |
-| `lib/shared/models/media_type.dart` | **Enum типа медиа**. Значения: `game`, `movie`, `tvShow`, `animation`. `AnimationSource` — abstract final class с константами `movie = 0`, `tvShow = 1` для дискриминации источника анимации через `platform_id`. Свойства: `label`, `icon`. Методы: `fromString()` |
+| `lib/shared/models/visual_novel.dart` | **Модель визуальной новеллы**. Поля: id (String "v2"), title, altTitle, description, imageUrl, rating (0-100), voteCount, released, lengthMinutes, length (1-5), tags, developers, platforms, externalUrl. Computed: `numericId`, `rating10`, `formattedRating`, `releaseYear`, `lengthLabel`, `platformsString`. Класс `VndbTag` (id, name). Методы: `fromJson()`, `fromDb()`, `toDb()`, `toExport()`, `copyWith()` |
+| `lib/shared/models/data_source.dart` | **Enum источника данных**. `DataSource` (igdb, tmdb, steamGridDb, vgMaps, vndb) — извлечён из `source_badge.dart`. Поля: `label`, `color`. Реэкспортируется из `source_badge.dart` |
+| `lib/shared/models/media_type.dart` | **Enum типа медиа**. Значения: `game`, `movie`, `tvShow`, `animation`, `visualNovel`. `AnimationSource` — abstract final class с константами `movie = 0`, `tvShow = 1` для дискриминации источника анимации через `platform_id`. Свойства: `label`, `icon`. Методы: `fromString()` |
 | `lib/shared/models/item_status.dart` | **Enum статуса элемента**. Значения: `notStarted`, `inProgress`, `completed`, `dropped`, `planned`. Свойства: `materialIcon` (IconData), `color`, `statusSortPriority`. Методы: `fromString()`, `displayLabel()`, `localizedLabel()` |
 | `lib/shared/models/collection_sort_mode.dart` | **Enum режима сортировки коллекции**. Значения: `manual`, `addedDate`, `status`, `name`, `rating`. Свойства: `value`, `displayLabel`, `shortLabel`, `description`. Метод: `fromString()`. Хранится в SharedPreferences per collection |
 | `lib/shared/models/movie.dart` | **Модель фильма**. Поля: tmdbId, title, overview, posterUrl, backdropUrl, rating, genres, runtime, externalUrl и др. Свойства: `posterThumbUrl`, `backdropSmallUrl`, `formattedRating`, `genresString`. Методы: `fromJson()`, `fromDb()`, `toDb()`, `copyWith()` |

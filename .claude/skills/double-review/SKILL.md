@@ -45,6 +45,23 @@ description: Two-stage code review with improvements and optimizations. Use befo
 - [ ] CI workflows include `--dart-define` secrets for ALL platform build jobs (Windows, Android, Linux)?
 - [ ] Generated scaffolding (`flutter create`) values match project identity (not default package name)?
 
+#### New Media Type / Enum Value Propagation
+When adding a new `MediaType`, `CanvasItemType`, or similar enum value, check ALL of these:
+- [ ] `CanvasItemType` enum — new value added, `fromMediaType()` maps correctly, `isMediaItem` includes it?
+- [ ] `CanvasItem` model — new joined field (e.g. `final VisualNovel? visualNovel`), `copyWith`, and ALL unified accessors (`mediaTitle`, `mediaThumbnailUrl`, `mediaImageType`, `mediaCacheId`, `mediaPlaceholderIcon`, `asMediaType`)?
+- [ ] `canvas_repository.dart` `_enrichItemsWithMediaData()` — new IDs collected, DB query added to `Future.wait`, new map built, switch case added?
+- [ ] `canvas_repository.dart` `initializeCanvas()` — new field passed in `copyWith` when creating items?
+- [ ] `canvas_view.dart` — ALL `switch (item.itemType)` statements updated (edit, build, width, height, fallback label)?
+- [ ] `all_items_screen.dart` `_buildChipsRow()` — filter chip added for new type with localization key (`allItems*`)?
+- [ ] `collection_screen.dart` — filter dropdown entry added with count from `CollectionStats`?
+- [ ] `CollectionStats` — new count field added, computed in `database_service.dart`?
+- [ ] `collections_provider.dart` — `collectedXxxIdsProvider` added for search in-collection markers?
+- [ ] `browse_grid.dart` — new IDs wired into `_collectedIdsProvider`?
+- [ ] Localization keys added: `unknown*`, `allItems*`, `collectionFilter*`, `mediaType*`, `searchSource*`?
+- [ ] `export_service.dart` / `import_service.dart` — new media section handled in both directions?
+
+**Tip:** Run `flutter analyze` immediately after adding a new enum value — exhaustive switch errors will reveal most missing locations.
+
 ### Actions After Round 1:
 1. Fix all found issues
 2. Ensure tests pass

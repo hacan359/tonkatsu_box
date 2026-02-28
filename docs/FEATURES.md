@@ -38,8 +38,8 @@ The app uses a forced dark theme (ThemeMode.dark) with a cinematic design system
 
 The Home tab shows all items from all collections in a single grid view:
 
-- **Unified view** — browse all collection items (games, movies, TV shows, animation) in one place
-- **Media type filter** — horizontal ChoiceChip row: All, Games, Movies, TV Shows, Animation
+- **Unified view** — browse all collection items (games, movies, TV shows, animation, visual novels) in one place
+- **Media type filter** — horizontal ChoiceChip row: All, Games, Movies, TV Shows, Animation, Visual Novels
 - **Platform filter** — when "Games" is selected, a second row of ChoiceChips shows available platforms (All + SNES, GBA, etc.). Resets on media type change
 - **Rating sort** — toggle chip to sort by user rating (ascending/descending)
 - **Default sort** — by date added (newest first)
@@ -56,7 +56,7 @@ Create unlimited collections organized however you want:
 - Mix games, movies and TV shows in a single collection
 - **Multi-platform games** — add the same game with different platforms (e.g. Castlevania for SNES and GBA) with independent progress, rating, and notes. Platform badge shown on poster cards
 - **Grid mode** — toggle between list and poster grid view; choice is saved per-collection. Grid cards show dual rating badge (`★ 8 / 7.5`), collection checkmark, and status emoji
-- **Type filter** — filter items by type (All/Games/Movies/TV Shows/Animation) with item count badges
+- **Type filter** — filter items by type (All/Games/Movies/TV Shows/Animation/Visual Novels) with item count badges
 - **Platform filter** — when "Games" is selected, a second row of ChoiceChips shows platforms from current collection items. Resets when switching media types
 - **Search** — filter items by name within a collection
 - **Move to Collection** — move items between collections or to/from uncategorized via PopupMenuButton on detail screens and collection tiles. Prompts to delete the source collection when it becomes empty
@@ -83,6 +83,7 @@ Browse and search across multiple media sources via pluggable source architectur
 | **TV Shows** | TMDB | Genre, Year (decades) | Popular, Top Rated, Newest |
 | **Animation** | TMDB | Type (Series/Movies), Genre, Year | Popular, Top Rated, Newest |
 | **Games** | IGDB | Genre, Platform | Popular, Rating, Newest |
+| **Visual Novels** | VNDB | Genre (tags) | Rating, Newest, Most Voted |
 
 > [!TIP]
 > The Animation source automatically filters by genre Animation (ID=16). Movies and TV Shows sources exclude animated content, so there's no overlap.
@@ -92,7 +93,7 @@ Two modes:
 - **Search mode** — text search field with results in the same grid
 
 Features:
-- **Source switching** — dropdown to switch between Movies/TV/Anime/Games; filters reset on source change
+- **Source switching** — dropdown to switch between Movies/TV/Anime/Games/Visual Novels; filters reset on source change
 - **Filter bar** — horizontal scrollable row with genre/year/platform dropdowns and sort selector
 - **In-collection markers** — green checkmark badge on items already in any collection (`_collectedIdsProvider`)
 - **Consistent card sizes** — grid delegate matches collection screen (desktop: maxCrossAxisExtent 150px, childAspectRatio 0.55)

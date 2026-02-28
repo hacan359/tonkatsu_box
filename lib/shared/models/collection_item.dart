@@ -11,6 +11,7 @@ import 'media_type.dart';
 import 'movie.dart';
 import 'platform.dart';
 import 'tv_show.dart';
+import 'visual_novel.dart';
 
 /// Универсальный элемент коллекции.
 ///
@@ -37,6 +38,7 @@ class CollectionItem with Exportable {
     this.game,
     this.movie,
     this.tvShow,
+    this.visualNovel,
     this.platform,
   });
 
@@ -51,6 +53,7 @@ class CollectionItem with Exportable {
     Game? game,
     Movie? movie,
     TvShow? tvShow,
+    VisualNovel? visualNovel,
     Platform? platform,
   }) {
     return CollectionItem(
@@ -87,6 +90,7 @@ class CollectionItem with Exportable {
       game: game,
       movie: movie,
       tvShow: tvShow,
+      visualNovel: visualNovel,
       platform: platform,
     );
   }
@@ -174,6 +178,9 @@ class CollectionItem with Exportable {
 
   /// Данные сериала (joined).
   final TvShow? tvShow;
+
+  /// Данные визуальной новеллы (joined).
+  final VisualNovel? visualNovel;
 
   /// Данные платформы (joined).
   final Platform? platform;
@@ -303,6 +310,25 @@ class CollectionItem with Exportable {
           imageType: ImageType.moviePoster,
           placeholderIcon: Icons.animation,
         );
+      case MediaType.visualNovel:
+        return (
+          name: visualNovel?.title,
+          coverUrl: visualNovel?.imageUrl,
+          thumbUrl: visualNovel?.imageUrl,
+          description: visualNovel?.description,
+          rating: visualNovel?.rating10,
+          formattedRating: visualNovel?.formattedRating,
+          releaseYear: visualNovel?.releaseYear,
+          runtime: visualNovel?.lengthMinutes,
+          totalSeasons: null,
+          totalEpisodes: null,
+          genresString: visualNovel?.genresString,
+          genres: visualNovel?.tags,
+          mediaStatus: null,
+          source: DataSource.vndb,
+          imageType: ImageType.vnCover,
+          placeholderIcon: Icons.menu_book,
+        );
     }
   }
 
@@ -313,6 +339,7 @@ class CollectionItem with Exportable {
       MediaType.movie => 'Unknown Movie',
       MediaType.tvShow => 'Unknown TV Show',
       MediaType.animation => 'Unknown Animation',
+      MediaType.visualNovel => 'Unknown Visual Novel',
     };
     return _resolvedMedia.name ?? fallback;
   }
@@ -461,6 +488,7 @@ class CollectionItem with Exportable {
     Game? game,
     Movie? movie,
     TvShow? tvShow,
+    VisualNovel? visualNovel,
     Platform? platform,
   }) {
     return CollectionItem(
@@ -486,6 +514,7 @@ class CollectionItem with Exportable {
       game: game ?? this.game,
       movie: movie ?? this.movie,
       tvShow: tvShow ?? this.tvShow,
+      visualNovel: visualNovel ?? this.visualNovel,
       platform: platform ?? this.platform,
     );
   }

@@ -1,8 +1,11 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:xerabora/core/services/image_cache_service.dart';
 import 'package:xerabora/shared/models/canvas_item.dart';
 import 'package:xerabora/shared/models/media_type.dart';
+import 'package:xerabora/shared/models/visual_novel.dart';
 
 void main() {
   group('CanvasItemType', () {
@@ -12,6 +15,7 @@ void main() {
       expect(CanvasItemType.image.value, 'image');
       expect(CanvasItemType.link.value, 'link');
       expect(CanvasItemType.animation.value, 'animation');
+      expect(CanvasItemType.visualNovel.value, 'visual_novel');
     });
 
     test('fromString should return correct type', () {
@@ -19,6 +23,8 @@ void main() {
       expect(CanvasItemType.fromString('text'), CanvasItemType.text);
       expect(CanvasItemType.fromString('image'), CanvasItemType.image);
       expect(CanvasItemType.fromString('link'), CanvasItemType.link);
+      expect(CanvasItemType.fromString('visual_novel'),
+          CanvasItemType.visualNovel);
     });
 
     test('fromString should return game for unknown value', () {
@@ -33,8 +39,20 @@ void main() {
       );
     });
 
+    test('fromMediaType should return visualNovel for MediaType.visualNovel',
+        () {
+      expect(
+        CanvasItemType.fromMediaType(MediaType.visualNovel),
+        CanvasItemType.visualNovel,
+      );
+    });
+
     test('isMediaItem should return true for animation', () {
       expect(CanvasItemType.animation.isMediaItem, isTrue);
+    });
+
+    test('isMediaItem should return true for visualNovel', () {
+      expect(CanvasItemType.visualNovel.isMediaItem, isTrue);
     });
   });
 
@@ -484,6 +502,167 @@ void main() {
       expect(str, contains('type: game'));
       expect(str, contains('x: 50.0'));
       expect(str, contains('y: 100.0'));
+    });
+
+    group('visualNovel media accessors', () {
+      const VisualNovel testVn = VisualNovel(
+        id: 'v123',
+        title: 'Steins;Gate',
+        imageUrl: 'https://example.com/sg.jpg',
+      );
+
+      test('mediaTitle should return visualNovel title', () {
+        final CanvasItem item = CanvasItem(
+          id: 1,
+          collectionId: 10,
+          itemType: CanvasItemType.visualNovel,
+          itemRefId: 123,
+          x: 0,
+          y: 0,
+          createdAt: testDate,
+          visualNovel: testVn,
+        );
+        expect(item.mediaTitle, 'Steins;Gate');
+      });
+
+      test('mediaTitle should return null when visualNovel is null', () {
+        final CanvasItem item = CanvasItem(
+          id: 1,
+          collectionId: 10,
+          itemType: CanvasItemType.visualNovel,
+          itemRefId: 123,
+          x: 0,
+          y: 0,
+          createdAt: testDate,
+        );
+        expect(item.mediaTitle, isNull);
+      });
+
+      test('mediaThumbnailUrl should return visualNovel imageUrl', () {
+        final CanvasItem item = CanvasItem(
+          id: 1,
+          collectionId: 10,
+          itemType: CanvasItemType.visualNovel,
+          itemRefId: 123,
+          x: 0,
+          y: 0,
+          createdAt: testDate,
+          visualNovel: testVn,
+        );
+        expect(item.mediaThumbnailUrl, 'https://example.com/sg.jpg');
+      });
+
+      test('mediaImageType should return ImageType.vnCover', () {
+        final CanvasItem item = CanvasItem(
+          id: 1,
+          collectionId: 10,
+          itemType: CanvasItemType.visualNovel,
+          itemRefId: 123,
+          x: 0,
+          y: 0,
+          createdAt: testDate,
+        );
+        expect(item.mediaImageType, ImageType.vnCover);
+      });
+
+      test('mediaCacheId should return itemRefId as string', () {
+        final CanvasItem item = CanvasItem(
+          id: 1,
+          collectionId: 10,
+          itemType: CanvasItemType.visualNovel,
+          itemRefId: 456,
+          x: 0,
+          y: 0,
+          createdAt: testDate,
+        );
+        expect(item.mediaCacheId, '456');
+      });
+
+      test('mediaCacheId should return 0 when itemRefId is null', () {
+        final CanvasItem item = CanvasItem(
+          id: 1,
+          collectionId: 10,
+          itemType: CanvasItemType.visualNovel,
+          x: 0,
+          y: 0,
+          createdAt: testDate,
+        );
+        expect(item.mediaCacheId, '0');
+      });
+
+      test('mediaPlaceholderIcon should return Icons.menu_book', () {
+        final CanvasItem item = CanvasItem(
+          id: 1,
+          collectionId: 10,
+          itemType: CanvasItemType.visualNovel,
+          x: 0,
+          y: 0,
+          createdAt: testDate,
+        );
+        expect(item.mediaPlaceholderIcon, Icons.menu_book);
+      });
+
+      test('asMediaType should return MediaType.visualNovel', () {
+        final CanvasItem item = CanvasItem(
+          id: 1,
+          collectionId: 10,
+          itemType: CanvasItemType.visualNovel,
+          x: 0,
+          y: 0,
+          createdAt: testDate,
+        );
+        expect(item.asMediaType, MediaType.visualNovel);
+      });
+    });
+
+    group('copyWith visualNovel', () {
+      test('should copy with visualNovel field', () {
+        const VisualNovel vn = VisualNovel(
+          id: 'v111',
+          title: 'Original VN',
+        );
+        final CanvasItem original = CanvasItem(
+          id: 1,
+          collectionId: 10,
+          itemType: CanvasItemType.visualNovel,
+          itemRefId: 111,
+          x: 0,
+          y: 0,
+          createdAt: testDate,
+          visualNovel: vn,
+        );
+
+        const VisualNovel newVn = VisualNovel(
+          id: 'v222',
+          title: 'Updated VN',
+        );
+        final CanvasItem copy = original.copyWith(visualNovel: newVn);
+
+        expect(copy.visualNovel?.title, 'Updated VN');
+        expect(original.visualNovel?.title, 'Original VN');
+      });
+
+      test('should preserve visualNovel when not specified', () {
+        const VisualNovel vn = VisualNovel(
+          id: 'v333',
+          title: 'Preserved VN',
+        );
+        final CanvasItem original = CanvasItem(
+          id: 1,
+          collectionId: 10,
+          itemType: CanvasItemType.visualNovel,
+          itemRefId: 333,
+          x: 0,
+          y: 0,
+          createdAt: testDate,
+          visualNovel: vn,
+        );
+
+        final CanvasItem copy = original.copyWith(x: 100);
+
+        expect(copy.visualNovel?.title, 'Preserved VN');
+        expect(copy.x, 100);
+      });
     });
   });
 }

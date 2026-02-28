@@ -5,6 +5,7 @@ import 'igdb_games_source.dart';
 import 'tmdb_anime_source.dart';
 import 'tmdb_movies_source.dart';
 import 'tmdb_tv_source.dart';
+import 'vndb_source.dart';
 
 /// Все зарегистрированные источники поиска.
 ///
@@ -16,6 +17,7 @@ final List<SearchSource> searchSources = List<SearchSource>.unmodifiable(
     TmdbTvSource(),
     TmdbAnimeSource(),
     IgdbGamesSource(),
+    VndbSource(),
   ],
 );
 

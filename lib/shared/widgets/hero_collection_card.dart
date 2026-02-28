@@ -103,6 +103,8 @@ class HeroCollectionCard extends ConsumerWidget {
           return ImageType.tvShowPoster;
         }
         return ImageType.moviePoster;
+      case MediaType.visualNovel:
+        return ImageType.vnCover;
     }
   }
 

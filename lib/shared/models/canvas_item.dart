@@ -8,6 +8,7 @@ import 'game.dart';
 import 'media_type.dart';
 import 'movie.dart';
 import 'tv_show.dart';
+import 'visual_novel.dart';
 
 /// Тип элемента на канвасе.
 enum CanvasItemType {
@@ -22,6 +23,9 @@ enum CanvasItemType {
 
   /// Карточка анимации.
   animation('animation'),
+
+  /// Карточка визуальной новеллы.
+  visualNovel('visual_novel'),
 
   /// Текстовый блок.
   text('text'),
@@ -56,12 +60,18 @@ enum CanvasItemType {
         return CanvasItemType.tvShow;
       case MediaType.animation:
         return CanvasItemType.animation;
+      case MediaType.visualNovel:
+        return CanvasItemType.visualNovel;
     }
   }
 
   /// Является ли тип медиа-элементом (game, movie, tvShow).
   bool get isMediaItem =>
-      this == game || this == movie || this == tvShow || this == animation;
+      this == game ||
+      this == movie ||
+      this == tvShow ||
+      this == animation ||
+      this == visualNovel;
 }
 
 /// Модель элемента на канвасе коллекции.
@@ -86,6 +96,7 @@ class CanvasItem with Exportable {
     this.game,
     this.movie,
     this.tvShow,
+    this.visualNovel,
   });
 
   /// Создаёт [CanvasItem] из записи базы данных.
@@ -185,15 +196,19 @@ class CanvasItem with Exportable {
   /// Данные сериала (joined, не сохраняются в БД).
   final TvShow? tvShow;
 
+  /// Данные визуальной новеллы (joined, не сохраняются в БД).
+  final VisualNovel? visualNovel;
+
   // -- Unified media accessors (для медиа-типов) --
 
-  /// Название медиа-элемента (game/movie/tvShow).
+  /// Название медиа-элемента (game/movie/tvShow/visualNovel).
   String? get mediaTitle {
     return switch (itemType) {
       CanvasItemType.game => game?.name,
       CanvasItemType.movie => movie?.title,
       CanvasItemType.tvShow => tvShow?.title,
       CanvasItemType.animation => movie?.title ?? tvShow?.title,
+      CanvasItemType.visualNovel => visualNovel?.title,
       _ => null,
     };
   }
@@ -207,6 +222,7 @@ class CanvasItem with Exportable {
       CanvasItemType.animation => tvShow != null
           ? tvShow?.posterThumbUrl
           : movie?.posterThumbUrl,
+      CanvasItemType.visualNovel => visualNovel?.imageUrl,
       _ => null,
     };
   }
@@ -220,6 +236,7 @@ class CanvasItem with Exportable {
       CanvasItemType.animation => tvShow != null
           ? ImageType.tvShowPoster
           : ImageType.moviePoster,
+      CanvasItemType.visualNovel => ImageType.vnCover,
       _ => ImageType.gameCover,
     };
   }
@@ -233,6 +250,8 @@ class CanvasItem with Exportable {
       CanvasItemType.animation => tvShow != null
           ? (tvShow?.tmdbId ?? 0).toString()
           : (movie?.tmdbId ?? 0).toString(),
+      CanvasItemType.visualNovel =>
+        (itemRefId ?? 0).toString(),
       _ => '0',
     };
   }
@@ -244,6 +263,7 @@ class CanvasItem with Exportable {
       CanvasItemType.movie => Icons.movie_outlined,
       CanvasItemType.tvShow => Icons.tv_outlined,
       CanvasItemType.animation => Icons.animation,
+      CanvasItemType.visualNovel => Icons.menu_book,
       _ => Icons.note,
     };
   }
@@ -255,6 +275,7 @@ class CanvasItem with Exportable {
       CanvasItemType.movie => MediaType.movie,
       CanvasItemType.tvShow => MediaType.tvShow,
       CanvasItemType.animation => MediaType.animation,
+      CanvasItemType.visualNovel => MediaType.visualNovel,
       _ => null,
     };
   }
@@ -322,6 +343,7 @@ class CanvasItem with Exportable {
     Game? game,
     Movie? movie,
     TvShow? tvShow,
+    VisualNovel? visualNovel,
   }) {
     return CanvasItem(
       id: id ?? this.id,
@@ -339,6 +361,7 @@ class CanvasItem with Exportable {
       game: game ?? this.game,
       movie: movie ?? this.movie,
       tvShow: tvShow ?? this.tvShow,
+      visualNovel: visualNovel ?? this.visualNovel,
     );
   }
 

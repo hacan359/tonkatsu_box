@@ -193,6 +193,12 @@ abstract class S {
   /// **'Animation'**
   String get mediaTypeAnimation;
 
+  /// No description provided for @mediaTypeVisualNovel.
+  ///
+  /// In en, this message translates to:
+  /// **'Visual Novel'**
+  String get mediaTypeVisualNovel;
+
   /// No description provided for @sortManualDisplay.
   ///
   /// In en, this message translates to:
@@ -1309,6 +1315,12 @@ abstract class S {
   /// **'Artwork provided by SteamGridDB.'**
   String get creditsSteamGridDbAttribution;
 
+  /// No description provided for @creditsVndbAttribution.
+  ///
+  /// In en, this message translates to:
+  /// **'Visual novel data provided by VNDB.'**
+  String get creditsVndbAttribution;
+
   /// No description provided for @creditsOpenSource.
   ///
   /// In en, this message translates to:
@@ -1567,6 +1579,12 @@ abstract class S {
   /// **'Animation'**
   String get collectionFilterAnimation;
 
+  /// No description provided for @collectionFilterVisualNovels.
+  ///
+  /// In en, this message translates to:
+  /// **'Visual Novels'**
+  String get collectionFilterVisualNovels;
+
   /// No description provided for @collectionItemMovedTo.
   ///
   /// In en, this message translates to:
@@ -1632,6 +1650,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Animation not found'**
   String get animationNotFound;
+
+  /// No description provided for @visualNovelNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Visual novel not found'**
+  String get visualNovelNotFound;
 
   /// No description provided for @animatedMovie.
   ///
@@ -2148,6 +2172,18 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Search games...'**
   String get searchHintGames;
+
+  /// No description provided for @searchHintVisualNovels.
+  ///
+  /// In en, this message translates to:
+  /// **'Search visual novels...'**
+  String get searchHintVisualNovels;
+
+  /// No description provided for @searchSourceVisualNovels.
+  ///
+  /// In en, this message translates to:
+  /// **'Visual Novels'**
+  String get searchSourceVisualNovels;
 
   /// No description provided for @searchSelectPlatform.
   ///
@@ -2887,6 +2923,12 @@ abstract class S {
   /// **'Unknown Animation'**
   String get unknownAnimation;
 
+  /// No description provided for @unknownVisualNovel.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown Visual Novel'**
+  String get unknownVisualNovel;
+
   /// No description provided for @unknownPlatform.
   ///
   /// In en, this message translates to:
@@ -2934,6 +2976,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Animation'**
   String get allItemsAnimation;
+
+  /// No description provided for @allItemsVisualNovels.
+  ///
+  /// In en, this message translates to:
+  /// **'Visual Novels'**
+  String get allItemsVisualNovels;
 
   /// No description provided for @allItemsRatingAsc.
   ///
@@ -3516,6 +3564,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Newest'**
   String get browseSortNewest;
+
+  /// No description provided for @browseSortMostVoted.
+  ///
+  /// In en, this message translates to:
+  /// **'Most Voted'**
+  String get browseSortMostVoted;
 
   /// No description provided for @browseAnimeTypeSeries.
   ///
