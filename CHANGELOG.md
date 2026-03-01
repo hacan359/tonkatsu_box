@@ -26,6 +26,7 @@
 ### Fixed
 - `collectionCoversProvider` now invalidated in all 6 mutation points in `CollectionItemsNotifier` (`refresh`, `delete`, `moveItem`, `updateItemStatus`, `updateActivityDates`) — cover mosaics on HomeScreen update when items are added, removed, or moved
 - `DatabaseService.getCollectionCovers()` SQL — wrapped in subquery to avoid referencing column alias `thumbnail_url` in WHERE clause (not reliably supported across SQLite versions)
+- `BrowseGrid` viewport fill auto-load — on tall/wide screens where initial results (20 items) fit entirely without scrollbar, `loadMore()` was never called. Added `_scheduleViewportFillCheck()` with `addPostFrameCallback` and `ref.listen` to auto-load more pages until viewport is filled or results exhausted
 
 ### Removed
 - `CollectionTile` widget (`collection_tile.dart`) and its tests — replaced by `CollectionCard`

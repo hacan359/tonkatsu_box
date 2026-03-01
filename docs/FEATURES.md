@@ -97,7 +97,7 @@ Features:
 - **Filter bar** — horizontal scrollable row with genre/year/platform dropdowns and sort selector
 - **In-collection markers** — green checkmark badge on items already in any collection (`_collectedIdsProvider`)
 - **Consistent card sizes** — grid delegate matches collection screen (desktop: maxCrossAxisExtent 150px, childAspectRatio 0.55)
-- **Infinite scroll** — automatic pagination with shimmer loading indicators
+- **Infinite scroll** — automatic pagination with shimmer loading indicators. Viewport fill auto-load: on tall screens where initial results fit without scrollbar, automatically loads more pages
 - **Smart error handling** — network errors show "No internet connection" with retry; API errors show the error message with retry
 
 ### Discover Feed

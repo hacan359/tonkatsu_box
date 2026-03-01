@@ -291,7 +291,7 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/features/search/widgets/browse_grid.dart` | **Грид результатов**. ConsumerStatefulWidget. Бесконечный скролл (пагинация). Grid delegate совпадает с CollectionScreen (maxCrossAxisExtent:150 на desktop, childAspectRatio:0.55). `_collectedIdsProvider` для маркировки "в коллекции" (зелёный чек). Shimmer-загрузка |
+| `lib/features/search/widgets/browse_grid.dart` | **Грид результатов**. ConsumerStatefulWidget. Бесконечный скролл (пагинация). Viewport fill auto-load: `_scheduleViewportFillCheck()` + `ref.listen` для автоподгрузки на высоких экранах. Grid delegate совпадает с CollectionScreen (maxCrossAxisExtent:150 на desktop, childAspectRatio:0.55). `_collectedIdsProvider` для маркировки "в коллекции" (зелёный чек). Shimmer-загрузка |
 | `lib/features/search/widgets/filter_bar.dart` | **Горизонтальная строка фильтров**. SourceDropdown + FilterDropdown-ы + SortDropdown. ValueKey по source+cacheKey для пересоздания при смене источника |
 | `lib/features/search/widgets/filter_dropdown.dart` | **Дропдаун фильтра**. `FilterDropdown` — PopupMenuButton с async-загрузкой опций, generation-based cancellation, sentinel для "All". `SortDropdown` — дропдаун сортировки |
 | `lib/features/search/widgets/source_dropdown.dart` | **Дропдаун источника**. Переключение между Movies/TV/Anime/Games с иконками |
