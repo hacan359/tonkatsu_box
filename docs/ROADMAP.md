@@ -69,10 +69,10 @@
 - [x] Design system — AppColors (deep dark palette), AppSpacing, AppTypography (Inter font), AppTheme (centralized dark theme)
 - [x] NavigationShell — adaptive: NavigationRail (≥800px) / BottomNavigationBar (<800px)
 - [x] Dark theme — forced dark theme applied to all screens via AppTheme
-- [x] Reusable widgets — SectionHeader, RatingBadge, ShimmerLoading, MediaPosterCard (replaced PosterCard), DualRatingBadge, HeroCollectionCard
+- [x] Reusable widgets — SectionHeader, RatingBadge, ShimmerLoading, MediaPosterCard (replaced PosterCard), DualRatingBadge, CollectionCard (iOS folder style, replaced HeroCollectionCard)
 - [x] TMDB Genre caching — tmdb_genres DB table, DB-first loading, auto-resolve numeric IDs
-- [x] HomeScreen — HeroCollectionCard for featured collections, shimmer loading
-- [x] CollectionScreen — grid mode with MediaPosterCard (dual rating), type filter, name search
+- [x] HomeScreen — CollectionCard with 3+3 cover mosaic, hover dimming, GridView with MaxCrossAxisExtent
+- [x] CollectionScreen — refactored into extracted widgets (CollectionFilterBar, CollectionItemsView, CollectionCanvasLayout, CollectionActions)
 - [x] SearchScreen — poster grid with MediaPosterCard, shimmer loading
 - [x] MediaDetailView — AppColors/AppTypography, poster 100×150, per-media accent colors
 - [x] Detail screens — styled fallback AppBars, per-media accent colors

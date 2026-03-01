@@ -1,0 +1,416 @@
+// Карточка коллекции в стиле "iOS папка" для грида на HomeScreen.
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../core/services/image_cache_service.dart';
+import '../../../data/repositories/collection_repository.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../shared/models/collection.dart';
+import '../../../shared/models/cover_info.dart';
+import '../../../shared/models/media_type.dart';
+import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/cached_image.dart';
+import '../providers/collection_covers_provider.dart';
+import '../providers/collections_provider.dart';
+
+/// Карточка коллекции в стиле "iOS папка".
+///
+/// Сверху — квадратная область с мозаикой 3+3 (скруглённые углы 16).
+/// Снизу — название и количество элементов по центру.
+/// Фон прозрачный, без бордеров.
+class CollectionCard extends ConsumerStatefulWidget {
+  /// Создаёт [CollectionCard].
+  const CollectionCard({
+    required this.collection,
+    this.onTap,
+    this.onLongPress,
+    super.key,
+  });
+
+  /// Коллекция для отображения.
+  final Collection collection;
+
+  /// Callback при нажатии.
+  final VoidCallback? onTap;
+
+  /// Callback при долгом нажатии.
+  final VoidCallback? onLongPress;
+
+  /// Радиус скругления квадрата мозаики.
+  static const double mosaicRadius = 16;
+
+  /// Радиус скругления каждой ячейки мозаики.
+  static const double _cellRadius = 8;
+
+  /// Padding внутри квадрата мозаики.
+  static const double _mosaicPadding = 14;
+
+  /// Gap между ячейками мозаики.
+  static const double _cellGap = 10;
+
+  /// Непрозрачность затемнения в обычном состоянии.
+  static const double _dimOpacity = 0.25;
+
+  @override
+  ConsumerState<CollectionCard> createState() => _CollectionCardState();
+}
+
+class _CollectionCardState extends ConsumerState<CollectionCard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _hoverController;
+  late final Animation<double> _dimAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _hoverController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+    // От затемнённого (dimOpacity) к прозрачному (0)
+    _dimAnimation = Tween<double>(
+      begin: CollectionCard._dimOpacity,
+      end: 0,
+    ).animate(CurvedAnimation(parent: _hoverController, curve: Curves.easeOut));
+  }
+
+  @override
+  void dispose() {
+    _hoverController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final AsyncValue<CollectionStats> statsAsync =
+        ref.watch(collectionStatsProvider(widget.collection.id));
+    final AsyncValue<List<CoverInfo>> coversAsync =
+        ref.watch(collectionCoversProvider(widget.collection.id));
+
+    return MouseRegion(
+      onEnter: (_) => _hoverController.forward(),
+      onExit: (_) => _hoverController.reverse(),
+      cursor: widget.onTap != null
+          ? SystemMouseCursors.click
+          : SystemMouseCursors.basic,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        onLongPress: widget.onLongPress,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 5),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              // Мозаика обложек + затемнение
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceLight,
+                    borderRadius:
+                        BorderRadius.circular(CollectionCard.mosaicRadius),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: <Widget>[
+                      Padding(
+                        padding:
+                            const EdgeInsets.all(CollectionCard._mosaicPadding),
+                        child: _CoverMosaic(
+                          covers: coversAsync,
+                          totalCount: statsAsync.valueOrNull?.total ?? 0,
+                        ),
+                      ),
+                      // Затемнение поверх мозаики
+                      AnimatedBuilder(
+                        animation: _dimAnimation,
+                        builder: (BuildContext context, Widget? child) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: Colors.black.withAlpha(
+                                (_dimAnimation.value * 255).round(),
+                              ),
+                              borderRadius: BorderRadius.circular(
+                                CollectionCard.mosaicRadius,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              // Название
+              Text(
+                widget.collection.name,
+                style: AppTypography.h3,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+              ),
+
+              // Статистика
+              statsAsync.when(
+                data: (CollectionStats s) => Text(
+                  S.of(context).collectionTileStats(
+                        s.total,
+                        s.completionPercentFormatted,
+                      ),
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                loading: () => const SizedBox(height: 14),
+                error: (Object error, StackTrace stack) => Text(
+                  S.of(context).collectionTileError,
+                  style: AppTypography.caption.copyWith(
+                    color: AppColors.error,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// Мозаика обложек 3+3
+// =============================================================================
+
+class _CoverMosaic extends StatelessWidget {
+  const _CoverMosaic({required this.covers, required this.totalCount});
+
+  final AsyncValue<List<CoverInfo>> covers;
+  final int totalCount;
+
+  static final BorderRadius _cellBorderRadius =
+      BorderRadius.circular(CollectionCard._cellRadius);
+  static final BoxDecoration _emptyCellDecoration = BoxDecoration(
+    color: AppColors.surface,
+    borderRadius: _cellBorderRadius,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return covers.when(
+      data: (List<CoverInfo> data) => _buildGrid(data),
+      loading: () => const SizedBox.expand(),
+      error: (Object error, StackTrace stack) => _buildEmpty(),
+    );
+  }
+
+  /// Сетка 3+3: верхний ряд 3 постера, нижний ряд 2 постера + "+N".
+  Widget _buildGrid(List<CoverInfo> data) {
+    if (data.isEmpty) return _buildEmpty();
+
+    return Column(
+      children: <Widget>[
+        // Верхний ряд — 3 постера
+        Expanded(
+          child: Row(
+            children: <Widget>[
+              Expanded(child: _poster(data, 0)),
+              const SizedBox(width: CollectionCard._cellGap),
+              Expanded(child: _poster(data, 1)),
+              const SizedBox(width: CollectionCard._cellGap),
+              Expanded(child: _poster(data, 2)),
+            ],
+          ),
+        ),
+        const SizedBox(height: CollectionCard._cellGap),
+        // Нижний ряд — 2 постера + "+N"
+        Expanded(
+          child: Row(
+            children: <Widget>[
+              Expanded(child: _poster(data, 3)),
+              const SizedBox(width: CollectionCard._cellGap),
+              Expanded(child: _poster(data, 4)),
+              const SizedBox(width: CollectionCard._cellGap),
+              Expanded(child: _counterCell(totalCount - 5)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _poster(List<CoverInfo> data, int index) {
+    if (index >= data.length) {
+      return _emptyCell();
+    }
+    return _CoverImage(cover: data[index]);
+  }
+
+  Widget _counterCell(int count) {
+    if (count <= 0) return _emptyCell();
+    return Container(
+      decoration: _emptyCellDecoration,
+      clipBehavior: Clip.antiAlias,
+      alignment: Alignment.center,
+      child: Text(
+        '+$count',
+        style: AppTypography.h3.copyWith(
+          color: AppColors.textSecondary,
+        ),
+      ),
+    );
+  }
+
+  Widget _emptyCell() {
+    return Container(decoration: _emptyCellDecoration);
+  }
+
+  Widget _buildEmpty() {
+    return Center(
+      child: Icon(
+        Icons.folder_rounded,
+        color: AppColors.textTertiary.withAlpha(120),
+        size: 36,
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// Обложка-изображение с обрезкой
+// =============================================================================
+
+class _CoverImage extends StatelessWidget {
+  const _CoverImage({required this.cover});
+
+  final CoverInfo cover;
+
+  static final BoxDecoration _cellDecoration = BoxDecoration(
+    color: AppColors.surface,
+    borderRadius: BorderRadius.circular(CollectionCard._cellRadius),
+  );
+  static const Widget _surfacePlaceholder =
+      ColoredBox(color: AppColors.surface);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: _cellDecoration,
+      clipBehavior: Clip.antiAlias,
+      child: cover.thumbnailUrl == null
+          ? const SizedBox.expand()
+          : SizedBox.expand(
+              child: CachedImage(
+                imageType: _imageTypeFor(cover.mediaType, cover.platformId),
+                imageId: cover.externalId.toString(),
+                remoteUrl: cover.thumbnailUrl!,
+                fit: BoxFit.cover,
+                memCacheWidth: 200,
+                memCacheHeight: 200,
+                placeholder: _surfacePlaceholder,
+                errorWidget: _surfacePlaceholder,
+              ),
+            ),
+    );
+  }
+
+  static ImageType _imageTypeFor(MediaType mediaType, int? platformId) {
+    switch (mediaType) {
+      case MediaType.game:
+        return ImageType.gameCover;
+      case MediaType.movie:
+        return ImageType.moviePoster;
+      case MediaType.tvShow:
+        return ImageType.tvShowPoster;
+      case MediaType.animation:
+        if (platformId == AnimationSource.tvShow) {
+          return ImageType.tvShowPoster;
+        }
+        return ImageType.moviePoster;
+      case MediaType.visualNovel:
+        return ImageType.vnCover;
+    }
+  }
+}
+
+// =============================================================================
+// Карточка Uncategorized
+// =============================================================================
+
+/// Карточка для uncategorized элементов в стиле "iOS папка".
+///
+/// Вместо мозаики — иконка inbox на фоне surfaceLight.
+class UncategorizedCard extends StatelessWidget {
+  /// Создаёт [UncategorizedCard].
+  const UncategorizedCard({
+    required this.count,
+    this.onTap,
+    super.key,
+  });
+
+  /// Количество uncategorized элементов.
+  final int count;
+
+  /// Callback при нажатии.
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final S l = S.of(context);
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(CollectionCard.mosaicRadius),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          // Фон с иконкой
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.surfaceLight,
+                borderRadius:
+                    BorderRadius.circular(CollectionCard.mosaicRadius),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: const Center(
+                child: Icon(
+                  Icons.inbox_rounded,
+                  color: AppColors.brand,
+                  size: 40,
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 8),
+
+          // Название
+          Text(
+            l.collectionsUncategorized,
+            style: AppTypography.h3,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+          ),
+
+          // Количество
+          Text(
+            l.collectionsUncategorizedItems(count),
+            style: AppTypography.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+}

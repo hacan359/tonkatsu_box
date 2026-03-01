@@ -7,6 +7,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../shared/models/collected_item_info.dart';
 import '../../shared/models/collection.dart';
+import '../../shared/models/cover_info.dart';
 import '../../shared/models/collection_item.dart';
 import '../../shared/models/game.dart';
 import '../../shared/models/item_status.dart';
@@ -2668,6 +2669,73 @@ class DatabaseService {
       orderBy: 'name ASC',
     );
     return rows.map(VndbTag.fromDb).toList();
+  }
+
+  // ==================== Collection Covers ====================
+
+  /// Возвращает первые [limit] обложек элементов коллекции.
+  ///
+  /// Легковесный запрос: получает только URL обложек из кэш-таблиц,
+  /// без загрузки полных моделей. Приоритет: completed > in_progress > остальные.
+  ///
+  /// Если [collectionId] == null, возвращает обложки uncategorized элементов.
+  Future<List<CoverInfo>> getCollectionCovers(
+    int? collectionId, {
+    int limit = 4,
+  }) async {
+    final Database db = await database;
+
+    final String whereClause = collectionId != null
+        ? 'ci.collection_id = ?'
+        : 'ci.collection_id IS NULL';
+    final List<Object> args = <Object>[
+      if (collectionId case final int id) id,
+      limit,
+    ];
+
+    final List<Map<String, Object?>> rows = await db.rawQuery('''
+      SELECT external_id, media_type, platform_id, thumbnail_url
+      FROM (
+        SELECT ci.external_id, ci.media_type, ci.platform_id, ci.status,
+          ci.sort_order,
+          CASE ci.media_type
+            WHEN 'game' THEN g.cover_url
+            WHEN 'movie' THEN m.poster_url
+            WHEN 'tv_show' THEN t.poster_url
+            WHEN 'animation' THEN
+              CASE WHEN ci.platform_id = 1 THEN t2.poster_url
+                   ELSE m2.poster_url END
+            WHEN 'visual_novel' THEN vn.image_url
+          END AS thumbnail_url
+        FROM collection_items ci
+        LEFT JOIN games g
+          ON ci.media_type = 'game' AND ci.external_id = g.id
+        LEFT JOIN movies_cache m
+          ON ci.media_type = 'movie' AND ci.external_id = m.tmdb_id
+        LEFT JOIN tv_shows_cache t
+          ON ci.media_type = 'tv_show' AND ci.external_id = t.tmdb_id
+        LEFT JOIN tv_shows_cache t2
+          ON ci.media_type = 'animation' AND ci.platform_id = 1
+          AND ci.external_id = t2.tmdb_id
+        LEFT JOIN movies_cache m2
+          ON ci.media_type = 'animation' AND ci.platform_id != 1
+          AND ci.external_id = m2.tmdb_id
+        LEFT JOIN visual_novels_cache vn
+          ON ci.media_type = 'visual_novel' AND ci.external_id = vn.numeric_id
+        WHERE $whereClause
+      )
+      WHERE thumbnail_url IS NOT NULL
+      ORDER BY
+        CASE status
+          WHEN 'completed' THEN 0
+          WHEN 'in_progress' THEN 1
+          ELSE 2
+        END,
+        sort_order
+      LIMIT ?
+    ''', args);
+
+    return rows.map(CoverInfo.fromDb).toList();
   }
 
   /// Закрывает соединение с базой данных.

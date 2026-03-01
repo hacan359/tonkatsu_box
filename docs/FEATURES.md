@@ -18,7 +18,7 @@ The app uses a forced dark theme (ThemeMode.dark) with a cinematic design system
 
 - **MediaPosterCard** — unified vertical 2:3 poster card with 3 variants: grid (hover animation, dual rating badge, collection checkmark, status Material icon badge, platform label for games), compact (smaller sizes for landscape), canvas (colored border by media type, no hover)
 - **DualRatingBadge** — dual rating display `★ 8 / 7.5` (user rating + API rating) on poster cards and list items. Modes: badge (dark overlay on poster), compact (smaller), inline (no background, for list tiles)
-- **HeroCollectionCard** — large gradient collection card with progress bar and stats
+- **CollectionCard** — iOS folder-style card with 3+3 cover mosaic, hover dimming effect, name and stats
 - **ShimmerLoading** — animated shimmer placeholders (ShimmerBox, ShimmerPosterCard, ShimmerListTile)
 
 </details>

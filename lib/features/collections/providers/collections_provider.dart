@@ -12,6 +12,7 @@ import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../data/repositories/game_repository.dart';
 import '../../home/providers/all_items_provider.dart';
+import 'collection_covers_provider.dart';
 import 'sort_utils.dart';
 
 /// Провайдер для списка коллекций.
@@ -82,6 +83,7 @@ class CollectionsNotifier extends AsyncNotifier<List<Collection>> {
 
     // Инвалидируем связанные провайдеры
     ref.invalidate(collectionStatsProvider(id));
+    ref.invalidate(collectionCoversProvider(id));
     ref.invalidate(allItemsNotifierProvider);
   }
 
@@ -273,6 +275,7 @@ class CollectionItemsNotifier
         ref.read(collectionSortDescProvider(_collectionId));
     await _loadItems(sortMode, isDescending: isDescending);
     ref.invalidate(collectionStatsProvider(_collectionId));
+    ref.invalidate(collectionCoversProvider(_collectionId));
   }
 
   /// Перемещает элемент с позиции [oldIndex] на [newIndex].
@@ -353,7 +356,9 @@ class CollectionItemsNotifier
     // Инвалидируем целевую коллекцию и статистики.
     ref.invalidate(collectionItemsNotifierProvider(targetCollectionId));
     ref.invalidate(collectionStatsProvider(targetCollectionId));
+    ref.invalidate(collectionCoversProvider(targetCollectionId));
     ref.invalidate(collectionStatsProvider(_collectionId));
+    ref.invalidate(collectionCoversProvider(_collectionId));
     ref.invalidate(uncategorizedItemCountProvider);
     _invalidateCollectedIds(mediaType);
     ref.invalidate(allItemsNotifierProvider);
@@ -437,6 +442,7 @@ class CollectionItemsNotifier
     }
 
     ref.invalidate(collectionStatsProvider(_collectionId));
+    ref.invalidate(collectionCoversProvider(_collectionId));
     ref.invalidate(allItemsNotifierProvider);
   }
 
@@ -505,6 +511,7 @@ class CollectionItemsNotifier
 
       if (newStatus != null) {
         ref.invalidate(collectionStatsProvider(_collectionId));
+        ref.invalidate(collectionCoversProvider(_collectionId));
         ref.invalidate(allItemsNotifierProvider);
       }
     }
