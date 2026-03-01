@@ -389,6 +389,245 @@ void main() {
         isA<SliverGridDelegateWithFixedCrossAxisCount>(),
       );
     });
+
+    group('viewport fill auto-load', () {
+      testWidgets('auto-loads more when content does not fill viewport',
+          (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(1200, 1200);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        int loadMoreCalls = 0;
+        late _ViewportFillTestNotifier notifier;
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: <Override>[
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              ...emptyCollectedOverrides(),
+              browseProvider.overrideWith(() {
+                notifier = _ViewportFillTestNotifier(
+                  onLoadMore: () => loadMoreCalls++,
+                );
+                return notifier;
+              }),
+            ],
+            child: MaterialApp(
+              localizationsDelegates: S.localizationsDelegates,
+              supportedLocales: S.supportedLocales,
+              locale: const Locale('en'),
+              home: Scaffold(
+                body: BrowseGrid(onItemTap: (_, _) {}),
+              ),
+            ),
+          ),
+        );
+        await tester.pump();
+
+        // Simulate loading completion with few items that won't fill viewport.
+        notifier.completeLoading(
+          const <Object>[
+            Movie(tmdbId: 1, title: 'M1', releaseYear: 2024),
+            Movie(tmdbId: 2, title: 'M2', releaseYear: 2024),
+          ],
+          hasMore: true,
+        );
+
+        await tester.pump(); // Rebuild + post-frame callback
+        await tester.pump(); // Ensure callback executed
+
+        expect(loadMoreCalls, greaterThan(0));
+      });
+
+      testWidgets('does not auto-load when hasMore is false',
+          (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(1200, 1200);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        int loadMoreCalls = 0;
+        late _ViewportFillTestNotifier notifier;
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: <Override>[
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              ...emptyCollectedOverrides(),
+              browseProvider.overrideWith(() {
+                notifier = _ViewportFillTestNotifier(
+                  onLoadMore: () => loadMoreCalls++,
+                );
+                return notifier;
+              }),
+            ],
+            child: MaterialApp(
+              localizationsDelegates: S.localizationsDelegates,
+              supportedLocales: S.supportedLocales,
+              locale: const Locale('en'),
+              home: Scaffold(
+                body: BrowseGrid(onItemTap: (_, _) {}),
+              ),
+            ),
+          ),
+        );
+        await tester.pump();
+
+        // Complete with hasMore: false — should not trigger auto-load.
+        notifier.completeLoading(
+          const <Object>[
+            Movie(tmdbId: 1, title: 'M1', releaseYear: 2024),
+          ],
+          hasMore: false,
+        );
+
+        await tester.pump();
+        await tester.pump();
+
+        expect(loadMoreCalls, 0);
+      });
+
+      testWidgets('does not auto-load while still loading',
+          (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(1200, 1200);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        int loadMoreCalls = 0;
+        late _ViewportFillTestNotifier notifier;
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: <Override>[
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              ...emptyCollectedOverrides(),
+              browseProvider.overrideWith(() {
+                notifier = _ViewportFillTestNotifier(
+                  onLoadMore: () => loadMoreCalls++,
+                );
+                return notifier;
+              }),
+            ],
+            child: MaterialApp(
+              localizationsDelegates: S.localizationsDelegates,
+              supportedLocales: S.supportedLocales,
+              locale: const Locale('en'),
+              home: Scaffold(
+                body: BrowseGrid(onItemTap: (_, _) {}),
+              ),
+            ),
+          ),
+        );
+        await tester.pump();
+
+        // Set loading state with items — listener should skip (isLoadingMore).
+        notifier.setLoadingMore(
+          const <Object>[
+            Movie(tmdbId: 1, title: 'M1', releaseYear: 2024),
+          ],
+        );
+
+        await tester.pump();
+        await tester.pump();
+
+        expect(loadMoreCalls, 0);
+      });
+
+      testWidgets('does not auto-load when isLoading is true',
+          (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(1200, 1200);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        int loadMoreCalls = 0;
+        late _ViewportFillTestNotifier notifier;
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: <Override>[
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              ...emptyCollectedOverrides(),
+              browseProvider.overrideWith(() {
+                notifier = _ViewportFillTestNotifier(
+                  onLoadMore: () => loadMoreCalls++,
+                );
+                return notifier;
+              }),
+            ],
+            child: MaterialApp(
+              localizationsDelegates: S.localizationsDelegates,
+              supportedLocales: S.supportedLocales,
+              locale: const Locale('en'),
+              home: Scaffold(
+                body: BrowseGrid(onItemTap: (_, _) {}),
+              ),
+            ),
+          ),
+        );
+        await tester.pump();
+
+        // Set state with items but isLoading still true — listener should skip.
+        notifier.setStillLoading(
+          const <Object>[
+            Movie(tmdbId: 1, title: 'M1', releaseYear: 2024),
+          ],
+        );
+
+        await tester.pump();
+        await tester.pump();
+
+        expect(loadMoreCalls, 0);
+      });
+
+      testWidgets('does not auto-load when items are empty',
+          (WidgetTester tester) async {
+        tester.view.physicalSize = const Size(1200, 1200);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        int loadMoreCalls = 0;
+        late _ViewportFillTestNotifier notifier;
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: <Override>[
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              ...emptyCollectedOverrides(),
+              browseProvider.overrideWith(() {
+                notifier = _ViewportFillTestNotifier(
+                  onLoadMore: () => loadMoreCalls++,
+                );
+                return notifier;
+              }),
+            ],
+            child: MaterialApp(
+              localizationsDelegates: S.localizationsDelegates,
+              supportedLocales: S.supportedLocales,
+              locale: const Locale('en'),
+              home: Scaffold(
+                body: BrowseGrid(onItemTap: (_, _) {}),
+              ),
+            ),
+          ),
+        );
+        await tester.pump();
+
+        // Complete with empty items — listener should skip.
+        notifier.completeLoading(
+          const <Object>[],
+          hasMore: true,
+        );
+
+        await tester.pump();
+        await tester.pump();
+
+        expect(loadMoreCalls, 0);
+      });
+    });
   });
 }
 
@@ -400,4 +639,51 @@ class _TestBrowseNotifier extends BrowseNotifier {
 
   @override
   BrowseState build() => _initialState;
+}
+
+/// Тестовый нотифайер для проверки viewport fill auto-load.
+class _ViewportFillTestNotifier extends BrowseNotifier {
+  _ViewportFillTestNotifier({required this.onLoadMore});
+
+  final void Function() onLoadMore;
+
+  @override
+  BrowseState build() =>
+      const BrowseState(sourceId: 'movies', isLoading: true);
+
+  /// Имитирует завершение загрузки.
+  void completeLoading(List<Object> items, {required bool hasMore}) {
+    state = state.copyWith(
+      items: items,
+      hasMore: hasMore,
+      isLoading: false,
+      filterValues: const <String, Object?>{'genre': 28},
+    );
+  }
+
+  /// Имитирует состояние загрузки следующей страницы.
+  void setLoadingMore(List<Object> items) {
+    state = state.copyWith(
+      items: items,
+      hasMore: true,
+      isLoading: false,
+      isLoadingMore: true,
+      filterValues: const <String, Object?>{'genre': 28},
+    );
+  }
+
+  /// Имитирует состояние первичной загрузки с элементами.
+  void setStillLoading(List<Object> items) {
+    state = state.copyWith(
+      items: items,
+      hasMore: true,
+      isLoading: true,
+      filterValues: const <String, Object?>{'genre': 28},
+    );
+  }
+
+  @override
+  Future<void> loadMore() async {
+    onLoadMore();
+  }
 }

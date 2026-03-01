@@ -82,10 +82,35 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     }
   }
 
+  /// Проверяет, заполнен ли viewport контентом после загрузки.
+  ///
+  /// Если контент не достигает порога прокрутки (300px от конца),
+  /// автоматически подгружает следующую страницу.
+  void _scheduleViewportFillCheck() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_scrollController.hasClients) return;
+      final ScrollPosition pos = _scrollController.position;
+      if (pos.pixels >= pos.maxScrollExtent - 300) {
+        ref.read(browseProvider.notifier).loadMore();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final BrowseState state = ref.watch(browseProvider);
     final S l = S.of(context);
+
+    // Auto-load more if content doesn't fill the viewport.
+    ref.listen<BrowseState>(browseProvider,
+        (BrowseState? prev, BrowseState next) {
+      if (next.hasMore &&
+          !next.isLoading &&
+          !next.isLoadingMore &&
+          next.items.isNotEmpty) {
+        _scheduleViewportFillCheck();
+      }
+    });
 
     // Loading state
     if (state.isLoading && state.items.isEmpty) {

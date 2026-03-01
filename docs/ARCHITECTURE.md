@@ -136,6 +136,7 @@ lib/
 | `lib/shared/models/steamgriddb_image.dart` | **Модель SteamGridDB изображения**. Поля: id, score, style, url, thumb, width, height, mime, author. Свойство `dimensions` |
 | `lib/shared/models/collection_item.dart` | **Модель универсального элемента коллекции**. Поля: id, collectionId, mediaType, externalId, platformId, sortOrder, status, authorComment, userComment, userRating (1-10), addedAt, startedAt, completedAt, lastActivityAt. Методы: `fromDb()`, `toDb()`, `copyWith()` (с sentinel-флагами `clearAuthorComment`, `clearUserComment`, `clearUserRating`). Геттеры: `apiRating` (нормализованный 0-10: IGDB rating/10, TMDB as-is, учитывает AnimationSource), `itemDescription` (game.summary / movie.overview / tvShow.overview). **Unified media accessors** через `_resolvedMedia` record: `releaseYear`, `runtime`, `totalSeasons`, `totalEpisodes`, `genresString`, `genres`, `mediaStatus`, `formattedRating`, `dataSource`, `imageType`, `placeholderIcon` — устраняют switch-on-mediaType в UI. `sortOrder` используется для ручной сортировки drag-and-drop. Даты хранятся как Unix seconds |
 | `lib/shared/models/visual_novel.dart` | **Модель визуальной новеллы**. Поля: id (String "v2"), title, altTitle, description, imageUrl, rating (0-100), voteCount, released, lengthMinutes, length (1-5), tags, developers, platforms, externalUrl. Computed: `numericId`, `rating10`, `formattedRating`, `releaseYear`, `lengthLabel`, `platformsString`. Класс `VndbTag` (id, name). Методы: `fromJson()`, `fromDb()`, `toDb()`, `toExport()`, `copyWith()` |
+| `lib/shared/models/cover_info.dart` | **Модель обложки коллекции**. Легковесная модель для мозаики карточек: externalId, mediaType, platformId, thumbnailUrl. Конструктор `fromDb()` |
 | `lib/shared/models/data_source.dart` | **Enum источника данных**. `DataSource` (igdb, tmdb, steamGridDb, vgMaps, vndb) — извлечён из `source_badge.dart`. Поля: `label`, `color`. Реэкспортируется из `source_badge.dart` |
 | `lib/shared/models/media_type.dart` | **Enum типа медиа**. Значения: `game`, `movie`, `tvShow`, `animation`, `visualNovel`. `AnimationSource` — abstract final class с константами `movie = 0`, `tvShow = 1` для дискриминации источника анимации через `platform_id`. Свойства: `label`, `icon`. Методы: `fromString()` |
 | `lib/shared/models/item_status.dart` | **Enum статуса элемента**. Значения: `notStarted`, `inProgress`, `completed`, `dropped`, `planned`. Свойства: `materialIcon` (IconData), `color`, `statusSortPriority`. Методы: `fromString()`, `displayLabel()`, `localizedLabel()` |
@@ -174,7 +175,12 @@ lib/
 |------|------------|
 | `lib/features/collections/widgets/activity_dates_section.dart` | **Секция дат активности**. StatelessWidget: Added (readonly), Started (editable), Completed (editable), Last Activity (readonly). DatePicker для ручного редактирования. `_DateRow` — приватный виджет строки с иконкой, меткой и датой. `OnDateChanged` typedef для callback |
 | `lib/features/collections/widgets/episode_tracker_section.dart` | **Секция Episode Tracker**. Прогресс просмотра сезонов/эпизодов. `EpisodeTrackerSection` (ConsumerWidget) с прогресс-баром и `SeasonsListWidget`. `SeasonExpansionTile` для каждого сезона с mark all/unmark all. `EpisodeTile` с чекбоксом и датой просмотра. Параметр `accentColor` для различения TV Show (`AppColors.tvShowAccent`) и Animation (`AppColors.animationAccent`). Загрузка сезонов из БД с fallback на TMDB API, кнопка Refresh |
-| `lib/features/collections/widgets/collection_tile.dart` | **Плитка коллекции**. Показывает имя, автора, тип, количество игр. Иконка удаления |
+| `lib/features/collections/widgets/collection_card.dart` | **Карточка коллекции (iOS folder style)**. ConsumerStatefulWidget с hover dimming (AnimationController). Мозаика 3+3 обложек (3 сверху, 2 + "+N" снизу), название и статистика под мозаикой |
+| `lib/features/collections/widgets/collection_filter_bar.dart` | **Панель фильтров**. Медиа-тип dropdown, поиск, сортировка, grid/list toggle, платформенные чипсы для игр |
+| `lib/features/collections/widgets/collection_item_tile.dart` | **Плитка элемента коллекции**. List-режим отображения элемента с постером, названием, статусом |
+| `lib/features/collections/widgets/collection_items_view.dart` | **Вью элементов коллекции**. Grid/list отображение с фильтрацией и сортировкой |
+| `lib/features/collections/widgets/collection_canvas_layout.dart` | **Canvas layout**. Board/Canvas режим коллекции, извлечён из collection_screen |
+| `lib/features/collections/helpers/collection_actions.dart` | **Действия с коллекцией**. Добавление, удаление, перемещение, экспорт элементов |
 | `lib/features/collections/widgets/create_collection_dialog.dart` | **Диалоги**. Создание, переименование, удаление коллекции |
 | `lib/features/collections/widgets/status_chip_row.dart` | **Полоса статус-сегментов (piano-style)**. `Row` из `Expanded` сегментов в один ряд на всю ширину. Каждый сегмент — `AnimatedContainer` с flat color fill, Material icon (из `status.materialIcon`), `Tooltip` с локализованной меткой. Выбранный: полный цвет + белая иконка, невыбранные: приглушённый фон + приглушённая иконка |
 | `lib/features/collections/widgets/status_ribbon.dart` | **Диагональная ленточка статуса**. Display-only `Positioned` + `Transform.rotate(-45deg)` в верхнем левом углу list-карточек. Material icon (12px, белый), цвет фона = `status.color`. Не показывается для `notStarted` |
@@ -285,7 +291,7 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/features/search/widgets/browse_grid.dart` | **Грид результатов**. ConsumerStatefulWidget. Бесконечный скролл (пагинация). Grid delegate совпадает с CollectionScreen (maxCrossAxisExtent:150 на desktop, childAspectRatio:0.55). `_collectedIdsProvider` для маркировки "в коллекции" (зелёный чек). Shimmer-загрузка |
+| `lib/features/search/widgets/browse_grid.dart` | **Грид результатов**. ConsumerStatefulWidget. Бесконечный скролл (пагинация). Viewport fill auto-load: `_scheduleViewportFillCheck()` + `ref.listen` для автоподгрузки на высоких экранах. Grid delegate совпадает с CollectionScreen (maxCrossAxisExtent:150 на desktop, childAspectRatio:0.55). `_collectedIdsProvider` для маркировки "в коллекции" (зелёный чек). Shimmer-загрузка |
 | `lib/features/search/widgets/filter_bar.dart` | **Горизонтальная строка фильтров**. SourceDropdown + FilterDropdown-ы + SortDropdown. ValueKey по source+cacheKey для пересоздания при смене источника |
 | `lib/features/search/widgets/filter_dropdown.dart` | **Дропдаун фильтра**. `FilterDropdown` — PopupMenuButton с async-загрузкой опций, generation-based cancellation, sentinel для "All". `SortDropdown` — дропдаун сортировки |
 | `lib/features/search/widgets/source_dropdown.dart` | **Дропдаун источника**. Переключение между Movies/TV/Anime/Games с иконками |
@@ -357,7 +363,7 @@ lib/
 | `lib/shared/widgets/rating_badge.dart` | **Бейдж рейтинга**. Цветной бейдж 28x20: зелёный (>= 8.0), жёлтый (>= 6.0), красный (< 6.0). Текст белый bold 12px |
 | `lib/shared/widgets/shimmer_loading.dart` | **Shimmer-загрузка**. `ShimmerBox` (базовый блок), `ShimmerPosterCard` (заглушка для MediaPosterCard), `ShimmerListTile` (заглушка для списка). Анимированный линейный градиент surfaceLight <-> surface |
 | ~~`lib/shared/widgets/poster_card.dart`~~ | **Удалён**. Заменён на `MediaPosterCard(variant: grid/compact)` |
-| `lib/shared/widgets/hero_collection_card.dart` | **Большая карточка коллекции**. Градиентный фон с иконкой типа медиа, название коллекции, статистика (items, completion %), прогресс-бар. Используется в HomeScreen |
+| ~~`lib/shared/widgets/hero_collection_card.dart`~~ | **Удалён**. Заменён на `CollectionCard` (iOS folder style) в `collection_card.dart` |
 | ~~`lib/shared/widgets/media_card.dart`~~ | **Удалён**. Мёртвый код после редизайна SearchScreen |
 | `lib/shared/widgets/media_detail_view.dart` | **Базовый виджет экрана деталей**. Постер 100x150 (CachedNetworkImage или CachedImage), SourceBadge (clickable with `externalUrl` — opens IGDB/TMDB page via `url_launcher`), info chips (`MediaDetailChip`), описание inline, секция статуса, секция "My Rating" (`StarRatingBar`), личные заметки (My Notes), рецензия автора (Author's Review, видна другим при экспорте), дополнительные секции в `ExpansionTile` "Activity & Progress", `recommendationSections` — виджеты рекомендаций/отзывов вне ExpansionTile (всегда видимы), `accentColor` для per-media окрашивания |
 | `lib/shared/widgets/star_rating_bar.dart` | **Виджет рейтинга**. 10 кликабельных звёзд (InkWell, focusable для геймпада). Параметры: `rating: int?`, `starSize: double`, `onChanged: ValueChanged<int?>`. Повторный клик на текущий рейтинг сбрасывает на `null` |
@@ -825,6 +831,7 @@ CREATE TABLE wishlist (
 | `collectionsProvider` | AsyncNotifierProvider | Список коллекций |
 | `collectionItemsNotifierProvider` | NotifierProvider.family | Элементы коллекции (по collectionId) |
 | `collectionStatsProvider` | FutureProvider.family | Статистика коллекции |
+| `collectionCoversProvider` | FutureProvider.family | Первые 5 обложек коллекции для мозаики |
 | `gameSearchProvider` | NotifierProvider | Состояние поиска игр |
 | `mediaSearchProvider` | NotifierProvider | Состояние поиска фильмов/сериалов |
 | `gameRepositoryProvider` | Provider | Репозиторий игр |

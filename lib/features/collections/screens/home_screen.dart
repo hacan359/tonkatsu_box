@@ -10,13 +10,11 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
-import '../../../shared/widgets/hero_collection_card.dart';
-import '../../../shared/widgets/section_header.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../providers/collections_provider.dart';
 import '../../settings/providers/settings_provider.dart';
-import '../widgets/collection_tile.dart';
+import '../widgets/collection_card.dart';
 import '../widgets/create_collection_dialog.dart';
 import 'collection_screen.dart';
 
@@ -61,9 +59,6 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  /// Максимальное количество Hero-карточек.
-  static const int _maxHeroCards = 3;
-
   Widget _buildCollectionsList(
     BuildContext context,
     WidgetRef ref,
@@ -76,60 +71,32 @@ class HomeScreen extends ConsumerWidget {
       return _buildEmptyState(context);
     }
 
-    // Первые N коллекций как Hero, остальные как Tile
-    final List<Collection> heroCollections =
-        collections.take(_maxHeroCards).toList();
-    final List<Collection> tileCollections =
-        collections.skip(_maxHeroCards).toList();
-
-    final bool isLandscape = isLandscapeMobile(context);
+    // Все элементы грида: uncategorized (опционально) + все коллекции
+    final List<Widget> gridItems = <Widget>[
+      if (uncategorizedCount > 0)
+        UncategorizedCard(
+          count: uncategorizedCount,
+          onTap: () => _navigateToUncategorized(context),
+        ),
+      ...collections.map((Collection c) => CollectionCard(
+            collection: c,
+            onTap: () => _navigateToCollection(context, c),
+            onLongPress: () => _showCollectionOptions(context, ref, c),
+          )),
+    ];
 
     return RefreshIndicator(
       onRefresh: () => ref.read(collectionsProvider.notifier).refresh(),
-      child: ListView(
-        padding: EdgeInsets.only(
-          left: isLandscape ? AppSpacing.sm : AppSpacing.md,
-          right: isLandscape ? AppSpacing.sm : AppSpacing.md,
-          bottom: isLandscape ? 40 : 80,
+      child: GridView.builder(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: 273,
+          crossAxisSpacing: 8,
+          mainAxisSpacing: 8,
+          childAspectRatio: 1,
         ),
-        children: <Widget>[
-          // Uncategorized тайл (если есть элементы без коллекции)
-          if (uncategorizedCount > 0) ...<Widget>[
-            const SizedBox(height: AppSpacing.md),
-            _UncategorizedTile(
-              count: uncategorizedCount,
-              onTap: () => _navigateToUncategorized(context),
-            ),
-          ],
-
-          // Hero-карточки (первые 3 own коллекции)
-          if (heroCollections.isNotEmpty) ...<Widget>[
-            const SizedBox(height: AppSpacing.md),
-            ...heroCollections.map((Collection c) => HeroCollectionCard(
-                  collection: c,
-                  onTap: () => _navigateToCollection(context, c),
-                  onLongPress: () => _showCollectionOptions(context, ref, c),
-                )),
-          ],
-
-          // Остальные коллекции
-          if (tileCollections.isNotEmpty) ...<Widget>[
-            Padding(
-              padding: const EdgeInsets.only(
-                top: AppSpacing.lg,
-                bottom: AppSpacing.sm,
-              ),
-              child: SectionHeader(
-                title: S.of(context).collectionsCount(collections.length),
-              ),
-            ),
-            ...tileCollections.map((Collection c) => CollectionTile(
-                  collection: c,
-                  onTap: () => _navigateToCollection(context, c),
-                  onLongPress: () => _showCollectionOptions(context, ref, c),
-                )),
-          ],
-        ],
+        itemCount: gridItems.length,
+        itemBuilder: (BuildContext context, int index) => gridItems[index],
       ),
     );
   }
@@ -407,84 +374,6 @@ class HomeScreen extends ConsumerWidget {
     } else if (!result.isCancelled && result.error != null) {
       context.showSnack(result.error!, type: SnackType.error);
     }
-  }
-}
-
-/// Тайл для перехода к uncategorized элементам.
-class _UncategorizedTile extends StatelessWidget {
-  const _UncategorizedTile({
-    required this.count,
-    required this.onTap,
-  });
-
-  /// Количество uncategorized элементов.
-  final int count;
-
-  /// Callback при нажатии.
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final S l = S.of(context);
-    return Card(
-      color: AppColors.surface,
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        side: BorderSide(
-          color: AppColors.surfaceBorder.withAlpha(100),
-        ),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Row(
-            children: <Widget>[
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: AppColors.textTertiary.withAlpha(30),
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                ),
-                child: const Icon(
-                  Icons.inbox_outlined,
-                  color: AppColors.textTertiary,
-                  size: 22,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      l.collectionsUncategorized,
-                      style: AppTypography.h3.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      l.collectionsUncategorizedItems(count),
-                      style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(
-                Icons.chevron_right,
-                color: AppColors.textTertiary,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }
 

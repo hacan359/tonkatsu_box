@@ -6,6 +6,32 @@
 
 ## [Unreleased]
 
+### Added
+- iOS folder-style `CollectionCard` widget (`collection_card.dart`) — 3+3 mosaic grid (3 posters top row, 2 posters + "+N" counter bottom row), hover dimming effect with `AnimationController`, rounded corners (16px outer, 8px cells), internal padding 14px
+- `UncategorizedCard` widget for uncategorized items with inbox icon
+- `CoverInfo` model (`cover_info.dart`) — lightweight cover data (externalId, mediaType, platformId, thumbnailUrl) for collection card mosaics
+- `collectionCoversProvider` (`collection_covers_provider.dart`) — `FutureProvider.family` that fetches first 5 cover thumbnails via optimized SQL JOIN query
+- `DatabaseService.getCollectionCovers()` — single SQL query joining `collection_items` with all 5 media cache tables (games, movies, tv_shows, visual_novels), prioritized by completion status
+- `CollectionFilterBar` widget (`collection_filter_bar.dart`) — compact filter row with media type dropdown, search field, sort dropdown, grid/list toggle, and platform chips for games
+- `CollectionItemTile` widget (`collection_item_tile.dart`) — list item tile for collection items
+- `CollectionItemsView` widget (`collection_items_view.dart`) — grid/list view for collection items with filtering and sorting
+- `CollectionCanvasLayout` widget (`collection_canvas_layout.dart`) — canvas/board layout extracted from collection screen
+- `CollectionActions` helper (`collection_actions.dart`) — extracted collection action methods (add, remove, move, export) from collection screen
+- Tests: `collection_card_test.dart` (22 tests), `collection_covers_provider_test.dart` (4 tests), `collection_filter_bar_test.dart`, `collection_item_tile_test.dart`, `collection_items_view_test.dart`, `collection_canvas_layout_test.dart`, `collection_actions_test.dart`, `cover_info_test.dart`
+
+### Changed
+- `HomeScreen` — replaced category-grouped layout with single `GridView.builder` using `SliverGridDelegateWithMaxCrossAxisExtent(maxCrossAxisExtent: 273, childAspectRatio: 1)`. All collections rendered as `CollectionCard` widgets
+- `CollectionScreen` — major refactoring: extracted filter bar, items view, canvas layout, and action helpers into separate widgets. Reduced from ~1800 lines to ~500 lines
+
+### Fixed
+- `collectionCoversProvider` now invalidated in all 6 mutation points in `CollectionItemsNotifier` (`refresh`, `delete`, `moveItem`, `updateItemStatus`, `updateActivityDates`) — cover mosaics on HomeScreen update when items are added, removed, or moved
+- `DatabaseService.getCollectionCovers()` SQL — wrapped in subquery to avoid referencing column alias `thumbnail_url` in WHERE clause (not reliably supported across SQLite versions)
+- `BrowseGrid` viewport fill auto-load — on tall/wide screens where initial results (20 items) fit entirely without scrollbar, `loadMore()` was never called. Added `_scheduleViewportFillCheck()` with `addPostFrameCallback` and `ref.listen` to auto-load more pages until viewport is filled or results exhausted
+
+### Removed
+- `CollectionTile` widget (`collection_tile.dart`) and its tests — replaced by `CollectionCard`
+- `HeroCollectionCard` widget (`hero_collection_card.dart`) and its tests — replaced by `CollectionCard`
+
 ## [0.16.0] - 2026-02-28
 
 ### Added
