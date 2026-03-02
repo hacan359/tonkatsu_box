@@ -11,6 +11,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
+import '../../../shared/widgets/type_to_filter_overlay.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../providers/collections_provider.dart';
 import '../../settings/providers/settings_provider.dart';
@@ -21,12 +22,19 @@ import 'collection_screen.dart';
 /// Главный экран приложения.
 ///
 /// Показывает список коллекций пользователя с группировкой по типу.
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   /// Создаёт [HomeScreen].
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  String _typeToFilterQuery = '';
+
+  @override
+  Widget build(BuildContext context) {
     final AsyncValue<List<Collection>> collectionsAsync =
         ref.watch(collectionsProvider);
     final bool isLandscape = isLandscapeMobile(context);
@@ -49,12 +57,17 @@ class HomeScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: collectionsAsync.when(
-        data: (List<Collection> collections) =>
-            _buildCollectionsList(context, ref, collections),
-        loading: () => _buildLoadingState(),
-        error: (Object error, StackTrace stack) =>
-            _buildErrorState(context, ref, error),
+      body: TypeToFilterOverlay(
+        onFilterChanged: (String query) {
+          setState(() => _typeToFilterQuery = query);
+        },
+        child: collectionsAsync.when(
+          data: (List<Collection> collections) =>
+              _buildCollectionsList(context, ref, collections),
+          loading: () => _buildLoadingState(),
+          error: (Object error, StackTrace stack) =>
+              _buildErrorState(context, ref, error),
+        ),
       ),
     );
   }
@@ -71,14 +84,23 @@ class HomeScreen extends ConsumerWidget {
       return _buildEmptyState(context);
     }
 
-    // Все элементы грида: uncategorized (опционально) + все коллекции
+    // Фильтрация коллекций по имени
+    List<Collection> filteredCollections = collections;
+    if (_typeToFilterQuery.isNotEmpty) {
+      final String query = _typeToFilterQuery.toLowerCase();
+      filteredCollections = collections
+          .where((Collection c) => c.name.toLowerCase().contains(query))
+          .toList();
+    }
+
+    // Все элементы грида: uncategorized (опционально) + отфильтрованные коллекции
     final List<Widget> gridItems = <Widget>[
-      if (uncategorizedCount > 0)
+      if (uncategorizedCount > 0 && _typeToFilterQuery.isEmpty)
         UncategorizedCard(
           count: uncategorizedCount,
           onTap: () => _navigateToUncategorized(context),
         ),
-      ...collections.map((Collection c) => CollectionCard(
+      ...filteredCollections.map((Collection c) => CollectionCard(
             collection: c,
             onTap: () => _navigateToCollection(context, c),
             onLongPress: () => _showCollectionOptions(context, ref, c),

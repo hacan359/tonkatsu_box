@@ -19,6 +19,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
 import '../../../shared/widgets/breadcrumb_scope.dart';
 import '../../../shared/widgets/media_poster_card.dart';
+import '../../../shared/widgets/type_to_filter_overlay.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../collections/screens/item_detail_screen.dart';
 import '../providers/all_items_provider.dart';
@@ -38,6 +39,7 @@ class AllItemsScreen extends ConsumerStatefulWidget {
 class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   MediaType? _filterType;
   int? _filterPlatformId;
+  String _typeToFilterQuery = '';
 
   /// Максимальная ширина карточки на десктопе.
   static const double _desktopMaxCardWidth = 150;
@@ -54,26 +56,31 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
 
     return Scaffold(
       appBar: const AutoBreadcrumbAppBar(),
-      body: Column(
-        children: <Widget>[
-          _buildChipsRow(itemsAsync, currentSort, isDescending),
-          if (_filterType == MediaType.game) _buildPlatformChipsRow(),
-          Expanded(
-            child: itemsAsync.when(
-              data: (List<CollectionItem> items) {
-                final List<CollectionItem> filtered = _applyFilter(items);
-                if (filtered.isEmpty) {
-                  return _buildEmptyState(items.isEmpty);
-                }
-                return _buildGridView(filtered, collectionNames);
-              },
-              loading: () =>
-                  const Center(child: CircularProgressIndicator()),
-              error: (Object error, StackTrace stack) =>
-                  _buildErrorState(error),
+      body: TypeToFilterOverlay(
+        onFilterChanged: (String query) {
+          setState(() => _typeToFilterQuery = query);
+        },
+        child: Column(
+          children: <Widget>[
+            _buildChipsRow(itemsAsync, currentSort, isDescending),
+            if (_filterType == MediaType.game) _buildPlatformChipsRow(),
+            Expanded(
+              child: itemsAsync.when(
+                data: (List<CollectionItem> items) {
+                  final List<CollectionItem> filtered = _applyFilter(items);
+                  if (filtered.isEmpty) {
+                    return _buildEmptyState(items.isEmpty);
+                  }
+                  return _buildGridView(filtered, collectionNames);
+                },
+                loading: () =>
+                    const Center(child: CircularProgressIndicator()),
+                error: (Object error, StackTrace stack) =>
+                    _buildErrorState(error),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -88,6 +95,15 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     if (_filterPlatformId != null) {
       result = result
           .where((CollectionItem item) => item.platformId == _filterPlatformId)
+          .toList();
+    }
+    if (_typeToFilterQuery.isNotEmpty) {
+      final String query = _typeToFilterQuery.toLowerCase();
+      result = result
+          .where(
+            (CollectionItem item) =>
+                item.itemName.toLowerCase().contains(query),
+          )
           .toList();
     }
     return result;

@@ -1980,4 +1980,7 @@ class SRu extends S {
   @override
   String get browseSortDisabledHint =>
       'Сортировка недоступна при текстовом поиске';
+
+  @override
+  String get typeToFilterHint => 'Фильтр...';
 }

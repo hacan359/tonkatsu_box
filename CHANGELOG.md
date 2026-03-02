@@ -7,6 +7,7 @@
 ## [Unreleased]
 
 ### Added
+- **[Experimental]** Type-to-Filter overlay (desktop only) — при наборе текста на физической клавиатуре появляется плавающая строка поиска, фильтрующая элементы по названию в реальном времени. Работает на 5 экранах: AllItems, HomeScreen, CollectionScreen, SearchScreen, WishlistScreen. Виджет `TypeToFilterOverlay` (`type_to_filter_overlay.dart`), клавиши: печатные символы — показать/фильтр, Escape — скрыть, Backspace — удалить символ, кнопка закрыть. На мобильной платформе — zero overhead
 - Database migration v24 (`migration_v24.dart`) — seed genres, tags, and platforms as static reference data. TMDB genres (EN + RU for movie + tv), 23 IGDB genres, 100 VNDB tags, 220 IGDB platforms embedded directly in migration. Eliminates runtime API calls for reference data
 - `tmdb_genres` table extended with `lang` column (composite PK: id, type, lang) — supports bilingual genre names without runtime API calls
 - `credentialsPlatformsAvailable` localization key (EN + RU) — replaces sync-related labels

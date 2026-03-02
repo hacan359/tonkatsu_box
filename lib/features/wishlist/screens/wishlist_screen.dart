@@ -11,6 +11,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
+import '../../../shared/widgets/type_to_filter_overlay.dart';
 import '../../search/screens/search_screen.dart';
 import '../providers/wishlist_provider.dart';
 import '../widgets/add_wishlist_dialog.dart';
@@ -29,6 +30,7 @@ class WishlistScreen extends ConsumerStatefulWidget {
 
 class _WishlistScreenState extends ConsumerState<WishlistScreen> {
   bool _showResolved = true;
+  String _typeToFilterQuery = '';
 
   @override
   Widget build(BuildContext context) {
@@ -61,36 +63,49 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
           ),
         ],
       ),
-      body: itemsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (Object error, StackTrace stack) => Center(
-          child: Text(S.of(context).errorPrefix(error.toString())),
-        ),
-        data: (List<WishlistItem> items) {
-          final List<WishlistItem> filtered = _showResolved
-              ? items
-              : items
-                  .where((WishlistItem item) => !item.isResolved)
-                  .toList();
-
-          if (filtered.isEmpty) {
-            return _buildEmptyState(context);
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.only(bottom: 80),
-            itemCount: filtered.length,
-            itemBuilder: (BuildContext context, int index) {
-              return _WishlistTile(
-                item: filtered[index],
-                onTap: () => _searchForItem(context, filtered[index]),
-                onResolve: () => _toggleResolved(filtered[index]),
-                onEdit: () => _editItem(context, filtered[index]),
-                onDelete: () => _deleteItem(context, filtered[index]),
-              );
-            },
-          );
+      body: TypeToFilterOverlay(
+        onFilterChanged: (String query) {
+          setState(() => _typeToFilterQuery = query);
         },
+        child: itemsAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (Object error, StackTrace stack) => Center(
+            child: Text(S.of(context).errorPrefix(error.toString())),
+          ),
+          data: (List<WishlistItem> items) {
+            List<WishlistItem> filtered = _showResolved
+                ? items
+                : items
+                    .where((WishlistItem item) => !item.isResolved)
+                    .toList();
+
+            if (_typeToFilterQuery.isNotEmpty) {
+              final String query = _typeToFilterQuery.toLowerCase();
+              filtered = filtered
+                  .where((WishlistItem item) =>
+                      item.text.toLowerCase().contains(query))
+                  .toList();
+            }
+
+            if (filtered.isEmpty) {
+              return _buildEmptyState(context);
+            }
+
+            return ListView.builder(
+              padding: const EdgeInsets.only(bottom: 80),
+              itemCount: filtered.length,
+              itemBuilder: (BuildContext context, int index) {
+                return _WishlistTile(
+                  item: filtered[index],
+                  onTap: () => _searchForItem(context, filtered[index]),
+                  onResolve: () => _toggleResolved(filtered[index]),
+                  onEdit: () => _editItem(context, filtered[index]),
+                  onDelete: () => _deleteItem(context, filtered[index]),
+                );
+              },
+            );
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         heroTag: 'wishlist_add',

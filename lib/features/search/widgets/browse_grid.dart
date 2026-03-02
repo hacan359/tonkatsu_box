@@ -50,11 +50,15 @@ class BrowseGrid extends ConsumerStatefulWidget {
   /// Создаёт [BrowseGrid].
   const BrowseGrid({
     required this.onItemTap,
+    this.clientFilter,
     super.key,
   });
 
   /// Callback при тапе на элемент.
   final void Function(Object item, MediaType mediaType) onItemTap;
+
+  /// Клиентский фильтр по названию (type-to-filter).
+  final String? clientFilter;
 
   @override
   ConsumerState<BrowseGrid> createState() => _BrowseGridState();
@@ -206,6 +210,19 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     final Set<int> vnIds =
         collectedIds.valueOrNull?.vnIds ?? const <int>{};
 
+    // Применяем клиентский фильтр по названию
+    final List<Object> displayItems;
+    final String? clientFilter = widget.clientFilter;
+    if (clientFilter != null && clientFilter.isNotEmpty) {
+      final String query = clientFilter.toLowerCase();
+      displayItems = state.items
+          .where((Object item) =>
+              _extractTitle(item).toLowerCase().contains(query))
+          .toList();
+    } else {
+      displayItems = state.items;
+    }
+
     // Results grid
     final SliverGridDelegate gridDelegate = _buildGridDelegate(context);
 
@@ -216,14 +233,14 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         vertical: AppSpacing.sm,
       ),
       gridDelegate: gridDelegate,
-      itemCount: state.items.length + (state.isLoadingMore ? 3 : 0),
+      itemCount: displayItems.length + (state.isLoadingMore ? 3 : 0),
       itemBuilder: (BuildContext context, int index) {
         // Loading more indicators
-        if (index >= state.items.length) {
+        if (index >= displayItems.length) {
           return const ShimmerPosterCard();
         }
 
-        final Object item = state.items[index];
+        final Object item = displayItems[index];
         return _buildCard(item, state.source.id, tmdbIds, gameIds, vnIds);
       },
     );
@@ -304,6 +321,15 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     }
 
     return const SizedBox.shrink();
+  }
+
+  /// Извлекает название из элемента для клиентской фильтрации.
+  static String _extractTitle(Object item) {
+    if (item is Game) return item.name;
+    if (item is Movie) return item.title;
+    if (item is TvShow) return item.title;
+    if (item is VisualNovel) return item.title;
+    return '';
   }
 
   bool _isAnimation(TvShow show) {

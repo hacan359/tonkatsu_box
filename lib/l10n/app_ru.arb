@@ -702,5 +702,7 @@
   "browseEmptyFilters": "Выберите фильтр или выполните поиск",
   "browseEmptyResults": "Ничего не найдено",
   "browseSearchHint": "Поиск...",
-  "browseBackToBrowse": "Назад к обзору"
+  "browseBackToBrowse": "Назад к обзору",
+
+  "typeToFilterHint": "Фильтр..."
 }

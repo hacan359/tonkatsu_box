@@ -15,6 +15,7 @@ import '../../../shared/models/media_type.dart';
 import '../../../shared/models/steamgriddb_image.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../../../shared/constants/platform_features.dart';
+import '../../../shared/widgets/type_to_filter_overlay.dart';
 import '../helpers/collection_actions.dart';
 import '../providers/collections_provider.dart';
 import '../providers/steamgriddb_panel_provider.dart';
@@ -48,6 +49,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   MediaType? _filterType;
   int? _filterPlatformId;
   String _searchQuery = '';
+  String _typeToFilterQuery = '';
   final TextEditingController _searchController = TextEditingController();
 
   /// Реальная возможность редактирования с учётом режима просмотра.
@@ -183,7 +185,12 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                   );
                 },
               )
-            : _buildListLayout(itemsAsync, statsAsync),
+            : TypeToFilterOverlay(
+                onFilterChanged: (String query) {
+                  setState(() => _typeToFilterQuery = query);
+                },
+                child: _buildListLayout(itemsAsync, statsAsync),
+              ),
       ),
     );
   }
@@ -364,6 +371,16 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
 
     if (_searchQuery.isNotEmpty) {
       final String query = _searchQuery.toLowerCase();
+      result = result
+          .where(
+            (CollectionItem item) =>
+                item.itemName.toLowerCase().contains(query),
+          )
+          .toList();
+    }
+
+    if (_typeToFilterQuery.isNotEmpty) {
+      final String query = _typeToFilterQuery.toLowerCase();
       result = result
           .where(
             (CollectionItem item) =>

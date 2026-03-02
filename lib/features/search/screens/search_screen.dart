@@ -23,6 +23,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
 import '../../../shared/widgets/collection_picker_dialog.dart';
+import '../../../shared/widgets/type_to_filter_overlay.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../providers/browse_provider.dart';
 import '../widgets/browse_grid.dart';
@@ -67,6 +68,7 @@ class SearchScreen extends ConsumerStatefulWidget {
 class _SearchScreenState extends ConsumerState<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocus = FocusNode();
+  String _typeToFilterQuery = '';
 
   Map<int, Platform> _platformMap = <int, Platform>{};
 
@@ -901,18 +903,23 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             ),
         ],
       ),
-      body: Column(
-        children: <Widget>[
-          // Фильтр-бар: всегда видим
-          const FilterBar(),
-          // Поле поиска: всегда видимо
-          _buildSearchField(),
-          const SizedBox(height: AppSpacing.xs),
-          // Контент
-          Expanded(
-            child: _buildContent(browseState),
-          ),
-        ],
+      body: TypeToFilterOverlay(
+        onFilterChanged: (String query) {
+          setState(() => _typeToFilterQuery = query);
+        },
+        child: Column(
+          children: <Widget>[
+            // Фильтр-бар: всегда видим
+            const FilterBar(),
+            // Поле поиска: всегда видимо
+            _buildSearchField(),
+            const SizedBox(height: AppSpacing.xs),
+            // Контент
+            Expanded(
+              child: _buildContent(browseState),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1010,7 +1017,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     }
 
     // Есть запрос (текст и/или фильтры) → показываем грид результатов
-    return BrowseGrid(onItemTap: _onItemTap);
+    return BrowseGrid(
+      onItemTap: _onItemTap,
+      clientFilter: _typeToFilterQuery,
+    );
   }
 
   // ==================== Empty states ====================

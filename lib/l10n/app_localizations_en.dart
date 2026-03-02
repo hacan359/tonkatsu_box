@@ -1959,4 +1959,7 @@ class SEn extends S {
 
   @override
   String get browseSortDisabledHint => 'Sorting unavailable during text search';
+
+  @override
+  String get typeToFilterHint => 'Filter...';
 }
