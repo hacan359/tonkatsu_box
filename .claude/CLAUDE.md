@@ -99,10 +99,33 @@ final databaseServiceProvider = Provider<DatabaseService>((ref) => DatabaseServi
 - `SteamGridDbApi` — Bearer token, провайдер `steamGridDbApiProvider`
 - API ключи хранятся в SharedPreferences, читаются через `SettingsNotifier`
 
-### База данных (`lib/core/database/database_service.dart`)
-- SQLite через sqflite_common_ffi, 16 таблиц, текущая версия БД: 20
-- Миграции в `_onUpgrade()` — инкрементальные (v1 → v2 → ... → v20)
+### База данных (`lib/core/database/`)
+- SQLite через sqflite_common_ffi, 18 таблиц, текущая версия БД: 23
 - Провайдер: `databaseServiceProvider`
+
+#### Структура файлов БД:
+```
+lib/core/database/
+├── database_service.dart          # CRUD-операции, _initDatabase, _onCreate, _onUpgrade
+├── schema.dart                    # DatabaseSchema — все CREATE TABLE (18 методов + createAll)
+└── migrations/
+    ├── migration.dart             # Абстрактный класс Migration (version, description, migrate)
+    ├── migration_registry.dart    # MigrationRegistry.all / .pending(oldVersion)
+    ├── migration_v2.dart          # MigrationV2..MigrationV23 — по файлу на версию
+    └── ...
+```
+
+#### Правила работы с миграциями:
+- **Новая таблица** → добавить метод `create*Table` в `DatabaseSchema` (`schema.dart`)
+- **Новая миграция** → создать `migration_vN.dart` с классом `MigrationVN extends Migration`
+- Зарегистрировать миграцию в `MigrationRegistry.all` (`migration_registry.dart`)
+- Увеличить `version` в `_initDatabase()` (`database_service.dart`)
+- Если миграция создаёт новую таблицу — вызывать `DatabaseSchema.create*Table(db)`, а **не** дублировать SQL
+- Если миграция содержит ALTER/UPDATE — SQL пишется inline в методе `migrate()`
+- `_onCreate` вызывает `DatabaseSchema.createAll(db)` — **не трогать**
+- `_onUpgrade` итерирует `MigrationRegistry.pending(oldVersion)` — **не трогать**
+- SQL-запросы в миграциях **нельзя** менять задним числом — только добавлять новые миграции
+- `database_service.dart` содержит **только** CRUD-операции и инициализацию — никаких CREATE TABLE / ALTER TABLE
 
 ### Тесты (`test/`)
 - Зеркальная структура: `test/` повторяет `lib/`
@@ -265,7 +288,9 @@ D-pad и кнопка A обрабатываются глобально в `Navi
 ## Ключевые файлы для ориентации
 | Файл | Описание |
 |------|----------|
-| `lib/core/database/database_service.dart` | Вся работа с БД (1974 строк) |
+| `lib/core/database/database_service.dart` | CRUD-операции БД |
+| `lib/core/database/schema.dart` | Определения всех таблиц (DatabaseSchema) |
+| `lib/core/database/migrations/` | Миграции БД (v2–v23, реестр, базовый класс) |
 | `lib/features/collections/widgets/canvas_view.dart` | Главный виджет Board/Canvas |
 | `lib/features/collections/providers/canvas_provider.dart` | State канваса |
 | `lib/features/collections/providers/collections_provider.dart` | State коллекций |
