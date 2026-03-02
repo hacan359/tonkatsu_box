@@ -88,9 +88,7 @@ Browse and search across multiple media sources via pluggable source architectur
 > [!TIP]
 > The Animation source automatically filters by genre Animation (ID=16). Movies and TV Shows sources exclude animated content, so there's no overlap.
 
-Two modes:
-- **Browse mode** — source dropdown + filter bar + sort dropdown. When no filters are active, shows Discover feed (TMDB sources). With filters, shows paginated grid
-- **Search mode** — text search field with results in the same grid
+Unified search and browse — text search and filters work simultaneously (no mode switching). Source dropdown + filter bar + search field + sort dropdown are always visible. When no filters or query are active, TMDB sources show a curated Discover feed. Sort dropdown is disabled during text search on sources that don't support custom sort (TMDB, IGDB); VNDB supports sort during search.
 
 Features:
 - **Source switching** — dropdown to switch between Movies/TV/Anime/Games/Visual Novels; filters reset on source change
@@ -99,6 +97,7 @@ Features:
 - **Consistent card sizes** — grid delegate matches collection screen (desktop: maxCrossAxisExtent 150px, childAspectRatio 0.55)
 - **Infinite scroll** — automatic pagination with shimmer loading indicators. Viewport fill auto-load: on tall screens where initial results fit without scrollbar, automatically loads more pages
 - **Smart error handling** — network errors show "No internet connection" with retry; API errors show the error message with retry
+- **[Experimental] Type-to-Filter** (desktop only) — start typing on physical keyboard to show a floating search bar that filters loaded items by title in real-time. Works on AllItems, Home, Collection, Search, and Wishlist screens. Escape to clear. Zero overhead on mobile
 
 ### Discover Feed
 

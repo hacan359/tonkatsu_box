@@ -8,6 +8,8 @@
 
 ### Added
 - **[Experimental]** Type-to-Filter overlay (desktop only) — при наборе текста на физической клавиатуре появляется плавающая строка поиска, фильтрующая элементы по названию в реальном времени. Работает на 5 экранах: AllItems, HomeScreen, CollectionScreen, SearchScreen, WishlistScreen. Виджет `TypeToFilterOverlay` (`type_to_filter_overlay.dart`), клавиши: печатные символы — показать/фильтр, Escape — скрыть, Backspace — удалить символ, кнопка закрыть. На мобильной платформе — zero overhead
+- `sortDisabledTooltip` localization key (EN + RU) — tooltip for disabled sort dropdown during text search
+- Tests: `type_to_filter_overlay_test.dart` (12 tests), `filter_dropdown_test.dart` (3 tests), updated `browse_provider_test.dart`, `search_source_test.dart`
 - Database migration v24 (`migration_v24.dart`) — seed genres, tags, and platforms as static reference data. TMDB genres (EN + RU for movie + tv), 23 IGDB genres, 100 VNDB tags, 220 IGDB platforms embedded directly in migration. Eliminates runtime API calls for reference data
 - `tmdb_genres` table extended with `lang` column (composite PK: id, type, lang) — supports bilingual genre names without runtime API calls
 - `credentialsPlatformsAvailable` localization key (EN + RU) — replaces sync-related labels
@@ -29,6 +31,12 @@
 - Tests: `collection_card_test.dart` (22 tests), `collection_covers_provider_test.dart` (4 tests), `collection_filter_bar_test.dart`, `collection_item_tile_test.dart`, `collection_items_view_test.dart`, `collection_canvas_layout_test.dart`, `collection_actions_test.dart`, `cover_info_test.dart`
 
 ### Changed
+- Unified Search — replaced separate `browse()` and `search()` methods in `SearchSource` with single `fetch(query?, filterValues, sortBy, page)`. Text search and filters now work simultaneously on all 5 tabs. `BrowseState` removed `isSearchMode`, added `hasSearchQuery`/`hasActiveQuery`. SearchScreen shows FilterBar + SearchField simultaneously (no AnimatedSwitcher toggle)
+- IGDB `searchGames` now supports `genreId`, `year`, `decade` filter parameters during text search
+- TMDB `searchMoviesPaged`/`searchTvShowsPaged` now support `year` parameter during text search
+- VNDB `browseVn` now accepts `query` for native search+tag combination
+- Sort dropdown (`FilterDropdown`) disabled with tooltip hint when text search is active on sources that don't support custom sort (TMDB, IGDB). VNDB supports sort during search and remains enabled. Controlled via `SearchSource.supportsSortDuringSearch`
+- `BrowseGrid` accepts optional `clientFilter` parameter for Type-to-Filter client-side filtering by title
 - Genre/tag/platform providers now read static data from SQLite (seeded by migration v24) instead of fetching from APIs at runtime. Affected: `genre_provider.dart`, `igdb_genre_provider.dart`, `vndb_tag_provider.dart`
 - `genre_provider.dart` — `movieGenresProvider`/`tvGenresProvider` derive from `movieGenreMapProvider`/`tvGenreMapProvider` (no duplicate DB queries). Language-aware: reads `lang` column based on TMDB language setting
 - `Platform` model simplified — removed `logoImageId`, `syncedAt`, `logoUrl` fields
