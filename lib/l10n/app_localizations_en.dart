@@ -331,6 +331,9 @@ class SEn extends S {
   String get credentialsPlatformsSynced => 'Platforms synced';
 
   @override
+  String get credentialsPlatformsAvailable => 'Platforms available';
+
+  @override
   String get credentialsLastSync => 'Last sync';
 
   @override

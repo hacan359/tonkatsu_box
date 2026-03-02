@@ -128,6 +128,7 @@
   "credentialsClientSecretHint": "Enter your Twitch Client Secret",
   "credentialsConnectionStatus": "Connection Status",
   "credentialsPlatformsSynced": "Platforms synced",
+  "credentialsPlatformsAvailable": "Platforms available",
   "credentialsLastSync": "Last sync",
   "credentialsVerifyConnection": "Verify Connection",
   "credentialsRefreshPlatforms": "Refresh Platforms",

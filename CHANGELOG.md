@@ -7,6 +7,10 @@
 ## [Unreleased]
 
 ### Added
+- Database migration v24 (`migration_v24.dart`) — seed genres, tags, and platforms as static reference data. TMDB genres (EN + RU for movie + tv), 23 IGDB genres, 100 VNDB tags, 220 IGDB platforms embedded directly in migration. Eliminates runtime API calls for reference data
+- `tmdb_genres` table extended with `lang` column (composite PK: id, type, lang) — supports bilingual genre names without runtime API calls
+- `credentialsPlatformsAvailable` localization key (EN + RU) — replaces sync-related labels
+- Tests: `genre_provider_test.dart` (17 tests), `igdb_genre_provider_test.dart` (5 tests), `vndb_tag_provider_test.dart` (5 tests)
 - `AppLogger` utility (`lib/core/logging/app_logger.dart`) — centralized logging via `package:logging` and `dart:developer`. Initialized once in `main()` before `runApp()`, logs visible in Flutter DevTools Logging tab
 - `static final Logger _log` field in 11 core classes: `IgdbApi`, `TmdbApi`, `SteamGridDbApi`, `VndbApi`, `DatabaseService`, `ImageCacheService`, `ImportService`, `ExportService`, `TraktZipImportService`, `ConfigService`, `UpdateService`
 - Logging in `DatabaseService._onCreate()` and `_onUpgrade()` — schema creation and migration progress messages
@@ -24,6 +28,15 @@
 - Tests: `collection_card_test.dart` (22 tests), `collection_covers_provider_test.dart` (4 tests), `collection_filter_bar_test.dart`, `collection_item_tile_test.dart`, `collection_items_view_test.dart`, `collection_canvas_layout_test.dart`, `collection_actions_test.dart`, `cover_info_test.dart`
 
 ### Changed
+- Genre/tag/platform providers now read static data from SQLite (seeded by migration v24) instead of fetching from APIs at runtime. Affected: `genre_provider.dart`, `igdb_genre_provider.dart`, `vndb_tag_provider.dart`
+- `genre_provider.dart` — `movieGenresProvider`/`tvGenresProvider` derive from `movieGenreMapProvider`/`tvGenreMapProvider` (no duplicate DB queries). Language-aware: reads `lang` column based on TMDB language setting
+- `Platform` model simplified — removed `logoImageId`, `syncedAt`, `logoUrl` fields
+- `DatabaseService.getTmdbGenreMap()` — added `lang` parameter for bilingual genre lookup
+- `DatabaseService._onCreate()` — calls `MigrationV24().migrate(db)` for fresh install seeding
+- `DatabaseService.clearAllData()` — no longer deletes static reference tables (platforms, tmdb_genres, igdb_genres, vndb_tags)
+- `SettingsNotifier` — removed `syncPlatforms()`, `_preloadTmdbGenres()`, `lastSync` from state. `setTmdbLanguage()` no longer clears/reloads genre cache
+- `CredentialsContent` — removed platform sync button, logo download logic, last sync display. Changed label from "Platforms synced" to "Platforms available"
+- IGDB API queries — removed `platform_logo.image_id` from `fetchPlatforms` and `fetchPlatformsByIds`
 - Replaced 5 silent `catch (_)` blocks with `catch (e)` + `_log.warning(...)` in `TmdbApi` (genre map loading), `ImageCacheService` (save bytes, download), `ImportService` (base64 restore), `ExportService` (export failure)
 - Replaced `debugPrint()` with `_log.warning()` in `ImportService` (VNDB fetch error)
 - Replaced `print()` with `_log.fine()` in `GamepadDebugScreen` (raw gamepad events)
@@ -37,6 +50,13 @@
 - `BrowseGrid` viewport fill auto-load — on tall/wide screens where initial results (20 items) fit entirely without scrollbar, `loadMore()` was never called. Added `_scheduleViewportFillCheck()` with `addPostFrameCallback` and `ref.listen` to auto-load more pages until viewport is filled or results exhausted
 
 ### Removed
+- `DatabaseService.cacheIgdbGenres()`, `cacheTmdbGenres()`, `clearTmdbGenres()`, `cacheVndbTags()`, `clearPlatforms()` — replaced by static seeding in migration v24
+- `SettingsNotifier.syncPlatforms()`, `_preloadTmdbGenres()` — no longer needed with static data
+- `SettingsState.lastSync` field — sync timestamp removed from state
+- `ImageType.platformLogo` — platform logos no longer cached (removed from `image_cache_service.dart`)
+- `Platform.logoImageId`, `Platform.syncedAt`, `Platform.logoUrl` — platform logo fields removed
+- `_buildPlatformLogo()` methods in `search_screen.dart` and `platform_filter_sheet.dart` — replaced with static icons
+- `_formatTimestamp()` and `_downloadLogosIfEnabled()` in `credentials_content.dart`
 - `CollectionTile` widget (`collection_tile.dart`) and its tests — replaced by `CollectionCard`
 - `HeroCollectionCard` widget (`hero_collection_card.dart`) and its tests — replaced by `CollectionCard`
 

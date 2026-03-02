@@ -132,7 +132,7 @@ void main() {
   ];
 
   setUpAll(() {
-    registerFallbackValue(ImageType.platformLogo);
+    registerFallbackValue(ImageType.gameCover);
     registerFallbackValue(MediaType.game);
     registerFallbackValue(ItemStatus.notStarted);
   });

@@ -4,10 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/database/database_service.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../core/services/image_cache_service.dart';
-import '../../../shared/models/platform.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -161,18 +158,10 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
         ),
         const SizedBox(height: AppSpacing.md),
         _buildInfoRow(
-          S.of(context).credentialsPlatformsSynced,
+          S.of(context).credentialsPlatformsAvailable,
           settings.platformCount.toString(),
           Icons.videogame_asset,
         ),
-        if (settings.lastSync != null) ...<Widget>[
-          const SizedBox(height: AppSpacing.sm),
-          _buildInfoRow(
-            S.of(context).credentialsLastSync,
-            _formatTimestamp(settings.lastSync!),
-            Icons.schedule,
-          ),
-        ],
       ],
     );
   }
@@ -219,20 +208,6 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
                 )
               : const Icon(Icons.verified_user),
           label: Text(S.of(context).credentialsVerifyConnection),
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        OutlinedButton.icon(
-          onPressed:
-              settings.isLoading || !settings.isApiReady ? null : _syncPlatforms,
-          icon: settings.isLoading &&
-                  settings.connectionStatus != ConnectionStatus.checking
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Icon(Icons.sync),
-          label: Text(S.of(context).credentialsRefreshPlatforms),
         ),
       ],
     );
@@ -433,83 +408,10 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
     final bool success = await notifier.verifyConnection();
 
     if (success && mounted) {
-      final bool syncOk = await notifier.syncPlatforms();
-      if (mounted) {
-        if (syncOk) {
-          context.showSnack(
-            S.of(context).credentialsConnectedSynced,
-            type: SnackType.success,
-          );
-          await _downloadLogosIfEnabled();
-        } else {
-          context.showSnack(
-            S.of(context).credentialsConnectedSyncFailed,
-            type: SnackType.error,
-          );
-        }
-      }
-    }
-  }
-
-  Future<void> _syncPlatforms() async {
-    final SettingsNotifier notifier =
-        ref.read(settingsNotifierProvider.notifier);
-    final bool success = await notifier.syncPlatforms();
-
-    if (success && mounted) {
       context.showSnack(
-        S.of(context).credentialsPlatformsSyncedOk,
+        S.of(context).credentialsConnectedSynced,
         type: SnackType.success,
       );
-      await _downloadLogosIfEnabled();
-    }
-  }
-
-  Future<void> _downloadLogosIfEnabled() async {
-    final ImageCacheService cacheService =
-        ref.read(imageCacheServiceProvider);
-
-    final bool enabled = await cacheService.isCacheEnabled();
-    if (!enabled) return;
-
-    final DatabaseService dbService = ref.read(databaseServiceProvider);
-    final List<Platform> platforms = await dbService.getAllPlatforms();
-
-    if (!mounted) return;
-
-    context.showSnack(
-      S.of(context).credentialsDownloadingLogos,
-      loading: true,
-      duration: const Duration(seconds: 60),
-    );
-
-    final List<ImageDownloadTask> tasks = platforms
-        .where((Platform p) => p.logoImageId != null && p.logoUrl != null)
-        .map((Platform p) => ImageDownloadTask(
-              imageId: p.logoImageId!,
-              remoteUrl: p.logoUrl!,
-            ))
-        .toList();
-
-    try {
-      final int downloaded = await cacheService.downloadImages(
-        type: ImageType.platformLogo,
-        tasks: tasks,
-      );
-
-      if (mounted) {
-        context.showSnack(
-          S.of(context).credentialsDownloadedLogos(downloaded),
-          type: SnackType.success,
-        );
-      }
-    } on Exception {
-      if (mounted) {
-        context.showSnack(
-          S.of(context).credentialsFailedDownloadLogos,
-          type: SnackType.error,
-        );
-      }
     }
   }
 
@@ -596,21 +498,4 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
     context.showSnack(S.of(context).credentialsResetToBuiltIn, type: SnackType.success);
   }
 
-  String _formatTimestamp(int timestamp) {
-    final DateTime date =
-        DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
-    final DateTime now = DateTime.now();
-    final Duration diff = now.difference(date);
-    final S l10n = S.of(context);
-
-    if (diff.inDays > 0) {
-      return l10n.timeAgo(diff.inDays, l10n.timeUnitDays(diff.inDays));
-    } else if (diff.inHours > 0) {
-      return l10n.timeAgo(diff.inHours, l10n.timeUnitHours(diff.inHours));
-    } else if (diff.inMinutes > 0) {
-      return l10n.timeAgo(diff.inMinutes, l10n.timeUnitMinutes(diff.inMinutes));
-    } else {
-      return l10n.timeJustNow;
-    }
-  }
 }

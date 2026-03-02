@@ -123,6 +123,7 @@
   "credentialsClientSecretHint": "Введите ваш Twitch Client Secret",
   "credentialsConnectionStatus": "Статус подключения",
   "credentialsPlatformsSynced": "Платформы синхронизированы",
+  "credentialsPlatformsAvailable": "Доступно платформ",
   "credentialsLastSync": "Последняя синхронизация",
   "credentialsVerifyConnection": "Проверить подключение",
   "credentialsRefreshPlatforms": "Обновить платформы",

@@ -25,7 +25,7 @@ Tonkatsu Box — кроссплатформенное приложение на 
 graph TB
     subgraph core ["🔧 Core"]
         api["API<br/><small>igdb_api, tmdb_api,<br/>steamgriddb_api, vndb_api</small>"]
-        database["Database<br/><small>database_service<br/>SQLite, 16 таблиц</small>"]
+        database["Database<br/><small>database_service<br/>SQLite, 18 таблиц</small>"]
         logging["Logging<br/><small>AppLogger<br/>package:logging</small>"]
         services["Services<br/><small>export, import,<br/>image_cache, config</small>"]
     end
@@ -313,8 +313,9 @@ lib/
 | Файл | Назначение |
 |------|------------|
 | `lib/features/search/providers/browse_provider.dart` | **State Browse/Search**. `BrowseState` (sourceId, filterValues, sortBy, items, pagination, isSearchMode, searchQuery, error). `BrowseNotifier` — NotifierProvider. Методы: setSource, setFilter, setSort, loadMore, enterSearchMode, exitSearchMode, search. Pagination через `BrowseResult.hasMore`. Сброс фильтров при смене источника |
-| `lib/features/search/providers/igdb_genre_provider.dart` | **Кэш жанров IGDB**. `igdbGenresProvider` — FutureProvider, загружает жанры через `IgdbApi.getGenres()` |
-| `lib/features/search/providers/genre_provider.dart` | **Провайдеры жанров TMDB**. `movieGenresProvider`, `tvGenresProvider` — FutureProvider для кэширования списков жанров из TMDB API. `movieGenreMapProvider`, `tvGenreMapProvider` — маппинг ID->имя. DB-first стратегия |
+| `lib/features/search/providers/igdb_genre_provider.dart` | **Жанры IGDB**. `igdbGenresProvider` — FutureProvider, читает статические жанры из БД (предзаполнены миграцией v24) |
+| `lib/features/search/providers/genre_provider.dart` | **Жанры TMDB**. `movieGenreMapProvider`, `tvGenreMapProvider` — маппинг ID->имя из БД с учётом языка. `movieGenresProvider`, `tvGenresProvider` — производные списки [TmdbGenre]. Статические данные (миграция v24), EN + RU |
+| `lib/features/search/providers/vndb_tag_provider.dart` | **Теги VNDB**. `vndbTagsProvider` — FutureProvider, читает статические теги из БД (предзаполнены миграцией v24) |
 | `lib/features/search/providers/discover_provider.dart` | **State Discover ленты**. `DiscoverSettings` (enabledSections, hideOwned). `DiscoverSectionId` enum. `discoverSettingsProvider` (NotifierProvider, SharedPreferences). FutureProvider-ы для каждой секции |
 
 </details>
@@ -457,7 +458,7 @@ Content-виджеты — извлечённое тело подэкранов,
 ## 🗄️ База данных
 
 > [!IMPORTANT]
-> SQLite через `sqflite_common_ffi` на desktop, нативный `sqflite` на Android. Текущая версия БД: **20**. Миграции инкрементальные (v1 -> v2 -> ... -> v20). Всего **16 таблиц**.
+> SQLite через `sqflite_common_ffi` на desktop, нативный `sqflite` на Android. Текущая версия БД: **24**. Миграции инкрементальные (v1 -> v2 -> ... -> v24). Всего **18 таблиц**. Статические справочники (platforms, tmdb_genres, igdb_genres, vndb_tags) предзаполнены миграцией v24 и не удаляются при сбросе данных.
 
 ### ER-диаграмма
 
@@ -605,6 +606,7 @@ erDiagram
     tmdb_genres {
         int id PK
         text type PK
+        text lang PK
         text name
     }
 ```
@@ -612,15 +614,14 @@ erDiagram
 ### SQL-схема таблиц
 
 <details>
-<summary><strong>Полная SQL-схема всех 16 таблиц</strong> — развернуть</summary>
+<summary><strong>Полная SQL-схема всех 18 таблиц</strong> — развернуть</summary>
 
 ```sql
--- Платформы из IGDB (кеш)
+-- Платформы из IGDB (статические, seed миграцией v24)
 CREATE TABLE platforms (
   id INTEGER PRIMARY KEY,     -- IGDB ID
   name TEXT NOT NULL,
-  abbreviation TEXT,
-  synced_at INTEGER
+  abbreviation TEXT
 );
 
 -- Игры из IGDB (кеш)
@@ -741,12 +742,13 @@ CREATE TABLE watched_episodes (
   UNIQUE(collection_id, show_id, season_number, episode_number)
 );
 
--- Кэш жанров TMDB (v13)
+-- Жанры TMDB (статические, seed миграцией v24, EN + RU)
 CREATE TABLE tmdb_genres (
   id INTEGER NOT NULL,
   type TEXT NOT NULL,        -- 'movie' или 'tv'
+  lang TEXT NOT NULL DEFAULT 'en',  -- 'en' или 'ru'
   name TEXT NOT NULL,
-  PRIMARY KEY (id, type)
+  PRIMARY KEY (id, type, lang)
 );
 
 -- Элементы канваса (Stage 7, updated Stage 9+)

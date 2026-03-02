@@ -271,26 +271,6 @@ void main() {
         expect(find.text('Verify Connection'), findsOneWidget);
       });
 
-      testWidgets('должен показывать кнопку Refresh Platforms',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        expect(find.text('Refresh Platforms'), findsOneWidget);
-      });
-
-      testWidgets('Refresh Platforms должен быть отключен без API key',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        final Finder button =
-            find.widgetWithText(OutlinedButton, 'Refresh Platforms');
-        final OutlinedButton widget = tester.widget<OutlinedButton>(button);
-
-        expect(widget.onPressed, isNull);
-      });
-
       testWidgets('должен показывать snackbar при пустых полях',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
@@ -323,12 +303,12 @@ void main() {
         expect(find.text('Not Connected'), findsOneWidget);
       });
 
-      testWidgets('должен показывать количество Platforms synced',
+      testWidgets('должен показывать количество Platforms available',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        expect(find.textContaining('Platforms synced'), findsOneWidget);
+        expect(find.textContaining('Platforms available'), findsOneWidget);
         expect(find.textContaining(': 0'), findsOneWidget);
       });
 

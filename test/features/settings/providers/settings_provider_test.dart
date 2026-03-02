@@ -156,7 +156,6 @@ void main() {
         expect(state.clientSecret, equals('csecret'));
         expect(state.accessToken, equals('token123'));
         expect(state.tokenExpires, equals(futureExpiry));
-        expect(state.lastSync, equals(1700000000));
         expect(state.steamGridDbApiKey, equals('sgdb_key'));
         expect(state.tmdbApiKey, equals('tmdb_key'));
 
@@ -222,9 +221,6 @@ void main() {
 
     group('setTmdbLanguage', () {
       test('должен сохранить язык в prefs и обновить состояние', () async {
-        when(() => mockDbService.clearTmdbGenres())
-            .thenAnswer((_) async {});
-
         final ProviderContainer container = await createContainer();
 
         final SettingsNotifier notifier =
@@ -238,7 +234,6 @@ void main() {
         expect(state.tmdbLanguage, equals('en-US'));
         expect(prefs.getString('tmdb_language'), equals('en-US'));
         verify(() => mockTmdbApi.setLanguage('en-US')).called(1);
-        verify(() => mockDbService.clearTmdbGenres()).called(1);
       });
 
       test('должен использовать ru-RU по умолчанию', () async {
@@ -308,8 +303,6 @@ void main() {
 
     group('clearSettings', () {
       test('должен очистить все настройки включая TMDB ключ', () async {
-        when(() => mockDbService.clearPlatforms()).thenAnswer((_) async {});
-
         final ProviderContainer container = await createContainer(
           initialPrefs: <String, Object>{
             'igdb_client_id': 'cid',
@@ -339,7 +332,6 @@ void main() {
         expect(state.clientSecret, isNull);
         expect(state.accessToken, isNull);
         expect(state.tokenExpires, isNull);
-        expect(state.lastSync, isNull);
         expect(state.steamGridDbApiKey, isNull);
         expect(state.tmdbApiKey, isNull);
         expect(state.platformCount, equals(0));
@@ -358,12 +350,9 @@ void main() {
         verify(() => mockIgdbApi.clearCredentials()).called(1);
         verify(() => mockSteamGridDbApi.clearApiKey()).called(1);
         verify(() => mockTmdbApi.clearApiKey()).called(1);
-        verify(() => mockDbService.clearPlatforms()).called(1);
       });
 
       test('должен сбросить состояние к дефолтному', () async {
-        when(() => mockDbService.clearPlatforms()).thenAnswer((_) async {});
-
         final ProviderContainer container = await createContainer(
           initialPrefs: <String, Object>{
             'tmdb_api_key': 'tmdb_key',

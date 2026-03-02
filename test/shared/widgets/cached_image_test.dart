@@ -17,7 +17,7 @@ void main() {
   late MockImageCacheService mockCacheService;
 
   setUpAll(() {
-    registerFallbackValue(ImageType.platformLogo);
+    registerFallbackValue(ImageType.gameCover);
   });
 
   setUp(() {
@@ -67,7 +67,7 @@ void main() {
         // Act
         await tester.pumpWidget(buildTestWidget(
           child: const CachedImage(
-            imageType: ImageType.platformLogo,
+            imageType: ImageType.gameCover,
             imageId: 'test_id',
             remoteUrl: 'https://example.com/image.png',
             width: 32,
@@ -181,7 +181,7 @@ void main() {
           constrainedWidth: 32,
           constrainedHeight: 32,
           child: const CachedImage(
-            imageType: ImageType.platformLogo,
+            imageType: ImageType.gameCover,
             imageId: 'test_id',
             remoteUrl: 'https://example.com/image.png',
             width: 32,
@@ -272,7 +272,7 @@ void main() {
         // Act
         await tester.pumpWidget(buildTestWidget(
           child: const CachedImage(
-            imageType: ImageType.platformLogo,
+            imageType: ImageType.gameCover,
             imageId: 'test_id',
             remoteUrl: 'https://example.com/image.png',
             width: 32,
@@ -298,7 +298,7 @@ void main() {
         // Act
         await tester.pumpWidget(buildTestWidget(
           child: const CachedImage(
-            imageType: ImageType.platformLogo,
+            imageType: ImageType.gameCover,
             imageId: 'test_id',
             remoteUrl: 'https://example.com/image.png',
             width: 32,
@@ -327,7 +327,7 @@ void main() {
           constrainedWidth: 32,
           constrainedHeight: 32,
           child: const CachedImage(
-            imageType: ImageType.platformLogo,
+            imageType: ImageType.gameCover,
             imageId: 'test_id',
             remoteUrl: 'https://example.com/image.png',
             width: 32,
@@ -353,7 +353,7 @@ void main() {
         // Act
         await tester.pumpWidget(buildTestWidget(
           child: const CachedImage(
-            imageType: ImageType.platformLogo,
+            imageType: ImageType.gameCover,
             imageId: 'test_id',
             remoteUrl: 'https://example.com/image.png',
             width: 32,
@@ -378,7 +378,7 @@ void main() {
         // Act
         await tester.pumpWidget(buildTestWidget(
           child: const CachedImage(
-            imageType: ImageType.platformLogo,
+            imageType: ImageType.gameCover,
             imageId: 'test_id',
             remoteUrl: 'https://example.com/image.png',
             width: 32,
@@ -407,7 +407,7 @@ void main() {
           constrainedWidth: 32,
           constrainedHeight: 32,
           child: const CachedImage(
-            imageType: ImageType.platformLogo,
+            imageType: ImageType.gameCover,
             imageId: 'test_id',
             remoteUrl: 'https://example.com/image.png',
             width: 32,

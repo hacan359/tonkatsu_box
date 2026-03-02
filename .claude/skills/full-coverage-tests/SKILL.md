@@ -3,7 +3,24 @@ name: full-coverage-tests
 description: Creates unit tests with 100% code coverage. Use after writing any code or when requested by user.
 ---
 
-# Creating Tests with 100% Coverage
+# Creating Tests — Only Logic, No UI
+
+## Scope
+
+**Тестируем ТОЛЬКО логику:**
+- Модели (fromJson, fromDb, toDb, copyWith, геттеры, операторы)
+- Сервисы и репозитории (CRUD, бизнес-логика, обработка ошибок)
+- Провайдеры Riverpod (state transitions, async logic)
+- API клиенты (запросы, парсинг, обработка ошибок)
+- Утилиты, хелперы, расширения
+- Миграции БД (структура данных, seed data)
+
+**НЕ тестируем:**
+- Наличие конкретных виджетов/кнопок/текстов в UI (find.text, find.byType для UI элементов)
+- Визуальное расположение элементов
+- Стили, цвета, размеры
+- Навигацию между экранами
+- Любые widget tests типа "должен показывать кнопку X" или "должен отображать текст Y"
 
 ## Process
 
@@ -58,22 +75,30 @@ void main() {
 - [ ] Network/API error
 - [ ] Operation cancellation
 
-#### For UI (Widget tests):
-- [ ] Rendering in different states
-- [ ] User interaction (tap, scroll, input)
-- [ ] Error display
-- [ ] Loading states
+#### For models:
+- [ ] fromJson — all fields, missing fields, null fields
+- [ ] fromDb — all fields, missing fields
+- [ ] toDb — round-trip (fromDb → toDb → fromDb)
+- [ ] copyWith — each field individually, no-change copy
+- [ ] Computed getters (displayName, urls, etc.)
+- [ ] equality / toString if overridden
+
+#### For providers (Riverpod):
+- [ ] Initial state
+- [ ] State after method calls
+- [ ] Error states
+- [ ] Dependencies (mock ref.watch/ref.read)
 
 ### 4. Mocks and Stubs
 ```dart
 // Use mocktail for mocks
 import 'package:mocktail/mocktail.dart';
 
-class MockUserRepository extends Mock implements UserRepository {}
+class MockDatabaseService extends Mock implements DatabaseService {}
 
 // In tests
-final mockRepo = MockUserRepository();
-when(() => mockRepo.getUser(any())).thenAnswer((_) async => testUser);
+final MockDatabaseService mockDb = MockDatabaseService();
+when(() => mockDb.getAllPlatforms()).thenAnswer((_) async => <Platform>[]);
 ```
 
 ### 5. Coverage Verification
@@ -87,9 +112,9 @@ genhtml coverage/lcov.info -o coverage/html
 
 ### 6. Completion Criteria
 - All tests pass (`flutter test`)
-- Line coverage >= 100%
-- Branch coverage >= 100%
-- No missed edge cases
+- All logic branches covered
+- Edge cases tested
+- No missed error handling paths
 
 ## Test Naming Convention
 ```
@@ -99,4 +124,5 @@ should [expected result] when [condition]
 Examples:
 - `should return empty list when no data exists`
 - `should throw exception when id is invalid`
-- `should show loading when data is being fetched`
+- `should parse all fields from valid JSON`
+- `should fallback to default when abbreviation is null`
