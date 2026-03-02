@@ -7,7 +7,7 @@
 ## [Unreleased]
 
 ### Added
-- **[Experimental]** Type-to-Filter overlay (desktop only) — при наборе текста на физической клавиатуре появляется плавающая строка поиска, фильтрующая элементы по названию в реальном времени. Работает на 5 экранах: AllItems, HomeScreen, CollectionScreen, SearchScreen, WishlistScreen. Виджет `TypeToFilterOverlay` (`type_to_filter_overlay.dart`), клавиши: печатные символы — показать/фильтр, Escape — скрыть, Backspace — удалить символ, кнопка закрыть. На мобильной платформе — zero overhead
+- **[Experimental]** Type-to-Filter overlay (desktop only) — typing on physical keyboard shows a floating search bar that filters loaded items by title in real-time. Works on 5 screens: AllItems, HomeScreen, CollectionScreen, SearchScreen, WishlistScreen. Widget `TypeToFilterOverlay` (`type_to_filter_overlay.dart`), keys: printable characters — show/filter, Escape — hide, Backspace — delete character, close button. Zero overhead on mobile
 - `sortDisabledTooltip` localization key (EN + RU) — tooltip for disabled sort dropdown during text search
 - Tests: `type_to_filter_overlay_test.dart` (12 tests), `filter_dropdown_test.dart` (3 tests), updated `browse_provider_test.dart`, `search_source_test.dart`
 - Database migration v24 (`migration_v24.dart`) — seed genres, tags, and platforms as static reference data. TMDB genres (EN + RU for movie + tv), 23 IGDB genres, 100 VNDB tags, 220 IGDB platforms embedded directly in migration. Eliminates runtime API calls for reference data

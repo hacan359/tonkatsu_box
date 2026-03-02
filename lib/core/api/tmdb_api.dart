@@ -263,7 +263,7 @@ class TmdbApi {
         'language': language,
         'query': query.trim(),
         'page': page,
-        if (year != null) 'year': year,
+        'year': ?year,
       };
       final Response<dynamic> response = await _dio.get<dynamic>(
         '$_baseUrl/search/movie',
@@ -445,7 +445,7 @@ class TmdbApi {
         'language': language,
         'query': query.trim(),
         'page': page,
-        if (firstAirDateYear != null) 'first_air_date_year': firstAirDateYear,
+        'first_air_date_year': ?firstAirDateYear,
       };
       final Response<dynamic> response = await _dio.get<dynamic>(
         '$_baseUrl/search/tv',
