@@ -696,6 +696,7 @@
   "browseSortTopRated": "Лучшие",
   "browseSortNewest": "Новинки",
   "browseSortMostVoted": "По голосам",
+  "browseSortDisabledHint": "Сортировка недоступна при текстовом поиске",
   "browseAnimeTypeSeries": "Сериалы",
   "browseAnimeTypeMovies": "Фильмы",
   "browseEmptyFilters": "Выберите фильтр или выполните поиск",

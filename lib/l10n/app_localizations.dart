@@ -3612,6 +3612,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Back to browse'**
   String get browseBackToBrowse;
+
+  /// No description provided for @browseSortDisabledHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Sorting unavailable during text search'**
+  String get browseSortDisabledHint;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

@@ -116,15 +116,11 @@ class VndbApi {
           ? filters.first
           : <dynamic>['and', ...filters];
 
-      // При текстовом поиске сортируем по релевантности
-      final String effectiveSort =
-          (query != null && query.trim().isNotEmpty) ? 'searchrank' : sort;
-
       final Map<String, dynamic> body = <String, dynamic>{
         'filters': finalFilter,
         'fields': _vnFields,
-        'sort': effectiveSort,
-        'reverse': (query != null && query.trim().isNotEmpty) ? false : reverse,
+        'sort': sort,
+        'reverse': reverse,
         'results': results,
         'page': page,
         'count': true,

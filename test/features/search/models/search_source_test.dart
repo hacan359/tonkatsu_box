@@ -215,6 +215,12 @@ void main() {
       expect(source.filters, hasLength(1));
       expect(source.sortOptions, hasLength(2));
     });
+
+    test('supportsSortDuringSearch defaults to false', () {
+      final SearchSource source = _TestSource();
+
+      expect(source.supportsSortDuringSearch, isFalse);
+    });
   });
 }
 

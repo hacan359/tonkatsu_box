@@ -1976,4 +1976,8 @@ class SRu extends S {
 
   @override
   String get browseBackToBrowse => 'Назад к обзору';
+
+  @override
+  String get browseSortDisabledHint =>
+      'Сортировка недоступна при текстовом поиске';
 }

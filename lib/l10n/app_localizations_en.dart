@@ -1956,4 +1956,7 @@ class SEn extends S {
 
   @override
   String get browseBackToBrowse => 'Back to browse';
+
+  @override
+  String get browseSortDisabledHint => 'Sorting unavailable during text search';
 }

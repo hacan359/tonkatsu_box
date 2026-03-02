@@ -174,6 +174,12 @@ abstract class SearchSource {
   /// Сортировка по умолчанию.
   BrowseSortOption get defaultSort => sortOptions.first;
 
+  /// Поддерживается ли пользовательская сортировка при текстовом поиске.
+  ///
+  /// Некоторые API (TMDB) не позволяют сортировать результаты поиска.
+  /// По умолчанию `false` — дропдаун сортировки блокируется при поиске.
+  bool get supportsSortDuringSearch => false;
+
   /// Подсказка для поля поиска (локализованная).
   String searchHint(S l);
 }

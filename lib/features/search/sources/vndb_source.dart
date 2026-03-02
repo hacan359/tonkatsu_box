@@ -40,6 +40,9 @@ class VndbSource extends SearchSource {
       ];
 
   @override
+  bool get supportsSortDuringSearch => true;
+
+  @override
   String searchHint(S l) => l.searchHintVisualNovels;
 
   @override

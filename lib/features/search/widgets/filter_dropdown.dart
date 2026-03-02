@@ -216,6 +216,7 @@ class SortDropdown extends StatelessWidget {
     required this.options,
     required this.current,
     required this.onChanged,
+    this.enabled = true,
     super.key,
   });
 
@@ -228,6 +229,9 @@ class SortDropdown extends StatelessWidget {
   /// Callback при выборе нового значения.
   final ValueChanged<String> onChanged;
 
+  /// Доступен ли дропдаун для взаимодействия.
+  final bool enabled;
+
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
@@ -239,6 +243,52 @@ class SortDropdown extends StatelessWidget {
         currentLabel = option.label(l);
         break;
       }
+    }
+
+    final Widget chip = Container(
+      height: 32,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+        border: Border.all(color: AppColors.surfaceBorder),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Icon(
+            Icons.sort,
+            size: 14,
+            color: enabled
+                ? AppColors.textTertiary
+                : AppColors.textTertiary.withValues(alpha: 0.4),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            currentLabel,
+            style: AppTypography.body.copyWith(
+              color: enabled
+                  ? AppColors.textSecondary
+                  : AppColors.textTertiary.withValues(alpha: 0.4),
+            ),
+          ),
+          const SizedBox(width: 4),
+          Icon(
+            Icons.keyboard_arrow_down,
+            size: 16,
+            color: enabled
+                ? AppColors.textTertiary
+                : AppColors.textTertiary.withValues(alpha: 0.4),
+          ),
+        ],
+      ),
+    );
+
+    if (!enabled) {
+      return Tooltip(
+        message: l.browseSortDisabledHint,
+        child: chip,
+      );
     }
 
     return PopupMenuButton<String>(
@@ -268,38 +318,7 @@ class SortDropdown extends StatelessWidget {
           );
         }).toList();
       },
-      child: Container(
-        height: 32,
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          border: Border.all(color: AppColors.surfaceBorder),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            const Icon(
-              Icons.sort,
-              size: 14,
-              color: AppColors.textTertiary,
-            ),
-            const SizedBox(width: 4),
-            Text(
-              currentLabel,
-              style: AppTypography.body.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(width: 4),
-            const Icon(
-              Icons.keyboard_arrow_down,
-              size: 16,
-              color: AppColors.textTertiary,
-            ),
-          ],
-        ),
-      ),
+      child: chip,
     );
   }
 }

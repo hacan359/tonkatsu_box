@@ -32,6 +32,7 @@ void main() {
     List<BrowseSortOption>? options,
     String? current,
     ValueChanged<String>? onChanged,
+    bool enabled = true,
   }) {
     return MaterialApp(
       localizationsDelegates: S.localizationsDelegates,
@@ -51,6 +52,7 @@ void main() {
                 ),
               ],
           current: current ?? 'popularity.desc',
+          enabled: enabled,
           onChanged: onChanged ?? (_) {},
         ),
       ),
@@ -211,6 +213,66 @@ void main() {
 
       // Should show the browseSort localization string (fallback)
       expect(find.byType(SortDropdown), findsOneWidget);
+    });
+
+    testWidgets('does not open popup when disabled',
+        (WidgetTester tester) async {
+      String? selectedSort;
+
+      await tester.pumpWidget(
+        buildSortDropdown(
+          enabled: false,
+          onChanged: (String v) => selectedSort = v,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Tap the disabled dropdown
+      await tester.tap(find.byType(SortDropdown));
+      await tester.pumpAndSettle();
+
+      // No popup should appear — "Newest" should not be found
+      expect(find.text('Newest'), findsNothing);
+      expect(selectedSort, isNull);
+    });
+
+    testWidgets('shows tooltip when disabled', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        buildSortDropdown(enabled: false),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(Tooltip), findsOneWidget);
+    });
+
+    testWidgets('does not show disabled tooltip when enabled',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        buildSortDropdown(enabled: true),
+      );
+      await tester.pumpAndSettle();
+
+      // PopupMenuButton has its own built-in Tooltip("Show menu"),
+      // so we check that our custom disabled-hint tooltip is absent.
+      expect(
+        find.byWidgetPredicate(
+          (Widget w) =>
+              w is Tooltip &&
+              w.message == 'Sorting unavailable during text search',
+        ),
+        findsNothing,
+      );
+    });
+
+    testWidgets('still renders sort icon and label when disabled',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        buildSortDropdown(enabled: false, current: 'popularity.desc'),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.sort), findsOneWidget);
+      expect(find.text('Popular'), findsOneWidget);
     });
   });
 }
