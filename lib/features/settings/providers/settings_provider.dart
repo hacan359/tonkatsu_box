@@ -7,7 +7,6 @@ import '../../../core/api/steamgriddb_api.dart';
 import '../../../core/api/tmdb_api.dart';
 import '../../../core/database/database_service.dart';
 import '../../../core/services/config_service.dart';
-import '../../../shared/models/platform.dart';
 
 /// Ключи для SharedPreferences.
 abstract class SettingsKeys {
@@ -53,7 +52,6 @@ class SettingsState {
     this.clientSecret,
     this.accessToken,
     this.tokenExpires,
-    this.lastSync,
     this.platformCount = 0,
     this.connectionStatus = ConnectionStatus.unknown,
     this.errorMessage,
@@ -78,10 +76,7 @@ class SettingsState {
   /// Время истечения токена (Unix timestamp).
   final int? tokenExpires;
 
-  /// Время последней синхронизации платформ (Unix timestamp).
-  final int? lastSync;
-
-  /// Количество синхронизированных платформ.
+  /// Количество доступных платформ (предзаполнены миграцией).
   final int platformCount;
 
   /// Статус подключения.
@@ -158,7 +153,6 @@ class SettingsState {
     String? clientSecret,
     String? accessToken,
     int? tokenExpires,
-    int? lastSync,
     int? platformCount,
     ConnectionStatus? connectionStatus,
     String? errorMessage,
@@ -176,7 +170,6 @@ class SettingsState {
       clientSecret: clientSecret ?? this.clientSecret,
       accessToken: accessToken ?? this.accessToken,
       tokenExpires: tokenExpires ?? this.tokenExpires,
-      lastSync: lastSync ?? this.lastSync,
       platformCount: platformCount ?? this.platformCount,
       connectionStatus: connectionStatus ?? this.connectionStatus,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
@@ -246,7 +239,6 @@ class SettingsNotifier extends Notifier<SettingsState> {
     final String? clientSecret = _prefs.getString(SettingsKeys.clientSecret);
     final String? accessToken = _prefs.getString(SettingsKeys.accessToken);
     final int? tokenExpires = _prefs.getInt(SettingsKeys.tokenExpires);
-    final int? lastSync = _prefs.getInt(SettingsKeys.lastSync);
     // SteamGridDB: user key → built-in key → null
     final String? userSteamGridDbKey =
         _prefs.getString(SettingsKeys.steamGridDbApiKey);
@@ -279,7 +271,6 @@ class SettingsNotifier extends Notifier<SettingsState> {
       clientSecret: clientSecret,
       accessToken: accessToken,
       tokenExpires: tokenExpires,
-      lastSync: lastSync,
       steamGridDbApiKey: steamGridDbApiKey,
       tmdbApiKey: tmdbApiKey,
       defaultAuthor: defaultAuthor,
@@ -304,9 +295,6 @@ class SettingsNotifier extends Notifier<SettingsState> {
     // Устанавливаем TMDB API ключ, если есть
     if (tmdbApiKey != null && tmdbApiKey.isNotEmpty) {
       _tmdbApi.setApiKey(tmdbApiKey);
-      // Предзагружаем жанры из TMDB в БД-кэш (отложенно, чтобы не блокировать
-      // первый frame — на Android вызывает 300+ пропущенных кадров)
-      Future<void>.microtask(_preloadTmdbGenres);
     }
 
     // Загружаем количество платформ отложенно
@@ -315,56 +303,10 @@ class SettingsNotifier extends Notifier<SettingsState> {
     return loadedState;
   }
 
-  /// Предзагружает списки жанров TMDB в БД-кэш.
-  ///
-  /// Запускается асинхронно при установке TMDB API ключа.
-  /// Ошибки игнорируются — жанры загрузятся при первом поиске.
-  Future<void> _preloadTmdbGenres() async {
-    try {
-      final Map<String, String> movieGenres =
-          await _dbService.getTmdbGenreMap('movie');
-      final Map<String, String> tvGenres =
-          await _dbService.getTmdbGenreMap('tv');
-
-      // Загружаем из API только если кэш пуст
-      if (movieGenres.isEmpty) {
-        final List<TmdbGenre> genres = await _tmdbApi.getMovieGenres();
-        if (genres.isNotEmpty) {
-          await _dbService.cacheTmdbGenres(
-            'movie',
-            genres
-                .map((TmdbGenre g) =>
-                    <String, dynamic>{'id': g.id, 'name': g.name})
-                .toList(),
-          );
-        }
-      }
-      if (tvGenres.isEmpty) {
-        final List<TmdbGenre> genres = await _tmdbApi.getTvGenres();
-        if (genres.isNotEmpty) {
-          await _dbService.cacheTmdbGenres(
-            'tv',
-            genres
-                .map((TmdbGenre g) =>
-                    <String, dynamic>{'id': g.id, 'name': g.name})
-                .toList(),
-          );
-        }
-      }
-      // ignore: avoid_catches_without_on_clauses
-    } catch (_) {
-      // Ошибки игнорируются — жанры загрузятся при первом поиске
-    }
-  }
-
   Future<void> _loadPlatformCount() async {
     final int count = await _dbService.getPlatformCount();
     if (count != state.platformCount) {
-      state = state.copyWith(
-        platformCount: count,
-        connectionStatus:
-            count > 0 ? ConnectionStatus.connected : state.connectionStatus,
-      );
+      state = state.copyWith(platformCount: count);
     }
   }
 
@@ -431,42 +373,6 @@ class SettingsNotifier extends Notifier<SettingsState> {
     }
   }
 
-  /// Синхронизирует платформы с IGDB.
-  Future<bool> syncPlatforms() async {
-    if (!state.isApiReady) {
-      state = state.copyWith(
-        errorMessage: 'API not ready. Please verify connection first.',
-      );
-      return false;
-    }
-
-    state = state.copyWith(isLoading: true, clearError: true);
-
-    try {
-      final List<Platform> platforms = await _igdbApi.fetchPlatforms();
-      await _dbService.upsertPlatforms(platforms);
-
-      final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      await _prefs.setInt(SettingsKeys.lastSync, now);
-
-      final int count = await _dbService.getPlatformCount();
-
-      state = state.copyWith(
-        lastSync: now,
-        platformCount: count,
-        isLoading: false,
-      );
-
-      return true;
-    } on IgdbApiException catch (e) {
-      state = state.copyWith(
-        errorMessage: e.message,
-        isLoading: false,
-      );
-      return false;
-    }
-  }
-
   /// Сохраняет API ключ SteamGridDB.
   Future<void> setSteamGridDbApiKey(String apiKey) async {
     if (apiKey.isNotEmpty) {
@@ -485,8 +391,6 @@ class SettingsNotifier extends Notifier<SettingsState> {
     if (apiKey.isNotEmpty) {
       await _prefs.setString(SettingsKeys.tmdbApiKey, apiKey);
       _tmdbApi.setApiKey(apiKey);
-      // Предзагружаем жанры при смене ключа
-      _preloadTmdbGenres();
     } else {
       await _prefs.remove(SettingsKeys.tmdbApiKey);
       _tmdbApi.clearApiKey();
@@ -497,13 +401,11 @@ class SettingsNotifier extends Notifier<SettingsState> {
 
   /// Устанавливает язык контента TMDB API.
   ///
-  /// Очищает кэш жанров (т.к. названия локализованы) и перезагружает их.
+  /// Жанры предзаполнены для обоих языков (EN + RU) — очистка не нужна.
   Future<void> setTmdbLanguage(String language) async {
     await _prefs.setString(SettingsKeys.tmdbLanguage, language);
     _tmdbApi.setLanguage(language);
-    await _dbService.clearTmdbGenres();
     state = state.copyWith(tmdbLanguage: language);
-    _preloadTmdbGenres();
   }
 
   /// Устанавливает язык интерфейса приложения.
@@ -527,7 +429,6 @@ class SettingsNotifier extends Notifier<SettingsState> {
     if (ApiDefaults.hasTmdbKey) {
       _tmdbApi.setApiKey(ApiDefaults.tmdbApiKey);
       state = state.copyWith(tmdbApiKey: ApiDefaults.tmdbApiKey);
-      _preloadTmdbGenres();
     } else {
       _tmdbApi.clearApiKey();
       state = state.copyWith(tmdbApiKey: '');
@@ -621,7 +522,6 @@ class SettingsNotifier extends Notifier<SettingsState> {
     _igdbApi.clearCredentials();
     _steamGridDbApi.clearApiKey();
     _tmdbApi.clearApiKey();
-    await _dbService.clearPlatforms();
 
     state = const SettingsState();
   }

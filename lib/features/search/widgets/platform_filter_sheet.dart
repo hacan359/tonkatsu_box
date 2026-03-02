@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/platform.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
-import '../../../shared/widgets/cached_image.dart' as app_cached;
 
 /// BottomSheet для выбора платформ с поиском.
 ///
@@ -211,7 +209,7 @@ class _PlatformFilterSheetState extends ConsumerState<PlatformFilterSheet> {
                             _selectedIds.contains(platform.id);
 
                         return ListTile(
-                          leading: _buildPlatformLogo(platform),
+                          leading: const Icon(Icons.devices, size: 24),
                           title: Text(platform.name),
                           subtitle: platform.abbreviation != null
                               ? Text(platform.abbreviation!)
@@ -268,21 +266,6 @@ class _PlatformFilterSheetState extends ConsumerState<PlatformFilterSheet> {
     );
   }
 
-  Widget _buildPlatformLogo(Platform platform) {
-    if (platform.logoUrl != null && platform.logoImageId != null) {
-      return app_cached.CachedImage(
-        imageType: ImageType.platformLogo,
-        imageId: platform.logoImageId!,
-        remoteUrl: platform.logoUrl!,
-        width: 32,
-        height: 32,
-        fit: BoxFit.contain,
-        placeholder: const Icon(Icons.devices, size: 24),
-        errorWidget: const Icon(Icons.devices, size: 24),
-      );
-    }
-    return const Icon(Icons.devices, size: 24);
-  }
 
   Widget _buildEmptyState() {
     final S l = S.of(context);

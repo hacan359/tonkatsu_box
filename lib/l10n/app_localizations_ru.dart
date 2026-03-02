@@ -330,6 +330,9 @@ class SRu extends S {
   String get credentialsPlatformsSynced => 'Платформы синхронизированы';
 
   @override
+  String get credentialsPlatformsAvailable => 'Доступно платформ';
+
+  @override
   String get credentialsLastSync => 'Последняя синхронизация';
 
   @override

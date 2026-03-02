@@ -31,9 +31,7 @@ abstract final class DatabaseSchema {
       CREATE TABLE platforms (
         id INTEGER PRIMARY KEY,
         name TEXT NOT NULL,
-        abbreviation TEXT,
-        logo_image_id TEXT,
-        synced_at INTEGER
+        abbreviation TEXT
       )
     ''');
   }
@@ -308,8 +306,9 @@ abstract final class DatabaseSchema {
       CREATE TABLE IF NOT EXISTS tmdb_genres (
         id INTEGER NOT NULL,
         type TEXT NOT NULL,
+        lang TEXT NOT NULL DEFAULT 'en',
         name TEXT NOT NULL,
-        PRIMARY KEY (id, type)
+        PRIMARY KEY (id, type, lang)
       )
     ''');
   }

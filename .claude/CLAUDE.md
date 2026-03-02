@@ -100,7 +100,7 @@ final databaseServiceProvider = Provider<DatabaseService>((ref) => DatabaseServi
 - API ключи хранятся в SharedPreferences, читаются через `SettingsNotifier`
 
 ### База данных (`lib/core/database/`)
-- SQLite через sqflite_common_ffi, 18 таблиц, текущая версия БД: 23
+- SQLite через sqflite_common_ffi, 18 таблиц, текущая версия БД: 24
 - Провайдер: `databaseServiceProvider`
 
 #### Структура файлов БД:
@@ -111,7 +111,7 @@ lib/core/database/
 └── migrations/
     ├── migration.dart             # Абстрактный класс Migration (version, description, migrate)
     ├── migration_registry.dart    # MigrationRegistry.all / .pending(oldVersion)
-    ├── migration_v2.dart          # MigrationV2..MigrationV23 — по файлу на версию
+    ├── migration_v2.dart          # MigrationV2..MigrationV24 — по файлу на версию
     └── ...
 ```
 
@@ -122,7 +122,7 @@ lib/core/database/
 - Увеличить `version` в `_initDatabase()` (`database_service.dart`)
 - Если миграция создаёт новую таблицу — вызывать `DatabaseSchema.create*Table(db)`, а **не** дублировать SQL
 - Если миграция содержит ALTER/UPDATE — SQL пишется inline в методе `migrate()`
-- `_onCreate` вызывает `DatabaseSchema.createAll(db)` — **не трогать**
+- `_onCreate` вызывает `DatabaseSchema.createAll(db)` + `MigrationV24().migrate(db)` для seed статических справочников — **не трогать**
 - `_onUpgrade` итерирует `MigrationRegistry.pending(oldVersion)` — **не трогать**
 - SQL-запросы в миграциях **нельзя** менять задним числом — только добавлять новые миграции
 - `database_service.dart` содержит **только** CRUD-операции и инициализацию — никаких CREATE TABLE / ALTER TABLE
@@ -290,7 +290,7 @@ D-pad и кнопка A обрабатываются глобально в `Navi
 |------|----------|
 | `lib/core/database/database_service.dart` | CRUD-операции БД |
 | `lib/core/database/schema.dart` | Определения всех таблиц (DatabaseSchema) |
-| `lib/core/database/migrations/` | Миграции БД (v2–v23, реестр, базовый класс) |
+| `lib/core/database/migrations/` | Миграции БД (v2–v24, реестр, базовый класс) |
 | `lib/features/collections/widgets/canvas_view.dart` | Главный виджет Board/Canvas |
 | `lib/features/collections/providers/canvas_provider.dart` | State канваса |
 | `lib/features/collections/providers/collections_provider.dart` | State коллекций |

@@ -207,8 +207,6 @@ void main() {
     group('clearSettings', () {
       test('сбрасывает showRecommendations к значению по умолчанию (true)',
           () async {
-        when(() => mockDbService.clearPlatforms()).thenAnswer((_) async {});
-
         final ProviderContainer container = await createContainer(
           initialPrefs: <String, Object>{
             'show_recommendations': false,

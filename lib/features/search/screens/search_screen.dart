@@ -23,7 +23,6 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
 import '../../../shared/widgets/collection_picker_dialog.dart';
-import '../../../shared/widgets/cached_image.dart' as app_cached;
 import '../../collections/providers/collections_provider.dart';
 import '../providers/browse_provider.dart';
 import '../widgets/browse_grid.dart';
@@ -739,7 +738,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             final String platformName =
                 platform?.displayName ?? 'Platform $id';
             return ListTile(
-              leading: _buildPlatformLogo(platform),
+              leading: const Icon(Icons.videogame_asset, size: 24),
               title: Text(platformName),
               onTap: () => Navigator.of(context).pop(id),
             );
@@ -755,21 +754,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     );
   }
 
-  Widget _buildPlatformLogo(Platform? platform) {
-    if (platform?.logoUrl != null && platform?.logoImageId != null) {
-      return app_cached.CachedImage(
-        imageType: ImageType.platformLogo,
-        imageId: platform!.logoImageId!,
-        remoteUrl: platform.logoUrl!,
-        width: 32,
-        height: 32,
-        fit: BoxFit.contain,
-        placeholder: const Icon(Icons.videogame_asset, size: 24),
-        errorWidget: const Icon(Icons.videogame_asset, size: 24),
-      );
-    }
-    return const Icon(Icons.videogame_asset, size: 24);
-  }
 
   // ==================== Detail sheets ====================
 

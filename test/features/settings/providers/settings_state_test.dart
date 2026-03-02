@@ -47,7 +47,6 @@ void main() {
         expect(state.clientSecret, isNull);
         expect(state.accessToken, isNull);
         expect(state.tokenExpires, isNull);
-        expect(state.lastSync, isNull);
         expect(state.platformCount, equals(0));
         expect(state.connectionStatus, equals(ConnectionStatus.unknown));
         expect(state.errorMessage, isNull);
@@ -63,7 +62,6 @@ void main() {
           clientSecret: testClientSecret,
           accessToken: testAccessToken,
           tokenExpires: 9999999999,
-          lastSync: 1700000000,
           platformCount: 100,
           connectionStatus: ConnectionStatus.connected,
           errorMessage: 'Test error',
@@ -76,7 +74,6 @@ void main() {
         expect(state.clientSecret, equals(testClientSecret));
         expect(state.accessToken, equals(testAccessToken));
         expect(state.tokenExpires, equals(9999999999));
-        expect(state.lastSync, equals(1700000000));
         expect(state.platformCount, equals(100));
         expect(state.connectionStatus, equals(ConnectionStatus.connected));
         expect(state.errorMessage, equals('Test error'));
@@ -309,13 +306,6 @@ void main() {
         expect(copy.tokenExpires, equals(12345));
       });
 
-      test('должен копировать с изменением lastSync', () {
-        const SettingsState original = SettingsState();
-        final SettingsState copy = original.copyWith(lastSync: 67890);
-
-        expect(copy.lastSync, equals(67890));
-      });
-
       test('должен копировать с изменением platformCount', () {
         const SettingsState original = SettingsState();
         final SettingsState copy = original.copyWith(platformCount: 100);
@@ -390,7 +380,6 @@ void main() {
           clientSecret: testClientSecret,
           accessToken: testAccessToken,
           tokenExpires: 12345,
-          lastSync: 67890,
           platformCount: 100,
           connectionStatus: ConnectionStatus.connected,
           errorMessage: 'Error',
@@ -406,7 +395,6 @@ void main() {
         expect(copy.clientSecret, equals(original.clientSecret));
         expect(copy.accessToken, equals(original.accessToken));
         expect(copy.tokenExpires, equals(original.tokenExpires));
-        expect(copy.lastSync, equals(original.lastSync));
         expect(copy.platformCount, equals(original.platformCount));
         expect(copy.connectionStatus, equals(original.connectionStatus));
         expect(copy.errorMessage, equals(original.errorMessage));

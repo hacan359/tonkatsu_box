@@ -18,7 +18,7 @@
 - [x] Comments system
 - [x] SteamGridDB integration (API client, debug panel)
 - [x] Offline image caching
-- [x] Platform logos
+- [x] Static reference data — genres (TMDB EN+RU, IGDB), tags (VNDB), platforms (220 IGDB) embedded in migration v24. No runtime API calls needed for reference data
 
 ---
 
@@ -70,7 +70,7 @@
 - [x] NavigationShell — adaptive: NavigationRail (≥800px) / BottomNavigationBar (<800px)
 - [x] Dark theme — forced dark theme applied to all screens via AppTheme
 - [x] Reusable widgets — SectionHeader, RatingBadge, ShimmerLoading, MediaPosterCard (replaced PosterCard), DualRatingBadge, CollectionCard (iOS folder style, replaced HeroCollectionCard)
-- [x] TMDB Genre caching — tmdb_genres DB table, DB-first loading, auto-resolve numeric IDs
+- [x] TMDB Genre caching — tmdb_genres DB table with bilingual support (EN + RU), static seeding via migration v24, auto-resolve numeric IDs
 - [x] HomeScreen — CollectionCard with 3+3 cover mosaic, hover dimming, GridView with MaxCrossAxisExtent
 - [x] CollectionScreen — refactored into extracted widgets (CollectionFilterBar, CollectionItemsView, CollectionCanvasLayout, CollectionActions)
 - [x] SearchScreen — poster grid with MediaPosterCard, shimmer loading

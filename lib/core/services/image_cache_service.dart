@@ -16,9 +16,6 @@ class _CacheKeys {
 
 /// Типы изображений для кэширования.
 enum ImageType {
-  /// Логотипы платформ.
-  platformLogo('platform_logos'),
-
   /// Обложки игр.
   gameCover('game_covers'),
 

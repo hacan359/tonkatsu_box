@@ -721,6 +721,12 @@ abstract class S {
   /// **'Platforms synced'**
   String get credentialsPlatformsSynced;
 
+  /// No description provided for @credentialsPlatformsAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Platforms available'**
+  String get credentialsPlatformsAvailable;
+
   /// No description provided for @credentialsLastSync.
   ///
   /// In en, this message translates to:

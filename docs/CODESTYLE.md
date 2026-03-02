@@ -1,8 +1,3 @@
----
-name: dart-tonkatsu
-description: Dart/Flutter coding standards for Tonkatsu Box. Use this skill for ANY code changes in the Tonkatsu Box project — writing new features, fixing bugs, refactoring, creating new files, editing existing code. Trigger whenever working with .dart files in a Flutter project that has Riverpod, sqflite, and strict analysis_options. Also trigger when discussing code style, architecture decisions, or reviewing code in this project.
----
-
 # Tonkatsu Box — Код-стандарт
 
 Обязательные правила для всего кода в проекте Tonkatsu Box. Этот документ — источник истины; `analysis_options.yaml` обеспечивает автоматическую проверку, но не покрывает все соглашения.

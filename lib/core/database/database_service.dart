@@ -22,6 +22,7 @@ import '../../shared/models/visual_novel.dart';
 import '../../shared/models/wishlist_item.dart';
 import 'migrations/migration.dart';
 import 'migrations/migration_registry.dart';
+import 'migrations/migration_v24.dart';
 import 'schema.dart';
 
 /// Провайдер для доступа к сервису базы данных.
@@ -61,7 +62,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 23,
+        version: 24,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -75,6 +76,9 @@ class DatabaseService {
   Future<void> _onCreate(Database db, int version) async {
     _log.info('Creating database schema v$version');
     await DatabaseSchema.createAll(db);
+    // Seed статических справочников (жанры, теги, платформы).
+    // При fresh install миграции не запускаются, поэтому seed вызываем явно.
+    await MigrationV24().migrate(db);
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -96,28 +100,6 @@ class DatabaseService {
       orderBy: 'name ASC',
     );
     return rows;
-  }
-
-  /// Сохраняет жанры IGDB в кэш.
-  Future<void> cacheIgdbGenres(List<Map<String, dynamic>> genres) async {
-    final Database db = await database;
-    final Batch batch = db.batch();
-
-    // Очищаем старые данные
-    batch.delete('igdb_genres');
-
-    for (final Map<String, dynamic> genre in genres) {
-      batch.insert(
-        'igdb_genres',
-        <String, Object?>{
-          'id': genre['id'],
-          'name': genre['name'],
-        },
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
-    }
-
-    await batch.commit(noResult: true);
   }
 
   // ==================== Platforms ====================
@@ -196,12 +178,6 @@ class DatabaseService {
       whereArgs: ids.cast<Object?>(),
     );
     return rows.map(Platform.fromDb).toList();
-  }
-
-  /// Удаляет все платформы из базы данных.
-  Future<void> clearPlatforms() async {
-    final Database db = await database;
-    await db.delete('platforms');
   }
 
   // ==================== Games ====================
@@ -428,50 +404,19 @@ class DatabaseService {
 
   // ===== TMDB Жанры =====
 
-  /// Сохраняет список жанров TMDB в кэш.
-  ///
-  /// [type] — тип медиа: `'movie'` или `'tv'`.
-  Future<void> cacheTmdbGenres(
-    String type,
-    List<Map<String, dynamic>> genres,
-  ) async {
-    if (genres.isEmpty) return;
-
-    final Database db = await database;
-    await db.transaction((Transaction txn) async {
-      // Удаляем старые записи этого типа
-      await txn.delete(
-        'tmdb_genres',
-        where: 'type = ?',
-        whereArgs: <Object?>[type],
-      );
-      final Batch batch = txn.batch();
-      for (final Map<String, dynamic> genre in genres) {
-        batch.insert('tmdb_genres', <String, Object?>{
-          'id': genre['id'],
-          'type': type,
-          'name': genre['name'],
-        });
-      }
-      await batch.commit(noResult: true);
-    });
-  }
-
-  /// Очищает весь кэш жанров TMDB (все типы).
-  Future<void> clearTmdbGenres() async {
-    final Database db = await database;
-    await db.delete('tmdb_genres');
-  }
-
   /// Возвращает маппинг ID → имя жанров из кэша.
   ///
   /// [type] — тип медиа: `'movie'` или `'tv'`.
-  Future<Map<String, String>> getTmdbGenreMap(String type) async {
+  /// [lang] — язык: `'en'` или `'ru'`.
+  Future<Map<String, String>> getTmdbGenreMap(
+    String type, {
+    String lang = 'en',
+  }) async {
     final Database db = await database;
     final List<Map<String, dynamic>> rows = await db.query(
       'tmdb_genres',
-      where: 'type = ?',
-      whereArgs: <Object?>[type],
+      where: 'type = ? AND lang = ?',
+      whereArgs: <Object?>[type, lang],
     );
 
     return <String, String>{
@@ -1973,7 +1918,8 @@ class DatabaseService {
       await txn.delete('tv_shows_cache');
       await txn.delete('movies_cache');
       await txn.delete('games');
-      await txn.delete('platforms');
+      // Статические справочники (platforms, tmdb_genres, igdb_genres, vndb_tags)
+      // не очищаются — они заполнены миграцией v24 и не являются пользовательскими.
       // Wishlist
       await txn.delete('wishlist');
     });
@@ -2032,21 +1978,6 @@ class DatabaseService {
       numericIds,
     );
     return rows.map(VisualNovel.fromDb).toList();
-  }
-
-  /// Кэширует теги VNDB.
-  Future<void> cacheVndbTags(List<VndbTag> tags) async {
-    if (tags.isEmpty) return;
-    final Database db = await database;
-    final Batch batch = db.batch();
-    for (final VndbTag tag in tags) {
-      batch.insert(
-        'vndb_tags',
-        tag.toDb(),
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
-    }
-    await batch.commit(noResult: true);
   }
 
   /// Получает кэшированные теги VNDB.
