@@ -44,8 +44,9 @@ class TmdbTvSource extends SearchSource {
   String searchHint(S l) => l.searchHintTv;
 
   @override
-  Future<BrowseResult> browse(
+  Future<BrowseResult> fetch(
     Ref ref, {
+    String? query,
     required Map<String, Object?> filterValues,
     required String sortBy,
     required int page,
@@ -67,10 +68,49 @@ class TmdbTvSource extends SearchSource {
     }
 
     final int? genreId = filterValues['genre'] as int?;
+
+    if (query != null && query.isNotEmpty) {
+      // Текстовый поиск + клиентская фильтрация
+      final TmdbPagedResult<TvShow> result = await tmdb.searchTvShowsPaged(
+        query,
+        page: page,
+        firstAirDateYear: year,
+      );
+
+      // Фильтруем анимацию из результатов поиска
+      List<TvShow> filtered = result.results
+          .where(
+            (TvShow s) =>
+                s.genres == null || !s.genres!.any(isAnimationGenre),
+          )
+          .toList();
+
+      // Клиентская фильтрация по жанру
+      if (genreId != null) {
+        final String? genreName = genreMap[genreId.toString()];
+        if (genreName != null) {
+          filtered = filtered
+              .where((TvShow s) =>
+                  s.genres != null && s.genres!.contains(genreName))
+              .toList();
+        }
+      }
+
+      final List<TvShow> resolved = resolveTvGenres(filtered, genreMap);
+
+      return BrowseResult(
+        items: resolved,
+        mediaType: MediaType.tvShow,
+        hasMore: result.hasMore,
+        currentPage: result.page,
+        totalPages: result.totalPages,
+      );
+    }
+
+    // Browse mode: Discover с фильтрами
     final int? voteCountGte =
         sortBy == 'vote_average.desc' ? 200 : null;
 
-    // Исключаем анимацию — добавляем without_genres=16
     final List<TvShow> tvShows = await tmdb.discoverTvShows(
       genreId: genreId,
       year: year,
@@ -89,37 +129,6 @@ class TmdbTvSource extends SearchSource {
       mediaType: MediaType.tvShow,
       hasMore: tvShows.length >= 20,
       currentPage: page,
-    );
-  }
-
-  @override
-  Future<BrowseResult> search(
-    Ref ref, {
-    required String query,
-    required int page,
-  }) async {
-    final TmdbApi tmdb = ref.read(tmdbApiProvider);
-    final Map<String, String> genreMap =
-        await ref.read(tvGenreMapProvider.future);
-    final TmdbPagedResult<TvShow> result =
-        await tmdb.searchTvShowsPaged(query, page: page);
-
-    // Фильтруем анимацию из результатов поиска
-    final List<TvShow> filtered = result.results
-        .where(
-          (TvShow s) =>
-              s.genres == null || !s.genres!.any(isAnimationGenre),
-        )
-        .toList();
-
-    final List<TvShow> resolved = resolveTvGenres(filtered, genreMap);
-
-    return BrowseResult(
-      items: resolved,
-      mediaType: MediaType.tvShow,
-      hasMore: result.hasMore,
-      currentPage: result.page,
-      totalPages: result.totalPages,
     );
   }
 

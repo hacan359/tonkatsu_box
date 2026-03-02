@@ -265,19 +265,11 @@ class _TestSource extends SearchSource {
   String searchHint(dynamic l) => 'Search...';
 
   @override
-  Future<BrowseResult> browse(
+  Future<BrowseResult> fetch(
     Ref ref, {
+    String? query,
     required Map<String, Object?> filterValues,
     required String sortBy,
-    required int page,
-  }) async {
-    return const BrowseResult(items: <Object>[], mediaType: MediaType.movie);
-  }
-
-  @override
-  Future<BrowseResult> search(
-    Ref ref, {
-    required String query,
     required int page,
   }) async {
     return const BrowseResult(items: <Object>[], mediaType: MediaType.movie);

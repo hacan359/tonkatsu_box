@@ -82,10 +82,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       });
     }
 
-    // Если передан начальный запрос — сразу входим в режим поиска
+    // Если передан начальный запрос — сразу выполняем поиск
     if (widget.initialQuery != null && widget.initialQuery!.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(browseProvider.notifier).enterSearchMode();
         _searchController.text = widget.initialQuery!;
         ref.read(browseProvider.notifier).search(widget.initialQuery!);
       });
@@ -111,19 +110,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     super.dispose();
   }
 
-  // ==================== Search mode ====================
-
-  void _enterSearchMode() {
-    ref.read(browseProvider.notifier).enterSearchMode();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _searchFocus.requestFocus();
-    });
-  }
-
-  void _exitSearchMode() {
-    _searchController.clear();
-    ref.read(browseProvider.notifier).exitSearchMode();
-  }
+  // ==================== Search ====================
 
   void _onSearchSubmit() {
     final String query = _searchController.text;
@@ -133,7 +120,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   void _onClearSearch() {
     _searchController.clear();
-    _searchFocus.requestFocus();
+    ref.read(browseProvider.notifier).clearSearch();
   }
 
   // ==================== Image caching ====================
@@ -895,10 +882,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final BrowseState browseState = ref.watch(browseProvider);
     final bool isLandscape = isLandscapeMobile(context);
 
-    // Discover Customize кнопка — только в Browse mode без фильтров
+    // Discover Customize кнопка — только без запросов и фильтров
     // когда источник поддерживает Discover (TMDB)
-    final bool showDiscoverCustomize = !browseState.isSearchMode &&
-        !browseState.hasFilters &&
+    final bool showDiscoverCustomize = !browseState.hasActiveQuery &&
         (browseState.sourceId == 'movies' ||
             browseState.sourceId == 'tv' ||
             browseState.sourceId == 'anime');
@@ -913,38 +899,27 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               tooltip: S.of(context).discoverCustomize,
               onPressed: _showDiscoverCustomizeSheet,
             ),
-          if (!browseState.isSearchMode)
-            IconButton(
-              icon: const Icon(Icons.search, size: 22),
-              tooltip: S.of(context).navSearch,
-              onPressed: _enterSearchMode,
-            ),
         ],
       ),
       body: Column(
         children: <Widget>[
-          // Фильтр-бар или поле поиска
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
-            child: browseState.isSearchMode
-                ? _buildSearchBar()
-                : const FilterBar(),
-          ),
+          // Фильтр-бар: всегда видим
+          const FilterBar(),
+          // Поле поиска: всегда видимо
+          _buildSearchField(),
           const SizedBox(height: AppSpacing.xs),
           // Контент
           Expanded(
-            child: browseState.isSearchMode
-                ? _buildSearchContent(browseState)
-                : _buildBrowseContent(browseState),
+            child: _buildContent(browseState),
           ),
         ],
       ),
     );
   }
 
-  // ==================== Search bar ====================
+  // ==================== Search field ====================
 
-  Widget _buildSearchBar() {
+  Widget _buildSearchField() {
     final S l = S.of(context);
     final BrowseState browseState = ref.watch(browseProvider);
     final bool hasText = _searchController.text.isNotEmpty;
@@ -956,88 +931,70 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       ),
       child: SizedBox(
         height: 36,
-        child: Row(
-          children: <Widget>[
-            // Back button
-            IconButton(
-              icon: const Icon(Icons.arrow_back, size: 20),
-              onPressed: _exitSearchMode,
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(
-                minWidth: 36,
-                minHeight: 36,
-              ),
+        child: TextField(
+          controller: _searchController,
+          focusNode: _searchFocus,
+          style: AppTypography.body.copyWith(
+            color: AppColors.textPrimary,
+          ),
+          decoration: InputDecoration(
+            hintText: browseState.source.searchHint(l),
+            hintStyle: AppTypography.body.copyWith(
+              color: AppColors.textTertiary,
             ),
-            const SizedBox(width: AppSpacing.xs),
-            // Search field
-            Expanded(
-              child: TextField(
-                controller: _searchController,
-                focusNode: _searchFocus,
-                style: AppTypography.body.copyWith(
-                  color: AppColors.textPrimary,
-                ),
-                decoration: InputDecoration(
-                  hintText: browseState.source.searchHint(l),
-                  hintStyle: AppTypography.body.copyWith(
-                    color: AppColors.textTertiary,
-                  ),
-                  prefixIcon: const Icon(
-                    Icons.search,
-                    size: 18,
-                    color: AppColors.textTertiary,
-                  ),
-                  suffixIcon: hasText
-                      ? IconButton(
-                          icon: const Icon(
-                            Icons.close,
-                            size: 16,
-                            color: AppColors.textTertiary,
-                          ),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(
-                            minWidth: 28,
-                            minHeight: 28,
-                          ),
-                          onPressed: _onClearSearch,
-                        )
-                      : null,
-                  filled: true,
-                  fillColor: AppColors.surfaceLight,
-                  contentPadding: const EdgeInsets.symmetric(
-                    vertical: AppSpacing.xs,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius:
-                        BorderRadius.circular(AppSpacing.radiusSm),
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius:
-                        BorderRadius.circular(AppSpacing.radiusSm),
-                    borderSide: BorderSide.none,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius:
-                        BorderRadius.circular(AppSpacing.radiusSm),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-                textInputAction: TextInputAction.search,
-                onSubmitted: (_) => _onSearchSubmit(),
-              ),
+            prefixIcon: const Icon(
+              Icons.search,
+              size: 18,
+              color: AppColors.textTertiary,
             ),
-          ],
+            suffixIcon: hasText
+                ? IconButton(
+                    icon: const Icon(
+                      Icons.close,
+                      size: 16,
+                      color: AppColors.textTertiary,
+                    ),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(
+                      minWidth: 28,
+                      minHeight: 28,
+                    ),
+                    onPressed: _onClearSearch,
+                  )
+                : null,
+            filled: true,
+            fillColor: AppColors.surfaceLight,
+            contentPadding: const EdgeInsets.symmetric(
+              vertical: AppSpacing.xs,
+            ),
+            border: OutlineInputBorder(
+              borderRadius:
+                  BorderRadius.circular(AppSpacing.radiusSm),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius:
+                  BorderRadius.circular(AppSpacing.radiusSm),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius:
+                  BorderRadius.circular(AppSpacing.radiusSm),
+              borderSide: BorderSide.none,
+            ),
+          ),
+          textInputAction: TextInputAction.search,
+          onSubmitted: (_) => _onSearchSubmit(),
         ),
       ),
     );
   }
 
-  // ==================== Browse content ====================
+  // ==================== Content ====================
 
-  Widget _buildBrowseContent(BrowseState browseState) {
-    // Без фильтров → Discover feed (для TMDB источников)
-    if (!browseState.hasFilters) {
+  Widget _buildContent(BrowseState browseState) {
+    // Без активного запроса (ни текста, ни фильтров)
+    if (!browseState.hasActiveQuery) {
       final String sourceId = browseState.sourceId;
 
       // TMDB источники — показываем Discover feed
@@ -1052,18 +1009,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       return _buildEmptyFilterState();
     }
 
-    // С фильтрами → Browse grid
-    return BrowseGrid(onItemTap: _onItemTap);
-  }
-
-  // ==================== Search content ====================
-
-  Widget _buildSearchContent(BrowseState browseState) {
-    if (browseState.searchQuery.isEmpty && browseState.items.isEmpty) {
-      return _buildEmptySearchState();
-    }
-
-    // Результаты через BrowseGrid
+    // Есть запрос (текст и/или фильтры) → показываем грид результатов
     return BrowseGrid(onItemTap: _onItemTap);
   }
 
@@ -1096,29 +1042,4 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     );
   }
 
-  Widget _buildEmptySearchState() {
-    final S l = S.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            const Icon(
-              Icons.search,
-              size: 48,
-              color: AppColors.textTertiary,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              l.browseSearchHint,
-              style: AppTypography.body.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }

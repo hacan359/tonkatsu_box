@@ -171,7 +171,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     }
 
     // Empty — no filters, no Discover
-    if (state.isEmpty && !state.hasFilters && !state.isSearchMode) {
+    if (state.isEmpty && !state.hasActiveQuery) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.xl),

@@ -47,8 +47,9 @@ class TmdbMoviesSource extends SearchSource {
   String searchHint(S l) => l.searchHintMovies;
 
   @override
-  Future<BrowseResult> browse(
+  Future<BrowseResult> fetch(
     Ref ref, {
+    String? query,
     required Map<String, Object?> filterValues,
     required String sortBy,
     required int page,
@@ -71,7 +72,36 @@ class TmdbMoviesSource extends SearchSource {
 
     final int? genreId = filterValues['genre'] as int?;
 
-    // Для top_rated добавляем минимум голосов
+    if (query != null && query.isNotEmpty) {
+      // Текстовый поиск: TMDB search + клиентская фильтрация по жанру
+      final TmdbPagedResult<Movie> result =
+          await tmdb.searchMoviesPaged(query, page: page, year: year);
+
+      List<Movie> movies = result.results;
+
+      // Клиентская фильтрация по жанру (TMDB search не поддерживает genre)
+      if (genreId != null) {
+        final String? genreName = genreMap[genreId.toString()];
+        if (genreName != null) {
+          movies = movies
+              .where((Movie m) =>
+                  m.genres != null && m.genres!.contains(genreName))
+              .toList();
+        }
+      }
+
+      final List<Movie> resolved = resolveMovieGenres(movies, genreMap);
+
+      return BrowseResult(
+        items: resolved,
+        mediaType: MediaType.movie,
+        hasMore: result.hasMore,
+        currentPage: result.page,
+        totalPages: result.totalPages,
+      );
+    }
+
+    // Browse mode: Discover с фильтрами
     final int? voteCountGte =
         sortBy == 'vote_average.desc' ? 200 : null;
 
@@ -85,7 +115,6 @@ class TmdbMoviesSource extends SearchSource {
       page: page,
     );
 
-    // Резолвим жанры
     final List<Movie> resolved = resolveMovieGenres(movies, genreMap);
 
     return BrowseResult(
@@ -93,28 +122,6 @@ class TmdbMoviesSource extends SearchSource {
       mediaType: MediaType.movie,
       hasMore: movies.length >= 20,
       currentPage: page,
-    );
-  }
-
-  @override
-  Future<BrowseResult> search(
-    Ref ref, {
-    required String query,
-    required int page,
-  }) async {
-    final TmdbApi tmdb = ref.read(tmdbApiProvider);
-    final Map<String, String> genreMap =
-        await ref.read(movieGenreMapProvider.future);
-    final TmdbPagedResult<Movie> result =
-        await tmdb.searchMoviesPaged(query, page: page);
-    final List<Movie> resolved = resolveMovieGenres(result.results, genreMap);
-
-    return BrowseResult(
-      items: resolved,
-      mediaType: MediaType.movie,
-      hasMore: result.hasMore,
-      currentPage: result.page,
-      totalPages: result.totalPages,
     );
   }
 

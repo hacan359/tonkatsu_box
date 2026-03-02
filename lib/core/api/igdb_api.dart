@@ -276,7 +276,10 @@ class IgdbApi {
   /// Throws [IgdbApiException] при ошибке запроса.
   Future<List<Game>> searchGames({
     required String query,
+    int? genreId,
     List<int>? platformIds,
+    int? year,
+    (int, int)? decade,
     int limit = 20,
     int offset = 0,
   }) async {
@@ -294,9 +297,33 @@ class IgdbApi {
       // fields -> where -> search -> limit
       final StringBuffer body = StringBuffer(_gameFields);
 
-      // Добавляем фильтр по платформам, если указаны
+      // Добавляем where-клаузу с фильтрами, если есть
+      final List<String> conditions = <String>[];
       if (platformIds != null && platformIds.isNotEmpty) {
-        body.write(' where platforms = (${platformIds.join(",")});');
+        conditions.add('platforms = (${platformIds.join(",")})');
+      }
+      if (genreId != null) {
+        conditions.add('genres = ($genreId)');
+      }
+      if (year != null) {
+        final int start =
+            DateTime(year).millisecondsSinceEpoch ~/ 1000;
+        final int end =
+            DateTime(year + 1).millisecondsSinceEpoch ~/ 1000;
+        conditions.add(
+          'first_release_date >= $start & first_release_date < $end',
+        );
+      } else if (decade != null) {
+        final int start =
+            DateTime(decade.$1).millisecondsSinceEpoch ~/ 1000;
+        final int end =
+            DateTime(decade.$2 + 1).millisecondsSinceEpoch ~/ 1000;
+        conditions.add(
+          'first_release_date >= $start & first_release_date < $end',
+        );
+      }
+      if (conditions.isNotEmpty) {
+        body.write(' where ${conditions.join(" & ")};');
       }
 
       body.write(' search "$escapedQuery"; limit $limit;');

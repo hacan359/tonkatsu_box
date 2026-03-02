@@ -23,7 +23,6 @@ void main() {
         expect(state.currentPage, 1);
         expect(state.hasMore, isFalse);
         expect(state.error, isNull);
-        expect(state.isSearchMode, isFalse);
         expect(state.searchQuery, isEmpty);
       });
 
@@ -38,7 +37,6 @@ void main() {
           currentPage: 3,
           hasMore: true,
           error: 'fail',
-          isSearchMode: true,
           searchQuery: 'zelda',
         );
 
@@ -51,7 +49,6 @@ void main() {
         expect(state.currentPage, 3);
         expect(state.hasMore, isTrue);
         expect(state.error, 'fail');
-        expect(state.isSearchMode, isTrue);
         expect(state.searchQuery, 'zelda');
       });
     });
@@ -84,6 +81,69 @@ void main() {
           filterValues: <String, Object?>{'genre': 28, 'year': 2024},
         );
         expect(state.hasFilters, isTrue);
+      });
+    });
+
+    group('hasSearchQuery', () {
+      test('returns false for empty query', () {
+        const BrowseState state = BrowseState(sourceId: 'movies');
+        expect(state.hasSearchQuery, isFalse);
+      });
+
+      test('returns false for single character query', () {
+        const BrowseState state = BrowseState(
+          sourceId: 'movies',
+          searchQuery: 'a',
+        );
+        expect(state.hasSearchQuery, isFalse);
+      });
+
+      test('returns true for query with 2+ characters', () {
+        const BrowseState state = BrowseState(
+          sourceId: 'movies',
+          searchQuery: 'ab',
+        );
+        expect(state.hasSearchQuery, isTrue);
+      });
+
+      test('returns false for whitespace-only query', () {
+        const BrowseState state = BrowseState(
+          sourceId: 'movies',
+          searchQuery: '  ',
+        );
+        expect(state.hasSearchQuery, isFalse);
+      });
+    });
+
+    group('hasActiveQuery', () {
+      test('returns false when no query and no filters', () {
+        const BrowseState state = BrowseState(sourceId: 'movies');
+        expect(state.hasActiveQuery, isFalse);
+      });
+
+      test('returns true when has search query', () {
+        const BrowseState state = BrowseState(
+          sourceId: 'movies',
+          searchQuery: 'zelda',
+        );
+        expect(state.hasActiveQuery, isTrue);
+      });
+
+      test('returns true when has filters', () {
+        const BrowseState state = BrowseState(
+          sourceId: 'movies',
+          filterValues: <String, Object?>{'genre': 28},
+        );
+        expect(state.hasActiveQuery, isTrue);
+      });
+
+      test('returns true when has both', () {
+        const BrowseState state = BrowseState(
+          sourceId: 'movies',
+          searchQuery: 'zelda',
+          filterValues: <String, Object?>{'genre': 28},
+        );
+        expect(state.hasActiveQuery, isTrue);
       });
     });
 
@@ -153,7 +213,6 @@ void main() {
           currentPage: 5,
           hasMore: true,
           error: 'err',
-          isSearchMode: true,
           searchQuery: 'query',
         );
 
@@ -166,7 +225,6 @@ void main() {
         expect(copied.currentPage, 5);
         expect(copied.hasMore, isTrue);
         expect(copied.error, 'err');
-        expect(copied.isSearchMode, isTrue);
         expect(copied.searchQuery, 'query');
       });
 

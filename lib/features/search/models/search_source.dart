@@ -153,18 +153,15 @@ abstract class SearchSource {
   /// Есть ли Browse mode (Discover без поискового запроса).
   bool get supportsBrowse;
 
-  /// Загрузить контент для Browse mode с фильтрами.
-  Future<BrowseResult> browse(
+  /// Загрузить контент: поиск (если [query] задан) или Browse с фильтрами.
+  ///
+  /// Объединяет browse и search в единый метод.
+  /// Каждый source решает как комбинировать [query] с [filterValues].
+  Future<BrowseResult> fetch(
     Ref ref, {
+    String? query,
     required Map<String, Object?> filterValues,
     required String sortBy,
-    required int page,
-  });
-
-  /// Поиск по текстовому запросу.
-  Future<BrowseResult> search(
-    Ref ref, {
-    required String query,
     required int page,
   });
 

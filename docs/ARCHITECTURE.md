@@ -312,7 +312,7 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/features/search/providers/browse_provider.dart` | **State Browse/Search**. `BrowseState` (sourceId, filterValues, sortBy, items, pagination, isSearchMode, searchQuery, error). `BrowseNotifier` — NotifierProvider. Методы: setSource, setFilter, setSort, loadMore, enterSearchMode, exitSearchMode, search. Pagination через `BrowseResult.hasMore`. Сброс фильтров при смене источника |
+| `lib/features/search/providers/browse_provider.dart` | **State Browse/Search**. `BrowseState` (sourceId, filterValues, sortBy, items, pagination, searchQuery, error). `BrowseNotifier` — NotifierProvider. Методы: setSource, setFilter, setSort, loadMore, search, clearSearch. Unified fetch: текст и фильтры работают одновременно. Pagination через `BrowseResult.hasMore`. Сброс фильтров при смене источника |
 | `lib/features/search/providers/igdb_genre_provider.dart` | **Жанры IGDB**. `igdbGenresProvider` — FutureProvider, читает статические жанры из БД (предзаполнены миграцией v24) |
 | `lib/features/search/providers/genre_provider.dart` | **Жанры TMDB**. `movieGenreMapProvider`, `tvGenreMapProvider` — маппинг ID->имя из БД с учётом языка. `movieGenresProvider`, `tvGenresProvider` — производные списки [TmdbGenre]. Статические данные (миграция v24), EN + RU |
 | `lib/features/search/providers/vndb_tag_provider.dart` | **Теги VNDB**. `vndbTagsProvider` — FutureProvider, читает статические теги из БД (предзаполнены миграцией v24) |
