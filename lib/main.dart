@@ -6,11 +6,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'app.dart';
+import 'core/logging/app_logger.dart';
 import 'features/settings/providers/settings_provider.dart';
 
 /// Точка входа в приложение.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  AppLogger.init();
 
   // Инициализация SQLite FFI для Windows/Linux/macOS
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {

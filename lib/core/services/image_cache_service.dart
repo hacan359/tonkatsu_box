@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -51,6 +52,7 @@ final Provider<ImageCacheService> imageCacheServiceProvider =
 /// При включённом кэшировании изображения сохраняются локально
 /// и используются в оффлайн режиме.
 class ImageCacheService {
+  static final Logger _log = Logger('ImageCacheService');
   final Dio _dio = Dio();
 
   /// Возвращает базовый путь к директории кэша.
@@ -136,7 +138,8 @@ class ImageCacheService {
       }
       await file.writeAsBytes(bytes);
       return true;
-    } catch (_) {
+    } catch (e) {
+      _log.warning('Failed to save image bytes: $imageId', e);
       return false;
     }
   }
@@ -289,6 +292,7 @@ class ImageCacheService {
 
       return true;
     } catch (e) {
+      _log.warning('Failed to download image: $imageId', e);
       // Удаляем невалидный/частичный файл при ошибке
       final String localPath = await getLocalImagePath(type, imageId);
       final File partial = File(localPath);

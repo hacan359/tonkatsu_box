@@ -3,6 +3,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 
 import '../../shared/models/movie.dart';
 import '../../shared/models/tmdb_review.dart';
@@ -113,6 +114,8 @@ class TmdbApi {
   TmdbApi({Dio? dio, String language = 'ru-RU'})
       : _dio = dio ?? Dio(),
         _language = language;
+
+  static final Logger _log = Logger('TmdbApi');
 
   static const String _baseUrl = 'https://api.themoviedb.org/3';
 
@@ -1049,7 +1052,8 @@ class TmdbApi {
       _movieGenreMap = <int, String>{
         for (final TmdbGenre g in genres) g.id: g.name,
       };
-    } catch (_) {
+    } catch (e) {
+      _log.warning('Failed to load movie genre map', e);
       _movieGenreMap = <int, String>{};
     }
     return _movieGenreMap!;
@@ -1063,7 +1067,8 @@ class TmdbApi {
       _tvGenreMap = <int, String>{
         for (final TmdbGenre g in genres) g.id: g.name,
       };
-    } catch (_) {
+    } catch (e) {
+      _log.warning('Failed to load TV genre map', e);
       _tvGenreMap = <int, String>{};
     }
     return _tvGenreMap!;

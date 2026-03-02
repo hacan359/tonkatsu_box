@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -33,6 +34,8 @@ final Provider<DatabaseService> databaseServiceProvider =
 ///
 /// Управляет инициализацией базы данных и CRUD операциями для платформ.
 class DatabaseService {
+  static final Logger _log = Logger('DatabaseService');
+
   Database? _database;
 
   /// Возвращает экземпляр базы данных, инициализируя при необходимости.
@@ -70,13 +73,17 @@ class DatabaseService {
   }
 
   Future<void> _onCreate(Database db, int version) async {
+    _log.info('Creating database schema v$version');
     await DatabaseSchema.createAll(db);
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    _log.info('Upgrading database from v$oldVersion to v$newVersion');
     for (final Migration migration in MigrationRegistry.pending(oldVersion)) {
+      _log.fine('Running migration v${migration.version}: ${migration.description}');
       await migration.migrate(db);
     }
+    _log.info('Database upgrade complete');
   }
 
   // ==================== IGDB Genres ====================

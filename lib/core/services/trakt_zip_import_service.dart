@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'package:archive/archive.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 
 import '../../data/repositories/collection_repository.dart';
 import '../../data/repositories/wishlist_repository.dart';
@@ -280,6 +281,9 @@ class TraktZipImportService {
         _repository = repository,
         _database = database,
         _wishlistRepository = wishlistRepository;
+
+  // ignore: unused_field
+  static final Logger _log = Logger('TraktZipImportService');
 
   final TmdbApi _tmdbApi;
   final CollectionRepository _repository;

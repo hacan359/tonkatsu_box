@@ -26,6 +26,7 @@ graph TB
     subgraph core ["🔧 Core"]
         api["API<br/><small>igdb_api, tmdb_api,<br/>steamgriddb_api, vndb_api</small>"]
         database["Database<br/><small>database_service<br/>SQLite, 16 таблиц</small>"]
+        logging["Logging<br/><small>AppLogger<br/>package:logging</small>"]
         services["Services<br/><small>export, import,<br/>image_cache, config</small>"]
     end
 
@@ -72,7 +73,7 @@ graph TB
 lib/
 ├── main.dart                 # Точка входа
 ├── app.dart                  # Корневой виджет
-├── core/                     # Ядро (API, БД)
+├── core/                     # Ядро (API, БД, Logging)
 ├── data/                     # Репозитории
 ├── features/                 # Фичи (экраны, виджеты)
 ├── l10n/                     # Локализация (ARB файлы, gen_l10n)
@@ -87,7 +88,7 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/main.dart` | Инициализация Flutter, SQLite, SharedPreferences. Запуск приложения через `ProviderScope` |
+| `lib/main.dart` | Инициализация Flutter, `AppLogger.init()`, SQLite, SharedPreferences. Запуск приложения через `ProviderScope` |
 | `lib/app.dart` | Корневой виджет `TonkatsuBoxApp`. Настройка темы (Material 3), локализация (`locale`, `localizationsDelegates`), роутинг на основе состояния API |
 | `l10n.yaml` | Конфигурация Flutter `gen_l10n`: `arb-dir: lib/l10n`, output class `S`, `nullable-getter: false` |
 | `lib/l10n/app_en.arb` | Английские строки (521 ключ) — шаблон для генерации |
@@ -109,6 +110,7 @@ lib/
 | `lib/shared/constants/platform_features.dart` | **Флаги платформы**. `kCanvasEnabled` (true на всех платформах), `kVgMapsEnabled` (только Windows), `kScreenshotEnabled` (только Windows). VGMaps скрыт на не-Windows платформах |
 | `lib/shared/constants/api_defaults.dart` | **Встроенные API ключи**. `ApiDefaults` — `abstract final class` с `String.fromEnvironment` для TMDB и SteamGridDB ключей, инжектируемых при сборке через `--dart-define`. Геттеры `hasTmdbKey`, `hasSteamGridDbKey`. Используется в `SettingsNotifier._loadFromPrefs()` как fallback: user key → built-in → null |
 | `lib/core/database/database_service.dart` | **SQLite сервис**. Создание таблиц, миграции (версия 19), CRUD для всех сущностей. Использует `databaseFactory.openDatabase()` — кроссплатформенный вызов (FFI на desktop, нативный плагин на Android). Таблицы: `platforms`, `games`, `collections`, `collection_items`, `canvas_items`, `canvas_viewport`, `canvas_connections`, `game_canvas_viewport`, `movies_cache`, `tv_shows_cache`, `tv_seasons_cache`, `tv_episodes_cache`, `watched_episodes`, `tmdb_genres`, `wishlist`. Миграция v14: `UPDATE collection_items SET status='in_progress' WHERE status='playing'`. Методы кэша жанров: `cacheTmdbGenres()`, `getTmdbGenreMap()`. Авторезолвинг числовых genre_ids при загрузке коллекций: `_resolveGenresIfNeeded<T>()`. `updateItemStatus` автоматически устанавливает даты активности при смене статуса. `updateItemActivityDates` для ручного обновления дат. Методы per-item canvas: `getGameCanvasItems`, `getGameCanvasConnections`, `getGameCanvasViewport`, `upsertGameCanvasViewport`. Методы эпизодов: `getEpisodesByShowAndSeason`, `upsertEpisodes`, `clearEpisodesByShow`, `getWatchedEpisodes` (возвращает `Map<(int, int), DateTime?>` с датами просмотра), `markEpisodeWatched`, `markEpisodeUnwatched`, `getWatchedEpisodeCount`, `markSeasonWatched`, `unmarkSeasonWatched`. Изоляция данных: коллекционные методы фильтруют `collection_item_id IS NULL`. Метод `clearAllData()` — очистка всех 16 таблиц в транзакции. Метод `updateItemCollectionId()` — обновление `collection_id` и `sort_order` элемента (для Move to Collection). Миграция v18: UNIQUE индексы расширены на `COALESCE(platform_id, -1)` для мультиплатформенных игр. Метод `getUniquePlatformIds()` — уникальные ID платформ из игровых элементов. Метод `deleteCanvasItemByCollectionItemId()` — удаление канвас-элемента по ID элемента коллекции. Метод `findCollectionItem()` — поиск элемента по (collectionId, mediaType, externalId) для конфликт-резолюции при импорте. Миграция v19: таблица `wishlist`. Методы wishlist: `addWishlistItem()`, `getWishlistItems()`, `getWishlistItemCount()`, `updateWishlistItem()`, `resolveWishlistItem()`, `unresolveWishlistItem()`, `deleteWishlistItem()`, `clearResolvedWishlistItems()` |
+| `lib/core/logging/app_logger.dart` | **Утилита логирования**. `abstract final class AppLogger` — инициализация `package:logging` с выводом через `dart:developer`. Вызывается один раз в `main()`. Все core-классы используют `static final Logger _log = Logger('ClassName')` |
 | `lib/core/services/config_service.dart` | **Сервис конфигурации**. Экспорт/импорт 8 ключей SharedPreferences в JSON файл. Класс `ConfigResult` (success/failure/cancelled). Методы: `collectSettings()`, `applySettings()`, `exportToFile()`, `importFromFile()` |
 | `lib/core/services/image_cache_service.dart` | **Сервис кэширования изображений**. Enum `ImageType` (platformLogo, gameCover, moviePoster, tvShowPoster, canvasImage). Локальное хранение изображений в папках по типу. SharedPreferences для enable/disable и custom path. Валидация magic bytes (JPEG/PNG/WebP) при скачивании и при чтении из кэша. Безопасное удаление файлов (`_tryDelete`) при Windows file lock. Методы: `getImageUri()` (cache-first с fallback на remoteUrl + magic bytes проверка), `downloadImage()` (+ валидация), `downloadImages()`, `readImageBytes()`, `saveImageBytes()`, `clearCache()`, `getCacheSize()`, `getCachedCount()`. Провайдер `imageCacheServiceProvider` |
 | `lib/core/services/xcoll_file.dart` | **Модель файла экспорта/импорта**. Формат v2 (.xcoll/.xcollx, items + canvas + images). Классы: `XcollFile`, `ExportFormat` (light/full), `ExportCanvas`. Файлы v1 выбрасывают `FormatException` |

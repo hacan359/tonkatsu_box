@@ -2,6 +2,7 @@
 
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 
 import '../../shared/models/steamgriddb_game.dart';
 import '../../shared/models/steamgriddb_image.dart';
@@ -35,6 +36,9 @@ class SteamGridDbApiException implements Exception {
 class SteamGridDbApi {
   /// Создаёт экземпляр [SteamGridDbApi].
   SteamGridDbApi({Dio? dio}) : _dio = dio ?? Dio();
+
+  // ignore: unused_field
+  static final Logger _log = Logger('SteamGridDbApi');
 
   static const String _baseUrl = 'https://www.steamgriddb.com/api/v2';
 

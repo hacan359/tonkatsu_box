@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../features/settings/providers/settings_provider.dart';
@@ -69,6 +70,9 @@ class ConfigResult {
 class ConfigService {
   /// Создаёт экземпляр [ConfigService].
   ConfigService({required SharedPreferences prefs}) : _prefs = prefs;
+
+  // ignore: unused_field
+  static final Logger _log = Logger('ConfigService');
 
   final SharedPreferences _prefs;
 
