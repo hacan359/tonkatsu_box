@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 
 import '../../shared/models/game.dart';
 import '../../shared/models/platform.dart';
@@ -64,6 +65,9 @@ class IgdbApiException implements Exception {
 class IgdbApi {
   /// Создаёт экземпляр [IgdbApi].
   IgdbApi({Dio? dio}) : _dio = dio ?? Dio();
+
+  // ignore: unused_field
+  static final Logger _log = Logger('IgdbApi');
 
   static const String _twitchAuthUrl = 'https://id.twitch.tv/oauth2/token';
   static const String _igdbBaseUrl = 'https://api.igdb.com/v4';

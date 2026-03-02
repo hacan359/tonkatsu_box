@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 
 import '../../data/repositories/canvas_repository.dart';
 import '../../shared/models/canvas_connection.dart';
@@ -83,6 +84,8 @@ class ExportService {
   })  : _canvasRepository = canvasRepository,
         _imageCacheService = imageCacheService,
         _database = database;
+
+  static final Logger _log = Logger('ExportService');
 
   final CanvasRepository? _canvasRepository;
   final ImageCacheService? _imageCacheService;
@@ -517,6 +520,7 @@ class ExportService {
     } on FileSystemException catch (e) {
       return ExportResult.failure('Failed to save file: ${e.message}');
     } catch (e) {
+      _log.warning('Export failed', e);
       return ExportResult.failure('Export failed: $e');
     }
   }

@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gamepads/gamepads.dart';
+import 'package:logging/logging.dart';
 
 import '../../../core/services/gamepad_service.dart';
 import '../../../l10n/app_localizations.dart';
@@ -34,6 +35,8 @@ class GamepadDebugScreen extends ConsumerStatefulWidget {
 }
 
 class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
+  static final Logger _log = Logger('GamepadDebugScreen');
+
   final List<_EventEntry> _rawEvents = <_EventEntry>[];
   final List<_EventEntry> _serviceEvents = <_EventEntry>[];
   final ScrollController _rawScrollController = ScrollController();
@@ -47,8 +50,7 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
     final GamepadService service = ref.read(gamepadServiceProvider);
 
     _rawSub = service.rawEvents.listen((GamepadEvent event) {
-      // ignore: avoid_print
-      print('[GAMEPAD] key=${event.key}  type=${event.type}  '
+      _log.fine('key=${event.key}  type=${event.type}  '
           'value=${event.value.toStringAsFixed(3)}');
       setState(() {
         _rawEvents.insert(

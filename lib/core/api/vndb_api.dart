@@ -2,6 +2,7 @@
 
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 
 import '../../shared/models/visual_novel.dart';
 
@@ -32,6 +33,9 @@ class VndbApiException implements Exception {
 class VndbApi {
   /// Создаёт экземпляр [VndbApi].
   VndbApi({Dio? dio}) : _dio = dio ?? Dio();
+
+  // ignore: unused_field
+  static final Logger _log = Logger('VndbApi');
 
   static const String _baseUrl = 'https://api.vndb.org/kana';
 

@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 
 import '../../data/repositories/canvas_repository.dart';
 import '../../data/repositories/collection_repository.dart';
@@ -187,6 +188,8 @@ class ImportService {
   final DatabaseService _database;
   final CanvasRepository? _canvasRepository;
   final ImageCacheService? _imageCacheService;
+
+  static final Logger _log = Logger('ImportService');
 
   /// Допустимые расширения для импорта коллекций.
   static const List<String> _allowedExtensions = <String>[
@@ -721,7 +724,7 @@ class ImportService {
       try {
         visualNovels = await vndbApi.getVnByIds(vnIds);
       } on VndbApiException catch (e) {
-        debugPrint('Failed to fetch visual novels: ${e.message}');
+        _log.warning('Failed to fetch visual novels: ${e.message}');
       }
       onProgress?.call(ImportProgress(
         stage: ImportStage.fetchingVisualNovels,
@@ -817,8 +820,8 @@ class ImportService {
         final bool success =
             await cache.saveImageBytes(imageType, imageId, bytes);
         if (success) restored++;
-      } catch (_) {
-        // Пропускаем невалидный base64
+      } catch (e) {
+        _log.warning('Failed to restore image from base64: $imageId', e);
       }
     }
 

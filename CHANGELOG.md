@@ -7,6 +7,10 @@
 ## [Unreleased]
 
 ### Added
+- `AppLogger` utility (`lib/core/logging/app_logger.dart`) — centralized logging via `package:logging` and `dart:developer`. Initialized once in `main()` before `runApp()`, logs visible in Flutter DevTools Logging tab
+- `static final Logger _log` field in 11 core classes: `IgdbApi`, `TmdbApi`, `SteamGridDbApi`, `VndbApi`, `DatabaseService`, `ImageCacheService`, `ImportService`, `ExportService`, `TraktZipImportService`, `ConfigService`, `UpdateService`
+- Logging in `DatabaseService._onCreate()` and `_onUpgrade()` — schema creation and migration progress messages
+- `dart-tonkatsu` coding standards skill (`.claude/skills/dart-tonkatsu/SKILL.md`) — project-wide Dart/Flutter conventions including logging rules, catch-block policy, import ordering, model structure
 - iOS folder-style `CollectionCard` widget (`collection_card.dart`) — 3+3 mosaic grid (3 posters top row, 2 posters + "+N" counter bottom row), hover dimming effect with `AnimationController`, rounded corners (16px outer, 8px cells), internal padding 14px
 - `UncategorizedCard` widget for uncategorized items with inbox icon
 - `CoverInfo` model (`cover_info.dart`) — lightweight cover data (externalId, mediaType, platformId, thumbnailUrl) for collection card mosaics
@@ -20,6 +24,10 @@
 - Tests: `collection_card_test.dart` (22 tests), `collection_covers_provider_test.dart` (4 tests), `collection_filter_bar_test.dart`, `collection_item_tile_test.dart`, `collection_items_view_test.dart`, `collection_canvas_layout_test.dart`, `collection_actions_test.dart`, `cover_info_test.dart`
 
 ### Changed
+- Replaced 5 silent `catch (_)` blocks with `catch (e)` + `_log.warning(...)` in `TmdbApi` (genre map loading), `ImageCacheService` (save bytes, download), `ImportService` (base64 restore), `ExportService` (export failure)
+- Replaced `debugPrint()` with `_log.warning()` in `ImportService` (VNDB fetch error)
+- Replaced `print()` with `_log.fine()` in `GamepadDebugScreen` (raw gamepad events)
+- Replaced `import 'package:flutter/foundation.dart'` with `import 'dart:typed_data'` in `ImportService` (only `Uint8List` was needed)
 - `HomeScreen` — replaced category-grouped layout with single `GridView.builder` using `SliverGridDelegateWithMaxCrossAxisExtent(maxCrossAxisExtent: 273, childAspectRatio: 1)`. All collections rendered as `CollectionCard` widgets
 - `CollectionScreen` — major refactoring: extracted filter bar, items view, canvas layout, and action helpers into separate widgets. Reduced from ~1800 lines to ~500 lines
 
