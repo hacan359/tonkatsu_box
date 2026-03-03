@@ -6,6 +6,8 @@
 
 ## [Unreleased]
 
+## [0.17.0] - 2026-03-03
+
 ### Added
 - **[Experimental]** Type-to-Filter overlay (desktop only) — typing on physical keyboard shows a floating search bar that filters loaded items by title in real-time. Works on 5 screens: AllItems, HomeScreen, CollectionScreen, SearchScreen, WishlistScreen. Widget `TypeToFilterOverlay` (`type_to_filter_overlay.dart`), keys: printable characters — show/filter, Escape — hide, Backspace — delete character, close button. Zero overhead on mobile
 - `sortDisabledTooltip` localization key (EN + RU) — tooltip for disabled sort dropdown during text search
