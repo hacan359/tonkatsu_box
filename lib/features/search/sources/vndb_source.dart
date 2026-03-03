@@ -40,11 +40,15 @@ class VndbSource extends SearchSource {
       ];
 
   @override
+  bool get supportsSortDuringSearch => true;
+
+  @override
   String searchHint(S l) => l.searchHintVisualNovels;
 
   @override
-  Future<BrowseResult> browse(
+  Future<BrowseResult> fetch(
     Ref ref, {
+    String? query,
     required Map<String, Object?> filterValues,
     required String sortBy,
     required int page,
@@ -56,8 +60,10 @@ class VndbSource extends SearchSource {
     const int pageSize = _vndbPageSize;
 
     try {
+      // VNDB нативно комбинирует search + tag через ['and', ...]
       final (List<VisualNovel> novels, bool hasMore, int totalPages) =
           await vndb.browseVn(
+        query: query,
         tagId: tagId,
         sort: sortBy,
         page: page,
@@ -69,34 +75,6 @@ class VndbSource extends SearchSource {
         mediaType: MediaType.visualNovel,
         hasMore: hasMore,
         totalPages: totalPages,
-        currentPage: page,
-      );
-    } on VndbApiException catch (e) {
-      throw Exception(e.message);
-    }
-  }
-
-  @override
-  Future<BrowseResult> search(
-    Ref ref, {
-    required String query,
-    required int page,
-  }) async {
-    final VndbApi vndb = ref.read(vndbApiProvider);
-
-    const int pageSize = _vndbPageSize;
-
-    try {
-      final (List<VisualNovel> novels, bool hasMore) = await vndb.searchVn(
-        query: query,
-        page: page,
-        results: pageSize,
-      );
-
-      return BrowseResult(
-        items: novels,
-        mediaType: MediaType.visualNovel,
-        hasMore: hasMore,
         currentPage: page,
       );
     } on VndbApiException catch (e) {

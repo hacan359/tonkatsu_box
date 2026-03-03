@@ -47,8 +47,9 @@ class TmdbAnimeSource extends SearchSource {
   String searchHint(S l) => l.searchHintAnime;
 
   @override
-  Future<BrowseResult> browse(
+  Future<BrowseResult> fetch(
     Ref ref, {
+    String? query,
     required Map<String, Object?> filterValues,
     required String sortBy,
     required int page,
@@ -68,8 +69,22 @@ class TmdbAnimeSource extends SearchSource {
       dateLte = '${yearValue.$2}-12-31';
     }
 
-    // Жанр из фильтра + обязательный Animation (16)
     final int? extraGenreId = filterValues['genre'] as int?;
+
+    if (query != null && query.isNotEmpty) {
+      // Текстовый поиск + клиентская фильтрация по animation genre
+      return _searchWithFilters(
+        tmdb,
+        ref,
+        query: query,
+        animeType: animeType,
+        extraGenreId: extraGenreId,
+        year: year,
+        page: page,
+      );
+    }
+
+    // Browse mode: Discover с фильтрами
     final int? voteCountGte =
         sortBy == 'vote_average.desc' ? 100 : null;
 
@@ -218,13 +233,15 @@ class TmdbAnimeSource extends SearchSource {
     );
   }
 
-  @override
-  Future<BrowseResult> search(
+  Future<BrowseResult> _searchWithFilters(
+    TmdbApi tmdb,
     Ref ref, {
     required String query,
+    String? animeType,
+    int? extraGenreId,
+    int? year,
     required int page,
   }) async {
-    final TmdbApi tmdb = ref.read(tmdbApiProvider);
     final Map<String, String> tvGenreMap =
         await ref.read(tvGenreMapProvider.future);
     final Map<String, String> movieGenreMap =
@@ -232,45 +249,75 @@ class TmdbAnimeSource extends SearchSource {
 
     // Ищем сериалы и фильмы параллельно
     final List<Object> results = await Future.wait(<Future<Object>>[
-      tmdb.searchTvShowsPaged(query, page: page),
-      tmdb.searchMoviesPaged(query, page: page),
+      if (animeType != 'movies')
+        tmdb.searchTvShowsPaged(query, page: page, firstAirDateYear: year),
+      if (animeType != 'series')
+        tmdb.searchMoviesPaged(query, page: page, year: year),
     ]);
 
-    final TmdbPagedResult<TvShow> tvResult =
-        results[0] as TmdbPagedResult<TvShow>;
-    final TmdbPagedResult<Movie> movieResult =
-        results[1] as TmdbPagedResult<Movie>;
+    List<TvShow> animeTv = const <TvShow>[];
+    List<Movie> animeMovies = const <Movie>[];
 
-    // Фильтруем только анимацию
-    final List<TvShow> animeTv = tvResult.results
-        .where(
-          (TvShow s) =>
-              s.genres != null && s.genres!.any(isAnimationGenre),
-        )
-        .toList();
+    int resultIdx = 0;
+    if (animeType != 'movies') {
+      final TmdbPagedResult<TvShow> tvResult =
+          results[resultIdx++] as TmdbPagedResult<TvShow>;
+      animeTv = tvResult.results
+          .where(
+            (TvShow s) =>
+                s.genres != null && s.genres!.any(isAnimationGenre),
+          )
+          .toList();
+    }
+    if (animeType != 'series') {
+      final TmdbPagedResult<Movie> movieResult =
+          results[resultIdx] as TmdbPagedResult<Movie>;
+      animeMovies = movieResult.results
+          .where(
+            (Movie m) =>
+                m.genres != null && m.genres!.any(isAnimationGenre),
+          )
+          .toList();
+    }
 
-    final List<Movie> animeMovies = movieResult.results
-        .where(
-          (Movie m) =>
-              m.genres != null && m.genres!.any(isAnimationGenre),
-        )
-        .toList();
+    // Клиентская фильтрация по дополнительному жанру
+    if (extraGenreId != null) {
+      final String? tvGenreName = tvGenreMap[extraGenreId.toString()];
+      final String? movieGenreName = movieGenreMap[extraGenreId.toString()];
+      if (tvGenreName != null) {
+        animeTv = animeTv
+            .where((TvShow s) =>
+                s.genres != null && s.genres!.contains(tvGenreName))
+            .toList();
+      }
+      if (movieGenreName != null) {
+        animeMovies = animeMovies
+            .where((Movie m) =>
+                m.genres != null && m.genres!.contains(movieGenreName))
+            .toList();
+      }
+    }
 
     final List<TvShow> resolvedTv =
         resolveTvGenres(animeTv, tvGenreMap);
     final List<Movie> resolvedMovies =
         resolveMovieGenres(animeMovies, movieGenreMap);
 
-    // Объединяем: сериалы + фильмы
     final List<Object> combined = <Object>[
       ...resolvedTv,
       ...resolvedMovies,
     ];
 
+    final bool hasMore = results.any((Object r) {
+      if (r is TmdbPagedResult<TvShow>) return r.hasMore;
+      if (r is TmdbPagedResult<Movie>) return r.hasMore;
+      return false;
+    });
+
     return BrowseResult(
       items: combined,
       mediaType: MediaType.animation,
-      hasMore: tvResult.hasMore || movieResult.hasMore,
+      hasMore: hasMore,
       currentPage: page,
     );
   }

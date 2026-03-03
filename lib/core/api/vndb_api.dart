@@ -87,6 +87,7 @@ class VndbApi {
   /// Возвращает кортеж (список новелл, есть ли ещё, количество страниц).
   /// Throws [VndbApiException] при ошибке запроса.
   Future<(List<VisualNovel>, bool hasMore, int totalPages)> browseVn({
+    String? query,
     String? tagId,
     String sort = 'rating',
     bool reverse = true,
@@ -97,12 +98,18 @@ class VndbApi {
       // Собираем фильтры
       final List<dynamic> filters = <dynamic>[];
 
+      if (query != null && query.trim().isNotEmpty) {
+        filters.add(<dynamic>['search', '=', query]);
+      }
+
       if (tagId != null) {
         filters.add(<dynamic>['tag', '=', tagId]);
       }
 
-      // Минимум голосов для качественных результатов
-      filters.add(<dynamic>['votecount', '>=', 10]);
+      // Минимум голосов для качественных результатов (только без поиска)
+      if (query == null || query.trim().isEmpty) {
+        filters.add(<dynamic>['votecount', '>=', 10]);
+      }
 
       // Формируем итоговый фильтр
       final dynamic finalFilter = filters.length == 1

@@ -26,7 +26,6 @@ class BrowseState {
     this.currentPage = 1,
     this.hasMore = false,
     this.error,
-    this.isSearchMode = false,
     this.searchQuery = '',
   });
 
@@ -57,15 +56,18 @@ class BrowseState {
   /// Сообщение об ошибке.
   final String? error;
 
-  /// Режим поиска (вместо Browse).
-  final bool isSearchMode;
-
   /// Текстовый поисковый запрос.
   final String searchQuery;
 
   /// Есть ли активные фильтры (не null).
   bool get hasFilters =>
       filterValues.values.any((Object? v) => v != null);
+
+  /// Есть ли текстовый запрос.
+  bool get hasSearchQuery => searchQuery.trim().length >= 2;
+
+  /// Есть ли активный запрос (текст или фильтры).
+  bool get hasActiveQuery => hasSearchQuery || hasFilters;
 
   /// Пустое состояние.
   bool get isEmpty => items.isEmpty && !isLoading;
@@ -87,7 +89,6 @@ class BrowseState {
     int? currentPage,
     bool? hasMore,
     String? error,
-    bool? isSearchMode,
     String? searchQuery,
     bool clearError = false,
     bool clearSortBy = false,
@@ -102,7 +103,6 @@ class BrowseState {
       currentPage: currentPage ?? this.currentPage,
       hasMore: hasMore ?? this.hasMore,
       error: clearError ? null : (error ?? this.error),
-      isSearchMode: isSearchMode ?? this.isSearchMode,
       searchQuery: searchQuery ?? this.searchQuery,
     );
   }
@@ -178,35 +178,9 @@ class BrowseNotifier extends Notifier<BrowseState> {
       clearError: true,
       clearSortBy: true,
     );
-  }
 
-  /// Перейти в режим поиска.
-  void enterSearchMode() {
-    _generation++;
-    state = state.copyWith(
-      isSearchMode: true,
-      items: const <Object>[],
-      searchQuery: '',
-      currentPage: 1,
-      hasMore: false,
-      clearError: true,
-    );
-  }
-
-  /// Выйти из режима поиска (вернуться в Browse).
-  void exitSearchMode() {
-    _generation++;
-    state = state.copyWith(
-      isSearchMode: false,
-      items: const <Object>[],
-      searchQuery: '',
-      currentPage: 1,
-      hasMore: false,
-      clearError: true,
-    );
-
-    // Если были фильтры — перезагрузить
-    if (state.hasFilters) {
+    // Если есть текстовый запрос — перезагрузить только с текстом
+    if (state.hasSearchQuery) {
       _fetch();
     }
   }
@@ -215,39 +189,30 @@ class BrowseNotifier extends Notifier<BrowseState> {
   Future<void> search(String query) async {
     if (query.trim().length < 2) return;
 
-    final int gen = ++_generation;
-
     state = state.copyWith(
       searchQuery: query.trim(),
       items: const <Object>[],
       currentPage: 1,
       hasMore: false,
-      isLoading: true,
+    );
+
+    await _fetch();
+  }
+
+  /// Очистить текстовый поиск. Перезагружает если есть фильтры.
+  void clearSearch() {
+    _generation++;
+    state = state.copyWith(
+      searchQuery: '',
+      items: const <Object>[],
+      currentPage: 1,
+      hasMore: false,
       clearError: true,
     );
 
-    try {
-      final SearchSource source = state.source;
-      final BrowseResult result = await source.search(
-        ref,
-        query: query.trim(),
-        page: 1,
-      );
-
-      if (_generation != gen) return; // stale result
-
-      state = state.copyWith(
-        items: result.items,
-        hasMore: result.hasMore,
-        currentPage: 1,
-        isLoading: false,
-      );
-    } on Exception catch (e) {
-      if (_generation != gen) return;
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+    // Если есть фильтры — перезагрузить только с фильтрами
+    if (state.hasFilters) {
+      _fetch();
     }
   }
 
@@ -263,21 +228,13 @@ class BrowseNotifier extends Notifier<BrowseState> {
       final SearchSource source = state.source;
       final int nextPage = state.currentPage + 1;
 
-      final BrowseResult result;
-      if (state.isSearchMode && state.searchQuery.isNotEmpty) {
-        result = await source.search(
-          ref,
-          query: state.searchQuery,
-          page: nextPage,
-        );
-      } else {
-        result = await source.browse(
-          ref,
-          filterValues: state.filterValues,
-          sortBy: state.effectiveSortBy,
-          page: nextPage,
-        );
-      }
+      final BrowseResult result = await source.fetch(
+        ref,
+        query: state.hasSearchQuery ? state.searchQuery : null,
+        filterValues: state.filterValues,
+        sortBy: state.effectiveSortBy,
+        page: nextPage,
+      );
 
       if (_generation != gen) return; // stale result
 
@@ -296,9 +253,9 @@ class BrowseNotifier extends Notifier<BrowseState> {
     }
   }
 
-  /// Загрузить/перезагрузить контент с текущими фильтрами.
+  /// Загрузить/перезагрузить контент с текущими параметрами.
   Future<void> _fetch() async {
-    if (!state.hasFilters) return;
+    if (!state.hasActiveQuery) return;
 
     final int gen = ++_generation;
 
@@ -309,8 +266,9 @@ class BrowseNotifier extends Notifier<BrowseState> {
 
     try {
       final SearchSource source = state.source;
-      final BrowseResult result = await source.browse(
+      final BrowseResult result = await source.fetch(
         ref,
+        query: state.hasSearchQuery ? state.searchQuery : null,
         filterValues: state.filterValues,
         sortBy: state.effectiveSortBy,
         page: 1,
@@ -335,9 +293,7 @@ class BrowseNotifier extends Notifier<BrowseState> {
 
   /// Принудительная перезагрузка.
   Future<void> refresh() async {
-    if (state.isSearchMode && state.searchQuery.isNotEmpty) {
-      await search(state.searchQuery);
-    } else if (state.hasFilters) {
+    if (state.hasActiveQuery) {
       await _fetch();
     }
   }

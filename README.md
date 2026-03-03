@@ -204,7 +204,13 @@ The importer brings in your watched items (as completed), ratings (1–10), watc
 
 ### Demo Collections
 
-Want to try the app with pre-built content? Check out [**Tonkatsu Collections**](https://github.com/hacan359/tonkatsu-collections) — ready-made collections of top games for 18 platforms, movies, TV shows, and anime. Download a `.xcollx` file, import it from Settings → Import Collection, and everything works offline immediately.
+Want to try the app with pre-built content? Check out [**Tonkatsu Collections**](https://github.com/hacan359/tonkatsu-collections) — the largest open library of ready-to-import retro game databases:
+
+- **25,653 games** across **23 platforms** — from Atari 2600 to PSP, with cover images
+- **Top 50** curated collections for 18 platforms (PS1–PS5, NES, SNES, Switch, Xbox, PC...)
+- **Movies, TV shows & anime** — top rated from TMDB
+
+Download any `.xcollx` file, import it from **Settings → Import Collection**, and everything works offline immediately — no API keys needed for imported data.
 
 ## Platforms
 

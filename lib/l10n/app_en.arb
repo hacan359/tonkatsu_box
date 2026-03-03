@@ -915,5 +915,8 @@
   "browseEmptyFilters": "Choose a filter or search",
   "browseEmptyResults": "No results found",
   "browseSearchHint": "Search...",
-  "browseBackToBrowse": "Back to browse"
+  "browseBackToBrowse": "Back to browse",
+  "browseSortDisabledHint": "Sorting unavailable during text search",
+
+  "typeToFilterHint": "Filter..."
 }

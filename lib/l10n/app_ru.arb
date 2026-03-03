@@ -696,10 +696,13 @@
   "browseSortTopRated": "Лучшие",
   "browseSortNewest": "Новинки",
   "browseSortMostVoted": "По голосам",
+  "browseSortDisabledHint": "Сортировка недоступна при текстовом поиске",
   "browseAnimeTypeSeries": "Сериалы",
   "browseAnimeTypeMovies": "Фильмы",
   "browseEmptyFilters": "Выберите фильтр или выполните поиск",
   "browseEmptyResults": "Ничего не найдено",
   "browseSearchHint": "Поиск...",
-  "browseBackToBrowse": "Назад к обзору"
+  "browseBackToBrowse": "Назад к обзору",
+
+  "typeToFilterHint": "Фильтр..."
 }

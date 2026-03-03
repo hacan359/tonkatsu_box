@@ -58,6 +58,8 @@ class FilterBar extends ConsumerWidget {
             SortDropdown(
               options: source.sortOptions,
               current: browseState.effectiveSortBy,
+              enabled: !browseState.hasSearchQuery ||
+                  source.supportsSortDuringSearch,
               onChanged: (String sortBy) {
                 ref.read(browseProvider.notifier).setSort(sortBy);
               },

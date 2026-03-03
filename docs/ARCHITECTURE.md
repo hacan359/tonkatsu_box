@@ -242,7 +242,7 @@ lib/
 
 Поиск построен на pluggable-архитектуре с абстракциями `SearchSource` и `SearchFilter`:
 
-- **SearchSource** — описывает источник данных (IGDB, TMDB movies/tv/anime). Объявляет фильтры, сортировки, методы browse/search
+- **SearchSource** — описывает источник данных (IGDB, TMDB movies/tv/anime, VNDB). Объявляет фильтры, сортировки, unified `fetch()` method (query + filters simultaneously). `supportsSortDuringSearch` flag for sort dropdown control
 - **SearchFilter** — описывает один фильтр (жанр, год, платформа, тип). `cacheKey` различает фильтры с одинаковым `key` но разными наборами опций
 - **BrowseNotifier** — единый state manager для Browse/Search режимов с пагинацией и переключением источников
 
@@ -257,7 +257,7 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/features/search/models/search_source.dart` | **Абстракции**. `SearchSource` (id, label, icon, filters, browse, search, sortOptions), `SearchFilter` (key, cacheKey, placeholder, options, allOption), `FilterOption`, `BrowseSortOption`, `BrowseResult` |
+| `lib/features/search/models/search_source.dart` | **Абстракции**. `SearchSource` (id, label, icon, filters, fetch(query?, filterValues, sortBy, page), sortOptions, supportsSortDuringSearch), `SearchFilter` (key, cacheKey, placeholder, options, allOption), `FilterOption`, `BrowseSortOption`, `BrowseResult` |
 
 </details>
 
@@ -312,7 +312,7 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/features/search/providers/browse_provider.dart` | **State Browse/Search**. `BrowseState` (sourceId, filterValues, sortBy, items, pagination, isSearchMode, searchQuery, error). `BrowseNotifier` — NotifierProvider. Методы: setSource, setFilter, setSort, loadMore, enterSearchMode, exitSearchMode, search. Pagination через `BrowseResult.hasMore`. Сброс фильтров при смене источника |
+| `lib/features/search/providers/browse_provider.dart` | **State Browse/Search**. `BrowseState` (sourceId, filterValues, sortBy, items, pagination, searchQuery, error). `BrowseNotifier` — NotifierProvider. Методы: setSource, setFilter, setSort, loadMore, search, clearSearch. Unified fetch: текст и фильтры работают одновременно. Pagination через `BrowseResult.hasMore`. Сброс фильтров при смене источника |
 | `lib/features/search/providers/igdb_genre_provider.dart` | **Жанры IGDB**. `igdbGenresProvider` — FutureProvider, читает статические жанры из БД (предзаполнены миграцией v24) |
 | `lib/features/search/providers/genre_provider.dart` | **Жанры TMDB**. `movieGenreMapProvider`, `tvGenreMapProvider` — маппинг ID->имя из БД с учётом языка. `movieGenresProvider`, `tvGenresProvider` — производные списки [TmdbGenre]. Статические данные (миграция v24), EN + RU |
 | `lib/features/search/providers/vndb_tag_provider.dart` | **Теги VNDB**. `vndbTagsProvider` — FutureProvider, читает статические теги из БД (предзаполнены миграцией v24) |
@@ -379,6 +379,7 @@ lib/
 | `lib/shared/widgets/update_banner.dart` | **Баннер обновления**. `UpdateBanner` (ConsumerWidget) — читает `updateCheckProvider`, показывает баннер при наличии новой версии. `_UpdateBannerContent` (StatefulWidget) — dismiss state, кнопка "Update" (url_launcher), крестик закрытия. Стиль: AppColors.brand |
 | `lib/shared/widgets/scrollable_row_with_arrows.dart` | **Горизонтальный список со стрелками**. Stack с overlay кнопками ◀ ▶ на десктопе (width >= 600px). Слушает ScrollController, показывает/скрывает стрелки по позиции. Клик — `animateTo` ±300px. Полупрозрачный градиент-фон кнопки |
 | `lib/shared/widgets/horizontal_mouse_scroll.dart` | **Горизонтальный скролл колёсиком мыши**. Listener на PointerScrollEvent, конвертирует vertical scroll delta в horizontal `animateTo` |
+| `lib/shared/widgets/type_to_filter_overlay.dart` | **[Experimental] Type-to-Filter overlay**. Desktop-only: Focus(onKeyEvent) > Stack > [child, Positioned overlay]. Перехватывает печатные символы → показывает плавающую строку поиска сверху, `onFilterChanged` колбэк для клиентской фильтрации. Escape/кнопка закрыть скрывают overlay. На мобильной платформе (kIsMobile) возвращает child без overhead. Фокус-менеджмент: `addPostFrameCallback` для восстановления фокуса, `ModalRoute.of(context)` для route-aware восстановления после навигации push/pop |
 
 </details>
 
