@@ -4,7 +4,6 @@ import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:xerabora/core/services/trakt_zip_import_service.dart';
 import 'package:xerabora/features/collections/providers/collections_provider.dart';
 import 'package:xerabora/features/settings/screens/trakt_import_screen.dart';
@@ -12,8 +11,7 @@ import 'package:xerabora/features/settings/widgets/settings_section.dart';
 import 'package:xerabora/shared/models/collection.dart';
 import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 
-class MockTraktZipImportService extends Mock
-    implements TraktZipImportService {}
+import '../../../helpers/test_helpers.dart';
 
 void main() {
   late MockTraktZipImportService mockService;

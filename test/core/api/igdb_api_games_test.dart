@@ -4,7 +4,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:xerabora/core/api/igdb_api.dart';
 import 'package:xerabora/shared/models/game.dart';
 
-class MockDio extends Mock implements Dio {}
+import '../../helpers/test_helpers.dart';
 
 void main() {
   late MockDio mockDio;

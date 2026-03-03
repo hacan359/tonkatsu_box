@@ -7,6 +7,8 @@ import 'package:xerabora/shared/models/canvas_item.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/visual_novel.dart';
 
+import '../../helpers/test_helpers.dart';
+
 void main() {
   group('CanvasItemType', () {
     test('should have correct string values', () {
@@ -57,40 +59,16 @@ void main() {
   });
 
   group('CanvasItem', () {
+    // Дата отличается от shared testDate — оставляем локально.
     final DateTime testDate = DateTime(2024, 6, 15, 12, 0, 0);
     final int testTimestamp = testDate.millisecondsSinceEpoch ~/ 1000;
 
-    CanvasItem createTestItem({
-      int id = 1,
-      int collectionId = 10,
-      int? collectionItemId,
-      CanvasItemType itemType = CanvasItemType.game,
-      int? itemRefId = 100,
-      double x = 50.0,
-      double y = 100.0,
-      double? width = 160.0,
-      double? height = 220.0,
-      int zIndex = 0,
-      Map<String, dynamic>? data,
-    }) {
-      return CanvasItem(
-        id: id,
-        collectionId: collectionId,
-        collectionItemId: collectionItemId,
-        itemType: itemType,
-        itemRefId: itemRefId,
-        x: x,
-        y: y,
-        width: width,
-        height: height,
-        zIndex: zIndex,
-        data: data,
+    test('should create with required parameters', () {
+      final CanvasItem item = createTestCanvasItem(
+        collectionId: 10,
+        x: 50.0,
         createdAt: testDate,
       );
-    }
-
-    test('should create with required parameters', () {
-      final CanvasItem item = createTestItem();
 
       expect(item.id, 1);
       expect(item.collectionId, 10);
@@ -107,10 +85,13 @@ void main() {
     });
 
     test('should create with data map', () {
-      final CanvasItem item = createTestItem(
+      final CanvasItem item = createTestCanvasItem(
+        collectionId: 10,
         itemType: CanvasItemType.text,
         itemRefId: null,
+        x: 50.0,
         data: <String, dynamic>{'content': 'Hello', 'fontSize': 16},
+        createdAt: testDate,
       );
 
       expect(item.data, isNotNull);
@@ -119,7 +100,12 @@ void main() {
     });
 
     test('should create with collectionItemId', () {
-      final CanvasItem item = createTestItem(collectionItemId: 42);
+      final CanvasItem item = createTestCanvasItem(
+        collectionId: 10,
+        collectionItemId: 42,
+        x: 50.0,
+        createdAt: testDate,
+      );
 
       expect(item.collectionItemId, 42);
       expect(item.id, 1);
@@ -271,7 +257,11 @@ void main() {
 
     group('toDb', () {
       test('should serialize game item to database map', () {
-        final CanvasItem item = createTestItem();
+        final CanvasItem item = createTestCanvasItem(
+          collectionId: 10,
+          x: 50.0,
+          createdAt: testDate,
+        );
         final Map<String, dynamic> db = item.toDb();
 
         expect(db['id'], 1);
@@ -288,9 +278,12 @@ void main() {
       });
 
       test('should serialize data map as JSON string', () {
-        final CanvasItem item = createTestItem(
+        final CanvasItem item = createTestCanvasItem(
+          collectionId: 10,
           itemType: CanvasItemType.text,
+          x: 50.0,
           data: <String, dynamic>{'content': 'Hello'},
+          createdAt: testDate,
         );
         final Map<String, dynamic> db = item.toDb();
 
@@ -301,21 +294,35 @@ void main() {
       });
 
       test('should omit id when id is 0 (new item)', () {
-        final CanvasItem item = createTestItem(id: 0);
+        final CanvasItem item = createTestCanvasItem(
+          id: 0,
+          collectionId: 10,
+          x: 50.0,
+          createdAt: testDate,
+        );
         final Map<String, dynamic> db = item.toDb();
 
         expect(db.containsKey('id'), false);
       });
 
       test('should serialize collectionItemId to database map', () {
-        final CanvasItem item = createTestItem(collectionItemId: 42);
+        final CanvasItem item = createTestCanvasItem(
+          collectionId: 10,
+          collectionItemId: 42,
+          x: 50.0,
+          createdAt: testDate,
+        );
         final Map<String, dynamic> db = item.toDb();
 
         expect(db['collection_item_id'], 42);
       });
 
       test('should serialize null collectionItemId', () {
-        final CanvasItem item = createTestItem();
+        final CanvasItem item = createTestCanvasItem(
+          collectionId: 10,
+          x: 50.0,
+          createdAt: testDate,
+        );
         final Map<String, dynamic> db = item.toDb();
 
         expect(db.containsKey('collection_item_id'), true);
@@ -325,7 +332,11 @@ void main() {
 
     group('toExport', () {
       test('should serialize for export', () {
-        final CanvasItem item = createTestItem();
+        final CanvasItem item = createTestCanvasItem(
+          collectionId: 10,
+          x: 50.0,
+          createdAt: testDate,
+        );
         final Map<String, dynamic> jsonMap = item.toExport();
 
         expect(jsonMap['id'], 1);
@@ -341,8 +352,11 @@ void main() {
       });
 
       test('should include data map in export', () {
-        final CanvasItem item = createTestItem(
+        final CanvasItem item = createTestCanvasItem(
+          collectionId: 10,
+          x: 50.0,
           data: <String, dynamic>{'content': 'Test'},
+          createdAt: testDate,
         );
         final Map<String, dynamic> jsonMap = item.toExport();
 
@@ -351,7 +365,12 @@ void main() {
       });
 
       test('should include collectionItemId in export', () {
-        final CanvasItem item = createTestItem(collectionItemId: 42);
+        final CanvasItem item = createTestCanvasItem(
+          collectionId: 10,
+          collectionItemId: 42,
+          x: 50.0,
+          createdAt: testDate,
+        );
         final Map<String, dynamic> jsonMap = item.toExport();
 
         expect(jsonMap['collection_item_id'], 42);
@@ -431,7 +450,11 @@ void main() {
 
     group('copyWith', () {
       test('should create copy with changed fields', () {
-        final CanvasItem original = createTestItem();
+        final CanvasItem original = createTestCanvasItem(
+          collectionId: 10,
+          x: 50.0,
+          createdAt: testDate,
+        );
         final CanvasItem copy = original.copyWith(
           x: 200.0,
           y: 300.0,
@@ -447,7 +470,11 @@ void main() {
       });
 
       test('should keep original values when not specified', () {
-        final CanvasItem original = createTestItem();
+        final CanvasItem original = createTestCanvasItem(
+          collectionId: 10,
+          x: 50.0,
+          createdAt: testDate,
+        );
         final CanvasItem copy = original.copyWith();
 
         expect(copy.id, original.id);
@@ -457,7 +484,12 @@ void main() {
       });
 
       test('should copy with changed collectionItemId', () {
-        final CanvasItem original = createTestItem(collectionItemId: 10);
+        final CanvasItem original = createTestCanvasItem(
+          collectionId: 10,
+          collectionItemId: 10,
+          x: 50.0,
+          createdAt: testDate,
+        );
         final CanvasItem copy = original.copyWith(collectionItemId: 99);
 
         expect(copy.collectionItemId, 99);
@@ -467,35 +499,69 @@ void main() {
 
     group('equality', () {
       test('should be equal when id matches', () {
-        final CanvasItem item1 = createTestItem(id: 1, x: 0);
-        final CanvasItem item2 = createTestItem(id: 1, x: 100);
+        final CanvasItem item1 = createTestCanvasItem(
+          id: 1,
+          collectionId: 10,
+          x: 0,
+          createdAt: testDate,
+        );
+        final CanvasItem item2 = createTestCanvasItem(
+          id: 1,
+          collectionId: 10,
+          x: 100,
+          createdAt: testDate,
+        );
 
         expect(item1, equals(item2));
         expect(item1.hashCode, item2.hashCode);
       });
 
       test('should be equal to identical object', () {
-        final CanvasItem item = createTestItem(id: 1);
+        final CanvasItem item = createTestCanvasItem(
+          id: 1,
+          collectionId: 10,
+          x: 50.0,
+          createdAt: testDate,
+        );
 
         expect(item == item, true);
       });
 
       test('should not be equal when id differs', () {
-        final CanvasItem item1 = createTestItem(id: 1);
-        final CanvasItem item2 = createTestItem(id: 2);
+        final CanvasItem item1 = createTestCanvasItem(
+          id: 1,
+          collectionId: 10,
+          x: 50.0,
+          createdAt: testDate,
+        );
+        final CanvasItem item2 = createTestCanvasItem(
+          id: 2,
+          collectionId: 10,
+          x: 50.0,
+          createdAt: testDate,
+        );
 
         expect(item1, isNot(equals(item2)));
       });
 
       test('should not be equal to non-CanvasItem object', () {
-        final CanvasItem item = createTestItem(id: 1);
+        final CanvasItem item = createTestCanvasItem(
+          id: 1,
+          collectionId: 10,
+          x: 50.0,
+          createdAt: testDate,
+        );
 
         expect(item == Object(), false);
       });
     });
 
     test('toString should contain type and position', () {
-      final CanvasItem item = createTestItem();
+      final CanvasItem item = createTestCanvasItem(
+        collectionId: 10,
+        x: 50.0,
+        createdAt: testDate,
+      );
       final String str = item.toString();
 
       expect(str, contains('id: 1'));

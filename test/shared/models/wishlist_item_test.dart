@@ -2,36 +2,19 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/wishlist_item.dart';
 
+import '../../helpers/test_helpers.dart';
+
 void main() {
   group('WishlistItem', () {
+    // Дата отличается от shared testDate — оставляем локально.
     final DateTime testDate = DateTime(2024, 6, 15, 12, 0, 0);
     final int testTimestamp = testDate.millisecondsSinceEpoch ~/ 1000;
     final DateTime resolvedDate = DateTime(2024, 6, 20, 18, 0, 0);
     final int resolvedTimestamp = resolvedDate.millisecondsSinceEpoch ~/ 1000;
 
-    WishlistItem createTestItem({
-      int id = 1,
-      String text = 'Chrono Trigger',
-      MediaType? mediaTypeHint,
-      String? note,
-      bool isResolved = false,
-      DateTime? createdAt,
-      DateTime? resolvedAt,
-    }) {
-      return WishlistItem(
-        id: id,
-        text: text,
-        mediaTypeHint: mediaTypeHint,
-        note: note,
-        isResolved: isResolved,
-        createdAt: createdAt ?? testDate,
-        resolvedAt: resolvedAt,
-      );
-    }
-
     group('constructor', () {
       test('должен создавать экземпляр с обязательными полями', () {
-        final WishlistItem item = createTestItem();
+        final WishlistItem item = createTestWishlistItem(createdAt: testDate,);
 
         expect(item.id, 1);
         expect(item.text, 'Chrono Trigger');
@@ -43,7 +26,7 @@ void main() {
       });
 
       test('должен создавать экземпляр со всеми полями', () {
-        final WishlistItem item = createTestItem(
+        final WishlistItem item = createTestWishlistItem(createdAt: testDate,
           mediaTypeHint: MediaType.game,
           note: 'SNES RPG, посоветовал друг',
           isResolved: true,
@@ -59,17 +42,17 @@ void main() {
 
     group('hasNote', () {
       test('должен возвращать false для null заметки', () {
-        final WishlistItem item = createTestItem();
+        final WishlistItem item = createTestWishlistItem(createdAt: testDate,);
         expect(item.hasNote, false);
       });
 
       test('должен возвращать false для пустой заметки', () {
-        final WishlistItem item = createTestItem(note: '');
+        final WishlistItem item = createTestWishlistItem(createdAt: testDate, note: '');
         expect(item.hasNote, false);
       });
 
       test('должен возвращать true для непустой заметки', () {
-        final WishlistItem item = createTestItem(note: 'Some note');
+        final WishlistItem item = createTestWishlistItem(createdAt: testDate, note: 'Some note');
         expect(item.hasNote, true);
       });
     });
@@ -144,7 +127,7 @@ void main() {
 
     group('toDb', () {
       test('должен возвращать корректную Map для БД', () {
-        final WishlistItem item = createTestItem();
+        final WishlistItem item = createTestWishlistItem(createdAt: testDate,);
         final Map<String, dynamic> db = item.toDb();
 
         expect(db['id'], 1);
@@ -157,7 +140,7 @@ void main() {
       });
 
       test('должен включать все поля', () {
-        final WishlistItem item = createTestItem(
+        final WishlistItem item = createTestWishlistItem(createdAt: testDate,
           mediaTypeHint: MediaType.tvShow,
           note: 'Заметка',
           isResolved: true,
@@ -174,7 +157,7 @@ void main() {
 
     group('fromDb → toDb roundtrip', () {
       test('должен быть обратимым для минимального элемента', () {
-        final WishlistItem original = createTestItem();
+        final WishlistItem original = createTestWishlistItem(createdAt: testDate,);
         final Map<String, dynamic> db = original.toDb();
         final WishlistItem restored = WishlistItem.fromDb(db);
 
@@ -187,7 +170,7 @@ void main() {
       });
 
       test('должен быть обратимым для полного элемента', () {
-        final WishlistItem original = createTestItem(
+        final WishlistItem original = createTestWishlistItem(createdAt: testDate,
           mediaTypeHint: MediaType.animation,
           note: 'Аниме',
           isResolved: true,
@@ -210,7 +193,7 @@ void main() {
 
     group('copyWith', () {
       test('должен создавать копию с изменённым текстом', () {
-        final WishlistItem original = createTestItem();
+        final WishlistItem original = createTestWishlistItem(createdAt: testDate,);
         final WishlistItem copy = original.copyWith(text: 'New Title');
 
         expect(copy.text, 'New Title');
@@ -219,7 +202,7 @@ void main() {
       });
 
       test('должен создавать копию с изменённым mediaTypeHint', () {
-        final WishlistItem original = createTestItem();
+        final WishlistItem original = createTestWishlistItem(createdAt: testDate,);
         final WishlistItem copy =
             original.copyWith(mediaTypeHint: MediaType.movie);
 
@@ -229,7 +212,7 @@ void main() {
 
       test('должен очищать mediaTypeHint через clearMediaTypeHint', () {
         final WishlistItem original =
-            createTestItem(mediaTypeHint: MediaType.game);
+            createTestWishlistItem(createdAt: testDate, mediaTypeHint: MediaType.game);
         final WishlistItem copy =
             original.copyWith(clearMediaTypeHint: true);
 
@@ -237,7 +220,7 @@ void main() {
       });
 
       test('должен очищать note через clearNote', () {
-        final WishlistItem original = createTestItem(note: 'Заметка');
+        final WishlistItem original = createTestWishlistItem(createdAt: testDate, note: 'Заметка');
         final WishlistItem copy = original.copyWith(clearNote: true);
 
         expect(copy.note, null);
@@ -245,7 +228,7 @@ void main() {
 
       test('должен очищать resolvedAt через clearResolvedAt', () {
         final WishlistItem original =
-            createTestItem(resolvedAt: resolvedDate);
+            createTestWishlistItem(createdAt: testDate, resolvedAt: resolvedDate);
         final WishlistItem copy =
             original.copyWith(clearResolvedAt: true);
 
@@ -253,7 +236,7 @@ void main() {
       });
 
       test('должен создавать копию со всеми изменёнными полями', () {
-        final WishlistItem original = createTestItem();
+        final WishlistItem original = createTestWishlistItem(createdAt: testDate,);
         final DateTime newDate = DateTime(2025, 1, 1);
         final WishlistItem copy = original.copyWith(
           id: 99,
@@ -275,7 +258,7 @@ void main() {
       });
 
       test('должен сохранять все поля при пустом copyWith', () {
-        final WishlistItem original = createTestItem(
+        final WishlistItem original = createTestWishlistItem(createdAt: testDate,
           mediaTypeHint: MediaType.game,
           note: 'Заметка',
           isResolved: true,
@@ -294,27 +277,27 @@ void main() {
 
     group('equality', () {
       test('должен быть равен при одинаковом id', () {
-        final WishlistItem a = createTestItem(id: 1, text: 'A');
-        final WishlistItem b = createTestItem(id: 1, text: 'B');
+        final WishlistItem a = createTestWishlistItem(createdAt: testDate, id: 1, text: 'A');
+        final WishlistItem b = createTestWishlistItem(createdAt: testDate, id: 1, text: 'B');
 
         expect(a == b, true);
         expect(a.hashCode, b.hashCode);
       });
 
       test('должен быть не равен при разных id', () {
-        final WishlistItem a = createTestItem(id: 1);
-        final WishlistItem b = createTestItem(id: 2);
+        final WishlistItem a = createTestWishlistItem(createdAt: testDate, id: 1);
+        final WishlistItem b = createTestWishlistItem(createdAt: testDate, id: 2);
 
         expect(a == b, false);
       });
 
       test('должен быть равен самому себе', () {
-        final WishlistItem item = createTestItem();
+        final WishlistItem item = createTestWishlistItem(createdAt: testDate,);
         expect(item == item, true);
       });
 
       test('должен быть не равен объекту другого типа', () {
-        final WishlistItem item = createTestItem();
+        final WishlistItem item = createTestWishlistItem(createdAt: testDate,);
         // ignore: unrelated_type_equality_checks
         expect(item == 'string', false);
       });
@@ -322,7 +305,7 @@ void main() {
 
     group('toString', () {
       test('должен возвращать корректную строку', () {
-        final WishlistItem item = createTestItem(id: 5, text: 'Test Game');
+        final WishlistItem item = createTestWishlistItem(createdAt: testDate, id: 5, text: 'Test Game');
 
         expect(
           item.toString(),
@@ -331,7 +314,7 @@ void main() {
       });
 
       test('должен показывать resolved статус', () {
-        final WishlistItem item = createTestItem(isResolved: true);
+        final WishlistItem item = createTestWishlistItem(createdAt: testDate, isResolved: true);
 
         expect(item.toString(), contains('resolved: true'));
       });

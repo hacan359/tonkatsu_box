@@ -17,9 +17,7 @@ import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/movie.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
 
-class MockTmdbApi extends Mock implements TmdbApi {}
-
-class MockDatabaseService extends Mock implements DatabaseService {}
+import '../../../helpers/test_helpers.dart';
 
 /// Pumps enough frames for async providers to resolve without waiting for
 /// CachedNetworkImage animations to settle (which never finish in tests).

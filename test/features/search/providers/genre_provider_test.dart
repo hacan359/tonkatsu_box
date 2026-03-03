@@ -8,7 +8,7 @@ import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/features/search/providers/genre_provider.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 
-class MockDatabaseService extends Mock implements DatabaseService {}
+import '../../../helpers/test_helpers.dart';
 
 class _FakeSettingsNotifier extends SettingsNotifier {
   _FakeSettingsNotifier(this._initialState);

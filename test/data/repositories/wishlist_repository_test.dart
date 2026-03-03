@@ -1,11 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/data/repositories/wishlist_repository.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/wishlist_item.dart';
 
-class MockDatabaseService extends Mock implements DatabaseService {}
+import '../../helpers/test_helpers.dart';
 
 void main() {
   late MockDatabaseService mockDb;
@@ -17,7 +16,7 @@ void main() {
   });
 
   setUpAll(() {
-    registerFallbackValue(MediaType.game);
+    registerAllFallbacks();
   });
 
   final WishlistItem testItem = WishlistItem(

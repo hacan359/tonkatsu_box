@@ -6,8 +6,6 @@ import 'package:xerabora/l10n/app_localizations.dart';
 // поэтому подписка создаётся и тесты работают как прежде.
 // На Android/iOS подписка пропускается — геймпад не используется.
 
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -18,18 +16,7 @@ import 'package:xerabora/shared/gamepad/gamepad_action.dart';
 import 'package:xerabora/shared/gamepad/gamepad_provider.dart';
 import 'package:xerabora/shared/gamepad/widgets/gamepad_listener.dart';
 
-/// Мок-источник событий.
-class MockGamepadEventSource implements GamepadEventSource {
-  final StreamController<GamepadEvent> controller =
-      StreamController<GamepadEvent>.broadcast();
-
-  @override
-  Stream<GamepadEvent> get events => controller.stream;
-
-  void emit(GamepadEvent event) => controller.add(event);
-
-  void dispose() => controller.close();
-}
+import '../../../helpers/test_helpers.dart';
 
 GamepadEvent _event({
   required String key,

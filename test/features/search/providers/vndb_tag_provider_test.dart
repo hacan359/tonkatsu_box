@@ -7,7 +7,7 @@ import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/features/search/providers/vndb_tag_provider.dart';
 import 'package:xerabora/shared/models/visual_novel.dart';
 
-class MockDatabaseService extends Mock implements DatabaseService {}
+import '../../../helpers/test_helpers.dart';
 
 void main() {
   late MockDatabaseService mockDb;

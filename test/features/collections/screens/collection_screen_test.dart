@@ -21,9 +21,7 @@ import 'package:xerabora/shared/models/movie.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
 import 'package:xerabora/shared/widgets/media_poster_card.dart';
 
-class MockCollectionRepository extends Mock implements CollectionRepository {}
-
-class MockImageCacheService extends Mock implements ImageCacheService {}
+import '../../../helpers/test_helpers.dart';
 
 void main() {
   final DateTime testDate = DateTime(2024, 1, 15);
@@ -132,9 +130,7 @@ void main() {
   ];
 
   setUpAll(() {
-    registerFallbackValue(ImageType.gameCover);
-    registerFallbackValue(MediaType.game);
-    registerFallbackValue(ItemStatus.notStarted);
+    registerAllFallbacks();
   });
 
   setUp(() async {

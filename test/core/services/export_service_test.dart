@@ -6,7 +6,6 @@ import 'package:mocktail/mocktail.dart';
 import 'package:xerabora/core/services/export_service.dart';
 import 'package:xerabora/core/services/image_cache_service.dart';
 import 'package:xerabora/core/services/xcoll_file.dart';
-import 'package:xerabora/data/repositories/canvas_repository.dart';
 import 'package:xerabora/shared/models/canvas_connection.dart';
 import 'package:xerabora/shared/models/canvas_item.dart';
 import 'package:xerabora/shared/models/canvas_viewport.dart';
@@ -20,67 +19,13 @@ import 'package:xerabora/shared/models/platform.dart';
 import 'package:xerabora/shared/models/tv_episode.dart';
 import 'package:xerabora/shared/models/tv_season.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
-import 'package:xerabora/core/database/database_service.dart';
 
-class MockCanvasRepository extends Mock implements CanvasRepository {}
-
-class MockImageCacheService extends Mock implements ImageCacheService {}
-
-class MockDatabaseService extends Mock implements DatabaseService {}
+import '../../helpers/test_helpers.dart';
 
 void main() {
   setUpAll(() {
-    registerFallbackValue(ImageType.gameCover);
-    registerFallbackValue(Uint8List(0));
+    registerAllFallbacks();
   });
-
-  final DateTime testDate = DateTime(2024, 1, 15, 12, 0, 0);
-
-  Collection createTestCollection({
-    int id = 1,
-    String name = 'Test Collection',
-    String author = 'Test Author',
-    CollectionType type = CollectionType.own,
-  }) {
-    return Collection(
-      id: id,
-      name: name,
-      author: author,
-      type: type,
-      createdAt: testDate,
-    );
-  }
-
-  CollectionItem createTestItem({
-    int id = 1,
-    int collectionId = 1,
-    MediaType mediaType = MediaType.game,
-    int externalId = 100,
-    int? platformId = 18,
-    ItemStatus status = ItemStatus.notStarted,
-    String? authorComment,
-    int currentSeason = 0,
-    int currentEpisode = 0,
-    Game? game,
-    Movie? movie,
-    TvShow? tvShow,
-  }) {
-    return CollectionItem(
-      id: id,
-      collectionId: collectionId,
-      mediaType: mediaType,
-      externalId: externalId,
-      platformId: platformId,
-      status: status,
-      authorComment: authorComment,
-      currentSeason: currentSeason,
-      currentEpisode: currentEpisode,
-      addedAt: testDate,
-      game: game,
-      movie: movie,
-      tvShow: tvShow,
-    );
-  }
 
   group('ExportResult', () {
     test('ExportResult.success должен создать успешный результат', () {
@@ -147,21 +92,21 @@ void main() {
       test('должен экспортировать все типы медиа', () {
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(
+          createTestCollectionItem(
             mediaType: MediaType.game,
             externalId: 100,
             platformId: 18,
             status: ItemStatus.completed,
             authorComment: 'Great game',
           ),
-          createTestItem(
+          createTestCollectionItem(
             id: 2,
             mediaType: MediaType.movie,
             externalId: 550,
             platformId: null,
             status: ItemStatus.notStarted,
           ),
-          createTestItem(
+          createTestCollectionItem(
             id: 3,
             mediaType: MediaType.tvShow,
             externalId: 1399,
@@ -193,7 +138,7 @@ void main() {
 
       test('должен использовать toExport() для каждого элемента', () {
         final Collection collection = createTestCollection();
-        final CollectionItem item = createTestItem(
+        final CollectionItem item = createTestCollectionItem(
           mediaType: MediaType.game,
           externalId: 42,
           platformId: 6,
@@ -299,7 +244,7 @@ void main() {
       test('должен включить per-item canvas', () async {
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(id: 10, externalId: 100),
+          createTestCollectionItem(id: 10, externalId: 100),
         ];
 
         // Collection canvas — пустой
@@ -347,7 +292,7 @@ void main() {
       test('не должен включать _canvas если per-item canvas пуст', () async {
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(id: 10, externalId: 100),
+          createTestCollectionItem(id: 10, externalId: 100),
         ];
 
         when(() => mockCanvasRepo.getViewport(any()))
@@ -383,7 +328,7 @@ void main() {
         final Collection collection =
             createTestCollection(name: 'JSON Export');
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(externalId: 500, platformId: 20),
+          createTestCollectionItem(externalId: 500, platformId: 20),
         ];
 
         final String json = sut.exportToJson(collection, items);
@@ -422,7 +367,7 @@ void main() {
       test('должен сохранять все данные при round-trip', () {
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(
+          createTestCollectionItem(
             externalId: 111,
             platformId: 22,
             authorComment: 'Fantastic game',
@@ -507,7 +452,7 @@ void main() {
 
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(externalId: 100),
+          createTestCollectionItem(externalId: 100),
         ];
 
         final XcollFile xcoll =
@@ -532,7 +477,7 @@ void main() {
 
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(externalId: 100),
+          createTestCollectionItem(externalId: 100),
         ];
 
         final XcollFile xcoll =
@@ -555,8 +500,8 @@ void main() {
 
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(id: 1, externalId: 100),
-          createTestItem(id: 2, externalId: 100),
+          createTestCollectionItem(id: 1, externalId: 100),
+          createTestCollectionItem(id: 2, externalId: 100),
         ];
 
         // Мокаем getGameCanvasItems для per-item canvas
@@ -603,18 +548,18 @@ void main() {
 
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(
+          createTestCollectionItem(
             id: 1,
             mediaType: MediaType.game,
             externalId: 100,
           ),
-          createTestItem(
+          createTestCollectionItem(
             id: 2,
             mediaType: MediaType.movie,
             externalId: 200,
             platformId: null,
           ),
-          createTestItem(
+          createTestCollectionItem(
             id: 3,
             mediaType: MediaType.tvShow,
             externalId: 300,
@@ -641,7 +586,7 @@ void main() {
 
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(externalId: 100),
+          createTestCollectionItem(externalId: 100),
         ];
 
         final XcollFile xcoll =
@@ -668,7 +613,7 @@ void main() {
 
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(
+          createTestCollectionItem(
             id: 1,
             mediaType: MediaType.animation,
             externalId: 500,
@@ -704,7 +649,7 @@ void main() {
 
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(
+          createTestCollectionItem(
             id: 1,
             mediaType: MediaType.animation,
             externalId: 600,
@@ -842,7 +787,7 @@ void main() {
 
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(id: 10, externalId: 100),
+          createTestCollectionItem(id: 10, externalId: 100),
         ];
 
         final XcollFile xcoll =
@@ -1024,7 +969,7 @@ void main() {
 
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(id: 10, externalId: 100),
+          createTestCollectionItem(id: 10, externalId: 100),
         ];
 
         final XcollFile xcoll =
@@ -1046,14 +991,14 @@ void main() {
         final Collection collection =
             createTestCollection(name: 'Round Trip');
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(
+          createTestCollectionItem(
             mediaType: MediaType.game,
             externalId: 42,
             platformId: 6,
             status: ItemStatus.completed,
             authorComment: 'Best game',
           ),
-          createTestItem(
+          createTestCollectionItem(
             id: 2,
             mediaType: MediaType.tvShow,
             externalId: 1399,
@@ -1130,7 +1075,7 @@ void main() {
 
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(
+          createTestCollectionItem(
             id: 1,
             mediaType: MediaType.game,
             externalId: 42,
@@ -1168,7 +1113,7 @@ void main() {
 
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(
+          createTestCollectionItem(
             id: 1,
             mediaType: MediaType.movie,
             externalId: 550,
@@ -1206,7 +1151,7 @@ void main() {
 
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(
+          createTestCollectionItem(
             id: 1,
             mediaType: MediaType.tvShow,
             externalId: 1399,
@@ -1239,13 +1184,13 @@ void main() {
 
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(
+          createTestCollectionItem(
             id: 1,
             mediaType: MediaType.game,
             externalId: 42,
             game: testGame,
           ),
-          createTestItem(
+          createTestCollectionItem(
             id: 2,
             mediaType: MediaType.game,
             externalId: 42,
@@ -1274,7 +1219,7 @@ void main() {
 
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(
+          createTestCollectionItem(
             id: 1,
             mediaType: MediaType.animation,
             externalId: 999,
@@ -1309,7 +1254,7 @@ void main() {
 
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(
+          createTestCollectionItem(
             id: 1,
             mediaType: MediaType.animation,
             externalId: 888,
@@ -1339,7 +1284,7 @@ void main() {
 
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(
+          createTestCollectionItem(
             id: 1,
             mediaType: MediaType.game,
             externalId: 42,
@@ -1380,20 +1325,20 @@ void main() {
 
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(
+          createTestCollectionItem(
             id: 1,
             mediaType: MediaType.game,
             externalId: 42,
             game: testGame,
           ),
-          createTestItem(
+          createTestCollectionItem(
             id: 2,
             mediaType: MediaType.movie,
             externalId: 550,
             platformId: null,
             movie: testMovie,
           ),
-          createTestItem(
+          createTestCollectionItem(
             id: 3,
             mediaType: MediaType.tvShow,
             externalId: 1399,
@@ -1467,7 +1412,7 @@ void main() {
 
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(
+          createTestCollectionItem(
             id: 1,
             mediaType: MediaType.tvShow,
             externalId: 1399,
@@ -1505,7 +1450,7 @@ void main() {
 
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(
+          createTestCollectionItem(
             id: 1,
             mediaType: MediaType.tvShow,
             externalId: 1399,
@@ -1543,7 +1488,7 @@ void main() {
 
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(
+          createTestCollectionItem(
             id: 1,
             mediaType: MediaType.animation,
             externalId: 999,
@@ -1575,7 +1520,7 @@ void main() {
 
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(
+          createTestCollectionItem(
             id: 1,
             mediaType: MediaType.animation,
             externalId: 888,
@@ -1601,7 +1546,7 @@ void main() {
 
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(
+          createTestCollectionItem(
             id: 1,
             mediaType: MediaType.tvShow,
             externalId: 1399,
@@ -1635,14 +1580,14 @@ void main() {
         final Collection collection = createTestCollection();
         // Два элемента с одинаковым tvShow ID
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(
+          createTestCollectionItem(
             id: 1,
             mediaType: MediaType.tvShow,
             externalId: 1399,
             platformId: null,
             tvShow: testTvShow,
           ),
-          createTestItem(
+          createTestCollectionItem(
             id: 2,
             mediaType: MediaType.animation,
             externalId: 1399,
@@ -1721,7 +1666,7 @@ void main() {
 
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(
+          createTestCollectionItem(
             id: 1,
             mediaType: MediaType.tvShow,
             externalId: 1399,
@@ -1756,7 +1701,7 @@ void main() {
 
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(
+          createTestCollectionItem(
             id: 1,
             mediaType: MediaType.tvShow,
             externalId: 1399,
@@ -1794,14 +1739,14 @@ void main() {
 
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(
+          createTestCollectionItem(
             id: 1,
             mediaType: MediaType.tvShow,
             externalId: 1399,
             platformId: null,
             tvShow: testTvShow,
           ),
-          createTestItem(
+          createTestCollectionItem(
             id: 2,
             mediaType: MediaType.animation,
             externalId: 1399,
@@ -1864,7 +1809,7 @@ void main() {
 
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(
+          createTestCollectionItem(
             id: 1,
             mediaType: MediaType.game,
             externalId: 42,
@@ -1897,7 +1842,7 @@ void main() {
 
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(
+          createTestCollectionItem(
             id: 1,
             mediaType: MediaType.game,
             externalId: 42,
@@ -1926,7 +1871,7 @@ void main() {
 
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(
+          createTestCollectionItem(
             id: 1,
             mediaType: MediaType.game,
             externalId: 42,
@@ -1968,13 +1913,13 @@ void main() {
 
         final Collection collection = createTestCollection();
         final List<CollectionItem> items = <CollectionItem>[
-          createTestItem(
+          createTestCollectionItem(
             id: 1,
             mediaType: MediaType.game,
             externalId: 42,
             game: game1,
           ),
-          createTestItem(
+          createTestCollectionItem(
             id: 2,
             mediaType: MediaType.game,
             externalId: 43,

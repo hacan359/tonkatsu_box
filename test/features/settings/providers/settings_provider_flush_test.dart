@@ -11,16 +11,7 @@ import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/core/services/config_service.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 
-// Моки
-class MockIgdbApi extends Mock implements IgdbApi {}
-
-class MockSteamGridDbApi extends Mock implements SteamGridDbApi {}
-
-class MockTmdbApi extends Mock implements TmdbApi {}
-
-class MockDatabaseService extends Mock implements DatabaseService {}
-
-class MockConfigService extends Mock implements ConfigService {}
+import '../../../helpers/test_helpers.dart';
 
 void main() {
   late MockIgdbApi mockIgdbApi;

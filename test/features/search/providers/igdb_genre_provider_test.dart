@@ -7,7 +7,7 @@ import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/features/search/filters/igdb_genre_filter.dart';
 import 'package:xerabora/features/search/providers/igdb_genre_provider.dart';
 
-class MockDatabaseService extends Mock implements DatabaseService {}
+import '../../../helpers/test_helpers.dart';
 
 void main() {
   late MockDatabaseService mockDb;

@@ -25,19 +25,17 @@ import 'package:xerabora/shared/widgets/media_detail_view.dart';
 import 'package:xerabora/shared/models/visual_novel.dart';
 import 'package:xerabora/shared/widgets/source_badge.dart';
 
-class MockCollectionRepository extends Mock implements CollectionRepository {}
-
-class MockDatabaseService extends Mock implements DatabaseService {}
-
-class MockTmdbApi extends Mock implements TmdbApi {}
+import '../../../helpers/test_helpers.dart';
 
 void main() {
-  final DateTime testDate = DateTime(2024, 1, 15, 12, 0, 0);
-
   late MockCollectionRepository mockRepo;
   late MockDatabaseService mockDb;
   late MockTmdbApi mockTmdbApi;
   late SharedPreferences prefs;
+
+  setUpAll(() {
+    registerAllFallbacks();
+  });
 
   setUp(() async {
     SharedPreferences.setMockInitialValues(<String, Object>{});
@@ -54,9 +52,6 @@ void main() {
         .thenAnswer((_) async => 0);
     when(() => mockTmdbApi.getTvSeasons(any()))
         .thenAnswer((_) async => <TvSeason>[]);
-
-    registerFallbackValue(ItemStatus.notStarted);
-    registerFallbackValue(MediaType.game);
   });
 
   Widget createTestWidget({

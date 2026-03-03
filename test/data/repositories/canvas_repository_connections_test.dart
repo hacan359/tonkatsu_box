@@ -1,12 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/data/repositories/canvas_repository.dart';
 import 'package:xerabora/shared/models/canvas_connection.dart';
 
-class MockDatabaseService extends Mock implements DatabaseService {}
+import '../../helpers/test_helpers.dart';
 
 void main() {
+  setUpAll(() {
+    registerAllFallbacks();
+  });
+
   group('CanvasRepository — Connections', () {
     late MockDatabaseService mockDb;
     late CanvasRepository repository;

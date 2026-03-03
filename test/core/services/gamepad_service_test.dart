@@ -1,23 +1,10 @@
 // Тесты для GamepadService — маппинг, нормализация, дедзона, debounce.
 
-import 'dart:async';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gamepads/gamepads.dart';
 import 'package:xerabora/core/services/gamepad_service.dart';
 
-/// Мок-источник событий для тестов.
-class MockGamepadEventSource implements GamepadEventSource {
-  final StreamController<GamepadEvent> controller =
-      StreamController<GamepadEvent>.broadcast();
-
-  @override
-  Stream<GamepadEvent> get events => controller.stream;
-
-  void emit(GamepadEvent event) => controller.add(event);
-
-  void dispose() => controller.close();
-}
+import '../../helpers/test_helpers.dart';
 
 /// Хелпер для создания GamepadEvent.
 GamepadEvent _event({

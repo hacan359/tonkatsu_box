@@ -4,14 +4,11 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:xerabora/core/services/image_cache_service.dart';
 import 'package:xerabora/core/api/igdb_api.dart';
 import 'package:xerabora/core/api/tmdb_api.dart';
-import 'package:xerabora/core/database/database_service.dart';
-import 'package:xerabora/core/services/image_cache_service.dart';
 import 'package:xerabora/core/services/import_service.dart';
 import 'package:xerabora/core/services/xcoll_file.dart';
-import 'package:xerabora/data/repositories/canvas_repository.dart';
-import 'package:xerabora/data/repositories/collection_repository.dart';
 import 'package:xerabora/shared/models/canvas_connection.dart';
 import 'package:xerabora/shared/models/canvas_item.dart';
 import 'package:xerabora/shared/models/canvas_viewport.dart';
@@ -19,56 +16,13 @@ import 'package:xerabora/shared/models/collection.dart';
 import 'package:xerabora/shared/models/game.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/movie.dart';
-import 'package:xerabora/shared/models/platform.dart';
-import 'package:xerabora/shared/models/tv_episode.dart';
-import 'package:xerabora/shared/models/tv_season.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
 
-class MockCollectionRepository extends Mock implements CollectionRepository {}
-
-class MockIgdbApi extends Mock implements IgdbApi {}
-
-class MockTmdbApi extends Mock implements TmdbApi {}
-
-class MockDatabaseService extends Mock implements DatabaseService {}
-
-class MockCanvasRepository extends Mock implements CanvasRepository {}
-
-class MockImageCacheService extends Mock implements ImageCacheService {}
+import '../../helpers/test_helpers.dart';
 
 void main() {
-  final DateTime testDate = DateTime(2024, 1, 15, 12, 0, 0);
-
   setUpAll(() {
-    registerFallbackValue(const Game(id: 0, name: 'fallback'));
-    registerFallbackValue(const Movie(tmdbId: 0, title: 'fallback'));
-    registerFallbackValue(const TvShow(tmdbId: 0, title: 'fallback'));
-    registerFallbackValue(const <Game>[]);
-    registerFallbackValue(const <Movie>[]);
-    registerFallbackValue(const <TvShow>[]);
-    registerFallbackValue(const <TvSeason>[]);
-    registerFallbackValue(const <TvEpisode>[]);
-    registerFallbackValue(const <Platform>[]);
-    registerFallbackValue(CollectionType.own);
-    registerFallbackValue(MediaType.game);
-    registerFallbackValue(const CanvasViewport(collectionId: 0));
-    registerFallbackValue(CanvasItem(
-      id: 0,
-      collectionId: 0,
-      itemType: CanvasItemType.game,
-      x: 0,
-      y: 0,
-      createdAt: DateTime.now(),
-    ));
-    registerFallbackValue(CanvasConnection(
-      id: 0,
-      collectionId: 0,
-      fromItemId: 0,
-      toItemId: 0,
-      createdAt: DateTime.now(),
-    ));
-    registerFallbackValue(Uint8List(0));
-    registerFallbackValue(ImageType.gameCover);
+    registerAllFallbacks();
   });
 
   group('ImportResult', () {

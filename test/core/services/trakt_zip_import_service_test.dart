@@ -5,11 +5,8 @@ import 'package:archive/archive.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:xerabora/core/api/tmdb_api.dart';
-import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/core/services/import_service.dart';
 import 'package:xerabora/core/services/trakt_zip_import_service.dart';
-import 'package:xerabora/data/repositories/collection_repository.dart';
-import 'package:xerabora/data/repositories/wishlist_repository.dart';
 import 'package:xerabora/shared/models/collection.dart';
 import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/item_status.dart';
@@ -18,17 +15,7 @@ import 'package:xerabora/shared/models/movie.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
 import 'package:xerabora/shared/models/wishlist_item.dart';
 
-// ---------------------------------------------------------------------------
-// Mocks
-// ---------------------------------------------------------------------------
-
-class MockTmdbApi extends Mock implements TmdbApi {}
-
-class MockCollectionRepository extends Mock implements CollectionRepository {}
-
-class MockDatabaseService extends Mock implements DatabaseService {}
-
-class MockWishlistRepository extends Mock implements WishlistRepository {}
+import '../../helpers/test_helpers.dart';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -169,14 +156,8 @@ void main() {
   late Directory tempDir;
   late String zipPath;
 
-  final DateTime testDate = DateTime(2024, 1, 15, 12, 0, 0);
-
   setUpAll(() {
-    registerFallbackValue(const Movie(tmdbId: 0, title: 'fallback'));
-    registerFallbackValue(const TvShow(tmdbId: 0, title: 'fallback'));
-    registerFallbackValue(MediaType.game);
-    registerFallbackValue(ItemStatus.notStarted);
-    registerFallbackValue(CollectionType.own);
+    registerAllFallbacks();
   });
 
   setUp(() {
@@ -204,43 +185,6 @@ void main() {
   /// Записывает байты ZIP в тестовый файл.
   void writeZip(List<int> bytes) {
     File(zipPath).writeAsBytesSync(bytes);
-  }
-
-  /// Хелпер для создания тестовой коллекции.
-  Collection createTestCollection({
-    int id = 1,
-    String name = 'Test',
-    String author = 'testuser',
-  }) {
-    return Collection(
-      id: id,
-      name: name,
-      author: author,
-      type: CollectionType.own,
-      createdAt: testDate,
-    );
-  }
-
-  /// Хелпер для создания CollectionItem.
-  CollectionItem createTestItem({
-    int id = 1,
-    int collectionId = 1,
-    MediaType mediaType = MediaType.movie,
-    int externalId = 100,
-    ItemStatus status = ItemStatus.notStarted,
-    int? userRating,
-    DateTime? completedAt,
-  }) {
-    return CollectionItem(
-      id: id,
-      collectionId: collectionId,
-      mediaType: mediaType,
-      externalId: externalId,
-      status: status,
-      userRating: userRating,
-      completedAt: completedAt,
-      addedAt: testDate,
-    );
   }
 
   // =========================================================================
@@ -951,9 +895,10 @@ void main() {
             .thenAnswer((_) async => testMovie);
 
         // Фильм уже в коллекции, но без рейтинга
-        final CollectionItem existingItem = createTestItem(
+        final CollectionItem existingItem = createTestCollectionItem(
           id: 50,
           externalId: 300,
+          mediaType: MediaType.movie,
           status: ItemStatus.completed,
           userRating: null,
         );
@@ -989,9 +934,10 @@ void main() {
             .thenAnswer((_) async => testMovie);
 
         // Фильм уже в коллекции С рейтингом
-        final CollectionItem existingItem = createTestItem(
+        final CollectionItem existingItem = createTestCollectionItem(
           id: 50,
           externalId: 300,
+          mediaType: MediaType.movie,
           status: ItemStatus.completed,
           userRating: 7,
         );
@@ -1069,9 +1015,10 @@ void main() {
             .thenAnswer((_) async => testMovie);
 
         // Элемент уже planned
-        final CollectionItem existingPlanned = createTestItem(
+        final CollectionItem existingPlanned = createTestCollectionItem(
           id: 70,
           externalId: 100,
+          mediaType: MediaType.movie,
           status: ItemStatus.planned,
         );
         when(() => mockRepo.findItem(
@@ -1105,7 +1052,7 @@ void main() {
             .thenAnswer((_) async => testShow);
 
         // Элемент уже completed
-        final CollectionItem existingCompleted = createTestItem(
+        final CollectionItem existingCompleted = createTestCollectionItem(
           id: 80,
           externalId: 200,
           mediaType: MediaType.tvShow,
@@ -1150,9 +1097,10 @@ void main() {
             .thenAnswer((_) async => testMovie);
 
         // Элемент dropped
-        final CollectionItem existingDropped = createTestItem(
+        final CollectionItem existingDropped = createTestCollectionItem(
           id: 90,
           externalId: 100,
+          mediaType: MediaType.movie,
           status: ItemStatus.dropped,
         );
         when(() => mockRepo.findItem(
@@ -1185,9 +1133,10 @@ void main() {
             .thenAnswer((_) async => testMovie);
 
         // Элемент без completedAt
-        final CollectionItem existingItem = createTestItem(
+        final CollectionItem existingItem = createTestCollectionItem(
           id: 95,
           externalId: 100,
+          mediaType: MediaType.movie,
           status: ItemStatus.planned,
           completedAt: null,
         );
@@ -1349,9 +1298,10 @@ void main() {
             .thenAnswer((_) async => existingMovie);
 
         // Элемент уже в коллекции
-        final CollectionItem existing = createTestItem(
+        final CollectionItem existing = createTestCollectionItem(
           id: 55,
           externalId: 400,
+          mediaType: MediaType.movie,
           status: ItemStatus.completed,
         );
         when(() => mockRepo.findItem(
@@ -1852,9 +1802,10 @@ void main() {
             .thenAnswer((_) async => testMovie);
 
         // Элемент существует без рейтинга
-        final CollectionItem existingItem = createTestItem(
+        final CollectionItem existingItem = createTestCollectionItem(
           id: 50,
           externalId: 300,
+          mediaType: MediaType.movie,
           userRating: null,
         );
         when(() => mockRepo.findItem(
@@ -1897,9 +1848,10 @@ void main() {
 
         // Элемент уже имеет completedAt
         final DateTime existingCompletedAt = DateTime(2022, 1, 1);
-        final CollectionItem existingItem = createTestItem(
+        final CollectionItem existingItem = createTestCollectionItem(
           id: 96,
           externalId: 100,
+          mediaType: MediaType.movie,
           status: ItemStatus.planned,
           completedAt: existingCompletedAt,
         );

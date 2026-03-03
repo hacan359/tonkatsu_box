@@ -10,7 +10,7 @@ import 'package:xerabora/shared/models/tv_episode.dart';
 import 'package:xerabora/shared/models/tv_season.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
 
-class MockDio extends Mock implements Dio {}
+import '../../helpers/test_helpers.dart';
 
 void main() {
   late TmdbApi sut;

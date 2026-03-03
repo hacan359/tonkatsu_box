@@ -7,29 +7,11 @@ import 'package:xerabora/features/collections/providers/collections_provider.dar
 import 'package:xerabora/shared/models/canvas_connection.dart';
 import 'package:xerabora/shared/models/canvas_item.dart';
 import 'package:xerabora/shared/models/canvas_viewport.dart';
-import 'package:xerabora/shared/models/collection_item.dart';
 
-class MockCanvasRepository extends Mock implements CanvasRepository {}
-
-class MockCollectionItemsNotifier extends CollectionItemsNotifier {
-  @override
-  AsyncValue<List<CollectionItem>> build(int? arg) {
-    return const AsyncValue<List<CollectionItem>>.data(<CollectionItem>[]);
-  }
-}
-
-class FakeCanvasItem extends Fake implements CanvasItem {}
-
-class FakeCanvasViewport extends Fake implements CanvasViewport {}
-
-class FakeCanvasConnection extends Fake implements CanvasConnection {}
+import '../../../helpers/test_helpers.dart';
 
 void main() {
-  setUpAll(() {
-    registerFallbackValue(FakeCanvasItem());
-    registerFallbackValue(FakeCanvasViewport());
-    registerFallbackValue(FakeCanvasConnection());
-  });
+  setUpAll(registerAllFallbacks);
 
   group('CanvasState — connections', () {
     test('should create with empty connections by default', () {
