@@ -101,16 +101,26 @@ class TypeToFilterOverlayState extends State<TypeToFilterOverlay>
     });
   }
 
+  /// Мгновенно закрывает оверлей без анимации (при возврате на маршрут).
+  void _dismissInstantly() {
+    if (!_isVisible) return;
+    _animationController.value = 0;
+    setState(() => _isVisible = false);
+    _controller.clear();
+    widget.onFilterChanged('');
+  }
+
   /// Планирует восстановление фокуса на wrapper после перестроения.
   void _scheduleWrapperFocusRestore() {
     if (_focusRestoreScheduled) return;
     _focusRestoreScheduled = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _focusRestoreScheduled = false;
-      if (mounted && !_isVisible && !_wrapperFocus.hasFocus &&
-          !_textFieldFocus.hasFocus && !_isExternalTextFieldFocused()) {
-        _wrapperFocus.requestFocus();
-      }
+      if (!mounted) return;
+      if (_wrapperFocus.hasFocus || _textFieldFocus.hasFocus) return;
+      if (_isExternalTextFieldFocused()) return;
+      _dismissInstantly();
+      _wrapperFocus.requestFocus();
     });
   }
 
@@ -194,16 +204,6 @@ class TypeToFilterOverlayState extends State<TypeToFilterOverlay>
         selection: TextSelection.collapsed(offset: newText.length),
       );
       widget.onFilterChanged(newText);
-      // Фокусируем TextField ПОСЛЕ перестроения widget tree
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && _isVisible) {
-          _textFieldFocus.requestFocus();
-          // Гарантируем курсор в конце после получения фокуса
-          _controller.selection = TextSelection.collapsed(
-            offset: _controller.text.length,
-          );
-        }
-      });
       return KeyEventResult.handled;
     }
 
@@ -219,7 +219,7 @@ class TypeToFilterOverlayState extends State<TypeToFilterOverlay>
     // ModalRoute.of регистрирует зависимость → didChangeDependencies →
     // build вызывается при смене статуса маршрута.
     final ModalRoute<dynamic>? route = ModalRoute.of(context);
-    if (route != null && route.isCurrent && !_isVisible &&
+    if (route != null && route.isCurrent &&
         !_wrapperFocus.hasFocus && !_textFieldFocus.hasFocus) {
       _scheduleWrapperFocusRestore();
     }
