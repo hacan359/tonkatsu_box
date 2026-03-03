@@ -1,4 +1,3 @@
-import 'package:xerabora/l10n/app_localizations.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -7,16 +6,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:xerabora/core/services/image_cache_service.dart';
 import 'package:xerabora/features/collections/widgets/canvas_image_item.dart';
+import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/models/canvas_item.dart';
 import 'package:xerabora/shared/widgets/cached_image.dart';
 
-class MockImageCacheService extends Mock implements ImageCacheService {}
+import '../../../helpers/test_helpers.dart';
 
 void main() {
   late MockImageCacheService mockCacheService;
 
   setUpAll(() {
-    registerFallbackValue(ImageType.canvasImage);
+    registerAllFallbacks();
   });
 
   setUp(() {

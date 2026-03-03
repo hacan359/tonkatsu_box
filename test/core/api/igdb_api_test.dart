@@ -5,7 +5,7 @@ import 'package:xerabora/core/api/igdb_api.dart';
 import 'package:xerabora/shared/models/game.dart';
 import 'package:xerabora/shared/models/platform.dart';
 
-class MockDio extends Mock implements Dio {}
+import '../../helpers/test_helpers.dart';
 
 void main() {
   late IgdbApi sut;

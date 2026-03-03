@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/shared/models/canvas_connection.dart';
 
+import '../../helpers/test_helpers.dart';
+
 void main() {
   group('ConnectionStyle', () {
     test('should have correct string values', () {
@@ -22,34 +24,15 @@ void main() {
   });
 
   group('CanvasConnection', () {
+    // Дата отличается от shared testDate — оставляем локально.
     final DateTime testDate = DateTime(2024, 6, 15, 12, 0, 0);
     final int testTimestamp = testDate.millisecondsSinceEpoch ~/ 1000;
 
-    CanvasConnection createTestConnection({
-      int id = 1,
-      int collectionId = 10,
-      int? collectionItemId,
-      int fromItemId = 100,
-      int toItemId = 200,
-      String? label,
-      String color = '#FF0000',
-      ConnectionStyle style = ConnectionStyle.solid,
-    }) {
-      return CanvasConnection(
-        id: id,
-        collectionId: collectionId,
-        collectionItemId: collectionItemId,
-        fromItemId: fromItemId,
-        toItemId: toItemId,
-        label: label,
-        color: color,
-        style: style,
+    test('should create with required parameters', () {
+      final CanvasConnection conn = createTestCanvasConnection(
+        collectionId: 10,
         createdAt: testDate,
       );
-    }
-
-    test('should create with required parameters', () {
-      final CanvasConnection conn = createTestConnection();
       expect(conn.id, 1);
       expect(conn.collectionId, 10);
       expect(conn.fromItemId, 100);
@@ -74,8 +57,10 @@ void main() {
     });
 
     test('should create with collectionItemId', () {
-      final CanvasConnection conn = createTestConnection(
+      final CanvasConnection conn = createTestCanvasConnection(
+        collectionId: 10,
         collectionItemId: 42,
+        createdAt: testDate,
       );
       expect(conn.collectionItemId, 42);
     });
@@ -245,8 +230,10 @@ void main() {
 
     group('toDb', () {
       test('should convert all fields', () {
-        final CanvasConnection conn = createTestConnection(
+        final CanvasConnection conn = createTestCanvasConnection(
+          collectionId: 10,
           label: 'test',
+          createdAt: testDate,
         );
 
         final Map<String, dynamic> db = conn.toDb();
@@ -261,20 +248,29 @@ void main() {
       });
 
       test('should omit id when id is 0', () {
-        final CanvasConnection conn = createTestConnection(id: 0);
+        final CanvasConnection conn = createTestCanvasConnection(
+          id: 0,
+          collectionId: 10,
+          createdAt: testDate,
+        );
         final Map<String, dynamic> db = conn.toDb();
         expect(db.containsKey('id'), isFalse);
       });
 
       test('should include null label', () {
-        final CanvasConnection conn = createTestConnection();
+        final CanvasConnection conn = createTestCanvasConnection(
+          collectionId: 10,
+          createdAt: testDate,
+        );
         final Map<String, dynamic> db = conn.toDb();
         expect(db['label'], isNull);
       });
 
       test('should serialize collectionItemId to database map', () {
-        final CanvasConnection conn = createTestConnection(
+        final CanvasConnection conn = createTestCanvasConnection(
+          collectionId: 10,
           collectionItemId: 77,
+          createdAt: testDate,
         );
         final Map<String, dynamic> db = conn.toDb();
         expect(db['collection_item_id'], 77);
@@ -283,9 +279,11 @@ void main() {
 
     group('toExport', () {
       test('should convert all fields', () {
-        final CanvasConnection conn = createTestConnection(
+        final CanvasConnection conn = createTestCanvasConnection(
+          collectionId: 10,
           label: 'json test',
           style: ConnectionStyle.arrow,
+          createdAt: testDate,
         );
 
         final Map<String, dynamic> json = conn.toExport();
@@ -299,14 +297,19 @@ void main() {
       });
 
       test('should not contain collection_id', () {
-        final CanvasConnection conn = createTestConnection();
+        final CanvasConnection conn = createTestCanvasConnection(
+          collectionId: 10,
+          createdAt: testDate,
+        );
         final Map<String, dynamic> json = conn.toExport();
         expect(json.containsKey('collection_id'), isFalse);
       });
 
       test('should include collectionItemId in export when set', () {
-        final CanvasConnection conn = createTestConnection(
+        final CanvasConnection conn = createTestCanvasConnection(
+          collectionId: 10,
           collectionItemId: 88,
+          createdAt: testDate,
         );
         final Map<String, dynamic> json = conn.toExport();
         expect(json['collection_item_id'], 88);
@@ -315,7 +318,10 @@ void main() {
 
     group('copyWith', () {
       test('should copy with changed fields', () {
-        final CanvasConnection original = createTestConnection();
+        final CanvasConnection original = createTestCanvasConnection(
+          collectionId: 10,
+          createdAt: testDate,
+        );
         final CanvasConnection copy = original.copyWith(
           label: 'new label',
           color: '#00FF00',
@@ -332,8 +338,10 @@ void main() {
       });
 
       test('should clear label with clearLabel flag', () {
-        final CanvasConnection original = createTestConnection(
+        final CanvasConnection original = createTestCanvasConnection(
+          collectionId: 10,
           label: 'will be cleared',
+          createdAt: testDate,
         );
         final CanvasConnection copy = original.copyWith(clearLabel: true);
 
@@ -341,8 +349,10 @@ void main() {
       });
 
       test('clearLabel should take precedence over label', () {
-        final CanvasConnection original = createTestConnection(
+        final CanvasConnection original = createTestCanvasConnection(
+          collectionId: 10,
           label: 'old',
+          createdAt: testDate,
         );
         final CanvasConnection copy = original.copyWith(
           label: 'new',
@@ -353,9 +363,11 @@ void main() {
       });
 
       test('should keep original values when no changes', () {
-        final CanvasConnection original = createTestConnection(
+        final CanvasConnection original = createTestCanvasConnection(
+          collectionId: 10,
           label: 'keep me',
           color: '#AABBCC',
+          createdAt: testDate,
         );
         final CanvasConnection copy = original.copyWith();
 
@@ -366,13 +378,19 @@ void main() {
       });
 
       test('should copy with changed id', () {
-        final CanvasConnection original = createTestConnection();
+        final CanvasConnection original = createTestCanvasConnection(
+          collectionId: 10,
+          createdAt: testDate,
+        );
         final CanvasConnection copy = original.copyWith(id: 99);
         expect(copy.id, 99);
       });
 
       test('should copy with all fields changed', () {
-        final CanvasConnection original = createTestConnection();
+        final CanvasConnection original = createTestCanvasConnection(
+          collectionId: 10,
+          createdAt: testDate,
+        );
         final DateTime newDate = DateTime(2025, 1, 1);
         final CanvasConnection copy = original.copyWith(
           id: 99,
@@ -395,8 +413,10 @@ void main() {
       });
 
       test('should copy with changed collectionItemId', () {
-        final CanvasConnection original = createTestConnection(
+        final CanvasConnection original = createTestCanvasConnection(
+          collectionId: 10,
           collectionItemId: 10,
+          createdAt: testDate,
         );
         final CanvasConnection copy = original.copyWith(
           collectionItemId: 99,
@@ -409,44 +429,76 @@ void main() {
 
     group('equality', () {
       test('should be equal when ids match', () {
-        final CanvasConnection a = createTestConnection(id: 1);
-        final CanvasConnection b = createTestConnection(
+        final CanvasConnection a = createTestCanvasConnection(
           id: 1,
+          collectionId: 10,
+          createdAt: testDate,
+        );
+        final CanvasConnection b = createTestCanvasConnection(
+          id: 1,
+          collectionId: 10,
           fromItemId: 999,
           color: '#FFFFFF',
+          createdAt: testDate,
         );
         expect(a, equals(b));
       });
 
       test('should not be equal when ids differ', () {
-        final CanvasConnection a = createTestConnection(id: 1);
-        final CanvasConnection b = createTestConnection(id: 2);
+        final CanvasConnection a = createTestCanvasConnection(
+          id: 1,
+          collectionId: 10,
+          createdAt: testDate,
+        );
+        final CanvasConnection b = createTestCanvasConnection(
+          id: 2,
+          collectionId: 10,
+          createdAt: testDate,
+        );
         expect(a, isNot(equals(b)));
       });
 
       test('should have same hashCode for equal ids', () {
-        final CanvasConnection a = createTestConnection(id: 5);
-        final CanvasConnection b = createTestConnection(id: 5);
+        final CanvasConnection a = createTestCanvasConnection(
+          id: 5,
+          collectionId: 10,
+          createdAt: testDate,
+        );
+        final CanvasConnection b = createTestCanvasConnection(
+          id: 5,
+          collectionId: 10,
+          createdAt: testDate,
+        );
         expect(a.hashCode, equals(b.hashCode));
       });
 
       test('should be equal to itself (identical)', () {
-        final CanvasConnection conn = createTestConnection(id: 1);
+        final CanvasConnection conn = createTestCanvasConnection(
+          id: 1,
+          collectionId: 10,
+          createdAt: testDate,
+        );
         expect(conn == conn, isTrue);
       });
 
       test('should not be equal to non-CanvasConnection object', () {
-        final CanvasConnection conn = createTestConnection(id: 1);
+        final CanvasConnection conn = createTestCanvasConnection(
+          id: 1,
+          collectionId: 10,
+          createdAt: testDate,
+        );
         expect(conn == Object(), isFalse);
       });
     });
 
     test('toString should contain key information', () {
-      final CanvasConnection conn = createTestConnection(
+      final CanvasConnection conn = createTestCanvasConnection(
         id: 7,
+        collectionId: 10,
         fromItemId: 10,
         toItemId: 20,
         style: ConnectionStyle.arrow,
+        createdAt: testDate,
       );
 
       final String str = conn.toString();

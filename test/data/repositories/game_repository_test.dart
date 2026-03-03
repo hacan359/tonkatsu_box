@@ -1,16 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:xerabora/core/api/igdb_api.dart';
-import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/data/repositories/game_repository.dart';
 import 'package:xerabora/shared/models/game.dart';
 import 'package:xerabora/shared/models/platform.dart';
 
-class MockIgdbApi extends Mock implements IgdbApi {}
-
-class MockDatabaseService extends Mock implements DatabaseService {}
-
-class FakeGame extends Fake implements Game {}
+import '../../helpers/test_helpers.dart';
 
 void main() {
   late MockIgdbApi mockApi;
@@ -18,10 +12,7 @@ void main() {
   late GameRepository repository;
 
   setUpAll(() {
-    registerFallbackValue(FakeGame());
-    registerFallbackValue(<Game>[]);
-    registerFallbackValue(<int>[]);
-    registerFallbackValue(<Platform>[]);
+    registerAllFallbacks();
   });
 
   setUp(() {

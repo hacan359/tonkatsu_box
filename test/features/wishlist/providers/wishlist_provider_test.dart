@@ -6,7 +6,7 @@ import 'package:xerabora/features/wishlist/providers/wishlist_provider.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/wishlist_item.dart';
 
-class MockWishlistRepository extends Mock implements WishlistRepository {}
+import '../../../helpers/test_helpers.dart';
 
 void main() {
   late MockWishlistRepository mockRepo;
@@ -16,7 +16,7 @@ void main() {
   });
 
   setUpAll(() {
-    registerFallbackValue(MediaType.game);
+    registerAllFallbacks();
   });
 
   ProviderContainer createContainer({

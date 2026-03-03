@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/shared/models/collection.dart';
 
+import '../../helpers/test_helpers.dart';
+
 void main() {
   group('CollectionType', () {
     test('должен иметь правильные строковые значения', () {
@@ -22,30 +24,7 @@ void main() {
   });
 
   group('Collection', () {
-    final DateTime testDate = DateTime(2024, 1, 15, 12, 0, 0);
     final int testTimestamp = testDate.millisecondsSinceEpoch ~/ 1000;
-
-    Collection createTestCollection({
-      int id = 1,
-      String name = 'Test Collection',
-      String author = 'Test Author',
-      CollectionType type = CollectionType.own,
-      DateTime? createdAt,
-      String? originalSnapshot,
-      String? forkedFromAuthor,
-      String? forkedFromName,
-    }) {
-      return Collection(
-        id: id,
-        name: name,
-        author: author,
-        type: type,
-        createdAt: createdAt ?? testDate,
-        originalSnapshot: originalSnapshot,
-        forkedFromAuthor: forkedFromAuthor,
-        forkedFromName: forkedFromName,
-      );
-    }
 
     group('constructor', () {
       test('должен создавать экземпляр с обязательными полями', () {

@@ -7,7 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/data/repositories/collection_repository.dart';
@@ -22,11 +21,7 @@ import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/platform.dart' as model;
 import 'package:xerabora/shared/models/visual_novel.dart';
 
-class MockCollectionRepository extends Mock implements CollectionRepository {}
-
-class MockDatabaseService extends Mock implements DatabaseService {}
-
-class MockDatabase extends Mock implements Database {}
+import '../../../helpers/test_helpers.dart';
 
 void main() {
   late MockCollectionRepository mockRepo;

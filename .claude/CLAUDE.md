@@ -127,11 +127,18 @@ lib/core/database/
 - SQL-запросы в миграциях **нельзя** менять задним числом — только добавлять новые миграции
 - `database_service.dart` содержит **только** CRUD-операции и инициализацию — никаких CREATE TABLE / ALTER TABLE
 
-### Тесты (`test/`)
-- Зеркальная структура: `test/` повторяет `lib/`
-- Моки через mocktail: `class MockDio extends Mock implements Dio {}`
-- Группировка: `group('ClassName', () { group('methodName', () { ... }); });`
-- Widget тесты: `ProviderScope` с overrides для моков зависимостей
+### Tests (test/)
+- Mirror structure: test/ mirrors lib/
+- Shared helpers in test/helpers/:
+  - mocks.dart — all mock/fake classes (single source of truth)
+  - builders.dart — test data factories (createTestCollection, createTestStats, createTestCollectionItem, etc.)
+  - fallbacks.dart — registerAllFallbacks() for mocktail
+  - pump_app.dart — tester.pumpApp(widget, overrides: [...]) for widget tests
+  - test_helpers.dart — barrel export of all above
+- Mocks via mocktail, declared only in mocks.dart
+- Grouping: group('ClassName', () { group('methodName', () { ... }); });
+- Widget tests: use tester.pumpApp() instead of manual ProviderScope
+- Test behavior, not visuals — do not assert colors, text labels, icons, spacing. Tests should break only when logic breaks, not when design changes.
 
 ### Навигация
 ```dart
@@ -297,4 +304,5 @@ D-pad и кнопка A обрабатываются глобально в `Navi
 | `lib/shared/models/collection_item.dart` | Универсальный элемент коллекции |
 | `lib/shared/models/canvas_item.dart` | Элемент канваса (7 типов) |
 | `lib/shared/theme/app_theme.dart` | Централизованная тема (dark Material 3) |
+| `test/helpers/test_helpers.dart` | Shared mocks, builders, pumpApp for tests |
 | `analysis_options.yaml` | Строгие lint правила |

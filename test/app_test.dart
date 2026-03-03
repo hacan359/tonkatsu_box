@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:xerabora/app.dart';
 import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/core/services/update_service.dart';
@@ -14,11 +13,7 @@ import 'package:xerabora/features/splash/screens/splash_screen.dart';
 import 'package:xerabora/features/welcome/screens/welcome_screen.dart';
 import 'package:xerabora/shared/navigation/navigation_shell.dart';
 
-class MockCollectionRepository extends Mock implements CollectionRepository {}
-
-class MockDatabaseService extends Mock implements DatabaseService {}
-
-class MockDatabase extends Mock implements Database {}
+import 'helpers/test_helpers.dart';
 
 void main() {
   group('TonkatsuBoxApp', () {

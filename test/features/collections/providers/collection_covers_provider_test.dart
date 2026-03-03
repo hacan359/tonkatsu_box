@@ -6,7 +6,7 @@ import 'package:xerabora/features/collections/providers/collection_covers_provid
 import 'package:xerabora/shared/models/cover_info.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 
-class MockDatabaseService extends Mock implements DatabaseService {}
+import '../../../helpers/test_helpers.dart';
 
 void main() {
   late MockDatabaseService mockDb;

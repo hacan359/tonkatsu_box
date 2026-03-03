@@ -6,7 +6,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:xerabora/core/api/vndb_api.dart';
 import 'package:xerabora/shared/models/visual_novel.dart';
 
-class MockDio extends Mock implements Dio {}
+import '../../helpers/test_helpers.dart';
 
 void main() {
   late MockDio mockDio;

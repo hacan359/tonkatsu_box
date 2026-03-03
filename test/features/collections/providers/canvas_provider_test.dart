@@ -14,37 +14,10 @@ import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 
-// Моки
-class MockCanvasRepository extends Mock implements CanvasRepository {}
-
-class MockCollectionRepository extends Mock implements CollectionRepository {}
-
-class MockCollectionItemsNotifier extends CollectionItemsNotifier {
-  MockCollectionItemsNotifier(this._initialState);
-
-  final AsyncValue<List<CollectionItem>> _initialState;
-
-  @override
-  AsyncValue<List<CollectionItem>> build(int? arg) {
-    return _initialState;
-  }
-
-  void emitState(AsyncValue<List<CollectionItem>> newState) {
-    state = newState;
-  }
-}
-
-// Фейковые классы для registerFallbackValue
-class FakeCanvasItem extends Fake implements CanvasItem {}
-
-class FakeCanvasViewport extends Fake implements CanvasViewport {}
+import '../../../helpers/test_helpers.dart';
 
 void main() {
-  // Регистрация фейковых значений для mocktail
-  setUpAll(() {
-    registerFallbackValue(FakeCanvasItem());
-    registerFallbackValue(FakeCanvasViewport());
-  });
+  setUpAll(registerAllFallbacks);
 
   group('CanvasState', () {
     test('should create with default values', () {

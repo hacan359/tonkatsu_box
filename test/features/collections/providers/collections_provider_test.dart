@@ -12,8 +12,7 @@ import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 
-// Моки
-class MockCollectionRepository extends Mock implements CollectionRepository {}
+import '../../../helpers/test_helpers.dart';
 
 // Тестовые данные
 const int testCollectionId = 1;
@@ -43,11 +42,7 @@ void main() {
   late MockCollectionRepository mockRepository;
   late SharedPreferences sharedPrefs;
 
-  setUpAll(() {
-    registerFallbackValue(ItemStatus.notStarted);
-    registerFallbackValue(MediaType.game);
-    registerFallbackValue(DateTime(2024));
-  });
+  setUpAll(registerAllFallbacks);
 
   setUp(() async {
     SharedPreferences.setMockInitialValues(<String, Object>{});

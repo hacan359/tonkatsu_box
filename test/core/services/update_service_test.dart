@@ -6,7 +6,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/core/services/update_service.dart';
 
-class MockDio extends Mock implements Dio {}
+import '../../helpers/test_helpers.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -36,7 +36,7 @@ void main() {
   });
 
   setUpAll(() {
-    registerFallbackValue(Options());
+    registerAllFallbacks();
   });
 
   group('UpdateInfo', () {

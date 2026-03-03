@@ -4,13 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
-import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/data/repositories/collection_repository.dart';
 import 'package:xerabora/features/collections/providers/collections_provider.dart';
 import 'package:xerabora/features/home/providers/all_items_provider.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
+import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/shared/models/collection.dart';
 import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/collection_sort_mode.dart';
@@ -19,11 +18,7 @@ import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/platform.dart' as model;
 
-class MockCollectionRepository extends Mock implements CollectionRepository {}
-
-class MockDatabaseService extends Mock implements DatabaseService {}
-
-class MockDatabase extends Mock implements Database {}
+import '../../../helpers/test_helpers.dart';
 
 /// Вспомогательная функция: прокачать event queue для async fire-and-forget.
 Future<void> _pump([int times = 5]) async {

@@ -5,8 +5,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
-import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/data/repositories/collection_repository.dart';
 import 'package:xerabora/features/collections/providers/collection_covers_provider.dart';
 import 'package:xerabora/features/collections/providers/collections_provider.dart';
@@ -15,10 +13,6 @@ import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/models/collection.dart';
 import 'package:xerabora/shared/models/cover_info.dart';
 import 'package:xerabora/shared/models/media_type.dart';
-
-class MockDatabaseService extends Mock implements DatabaseService {}
-
-class MockCollectionRepository extends Mock implements CollectionRepository {}
 
 // Тестовые данные
 

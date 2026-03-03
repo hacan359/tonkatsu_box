@@ -9,7 +9,7 @@ import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/wishlist_item.dart';
 
-class MockWishlistRepository extends Mock implements WishlistRepository {}
+import '../../../helpers/test_helpers.dart';
 
 void main() {
   late MockWishlistRepository mockRepo;
@@ -19,7 +19,7 @@ void main() {
   });
 
   setUpAll(() {
-    registerFallbackValue(MediaType.game);
+    registerAllFallbacks();
   });
 
   final WishlistItem item1 = WishlistItem(

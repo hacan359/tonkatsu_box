@@ -14,14 +14,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/features/splash/screens/splash_screen.dart';
 
-class MockDatabaseService extends Mock implements DatabaseService {}
-
-class MockDatabase extends Mock implements Database {}
+import '../../../helpers/test_helpers.dart';
 
 void main() {
   late MockDatabaseService mockDb;

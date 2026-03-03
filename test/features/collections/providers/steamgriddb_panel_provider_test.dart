@@ -7,8 +7,7 @@ import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/shared/models/steamgriddb_game.dart';
 import 'package:xerabora/shared/models/steamgriddb_image.dart';
 
-// Моки
-class MockSteamGridDbApi extends Mock implements SteamGridDbApi {}
+import '../../../helpers/test_helpers.dart';
 
 const int testCollectionId = 10;
 

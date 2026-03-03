@@ -1,13 +1,8 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:xerabora/features/search/filters/year_filter.dart';
 import 'package:xerabora/features/search/models/search_source.dart';
-import 'package:xerabora/l10n/app_localizations.dart';
 
-class MockWidgetRef extends Mock implements WidgetRef {}
-
-class MockS extends Mock implements S {}
+import '../../../helpers/test_helpers.dart';
 
 void main() {
   group('YearFilter', () {

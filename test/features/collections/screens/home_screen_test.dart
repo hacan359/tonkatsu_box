@@ -9,16 +9,14 @@ import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/data/repositories/collection_repository.dart';
 import 'package:xerabora/features/collections/screens/home_screen.dart';
 import 'package:xerabora/features/collections/widgets/collection_card.dart';
-import 'package:xerabora/l10n/app_localizations.dart';
-import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
+import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/models/collection.dart';
 import 'package:xerabora/shared/models/cover_info.dart';
+import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 import 'package:xerabora/shared/widgets/shimmer_loading.dart';
 
-class MockCollectionRepository extends Mock implements CollectionRepository {}
-
-class MockDatabaseService extends Mock implements DatabaseService {}
+import '../../../helpers/test_helpers.dart';
 
 void main() {
   group('HomeScreen', () {

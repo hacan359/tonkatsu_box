@@ -1,17 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/data/repositories/collection_repository.dart';
 import 'package:xerabora/shared/models/collection.dart';
-import 'package:xerabora/shared/models/item_status.dart';
-import 'package:xerabora/shared/models/media_type.dart';
 
-class MockDatabaseService extends Mock implements DatabaseService {}
+import '../../helpers/test_helpers.dart';
 
 void main() {
   setUpAll(() {
-    registerFallbackValue(MediaType.game);
-    registerFallbackValue(ItemStatus.notStarted);
+    registerAllFallbacks();
   });
 
   group('CollectionStats', () {
@@ -136,23 +132,6 @@ void main() {
   group('CollectionRepository', () {
     late MockDatabaseService mockDb;
     late CollectionRepository repository;
-
-    final DateTime testDate = DateTime(2024, 1, 15, 12, 0, 0);
-
-    Collection createTestCollection({
-      int id = 1,
-      String name = 'Test Collection',
-      String author = 'Test Author',
-      CollectionType type = CollectionType.own,
-    }) {
-      return Collection(
-        id: id,
-        name: name,
-        author: author,
-        type: type,
-        createdAt: testDate,
-      );
-    }
 
     setUp(() {
       mockDb = MockDatabaseService();

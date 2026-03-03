@@ -5,7 +5,7 @@ import 'package:xerabora/core/api/steamgriddb_api.dart';
 import 'package:xerabora/shared/models/steamgriddb_game.dart';
 import 'package:xerabora/shared/models/steamgriddb_image.dart';
 
-class MockDio extends Mock implements Dio {}
+import '../../helpers/test_helpers.dart';
 
 void main() {
   late SteamGridDbApi sut;
