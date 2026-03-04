@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 
 import '../../../data/repositories/canvas_repository.dart';
 import '../../../data/repositories/collection_repository.dart';
@@ -168,6 +169,8 @@ final NotifierProviderFamily<CanvasNotifier, CanvasState, int?>
 /// Notifier для управления состоянием канваса.
 class CanvasNotifier extends FamilyNotifier<CanvasState, int?>
     implements BaseCanvasController {
+  static final Logger _log = Logger('CanvasNotifier');
+
   late CanvasRepository _repository;
   late int? _collectionId;
   Timer? _viewportSaveTimer;
@@ -287,16 +290,16 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int?>
     final int collectionId = _collectionId!;
     try {
       await _syncCanvasWithItems();
-    } catch (_) {
-      // Sync может упасть, но reload всё равно нужен
+    } catch (e) {
+      _log.warning('Canvas sync failed, proceeding to reload', e);
     }
     try {
       // Перезагружаем элементы канваса даже если sync упал
       final List<CanvasItem> items =
           await _repository.getItemsWithData(collectionId);
       state = state.copyWith(items: items);
-    } catch (_) {
-      // Ошибка перезагрузки — оставляем текущий state
+    } catch (e) {
+      _log.warning('Canvas reload failed, keeping current state', e);
     } finally {
       _isSyncing = false;
     }
