@@ -99,6 +99,43 @@ class CanvasDao {
     return result.first['count'] as int;
   }
 
+  /// Вставляет несколько элементов канваса в одной транзакции.
+  ///
+  /// Возвращает список ID вставленных элементов.
+  Future<List<int>> insertCanvasItemsBatch(
+    List<Map<String, dynamic>> items,
+  ) async {
+    if (items.isEmpty) return <int>[];
+
+    final Database db = await _getDatabase();
+    return db.transaction((Transaction txn) async {
+      final Batch batch = txn.batch();
+      for (final Map<String, dynamic> item in items) {
+        batch.insert('canvas_items', item);
+      }
+      final List<Object?> results = await batch.commit();
+      return results.cast<int>();
+    });
+  }
+
+  /// Удаляет несколько элементов канваса по ID в одной транзакции.
+  Future<void> deleteCanvasItemsBatch(List<int> ids) async {
+    if (ids.isEmpty) return;
+
+    final Database db = await _getDatabase();
+    await db.transaction((Transaction txn) async {
+      final Batch batch = txn.batch();
+      for (final int id in ids) {
+        batch.delete(
+          'canvas_items',
+          where: 'id = ?',
+          whereArgs: <Object?>[id],
+        );
+      }
+      await batch.commit(noResult: true);
+    });
+  }
+
   // ==================== Canvas Viewport ====================
 
   /// Возвращает состояние viewport канваса для коллекции.

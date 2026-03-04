@@ -331,16 +331,20 @@ class CollectionDao {
     int? collectionId,
     List<int> orderedItemIds,
   ) async {
+    if (orderedItemIds.isEmpty) return;
+
     final Database db = await _getDatabase();
     await db.transaction((Transaction txn) async {
+      final Batch batch = txn.batch();
       for (int i = 0; i < orderedItemIds.length; i++) {
-        await txn.update(
+        batch.update(
           'collection_items',
           <String, dynamic>{'sort_order': i},
           where: 'id = ?',
           whereArgs: <Object?>[orderedItemIds[i]],
         );
       }
+      await batch.commit(noResult: true);
     });
   }
 

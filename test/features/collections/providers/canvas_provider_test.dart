@@ -288,6 +288,10 @@ void main() {
           .thenAnswer((_) async => viewport);
       when(() => mockRepository.deleteItem(any()))
           .thenAnswer((_) async {});
+      when(() => mockRepository.deleteItemsBatch(any()))
+          .thenAnswer((_) async {});
+      when(() => mockRepository.createItemsBatch(any()))
+          .thenAnswer((_) async => <CanvasItem>[]);
       when(() => mockRepository.getConnections(collectionId))
           .thenAnswer((_) async => const <CanvasConnection>[]);
     }
@@ -496,8 +500,13 @@ void main() {
           container.read(canvasNotifierProvider(collectionId));
           await Future<void>.delayed(Duration.zero);
 
-          // Элемент с itemRefId=300 должен быть удалён
-          verify(() => mockRepository.deleteItem(3)).called(1);
+          // Элемент с itemRefId=300 (id=3) должен быть удалён через batch
+          final VerificationResult verification =
+              verify(() => mockRepository.deleteItemsBatch(captureAny()));
+          verification.called(1);
+          final List<int> deletedIds =
+              verification.captured.first as List<int>;
+          expect(deletedIds, <int>[3]);
         },
       );
 
@@ -532,11 +541,16 @@ void main() {
               .thenAnswer((_) async => null);
           when(() => mockRepository.getConnections(collectionId))
               .thenAnswer((_) async => const <CanvasConnection>[]);
-          when(() => mockRepository.createItem(any()))
+          when(() => mockRepository.deleteItemsBatch(any()))
+              .thenAnswer((_) async {});
+          when(() => mockRepository.createItemsBatch(any()))
               .thenAnswer((Invocation invocation) async {
-            final CanvasItem item =
-                invocation.positionalArguments[0] as CanvasItem;
-            return item.copyWith(id: 10);
+            final List<CanvasItem> items =
+                invocation.positionalArguments[0] as List<CanvasItem>;
+            return <CanvasItem>[
+              for (int i = 0; i < items.length; i++)
+                items[i].copyWith(id: 10 + i),
+            ];
           });
 
           final ProviderContainer container = createContainer(
@@ -548,15 +562,16 @@ void main() {
           await Future<void>.delayed(Duration.zero);
 
           final VerificationResult verification =
-              verify(() => mockRepository.createItem(captureAny()));
+              verify(() => mockRepository.createItemsBatch(captureAny()));
           verification.called(1);
-          final CanvasItem createdItem =
-              verification.captured.first as CanvasItem;
+          final List<CanvasItem> createdItems =
+              verification.captured.first as List<CanvasItem>;
+          expect(createdItems.length, 1);
           // Элементы канваса коллекции НЕ должны иметь collectionItemId
           // (getCanvasItems фильтрует по collection_item_id IS NULL)
-          expect(createdItem.collectionItemId, isNull);
-          expect(createdItem.itemRefId, 400);
-          expect(createdItem.itemType, CanvasItemType.game);
+          expect(createdItems[0].collectionItemId, isNull);
+          expect(createdItems[0].itemRefId, 400);
+          expect(createdItems[0].itemType, CanvasItemType.game);
         },
       );
 
@@ -564,7 +579,7 @@ void main() {
         'должен удалить сиротский элемент без collectionItemId по (type, refId)',
         () async {
           // Canvas item с collectionItemId=null (как создаёт initializeCanvas)
-          // но externalId=300 больше нет в коллекции
+          // но externalId=999 больше нет в коллекции
           final List<CanvasItem> canvasItemsNoCollId = <CanvasItem>[
             CanvasItem(
               id: 1,
@@ -605,8 +620,10 @@ void main() {
               .thenAnswer((_) async => null);
           when(() => mockRepository.getConnections(collectionId))
               .thenAnswer((_) async => const <CanvasConnection>[]);
-          when(() => mockRepository.deleteItem(any()))
+          when(() => mockRepository.deleteItemsBatch(any()))
               .thenAnswer((_) async {});
+          when(() => mockRepository.createItemsBatch(any()))
+              .thenAnswer((_) async => <CanvasItem>[]);
 
           final ProviderContainer container = createContainer(
             itemsState: AsyncData<List<CollectionItem>>(oneItem),
@@ -616,9 +633,13 @@ void main() {
           container.read(canvasNotifierProvider(collectionId));
           await Future<void>.delayed(Duration.zero);
 
-          // Элемент с itemRefId=999 (game) должен быть удалён
-          verify(() => mockRepository.deleteItem(2)).called(1);
-          verifyNever(() => mockRepository.deleteItem(1));
+          // Элемент с id=2 (itemRefId=999, game) должен быть удалён
+          final VerificationResult verification =
+              verify(() => mockRepository.deleteItemsBatch(captureAny()));
+          verification.called(1);
+          final List<int> deletedIds =
+              verification.captured.first as List<int>;
+          expect(deletedIds, <int>[2]);
         },
       );
 
@@ -649,6 +670,10 @@ void main() {
               .thenAnswer((_) async => null);
           when(() => mockRepository.getConnections(collectionId))
               .thenAnswer((_) async => const <CanvasConnection>[]);
+          when(() => mockRepository.deleteItemsBatch(any()))
+              .thenAnswer((_) async {});
+          when(() => mockRepository.createItemsBatch(any()))
+              .thenAnswer((_) async => <CanvasItem>[]);
 
           final ProviderContainer container = createContainer(
             itemsState: AsyncData<List<CollectionItem>>(
@@ -660,8 +685,9 @@ void main() {
           container.read(canvasNotifierProvider(collectionId));
           await Future<void>.delayed(Duration.zero);
 
-          // Текстовый элемент НЕ должен быть удалён
-          verifyNever(() => mockRepository.deleteItem(10));
+          // Текстовый элемент НЕ должен быть удалён (deleteItemsBatch не вызван
+          // т.к. нет orphans, или вызван с пустым списком без id=10)
+          verifyNever(() => mockRepository.deleteItemsBatch(any()));
         },
       );
 
@@ -678,6 +704,10 @@ void main() {
               .thenAnswer((_) async => null);
           when(() => mockRepository.getConnections(collectionId))
               .thenAnswer((_) async => const <CanvasConnection>[]);
+          when(() => mockRepository.deleteItemsBatch(any()))
+              .thenAnswer((_) async {});
+          when(() => mockRepository.createItemsBatch(any()))
+              .thenAnswer((_) async => <CanvasItem>[]);
           // Fallback: при AsyncLoading загружаем из collection repository
           // Возвращаем полный список, чтобы sync не удалял сиротские items
           when(() => mockCollectionRepo.getItemsWithData(collectionId))
@@ -697,7 +727,7 @@ void main() {
               .called(1);
           // getItemsWithData на canvas repository вызывается для загрузки canvas items
           verify(() => mockRepository.getItemsWithData(collectionId)).called(1);
-          verifyNever(() => mockRepository.deleteItem(any()));
+          verifyNever(() => mockRepository.deleteItemsBatch(any()));
         },
       );
     });

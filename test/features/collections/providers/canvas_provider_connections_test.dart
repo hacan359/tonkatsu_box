@@ -182,6 +182,10 @@ void main() {
           .thenAnswer((_) async => connections ?? testConnections);
       when(() => mockRepository.deleteItem(any()))
           .thenAnswer((_) async {});
+      when(() => mockRepository.deleteItemsBatch(any()))
+          .thenAnswer((_) async {});
+      when(() => mockRepository.createItemsBatch(any()))
+          .thenAnswer((_) async => <CanvasItem>[]);
 
       final ProviderContainer container = ProviderContainer(
         overrides: <Override>[

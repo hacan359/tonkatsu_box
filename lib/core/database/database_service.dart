@@ -604,6 +604,16 @@ class DatabaseService {
   Future<void> deleteCanvasItemsByCollection(int collectionId) =>
       canvasDao.deleteCanvasItemsByCollection(collectionId);
 
+  /// Вставляет несколько элементов канваса в одной транзакции.
+  Future<List<int>> insertCanvasItemsBatch(
+    List<Map<String, dynamic>> items,
+  ) =>
+      canvasDao.insertCanvasItemsBatch(items);
+
+  /// Удаляет несколько элементов канваса по ID в одной транзакции.
+  Future<void> deleteCanvasItemsBatch(List<int> ids) =>
+      canvasDao.deleteCanvasItemsBatch(ids);
+
   /// Возвращает количество элементов канваса для коллекции.
   Future<int> getCanvasItemCount(int collectionId) =>
       canvasDao.getCanvasItemCount(collectionId);

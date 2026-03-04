@@ -8,15 +8,21 @@
 
 ### Added
 - **DAO layer** — extracted 7 domain-specific DAO classes from `DatabaseService` into `lib/core/database/dao/`: `GameDao`, `MovieDao`, `TvShowDao`, `VisualNovelDao`, `CollectionDao`, `CanvasDao`, `WishlistDao`. Each DAO receives a database accessor function and encapsulates all SQL operations for its domain
+- `CanvasDao.insertCanvasItemsBatch()` and `deleteCanvasItemsBatch()` — batch INSERT/DELETE using `Transaction` + `Batch` for canvas items. Eliminates N individual DB calls when opening/syncing large canvases
+- `CanvasRepository.createItemsBatch()` and `deleteItemsBatch()` — repository-level batch operations wrapping DAO batch methods
 - Tests for all 7 DAOs (166 tests): `game_dao_test.dart`, `movie_dao_test.dart`, `tv_show_dao_test.dart`, `visual_novel_dao_test.dart`, `collection_dao_test.dart`, `canvas_dao_test.dart`, `wishlist_dao_test.dart`
 - `TransactionMockDatabase` in `test/helpers/mocks.dart` — solves mocktail limitation with generic `Database.transaction<T>()` method stubbing
 
 ### Changed
 - `DatabaseService` refactored from ~2700 lines to ~850 lines — now delegates all operations to DAO instances via `late final` fields, preserving the existing public API
+- `CanvasRepository.initializeCanvas()` — replaced N individual `createItem()` calls with single `createItemsBatch()` transaction
+- `CanvasNotifier._syncCanvasWithItems()` — replaced individual `deleteItem()`/`createItem()` loops with `deleteItemsBatch()`/`createItemsBatch()` batch calls. Fixes "database has been locked for 10s" warnings on large collections
+- `CollectionDao.reorderItems()` — replaced N sequential `txn.update()` calls with `Batch.update()` in a single transaction
 - `CollectionItemsNotifier` — replaced `ref.read()` in action methods with instance fields set during `build()` to fix Riverpod assertion error when watched dependencies change asynchronously
 - `docs/CODESTYLE.md` — fixed builder names to match actual functions, updated migration procedure example
 
 ### Fixed
+- Fixed "database has been locked for 10s" warnings when opening canvas for collections with many items — batch DB operations reduce N individual INSERT/DELETE calls to single transactions
 - Fixed Riverpod `_didChangeDependency` assertion crash in `CollectionItemsNotifier.refresh()` when sort providers update asynchronously from SharedPreferences
 
 ## [0.17.0] - 2026-03-03

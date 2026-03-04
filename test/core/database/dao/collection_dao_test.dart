@@ -700,27 +700,54 @@ void main() {
     });
 
     group('reorderItems', () {
-      test('updates sort_order in transaction', () async {
+      test('does nothing for empty list', () async {
+        await dao.reorderItems(1, <int>[]);
+
+        verifyNever(() => mockTxn.batch());
+      });
+
+      test('updates sort_order in batch transaction', () async {
+        final MockBatch mockBatch = MockBatch();
         mockDb.stubTransaction(mockTxn);
+        when(() => mockTxn.batch()).thenReturn(mockBatch);
         when(
-          () => mockTxn.update(
-            'collection_items',
+          () => mockBatch.update(
             any(),
-            where: 'id = ?',
+            any(),
+            where: any(named: 'where'),
             whereArgs: any(named: 'whereArgs'),
           ),
-        ).thenAnswer((_) async => 1);
+        ).thenReturn(null);
+        when(() => mockBatch.commit(noResult: true))
+            .thenAnswer((_) async => <Object?>[]);
 
         await dao.reorderItems(1, <int>[30, 20, 10]);
 
         verify(
-          () => mockTxn.update(
+          () => mockBatch.update(
             'collection_items',
-            any(),
+            <String, dynamic>{'sort_order': 0},
             where: 'id = ?',
-            whereArgs: any(named: 'whereArgs'),
+            whereArgs: <Object?>[30],
           ),
-        ).called(3);
+        ).called(1);
+        verify(
+          () => mockBatch.update(
+            'collection_items',
+            <String, dynamic>{'sort_order': 1},
+            where: 'id = ?',
+            whereArgs: <Object?>[20],
+          ),
+        ).called(1);
+        verify(
+          () => mockBatch.update(
+            'collection_items',
+            <String, dynamic>{'sort_order': 2},
+            where: 'id = ?',
+            whereArgs: <Object?>[10],
+          ),
+        ).called(1);
+        verify(() => mockBatch.commit(noResult: true)).called(1);
       });
     });
 

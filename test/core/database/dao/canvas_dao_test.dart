@@ -6,11 +6,15 @@ import 'package:xerabora/core/database/dao/canvas_dao.dart';
 import '../../../helpers/mocks.dart';
 
 void main() {
-  late MockDatabase mockDb;
+  late TransactionMockDatabase mockDb;
+  late MockTransaction mockTxn;
+  late MockBatch mockBatch;
   late CanvasDao dao;
 
   setUp(() {
-    mockDb = MockDatabase();
+    mockDb = TransactionMockDatabase();
+    mockTxn = MockTransaction();
+    mockBatch = MockBatch();
     dao = CanvasDao(() async => mockDb);
   });
 
@@ -185,6 +189,87 @@ void main() {
         );
 
         expect(await dao.getCanvasItemCount(1), 7);
+      });
+    });
+
+    // ==================== Batch Operations ====================
+
+    group('insertCanvasItemsBatch', () {
+      test('returns empty list for empty input', () async {
+        final List<int> result =
+            await dao.insertCanvasItemsBatch(<Map<String, dynamic>>[]);
+
+        expect(result, isEmpty);
+        verifyNever(() => mockTxn.batch());
+      });
+
+      test('inserts items in batch and returns IDs', () async {
+        mockDb.stubTransaction(mockTxn);
+        when(() => mockTxn.batch()).thenReturn(mockBatch);
+        when(() => mockBatch.insert(any(), any())).thenReturn(null);
+        when(() => mockBatch.commit())
+            .thenAnswer((_) async => <Object?>[10, 11, 12]);
+
+        final List<Map<String, dynamic>> items = <Map<String, dynamic>>[
+          <String, dynamic>{'collection_id': 1, 'item_type': 'game'},
+          <String, dynamic>{'collection_id': 1, 'item_type': 'movie'},
+          <String, dynamic>{'collection_id': 1, 'item_type': 'tv_show'},
+        ];
+
+        final List<int> ids = await dao.insertCanvasItemsBatch(items);
+
+        expect(ids, <int>[10, 11, 12]);
+        verify(() => mockBatch.insert('canvas_items', items[0])).called(1);
+        verify(() => mockBatch.insert('canvas_items', items[1])).called(1);
+        verify(() => mockBatch.insert('canvas_items', items[2])).called(1);
+        verify(() => mockBatch.commit()).called(1);
+      });
+    });
+
+    group('deleteCanvasItemsBatch', () {
+      test('does nothing for empty list', () async {
+        await dao.deleteCanvasItemsBatch(<int>[]);
+
+        verifyNever(() => mockTxn.batch());
+      });
+
+      test('deletes items in batch', () async {
+        mockDb.stubTransaction(mockTxn);
+        when(() => mockTxn.batch()).thenReturn(mockBatch);
+        when(
+          () => mockBatch.delete(
+            any(),
+            where: any(named: 'where'),
+            whereArgs: any(named: 'whereArgs'),
+          ),
+        ).thenReturn(null);
+        when(() => mockBatch.commit(noResult: true))
+            .thenAnswer((_) async => <Object?>[]);
+
+        await dao.deleteCanvasItemsBatch(<int>[10, 20, 30]);
+
+        verify(
+          () => mockBatch.delete(
+            'canvas_items',
+            where: 'id = ?',
+            whereArgs: <Object?>[10],
+          ),
+        ).called(1);
+        verify(
+          () => mockBatch.delete(
+            'canvas_items',
+            where: 'id = ?',
+            whereArgs: <Object?>[20],
+          ),
+        ).called(1);
+        verify(
+          () => mockBatch.delete(
+            'canvas_items',
+            where: 'id = ?',
+            whereArgs: <Object?>[30],
+          ),
+        ).called(1);
+        verify(() => mockBatch.commit(noResult: true)).called(1);
       });
     });
 
