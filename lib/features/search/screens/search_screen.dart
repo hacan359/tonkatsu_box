@@ -160,7 +160,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         }
       }
     } catch (_) {
-      // Не критично
+      // Episode pre-cache failed (network/API error) — not critical,
+      // episodes will be fetched on demand when user opens the show.
     }
   }
 

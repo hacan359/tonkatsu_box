@@ -647,7 +647,8 @@ class _DemoCollectionsScreenState
         return base64Encode(response.data!);
       }
     } catch (_) {
-      // Skip failed images silently.
+      // Image download failed — skip this cover, demo collection
+      // will work without it. Not worth blocking the whole export.
     }
     return null;
   }

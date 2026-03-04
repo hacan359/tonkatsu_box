@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 
 import '../../../core/api/tmdb_api.dart';
 import '../../../core/database/database_service.dart';
@@ -97,6 +98,8 @@ final NotifierProviderFamily<EpisodeTrackerNotifier, EpisodeTrackerState,
 /// Нотификатор для управления просмотренными эпизодами.
 class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
     ({int? collectionId, int showId})> {
+  static final Logger _log = Logger('EpisodeTrackerNotifier');
+
   late DatabaseService _db;
   late TmdbApi _tmdbApi;
   late int? _collectionId;
@@ -331,8 +334,8 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
           _cachedTotalEpisodes = totalInShow;
           _cachedTotalSeasons = totalSeasons;
         }
-      } on Exception catch (_) {
-        // API недоступен — используем имеющиеся данные
+      } on Exception catch (e) {
+        _log.warning('TMDB API unavailable, using cached episode data', e);
       }
     }
 

@@ -147,7 +147,8 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
           await db.upsertTvSeasons(seasons);
         }
       } on Exception catch (_) {
-        // Если API недоступен — покажем пустой список
+        // TMDB API unavailable — show empty season list, not critical.
+        // User can retry via pull-to-refresh.
       }
     }
 
@@ -195,6 +196,7 @@ class _SeasonsListWidgetState extends ConsumerState<SeasonsListWidget> {
         });
       }
     } on Exception catch (_) {
+      // Season refresh failed (network/API error) — stop spinner, keep existing data.
       if (mounted) {
         setState(() => _refreshing = false);
       }
