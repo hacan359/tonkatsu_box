@@ -604,11 +604,8 @@ void main() {
           ),
         ];
 
-        int insertCallCount = 0;
-        when(() => mockDb.insertCanvasItem(any())).thenAnswer((_) async {
-          insertCallCount++;
-          return insertCallCount;
-        });
+        when(() => mockDb.insertCanvasItemsBatch(any()))
+            .thenAnswer((_) async => <int>[1, 2]);
         when(() => mockDb.upsertCanvasViewport(
               collectionId: any(named: 'collectionId'),
               scale: any(named: 'scale'),
@@ -630,7 +627,7 @@ void main() {
         expect(result[1].itemRefId, 200);
         expect(result[1].x, 2512.0); // 2328 + 1 * (160 + 24)
         expect(result[1].y, 2390.0);
-        verify(() => mockDb.insertCanvasItem(any())).called(2);
+        verify(() => mockDb.insertCanvasItemsBatch(any())).called(1);
         verify(() => mockDb.upsertCanvasViewport(
               collectionId: 10,
               scale: 1.0,
@@ -654,11 +651,8 @@ void main() {
           ),
         );
 
-        int insertCallCount = 0;
-        when(() => mockDb.insertCanvasItem(any())).thenAnswer((_) async {
-          insertCallCount++;
-          return insertCallCount;
-        });
+        when(() => mockDb.insertCanvasItemsBatch(any()))
+            .thenAnswer((_) async => <int>[1, 2, 3, 4, 5, 6]);
         when(() => mockDb.upsertCanvasViewport(
               collectionId: any(named: 'collectionId'),
               scale: any(named: 'scale'),
@@ -694,7 +688,8 @@ void main() {
           ),
         ];
 
-        when(() => mockDb.insertCanvasItem(any())).thenAnswer((_) async => 1);
+        when(() => mockDb.insertCanvasItemsBatch(any()))
+            .thenAnswer((_) async => <int>[1]);
         when(() => mockDb.upsertCanvasViewport(
               collectionId: any(named: 'collectionId'),
               scale: any(named: 'scale'),
@@ -724,7 +719,7 @@ void main() {
             await repository.initializeCanvas(10, <CollectionItem>[]);
 
         expect(result, isEmpty);
-        verifyNever(() => mockDb.insertCanvasItem(any()));
+        verifyNever(() => mockDb.insertCanvasItemsBatch(any()));
         // Should still create default viewport
         verify(() => mockDb.upsertCanvasViewport(
               collectionId: 10,

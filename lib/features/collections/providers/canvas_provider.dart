@@ -331,14 +331,18 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int?>
         (CanvasItemType.fromMediaType(ci.mediaType).value, ci.externalId),
     };
 
-    // Удаляем сиротские медиа-элементы (удалены из коллекции)
-    for (final CanvasItem item in canvasItems) {
-      if (item.itemType.isMediaItem && item.itemRefId != null) {
-        final (String, int) key = (item.itemType.value, item.itemRefId!);
-        if (!collectionMediaKeys.contains(key)) {
-          await _repository.deleteItem(item.id);
-        }
-      }
+    // Удаляем сиротские медиа-элементы (удалены из коллекции) одной транзакцией
+    final List<int> orphanIds = <int>[
+      for (final CanvasItem item in canvasItems)
+        if (item.itemType.isMediaItem &&
+            item.itemRefId != null &&
+            !collectionMediaKeys.contains(
+              (item.itemType.value, item.itemRefId!),
+            ))
+          item.id,
+    ];
+    if (orphanIds.isNotEmpty) {
+      await _repository.deleteItemsBatch(orphanIds);
     }
 
     // Строим множество ключей (type, refId) для существующих canvas-элементов
@@ -387,35 +391,30 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int?>
                 .reduce((int a, int b) => a > b ? a : b) +
             1;
 
-    for (int i = 0; i < missingItems.length; i++) {
-      final int col = i % cols;
-      final int row = i ~/ cols;
-      final double x = startX +
-          col * (CanvasRepository.defaultCardWidth + CanvasRepository.gridGap);
-      final double y = startY +
-          row *
-              (CanvasRepository.defaultCardHeight + CanvasRepository.gridGap);
-
-      final CanvasItemType canvasType =
-          CanvasItemType.fromMediaType(missingItems[i].mediaType);
-
-      // НЕ устанавливаем collectionItemId — элементы канваса коллекции
-      // хранятся с collection_item_id = NULL (getCanvasItems фильтрует по этому)
-      final CanvasItem item = CanvasItem(
-        id: 0,
-        collectionId: collectionId,
-        itemType: canvasType,
-        itemRefId: missingItems[i].externalId,
-        x: x,
-        y: y,
-        width: CanvasRepository.defaultCardWidth,
-        height: CanvasRepository.defaultCardHeight,
-        zIndex: baseZIndex + i,
-        createdAt: DateTime.fromMillisecondsSinceEpoch(now * 1000),
-      );
-
-      await _repository.createItem(item);
-    }
+    // НЕ устанавливаем collectionItemId — элементы канваса коллекции
+    // хранятся с collection_item_id = NULL (getCanvasItems фильтрует по этому)
+    final List<CanvasItem> newItems = <CanvasItem>[
+      for (int i = 0; i < missingItems.length; i++)
+        CanvasItem(
+          id: 0,
+          collectionId: collectionId,
+          itemType: CanvasItemType.fromMediaType(missingItems[i].mediaType),
+          itemRefId: missingItems[i].externalId,
+          x: startX +
+              (i % cols) *
+                  (CanvasRepository.defaultCardWidth +
+                      CanvasRepository.gridGap),
+          y: startY +
+              (i ~/ cols) *
+                  (CanvasRepository.defaultCardHeight +
+                      CanvasRepository.gridGap),
+          width: CanvasRepository.defaultCardWidth,
+          height: CanvasRepository.defaultCardHeight,
+          zIndex: baseZIndex + i,
+          createdAt: DateTime.fromMillisecondsSinceEpoch(now * 1000),
+        ),
+    ];
+    await _repository.createItemsBatch(newItems);
   }
 
   /// Удаляет медиа-элемент с канваса по ID элемента коллекции.

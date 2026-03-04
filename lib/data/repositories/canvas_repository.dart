@@ -68,6 +68,24 @@ class CanvasRepository {
     return item.copyWith(id: id);
   }
 
+  /// Создаёт несколько элементов канваса в одной транзакции.
+  Future<List<CanvasItem>> createItemsBatch(List<CanvasItem> items) async {
+    if (items.isEmpty) return <CanvasItem>[];
+
+    final List<Map<String, dynamic>> dbMaps =
+        items.map((CanvasItem item) => item.toDb()).toList();
+    final List<int> ids = await _db.insertCanvasItemsBatch(dbMaps);
+
+    return <CanvasItem>[
+      for (int i = 0; i < items.length; i++) items[i].copyWith(id: ids[i]),
+    ];
+  }
+
+  /// Удаляет несколько элементов канваса по ID в одной транзакции.
+  Future<void> deleteItemsBatch(List<int> ids) async {
+    await _db.deleteCanvasItemsBatch(ids);
+  }
+
   /// Обновляет элемент канваса.
   Future<void> updateItem(CanvasItem item) async {
     final Map<String, dynamic> dbData = item.toDb();
@@ -376,11 +394,10 @@ class CanvasRepository {
     List<CollectionItem> items,
   ) async {
     final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    final List<CanvasItem> createdItems = <CanvasItem>[];
 
     if (items.isEmpty) {
       await saveViewport(CanvasViewport(collectionId: collectionId));
-      return createdItems;
+      return <CanvasItem>[];
     }
 
     // Рассчитываем размеры сетки для центрирования
@@ -393,6 +410,7 @@ class CanvasRepository {
     final double startX = initialCenterX - gridWidth / 2;
     final double startY = initialCenterY - gridHeight / 2;
 
+    final List<CanvasItem> pendingItems = <CanvasItem>[];
     for (int i = 0; i < items.length; i++) {
       final int col = i % cols;
       final int row = i ~/ cols;
@@ -402,7 +420,7 @@ class CanvasRepository {
       final CanvasItemType canvasType =
           CanvasItemType.fromMediaType(items[i].mediaType);
 
-      final CanvasItem item = CanvasItem(
+      pendingItems.add(CanvasItem(
         id: 0,
         collectionId: collectionId,
         itemType: canvasType,
@@ -413,16 +431,20 @@ class CanvasRepository {
         height: defaultCardHeight,
         zIndex: i,
         createdAt: DateTime.fromMillisecondsSinceEpoch(now * 1000),
-      );
-
-      final CanvasItem created = await createItem(item);
-      createdItems.add(created.copyWith(
-        game: items[i].game,
-        movie: items[i].movie,
-        tvShow: items[i].tvShow,
-        visualNovel: items[i].visualNovel,
       ));
     }
+
+    final List<CanvasItem> created = await createItemsBatch(pendingItems);
+
+    final List<CanvasItem> createdItems = <CanvasItem>[
+      for (int i = 0; i < created.length; i++)
+        created[i].copyWith(
+          game: items[i].game,
+          movie: items[i].movie,
+          tvShow: items[i].tvShow,
+          visualNovel: items[i].visualNovel,
+        ),
+    ];
 
     // Создаём viewport по умолчанию
     await saveViewport(CanvasViewport(collectionId: collectionId));

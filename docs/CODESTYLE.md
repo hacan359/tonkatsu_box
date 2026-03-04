@@ -1,256 +1,274 @@
-# Tonkatsu Box — Код-стандарт
+# Tonkatsu Box Coding Standards
 
-Обязательные правила для всего кода в проекте Tonkatsu Box. Этот документ — источник истины; `analysis_options.yaml` обеспечивает автоматическую проверку, но не покрывает все соглашения.
+Mandatory rules for all code in the Tonkatsu Box project. This document is the single source of truth.
 
-## Анализатор
+---
 
-Проект использует максимально строгие настройки. Код не должен генерировать ни одного warning/info:
+## Analyzer
 
-- `strict-casts: true` — нет неявных приведений
-- `strict-inference: true` — нет неявного вывода типов
-- `strict-raw-types: true` — нет raw-дженериков
-- `always_specify_types: true` — все типы явно
-- `avoid_print: true` — print запрещён, использовать `_log`
-- `require_trailing_commas: true` — завершающие запятые
-- `prefer_single_quotes: true` — одинарные кавычки
+Maximum strictness. Code must produce zero warnings/infos:
 
-## Структура проекта
+- strict-casts: true
+- strict-inference: true
+- strict-raw-types: true
+- always_specify_types: true
+- avoid_print: true (print is forbidden, use _log)
+- require_trailing_commas: true
+- prefer_single_quotes: true
 
-```
-lib/
-├── main.dart                 # Точка входа
-├── app.dart                  # Корневой виджет
-├── core/                     # Ядро (не зависит от features)
-│   ├── api/                  #   API-клиенты (Dio)
-│   ├── database/             #   DatabaseService, schema, миграции
-│   │   └── migrations/       #     Отдельные файлы миграций
-│   ├── logging/              #   AppLogger
-│   └── services/             #   Export, Import, ImageCache, Config
-├── data/                     # Репозитории (мост core ↔ features)
-│   └── repositories/
-├── features/                 # Фичи (экраны, провайдеры, виджеты)
-│   ├── collections/
-│   ├── home/
-│   ├── search/
-│   ├── settings/
-│   ├── splash/
-│   ├── welcome/
-│   └── wishlist/
-├── l10n/                     # Локализация (ARB, gen_l10n)
-└── shared/                   # Общие модели, виджеты, тема
-├── constants/
-├── extensions/
-├── gamepad/
-├── models/
-├── navigation/
-├── theme/
-└── widgets/
-```
+---
 
-Направление зависимостей: `features → data → core → shared`. Фичи не импортируют друг друга (кроме навигации).
+## Project Structure
 
-## Именование файлов и классов
+    lib/
+      main.dart                  # Entry point
+      app.dart                   # Root widget
+      core/                      # Core layer (does not depend on features)
+        api/                     #   API clients (Dio)
+        database/                #   DatabaseService, schema, migrations
+          dao/                   #     Domain-specific DAO classes
+          migrations/            #     Individual migration files
+        logging/                 #   AppLogger
+        services/                #   Export, Import, ImageCache, Config
+      data/                      # Repositories (bridge core <-> features)
+        repositories/
+      features/                  # Features (screens, providers, widgets)
+      l10n/                      # Localization (ARB, gen_l10n)
+      shared/                    # Shared models, widgets, theme
 
-- Файлы: `snake_case.dart`
-- Классы: `PascalCase`
-- Перечисления: `PascalCase`, значения `camelCase`
-- Провайдеры: `camelCaseProvider` (суффикс `Provider`)
-- Приватные поля: `_camelCase`
-- Константы: `camelCase` (Dart-стиль, не UPPER_SNAKE)
+Dependency direction: features -> data -> core -> shared. Features do not import each other (except for navigation).
+
+---
+
+## Naming
+
+- Files: snake_case.dart
+- Classes: PascalCase
+- Enums: PascalCase, values camelCase
+- Providers: camelCaseProvider (suffix Provider)
+- Private fields: _camelCase
+- Constants: camelCase (Dart style, not UPPER_SNAKE)
+
+---
+
+## File Size Limits
+
+- Hard limit: no file exceeds 800 lines. If it does, split it.
+- Soft target: aim for under 400 lines.
+- Screens: past 500 lines, extract widgets into separate files in the same widgets/ directory.
+- Providers: past 400 lines, decompose into sub-providers or extract helper classes.
+
+When splitting, extract into the same feature directory rather than creating new directories.
+
+---
 
 ## State Management (Riverpod)
 
-Паттерн провайдеров:
+Provider types must be explicit in declarations. Use ref.watch() in build(), ref.read() in action methods.
 
-```dart
-// Простой провайдер — глобальный final
-final Provider<SomeApi> someApiProvider = Provider<SomeApi>((Ref ref) {
-  return SomeApi();
-});
+---
 
-// AsyncNotifier — для состояния с загрузкой
-final AsyncNotifierProvider<SomeNotifier, List<Item>>
-    someProvider =
-    AsyncNotifierProvider<SomeNotifier, List<Item>>(
-  SomeNotifier.new,
-);
+## Data Models
 
-class SomeNotifier extends AsyncNotifier<List<Item>> {
-  late SomeRepository _repository;
+Immutable classes with factory constructors. Order within model class:
+1. const constructor
+2. Factory constructors (fromJson, fromDb)
+3. Fields (final)
+4. Getters / computed properties
+5. Methods (toDb, toJson, copyWith)
 
-  @override
-  Future<List<Item>> build() async {
-    _repository = ref.watch(someRepositoryProvider);
-    return _repository.getAll();
-  }
-}
-```
+---
 
-- Типы провайдеров указываются **явно** в объявлении
-- `ref.watch()` — в `build()`, `ref.read()` — в методах-действиях
+## Database Layer
 
-## Модели данных
+### DAO Pattern
 
-Модели — immutable классы с фабричными конструкторами:
+Database operations are organized into domain-specific DAO classes. Each DAO receives a database accessor function.
 
-```dart
-class Game {
-  const Game({
-    required this.id,
-    required this.name,
-    this.summary,
-  });
+DAOs live in lib/core/database/dao/. DatabaseService exposes DAO instances via late final fields and delegates all public methods to them, preserving the existing API for consumers.
 
-  factory Game.fromJson(Map<String, dynamic> json) { ... }
-  factory Game.fromDb(Map<String, dynamic> row) { ... }
+Available DAOs:
+- GameDao: games, platforms, IGDB genres
+- MovieDao: movies, TMDB genres
+- TvShowDao: TV shows, seasons, episodes, watched episodes
+- CollectionDao: collections, collection items
+- CanvasDao: canvas items, connections, viewports
+- WishlistDao: wishlist items
+- VisualNovelDao: visual novels, VNDB tags
 
-  final int id;
-  final String name;
-  final String? summary;
+When adding new database methods: add to the appropriate DAO, then add a one-line delegate in DatabaseService.
 
-  Map<String, dynamic> toDb() { ... }
-  Map<String, dynamic> toJson() { ... }
-  Game copyWith({...}) { ... }
-}
-```
+### Migrations
 
-Порядок в классе модели:
-1. `const` конструктор
-2. Фабричные конструкторы (`fromJson`, `fromDb`)
-3. Поля (`final`)
-4. Геттеры/computed-свойства
-5. Методы (`toDb`, `toJson`, `copyWith`)
+Each migration is a separate file in lib/core/database/migrations/.
 
-## Логирование
+Procedure (where N is the next version number):
+1. Create migration_vN.dart
+2. Add MigrationVN() to MigrationRegistry.all
+3. Update version: N in _initDatabase()
+4. New table needed? Add method to DatabaseSchema, call from createAll()
 
-### Правила
+---
 
-- `print()` и `debugPrint()` — **запрещены** (`avoid_print: true`)
-- Для логирования использовать `package:logging`
-- Инициализация: `AppLogger.init()` в `main()` до `runApp()`
-- Логи выводятся через `dart:developer` `log()` (видны в Flutter DevTools)
+## Logging
 
-### Уровни логирования
+print() and debugPrint() are forbidden. Use package:logging.
+Initialize: AppLogger.init() in main() before runApp().
+Logs output via dart:developer log() (visible in Flutter DevTools).
 
-| Уровень | Когда использовать | Пример |
-|---------|-------------------|--------|
-| `_log.fine()` | Детали для отладки, обычно шумно | `_log.fine('Loaded 42 platforms')` |
-| `_log.info()` | Важные события жизненного цикла | `_log.info('Database upgraded to v23')` |
-| `_log.warning()` | Ошибки, которые не ломают приложение | `_log.warning('Failed to load genre map', e)` |
-| `_log.severe()` | Критические ошибки | `_log.severe('Database creation failed', e, stackTrace)` |
+Levels:
+- _log.fine()    Debug details, noisy
+- _log.info()    Important lifecycle events
+- _log.warning() Non-breaking errors
+- _log.severe()  Critical errors
 
-### Размещение логгера
+Logger placement: static _log field goes first in the class body. Logger name = class name.
 
-Статическое поле `_log` размещается **первым** в теле класса:
+Required in: all classes in lib/core/, all repositories, all Notifier/AsyncNotifier.
+Not needed in: models, static utilities, widgets (except debug screens).
 
-```dart
-class IgdbApi {
-  static final Logger _log = Logger('IgdbApi');
+---
 
-  // ... остальные поля и методы
-}
-```
+## Error Handling
 
-Имя логгера = имя класса.
+### Typed Exceptions
 
-### Правило catch-блоков
+API clients throw domain-specific exceptions: TmdbApiException, IgdbApiException, VndbApiException, SteamGridDbApiException.
 
-**Запрещено** писать `catch (_)` без логирования (кроме осознанных ситуаций вроде repair-миграции v16). Каждый catch должен либо:
-- логировать ошибку: `_log.warning('описание', e)`
-- пробрасывать её дальше: `rethrow`
-- иметь комментарий, почему ошибка намеренно игнорируется
+### Layer Responsibilities
 
-```dart
-// ✅ Правильно
-} catch (e) {
-  _log.warning('Failed to download image: $imageId', e);
-  return false;
-}
+- API clients: throw typed exceptions
+- Repositories: catch API exceptions, return null/empty or rethrow
+- Providers: handle errors through Riverpod AsyncValue.error state
+- UI: display errors via AsyncValue.when(error: ...) never crash on error
 
-// ✅ Правильно — осознанное игнорирование с комментарием
-} on DatabaseException catch (_) {
-  // Колонка уже существует — repair-миграция, безопасно игнорировать.
-}
+### Catch Block Rules
 
-// ❌ Запрещено — молчаливый catch
-} catch (_) {
-  return false;
-}
-```
+Forbidden to write catch (_) without logging. Every catch must either:
+- Log the error: _log.warning(description, e)
+- Rethrow: rethrow
+- Have a comment explaining why the error is intentionally ignored
 
-### Где добавлять логгер
+---
 
-Логгер **обязателен** в:
-- Всех классах в `lib/core/` (API, Database, Services)
-- Всех репозиториях в `lib/data/repositories/`
-- Всех Notifier/AsyncNotifier в `lib/features/*/providers/`
+## Documentation
 
-Логгер **не нужен** в:
-- Моделях (`lib/shared/models/`)
-- Статических утилитах без side-effects
-- Виджетах (кроме debug-экранов)
+- Doc comments (///) in Russian
+- Required on all public classes and methods
+- Required on private methods if logic is non-obvious
+- DO NOT place /// at file top without library directive (triggers dangling_library_doc_comments), use // instead
 
-## Миграции БД
+---
 
-Каждая миграция — отдельный файл в `lib/core/database/migrations/`:
+## Imports
 
-```dart
-class MigrationV24 extends Migration {
-  @override
-  int get version => 24;
+Group order (separated by blank lines):
+1. dart: standard library
+2. package: external packages
+3. Relative project imports
 
-  @override
-  String get description => 'Brief description in English';
+---
 
-  @override
-  Future<void> migrate(Database db) async {
-    // SQL-операции
-  }
-}
-```
+## Testing
 
-Процедура добавления:
-1. Создать `migration_v24.dart`
-2. Добавить `MigrationV24()` в `MigrationRegistry.all`
-3. Обновить `version: 24` в `_initDatabase()`
-4. Если нужна новая таблица — добавить метод в `DatabaseSchema` и вызвать из `createAll()`
+### Shared Test Helpers
 
-## Документация
+All tests use shared helpers from test/helpers/. One import covers everything:
 
-- Doc-комментарии (`///`) — на русском
-- На всех публичных классах и методах
-- На приватных методах, если логика неочевидна
-- Inline-комментарии (`//`) — по ситуации, русский или английский
+    import xx/helpers/test_helpers.dart
 
-```dart
-/// Сервис для работы с SQLite базой данных.
-///
-/// Управляет инициализацией базы данных и CRUD операциями.
-class DatabaseService {
-```
+Contents:
+- mocks.dart: all mock/fake classes (single source of truth)
+- builders.dart: test data factories (createTestCollection, createTestCollections, createTestStats, createTestCollectionItem, createTestGame, createTestMovie, createTestTvShow, createTestVisualNovel, createTestWishlistItem, createTestCanvasItem, createTestCanvasConnection)
+- fallbacks.dart: registerAllFallbacks() for mocktail
+- pump_app.dart: tester.pumpApp(widget, overrides: [...]) for widget tests
+- test_helpers.dart: barrel export of all above
 
-## Импорты
+### Mock Rules
 
-Порядок групп (разделённых пустой строкой):
-1. `dart:` стандартная библиотека
-2. `package:` внешние пакеты
-3. Относительные импорты проекта
+- DO NOT declare mock classes in test files if they exist in test/helpers/mocks.dart
+- DO NOT write registerFallbackValue() inline, use registerAllFallbacks() in setUpAll()
+- DO NOT construct test data manually, use builders from builders.dart
+- DO NOT write ProviderScope + MaterialApp + localizationsDelegates manually, use tester.pumpApp()
+- New mock needed in 2+ files? Add to mocks.dart
+- New builder needed in 2+ files? Add to builders.dart
+- Mock/builder unique to one file? OK to declare locally
 
-```dart
-import 'dart:convert';
-import 'dart:io';
+### Test Behavior, Not Visuals
 
-import 'package:dio/dio.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:logging/logging.dart';
+Tests should break only when behavior breaks, not when design changes.
 
-import '../../shared/models/game.dart';
-import '../../shared/models/platform.dart';
-```
+DO TEST:
+- Method returns correct value for given input
+- State changes after actions (status updated, item added/removed)
+- Error handling (exception thrown, error state set)
+- Async flows (loading -> data, loading -> error)
+- Navigation triggers (screen pushes on tap)
+- Conditional rendering (widget shown/hidden based on state)
+- Callbacks fire correctly (onTap called, onChanged called with value)
+- Data transformations (model parsing, JSON mapping, filtering, sorting)
+- Lists render correct number of items
 
-## Тестирование
+DO NOT TEST:
+- Button labels and text content (cosmetic)
+- Colors (design decision)
+- Font sizes, weights, styles (typography)
+- Icon types (cosmetic)
+- Padding, margins, spacing (layout)
+- Border radius, shadows, decorations (visual styling)
+- Localized string values (test that text IS displayed, not WHAT exact string)
 
-- Тесты зеркалят структуру `lib/` → `test/`
-- Используется `mocktail` для моков
-- In-memory SQLite (`sqflite_common_ffi`, `inMemoryDatabasePath`) для тестов БД
-- Тест-файлы: `*_test.dart`
+Data-driven text IS behavior (testing that collection.name renders is OK; testing that screen title says Collections is NOT OK).
+
+### Test Naming
+
+    should [expected result] when [condition]
+
+### Coverage
+
+- Target: 100% line and branch coverage
+- In-memory SQLite (sqflite_common_ffi, inMemoryDatabasePath) for database tests
+- Mirror lib/ structure in test/
+
+---
+
+## Widget Guidelines
+
+### Theme Constants
+
+Always use theme constants, never hardcode (AppColors, AppTypography, AppSpacing).
+
+### Construction
+
+- Use const constructors wherever possible
+- Use Key for list items: ValueKey<int>(item.id)
+- Prefer ListView.builder / GridView.builder for long lists
+- Split widgets exceeding ~200 lines into sub-widgets or separate files
+
+### TextField in Custom Containers
+
+Global theme sets filled: true + focusedBorder: brand. If TextField is inside a container with its own border, disable decorations to avoid double borders.
+
+### Platform-Specific Code
+
+- Check platform via platform_features.dart (kCanvasEnabled, kVgMapsEnabled)
+- VGMaps / WebView2: Windows only
+- Long press context menu: Android, right-click: Windows
+- Gamepad: new interactive widgets must be focusable (see docs/GAMEPAD.md)
+
+---
+
+## Forbidden
+
+- print() in production code, use logger
+- Hardcoded UI strings, use localization
+- Magic numbers, extract to constants
+- Ignoring lint warnings
+- Committing commented-out code
+- setState in complex widgets, use Riverpod
+- dynamic type, always explicit types
+- var for public API, only explicit types
+- ! (null assertion) without extreme necessity
+- Silent catch blocks without logging or comment
+- Declaring mock classes in test files when they exist in test/helpers/mocks.dart
+- Testing visual details (colors, labels, icons, spacing) in unit/widget tests

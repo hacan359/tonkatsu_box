@@ -14,6 +14,13 @@ import 'package:xerabora/core/api/igdb_api.dart';
 import 'package:xerabora/core/api/steamgriddb_api.dart';
 import 'package:xerabora/core/api/tmdb_api.dart';
 import 'package:xerabora/core/api/vndb_api.dart';
+import 'package:xerabora/core/database/dao/canvas_dao.dart';
+import 'package:xerabora/core/database/dao/collection_dao.dart';
+import 'package:xerabora/core/database/dao/game_dao.dart';
+import 'package:xerabora/core/database/dao/movie_dao.dart';
+import 'package:xerabora/core/database/dao/tv_show_dao.dart';
+import 'package:xerabora/core/database/dao/visual_novel_dao.dart';
+import 'package:xerabora/core/database/dao/wishlist_dao.dart';
 import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/core/services/config_service.dart';
 import 'package:xerabora/core/services/gamepad_service.dart';
@@ -37,9 +44,53 @@ class MockDio extends Mock implements Dio {}
 
 class MockDatabase extends Mock implements Database {}
 
+/// [MockDatabase] с прямым override [transaction] для тестов.
+///
+/// mocktail не может корректно стабить generic-метод `Database.transaction<T>()`
+/// через `when(() => mockDb.transaction<void>(any()))`. Этот подкласс
+/// решает проблему прямым override метода.
+class TransactionMockDatabase extends MockDatabase {
+  Transaction? _stubTxn;
+
+  /// Задаёт mock [Transaction] для передачи в callback транзакции.
+  // ignore: use_setters_to_change_properties
+  void stubTransaction(Transaction txn) => _stubTxn = txn;
+
+  @override
+  Future<T> transaction<T>(
+    Future<T> Function(Transaction txn) action, {
+    bool? exclusive,
+  }) async {
+    if (_stubTxn == null) {
+      throw StateError('transaction() called but not stubbed');
+    }
+    return action(_stubTxn!);
+  }
+}
+
+class MockTransaction extends Mock implements Transaction {}
+
+class MockBatch extends Mock implements Batch {}
+
 class MockDatabaseService extends Mock implements DatabaseService {}
 
 class MockConfigService extends Mock implements ConfigService {}
+
+// ===== DAO =====
+
+class MockGameDao extends Mock implements GameDao {}
+
+class MockMovieDao extends Mock implements MovieDao {}
+
+class MockTvShowDao extends Mock implements TvShowDao {}
+
+class MockVisualNovelDao extends Mock implements VisualNovelDao {}
+
+class MockCollectionDao extends Mock implements CollectionDao {}
+
+class MockCanvasDao extends Mock implements CanvasDao {}
+
+class MockWishlistDao extends Mock implements WishlistDao {}
 
 // ===== API =====
 
@@ -112,6 +163,12 @@ class MockGamepadEventSource implements GamepadEventSource {
 }
 
 // ===== Fakes =====
+
+/// Фейк [DatabaseException] c поддержкой isUniqueConstraintError.
+class FakeDatabaseException extends Fake implements DatabaseException {
+  @override
+  bool isUniqueConstraintError([String? field]) => true;
+}
 
 class FakeCanvasItem extends Fake implements CanvasItem {}
 
