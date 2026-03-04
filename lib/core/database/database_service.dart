@@ -8,8 +8,8 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../shared/models/collected_item_info.dart';
 import '../../shared/models/collection.dart';
-import '../../shared/models/cover_info.dart';
 import '../../shared/models/collection_item.dart';
+import '../../shared/models/cover_info.dart';
 import '../../shared/models/game.dart';
 import '../../shared/models/item_status.dart';
 import '../../shared/models/media_type.dart';
@@ -20,6 +20,13 @@ import '../../shared/models/tv_season.dart';
 import '../../shared/models/tv_show.dart';
 import '../../shared/models/visual_novel.dart';
 import '../../shared/models/wishlist_item.dart';
+import 'dao/canvas_dao.dart';
+import 'dao/collection_dao.dart';
+import 'dao/game_dao.dart';
+import 'dao/movie_dao.dart';
+import 'dao/tv_show_dao.dart';
+import 'dao/visual_novel_dao.dart';
+import 'dao/wishlist_dao.dart';
 import 'migrations/migration.dart';
 import 'migrations/migration_registry.dart';
 import 'migrations/migration_v24.dart';
@@ -29,6 +36,44 @@ import 'schema.dart';
 final Provider<DatabaseService> databaseServiceProvider =
     Provider<DatabaseService>((Ref ref) {
   return DatabaseService();
+});
+
+/// Провайдер для [GameDao].
+final Provider<GameDao> gameDaoProvider = Provider<GameDao>((Ref ref) {
+  return ref.watch(databaseServiceProvider).gameDao;
+});
+
+/// Провайдер для [MovieDao].
+final Provider<MovieDao> movieDaoProvider = Provider<MovieDao>((Ref ref) {
+  return ref.watch(databaseServiceProvider).movieDao;
+});
+
+/// Провайдер для [TvShowDao].
+final Provider<TvShowDao> tvShowDaoProvider = Provider<TvShowDao>((Ref ref) {
+  return ref.watch(databaseServiceProvider).tvShowDao;
+});
+
+/// Провайдер для [VisualNovelDao].
+final Provider<VisualNovelDao> visualNovelDaoProvider =
+    Provider<VisualNovelDao>((Ref ref) {
+  return ref.watch(databaseServiceProvider).visualNovelDao;
+});
+
+/// Провайдер для [CollectionDao].
+final Provider<CollectionDao> collectionDaoProvider =
+    Provider<CollectionDao>((Ref ref) {
+  return ref.watch(databaseServiceProvider).collectionDao;
+});
+
+/// Провайдер для [CanvasDao].
+final Provider<CanvasDao> canvasDaoProvider = Provider<CanvasDao>((Ref ref) {
+  return ref.watch(databaseServiceProvider).canvasDao;
+});
+
+/// Провайдер для [WishlistDao].
+final Provider<WishlistDao> wishlistDaoProvider =
+    Provider<WishlistDao>((Ref ref) {
+  return ref.watch(databaseServiceProvider).wishlistDao;
 });
 
 /// Сервис для работы с SQLite базой данных.
@@ -45,6 +90,37 @@ class DatabaseService {
     _database = await _initDatabase();
     return _database!;
   }
+
+  // ==================== DAO ====================
+
+  /// DAO для работы с играми, платформами и IGDB-жанрами.
+  late final GameDao gameDao = GameDao(() => database);
+
+  /// DAO для работы с фильмами и TMDB-жанрами.
+  late final MovieDao movieDao = MovieDao(() => database);
+
+  /// DAO для работы с сериалами, сезонами и эпизодами.
+  late final TvShowDao tvShowDao = TvShowDao(() => database);
+
+  /// DAO для работы с визуальными новеллами.
+  late final VisualNovelDao visualNovelDao = VisualNovelDao(() => database);
+
+  /// DAO для работы с коллекциями и элементами коллекций.
+  late final CollectionDao collectionDao = CollectionDao(
+    () => database,
+    gameDao: gameDao,
+    movieDao: movieDao,
+    tvShowDao: tvShowDao,
+    visualNovelDao: visualNovelDao,
+  );
+
+  /// DAO для работы с канвасом.
+  late final CanvasDao canvasDao = CanvasDao(() => database);
+
+  /// DAO для работы с вишлистом.
+  late final WishlistDao wishlistDao = WishlistDao(() => database);
+
+  // ==================== Init ====================
 
   Future<Database> _initDatabase() async {
     // AppSupport вместо Documents — Documents может быть под OneDrive,
@@ -90,485 +166,156 @@ class DatabaseService {
     _log.info('Database upgrade complete');
   }
 
-  // ==================== IGDB Genres ====================
+  // ==================== IGDB Genres (delegates to GameDao) ====================
 
   /// Возвращает все жанры IGDB из кэша.
-  Future<List<Map<String, dynamic>>> getIgdbGenres() async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> rows = await db.query(
-      'igdb_genres',
-      orderBy: 'name ASC',
-    );
-    return rows;
-  }
+  Future<List<Map<String, dynamic>>> getIgdbGenres() => gameDao.getIgdbGenres();
 
-  // ==================== Platforms ====================
+  // ==================== Platforms (delegates to GameDao) ====================
 
   /// Возвращает все платформы из базы данных.
-  Future<List<Platform>> getAllPlatforms() async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> rows = await db.query(
-      'platforms',
-      orderBy: 'name ASC',
-    );
-    return rows.map(Platform.fromDb).toList();
-  }
+  Future<List<Platform>> getAllPlatforms() => gameDao.getAllPlatforms();
 
   /// Возвращает платформу по ID или null, если не найдена.
-  Future<Platform?> getPlatformById(int id) async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> rows = await db.query(
-      'platforms',
-      where: 'id = ?',
-      whereArgs: <Object?>[id],
-      limit: 1,
-    );
-    if (rows.isEmpty) return null;
-    return Platform.fromDb(rows.first);
-  }
+  Future<Platform?> getPlatformById(int id) => gameDao.getPlatformById(id);
 
   /// Возвращает количество платформ в базе данных.
-  Future<int> getPlatformCount() async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> result = await db.rawQuery(
-      'SELECT COUNT(*) as count FROM platforms',
-    );
-    return result.first['count'] as int;
-  }
+  Future<int> getPlatformCount() => gameDao.getPlatformCount();
 
   /// Сохраняет или обновляет платформу в базе данных.
-  Future<void> upsertPlatform(Platform platform) async {
-    final Database db = await database;
-    await db.insert(
-      'platforms',
-      platform.toDb(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-  }
+  Future<void> upsertPlatform(Platform platform) =>
+      gameDao.upsertPlatform(platform);
 
   /// Сохраняет список платформ пакетно.
-  ///
-  /// Использует транзакцию для оптимизации производительности.
-  Future<void> upsertPlatforms(List<Platform> platforms) async {
-    final Database db = await database;
-    await db.transaction((Transaction txn) async {
-      final Batch batch = txn.batch();
-      for (final Platform platform in platforms) {
-        batch.insert(
-          'platforms',
-          platform.toDb(),
-          conflictAlgorithm: ConflictAlgorithm.replace,
-        );
-      }
-      await batch.commit(noResult: true);
-    });
-  }
+  Future<void> upsertPlatforms(List<Platform> platforms) =>
+      gameDao.upsertPlatforms(platforms);
 
   /// Возвращает платформы по списку ID.
-  ///
-  /// Возвращает только те платформы, которые есть в базе данных.
-  Future<List<Platform>> getPlatformsByIds(List<int> ids) async {
-    if (ids.isEmpty) return <Platform>[];
-    final Database db = await database;
-    final String placeholders =
-        List<String>.filled(ids.length, '?').join(',');
-    final List<Map<String, dynamic>> rows = await db.query(
-      'platforms',
-      where: 'id IN ($placeholders)',
-      whereArgs: ids.cast<Object?>(),
-    );
-    return rows.map(Platform.fromDb).toList();
-  }
+  Future<List<Platform>> getPlatformsByIds(List<int> ids) =>
+      gameDao.getPlatformsByIds(ids);
 
-  // ==================== Games ====================
+  // ==================== Games (delegates to GameDao) ====================
 
   /// Возвращает игру по ID или null, если не найдена.
-  Future<Game?> getGameById(int id) async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> rows = await db.query(
-      'games',
-      where: 'id = ?',
-      whereArgs: <Object?>[id],
-      limit: 1,
-    );
-    if (rows.isEmpty) return null;
-    return Game.fromDb(rows.first);
-  }
+  Future<Game?> getGameById(int id) => gameDao.getGameById(id);
 
   /// Возвращает несколько игр по списку ID.
-  Future<List<Game>> getGamesByIds(List<int> ids) async {
-    if (ids.isEmpty) return <Game>[];
-
-    final Database db = await database;
-    final String placeholders = List<String>.filled(ids.length, '?').join(',');
-    final List<Map<String, dynamic>> rows = await db.query(
-      'games',
-      where: 'id IN ($placeholders)',
-      whereArgs: ids.cast<Object?>(),
-    );
-    return rows.map(Game.fromDb).toList();
-  }
+  Future<List<Game>> getGamesByIds(List<int> ids) => gameDao.getGamesByIds(ids);
 
   /// Ищет игры по названию в кеше.
-  ///
-  /// Возвращает список игр, название которых содержит [query].
-  Future<List<Game>> searchGamesInCache(String query, {int limit = 20}) async {
-    if (query.trim().isEmpty) return <Game>[];
-
-    final Database db = await database;
-    final List<Map<String, dynamic>> rows = await db.query(
-      'games',
-      where: 'name LIKE ?',
-      whereArgs: <Object?>['%$query%'],
-      orderBy: 'name ASC',
-      limit: limit,
-    );
-    return rows.map(Game.fromDb).toList();
-  }
+  Future<List<Game>> searchGamesInCache(String query, {int limit = 20}) =>
+      gameDao.searchGamesInCache(query, limit: limit);
 
   /// Возвращает количество игр в кеше.
-  Future<int> getGameCount() async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> result = await db.rawQuery(
-      'SELECT COUNT(*) as count FROM games',
-    );
-    return result.first['count'] as int;
-  }
+  Future<int> getGameCount() => gameDao.getGameCount();
 
   /// Сохраняет или обновляет игру в базе данных.
-  Future<void> upsertGame(Game game) async {
-    final Database db = await database;
-    await db.insert(
-      'games',
-      game.toDb(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-  }
+  Future<void> upsertGame(Game game) => gameDao.upsertGame(game);
 
   /// Сохраняет список игр пакетно.
-  ///
-  /// Использует транзакцию для оптимизации производительности.
-  Future<void> upsertGames(List<Game> games) async {
-    if (games.isEmpty) return;
-
-    final Database db = await database;
-    await db.transaction((Transaction txn) async {
-      final Batch batch = txn.batch();
-      for (final Game game in games) {
-        batch.insert(
-          'games',
-          game.toDb(),
-          conflictAlgorithm: ConflictAlgorithm.replace,
-        );
-      }
-      await batch.commit(noResult: true);
-    });
-  }
+  Future<void> upsertGames(List<Game> games) => gameDao.upsertGames(games);
 
   /// Удаляет игру по ID.
-  Future<void> deleteGame(int id) async {
-    final Database db = await database;
-    await db.delete(
-      'games',
-      where: 'id = ?',
-      whereArgs: <Object?>[id],
-    );
-  }
+  Future<void> deleteGame(int id) => gameDao.deleteGame(id);
 
   /// Удаляет все игры из кеша.
-  Future<void> clearGames() async {
-    final Database db = await database;
-    await db.delete('games');
-  }
+  Future<void> clearGames() => gameDao.clearGames();
 
   /// Удаляет устаревшие игры из кеша.
-  ///
-  /// [maxAgeSeconds] — максимальный возраст записи в секундах.
-  Future<int> clearStaleGames({int maxAgeSeconds = 86400 * 30}) async {
-    final Database db = await database;
-    final int threshold =
-        DateTime.now().millisecondsSinceEpoch ~/ 1000 - maxAgeSeconds;
-    return db.delete(
-      'games',
-      where: 'cached_at < ?',
-      whereArgs: <Object?>[threshold],
-    );
-  }
+  Future<int> clearStaleGames({int maxAgeSeconds = 86400 * 30}) =>
+      gameDao.clearStaleGames(maxAgeSeconds: maxAgeSeconds);
 
-  // ==================== Movies Cache ====================
+  // ==================== Movies Cache (delegates to MovieDao) ====================
 
   /// Возвращает фильм по TMDB ID или null, если не найден.
-  Future<Movie?> getMovieByTmdbId(int tmdbId) async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> rows = await db.query(
-      'movies_cache',
-      where: 'tmdb_id = ?',
-      whereArgs: <Object?>[tmdbId],
-      limit: 1,
-    );
-    if (rows.isEmpty) return null;
-    return Movie.fromDb(rows.first);
-  }
+  Future<Movie?> getMovieByTmdbId(int tmdbId) =>
+      movieDao.getMovieByTmdbId(tmdbId);
 
   /// Сохраняет или обновляет фильм в кеше.
-  Future<void> upsertMovie(Movie movie) async {
-    final Database db = await database;
-    await db.insert(
-      'movies_cache',
-      movie.toDb(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-  }
+  Future<void> upsertMovie(Movie movie) => movieDao.upsertMovie(movie);
 
   /// Сохраняет список фильмов пакетно.
-  Future<void> upsertMovies(List<Movie> movies) async {
-    if (movies.isEmpty) return;
-
-    final Database db = await database;
-    await db.transaction((Transaction txn) async {
-      final Batch batch = txn.batch();
-      for (final Movie movie in movies) {
-        batch.insert(
-          'movies_cache',
-          movie.toDb(),
-          conflictAlgorithm: ConflictAlgorithm.replace,
-        );
-      }
-      await batch.commit(noResult: true);
-    });
-  }
+  Future<void> upsertMovies(List<Movie> movies) =>
+      movieDao.upsertMovies(movies);
 
   /// Возвращает несколько фильмов по списку TMDB ID.
-  Future<List<Movie>> getMoviesByTmdbIds(List<int> tmdbIds) async {
-    if (tmdbIds.isEmpty) return <Movie>[];
-
-    final Database db = await database;
-    final String placeholders =
-        List<String>.filled(tmdbIds.length, '?').join(',');
-    final List<Map<String, dynamic>> rows = await db.query(
-      'movies_cache',
-      where: 'tmdb_id IN ($placeholders)',
-      whereArgs: tmdbIds.cast<Object?>(),
-    );
-    return rows.map(Movie.fromDb).toList();
-  }
+  Future<List<Movie>> getMoviesByTmdbIds(List<int> tmdbIds) =>
+      movieDao.getMoviesByTmdbIds(tmdbIds);
 
   /// Удаляет все фильмы из кеша.
-  Future<void> clearMovies() async {
-    final Database db = await database;
-    await db.delete('movies_cache');
-  }
+  Future<void> clearMovies() => movieDao.clearMovies();
 
-  // ==================== TV Shows Cache ====================
+  // ==================== TV Shows (delegates to TvShowDao) ====================
 
   /// Возвращает сериал по TMDB ID или null, если не найден.
-  Future<TvShow?> getTvShowByTmdbId(int tmdbId) async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> rows = await db.query(
-      'tv_shows_cache',
-      where: 'tmdb_id = ?',
-      whereArgs: <Object?>[tmdbId],
-      limit: 1,
-    );
-    if (rows.isEmpty) return null;
-    return TvShow.fromDb(rows.first);
-  }
+  Future<TvShow?> getTvShowByTmdbId(int tmdbId) =>
+      tvShowDao.getTvShowByTmdbId(tmdbId);
 
   /// Сохраняет или обновляет сериал в кеше.
-  Future<void> upsertTvShow(TvShow tvShow) async {
-    final Database db = await database;
-    await db.insert(
-      'tv_shows_cache',
-      tvShow.toDb(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-  }
+  Future<void> upsertTvShow(TvShow tvShow) => tvShowDao.upsertTvShow(tvShow);
 
   /// Сохраняет список сериалов пакетно.
-  Future<void> upsertTvShows(List<TvShow> tvShows) async {
-    if (tvShows.isEmpty) return;
+  Future<void> upsertTvShows(List<TvShow> tvShows) =>
+      tvShowDao.upsertTvShows(tvShows);
 
-    final Database db = await database;
-    await db.transaction((Transaction txn) async {
-      final Batch batch = txn.batch();
-      for (final TvShow tvShow in tvShows) {
-        batch.insert(
-          'tv_shows_cache',
-          tvShow.toDb(),
-          conflictAlgorithm: ConflictAlgorithm.replace,
-        );
-      }
-      await batch.commit(noResult: true);
-    });
-  }
-
-  // ===== TMDB Жанры =====
+  // ===== TMDB Жанры (delegates to MovieDao) =====
 
   /// Возвращает маппинг ID → имя жанров из кэша.
-  ///
-  /// [type] — тип медиа: `'movie'` или `'tv'`.
-  /// [lang] — язык: `'en'` или `'ru'`.
   Future<Map<String, String>> getTmdbGenreMap(
     String type, {
     String lang = 'en',
-  }) async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> rows = await db.query(
-      'tmdb_genres',
-      where: 'type = ? AND lang = ?',
-      whereArgs: <Object?>[type, lang],
-    );
-
-    return <String, String>{
-      for (final Map<String, dynamic> row in rows)
-        (row['id'] as int).toString(): row['name'] as String,
-    };
-  }
+  }) =>
+      movieDao.getTmdbGenreMap(type, lang: lang);
 
   /// Возвращает несколько сериалов по списку TMDB ID.
-  Future<List<TvShow>> getTvShowsByTmdbIds(List<int> tmdbIds) async {
-    if (tmdbIds.isEmpty) return <TvShow>[];
-
-    final Database db = await database;
-    final String placeholders =
-        List<String>.filled(tmdbIds.length, '?').join(',');
-    final List<Map<String, dynamic>> rows = await db.query(
-      'tv_shows_cache',
-      where: 'tmdb_id IN ($placeholders)',
-      whereArgs: tmdbIds.cast<Object?>(),
-    );
-    return rows.map(TvShow.fromDb).toList();
-  }
+  Future<List<TvShow>> getTvShowsByTmdbIds(List<int> tmdbIds) =>
+      tvShowDao.getTvShowsByTmdbIds(tmdbIds);
 
   /// Удаляет все сериалы из кеша.
-  Future<void> clearTvShows() async {
-    final Database db = await database;
-    await db.delete('tv_shows_cache');
-  }
+  Future<void> clearTvShows() => tvShowDao.clearTvShows();
 
-  // ==================== TV Seasons Cache ====================
+  // ==================== TV Seasons (delegates to TvShowDao) ====================
 
   /// Возвращает сезоны сериала.
-  Future<List<TvSeason>> getTvSeasonsByShowId(int tmdbShowId) async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> rows = await db.query(
-      'tv_seasons_cache',
-      where: 'tmdb_show_id = ?',
-      whereArgs: <Object?>[tmdbShowId],
-      orderBy: 'season_number ASC',
-    );
-    return rows.map(TvSeason.fromDb).toList();
-  }
+  Future<List<TvSeason>> getTvSeasonsByShowId(int tmdbShowId) =>
+      tvShowDao.getTvSeasonsByShowId(tmdbShowId);
 
   /// Сохраняет сезоны сериала пакетно.
-  Future<void> upsertTvSeasons(List<TvSeason> seasons) async {
-    if (seasons.isEmpty) return;
-
-    final Database db = await database;
-    await db.transaction((Transaction txn) async {
-      final Batch batch = txn.batch();
-      for (final TvSeason season in seasons) {
-        batch.insert(
-          'tv_seasons_cache',
-          season.toDb(),
-          conflictAlgorithm: ConflictAlgorithm.replace,
-        );
-      }
-      await batch.commit(noResult: true);
-    });
-  }
+  Future<void> upsertTvSeasons(List<TvSeason> seasons) =>
+      tvShowDao.upsertTvSeasons(seasons);
 
   /// Удаляет все сезоны из кеша.
-  Future<void> clearTvSeasons() async {
-    final Database db = await database;
-    await db.delete('tv_seasons_cache');
-  }
+  Future<void> clearTvSeasons() => tvShowDao.clearTvSeasons();
 
-  // ==================== TV Episodes Cache ====================
+  // ==================== TV Episodes (delegates to TvShowDao) ====================
 
   /// Возвращает все эпизоды сериала из кеша.
-  Future<List<TvEpisode>> getEpisodesByShowId(int showId) async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> rows = await db.query(
-      'tv_episodes_cache',
-      where: 'tmdb_show_id = ?',
-      whereArgs: <Object?>[showId],
-      orderBy: 'season_number ASC, episode_number ASC',
-    );
-    return rows.map(TvEpisode.fromDb).toList();
-  }
+  Future<List<TvEpisode>> getEpisodesByShowId(int showId) =>
+      tvShowDao.getEpisodesByShowId(showId);
 
   /// Возвращает эпизоды сезона сериала из кеша.
   Future<List<TvEpisode>> getEpisodesByShowAndSeason(
     int showId,
     int seasonNumber,
-  ) async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> rows = await db.query(
-      'tv_episodes_cache',
-      where: 'tmdb_show_id = ? AND season_number = ?',
-      whereArgs: <Object?>[showId, seasonNumber],
-      orderBy: 'episode_number ASC',
-    );
-    return rows.map(TvEpisode.fromDb).toList();
-  }
+  ) =>
+      tvShowDao.getEpisodesByShowAndSeason(showId, seasonNumber);
 
   /// Сохраняет список эпизодов пакетно (INSERT OR REPLACE).
-  Future<void> upsertEpisodes(List<TvEpisode> episodes) async {
-    if (episodes.isEmpty) return;
-
-    final Database db = await database;
-    await db.transaction((Transaction txn) async {
-      final Batch batch = txn.batch();
-      for (final TvEpisode episode in episodes) {
-        batch.insert(
-          'tv_episodes_cache',
-          episode.toDb(),
-          conflictAlgorithm: ConflictAlgorithm.replace,
-        );
-      }
-      await batch.commit(noResult: true);
-    });
-  }
+  Future<void> upsertEpisodes(List<TvEpisode> episodes) =>
+      tvShowDao.upsertEpisodes(episodes);
 
   /// Удаляет кешированные эпизоды сериала.
-  Future<void> clearEpisodesByShow(int showId) async {
-    final Database db = await database;
-    await db.delete(
-      'tv_episodes_cache',
-      where: 'tmdb_show_id = ?',
-      whereArgs: <Object?>[showId],
-    );
-  }
+  Future<void> clearEpisodesByShow(int showId) =>
+      tvShowDao.clearEpisodesByShow(showId);
 
-  // ==================== Watched Episodes ====================
+  // ==================== Watched Episodes (delegates to TvShowDao) ====================
 
   /// Возвращает множество просмотренных эпизодов для сериала в коллекции.
-  ///
-  /// Возвращает Set записей (seasonNumber, episodeNumber).
   Future<Map<(int, int), DateTime?>> getWatchedEpisodes(
     int collectionId,
     int showId,
-  ) async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> rows = await db.query(
-      'watched_episodes',
-      columns: <String>['season_number', 'episode_number', 'watched_at'],
-      where: 'collection_id = ? AND show_id = ?',
-      whereArgs: <Object?>[collectionId, showId],
-    );
-    final Map<(int, int), DateTime?> result = <(int, int), DateTime?>{};
-    for (final Map<String, dynamic> row in rows) {
-      final int? watchedAtMs = row['watched_at'] as int?;
-      result[(
-        row['season_number'] as int,
-        row['episode_number'] as int,
-      )] = watchedAtMs != null
-          ? DateTime.fromMillisecondsSinceEpoch(watchedAtMs)
-          : null;
-    }
-    return result;
-  }
+  ) =>
+      tvShowDao.getWatchedEpisodes(collectionId, showId);
 
   /// Отмечает эпизод как просмотренный.
   Future<void> markEpisodeWatched(
@@ -576,20 +323,13 @@ class DatabaseService {
     int showId,
     int seasonNumber,
     int episodeNumber,
-  ) async {
-    final Database db = await database;
-    await db.insert(
-      'watched_episodes',
-      <String, dynamic>{
-        'collection_id': collectionId,
-        'show_id': showId,
-        'season_number': seasonNumber,
-        'episode_number': episodeNumber,
-        'watched_at': DateTime.now().millisecondsSinceEpoch,
-      },
-      conflictAlgorithm: ConflictAlgorithm.ignore,
-    );
-  }
+  ) =>
+      tvShowDao.markEpisodeWatched(
+        collectionId,
+        showId,
+        seasonNumber,
+        episodeNumber,
+      );
 
   /// Снимает отметку просмотра с эпизода.
   Future<void> markEpisodeUnwatched(
@@ -597,29 +337,20 @@ class DatabaseService {
     int showId,
     int seasonNumber,
     int episodeNumber,
-  ) async {
-    final Database db = await database;
-    await db.delete(
-      'watched_episodes',
-      where: 'collection_id = ? AND show_id = ? '
-          'AND season_number = ? AND episode_number = ?',
-      whereArgs: <Object?>[collectionId, showId, seasonNumber, episodeNumber],
-    );
-  }
+  ) =>
+      tvShowDao.markEpisodeUnwatched(
+        collectionId,
+        showId,
+        seasonNumber,
+        episodeNumber,
+      );
 
   /// Возвращает количество просмотренных эпизодов для сериала в коллекции.
   Future<int> getWatchedEpisodeCount(
     int collectionId,
     int showId,
-  ) async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> result = await db.rawQuery(
-      'SELECT COUNT(*) as cnt FROM watched_episodes '
-      'WHERE collection_id = ? AND show_id = ?',
-      <Object?>[collectionId, showId],
-    );
-    return result.first['cnt'] as int;
-  }
+  ) =>
+      tvShowDao.getWatchedEpisodeCount(collectionId, showId);
 
   /// Отмечает все эпизоды сезона как просмотренные.
   Future<void> markSeasonWatched(
@@ -627,80 +358,35 @@ class DatabaseService {
     int showId,
     int seasonNumber,
     List<int> episodeNumbers,
-  ) async {
-    if (episodeNumbers.isEmpty) return;
-
-    final Database db = await database;
-    final int now = DateTime.now().millisecondsSinceEpoch;
-    await db.transaction((Transaction txn) async {
-      final Batch batch = txn.batch();
-      for (final int ep in episodeNumbers) {
-        batch.insert(
-          'watched_episodes',
-          <String, dynamic>{
-            'collection_id': collectionId,
-            'show_id': showId,
-            'season_number': seasonNumber,
-            'episode_number': ep,
-            'watched_at': now,
-          },
-          conflictAlgorithm: ConflictAlgorithm.ignore,
-        );
-      }
-      await batch.commit(noResult: true);
-    });
-  }
+  ) =>
+      tvShowDao.markSeasonWatched(
+        collectionId,
+        showId,
+        seasonNumber,
+        episodeNumbers,
+      );
 
   /// Снимает отметку просмотра со всех эпизодов сезона.
   Future<void> unmarkSeasonWatched(
     int collectionId,
     int showId,
     int seasonNumber,
-  ) async {
-    final Database db = await database;
-    await db.delete(
-      'watched_episodes',
-      where: 'collection_id = ? AND show_id = ? AND season_number = ?',
-      whereArgs: <Object?>[collectionId, showId, seasonNumber],
-    );
-  }
+  ) =>
+      tvShowDao.unmarkSeasonWatched(collectionId, showId, seasonNumber);
 
-  // ==================== Collections ====================
+  // ==================== Collections (delegates to CollectionDao) ====================
 
   /// Возвращает все коллекции.
-  Future<List<Collection>> getAllCollections() async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> rows = await db.query(
-      'collections',
-      orderBy: 'created_at DESC',
-    );
-    return rows.map(Collection.fromDb).toList();
-  }
+  Future<List<Collection>> getAllCollections() =>
+      collectionDao.getAllCollections();
 
   /// Возвращает коллекции по типу.
-  Future<List<Collection>> getCollectionsByType(CollectionType type) async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> rows = await db.query(
-      'collections',
-      where: 'type = ?',
-      whereArgs: <Object?>[type.value],
-      orderBy: 'created_at DESC',
-    );
-    return rows.map(Collection.fromDb).toList();
-  }
+  Future<List<Collection>> getCollectionsByType(CollectionType type) =>
+      collectionDao.getCollectionsByType(type);
 
   /// Возвращает коллекцию по ID или null, если не найдена.
-  Future<Collection?> getCollectionById(int id) async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> rows = await db.query(
-      'collections',
-      where: 'id = ?',
-      whereArgs: <Object?>[id],
-      limit: 1,
-    );
-    if (rows.isEmpty) return null;
-    return Collection.fromDb(rows.first);
-  }
+  Future<Collection?> getCollectionById(int id) =>
+      collectionDao.getCollectionById(id);
 
   /// Создаёт новую коллекцию и возвращает её с присвоенным ID.
   Future<Collection> createCollection({
@@ -710,342 +396,74 @@ class DatabaseService {
     String? originalSnapshot,
     String? forkedFromAuthor,
     String? forkedFromName,
-  }) async {
-    final Database db = await database;
-    final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-
-    final int id = await db.insert(
-      'collections',
-      <String, dynamic>{
-        'name': name,
-        'author': author,
-        'type': type.value,
-        'created_at': now,
-        'original_snapshot': originalSnapshot,
-        'forked_from_author': forkedFromAuthor,
-        'forked_from_name': forkedFromName,
-      },
-    );
-
-    return Collection(
-      id: id,
-      name: name,
-      author: author,
-      type: type,
-      createdAt: DateTime.fromMillisecondsSinceEpoch(now * 1000),
-      originalSnapshot: originalSnapshot,
-      forkedFromAuthor: forkedFromAuthor,
-      forkedFromName: forkedFromName,
-    );
-  }
+  }) =>
+      collectionDao.createCollection(
+        name: name,
+        author: author,
+        type: type,
+        originalSnapshot: originalSnapshot,
+        forkedFromAuthor: forkedFromAuthor,
+        forkedFromName: forkedFromName,
+      );
 
   /// Обновляет коллекцию.
-  Future<void> updateCollection(int id, {String? name}) async {
-    if (name == null) return;
-
-    final Database db = await database;
-    await db.update(
-      'collections',
-      <String, dynamic>{'name': name},
-      where: 'id = ?',
-      whereArgs: <Object?>[id],
-    );
-  }
+  Future<void> updateCollection(int id, {String? name}) =>
+      collectionDao.updateCollection(id, name: name);
 
   /// Удаляет коллекцию и все связанные игры (каскадно).
-  Future<void> deleteCollection(int id) async {
-    final Database db = await database;
-    await db.delete(
-      'collections',
-      where: 'id = ?',
-      whereArgs: <Object?>[id],
-    );
-  }
+  Future<void> deleteCollection(int id) => collectionDao.deleteCollection(id);
 
   /// Возвращает количество коллекций.
-  Future<int> getCollectionCount() async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> result = await db.rawQuery(
-      'SELECT COUNT(*) as count FROM collections',
-    );
-    return result.first['count'] as int;
-  }
+  Future<int> getCollectionCount() => collectionDao.getCollectionCount();
 
-  // ==================== Collection Items ====================
+  // ==================== Collection Items (delegates to CollectionDao) ====================
 
   /// Возвращает все элементы в коллекции.
-  ///
-  /// Если [collectionId] == null, возвращает uncategorized элементы.
   Future<List<CollectionItem>> getCollectionItems(
     int? collectionId, {
     MediaType? mediaType,
-  }) async {
-    final Database db = await database;
-    String where;
-    final List<Object?> whereArgs = <Object?>[];
-    if (collectionId != null) {
-      where = 'collection_id = ?';
-      whereArgs.add(collectionId);
-    } else {
-      where = 'collection_id IS NULL';
-    }
-    if (mediaType != null) {
-      where += ' AND media_type = ?';
-      whereArgs.add(mediaType.value);
-    }
-    final List<Map<String, dynamic>> rows = await db.query(
-      'collection_items',
-      where: where,
-      whereArgs: whereArgs,
-      orderBy: 'sort_order ASC',
-    );
-    return rows.map(CollectionItem.fromDb).toList();
-  }
+  }) =>
+      collectionDao.getCollectionItems(collectionId, mediaType: mediaType);
 
   /// Возвращает элементы коллекции с подгруженными данными.
-  ///
-  /// Если [collectionId] == null, возвращает uncategorized элементы.
   Future<List<CollectionItem>> getCollectionItemsWithData(
     int? collectionId, {
     MediaType? mediaType,
-  }) async {
-    final List<CollectionItem> items = await getCollectionItems(
-      collectionId,
-      mediaType: mediaType,
-    );
-    if (items.isEmpty) return items;
-    return _loadJoinedData(items);
-  }
+  }) =>
+      collectionDao.getCollectionItemsWithData(
+        collectionId,
+        mediaType: mediaType,
+      );
 
   /// Возвращает все элементы из всех коллекций.
   Future<List<CollectionItem>> getAllCollectionItems({
     MediaType? mediaType,
-  }) async {
-    final Database db = await database;
-    String? where;
-    List<Object?>? whereArgs;
-    if (mediaType != null) {
-      where = 'media_type = ?';
-      whereArgs = <Object?>[mediaType.value];
-    }
-    final List<Map<String, dynamic>> rows = await db.query(
-      'collection_items',
-      where: where,
-      whereArgs: whereArgs,
-      orderBy: 'added_at DESC',
-    );
-    return rows.map(CollectionItem.fromDb).toList();
-  }
+  }) =>
+      collectionDao.getAllCollectionItems(mediaType: mediaType);
 
   /// Возвращает все элементы из всех коллекций с подгруженными данными.
   Future<List<CollectionItem>> getAllCollectionItemsWithData({
     MediaType? mediaType,
-  }) async {
-    final List<CollectionItem> items = await getAllCollectionItems(
-      mediaType: mediaType,
-    );
-    if (items.isEmpty) return items;
-    return _loadJoinedData(items);
-  }
-
-  /// Загружает связанные данные (Game, Movie, TvShow, Platform) для элементов.
-  Future<List<CollectionItem>> _loadJoinedData(
-    List<CollectionItem> items,
-  ) async {
-    // Собираем ID по типам
-    final List<int> gameIds = <int>[];
-    final List<int> movieIds = <int>[];
-    final List<int> tvShowIds = <int>[];
-    final List<int> vnIds = <int>[];
-    final Set<int> platformIds = <int>{};
-
-    for (final CollectionItem item in items) {
-      switch (item.mediaType) {
-        case MediaType.game:
-          gameIds.add(item.externalId);
-          if (item.platformId != null) {
-            platformIds.add(item.platformId!);
-          }
-        case MediaType.movie:
-          movieIds.add(item.externalId);
-        case MediaType.tvShow:
-          tvShowIds.add(item.externalId);
-        case MediaType.animation:
-          if (item.platformId == AnimationSource.tvShow) {
-            tvShowIds.add(item.externalId);
-          } else {
-            movieIds.add(item.externalId);
-          }
-        case MediaType.visualNovel:
-          vnIds.add(item.externalId);
-      }
-    }
-
-    // Загружаем данные параллельно
-    final List<Game> games =
-        gameIds.isNotEmpty ? await getGamesByIds(gameIds) : <Game>[];
-    final List<Movie> movies =
-        movieIds.isNotEmpty ? await getMoviesByTmdbIds(movieIds) : <Movie>[];
-    final List<TvShow> tvShows = tvShowIds.isNotEmpty
-        ? await getTvShowsByTmdbIds(tvShowIds)
-        : <TvShow>[];
-    final List<VisualNovel> visualNovels = vnIds.isNotEmpty
-        ? await getVisualNovelsByNumericIds(vnIds)
-        : <VisualNovel>[];
-
-    // Загружаем платформы
-    Map<int, Platform> platformsMap = <int, Platform>{};
-    if (platformIds.isNotEmpty) {
-      final List<Platform> platforms =
-          await getPlatformsByIds(platformIds.toList());
-      platformsMap = <int, Platform>{
-        for (final Platform p in platforms) p.id: p,
-      };
-    }
-
-    // Резолвим жанры из числовых ID в имена (если есть нерезолвленные)
-    final List<Movie> resolvedMovies = await _resolveGenresIfNeeded(
-      movies,
-      'movie',
-      (Movie m) => m.genres,
-      (Movie m, List<String> g) => m.copyWith(genres: g),
-    );
-    final List<TvShow> resolvedTvShows = await _resolveGenresIfNeeded(
-      tvShows,
-      'tv',
-      (TvShow t) => t.genres,
-      (TvShow t, List<String> g) => t.copyWith(genres: g),
-    );
-
-    // Создаём карты для быстрого поиска
-    final Map<int, Game> gamesMap = <int, Game>{
-      for (final Game g in games) g.id: g,
-    };
-    final Map<int, Movie> moviesMap = <int, Movie>{
-      for (final Movie m in resolvedMovies) m.tmdbId: m,
-    };
-    final Map<int, TvShow> tvShowsMap = <int, TvShow>{
-      for (final TvShow t in resolvedTvShows) t.tmdbId: t,
-    };
-    final Map<int, VisualNovel> vnMap = <int, VisualNovel>{
-      for (final VisualNovel vn in visualNovels) vn.numericId: vn,
-    };
-
-    // Собираем результат
-    return items.map((CollectionItem item) {
-      switch (item.mediaType) {
-        case MediaType.game:
-          return item.copyWith(
-            game: gamesMap[item.externalId],
-            platform: item.platformId != null
-                ? platformsMap[item.platformId]
-                : null,
-          );
-        case MediaType.movie:
-          return item.copyWith(movie: moviesMap[item.externalId]);
-        case MediaType.tvShow:
-          return item.copyWith(tvShow: tvShowsMap[item.externalId]);
-        case MediaType.animation:
-          if (item.platformId == AnimationSource.tvShow) {
-            return item.copyWith(tvShow: tvShowsMap[item.externalId]);
-          }
-          return item.copyWith(movie: moviesMap[item.externalId]);
-        case MediaType.visualNovel:
-          return item.copyWith(visualNovel: vnMap[item.externalId]);
-      }
-    }).toList();
-  }
-
-  /// Проверяет, является ли строка числовым ID (нерезолвленный жанр).
-  static bool _isNumericGenre(String genre) {
-    return int.tryParse(genre) != null;
-  }
-
-  /// Резолвит числовые genre_ids в имена для списка медиа-элементов.
-  ///
-  /// Проверяет жанры каждого элемента: если хотя бы один жанр — числовой ID,
-  /// загружает маппинг из кэша `tmdb_genres` и заменяет ID на имена.
-  /// Если кэш пуст или нет нерезолвленных жанров, возвращает исходный список.
-  Future<List<T>> _resolveGenresIfNeeded<T>(
-    List<T> items,
-    String genreType,
-    List<String>? Function(T item) getGenres,
-    T Function(T item, List<String> genres) withGenres,
-  ) async {
-    if (items.isEmpty) return items;
-
-    // Проверяем, есть ли нерезолвленные жанры (числовые ID)
-    final bool hasUnresolved = items.any((T item) {
-      final List<String>? genres = getGenres(item);
-      return genres != null && genres.any(_isNumericGenre);
-    });
-    if (!hasUnresolved) return items;
-
-    // Загружаем маппинг из кэша
-    final Map<String, String> genreMap = await getTmdbGenreMap(genreType);
-    if (genreMap.isEmpty) return items;
-
-    return items.map((T item) {
-      final List<String>? genres = getGenres(item);
-      if (genres == null || genres.isEmpty) return item;
-      if (!genres.any(_isNumericGenre)) return item;
-
-      final List<String> resolved =
-          genres.map((String g) => genreMap[g] ?? g).toList();
-      return withGenres(item, resolved);
-    }).toList();
-  }
+  }) =>
+      collectionDao.getAllCollectionItemsWithData(mediaType: mediaType);
 
   /// Возвращает элемент коллекции по ID.
-  Future<CollectionItem?> getCollectionItemById(int id) async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> rows = await db.query(
-      'collection_items',
-      where: 'id = ?',
-      whereArgs: <Object?>[id],
-      limit: 1,
-    );
-    if (rows.isEmpty) return null;
-    return CollectionItem.fromDb(rows.first);
-  }
+  Future<CollectionItem?> getCollectionItemById(int id) =>
+      collectionDao.getCollectionItemById(id);
 
   /// Находит элемент коллекции по типу медиа и внешнему ID.
-  ///
-  /// Возвращает null если элемент не найден в указанной коллекции.
   Future<CollectionItem?> findCollectionItem({
     required int? collectionId,
     required MediaType mediaType,
     required int externalId,
-  }) async {
-    final Database db = await database;
-    String where;
-    final List<Object?> whereArgs = <Object?>[];
-
-    if (collectionId != null) {
-      where = 'collection_id = ? AND media_type = ? AND external_id = ?';
-      whereArgs.addAll(
-        <Object?>[collectionId, mediaType.value, externalId],
+  }) =>
+      collectionDao.findCollectionItem(
+        collectionId: collectionId,
+        mediaType: mediaType,
+        externalId: externalId,
       );
-    } else {
-      where = 'collection_id IS NULL AND media_type = ? AND external_id = ?';
-      whereArgs.addAll(<Object?>[mediaType.value, externalId]);
-    }
-
-    final List<Map<String, dynamic>> rows = await db.query(
-      'collection_items',
-      where: where,
-      whereArgs: whereArgs,
-      limit: 1,
-    );
-
-    if (rows.isEmpty) return null;
-    return CollectionItem.fromDb(rows.first);
-  }
 
   /// Добавляет элемент в коллекцию.
-  ///
-  /// Если [collectionId] == null, элемент добавляется как uncategorized.
-  /// Возвращает ID созданной записи или null при конфликте.
   Future<int?> addItemToCollection({
     required int? collectionId,
     required MediaType mediaType,
@@ -1053,135 +471,38 @@ class DatabaseService {
     int? platformId,
     String? authorComment,
     ItemStatus status = ItemStatus.notStarted,
-  }) async {
-    final Database db = await database;
-    final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-
-    try {
-      final int sortOrder = await getNextSortOrder(collectionId);
-      final int id = await db.insert(
-        'collection_items',
-        <String, dynamic>{
-          'collection_id': collectionId,
-          'media_type': mediaType.value,
-          'external_id': externalId,
-          'platform_id': platformId,
-          'status': status.value,
-          'author_comment': authorComment,
-          'added_at': now,
-          'sort_order': sortOrder,
-        },
+  }) =>
+      collectionDao.addItemToCollection(
+        collectionId: collectionId,
+        mediaType: mediaType,
+        externalId: externalId,
+        platformId: platformId,
+        authorComment: authorComment,
+        status: status,
       );
-      return id;
-    } on DatabaseException catch (e) {
-      if (e.isUniqueConstraintError()) {
-        return null;
-      }
-      rethrow;
-    }
-  }
 
   /// Возвращает следующий sort_order для коллекции.
-  ///
-  /// Если [collectionId] == null, возвращает sort_order для uncategorized.
-  Future<int> getNextSortOrder(int? collectionId) async {
-    final Database db = await database;
-    final String where = collectionId != null
-        ? 'WHERE collection_id = ?'
-        : 'WHERE collection_id IS NULL';
-    final List<Object?> args =
-        collectionId != null ? <Object?>[collectionId] : <Object?>[];
-    final List<Map<String, dynamic>> result = await db.rawQuery(
-      'SELECT MAX(sort_order) AS max_sort FROM collection_items $where',
-      args,
-    );
-    final int maxSort = (result.first['max_sort'] as int?) ?? -1;
-    return maxSort + 1;
-  }
+  Future<int> getNextSortOrder(int? collectionId) =>
+      collectionDao.getNextSortOrder(collectionId);
 
   /// Пересортировывает элементы коллекции после drag-and-drop.
-  ///
-  /// Обновляет sort_order всех элементов в транзакции.
   Future<void> reorderItems(
     int? collectionId,
     List<int> orderedItemIds,
-  ) async {
-    final Database db = await database;
-    await db.transaction((Transaction txn) async {
-      for (int i = 0; i < orderedItemIds.length; i++) {
-        await txn.update(
-          'collection_items',
-          <String, dynamic>{'sort_order': i},
-          where: 'id = ?',
-          whereArgs: <Object?>[orderedItemIds[i]],
-        );
-      }
-    });
-  }
+  ) =>
+      collectionDao.reorderItems(collectionId, orderedItemIds);
 
   /// Удаляет элемент из коллекции.
-  Future<void> removeItemFromCollection(int id) async {
-    final Database db = await database;
-    await db.delete(
-      'collection_items',
-      where: 'id = ?',
-      whereArgs: <Object?>[id],
-    );
-  }
+  Future<void> removeItemFromCollection(int id) =>
+      collectionDao.removeItemFromCollection(id);
 
   /// Обновляет статус элемента коллекции.
-  ///
-  /// Автоматически устанавливает даты активности:
-  /// - `last_activity_at` обновляется всегда
-  /// - `started_at` устанавливается при переходе в inProgress (если null)
-  /// - `completed_at` устанавливается при переходе в completed
   Future<void> updateItemStatus(
     int id,
     ItemStatus status, {
     required MediaType mediaType,
-  }) async {
-    final Database db = await database;
-    final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-
-    final Map<String, dynamic> updateData = <String, dynamic>{
-      'status': status.value,
-      'last_activity_at': now,
-    };
-
-    // Получаем текущий элемент для проверки дат
-    final List<Map<String, dynamic>> rows = await db.query(
-      'collection_items',
-      columns: <String>['started_at'],
-      where: 'id = ?',
-      whereArgs: <Object?>[id],
-      limit: 1,
-    );
-
-    final bool hasStartedAt =
-        rows.isNotEmpty && rows.first['started_at'] != null;
-
-    if (status == ItemStatus.notStarted) {
-      updateData['started_at'] = null;
-      updateData['completed_at'] = null;
-    } else if (status == ItemStatus.inProgress) {
-      updateData['completed_at'] = null;
-      if (!hasStartedAt) {
-        updateData['started_at'] = now;
-      }
-    } else if (status == ItemStatus.completed) {
-      updateData['completed_at'] = now;
-      if (!hasStartedAt) {
-        updateData['started_at'] = now;
-      }
-    }
-
-    await db.update(
-      'collection_items',
-      updateData,
-      where: 'id = ?',
-      whereArgs: <Object?>[id],
-    );
-  }
+  }) =>
+      collectionDao.updateItemStatus(id, status, mediaType: mediaType);
 
   /// Обновляет даты активности элемента коллекции вручную.
   Future<void> updateItemActivityDates(
@@ -1189,357 +510,109 @@ class DatabaseService {
     DateTime? startedAt,
     DateTime? completedAt,
     DateTime? lastActivityAt,
-  }) async {
-    final Database db = await database;
-    final Map<String, dynamic> data = <String, dynamic>{};
-    if (startedAt != null) {
-      data['started_at'] = startedAt.millisecondsSinceEpoch ~/ 1000;
-    }
-    if (completedAt != null) {
-      data['completed_at'] = completedAt.millisecondsSinceEpoch ~/ 1000;
-    }
-    if (lastActivityAt != null) {
-      data['last_activity_at'] =
-          lastActivityAt.millisecondsSinceEpoch ~/ 1000;
-    }
-    if (data.isEmpty) return;
-    await db.update(
-      'collection_items',
-      data,
-      where: 'id = ?',
-      whereArgs: <Object?>[id],
-    );
-  }
+  }) =>
+      collectionDao.updateItemActivityDates(
+        id,
+        startedAt: startedAt,
+        completedAt: completedAt,
+        lastActivityAt: lastActivityAt,
+      );
 
   /// Обновляет прогресс просмотра сериала.
   Future<void> updateItemProgress(
     int id, {
     int? currentSeason,
     int? currentEpisode,
-  }) async {
-    final Database db = await database;
-    final Map<String, dynamic> data = <String, dynamic>{};
-    if (currentSeason != null) {
-      data['current_season'] = currentSeason;
-    }
-    if (currentEpisode != null) {
-      data['current_episode'] = currentEpisode;
-    }
-    if (data.isEmpty) return;
-    await db.update(
-      'collection_items',
-      data,
-      where: 'id = ?',
-      whereArgs: <Object?>[id],
-    );
-  }
+  }) =>
+      collectionDao.updateItemProgress(
+        id,
+        currentSeason: currentSeason,
+        currentEpisode: currentEpisode,
+      );
 
   /// Обновляет комментарий автора элемента.
-  Future<void> updateItemAuthorComment(int id, String? comment) async {
-    final Database db = await database;
-    await db.update(
-      'collection_items',
-      <String, dynamic>{'author_comment': comment},
-      where: 'id = ?',
-      whereArgs: <Object?>[id],
-    );
-  }
+  Future<void> updateItemAuthorComment(int id, String? comment) =>
+      collectionDao.updateItemAuthorComment(id, comment);
 
   /// Обновляет личный комментарий пользователя элемента.
-  Future<void> updateItemUserComment(int id, String? comment) async {
-    final Database db = await database;
-    await db.update(
-      'collection_items',
-      <String, dynamic>{'user_comment': comment},
-      where: 'id = ?',
-      whereArgs: <Object?>[id],
-    );
-  }
+  Future<void> updateItemUserComment(int id, String? comment) =>
+      collectionDao.updateItemUserComment(id, comment);
 
   /// Обновляет пользовательский рейтинг элемента (1-10 или null).
-  Future<void> updateItemUserRating(int id, int? rating) async {
-    final Database db = await database;
-    await db.update(
-      'collection_items',
-      <String, dynamic>{'user_rating': rating},
-      where: 'id = ?',
-      whereArgs: <Object?>[id],
-    );
-  }
+  Future<void> updateItemUserRating(int id, int? rating) =>
+      collectionDao.updateItemUserRating(id, rating);
 
   /// Обновляет collection_id элемента (перемещает в другую коллекцию).
-  ///
-  /// Передайте [collectionId] = null для перемещения в uncategorized.
-  /// Также обновляет sort_order для целевой коллекции.
-  /// Возвращает true при успехе, false если элемент уже есть в целевой
-  /// коллекции (UNIQUE constraint).
-  Future<bool> updateItemCollectionId(int id, int? collectionId) async {
-    final Database db = await database;
-    final int newSortOrder = await getNextSortOrder(collectionId);
-    try {
-      await db.update(
-        'collection_items',
-        <String, dynamic>{
-          'collection_id': collectionId,
-          'sort_order': newSortOrder,
-        },
-        where: 'id = ?',
-        whereArgs: <Object?>[id],
-      );
-      return true;
-    } on DatabaseException catch (e) {
-      if (e.isUniqueConstraintError()) {
-        return false;
-      }
-      rethrow;
-    }
-  }
+  Future<bool> updateItemCollectionId(int id, int? collectionId) =>
+      collectionDao.updateItemCollectionId(id, collectionId);
 
   /// Возвращает уникальные platform_id из игр в коллекциях.
-  ///
-  /// Если [collectionId] указан, фильтрует по этой коллекции.
-  /// Если null — возвращает платформы из всех коллекций.
-  /// Исключает platform_id = NULL и platform_id = -1.
-  Future<List<int>> getUniquePlatformIds({int? collectionId}) async {
-    final Database db = await database;
-    final StringBuffer sql = StringBuffer('''
-      SELECT DISTINCT platform_id FROM collection_items
-      WHERE media_type = 'game'
-        AND platform_id IS NOT NULL
-        AND platform_id != -1
-    ''');
-    final List<Object?> args = <Object?>[];
-    if (collectionId != null) {
-      sql.write(' AND collection_id = ?');
-      args.add(collectionId);
-    }
-    sql.write(' ORDER BY platform_id');
-    final List<Map<String, dynamic>> rows =
-        await db.rawQuery(sql.toString(), args);
-    return rows
-        .map((Map<String, dynamic> row) => row['platform_id'] as int)
-        .toList();
-  }
+  Future<List<int>> getUniquePlatformIds({int? collectionId}) =>
+      collectionDao.getUniquePlatformIds(collectionId: collectionId);
 
   /// Возвращает количество элементов в коллекции.
-  ///
-  /// Если [collectionId] == null, считает uncategorized элементы.
   Future<int> getCollectionItemCount(
     int? collectionId, {
     MediaType? mediaType,
-  }) async {
-    final Database db = await database;
-    String sql;
-    final List<Object?> args = <Object?>[];
-    if (collectionId != null) {
-      sql =
-          'SELECT COUNT(*) as count FROM collection_items '
-          'WHERE collection_id = ?';
-      args.add(collectionId);
-    } else {
-      sql =
-          'SELECT COUNT(*) as count FROM collection_items '
-          'WHERE collection_id IS NULL';
-    }
-    if (mediaType != null) {
-      sql += ' AND media_type = ?';
-      args.add(mediaType.value);
-    }
-    final List<Map<String, dynamic>> result = await db.rawQuery(sql, args);
-    return result.first['count'] as int;
-  }
+  }) =>
+      collectionDao.getCollectionItemCount(collectionId, mediaType: mediaType);
 
   /// Возвращает расширенную статистику по коллекции.
-  ///
-  /// Если [collectionId] == null, возвращает статистику uncategorized.
-  Future<Map<String, int>> getCollectionItemStats(int? collectionId) async {
-    final Database db = await database;
-    final String where = collectionId != null
-        ? 'WHERE collection_id = ?'
-        : 'WHERE collection_id IS NULL';
-    final List<Object?> args =
-        collectionId != null ? <Object?>[collectionId] : <Object?>[];
-    final List<Map<String, dynamic>> result = await db.rawQuery(
-      'SELECT media_type, status, COUNT(*) as count FROM collection_items '
-      '$where GROUP BY media_type, status',
-      args,
-    );
-
-    final Map<String, int> stats = <String, int>{
-      'total': 0,
-      'completed': 0,
-      'inProgress': 0,
-      'notStarted': 0,
-      'dropped': 0,
-      'planned': 0,
-      'gameCount': 0,
-      'movieCount': 0,
-      'tvShowCount': 0,
-      'animationCount': 0,
-      'visualNovelCount': 0,
-    };
-
-    for (final Map<String, dynamic> row in result) {
-      final String status = row['status'] as String;
-      final String type = row['media_type'] as String;
-      final int count = row['count'] as int;
-      stats['total'] = (stats['total'] ?? 0) + count;
-
-      // Подсчёт по типам медиа
-      switch (type) {
-        case 'game':
-          stats['gameCount'] = (stats['gameCount'] ?? 0) + count;
-        case 'movie':
-          stats['movieCount'] = (stats['movieCount'] ?? 0) + count;
-        case 'tv_show':
-          stats['tvShowCount'] = (stats['tvShowCount'] ?? 0) + count;
-        case 'animation':
-          stats['animationCount'] = (stats['animationCount'] ?? 0) + count;
-        case 'visual_novel':
-          stats['visualNovelCount'] =
-              (stats['visualNovelCount'] ?? 0) + count;
-      }
-
-      // Подсчёт по статусам
-      switch (status) {
-        case 'completed':
-          stats['completed'] = (stats['completed'] ?? 0) + count;
-        case 'in_progress':
-          stats['inProgress'] = (stats['inProgress'] ?? 0) + count;
-        case 'not_started':
-          stats['notStarted'] = (stats['notStarted'] ?? 0) + count;
-        case 'dropped':
-          stats['dropped'] = (stats['dropped'] ?? 0) + count;
-        case 'planned':
-          stats['planned'] = (stats['planned'] ?? 0) + count;
-      }
-    }
-
-    return stats;
-  }
+  Future<Map<String, int>> getCollectionItemStats(int? collectionId) =>
+      collectionDao.getCollectionItemStats(collectionId);
 
   /// Удаляет все элементы из коллекции.
-  ///
-  /// Если [collectionId] == null, удаляет uncategorized элементы.
-  Future<void> clearCollectionItems(int? collectionId) async {
-    final Database db = await database;
-    if (collectionId != null) {
-      await db.delete(
-        'collection_items',
-        where: 'collection_id = ?',
-        whereArgs: <Object?>[collectionId],
-      );
-    } else {
-      await db.delete(
-        'collection_items',
-        where: 'collection_id IS NULL',
-      );
-    }
-  }
+  Future<void> clearCollectionItems(int? collectionId) =>
+      collectionDao.clearCollectionItems(collectionId);
 
-  // ==================== Canvas Items ====================
+  // ==================== Canvas Items (delegates to CanvasDao) ====================
 
   /// Возвращает все элементы канваса для коллекции.
-  Future<List<Map<String, dynamic>>> getCanvasItems(int collectionId) async {
-    final Database db = await database;
-    return db.query(
-      'canvas_items',
-      where: 'collection_id = ? AND collection_item_id IS NULL',
-      whereArgs: <Object?>[collectionId],
-      orderBy: 'z_index ASC',
-    );
-  }
+  Future<List<Map<String, dynamic>>> getCanvasItems(int collectionId) =>
+      canvasDao.getCanvasItems(collectionId);
 
   /// Вставляет элемент канваса и возвращает его ID.
-  Future<int> insertCanvasItem(Map<String, dynamic> data) async {
-    final Database db = await database;
-    return db.insert('canvas_items', data);
-  }
+  Future<int> insertCanvasItem(Map<String, dynamic> data) =>
+      canvasDao.insertCanvasItem(data);
 
   /// Обновляет элемент канваса по ID.
-  Future<void> updateCanvasItem(int id, Map<String, dynamic> data) async {
-    final Database db = await database;
-    await db.update(
-      'canvas_items',
-      data,
-      where: 'id = ?',
-      whereArgs: <Object?>[id],
-    );
-  }
+  Future<void> updateCanvasItem(int id, Map<String, dynamic> data) =>
+      canvasDao.updateCanvasItem(id, data);
 
   /// Удаляет элемент канваса по ID.
-  Future<void> deleteCanvasItem(int id) async {
-    final Database db = await database;
-    await db.delete(
-      'canvas_items',
-      where: 'id = ?',
-      whereArgs: <Object?>[id],
-    );
-  }
+  Future<void> deleteCanvasItem(int id) => canvasDao.deleteCanvasItem(id);
 
   /// Удаляет элемент канваса по типу и ID связанного объекта.
   Future<void> deleteCanvasItemByRef(
     int collectionId,
     String itemType,
     int itemRefId,
-  ) async {
-    final Database db = await database;
-    await db.delete(
-      'canvas_items',
-      where: 'collection_id = ? AND item_type = ? AND item_ref_id = ?'
-          ' AND collection_item_id IS NULL',
-      whereArgs: <Object?>[collectionId, itemType, itemRefId],
-    );
-  }
+  ) =>
+      canvasDao.deleteCanvasItemByRef(collectionId, itemType, itemRefId);
 
   /// Удаляет элемент канваса по collection_item_id.
   Future<void> deleteCanvasItemByCollectionItemId(
     int collectionId,
     int collectionItemId,
-  ) async {
-    final Database db = await database;
-    await db.delete(
-      'canvas_items',
-      where: 'collection_id = ? AND collection_item_id = ?',
-      whereArgs: <Object?>[collectionId, collectionItemId],
-    );
-  }
+  ) =>
+      canvasDao.deleteCanvasItemByCollectionItemId(
+        collectionId,
+        collectionItemId,
+      );
 
   /// Удаляет все элементы канваса коллекции (без per-item элементов).
-  Future<void> deleteCanvasItemsByCollection(int collectionId) async {
-    final Database db = await database;
-    await db.delete(
-      'canvas_items',
-      where: 'collection_id = ? AND collection_item_id IS NULL',
-      whereArgs: <Object?>[collectionId],
-    );
-  }
+  Future<void> deleteCanvasItemsByCollection(int collectionId) =>
+      canvasDao.deleteCanvasItemsByCollection(collectionId);
 
   /// Возвращает количество элементов канваса для коллекции.
-  Future<int> getCanvasItemCount(int collectionId) async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> result = await db.rawQuery(
-      'SELECT COUNT(*) as count FROM canvas_items'
-          ' WHERE collection_id = ? AND collection_item_id IS NULL',
-      <Object?>[collectionId],
-    );
-    return result.first['count'] as int;
-  }
+  Future<int> getCanvasItemCount(int collectionId) =>
+      canvasDao.getCanvasItemCount(collectionId);
 
-  // ==================== Canvas Viewport ====================
+  // ==================== Canvas Viewport (delegates to CanvasDao) ====================
 
   /// Возвращает состояние viewport канваса для коллекции.
-  Future<Map<String, dynamic>?> getCanvasViewport(int collectionId) async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> rows = await db.query(
-      'canvas_viewport',
-      where: 'collection_id = ?',
-      whereArgs: <Object?>[collectionId],
-      limit: 1,
-    );
-    if (rows.isEmpty) return null;
-    return rows.first;
-  }
+  Future<Map<String, dynamic>?> getCanvasViewport(int collectionId) =>
+      canvasDao.getCanvasViewport(collectionId);
 
   /// Сохраняет или обновляет состояние viewport канваса.
   Future<void> upsertCanvasViewport({
@@ -1547,124 +620,64 @@ class DatabaseService {
     required double scale,
     required double offsetX,
     required double offsetY,
-  }) async {
-    final Database db = await database;
-    await db.insert(
-      'canvas_viewport',
-      <String, dynamic>{
-        'collection_id': collectionId,
-        'scale': scale,
-        'offset_x': offsetX,
-        'offset_y': offsetY,
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-  }
+  }) =>
+      canvasDao.upsertCanvasViewport(
+        collectionId: collectionId,
+        scale: scale,
+        offsetX: offsetX,
+        offsetY: offsetY,
+      );
 
-  // ==================== Canvas Connections ====================
+  // ==================== Canvas Connections (delegates to CanvasDao) ====================
 
   /// Возвращает связи канваса коллекции (без per-item связей).
   Future<List<Map<String, dynamic>>> getCanvasConnections(
     int collectionId,
-  ) async {
-    final Database db = await database;
-    return db.query(
-      'canvas_connections',
-      where: 'collection_id = ? AND collection_item_id IS NULL',
-      whereArgs: <Object?>[collectionId],
-    );
-  }
+  ) =>
+      canvasDao.getCanvasConnections(collectionId);
 
   /// Вставляет связь канваса и возвращает её ID.
-  Future<int> insertCanvasConnection(Map<String, dynamic> data) async {
-    final Database db = await database;
-    return db.insert('canvas_connections', data);
-  }
+  Future<int> insertCanvasConnection(Map<String, dynamic> data) =>
+      canvasDao.insertCanvasConnection(data);
 
   /// Обновляет связь канваса по ID.
   Future<void> updateCanvasConnection(
     int id,
     Map<String, dynamic> data,
-  ) async {
-    final Database db = await database;
-    await db.update(
-      'canvas_connections',
-      data,
-      where: 'id = ?',
-      whereArgs: <Object?>[id],
-    );
-  }
+  ) =>
+      canvasDao.updateCanvasConnection(id, data);
 
   /// Удаляет связь канваса по ID.
-  Future<void> deleteCanvasConnection(int id) async {
-    final Database db = await database;
-    await db.delete(
-      'canvas_connections',
-      where: 'id = ?',
-      whereArgs: <Object?>[id],
-    );
-  }
+  Future<void> deleteCanvasConnection(int id) =>
+      canvasDao.deleteCanvasConnection(id);
 
   /// Удаляет связи канваса коллекции (без per-item связей).
-  Future<void> deleteCanvasConnectionsByCollection(int collectionId) async {
-    final Database db = await database;
-    await db.delete(
-      'canvas_connections',
-      where: 'collection_id = ? AND collection_item_id IS NULL',
-      whereArgs: <Object?>[collectionId],
-    );
-  }
+  Future<void> deleteCanvasConnectionsByCollection(int collectionId) =>
+      canvasDao.deleteCanvasConnectionsByCollection(collectionId);
 
-  // ==================== Game Canvas ====================
+  // ==================== Game Canvas (delegates to CanvasDao) ====================
 
   /// Возвращает элементы game canvas по ID элемента коллекции.
   Future<List<Map<String, dynamic>>> getGameCanvasItems(
     int collectionItemId,
-  ) async {
-    final Database db = await database;
-    return db.query(
-      'canvas_items',
-      where: 'collection_item_id = ?',
-      whereArgs: <Object?>[collectionItemId],
-    );
-  }
+  ) =>
+      canvasDao.getGameCanvasItems(collectionItemId);
 
   /// Возвращает количество элементов game canvas.
-  Future<int> getGameCanvasItemCount(int collectionItemId) async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> result = await db.rawQuery(
-      'SELECT COUNT(*) as cnt FROM canvas_items '
-      'WHERE collection_item_id = ?',
-      <Object?>[collectionItemId],
-    );
-    return result.first['cnt'] as int;
-  }
+  Future<int> getGameCanvasItemCount(int collectionItemId) =>
+      canvasDao.getGameCanvasItemCount(collectionItemId);
 
   /// Возвращает связи game canvas.
   Future<List<Map<String, dynamic>>> getGameCanvasConnections(
     int collectionItemId,
-  ) async {
-    final Database db = await database;
-    return db.query(
-      'canvas_connections',
-      where: 'collection_item_id = ?',
-      whereArgs: <Object?>[collectionItemId],
-    );
-  }
+  ) =>
+      canvasDao.getGameCanvasConnections(collectionItemId);
 
   /// Возвращает viewport для game canvas.
   Future<Map<String, dynamic>?> getGameCanvasViewport(
     int collectionItemId,
-  ) async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> rows = await db.query(
-      'game_canvas_viewport',
-      where: 'collection_item_id = ?',
-      whereArgs: <Object?>[collectionItemId],
-    );
-    if (rows.isEmpty) return null;
-    return rows.first;
-  }
+  ) =>
+      canvasDao.getGameCanvasViewport(collectionItemId);
 
   /// Сохраняет или обновляет viewport для game canvas.
   Future<void> upsertGameCanvasViewport({
@@ -1672,147 +685,61 @@ class DatabaseService {
     required double scale,
     required double offsetX,
     required double offsetY,
-  }) async {
-    final Database db = await database;
-    await db.execute(
-      'INSERT OR REPLACE INTO game_canvas_viewport '
-      '(collection_item_id, scale, offset_x, offset_y) '
-      'VALUES (?, ?, ?, ?)',
-      <Object?>[collectionItemId, scale, offsetX, offsetY],
-    );
-  }
+  }) =>
+      canvasDao.upsertGameCanvasViewport(
+        collectionItemId: collectionItemId,
+        scale: scale,
+        offsetX: offsetX,
+        offsetY: offsetY,
+      );
 
   /// Удаляет все элементы game canvas по collection_item_id.
-  Future<void> deleteGameCanvasItems(int collectionItemId) async {
-    final Database db = await database;
-    await db.delete(
-      'canvas_items',
-      where: 'collection_item_id = ?',
-      whereArgs: <Object?>[collectionItemId],
-    );
-  }
+  Future<void> deleteGameCanvasItems(int collectionItemId) =>
+      canvasDao.deleteGameCanvasItems(collectionItemId);
 
   /// Удаляет все связи game canvas по collection_item_id.
-  Future<void> deleteGameCanvasConnections(int collectionItemId) async {
-    final Database db = await database;
-    await db.delete(
-      'canvas_connections',
-      where: 'collection_item_id = ?',
-      whereArgs: <Object?>[collectionItemId],
-    );
-  }
+  Future<void> deleteGameCanvasConnections(int collectionItemId) =>
+      canvasDao.deleteGameCanvasConnections(collectionItemId);
 
   /// Удаляет viewport game canvas.
-  Future<void> deleteGameCanvasViewport(int collectionItemId) async {
-    final Database db = await database;
-    await db.delete(
-      'game_canvas_viewport',
-      where: 'collection_item_id = ?',
-      whereArgs: <Object?>[collectionItemId],
-    );
-  }
+  Future<void> deleteGameCanvasViewport(int collectionItemId) =>
+      canvasDao.deleteGameCanvasViewport(collectionItemId);
+
+  // ==================== Info (delegates to CollectionDao) ====================
 
   /// Возвращает информацию о нахождении элементов заданного типа в коллекциях.
-  ///
-  /// Результат: `Map` external_id -> список записей в коллекциях.
-  /// Элементы без коллекции (uncategorized) также включаются.
   Future<Map<int, List<CollectedItemInfo>>> getCollectedItemInfos(
     MediaType mediaType,
-  ) async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> rows = await db.rawQuery('''
-      SELECT ci.id, ci.external_id, ci.collection_id, c.name
-      FROM collection_items ci
-      LEFT JOIN collections c ON c.id = ci.collection_id
-      WHERE ci.media_type = ?
-      ORDER BY ci.added_at ASC
-    ''', <Object?>[mediaType.value]);
-
-    final Map<int, List<CollectedItemInfo>> result =
-        <int, List<CollectedItemInfo>>{};
-    for (final Map<String, dynamic> row in rows) {
-      final int externalId = row['external_id'] as int;
-      final CollectedItemInfo info = CollectedItemInfo(
-        recordId: row['id'] as int,
-        collectionId: row['collection_id'] as int?,
-        collectionName: row['name'] as String?,
-      );
-      result.putIfAbsent(externalId, () => <CollectedItemInfo>[]).add(info);
-    }
-    return result;
-  }
+  ) =>
+      collectionDao.getCollectedItemInfos(mediaType);
 
   /// Возвращает количество uncategorized элементов.
-  Future<int> getUncategorizedItemCount() async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> result = await db.rawQuery(
-      'SELECT COUNT(*) as count FROM collection_items '
-      'WHERE collection_id IS NULL',
-    );
-    return result.first['count'] as int;
-  }
+  Future<int> getUncategorizedItemCount() =>
+      collectionDao.getUncategorizedItemCount();
 
-  // ==================== Wishlist ====================
+  // ==================== Wishlist (delegates to WishlistDao) ====================
 
   /// Добавляет элемент в вишлист.
-  ///
-  /// Возвращает созданный [WishlistItem] с присвоенным ID.
   Future<WishlistItem> addWishlistItem({
     required String text,
     MediaType? mediaTypeHint,
     String? note,
-  }) async {
-    final Database db = await database;
-    final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-
-    final int id = await db.insert(
-      'wishlist',
-      <String, dynamic>{
-        'text': text,
-        'media_type_hint': mediaTypeHint?.value,
-        'note': note,
-        'is_resolved': 0,
-        'created_at': now,
-      },
-    );
-
-    return WishlistItem(
-      id: id,
-      text: text,
-      mediaTypeHint: mediaTypeHint,
-      note: note,
-      createdAt: DateTime.fromMillisecondsSinceEpoch(now * 1000),
-    );
-  }
+  }) =>
+      wishlistDao.addWishlistItem(
+        text: text,
+        mediaTypeHint: mediaTypeHint,
+        note: note,
+      );
 
   /// Возвращает все элементы вишлиста.
-  ///
-  /// Сортировка: активные первыми (по created_at DESC),
-  /// затем resolved (по resolved_at DESC).
-  /// Если [includeResolved] == false, возвращает только активные.
   Future<List<WishlistItem>> getWishlistItems({
     bool includeResolved = true,
-  }) async {
-    final Database db = await database;
-    final String where = includeResolved ? '' : 'WHERE is_resolved = 0';
-    final List<Map<String, dynamic>> rows = await db.rawQuery(
-      'SELECT * FROM wishlist $where '
-      'ORDER BY is_resolved ASC, created_at DESC',
-    );
-    return rows.map(WishlistItem.fromDb).toList();
-  }
+  }) =>
+      wishlistDao.getWishlistItems(includeResolved: includeResolved);
 
   /// Возвращает количество элементов вишлиста.
-  ///
-  /// Если [onlyActive] == true, считает только неразрешённые.
-  Future<int> getWishlistItemCount({bool onlyActive = true}) async {
-    final Database db = await database;
-    final String where = onlyActive ? 'WHERE is_resolved = 0' : '';
-    final List<Map<String, dynamic>> result = await db.rawQuery(
-      'SELECT COUNT(*) as count FROM wishlist $where',
-    );
-    return result.first['count'] as int;
-  }
+  Future<int> getWishlistItemCount({bool onlyActive = true}) =>
+      wishlistDao.getWishlistItemCount(onlyActive: onlyActive);
 
   /// Обновляет элемент вишлиста.
   Future<void> updateWishlistItem(
@@ -1822,79 +749,33 @@ class DatabaseService {
     bool clearMediaTypeHint = false,
     String? note,
     bool clearNote = false,
-  }) async {
-    final Map<String, dynamic> updates = <String, dynamic>{};
-    if (text != null) updates['text'] = text;
-    if (clearMediaTypeHint) {
-      updates['media_type_hint'] = null;
-    } else if (mediaTypeHint != null) {
-      updates['media_type_hint'] = mediaTypeHint.value;
-    }
-    if (clearNote) {
-      updates['note'] = null;
-    } else if (note != null) {
-      updates['note'] = note;
-    }
-    if (updates.isEmpty) return;
-
-    final Database db = await database;
-    await db.update(
-      'wishlist',
-      updates,
-      where: 'id = ?',
-      whereArgs: <Object?>[id],
-    );
-  }
+  }) =>
+      wishlistDao.updateWishlistItem(
+        id,
+        text: text,
+        mediaTypeHint: mediaTypeHint,
+        clearMediaTypeHint: clearMediaTypeHint,
+        note: note,
+        clearNote: clearNote,
+      );
 
   /// Помечает элемент вишлиста как resolved.
-  Future<void> resolveWishlistItem(int id) async {
-    final Database db = await database;
-    final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    await db.update(
-      'wishlist',
-      <String, dynamic>{
-        'is_resolved': 1,
-        'resolved_at': now,
-      },
-      where: 'id = ?',
-      whereArgs: <Object?>[id],
-    );
-  }
+  Future<void> resolveWishlistItem(int id) =>
+      wishlistDao.resolveWishlistItem(id);
 
   /// Снимает отметку resolved с элемента вишлиста.
-  Future<void> unresolveWishlistItem(int id) async {
-    final Database db = await database;
-    await db.update(
-      'wishlist',
-      <String, dynamic>{
-        'is_resolved': 0,
-        'resolved_at': null,
-      },
-      where: 'id = ?',
-      whereArgs: <Object?>[id],
-    );
-  }
+  Future<void> unresolveWishlistItem(int id) =>
+      wishlistDao.unresolveWishlistItem(id);
 
   /// Удаляет элемент вишлиста.
-  Future<void> deleteWishlistItem(int id) async {
-    final Database db = await database;
-    await db.delete(
-      'wishlist',
-      where: 'id = ?',
-      whereArgs: <Object?>[id],
-    );
-  }
+  Future<void> deleteWishlistItem(int id) =>
+      wishlistDao.deleteWishlistItem(id);
 
   /// Удаляет все resolved элементы вишлиста.
-  ///
-  /// Возвращает количество удалённых записей.
-  Future<int> clearResolvedWishlistItems() async {
-    final Database db = await database;
-    return db.delete(
-      'wishlist',
-      where: 'is_resolved = 1',
-    );
-  }
+  Future<int> clearResolvedWishlistItems() =>
+      wishlistDao.clearResolvedWishlistItems();
+
+  // ==================== Clear All / Close ====================
 
   /// Очищает все данные из базы данных.
   ///
@@ -1925,137 +806,37 @@ class DatabaseService {
     });
   }
 
-  // ==================== Visual Novels Cache ====================
+  // ==================== Visual Novels (delegates to VisualNovelDao) ====================
 
   /// Сохраняет или обновляет визуальную новеллу в кэше.
-  Future<void> upsertVisualNovel(VisualNovel vn) async {
-    final Database db = await database;
-    await db.insert(
-      'visual_novels_cache',
-      vn.toDb(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-  }
+  Future<void> upsertVisualNovel(VisualNovel vn) =>
+      visualNovelDao.upsertVisualNovel(vn);
 
   /// Сохраняет или обновляет список визуальных новелл.
-  Future<void> upsertVisualNovels(List<VisualNovel> vns) async {
-    if (vns.isEmpty) return;
-    final Database db = await database;
-    final Batch batch = db.batch();
-    for (final VisualNovel vn in vns) {
-      batch.insert(
-        'visual_novels_cache',
-        vn.toDb(),
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
-    }
-    await batch.commit(noResult: true);
-  }
+  Future<void> upsertVisualNovels(List<VisualNovel> vns) =>
+      visualNovelDao.upsertVisualNovels(vns);
 
   /// Получает визуальную новеллу по числовому ID.
-  Future<VisualNovel?> getVisualNovel(int numericId) async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> rows = await db.query(
-      'visual_novels_cache',
-      where: 'numeric_id = ?',
-      whereArgs: <Object?>[numericId],
-      limit: 1,
-    );
-    if (rows.isEmpty) return null;
-    return VisualNovel.fromDb(rows.first);
-  }
+  Future<VisualNovel?> getVisualNovel(int numericId) =>
+      visualNovelDao.getVisualNovel(numericId);
 
   /// Получает визуальные новеллы по списку числовых ID.
   Future<List<VisualNovel>> getVisualNovelsByNumericIds(
     List<int> numericIds,
-  ) async {
-    if (numericIds.isEmpty) return <VisualNovel>[];
-    final Database db = await database;
-    final String placeholders =
-        List<String>.filled(numericIds.length, '?').join(',');
-    final List<Map<String, dynamic>> rows = await db.rawQuery(
-      'SELECT * FROM visual_novels_cache WHERE numeric_id IN ($placeholders)',
-      numericIds,
-    );
-    return rows.map(VisualNovel.fromDb).toList();
-  }
+  ) =>
+      visualNovelDao.getVisualNovelsByNumericIds(numericIds);
 
   /// Получает кэшированные теги VNDB.
-  Future<List<VndbTag>> getVndbTags() async {
-    final Database db = await database;
-    final List<Map<String, dynamic>> rows = await db.query(
-      'vndb_tags',
-      orderBy: 'name ASC',
-    );
-    return rows.map(VndbTag.fromDb).toList();
-  }
+  Future<List<VndbTag>> getVndbTags() => visualNovelDao.getVndbTags();
 
-  // ==================== Collection Covers ====================
+  // ==================== Collection Covers (delegates to CollectionDao) ====================
 
   /// Возвращает первые [limit] обложек элементов коллекции.
-  ///
-  /// Легковесный запрос: получает только URL обложек из кэш-таблиц,
-  /// без загрузки полных моделей. Приоритет: completed > in_progress > остальные.
-  ///
-  /// Если [collectionId] == null, возвращает обложки uncategorized элементов.
   Future<List<CoverInfo>> getCollectionCovers(
     int? collectionId, {
     int limit = 4,
-  }) async {
-    final Database db = await database;
-
-    final String whereClause = collectionId != null
-        ? 'ci.collection_id = ?'
-        : 'ci.collection_id IS NULL';
-    final List<Object> args = <Object>[
-      if (collectionId case final int id) id,
-      limit,
-    ];
-
-    final List<Map<String, Object?>> rows = await db.rawQuery('''
-      SELECT external_id, media_type, platform_id, thumbnail_url
-      FROM (
-        SELECT ci.external_id, ci.media_type, ci.platform_id, ci.status,
-          ci.sort_order,
-          CASE ci.media_type
-            WHEN 'game' THEN g.cover_url
-            WHEN 'movie' THEN m.poster_url
-            WHEN 'tv_show' THEN t.poster_url
-            WHEN 'animation' THEN
-              CASE WHEN ci.platform_id = 1 THEN t2.poster_url
-                   ELSE m2.poster_url END
-            WHEN 'visual_novel' THEN vn.image_url
-          END AS thumbnail_url
-        FROM collection_items ci
-        LEFT JOIN games g
-          ON ci.media_type = 'game' AND ci.external_id = g.id
-        LEFT JOIN movies_cache m
-          ON ci.media_type = 'movie' AND ci.external_id = m.tmdb_id
-        LEFT JOIN tv_shows_cache t
-          ON ci.media_type = 'tv_show' AND ci.external_id = t.tmdb_id
-        LEFT JOIN tv_shows_cache t2
-          ON ci.media_type = 'animation' AND ci.platform_id = 1
-          AND ci.external_id = t2.tmdb_id
-        LEFT JOIN movies_cache m2
-          ON ci.media_type = 'animation' AND ci.platform_id != 1
-          AND ci.external_id = m2.tmdb_id
-        LEFT JOIN visual_novels_cache vn
-          ON ci.media_type = 'visual_novel' AND ci.external_id = vn.numeric_id
-        WHERE $whereClause
-      )
-      WHERE thumbnail_url IS NOT NULL
-      ORDER BY
-        CASE status
-          WHEN 'completed' THEN 0
-          WHEN 'in_progress' THEN 1
-          ELSE 2
-        END,
-        sort_order
-      LIMIT ?
-    ''', args);
-
-    return rows.map(CoverInfo.fromDb).toList();
-  }
+  }) =>
+      collectionDao.getCollectionCovers(collectionId, limit: limit);
 
   /// Закрывает соединение с базой данных.
   Future<void> close() async {

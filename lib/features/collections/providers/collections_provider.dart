@@ -204,19 +204,23 @@ class CollectionItemsNotifier
     extends FamilyNotifier<AsyncValue<List<CollectionItem>>, int?> {
   late CollectionRepository _repository;
   late int? _collectionId;
+  late CollectionSortMode _sortMode;
+  late bool _isDescending;
+  late DatabaseService _db;
+  late GameRepository _gameRepository;
 
   @override
   AsyncValue<List<CollectionItem>> build(int? arg) {
     _collectionId = arg;
     _repository = ref.watch(collectionRepositoryProvider);
+    _db = ref.watch(databaseServiceProvider);
+    _gameRepository = ref.watch(gameRepositoryProvider);
 
     // Подписываемся на режим и направление сортировки
-    final CollectionSortMode sortMode =
-        ref.watch(collectionSortProvider(_collectionId));
-    final bool isDescending =
-        ref.watch(collectionSortDescProvider(_collectionId));
+    _sortMode = ref.watch(collectionSortProvider(_collectionId));
+    _isDescending = ref.watch(collectionSortDescProvider(_collectionId));
 
-    _loadItems(sortMode, isDescending: isDescending);
+    _loadItems(_sortMode, isDescending: _isDescending);
 
     return const AsyncLoading<List<CollectionItem>>();
   }
@@ -246,8 +250,7 @@ class CollectionItemsNotifier
             .map((CollectionItem item) => item.game!)
             .toList();
         if (gamesWithPlatforms.isNotEmpty) {
-          await ref
-              .read(gameRepositoryProvider)
+          await _gameRepository
               .ensurePlatformsCached(gamesWithPlatforms);
           // Перезагружаем items с подгруженными платформами
           items = await _repository.getItemsWithData(_collectionId);
@@ -269,11 +272,7 @@ class CollectionItemsNotifier
 
   /// Обновляет список элементов.
   Future<void> refresh() async {
-    final CollectionSortMode sortMode =
-        ref.read(collectionSortProvider(_collectionId));
-    final bool isDescending =
-        ref.read(collectionSortDescProvider(_collectionId));
-    await _loadItems(sortMode, isDescending: isDescending);
+    await _loadItems(_sortMode, isDescending: _isDescending);
     ref.invalidate(collectionStatsProvider(_collectionId));
     ref.invalidate(collectionCoversProvider(_collectionId));
   }
@@ -298,10 +297,9 @@ class CollectionItemsNotifier
     state = AsyncData<List<CollectionItem>>(updated);
 
     // Сохраняем в БД
-    final DatabaseService db = ref.read(databaseServiceProvider);
     final List<int> orderedIds =
         updated.map((CollectionItem item) => item.id).toList();
-    await db.reorderItems(_collectionId, orderedIds);
+    await _db.reorderItems(_collectionId, orderedIds);
   }
 
   /// Добавляет элемент в коллекцию.

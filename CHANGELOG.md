@@ -6,6 +6,19 @@
 
 ## [Unreleased]
 
+### Added
+- **DAO layer** — extracted 7 domain-specific DAO classes from `DatabaseService` into `lib/core/database/dao/`: `GameDao`, `MovieDao`, `TvShowDao`, `VisualNovelDao`, `CollectionDao`, `CanvasDao`, `WishlistDao`. Each DAO receives a database accessor function and encapsulates all SQL operations for its domain
+- Tests for all 7 DAOs (166 tests): `game_dao_test.dart`, `movie_dao_test.dart`, `tv_show_dao_test.dart`, `visual_novel_dao_test.dart`, `collection_dao_test.dart`, `canvas_dao_test.dart`, `wishlist_dao_test.dart`
+- `TransactionMockDatabase` in `test/helpers/mocks.dart` — solves mocktail limitation with generic `Database.transaction<T>()` method stubbing
+
+### Changed
+- `DatabaseService` refactored from ~2700 lines to ~850 lines — now delegates all operations to DAO instances via `late final` fields, preserving the existing public API
+- `CollectionItemsNotifier` — replaced `ref.read()` in action methods with instance fields set during `build()` to fix Riverpod assertion error when watched dependencies change asynchronously
+- `docs/CODESTYLE.md` — fixed builder names to match actual functions, updated migration procedure example
+
+### Fixed
+- Fixed Riverpod `_didChangeDependency` assertion crash in `CollectionItemsNotifier.refresh()` when sort providers update asynchronously from SharedPreferences
+
 ## [0.17.0] - 2026-03-03
 
 ### Added
