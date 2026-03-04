@@ -17,7 +17,10 @@ enum MediaType {
   animation('animation'),
 
   /// Визуальная новелла (VNDB).
-  visualNovel('visual_novel');
+  visualNovel('visual_novel'),
+
+  /// Манга (AniList).
+  manga('manga');
 
   const MediaType(this.value);
 
@@ -49,6 +52,8 @@ enum MediaType {
         return 'Animation';
       case MediaType.visualNovel:
         return 'Visual Novel';
+      case MediaType.manga:
+        return 'Manga';
     }
   }
 
@@ -65,6 +70,8 @@ enum MediaType {
         return l.mediaTypeAnimation;
       case MediaType.visualNovel:
         return l.mediaTypeVisualNovel;
+      case MediaType.manga:
+        return l.mediaTypeManga;
     }
   }
 }

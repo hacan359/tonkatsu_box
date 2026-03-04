@@ -5,7 +5,7 @@
 <h1 align="center">Tonkatsu Box</h1>
 
 <p align="center">
-  <b>Organize your games, movies, TV shows, anime, and visual novels — all in one place</b>
+  <b>Organize your games, movies, TV shows, anime, visual novels, and manga — all in one place</b>
 </p>
 
 <p align="center">
@@ -28,7 +28,7 @@
 
 ---
 
-Tonkatsu Box is a free, open-source collection manager for retro games, movies, TV shows, anime, and visual novels. Search IGDB, TMDB, and VNDB databases with hundreds of thousands of titles, organize them into custom collections, track your backlog and progress, rate everything from 1 to 10, create visual boards with drag-and-drop, import your watch history from Trakt.tv, and share collections with friends. Available for Windows, Linux, and Android in English and Russian.
+Tonkatsu Box is a free, open-source collection manager for retro games, movies, TV shows, anime, visual novels, and manga. Search IGDB, TMDB, VNDB, and AniList databases with hundreds of thousands of titles, organize them into custom collections, track your backlog and progress, rate everything from 1 to 10, create visual boards with drag-and-drop, import your watch history from Trakt.tv, and share collections with friends. Available for Windows, Linux, and Android in English and Russian.
 
 <p align="center">
   <img src="docs/screenshots/01-main-all.jpg" width="800" alt="Main screen — browse all your games, movies, TV shows, anime, and visual novels">
@@ -47,7 +47,7 @@ Create as many collections as you want — by platform (SNES, PlayStation, PC), 
 </p>
 
 ### 🔍 Search & Discover
-Multiple search tabs — **Games**, **TV**, and **Visual Novels** — each with their own filters:
+Multiple search tabs — **Games**, **TV**, **Visual Novels**, and **Manga** — each with their own filters:
 
 **Games** (powered by IGDB):
 - Filter by platform — select one or multiple platforms from a searchable list (NES, SNES, PlayStation, PC, and hundreds more)
@@ -63,6 +63,11 @@ Multiple search tabs — **Games**, **TV**, and **Visual Novels** — each with 
 - Browse by genre/tag or search by title
 - Sort by rating, release date, or vote count
 - No API key required — VNDB is free and open
+
+**Manga** (powered by AniList):
+- Browse by genre, format (manga, manhwa, manhua, light novel)
+- Sort by rating, popularity, or newest
+- No API key required — AniList is free and open
 
 Results load as you scroll with automatic pagination. Each card shows the poster, title, year, rating, and top genres at a glance.
 
@@ -104,7 +109,7 @@ Export your collections as `.xcoll` (lightweight) or `.xcollx` (full offline cop
 
 ### Step 1: Get your API keys
 
-The app uses free APIs to search for games, movies, visual novels, and artwork. You'll need to register for API keys (it's free and takes a few minutes). VNDB for visual novels works without any key.
+The app uses free APIs to search for games, movies, visual novels, manga, and artwork. You'll need to register for API keys (it's free and takes a few minutes). VNDB for visual novels and AniList for manga work without any key.
 
 <details>
 <summary><b>🎮 IGDB — for searching games (required)</b></summary>
@@ -154,6 +159,8 @@ Enter it in the app under **Settings → Credentials**.
 > This key is only needed if you want to add high-quality game artwork (covers, heroes, logos) to your visual boards.
 
 </details>
+
+> **📚 AniList** — for searching manga — requires no setup. Works out of the box.
 
 > [!TIP]
 > On first launch, the app will walk you through a **Welcome Wizard** that explains everything — you can also revisit it later from **Settings → Welcome Guide**.
@@ -245,7 +252,7 @@ For developers and contributors:
 
 ## Tech Stack
 
-Flutter 3.38+ / Dart 3.10+ · Riverpod · SQLite · Dio · Material Design 3 · IGDB · TMDB · VNDB · SteamGridDB
+Flutter 3.38+ / Dart 3.10+ · Riverpod · SQLite · Dio · Material Design 3 · IGDB · TMDB · VNDB · AniList · SteamGridDB
 
 ## Contributing
 
@@ -256,6 +263,7 @@ Contributions are welcome! See the [Contributing Guide](docs/CONTRIBUTING.md) fo
 - Movie, TV show, and anime data provided by [TMDB](https://www.themoviedb.org/). This product uses the TMDB API but is not endorsed or certified by TMDB.
 - Game data provided by [IGDB](https://www.igdb.com/).
 - Visual novel data provided by [VNDB](https://vndb.org/).
+- Manga data provided by [AniList](https://anilist.co/).
 - Artwork provided by [SteamGridDB](https://www.steamgriddb.com/).
 
 ## License

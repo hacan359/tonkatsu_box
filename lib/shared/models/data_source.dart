@@ -17,7 +17,10 @@ enum DataSource {
   vgMaps('VGMaps', Color(0xFFE57C23)),
 
   /// VNDB — база данных визуальных новелл.
-  vndb('VNDB', Color(0xFF2A5FC1));
+  vndb('VNDB', Color(0xFF2A5FC1)),
+
+  /// AniList — база данных манги и аниме.
+  anilist('AniList', Color(0xFF3DB4F2));
 
   const DataSource(this.label, this.color);
 

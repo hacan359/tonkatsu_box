@@ -60,6 +60,9 @@ abstract final class AppColors {
   /// Акцентный цвет для визуальных новелл (синий).
   static const Color visualNovelAccent = Color(0xFF2A5FC1);
 
+  /// Акцентный цвет для манги (голубой AniList).
+  static const Color mangaAccent = Color(0xFF3DB4F2);
+
   // ==================== Семантические цвета ====================
 
   /// Цвет успеха (completed, done).

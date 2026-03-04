@@ -60,6 +60,9 @@ class SRu extends S {
   String get mediaTypeVisualNovel => 'Визуальная новелла';
 
   @override
+  String get mediaTypeManga => 'Манга';
+
+  @override
   String get sortManualDisplay => 'Вручную';
 
   @override
@@ -691,6 +694,10 @@ class SRu extends S {
       'Данные о визуальных новеллах предоставлены VNDB.';
 
   @override
+  String get creditsAniListAttribution =>
+      'Данные о манге предоставлены AniList.';
+
+  @override
   String get creditsOpenSource => 'Открытый исходный код';
 
   @override
@@ -848,6 +855,9 @@ class SRu extends S {
   String get collectionFilterVisualNovels => 'Визуальные новеллы';
 
   @override
+  String get collectionFilterManga => 'Манга';
+
+  @override
   String collectionItemMovedTo(String name, String collection) {
     return '$name перемещён в $collection';
   }
@@ -888,6 +898,21 @@ class SRu extends S {
 
   @override
   String get visualNovelNotFound => 'Визуальная новелла не найдена';
+
+  @override
+  String get mangaNotFound => 'Манга не найдена';
+
+  @override
+  String get mangaProgress => 'Прогресс чтения';
+
+  @override
+  String get mangaChapters => 'Главы';
+
+  @override
+  String get mangaVolumes => 'Тома';
+
+  @override
+  String get mangaMarkCompleted => 'Отметить как прочитано';
 
   @override
   String get animatedMovie => 'Мультфильм';
@@ -1183,6 +1208,12 @@ class SRu extends S {
 
   @override
   String get searchSourceVisualNovels => 'Визуальные новеллы';
+
+  @override
+  String get searchSourceManga => 'Манга';
+
+  @override
+  String get searchHintManga => 'Поиск манги...';
 
   @override
   String get searchSelectPlatform => 'Выбрать платформу';
@@ -1614,6 +1645,9 @@ class SRu extends S {
   String get unknownVisualNovel => 'Неизвестная визуальная новелла';
 
   @override
+  String get unknownManga => 'Неизвестная манга';
+
+  @override
   String get unknownPlatform => 'Неизвестная платформа';
 
   @override
@@ -1641,6 +1675,9 @@ class SRu extends S {
 
   @override
   String get allItemsVisualNovels => 'Визуальные новеллы';
+
+  @override
+  String get allItemsManga => 'Манга';
 
   @override
   String get allItemsRatingAsc => 'Оценка ↑';
@@ -1934,6 +1971,27 @@ class SRu extends S {
 
   @override
   String get browseFilterPlatform => 'Платформа';
+
+  @override
+  String get browseFilterFormat => 'Формат';
+
+  @override
+  String get mangaFormatManga => 'Манга';
+
+  @override
+  String get mangaFormatManhwa => 'Манхва';
+
+  @override
+  String get mangaFormatManhua => 'Маньхуа';
+
+  @override
+  String get mangaFormatOneShot => 'Ваншот';
+
+  @override
+  String get mangaFormatNovel => 'Роман';
+
+  @override
+  String get mangaFormatLightNovel => 'Ранобэ';
 
   @override
   String get browseFilterType => 'Тип';

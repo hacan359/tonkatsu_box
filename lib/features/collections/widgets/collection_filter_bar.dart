@@ -134,6 +134,7 @@ class CollectionFilterBar extends ConsumerWidget {
         MediaType.tvShow => stats?.tvShowCount,
         MediaType.animation => stats?.animationCount,
         MediaType.visualNovel => stats?.visualNovelCount,
+        MediaType.manga => stats?.mangaCount,
       };
       label = '${filterType!.localizedLabel(l)}${count != null ? ' ($count)' : ''}';
     }
@@ -204,6 +205,8 @@ class CollectionFilterBar extends ConsumerWidget {
               MediaType.animation.value, ml.collectionFilterAnimation, stats?.animationCount),
           _buildMediaTypeMenuItem(
               MediaType.visualNovel.value, ml.collectionFilterVisualNovels, stats?.visualNovelCount),
+          _buildMediaTypeMenuItem(
+              MediaType.manga.value, ml.collectionFilterManga, stats?.mangaCount),
         ];
       },
     );

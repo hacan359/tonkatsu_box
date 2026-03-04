@@ -43,8 +43,13 @@ void main() {
       expect(DataSource.vgMaps.color, const Color(0xFFE57C23));
     });
 
+    test('anilist должен иметь правильный label и цвет', () {
+      expect(DataSource.anilist.label, 'AniList');
+      expect(DataSource.anilist.color, const Color(0xFF3DB4F2));
+    });
+
     test('все значения enum перечислены', () {
-      expect(DataSource.values.length, 5);
+      expect(DataSource.values.length, 6);
     });
   });
 

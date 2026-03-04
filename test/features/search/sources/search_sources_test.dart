@@ -5,12 +5,13 @@ import 'package:xerabora/features/search/sources/search_sources.dart';
 import 'package:xerabora/features/search/sources/tmdb_anime_source.dart';
 import 'package:xerabora/features/search/sources/tmdb_movies_source.dart';
 import 'package:xerabora/features/search/sources/tmdb_tv_source.dart';
+import 'package:xerabora/features/search/sources/anilist_manga_source.dart';
 import 'package:xerabora/features/search/sources/vndb_source.dart';
 
 void main() {
   group('searchSources', () {
-    test('contains 5 sources', () {
-      expect(searchSources, hasLength(5));
+    test('contains 6 sources', () {
+      expect(searchSources, hasLength(6));
     });
 
     test('first source is TmdbMoviesSource', () {
@@ -33,6 +34,10 @@ void main() {
       expect(searchSources[4], isA<VndbSource>());
     });
 
+    test('sixth source is AniListMangaSource', () {
+      expect(searchSources[5], isA<AniListMangaSource>());
+    });
+
     test('all sources have unique ids', () {
       final Set<String> ids =
           searchSources.map((SearchSource s) => s.id).toSet();
@@ -42,8 +47,8 @@ void main() {
     test('source ids match expected values', () {
       final List<String> ids =
           searchSources.map((SearchSource s) => s.id).toList();
-      expect(
-          ids, <String>['movies', 'tv', 'anime', 'games', 'visual_novels']);
+      expect(ids,
+          <String>['movies', 'tv', 'anime', 'games', 'visual_novels', 'manga']);
     });
   });
 

@@ -13,12 +13,14 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:xerabora/core/api/igdb_api.dart';
 import 'package:xerabora/core/api/steamgriddb_api.dart';
 import 'package:xerabora/core/api/tmdb_api.dart';
+import 'package:xerabora/core/api/anilist_api.dart';
 import 'package:xerabora/core/api/vndb_api.dart';
 import 'package:xerabora/core/database/dao/canvas_dao.dart';
 import 'package:xerabora/core/database/dao/collection_dao.dart';
 import 'package:xerabora/core/database/dao/game_dao.dart';
 import 'package:xerabora/core/database/dao/movie_dao.dart';
 import 'package:xerabora/core/database/dao/tv_show_dao.dart';
+import 'package:xerabora/core/database/dao/manga_dao.dart';
 import 'package:xerabora/core/database/dao/visual_novel_dao.dart';
 import 'package:xerabora/core/database/dao/wishlist_dao.dart';
 import 'package:xerabora/core/database/database_service.dart';
@@ -86,6 +88,8 @@ class MockTvShowDao extends Mock implements TvShowDao {}
 
 class MockVisualNovelDao extends Mock implements VisualNovelDao {}
 
+class MockMangaDao extends Mock implements MangaDao {}
+
 class MockCollectionDao extends Mock implements CollectionDao {}
 
 class MockCanvasDao extends Mock implements CanvasDao {}
@@ -101,6 +105,8 @@ class MockTmdbApi extends Mock implements TmdbApi {}
 class MockSteamGridDbApi extends Mock implements SteamGridDbApi {}
 
 class MockVndbApi extends Mock implements VndbApi {}
+
+class MockAniListApi extends Mock implements AniListApi {}
 
 // ===== Services =====
 

@@ -208,11 +208,21 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
   }
 
   void _searchForItem(BuildContext context, WishlistItem item) {
+    final String? sourceId = switch (item.mediaTypeHint) {
+      MediaType.game => 'games',
+      MediaType.movie => 'movies',
+      MediaType.tvShow => 'tv',
+      MediaType.animation => 'anime',
+      MediaType.visualNovel => 'visual_novels',
+      MediaType.manga => 'manga',
+      null => null,
+    };
+
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (BuildContext context) => SearchScreen(
           initialQuery: item.text,
-          initialTabIndex: item.mediaTypeHint == MediaType.game ? 1 : 0,
+          initialSourceId: sourceId,
         ),
       ),
     );

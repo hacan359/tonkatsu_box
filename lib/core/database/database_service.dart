@@ -18,6 +18,7 @@ import '../../shared/models/platform.dart';
 import '../../shared/models/tv_episode.dart';
 import '../../shared/models/tv_season.dart';
 import '../../shared/models/tv_show.dart';
+import '../../shared/models/manga.dart';
 import '../../shared/models/visual_novel.dart';
 import '../../shared/models/wishlist_item.dart';
 import 'dao/canvas_dao.dart';
@@ -25,6 +26,7 @@ import 'dao/collection_dao.dart';
 import 'dao/game_dao.dart';
 import 'dao/movie_dao.dart';
 import 'dao/tv_show_dao.dart';
+import 'dao/manga_dao.dart';
 import 'dao/visual_novel_dao.dart';
 import 'dao/wishlist_dao.dart';
 import 'migrations/migration.dart';
@@ -57,6 +59,11 @@ final Provider<TvShowDao> tvShowDaoProvider = Provider<TvShowDao>((Ref ref) {
 final Provider<VisualNovelDao> visualNovelDaoProvider =
     Provider<VisualNovelDao>((Ref ref) {
   return ref.watch(databaseServiceProvider).visualNovelDao;
+});
+
+/// Провайдер для [MangaDao].
+final Provider<MangaDao> mangaDaoProvider = Provider<MangaDao>((Ref ref) {
+  return ref.watch(databaseServiceProvider).mangaDao;
 });
 
 /// Провайдер для [CollectionDao].
@@ -105,6 +112,9 @@ class DatabaseService {
   /// DAO для работы с визуальными новеллами.
   late final VisualNovelDao visualNovelDao = VisualNovelDao(() => database);
 
+  /// DAO для работы с мангой.
+  late final MangaDao mangaDao = MangaDao(() => database);
+
   /// DAO для работы с коллекциями и элементами коллекций.
   late final CollectionDao collectionDao = CollectionDao(
     () => database,
@@ -112,6 +122,7 @@ class DatabaseService {
     movieDao: movieDao,
     tvShowDao: tvShowDao,
     visualNovelDao: visualNovelDao,
+    mangaDao: mangaDao,
   );
 
   /// DAO для работы с канвасом.
@@ -138,7 +149,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 24,
+        version: 25,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -838,6 +849,22 @@ class DatabaseService {
 
   /// Получает кэшированные теги VNDB.
   Future<List<VndbTag>> getVndbTags() => visualNovelDao.getVndbTags();
+
+  // ==================== Manga (delegates to MangaDao) ====================
+
+  /// Сохраняет или обновляет мангу в кэше.
+  Future<void> upsertManga(Manga manga) => mangaDao.upsertManga(manga);
+
+  /// Сохраняет или обновляет список манг.
+  Future<void> upsertMangas(List<Manga> mangas) =>
+      mangaDao.upsertMangas(mangas);
+
+  /// Получает мангу по AniList ID.
+  Future<Manga?> getManga(int id) => mangaDao.getManga(id);
+
+  /// Получает манги по списку ID.
+  Future<List<Manga>> getMangaByIds(List<int> ids) =>
+      mangaDao.getMangaByIds(ids);
 
   // ==================== Collection Covers (delegates to CollectionDao) ====================
 

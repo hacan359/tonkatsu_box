@@ -114,6 +114,30 @@ void main() {
         expect(find.text('steamgriddb.com'), findsOneWidget);
       });
 
+      testWidgets('shows AniList attribution text',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pump();
+
+        await tester.drag(find.byType(ListView), const Offset(0, -400));
+        await tester.pump();
+
+        expect(
+          find.text('Manga data provided by AniList.'),
+          findsOneWidget,
+        );
+      });
+
+      testWidgets('shows AniList link', (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pump();
+
+        await tester.drag(find.byType(ListView), const Offset(0, -400));
+        await tester.pump();
+
+        expect(find.text('anilist.co'), findsOneWidget);
+      });
+
       testWidgets('shows open_in_new icons for provider links',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
@@ -278,19 +302,25 @@ void main() {
         expect(find.byType(ListView), findsOneWidget);
       });
 
-      testWidgets('renders 3 provider cards',
+      testWidgets('renders 5 provider cards',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pump();
 
-        // All 3 providers have open_in_new icon + GitHub link also has one
-        // TMDB, IGDB cards visible initially, SteamGridDB may need scroll
+        // All 5 providers have open_in_new icon + GitHub link also has one
+        // TMDB, IGDB cards visible initially, others may need scroll
         await tester.drag(find.byType(ListView), const Offset(0, -200));
         await tester.pump();
 
         expect(find.text('themoviedb.org'), findsOneWidget);
         expect(find.text('igdb.com'), findsOneWidget);
         expect(find.text('steamgriddb.com'), findsOneWidget);
+
+        await tester.drag(find.byType(ListView), const Offset(0, -200));
+        await tester.pump();
+
+        expect(find.text('vndb.org'), findsOneWidget);
+        expect(find.text('anilist.co'), findsOneWidget);
       });
     });
   });

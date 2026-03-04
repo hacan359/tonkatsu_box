@@ -25,6 +25,9 @@ abstract final class MediaTypeTheme {
   /// Цвет для визуальных новелл.
   static const Color visualNovelColor = AppColors.visualNovelAccent;
 
+  /// Цвет для манги.
+  static const Color mangaColor = AppColors.mangaAccent;
+
   /// Возвращает иконку для типа медиа.
   static IconData iconFor(MediaType type) => switch (type) {
         MediaType.game => Icons.videogame_asset,
@@ -32,6 +35,7 @@ abstract final class MediaTypeTheme {
         MediaType.tvShow => Icons.tv,
         MediaType.animation => Icons.animation,
         MediaType.visualNovel => Icons.menu_book,
+        MediaType.manga => Icons.auto_stories,
       };
 
   /// Возвращает цвет для типа медиа.
@@ -41,5 +45,6 @@ abstract final class MediaTypeTheme {
         MediaType.tvShow => tvShowColor,
         MediaType.animation => animationColor,
         MediaType.visualNovel => visualNovelColor,
+        MediaType.manga => mangaColor,
       };
 }

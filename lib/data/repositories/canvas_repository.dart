@@ -10,6 +10,7 @@ import '../../shared/models/collection_item.dart';
 import '../../shared/models/game.dart';
 import '../../shared/models/movie.dart';
 import '../../shared/models/tv_show.dart';
+import '../../shared/models/manga.dart';
 import '../../shared/models/visual_novel.dart';
 
 /// Провайдер для репозитория канваса.
@@ -225,11 +226,18 @@ class CanvasRepository {
         .map((CanvasItem item) => item.itemRefId!)
         .toList();
 
+    final List<int> mangaIds = items
+        .where((CanvasItem item) =>
+            item.itemType == CanvasItemType.manga && item.itemRefId != null)
+        .map((CanvasItem item) => item.itemRefId!)
+        .toList();
+
     // Если нет медиа-элементов, возвращаем как есть
     if (gameIds.isEmpty &&
         movieTmdbIds.isEmpty &&
         tvShowTmdbIds.isEmpty &&
-        vnIds.isEmpty) {
+        vnIds.isEmpty &&
+        mangaIds.isEmpty) {
       return items;
     }
 
@@ -247,6 +255,9 @@ class CanvasRepository {
       vnIds.isNotEmpty
           ? _db.getVisualNovelsByNumericIds(vnIds)
           : Future<List<VisualNovel>>.value(<VisualNovel>[]),
+      mangaIds.isNotEmpty
+          ? _db.getMangaByIds(mangaIds)
+          : Future<List<Manga>>.value(<Manga>[]),
     ]);
 
     final Map<int, Game> gamesMap = <int, Game>{
@@ -261,6 +272,9 @@ class CanvasRepository {
     final Map<int, VisualNovel> vnMap = <int, VisualNovel>{
       for (final VisualNovel vn in results[3] as List<VisualNovel>)
         vn.numericId: vn,
+    };
+    final Map<int, Manga> mangaMap = <int, Manga>{
+      for (final Manga m in results[4] as List<Manga>) m.id: m,
     };
 
     return items.map((CanvasItem item) {
@@ -281,6 +295,8 @@ class CanvasRepository {
           return item.copyWith(tvShow: tvShowsMap[item.itemRefId]);
         case CanvasItemType.visualNovel:
           return item.copyWith(visualNovel: vnMap[item.itemRefId]);
+        case CanvasItemType.manga:
+          return item.copyWith(manga: mangaMap[item.itemRefId]);
         case CanvasItemType.text:
         case CanvasItemType.image:
         case CanvasItemType.link:
@@ -443,6 +459,7 @@ class CanvasRepository {
           movie: items[i].movie,
           tvShow: items[i].tvShow,
           visualNovel: items[i].visualNovel,
+          manga: items[i].manga,
         ),
     ];
 

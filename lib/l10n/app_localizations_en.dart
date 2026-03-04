@@ -60,6 +60,9 @@ class SEn extends S {
   String get mediaTypeVisualNovel => 'Visual Novel';
 
   @override
+  String get mediaTypeManga => 'Manga';
+
+  @override
   String get sortManualDisplay => 'Manual';
 
   @override
@@ -682,6 +685,9 @@ class SEn extends S {
   String get creditsVndbAttribution => 'Visual novel data provided by VNDB.';
 
   @override
+  String get creditsAniListAttribution => 'Manga data provided by AniList.';
+
+  @override
   String get creditsOpenSource => 'Open Source';
 
   @override
@@ -837,6 +843,9 @@ class SEn extends S {
   String get collectionFilterVisualNovels => 'Visual Novels';
 
   @override
+  String get collectionFilterManga => 'Manga';
+
+  @override
   String collectionItemMovedTo(String name, String collection) {
     return '$name moved to $collection';
   }
@@ -877,6 +886,21 @@ class SEn extends S {
 
   @override
   String get visualNovelNotFound => 'Visual novel not found';
+
+  @override
+  String get mangaNotFound => 'Manga not found';
+
+  @override
+  String get mangaProgress => 'Reading Progress';
+
+  @override
+  String get mangaChapters => 'Chapters';
+
+  @override
+  String get mangaVolumes => 'Volumes';
+
+  @override
+  String get mangaMarkCompleted => 'Mark as completed';
 
   @override
   String get animatedMovie => 'Animated Movie';
@@ -1171,6 +1195,12 @@ class SEn extends S {
 
   @override
   String get searchSourceVisualNovels => 'Visual Novels';
+
+  @override
+  String get searchSourceManga => 'Manga';
+
+  @override
+  String get searchHintManga => 'Search manga...';
 
   @override
   String get searchSelectPlatform => 'Select Platform';
@@ -1596,6 +1626,9 @@ class SEn extends S {
   String get unknownVisualNovel => 'Unknown Visual Novel';
 
   @override
+  String get unknownManga => 'Unknown Manga';
+
+  @override
   String get unknownPlatform => 'Unknown Platform';
 
   @override
@@ -1623,6 +1656,9 @@ class SEn extends S {
 
   @override
   String get allItemsVisualNovels => 'Visual Novels';
+
+  @override
+  String get allItemsManga => 'Manga';
 
   @override
   String get allItemsRatingAsc => 'Rating ↑';
@@ -1914,6 +1950,27 @@ class SEn extends S {
 
   @override
   String get browseFilterPlatform => 'Platform';
+
+  @override
+  String get browseFilterFormat => 'Format';
+
+  @override
+  String get mangaFormatManga => 'Manga';
+
+  @override
+  String get mangaFormatManhwa => 'Manhwa';
+
+  @override
+  String get mangaFormatManhua => 'Manhua';
+
+  @override
+  String get mangaFormatOneShot => 'One Shot';
+
+  @override
+  String get mangaFormatNovel => 'Novel';
+
+  @override
+  String get mangaFormatLightNovel => 'Light Novel';
 
   @override
   String get browseFilterType => 'Type';

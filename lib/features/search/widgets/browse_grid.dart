@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/game.dart';
+import '../../../shared/models/manga.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/movie.dart';
 import '../../../shared/models/tv_show.dart';
@@ -21,10 +22,20 @@ import '../../collections/providers/collections_provider.dart';
 import '../providers/browse_provider.dart';
 
 /// Множества ID элементов, которые уже есть в коллекциях.
-final FutureProvider<({Set<int> tmdbIds, Set<int> gameIds, Set<int> vnIds})>
-    _collectedIdsProvider =
-    FutureProvider<({Set<int> tmdbIds, Set<int> gameIds, Set<int> vnIds})>(
-        (Ref ref) async {
+final FutureProvider<
+        ({
+          Set<int> tmdbIds,
+          Set<int> gameIds,
+          Set<int> vnIds,
+          Set<int> mangaIds,
+        })>
+    _collectedIdsProvider = FutureProvider<
+        ({
+          Set<int> tmdbIds,
+          Set<int> gameIds,
+          Set<int> vnIds,
+          Set<int> mangaIds,
+        })>((Ref ref) async {
   final Map<int, List<CollectedItemInfo>> movies =
       await ref.watch(collectedMovieIdsProvider.future);
   final Map<int, List<CollectedItemInfo>> tvShows =
@@ -35,10 +46,13 @@ final FutureProvider<({Set<int> tmdbIds, Set<int> gameIds, Set<int> vnIds})>
       await ref.watch(collectedGameIdsProvider.future);
   final Map<int, List<CollectedItemInfo>> visualNovels =
       await ref.watch(collectedVisualNovelIdsProvider.future);
+  final Map<int, List<CollectedItemInfo>> mangas =
+      await ref.watch(collectedMangaIdsProvider.future);
   return (
     tmdbIds: <int>{...movies.keys, ...tvShows.keys, ...animations.keys},
     gameIds: games.keys.toSet(),
     vnIds: visualNovels.keys.toSet(),
+    mangaIds: mangas.keys.toSet(),
   );
 });
 
@@ -201,14 +215,22 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     }
 
     // Collected IDs для маркировки "уже в коллекции"
-    final AsyncValue<({Set<int> tmdbIds, Set<int> gameIds, Set<int> vnIds})>
-        collectedIds = ref.watch(_collectedIdsProvider);
+    final AsyncValue<
+            ({
+              Set<int> tmdbIds,
+              Set<int> gameIds,
+              Set<int> vnIds,
+              Set<int> mangaIds,
+            })> collectedIds =
+        ref.watch(_collectedIdsProvider);
     final Set<int> tmdbIds =
         collectedIds.valueOrNull?.tmdbIds ?? const <int>{};
     final Set<int> gameIds =
         collectedIds.valueOrNull?.gameIds ?? const <int>{};
     final Set<int> vnIds =
         collectedIds.valueOrNull?.vnIds ?? const <int>{};
+    final Set<int> mangaIds =
+        collectedIds.valueOrNull?.mangaIds ?? const <int>{};
 
     // Применяем клиентский фильтр по названию
     final List<Object> displayItems;
@@ -241,7 +263,8 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         }
 
         final Object item = displayItems[index];
-        return _buildCard(item, state.source.id, tmdbIds, gameIds, vnIds);
+        return _buildCard(
+            item, state.source.id, tmdbIds, gameIds, vnIds, mangaIds);
       },
     );
   }
@@ -252,6 +275,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     Set<int> tmdbIds,
     Set<int> gameIds,
     Set<int> vnIds,
+    Set<int> mangaIds,
   ) {
     if (item is Movie) {
       return MediaPosterCard(
@@ -320,6 +344,22 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
       );
     }
 
+    if (item is Manga) {
+      return MediaPosterCard(
+        variant: CardVariant.grid,
+        title: item.title,
+        imageUrl: item.coverUrl ?? '',
+        cacheImageType: ImageType.mangaCover,
+        cacheImageId: item.id.toString(),
+        apiRating: item.rating10,
+        year: item.releaseYear,
+        subtitle: item.genresString,
+        mediaType: MediaType.manga,
+        isInCollection: mangaIds.contains(item.id),
+        onTap: () => widget.onItemTap(item, MediaType.manga),
+      );
+    }
+
     return const SizedBox.shrink();
   }
 
@@ -329,6 +369,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     if (item is Movie) return item.title;
     if (item is TvShow) return item.title;
     if (item is VisualNovel) return item.title;
+    if (item is Manga) return item.title;
     return '';
   }
 

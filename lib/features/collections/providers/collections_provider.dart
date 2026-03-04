@@ -387,6 +387,8 @@ class CollectionItemsNotifier
         ref.invalidate(collectedAnimationIdsProvider);
       case MediaType.visualNovel:
         ref.invalidate(collectedVisualNovelIdsProvider);
+      case MediaType.manga:
+        ref.invalidate(collectedMangaIdsProvider);
     }
   }
 
@@ -515,7 +517,13 @@ class CollectionItemsNotifier
     }
   }
 
-  /// Обновляет прогресс просмотра сериала.
+  /// Обновляет прогресс просмотра сериала или чтения манги.
+  ///
+  /// Для манги автоматически обновляет статус:
+  /// - `notStarted`/`planned` → `inProgress` при начале чтения.
+  /// - → `completed` при достижении последней главы.
+  /// - → `notStarted` при сбросе прогресса до нуля.
+  /// - `dropped` никогда не перезаписывается.
   Future<void> updateProgress(
     int id, {
     int? currentSeason,
@@ -541,6 +549,50 @@ class CollectionItemsNotifier
           return i;
         }).toList(),
       );
+
+      // Авто-статус для манги
+      await _autoUpdateMangaStatus(id, currentEpisode, currentSeason);
+    }
+  }
+
+  /// Автоматически обновляет статус манги на основе прогресса чтения.
+  Future<void> _autoUpdateMangaStatus(
+    int id,
+    int? newChapterValue,
+    int? newVolumeValue,
+  ) async {
+    final CollectionItem? item =
+        state.valueOrNull?.where((CollectionItem i) => i.id == id).firstOrNull;
+    if (item == null ||
+        item.mediaType != MediaType.manga ||
+        item.status == ItemStatus.dropped) {
+      return;
+    }
+
+    final int newChapter = newChapterValue ?? item.currentEpisode;
+    final int newVolume = newVolumeValue ?? item.currentSeason;
+    final int? totalChapters = item.manga?.chapters;
+
+    ItemStatus? targetStatus;
+
+    if (newChapter == 0 && newVolume == 0) {
+      if (item.status == ItemStatus.inProgress ||
+          item.status == ItemStatus.completed) {
+        targetStatus = ItemStatus.notStarted;
+      }
+    } else if (totalChapters != null && newChapter >= totalChapters) {
+      if (item.status != ItemStatus.completed) {
+        targetStatus = ItemStatus.completed;
+      }
+    } else if (item.status == ItemStatus.notStarted ||
+        item.status == ItemStatus.planned) {
+      targetStatus = ItemStatus.inProgress;
+    } else if (item.status == ItemStatus.completed) {
+      targetStatus = ItemStatus.inProgress;
+    }
+
+    if (targetStatus != null) {
+      await updateStatus(id, targetStatus, MediaType.manga);
     }
   }
 
@@ -657,6 +709,16 @@ final FutureProvider<Map<int, List<CollectedItemInfo>>>
     FutureProvider<Map<int, List<CollectedItemInfo>>>((Ref ref) async {
   final DatabaseService db = ref.watch(databaseServiceProvider);
   return db.getCollectedItemInfos(MediaType.visualNovel);
+});
+
+/// Провайдер для информации о нахождении манги в коллекциях.
+///
+/// Возвращает `Map` numeric_id -> список записей в коллекциях.
+final FutureProvider<Map<int, List<CollectedItemInfo>>>
+    collectedMangaIdsProvider =
+    FutureProvider<Map<int, List<CollectedItemInfo>>>((Ref ref) async {
+  final DatabaseService db = ref.watch(databaseServiceProvider);
+  return db.getCollectedItemInfos(MediaType.manga);
 });
 
 /// Провайдер для количества uncategorized элементов.

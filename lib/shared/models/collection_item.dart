@@ -10,6 +10,7 @@ import 'item_status.dart';
 import 'media_type.dart';
 import 'movie.dart';
 import 'platform.dart';
+import 'manga.dart';
 import 'tv_show.dart';
 import 'visual_novel.dart';
 
@@ -39,6 +40,7 @@ class CollectionItem with Exportable {
     this.movie,
     this.tvShow,
     this.visualNovel,
+    this.manga,
     this.platform,
   });
 
@@ -54,6 +56,7 @@ class CollectionItem with Exportable {
     Movie? movie,
     TvShow? tvShow,
     VisualNovel? visualNovel,
+    Manga? manga,
     Platform? platform,
   }) {
     return CollectionItem(
@@ -91,6 +94,7 @@ class CollectionItem with Exportable {
       movie: movie,
       tvShow: tvShow,
       visualNovel: visualNovel,
+      manga: manga,
       platform: platform,
     );
   }
@@ -181,6 +185,9 @@ class CollectionItem with Exportable {
 
   /// Данные визуальной новеллы (joined).
   final VisualNovel? visualNovel;
+
+  /// Данные манги (joined).
+  final Manga? manga;
 
   /// Данные платформы (joined).
   final Platform? platform;
@@ -329,6 +336,25 @@ class CollectionItem with Exportable {
           imageType: ImageType.vnCover,
           placeholderIcon: Icons.menu_book,
         );
+      case MediaType.manga:
+        return (
+          name: manga?.title,
+          coverUrl: manga?.coverUrl,
+          thumbUrl: manga?.coverUrlMedium ?? manga?.coverUrl,
+          description: manga?.description,
+          rating: manga?.rating10,
+          formattedRating: manga?.formattedRating,
+          releaseYear: manga?.releaseYear,
+          runtime: null,
+          totalSeasons: null,
+          totalEpisodes: null,
+          genresString: manga?.genresString,
+          genres: manga?.genres,
+          mediaStatus: manga?.statusLabel,
+          source: DataSource.anilist,
+          imageType: ImageType.mangaCover,
+          placeholderIcon: Icons.auto_stories,
+        );
     }
   }
 
@@ -340,6 +366,7 @@ class CollectionItem with Exportable {
       MediaType.tvShow => 'Unknown TV Show',
       MediaType.animation => 'Unknown Animation',
       MediaType.visualNovel => 'Unknown Visual Novel',
+      MediaType.manga => 'Unknown Manga',
     };
     return _resolvedMedia.name ?? fallback;
   }
@@ -489,6 +516,7 @@ class CollectionItem with Exportable {
     Movie? movie,
     TvShow? tvShow,
     VisualNovel? visualNovel,
+    Manga? manga,
     Platform? platform,
   }) {
     return CollectionItem(
@@ -515,6 +543,7 @@ class CollectionItem with Exportable {
       movie: movie ?? this.movie,
       tvShow: tvShow ?? this.tvShow,
       visualNovel: visualNovel ?? this.visualNovel,
+      manga: manga ?? this.manga,
       platform: platform ?? this.platform,
     );
   }

@@ -28,6 +28,9 @@ enum ImageType {
   /// Изображения с канваса (URL).
   canvasImage('canvas_images'),
 
+  /// Обложки манги.
+  mangaCover('manga_covers'),
+
   /// Обложки визуальных новелл.
   vnCover('vn_covers');
 

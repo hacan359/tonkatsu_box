@@ -199,6 +199,12 @@ abstract class S {
   /// **'Visual Novel'**
   String get mediaTypeVisualNovel;
 
+  /// No description provided for @mediaTypeManga.
+  ///
+  /// In en, this message translates to:
+  /// **'Manga'**
+  String get mediaTypeManga;
+
   /// No description provided for @sortManualDisplay.
   ///
   /// In en, this message translates to:
@@ -1327,6 +1333,12 @@ abstract class S {
   /// **'Visual novel data provided by VNDB.'**
   String get creditsVndbAttribution;
 
+  /// No description provided for @creditsAniListAttribution.
+  ///
+  /// In en, this message translates to:
+  /// **'Manga data provided by AniList.'**
+  String get creditsAniListAttribution;
+
   /// No description provided for @creditsOpenSource.
   ///
   /// In en, this message translates to:
@@ -1591,6 +1603,12 @@ abstract class S {
   /// **'Visual Novels'**
   String get collectionFilterVisualNovels;
 
+  /// No description provided for @collectionFilterManga.
+  ///
+  /// In en, this message translates to:
+  /// **'Manga'**
+  String get collectionFilterManga;
+
   /// No description provided for @collectionItemMovedTo.
   ///
   /// In en, this message translates to:
@@ -1662,6 +1680,36 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Visual novel not found'**
   String get visualNovelNotFound;
+
+  /// No description provided for @mangaNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Manga not found'**
+  String get mangaNotFound;
+
+  /// No description provided for @mangaProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading Progress'**
+  String get mangaProgress;
+
+  /// No description provided for @mangaChapters.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapters'**
+  String get mangaChapters;
+
+  /// No description provided for @mangaVolumes.
+  ///
+  /// In en, this message translates to:
+  /// **'Volumes'**
+  String get mangaVolumes;
+
+  /// No description provided for @mangaMarkCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as completed'**
+  String get mangaMarkCompleted;
 
   /// No description provided for @animatedMovie.
   ///
@@ -2190,6 +2238,18 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Visual Novels'**
   String get searchSourceVisualNovels;
+
+  /// No description provided for @searchSourceManga.
+  ///
+  /// In en, this message translates to:
+  /// **'Manga'**
+  String get searchSourceManga;
+
+  /// No description provided for @searchHintManga.
+  ///
+  /// In en, this message translates to:
+  /// **'Search manga...'**
+  String get searchHintManga;
 
   /// No description provided for @searchSelectPlatform.
   ///
@@ -2935,6 +2995,12 @@ abstract class S {
   /// **'Unknown Visual Novel'**
   String get unknownVisualNovel;
 
+  /// No description provided for @unknownManga.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown Manga'**
+  String get unknownManga;
+
   /// No description provided for @unknownPlatform.
   ///
   /// In en, this message translates to:
@@ -2988,6 +3054,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Visual Novels'**
   String get allItemsVisualNovels;
+
+  /// No description provided for @allItemsManga.
+  ///
+  /// In en, this message translates to:
+  /// **'Manga'**
+  String get allItemsManga;
 
   /// No description provided for @allItemsRatingAsc.
   ///
@@ -3528,6 +3600,48 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Platform'**
   String get browseFilterPlatform;
+
+  /// No description provided for @browseFilterFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Format'**
+  String get browseFilterFormat;
+
+  /// No description provided for @mangaFormatManga.
+  ///
+  /// In en, this message translates to:
+  /// **'Manga'**
+  String get mangaFormatManga;
+
+  /// No description provided for @mangaFormatManhwa.
+  ///
+  /// In en, this message translates to:
+  /// **'Manhwa'**
+  String get mangaFormatManhwa;
+
+  /// No description provided for @mangaFormatManhua.
+  ///
+  /// In en, this message translates to:
+  /// **'Manhua'**
+  String get mangaFormatManhua;
+
+  /// No description provided for @mangaFormatOneShot.
+  ///
+  /// In en, this message translates to:
+  /// **'One Shot'**
+  String get mangaFormatOneShot;
+
+  /// No description provided for @mangaFormatNovel.
+  ///
+  /// In en, this message translates to:
+  /// **'Novel'**
+  String get mangaFormatNovel;
+
+  /// No description provided for @mangaFormatLightNovel.
+  ///
+  /// In en, this message translates to:
+  /// **'Light Novel'**
+  String get mangaFormatLightNovel;
 
   /// No description provided for @browseFilterType.
   ///

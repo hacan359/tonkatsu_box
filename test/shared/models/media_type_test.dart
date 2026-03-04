@@ -6,8 +6,8 @@ import 'package:xerabora/shared/models/media_type.dart';
 void main() {
   group('MediaType', () {
     group('значения enum', () {
-      test('должен содержать 5 значений', () {
-        expect(MediaType.values.length, 5);
+      test('должен содержать 6 значений', () {
+        expect(MediaType.values.length, 6);
       });
 
       test('должен содержать game', () {
@@ -28,6 +28,10 @@ void main() {
 
       test('должен содержать visualNovel', () {
         expect(MediaType.values.contains(MediaType.visualNovel), isTrue);
+      });
+
+      test('должен содержать manga', () {
+        expect(MediaType.values.contains(MediaType.manga), isTrue);
       });
     });
 
@@ -50,6 +54,10 @@ void main() {
 
       test('visualNovel должен иметь значение "visual_novel"', () {
         expect(MediaType.visualNovel.value, 'visual_novel');
+      });
+
+      test('manga должен иметь значение "manga"', () {
+        expect(MediaType.manga.value, 'manga');
       });
     });
 
@@ -101,6 +109,12 @@ void main() {
 
         expect(result, MediaType.visualNovel);
       });
+
+      test('должен вернуть manga для "manga"', () {
+        final MediaType result = MediaType.fromString('manga');
+
+        expect(result, MediaType.manga);
+      });
     });
 
     group('displayLabel', () {
@@ -122,6 +136,10 @@ void main() {
 
       test('visualNovel должен отображаться как "Visual Novel"', () {
         expect(MediaType.visualNovel.displayLabel, 'Visual Novel');
+      });
+
+      test('manga должен отображаться как "Manga"', () {
+        expect(MediaType.manga.displayLabel, 'Manga');
       });
     });
   });

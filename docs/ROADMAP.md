@@ -90,6 +90,7 @@
 - [x] Unified Search — single `fetch()` method replaces separate browse/search. Text search + filters work simultaneously. Sort disabled during search for APIs that don't support it (TMDB, IGDB)
 - [x] **[Experimental]** Type-to-Filter overlay — desktop keyboard-driven client-side filtering on AllItems, Home, Collection, Search, Wishlist screens
 - [x] VNDB Integration — Visual novels as 5th media type via VNDB API (public, no auth). VisualNovel model, VndbApi client (search, browse, getById, tags), VndbSource (genre filter by tags, 3 sort modes), VnDetailsSheet, DB migration v23 (visual_novels_cache, vndb_tags tables), export/import support, VNDB attribution in Credits
+- [x] AniList Manga Integration — Manga as 6th media type via AniList GraphQL API (public, no auth, 90 req/min). Manga model, AniListApi client (searchManga, browseManga, getMangaById, getMangaByIds with batch pagination), AnilistMangaSource (genre + format filters, 3 sort modes), MangaDetailsSheet, DB migration v25 (manga_cache table), MangaDao, export/import support, AniList attribution in Credits. Full canvas, collection, and All Items support
 
 ---
 
