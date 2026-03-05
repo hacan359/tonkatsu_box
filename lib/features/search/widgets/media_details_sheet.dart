@@ -1,10 +1,11 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
+import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/cached_image.dart';
 
 /// Bottom sheet с деталями фильма или сериала.
 class MediaDetailsSheet extends StatelessWidget {
@@ -19,6 +20,8 @@ class MediaDetailsSheet extends StatelessWidget {
     this.genres,
     this.extraInfo,
     this.posterUrl,
+    this.cacheImageType,
+    this.cacheImageId,
     super.key,
   });
 
@@ -45,6 +48,12 @@ class MediaDetailsSheet extends StatelessWidget {
 
   /// URL постера.
   final String? posterUrl;
+
+  /// Тип изображения для кэша.
+  final ImageType? cacheImageType;
+
+  /// ID изображения для кэша.
+  final String? cacheImageId;
 
   /// Callback добавления в коллекцию (если null — кнопка не показывается).
   final VoidCallback? onAddToCollection;
@@ -83,13 +92,15 @@ class MediaDetailsSheet extends StatelessWidget {
                     ClipRRect(
                       borderRadius:
                           BorderRadius.circular(AppSpacing.radiusSm),
-                      child: CachedNetworkImage(
-                        imageUrl: posterUrl!,
+                      child: CachedImage(
+                        imageType:
+                            cacheImageType ?? ImageType.moviePoster,
+                        imageId: cacheImageId ?? posterUrl!,
+                        remoteUrl: posterUrl!,
                         width: 100,
                         height: 150,
                         fit: BoxFit.cover,
-                        placeholder:
-                            (BuildContext context, String url) => Container(
+                        placeholder: Container(
                           width: 100,
                           height: 150,
                           color: AppColors.surfaceLight,
@@ -98,9 +109,7 @@ class MediaDetailsSheet extends StatelessWidget {
                                 CircularProgressIndicator(strokeWidth: 2),
                           ),
                         ),
-                        errorWidget: (BuildContext context, String url,
-                                Object error) =>
-                            Container(
+                        errorWidget: Container(
                           width: 100,
                           height: 150,
                           color: AppColors.surfaceLight,

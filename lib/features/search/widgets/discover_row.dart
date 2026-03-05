@@ -1,11 +1,12 @@
 // Переиспользуемый горизонтальный ряд постеров для Discover.
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
+import '../../../core/services/image_cache_service.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/cached_image.dart';
 import '../../../shared/widgets/scrollable_row_with_arrows.dart';
 
 /// Элемент для отображения в ряду Discover.
@@ -257,11 +258,14 @@ class _DiscoverPosterCard extends StatelessWidget {
       );
     }
 
-    return CachedNetworkImage(
-      imageUrl: item.posterUrl!,
+    return CachedImage(
+      imageType:
+          item.isMovie ? ImageType.moviePoster : ImageType.tvShowPoster,
+      imageId: item.tmdbId.toString(),
+      remoteUrl: item.posterUrl!,
       fit: BoxFit.cover,
       memCacheWidth: 300,
-      placeholder: (_, _) => Container(
+      placeholder: Container(
         color: AppColors.surfaceLight,
         child: const Center(
           child: SizedBox(
@@ -271,7 +275,7 @@ class _DiscoverPosterCard extends StatelessWidget {
           ),
         ),
       ),
-      errorWidget: (_, _, _) => Container(
+      errorWidget: Container(
         color: AppColors.surfaceLight,
         child: const Center(
           child: Icon(

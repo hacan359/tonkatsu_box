@@ -1,11 +1,12 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
+import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/game.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/cached_image.dart';
 
 /// Bottom sheet с деталями игры.
 class GameDetailsSheet extends StatelessWidget {
@@ -56,13 +57,14 @@ class GameDetailsSheet extends StatelessWidget {
                     ClipRRect(
                       borderRadius:
                           BorderRadius.circular(AppSpacing.radiusSm),
-                      child: CachedNetworkImage(
-                        imageUrl: game.coverUrl!,
+                      child: CachedImage(
+                        imageType: ImageType.gameCover,
+                        imageId: game.id.toString(),
+                        remoteUrl: game.coverUrl!,
                         width: 100,
                         height: 133,
                         fit: BoxFit.cover,
-                        placeholder:
-                            (BuildContext context, String url) => Container(
+                        placeholder: Container(
                           width: 100,
                           height: 133,
                           color: AppColors.surfaceLight,
@@ -71,9 +73,7 @@ class GameDetailsSheet extends StatelessWidget {
                                 CircularProgressIndicator(strokeWidth: 2),
                           ),
                         ),
-                        errorWidget: (BuildContext context, String url,
-                                Object error) =>
-                            Container(
+                        errorWidget: Container(
                           width: 100,
                           height: 133,
                           color: AppColors.surfaceLight,

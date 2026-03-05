@@ -37,6 +37,7 @@
 - Fixed search text field clear button not appearing/disappearing reactively — added `TextEditingController.addListener` for immediate rebuild
 - Fixed search text auto-deleting on input — replaced `!hasSearchQuery` sync in `build()` with source-change-only clear via `_lastSourceId` tracking
 - Fixed wishlist→search navigation opening wrong source for all non-game types
+- Fixed detail sheet cover images not loading on Windows desktop — replaced `CachedNetworkImage` (unreliable `flutter_cache_manager` HTTP cache) with project's `CachedImage` widget (file-based `ImageCacheService`) in `GameDetailsSheet`, `MangaDetailsSheet`, `VnDetailsSheet`, `MediaDetailsSheet`, and `DiscoverRow`. Added `cacheImageType`/`cacheImageId` optional params to `MediaDetailsSheet` for correct per-media-type caching. Updated callers in `SearchScreen` and `DiscoverFeed`
 - Fixed manga card tap not opening details or adding to collection
 - Fixed collection covers not showing for manga items
 - Fixed "database has been locked for 10s" warnings when opening canvas for collections with many items — batch DB operations reduce N individual INSERT/DELETE calls to single transactions

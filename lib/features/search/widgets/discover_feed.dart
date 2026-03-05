@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/collected_item_info.dart';
 import '../../../shared/models/movie.dart';
@@ -374,6 +375,8 @@ class DiscoverFeed extends ConsumerWidget {
         rating: movie.formattedRating,
         genres: movie.genres,
         posterUrl: movie.posterUrl,
+        cacheImageType: ImageType.moviePoster,
+        cacheImageId: movie.tmdbId.toString(),
         onAddToCollection: () => onAddMovie(movie),
       ),
     );
@@ -391,6 +394,8 @@ class DiscoverFeed extends ConsumerWidget {
         rating: tvShow.formattedRating,
         genres: tvShow.genres,
         posterUrl: tvShow.posterUrl,
+        cacheImageType: ImageType.tvShowPoster,
+        cacheImageId: tvShow.tmdbId.toString(),
         onAddToCollection: () => onAddTvShow(tvShow),
       ),
     );
