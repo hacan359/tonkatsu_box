@@ -209,7 +209,9 @@ class _DateRow extends StatelessWidget {
     );
 
     if (editable && onTap != null) {
-      return InkWell(
+      return Material(
+        color: Colors.transparent,
+        child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
         child: Padding(
@@ -218,6 +220,7 @@ class _DateRow extends StatelessWidget {
             horizontal: AppSpacing.sm,
           ),
           child: content,
+        ),
         ),
       );
     }
