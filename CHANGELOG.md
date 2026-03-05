@@ -7,6 +7,8 @@
 ## [Unreleased]
 
 ### Added
+- **AniList Manga Integration** — manga as 6th media type via AniList GraphQL API. `AniListApi` client (`anilist_api.dart`) with search, browse (genre/format filters, 4 sort modes), batch `getMangaByIds()` with pagination (50 per batch). `Manga` model with 22 fields, computed properties (`rating10`, `formatLabel`, `statusLabel`, `progressString`), `fromJson`/`fromDb`/`toDb`/`toExport`/`copyWith`. `AniListMangaSource` — pluggable search source with `AniListGenreFilter` (20 genres) and `MangaFormatFilter` (6 formats). `MangaDetailsSheet` — bottom sheet with cover, metadata, genres, description, "Add to Collection" button. `MangaProgressSection` — reading progress widget with chapter/volume progress bars, +1 increment buttons, edit dialog, "Mark as completed". Auto-status transitions for manga reading progress (`_autoUpdateMangaStatus`): notStarted/planned→inProgress on first chapter/volume, →completed when chapters reach total, →notStarted on full reset, completed→inProgress on decrease; `dropped` status is never overwritten. DB migration v25 (`manga_cache` table), `MangaDao` for CRUD operations. Full propagation across `MediaType.manga`, `CanvasItemType.manga`, `CollectionItem.manga`, canvas repository, collection covers, export/import, all_items filter chip, collection filter bar, browse grid with in-collection markers, wishlist→search navigation. 18 localization keys (EN + RU). 53 new tests
+- **AniList Attribution** — AniList card added to Credits screen (`_TextLogoProviderCard` with brand blue `#3DB4F2`), `creditsAniListAttribution` localization key (EN + RU), README updated in 7 places (description, features, API setup, credits, tech stack)
 - **DAO layer** — extracted 7 domain-specific DAO classes from `DatabaseService` into `lib/core/database/dao/`: `GameDao`, `MovieDao`, `TvShowDao`, `VisualNovelDao`, `CollectionDao`, `CanvasDao`, `WishlistDao`. Each DAO receives a database accessor function and encapsulates all SQL operations for its domain
 - `CanvasDao.insertCanvasItemsBatch()` and `deleteCanvasItemsBatch()` — batch INSERT/DELETE using `Transaction` + `Batch` for canvas items. Eliminates N individual DB calls when opening/syncing large canvases
 - `CanvasRepository.createItemsBatch()` and `deleteItemsBatch()` — repository-level batch operations wrapping DAO batch methods
@@ -14,6 +16,10 @@
 - `TransactionMockDatabase` in `test/helpers/mocks.dart` — solves mocktail limitation with generic `Database.transaction<T>()` method stubbing
 
 ### Changed
+- `SearchScreen` — added `initialSourceId` parameter replacing legacy `initialTabIndex` for precise source pre-selection from Wishlist
+- Recommendations section on detail screens — changed from blacklist to whitelist (only movies, TV shows, animation)
+- `DataSource.anilist` color set to AniList brand blue `Color(0xFF3DB4F2)`
+- `CollectionDao.getCollectionCovers()` — added `LEFT JOIN manga_cache` for manga cover thumbnails
 - `DatabaseService` refactored from ~2700 lines to ~850 lines — now delegates all operations to DAO instances via `late final` fields, preserving the existing public API
 - `CanvasRepository.initializeCanvas()` — replaced N individual `createItem()` calls with single `createItemsBatch()` transaction
 - `CanvasNotifier._syncCanvasWithItems()` — replaced individual `deleteItem()`/`createItem()` loops with `deleteItemsBatch()`/`createItemsBatch()` batch calls. Fixes "database has been locked for 10s" warnings on large collections
@@ -22,6 +28,11 @@
 - `docs/CODESTYLE.md` — fixed builder names to match actual functions, updated migration procedure example
 
 ### Fixed
+- Fixed search text field clear button not appearing/disappearing reactively — added `TextEditingController.addListener` for immediate rebuild
+- Fixed search text auto-deleting on input — replaced `!hasSearchQuery` sync in `build()` with source-change-only clear via `_lastSourceId` tracking
+- Fixed wishlist→search navigation opening wrong source for all non-game types
+- Fixed manga card tap not opening details or adding to collection
+- Fixed collection covers not showing for manga items
 - Fixed "database has been locked for 10s" warnings when opening canvas for collections with many items — batch DB operations reduce N individual INSERT/DELETE calls to single transactions
 - Fixed Riverpod `_didChangeDependency` assertion crash in `CollectionItemsNotifier.refresh()` when sort providers update asynchronously from SharedPreferences
 

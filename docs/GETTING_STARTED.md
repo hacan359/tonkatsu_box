@@ -21,7 +21,7 @@ You can use these features right away — no registration needed:
 - **Canvas boards** — visual boards with artwork
 - **Ratings & notes** — rate and comment on items
 
-> API keys are only needed for **searching** new games, movies & TV shows.
+> API keys are only needed for **searching** new games, movies & TV shows. Visual novel search (VNDB) and manga search (AniList) work without any API keys.
 
 ---
 
@@ -74,7 +74,7 @@ Detailed instructions: [docs/guides/API_KEYS.md](guides/API_KEYS.md)
 | **Main** | All items from all collections. Filter by type, sort by rating. |
 | **Collections** | Your collections. Grid or list view per collection. |
 | **Wishlist** | Quick list of items to check out later. No API needed. |
-| **Search** | Find games, movies & TV shows via API. Add to any collection. |
+| **Search** | Find games, movies, TV shows, visual novels & manga via API. Add to any collection. |
 | **Settings** | Language, API keys, cache, database export/import, debug tools. |
 
 More details: [docs/guides/HOW_IT_WORKS.md](guides/HOW_IT_WORKS.md)

@@ -39,7 +39,7 @@ The app uses a forced dark theme (ThemeMode.dark) with a cinematic design system
 The Home tab shows all items from all collections in a single grid view:
 
 - **Unified view** — browse all collection items (games, movies, TV shows, animation, visual novels) in one place
-- **Media type filter** — horizontal ChoiceChip row: All, Games, Movies, TV Shows, Animation, Visual Novels
+- **Media type filter** — horizontal ChoiceChip row: All, Games, Movies, TV Shows, Animation, Visual Novels, Manga
 - **Platform filter** — when "Games" is selected, a second row of ChoiceChips shows available platforms (All + SNES, GBA, etc.). Resets on media type change
 - **Rating sort** — toggle chip to sort by user rating (ascending/descending)
 - **Default sort** — by date added (newest first)
@@ -53,10 +53,10 @@ The Home tab shows all items from all collections in a single grid view:
 Create unlimited collections organized however you want:
 
 - By platform (SNES, PlayStation, PC...), genre (RPGs, Platformers...), theme (Couch co-op, Hidden gems...), or personal lists (Backlog, Completed, Favorites...)
-- Mix games, movies and TV shows in a single collection
+- Mix games, movies, TV shows, visual novels and manga in a single collection
 - **Multi-platform games** — add the same game with different platforms (e.g. Castlevania for SNES and GBA) with independent progress, rating, and notes. Platform badge shown on poster cards
 - **Grid mode** — toggle between list and poster grid view; choice is saved per-collection. Grid cards show dual rating badge (`★ 8 / 7.5`), collection checkmark, and status emoji
-- **Type filter** — filter items by type (All/Games/Movies/TV Shows/Animation/Visual Novels) with item count badges
+- **Type filter** — filter items by type (All/Games/Movies/TV Shows/Animation/Visual Novels/Manga) with item count badges
 - **Platform filter** — when "Games" is selected, a second row of ChoiceChips shows platforms from current collection items. Resets when switching media types
 - **Search** — filter items by name within a collection
 - **Move to Collection** — move items between collections or to/from uncategorized via PopupMenuButton on detail screens and collection tiles. Prompts to delete the source collection when it becomes empty
@@ -84,6 +84,7 @@ Browse and search across multiple media sources via pluggable source architectur
 | **Animation** | TMDB | Type (Series/Movies), Genre, Year | Popular, Top Rated, Newest |
 | **Games** | IGDB | Genre, Platform | Popular, Rating, Newest |
 | **Visual Novels** | VNDB | Genre (tags) | Rating, Newest, Most Voted |
+| **Manga** | AniList | Genre, Format (Manga/Manhwa/Manhua/One Shot/Light Novel) | Rating, Popular, Newest |
 
 > [!TIP]
 > The Animation source automatically filters by genre Animation (ID=16). Movies and TV Shows sources exclude animated content, so there's no overlap.
@@ -91,7 +92,7 @@ Browse and search across multiple media sources via pluggable source architectur
 Unified search and browse — text search and filters work simultaneously (no mode switching). Source dropdown + filter bar + search field + sort dropdown are always visible. When no filters or query are active, TMDB sources show a curated Discover feed. Sort dropdown is disabled during text search on sources that don't support custom sort (TMDB, IGDB); VNDB supports sort during search.
 
 Features:
-- **Source switching** — dropdown to switch between Movies/TV/Anime/Games/Visual Novels; filters reset on source change
+- **Source switching** — dropdown to switch between Movies/TV/Anime/Games/Visual Novels/Manga; filters reset on source change
 - **Filter bar** — horizontal scrollable row with genre/year/platform dropdowns and sort selector
 - **In-collection markers** — green checkmark badge on items already in any collection (`_collectedIdsProvider`)
 - **Consistent card sizes** — grid delegate matches collection screen (desktop: maxCrossAxisExtent 150px, childAspectRatio 0.55)
@@ -186,6 +187,8 @@ Displayed below Activity & Progress section (always visible, not collapsed):
 - **Movie Details** — TMDB source, runtime ("2h 10m"), rating, genres
 - **TV Show Details** — TMDB source, seasons/episodes count, show status, episode tracker
 - **Animation Details** — adaptive: movie-like for animated films, TV show-like (with episodes) for animated series. Purple accent
+- **Visual Novel Details** — VNDB source, length, tags, developers, platforms
+- **Manga Details** — AniList source, chapters/volumes, format, country, staff. Bottom sheet via `MangaDetailsSheet`. Auto-status transitions: first chapter/volume → In Progress, all chapters read → Completed, reset to 0 → Not Started; `dropped` never overwritten
 
 </details>
 
@@ -194,7 +197,9 @@ Displayed below Activity & Progress section (always visible, not collapsed):
 ### Source Badges
 - **IGDB** — purple badge on game cards/details
 - **TMDB** — teal badge on movie/TV show cards/details
-- On detail screens, tapping the source badge opens the item's IGDB/TMDB page in the system browser
+- **VNDB** — dark badge on visual novel cards/details
+- **AniList** — blue badge (#3DB4F2) on manga cards/details
+- On detail screens, tapping the source badge opens the item's page in the system browser
 
 ### Media Type Colors
 | Type | Color | Accent |
@@ -203,6 +208,8 @@ Displayed below Activity & Progress section (always visible, not collapsed):
 | Movies | Red | `#EF5350` |
 | TV Shows | Green | `#66BB6A` |
 | Animation | Purple | `#CE93D8` |
+| Visual Novels | Teal | `#4DB6AC` |
+| Manga | Pink | `#F06292` |
 
 Applied to board card borders, collection item backgrounds, and tilted watermark icons (200px, 6% opacity, rotated -17°).
 
@@ -231,7 +238,7 @@ Quick notes for content to find later when internet is available:
 Metadata + element IDs. Tiny file size. Recipients fetch data from APIs on import.
 
 ### Full Export (`.xcollx`)
-Everything: board data, base64 covers, embedded media data (Game/Movie/TvShow/TvSeason/TvEpisode), all episodes. Fully self-contained — import without internet.
+Everything: board data, base64 covers, embedded media data (Game/Movie/TvShow/VisualNovel/Manga/TvSeason/TvEpisode), all episodes. Fully self-contained — import without internet.
 
 ### Import
 Imported collections are fully editable — they behave the same as your own collections.
@@ -316,6 +323,11 @@ Each item in a collection has its own personal board:
 - Genre caching in SQLite (DB-first strategy, auto-cleared on language change)
 - Season/episode data with lazy loading
 
+### AniList (Manga)
+- Manga, manhwa, manhua, light novels via public GraphQL API
+- Genre and format filters, multiple sort options
+- No API key required — AniList is free and open
+
 ### SteamGridDB (Artwork)
 - High-quality game artwork: grids, heroes, logos, icons
 - Side panel for adding images to boards
@@ -356,7 +368,7 @@ Sub-screen content is extracted into reusable Content widgets (`lib/features/set
 | **Database** | Config export/import (.json), Reset Database with confirmation |
 | **Debug** | SteamGridDB, Image Debug, Gamepad (dev only) |
 | **Trakt Import** | Offline import from Trakt.tv ZIP data export |
-| **Credits** | API provider attribution (TMDB mandatory, IGDB, SteamGridDB) with SVG logos, external links, Open Source section with MIT license info and Flutter `showLicensePage()` |
+| **Credits** | API provider attribution (TMDB mandatory, IGDB, SteamGridDB, VNDB, AniList) with SVG/text logos, external links, Open Source section with MIT license info and Flutter `showLicensePage()` |
 
 > [!WARNING]
 > **Reset Database** clears all collections, items, and board data. API keys and settings are preserved. This action cannot be undone.

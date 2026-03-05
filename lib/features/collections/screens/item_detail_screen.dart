@@ -17,6 +17,7 @@ import '../../../data/repositories/canvas_repository.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/item_status.dart';
+import '../../../shared/models/manga.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/movie.dart';
 import '../../../shared/models/steamgriddb_image.dart';
@@ -30,6 +31,7 @@ import '../providers/steamgriddb_panel_provider.dart';
 import '../providers/vgmaps_panel_provider.dart';
 import '../widgets/canvas_view.dart';
 import '../widgets/episode_tracker_section.dart';
+import '../widgets/manga_progress_section.dart';
 import '../widgets/recommendations_section.dart';
 import '../widgets/reviews_section.dart';
 import '../widgets/status_chip_row.dart';
@@ -51,8 +53,10 @@ class _MediaConfig {
     required this.infoChips,
     required this.description,
     required this.hasEpisodeTracker,
+    required this.hasMangaProgress,
     this.externalUrl,
     this.tvShow,
+    this.manga,
   });
 
   final String? coverUrl;
@@ -66,8 +70,10 @@ class _MediaConfig {
   final List<MediaDetailChip> infoChips;
   final String? description;
   final bool hasEpisodeTracker;
+  final bool hasMangaProgress;
   final String? externalUrl;
   final TvShow? tvShow;
+  final Manga? manga;
 }
 
 /// Единый экран детального просмотра элемента коллекции.
@@ -379,9 +385,11 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
 
   Widget _buildDetailView(CollectionItem item, _MediaConfig config) {
     final SettingsState settings = ref.watch(settingsNotifierProvider);
+    // Рекомендации и ревью доступны только для TMDB-источников
     final bool showRecs = settings.showRecommendations &&
-        item.mediaType != MediaType.game &&
-        item.mediaType != MediaType.visualNovel;
+        (item.mediaType == MediaType.movie ||
+            item.mediaType == MediaType.tvShow ||
+            item.mediaType == MediaType.animation);
 
     return MediaDetailView(
       title: item.itemName,
@@ -421,6 +429,15 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
           ),
         if (config.hasEpisodeTracker && widget.collectionId == null)
           _buildSeasonsInfo(item, config.accentColor),
+        if (config.hasMangaProgress && widget.collectionId != null)
+          MangaProgressSection(
+            itemId: item.id,
+            collectionId: widget.collectionId,
+            manga: config.manga,
+            currentChapter: item.currentEpisode,
+            currentVolume: item.currentSeason,
+            accentColor: config.accentColor,
+          ),
       ],
       recommendationSections: <Widget>[
         if (showRecs)
@@ -463,6 +480,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
           ?? item.tvShow?.externalUrl,
       MediaType.tvShow => item.tvShow?.externalUrl,
       MediaType.visualNovel => item.visualNovel?.externalUrl,
+      MediaType.manga => item.manga?.externalUrl,
     };
 
     return _MediaConfig(
@@ -481,8 +499,10 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       hasEpisodeTracker: item.mediaType == MediaType.tvShow ||
           (item.mediaType == MediaType.animation &&
               item.platformId == AnimationSource.tvShow),
+      hasMangaProgress: item.mediaType == MediaType.manga,
       externalUrl: externalUrl,
       tvShow: item.tvShow,
+      manga: item.manga,
     );
   }
 
@@ -496,6 +516,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
           ? l.animatedSeries
           : l.animatedMovie,
       MediaType.visualNovel => l.mediaTypeVisualNovel,
+      MediaType.manga => l.mediaTypeManga,
     };
   }
 
@@ -535,13 +556,34 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         iconColor: AppColors.ratingStar,
       ));
     }
+    // Manga-специфичные чипы: chapters, volumes, format, authors
+    if (item.mediaType == MediaType.manga && item.manga != null) {
+      final Manga m = item.manga!;
+      chips.add(MediaDetailChip(
+        icon: Icons.menu_book,
+        text: m.progressString,
+      ));
+      if (m.formatLabel != null) {
+        chips.add(MediaDetailChip(
+          icon: Icons.category_outlined,
+          text: m.formatLabel!,
+        ));
+      }
+      if (m.authorsString != null) {
+        chips.add(MediaDetailChip(
+          icon: Icons.person_outline,
+          text: m.authorsString!,
+        ));
+      }
+    }
     if (item.mediaStatus != null) {
       chips.add(MediaDetailChip(
         icon: Icons.info_outline,
         text: item.mediaStatus!,
       ));
     }
-    if (item.genresString != null) {
+    if (item.genresString != null &&
+        item.mediaType != MediaType.manga) {
       chips.add(MediaDetailChip(
         icon: Icons.category_outlined,
         text: item.genresString!,
@@ -655,6 +697,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       MediaType.tvShow => l.tvShowNotFound,
       MediaType.animation => l.animationNotFound,
       MediaType.visualNovel => l.visualNovelNotFound,
+      MediaType.manga => l.mangaNotFound,
       null => l.gameNotFound,
     };
   }

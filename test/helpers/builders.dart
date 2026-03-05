@@ -14,6 +14,7 @@ import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/movie.dart';
 import 'package:xerabora/shared/models/platform.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
+import 'package:xerabora/shared/models/manga.dart';
 import 'package:xerabora/shared/models/visual_novel.dart';
 import 'package:xerabora/shared/models/wishlist_item.dart';
 
@@ -70,6 +71,7 @@ CollectionStats createTestStats({
   int tvShowCount = 0,
   int animationCount = 0,
   int visualNovelCount = 0,
+  int mangaCount = 0,
 }) {
   return CollectionStats(
     total: total,
@@ -83,6 +85,7 @@ CollectionStats createTestStats({
     tvShowCount: tvShowCount,
     animationCount: animationCount,
     visualNovelCount: visualNovelCount,
+    mangaCount: mangaCount,
   );
 }
 
@@ -111,6 +114,7 @@ CollectionItem createTestCollectionItem({
   Movie? movie,
   TvShow? tvShow,
   VisualNovel? visualNovel,
+  Manga? manga,
   Platform? platform,
 }) {
   return CollectionItem(
@@ -134,6 +138,7 @@ CollectionItem createTestCollectionItem({
     movie: movie,
     tvShow: tvShow,
     visualNovel: visualNovel,
+    manga: manga,
     platform: platform,
   );
 }
@@ -271,6 +276,34 @@ VisualNovel createTestVisualNovel({
     developers: developers,
     platforms: platforms,
     externalUrl: externalUrl,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Manga
+// ---------------------------------------------------------------------------
+
+Manga createTestManga({
+  int id = 500,
+  String title = 'Test Manga',
+  String? description,
+  String? coverUrl,
+  int? averageScore,
+  int? chapters,
+  int? volumes,
+  String? format,
+  List<String>? genres,
+}) {
+  return Manga(
+    id: id,
+    title: title,
+    description: description,
+    coverUrl: coverUrl,
+    averageScore: averageScore,
+    chapters: chapters,
+    volumes: volumes,
+    format: format,
+    genres: genres,
   );
 }
 

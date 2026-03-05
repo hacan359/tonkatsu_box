@@ -17,6 +17,7 @@ import '../../../shared/models/platform.dart';
 import '../../../shared/models/tv_episode.dart';
 import '../../../shared/models/tv_season.dart';
 import '../../../shared/models/tv_show.dart';
+import '../../../shared/models/manga.dart';
 import '../../../shared/models/visual_novel.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -32,6 +33,7 @@ import '../widgets/discover_feed.dart';
 import '../widgets/filter_bar.dart';
 import '../widgets/game_details_sheet.dart';
 import '../widgets/media_details_sheet.dart';
+import '../widgets/manga_details_sheet.dart';
 import '../widgets/vn_details_sheet.dart';
 
 /// Экран поиска и просмотра контента.
@@ -45,6 +47,7 @@ class SearchScreen extends ConsumerStatefulWidget {
     this.onGameSelected,
     this.collectionId,
     this.initialTabIndex,
+    this.initialSourceId,
     this.initialQuery,
     super.key,
   });
@@ -58,6 +61,9 @@ class SearchScreen extends ConsumerStatefulWidget {
   /// Начальный индекс таба (legacy, используется для выбора источника).
   final int? initialTabIndex;
 
+  /// ID источника для предвыбора (например 'manga', 'games', 'tv').
+  final String? initialSourceId;
+
   /// Начальный запрос поиска (предзаполняет поле и запускает поиск).
   final String? initialQuery;
 
@@ -69,23 +75,33 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocus = FocusNode();
   String _typeToFilterQuery = '';
+  String? _lastSourceId;
 
   Map<int, Platform> _platformMap = <int, Platform>{};
 
   @override
   void initState() {
     super.initState();
+    _searchController.addListener(_onSearchTextChanged);
     _loadPlatforms();
 
-    // Совместимость: если передан initialTabIndex=1 (Games), выбираем games
-    if (widget.initialTabIndex == 1) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(browseProvider.notifier).setSource('games');
-      });
-    }
+    // Предвыбор источника
+    final String? sourceToSet = widget.initialSourceId ??
+        (widget.initialTabIndex == 1 ? 'games' : null);
 
-    // Если передан начальный запрос — сразу выполняем поиск
-    if (widget.initialQuery != null && widget.initialQuery!.isNotEmpty) {
+    if (sourceToSet != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(browseProvider.notifier).setSource(sourceToSet);
+        // Если есть начальный запрос — запускаем поиск после смены источника
+        if (widget.initialQuery != null &&
+            widget.initialQuery!.isNotEmpty) {
+          _searchController.text = widget.initialQuery!;
+          ref.read(browseProvider.notifier).search(widget.initialQuery!);
+        }
+      });
+    } else if (widget.initialQuery != null &&
+        widget.initialQuery!.isNotEmpty) {
+      // Начальный запрос без смены источника
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _searchController.text = widget.initialQuery!;
         ref.read(browseProvider.notifier).search(widget.initialQuery!);
@@ -107,9 +123,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   @override
   void dispose() {
+    _searchController.removeListener(_onSearchTextChanged);
     _searchController.dispose();
     _searchFocus.dispose();
     super.dispose();
+  }
+
+  void _onSearchTextChanged() {
+    // Перерисовка для обновления крестика очистки
+    setState(() {});
   }
 
   // ==================== Search ====================
@@ -176,6 +198,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       _onTvShowTap(item, mediaType);
     } else if (item is VisualNovel) {
       _onVisualNovelTap(item);
+    } else if (item is Manga) {
+      _onMangaTap(item);
     }
   }
 
@@ -853,6 +877,112 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     );
   }
 
+  // ==================== Manga actions ====================
+
+  void _onMangaTap(Manga manga) {
+    if (widget.collectionId != null) {
+      _addMangaToCollection(manga);
+    } else {
+      _showMangaDetails(manga);
+    }
+  }
+
+  Future<void> _addMangaToCollection(Manga manga) async {
+    final String title = manga.title;
+
+    await ref.read(databaseServiceProvider).upsertManga(manga);
+
+    final bool success = await ref
+        .read(
+            collectionItemsNotifierProvider(widget.collectionId).notifier)
+        .addItem(
+          mediaType: MediaType.manga,
+          externalId: manga.id,
+        );
+
+    if (mounted) {
+      final S l = S.of(context);
+      if (success) {
+        _cacheImage(
+          ImageType.mangaCover,
+          manga.id.toString(),
+          manga.coverUrl,
+        );
+        context.showSnack(
+          l.searchAddedToCollection(title),
+          type: SnackType.success,
+        );
+      } else {
+        context.showSnack(
+          l.searchAlreadyInCollection(title),
+          type: SnackType.info,
+        );
+      }
+    }
+  }
+
+  Future<void> _addMangaToAnyCollection(Manga manga) async {
+    final String title = manga.title;
+
+    final S l = S.of(context);
+    final CollectionChoice? choice = await showCollectionPickerDialog(
+      context: context,
+      ref: ref,
+      title: l.searchAddToCollection,
+    );
+    if (choice == null || !mounted) return;
+
+    final int? collectionId;
+    final String collectionName;
+    switch (choice) {
+      case ChosenCollection(:final Collection collection):
+        collectionId = collection.id;
+        collectionName = collection.name;
+      case WithoutCollection():
+        collectionId = null;
+        collectionName = l.collectionsUncategorized;
+    }
+
+    await ref.read(databaseServiceProvider).upsertManga(manga);
+
+    final bool success = await ref
+        .read(collectionItemsNotifierProvider(collectionId).notifier)
+        .addItem(
+          mediaType: MediaType.manga,
+          externalId: manga.id,
+        );
+
+    if (mounted) {
+      if (success) {
+        _cacheImage(
+          ImageType.mangaCover,
+          manga.id.toString(),
+          manga.coverUrl,
+        );
+        context.showSnack(
+          l.searchAddedToNamed(title, collectionName),
+          type: SnackType.success,
+        );
+      } else {
+        context.showSnack(
+          l.searchAlreadyInNamed(title, collectionName),
+          type: SnackType.info,
+        );
+      }
+    }
+  }
+
+  void _showMangaDetails(Manga manga) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) => MangaDetailsSheet(
+        manga: manga,
+        onAddToCollection: () => _addMangaToAnyCollection(manga),
+      ),
+    );
+  }
+
   void _showGameDetails(Game game) {
     showModalBottomSheet<void>(
       context: context,
@@ -884,6 +1014,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   Widget build(BuildContext context) {
     final BrowseState browseState = ref.watch(browseProvider);
     final bool isLandscape = isLandscapeMobile(context);
+
+    // Очистка поля при смене источника
+    if (_lastSourceId != null && _lastSourceId != browseState.sourceId) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _searchController.clear();
+      });
+    }
+    _lastSourceId = browseState.sourceId;
 
     // Discover Customize кнопка — только без запросов и фильтров
     // когда источник поддерживает Discover (TMDB)

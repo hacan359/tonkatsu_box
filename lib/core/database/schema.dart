@@ -23,6 +23,7 @@ abstract final class DatabaseSchema {
     await createIgdbGenresTable(db);
     await createVisualNovelsCacheTable(db);
     await createVndbTagsTable(db);
+    await createMangaCacheTable(db);
   }
 
   /// Таблица платформ (IGDB).
@@ -372,6 +373,36 @@ abstract final class DatabaseSchema {
       CREATE TABLE IF NOT EXISTS vndb_tags (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL
+      )
+    ''');
+  }
+
+  /// Таблица кэша манги (AniList).
+  static Future<void> createMangaCacheTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS manga_cache (
+        id INTEGER PRIMARY KEY,
+        title TEXT NOT NULL,
+        title_english TEXT,
+        title_native TEXT,
+        description TEXT,
+        cover_url TEXT,
+        cover_url_medium TEXT,
+        average_score INTEGER,
+        mean_score INTEGER,
+        popularity INTEGER,
+        status TEXT,
+        start_year INTEGER,
+        start_month INTEGER,
+        start_day INTEGER,
+        chapters INTEGER,
+        volumes INTEGER,
+        format TEXT,
+        country_of_origin TEXT,
+        genres TEXT,
+        authors TEXT,
+        external_url TEXT,
+        updated_at INTEGER NOT NULL
       )
     ''');
   }

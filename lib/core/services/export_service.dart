@@ -332,6 +332,8 @@ class ExportService {
     final Map<int, Map<String, dynamic>> tvShows =
         <int, Map<String, dynamic>>{};
     final Map<int, Map<String, dynamic>> vns = <int, Map<String, dynamic>>{};
+    final Map<int, Map<String, dynamic>> mangas =
+        <int, Map<String, dynamic>>{};
     final Set<int> tvShowIds = <int>{};
     final Set<int> platformIds = <int>{};
 
@@ -380,6 +382,10 @@ class ExportService {
               !vns.containsKey(item.externalId)) {
             vns[item.externalId] = item.visualNovel!.toExport();
           }
+        case MediaType.manga:
+          if (item.manga != null && !mangas.containsKey(item.externalId)) {
+            mangas[item.externalId] = item.manga!.toExport();
+          }
       }
     }
 
@@ -419,6 +425,7 @@ class ExportService {
         movies.isEmpty &&
         tvShows.isEmpty &&
         vns.isEmpty &&
+        mangas.isEmpty &&
         allSeasons.isEmpty &&
         allEpisodes.isEmpty &&
         allPlatforms.isEmpty) {
@@ -433,6 +440,7 @@ class ExportService {
       if (allEpisodes.isNotEmpty) 'tv_episodes': allEpisodes,
       if (allPlatforms.isNotEmpty) 'platforms': allPlatforms,
       if (vns.isNotEmpty) 'visual_novels': vns.values.toList(),
+      if (mangas.isNotEmpty) 'mangas': mangas.values.toList(),
     };
   }
 

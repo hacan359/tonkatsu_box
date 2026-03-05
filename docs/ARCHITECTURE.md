@@ -4,14 +4,14 @@
 
 ## Обзор
 
-Tonkatsu Box — кроссплатформенное приложение на Flutter для управления коллекциями ретро-игр, фильмов, сериалов и визуальных новелл с интеграцией IGDB, TMDB, SteamGridDB и VNDB API.
+Tonkatsu Box — кроссплатформенное приложение на Flutter для управления коллекциями ретро-игр, фильмов, сериалов, визуальных новелл и манги с интеграцией IGDB, TMDB, SteamGridDB, VNDB и AniList API.
 
 | Слой | Технология |
 |------|------------|
 | UI | Flutter (Material 3) |
 | State | Riverpod |
 | Database | SQLite (sqflite_ffi на desktop, sqflite на Android) |
-| API | IGDB (Twitch OAuth), TMDB (Bearer token), SteamGridDB (Bearer token), VNDB (public, no auth) |
+| API | IGDB (Twitch OAuth), TMDB (Bearer token), SteamGridDB (Bearer token), VNDB (public, no auth), AniList (public GraphQL, no auth) |
 | Platform | Windows Desktop, Linux Desktop, Android (VGMaps недоступен) |
 
 > [!IMPORTANT]
@@ -24,8 +24,8 @@ Tonkatsu Box — кроссплатформенное приложение на 
 ```mermaid
 graph TB
     subgraph core ["🔧 Core"]
-        api["API<br/><small>igdb_api, tmdb_api,<br/>steamgriddb_api, vndb_api</small>"]
-        database["Database<br/><small>database_service + 7 DAOs<br/>SQLite, 18 таблиц</small>"]
+        api["API<br/><small>igdb_api, tmdb_api,<br/>steamgriddb_api, vndb_api,<br/>anilist_api</small>"]
+        database["Database<br/><small>database_service + 8 DAOs<br/>SQLite, 19 таблиц</small>"]
         logging["Logging<br/><small>AppLogger<br/>package:logging</small>"]
         services["Services<br/><small>export, import,<br/>image_cache, config</small>"]
     end
@@ -36,7 +36,7 @@ graph TB
 
     subgraph features ["🖥️ Features"]
         collections["Collections<br/><small>home, collection,<br/>detail screens,<br/>canvas, panels</small>"]
-        search["Search<br/><small>game, movie,<br/>tv show, animation,<br/>visual novel</small>"]
+        search["Search<br/><small>game, movie,<br/>tv show, animation,<br/>visual novel, manga</small>"]
         settings["Settings<br/><small>credentials, cache,<br/>database, debug</small>"]
         wishlist["Wishlist<br/><small>quick notes for<br/>deferred search</small>"]
         home["Home<br/><small>all items grid</small>"]
@@ -44,7 +44,7 @@ graph TB
     end
 
     subgraph shared ["🧩 Shared"]
-        models["Models<br/><small>22 модели:<br/>Game, Movie, TvShow,<br/>VisualNovel, Collection,<br/>CanvasItem, WishlistItem...</small>"]
+        models["Models<br/><small>23 модели:<br/>Game, Movie, TvShow,<br/>VisualNovel, Manga, Collection,<br/>CanvasItem, WishlistItem...</small>"]
         widgets["Widgets<br/><small>CachedImage, MediaPosterCard,<br/>BreadcrumbAppBar,<br/>StarRatingBar...</small>"]
         theme["Theme<br/><small>AppColors, AppTypography,<br/>AppSpacing, AppTheme</small>"]
         navigation["Navigation<br/><small>NavigationShell<br/>Rail / BottomBar</small>"]
@@ -106,20 +106,22 @@ lib/
 | `lib/core/api/igdb_api.dart` | **IGDB API клиент**. OAuth через Twitch, поиск игр, загрузка платформ, browse с фильтрами, жанры. Методы: `getAccessToken()`, `searchGames()`, `fetchPlatforms()`, `browseGames()`, `getGenres()`, `getTopGamesByPlatform()` |
 | `lib/core/api/steamgriddb_api.dart` | **SteamGridDB API клиент**. Bearer token авторизация. Методы: `searchGames()`, `getGrids()`, `getHeroes()`, `getLogos()`, `getIcons()`, `validateApiKey()` |
 | `lib/core/api/vndb_api.dart` | **VNDB API клиент**. Публичный API без авторизации (~200 req/min). Методы: `searchVn()`, `browseVn()`, `getVnById()`, `getVnByIds()`, `fetchTags()`. Провайдер: `vndbApiProvider` |
+| `lib/core/api/anilist_api.dart` | **AniList API клиент**. Публичный GraphQL API без авторизации (90 req/min). Методы: `searchManga()`, `browseManga()` (query/genre/format/sort), `getMangaById()`, `getMangaByIds()` (batch по 50). `AniListApiException` с statusCode. Провайдер: `aniListApiProvider` |
 | `lib/core/api/tmdb_api.dart` | **TMDB API клиент**. Bearer token авторизация. Методы: `searchMovies(query, {year})`, `searchTvShows(query, {firstAirDateYear})`, `multiSearch()`, `getMovieDetails()`, `getTvShowDetails()`, `getPopularMovies()`, `getPopularTvShows()`, `getMovieGenres()`, `getTvGenres()`, `getSeasonEpisodes(tmdbShowId, seasonNumber)`, `setLanguage(language)`, `getMovieRecommendations()`, `getTvShowRecommendations()`, `getMovieReviews()`, `getTvShowReviews()`, `discoverMovies()`, `discoverTvShows()`. Lazy-cached genre map (`_movieGenreMap`, `_tvGenreMap`) — resolves `genre_ids` to `genres` in all list endpoints. Cache cleared on `setLanguage()` and `clearApiKey()` |
 | `lib/shared/constants/platform_features.dart` | **Флаги платформы**. `kCanvasEnabled` (true на всех платформах), `kVgMapsEnabled` (только Windows), `kScreenshotEnabled` (только Windows). VGMaps скрыт на не-Windows платформах |
 | `lib/shared/constants/api_defaults.dart` | **Встроенные API ключи**. `ApiDefaults` — `abstract final class` с `String.fromEnvironment` для TMDB и SteamGridDB ключей, инжектируемых при сборке через `--dart-define`. Геттеры `hasTmdbKey`, `hasSteamGridDbKey`. Используется в `SettingsNotifier._loadFromPrefs()` как fallback: user key → built-in → null |
-| `lib/core/database/database_service.dart` | **SQLite сервис (фасад)**. Инициализация БД, миграции (версия 24), делегирование операций в 7 DAO. Использует `databaseFactory.openDatabase()` — кроссплатформенный вызов (FFI на desktop, нативный плагин на Android). 18 таблиц: `platforms`, `games`, `collections`, `collection_items`, `canvas_items`, `canvas_viewport`, `canvas_connections`, `game_canvas_viewport`, `movies_cache`, `tv_shows_cache`, `tv_seasons_cache`, `tv_episodes_cache`, `watched_episodes`, `tmdb_genres`, `wishlist`, `visual_novels_cache`, `vndb_tags`, `igdb_genres`. DAO экземпляры: `gameDao`, `movieDao`, `tvShowDao`, `visualNovelDao`, `collectionDao`, `canvasDao`, `wishlistDao`. Публичный API сохранён — все методы делегируют в соответствующие DAO |
+| `lib/core/database/database_service.dart` | **SQLite сервис (фасад)**. Инициализация БД, миграции (версия 25), делегирование операций в 8 DAO. Использует `databaseFactory.openDatabase()` — кроссплатформенный вызов (FFI на desktop, нативный плагин на Android). 19 таблиц: `platforms`, `games`, `collections`, `collection_items`, `canvas_items`, `canvas_viewport`, `canvas_connections`, `game_canvas_viewport`, `movies_cache`, `tv_shows_cache`, `tv_seasons_cache`, `tv_episodes_cache`, `watched_episodes`, `tmdb_genres`, `wishlist`, `visual_novels_cache`, `vndb_tags`, `igdb_genres`, `manga_cache`. DAO экземпляры: `gameDao`, `movieDao`, `tvShowDao`, `visualNovelDao`, `mangaDao`, `collectionDao`, `canvasDao`, `wishlistDao`. Публичный API сохранён — все методы делегируют в соответствующие DAO |
 | `lib/core/database/dao/game_dao.dart` | **DAO игр**. CRUD для таблиц `games`, `platforms`, `igdb_genres`. Методы: `upsertGame()`, `upsertGames()`, `getGamesByIds()`, `upsertPlatform()`, `upsertPlatforms()`, `getPlatformsByIds()`, `getUniquePlatformIds()`, `getIgdbGenres()`, `clearGames()` и др. Batch-операции через транзакции |
 | `lib/core/database/dao/movie_dao.dart` | **DAO фильмов**. CRUD для `movies_cache`, `tmdb_genres`. Методы: `upsertMovie()`, `upsertMovies()`, `getMovieByTmdbId()`, `getMoviesByTmdbIds()`, `getTmdbGenreMap()`, `clearMovies()` и др. |
 | `lib/core/database/dao/tv_show_dao.dart` | **DAO сериалов**. CRUD для `tv_shows_cache`, `tv_seasons_cache`, `tv_episodes_cache`, `watched_episodes`. Методы для шоу, сезонов, эпизодов и отслеживания просмотра. Batch upsert через транзакции |
 | `lib/core/database/dao/visual_novel_dao.dart` | **DAO визуальных новелл**. CRUD для `visual_novels_cache`, `vndb_tags`. Методы: `upsertVisualNovel()`, `upsertVisualNovels()`, `getVisualNovel()`, `getVisualNovelsByNumericIds()`, `getVndbTags()` |
+| `lib/core/database/dao/manga_dao.dart` | **DAO манги**. CRUD для `manga_cache`. Методы: `upsertManga()`, `upsertMangas()`, `getManga()`, `getMangaByIds()` |
 | `lib/core/database/dao/collection_dao.dart` | **DAO коллекций**. CRUD для `collections`, `collection_items`. Методы: `getCollections()`, `insertCollection()`, `getCollectionItemsWithData()`, `addItemToCollection()`, `updateItemStatus()`, `reorderItems()` (batch), `getCollectionStats()`, `findCollectionItem()` и др. Авторезолвинг жанров через `_resolveGenresIfNeeded<T>()` |
 | `lib/core/database/dao/canvas_dao.dart` | **DAO канваса**. CRUD для `canvas_items`, `canvas_viewport`, `canvas_connections`, `game_canvas_viewport`. Методы: `getCanvasItems()`, `insertCanvasItem()`, `updateCanvasItem()`, `deleteCanvasItem()`, `insertCanvasItemsBatch()`, `deleteCanvasItemsBatch()`, `getCanvasConnections()`, viewport операции. Batch методы используют `Transaction` + `Batch` для массовых INSERT/DELETE |
 | `lib/core/database/dao/wishlist_dao.dart` | **DAO вишлиста**. CRUD для `wishlist`. Методы: `addWishlistItem()`, `getWishlistItems()`, `getWishlistItemCount()`, `updateWishlistItem()`, `resolveWishlistItem()`, `deleteWishlistItem()`, `clearResolvedWishlistItems()` |
 | `lib/core/logging/app_logger.dart` | **Утилита логирования**. `abstract final class AppLogger` — инициализация `package:logging` с выводом через `dart:developer`. Вызывается один раз в `main()`. Все core-классы используют `static final Logger _log = Logger('ClassName')` |
 | `lib/core/services/config_service.dart` | **Сервис конфигурации**. Экспорт/импорт 8 ключей SharedPreferences в JSON файл. Класс `ConfigResult` (success/failure/cancelled). Методы: `collectSettings()`, `applySettings()`, `exportToFile()`, `importFromFile()` |
-| `lib/core/services/image_cache_service.dart` | **Сервис кэширования изображений**. Enum `ImageType` (platformLogo, gameCover, moviePoster, tvShowPoster, canvasImage). Локальное хранение изображений в папках по типу. SharedPreferences для enable/disable и custom path. Валидация magic bytes (JPEG/PNG/WebP) при скачивании и при чтении из кэша. Безопасное удаление файлов (`_tryDelete`) при Windows file lock. Методы: `getImageUri()` (cache-first с fallback на remoteUrl + magic bytes проверка), `downloadImage()` (+ валидация), `downloadImages()`, `readImageBytes()`, `saveImageBytes()`, `clearCache()`, `getCacheSize()`, `getCachedCount()`. Провайдер `imageCacheServiceProvider` |
+| `lib/core/services/image_cache_service.dart` | **Сервис кэширования изображений**. Enum `ImageType` (platformLogo, gameCover, moviePoster, tvShowPoster, vnCover, mangaCover, canvasImage). Локальное хранение изображений в папках по типу. SharedPreferences для enable/disable и custom path. Валидация magic bytes (JPEG/PNG/WebP) при скачивании и при чтении из кэша. Безопасное удаление файлов (`_tryDelete`) при Windows file lock. Методы: `getImageUri()` (cache-first с fallback на remoteUrl + magic bytes проверка), `downloadImage()` (+ валидация), `downloadImages()`, `readImageBytes()`, `saveImageBytes()`, `clearCache()`, `getCacheSize()`, `getCachedCount()`. Провайдер `imageCacheServiceProvider` |
 | `lib/core/services/xcoll_file.dart` | **Модель файла экспорта/импорта**. Формат v2 (.xcoll/.xcollx, items + canvas + images). Классы: `XcollFile`, `ExportFormat` (light/full), `ExportCanvas`. Файлы v1 выбрасывают `FormatException` |
 | `lib/core/services/export_service.dart` | **Сервис экспорта**. Создаёт XcollFile из коллекции. Режимы: v2 light (.xcoll — ID элементов), v2 full (.xcollx — + canvas + per-item canvas + base64 обложки). Зависимости: `CanvasRepository`, `ImageCacheService`. Методы: `createLightExport()`, `createFullExport()`, `exportToFile()` |
 | `lib/core/services/import_service.dart` | **Сервис импорта**. Импортирует XcollFile в коллекцию. items + canvas (viewport/items/connections) + per-item canvas + восстановление обложек из base64. Прогресс через `ImportStage` enum и `ImportProgressCallback`. Зависимости: `DatabaseService`, `CanvasRepository`, `GameRepository`, `ImageCacheService` |
@@ -133,7 +135,7 @@ lib/
 ### 📦 Models (Модели данных)
 
 <details>
-<summary><strong>22 модели</strong> — развернуть таблицу</summary>
+<summary><strong>23 модели</strong> — развернуть таблицу</summary>
 
 | Файл | Назначение |
 |------|------------|
@@ -145,16 +147,17 @@ lib/
 | `lib/shared/models/steamgriddb_image.dart` | **Модель SteamGridDB изображения**. Поля: id, score, style, url, thumb, width, height, mime, author. Свойство `dimensions` |
 | `lib/shared/models/collection_item.dart` | **Модель универсального элемента коллекции**. Поля: id, collectionId, mediaType, externalId, platformId, sortOrder, status, authorComment, userComment, userRating (1-10), addedAt, startedAt, completedAt, lastActivityAt. Методы: `fromDb()`, `toDb()`, `copyWith()` (с sentinel-флагами `clearAuthorComment`, `clearUserComment`, `clearUserRating`). Геттеры: `apiRating` (нормализованный 0-10: IGDB rating/10, TMDB as-is, учитывает AnimationSource), `itemDescription` (game.summary / movie.overview / tvShow.overview). **Unified media accessors** через `_resolvedMedia` record: `releaseYear`, `runtime`, `totalSeasons`, `totalEpisodes`, `genresString`, `genres`, `mediaStatus`, `formattedRating`, `dataSource`, `imageType`, `placeholderIcon` — устраняют switch-on-mediaType в UI. `sortOrder` используется для ручной сортировки drag-and-drop. Даты хранятся как Unix seconds |
 | `lib/shared/models/visual_novel.dart` | **Модель визуальной новеллы**. Поля: id (String "v2"), title, altTitle, description, imageUrl, rating (0-100), voteCount, released, lengthMinutes, length (1-5), tags, developers, platforms, externalUrl. Computed: `numericId`, `rating10`, `formattedRating`, `releaseYear`, `lengthLabel`, `platformsString`. Класс `VndbTag` (id, name). Методы: `fromJson()`, `fromDb()`, `toDb()`, `toExport()`, `copyWith()` |
+| `lib/shared/models/manga.dart` | **Модель манги**. Поля: aniListId, title, titleEnglish, titleNative, coverUrl, coverMediumUrl, description, genres (List\<String\>), averageScore (0-100), meanScore, popularity, status, startYear, chapters, volumes, format, countryOfOrigin, staff (List\<MangaStaff\>). Computed: `rating10`, `formattedRating`, `releaseYear`, `genresString`, `formatLabel`, `statusLabel`, `staffString`. Класс `MangaStaff` (name, role). Методы: `fromJson()`, `fromDb()`, `toDb()`, `toExport()`, `copyWith()` |
 | `lib/shared/models/cover_info.dart` | **Модель обложки коллекции**. Легковесная модель для мозаики карточек: externalId, mediaType, platformId, thumbnailUrl. Конструктор `fromDb()` |
-| `lib/shared/models/data_source.dart` | **Enum источника данных**. `DataSource` (igdb, tmdb, steamGridDb, vgMaps, vndb) — извлечён из `source_badge.dart`. Поля: `label`, `color`. Реэкспортируется из `source_badge.dart` |
-| `lib/shared/models/media_type.dart` | **Enum типа медиа**. Значения: `game`, `movie`, `tvShow`, `animation`, `visualNovel`. `AnimationSource` — abstract final class с константами `movie = 0`, `tvShow = 1` для дискриминации источника анимации через `platform_id`. Свойства: `label`, `icon`. Методы: `fromString()` |
+| `lib/shared/models/data_source.dart` | **Enum источника данных**. `DataSource` (igdb, tmdb, steamGridDb, vgMaps, vndb, anilist) — извлечён из `source_badge.dart`. Поля: `label`, `color`. Реэкспортируется из `source_badge.dart` |
+| `lib/shared/models/media_type.dart` | **Enum типа медиа**. Значения: `game`, `movie`, `tvShow`, `animation`, `visualNovel`, `manga`. `AnimationSource` — abstract final class с константами `movie = 0`, `tvShow = 1` для дискриминации источника анимации через `platform_id`. Свойства: `label`, `icon`. Методы: `fromString()` |
 | `lib/shared/models/item_status.dart` | **Enum статуса элемента**. Значения: `notStarted`, `inProgress`, `completed`, `dropped`, `planned`. Свойства: `materialIcon` (IconData), `color`, `statusSortPriority`. Методы: `fromString()`, `displayLabel()`, `localizedLabel()` |
 | `lib/shared/models/collection_sort_mode.dart` | **Enum режима сортировки коллекции**. Значения: `manual`, `addedDate`, `status`, `name`, `rating`. Свойства: `value`, `displayLabel`, `shortLabel`, `description`. Метод: `fromString()`. Хранится в SharedPreferences per collection |
 | `lib/shared/models/movie.dart` | **Модель фильма**. Поля: tmdbId, title, overview, posterUrl, backdropUrl, rating, genres, runtime, externalUrl и др. Свойства: `posterThumbUrl`, `backdropSmallUrl`, `formattedRating`, `genresString`. Методы: `fromJson()`, `fromDb()`, `toDb()`, `copyWith()` |
 | `lib/shared/models/tv_show.dart` | **Модель сериала**. Поля: tmdbId, title, overview, posterUrl, backdropUrl, rating, genres, seasons, episodes, status, externalUrl. Свойства: `posterThumbUrl`, `backdropSmallUrl`, `formattedRating`, `genresString`. Методы: `fromJson()`, `fromDb()`, `toDb()`, `copyWith()` |
 | `lib/shared/models/tv_season.dart` | **Модель сезона сериала**. Поля: id, tvShowId, seasonNumber, name, overview, posterPath, airDate, episodeCount. Методы: `fromJson()`, `fromDb()`, `toDb()`, `copyWith()` |
 | `lib/shared/models/tv_episode.dart` | **Модель эпизода сериала**. Поля: tmdbShowId, seasonNumber, episodeNumber, name, overview, airDate, stillUrl, runtime. Equality по (tmdbShowId, seasonNumber, episodeNumber). Методы: `fromJson()`, `fromDb()`, `toDb()`, `copyWith()` |
-| `lib/shared/models/canvas_item.dart` | **Модель элемента канваса**. Enum `CanvasItemType` (game/movie/tvShow/animation/text/image/link). Поля: id, collectionId, collectionItemId (null для коллекционного canvas, int для per-item), itemType, itemRefId, x, y, width, height, zIndex, data (JSON). Joined поля: `game: Game?`, `movie: Movie?`, `tvShow: TvShow?`. Статический метод `CanvasItemType.fromMediaType()`, геттер `isMediaItem` |
+| `lib/shared/models/canvas_item.dart` | **Модель элемента канваса**. Enum `CanvasItemType` (game/movie/tvShow/animation/visualNovel/manga/text/image/link). Поля: id, collectionId, collectionItemId (null для коллекционного canvas, int для per-item), itemType, itemRefId, x, y, width, height, zIndex, data (JSON). Joined поля: `game: Game?`, `movie: Movie?`, `tvShow: TvShow?`, `visualNovel: VisualNovel?`, `manga: Manga?`. Unified accessors: `mediaTitle`, `mediaThumbnailUrl`, `mediaImageType`, `mediaCacheId`, `mediaPlaceholderIcon`, `asMediaType`. Статический метод `CanvasItemType.fromMediaType()`, геттер `isMediaItem` |
 | `lib/shared/models/canvas_viewport.dart` | **Модель viewport канваса**. Поля: collectionId, scale, offsetX, offsetY. Хранит зум и позицию камеры |
 | `lib/shared/models/canvas_connection.dart` | **Модель связи канваса**. Enum `ConnectionStyle` (solid/dashed/arrow). Поля: id, collectionId, collectionItemId (null для коллекционного canvas, int для per-item), fromItemId, toItemId, label, color (hex), style, createdAt |
 | `lib/shared/models/wishlist_item.dart` | **Модель элемента вишлиста**. Поля: id, text, mediaTypeHint (MediaType?), note, isResolved, createdAt, resolvedAt. Методы: `fromDb()`, `toDb()`, `copyWith()`. Геттер `hasNote` |
@@ -170,11 +173,11 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/features/home/screens/all_items_screen.dart` | **Экран всех элементов (Home tab)**. Grid-вид всех элементов из всех коллекций с PosterCard, именем коллекции как subtitle. ChoiceChip фильтрация по типу медиа (All/Games/Movies/TV Shows/Animation), ActionChip сортировки по рейтингу (toggle asc/desc). При выборе Games — второй ряд ChoiceChip с платформами (All + платформы из текущих элементов, `allItemsPlatformsProvider`). Tap -> detail screen. Loading, empty, error + retry states. RefreshIndicator |
+| `lib/features/home/screens/all_items_screen.dart` | **Экран всех элементов (Home tab)**. Grid-вид всех элементов из всех коллекций с PosterCard, именем коллекции как subtitle. ChoiceChip фильтрация по типу медиа (All/Games/Movies/TV Shows/Animation/Visual Novels/Manga), ActionChip сортировки по рейтингу (toggle asc/desc). При выборе Games — второй ряд ChoiceChip с платформами (All + платформы из текущих элементов, `allItemsPlatformsProvider`). Tap -> detail screen. Loading, empty, error + retry states. RefreshIndicator |
 | `lib/features/home/providers/all_items_provider.dart` | **Провайдеры All Items**. `allItemsSortProvider` (NotifierProvider, SharedPreferences), `allItemsSortDescProvider` (NotifierProvider, SharedPreferences), `allItemsNotifierProvider` (загрузка + сортировка всех элементов), `collectionNamesProvider` (Map<int, String> из collectionsProvider), `allItemsPlatformsProvider` (FutureProvider — уникальные платформы из игровых элементов, сортировка по имени) |
 | `lib/features/collections/providers/sort_utils.dart` | **Утилита сортировки**. Top-level функция `applySortMode()` — shared логика сортировки по 5 режимам (manual, addedDate, status, name, rating). Используется в `CollectionItemsNotifier` и `AllItemsNotifier` |
 | `lib/features/collections/screens/home_screen.dart` | **Экран коллекций (Collections tab)**. Плоский список коллекций (первые N как Hero-карточки, остальные как Tile). AppBar с кнопкой "+" для создания и Import. Меню: rename, delete |
-| `lib/features/collections/screens/collection_screen.dart` | **Экран коллекции**. Заголовок со статистикой (прогресс-бар), список элементов. Кнопка "Add Items" открывает SearchScreen. Поддержка игр, фильмов, сериалов и анимации через `CollectionItem`/`collectionItemsNotifierProvider`. Навигация к `ItemDetailScreen` для всех типов. Filter chips: All/Games/Movies/TV Shows/Animation. При выборе Games — второй ряд ChoiceChip с платформами (All + платформы из текущих элементов коллекции). Grid: `MediaPosterCard(variant: grid/compact)` с двойным рейтингом и `platformLabel` для игр. `_CollectionItemTile` — карточка с DualRatingBadge inline, описанием, заметками пользователя, большой полупрозрачной фоновой иконкой типа медиа |
+| `lib/features/collections/screens/collection_screen.dart` | **Экран коллекции**. Заголовок со статистикой (прогресс-бар), список элементов. Кнопка "Add Items" открывает SearchScreen. Поддержка игр, фильмов, сериалов, анимации, визуальных новелл и манги через `CollectionItem`/`collectionItemsNotifierProvider`. Навигация к `ItemDetailScreen` для всех типов. Filter chips: All/Games/Movies/TV Shows/Animation/Visual Novels/Manga. При выборе Games — второй ряд ChoiceChip с платформами (All + платформы из текущих элементов коллекции). Grid: `MediaPosterCard(variant: grid/compact)` с двойным рейтингом и `platformLabel` для игр. `_CollectionItemTile` — карточка с DualRatingBadge inline, описанием, заметками пользователя, большой полупрозрачной фоновой иконкой типа медиа |
 | `lib/features/collections/screens/item_detail_screen.dart` | **Единый экран деталей элемента**. Заменяет 4 экрана (Game/Movie/TvShow/Anime). Определяет тип медиа из `CollectionItem.mediaType`, строит UI через `_MediaConfig`. Board toggle кнопка в AppBar (вместо TabBar): `Icons.dashboard` (active) / `Icons.dashboard_outlined` (inactive). Lock кнопка видна только на Canvas view. PopupMenuButton: Move to Collection, Remove. Боковые панели SteamGridDB/VGMaps на Canvas. `EpisodeTrackerSection` для TV Show и Animation (tvShow source). Использует `gameCanvasNotifierProvider`, `episodeTrackerNotifierProvider`, `steamGridDbPanelProvider`, `vgMapsPanelProvider` |
 
 <details>
@@ -223,7 +226,7 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/features/collections/providers/collections_provider.dart` | **State management коллекций**. `collectionsProvider` — список. `collectionItemsNotifierProvider` — универсальные элементы коллекции (games/movies/tvShows/animation) с CRUD, реактивной сортировкой, оптимистичным обновлением дат активности и `moveItem()` для перемещения элементов между коллекциями. `collectionSortProvider` — режим сортировки per collection (SharedPreferences). `uncategorizedItemCountProvider` — количество элементов без коллекции |
+| `lib/features/collections/providers/collections_provider.dart` | **State management коллекций**. `collectionsProvider` — список. `collectionItemsNotifierProvider` — универсальные элементы коллекции (games/movies/tvShows/animation/visualNovels/manga) с CRUD, реактивной сортировкой, оптимистичным обновлением дат активности и `moveItem()` для перемещения элементов между коллекциями. `collectionSortProvider` — режим сортировки per collection (SharedPreferences). `uncategorizedItemCountProvider` — количество элементов без коллекции |
 | `lib/features/collections/providers/steamgriddb_panel_provider.dart` | **State management панели SteamGridDB**. `steamGridDbPanelProvider` — NotifierProvider.family по collectionId. Enum `SteamGridDbImageType` (grids/heroes/logos/icons). State: isOpen, searchTerm, searchResults, selectedGame, selectedImageType, images, isSearching, isLoadingImages, searchError, imageError, imageCache. Методы: togglePanel, openPanel, closePanel, searchGames, selectGame, clearGameSelection, selectImageType. In-memory кэш по ключу `gameId:imageType` |
 | `lib/features/collections/providers/vgmaps_panel_provider.dart` | **State management панели VGMaps**. `vgMapsPanelProvider` — NotifierProvider.family по collectionId. State: isOpen, currentUrl, canGoBack, canGoForward, isLoading, capturedImageUrl/Width/Height, error. Методы: togglePanel, openPanel, closePanel, setCurrentUrl, setNavigationState, setLoading, captureImage, clearCapturedImage, setError, clearError |
 | `lib/features/collections/providers/episode_tracker_provider.dart` | **State management трекера эпизодов**. `episodeTrackerNotifierProvider` — NotifierProvider.family по `({collectionId, showId})`. State: episodesBySeason (Map<int, List\<TvEpisode\>>), watchedEpisodes (Map<(int,int), DateTime?>), loadingSeasons, error. Методы: loadSeason (cache-first: DB -> API -> DB), toggleEpisode, toggleSeason, isEpisodeWatched, watchedCountForSeason, totalWatchedCount, getWatchedAt. Автоматический переход в Completed при просмотре всех эпизодов (сравнение с tvShow.totalEpisodes) |
@@ -257,7 +260,7 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/features/search/screens/search_screen.dart` | **Экран поиска**. Два режима: Browse (FilterBar + Discover feed / BrowseGrid) и Search (поле поиска + BrowseGrid). SourceDropdown переключает между 4 источниками. При `collectionId` — добавляет элементы в коллекцию (с upsert в БД). Bottom sheet с деталями. `initialQuery` — предзаполнение из Wishlist |
+| `lib/features/search/screens/search_screen.dart` | **Экран поиска**. Два режима: Browse (FilterBar + Discover feed / BrowseGrid) и Search (поле поиска + BrowseGrid). SourceDropdown переключает между 6 источниками (Movies/TV/Anime/Games/VN/Manga). При `collectionId` — добавляет элементы в коллекцию (с upsert в БД). Bottom sheet с деталями. `initialQuery` — предзаполнение из Wishlist. `initialSourceId` — стартовый источник |
 
 <details>
 <summary><strong>Модели и абстракции</strong> — развернуть таблицу</summary>
@@ -277,6 +280,8 @@ lib/
 | `lib/features/search/sources/tmdb_tv_source.dart` | **Сериалы TMDB**. Browse через discoverTvShowsFiltered (исключая анимацию), search через searchTvShows. Фильтры: жанр + год. Сортировка: popular/top_rated/newest |
 | `lib/features/search/sources/tmdb_anime_source.dart` | **Анимация TMDB**. Объединяет animated movies + TV shows (genre_id=16). Фильтры: тип (series/movies) + жанр + год |
 | `lib/features/search/sources/igdb_games_source.dart` | **Игры IGDB**. Browse через browseGames, search через searchGames. Фильтры: жанр + платформа. Сортировка: popular/rating/newest |
+| `lib/features/search/sources/vndb_source.dart` | **Визуальные новеллы VNDB**. Browse через browseVn, search через searchVn. Фильтры: жанр (теги). Сортировка: rating/newest/most_voted |
+| `lib/features/search/sources/anilist_manga_source.dart` | **Манга AniList**. Browse через browseManga, search через searchManga. Фильтры: жанр + формат (Manga/Manhwa/Manhua/One Shot/Light Novel). Сортировка: rating/popular/newest |
 
 </details>
 
@@ -447,7 +452,7 @@ Content-виджеты — извлечённое тело подэкранов,
 | `credentials_content.dart` | **Учётные данные API**. ConsumerStatefulWidget. `InlineTextField` для IGDB Client ID/Secret, SteamGridDB API key, TMDB API key. `SegmentedButton` для языка TMDB. `StatusDot` для статуса. Кнопки Verify/Refresh Platforms. Секция Welcome при `isInitialSetup` |
 | `cache_content.dart` | **Настройки кэша**. ConsumerStatefulWidget с Future state. Toggle кэша, выбор папки, статистика (файлы/размер), очистка |
 | `database_content.dart` | **Управление БД**. ConsumerWidget. Export/Import Config (JSON). Reset Database с диалогом подтверждения |
-| `credits_content.dart` | **Атрибуция API-провайдеров**. StatelessWidget. TMDB/IGDB/SteamGridDB карточки с SVG логотипами. Open Source секция с MIT лицензией |
+| `credits_content.dart` | **Атрибуция API-провайдеров**. StatelessWidget. TMDB/IGDB/SteamGridDB/VNDB/AniList карточки с SVG/текстовыми логотипами. Open Source секция с MIT лицензией |
 | `trakt_import_content.dart` | **Импорт Trakt.tv**. ConsumerStatefulWidget. File picker, ZIP validation, preview, options, progress dialog. Callback `onImportComplete` |
 
 ---
@@ -466,7 +471,7 @@ Content-виджеты — извлечённое тело подэкранов,
 ## 🗄️ База данных
 
 > [!IMPORTANT]
-> SQLite через `sqflite_common_ffi` на desktop, нативный `sqflite` на Android. Текущая версия БД: **24**. Миграции инкрементальные (v1 -> v2 -> ... -> v24). Всего **18 таблиц**. Статические справочники (platforms, tmdb_genres, igdb_genres, vndb_tags) предзаполнены миграцией v24 и не удаляются при сбросе данных.
+> SQLite через `sqflite_common_ffi` на desktop, нативный `sqflite` на Android. Текущая версия БД: **25**. Миграции инкрементальные (v1 -> v2 -> ... -> v25). Всего **19 таблиц**. Статические справочники (platforms, tmdb_genres, igdb_genres, vndb_tags) предзаполнены миграцией v24 и не удаляются при сбросе данных.
 
 ### ER-диаграмма
 
@@ -481,6 +486,7 @@ erDiagram
     collection_items ||--o| games : "ссылается (game)"
     collection_items ||--o| movies_cache : "ссылается (movie)"
     collection_items ||--o| tv_shows_cache : "ссылается (tvShow)"
+    collection_items ||--o| manga_cache : "ссылается (manga)"
     collection_items ||--o{ canvas_items : "per-item canvas"
     collection_items ||--o{ canvas_connections : "per-item связи"
     collection_items ||--o| game_canvas_viewport : "per-item вид"
@@ -498,6 +504,15 @@ erDiagram
         int is_resolved
         int created_at
         int resolved_at
+    }
+
+    manga_cache {
+        int id PK
+        text title
+        text cover_url
+        int average_score
+        text genres
+        text format
     }
 
     games ||--o{ platforms : "platform_ids"
@@ -622,7 +637,7 @@ erDiagram
 ### SQL-схема таблиц
 
 <details>
-<summary><strong>Полная SQL-схема всех 18 таблиц</strong> — развернуть</summary>
+<summary><strong>Полная SQL-схема всех 19 таблиц</strong> — развернуть</summary>
 
 ```sql
 -- Платформы из IGDB (статические, seed миграцией v24)
@@ -819,6 +834,29 @@ CREATE TABLE wishlist (
   created_at INTEGER NOT NULL,
   resolved_at INTEGER
 );
+
+-- Кэш манги из AniList (v25)
+CREATE TABLE manga_cache (
+  id INTEGER PRIMARY KEY,     -- AniList ID
+  title TEXT NOT NULL,
+  title_english TEXT,
+  title_native TEXT,
+  cover_url TEXT,
+  cover_medium_url TEXT,
+  description TEXT,
+  genres TEXT,                 -- JSON array
+  average_score INTEGER,
+  mean_score INTEGER,
+  popularity INTEGER,
+  status TEXT,
+  start_year INTEGER,
+  chapters INTEGER,
+  volumes INTEGER,
+  format TEXT,
+  country_of_origin TEXT,
+  staff TEXT,                  -- JSON array [{name, role}]
+  cached_at INTEGER
+);
 ```
 
 </details>
@@ -836,6 +874,7 @@ CREATE TABLE wishlist (
 | `igdbApiProvider` | Provider | Синглтон IgdbApi |
 | `steamGridDbApiProvider` | Provider | Синглтон SteamGridDbApi |
 | `tmdbApiProvider` | Provider | Синглтон TmdbApi |
+| `aniListApiProvider` | Provider | Синглтон AniListApi |
 | `imageCacheServiceProvider` | Provider | Синглтон ImageCacheService |
 | `sharedPreferencesProvider` | Provider | SharedPreferences (override в main) |
 | `settingsNotifierProvider` | NotifierProvider | Настройки IGDB, токены |

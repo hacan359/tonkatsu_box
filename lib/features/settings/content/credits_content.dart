@@ -23,6 +23,7 @@ class CreditsContent extends StatelessWidget {
   static const String _igdbUrl = 'https://www.igdb.com/';
   static const String _steamGridDbUrl = 'https://www.steamgriddb.com/';
   static const String _vndbUrl = 'https://vndb.org/';
+  static const String _aniListUrl = 'https://anilist.co/';
   static const String _githubUrl =
       'https://github.com/hacan359/tonkatsu_box';
 
@@ -75,6 +76,15 @@ class CreditsContent extends StatelessWidget {
           linkLabel: 'vndb.org',
           url: _vndbUrl,
           accentColor: DataSource.vndb.color,
+          compact: compact,
+        ),
+        SizedBox(height: compact ? AppSpacing.sm : AppSpacing.md),
+        _TextLogoProviderCard(
+          logoText: 'AniList',
+          description: l10n.creditsAniListAttribution,
+          linkLabel: 'anilist.co',
+          url: _aniListUrl,
+          accentColor: DataSource.anilist.color,
           compact: compact,
         ),
         SizedBox(height: compact ? AppSpacing.lg : AppSpacing.xl),

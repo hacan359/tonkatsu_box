@@ -20,7 +20,9 @@ import '../../shared/models/platform.dart' as model;
 import '../../shared/models/tv_episode.dart';
 import '../../shared/models/tv_season.dart';
 import '../../shared/models/tv_show.dart';
+import '../../shared/models/manga.dart';
 import '../../shared/models/visual_novel.dart';
+import '../api/anilist_api.dart';
 import '../api/igdb_api.dart';
 import '../api/tmdb_api.dart';
 import '../api/vndb_api.dart';
@@ -36,6 +38,7 @@ final Provider<ImportService> importServiceProvider =
     igdbApi: ref.watch(igdbApiProvider),
     tmdbApi: ref.watch(tmdbApiProvider),
     vndbApi: ref.watch(vndbApiProvider),
+    aniListApi: ref.watch(aniListApiProvider),
     database: ref.watch(databaseServiceProvider),
     canvasRepository: ref.watch(canvasRepositoryProvider),
     imageCacheService: ref.watch(imageCacheServiceProvider),
@@ -135,6 +138,9 @@ enum ImportStage {
   /// Загрузка данных визуальных новелл из VNDB.
   fetchingVisualNovels('Fetching visual novel data...'),
 
+  /// Загрузка данных манги из AniList.
+  fetchingManga('Fetching manga data...'),
+
   /// Кэширование медиа-данных.
   cachingMedia('Caching media...'),
 
@@ -171,12 +177,14 @@ class ImportService {
     required DatabaseService database,
     TmdbApi? tmdbApi,
     VndbApi? vndbApi,
+    AniListApi? aniListApi,
     CanvasRepository? canvasRepository,
     ImageCacheService? imageCacheService,
   })  : _repository = repository,
         _igdbApi = igdbApi,
         _tmdbApi = tmdbApi,
         _vndbApi = vndbApi,
+        _aniListApi = aniListApi,
         _database = database,
         _canvasRepository = canvasRepository,
         _imageCacheService = imageCacheService;
@@ -185,6 +193,7 @@ class ImportService {
   final IgdbApi _igdbApi;
   final TmdbApi? _tmdbApi;
   final VndbApi? _vndbApi;
+  final AniListApi? _aniListApi;
   final DatabaseService _database;
   final CanvasRepository? _canvasRepository;
   final ImageCacheService? _imageCacheService;
@@ -430,6 +439,8 @@ class ImportService {
         media['platforms'] as List<dynamic>? ?? <dynamic>[];
     final List<dynamic> rawVisualNovels =
         media['visual_novels'] as List<dynamic>? ?? <dynamic>[];
+    final List<dynamic> rawMangas =
+        media['mangas'] as List<dynamic>? ?? <dynamic>[];
 
     final int total = rawGames.length +
         rawMovies.length +
@@ -437,7 +448,8 @@ class ImportService {
         rawSeasons.length +
         rawEpisodes.length +
         rawPlatforms.length +
-        rawVisualNovels.length;
+        rawVisualNovels.length +
+        rawMangas.length;
     final int cachedAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     int current = 0;
 
@@ -582,6 +594,26 @@ class ImportService {
       }
       await _database.upsertVisualNovels(visualNovels);
     }
+
+    // Восстановление манги
+    if (rawMangas.isNotEmpty) {
+      final List<Manga> mangas = <Manga>[];
+      for (final dynamic raw in rawMangas) {
+        final Map<String, dynamic> row =
+            Map<String, dynamic>.from(raw as Map<String, dynamic>);
+        if (!row.containsKey('cached_at') || row['cached_at'] == null) {
+          row['cached_at'] = cachedAt;
+        }
+        mangas.add(Manga.fromDb(row));
+        current++;
+        onProgress?.call(ImportProgress(
+          stage: ImportStage.restoringMedia,
+          current: current,
+          total: total,
+        ));
+      }
+      await _database.upsertMangas(mangas);
+    }
   }
 
   // ==================== Media Fetch (API) ====================
@@ -599,6 +631,7 @@ class ImportService {
     final List<Map<String, dynamic>> movieItems = <Map<String, dynamic>>[];
     final List<Map<String, dynamic>> tvShowItems = <Map<String, dynamic>>[];
     final List<Map<String, dynamic>> vnItems = <Map<String, dynamic>>[];
+    final List<Map<String, dynamic>> mangaItems = <Map<String, dynamic>>[];
 
     for (final Map<String, dynamic> item in items) {
       final String mediaType = item['media_type'] as String;
@@ -618,6 +651,8 @@ class ImportService {
           }
         case 'visual_novel':
           vnItems.add(item);
+        case 'manga':
+          mangaItems.add(item);
       }
     }
 
@@ -730,9 +765,40 @@ class ImportService {
       ));
     }
 
+    // Загрузка манги из AniList
+    final List<int> mangaIds = mangaItems
+        .where((Map<String, dynamic> i) => i['external_id'] != null)
+        .map((Map<String, dynamic> i) => i['external_id'] as int)
+        .toList();
+    List<Manga> mangas = <Manga>[];
+
+    if (mangaIds.isNotEmpty && _aniListApi != null) {
+      final AniListApi aniListApi = _aniListApi;
+      onProgress?.call(ImportProgress(
+        stage: ImportStage.fetchingManga,
+        current: 0,
+        total: mangaIds.length,
+        message: 'Fetching ${mangaIds.length} manga from AniList...',
+      ));
+
+      try {
+        mangas = await aniListApi.getMangaByIds(mangaIds);
+      } on AniListApiException catch (e) {
+        _log.warning('Failed to fetch manga: ${e.message}');
+      }
+      onProgress?.call(ImportProgress(
+        stage: ImportStage.fetchingManga,
+        current: mangaIds.length,
+        total: mangaIds.length,
+      ));
+    }
+
     // Кэширование медиа-данных
-    final int totalMedia =
-        games.length + movies.length + tvShows.length + visualNovels.length;
+    final int totalMedia = games.length +
+        movies.length +
+        tvShows.length +
+        visualNovels.length +
+        mangas.length;
     onProgress?.call(ImportProgress(
       stage: ImportStage.cachingMedia,
       current: 0,
@@ -773,6 +839,16 @@ class ImportService {
     if (visualNovels.isNotEmpty) {
       await _database.upsertVisualNovels(visualNovels);
       cachedCount += visualNovels.length;
+      onProgress?.call(ImportProgress(
+        stage: ImportStage.cachingMedia,
+        current: cachedCount,
+        total: totalMedia,
+      ));
+    }
+
+    if (mangas.isNotEmpty) {
+      await _database.upsertMangas(mangas);
+      cachedCount += mangas.length;
       onProgress?.call(ImportProgress(
         stage: ImportStage.cachingMedia,
         current: cachedCount,

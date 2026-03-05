@@ -23,6 +23,7 @@ import 'migration_v21.dart';
 import 'migration_v22.dart';
 import 'migration_v23.dart';
 import 'migration_v24.dart';
+import 'migration_v25.dart';
 
 /// Реестр всех миграций базы данных.
 ///
@@ -54,6 +55,7 @@ abstract final class MigrationRegistry {
     MigrationV22(),
     MigrationV23(),
     MigrationV24(),
+    MigrationV25(),
   ];
 
   /// Возвращает миграции, ожидающие выполнения для данной версии.

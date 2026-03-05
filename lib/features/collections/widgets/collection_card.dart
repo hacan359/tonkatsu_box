@@ -335,6 +335,8 @@ class _CoverImage extends StatelessWidget {
         return ImageType.moviePoster;
       case MediaType.visualNovel:
         return ImageType.vnCover;
+      case MediaType.manga:
+        return ImageType.mangaCover;
     }
   }
 }

@@ -55,6 +55,7 @@ class CoverInfo {
         return url.replaceFirst(RegExp(r'/w\d+'), '/w154');
       case MediaType.game:
       case MediaType.visualNovel:
+      case MediaType.manga:
         return url;
     }
   }
