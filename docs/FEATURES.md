@@ -164,7 +164,7 @@ Rate any item 1–10 with clickable stars. Tap again to clear. Collections can b
 
 Tap any item to see full details. Screens have one or two tabs:
 
-**Details tab** — poster with clickable source badge (opens IGDB/TMDB page), info chips, description, status bar (piano-style segments), star rating, inline activity dates, notes/review
+**Details tab** — poster with clickable source badge (opens IGDB/TMDB page), info chips, description, status bar (piano-style segments), star rating, inline activity dates (shows completion time when both started and completed dates are set), notes/review
 
 **Board tab** — personal board for the item (hidden for uncategorized items)
 

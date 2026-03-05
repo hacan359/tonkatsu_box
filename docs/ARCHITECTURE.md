@@ -394,6 +394,12 @@ lib/
 | `lib/shared/widgets/horizontal_mouse_scroll.dart` | **Горизонтальный скролл колёсиком мыши**. Listener на PointerScrollEvent, конвертирует vertical scroll delta в horizontal `animateTo` |
 | `lib/shared/widgets/type_to_filter_overlay.dart` | **[Experimental] Type-to-Filter overlay**. Desktop-only: Focus(onKeyEvent) > Stack > [child, Positioned overlay]. Перехватывает печатные символы → показывает плавающую строку поиска сверху, `onFilterChanged` колбэк для клиентской фильтрации. Escape/кнопка закрыть скрывают overlay. На мобильной платформе (kIsMobile) возвращает child без overhead. Фокус-менеджмент: `addPostFrameCallback` для восстановления фокуса, `ModalRoute.of(context)` для route-aware восстановления после навигации push/pop |
 
+#### 🛠️ Утилиты
+
+| Файл | Назначение |
+|------|------------|
+| `lib/shared/utils/duration_formatter.dart` | **Duration formatting utilities**. `formatDuration(Duration, S)` — converts Duration to localized human-readable strings (days/weeks/months/years). `formatCompletionTime(Duration, S)` — adds "Completed in" prefix. Smart rounding: <7 days → days, <30 days → weeks (rounded), <365 days → months (rounded), ≥365 days → years (1 decimal place). Constants `_DurationConstants` for maintainability. Used in `ActivityDatesSection` and `MediaDetailView` for completion time display |
+
 </details>
 
 #### 🏷️ Константы

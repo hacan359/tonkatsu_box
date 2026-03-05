@@ -12,6 +12,7 @@ import '../theme/app_typography.dart';
 import 'cached_image.dart';
 import 'source_badge.dart';
 import 'star_rating_bar.dart';
+import '../utils/duration_formatter.dart';
 
 /// Колбэк для изменения даты активности.
 ///
@@ -484,21 +485,7 @@ class MediaDetailView extends StatelessWidget {
   }
 
   Widget _buildCompletionTimeChip(S l) {
-    final int days = completionTime!.inDays;
-    final String formatted;
-    if (days == 0) {
-      formatted = l.durationLessThanDay;
-    } else if (days == 1) {
-      formatted = l.durationOneDay;
-    } else if (days < 7) {
-      formatted = l.durationDays(days);
-    } else if (days < 30) {
-      formatted = l.durationWeeks((days / 7).round());
-    } else if (days < 365) {
-      formatted = l.durationMonths((days / 30).round());
-    } else {
-      formatted = l.durationYears((days / 365).toStringAsFixed(1));
-    }
+    final String formatted = formatCompletionTime(completionTime!, l);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
@@ -506,7 +493,7 @@ class MediaDetailView extends StatelessWidget {
             size: 14, color: AppColors.textTertiary),
         const SizedBox(width: 4),
         Text(
-          l.activityDatesCompletionTime(formatted),
+          formatted,
           style: AppTypography.caption.copyWith(
             color: AppColors.textTertiary,
           ),

@@ -6,19 +6,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
-
-/// Форматирует [Duration] в человекочитаемую строку.
-String _formatDuration(Duration duration, BuildContext context) {
-  final S l = S.of(context);
-  final int days = duration.inDays;
-  if (days == 0) return l.durationLessThanDay;
-  if (days == 1) return l.durationOneDay;
-  if (days < 7) return l.durationDays(days);
-  if (days < 30) return l.durationWeeks((days / 7).round());
-  if (days < 365) return l.durationMonths((days / 30).round());
-  final double years = days / 365;
-  return l.durationYears(years.toStringAsFixed(1));
-}
+import '../../../shared/utils/duration_formatter.dart';
 
 /// Форматирует [DateTime] в читаемую строку (например, "Jan 15, 2025").
 String _formatDate(DateTime date) {
@@ -125,9 +113,7 @@ class ActivityDatesSection extends StatelessWidget {
                     size: 14, color: AppColors.textTertiary),
                 const SizedBox(width: AppSpacing.sm),
                 Text(
-                  S.of(context).activityDatesCompletionTime(
-                    _formatDuration(completionTime!, context),
-                  ),
+                  formatCompletionTime(completionTime!, S.of(context)),
                   style: AppTypography.bodySmall.copyWith(
                     color: AppColors.textTertiary,
                   ),

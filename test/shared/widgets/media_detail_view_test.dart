@@ -30,6 +30,7 @@ void main() {
     DateTime? startedAt,
     DateTime? completedAt,
     DateTime? lastActivityAt,
+    Duration? completionTime,
     OnActivityDateChanged? onActivityDateChanged,
   }) {
     return MaterialApp(
@@ -60,6 +61,7 @@ void main() {
         startedAt: startedAt,
         completedAt: completedAt,
         lastActivityAt: lastActivityAt,
+        completionTime: completionTime,
         onActivityDateChanged: onActivityDateChanged,
       ),
     );
@@ -599,6 +601,38 @@ void main() {
         // 2 InkWell: Started + Completed
         final Finder inkWells = find.byType(InkWell);
         expect(inkWells, findsAtLeast(2));
+      });
+
+      testWidgets('should display completion time when set',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(
+          addedAt: DateTime(2025, 1, 15),
+          completionTime: const Duration(days: 14),
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Completed in 2 weeks'), findsOneWidget);
+      });
+
+      testWidgets('should not display completion time when null',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(
+          addedAt: DateTime(2025, 1, 15),
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Completed in'), findsNothing);
+      });
+
+      testWidgets('should format completion time correctly',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(
+          addedAt: DateTime(2025, 1, 15),
+          completionTime: const Duration(hours: 5),
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Completed in less than a day'), findsOneWidget);
       });
     });
 
