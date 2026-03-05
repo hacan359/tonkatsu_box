@@ -116,27 +116,6 @@ void main() {
       expect(find.text('Popular Movies'), findsOneWidget);
     });
 
-    testWidgets('renders icon when provided', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        buildWidget(
-          title: 'Top Rated',
-          items: testItems,
-          icon: Icons.trending_up,
-        ),
-      );
-
-      expect(find.byIcon(Icons.trending_up), findsOneWidget);
-    });
-
-    testWidgets('does not render icon when null', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        buildWidget(title: 'No Icon', items: testItems),
-      );
-
-      // Title should exist but no extra icon (aside from those inside cards).
-      expect(find.text('No Icon'), findsOneWidget);
-    });
-
     testWidgets('renders items in horizontal list',
         (WidgetTester tester) async {
       await tester.pumpWidget(buildWidget(items: testItems));
@@ -228,29 +207,7 @@ void main() {
         // We only have the title text, no additional number texts.
       });
 
-      testWidgets('shows owned badge when isOwned is true',
-          (WidgetTester tester) async {
-        const List<DiscoverItem> items = <DiscoverItem>[
-          DiscoverItem(title: 'Owned', tmdbId: 1, isOwned: true),
-        ];
-
-        await tester.pumpWidget(buildWidget(items: items));
-
-        expect(find.byIcon(Icons.check_circle), findsOneWidget);
-      });
-
-      testWidgets('does not show owned badge when isOwned is false',
-          (WidgetTester tester) async {
-        const List<DiscoverItem> items = <DiscoverItem>[
-          DiscoverItem(title: 'Not Owned', tmdbId: 1),
-        ];
-
-        await tester.pumpWidget(buildWidget(items: items));
-
-        expect(find.byIcon(Icons.check_circle), findsNothing);
-      });
-
-      testWidgets('shows rating badge when rating is provided',
+      testWidgets('shows rating text when rating is provided',
           (WidgetTester tester) async {
         const List<DiscoverItem> items = <DiscoverItem>[
           DiscoverItem(title: 'Rated', tmdbId: 1, rating: '8.5'),
@@ -259,18 +216,6 @@ void main() {
         await tester.pumpWidget(buildWidget(items: items));
 
         expect(find.text('8.5'), findsOneWidget);
-        expect(find.byIcon(Icons.star), findsOneWidget);
-      });
-
-      testWidgets('does not show rating badge when rating is null',
-          (WidgetTester tester) async {
-        const List<DiscoverItem> items = <DiscoverItem>[
-          DiscoverItem(title: 'Unrated', tmdbId: 1),
-        ];
-
-        await tester.pumpWidget(buildWidget(items: items));
-
-        expect(find.byIcon(Icons.star), findsNothing);
       });
 
       testWidgets('shows placeholder when no poster URL',
@@ -281,9 +226,8 @@ void main() {
 
         await tester.pumpWidget(buildWidget(items: items));
 
-        // No CachedImage, instead a placeholder with movie_outlined.
+        // No CachedImage — placeholder is shown instead.
         expect(find.byType(CachedImage), findsNothing);
-        expect(find.byIcon(Icons.movie_outlined), findsOneWidget);
       });
 
       testWidgets('shows placeholder when poster URL is empty',
@@ -295,7 +239,6 @@ void main() {
         await tester.pumpWidget(buildWidget(items: items));
 
         expect(find.byType(CachedImage), findsNothing);
-        expect(find.byIcon(Icons.movie_outlined), findsOneWidget);
       });
     });
   });

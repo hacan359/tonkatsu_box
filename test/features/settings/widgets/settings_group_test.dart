@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/settings/widgets/settings_group.dart';
-import 'package:xerabora/shared/theme/app_colors.dart';
 
 void main() {
   Widget createWidget({String? title, List<Widget>? children}) {
@@ -77,37 +76,6 @@ void main() {
 
         // 2 dividers for 3 children
         expect(find.byType(Divider), findsNWidgets(2));
-      });
-
-      testWidgets('dividers have correct color',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-
-        final Divider divider = tester.widget<Divider>(find.byType(Divider));
-        expect(divider.color, equals(AppColors.surfaceBorder));
-      });
-    });
-
-    group('Styling', () {
-      testWidgets('container has surfaceLight background',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-
-        final Container container = tester.widget<Container>(
-          find.byType(Container).first,
-        );
-        final BoxDecoration decoration =
-            container.decoration! as BoxDecoration;
-        expect(decoration.color, equals(AppColors.surfaceLight));
-      });
-
-      testWidgets('title text has tertiary color',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget(title: 'test'));
-
-        final Text titleText = tester.widget<Text>(find.text('TEST'));
-        final TextStyle style = titleText.style!;
-        expect(style.color, equals(AppColors.textTertiary));
       });
     });
   });

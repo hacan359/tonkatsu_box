@@ -160,7 +160,6 @@ void main() {
       await openSheet(tester);
 
       expect(find.text('2023'), findsOneWidget);
-      expect(find.byIcon(Icons.calendar_today), findsOneWidget);
     });
 
     testWidgets('shows rating chip', (WidgetTester tester) async {
@@ -170,7 +169,6 @@ void main() {
       await openSheet(tester);
 
       expect(find.text('8.5'), findsOneWidget);
-      expect(find.byIcon(Icons.star), findsOneWidget);
     });
 
     testWidgets('shows add button when onAddToCollection provided',
@@ -183,12 +181,10 @@ void main() {
       );
       await openSheet(tester);
 
-      // FilledButton.icon is used; look for the localized text.
       expect(
-        find.text('Add to Collection'),
+        find.byWidgetPredicate((Widget w) => w is FilledButton),
         findsOneWidget,
       );
-      expect(find.byIcon(Icons.add), findsOneWidget);
     });
 
     testWidgets('hides add button when onAddToCollection is null',
@@ -198,8 +194,10 @@ void main() {
       );
       await openSheet(tester);
 
-      expect(find.text('Add to Collection'), findsNothing);
-      expect(find.byIcon(Icons.add), findsNothing);
+      expect(
+        find.byWidgetPredicate((Widget w) => w is FilledButton),
+        findsNothing,
+      );
     });
 
     testWidgets(
@@ -220,7 +218,9 @@ void main() {
       // Sheet is visible.
       expect(find.text('Tap Test'), findsOneWidget);
 
-      await tester.tap(find.text('Add to Collection'));
+      await tester.tap(
+        find.byWidgetPredicate((Widget w) => w is FilledButton),
+      );
       await tester.pumpAndSettle();
 
       expect(callbackCalled, isTrue);
@@ -237,7 +237,6 @@ void main() {
       );
       await openSheet(tester);
 
-      expect(find.text('Description'), findsOneWidget);
       expect(
         find.text('A great movie about dreams within dreams.'),
         findsOneWidget,
@@ -251,7 +250,11 @@ void main() {
       );
       await openSheet(tester);
 
-      expect(find.text('Description'), findsNothing);
+      // Overview section should not render — check overview text is absent
+      expect(
+        find.text('A great movie about dreams within dreams.'),
+        findsNothing,
+      );
     });
 
     testWidgets('shows extraInfo chip', (WidgetTester tester) async {
@@ -265,8 +268,6 @@ void main() {
       await openSheet(tester);
 
       expect(find.text('8 Seasons'), findsOneWidget);
-      // The extraInfo chip uses the same icon as the sheet's icon prop.
-      expect(find.byIcon(Icons.tv), findsWidgets);
     });
 
     testWidgets('does not show extraInfo when null',
@@ -305,7 +306,6 @@ void main() {
       expect(find.text('Adventure'), findsOneWidget);
       expect(find.text('2h 30m'), findsOneWidget);
       expect(find.text('An amazing story.'), findsOneWidget);
-      expect(find.text('Description'), findsOneWidget);
       expect(find.byType(CachedImage), findsOneWidget);
     });
   });

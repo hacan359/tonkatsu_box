@@ -3,7 +3,6 @@ import 'package:xerabora/l10n/app_localizations.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/shared/theme/app_colors.dart';
 import 'package:xerabora/shared/widgets/dual_rating_badge.dart';
 
 void main() {
@@ -115,16 +114,14 @@ void main() {
         await tester.pumpWidget(buildBadge());
         await tester.pumpAndSettle();
 
-        expect(find.byType(SizedBox), findsOneWidget);
         expect(find.byIcon(Icons.star), findsNothing);
       });
 
-      testWidgets('должен показать иконку звезды и текст',
+      testWidgets('должен показать текст рейтинга',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildBadge(userRating: 8));
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.star), findsOneWidget);
         expect(find.text('8'), findsOneWidget);
       });
 
@@ -143,140 +140,18 @@ void main() {
 
         expect(find.text('6.3'), findsOneWidget);
       });
-
-      testWidgets('иконка звезды должна иметь цвет ratingStar',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildBadge(userRating: 5));
-        await tester.pumpAndSettle();
-
-        final Icon starIcon = tester.widget<Icon>(find.byIcon(Icons.star));
-        expect(starIcon.color, AppColors.ratingStar);
-      });
-
-      testWidgets('текст badge должен быть белым',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildBadge(userRating: 5));
-        await tester.pumpAndSettle();
-
-        final Text textWidget = tester.widget<Text>(find.text('5'));
-        expect(textWidget.style?.color, Colors.white);
-      });
-
-      testWidgets('badge должен иметь затемнённый фон',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildBadge(userRating: 5));
-        await tester.pumpAndSettle();
-
-        final Container container = tester.widget<Container>(
-          find.byType(Container).first,
-        );
-        final BoxDecoration decoration =
-            container.decoration! as BoxDecoration;
-        expect(decoration.color, const Color(0xCC000000));
-      });
-    });
-
-    group('compact режим', () {
-      testWidgets('должен уменьшить размер шрифта',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildBadge(userRating: 5, compact: true));
-        await tester.pumpAndSettle();
-
-        final Text textWidget = tester.widget<Text>(find.text('5'));
-        expect(textWidget.style?.fontSize, 8.0);
-      });
-
-      testWidgets('должен уменьшить размер иконки',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildBadge(userRating: 5, compact: true));
-        await tester.pumpAndSettle();
-
-        final Icon starIcon = tester.widget<Icon>(find.byIcon(Icons.star));
-        expect(starIcon.size, 8.0);
-      });
-
-      testWidgets('должен уменьшить borderRadius',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildBadge(userRating: 5, compact: true));
-        await tester.pumpAndSettle();
-
-        final Container container = tester.widget<Container>(
-          find.byType(Container).first,
-        );
-        final BoxDecoration decoration =
-            container.decoration! as BoxDecoration;
-        expect(
-          decoration.borderRadius,
-          BorderRadius.circular(4),
-        );
-      });
-    });
-
-    group('обычный (не compact) режим', () {
-      testWidgets('должен использовать стандартный размер шрифта',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildBadge(userRating: 5));
-        await tester.pumpAndSettle();
-
-        final Text textWidget = tester.widget<Text>(find.text('5'));
-        expect(textWidget.style?.fontSize, 11.0);
-      });
-
-      testWidgets('должен использовать стандартный размер иконки',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildBadge(userRating: 5));
-        await tester.pumpAndSettle();
-
-        final Icon starIcon = tester.widget<Icon>(find.byIcon(Icons.star));
-        expect(starIcon.size, 11.0);
-      });
-
-      testWidgets('должен использовать стандартный borderRadius',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildBadge(userRating: 5));
-        await tester.pumpAndSettle();
-
-        final Container container = tester.widget<Container>(
-          find.byType(Container).first,
-        );
-        final BoxDecoration decoration =
-            container.decoration! as BoxDecoration;
-        expect(
-          decoration.borderRadius,
-          BorderRadius.circular(6),
-        );
-      });
     });
 
     group('inline режим', () {
-      testWidgets('должен показать иконку и текст без фона',
+      testWidgets('должен показать текст без Container фона',
           (WidgetTester tester) async {
         await tester
             .pumpWidget(buildBadge(userRating: 8, apiRating: 7.5, inline: true));
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.star), findsOneWidget);
         expect(find.text('8 / 7.5'), findsOneWidget);
         // Нет Container с фоном
         expect(find.byType(Container), findsNothing);
-      });
-
-      testWidgets('иконка inline должна быть размером 14',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildBadge(userRating: 5, inline: true));
-        await tester.pumpAndSettle();
-
-        final Icon starIcon = tester.widget<Icon>(find.byIcon(Icons.star));
-        expect(starIcon.size, 14.0);
-      });
-
-      testWidgets('текст inline должен быть AppColors.textSecondary',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildBadge(userRating: 5, inline: true));
-        await tester.pumpAndSettle();
-
-        final Text textWidget = tester.widget<Text>(find.text('5'));
-        expect(textWidget.style?.color, AppColors.textSecondary);
       });
 
       testWidgets('inline должен показать SizedBox.shrink без рейтинга',

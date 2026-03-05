@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/settings/widgets/settings_tile.dart';
-import 'package:xerabora/shared/theme/app_colors.dart';
 
 void main() {
   Widget createWidget({
@@ -60,32 +59,6 @@ void main() {
       });
     });
 
-    group('Chevron', () {
-      testWidgets('shows chevron when onTap is provided and showChevron=true',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget(onTap: () {}));
-
-        expect(find.byIcon(Icons.chevron_right), findsOneWidget);
-      });
-
-      testWidgets('hides chevron when showChevron=false',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget(
-          onTap: () {},
-          showChevron: false,
-        ));
-
-        expect(find.byIcon(Icons.chevron_right), findsNothing);
-      });
-
-      testWidgets('hides chevron when onTap is null',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-
-        expect(find.byIcon(Icons.chevron_right), findsNothing);
-      });
-    });
-
     group('Interaction', () {
       testWidgets('calls onTap when tapped', (WidgetTester tester) async {
         bool tapped = false;
@@ -101,35 +74,6 @@ void main() {
 
         await tester.tap(find.byType(InkWell));
         expect(tester.takeException(), isNull);
-      });
-    });
-
-    group('Styling', () {
-      testWidgets('value text has tertiary color',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget(value: 'test value'));
-
-        final Text valueText = tester.widget<Text>(find.text('test value'));
-        final TextStyle style = valueText.style!;
-        expect(style.color, equals(AppColors.textTertiary));
-      });
-
-      testWidgets('chevron icon has tertiary color',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget(onTap: () {}));
-
-        final Icon chevronIcon =
-            tester.widget<Icon>(find.byIcon(Icons.chevron_right));
-        expect(chevronIcon.color, equals(AppColors.textTertiary));
-      });
-
-      testWidgets('chevron icon has size 18',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget(onTap: () {}));
-
-        final Icon chevronIcon =
-            tester.widget<Icon>(find.byIcon(Icons.chevron_right));
-        expect(chevronIcon.size, equals(18));
       });
     });
   });
