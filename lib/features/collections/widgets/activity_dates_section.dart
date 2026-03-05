@@ -212,15 +212,15 @@ class _DateRow extends StatelessWidget {
       return Material(
         color: Colors.transparent,
         child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            vertical: AppSpacing.xs,
-            horizontal: AppSpacing.sm,
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              vertical: AppSpacing.xs,
+              horizontal: AppSpacing.sm,
+            ),
+            child: content,
           ),
-          child: content,
-        ),
         ),
       );
     }

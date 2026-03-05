@@ -540,12 +540,15 @@ class MediaDetailView extends StatelessWidget {
     );
 
     if (editable && onTap != null) {
-      return InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 2),
-          child: content,
+      return Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 2),
+            child: content,
+          ),
         ),
       );
     }
