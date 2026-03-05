@@ -1383,6 +1383,12 @@ class SRu extends S {
   String get welcomeStepWelcome => 'Добро пожаловать';
 
   @override
+  String get welcomeStepName => 'Имя';
+
+  @override
+  String get welcomeStepLanguage => 'Язык';
+
+  @override
   String get welcomeStepApiKeys => 'Ключи API';
 
   @override
@@ -1392,11 +1398,30 @@ class SRu extends S {
   String get welcomeStepReady => 'Готово!';
 
   @override
+  String get welcomeNameTitle => 'Как вас зовут?';
+
+  @override
+  String get welcomeNameSubtitle =>
+      'Это имя будет указано как автор ваших коллекций';
+
+  @override
+  String get welcomeNameHint => 'Можно изменить позже в Настройках';
+
+  @override
+  String get welcomeLanguageTitle => 'Выберите язык';
+
+  @override
+  String get welcomeLanguageSubtitle => 'Язык интерфейса приложения';
+
+  @override
+  String get welcomeLanguageHint => 'Можно изменить позже в Настройках';
+
+  @override
   String get welcomeTitle => 'Добро пожаловать в Tonkatsu Box';
 
   @override
   String get welcomeSubtitle =>
-      'Организуйте коллекции ретро-игр,\nфильмов, сериалов и аниме';
+      'Организуйте коллекции игр, фильмов,\nсериалов, аниме, новелл и манги';
 
   @override
   String get welcomeWhatYouCanDo => 'Что вы можете делать';
@@ -1407,7 +1432,7 @@ class SRu extends S {
 
   @override
   String get welcomeFeatureSearch =>
-      'Ищите игры, фильмы, сериалы и аниме через API';
+      'Ищите игры, фильмы, сериалы, аниме, новеллы и мангу через API';
 
   @override
   String get welcomeFeatureTracking =>
@@ -1453,6 +1478,12 @@ class SRu extends S {
 
   @override
   String get welcomeChipAnime => 'Аниме (TMDB)';
+
+  @override
+  String get welcomeChipVisualNovels => 'Новеллы (VNDB)';
+
+  @override
+  String get welcomeChipManga => 'Манга (AniList)';
 
   @override
   String get welcomeApiTitle => 'Получение ключей API';
@@ -1511,7 +1542,7 @@ class SRu extends S {
 
   @override
   String get welcomeHowSearchDesc =>
-      'Поиск игр, фильмов и сериалов через API. Добавляйте в любую коллекцию.';
+      'Поиск игр, фильмов, сериалов, новелл и манги через API. Добавляйте в любую коллекцию.';
 
   @override
   String get welcomeHowSettingsDesc =>

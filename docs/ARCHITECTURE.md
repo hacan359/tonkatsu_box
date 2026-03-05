@@ -41,6 +41,7 @@ graph TB
         wishlist["Wishlist<br/><small>quick notes for<br/>deferred search</small>"]
         home["Home<br/><small>all items grid</small>"]
         splash["Splash<br/><small>animated logo,<br/>DB pre-warming</small>"]
+        welcome["Welcome<br/><small>6-step onboarding<br/>wizard</small>"]
     end
 
     subgraph shared ["🧩 Shared"]
@@ -409,6 +410,23 @@ lib/
 | Файл | Назначение |
 |------|------------|
 | `lib/features/splash/screens/splash_screen.dart` | **SplashScreen** (ConsumerStatefulWidget). Анимированный логотип с fade-in и scale (1.5с + 0.5с пауза = 2с). Параллельно с анимацией выполняет pre-warming SQLite DB. Навигация происходит только когда оба условия выполнены: анимация завершена И DB открыта (предотвращает ANR). Переход через `pushReplacement` с `FadeTransition` (500ms desktop, 200ms mobile) |
+
+---
+
+### 👋 Features: Welcome (Онбординг Wizard)
+
+6-шаговый PageView wizard при первом запуске. Может быть открыт повторно из Settings (`fromSettings: true`).
+
+| Файл | Назначение |
+|------|------------|
+| `lib/features/welcome/screens/welcome_screen.dart` | **WelcomeScreen** (ConsumerStatefulWidget). PageView с 6 шагами, StepIndicator bar, progress bar, dot navigation, Back/Next/Skip. Сохраняет `welcome_completed` в SharedPreferences. `fromSettings` — pop вместо pushReplacement |
+| `lib/features/welcome/widgets/welcome_step_intro.dart` | Шаг 1: Welcome — вступительное приветствие |
+| `lib/features/welcome/widgets/welcome_step_name.dart` | Шаг 2: Name — TextField для ввода имени автора. ConsumerStatefulWidget с TextEditingController. Пишет в `SettingsNotifier.setDefaultAuthor()` |
+| `lib/features/welcome/widgets/welcome_step_language.dart` | Шаг 3: Language — выбор EN/RU через AnimatedContainer карточки. ConsumerWidget, пишет в `SettingsNotifier.setAppLanguage()` |
+| `lib/features/welcome/widgets/welcome_step_api_keys.dart` | Шаг 4: API Keys — ввод ключей API |
+| `lib/features/welcome/widgets/welcome_step_how_it_works.dart` | Шаг 5: How it works — объяснение работы приложения |
+| `lib/features/welcome/widgets/welcome_step_ready.dart` | Шаг 6: Ready — кнопки "Go to Settings" и "Skip — explore on my own" |
+| `lib/features/welcome/widgets/step_indicator.dart` | **StepIndicator** — круг с номером + label, состояния: active/done/default, compact mode |
 
 ---
 

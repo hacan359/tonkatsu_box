@@ -1,5 +1,5 @@
 import 'package:xerabora/l10n/app_localizations.dart';
-// Тесты для WelcomeScreen — 4-шаговый онбординг wizard.
+// Тесты для WelcomeScreen — 6-шаговый онбординг wizard.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,9 +8,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/features/welcome/screens/welcome_screen.dart';
 import 'package:xerabora/features/welcome/widgets/step_indicator.dart';
-import 'package:xerabora/features/welcome/widgets/welcome_step_api_keys.dart';
-import 'package:xerabora/features/welcome/widgets/welcome_step_how_it_works.dart';
 import 'package:xerabora/features/welcome/widgets/welcome_step_intro.dart';
+import 'package:xerabora/features/welcome/widgets/welcome_step_language.dart';
+import 'package:xerabora/features/welcome/widgets/welcome_step_name.dart';
 import 'package:xerabora/features/welcome/widgets/welcome_step_ready.dart';
 
 void main() {
@@ -43,11 +43,11 @@ void main() {
         expect(find.byType(WelcomeStepIntro), findsOneWidget);
       });
 
-      testWidgets('shows 4 StepIndicators', (WidgetTester tester) async {
+      testWidgets('shows 6 StepIndicators', (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pump();
 
-        expect(find.byType(StepIndicator), findsNWidgets(4));
+        expect(find.byType(StepIndicator), findsNWidgets(6));
       });
 
       testWidgets('shows step labels', (WidgetTester tester) async {
@@ -55,6 +55,8 @@ void main() {
         await tester.pump();
 
         expect(find.text('Welcome'), findsOneWidget);
+        expect(find.text('Name'), findsOneWidget);
+        expect(find.text('Language'), findsOneWidget);
         expect(find.text('API Keys'), findsOneWidget);
         expect(find.text('How it works'), findsOneWidget);
         expect(find.text('Ready!'), findsOneWidget);
@@ -67,7 +69,7 @@ void main() {
         expect(find.byType(LinearProgressIndicator), findsOneWidget);
       });
 
-      testWidgets('progress bar shows 1/4 on first step',
+      testWidgets('progress bar shows 1/6 on first step',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pump();
@@ -76,7 +78,7 @@ void main() {
             tester.widget<LinearProgressIndicator>(
           find.byType(LinearProgressIndicator),
         );
-        expect(indicator.value, closeTo(0.25, 0.01));
+        expect(indicator.value, closeTo(1 / 6, 0.01));
       });
 
       testWidgets('shows Skip link', (WidgetTester tester) async {
@@ -107,17 +109,17 @@ void main() {
         expect(backButton.onPressed, isNull);
       });
 
-      testWidgets('shows 4 dot indicators', (WidgetTester tester) async {
+      testWidgets('shows 6 dot indicators', (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pump();
 
-        // 4 AnimatedContainer dot indicators
-        expect(find.byType(AnimatedContainer), findsNWidgets(4));
+        // 6 AnimatedContainer dot indicators
+        expect(find.byType(AnimatedContainer), findsNWidgets(6));
       });
     });
 
     group('PageView navigation', () {
-      testWidgets('Next button navigates to step 2',
+      testWidgets('Next button navigates to step 2 (Name)',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pump();
@@ -126,7 +128,7 @@ void main() {
         await tester.tap(find.text('Next'));
         await tester.pumpAndSettle();
 
-        expect(find.byType(WelcomeStepApiKeys), findsOneWidget);
+        expect(find.byType(WelcomeStepName), findsOneWidget);
       });
 
       testWidgets('progress bar updates on step 2',
@@ -141,7 +143,7 @@ void main() {
             tester.widget<LinearProgressIndicator>(
           find.byType(LinearProgressIndicator),
         );
-        expect(indicator.value, closeTo(0.5, 0.01));
+        expect(indicator.value, closeTo(2 / 6, 0.01));
       });
 
       testWidgets('Back button is enabled on step 2',
@@ -174,28 +176,29 @@ void main() {
         expect(find.byType(WelcomeStepIntro), findsOneWidget);
       });
 
-      testWidgets('can navigate to step 3', (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pump();
-
-        // Next to step 2
-        await tester.tap(find.text('Next'));
-        await tester.pumpAndSettle();
-
-        // Next to step 3
-        await tester.tap(find.text('Next'));
-        await tester.pumpAndSettle();
-
-        expect(find.byType(WelcomeStepHowItWorks), findsOneWidget);
-      });
-
-      testWidgets('can navigate to step 4 (Ready)',
+      testWidgets('can navigate to step 3 (Language)',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pump();
 
-        // Navigate through 3 steps
-        for (int i = 0; i < 3; i++) {
+        // Next to step 2 (Name)
+        await tester.tap(find.text('Next'));
+        await tester.pumpAndSettle();
+
+        // Next to step 3 (Language)
+        await tester.tap(find.text('Next'));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(WelcomeStepLanguage), findsOneWidget);
+      });
+
+      testWidgets('can navigate to step 6 (Ready)',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pump();
+
+        // Navigate through 5 steps
+        for (int i = 0; i < 5; i++) {
           await tester.tap(find.text('Next'));
           await tester.pumpAndSettle();
         }
@@ -208,7 +211,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pump();
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 5; i++) {
           await tester.tap(find.text('Next'));
           await tester.pumpAndSettle();
         }
@@ -221,7 +224,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pump();
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 5; i++) {
           await tester.tap(find.text('Next'));
           await tester.pumpAndSettle();
         }
@@ -229,12 +232,12 @@ void main() {
         expect(find.text('Skip'), findsNothing);
       });
 
-      testWidgets('progress bar shows 4/4 on last step',
+      testWidgets('progress bar shows 6/6 on last step',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pump();
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 5; i++) {
           await tester.tap(find.text('Next'));
           await tester.pumpAndSettle();
         }
@@ -268,14 +271,14 @@ void main() {
         // Dots are wrapped in GestureDetector > AnimatedContainer
         // Find all AnimatedContainers used as dots
         final Finder dots = find.byType(AnimatedContainer);
-        expect(dots, findsNWidgets(4));
+        expect(dots, findsNWidgets(6));
 
-        // Tap the 3rd dot (index 2)
+        // Tap the 3rd dot (index 2) — Language step
         await tester.tap(dots.at(2));
         await tester.pumpAndSettle();
 
-        // Should show step 3
-        expect(find.byType(WelcomeStepHowItWorks), findsOneWidget);
+        // Should show step 3 (Language)
+        expect(find.byType(WelcomeStepLanguage), findsOneWidget);
       });
     });
 
@@ -285,16 +288,16 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pump();
 
-        // Find StepIndicator for "API Keys" and tap it
-        final Finder apiKeysIndicator = find.widgetWithText(
+        // Find StepIndicator for "Name" and tap it
+        final Finder nameIndicator = find.widgetWithText(
           StepIndicator,
-          'API Keys',
+          'Name',
         );
-        expect(apiKeysIndicator, findsOneWidget);
-        await tester.tap(apiKeysIndicator);
+        expect(nameIndicator, findsOneWidget);
+        await tester.tap(nameIndicator);
         await tester.pumpAndSettle();
 
-        expect(find.byType(WelcomeStepApiKeys), findsOneWidget);
+        expect(find.byType(WelcomeStepName), findsOneWidget);
       });
     });
 
@@ -320,7 +323,7 @@ void main() {
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 400));
 
-        expect(find.byType(WelcomeStepApiKeys), findsOneWidget);
+        expect(find.byType(WelcomeStepName), findsOneWidget);
       });
 
       testWidgets('swiping right on first step does nothing',
@@ -379,7 +382,7 @@ void main() {
         await tester.pump();
 
         // Navigate to last step
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 5; i++) {
           await tester.tap(find.text('Next'));
           await tester.pumpAndSettle();
         }
@@ -400,7 +403,7 @@ void main() {
         await tester.pump();
 
         // Navigate to last step
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 5; i++) {
           await tester.tap(find.text('Next'));
           await tester.pumpAndSettle();
         }
@@ -454,7 +457,7 @@ void main() {
         expect(find.byType(WelcomeScreen), findsOneWidget);
 
         // Go to last step
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 5; i++) {
           await tester.tap(find.text('Next'));
           await tester.pumpAndSettle();
         }
@@ -501,7 +504,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Navigate to last step and finish
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 5; i++) {
           await tester.tap(find.text('Next'));
           await tester.pumpAndSettle();
         }
