@@ -43,6 +43,7 @@
 - Fixed collection covers not showing for manga items
 - Fixed "database has been locked for 10s" warnings when opening canvas for collections with many items — batch DB operations reduce N individual INSERT/DELETE calls to single transactions
 - Fixed Riverpod `_didChangeDependency` assertion crash in `CollectionItemsNotifier.refresh()` when sort providers update asynchronously from SharedPreferences
+- Fixed RenderFlex overflow in Welcome Wizard on small screens — added adaptive layout with `LayoutBuilder` to `WelcomeStepName`, `WelcomeStepLanguage`, and `WelcomeStepReady`. Applied `SingleChildScrollView` with responsive sizing for icons, text, spacing, and buttons based on screen height constraints. Prevents 73px/113px overflow on constrained displays
 
 ## [0.17.0] - 2026-03-03
 
