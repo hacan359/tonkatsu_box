@@ -1879,24 +1879,6 @@ abstract class S {
   /// **'Name must be at least 2 characters'**
   String get createCollectionNameTooShort;
 
-  /// No description provided for @createCollectionAuthor.
-  ///
-  /// In en, this message translates to:
-  /// **'Author'**
-  String get createCollectionAuthor;
-
-  /// No description provided for @createCollectionAuthorHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Your name or username'**
-  String get createCollectionAuthorHint;
-
-  /// No description provided for @createCollectionEnterAuthor.
-  ///
-  /// In en, this message translates to:
-  /// **'Please enter an author name'**
-  String get createCollectionEnterAuthor;
-
   /// No description provided for @renameCollectionTitle.
   ///
   /// In en, this message translates to:

@@ -1027,15 +1027,6 @@ class SRu extends S {
       'Название должно содержать минимум 2 символа';
 
   @override
-  String get createCollectionAuthor => 'Автор';
-
-  @override
-  String get createCollectionAuthorHint => 'Ваше имя или ник';
-
-  @override
-  String get createCollectionEnterAuthor => 'Введите имя автора';
-
-  @override
   String get renameCollectionTitle => 'Переименовать коллекцию';
 
   @override

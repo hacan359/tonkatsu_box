@@ -1014,15 +1014,6 @@ class SEn extends S {
       'Name must be at least 2 characters';
 
   @override
-  String get createCollectionAuthor => 'Author';
-
-  @override
-  String get createCollectionAuthorHint => 'Your name or username';
-
-  @override
-  String get createCollectionEnterAuthor => 'Please enter an author name';
-
-  @override
   String get renameCollectionTitle => 'Rename Collection';
 
   @override
