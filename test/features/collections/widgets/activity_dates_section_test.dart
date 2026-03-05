@@ -257,17 +257,11 @@ void main() {
 
       testWidgets('should call onDateChanged when date is tapped',
           (WidgetTester tester) async {
-        String? calledType;
-        DateTime? calledDate;
-
         await tester.pumpApp(
           ActivityDatesSection(
             addedAt: DateTime(2025, 1, 15),
             isEditable: true,
-            onDateChanged: (String type, DateTime date) async {
-              calledType = type;
-              calledDate = date;
-            },
+            onDateChanged: (String type, DateTime date) async {},
           ),
           wrapInScaffold: true,
         );
