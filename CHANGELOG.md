@@ -16,6 +16,10 @@
 - `TransactionMockDatabase` in `test/helpers/mocks.dart` — solves mocktail limitation with generic `Database.transaction<T>()` method stubbing
 
 ### Changed
+- **Settings Unified Layout** — removed desktop sidebar layout (`SettingsSidebar`), all platforms now use a single iOS-style grouped-list with `SettingsGroup`/`SettingsTile`. Deleted 4 legacy widgets: `SettingsSidebar`, `SettingsSection`, `SettingsRow`, `SettingsNavRow` (−334 lines). All 7 screen wrappers unified: `Align(topCenter)` + `ConstrainedBox(600)` + consistent `EdgeInsets.symmetric` padding
+- **Credits Screen** — replaced SVG logo cards (`_ProviderCard`, `_TextLogoProviderCard`, `_OpenSourceCard`) with plain-text `SettingsGroup` entries. Removed `flutter_svg` and `source_badge` dependencies from credits
+- **Trakt Import Screen** — merged separate instructions and file picker sections into a single `SettingsGroup`
+- **Debug Hub Screen** — migrated from `SettingsSection`/`SettingsNavRow` to `SettingsGroup`/`SettingsTile`
 - `SearchScreen` — added `initialSourceId` parameter replacing legacy `initialTabIndex` for precise source pre-selection from Wishlist
 - Recommendations section on detail screens — changed from blacklist to whitelist (only movies, TV shows, animation)
 - `DataSource.anilist` color set to AniList brand blue `Color(0xFF3DB4F2)`

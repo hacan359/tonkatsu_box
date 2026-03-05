@@ -643,6 +643,36 @@ abstract class S {
   /// **'{count} keys'**
   String settingsApiKeysValue(int count);
 
+  /// No description provided for @settingsAppearance.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get settingsAppearance;
+
+  /// No description provided for @settingsDataSources.
+  ///
+  /// In en, this message translates to:
+  /// **'Data Sources'**
+  String get settingsDataSources;
+
+  /// No description provided for @settingsStorage.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage'**
+  String get settingsStorage;
+
+  /// No description provided for @settingsImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Import'**
+  String get settingsImport;
+
+  /// No description provided for @settingsContentLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Content Language'**
+  String get settingsContentLanguage;
+
   /// No description provided for @settingsData.
   ///
   /// In en, this message translates to:

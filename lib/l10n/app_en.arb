@@ -104,6 +104,11 @@
       "count": {"type": "int"}
     }
   },
+  "settingsAppearance": "Appearance",
+  "settingsDataSources": "Data Sources",
+  "settingsStorage": "Storage",
+  "settingsImport": "Import",
+  "settingsContentLanguage": "Content Language",
   "settingsData": "Data",
   "settingsCacheValue": "{size}",
   "@settingsCacheValue": {

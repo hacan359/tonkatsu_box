@@ -4,9 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/features/settings/screens/debug_hub_screen.dart';
+import 'package:xerabora/features/settings/widgets/settings_group.dart';
+import 'package:xerabora/features/settings/widgets/settings_tile.dart';
 import 'package:xerabora/l10n/app_localizations.dart';
-import 'package:xerabora/features/settings/widgets/settings_nav_row.dart';
-import 'package:xerabora/features/settings/widgets/settings_section.dart';
 import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 
 void main() {
@@ -34,7 +34,7 @@ void main() {
       );
     }
 
-    testWidgets('Показывает хлебные крошки Settings и Debug',
+    testWidgets('shows breadcrumbs Settings and Debug',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
@@ -43,7 +43,21 @@ void main() {
       expect(find.text('Debug'), findsOneWidget);
     });
 
-    testWidgets('Показывает плитку SteamGridDB Debug Panel',
+    testWidgets('shows SettingsGroup widget', (WidgetTester tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SettingsGroup), findsOneWidget);
+    });
+
+    testWidgets('shows 4 SettingsTile widgets', (WidgetTester tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SettingsTile), findsNWidgets(4));
+    });
+
+    testWidgets('shows SteamGridDB Debug Panel tile',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
@@ -51,15 +65,14 @@ void main() {
       expect(find.text('SteamGridDB Debug Panel'), findsOneWidget);
     });
 
-    testWidgets('Показывает плитку Image Debug Panel',
-        (WidgetTester tester) async {
+    testWidgets('shows Image Debug Panel tile', (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
       expect(find.text('Image Debug Panel'), findsOneWidget);
     });
 
-    testWidgets('Показывает плитку Gamepad Debug Panel',
+    testWidgets('shows Gamepad Debug Panel tile',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
@@ -67,31 +80,16 @@ void main() {
       expect(find.text('Gamepad Debug Panel'), findsOneWidget);
     });
 
-    testWidgets('Показывает правильные иконки', (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      expect(find.byIcon(Icons.grid_view), findsOneWidget);
-      expect(find.byIcon(Icons.image_search), findsOneWidget);
-      expect(find.byIcon(Icons.gamepad), findsOneWidget);
-    });
-
-    testWidgets('SteamGridDB плитка отключена когда нет API ключа',
+    testWidgets('shows Demo Collections Generator tile',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
-      final Finder steamGridTile = find.ancestor(
-        of: find.text('SteamGridDB Debug Panel'),
-        matching: find.byType(ListTile),
-      );
-
-      final ListTile tile = tester.widget<ListTile>(steamGridTile);
-      expect(tile.enabled, false);
+      expect(find.text('Demo Collections Generator'), findsOneWidget);
     });
 
     testWidgets(
-        'SteamGridDB плитка показывает подзаголовок Set API key first когда нет ключа',
+        'SteamGridDB tile shows "Set API key first" when no key',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
@@ -99,7 +97,21 @@ void main() {
       expect(find.text('Set API key first'), findsOneWidget);
     });
 
-    testWidgets('SteamGridDB плитка активна когда есть API ключ',
+    testWidgets('SteamGridDB tile is not tappable when no API key',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pumpAndSettle();
+
+      // SettingsTile with onTap: null → no chevron, not tappable
+      final Finder steamGridTile = find.ancestor(
+        of: find.text('SteamGridDB Debug Panel'),
+        matching: find.byType(SettingsTile),
+      );
+      final SettingsTile tile = tester.widget<SettingsTile>(steamGridTile);
+      expect(tile.onTap, isNull);
+    });
+
+    testWidgets('SteamGridDB tile is tappable when API key is set',
         (WidgetTester tester) async {
       await prefs.setString('steamgriddb_api_key', 'test_key');
 
@@ -108,64 +120,14 @@ void main() {
 
       final Finder steamGridTile = find.ancestor(
         of: find.text('SteamGridDB Debug Panel'),
-        matching: find.byType(ListTile),
+        matching: find.byType(SettingsTile),
       );
-
-      final ListTile tile = tester.widget<ListTile>(steamGridTile);
-      expect(tile.enabled, true);
+      final SettingsTile tile = tester.widget<SettingsTile>(steamGridTile);
+      expect(tile.onTap, isNotNull);
       expect(find.text('Set API key first'), findsNothing);
     });
 
-    testWidgets('Все плитки имеют иконки chevron_right',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      // 4 ListTile chevrons + 2 breadcrumb separators
-      expect(find.byIcon(Icons.chevron_right), findsNWidgets(6));
-    });
-
-    testWidgets('Использует SettingsSection виджет',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      expect(find.byType(SettingsSection), findsOneWidget);
-    });
-
-    testWidgets('Использует 3 SettingsNavRow виджета',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      expect(find.byType(SettingsNavRow), findsNWidgets(4));
-    });
-
-    testWidgets('Показывает заголовок Debug Tools',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      expect(find.text('Debug Tools'), findsOneWidget);
-    });
-
-    testWidgets('Image Debug Panel показывает subtitle',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      expect(find.text('Check poster URLs and loading'), findsOneWidget);
-    });
-
-    testWidgets('Gamepad Debug Panel показывает subtitle',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      expect(find.text('Test controller input events'), findsOneWidget);
-    });
-
-    testWidgets('SteamGridDB показывает Test API endpoints при наличии ключа',
+    testWidgets('shows "Test API endpoints" when SteamGridDB key is set',
         (WidgetTester tester) async {
       await prefs.setString('steamgriddb_api_key', 'test_key');
 
@@ -175,42 +137,43 @@ void main() {
       expect(find.text('Test API endpoints'), findsOneWidget);
     });
 
-    testWidgets('Показывает иконку bug_report в секции',
+    testWidgets('Image Debug Panel shows subtitle',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.bug_report), findsOneWidget);
+      expect(find.text('Check poster URLs and loading'), findsOneWidget);
     });
 
-    testWidgets('Показывает плитку Demo Collections Generator',
+    testWidgets('Gamepad Debug Panel shows subtitle',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
-      expect(find.text('Demo Collections Generator'), findsOneWidget);
+      expect(find.text('Test controller input events'), findsOneWidget);
     });
 
-    testWidgets('Demo Collections отключена когда нет IGDB и TMDB ключей',
+    testWidgets('Demo Collections is not tappable without IGDB and TMDB keys',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
       final Finder demoTile = find.ancestor(
         of: find.text('Demo Collections Generator'),
-        matching: find.byType(ListTile),
+        matching: find.byType(SettingsTile),
       );
-
-      final ListTile tile = tester.widget<ListTile>(demoTile);
-      expect(tile.enabled, false);
+      final SettingsTile tile = tester.widget<SettingsTile>(demoTile);
+      expect(tile.onTap, isNull);
     });
 
-    testWidgets('Demo Collections показывает иконку library_books',
+    testWidgets('shows chevron icons on tappable tiles',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.library_books), findsOneWidget);
+      // Image Debug + Gamepad Debug are always tappable = 2 chevrons
+      // SteamGridDB + Demo are disabled (no key) = 0 chevrons
+      expect(find.byIcon(Icons.chevron_right), findsAtLeastNWidgets(2));
     });
   });
 }

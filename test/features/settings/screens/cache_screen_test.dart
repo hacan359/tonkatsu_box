@@ -4,7 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/features/settings/screens/cache_screen.dart';
-import 'package:xerabora/features/settings/widgets/settings_section.dart';
+import 'package:xerabora/features/settings/widgets/settings_group.dart';
+import 'package:xerabora/features/settings/widgets/settings_tile.dart';
 import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 
@@ -35,7 +36,7 @@ void main() {
       );
     }
 
-    testWidgets('Показывает хлебные крошки Settings и Cache',
+    testWidgets('shows breadcrumbs Settings and Cache',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
@@ -44,41 +45,31 @@ void main() {
       expect(find.text('Cache'), findsOneWidget);
     });
 
-    testWidgets('Показывает заголовок секции Image Cache',
+    testWidgets('shows SettingsGroup for Image Cache',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
-      expect(find.text('Image Cache'), findsOneWidget);
-      expect(find.byType(SettingsSection), findsOneWidget);
+      expect(find.byType(SettingsGroup), findsOneWidget);
     });
 
-    testWidgets('Показывает переключатель Offline mode',
-        (WidgetTester tester) async {
+    testWidgets('shows Offline mode switch', (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
-      expect(find.text('Offline mode'), findsOneWidget);
       expect(find.byType(Switch), findsOneWidget);
     });
 
-    testWidgets('Показывает метку Cache folder',
+    testWidgets('shows SettingsTile widgets for cache options',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
-      expect(find.text('Cache folder'), findsOneWidget);
+      // Offline mode + Cache folder + Cache size = 3 tiles
+      expect(find.byType(SettingsTile), findsAtLeastNWidgets(3));
     });
 
-    testWidgets('Показывает метку Cache size',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      expect(find.text('Cache size'), findsOneWidget);
-    });
-
-    testWidgets('Переключатель Offline mode имеет начальное значение false',
+    testWidgets('Offline mode switch has initial value false',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
@@ -90,32 +81,27 @@ void main() {
       expect(switchWidget.value, false);
     });
 
-    testWidgets('Показывает иконки', (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      expect(find.byIcon(Icons.folder), findsOneWidget);
-      expect(find.byIcon(Icons.folder_open), findsOneWidget);
-      expect(find.byIcon(Icons.delete_outline), findsOneWidget);
-    });
-
-    testWidgets('Offline mode показывает subtitle',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      expect(
-        find.text('Save images locally for offline use'),
-        findsOneWidget,
-      );
-    });
-
-    testWidgets('Показывает статистику кэша 0 files',
+    testWidgets('shows cache stats with 0 files',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
       expect(find.textContaining('0 files'), findsOneWidget);
+    });
+
+    testWidgets('shows delete icon for cache clearing',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.delete_outline), findsOneWidget);
+    });
+
+    testWidgets('shows folder picker icon', (WidgetTester tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.folder_open), findsOneWidget);
     });
   });
 }

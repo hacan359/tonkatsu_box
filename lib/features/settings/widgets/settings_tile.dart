@@ -8,8 +8,8 @@ import '../../../shared/theme/app_typography.dart';
 
 /// Тонкая строка настроек в стиле iOS Settings.
 ///
-/// Содержит заголовок слева, необязательное значение серым цветом,
-/// trailing-виджет и chevron-иконку справа.
+/// Содержит заголовок слева, необязательное значение серым цветом
+/// (прижато вправо к chevron), trailing-виджет и chevron-иконку.
 class SettingsTile extends StatelessWidget {
   /// Создаёт [SettingsTile].
   const SettingsTile({
@@ -48,29 +48,38 @@ class SettingsTile extends StatelessWidget {
         child: Row(
           children: <Widget>[
             Expanded(
+              flex: 3,
               child: Text(
                 title,
                 style: AppTypography.body.copyWith(
                   color: AppColors.textPrimary,
                 ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
             ),
             if (value != null)
-              Padding(
-                padding: const EdgeInsets.only(right: AppSpacing.xs),
+              Expanded(
+                flex: 2,
                 child: Text(
                   value!,
                   style: AppTypography.body.copyWith(
                     color: AppColors.textTertiary,
                   ),
+                  textAlign: TextAlign.end,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
               ),
             ?trailing,
             if (showChevron && onTap != null)
-              const Icon(
-                Icons.chevron_right,
-                size: 18,
-                color: AppColors.textTertiary,
+              const Padding(
+                padding: EdgeInsets.only(left: AppSpacing.xs),
+                child: Icon(
+                  Icons.chevron_right,
+                  size: 18,
+                  color: AppColors.textTertiary,
+                ),
               ),
           ],
         ),

@@ -104,6 +104,11 @@
       "count": {"type": "int"}
     }
   },
+  "settingsAppearance": "Оформление",
+  "settingsDataSources": "Источники данных",
+  "settingsStorage": "Хранилище",
+  "settingsImport": "Импорт",
+  "settingsContentLanguage": "Язык контента",
   "settingsData": "Данные",
   "settingsCacheValue": "{size}",
   "@settingsCacheValue": {

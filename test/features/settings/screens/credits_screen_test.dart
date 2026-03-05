@@ -1,31 +1,13 @@
 // Тесты для CreditsScreen (атрибуция API-провайдеров и лицензии).
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/settings/screens/credits_screen.dart';
+import 'package:xerabora/features/settings/widgets/settings_group.dart';
 import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 
 void main() {
-  setUp(() {
-    // Мок для SVG-ассетов — rootBundle.loadString возвращает валидный SVG.
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMessageHandler('flutter/assets', (ByteData? message) async {
-      const String svgContent =
-          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">'
-          '<rect width="100" height="100" fill="blue"/></svg>';
-      return ByteData.sublistView(
-        Uint8List.fromList(svgContent.codeUnits),
-      );
-    });
-  });
-
-  tearDown(() {
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMessageHandler('flutter/assets', null);
-  });
-
   Widget createWidget() {
     return const MaterialApp(
       localizationsDelegates: S.localizationsDelegates,
@@ -42,18 +24,19 @@ void main() {
 
   group('CreditsScreen', () {
     group('Data Providers section', () {
-      testWidgets('shows Data Providers header',
-          (WidgetTester tester) async {
+      testWidgets('shows Data Providers group', (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
-        await tester.pump();
+        await tester.pumpAndSettle();
 
-        expect(find.text('Data Providers'), findsOneWidget);
+        // SettingsGroup renders title.toUpperCase()
+        expect(find.text('DATA PROVIDERS'), findsOneWidget);
+        expect(find.byType(SettingsGroup), findsNWidgets(2));
       });
 
       testWidgets('shows TMDB attribution text',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         expect(
           find.text(
@@ -66,7 +49,7 @@ void main() {
 
       testWidgets('shows TMDB link', (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         expect(find.text('themoviedb.org'), findsOneWidget);
       });
@@ -74,7 +57,7 @@ void main() {
       testWidgets('shows IGDB attribution text',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         expect(
           find.text('Game data provided by IGDB.'),
@@ -84,7 +67,7 @@ void main() {
 
       testWidgets('shows IGDB link', (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         expect(find.text('igdb.com'), findsOneWidget);
       });
@@ -92,11 +75,10 @@ void main() {
       testWidgets('shows SteamGridDB attribution text',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
-        await tester.pump();
+        await tester.pumpAndSettle();
 
-        // Scroll to see SteamGridDB card
         await tester.drag(find.byType(ListView), const Offset(0, -200));
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         expect(
           find.text('Artwork provided by SteamGridDB.'),
@@ -106,10 +88,10 @@ void main() {
 
       testWidgets('shows SteamGridDB link', (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         await tester.drag(find.byType(ListView), const Offset(0, -200));
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         expect(find.text('steamgriddb.com'), findsOneWidget);
       });
@@ -117,10 +99,10 @@ void main() {
       testWidgets('shows AniList attribution text',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         await tester.drag(find.byType(ListView), const Offset(0, -400));
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         expect(
           find.text('Manga data provided by AniList.'),
@@ -130,10 +112,10 @@ void main() {
 
       testWidgets('shows AniList link', (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         await tester.drag(find.byType(ListView), const Offset(0, -400));
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         expect(find.text('anilist.co'), findsOneWidget);
       });
@@ -141,7 +123,7 @@ void main() {
       testWidgets('shows open_in_new icons for provider links',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         // At least TMDB and IGDB open_in_new icons visible
         expect(
@@ -152,23 +134,23 @@ void main() {
     });
 
     group('Open Source section', () {
-      testWidgets('shows Open Source header', (WidgetTester tester) async {
+      testWidgets('shows Open Source group', (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
-        await tester.pump();
+        await tester.pumpAndSettle();
 
-        // Scroll down to Open Source section
         await tester.drag(find.byType(ListView), const Offset(0, -400));
-        await tester.pump();
+        await tester.pumpAndSettle();
 
-        expect(find.text('Open Source'), findsOneWidget);
+        // SettingsGroup renders title.toUpperCase()
+        expect(find.text('OPEN SOURCE'), findsOneWidget);
       });
 
       testWidgets('shows MIT License text', (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         await tester.drag(find.byType(ListView), const Offset(0, -400));
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         expect(
           find.text(
@@ -181,13 +163,13 @@ void main() {
 
       testWidgets('shows GitHub link', (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         await tester.drag(find.byType(ListView), const Offset(0, -400));
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         expect(
-          find.text('github.com/hacan359/tonkatsu_box'),
+          find.text('hacan359/tonkatsu_box'),
           findsOneWidget,
         );
       });
@@ -195,10 +177,10 @@ void main() {
       testWidgets('shows View Open Source Licenses button',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         await tester.drag(find.byType(ListView), const Offset(0, -400));
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         expect(
           find.text('View Open Source Licenses'),
@@ -210,10 +192,10 @@ void main() {
       testWidgets('View Open Source Licenses button is tappable',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         await tester.drag(find.byType(ListView), const Offset(0, -400));
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         await tester.tap(find.text('View Open Source Licenses'));
         await tester.pumpAndSettle();
@@ -225,15 +207,45 @@ void main() {
       testWidgets('shows description_outlined icon on licenses button',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         await tester.drag(find.byType(ListView), const Offset(0, -400));
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         expect(
           find.byIcon(Icons.description_outlined),
           findsOneWidget,
         );
+      });
+    });
+
+    group('Layout', () {
+      testWidgets('uses ListView for scrolling',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        expect(find.byType(ListView), findsOneWidget);
+      });
+
+      testWidgets('shows all 5 provider links',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        expect(find.text('themoviedb.org'), findsOneWidget);
+        expect(find.text('igdb.com'), findsOneWidget);
+
+        await tester.drag(find.byType(ListView), const Offset(0, -200));
+        await tester.pumpAndSettle();
+
+        expect(find.text('steamgriddb.com'), findsOneWidget);
+
+        await tester.drag(find.byType(ListView), const Offset(0, -200));
+        await tester.pumpAndSettle();
+
+        expect(find.text('vndb.org'), findsOneWidget);
+        expect(find.text('anilist.co'), findsOneWidget);
       });
     });
 
@@ -258,20 +270,19 @@ void main() {
       testWidgets('renders in compact mode on narrow screens',
           (WidgetTester tester) async {
         await tester.pumpWidget(createCompactWidget());
-        await tester.pump();
+        await tester.pumpAndSettle();
 
-        // All content still visible
-        expect(find.text('Data Providers'), findsOneWidget);
+        expect(find.text('DATA PROVIDERS'), findsOneWidget);
         expect(find.text('themoviedb.org'), findsOneWidget);
       });
 
       testWidgets('shows all providers in compact mode',
           (WidgetTester tester) async {
         await tester.pumpWidget(createCompactWidget());
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         await tester.drag(find.byType(ListView), const Offset(0, -200));
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         expect(find.text('igdb.com'), findsOneWidget);
         expect(find.text('steamgriddb.com'), findsOneWidget);
@@ -280,47 +291,16 @@ void main() {
       testWidgets('shows Open Source section in compact mode',
           (WidgetTester tester) async {
         await tester.pumpWidget(createCompactWidget());
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         await tester.drag(find.byType(ListView), const Offset(0, -400));
-        await tester.pump();
+        await tester.pumpAndSettle();
 
-        expect(find.text('Open Source'), findsOneWidget);
+        expect(find.text('OPEN SOURCE'), findsOneWidget);
         expect(
           find.text('View Open Source Licenses'),
           findsOneWidget,
         );
-      });
-    });
-
-    group('Layout', () {
-      testWidgets('uses ListView for scrolling',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pump();
-
-        expect(find.byType(ListView), findsOneWidget);
-      });
-
-      testWidgets('renders 5 provider cards',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pump();
-
-        // All 5 providers have open_in_new icon + GitHub link also has one
-        // TMDB, IGDB cards visible initially, others may need scroll
-        await tester.drag(find.byType(ListView), const Offset(0, -200));
-        await tester.pump();
-
-        expect(find.text('themoviedb.org'), findsOneWidget);
-        expect(find.text('igdb.com'), findsOneWidget);
-        expect(find.text('steamgriddb.com'), findsOneWidget);
-
-        await tester.drag(find.byType(ListView), const Offset(0, -200));
-        await tester.pump();
-
-        expect(find.text('vndb.org'), findsOneWidget);
-        expect(find.text('anilist.co'), findsOneWidget);
       });
     });
   });

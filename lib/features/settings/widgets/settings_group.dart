@@ -51,6 +51,7 @@ class SettingsGroup extends StatelessWidget {
           ),
           clipBehavior: Clip.antiAlias,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               for (int i = 0; i < children.length; i++) ...<Widget>[
                 if (i > 0)

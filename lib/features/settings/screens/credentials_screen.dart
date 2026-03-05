@@ -24,15 +24,27 @@ class CredentialsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool compact = MediaQuery.sizeOf(context).width < 600;
+    final double width = MediaQuery.sizeOf(context).width;
+    final bool isWide = width >= 800;
 
     return BreadcrumbScope(
       label: S.of(context).credentialsTitle,
       child: Scaffold(
         appBar: const AutoBreadcrumbAppBar(),
-        body: SingleChildScrollView(
-          padding: EdgeInsets.all(compact ? AppSpacing.sm : AppSpacing.lg),
-          child: CredentialsContent(isInitialSetup: isInitialSetup),
+        body: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: isWide ? 600 : double.infinity,
+            ),
+            child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(
+                horizontal: isWide ? AppSpacing.lg : AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
+              child: CredentialsContent(isInitialSetup: isInitialSetup),
+            ),
+          ),
         ),
       ),
     );

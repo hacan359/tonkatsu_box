@@ -286,6 +286,21 @@ class SRu extends S {
   }
 
   @override
+  String get settingsAppearance => 'Оформление';
+
+  @override
+  String get settingsDataSources => 'Источники данных';
+
+  @override
+  String get settingsStorage => 'Хранилище';
+
+  @override
+  String get settingsImport => 'Импорт';
+
+  @override
+  String get settingsContentLanguage => 'Язык контента';
+
+  @override
   String get settingsData => 'Данные';
 
   @override

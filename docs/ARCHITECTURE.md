@@ -418,12 +418,8 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `settings_group.dart` | **Плоская группа настроек**. iOS-style: optional uppercase title (`bodySmall`, textTertiary), `surfaceLight` Container с `radiusSm`, Dividers (`surfaceBorder`) между children |
-| `settings_tile.dart` | **Тонкая строка настроек** (~44px). Title + optional value (textTertiary) + optional trailing widget (Switch и т.п.) + chevron_right (18px) при наличии `onTap`. `InkWell` для тапа |
-| `settings_sidebar.dart` | **Desktop sidebar** (200px). `ListView.builder` с `SettingsSidebarItem` (label + isSeparator). Selected: brand text + surfaceLight bg + FontWeight.w600. Separators → `Divider` |
-| `settings_section.dart` | **Секция настроек** (legacy, используется в content-виджетах). `Card > Padding > Column` с заголовком (иконка + title + trailing), подзаголовком и дочерними виджетами. Compact mode |
-| `settings_row.dart` | **Строка настройки**. Обёртка над `ListTile` с optional divider, icon, trailing widget. `contentPadding: EdgeInsets.zero`, compact dense mode |
-| `settings_nav_row.dart` | **Навигационная строка** (legacy, используется в debug_hub_screen). `ListTile` с leading icon, subtitle и `trailing: Icons.chevron_right` |
+| `settings_group.dart` | **Плоская группа настроек**. iOS-style: optional uppercase title (`bodySmall`, textTertiary), `surfaceLight` Container с `radiusSm`, Dividers (`surfaceBorder`) между children. `CrossAxisAlignment.stretch` для inner Column |
+| `settings_tile.dart` | **Тонкая строка настроек** (~44px). Title (`Expanded flex:3`) + optional value (`Expanded flex:2`, `textAlign: TextAlign.end`, textTertiary) + optional trailing widget (Switch и т.п.) + chevron_right (18px) при наличии `onTap`. `InkWell` для тапа |
 | `status_dot.dart` | **Индикатор статуса**. `StatusType` enum (success/warning/error/inactive) → иконка + цветной текст. Compact icon size (16/18) |
 | `inline_text_field.dart` | **Inline текстовое поле**. Tap → edit mode (TextField), blur/Enter → commit. Visibility toggle для obscured полей. D-pad/gamepad поддержка через `Actions > Focus > ActivateIntent` |
 
@@ -431,13 +427,13 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/features/settings/screens/settings_screen.dart` | **Хаб настроек** с двумя лейаутами. Mobile (< 800px): `ListView` с `SettingsGroup`/`SettingsTile` — Profile, Connections, Data, About, Debug (kDebugMode), Error. Push-навигация на подэкраны. Desktop (≥ 800px): `SettingsSidebar` (200px) + content panel (maxWidth 600) с inline Content-виджетами. `_buildContentPanel()` switch по `_selectedIndex` |
-| `lib/features/settings/screens/credentials_screen.dart` | **Тонкая обёртка** для push-навигации. `BreadcrumbScope > Scaffold > SingleChildScrollView > CredentialsContent` |
-| `lib/features/settings/screens/credits_screen.dart` | **Тонкая обёртка** для push-навигации. `BreadcrumbScope > Scaffold > ListView > CreditsContent` |
-| `lib/features/settings/screens/cache_screen.dart` | **Тонкая обёртка** для push-навигации. `BreadcrumbScope > Scaffold > SingleChildScrollView > CacheContent` |
-| `lib/features/settings/screens/database_screen.dart` | **Тонкая обёртка** для push-навигации. `BreadcrumbScope > Scaffold > SingleChildScrollView > DatabaseContent` |
-| `lib/features/settings/screens/trakt_import_screen.dart` | **Тонкая обёртка** для push-навигации. `BreadcrumbScope > Scaffold > SingleChildScrollView > TraktImportContent(onImportComplete: pop)` |
-| `lib/features/settings/screens/debug_hub_screen.dart` | **Хаб отладки** (только kDebugMode). `SettingsSection` с 3 `SettingsNavRow`: SteamGridDB, Image Debug, Gamepad. SteamGridDB недоступен без API ключа |
+| `lib/features/settings/screens/settings_screen.dart` | **Хаб настроек**. Единый grouped-list лейаут для всех платформ. `ListView` с `SettingsGroup`/`SettingsTile` — Appearance, Data Sources, Storage, Import, Profile, About, Debug (kDebugMode), Error. Push-навигация на подэкраны. На десктопе (≥ 800px): `Align(topCenter)` + `ConstrainedBox(maxWidth: 600)` |
+| `lib/features/settings/screens/credentials_screen.dart` | **Тонкая обёртка** для push-навигации. `BreadcrumbScope > Scaffold > Align(topCenter) > ConstrainedBox(600) > SingleChildScrollView > CredentialsContent` |
+| `lib/features/settings/screens/credits_screen.dart` | **Тонкая обёртка** для push-навигации. `BreadcrumbScope > Scaffold > Align(topCenter) > ConstrainedBox(600) > ListView > CreditsContent` |
+| `lib/features/settings/screens/cache_screen.dart` | **Тонкая обёртка** для push-навигации. `BreadcrumbScope > Scaffold > Align(topCenter) > ConstrainedBox(600) > SingleChildScrollView > CacheContent` |
+| `lib/features/settings/screens/database_screen.dart` | **Тонкая обёртка** для push-навигации. `BreadcrumbScope > Scaffold > Align(topCenter) > ConstrainedBox(600) > SingleChildScrollView > DatabaseContent` |
+| `lib/features/settings/screens/trakt_import_screen.dart` | **Тонкая обёртка** для push-навигации. `BreadcrumbScope > Scaffold > Align(topCenter) > ConstrainedBox(600) > SingleChildScrollView > TraktImportContent(onImportComplete: pop)` |
+| `lib/features/settings/screens/debug_hub_screen.dart` | **Хаб отладки** (только kDebugMode). `SettingsGroup`/`SettingsTile` с 4 debug tools: SteamGridDB, Image Debug, Gamepad, Demo Collections. SteamGridDB недоступен без API ключа |
 | `lib/features/settings/screens/steamgriddb_debug_screen.dart` | **Debug-экран SteamGridDB**. 5 табов: Search, Grids, Heroes, Logos, Icons. Тестирование всех API эндпоинтов |
 | `lib/features/settings/screens/image_debug_screen.dart` | **Debug-экран IGDB Media**. Проверка URL изображений в коллекциях: постеры, thumbnail, превью |
 | `lib/features/settings/screens/gamepad_debug_screen.dart` | **Debug-экран Gamepad**. Raw events от Gamepads.events + filtered events от GamepadService в двух колонках |
@@ -445,14 +441,14 @@ lib/
 
 #### Content (`lib/features/settings/content/`)
 
-Content-виджеты — извлечённое тело подэкранов, переиспользуемое на мобиле (через Screen-обёртку с push-навигацией) и на десктопе (inline в content panel).
+Content-виджеты — извлечённое тело подэкранов, используемое внутри Screen-обёрток с push-навигацией.
 
 | Файл | Назначение |
 |------|------------|
 | `credentials_content.dart` | **Учётные данные API**. ConsumerStatefulWidget. `InlineTextField` для IGDB Client ID/Secret, SteamGridDB API key, TMDB API key. `SegmentedButton` для языка TMDB. `StatusDot` для статуса. Кнопки Verify/Refresh Platforms. Секция Welcome при `isInitialSetup` |
 | `cache_content.dart` | **Настройки кэша**. ConsumerStatefulWidget с Future state. Toggle кэша, выбор папки, статистика (файлы/размер), очистка |
 | `database_content.dart` | **Управление БД**. ConsumerWidget. Export/Import Config (JSON). Reset Database с диалогом подтверждения |
-| `credits_content.dart` | **Атрибуция API-провайдеров**. StatelessWidget. TMDB/IGDB/SteamGridDB/VNDB/AniList карточки с SVG/текстовыми логотипами. Open Source секция с MIT лицензией |
+| `credits_content.dart` | **Атрибуция API-провайдеров**. StatelessWidget. 2 `SettingsGroup`: Data Providers (TMDB/IGDB/SteamGridDB/VNDB/AniList — plain text, name + description + link) и Open Source (MIT license, GitHub link, View Licenses button) |
 | `trakt_import_content.dart` | **Импорт Trakt.tv**. ConsumerStatefulWidget. File picker, ZIP validation, preview, options, progress dialog. Callback `onImportComplete` |
 
 ---

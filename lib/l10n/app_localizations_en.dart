@@ -287,6 +287,21 @@ class SEn extends S {
   }
 
   @override
+  String get settingsAppearance => 'Appearance';
+
+  @override
+  String get settingsDataSources => 'Data Sources';
+
+  @override
+  String get settingsStorage => 'Storage';
+
+  @override
+  String get settingsImport => 'Import';
+
+  @override
+  String get settingsContentLanguage => 'Content Language';
+
+  @override
   String get settingsData => 'Data';
 
   @override

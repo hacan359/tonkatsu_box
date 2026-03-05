@@ -13,105 +13,115 @@ import '../../../shared/navigation/navigation_shell.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../providers/settings_provider.dart';
-import '../widgets/settings_section.dart';
+import '../widgets/settings_group.dart';
 
 /// Контент экрана управления базой данных.
 ///
 /// Содержит экспорт/импорт конфигурации и сброс базы данных.
-/// Используется как standalone в десктопном sidebar и внутри [DatabaseScreen].
 class DatabaseContent extends ConsumerWidget {
   /// Создаёт [DatabaseContent].
   const DatabaseContent({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final bool compact = MediaQuery.sizeOf(context).width < 600;
+    final S l10n = S.of(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        _buildConfigSection(context, ref, compact),
-        SizedBox(height: compact ? AppSpacing.sm : AppSpacing.lg),
-        _buildDangerZoneSection(context, ref, compact),
-      ],
-    );
-  }
-
-  Widget _buildConfigSection(
-    BuildContext context,
-    WidgetRef ref,
-    bool compact,
-  ) {
-    final S l10n = S.of(context);
-    return SettingsSection(
-      title: l10n.databaseConfiguration,
-      icon: Icons.settings_backup_restore,
-      subtitle: l10n.databaseConfigSubtitle,
-      compact: compact,
-      children: <Widget>[
-        LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints constraints) {
-            final Widget exportButton = OutlinedButton.icon(
-              onPressed: () => _exportConfig(context, ref),
-              icon: const Icon(Icons.upload, size: 18),
-              label: Text(l10n.databaseExportConfig),
-            );
-            final Widget importButton = OutlinedButton.icon(
-              onPressed: () => _importConfig(context, ref),
-              icon: const Icon(Icons.download, size: 18),
-              label: Text(l10n.databaseImportConfig),
-            );
-            if (constraints.maxWidth < 400) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  exportButton,
-                  const SizedBox(height: AppSpacing.sm),
-                  importButton,
-                ],
-              );
-            }
-            return Row(
-              children: <Widget>[
-                Expanded(child: exportButton),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(child: importButton),
-              ],
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDangerZoneSection(
-    BuildContext context,
-    WidgetRef ref,
-    bool compact,
-  ) {
-    final S l10n = S.of(context);
-    return SettingsSection(
-      title: l10n.databaseDangerZone,
-      icon: Icons.warning_amber,
-      iconColor: AppColors.error,
-      compact: compact,
-      children: <Widget>[
-        Text(
-          l10n.databaseDangerZoneMessage,
-          style: AppTypography.bodySmall,
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: () => _resetDatabase(context, ref),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.error,
-              side: const BorderSide(color: AppColors.error),
+        // CONFIGURATION
+        SettingsGroup(
+          title: l10n.databaseConfiguration,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
+              child: Text(
+                l10n.databaseConfigSubtitle,
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
             ),
-            icon: const Icon(Icons.delete_forever, size: 18),
-            label: Text(l10n.databaseResetDatabase),
-          ),
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
+              child: LayoutBuilder(
+                builder:
+                    (BuildContext context, BoxConstraints constraints) {
+                  final Widget exportButton = OutlinedButton.icon(
+                    onPressed: () => _exportConfig(context, ref),
+                    icon: const Icon(Icons.upload, size: 18),
+                    label: Text(l10n.databaseExportConfig),
+                  );
+                  final Widget importButton = OutlinedButton.icon(
+                    onPressed: () => _importConfig(context, ref),
+                    icon: const Icon(Icons.download, size: 18),
+                    label: Text(l10n.databaseImportConfig),
+                  );
+                  if (constraints.maxWidth < 400) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        exportButton,
+                        const SizedBox(height: AppSpacing.sm),
+                        importButton,
+                      ],
+                    );
+                  }
+                  return Row(
+                    children: <Widget>[
+                      Expanded(child: exportButton),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(child: importButton),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.md),
+
+        // DANGER ZONE
+        SettingsGroup(
+          title: l10n.databaseDangerZone,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
+              child: Text(
+                l10n.databaseDangerZoneMessage,
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
+              child: SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => _resetDatabase(context, ref),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.error,
+                    side: const BorderSide(color: AppColors.error),
+                  ),
+                  icon: const Icon(Icons.delete_forever, size: 18),
+                  label: Text(l10n.databaseResetDatabase),
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );
