@@ -41,10 +41,10 @@ class _WelcomeStepNameState extends ConsumerState<WelcomeStepName> {
     final S l = S.of(context);
 
     return Center(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             const Icon(
               Icons.badge_outlined,
