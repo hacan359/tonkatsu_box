@@ -19,18 +19,6 @@ void main() {
     );
   }
 
-  group('CreateCollectionResult', () {
-    test('должен создавать экземпляр с полями', () {
-      const CreateCollectionResult result = CreateCollectionResult(
-        name: 'Test',
-        author: 'Author',
-      );
-
-      expect(result.name, 'Test');
-      expect(result.author, 'Author');
-    });
-  });
-
   group('CreateCollectionDialog', () {
     testWidgets('должен отображать заголовок', (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget(
@@ -40,16 +28,19 @@ void main() {
       expect(find.text('New Collection'), findsOneWidget);
     });
 
-    testWidgets('должен отображать поля ввода', (WidgetTester tester) async {
+    testWidgets('должен отображать поле ввода названия',
+        (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget(
         child: const CreateCollectionDialog(),
       ));
 
       expect(find.text('Collection Name'), findsOneWidget);
-      expect(find.text('Author'), findsOneWidget);
+      // Только одно поле ввода (без автора)
+      expect(find.byType(TextFormField), findsOneWidget);
     });
 
-    testWidgets('должен отображать кнопки Cancel и Create', (WidgetTester tester) async {
+    testWidgets('должен отображать кнопки Cancel и Create',
+        (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget(
         child: const CreateCollectionDialog(),
       ));
@@ -58,15 +49,8 @@ void main() {
       expect(find.text('Create'), findsOneWidget);
     });
 
-    testWidgets('должен заполнять автора по умолчанию', (WidgetTester tester) async {
-      await tester.pumpWidget(buildTestWidget(
-        child: const CreateCollectionDialog(defaultAuthor: 'DefaultUser'),
-      ));
-
-      expect(find.text('DefaultUser'), findsOneWidget);
-    });
-
-    testWidgets('должен показывать ошибку для пустого названия', (WidgetTester tester) async {
+    testWidgets('должен показывать ошибку для пустого названия',
+        (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget(
         child: const CreateCollectionDialog(),
       ));
@@ -77,33 +61,23 @@ void main() {
       expect(find.text('Please enter a name'), findsOneWidget);
     });
 
-    testWidgets('должен показывать ошибку для короткого названия', (WidgetTester tester) async {
+    testWidgets('должен показывать ошибку для короткого названия',
+        (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget(
         child: const CreateCollectionDialog(),
       ));
 
-      await tester.enterText(find.byType(TextFormField).first, 'A');
-      await tester.enterText(find.byType(TextFormField).last, 'Author');
+      await tester.enterText(find.byType(TextFormField), 'A');
       await tester.tap(find.text('Create'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Name must be at least 2 characters'), findsOneWidget);
+      expect(
+          find.text('Name must be at least 2 characters'), findsOneWidget);
     });
 
-    testWidgets('должен показывать ошибку для пустого автора', (WidgetTester tester) async {
-      await tester.pumpWidget(buildTestWidget(
-        child: const CreateCollectionDialog(),
-      ));
-
-      await tester.enterText(find.byType(TextFormField).first, 'Collection');
-      await tester.tap(find.text('Create'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Please enter an author name'), findsOneWidget);
-    });
-
-    testWidgets('должен закрываться при нажатии Cancel', (WidgetTester tester) async {
-      CreateCollectionResult? result;
+    testWidgets('должен закрываться при нажатии Cancel',
+        (WidgetTester tester) async {
+      String? result;
 
       await tester.pumpWidget(MaterialApp(
         localizationsDelegates: S.localizationsDelegates,
@@ -129,8 +103,9 @@ void main() {
       expect(result, isNull);
     });
 
-    testWidgets('должен возвращать результат при успешном создании', (WidgetTester tester) async {
-      CreateCollectionResult? result;
+    testWidgets('должен возвращать название при успешном создании',
+        (WidgetTester tester) async {
+      String? result;
 
       await tester.pumpWidget(MaterialApp(
         localizationsDelegates: S.localizationsDelegates,
@@ -150,18 +125,16 @@ void main() {
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(TextFormField).first, 'My Collection');
-      await tester.enterText(find.byType(TextFormField).last, 'Test Author');
+      await tester.enterText(find.byType(TextFormField), 'My Collection');
       await tester.tap(find.text('Create'));
       await tester.pumpAndSettle();
 
-      expect(result, isNotNull);
-      expect(result!.name, 'My Collection');
-      expect(result!.author, 'Test Author');
+      expect(result, 'My Collection');
     });
 
-    testWidgets('должен обрезать пробелы в названии и авторе', (WidgetTester tester) async {
-      CreateCollectionResult? result;
+    testWidgets('должен обрезать пробелы в названии',
+        (WidgetTester tester) async {
+      String? result;
 
       await tester.pumpWidget(MaterialApp(
         localizationsDelegates: S.localizationsDelegates,
@@ -181,38 +154,11 @@ void main() {
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(TextFormField).first, '  Trimmed Name  ');
-      await tester.enterText(find.byType(TextFormField).last, '  Trimmed Author  ');
+      await tester.enterText(find.byType(TextFormField), '  Trimmed Name  ');
       await tester.tap(find.text('Create'));
       await tester.pumpAndSettle();
 
-      expect(result!.name, 'Trimmed Name');
-      expect(result!.author, 'Trimmed Author');
-    });
-
-    testWidgets('статический метод show должен передавать defaultAuthor', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(
-        localizationsDelegates: S.localizationsDelegates,
-        supportedLocales: S.supportedLocales,
-        home: Builder(
-          builder: (BuildContext context) => Scaffold(
-            body: ElevatedButton(
-              onPressed: () async {
-                await CreateCollectionDialog.show(
-                  context,
-                  defaultAuthor: 'PrefilledAuthor',
-                );
-              },
-              child: const Text('Open'),
-            ),
-          ),
-        ),
-      ));
-
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('PrefilledAuthor'), findsOneWidget);
+      expect(result, 'Trimmed Name');
     });
   });
 
@@ -225,7 +171,8 @@ void main() {
       expect(find.text('Rename Collection'), findsOneWidget);
     });
 
-    testWidgets('должен заполнять текущее название', (WidgetTester tester) async {
+    testWidgets('должен заполнять текущее название',
+        (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget(
         child: const RenameCollectionDialog(currentName: 'Current Name'),
       ));
@@ -233,7 +180,8 @@ void main() {
       expect(find.text('Current Name'), findsOneWidget);
     });
 
-    testWidgets('должен отображать кнопки Cancel и Rename', (WidgetTester tester) async {
+    testWidgets('должен отображать кнопки Cancel и Rename',
+        (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget(
         child: const RenameCollectionDialog(currentName: 'Test'),
       ));
@@ -242,7 +190,8 @@ void main() {
       expect(find.text('Rename'), findsOneWidget);
     });
 
-    testWidgets('должен показывать ошибку для пустого названия', (WidgetTester tester) async {
+    testWidgets('должен показывать ошибку для пустого названия',
+        (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget(
         child: const RenameCollectionDialog(currentName: 'Old'),
       ));
@@ -254,7 +203,8 @@ void main() {
       expect(find.text('Please enter a name'), findsOneWidget);
     });
 
-    testWidgets('должен показывать ошибку для короткого названия', (WidgetTester tester) async {
+    testWidgets('должен показывать ошибку для короткого названия',
+        (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget(
         child: const RenameCollectionDialog(currentName: 'Old Name'),
       ));
@@ -263,10 +213,12 @@ void main() {
       await tester.tap(find.text('Rename'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Name must be at least 2 characters'), findsOneWidget);
+      expect(
+          find.text('Name must be at least 2 characters'), findsOneWidget);
     });
 
-    testWidgets('должен закрываться при нажатии Cancel', (WidgetTester tester) async {
+    testWidgets('должен закрываться при нажатии Cancel',
+        (WidgetTester tester) async {
       String? result;
 
       await tester.pumpWidget(MaterialApp(
@@ -276,7 +228,8 @@ void main() {
           builder: (BuildContext context) => Scaffold(
             body: ElevatedButton(
               onPressed: () async {
-                result = await RenameCollectionDialog.show(context, 'Old');
+                result =
+                    await RenameCollectionDialog.show(context, 'Old');
               },
               child: const Text('Open'),
             ),
@@ -293,7 +246,9 @@ void main() {
       expect(result, isNull);
     });
 
-    testWidgets('должен возвращать новое название при успешном переименовании', (WidgetTester tester) async {
+    testWidgets(
+        'должен возвращать новое название при успешном переименовании',
+        (WidgetTester tester) async {
       String? result;
 
       await tester.pumpWidget(MaterialApp(
@@ -303,7 +258,8 @@ void main() {
           builder: (BuildContext context) => Scaffold(
             body: ElevatedButton(
               onPressed: () async {
-                result = await RenameCollectionDialog.show(context, 'Old Name');
+                result = await RenameCollectionDialog.show(
+                    context, 'Old Name');
               },
               child: const Text('Open'),
             ),
@@ -321,7 +277,8 @@ void main() {
       expect(result, 'New Name');
     });
 
-    testWidgets('должен обрезать пробелы в названии', (WidgetTester tester) async {
+    testWidgets('должен обрезать пробелы в названии',
+        (WidgetTester tester) async {
       String? result;
 
       await tester.pumpWidget(MaterialApp(
@@ -331,7 +288,8 @@ void main() {
           builder: (BuildContext context) => Scaffold(
             body: ElevatedButton(
               onPressed: () async {
-                result = await RenameCollectionDialog.show(context, 'Old');
+                result =
+                    await RenameCollectionDialog.show(context, 'Old');
               },
               child: const Text('Open'),
             ),
@@ -359,25 +317,27 @@ void main() {
       expect(find.text('Delete Collection?'), findsOneWidget);
     });
 
-    testWidgets('должен отображать название коллекции в тексте', (WidgetTester tester) async {
+    testWidgets('должен отображать название коллекции в тексте',
+        (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget(
-        child: const DeleteCollectionDialog(collectionName: 'My Collection'),
+        child: const DeleteCollectionDialog(
+            collectionName: 'My Collection'),
       ));
 
-      // Текст содержит название коллекции
       expect(find.textContaining('My Collection'), findsOneWidget);
     });
 
-    testWidgets('должен отображать предупреждение', (WidgetTester tester) async {
+    testWidgets('должен отображать предупреждение',
+        (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget(
         child: const DeleteCollectionDialog(collectionName: 'Test'),
       ));
 
-      // Диалог содержит контент с предупреждением
       expect(find.byType(AlertDialog), findsOneWidget);
     });
 
-    testWidgets('должен отображать кнопки Cancel и Delete', (WidgetTester tester) async {
+    testWidgets('должен отображать кнопки Cancel и Delete',
+        (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget(
         child: const DeleteCollectionDialog(collectionName: 'Test'),
       ));
@@ -386,7 +346,8 @@ void main() {
       expect(find.text('Delete'), findsOneWidget);
     });
 
-    testWidgets('должен возвращать false при нажатии Cancel', (WidgetTester tester) async {
+    testWidgets('должен возвращать false при нажатии Cancel',
+        (WidgetTester tester) async {
       bool? result;
 
       await tester.pumpWidget(MaterialApp(
@@ -396,7 +357,8 @@ void main() {
           builder: (BuildContext context) => Scaffold(
             body: ElevatedButton(
               onPressed: () async {
-                result = await DeleteCollectionDialog.show(context, 'Test');
+                result =
+                    await DeleteCollectionDialog.show(context, 'Test');
               },
               child: const Text('Open'),
             ),
@@ -413,7 +375,8 @@ void main() {
       expect(result, false);
     });
 
-    testWidgets('должен возвращать true при нажатии Delete', (WidgetTester tester) async {
+    testWidgets('должен возвращать true при нажатии Delete',
+        (WidgetTester tester) async {
       bool? result;
 
       await tester.pumpWidget(MaterialApp(
@@ -423,7 +386,8 @@ void main() {
           builder: (BuildContext context) => Scaffold(
             body: ElevatedButton(
               onPressed: () async {
-                result = await DeleteCollectionDialog.show(context, 'Test');
+                result =
+                    await DeleteCollectionDialog.show(context, 'Test');
               },
               child: const Text('Open'),
             ),
@@ -440,7 +404,8 @@ void main() {
       expect(result, true);
     });
 
-    testWidgets('должен возвращать false при закрытии без выбора', (WidgetTester tester) async {
+    testWidgets('должен возвращать false при закрытии без выбора',
+        (WidgetTester tester) async {
       bool? result;
 
       await tester.pumpWidget(MaterialApp(
@@ -450,7 +415,8 @@ void main() {
           builder: (BuildContext context) => Scaffold(
             body: ElevatedButton(
               onPressed: () async {
-                result = await DeleteCollectionDialog.show(context, 'Test');
+                result =
+                    await DeleteCollectionDialog.show(context, 'Test');
               },
               child: const Text('Open'),
             ),
@@ -461,7 +427,6 @@ void main() {
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
-      // Нажимаем за пределами диалога (это закроет его)
       await tester.tapAt(const Offset(10, 10));
       await tester.pumpAndSettle();
 

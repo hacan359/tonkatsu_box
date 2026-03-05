@@ -8,14 +8,13 @@ import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
-import '../widgets/settings_row.dart';
-import '../widgets/settings_section.dart';
+import '../widgets/settings_group.dart';
+import '../widgets/settings_tile.dart';
 
 /// Контент экрана настроек кэширования.
 ///
 /// Позволяет включить/выключить offline mode, выбрать папку кэша,
 /// просмотреть статистику и очистить кэш.
-/// Используется как standalone в десктопном sidebar и внутри [CacheScreen].
 class CacheContent extends ConsumerStatefulWidget {
   /// Создаёт [CacheContent].
   const CacheContent({super.key});
@@ -47,23 +46,18 @@ class _CacheContentState extends ConsumerState<CacheContent> {
   Widget build(BuildContext context) {
     final ImageCacheService cacheService =
         ref.read(imageCacheServiceProvider);
-    final bool compact = MediaQuery.sizeOf(context).width < 600;
 
-    return SettingsSection(
+    return SettingsGroup(
       title: S.of(context).cacheImageCache,
-      icon: Icons.folder,
-      compact: compact,
       children: <Widget>[
-        // Галка включения кэширования
+        // Offline mode toggle
         FutureBuilder<bool>(
           future: _enabledFuture,
-          builder:
-              (BuildContext context, AsyncSnapshot<bool> snapshot) {
+          builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
             final bool enabled = snapshot.data ?? false;
-            return SettingsRow(
+            return SettingsTile(
               title: S.of(context).cacheOfflineMode,
-              subtitle: S.of(context).cacheOfflineModeSubtitle,
-              compact: compact,
+              showChevron: false,
               trailing: Switch(
                 value: enabled,
                 onChanged: (bool value) async {
@@ -77,41 +71,39 @@ class _CacheContentState extends ConsumerState<CacheContent> {
           },
         ),
 
-        // Путь к кэшу (только десктоп)
+        // Cache folder (desktop only)
         if (!kIsMobile)
           FutureBuilder<String>(
             future: _pathFuture,
-            builder:
-                (BuildContext context, AsyncSnapshot<String> snapshot) {
-              final String path = snapshot.data ?? 'Loading...';
-              return SettingsRow(
+            builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+              final String path = snapshot.data ?? '...';
+              return SettingsTile(
                 title: S.of(context).cacheCacheFolder,
-                subtitle: path,
-                showDivider: true,
-                compact: compact,
+                value: path,
+                showChevron: false,
                 trailing: IconButton(
-                  icon: const Icon(Icons.folder_open),
-                  onPressed: () =>
-                      _selectCacheFolder(cacheService),
+                  icon: const Icon(Icons.folder_open, size: 18),
+                  onPressed: () => _selectCacheFolder(cacheService),
                   tooltip: S.of(context).cacheSelectFolder,
                 ),
               );
             },
           ),
 
-        // Статистика кэша
+        // Cache stats
         FutureBuilder<(int, int)>(
           future: _statsFuture,
-          builder: (BuildContext context,
-              AsyncSnapshot<(int, int)> snapshot) {
+          builder:
+              (BuildContext context, AsyncSnapshot<(int, int)> snapshot) {
             final int count = snapshot.data?.$1 ?? 0;
             final int size = snapshot.data?.$2 ?? 0;
-            return SettingsRow(
+            return SettingsTile(
               title: S.of(context).cacheCacheSize,
-              subtitle:
-                  S.of(context).cacheCacheStats(count, cacheService.formatSize(size)),
-              showDivider: true,
-              compact: compact,
+              value: S.of(context).cacheCacheStats(
+                count,
+                cacheService.formatSize(size),
+              ),
+              showChevron: false,
               trailing: IconButton(
                 icon: const Icon(Icons.delete_outline, size: 18),
                 tooltip: S.of(context).cacheClearCache,
@@ -143,7 +135,10 @@ class _CacheContentState extends ConsumerState<CacheContent> {
       if (!mounted) return;
       _refreshFutures();
       setState(() {});
-      context.showSnack(S.of(context).cacheFolderUpdated, type: SnackType.success);
+      context.showSnack(
+        S.of(context).cacheFolderUpdated,
+        type: SnackType.success,
+      );
     }
   }
 

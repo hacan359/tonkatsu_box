@@ -220,18 +220,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Future<void> _createCollection(BuildContext context, WidgetRef ref) async {
-    final CreateCollectionResult? result = await CreateCollectionDialog.show(
-      context,
-      defaultAuthor: ref.read(settingsNotifierProvider).authorName,
-    );
+    final String? name = await CreateCollectionDialog.show(context);
 
-    if (result == null) return;
+    if (name == null) return;
 
     try {
+      final String author = ref.read(settingsNotifierProvider).authorName;
       final Collection collection =
           await ref.read(collectionsProvider.notifier).create(
-                name: result.name,
-                author: result.author,
+                name: name,
+                author: author,
               );
 
       if (context.mounted) {

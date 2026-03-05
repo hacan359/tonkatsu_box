@@ -2,44 +2,19 @@ import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
-import '../../../shared/theme/app_spacing.dart';
-
-/// Результат диалога создания коллекции.
-class CreateCollectionResult {
-  /// Создаёт [CreateCollectionResult].
-  const CreateCollectionResult({
-    required this.name,
-    required this.author,
-  });
-
-  /// Название коллекции.
-  final String name;
-
-  /// Автор коллекции.
-  final String author;
-}
 
 /// Диалог создания новой коллекции.
+///
+/// Возвращает название коллекции или null при отмене.
 class CreateCollectionDialog extends StatefulWidget {
   /// Создаёт [CreateCollectionDialog].
-  const CreateCollectionDialog({
-    this.defaultAuthor,
-    super.key,
-  });
+  const CreateCollectionDialog({super.key});
 
-  /// Автор по умолчанию.
-  final String? defaultAuthor;
-
-  /// Показывает диалог и возвращает результат.
-  static Future<CreateCollectionResult?> show(
-    BuildContext context, {
-    String? defaultAuthor,
-  }) {
-    return showDialog<CreateCollectionResult>(
+  /// Показывает диалог и возвращает название коллекции.
+  static Future<String?> show(BuildContext context) {
+    return showDialog<String>(
       context: context,
-      builder: (BuildContext context) => CreateCollectionDialog(
-        defaultAuthor: defaultAuthor,
-      ),
+      builder: (BuildContext context) => const CreateCollectionDialog(),
     );
   }
 
@@ -50,16 +25,11 @@ class CreateCollectionDialog extends StatefulWidget {
 class _CreateCollectionDialogState extends State<CreateCollectionDialog> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _authorController = TextEditingController();
   final FocusNode _nameFocus = FocusNode();
 
   @override
   void initState() {
     super.initState();
-    if (widget.defaultAuthor != null) {
-      _authorController.text = widget.defaultAuthor!;
-    }
-    // Автофокус на название
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _nameFocus.requestFocus();
     });
@@ -68,19 +38,13 @@ class _CreateCollectionDialogState extends State<CreateCollectionDialog> {
   @override
   void dispose() {
     _nameController.dispose();
-    _authorController.dispose();
     _nameFocus.dispose();
     super.dispose();
   }
 
   void _submit() {
     if (_formKey.currentState?.validate() ?? false) {
-      Navigator.of(context).pop(
-        CreateCollectionResult(
-          name: _nameController.text.trim(),
-          author: _authorController.text.trim(),
-        ),
-      );
+      Navigator.of(context).pop(_nameController.text.trim());
     }
   }
 
@@ -92,46 +56,25 @@ class _CreateCollectionDialogState extends State<CreateCollectionDialog> {
       scrollable: true,
       content: Form(
         key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            TextFormField(
-              controller: _nameController,
-              focusNode: _nameFocus,
-              decoration: InputDecoration(
-                labelText: l.createCollectionNameLabel,
-                hintText: l.createCollectionNameHint,
-                border: const OutlineInputBorder(),
-              ),
-              textInputAction: TextInputAction.next,
-              validator: (String? value) {
-                if (value == null || value.trim().isEmpty) {
-                  return l.createCollectionEnterName;
-                }
-                if (value.trim().length < 2) {
-                  return l.createCollectionNameTooShort;
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: AppSpacing.md),
-            TextFormField(
-              controller: _authorController,
-              decoration: InputDecoration(
-                labelText: l.createCollectionAuthor,
-                hintText: l.createCollectionAuthorHint,
-                border: const OutlineInputBorder(),
-              ),
-              textInputAction: TextInputAction.done,
-              onFieldSubmitted: (_) => _submit(),
-              validator: (String? value) {
-                if (value == null || value.trim().isEmpty) {
-                  return l.createCollectionEnterAuthor;
-                }
-                return null;
-              },
-            ),
-          ],
+        child: TextFormField(
+          controller: _nameController,
+          focusNode: _nameFocus,
+          decoration: InputDecoration(
+            labelText: l.createCollectionNameLabel,
+            hintText: l.createCollectionNameHint,
+            border: const OutlineInputBorder(),
+          ),
+          textInputAction: TextInputAction.done,
+          onFieldSubmitted: (_) => _submit(),
+          validator: (String? value) {
+            if (value == null || value.trim().isEmpty) {
+              return l.createCollectionEnterName;
+            }
+            if (value.trim().length < 2) {
+              return l.createCollectionNameTooShort;
+            }
+            return null;
+          },
         ),
       ),
       actions: <Widget>[

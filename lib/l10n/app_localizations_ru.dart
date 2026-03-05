@@ -286,6 +286,21 @@ class SRu extends S {
   }
 
   @override
+  String get settingsAppearance => 'Оформление';
+
+  @override
+  String get settingsDataSources => 'Источники данных';
+
+  @override
+  String get settingsStorage => 'Хранилище';
+
+  @override
+  String get settingsImport => 'Импорт';
+
+  @override
+  String get settingsContentLanguage => 'Язык контента';
+
+  @override
   String get settingsData => 'Данные';
 
   @override
@@ -1010,15 +1025,6 @@ class SRu extends S {
   @override
   String get createCollectionNameTooShort =>
       'Название должно содержать минимум 2 символа';
-
-  @override
-  String get createCollectionAuthor => 'Автор';
-
-  @override
-  String get createCollectionAuthorHint => 'Ваше имя или ник';
-
-  @override
-  String get createCollectionEnterAuthor => 'Введите имя автора';
 
   @override
   String get renameCollectionTitle => 'Переименовать коллекцию';

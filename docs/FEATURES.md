@@ -348,14 +348,14 @@ Full English and Russian localization with runtime language switching:
 
 ## ⚙️ Settings
 
-Settings uses a **dual-layout** architecture with an 800px breakpoint:
+Settings uses a **unified iOS-style grouped-list** layout on all platforms:
 
-- **Mobile (< 800px)** — flat iOS-style list with `SettingsGroup`/`SettingsTile` widgets. Uppercase group titles, thin rows (~44px), push-navigation to sub-screens
-- **Desktop (≥ 800px)** — sidebar (200px) + content panel (600px max). Instant section switching, no push-navigation
+- Flat list with `SettingsGroup`/`SettingsTile` widgets. Uppercase group titles, thin rows (~44px), push-navigation to sub-screens
+- On desktop (≥ 800px): content centered with `maxWidth: 600`, top-aligned
 
-Sub-screen content is extracted into reusable Content widgets (`lib/features/settings/content/`) that work both inside Screen wrappers (mobile push) and inline in the desktop content panel.
+Sub-screen content is extracted into reusable Content widgets (`lib/features/settings/content/`) used inside Screen wrappers with push-navigation.
 
-- **App Language** — mobile: language picker dialog; desktop: SegmentedButton (English/Русский)
+- **App Language** — language picker dialog (English/Русский)
 - **Author name** — configurable default author for new collections (editable inline via tap-to-edit field)
 - **Inline editing** — API keys and author name use `InlineTextField` (tap to edit, blur/Enter to save, no dialogs)
 - **Status indicators** — `StatusDot` shows connection status, API key presence with color-coded icons
@@ -366,9 +366,9 @@ Sub-screen content is extracted into reusable Content widgets (`lib/features/set
 | **Credentials** | IGDB, TMDB, SteamGridDB API keys via inline fields; TMDB content language (Russian/English); connection status with StatusDot; Verify/Refresh buttons; "Test" buttons for TMDB and SteamGridDB API key validation; auto-sync platforms on IGDB verify |
 | **Cache** | Image caching toggle, folder, stats, clear |
 | **Database** | Config export/import (.json), Reset Database with confirmation |
-| **Debug** | SteamGridDB, Image Debug, Gamepad (dev only) |
+| **Debug** | SteamGridDB, Image Debug, Gamepad, Demo Collections (dev only) |
 | **Trakt Import** | Offline import from Trakt.tv ZIP data export |
-| **Credits** | API provider attribution (TMDB mandatory, IGDB, SteamGridDB, VNDB, AniList) with SVG/text logos, external links, Open Source section with MIT license info and Flutter `showLicensePage()` |
+| **Credits** | API provider attribution (TMDB mandatory, IGDB, SteamGridDB, VNDB, AniList) as plain text entries with external links. Open Source section with MIT license info and Flutter `showLicensePage()` |
 
 > [!WARNING]
 > **Reset Database** clears all collections, items, and board data. API keys and settings are preserved. This action cannot be undone.

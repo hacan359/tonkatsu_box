@@ -13,7 +13,7 @@ import '../../../shared/widgets/source_badge.dart';
 import '../../../shared/constants/api_defaults.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/inline_text_field.dart';
-import '../widgets/settings_section.dart';
+import '../widgets/settings_group.dart';
 import '../widgets/status_dot.dart';
 
 /// URL для получения API ключей IGDB.
@@ -23,7 +23,6 @@ const String _twitchConsoleUrl = 'https://dev.twitch.tv/console/apps';
 ///
 /// Содержит секции IGDB, SteamGridDB и TMDB с полями ввода ключей,
 /// проверкой подключения и синхронизацией платформ.
-/// Используется как standalone в десктопном sidebar и внутри [CredentialsScreen].
 class CredentialsContent extends ConsumerStatefulWidget {
   /// Создаёт [CredentialsContent].
   const CredentialsContent({
@@ -35,7 +34,8 @@ class CredentialsContent extends ConsumerStatefulWidget {
   final bool isInitialSetup;
 
   @override
-  ConsumerState<CredentialsContent> createState() => _CredentialsContentState();
+  ConsumerState<CredentialsContent> createState() =>
+      _CredentialsContentState();
 }
 
 class _CredentialsContentState extends ConsumerState<CredentialsContent> {
@@ -65,21 +65,19 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         if (widget.isInitialSetup) ...<Widget>[
-          _buildWelcomeSection(compact),
-          const SizedBox(height: AppSpacing.xl),
+          _buildWelcomeSection(),
+          const SizedBox(height: AppSpacing.md),
         ],
         _buildIgdbSection(settings, compact),
-        SizedBox(height: compact ? AppSpacing.sm : AppSpacing.lg),
-        _buildStatusSection(settings, compact),
-        SizedBox(height: compact ? AppSpacing.sm : AppSpacing.lg),
-        _buildActionsSection(settings),
-        SizedBox(height: compact ? AppSpacing.sm : AppSpacing.lg),
+        const SizedBox(height: AppSpacing.md),
+        _buildConnectionSection(settings, compact),
+        const SizedBox(height: AppSpacing.md),
         _buildSteamGridDbSection(settings, compact),
-        SizedBox(height: compact ? AppSpacing.sm : AppSpacing.lg),
+        const SizedBox(height: AppSpacing.md),
         _buildTmdbSection(settings, compact),
         if (settings.errorMessage != null) ...<Widget>[
-          SizedBox(height: compact ? AppSpacing.sm : AppSpacing.md),
-          _buildErrorSection(settings.errorMessage!, compact),
+          const SizedBox(height: AppSpacing.md),
+          _buildErrorSection(settings.errorMessage!),
         ],
       ],
     );
@@ -87,28 +85,34 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
 
   // ==================== Welcome ====================
 
-  Widget _buildWelcomeSection(bool compact) {
-    return SettingsSection(
+  Widget _buildWelcomeSection() {
+    return SettingsGroup(
       title: S.of(context).credentialsWelcome,
-      icon: Icons.waving_hand,
-      iconColor: AppColors.brand,
-      compact: compact,
       children: <Widget>[
-        Text(
-          S.of(context).credentialsWelcomeHint,
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        TextButton.icon(
-          onPressed: () {
-            Clipboard.setData(
-              const ClipboardData(text: _twitchConsoleUrl),
-            );
-            context.showSnack(
-              S.of(context).credentialsUrlCopied(_twitchConsoleUrl),
-            );
-          },
-          icon: const Icon(Icons.copy, size: 16),
-          label: Text(S.of(context).credentialsCopyTwitchUrl),
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(S.of(context).credentialsWelcomeHint),
+              const SizedBox(height: AppSpacing.sm),
+              TextButton.icon(
+                onPressed: () {
+                  Clipboard.setData(
+                    const ClipboardData(text: _twitchConsoleUrl),
+                  );
+                  context.showSnack(
+                    S.of(context).credentialsUrlCopied(_twitchConsoleUrl),
+                  );
+                },
+                icon: const Icon(Icons.copy, size: 16),
+                label: Text(S.of(context).credentialsCopyTwitchUrl),
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -117,50 +121,100 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
   // ==================== IGDB ====================
 
   Widget _buildIgdbSection(SettingsState settings, bool compact) {
-    return SettingsSection(
+    return SettingsGroup(
       title: S.of(context).credentialsIgdbSection,
-      trailing: const SourceBadge(
-        source: DataSource.igdb,
-        size: SourceBadgeSize.large,
-      ),
-      compact: compact,
       children: <Widget>[
-        InlineTextField(
-          label: S.of(context).credentialsClientId,
-          value: _clientId,
-          placeholder: S.of(context).credentialsClientIdHint,
-          compact: compact,
-          onChanged: (String value) => setState(() => _clientId = value),
+        const Padding(
+          padding: EdgeInsets.only(
+            left: AppSpacing.md,
+            right: AppSpacing.md,
+            top: AppSpacing.sm,
+          ),
+          child: Row(
+            children: <Widget>[
+              Spacer(),
+              SourceBadge(
+                source: DataSource.igdb,
+                size: SourceBadgeSize.large,
+              ),
+            ],
+          ),
         ),
-        SizedBox(height: compact ? AppSpacing.sm : AppSpacing.md),
-        InlineTextField(
-          label: S.of(context).credentialsClientSecret,
-          value: _clientSecret,
-          placeholder: S.of(context).credentialsClientSecretHint,
-          obscureText: true,
-          compact: compact,
-          onChanged: (String value) =>
-              setState(() => _clientSecret = value),
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+          child: Column(
+            children: <Widget>[
+              InlineTextField(
+                label: S.of(context).credentialsClientId,
+                value: _clientId,
+                placeholder: S.of(context).credentialsClientIdHint,
+                compact: compact,
+                onChanged: (String value) =>
+                    setState(() => _clientId = value),
+              ),
+              SizedBox(height: compact ? AppSpacing.sm : AppSpacing.md),
+              InlineTextField(
+                label: S.of(context).credentialsClientSecret,
+                value: _clientSecret,
+                placeholder: S.of(context).credentialsClientSecretHint,
+                obscureText: true,
+                compact: compact,
+                onChanged: (String value) =>
+                    setState(() => _clientSecret = value),
+              ),
+            ],
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildStatusSection(SettingsState settings, bool compact) {
-    return SettingsSection(
+  // ==================== Connection ====================
+
+  Widget _buildConnectionSection(SettingsState settings, bool compact) {
+    return SettingsGroup(
       title: S.of(context).credentialsConnectionStatus,
-      compact: compact,
       children: <Widget>[
-        StatusDot(
-          label: _connectionLabel(settings.connectionStatus),
-          type: _connectionStatusType(settings.connectionStatus),
-          compact: compact,
-        ),
-        const SizedBox(height: AppSpacing.md),
-        _buildInfoRow(
-          S.of(context).credentialsPlatformsAvailable,
-          settings.platformCount.toString(),
-          Icons.videogame_asset,
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              StatusDot(
+                label: _connectionLabel(settings.connectionStatus),
+                type: _connectionStatusType(settings.connectionStatus),
+                compact: compact,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              _buildInfoRow(
+                S.of(context).credentialsPlatformsAvailable,
+                settings.platformCount.toString(),
+                Icons.videogame_asset,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              FilledButton.icon(
+                onPressed: settings.isLoading ? null : _verifyConnection,
+                icon: settings.isLoading &&
+                        settings.connectionStatus == ConnectionStatus.checking
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(Icons.verified_user),
+                label: Text(S.of(context).credentialsVerifyConnection),
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -175,11 +229,15 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
           child: Text.rich(
             TextSpan(
               text: '$label: ',
-              style: AppTypography.body.copyWith(color: AppColors.textSecondary),
+              style: AppTypography.body.copyWith(
+                color: AppColors.textSecondary,
+              ),
               children: <TextSpan>[
                 TextSpan(
                   text: value,
-                  style: AppTypography.body.copyWith(fontWeight: FontWeight.w500),
+                  style: AppTypography.body.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ],
             ),
@@ -190,67 +248,65 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
     );
   }
 
-  Widget _buildActionsSection(SettingsState settings) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        FilledButton.icon(
-          onPressed: settings.isLoading ? null : _verifyConnection,
-          icon: settings.isLoading &&
-                  settings.connectionStatus == ConnectionStatus.checking
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                )
-              : const Icon(Icons.verified_user),
-          label: Text(S.of(context).credentialsVerifyConnection),
-        ),
-      ],
-    );
-  }
-
   // ==================== SteamGridDB ====================
 
   Widget _buildSteamGridDbSection(SettingsState settings, bool compact) {
-    return SettingsSection(
+    return SettingsGroup(
       title: S.of(context).credentialsSteamGridDbSection,
-      trailing: const SourceBadge(
-        source: DataSource.steamGridDb,
-        size: SourceBadgeSize.large,
-      ),
-      compact: compact,
       children: <Widget>[
-        InlineTextField(
-          label: S.of(context).credentialsApiKey,
-          value: _steamGridDbApiKey,
-          placeholder: settings.isSteamGridDbKeyBuiltIn
-              ? S.of(context).credentialsUsingBuiltInKey
-              : S.of(context).credentialsEnterSteamGridDbKey,
-          obscureText: true,
-          compact: compact,
-          onChanged: (String value) {
-            setState(() => _steamGridDbApiKey = value);
-            if (value.trim().isNotEmpty) {
-              ref
-                  .read(settingsNotifierProvider.notifier)
-                  .setSteamGridDbApiKey(value.trim());
-            }
-          },
+        const Padding(
+          padding: EdgeInsets.only(
+            left: AppSpacing.md,
+            right: AppSpacing.md,
+            top: AppSpacing.sm,
+          ),
+          child: Row(
+            children: <Widget>[
+              Spacer(),
+              SourceBadge(
+                source: DataSource.steamGridDb,
+                size: SourceBadgeSize.large,
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: AppSpacing.sm),
-        _buildStatusRow(
-          hasKey: settings.hasSteamGridDbKey,
-          isBuiltIn: settings.isSteamGridDbKeyBuiltIn,
-          hasDefault: ApiDefaults.hasSteamGridDbKey,
-          compact: compact,
-          onValidate: _validateSteamGridDbKey,
-          onReset: _resetSteamGridDbKey,
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+          child: Column(
+            children: <Widget>[
+              InlineTextField(
+                label: S.of(context).credentialsApiKey,
+                value: _steamGridDbApiKey,
+                placeholder: settings.isSteamGridDbKeyBuiltIn
+                    ? S.of(context).credentialsUsingBuiltInKey
+                    : S.of(context).credentialsEnterSteamGridDbKey,
+                obscureText: true,
+                compact: compact,
+                onChanged: (String value) {
+                  setState(() => _steamGridDbApiKey = value);
+                  if (value.trim().isNotEmpty) {
+                    ref
+                        .read(settingsNotifierProvider.notifier)
+                        .setSteamGridDbApiKey(value.trim());
+                  }
+                },
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              _buildStatusRow(
+                hasKey: settings.hasSteamGridDbKey,
+                isBuiltIn: settings.isSteamGridDbKeyBuiltIn,
+                hasDefault: ApiDefaults.hasSteamGridDbKey,
+                compact: compact,
+                onValidate: _validateSteamGridDbKey,
+                onReset: _resetSteamGridDbKey,
+              ),
+              if (settings.isSteamGridDbKeyBuiltIn) _buildOwnKeyHint(),
+            ],
+          ),
         ),
-        if (settings.isSteamGridDbKeyBuiltIn) _buildOwnKeyHint(),
       ],
     );
   }
@@ -258,72 +314,62 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
   // ==================== TMDB ====================
 
   Widget _buildTmdbSection(SettingsState settings, bool compact) {
-    return SettingsSection(
+    return SettingsGroup(
       title: S.of(context).credentialsTmdbSection,
-      trailing: const SourceBadge(
-        source: DataSource.tmdb,
-        size: SourceBadgeSize.large,
-      ),
-      compact: compact,
       children: <Widget>[
-        InlineTextField(
-          label: S.of(context).credentialsApiKey,
-          value: _tmdbApiKey,
-          placeholder: settings.isTmdbKeyBuiltIn
-              ? S.of(context).credentialsUsingBuiltInKey
-              : S.of(context).credentialsEnterTmdbKey,
-          obscureText: true,
-          compact: compact,
-          onChanged: (String value) {
-            setState(() => _tmdbApiKey = value);
-            if (value.trim().isNotEmpty) {
-              ref
-                  .read(settingsNotifierProvider.notifier)
-                  .setTmdbApiKey(value.trim());
-            }
-          },
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        Row(
-          children: <Widget>[
-            const Icon(Icons.language, size: 20),
-            const SizedBox(width: AppSpacing.sm),
-            Text(S.of(context).credentialsContentLanguage, style: AppTypography.body),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        SizedBox(
-          width: double.infinity,
-          child: SegmentedButton<String>(
-            segments: const <ButtonSegment<String>>[
-              ButtonSegment<String>(
-                value: 'ru-RU',
-                label: Text('Русский'),
-              ),
-              ButtonSegment<String>(
-                value: 'en-US',
-                label: Text('English'),
+        const Padding(
+          padding: EdgeInsets.only(
+            left: AppSpacing.md,
+            right: AppSpacing.md,
+            top: AppSpacing.sm,
+          ),
+          child: Row(
+            children: <Widget>[
+              Spacer(),
+              SourceBadge(
+                source: DataSource.tmdb,
+                size: SourceBadgeSize.large,
               ),
             ],
-            selected: <String>{ref.watch(settingsNotifierProvider).tmdbLanguage},
-            onSelectionChanged: (Set<String> selection) {
-              ref
-                  .read(settingsNotifierProvider.notifier)
-                  .setTmdbLanguage(selection.first);
-            },
-            showSelectedIcon: false,
           ),
         ),
-        const SizedBox(height: AppSpacing.sm),
-        _buildStatusRow(
-          hasKey: settings.hasTmdbKey,
-          isBuiltIn: settings.isTmdbKeyBuiltIn,
-          hasDefault: ApiDefaults.hasTmdbKey,
-          compact: compact,
-          onValidate: _validateTmdbKey,
-          onReset: _resetTmdbKey,
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+          child: Column(
+            children: <Widget>[
+              InlineTextField(
+                label: S.of(context).credentialsApiKey,
+                value: _tmdbApiKey,
+                placeholder: settings.isTmdbKeyBuiltIn
+                    ? S.of(context).credentialsUsingBuiltInKey
+                    : S.of(context).credentialsEnterTmdbKey,
+                obscureText: true,
+                compact: compact,
+                onChanged: (String value) {
+                  setState(() => _tmdbApiKey = value);
+                  if (value.trim().isNotEmpty) {
+                    ref
+                        .read(settingsNotifierProvider.notifier)
+                        .setTmdbApiKey(value.trim());
+                  }
+                },
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              _buildStatusRow(
+                hasKey: settings.hasTmdbKey,
+                isBuiltIn: settings.isTmdbKeyBuiltIn,
+                hasDefault: ApiDefaults.hasTmdbKey,
+                compact: compact,
+                onValidate: _validateTmdbKey,
+                onReset: _resetTmdbKey,
+              ),
+              if (settings.isTmdbKeyBuiltIn) _buildOwnKeyHint(),
+            ],
+          ),
         ),
-        if (settings.isTmdbKeyBuiltIn) _buildOwnKeyHint(),
       ],
     );
   }
@@ -336,7 +382,11 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          const Icon(Icons.info_outline, size: 16, color: AppColors.textTertiary),
+          const Icon(
+            Icons.info_outline,
+            size: 16,
+            color: AppColors.textTertiary,
+          ),
           const SizedBox(width: AppSpacing.xs),
           Expanded(
             child: Text(
@@ -353,16 +403,16 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
 
   // ==================== Error ====================
 
-  Widget _buildErrorSection(String errorMessage, bool compact) {
-    return SettingsSection(
+  Widget _buildErrorSection(String errorMessage) {
+    return SettingsGroup(
       title: S.of(context).settingsError,
-      icon: Icons.warning_amber,
-      iconColor: AppColors.error,
-      compact: compact,
       children: <Widget>[
-        Text(
-          errorMessage,
-          style: AppTypography.body.copyWith(color: AppColors.error),
+        Padding(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Text(
+            errorMessage,
+            style: AppTypography.body.copyWith(color: AppColors.error),
+          ),
         ),
       ],
     );
@@ -370,7 +420,8 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
 
   // ==================== Helpers ====================
 
-  StatusType _connectionStatusType(ConnectionStatus status) => switch (status) {
+  StatusType _connectionStatusType(ConnectionStatus status) =>
+      switch (status) {
         ConnectionStatus.connected => StatusType.success,
         ConnectionStatus.error => StatusType.error,
         ConnectionStatus.checking => StatusType.warning,
@@ -465,7 +516,10 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
           type: SnackType.success,
         );
       } else {
-        context.showSnack(S.of(context).credentialsSteamGridDbKeyInvalid, type: SnackType.error);
+        context.showSnack(
+          S.of(context).credentialsSteamGridDbKeyInvalid,
+          type: SnackType.error,
+        );
       }
     }
   }
@@ -481,21 +535,31 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
           type: SnackType.success,
         );
       } else {
-        context.showSnack(S.of(context).credentialsTmdbKeyInvalid, type: SnackType.error);
+        context.showSnack(
+          S.of(context).credentialsTmdbKeyInvalid,
+          type: SnackType.error,
+        );
       }
     }
   }
 
   void _resetSteamGridDbKey() {
-    ref.read(settingsNotifierProvider.notifier).resetSteamGridDbApiKeyToDefault();
+    ref
+        .read(settingsNotifierProvider.notifier)
+        .resetSteamGridDbApiKeyToDefault();
     setState(() => _steamGridDbApiKey = '');
-    context.showSnack(S.of(context).credentialsResetToBuiltIn, type: SnackType.success);
+    context.showSnack(
+      S.of(context).credentialsResetToBuiltIn,
+      type: SnackType.success,
+    );
   }
 
   void _resetTmdbKey() {
     ref.read(settingsNotifierProvider.notifier).resetTmdbApiKeyToDefault();
     setState(() => _tmdbApiKey = '');
-    context.showSnack(S.of(context).credentialsResetToBuiltIn, type: SnackType.success);
+    context.showSnack(
+      S.of(context).credentialsResetToBuiltIn,
+      type: SnackType.success,
+    );
   }
-
 }

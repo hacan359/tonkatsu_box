@@ -4,9 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/features/settings/screens/database_screen.dart';
+import 'package:xerabora/features/settings/widgets/settings_group.dart';
 import 'package:xerabora/l10n/app_localizations.dart';
-import 'package:xerabora/features/settings/widgets/settings_section.dart';
-import 'package:xerabora/shared/theme/app_colors.dart';
 import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 
 void main() {
@@ -34,7 +33,7 @@ void main() {
       );
     }
 
-    testWidgets('Показывает хлебные крошки Settings и Database',
+    testWidgets('shows breadcrumbs Settings and Database',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
@@ -43,98 +42,35 @@ void main() {
       expect(find.text('Database'), findsOneWidget);
     });
 
-    testWidgets('Показывает заголовок секции Configuration',
-        (WidgetTester tester) async {
+    testWidgets('shows 2 SettingsGroup widgets', (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
-      expect(find.text('Configuration'), findsOneWidget);
+      expect(find.byType(SettingsGroup), findsNWidgets(2));
     });
 
-    testWidgets('Показывает кнопку Export Config', (WidgetTester tester) async {
+    testWidgets('shows Export Config button', (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
       expect(find.text('Export Config'), findsOneWidget);
     });
 
-    testWidgets('Показывает кнопку Import Config', (WidgetTester tester) async {
+    testWidgets('shows Import Config button', (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
       expect(find.text('Import Config'), findsOneWidget);
     });
 
-    testWidgets('Показывает заголовок секции Danger Zone',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      expect(find.text('Danger Zone'), findsOneWidget);
-    });
-
-    testWidgets('Показывает кнопку Reset Database', (WidgetTester tester) async {
+    testWidgets('shows Reset Database button', (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
       expect(find.text('Reset Database'), findsOneWidget);
     });
 
-    testWidgets('Показывает иконку предупреждения в Danger Zone',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      final Finder warningIcon = find.byIcon(Icons.warning_amber);
-      expect(warningIcon, findsOneWidget);
-    });
-
-    testWidgets('Reset Database показывает диалог подтверждения',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      final Finder resetButton = find.text('Reset Database');
-      await tester.tap(resetButton);
-      await tester.pumpAndSettle();
-
-      expect(find.byType(AlertDialog), findsOneWidget);
-      expect(find.text('Reset Database?'), findsOneWidget);
-    });
-
-    testWidgets('Cancel закрывает диалог', (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      final Finder resetButton = find.text('Reset Database');
-      await tester.tap(resetButton);
-      await tester.pumpAndSettle();
-
-      final Finder cancelButton = find.text('Cancel');
-      await tester.tap(cancelButton);
-      await tester.pumpAndSettle();
-
-      expect(find.byType(AlertDialog), findsNothing);
-    });
-
-    testWidgets('Export/Import кнопки имеют правильные иконки',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      expect(find.byIcon(Icons.upload), findsOneWidget);
-      expect(find.byIcon(Icons.download), findsOneWidget);
-    });
-
-    testWidgets('Configuration секция имеет иконку settings_backup_restore',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      expect(find.byIcon(Icons.settings_backup_restore), findsOneWidget);
-    });
-
-    testWidgets('Configuration секция показывает subtitle',
+    testWidgets('shows configuration subtitle',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
@@ -145,7 +81,7 @@ void main() {
       );
     });
 
-    testWidgets('Danger Zone показывает описание',
+    testWidgets('shows danger zone description',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
@@ -156,18 +92,16 @@ void main() {
       );
     });
 
-    testWidgets('Показывает 2 SettingsSection виджета',
+    testWidgets('Export/Import buttons have correct icons',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
-      expect(
-        find.byType(SettingsSection),
-        findsNWidgets(2),
-      );
+      expect(find.byIcon(Icons.upload), findsOneWidget);
+      expect(find.byIcon(Icons.download), findsOneWidget);
     });
 
-    testWidgets('Reset Database диалог содержит текст предупреждения',
+    testWidgets('Reset Database shows confirmation dialog',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
@@ -175,22 +109,34 @@ void main() {
       await tester.tap(find.text('Reset Database'));
       await tester.pumpAndSettle();
 
-      expect(
-        find.textContaining('permanently delete'),
-        findsOneWidget,
-      );
-      expect(find.text('Cancel'), findsOneWidget);
-      expect(find.text('Reset'), findsOneWidget);
+      expect(find.byType(AlertDialog), findsOneWidget);
+      expect(find.text('Reset Database?'), findsOneWidget);
     });
 
-    testWidgets('Danger Zone иконка имеет error цвет',
+    testWidgets('Cancel closes the dialog', (WidgetTester tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Reset Database'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AlertDialog), findsNothing);
+    });
+
+    testWidgets('Reset dialog contains warning text',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pumpAndSettle();
 
-      final Icon warningIcon =
-          tester.widget<Icon>(find.byIcon(Icons.warning_amber));
-      expect(warningIcon.color, equals(AppColors.error));
+      await tester.tap(find.text('Reset Database'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('permanently delete'), findsOneWidget);
+      expect(find.text('Cancel'), findsOneWidget);
+      expect(find.text('Reset'), findsOneWidget);
     });
   });
 }

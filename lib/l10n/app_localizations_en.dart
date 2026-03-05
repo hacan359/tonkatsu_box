@@ -287,6 +287,21 @@ class SEn extends S {
   }
 
   @override
+  String get settingsAppearance => 'Appearance';
+
+  @override
+  String get settingsDataSources => 'Data Sources';
+
+  @override
+  String get settingsStorage => 'Storage';
+
+  @override
+  String get settingsImport => 'Import';
+
+  @override
+  String get settingsContentLanguage => 'Content Language';
+
+  @override
   String get settingsData => 'Data';
 
   @override
@@ -997,15 +1012,6 @@ class SEn extends S {
   @override
   String get createCollectionNameTooShort =>
       'Name must be at least 2 characters';
-
-  @override
-  String get createCollectionAuthor => 'Author';
-
-  @override
-  String get createCollectionAuthorHint => 'Your name or username';
-
-  @override
-  String get createCollectionEnterAuthor => 'Please enter an author name';
 
   @override
   String get renameCollectionTitle => 'Rename Collection';

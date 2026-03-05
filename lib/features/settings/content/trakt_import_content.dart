@@ -16,12 +16,11 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../home/providers/all_items_provider.dart';
-import '../widgets/settings_section.dart';
+import '../widgets/settings_group.dart';
 
 /// Контент экрана импорта из Trakt.tv ZIP-выгрузки.
 ///
 /// Поддерживает: выбор ZIP файла, preview, настройка опций, прогресс.
-/// Используется как standalone в десктопном sidebar и внутри [TraktImportScreen].
 class TraktImportContent extends ConsumerStatefulWidget {
   /// Создаёт [TraktImportContent].
   const TraktImportContent({
@@ -30,7 +29,6 @@ class TraktImportContent extends ConsumerStatefulWidget {
   });
 
   /// Callback при завершении импорта.
-  /// На мобиле — `Navigator.pop()`, на десктопе — сброс формы/snackbar.
   final VoidCallback? onImportComplete;
 
   @override
@@ -51,42 +49,39 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
 
   @override
   Widget build(BuildContext context) {
-    final bool compact = MediaQuery.sizeOf(context).width < 600;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        _buildInstructionsSection(context, compact),
-        SizedBox(height: compact ? AppSpacing.sm : AppSpacing.lg),
-        _buildFilePickerSection(context, compact),
+        _buildFilePickerSection(context),
         if (_zipInfo != null && _zipInfo!.isValid) ...<Widget>[
-          SizedBox(height: compact ? AppSpacing.sm : AppSpacing.lg),
-          _buildPreviewSection(context, compact),
-          SizedBox(height: compact ? AppSpacing.sm : AppSpacing.lg),
-          _buildOptionsSection(context, compact),
-          SizedBox(height: compact ? AppSpacing.sm : AppSpacing.lg),
-          _buildImportButton(context, compact),
+          const SizedBox(height: AppSpacing.md),
+          _buildPreviewSection(context),
+          const SizedBox(height: AppSpacing.md),
+          _buildOptionsSection(context),
+          const SizedBox(height: AppSpacing.md),
+          _buildImportButton(context),
         ],
       ],
     );
   }
 
-  Widget _buildInstructionsSection(BuildContext context, bool compact) {
-    return SettingsSection(
+  Widget _buildFilePickerSection(BuildContext context) {
+    return SettingsGroup(
       title: S.of(context).traktImportFrom,
-      icon: Icons.info_outline,
-      subtitle: S.of(context).traktImportDescription,
-      compact: compact,
-      children: const <Widget>[],
-    );
-  }
-
-  Widget _buildFilePickerSection(BuildContext context, bool compact) {
-    return SettingsSection(
-      title: S.of(context).traktZipFile,
-      icon: Icons.folder_zip,
-      compact: compact,
       children: <Widget>[
+        // Инструкция по скачиванию данных с Trakt.tv
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+          child: Text(
+            S.of(context).traktImportDescription,
+            style: AppTypography.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ),
         if (_isValidating)
           const Padding(
             padding: EdgeInsets.all(AppSpacing.md),
@@ -94,11 +89,17 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
           )
         else if (_zipPath != null && _zipInfo != null && _zipInfo!.isValid)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm,
+            ),
             child: Row(
               children: <Widget>[
-                const Icon(Icons.check_circle, color: AppColors.statusCompleted,
-                    size: 20),
+                const Icon(
+                  Icons.check_circle,
+                  color: AppColors.statusCompleted,
+                  size: 20,
+                ),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
@@ -116,7 +117,10 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
           )
         else
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
@@ -141,16 +145,25 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
     );
   }
 
-  Widget _buildPreviewSection(BuildContext context, bool compact) {
+  Widget _buildPreviewSection(BuildContext context) {
     final TraktZipInfo info = _zipInfo!;
-
     final S l10n = S.of(context);
-    return SettingsSection(
+
+    return SettingsGroup(
       title: l10n.traktPreview,
-      icon: Icons.preview,
-      subtitle: l10n.traktUser(info.username),
-      compact: compact,
       children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.xs,
+          ),
+          child: Text(
+            l10n.traktUser(info.username),
+            style: AppTypography.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ),
         _buildPreviewRow(
           Icons.movie,
           l10n.traktWatchedMovies,
@@ -183,7 +196,7 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
   Widget _buildPreviewRow(IconData icon, String label, int count) {
     return Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
+        horizontal: AppSpacing.md,
         vertical: AppSpacing.xs,
       ),
       child: Row(
@@ -204,15 +217,13 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
     );
   }
 
-  Widget _buildOptionsSection(BuildContext context, bool compact) {
+  Widget _buildOptionsSection(BuildContext context) {
     final AsyncValue<List<Collection>> collectionsAsync =
         ref.watch(collectionsProvider);
-
     final S l10n = S.of(context);
-    return SettingsSection(
+
+    return SettingsGroup(
       title: l10n.traktOptions,
-      icon: Icons.tune,
-      compact: compact,
       children: <Widget>[
         CheckboxListTile(
           title: Text(l10n.traktImportWatched),
@@ -241,9 +252,11 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
             setState(() => _importWatchlist = value ?? true);
           },
         ),
-        const Divider(height: 1),
         Padding(
-          padding: const EdgeInsets.all(AppSpacing.sm),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
           child: Text(
             l10n.traktTargetCollection,
             style: AppTypography.bodySmall.copyWith(
@@ -303,7 +316,8 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
                   },
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () =>
+                  const Center(child: CircularProgressIndicator()),
               error: (Object e, StackTrace s) => Text(
                 l10n.traktErrorLoadingCollections,
                 style: AppTypography.bodySmall.copyWith(
@@ -316,16 +330,14 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
     );
   }
 
-  Widget _buildImportButton(BuildContext context, bool compact) {
+  Widget _buildImportButton(BuildContext context) {
     final bool canImport =
         _importWatched || _importRatings || _importWatchlist;
     final bool hasTarget =
         _useNewCollection || _selectedCollectionId != null;
 
     return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: compact ? AppSpacing.sm : AppSpacing.lg,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       child: FilledButton.icon(
         onPressed: canImport && hasTarget ? _startImport : null,
         icon: const Icon(Icons.download),

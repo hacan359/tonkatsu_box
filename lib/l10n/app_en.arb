@@ -104,6 +104,11 @@
       "count": {"type": "int"}
     }
   },
+  "settingsAppearance": "Appearance",
+  "settingsDataSources": "Data Sources",
+  "settingsStorage": "Storage",
+  "settingsImport": "Import",
+  "settingsContentLanguage": "Content Language",
   "settingsData": "Data",
   "settingsCacheValue": "{size}",
   "@settingsCacheValue": {
@@ -482,9 +487,6 @@
   "createCollectionNameHint": "e.g., SNES Classics",
   "createCollectionEnterName": "Please enter a name",
   "createCollectionNameTooShort": "Name must be at least 2 characters",
-  "createCollectionAuthor": "Author",
-  "createCollectionAuthorHint": "Your name or username",
-  "createCollectionEnterAuthor": "Please enter an author name",
   "renameCollectionTitle": "Rename Collection",
   "deleteCollectionTitle": "Delete Collection?",
   "deleteCollectionMessage": "Are you sure you want to delete {name}?\n\nThis action cannot be undone.",

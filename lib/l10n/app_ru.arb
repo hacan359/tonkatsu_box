@@ -104,6 +104,11 @@
       "count": {"type": "int"}
     }
   },
+  "settingsAppearance": "Оформление",
+  "settingsDataSources": "Источники данных",
+  "settingsStorage": "Хранилище",
+  "settingsImport": "Импорт",
+  "settingsContentLanguage": "Язык контента",
   "settingsData": "Данные",
   "settingsCacheValue": "{size}",
   "@settingsCacheValue": {
@@ -355,9 +360,6 @@
   "createCollectionNameHint": "напр., Классика SNES",
   "createCollectionEnterName": "Введите название",
   "createCollectionNameTooShort": "Название должно содержать минимум 2 символа",
-  "createCollectionAuthor": "Автор",
-  "createCollectionAuthorHint": "Ваше имя или ник",
-  "createCollectionEnterAuthor": "Введите имя автора",
   "renameCollectionTitle": "Переименовать коллекцию",
   "deleteCollectionTitle": "Удалить коллекцию?",
   "deleteCollectionMessage": "Вы уверены, что хотите удалить {name}?\n\nЭто действие нельзя отменить.",

@@ -18,17 +18,29 @@ class CreditsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool compact = MediaQuery.sizeOf(context).width < 600;
+    final double width = MediaQuery.sizeOf(context).width;
+    final bool isWide = width >= 800;
 
     return BreadcrumbScope(
       label: S.of(context).creditsTitle,
       child: Scaffold(
         appBar: const AutoBreadcrumbAppBar(),
-        body: ListView(
-          padding: EdgeInsets.all(compact ? AppSpacing.sm : AppSpacing.lg),
-          children: const <Widget>[
-            CreditsContent(),
-          ],
+        body: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: isWide ? 600 : double.infinity,
+            ),
+            child: ListView(
+              padding: EdgeInsets.symmetric(
+                horizontal: isWide ? AppSpacing.lg : AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
+              children: const <Widget>[
+                CreditsContent(),
+              ],
+            ),
+          ),
         ),
       ),
     );

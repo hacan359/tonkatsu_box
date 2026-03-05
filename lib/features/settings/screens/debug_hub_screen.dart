@@ -8,8 +8,8 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
 import '../../../shared/widgets/breadcrumb_scope.dart';
 import '../providers/settings_provider.dart';
-import '../widgets/settings_nav_row.dart';
-import '../widgets/settings_section.dart';
+import '../widgets/settings_group.dart';
+import '../widgets/settings_tile.dart';
 import 'demo_collections_screen.dart';
 import 'gamepad_debug_screen.dart';
 import 'image_debug_screen.dart';
@@ -25,100 +25,72 @@ class DebugHubScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final SettingsState settings = ref.watch(settingsNotifierProvider);
-    final bool compact = MediaQuery.sizeOf(context).width < 600;
+    final double width = MediaQuery.sizeOf(context).width;
+    final bool isWide = width >= 800;
 
     return BreadcrumbScope(
       label: S.of(context).settingsDebug,
       child: Scaffold(
         appBar: const AutoBreadcrumbAppBar(),
-        body: ListView(
-          padding: EdgeInsets.all(compact ? AppSpacing.sm : AppSpacing.lg),
-          children: <Widget>[
-            SettingsSection(
-              title: 'Debug Tools',
-              icon: Icons.bug_report,
-              compact: compact,
+        body: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: isWide ? 600 : double.infinity,
+            ),
+            child: ListView(
+              padding: EdgeInsets.symmetric(
+                horizontal: isWide ? AppSpacing.lg : AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
               children: <Widget>[
-                SettingsNavRow(
-                  title: 'SteamGridDB Debug Panel',
-                  icon: Icons.grid_view,
-                  subtitle: settings.hasSteamGridDbKey
-                      ? 'Test API endpoints'
-                      : 'Set API key first',
-                  enabled: settings.hasSteamGridDbKey,
-                  compact: compact,
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (BuildContext context) =>
-                            const BreadcrumbScope(
-                          label: 'Debug',
-                          child: SteamGridDbDebugScreen(),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                SettingsNavRow(
-                  title: 'Image Debug Panel',
-                  icon: Icons.image_search,
-                  subtitle: 'Check poster URLs and loading',
-                  showDivider: true,
-                  compact: compact,
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (BuildContext context) =>
-                            const BreadcrumbScope(
-                          label: 'Debug',
-                          child: ImageDebugScreen(),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                SettingsNavRow(
-                  title: 'Gamepad Debug Panel',
-                  icon: Icons.gamepad,
-                  subtitle: 'Test controller input events',
-                  showDivider: true,
-                  compact: compact,
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (BuildContext context) =>
-                            const BreadcrumbScope(
-                          label: 'Debug',
-                          child: GamepadDebugScreen(),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                SettingsNavRow(
-                  title: 'Demo Collections Generator',
-                  icon: Icons.library_books,
-                  subtitle: settings.hasCredentials && settings.hasTmdbKey
-                      ? 'Generate .xcollx files for tonkatsu-collections'
-                      : 'Set IGDB + TMDB keys first',
-                  enabled: settings.hasCredentials && settings.hasTmdbKey,
-                  showDivider: true,
-                  compact: compact,
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (BuildContext context) =>
-                            const BreadcrumbScope(
-                          label: 'Debug',
-                          child: DemoCollectionsScreen(),
-                        ),
-                      ),
-                    );
-                  },
+                SettingsGroup(
+                  title: 'Debug Tools',
+                  children: <Widget>[
+                    SettingsTile(
+                      title: 'SteamGridDB Debug Panel',
+                      value: settings.hasSteamGridDbKey
+                          ? 'Test API endpoints'
+                          : 'Set API key first',
+                      onTap: settings.hasSteamGridDbKey
+                          ? () => _push(context, const SteamGridDbDebugScreen())
+                          : null,
+                    ),
+                    SettingsTile(
+                      title: 'Image Debug Panel',
+                      value: 'Check poster URLs and loading',
+                      onTap: () => _push(context, const ImageDebugScreen()),
+                    ),
+                    SettingsTile(
+                      title: 'Gamepad Debug Panel',
+                      value: 'Test controller input events',
+                      onTap: () => _push(context, const GamepadDebugScreen()),
+                    ),
+                    SettingsTile(
+                      title: 'Demo Collections Generator',
+                      value: settings.hasCredentials && settings.hasTmdbKey
+                          ? 'Generate .xcollx files'
+                          : 'Set IGDB + TMDB keys first',
+                      onTap: settings.hasCredentials && settings.hasTmdbKey
+                          ? () => _push(context, const DemoCollectionsScreen())
+                          : null,
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _push(BuildContext context, Widget screen) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => BreadcrumbScope(
+          label: 'Debug',
+          child: screen,
         ),
       ),
     );
