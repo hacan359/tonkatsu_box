@@ -25,8 +25,12 @@ jobs:
         run: flutter analyze --fatal-infos --fatal-warnings
 
   test:
-    name: Test
+    name: Test (shard ${{ matrix.shard }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1]
     steps:
       - uses: actions/checkout@v4
 
@@ -38,10 +42,11 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Run tests with coverage
-        run: flutter test --coverage
+      - name: Run tests
+        run: flutter test --total-shards 2 --shard-index ${{ matrix.shard }} --coverage
 
       - name: Upload coverage to Codecov
+        if: matrix.shard == 0
         uses: codecov/codecov-action@v4
         with:
           files: coverage/lcov.info
