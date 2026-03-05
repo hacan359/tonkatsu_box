@@ -2103,5 +2103,76 @@ void main() {
         expect(exported.containsKey('current_episode'), isFalse);
       });
     });
+
+    group('completionTime', () {
+      test('should return duration when both dates set', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.completed,
+          addedAt: testAddedAt,
+          startedAt: DateTime(2025, 1, 1),
+          completedAt: DateTime(2025, 1, 15),
+        );
+        expect(item.completionTime, equals(const Duration(days: 14)));
+      });
+
+      test('should return Duration.zero when same day', () {
+        final DateTime date = DateTime(2025, 3, 1);
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.movie,
+          externalId: 200,
+          status: ItemStatus.completed,
+          addedAt: testAddedAt,
+          startedAt: date,
+          completedAt: date,
+        );
+        expect(item.completionTime, equals(Duration.zero));
+      });
+
+      test('should return null when startedAt missing', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.completed,
+          addedAt: testAddedAt,
+          completedAt: DateTime(2025, 1, 15),
+        );
+        expect(item.completionTime, isNull);
+      });
+
+      test('should return null when completedAt missing', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.inProgress,
+          addedAt: testAddedAt,
+          startedAt: DateTime(2025, 1, 1),
+        );
+        expect(item.completionTime, isNull);
+      });
+
+      test('should return null when completedAt before startedAt', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.completed,
+          addedAt: testAddedAt,
+          startedAt: DateTime(2025, 1, 15),
+          completedAt: DateTime(2025, 1, 1),
+        );
+        expect(item.completionTime, isNull);
+      });
+    });
   });
 }

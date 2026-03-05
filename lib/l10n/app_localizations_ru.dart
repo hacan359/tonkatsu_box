@@ -1844,6 +1844,37 @@ class SRu extends S {
   String get activityDatesSelectCompletion => 'Выберите дату завершения';
 
   @override
+  String activityDatesCompletionTime(String duration) {
+    return 'Пройдено за $duration';
+  }
+
+  @override
+  String get durationLessThanDay => 'менее дня';
+
+  @override
+  String get durationOneDay => '1 день';
+
+  @override
+  String durationDays(int count) {
+    return '$count дней';
+  }
+
+  @override
+  String durationWeeks(int count) {
+    return '$count нед.';
+  }
+
+  @override
+  String durationMonths(int count) {
+    return '$count мес.';
+  }
+
+  @override
+  String durationYears(String count) {
+    return '$count лет';
+  }
+
+  @override
   String get canvasFailedToLoad => 'Не удалось загрузить доску';
 
   @override

@@ -3355,6 +3355,48 @@ abstract class S {
   /// **'Select completion date'**
   String get activityDatesSelectCompletion;
 
+  /// No description provided for @activityDatesCompletionTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed in {duration}'**
+  String activityDatesCompletionTime(String duration);
+
+  /// No description provided for @durationLessThanDay.
+  ///
+  /// In en, this message translates to:
+  /// **'less than a day'**
+  String get durationLessThanDay;
+
+  /// No description provided for @durationOneDay.
+  ///
+  /// In en, this message translates to:
+  /// **'1 day'**
+  String get durationOneDay;
+
+  /// No description provided for @durationDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} days'**
+  String durationDays(int count);
+
+  /// No description provided for @durationWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} weeks'**
+  String durationWeeks(int count);
+
+  /// No description provided for @durationMonths.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} months'**
+  String durationMonths(int count);
+
+  /// No description provided for @durationYears.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} years'**
+  String durationYears(String count);
+
   /// No description provided for @canvasFailedToLoad.
   ///
   /// In en, this message translates to:

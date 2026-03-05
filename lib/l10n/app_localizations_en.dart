@@ -1823,6 +1823,37 @@ class SEn extends S {
   String get activityDatesSelectCompletion => 'Select completion date';
 
   @override
+  String activityDatesCompletionTime(String duration) {
+    return 'Completed in $duration';
+  }
+
+  @override
+  String get durationLessThanDay => 'less than a day';
+
+  @override
+  String get durationOneDay => '1 day';
+
+  @override
+  String durationDays(int count) {
+    return '$count days';
+  }
+
+  @override
+  String durationWeeks(int count) {
+    return '$count weeks';
+  }
+
+  @override
+  String durationMonths(int count) {
+    return '$count months';
+  }
+
+  @override
+  String durationYears(String count) {
+    return '$count years';
+  }
+
+  @override
   String get canvasFailedToLoad => 'Failed to load board';
 
   @override

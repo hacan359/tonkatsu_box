@@ -641,6 +641,13 @@
   "activityDatesLastActivity": "Последняя активность",
   "activityDatesSelectStart": "Выберите дату начала",
   "activityDatesSelectCompletion": "Выберите дату завершения",
+  "activityDatesCompletionTime": "Пройдено за {duration}",
+  "durationLessThanDay": "менее дня",
+  "durationOneDay": "1 день",
+  "durationDays": "{count} дней",
+  "durationWeeks": "{count} нед.",
+  "durationMonths": "{count} мес.",
+  "durationYears": "{count} лет",
 
   "canvasFailedToLoad": "Не удалось загрузить доску",
   "canvasBoardEmpty": "Доска пуста",

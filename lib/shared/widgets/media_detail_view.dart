@@ -81,6 +81,7 @@ class MediaDetailView extends StatelessWidget {
     this.startedAt,
     this.completedAt,
     this.lastActivityAt,
+    this.completionTime,
     this.onActivityDateChanged,
     this.hasAuthorComment = false,
     this.hasUserComment = false,
@@ -150,6 +151,9 @@ class MediaDetailView extends StatelessWidget {
 
   /// Дата последней активности (readonly).
   final DateTime? lastActivityAt;
+
+  /// Время прохождения (startedAt → completedAt).
+  final Duration? completionTime;
 
   /// Колбэк при изменении даты активности (Started/Completed).
   final OnActivityDateChanged? onActivityDateChanged;
@@ -467,12 +471,46 @@ class MediaDetailView extends StatelessWidget {
               ? () => _pickActivityDate(context, 'completed', completedAt)
               : null,
         ),
+        if (completionTime != null)
+          _buildCompletionTimeChip(l),
         if (lastActivityAt != null)
           _buildDateChip(
             icon: Icons.update,
             label: l.activityDatesLastActivity,
             date: lastActivityAt,
           ),
+      ],
+    );
+  }
+
+  Widget _buildCompletionTimeChip(S l) {
+    final int days = completionTime!.inDays;
+    final String formatted;
+    if (days == 0) {
+      formatted = l.durationLessThanDay;
+    } else if (days == 1) {
+      formatted = l.durationOneDay;
+    } else if (days < 7) {
+      formatted = l.durationDays(days);
+    } else if (days < 30) {
+      formatted = l.durationWeeks((days / 7).round());
+    } else if (days < 365) {
+      formatted = l.durationMonths((days / 30).round());
+    } else {
+      formatted = l.durationYears((days / 365).toStringAsFixed(1));
+    }
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        const Icon(Icons.timer_outlined,
+            size: 14, color: AppColors.textTertiary),
+        const SizedBox(width: 4),
+        Text(
+          l.activityDatesCompletionTime(formatted),
+          style: AppTypography.caption.copyWith(
+            color: AppColors.textTertiary,
+          ),
+        ),
       ],
     );
   }

@@ -7,6 +7,19 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 
+/// Форматирует [Duration] в человекочитаемую строку.
+String _formatDuration(Duration duration, BuildContext context) {
+  final S l = S.of(context);
+  final int days = duration.inDays;
+  if (days == 0) return l.durationLessThanDay;
+  if (days == 1) return l.durationOneDay;
+  if (days < 7) return l.durationDays(days);
+  if (days < 30) return l.durationWeeks((days / 7).round());
+  if (days < 365) return l.durationMonths((days / 30).round());
+  final double years = days / 365;
+  return l.durationYears(years.toStringAsFixed(1));
+}
+
 /// Форматирует [DateTime] в читаемую строку (например, "Jan 15, 2025").
 String _formatDate(DateTime date) {
   const List<String> months = <String>[
@@ -35,6 +48,7 @@ class ActivityDatesSection extends StatelessWidget {
     this.startedAt,
     this.completedAt,
     this.lastActivityAt,
+    this.completionTime,
     super.key,
   });
 
@@ -49,6 +63,9 @@ class ActivityDatesSection extends StatelessWidget {
 
   /// Дата последней активности (readonly).
   final DateTime? lastActivityAt;
+
+  /// Время прохождения (startedAt → completedAt).
+  final Duration? completionTime;
 
   /// Можно ли редактировать даты.
   final bool isEditable;
@@ -98,6 +115,27 @@ class ActivityDatesSection extends StatelessWidget {
           editable: isEditable,
           onTap: () => _pickDate(context, 'completed', completedAt),
         ),
+        if (completionTime != null) ...<Widget>[
+          const SizedBox(height: 2),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+            child: Row(
+              children: <Widget>[
+                const Icon(Icons.timer_outlined,
+                    size: 14, color: AppColors.textTertiary),
+                const SizedBox(width: AppSpacing.sm),
+                Text(
+                  S.of(context).activityDatesCompletionTime(
+                    _formatDuration(completionTime!, context),
+                  ),
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.textTertiary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
         if (lastActivityAt != null) ...<Widget>[
           const SizedBox(height: 6),
           _DateRow(
