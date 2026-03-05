@@ -1368,6 +1368,12 @@ class SEn extends S {
   String get welcomeStepWelcome => 'Welcome';
 
   @override
+  String get welcomeStepName => 'Name';
+
+  @override
+  String get welcomeStepLanguage => 'Language';
+
+  @override
   String get welcomeStepApiKeys => 'API Keys';
 
   @override
@@ -1377,11 +1383,30 @@ class SEn extends S {
   String get welcomeStepReady => 'Ready!';
 
   @override
+  String get welcomeNameTitle => 'What\'s your name?';
+
+  @override
+  String get welcomeNameSubtitle =>
+      'This name will appear as the author on collections you create';
+
+  @override
+  String get welcomeNameHint => 'You can change this later in Settings';
+
+  @override
+  String get welcomeLanguageTitle => 'Choose your language';
+
+  @override
+  String get welcomeLanguageSubtitle => 'Select the app interface language';
+
+  @override
+  String get welcomeLanguageHint => 'You can change this later in Settings';
+
+  @override
   String get welcomeTitle => 'Welcome to Tonkatsu Box';
 
   @override
   String get welcomeSubtitle =>
-      'Organize your collections of retro games,\nmovies, TV shows & anime';
+      'Organize your collections of games, movies,\nTV shows, anime, visual novels & manga';
 
   @override
   String get welcomeWhatYouCanDo => 'What you can do';
@@ -1392,7 +1417,7 @@ class SEn extends S {
 
   @override
   String get welcomeFeatureSearch =>
-      'Search games, movies, TV shows & anime via APIs';
+      'Search games, movies, TV shows, anime, visual novels & manga via APIs';
 
   @override
   String get welcomeFeatureTracking => 'Track progress, rate 1-10, add notes';
@@ -1437,6 +1462,12 @@ class SEn extends S {
 
   @override
   String get welcomeChipAnime => 'Anime (TMDB)';
+
+  @override
+  String get welcomeChipVisualNovels => 'Visual Novels (VNDB)';
+
+  @override
+  String get welcomeChipManga => 'Manga (AniList)';
 
   @override
   String get welcomeApiTitle => 'Getting API Keys';
@@ -1495,7 +1526,7 @@ class SEn extends S {
 
   @override
   String get welcomeHowSearchDesc =>
-      'Find games, movies & TV shows via API. Add to any collection.';
+      'Find games, movies, TV shows, visual novels & manga via API. Add to any collection.';
 
   @override
   String get welcomeHowSettingsDesc =>

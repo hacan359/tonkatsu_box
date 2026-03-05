@@ -327,6 +327,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         icon: isAnim ? Icons.animation : Icons.movie,
         extraInfo: movie.runtime != null ? '${movie.runtime} min' : null,
         posterUrl: movie.posterUrl,
+        cacheImageType: ImageType.moviePoster,
+        cacheImageId: movie.tmdbId.toString(),
         onAddToCollection: () => isAnim
             ? _addAnimationMovieToAnyCollection(movie)
             : _addMovieToAnyCollection(movie),
@@ -447,6 +449,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         icon: isAnim ? Icons.animation : Icons.tv,
         extraInfo: tvShow.status,
         posterUrl: tvShow.posterUrl,
+        cacheImageType: ImageType.tvShowPoster,
+        cacheImageId: tvShow.tmdbId.toString(),
         onAddToCollection: () => isAnim
             ? _addAnimationTvShowToAnyCollection(tvShow)
             : _addTvShowToAnyCollection(tvShow),

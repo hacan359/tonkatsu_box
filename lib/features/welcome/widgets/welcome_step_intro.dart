@@ -160,6 +160,14 @@ class WelcomeStepIntro extends StatelessWidget {
                 label: l.welcomeChipAnime,
                 color: AppColors.animationAccent,
               ),
+              _MediaChip(
+                label: l.welcomeChipVisualNovels,
+                color: AppColors.visualNovelAccent,
+              ),
+              _MediaChip(
+                label: l.welcomeChipManga,
+                color: AppColors.mangaAccent,
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.md),

@@ -1,11 +1,21 @@
 // Widget tests for DiscoverItem and DiscoverRow.
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/features/search/widgets/discover_row.dart';
+import 'package:xerabora/features/settings/providers/settings_provider.dart';
+import 'package:xerabora/shared/widgets/cached_image.dart';
 
 void main() {
+  late SharedPreferences prefs;
+
+  setUp(() async {
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    prefs = await SharedPreferences.getInstance();
+  });
+
   group('DiscoverItem', () {
     test('constructor with all fields', () {
       const DiscoverItem item = DiscoverItem(
@@ -81,13 +91,18 @@ void main() {
       void Function(DiscoverItem)? onTap,
       IconData? icon,
     }) {
-      return MaterialApp(
-        home: Scaffold(
-          body: DiscoverRow(
-            title: title,
-            items: items,
-            onTap: onTap ?? (_) {},
-            icon: icon,
+      return ProviderScope(
+        overrides: <Override>[
+          sharedPreferencesProvider.overrideWithValue(prefs),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: DiscoverRow(
+              title: title,
+              items: items,
+              onTap: onTap ?? (_) {},
+              icon: icon,
+            ),
           ),
         ),
       );
@@ -166,7 +181,7 @@ void main() {
     });
 
     group('poster card content', () {
-      testWidgets('shows poster image via CachedNetworkImage',
+      testWidgets('shows poster image via CachedImage',
           (WidgetTester tester) async {
         const List<DiscoverItem> items = <DiscoverItem>[
           DiscoverItem(
@@ -178,7 +193,7 @@ void main() {
 
         await tester.pumpWidget(buildWidget(items: items));
 
-        expect(find.byType(CachedNetworkImage), findsOneWidget);
+        expect(find.byType(CachedImage), findsOneWidget);
       });
 
       testWidgets('shows title text', (WidgetTester tester) async {
@@ -266,8 +281,8 @@ void main() {
 
         await tester.pumpWidget(buildWidget(items: items));
 
-        // No CachedNetworkImage, instead a placeholder with movie_outlined.
-        expect(find.byType(CachedNetworkImage), findsNothing);
+        // No CachedImage, instead a placeholder with movie_outlined.
+        expect(find.byType(CachedImage), findsNothing);
         expect(find.byIcon(Icons.movie_outlined), findsOneWidget);
       });
 
@@ -279,7 +294,7 @@ void main() {
 
         await tester.pumpWidget(buildWidget(items: items));
 
-        expect(find.byType(CachedNetworkImage), findsNothing);
+        expect(find.byType(CachedImage), findsNothing);
         expect(find.byIcon(Icons.movie_outlined), findsOneWidget);
       });
     });

@@ -13,12 +13,14 @@ import '../widgets/step_indicator.dart';
 import '../widgets/welcome_step_api_keys.dart';
 import '../widgets/welcome_step_how_it_works.dart';
 import '../widgets/welcome_step_intro.dart';
+import '../widgets/welcome_step_language.dart';
+import '../widgets/welcome_step_name.dart';
 import '../widgets/welcome_step_ready.dart';
 
 /// Ключ SharedPreferences для флага завершения wizard'а.
 const String kWelcomeCompletedKey = 'welcome_completed';
 
-/// Welcome Wizard — 4-шаговый онбординг.
+/// Welcome Wizard — 6-шаговый онбординг.
 ///
 /// При первом запуске показывается автоматически вместо [NavigationShell].
 /// Может быть открыт повторно из Settings (с [fromSettings] = true).
@@ -37,10 +39,12 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  static const int _totalSteps = 4;
+  static const int _totalSteps = 6;
 
   List<String> _stepLabels(S l) => <String>[
     l.welcomeStepWelcome,
+    l.welcomeStepName,
+    l.welcomeStepLanguage,
     l.welcomeStepApiKeys,
     l.welcomeStepHowItWorks,
     l.welcomeStepReady,
@@ -74,6 +78,8 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                 },
                 children: <Widget>[
                   const WelcomeStepIntro(),
+                  const WelcomeStepName(),
+                  const WelcomeStepLanguage(),
                   const WelcomeStepApiKeys(),
                   const WelcomeStepHowItWorks(),
                   WelcomeStepReady(

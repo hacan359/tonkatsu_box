@@ -1,14 +1,15 @@
 // Bottom sheet с деталями манги.
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
+import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/data_source.dart';
 import '../../../shared/models/manga.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/cached_image.dart';
 
 /// Bottom sheet с деталями манги.
 class MangaDetailsSheet extends StatelessWidget {
@@ -64,13 +65,14 @@ class MangaDetailsSheet extends StatelessWidget {
                     ClipRRect(
                       borderRadius:
                           BorderRadius.circular(AppSpacing.radiusSm),
-                      child: CachedNetworkImage(
-                        imageUrl: manga.coverUrl!,
+                      child: CachedImage(
+                        imageType: ImageType.mangaCover,
+                        imageId: manga.id.toString(),
+                        remoteUrl: manga.coverUrl!,
                         width: 100,
                         height: 142,
                         fit: BoxFit.cover,
-                        placeholder:
-                            (BuildContext context, String url) => Container(
+                        placeholder: Container(
                           width: 100,
                           height: 142,
                           color: AppColors.surfaceLight,
@@ -79,9 +81,7 @@ class MangaDetailsSheet extends StatelessWidget {
                                 CircularProgressIndicator(strokeWidth: 2),
                           ),
                         ),
-                        errorWidget: (BuildContext context, String url,
-                                Object error) =>
-                            Container(
+                        errorWidget: Container(
                           width: 100,
                           height: 142,
                           color: AppColors.surfaceLight,

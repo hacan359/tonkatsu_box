@@ -1,12 +1,22 @@
 // Widget tests for MediaDetailsSheet.
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/features/search/widgets/media_details_sheet.dart';
+import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/l10n/app_localizations.dart';
+import 'package:xerabora/shared/widgets/cached_image.dart';
 
 void main() {
+  late SharedPreferences prefs;
+
+  setUp(() async {
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    prefs = await SharedPreferences.getInstance();
+  });
+
   // Helper to build the test widget that opens MediaDetailsSheet
   // as a modal bottom sheet.
   Widget buildTestApp({
@@ -20,33 +30,38 @@ void main() {
     String? posterUrl,
     VoidCallback? onAddToCollection,
   }) {
-    return MaterialApp(
-      localizationsDelegates: S.localizationsDelegates,
-      supportedLocales: S.supportedLocales,
-      home: Scaffold(
-        body: Builder(
-          builder: (BuildContext context) {
-            return ElevatedButton(
-              onPressed: () {
-                showModalBottomSheet<void>(
-                  context: context,
-                  isScrollControlled: true,
-                  builder: (_) => MediaDetailsSheet(
-                    title: title,
-                    icon: icon,
-                    overview: overview,
-                    year: year,
-                    rating: rating,
-                    genres: genres,
-                    extraInfo: extraInfo,
-                    posterUrl: posterUrl,
-                    onAddToCollection: onAddToCollection,
-                  ),
-                );
-              },
-              child: const Text('Open Sheet'),
-            );
-          },
+    return ProviderScope(
+      overrides: <Override>[
+        sharedPreferencesProvider.overrideWithValue(prefs),
+      ],
+      child: MaterialApp(
+        localizationsDelegates: S.localizationsDelegates,
+        supportedLocales: S.supportedLocales,
+        home: Scaffold(
+          body: Builder(
+            builder: (BuildContext context) {
+              return ElevatedButton(
+                onPressed: () {
+                  showModalBottomSheet<void>(
+                    context: context,
+                    isScrollControlled: true,
+                    builder: (_) => MediaDetailsSheet(
+                      title: title,
+                      icon: icon,
+                      overview: overview,
+                      year: year,
+                      rating: rating,
+                      genres: genres,
+                      extraInfo: extraInfo,
+                      posterUrl: posterUrl,
+                      onAddToCollection: onAddToCollection,
+                    ),
+                  );
+                },
+                child: const Text('Open Sheet'),
+              );
+            },
+          ),
         ),
       ),
     );
@@ -60,7 +75,7 @@ void main() {
 
   // Opens the bottom sheet with multiple pump() calls instead of
   // pumpAndSettle, to avoid timeout from infinite animations
-  // like CircularProgressIndicator inside CachedNetworkImage.
+  // like CircularProgressIndicator inside CachedImage.
   Future<void> openSheetWithPump(WidgetTester tester) async {
     await tester.tap(find.text('Open Sheet'));
     // Pump several frames to let the sheet animate in.
@@ -89,7 +104,7 @@ void main() {
       );
       await openSheetWithPump(tester);
 
-      expect(find.byType(CachedNetworkImage), findsOneWidget);
+      expect(find.byType(CachedImage), findsOneWidget);
     });
 
     testWidgets('does not show poster when posterUrl is null',
@@ -99,7 +114,7 @@ void main() {
       );
       await openSheet(tester);
 
-      expect(find.byType(CachedNetworkImage), findsNothing);
+      expect(find.byType(CachedImage), findsNothing);
     });
 
     testWidgets('shows genres as Chip widgets',
@@ -278,7 +293,7 @@ void main() {
           onAddToCollection: () {},
         ),
       );
-      // Use openSheetWithPump because CachedNetworkImage has
+      // Use openSheetWithPump because CachedImage has
       // a CircularProgressIndicator placeholder that prevents
       // pumpAndSettle from completing.
       await openSheetWithPump(tester);
@@ -291,7 +306,7 @@ void main() {
       expect(find.text('2h 30m'), findsOneWidget);
       expect(find.text('An amazing story.'), findsOneWidget);
       expect(find.text('Description'), findsOneWidget);
-      expect(find.byType(CachedNetworkImage), findsOneWidget);
+      expect(find.byType(CachedImage), findsOneWidget);
     });
   });
 }

@@ -2527,6 +2527,18 @@ abstract class S {
   /// **'Welcome'**
   String get welcomeStepWelcome;
 
+  /// No description provided for @welcomeStepName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get welcomeStepName;
+
+  /// No description provided for @welcomeStepLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get welcomeStepLanguage;
+
   /// No description provided for @welcomeStepApiKeys.
   ///
   /// In en, this message translates to:
@@ -2545,6 +2557,42 @@ abstract class S {
   /// **'Ready!'**
   String get welcomeStepReady;
 
+  /// No description provided for @welcomeNameTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s your name?'**
+  String get welcomeNameTitle;
+
+  /// No description provided for @welcomeNameSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This name will appear as the author on collections you create'**
+  String get welcomeNameSubtitle;
+
+  /// No description provided for @welcomeNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'You can change this later in Settings'**
+  String get welcomeNameHint;
+
+  /// No description provided for @welcomeLanguageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your language'**
+  String get welcomeLanguageTitle;
+
+  /// No description provided for @welcomeLanguageSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select the app interface language'**
+  String get welcomeLanguageSubtitle;
+
+  /// No description provided for @welcomeLanguageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'You can change this later in Settings'**
+  String get welcomeLanguageHint;
+
   /// No description provided for @welcomeTitle.
   ///
   /// In en, this message translates to:
@@ -2554,7 +2602,7 @@ abstract class S {
   /// No description provided for @welcomeSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Organize your collections of retro games,\nmovies, TV shows & anime'**
+  /// **'Organize your collections of games, movies,\nTV shows, anime, visual novels & manga'**
   String get welcomeSubtitle;
 
   /// No description provided for @welcomeWhatYouCanDo.
@@ -2572,7 +2620,7 @@ abstract class S {
   /// No description provided for @welcomeFeatureSearch.
   ///
   /// In en, this message translates to:
-  /// **'Search games, movies, TV shows & anime via APIs'**
+  /// **'Search games, movies, TV shows, anime, visual novels & manga via APIs'**
   String get welcomeFeatureSearch;
 
   /// No description provided for @welcomeFeatureTracking.
@@ -2658,6 +2706,18 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Anime (TMDB)'**
   String get welcomeChipAnime;
+
+  /// No description provided for @welcomeChipVisualNovels.
+  ///
+  /// In en, this message translates to:
+  /// **'Visual Novels (VNDB)'**
+  String get welcomeChipVisualNovels;
+
+  /// No description provided for @welcomeChipManga.
+  ///
+  /// In en, this message translates to:
+  /// **'Manga (AniList)'**
+  String get welcomeChipManga;
 
   /// No description provided for @welcomeApiTitle.
   ///
@@ -2764,7 +2824,7 @@ abstract class S {
   /// No description provided for @welcomeHowSearchDesc.
   ///
   /// In en, this message translates to:
-  /// **'Find games, movies & TV shows via API. Add to any collection.'**
+  /// **'Find games, movies, TV shows, visual novels & manga via API. Add to any collection.'**
   String get welcomeHowSearchDesc;
 
   /// No description provided for @welcomeHowSettingsDesc.

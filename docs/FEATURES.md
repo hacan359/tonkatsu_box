@@ -346,6 +346,24 @@ Full English and Russian localization with runtime language switching:
 > [!NOTE]
 > App Language controls all UI text. Content Language (in Settings → Credentials) controls the language of movie/TV show data fetched from TMDB.
 
+## 👋 Welcome Wizard (Онбординг)
+
+A 6-step PageView wizard shown on first launch. Can be reopened from Settings.
+
+1. **Welcome** — introductory greeting
+2. **Name** — author name input (saved to Settings, used as default author for new collections)
+3. **Language** — app language picker (English / Русский) with animated selection cards
+4. **API Keys** — enter IGDB, SteamGridDB, TMDB credentials
+5. **How it works** — brief app guide
+6. **Ready** — finish buttons ("Go to Settings" / "Skip — explore on my own")
+
+- **Step bar** — clickable `StepIndicator` circles with labels (compact mode: only active label shown on narrow screens)
+- **Progress bar** — `LinearProgressIndicator` showing current step / total
+- **Dot navigation** — bottom dot indicators, clickable
+- **Skip** — jumps to the last step
+- **Swipe** — horizontal swipe navigates between steps
+- **fromSettings mode** — when reopened from Settings, pops back instead of replacing the navigation stack
+
 ## ⚙️ Settings
 
 Settings uses a **unified iOS-style grouped-list** layout on all platforms:
