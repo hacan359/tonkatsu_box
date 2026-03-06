@@ -6,6 +6,11 @@
 
 ## [Unreleased]
 
+## [0.18.1] - 2026-03-06
+
+### Added
+- **Built-in IGDB Key** — IGDB now supports built-in API keys via `--dart-define` (same pattern as TMDB and SteamGridDB). Users can search games immediately after install without registering a Twitch developer app. Auto-verifies OAuth token on startup when credentials are available. Credentials UI shows "Using built-in key" status with Reset button. Welcome Wizard displays "BUILT-IN KEY" badge for all APIs that have embedded keys. Release workflow updated with `IGDB_CLIENT_ID` and `IGDB_CLIENT_SECRET` dart-defines for all 3 platforms. 13 new tests
+
 ## [0.18.0] - 2026-03-06
 
 ### Changed
