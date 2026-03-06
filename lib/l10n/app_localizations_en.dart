@@ -204,6 +204,9 @@ class SEn extends S {
   String get settingsProfile => 'Profile';
 
   @override
+  String get settingsProfileSubtitle => 'Author name for your collections';
+
+  @override
   String get settingsAuthorName => 'Author name';
 
   @override
@@ -222,7 +225,7 @@ class SEn extends S {
   String get settingsCache => 'Cache';
 
   @override
-  String get settingsCacheSubtitle => 'Image cache settings';
+  String get settingsCacheSubtitle => 'Offline mode and cover storage';
 
   @override
   String get settingsDatabase => 'Database';
@@ -234,7 +237,7 @@ class SEn extends S {
   String get settingsTraktImport => 'Trakt Import';
 
   @override
-  String get settingsTraktImportSubtitle => 'Import from Trakt.tv ZIP export';
+  String get settingsTraktImportSubtitle => 'Watch history, ratings, watchlist';
 
   @override
   String get settingsDebug => 'Debug';
@@ -290,13 +293,36 @@ class SEn extends S {
   String get settingsAppearance => 'Appearance';
 
   @override
+  String get settingsAppearanceSubtitle => 'Language, display and content';
+
+  @override
+  String get settingsAppLanguageSubtitle => 'Interface language';
+
+  @override
+  String get settingsContentLanguageSubtitle =>
+      'Language for movie and TV show descriptions';
+
+  @override
   String get settingsDataSources => 'Data Sources';
+
+  @override
+  String get settingsDataSourcesSubtitle => 'IGDB, TMDB, SteamGridDB';
+
+  @override
+  String get settingsApiKeysSubtitle => 'Configure connections to databases';
 
   @override
   String get settingsStorage => 'Storage';
 
   @override
+  String get settingsStorageSubtitle => 'Image cache and database';
+
+  @override
   String get settingsImport => 'Import';
+
+  @override
+  String get settingsImportSubtitle =>
+      'Import collections from external services';
 
   @override
   String get settingsContentLanguage => 'Content Language';
@@ -1970,7 +1996,7 @@ class SEn extends S {
 
   @override
   String get settingsShowRecommendationsSubtitle =>
-      'Show recommendations and reviews on item details';
+      'Similar movies and TV shows on detail pages';
 
   @override
   String get uncategorizedBanner =>

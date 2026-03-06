@@ -8,18 +8,22 @@ import '../../../shared/theme/app_typography.dart';
 
 /// Плоская группа настроек в стиле iOS Settings.
 ///
-/// Отображает необязательный uppercase-заголовок мелким шрифтом
-/// и контейнер с детьми, разделёнными тонкими dividers.
+/// Отображает необязательный uppercase-заголовок мелким шрифтом,
+/// необязательный подзаголовок и контейнер с детьми, разделёнными тонкими dividers.
 class SettingsGroup extends StatelessWidget {
   /// Создаёт [SettingsGroup].
   const SettingsGroup({
     required this.children,
     this.title,
+    this.subtitle,
     super.key,
   });
 
   /// Необязательный заголовок группы (uppercase, мелкий шрифт).
   final String? title;
+
+  /// Необязательный подзаголовок группы (обычный размер, приглушённый цвет).
+  final String? subtitle;
 
   /// Дочерние виджеты (обычно [SettingsTile]).
   final List<Widget> children;
@@ -35,13 +39,28 @@ class SettingsGroup extends StatelessWidget {
               left: AppSpacing.md,
               bottom: AppSpacing.xs,
             ),
-            child: Text(
-              title!.toUpperCase(),
-              style: AppTypography.bodySmall.copyWith(
-                color: AppColors.textTertiary,
-                letterSpacing: 0.5,
-                fontWeight: FontWeight.w600,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  title!.toUpperCase(),
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.textTertiary,
+                    letterSpacing: 0.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (subtitle != null) ...<Widget>[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle!,
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.textTertiary,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
         Container(

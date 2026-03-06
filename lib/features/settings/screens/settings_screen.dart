@@ -86,80 +86,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final S l = S.of(context);
 
     return <Widget>[
-      // APPEARANCE
-      SettingsGroup(
-        title: l.settingsAppearance,
-        children: <Widget>[
-          SettingsTile(
-            title: l.settingsAppLanguage,
-            value: settings.appLanguage == 'ru' ? 'Русский' : 'English',
-            onTap: () => _showLanguagePicker(settings),
-          ),
-          SettingsTile(
-            title: l.settingsContentLanguage,
-            value: settings.tmdbLanguage == 'ru-RU' ? 'Русский' : 'English',
-            onTap: () => _showContentLanguagePicker(settings),
-          ),
-          SettingsTile(
-            title: l.settingsShowRecommendations,
-            showChevron: false,
-            trailing: Switch(
-              value: settings.showRecommendations,
-              onChanged: (bool value) {
-                ref
-                    .read(settingsNotifierProvider.notifier)
-                    .setShowRecommendations(enabled: value);
-              },
-            ),
-          ),
-        ],
-      ),
-      const SizedBox(height: AppSpacing.md),
-
-      // DATA SOURCES
-      SettingsGroup(
-        title: l.settingsDataSources,
-        children: <Widget>[
-          SettingsTile(
-            title: l.settingsApiKeys,
-            value: _apiKeysValue(settings),
-            onTap: () => _pushScreen(const CredentialsScreen()),
-          ),
-        ],
-      ),
-      const SizedBox(height: AppSpacing.md),
-
-      // STORAGE
-      SettingsGroup(
-        title: l.settingsStorage,
-        children: <Widget>[
-          SettingsTile(
-            title: l.settingsCache,
-            onTap: () => _pushScreen(const CacheScreen()),
-          ),
-          SettingsTile(
-            title: l.settingsDatabase,
-            onTap: () => _pushScreen(const DatabaseScreen()),
-          ),
-        ],
-      ),
-      const SizedBox(height: AppSpacing.md),
-
-      // IMPORT
-      SettingsGroup(
-        title: l.settingsImport,
-        children: <Widget>[
-          SettingsTile(
-            title: l.settingsTraktImport,
-            onTap: () => _pushScreen(const TraktImportScreen()),
-          ),
-        ],
-      ),
-      const SizedBox(height: AppSpacing.md),
-
       // PROFILE
       SettingsGroup(
         title: l.settingsProfile,
+        subtitle: l.settingsProfileSubtitle,
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.symmetric(
@@ -177,6 +107,88 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     .setDefaultAuthor(value);
               },
             ),
+          ),
+        ],
+      ),
+      const SizedBox(height: AppSpacing.md),
+
+      // APPEARANCE
+      SettingsGroup(
+        title: l.settingsAppearance,
+        subtitle: l.settingsAppearanceSubtitle,
+        children: <Widget>[
+          SettingsTile(
+            title: l.settingsAppLanguage,
+            subtitle: l.settingsAppLanguageSubtitle,
+            value: settings.appLanguage == 'ru' ? 'Русский' : 'English',
+            onTap: () => _showLanguagePicker(settings),
+          ),
+          SettingsTile(
+            title: l.settingsContentLanguage,
+            subtitle: l.settingsContentLanguageSubtitle,
+            value: settings.tmdbLanguage == 'ru-RU' ? 'Русский' : 'English',
+            onTap: () => _showContentLanguagePicker(settings),
+          ),
+          SettingsTile(
+            title: l.settingsShowRecommendations,
+            subtitle: l.settingsShowRecommendationsSubtitle,
+            showChevron: false,
+            trailing: Switch(
+              value: settings.showRecommendations,
+              onChanged: (bool value) {
+                ref
+                    .read(settingsNotifierProvider.notifier)
+                    .setShowRecommendations(enabled: value);
+              },
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: AppSpacing.md),
+
+      // DATA SOURCES
+      SettingsGroup(
+        title: l.settingsDataSources,
+        subtitle: l.settingsDataSourcesSubtitle,
+        children: <Widget>[
+          SettingsTile(
+            title: l.settingsApiKeys,
+            subtitle: l.settingsApiKeysSubtitle,
+            value: _apiKeysValue(settings),
+            onTap: () => _pushScreen(const CredentialsScreen()),
+          ),
+        ],
+      ),
+      const SizedBox(height: AppSpacing.md),
+
+      // STORAGE
+      SettingsGroup(
+        title: l.settingsStorage,
+        subtitle: l.settingsStorageSubtitle,
+        children: <Widget>[
+          SettingsTile(
+            title: l.settingsCache,
+            subtitle: l.settingsCacheSubtitle,
+            onTap: () => _pushScreen(const CacheScreen()),
+          ),
+          SettingsTile(
+            title: l.settingsDatabase,
+            subtitle: l.settingsDatabaseSubtitle,
+            onTap: () => _pushScreen(const DatabaseScreen()),
+          ),
+        ],
+      ),
+      const SizedBox(height: AppSpacing.md),
+
+      // IMPORT
+      SettingsGroup(
+        title: l.settingsImport,
+        subtitle: l.settingsImportSubtitle,
+        children: <Widget>[
+          SettingsTile(
+            title: l.settingsTraktImport,
+            subtitle: l.settingsTraktImportSubtitle,
+            onTap: () => _pushScreen(const TraktImportScreen()),
           ),
         ],
       ),
