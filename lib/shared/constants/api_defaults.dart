@@ -14,9 +14,21 @@ abstract final class ApiDefaults {
   static const String steamGridDbApiKey =
       String.fromEnvironment('STEAMGRIDDB_API_KEY');
 
+  /// Встроенный IGDB Client ID.
+  static const String igdbClientId =
+      String.fromEnvironment('IGDB_CLIENT_ID');
+
+  /// Встроенный IGDB Client Secret.
+  static const String igdbClientSecret =
+      String.fromEnvironment('IGDB_CLIENT_SECRET');
+
   /// Есть ли встроенный TMDB ключ.
   static bool get hasTmdbKey => tmdbApiKey.isNotEmpty;
 
   /// Есть ли встроенный SteamGridDB ключ.
   static bool get hasSteamGridDbKey => steamGridDbApiKey.isNotEmpty;
+
+  /// Есть ли встроенный IGDB ключ (оба поля заполнены).
+  static bool get hasIgdbKey =>
+      igdbClientId.isNotEmpty && igdbClientSecret.isNotEmpty;
 }

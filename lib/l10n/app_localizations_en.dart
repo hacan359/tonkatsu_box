@@ -1529,6 +1529,13 @@ class SEn extends S {
   String get welcomeApiOptional => 'OPTIONAL';
 
   @override
+  String get welcomeApiBuiltInKey => 'BUILT-IN KEY';
+
+  @override
+  String get welcomeApiOwnKeyHint =>
+      'You can add your own key later in Settings for higher rate limits';
+
+  @override
   String get welcomeApiEnterKeysHint =>
       'Enter keys in Settings → Credentials after setup';
 

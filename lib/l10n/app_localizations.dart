@@ -2833,6 +2833,18 @@ abstract class S {
   /// **'OPTIONAL'**
   String get welcomeApiOptional;
 
+  /// No description provided for @welcomeApiBuiltInKey.
+  ///
+  /// In en, this message translates to:
+  /// **'BUILT-IN KEY'**
+  String get welcomeApiBuiltInKey;
+
+  /// No description provided for @welcomeApiOwnKeyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'You can add your own key later in Settings for higher rate limits'**
+  String get welcomeApiOwnKeyHint;
+
   /// No description provided for @welcomeApiEnterKeysHint.
   ///
   /// In en, this message translates to:

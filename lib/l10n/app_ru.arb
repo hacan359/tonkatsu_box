@@ -537,6 +537,8 @@
   "welcomeApiSgdbTag": "SGDB",
   "welcomeApiSgdbDesc": "Иллюстрации для досок",
   "welcomeApiOptional": "НЕОБЯЗАТЕЛЬНО",
+  "welcomeApiBuiltInKey": "ВСТРОЕННЫЙ КЛЮЧ",
+  "welcomeApiOwnKeyHint": "Можно добавить свой ключ позже в Настройках для лучшей производительности",
   "welcomeApiEnterKeysHint": "Введите ключи в Настройки → Учётные данные",
 
   "welcomeHowTitle": "Как это работает",

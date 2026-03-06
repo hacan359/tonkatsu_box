@@ -716,6 +716,8 @@
   "welcomeApiSgdbTag": "SGDB",
   "welcomeApiSgdbDesc": "Game artwork for boards",
   "welcomeApiOptional": "OPTIONAL",
+  "welcomeApiBuiltInKey": "BUILT-IN KEY",
+  "welcomeApiOwnKeyHint": "You can add your own key later in Settings for higher rate limits",
   "welcomeApiEnterKeysHint": "Enter keys in Settings → Credentials after setup",
 
   "welcomeHowTitle": "How it works",

@@ -48,8 +48,9 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
   void initState() {
     super.initState();
     final SettingsState settings = ref.read(settingsNotifierProvider);
-    _clientId = settings.clientId ?? '';
-    _clientSecret = settings.clientSecret ?? '';
+    _clientId = settings.isIgdbKeyBuiltIn ? '' : (settings.clientId ?? '');
+    _clientSecret =
+        settings.isIgdbKeyBuiltIn ? '' : (settings.clientSecret ?? '');
     _steamGridDbApiKey =
         settings.isSteamGridDbKeyBuiltIn ? '' : (settings.steamGridDbApiKey ?? '');
     _tmdbApiKey =
@@ -150,7 +151,9 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
               InlineTextField(
                 label: S.of(context).credentialsClientId,
                 value: _clientId,
-                placeholder: S.of(context).credentialsClientIdHint,
+                placeholder: settings.isIgdbKeyBuiltIn
+                    ? S.of(context).credentialsUsingBuiltInKey
+                    : S.of(context).credentialsClientIdHint,
                 compact: compact,
                 onChanged: (String value) =>
                     setState(() => _clientId = value),
@@ -159,12 +162,23 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
               InlineTextField(
                 label: S.of(context).credentialsClientSecret,
                 value: _clientSecret,
-                placeholder: S.of(context).credentialsClientSecretHint,
+                placeholder: settings.isIgdbKeyBuiltIn
+                    ? S.of(context).credentialsUsingBuiltInKey
+                    : S.of(context).credentialsClientSecretHint,
                 obscureText: true,
                 compact: compact,
                 onChanged: (String value) =>
                     setState(() => _clientSecret = value),
               ),
+              const SizedBox(height: AppSpacing.sm),
+              _buildStatusRow(
+                hasKey: settings.hasCredentials,
+                isBuiltIn: settings.isIgdbKeyBuiltIn,
+                hasDefault: ApiDefaults.hasIgdbKey,
+                compact: compact,
+                onReset: _resetIgdbCredentials,
+              ),
+              if (settings.isIgdbKeyBuiltIn) _buildOwnKeyHint(),
             ],
           ),
         ),
@@ -438,8 +452,14 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
   // ==================== Actions ====================
 
   Future<void> _verifyConnection() async {
-    final String clientId = _clientId.trim();
-    final String clientSecret = _clientSecret.trim();
+    final SettingsState settings = ref.read(settingsNotifierProvider);
+    // Используем введённые ключи, или текущие из state (built-in)
+    final String clientId = _clientId.trim().isNotEmpty
+        ? _clientId.trim()
+        : (settings.clientId ?? '');
+    final String clientSecret = _clientSecret.trim().isNotEmpty
+        ? _clientSecret.trim()
+        : (settings.clientSecret ?? '');
 
     if (clientId.isEmpty || clientSecret.isEmpty) {
       context.showSnack(
@@ -541,6 +561,20 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
         );
       }
     }
+  }
+
+  void _resetIgdbCredentials() {
+    ref
+        .read(settingsNotifierProvider.notifier)
+        .resetIgdbCredentialsToDefault();
+    setState(() {
+      _clientId = '';
+      _clientSecret = '';
+    });
+    context.showSnack(
+      S.of(context).credentialsResetToBuiltIn,
+      type: SnackType.success,
+    );
   }
 
   void _resetSteamGridDbKey() {
