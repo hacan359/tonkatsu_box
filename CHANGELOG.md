@@ -6,6 +6,8 @@
 
 ## [Unreleased]
 
+## [0.18.0] - 2026-03-06
+
 ### Changed
 - **Settings UX — Subtitles & Reorder** — added optional `subtitle` parameter to `SettingsGroup` (shown below uppercase title) and `SettingsTile` (shown below main text). Reordered settings sections: Profile moved from 5th to 1st position. Added 12 new localization keys (EN + RU) for section and tile subtitles, updated 3 existing subtitle values for clarity. 5 new tests for subtitle rendering
 
