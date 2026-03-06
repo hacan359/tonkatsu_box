@@ -413,6 +413,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       startedAt: item.startedAt,
       completedAt: item.completedAt,
       lastActivityAt: item.lastActivityAt,
+      completionTime: item.completionTime,
       onActivityDateChanged: widget.isEditable
           ? (String type, DateTime date) =>
               _updateActivityDate(item.id, type, date)

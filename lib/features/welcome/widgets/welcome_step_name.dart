@@ -40,61 +40,76 @@ class _WelcomeStepNameState extends ConsumerState<WelcomeStepName> {
   Widget build(BuildContext context) {
     final S l = S.of(context);
 
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Icon(
-              Icons.badge_outlined,
-              size: 56,
-              color: AppColors.brand,
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        // Адаптивные размеры для маленьких экранов
+        final bool isSmallScreen = constraints.maxHeight < 400;
+        final double iconSize = isSmallScreen ? 40 : 56;
+        final double spacing = isSmallScreen ? AppSpacing.sm : 20;
+
+        return Center(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: isSmallScreen ? AppSpacing.sm : AppSpacing.md,
             ),
-            const SizedBox(height: 20),
-            Text(
-              l.welcomeNameTitle,
-              style: AppTypography.h1.copyWith(fontSize: 22),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              l.welcomeNameSubtitle,
-              style: AppTypography.body.copyWith(
-                color: AppColors.textSecondary,
-                fontSize: 13,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            SizedBox(
-              width: 280,
-              child: TextField(
-                controller: _controller,
-                textAlign: TextAlign.center,
-                style: AppTypography.h3,
-                decoration: InputDecoration(
-                  hintText: l.settingsAuthorPlaceholder,
-                  border: const OutlineInputBorder(),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Icon(
+                  Icons.badge_outlined,
+                  size: iconSize,
+                  color: AppColors.brand,
                 ),
-                onChanged: (String value) {
-                  ref
-                      .read(settingsNotifierProvider.notifier)
-                      .setDefaultAuthor(value.trim());
-                },
-              ),
+                SizedBox(height: spacing),
+                Text(
+                  l.welcomeNameTitle,
+                  style: AppTypography.h1.copyWith(
+                    fontSize: isSmallScreen ? 20 : 22,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: isSmallScreen ? 6 : AppSpacing.sm),
+                Text(
+                  l.welcomeNameSubtitle,
+                  style: AppTypography.body.copyWith(
+                    color: AppColors.textSecondary,
+                    fontSize: isSmallScreen ? 12 : 13,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: isSmallScreen ? AppSpacing.md : AppSpacing.lg),
+                SizedBox(
+                  width: isSmallScreen ? 240 : 280,
+                  child: TextField(
+                    controller: _controller,
+                    textAlign: TextAlign.center,
+                    style: AppTypography.h3,
+                    decoration: InputDecoration(
+                      hintText: l.settingsAuthorPlaceholder,
+                      border: const OutlineInputBorder(),
+                    ),
+                    onChanged: (String value) {
+                      ref
+                          .read(settingsNotifierProvider.notifier)
+                          .setDefaultAuthor(value.trim());
+                    },
+                  ),
+                ),
+                SizedBox(height: isSmallScreen ? AppSpacing.sm : AppSpacing.md),
+                Text(
+                  l.welcomeNameHint,
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.textTertiary,
+                    fontSize: isSmallScreen ? 11 : null,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              l.welcomeNameHint,
-              style: AppTypography.bodySmall.copyWith(
-                color: AppColors.textTertiary,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

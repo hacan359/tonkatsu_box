@@ -6,6 +6,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/utils/duration_formatter.dart';
 
 /// Форматирует [DateTime] в читаемую строку (например, "Jan 15, 2025").
 String _formatDate(DateTime date) {
@@ -35,6 +36,7 @@ class ActivityDatesSection extends StatelessWidget {
     this.startedAt,
     this.completedAt,
     this.lastActivityAt,
+    this.completionTime,
     super.key,
   });
 
@@ -49,6 +51,9 @@ class ActivityDatesSection extends StatelessWidget {
 
   /// Дата последней активности (readonly).
   final DateTime? lastActivityAt;
+
+  /// Время прохождения (startedAt → completedAt).
+  final Duration? completionTime;
 
   /// Можно ли редактировать даты.
   final bool isEditable;
@@ -98,6 +103,25 @@ class ActivityDatesSection extends StatelessWidget {
           editable: isEditable,
           onTap: () => _pickDate(context, 'completed', completedAt),
         ),
+        if (completionTime != null) ...<Widget>[
+          const SizedBox(height: 2),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+            child: Row(
+              children: <Widget>[
+                const Icon(Icons.timer_outlined,
+                    size: 14, color: AppColors.textTertiary),
+                const SizedBox(width: AppSpacing.sm),
+                Text(
+                  formatCompletionTime(completionTime!, S.of(context)),
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.textTertiary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
         if (lastActivityAt != null) ...<Widget>[
           const SizedBox(height: 6),
           _DateRow(
@@ -185,15 +209,18 @@ class _DateRow extends StatelessWidget {
     );
 
     if (editable && onTap != null) {
-      return InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            vertical: AppSpacing.xs,
-            horizontal: AppSpacing.sm,
+      return Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              vertical: AppSpacing.xs,
+              horizontal: AppSpacing.sm,
+            ),
+            child: content,
           ),
-          child: content,
         ),
       );
     }

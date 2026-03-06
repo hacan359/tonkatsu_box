@@ -24,98 +24,120 @@ class WelcomeStepReady extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Icon(
-              Icons.celebration,
-              size: 56,
-              color: AppColors.brand,
-            ),
-            const SizedBox(height: 20),
-            Text(
-              S.of(context).welcomeReadyTitle,
-              style: AppTypography.h1.copyWith(fontSize: 22),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              S.of(context).welcomeReadyMessage,
-              style: AppTypography.body.copyWith(
-                color: AppColors.textSecondary,
-                fontSize: 13,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.lg),
+    final S l = S.of(context);
 
-            // CTA: Go to Settings
-            SizedBox(
-              width: 280,
-              child: FilledButton(
-                onPressed: onGoToSettings,
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.brand,
-                  foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(
-                      AppSpacing.radiusSm,
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        // Адаптивные размеры для маленьких экранов
+        final bool isSmallScreen = constraints.maxHeight < 500;
+        final double iconSize = isSmallScreen ? 40 : 56;
+        final double spacing = isSmallScreen ? AppSpacing.sm : 20;
+        final double titleFontSize = isSmallScreen ? 20 : 22;
+        final double bodyFontSize = isSmallScreen ? 12 : 13;
+
+        return Center(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: isSmallScreen ? AppSpacing.sm : AppSpacing.md,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Icon(
+                  Icons.celebration,
+                  size: iconSize,
+                  color: AppColors.brand,
+                ),
+                SizedBox(height: spacing),
+                Text(
+                  l.welcomeReadyTitle,
+                  style: AppTypography.h1.copyWith(fontSize: titleFontSize),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: isSmallScreen ? 6 : AppSpacing.sm),
+                Text(
+                  l.welcomeReadyMessage,
+                  style: AppTypography.body.copyWith(
+                    color: AppColors.textSecondary,
+                    fontSize: bodyFontSize,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: isSmallScreen ? AppSpacing.md : AppSpacing.lg),
+
+                // CTA: Go to Settings
+                SizedBox(
+                  width: isSmallScreen ? 240 : 280,
+                  child: FilledButton(
+                    onPressed: onGoToSettings,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.brand,
+                      foregroundColor: Colors.black,
+                      padding: EdgeInsets.symmetric(
+                        vertical: isSmallScreen ? 10 : 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusSm,
+                        ),
+                      ),
+                      textStyle: TextStyle(
+                        fontSize: isSmallScreen ? 13 : 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Text(l.welcomeReadyGoToSettings),
+                        const SizedBox(width: 4),
+                        const Icon(Icons.arrow_forward, size: 16),
+                      ],
                     ),
                   ),
-                  textStyle: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Text(S.of(context).welcomeReadyGoToSettings),
-                    const SizedBox(width: 4),
-                    const Icon(Icons.arrow_forward, size: 16),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
+                SizedBox(height: isSmallScreen ? 8 : AppSpacing.sm),
 
-            // Secondary: Skip
-            SizedBox(
-              width: 280,
-              child: OutlinedButton(
-                onPressed: onSkip,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.textSecondary,
-                  side: const BorderSide(color: AppColors.surfaceBorder),
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(
-                      AppSpacing.radiusSm,
+                // Secondary: Skip
+                SizedBox(
+                  width: isSmallScreen ? 240 : 280,
+                  child: OutlinedButton(
+                    onPressed: onSkip,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.textSecondary,
+                      side: const BorderSide(color: AppColors.surfaceBorder),
+                      padding: EdgeInsets.symmetric(
+                        vertical: isSmallScreen ? 8 : 10,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusSm,
+                        ),
+                      ),
+                      textStyle: TextStyle(
+                        fontSize: isSmallScreen ? 12 : 13,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                  ),
-                  textStyle: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
+                    child: Text(l.welcomeReadySkip),
                   ),
                 ),
-                child: Text(S.of(context).welcomeReadySkip),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.md),
+                SizedBox(height: isSmallScreen ? 8 : AppSpacing.md),
 
-            Text(
-              S.of(context).welcomeReadyReturnHint,
-              style: AppTypography.bodySmall.copyWith(
-                color: AppColors.textTertiary,
-              ),
+                Text(
+                  l.welcomeReadyReturnHint,
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.textTertiary,
+                    fontSize: isSmallScreen ? 11 : null,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

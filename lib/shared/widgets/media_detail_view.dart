@@ -12,6 +12,7 @@ import '../theme/app_typography.dart';
 import 'cached_image.dart';
 import 'source_badge.dart';
 import 'star_rating_bar.dart';
+import '../utils/duration_formatter.dart';
 
 /// Колбэк для изменения даты активности.
 ///
@@ -81,6 +82,7 @@ class MediaDetailView extends StatelessWidget {
     this.startedAt,
     this.completedAt,
     this.lastActivityAt,
+    this.completionTime,
     this.onActivityDateChanged,
     this.hasAuthorComment = false,
     this.hasUserComment = false,
@@ -150,6 +152,9 @@ class MediaDetailView extends StatelessWidget {
 
   /// Дата последней активности (readonly).
   final DateTime? lastActivityAt;
+
+  /// Время прохождения (startedAt → completedAt).
+  final Duration? completionTime;
 
   /// Колбэк при изменении даты активности (Started/Completed).
   final OnActivityDateChanged? onActivityDateChanged;
@@ -467,12 +472,32 @@ class MediaDetailView extends StatelessWidget {
               ? () => _pickActivityDate(context, 'completed', completedAt)
               : null,
         ),
+        if (completionTime != null)
+          _buildCompletionTimeChip(l),
         if (lastActivityAt != null)
           _buildDateChip(
             icon: Icons.update,
             label: l.activityDatesLastActivity,
             date: lastActivityAt,
           ),
+      ],
+    );
+  }
+
+  Widget _buildCompletionTimeChip(S l) {
+    final String formatted = formatCompletionTime(completionTime!, l);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        const Icon(Icons.timer_outlined,
+            size: 14, color: AppColors.textTertiary),
+        const SizedBox(width: 4),
+        Text(
+          formatted,
+          style: AppTypography.caption.copyWith(
+            color: AppColors.textTertiary,
+          ),
+        ),
       ],
     );
   }
@@ -515,12 +540,15 @@ class MediaDetailView extends StatelessWidget {
     );
 
     if (editable && onTap != null) {
-      return InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 2),
-          child: content,
+      return Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 2),
+            child: content,
+          ),
         ),
       );
     }

@@ -381,6 +381,13 @@ class CollectionItem with Exportable {
   /// Есть ли личный комментарий.
   bool get hasUserComment => userComment != null && userComment!.isNotEmpty;
 
+  /// Время прохождения (разница startedAt → completedAt).
+  Duration? get completionTime {
+    if (startedAt == null || completedAt == null) return null;
+    final Duration diff = completedAt!.difference(startedAt!);
+    return diff.isNegative ? null : diff;
+  }
+
   /// Завершён ли элемент.
   bool get isCompleted => status == ItemStatus.completed;
 

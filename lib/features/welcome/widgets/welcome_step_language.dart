@@ -19,65 +19,79 @@ class WelcomeStepLanguage extends ConsumerWidget {
     final SettingsState settings = ref.watch(settingsNotifierProvider);
     final S l = S.of(context);
 
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Icon(
-              Icons.language,
-              size: 56,
-              color: AppColors.brand,
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        // Адаптивные размеры для маленьких экранов
+        final bool isSmallScreen = constraints.maxHeight < 450;
+        final double iconSize = isSmallScreen ? 40 : 56;
+        final double spacing = isSmallScreen ? AppSpacing.sm : 20;
+
+        return Center(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: isSmallScreen ? AppSpacing.sm : AppSpacing.md,
             ),
-            const SizedBox(height: 20),
-            Text(
-              l.welcomeLanguageTitle,
-              style: AppTypography.h1.copyWith(fontSize: 22),
-              textAlign: TextAlign.center,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Icon(
+                  Icons.language,
+                  size: iconSize,
+                  color: AppColors.brand,
+                ),
+                SizedBox(height: spacing),
+                Text(
+                  l.welcomeLanguageTitle,
+                  style: AppTypography.h1.copyWith(
+                    fontSize: isSmallScreen ? 20 : 22,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: isSmallScreen ? 6 : AppSpacing.sm),
+                Text(
+                  l.welcomeLanguageSubtitle,
+                  style: AppTypography.body.copyWith(
+                    color: AppColors.textSecondary,
+                    fontSize: isSmallScreen ? 12 : 13,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: isSmallScreen ? AppSpacing.md : AppSpacing.lg),
+                SizedBox(
+                  width: 280,
+                  child: _LanguageOption(
+                    label: 'English',
+                    isSelected: settings.appLanguage == 'en',
+                    onTap: () => ref
+                        .read(settingsNotifierProvider.notifier)
+                        .setAppLanguage('en'),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                SizedBox(
+                  width: 280,
+                  child: _LanguageOption(
+                    label: 'Русский',
+                    isSelected: settings.appLanguage == 'ru',
+                    onTap: () => ref
+                        .read(settingsNotifierProvider.notifier)
+                        .setAppLanguage('ru'),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  l.welcomeLanguageHint,
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.textTertiary,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              l.welcomeLanguageSubtitle,
-              style: AppTypography.body.copyWith(
-                color: AppColors.textSecondary,
-                fontSize: 13,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            SizedBox(
-              width: 280,
-              child: _LanguageOption(
-                label: 'English',
-                isSelected: settings.appLanguage == 'en',
-                onTap: () => ref
-                    .read(settingsNotifierProvider.notifier)
-                    .setAppLanguage('en'),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            SizedBox(
-              width: 280,
-              child: _LanguageOption(
-                label: 'Русский',
-                isSelected: settings.appLanguage == 'ru',
-                onTap: () => ref
-                    .read(settingsNotifierProvider.notifier)
-                    .setAppLanguage('ru'),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              l.welcomeLanguageHint,
-              style: AppTypography.bodySmall.copyWith(
-                color: AppColors.textTertiary,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
