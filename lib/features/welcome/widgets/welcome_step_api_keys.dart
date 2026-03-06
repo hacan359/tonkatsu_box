@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/constants/api_defaults.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
@@ -55,24 +56,33 @@ class WelcomeStepApiKeys extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
 
           // IGDB
-          _ApiSection(
-            tag: l.welcomeApiIgdbTag,
-            tagColor: AppColors.gameAccent,
-            title: l.welcomeApiIgdbDesc,
-            badge: l.welcomeApiRequired,
-            badgeColor: AppColors.brand,
-            steps: const <String>[
-              'Go to dev.twitch.tv/console',
-              'Log in with Twitch (create account if needed)',
-              'Register Your Application\n'
-                  'Name: anything, URL: http://localhost',
-              'Copy Client ID and Client Secret',
-            ],
-            linkTitle: 'Twitch Developer Console',
-            linkSubtitle: 'dev.twitch.tv/console/apps',
-            linkUrl: 'https://dev.twitch.tv/console/apps',
-            linkColor: AppColors.gameAccent,
-          ),
+          if (ApiDefaults.hasIgdbKey)
+            _BuiltInKeySection(
+              tag: l.welcomeApiIgdbTag,
+              tagColor: AppColors.gameAccent,
+              title: l.welcomeApiIgdbDesc,
+              builtInLabel: l.welcomeApiBuiltInKey,
+              ownKeyHint: l.welcomeApiOwnKeyHint,
+            )
+          else
+            _ApiSection(
+              tag: l.welcomeApiIgdbTag,
+              tagColor: AppColors.gameAccent,
+              title: l.welcomeApiIgdbDesc,
+              badge: l.welcomeApiRequired,
+              badgeColor: AppColors.brand,
+              steps: const <String>[
+                'Go to dev.twitch.tv/console',
+                'Log in with Twitch (create account if needed)',
+                'Register Your Application\n'
+                    'Name: anything, URL: http://localhost',
+                'Copy Client ID and Client Secret',
+              ],
+              linkTitle: 'Twitch Developer Console',
+              linkSubtitle: 'dev.twitch.tv/console/apps',
+              linkUrl: 'https://dev.twitch.tv/console/apps',
+              linkColor: AppColors.gameAccent,
+            ),
           const SizedBox(height: AppSpacing.sm),
 
           // TMDB
@@ -80,8 +90,12 @@ class WelcomeStepApiKeys extends StatelessWidget {
             tag: l.welcomeApiTmdbTag,
             tagColor: AppColors.brand,
             title: l.welcomeApiTmdbDesc,
-            badge: l.welcomeApiRecommended,
-            badgeColor: AppColors.textTertiary,
+            badge: ApiDefaults.hasTmdbKey
+                ? l.welcomeApiBuiltInKey
+                : l.welcomeApiRecommended,
+            badgeColor: ApiDefaults.hasTmdbKey
+                ? AppColors.success
+                : AppColors.textTertiary,
             steps: const <String>[
               'Go to themoviedb.org',
               'Create free account → Settings → API',
@@ -100,8 +114,12 @@ class WelcomeStepApiKeys extends StatelessWidget {
             tag: l.welcomeApiSgdbTag,
             tagColor: _sgdbColor,
             title: l.welcomeApiSgdbDesc,
-            badge: l.welcomeApiOptional,
-            badgeColor: AppColors.textTertiary,
+            badge: ApiDefaults.hasSteamGridDbKey
+                ? l.welcomeApiBuiltInKey
+                : l.welcomeApiOptional,
+            badgeColor: ApiDefaults.hasSteamGridDbKey
+                ? AppColors.success
+                : AppColors.textTertiary,
             steps: const <String>[
               'Go to steamgriddb.com',
               'Create account → Preferences → API',
@@ -263,6 +281,122 @@ class _ApiSection extends StatelessWidget {
             subtitle: linkSubtitle,
             url: linkUrl,
             color: linkColor,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Секция API с встроенным ключом — компактная, без инструкций.
+class _BuiltInKeySection extends StatelessWidget {
+  const _BuiltInKeySection({
+    required this.tag,
+    required this.tagColor,
+    required this.title,
+    required this.builtInLabel,
+    required this.ownKeyHint,
+  });
+
+  final String tag;
+  final Color tagColor;
+  final String title;
+  final String builtInLabel;
+  final String ownKeyHint;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        border: Border.all(color: AppColors.surfaceBorder),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: <Widget>[
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 7,
+                  vertical: 2,
+                ),
+                decoration: BoxDecoration(
+                  color: tagColor.withAlpha(30),
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: Text(
+                  tag,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: tagColor,
+                  ),
+                ),
+              ),
+              Text(
+                title,
+                style: AppTypography.h3.copyWith(fontSize: 13),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 6,
+                  vertical: 2,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withAlpha(30),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  builtInLabel,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.success,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: <Widget>[
+              const Icon(Icons.check_circle, size: 16, color: AppColors.success),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  builtInLabel,
+                  style: AppTypography.body.copyWith(
+                    color: AppColors.success,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: <Widget>[
+              const Icon(
+                Icons.info_outline,
+                size: 14,
+                color: AppColors.textTertiary,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  ownKeyHint,
+                  style: AppTypography.caption.copyWith(
+                    color: AppColors.textTertiary,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

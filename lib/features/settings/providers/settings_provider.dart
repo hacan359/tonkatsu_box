@@ -130,6 +130,13 @@ class SettingsState {
       ApiDefaults.hasSteamGridDbKey &&
       steamGridDbApiKey == ApiDefaults.steamGridDbApiKey;
 
+  /// Проверяет, используется ли встроенный IGDB ключ.
+  bool get isIgdbKeyBuiltIn =>
+      hasCredentials &&
+      ApiDefaults.hasIgdbKey &&
+      clientId == ApiDefaults.igdbClientId &&
+      clientSecret == ApiDefaults.igdbClientSecret;
+
   /// Проверяет наличие сохранённых учётных данных.
   bool get hasCredentials =>
       clientId != null &&
@@ -235,8 +242,18 @@ class SettingsNotifier extends Notifier<SettingsState> {
   }
 
   SettingsState _loadFromPrefs() {
-    final String? clientId = _prefs.getString(SettingsKeys.clientId);
-    final String? clientSecret = _prefs.getString(SettingsKeys.clientSecret);
+    // IGDB: user key → built-in key → null
+    final String? userClientId = _prefs.getString(SettingsKeys.clientId);
+    final String? clientId =
+        (userClientId != null && userClientId.isNotEmpty)
+            ? userClientId
+            : (ApiDefaults.hasIgdbKey ? ApiDefaults.igdbClientId : null);
+    final String? userClientSecret =
+        _prefs.getString(SettingsKeys.clientSecret);
+    final String? clientSecret =
+        (userClientSecret != null && userClientSecret.isNotEmpty)
+            ? userClientSecret
+            : (ApiDefaults.hasIgdbKey ? ApiDefaults.igdbClientSecret : null);
     final String? accessToken = _prefs.getString(SettingsKeys.accessToken);
     final int? tokenExpires = _prefs.getInt(SettingsKeys.tokenExpires);
     // SteamGridDB: user key → built-in key → null
@@ -300,7 +317,36 @@ class SettingsNotifier extends Notifier<SettingsState> {
     // Загружаем количество платформ отложенно
     Future<void>.microtask(_loadPlatformCount);
 
+    // Авто-верификация: если есть credentials но нет токена — получаем его
+    if (loadedState.hasCredentials && !loadedState.hasValidToken) {
+      Future<void>.microtask(_autoVerifyConnection);
+    }
+
     return loadedState;
+  }
+
+  /// Автоматически получает токен при наличии credentials.
+  Future<void> _autoVerifyConnection() async {
+    if (!state.hasCredentials) return;
+    try {
+      final TwitchAuthResult authResult = await _igdbApi.getAccessToken(
+        clientId: state.clientId!,
+        clientSecret: state.clientSecret!,
+      );
+      await _prefs.setString(SettingsKeys.accessToken, authResult.accessToken);
+      await _prefs.setInt(SettingsKeys.tokenExpires, authResult.expiresAt);
+      _igdbApi.setCredentials(
+        clientId: state.clientId!,
+        accessToken: authResult.accessToken,
+      );
+      state = state.copyWith(
+        accessToken: authResult.accessToken,
+        tokenExpires: authResult.expiresAt,
+        connectionStatus: ConnectionStatus.connected,
+      );
+    } on IgdbApiException {
+      // Тихо проглатываем — пользователь увидит "Not connected"
+    }
   }
 
   Future<void> _loadPlatformCount() async {
@@ -432,6 +478,32 @@ class SettingsNotifier extends Notifier<SettingsState> {
     } else {
       _tmdbApi.clearApiKey();
       state = state.copyWith(tmdbApiKey: '');
+    }
+  }
+
+  /// Сбрасывает IGDB credentials на встроенные.
+  ///
+  /// Удаляет пользовательские ключи из SharedPreferences.
+  /// Если есть встроенные ключи — использует их, иначе очищает.
+  Future<void> resetIgdbCredentialsToDefault() async {
+    await _prefs.remove(SettingsKeys.clientId);
+    await _prefs.remove(SettingsKeys.clientSecret);
+    await _prefs.remove(SettingsKeys.accessToken);
+    await _prefs.remove(SettingsKeys.tokenExpires);
+    if (ApiDefaults.hasIgdbKey) {
+      state = state.copyWith(
+        clientId: ApiDefaults.igdbClientId,
+        clientSecret: ApiDefaults.igdbClientSecret,
+      );
+      Future<void>.microtask(_autoVerifyConnection);
+    } else {
+      _igdbApi.clearCredentials();
+      state = state.copyWith(
+        clientId: '',
+        clientSecret: '',
+        accessToken: '',
+        connectionStatus: ConnectionStatus.unknown,
+      );
     }
   }
 

@@ -1545,6 +1545,13 @@ class SRu extends S {
   String get welcomeApiOptional => 'НЕОБЯЗАТЕЛЬНО';
 
   @override
+  String get welcomeApiBuiltInKey => 'ВСТРОЕННЫЙ КЛЮЧ';
+
+  @override
+  String get welcomeApiOwnKeyHint =>
+      'Можно добавить свой ключ позже в Настройках для лучшей производительности';
+
+  @override
   String get welcomeApiEnterKeysHint =>
       'Введите ключи в Настройки → Учётные данные';
 

@@ -28,6 +28,12 @@ void main() {
 
     // По умолчанию getPlatformCount возвращает 0
     when(() => mockDbService.getPlatformCount()).thenAnswer((_) async => 0);
+
+    // По умолчанию getAccessToken бросает ошибку (нет реального API)
+    when(() => mockIgdbApi.getAccessToken(
+          clientId: any(named: 'clientId'),
+          clientSecret: any(named: 'clientSecret'),
+        )).thenThrow(const IgdbApiException('Test: no real API'));
   });
 
   Future<ProviderContainer> createContainer({
@@ -48,6 +54,46 @@ void main() {
     addTearDown(container.dispose);
     return container;
   }
+
+  group('SettingsState', () {
+    test('isIgdbKeyBuiltIn false когда нет credentials', () {
+      const SettingsState state = SettingsState();
+      expect(state.isIgdbKeyBuiltIn, isFalse);
+    });
+
+    test('isIgdbKeyBuiltIn false когда credentials есть но built-in нет', () {
+      // В тестах ApiDefaults.hasIgdbKey == false
+      const SettingsState state = SettingsState(
+        clientId: 'user_cid',
+        clientSecret: 'user_csecret',
+      );
+      expect(state.isIgdbKeyBuiltIn, isFalse);
+      expect(state.hasCredentials, isTrue);
+    });
+
+    test('hasCredentials true когда clientId и clientSecret заполнены', () {
+      const SettingsState state = SettingsState(
+        clientId: 'cid',
+        clientSecret: 'csecret',
+      );
+      expect(state.hasCredentials, isTrue);
+    });
+
+    test('hasCredentials false когда clientId пуст', () {
+      const SettingsState state = SettingsState(
+        clientId: '',
+        clientSecret: 'csecret',
+      );
+      expect(state.hasCredentials, isFalse);
+    });
+
+    test('hasCredentials false когда clientSecret null', () {
+      const SettingsState state = SettingsState(
+        clientId: 'cid',
+      );
+      expect(state.hasCredentials, isFalse);
+    });
+  });
 
   group('SettingsKeys', () {
     test('collectionViewModePrefix должен быть корректным', () {
@@ -586,6 +632,101 @@ void main() {
         expect(state.steamGridDbApiKey, isNull);
         expect(state.hasSteamGridDbKey, isFalse);
       });
+
+      test('isIgdbKeyBuiltIn false когда built-in ключ отсутствует', () async {
+        final ProviderContainer container = await createContainer(
+          initialPrefs: <String, Object>{
+            'igdb_client_id': 'user_cid',
+            'igdb_client_secret': 'user_csecret',
+          },
+        );
+
+        final SettingsState state =
+            container.read(settingsNotifierProvider);
+
+        // В тестах ApiDefaults.hasIgdbKey == false
+        expect(state.isIgdbKeyBuiltIn, isFalse);
+        expect(state.hasCredentials, isTrue);
+        expect(state.clientId, equals('user_cid'));
+        expect(state.clientSecret, equals('user_csecret'));
+      });
+
+      test('при отсутствии user IGDB key и built-in — credentials null',
+          () async {
+        final ProviderContainer container = await createContainer();
+
+        final SettingsState state =
+            container.read(settingsNotifierProvider);
+
+        // В тестах ApiDefaults.hasIgdbKey == false, нет user key → null
+        expect(state.clientId, isNull);
+        expect(state.clientSecret, isNull);
+        expect(state.hasCredentials, isFalse);
+        expect(state.isIgdbKeyBuiltIn, isFalse);
+      });
+
+      test('при пустом IGDB key в prefs — fallback на null', () async {
+        final ProviderContainer container = await createContainer(
+          initialPrefs: <String, Object>{
+            'igdb_client_id': '',
+            'igdb_client_secret': '',
+          },
+        );
+
+        final SettingsState state =
+            container.read(settingsNotifierProvider);
+
+        expect(state.clientId, isNull);
+        expect(state.clientSecret, isNull);
+        expect(state.hasCredentials, isFalse);
+      });
+    });
+
+    group('resetIgdbCredentialsToDefault', () {
+      test('должен удалить user credentials из prefs', () async {
+        final ProviderContainer container = await createContainer(
+          initialPrefs: <String, Object>{
+            'igdb_client_id': 'user_cid',
+            'igdb_client_secret': 'user_csecret',
+            'igdb_access_token': 'user_token',
+            'igdb_token_expires': 9999999999,
+          },
+        );
+
+        final SettingsNotifier notifier =
+            container.read(settingsNotifierProvider.notifier);
+
+        await notifier.resetIgdbCredentialsToDefault();
+
+        expect(prefs.getString('igdb_client_id'), isNull);
+        expect(prefs.getString('igdb_client_secret'), isNull);
+        expect(prefs.getString('igdb_access_token'), isNull);
+        expect(prefs.getInt('igdb_token_expires'), isNull);
+      });
+
+      test('должен очистить API клиент когда built-in ключ отсутствует',
+          () async {
+        final ProviderContainer container = await createContainer(
+          initialPrefs: <String, Object>{
+            'igdb_client_id': 'user_cid',
+            'igdb_client_secret': 'user_csecret',
+          },
+        );
+
+        final SettingsNotifier notifier =
+            container.read(settingsNotifierProvider.notifier);
+
+        await notifier.resetIgdbCredentialsToDefault();
+
+        // В тестах ApiDefaults.hasIgdbKey == false
+        verify(() => mockIgdbApi.clearCredentials()).called(1);
+
+        final SettingsState state =
+            container.read(settingsNotifierProvider);
+        expect(state.clientId, equals(''));
+        expect(state.clientSecret, equals(''));
+        expect(state.connectionStatus, equals(ConnectionStatus.unknown));
+      });
     });
 
     group('resetTmdbApiKeyToDefault', () {
@@ -673,12 +814,24 @@ void main() {
       expect(ApiDefaults.steamGridDbApiKey, isEmpty);
     });
 
+    test('igdbClientId пустая строка в тестах', () {
+      expect(ApiDefaults.igdbClientId, isEmpty);
+    });
+
+    test('igdbClientSecret пустая строка в тестах', () {
+      expect(ApiDefaults.igdbClientSecret, isEmpty);
+    });
+
     test('hasTmdbKey false в тестах', () {
       expect(ApiDefaults.hasTmdbKey, isFalse);
     });
 
     test('hasSteamGridDbKey false в тестах', () {
       expect(ApiDefaults.hasSteamGridDbKey, isFalse);
+    });
+
+    test('hasIgdbKey false в тестах', () {
+      expect(ApiDefaults.hasIgdbKey, isFalse);
     });
   });
 }
