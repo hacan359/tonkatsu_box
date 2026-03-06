@@ -6,6 +6,9 @@
 
 ## [Unreleased]
 
+### Changed
+- **Settings UX — Subtitles & Reorder** — added optional `subtitle` parameter to `SettingsGroup` (shown below uppercase title) and `SettingsTile` (shown below main text). Reordered settings sections: Profile moved from 5th to 1st position. Added 12 new localization keys (EN + RU) for section and tile subtitles, updated 3 existing subtitle values for clarity. 5 new tests for subtitle rendering
+
 ### Added
 - **Completion Time Display** — shows time taken to complete collection items when both started and completed dates are set. Added `CollectionItem.completionTime` getter that returns `Duration?` from date difference (null for missing dates or negative durations). `ActivityDatesSection` displays completion time with localized formatting ("2 weeks", "3 months", "1.1 years"). `MediaDetailView` includes completion time in horizontal dates row. Shared `lib/shared/utils/duration_formatter.dart` utility with `formatDuration()` and `formatCompletionTime()` functions, supporting 6 time ranges with smart rounding. 7 localization keys (EN + RU): `activityDatesCompletionTime`, `durationLessThanDay`, `durationOneDay`, `durationDays`, `durationWeeks`, `durationMonths`, `durationYears`. 26 new tests: 5 for `CollectionItem.completionTime` logic, 18 for `ActivityDatesSection` widget, 3 for `MediaDetailView` integration
 - **Welcome Wizard — Name & Language steps** — expanded Welcome Wizard from 4 to 6 steps. New step 2 (`WelcomeStepName`) lets the user set their author name via a `TextField` backed by `SettingsNotifier.setDefaultAuthor()`. New step 3 (`WelcomeStepLanguage`) offers English/Russian selection via animated cards backed by `SettingsNotifier.setAppLanguage()`. 8 new localization keys (EN + RU). 18 new tests for both widgets, plus updated `welcome_screen_test.dart` for 6-step flow

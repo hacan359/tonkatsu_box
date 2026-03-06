@@ -14,6 +14,7 @@ class SettingsTile extends StatelessWidget {
   /// Создаёт [SettingsTile].
   const SettingsTile({
     required this.title,
+    this.subtitle,
     this.value,
     this.onTap,
     this.trailing,
@@ -23,6 +24,9 @@ class SettingsTile extends StatelessWidget {
 
   /// Основной текст строки.
   final String title;
+
+  /// Подзаголовок под основным текстом (приглушённый цвет).
+  final String? subtitle;
 
   /// Значение справа (серым цветом).
   final String? value;
@@ -49,13 +53,25 @@ class SettingsTile extends StatelessWidget {
           children: <Widget>[
             Expanded(
               flex: 3,
-              child: Text(
-                title,
-                style: AppTypography.body.copyWith(
-                  color: AppColors.textPrimary,
-                ),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    title,
+                    style: AppTypography.body.copyWith(
+                      color: AppColors.textPrimary,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                  if (subtitle != null)
+                    Text(
+                      subtitle!,
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.textTertiary,
+                      ),
+                    ),
+                ],
               ),
             ),
             if (value != null)

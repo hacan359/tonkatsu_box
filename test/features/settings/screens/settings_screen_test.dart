@@ -184,6 +184,9 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
+        await tester.drag(find.byType(ListView), const Offset(0, -300));
+        await tester.pumpAndSettle();
+
         expect(find.text('Trakt Import'), findsOneWidget);
       });
     });
@@ -302,6 +305,9 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
+        await tester.drag(find.byType(ListView), const Offset(0, -300));
+        await tester.pumpAndSettle();
+
         final Finder databaseTile = find.ancestor(
           of: find.text('Database'),
           matching: find.byType(SettingsTile),
@@ -315,6 +321,9 @@ void main() {
       testWidgets('Trakt Import tile is tappable',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        await tester.drag(find.byType(ListView), const Offset(0, -300));
         await tester.pumpAndSettle();
 
         final Finder traktTile = find.ancestor(

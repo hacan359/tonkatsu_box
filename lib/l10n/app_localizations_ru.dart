@@ -204,6 +204,9 @@ class SRu extends S {
   String get settingsProfile => 'Профиль';
 
   @override
+  String get settingsProfileSubtitle => 'Имя автора для ваших коллекций';
+
+  @override
   String get settingsAuthorName => 'Имя автора';
 
   @override
@@ -223,7 +226,7 @@ class SRu extends S {
   String get settingsCache => 'Кэш';
 
   @override
-  String get settingsCacheSubtitle => 'Настройки кэша изображений';
+  String get settingsCacheSubtitle => 'Офлайн-режим и хранение обложек';
 
   @override
   String get settingsDatabase => 'База данных';
@@ -235,7 +238,8 @@ class SRu extends S {
   String get settingsTraktImport => 'Импорт Trakt';
 
   @override
-  String get settingsTraktImportSubtitle => 'Импорт из ZIP-экспорта Trakt.tv';
+  String get settingsTraktImportSubtitle =>
+      'История просмотров, оценки, вишлист';
 
   @override
   String get settingsDebug => 'Отладка';
@@ -289,13 +293,35 @@ class SRu extends S {
   String get settingsAppearance => 'Оформление';
 
   @override
+  String get settingsAppearanceSubtitle => 'Язык, отображение и контент';
+
+  @override
+  String get settingsAppLanguageSubtitle => 'Язык интерфейса';
+
+  @override
+  String get settingsContentLanguageSubtitle =>
+      'Язык описаний фильмов и сериалов';
+
+  @override
   String get settingsDataSources => 'Источники данных';
+
+  @override
+  String get settingsDataSourcesSubtitle => 'IGDB, TMDB, SteamGridDB';
+
+  @override
+  String get settingsApiKeysSubtitle => 'Настройка подключений к базам данных';
 
   @override
   String get settingsStorage => 'Хранилище';
 
   @override
+  String get settingsStorageSubtitle => 'Кэш изображений и база данных';
+
+  @override
   String get settingsImport => 'Импорт';
+
+  @override
+  String get settingsImportSubtitle => 'Импорт коллекций из внешних сервисов';
 
   @override
   String get settingsContentLanguage => 'Язык контента';
@@ -2022,7 +2048,7 @@ class SRu extends S {
 
   @override
   String get settingsShowRecommendationsSubtitle =>
-      'Показывать рекомендации и отзывы на странице элемента';
+      'Похожие фильмы и сериалы на странице деталей';
 
   @override
   String get uncategorizedBanner =>

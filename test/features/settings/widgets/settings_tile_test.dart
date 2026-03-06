@@ -7,6 +7,7 @@ import 'package:xerabora/features/settings/widgets/settings_tile.dart';
 void main() {
   Widget createWidget({
     String title = 'Test Tile',
+    String? subtitle,
     String? value,
     VoidCallback? onTap,
     Widget? trailing,
@@ -16,6 +17,7 @@ void main() {
       home: Scaffold(
         body: SettingsTile(
           title: title,
+          subtitle: subtitle,
           value: value,
           onTap: onTap,
           trailing: trailing,
@@ -47,6 +49,25 @@ void main() {
         // Only title text is present
         final Finder texts = find.byType(Text);
         expect(texts, findsOneWidget);
+      });
+
+      testWidgets('renders subtitle when provided',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget(
+          subtitle: 'Interface language',
+        ));
+
+        expect(find.text('Test Tile'), findsOneWidget);
+        expect(find.text('Interface language'), findsOneWidget);
+      });
+
+      testWidgets('does not render subtitle when null',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+
+        expect(find.text('Test Tile'), findsOneWidget);
+        // Only 1 text widget (the title)
+        expect(find.byType(Text), findsOneWidget);
       });
 
       testWidgets('renders trailing widget when provided',

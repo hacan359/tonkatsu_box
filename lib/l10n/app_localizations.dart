@@ -487,6 +487,12 @@ abstract class S {
   /// **'Profile'**
   String get settingsProfile;
 
+  /// No description provided for @settingsProfileSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Author name for your collections'**
+  String get settingsProfileSubtitle;
+
   /// No description provided for @settingsAuthorName.
   ///
   /// In en, this message translates to:
@@ -526,7 +532,7 @@ abstract class S {
   /// No description provided for @settingsCacheSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Image cache settings'**
+  /// **'Offline mode and cover storage'**
   String get settingsCacheSubtitle;
 
   /// No description provided for @settingsDatabase.
@@ -550,7 +556,7 @@ abstract class S {
   /// No description provided for @settingsTraktImportSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Import from Trakt.tv ZIP export'**
+  /// **'Watch history, ratings, watchlist'**
   String get settingsTraktImportSubtitle;
 
   /// No description provided for @settingsDebug.
@@ -649,11 +655,41 @@ abstract class S {
   /// **'Appearance'**
   String get settingsAppearance;
 
+  /// No description provided for @settingsAppearanceSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Language, display and content'**
+  String get settingsAppearanceSubtitle;
+
+  /// No description provided for @settingsAppLanguageSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Interface language'**
+  String get settingsAppLanguageSubtitle;
+
+  /// No description provided for @settingsContentLanguageSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Language for movie and TV show descriptions'**
+  String get settingsContentLanguageSubtitle;
+
   /// No description provided for @settingsDataSources.
   ///
   /// In en, this message translates to:
   /// **'Data Sources'**
   String get settingsDataSources;
+
+  /// No description provided for @settingsDataSourcesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'IGDB, TMDB, SteamGridDB'**
+  String get settingsDataSourcesSubtitle;
+
+  /// No description provided for @settingsApiKeysSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Configure connections to databases'**
+  String get settingsApiKeysSubtitle;
 
   /// No description provided for @settingsStorage.
   ///
@@ -661,11 +697,23 @@ abstract class S {
   /// **'Storage'**
   String get settingsStorage;
 
+  /// No description provided for @settingsStorageSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Image cache and database'**
+  String get settingsStorageSubtitle;
+
   /// No description provided for @settingsImport.
   ///
   /// In en, this message translates to:
   /// **'Import'**
   String get settingsImport;
+
+  /// No description provided for @settingsImportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Import collections from external services'**
+  String get settingsImportSubtitle;
 
   /// No description provided for @settingsContentLanguage.
   ///
@@ -3682,7 +3730,7 @@ abstract class S {
   /// No description provided for @settingsShowRecommendationsSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Show recommendations and reviews on item details'**
+  /// **'Similar movies and TV shows on detail pages'**
   String get settingsShowRecommendationsSubtitle;
 
   /// No description provided for @uncategorizedBanner.

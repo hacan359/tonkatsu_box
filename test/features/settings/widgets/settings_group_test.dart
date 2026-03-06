@@ -5,11 +5,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/settings/widgets/settings_group.dart';
 
 void main() {
-  Widget createWidget({String? title, List<Widget>? children}) {
+  Widget createWidget({
+    String? title,
+    String? subtitle,
+    List<Widget>? children,
+  }) {
     return MaterialApp(
       home: Scaffold(
         body: SettingsGroup(
           title: title,
+          subtitle: subtitle,
           children: children ?? const <Widget>[
             Text('Child 1'),
             Text('Child 2'),
@@ -60,6 +65,37 @@ void main() {
         expect(find.text('Only child'), findsOneWidget);
         // No dividers for single child
         expect(find.byType(Divider), findsNothing);
+      });
+    });
+
+    group('Subtitle', () {
+      testWidgets('renders subtitle when provided with title',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget(
+          title: 'profile',
+          subtitle: 'Author name for collections',
+        ));
+
+        expect(find.text('PROFILE'), findsOneWidget);
+        expect(find.text('Author name for collections'), findsOneWidget);
+      });
+
+      testWidgets('does not render subtitle when null',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget(title: 'profile'));
+
+        expect(find.text('PROFILE'), findsOneWidget);
+        // Only the title text inside the header Column
+        expect(find.text('Author name for collections'), findsNothing);
+      });
+
+      testWidgets('does not render subtitle when title is null',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget(
+          subtitle: 'Should not appear',
+        ));
+
+        expect(find.text('Should not appear'), findsNothing);
       });
     });
 
