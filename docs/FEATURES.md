@@ -16,7 +16,7 @@ The app uses a forced dark theme (ThemeMode.dark) with a cinematic design system
 <details>
 <summary><b>UI Components</b></summary>
 
-- **MediaPosterCard** — unified vertical 2:3 poster card with 3 variants: grid (hover animation, dual rating badge, collection checkmark, status Material icon badge, platform label for games), compact (smaller sizes for landscape), canvas (colored border by media type, no hover)
+- **MediaPosterCard** — unified vertical 2:3 poster card with 3 variants: grid (hover animation with dimming effect, fixed-height 2-line title + subtitle, dual rating badge, collection checkmark, status Material icon badge, platform label for games, Tooltip for full title), compact (smaller sizes for landscape), canvas (colored border by media type, no hover). Idle posters dimmed ~25%, hover fades to full brightness
 - **DualRatingBadge** — dual rating display `★ 8 / 7.5` (user rating + API rating) on poster cards and list items. Modes: badge (dark overlay on poster), compact (smaller), inline (no background, for list tiles)
 - **CollectionCard** — iOS folder-style card with 3+3 cover mosaic, hover dimming effect, name and stats
 - **ShimmerLoading** — animated shimmer placeholders (ShimmerBox, ShimmerPosterCard, ShimmerListTile)
@@ -159,6 +159,7 @@ Rate any item 1–10 with clickable stars. Tap again to clear. Collections can b
 
 - **Author's Review** — visible to everyone who imports your collection
 - **My Notes** — private, not included in export
+- **Mini-markdown** — both fields support inline formatting: `**bold**`, `*italic*`, `[text](url)`, and bare URLs. Rendered via `MiniMarkdownText` with tappable links. Editing toolbar with Bold/Italic/Link buttons (`MarkdownToolbar`)
 
 ## 📋 Detail Screens
 
@@ -222,7 +223,7 @@ Quick notes for content to find later when internet is available:
 
 - **Text notes** — save game/movie/TV show names for later search
 - **Optional media type hint** — tag notes as Game, Movie, TV Show, or Animation (ChoiceChip selector)
-- **Optional note** — additional context (platform, year, source of recommendation)
+- **Optional note** — additional context with mini-markdown support (bold, italic, links). Editing toolbar with Bold/Italic/Link buttons. Rendered with `MiniMarkdownText` on the wishlist screen
 - **Tap to search** — opens SearchScreen with pre-filled query and correct media tab
 - **Resolve/Unresolve** — mark items as found; resolved items show strikethrough text at 50% opacity, sorted to bottom
 - **Filter toggle** — show/hide resolved items

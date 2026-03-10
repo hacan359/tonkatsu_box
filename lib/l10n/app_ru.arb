@@ -758,5 +758,14 @@
   "browseSearchHint": "Поиск...",
   "browseBackToBrowse": "Назад к обзору",
 
-  "typeToFilterHint": "Фильтр..."
+  "typeToFilterHint": "Фильтр...",
+
+  "insertLink": "Вставить ссылку",
+  "linkText": "Текст",
+  "linkHint": "Гайд",
+  "urlLabel": "URL",
+  "urlHint": "https://example.com",
+  "markdownBold": "Жирный",
+  "markdownItalic": "Курсив",
+  "insert": "Вставить"
 }

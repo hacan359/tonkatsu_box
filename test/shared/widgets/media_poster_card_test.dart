@@ -106,14 +106,23 @@ void main() {
         expect(find.text('Action'), findsOneWidget);
       });
 
-      testWidgets('не должен показывать подзаголовок без года и subtitle',
+      testWidgets('subtitle всегда на месте (пустая строка без данных)',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildCard());
         await tester.pumpAndSettle();
 
-        // Только заголовок, без subtitle row
-        final Finder columnFinder = find.byType(Column);
-        expect(columnFinder, findsWidgets);
+        // Текстовый блок с фиксированной высотой всегда рендерится.
+        final Finder sizedBoxes = find.byType(SizedBox);
+        bool foundFixedTextBlock = false;
+        for (int i = 0; i < tester.widgetList(sizedBoxes).length; i++) {
+          final SizedBox box =
+              tester.widget<SizedBox>(sizedBoxes.at(i));
+          if (box.height == 52) {
+            foundFixedTextBlock = true;
+            break;
+          }
+        }
+        expect(foundFixedTextBlock, isTrue);
       });
 
       testWidgets('должен показать DualRatingBadge с рейтингами',
@@ -237,9 +246,9 @@ void main() {
           of: find.byType(MediaPosterCard),
           matching: find.byType(MouseRegion),
         );
-        expect(mouseRegions, findsOneWidget);
+        expect(mouseRegions, findsAtLeastNWidgets(1));
         final MouseRegion region =
-            tester.widget<MouseRegion>(mouseRegions);
+            tester.widget<MouseRegion>(mouseRegions.first);
         expect(region.cursor, SystemMouseCursors.click);
       });
 
@@ -252,9 +261,9 @@ void main() {
           of: find.byType(MediaPosterCard),
           matching: find.byType(MouseRegion),
         );
-        expect(mouseRegions, findsOneWidget);
+        expect(mouseRegions, findsAtLeastNWidgets(1));
         final MouseRegion region =
-            tester.widget<MouseRegion>(mouseRegions);
+            tester.widget<MouseRegion>(mouseRegions.first);
         expect(region.cursor, SystemMouseCursors.basic);
       });
 
@@ -270,18 +279,18 @@ void main() {
         expect(focusWidgets, findsOneWidget);
       });
 
-      testWidgets('должен показать затемнение на постере',
+      testWidgets('должен показать затемнение ~38% на постере (idle)',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildCard());
         await tester.pumpAndSettle();
 
-        // ColoredBox с 0x30000000 (затемнение)
+        // Idle: alpha = 0x40 (64) → Color.fromARGB(64, 0, 0, 0)
         final Finder coloredBoxes = find.byType(ColoredBox);
         bool foundDimOverlay = false;
         for (int i = 0; i < tester.widgetList(coloredBoxes).length; i++) {
           final ColoredBox box =
               tester.widget<ColoredBox>(coloredBoxes.at(i));
-          if (box.color == const Color(0x30000000)) {
+          if (box.color == const Color.fromARGB(0x40, 0, 0, 0)) {
             foundDimOverlay = true;
             break;
           }
@@ -530,7 +539,7 @@ void main() {
     });
 
     group('grid title', () {
-      testWidgets('должен обрезать длинное название',
+      testWidgets('должен обрезать длинное название в 2 строки',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildCard(
           title: 'A' * 200,
@@ -538,8 +547,21 @@ void main() {
         await tester.pumpAndSettle();
 
         final Text text = tester.widget<Text>(find.text('A' * 200));
-        expect(text.maxLines, 1);
+        expect(text.maxLines, 2);
         expect(text.overflow, TextOverflow.ellipsis);
+      });
+
+      testWidgets('должен показывать Tooltip с полным названием',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildCard(
+          title: 'Wolfenstein II: The New Colossus',
+        ));
+        await tester.pumpAndSettle();
+
+        final Finder tooltipFinder = find.byType(Tooltip);
+        expect(tooltipFinder, findsOneWidget);
+        final Tooltip tooltip = tester.widget<Tooltip>(tooltipFinder);
+        expect(tooltip.message, 'Wolfenstein II: The New Colossus');
       });
     });
 

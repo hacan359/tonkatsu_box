@@ -11,6 +11,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
+import '../../../shared/widgets/mini_markdown_text.dart';
 import '../../../shared/widgets/type_to_filter_overlay.dart';
 import '../../search/screens/search_screen.dart';
 import '../providers/wishlist_provider.dart';
@@ -374,8 +375,20 @@ class _WishlistTile extends StatelessWidget {
 
     if (parts.isEmpty) return null;
 
+    final String subtitle = parts.join(' \u00b7 ');
+
+    // Если есть заметка — рендерим через MiniMarkdownText для поддержки разметки.
+    if (item.hasNote) {
+      return MiniMarkdownText(
+        text: subtitle,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: AppColors.textSecondary,
+            ),
+      );
+    }
+
     return Text(
-      parts.join(' \u00b7 '),
+      subtitle,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
     );

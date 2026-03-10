@@ -972,5 +972,14 @@
   "browseBackToBrowse": "Back to browse",
   "browseSortDisabledHint": "Sorting unavailable during text search",
 
-  "typeToFilterHint": "Filter..."
+  "typeToFilterHint": "Filter...",
+
+  "insertLink": "Insert link",
+  "linkText": "Text",
+  "linkHint": "Guide",
+  "urlLabel": "URL",
+  "urlHint": "https://example.com",
+  "markdownBold": "Bold",
+  "markdownItalic": "Italic",
+  "insert": "Insert"
 }

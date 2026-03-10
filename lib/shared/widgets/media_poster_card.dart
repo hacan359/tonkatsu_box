@@ -193,15 +193,44 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   _buildGridPoster(),
-                  SizedBox(height: _isCompact ? 2 : AppSpacing.xs),
-                  _buildGridTitle(),
-                  if (widget.year != null ||
-                      widget.subtitle != null ||
-                      widget.platformLabel != null)
-                    Padding(
-                      padding: EdgeInsets.only(top: _isCompact ? 1 : 2),
-                      child: _buildGridSubtitle(),
+                  // Текстовый блок — фиксированная высота для ровной сетки.
+                  Tooltip(
+                    message: widget.title,
+                    waitDuration: const Duration(milliseconds: 500),
+                    child: SizedBox(
+                      height: _isCompact ? 38 : 52,
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          top: _isCompact ? 2 : AppSpacing.xs,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Expanded(
+                              child: Text(
+                                widget.title,
+                                style: _isCompact
+                                    ? AppTypography.posterTitle
+                                        .copyWith(fontSize: 9)
+                                    : AppTypography.posterTitle,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Text(
+                              _subtitleText,
+                              style: _isCompact
+                                  ? AppTypography.posterSubtitle
+                                      .copyWith(fontSize: 7)
+                                  : AppTypography.posterSubtitle,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
+                  ),
                 ],
               ),
             ),
@@ -226,9 +255,18 @@ class _MediaPosterCardState extends State<MediaPosterCard>
               placeholder: _buildGridPlaceholder(),
             ),
 
-            // Затемнение
-            const Positioned.fill(
-              child: ColoredBox(color: Color(0x30000000)),
+            // Затемнение: idle ~25%, hover → прозрачный.
+            AnimatedBuilder(
+              animation: _hoverController!,
+              builder: (BuildContext context, Widget? child) {
+                final int alpha =
+                    (0x40 * (1.0 - _hoverController!.value)).round();
+                return Positioned.fill(
+                  child: ColoredBox(
+                    color: Color.fromARGB(alpha, 0, 0, 0),
+                  ),
+                );
+              },
             ),
 
             // Hover-рамка
@@ -322,31 +360,13 @@ class _MediaPosterCardState extends State<MediaPosterCard>
     );
   }
 
-  Widget _buildGridTitle() {
-    return Text(
-      widget.title,
-      style: _isCompact
-          ? AppTypography.posterTitle.copyWith(fontSize: 9)
-          : AppTypography.posterTitle,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-    );
-  }
-
-  Widget _buildGridSubtitle() {
+  /// Сформированный subtitle: platform · year · genre (или пустая строка).
+  String get _subtitleText {
     final List<String> parts = <String>[];
     if (widget.platformLabel != null) parts.add(widget.platformLabel!);
     if (widget.year != null) parts.add(widget.year.toString());
     if (widget.subtitle != null) parts.add(widget.subtitle!);
-
-    return Text(
-      parts.join(' \u00b7 '),
-      style: _isCompact
-          ? AppTypography.posterSubtitle.copyWith(fontSize: 7)
-          : AppTypography.posterSubtitle,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-    );
+    return parts.isNotEmpty ? parts.join(' \u00b7 ') : '';
   }
 
   bool get _hasAnyRating =>
@@ -426,14 +446,17 @@ class _MediaPosterCardState extends State<MediaPosterCard>
   Widget _buildCachedImage({required Widget placeholder}) {
     if (widget.imageUrl.isEmpty) return placeholder;
 
-    return CachedImage(
-      imageType: widget.cacheImageType,
-      imageId: widget.cacheImageId,
-      remoteUrl: widget.imageUrl,
-      fit: BoxFit.cover,
-      memCacheWidth: _posterDecodeWidth,
-      placeholder: placeholder,
-      errorWidget: placeholder,
+    return ColoredBox(
+      color: AppColors.surface,
+      child: CachedImage(
+        imageType: widget.cacheImageType,
+        imageId: widget.cacheImageId,
+        remoteUrl: widget.imageUrl,
+        fit: BoxFit.contain,
+        memCacheWidth: _posterDecodeWidth,
+        placeholder: placeholder,
+        errorWidget: placeholder,
+      ),
     );
   }
 }

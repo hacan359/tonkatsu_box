@@ -3912,6 +3912,54 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Filter...'**
   String get typeToFilterHint;
+
+  /// No description provided for @insertLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Insert link'**
+  String get insertLink;
+
+  /// No description provided for @linkText.
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get linkText;
+
+  /// No description provided for @linkHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Guide'**
+  String get linkHint;
+
+  /// No description provided for @urlLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'URL'**
+  String get urlLabel;
+
+  /// No description provided for @urlHint.
+  ///
+  /// In en, this message translates to:
+  /// **'https://example.com'**
+  String get urlHint;
+
+  /// No description provided for @markdownBold.
+  ///
+  /// In en, this message translates to:
+  /// **'Bold'**
+  String get markdownBold;
+
+  /// No description provided for @markdownItalic.
+  ///
+  /// In en, this message translates to:
+  /// **'Italic'**
+  String get markdownItalic;
+
+  /// No description provided for @insert.
+  ///
+  /// In en, this message translates to:
+  /// **'Insert'**
+  String get insert;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

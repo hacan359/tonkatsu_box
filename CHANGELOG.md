@@ -6,6 +6,17 @@
 
 ## [Unreleased]
 
+### Added
+- **MiniMarkdownText widget** — inline rich text renderer supporting bold (`**`), italic (`*`), links (`[text](url)`), and bare URLs. Tappable links open in system browser via `url_launcher`. Used in detail screen comments and wishlist notes
+- **MarkdownToolbar widget** — reusable toolbar with Bold/Italic/Link buttons for markdown editing. Static `wrapSelection()` wraps selected text in markers, `insertLink()` opens a dialog for `[text](url)` insertion. Used in `MediaDetailView` (comments/reviews) and `AddWishlistDialog` (notes)
+- **Wishlist markdown support** — note field in Add/Edit Wishlist dialog now has `MarkdownToolbar` and renders notes via `MiniMarkdownText` on the wishlist screen
+
+### Changed
+- **MediaPosterCard grid layout** — fixed-height text block (`SizedBox` 52px / 38px compact) ensures uniform card height across the grid. Title now shows up to 2 lines (was 1). Subtitle always rendered (empty string preserves space). `Tooltip` wraps text block for full title on hover/long press
+- **MediaPosterCard hover dimming** — idle posters are dimmed ~25% (`Color.fromARGB(0x40, 0, 0, 0)`), dimming smoothly fades to transparent on hover via `AnimatedBuilder` linked to `_hoverController`. Scale 1.04x on hover preserved
+- **MiniMarkdownText link regex** — removed `https?://` requirement from `[text](url)` pattern, allowing arbitrary URLs like `[guide](topper)`
+- **MediaDetailView** — extracted inline markdown toolbar code into shared `MarkdownToolbar` widget (−100 lines)
+
 ## [0.18.1] - 2026-03-06
 
 ### Added

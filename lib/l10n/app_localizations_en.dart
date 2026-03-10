@@ -2120,4 +2120,28 @@ class SEn extends S {
 
   @override
   String get typeToFilterHint => 'Filter...';
+
+  @override
+  String get insertLink => 'Insert link';
+
+  @override
+  String get linkText => 'Text';
+
+  @override
+  String get linkHint => 'Guide';
+
+  @override
+  String get urlLabel => 'URL';
+
+  @override
+  String get urlHint => 'https://example.com';
+
+  @override
+  String get markdownBold => 'Bold';
+
+  @override
+  String get markdownItalic => 'Italic';
+
+  @override
+  String get insert => 'Insert';
 }
