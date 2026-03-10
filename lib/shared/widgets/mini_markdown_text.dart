@@ -65,7 +65,7 @@ class _MiniMarkdownTextState extends State<MiniMarkdownText> {
   static final RegExp _pattern = RegExp(
     r'\*\*(.+?)\*\*'
     r'|\*(.+?)\*'
-    r'|\[([^\]]+)\]\((https?://[^\)]+)\)'
+    r'|\[([^\]]+)\]\(([^\)]+)\)'
     r'|(https?://\S+)',
   );
 

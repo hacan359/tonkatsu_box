@@ -8,6 +8,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
 import '../../../shared/widgets/breadcrumb_scope.dart';
+import '../../../shared/widgets/markdown_toolbar.dart';
 
 // Экран-форма для добавления/редактирования элемента вишлиста.
 
@@ -174,10 +175,12 @@ class _AddWishlistFormState extends State<AddWishlistForm> {
             ),
             const SizedBox(height: AppSpacing.lg),
 
-            // Note field.
+            // Note field with markdown toolbar.
+            MarkdownToolbar(controller: _noteController),
             TextField(
               controller: _noteController,
-              maxLines: 3,
+              maxLines: 5,
+              minLines: 3,
               textCapitalization: TextCapitalization.sentences,
               decoration: InputDecoration(
                 labelText: l.wishlistNoteOptional,

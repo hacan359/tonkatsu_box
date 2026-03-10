@@ -2150,5 +2150,20 @@ class SRu extends S {
   String get linkText => 'Текст';
 
   @override
+  String get linkHint => 'Гайд';
+
+  @override
+  String get urlLabel => 'URL';
+
+  @override
+  String get urlHint => 'https://example.com';
+
+  @override
+  String get markdownBold => 'Жирный';
+
+  @override
+  String get markdownItalic => 'Курсив';
+
+  @override
   String get insert => 'Вставить';
 }

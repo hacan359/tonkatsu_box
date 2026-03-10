@@ -152,6 +152,21 @@ void main() {
         expect(span!.recognizer, isA<TapGestureRecognizer>());
       });
 
+      testWidgets('должен рендерить ссылку с произвольным URL',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(
+          buildWidget(text: '[guide](topper)'),
+        );
+        await tester.pumpAndSettle();
+
+        final TextSpan root = findRootTextSpan(tester);
+        final TextSpan? span = findSpanByText(root, 'guide');
+        expect(span, isNotNull);
+        expect(span!.style?.color, AppColors.brand);
+        expect(span.style?.decoration, TextDecoration.underline);
+        expect(span.recognizer, isA<TapGestureRecognizer>());
+      });
+
       testWidgets('не должен показывать синтаксис ссылки',
           (WidgetTester tester) async {
         await tester.pumpWidget(

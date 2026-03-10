@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/wishlist/widgets/add_wishlist_dialog.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/wishlist_item.dart';
+import 'package:xerabora/shared/widgets/markdown_toolbar.dart';
 
 void main() {
   group('AddWishlistForm', () {
@@ -217,6 +218,16 @@ void main() {
 
         // Ошибки не было и нет.
         expect(find.text('At least 2 characters'), findsNothing);
+      });
+
+      testWidgets('должен показывать MarkdownToolbar для note поля',
+          (WidgetTester tester) async {
+        await pumpForm(tester);
+
+        expect(find.byType(MarkdownToolbar), findsOneWidget);
+        expect(find.byIcon(Icons.format_bold), findsOneWidget);
+        expect(find.byIcon(Icons.format_italic), findsOneWidget);
+        expect(find.byIcon(Icons.link), findsOneWidget);
       });
 
       testWidgets('показывает breadcrumb Add',

@@ -10,6 +10,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import 'cached_image.dart';
+import 'markdown_toolbar.dart';
 import 'mini_markdown_text.dart';
 import 'source_badge.dart';
 import 'star_rating_bar.dart';
@@ -844,28 +845,7 @@ class _MediaDetailViewState extends State<MediaDetailView> {
           ? Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    _MarkdownToolbarButton(
-                      icon: Icons.format_bold,
-                      tooltip: 'Bold',
-                      onPressed: () =>
-                          _wrapSelection(controller, '**'),
-                    ),
-                    _MarkdownToolbarButton(
-                      icon: Icons.format_italic,
-                      tooltip: 'Italic',
-                      onPressed: () =>
-                          _wrapSelection(controller, '*'),
-                    ),
-                    _MarkdownToolbarButton(
-                      icon: Icons.link,
-                      tooltip: S.of(context).insertLink,
-                      onPressed: () =>
-                          _insertLink(context, controller),
-                    ),
-                  ],
-                ),
+                MarkdownToolbar(controller: controller),
                 const SizedBox(height: 4),
                 TextField(
                   controller: controller,
@@ -889,128 +869,6 @@ class _MediaDetailViewState extends State<MediaDetailView> {
     );
   }
 
-  static void _wrapSelection(
-    TextEditingController controller,
-    String marker,
-  ) {
-    final TextSelection selection = controller.selection;
-    final String text = controller.text;
-
-    if (!selection.isValid) return;
-
-    if (selection.isCollapsed) {
-      final int pos = selection.baseOffset;
-      controller.text =
-          '${text.substring(0, pos)}$marker$marker${text.substring(pos)}';
-      controller.selection =
-          TextSelection.collapsed(offset: pos + marker.length);
-    } else {
-      final String selected =
-          text.substring(selection.start, selection.end);
-      controller.text =
-          '${text.substring(0, selection.start)}$marker$selected$marker${text.substring(selection.end)}';
-      controller.selection = TextSelection(
-        baseOffset: selection.start + marker.length,
-        extentOffset: selection.end + marker.length,
-      );
-    }
-  }
-
-  static Future<void> _insertLink(
-    BuildContext context,
-    TextEditingController controller,
-  ) async {
-    final TextEditingController textCtrl = TextEditingController();
-    final TextEditingController urlCtrl = TextEditingController();
-
-    final TextSelection selection = controller.selection;
-    if (selection.isValid && !selection.isCollapsed) {
-      textCtrl.text =
-          controller.text.substring(selection.start, selection.end);
-    }
-
-    final bool? confirmed = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext ctx) => AlertDialog(
-        title: Text(S.of(ctx).insertLink),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            TextField(
-              controller: textCtrl,
-              decoration: InputDecoration(
-                labelText: S.of(ctx).linkText,
-                hintText: 'Guide',
-              ),
-              autofocus: true,
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: urlCtrl,
-              decoration: const InputDecoration(
-                labelText: 'URL',
-                hintText: 'https://example.com',
-              ),
-              keyboardType: TextInputType.url,
-            ),
-          ],
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(S.of(ctx).cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(S.of(ctx).insert),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed != true || urlCtrl.text.isEmpty) return;
-
-    final String linkText =
-        textCtrl.text.isNotEmpty ? textCtrl.text : urlCtrl.text;
-    final String markdown = '[$linkText](${urlCtrl.text})';
-
-    final int start = selection.isValid && !selection.isCollapsed
-        ? selection.start
-        : (selection.isValid ? selection.baseOffset : controller.text.length);
-    final int end = selection.isValid && !selection.isCollapsed
-        ? selection.end
-        : start;
-
-    controller.text =
-        '${controller.text.substring(0, start)}$markdown${controller.text.substring(end)}';
-    controller.selection =
-        TextSelection.collapsed(offset: start + markdown.length);
-  }
-}
-
-/// Кнопка мини-тулбара для markdown-разметки.
-class _MarkdownToolbarButton extends StatelessWidget {
-  const _MarkdownToolbarButton({
-    required this.icon,
-    required this.tooltip,
-    required this.onPressed,
-  });
-
-  final IconData icon;
-  final String tooltip;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      onPressed: onPressed,
-      icon: Icon(icon, size: 18),
-      iconSize: 18,
-      visualDensity: VisualDensity.compact,
-      tooltip: tooltip,
-      color: AppColors.textSecondary,
-    );
-  }
 }
 
 Future<void> _launchExternalUrl(String url) async {

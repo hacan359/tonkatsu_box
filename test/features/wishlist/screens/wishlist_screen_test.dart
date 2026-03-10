@@ -6,6 +6,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:xerabora/data/repositories/wishlist_repository.dart';
 import 'package:xerabora/features/wishlist/screens/wishlist_screen.dart';
 import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
+import 'package:xerabora/shared/widgets/mini_markdown_text.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/wishlist_item.dart';
 
@@ -93,7 +94,7 @@ void main() {
         expect(find.text('The Matrix'), findsOneWidget);
       });
 
-      testWidgets('должен показывать заметку в subtitle',
+      testWidgets('должен показывать заметку через MiniMarkdownText',
           (WidgetTester tester) async {
         when(() => mockRepo.getAll())
             .thenAnswer((_) async => <WishlistItem>[item1]);
@@ -101,6 +102,7 @@ void main() {
         await tester.pumpWidget(buildScreen());
         await tester.pumpAndSettle();
 
+        expect(find.byType(MiniMarkdownText), findsOneWidget);
         expect(find.text('SNES RPG'), findsOneWidget);
       });
 

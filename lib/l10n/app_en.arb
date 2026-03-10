@@ -976,5 +976,10 @@
 
   "insertLink": "Insert link",
   "linkText": "Text",
+  "linkHint": "Guide",
+  "urlLabel": "URL",
+  "urlHint": "https://example.com",
+  "markdownBold": "Bold",
+  "markdownItalic": "Italic",
   "insert": "Insert"
 }

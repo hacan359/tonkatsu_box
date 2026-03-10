@@ -3925,6 +3925,36 @@ abstract class S {
   /// **'Text'**
   String get linkText;
 
+  /// No description provided for @linkHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Guide'**
+  String get linkHint;
+
+  /// No description provided for @urlLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'URL'**
+  String get urlLabel;
+
+  /// No description provided for @urlHint.
+  ///
+  /// In en, this message translates to:
+  /// **'https://example.com'**
+  String get urlHint;
+
+  /// No description provided for @markdownBold.
+  ///
+  /// In en, this message translates to:
+  /// **'Bold'**
+  String get markdownBold;
+
+  /// No description provided for @markdownItalic.
+  ///
+  /// In en, this message translates to:
+  /// **'Italic'**
+  String get markdownItalic;
+
   /// No description provided for @insert.
   ///
   /// In en, this message translates to:
