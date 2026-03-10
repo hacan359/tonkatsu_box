@@ -63,10 +63,11 @@ class _CreateTierListDialogState
       title: Text(l.tierListCreate),
       content: SizedBox(
         width: 400,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
             TextField(
               controller: _nameController,
               autofocus: true,
@@ -134,6 +135,7 @@ class _CreateTierListDialogState
                 ),
             ],
           ],
+        ),
         ),
       ),
       actions: <Widget>[
