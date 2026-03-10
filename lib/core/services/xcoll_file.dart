@@ -93,6 +93,7 @@ class XcollFile {
     this.canvas,
     this.images = const <String, String>{},
     this.media = const <String, dynamic>{},
+    this.tierLists,
   });
 
   /// Создаёт [XcollFile] из JSON строки.
@@ -178,6 +179,13 @@ class XcollFile {
     final Map<String, dynamic> media =
         json['media'] as Map<String, dynamic>? ?? const <String, dynamic>{};
 
+    // Tier lists (optional, full export only)
+    final List<dynamic>? rawTierLists =
+        json['tier_lists'] as List<dynamic>?;
+    final List<Map<String, dynamic>>? tierLists = rawTierLists
+        ?.map((dynamic tl) => tl as Map<String, dynamic>)
+        .toList();
+
     return XcollFile(
       version: 2,
       format: format,
@@ -189,6 +197,7 @@ class XcollFile {
       canvas: canvas,
       images: images,
       media: media,
+      tierLists: tierLists,
     );
   }
 
@@ -242,6 +251,9 @@ class XcollFile {
   /// Каждый элемент — Map в формате `toDb()` соответствующей модели.
   final Map<String, dynamic> media;
 
+  /// Тир-листы привязанные к коллекции (только full export).
+  final List<Map<String, dynamic>>? tierLists;
+
   /// Является ли полным экспортом.
   bool get isFull => format == ExportFormat.full;
 
@@ -258,6 +270,7 @@ class XcollFile {
       if (canvas != null) 'canvas': canvas!.toJson(),
       if (images.isNotEmpty) 'images': images,
       if (media.isNotEmpty) 'media': media,
+      if (tierLists != null) 'tier_lists': tierLists,
     };
   }
 

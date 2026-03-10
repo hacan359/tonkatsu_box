@@ -29,20 +29,24 @@ void main() {
       expect(NavTab.collections.index, equals(1));
     });
 
-    test('wishlist имеет index 2', () {
-      expect(NavTab.wishlist.index, equals(2));
+    test('tierLists имеет index 2', () {
+      expect(NavTab.tierLists.index, equals(2));
     });
 
-    test('search имеет index 3', () {
-      expect(NavTab.search.index, equals(3));
+    test('wishlist имеет index 3', () {
+      expect(NavTab.wishlist.index, equals(3));
     });
 
-    test('settings имеет index 4', () {
-      expect(NavTab.settings.index, equals(4));
+    test('search имеет index 4', () {
+      expect(NavTab.search.index, equals(4));
     });
 
-    test('содержит 5 значений', () {
-      expect(NavTab.values.length, equals(5));
+    test('settings имеет index 5', () {
+      expect(NavTab.settings.index, equals(5));
+    });
+
+    test('содержит 6 значений', () {
+      expect(NavTab.values.length, equals(6));
     });
 
     test('все значения уникальны', () {
@@ -110,14 +114,14 @@ void main() {
         expect(find.byType(BottomNavigationBar), findsNothing);
       });
 
-      testWidgets('Rail содержит 5 destination',
+      testWidgets('Rail содержит 6 destination',
           (WidgetTester tester) async {
         await tester.pumpWidget(createShell(width: 1024));
         await tester.pump();
 
         final NavigationRail rail =
             tester.widget<NavigationRail>(find.byType(NavigationRail));
-        expect(rail.destinations.length, equals(5));
+        expect(rail.destinations.length, equals(6));
       });
 
       testWidgets('переключение таба через Rail',
@@ -129,12 +133,12 @@ void main() {
             tester.widget<NavigationRail>(find.byType(NavigationRail));
         expect(railBefore.selectedIndex, equals(0));
 
-        railBefore.onDestinationSelected!(4);
+        railBefore.onDestinationSelected!(5);
         await tester.pump();
 
         final NavigationRail railAfter =
             tester.widget<NavigationRail>(find.byType(NavigationRail));
-        expect(railAfter.selectedIndex, equals(4));
+        expect(railAfter.selectedIndex, equals(5));
       });
     });
 
@@ -148,7 +152,7 @@ void main() {
         expect(find.byType(NavigationRail), findsNothing);
       });
 
-      testWidgets('BottomBar содержит 5 items',
+      testWidgets('BottomBar содержит 6 items',
           (WidgetTester tester) async {
         await tester.pumpWidget(createShell(width: 400));
         await tester.pump();
@@ -156,7 +160,7 @@ void main() {
         final BottomNavigationBar bar =
             tester.widget<BottomNavigationBar>(
                 find.byType(BottomNavigationBar));
-        expect(bar.items.length, equals(5));
+        expect(bar.items.length, equals(6));
       });
 
       testWidgets('переключение таба через BottomBar',
@@ -169,13 +173,13 @@ void main() {
                 find.byType(BottomNavigationBar));
         expect(barBefore.currentIndex, equals(0));
 
-        barBefore.onTap!(4);
+        barBefore.onTap!(5);
         await tester.pump();
 
         final BottomNavigationBar barAfter =
             tester.widget<BottomNavigationBar>(
                 find.byType(BottomNavigationBar));
-        expect(barAfter.currentIndex, equals(4));
+        expect(barAfter.currentIndex, equals(5));
       });
     });
 
@@ -198,7 +202,7 @@ void main() {
         // Переключаемся на Settings (index 3)
         final NavigationRail rail =
             tester.widget<NavigationRail>(find.byType(NavigationRail));
-        rail.onDestinationSelected!(4);
+        rail.onDestinationSelected!(5);
         await tester.pump();
         await tester.pump(); // Navigator initial route transition
 
@@ -221,7 +225,7 @@ void main() {
         final BottomNavigationBar bar =
             tester.widget<BottomNavigationBar>(
                 find.byType(BottomNavigationBar));
-        bar.onTap!(4);
+        bar.onTap!(5);
         await tester.pump();
         await tester.pump();
 
@@ -256,7 +260,7 @@ void main() {
         // Переключаемся на Settings
         final NavigationRail rail =
             tester.widget<NavigationRail>(find.byType(NavigationRail));
-        rail.onDestinationSelected!(4);
+        rail.onDestinationSelected!(5);
         await tester.pump();
         await tester.pump();
 
@@ -271,7 +275,7 @@ void main() {
         // Повторное нажатие на Settings (index 3) — pop к корню
         final NavigationRail railAfterPush =
             tester.widget<NavigationRail>(find.byType(NavigationRail));
-        railAfterPush.onDestinationSelected!(4);
+        railAfterPush.onDestinationSelected!(5);
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 300));
 
@@ -352,7 +356,7 @@ void main() {
         // Переключаемся на Settings
         final NavigationRail rail =
             tester.widget<NavigationRail>(find.byType(NavigationRail));
-        rail.onDestinationSelected!(4);
+        rail.onDestinationSelected!(5);
         await tester.pump();
         await tester.pump();
 

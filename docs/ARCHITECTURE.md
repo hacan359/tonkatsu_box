@@ -247,6 +247,22 @@ lib/
 
 ---
 
+### 📊 Features: Tier Lists (Тир-листы)
+
+| Файл | Назначение |
+|------|------------|
+| `lib/features/tier_lists/screens/tier_lists_screen.dart` | **Экран списка тир-листов**. ListView.separated с `_TierListCard`, FAB → `CreateTierListDialog`. Long press → bottom sheet (rename/delete). Тап → `TierListDetailScreen` |
+| `lib/features/tier_lists/screens/tier_list_detail_screen.dart` | **Экран одного тир-листа**. AppBar с export image + clear all. Stack: `TierListView` (основной) + off-screen `TierListExportView` (для PNG capture). `_exportAsImage`: RepaintBoundary → toImage → FilePicker/Pictures |
+| `lib/features/tier_lists/widgets/tier_list_view.dart` | **Основной виджет тир-листа**. ListView тиров + `_UnrankedPool` (DragTarget + Wrap). Bottom sheet для tier options (rename/color/add/delete). `_ColorPickerDialog` с 12 preset цветами |
+| `lib/features/tier_lists/widgets/tier_row.dart` | **Один ряд тира**. 60px colored label + Expanded DragTarget с горизонтальным скроллом. `_textColorFor()` — контрастный цвет текста по luminance |
+| `lib/features/tier_lists/widgets/tier_item_card.dart` | **Карточка элемента**. Draggable\<int\> с CachedImage/placeholder (60×82). Tooltip с itemName. Feedback opacity 0.7, childWhenDragging 0.3 |
+| `lib/features/tier_lists/widgets/tier_list_export_view.dart` | **Off-screen view для PNG экспорта**. RepaintBoundary → IntrinsicWidth Column: title, tier rows (Wrap, 80×110), branded footer |
+| `lib/features/tier_lists/widgets/create_tier_list_dialog.dart` | **Диалог создания**. TextField name + RadioGroup scope (all/collection) + DropdownButton коллекций. `preselectedCollectionId` для создания из коллекции |
+| `lib/features/tier_lists/providers/tier_lists_provider.dart` | **State списка тир-листов**. `tierListsProvider` — AsyncNotifierProvider. Методы: build, refresh, create (optimistic prepend), rename, delete |
+| `lib/features/tier_lists/providers/tier_list_detail_provider.dart` | **State одного тир-листа**. `tierListDetailProvider` — NotifierProvider.family\<..., int\>. `TierListDetailState`: tierList, definitions, entries, items, computed placedItemIds/unrankedItems/entriesByTier. Методы: moveToTier, removeFromTier, reorder, moveBetweenTiers, updateTierDefinition, addTier, removeTier, clearAll |
+
+---
+
 ### 🔍 Features: Search (Поиск)
 
 #### Архитектура

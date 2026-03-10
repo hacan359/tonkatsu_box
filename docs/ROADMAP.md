@@ -19,6 +19,7 @@
 - [x] SteamGridDB integration (API client, debug panel)
 - [x] Offline image caching
 - [x] Static reference data — genres (TMDB EN+RU, IGDB), tags (VNDB), platforms (220 IGDB) embedded in migration v24. No runtime API calls needed for reference data
+- [x] Tier Lists — rank collection items across customizable S/A/B/C/D/F tiers with drag-and-drop, color picker, PNG export, .xcollx support
 
 ---
 

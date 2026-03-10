@@ -233,6 +233,20 @@ Quick notes for content to find later when internet is available:
 - **FAB** — quick add via floating action button, opens full-page form with breadcrumb navigation
 - **Full-page form** — add/edit items on a dedicated screen (not popup), with title validation (min 2 chars), media type chips (no checkmark overlap), and optional note field
 
+## 📊 Tier Lists
+
+Rank collection items across customizable tiers:
+
+- **Create tier lists** — global (all items) or scoped to a specific collection
+- **Default tiers** — S/A/B/C/D/F with preset colors, auto-created on first open
+- **Drag-and-drop** — move items between tiers and the Unranked pool via Draggable/DragTarget
+- **Customize tiers** — rename labels, change colors (12-color picker), add/remove tiers
+- **Unranked pool** — items not yet placed in any tier, shown below with divider
+- **Export as image** — capture tier list as PNG via RepaintBoundary (2x pixel ratio) with branded footer. Platform-aware: FilePicker on desktop, Pictures directory on Android
+- **Create from collection** — popup menu on collection screen to create a scoped tier list
+- **Navigation tab** — dedicated tab in NavigationShell with `Icons.leaderboard`
+- **.xcollx support** — tier lists included in full export/import with `itemIdMapping` for entry resolution
+
 ## 📤 Sharing
 
 ### Light Export (`.xcoll`)

@@ -2166,4 +2166,75 @@ class SRu extends S {
 
   @override
   String get insert => 'Вставить';
+
+  @override
+  String get navTierLists => 'Тир-листы';
+
+  @override
+  String get tierListCreate => 'Новый тир-лист';
+
+  @override
+  String get tierListCreateFromCollection => 'Создать тир-лист';
+
+  @override
+  String get tierListNameHint => 'Название тир-листа';
+
+  @override
+  String get tierListScopeAll => 'Все элементы';
+
+  @override
+  String get tierListScopeCollection => 'Из коллекции';
+
+  @override
+  String tierListFromCollection(String name) {
+    return 'Из: $name';
+  }
+
+  @override
+  String tierListRankedCount(int count) {
+    return '$count распределено';
+  }
+
+  @override
+  String get tierListTitle => 'Тир-лист';
+
+  @override
+  String get tierListUnranked => 'Без тира';
+
+  @override
+  String get tierListExportImage => 'Экспорт как картинку';
+
+  @override
+  String get tierListImageSaved => 'Тир-лист сохранён как изображение';
+
+  @override
+  String get tierListRename => 'Переименовать тир';
+
+  @override
+  String get tierListChangeColor => 'Изменить цвет';
+
+  @override
+  String get tierListDeleteTier => 'Удалить тир';
+
+  @override
+  String get tierListAddTier => 'Добавить тир';
+
+  @override
+  String get tierListClearAll => 'Очистить всё';
+
+  @override
+  String get tierListClearConfirm =>
+      'Убрать все элементы из тиров? Они вернутся в «Без тира».';
+
+  @override
+  String get tierListDeleteConfirm => 'Удалить этот тир-лист?';
+
+  @override
+  String get tierListEmpty => 'Тир-листов пока нет';
+
+  @override
+  String get tierListAllRanked => 'Все элементы распределены!';
+
+  @override
+  String get tierListNoCollections => 'Нет доступных коллекций';
 }

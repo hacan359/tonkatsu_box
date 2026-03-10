@@ -13,6 +13,8 @@ import '../../shared/models/canvas_item.dart';
 import '../../shared/models/canvas_viewport.dart';
 import '../../shared/models/collection.dart';
 import '../../shared/models/collection_item.dart';
+import '../../shared/models/tier_definition.dart';
+import '../../shared/models/tier_list.dart';
 import '../../shared/models/game.dart';
 import '../../shared/models/media_type.dart';
 import '../../shared/models/movie.dart';
@@ -330,6 +332,8 @@ class ImportService {
       ));
 
       // Добавление элементов в коллекцию
+      // Маппинг (media_type:external_id) → new collection_item_id для тир-листов
+      final Map<String, int> itemIdMapping = <String, int>{};
       int addedCount = 0;
       for (int i = 0; i < xcoll.items.length; i++) {
         final Map<String, dynamic> itemData = xcoll.items[i];
@@ -352,6 +356,9 @@ class ImportService {
 
         if (itemId != null) {
           addedCount++;
+          final String key =
+              '${parsed.mediaType.value}:${parsed.externalId}';
+          itemIdMapping[key] = itemId;
 
           // Импорт per-item canvas (для full export)
           final Map<String, dynamic>? perItemCanvas =
@@ -393,6 +400,17 @@ class ImportService {
         ));
 
         await _restoreImages(xcoll.images, onProgress: onProgress);
+      }
+
+      // Восстановление тир-листов (для full export)
+      if (xcoll.isFull &&
+          xcoll.tierLists != null &&
+          xcoll.tierLists!.isNotEmpty) {
+        await _importTierLists(
+          xcoll.tierLists!,
+          collection.id,
+          itemIdMapping,
+        );
       }
 
       // Завершено
@@ -1033,6 +1051,68 @@ class ImportService {
       );
 
       await repo.createConnection(conn);
+    }
+  }
+
+  // ==================== Tier Lists Import ====================
+
+  /// Восстанавливает тир-листы из экспорта.
+  ///
+  /// [itemIdMapping] — маппинг 'media_type:external_id' → new collection_item_id.
+  Future<void> _importTierLists(
+    List<Map<String, dynamic>> tierListsData,
+    int collectionId,
+    Map<String, int> itemIdMapping,
+  ) async {
+    for (final Map<String, dynamic> tlData in tierListsData) {
+      final String name = tlData['name'] as String? ?? 'Imported Tier List';
+
+      // Создаём тир-лист привязанный к коллекции
+      final TierList tierList = await _database.tierListDao.createTierList(
+        name,
+        collectionId: collectionId,
+      );
+
+      // Восстанавливаем определения тиров
+      final List<dynamic>? rawDefs =
+          tlData['definitions'] as List<dynamic>?;
+      if (rawDefs != null && rawDefs.isNotEmpty) {
+        final List<TierDefinition> defs = rawDefs
+            .map((dynamic d) =>
+                TierDefinition.fromExport(d as Map<String, dynamic>))
+            .toList();
+        await _database.tierListDao.saveTierDefinitions(tierList.id, defs);
+      }
+
+      // Восстанавливаем записи (entries)
+      final List<dynamic>? rawEntries =
+          tlData['entries'] as List<dynamic>?;
+      if (rawEntries == null) continue;
+
+      for (final dynamic entryRaw in rawEntries) {
+        final Map<String, dynamic> entryData =
+            entryRaw as Map<String, dynamic>;
+
+        // Разрешаем collection_item_id через external_id + media_type
+        final int? externalId = entryData['external_id'] as int?;
+        final String? mediaType = entryData['media_type'] as String?;
+
+        if (externalId == null || mediaType == null) continue;
+
+        final String key = '$mediaType:$externalId';
+        final int? newItemId = itemIdMapping[key];
+        if (newItemId == null) continue;
+
+        final String tierKey = entryData['tier_key'] as String;
+        final int sortOrder = entryData['sort_order'] as int? ?? 0;
+
+        await _database.tierListDao.setItemTier(
+          tierList.id,
+          newItemId,
+          tierKey,
+          sortOrder,
+        );
+      }
     }
   }
 }

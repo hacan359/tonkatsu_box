@@ -17,6 +17,7 @@ import 'package:xerabora/shared/models/tv_episode.dart';
 import 'package:xerabora/shared/models/tv_season.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
 import 'package:xerabora/core/services/image_cache_service.dart';
+import 'package:xerabora/shared/models/tier_definition.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'mocks.dart';
@@ -50,6 +51,9 @@ void registerAllFallbacks() {
   registerFallbackValue(const <TvEpisode>[]);
   registerFallbackValue(const <Platform>[]);
   registerFallbackValue(const <int>[]);
+
+  // Tier lists
+  registerFallbackValue(<TierDefinition>[]);
 
   // Other
   registerFallbackValue(Uint8List(0));

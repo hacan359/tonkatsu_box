@@ -3,6 +3,8 @@
 // Все параметры опциональны с разумными дефолтами. Это позволяет
 // в тестах указывать только релевантные поля.
 
+import 'dart:ui';
+
 import 'package:xerabora/data/repositories/collection_repository.dart';
 import 'package:xerabora/shared/models/canvas_connection.dart';
 import 'package:xerabora/shared/models/canvas_item.dart';
@@ -16,6 +18,9 @@ import 'package:xerabora/shared/models/platform.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
 import 'package:xerabora/shared/models/manga.dart';
 import 'package:xerabora/shared/models/visual_novel.dart';
+import 'package:xerabora/shared/models/tier_definition.dart';
+import 'package:xerabora/shared/models/tier_list.dart';
+import 'package:xerabora/shared/models/tier_list_entry.dart';
 import 'package:xerabora/shared/models/wishlist_item.dart';
 
 /// Стандартная тестовая дата для единообразия.
@@ -398,5 +403,49 @@ CanvasConnection createTestCanvasConnection({
     color: color,
     style: style,
     createdAt: createdAt ?? testDate,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Tier List
+// ---------------------------------------------------------------------------
+
+TierList createTestTierList({
+  int id = 1,
+  String name = 'Test Tier List',
+  int? collectionId,
+  DateTime? createdAt,
+}) {
+  return TierList(
+    id: id,
+    name: name,
+    collectionId: collectionId,
+    createdAt: createdAt ?? testDate,
+  );
+}
+
+TierDefinition createTestTierDefinition({
+  String tierKey = 'S',
+  String label = 'S',
+  int colorValue = 0xFFFF4444,
+  int sortOrder = 0,
+}) {
+  return TierDefinition(
+    tierKey: tierKey,
+    label: label,
+    color: Color(colorValue),
+    sortOrder: sortOrder,
+  );
+}
+
+TierListEntry createTestTierListEntry({
+  int collectionItemId = 1,
+  String tierKey = 'S',
+  int sortOrder = 0,
+}) {
+  return TierListEntry(
+    collectionItemId: collectionItemId,
+    tierKey: tierKey,
+    sortOrder: sortOrder,
   );
 }

@@ -981,5 +981,38 @@
   "urlHint": "https://example.com",
   "markdownBold": "Bold",
   "markdownItalic": "Italic",
-  "insert": "Insert"
+  "insert": "Insert",
+
+  "navTierLists": "Tier Lists",
+  "tierListCreate": "New Tier List",
+  "tierListCreateFromCollection": "Create Tier List",
+  "tierListNameHint": "Tier list name",
+  "tierListScopeAll": "All items",
+  "tierListScopeCollection": "From collection",
+  "tierListFromCollection": "From: {name}",
+  "@tierListFromCollection": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "tierListRankedCount": "{count} ranked",
+  "@tierListRankedCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "tierListTitle": "Tier List",
+  "tierListUnranked": "Unranked",
+  "tierListExportImage": "Export as image",
+  "tierListImageSaved": "Tier list saved as image",
+  "tierListRename": "Rename tier",
+  "tierListChangeColor": "Change color",
+  "tierListDeleteTier": "Delete tier",
+  "tierListAddTier": "Add tier",
+  "tierListClearAll": "Clear all",
+  "tierListClearConfirm": "Remove all items from tiers? They will return to Unranked.",
+  "tierListDeleteConfirm": "Delete this tier list?",
+  "tierListEmpty": "No tier lists yet",
+  "tierListAllRanked": "All items ranked!",
+  "tierListNoCollections": "No collections available"
 }

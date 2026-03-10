@@ -767,5 +767,38 @@
   "urlHint": "https://example.com",
   "markdownBold": "Жирный",
   "markdownItalic": "Курсив",
-  "insert": "Вставить"
+  "insert": "Вставить",
+
+  "navTierLists": "Тир-листы",
+  "tierListCreate": "Новый тир-лист",
+  "tierListCreateFromCollection": "Создать тир-лист",
+  "tierListNameHint": "Название тир-листа",
+  "tierListScopeAll": "Все элементы",
+  "tierListScopeCollection": "Из коллекции",
+  "tierListFromCollection": "Из: {name}",
+  "@tierListFromCollection": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "tierListRankedCount": "{count} распределено",
+  "@tierListRankedCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "tierListTitle": "Тир-лист",
+  "tierListUnranked": "Без тира",
+  "tierListExportImage": "Экспорт как картинку",
+  "tierListImageSaved": "Тир-лист сохранён как изображение",
+  "tierListRename": "Переименовать тир",
+  "tierListChangeColor": "Изменить цвет",
+  "tierListDeleteTier": "Удалить тир",
+  "tierListAddTier": "Добавить тир",
+  "tierListClearAll": "Очистить всё",
+  "tierListClearConfirm": "Убрать все элементы из тиров? Они вернутся в «Без тира».",
+  "tierListDeleteConfirm": "Удалить этот тир-лист?",
+  "tierListEmpty": "Тир-листов пока нет",
+  "tierListAllRanked": "Все элементы распределены!",
+  "tierListNoCollections": "Нет доступных коллекций"
 }

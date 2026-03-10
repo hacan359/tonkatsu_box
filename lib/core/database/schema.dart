@@ -24,6 +24,9 @@ abstract final class DatabaseSchema {
     await createVisualNovelsCacheTable(db);
     await createVndbTagsTable(db);
     await createMangaCacheTable(db);
+    await createTierListsTable(db);
+    await createTierDefinitionsTable(db);
+    await createTierListEntriesTable(db);
   }
 
   /// Таблица платформ (IGDB).
@@ -404,6 +407,57 @@ abstract final class DatabaseSchema {
         external_url TEXT,
         updated_at INTEGER NOT NULL
       )
+    ''');
+  }
+
+  /// Таблица тир-листов.
+  static Future<void> createTierListsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE tier_lists (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        collection_id INTEGER,
+        created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+        FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE
+      )
+    ''');
+  }
+
+  /// Таблица определений тиров (S/A/B/C/D/F + кастомные).
+  static Future<void> createTierDefinitionsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE tier_definitions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tier_list_id INTEGER NOT NULL,
+        tier_key TEXT NOT NULL,
+        label TEXT NOT NULL,
+        color INTEGER NOT NULL,
+        sort_order INTEGER NOT NULL DEFAULT 0,
+        FOREIGN KEY (tier_list_id) REFERENCES tier_lists(id) ON DELETE CASCADE
+      )
+    ''');
+    await db.execute('''
+      CREATE UNIQUE INDEX idx_tier_def
+      ON tier_definitions(tier_list_id, tier_key)
+    ''');
+  }
+
+  /// Таблица привязок элементов к тирам.
+  static Future<void> createTierListEntriesTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE tier_list_entries (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tier_list_id INTEGER NOT NULL,
+        collection_item_id INTEGER NOT NULL,
+        tier_key TEXT NOT NULL,
+        sort_order INTEGER NOT NULL DEFAULT 0,
+        FOREIGN KEY (tier_list_id) REFERENCES tier_lists(id) ON DELETE CASCADE,
+        FOREIGN KEY (collection_item_id) REFERENCES collection_items(id) ON DELETE CASCADE
+      )
+    ''');
+    await db.execute('''
+      CREATE UNIQUE INDEX idx_tier_entry
+      ON tier_list_entries(tier_list_id, collection_item_id)
     ''');
   }
 }

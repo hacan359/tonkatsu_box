@@ -3960,6 +3960,138 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Insert'**
   String get insert;
+
+  /// No description provided for @navTierLists.
+  ///
+  /// In en, this message translates to:
+  /// **'Tier Lists'**
+  String get navTierLists;
+
+  /// No description provided for @tierListCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'New Tier List'**
+  String get tierListCreate;
+
+  /// No description provided for @tierListCreateFromCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Tier List'**
+  String get tierListCreateFromCollection;
+
+  /// No description provided for @tierListNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tier list name'**
+  String get tierListNameHint;
+
+  /// No description provided for @tierListScopeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All items'**
+  String get tierListScopeAll;
+
+  /// No description provided for @tierListScopeCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'From collection'**
+  String get tierListScopeCollection;
+
+  /// No description provided for @tierListFromCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'From: {name}'**
+  String tierListFromCollection(String name);
+
+  /// No description provided for @tierListRankedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} ranked'**
+  String tierListRankedCount(int count);
+
+  /// No description provided for @tierListTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tier List'**
+  String get tierListTitle;
+
+  /// No description provided for @tierListUnranked.
+  ///
+  /// In en, this message translates to:
+  /// **'Unranked'**
+  String get tierListUnranked;
+
+  /// No description provided for @tierListExportImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Export as image'**
+  String get tierListExportImage;
+
+  /// No description provided for @tierListImageSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Tier list saved as image'**
+  String get tierListImageSaved;
+
+  /// No description provided for @tierListRename.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename tier'**
+  String get tierListRename;
+
+  /// No description provided for @tierListChangeColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Change color'**
+  String get tierListChangeColor;
+
+  /// No description provided for @tierListDeleteTier.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete tier'**
+  String get tierListDeleteTier;
+
+  /// No description provided for @tierListAddTier.
+  ///
+  /// In en, this message translates to:
+  /// **'Add tier'**
+  String get tierListAddTier;
+
+  /// No description provided for @tierListClearAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all'**
+  String get tierListClearAll;
+
+  /// No description provided for @tierListClearConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove all items from tiers? They will return to Unranked.'**
+  String get tierListClearConfirm;
+
+  /// No description provided for @tierListDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this tier list?'**
+  String get tierListDeleteConfirm;
+
+  /// No description provided for @tierListEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No tier lists yet'**
+  String get tierListEmpty;
+
+  /// No description provided for @tierListAllRanked.
+  ///
+  /// In en, this message translates to:
+  /// **'All items ranked!'**
+  String get tierListAllRanked;
+
+  /// No description provided for @tierListNoCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'No collections available'**
+  String get tierListNoCollections;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

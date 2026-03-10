@@ -28,6 +28,7 @@ import 'dao/movie_dao.dart';
 import 'dao/tv_show_dao.dart';
 import 'dao/manga_dao.dart';
 import 'dao/visual_novel_dao.dart';
+import 'dao/tier_list_dao.dart';
 import 'dao/wishlist_dao.dart';
 import 'migrations/migration.dart';
 import 'migrations/migration_registry.dart';
@@ -75,6 +76,12 @@ final Provider<CollectionDao> collectionDaoProvider =
 /// Провайдер для [CanvasDao].
 final Provider<CanvasDao> canvasDaoProvider = Provider<CanvasDao>((Ref ref) {
   return ref.watch(databaseServiceProvider).canvasDao;
+});
+
+/// Провайдер для [TierListDao].
+final Provider<TierListDao> tierListDaoProvider =
+    Provider<TierListDao>((Ref ref) {
+  return ref.watch(databaseServiceProvider).tierListDao;
 });
 
 /// Провайдер для [WishlistDao].
@@ -128,6 +135,9 @@ class DatabaseService {
   /// DAO для работы с канвасом.
   late final CanvasDao canvasDao = CanvasDao(() => database);
 
+  /// DAO для работы с тир-листами.
+  late final TierListDao tierListDao = TierListDao(() => database);
+
   /// DAO для работы с вишлистом.
   late final WishlistDao wishlistDao = WishlistDao(() => database);
 
@@ -149,7 +159,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 25,
+        version: 26,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
