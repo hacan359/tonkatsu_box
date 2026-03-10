@@ -6,6 +6,8 @@
 
 ## [Unreleased]
 
+## [0.19.0] - 2026-03-10
+
 ### Added
 - **MiniMarkdownText widget** — inline rich text renderer supporting bold (`**`), italic (`*`), links (`[text](url)`), and bare URLs. Tappable links open in system browser via `url_launcher`. Used in detail screen comments and wishlist notes
 - **MarkdownToolbar widget** — reusable toolbar with Bold/Italic/Link buttons for markdown editing. Static `wrapSelection()` wraps selected text in markers, `insertLink()` opens a dialog for `[text](url)` insertion. Used in `MediaDetailView` (comments/reviews) and `AddWishlistDialog` (notes)
