@@ -972,5 +972,9 @@
   "browseBackToBrowse": "Back to browse",
   "browseSortDisabledHint": "Sorting unavailable during text search",
 
-  "typeToFilterHint": "Filter..."
+  "typeToFilterHint": "Filter...",
+
+  "insertLink": "Insert link",
+  "linkText": "Text",
+  "insert": "Insert"
 }

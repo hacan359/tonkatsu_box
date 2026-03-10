@@ -2,6 +2,7 @@ import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/shared/widgets/media_detail_view.dart';
+import 'package:xerabora/shared/widgets/mini_markdown_text.dart';
 import 'package:xerabora/shared/widgets/source_badge.dart';
 
 void main() {
@@ -275,7 +276,7 @@ void main() {
         expect(find.text("Author's Review"), findsOneWidget);
       });
 
-      testWidgets('должен отображать комментарий когда есть',
+      testWidgets('должен отображать комментарий через MiniMarkdownText',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(
           authorComment: 'Best RPG ever!',
@@ -283,6 +284,7 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
+        expect(find.byType(MiniMarkdownText), findsOneWidget);
         expect(find.text('Best RPG ever!'), findsOneWidget);
       });
 
@@ -342,7 +344,7 @@ void main() {
         expect(find.text('My Notes'), findsOneWidget);
       });
 
-      testWidgets('должен отображать заметки когда есть',
+      testWidgets('должен отображать заметки через MiniMarkdownText',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(
           userComment: 'Finished on Jan 15',
@@ -350,6 +352,7 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
+        expect(find.byType(MiniMarkdownText), findsOneWidget);
         expect(find.text('Finished on Jan 15'), findsOneWidget);
       });
 
@@ -374,69 +377,41 @@ void main() {
       });
     });
 
-    group('Edit Dialog', () {
+    group('Inline Editing', () {
       // Порядок секций: My Notes (first edit icon) → Author's Review (last)
 
-      testWidgets('должен открывать диалог при нажатии Edit заметок',
+      testWidgets('должен показать TextField при нажатии Edit заметок',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(isEditable: true));
         await tester.pumpAndSettle();
 
-        // My Notes is first section → first edit icon
+        // Нет TextField до нажатия
+        expect(find.byType(TextField), findsNothing);
+
+        // My Notes → first edit icon
         await tester.tap(find.byIcon(Icons.edit).first);
         await tester.pumpAndSettle();
 
-        expect(find.text('Edit My Notes'), findsOneWidget);
-        expect(find.text('Cancel'), findsOneWidget);
-        expect(find.text('Save'), findsOneWidget);
+        // TextField появился inline
+        expect(find.byType(TextField), findsOneWidget);
+        // Карандаш стал галочкой
+        expect(find.byIcon(Icons.check), findsOneWidget);
       });
 
-      testWidgets('должен открывать диалог при нажатии Edit автора',
+      testWidgets('должен показать TextField при нажатии Edit автора',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(isEditable: true));
-        await tester.pumpAndSettle();
-
-        // Author's Review is second section → last edit icon
-        await tester.tap(find.byIcon(Icons.edit).last);
-        await tester.pumpAndSettle();
-
-        expect(find.text("Edit Author's Review"), findsOneWidget);
-      });
-
-      testWidgets('должен закрывать диалог при Cancel',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(isEditable: true));
-        await tester.pumpAndSettle();
-
-        await tester.tap(find.byIcon(Icons.edit).last);
-        await tester.pumpAndSettle();
-
-        await tester.tap(find.text('Cancel'));
-        await tester.pumpAndSettle();
-
-        expect(find.text("Edit Author's Review"), findsNothing);
-      });
-
-      testWidgets('не должен вызывать onSave при Cancel',
-          (WidgetTester tester) async {
-        bool wasCalled = false;
-        await tester.pumpWidget(buildTestWidget(
-          isEditable: true,
-          onAuthorCommentSave: (_) => wasCalled = true,
-        ));
         await tester.pumpAndSettle();
 
         // Author's Review → last edit icon
         await tester.tap(find.byIcon(Icons.edit).last);
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Cancel'));
-        await tester.pumpAndSettle();
-
-        expect(wasCalled, isFalse);
+        expect(find.byType(TextField), findsOneWidget);
+        expect(find.byIcon(Icons.check), findsOneWidget);
       });
 
-      testWidgets('должен вызывать onSave с текстом при Save',
+      testWidgets('должен сохранять и закрывать при нажатии галочки',
           (WidgetTester tester) async {
         String? savedValue;
         await tester.pumpWidget(buildTestWidget(
@@ -450,10 +425,13 @@ void main() {
         await tester.pumpAndSettle();
 
         await tester.enterText(find.byType(TextField), 'New comment');
-        await tester.tap(find.text('Save'));
+        // Нажимаем галочку (check)
+        await tester.tap(find.byIcon(Icons.check));
         await tester.pumpAndSettle();
 
         expect(savedValue, 'New comment');
+        // TextField убран
+        expect(find.byType(TextField), findsNothing);
       });
 
       testWidgets('должен вызывать onSave с null при пустом тексте',
@@ -469,11 +447,24 @@ void main() {
         await tester.tap(find.byIcon(Icons.edit).last);
         await tester.pumpAndSettle();
 
-        // Поле уже пустое, нажимаем Save
-        await tester.tap(find.text('Save'));
+        // Поле уже пустое, нажимаем галочку
+        await tester.tap(find.byIcon(Icons.check));
         await tester.pumpAndSettle();
 
         expect(savedValue, isNull);
+      });
+
+      testWidgets('должен показывать тулбар markdown при inline-редактировании',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildTestWidget(isEditable: true));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byIcon(Icons.edit).first);
+        await tester.pumpAndSettle();
+
+        expect(find.byIcon(Icons.format_bold), findsOneWidget);
+        expect(find.byIcon(Icons.format_italic), findsOneWidget);
+        expect(find.byIcon(Icons.link), findsOneWidget);
       });
 
       testWidgets('должен показывать initialValue в поле',
@@ -508,7 +499,8 @@ void main() {
         await tester.pumpAndSettle();
 
         await tester.enterText(find.byType(TextField), 'My note');
-        await tester.tap(find.text('Save'));
+        // Нажимаем галочку
+        await tester.tap(find.byIcon(Icons.check));
         await tester.pumpAndSettle();
 
         expect(savedValue, 'My note');
@@ -664,6 +656,7 @@ void main() {
         expect(find.text('Test description'), findsOneWidget);
         expect(find.text('Status Widget'), findsOneWidget);
         expect(find.text("Author's Review"), findsOneWidget);
+        expect(find.byType(MiniMarkdownText), findsNWidgets(2));
         expect(find.text('Author text'), findsOneWidget);
         expect(find.text('My Notes'), findsOneWidget);
         expect(find.text('User text'), findsOneWidget);

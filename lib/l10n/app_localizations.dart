@@ -3912,6 +3912,24 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Filter...'**
   String get typeToFilterHint;
+
+  /// No description provided for @insertLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Insert link'**
+  String get insertLink;
+
+  /// No description provided for @linkText.
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get linkText;
+
+  /// No description provided for @insert.
+  ///
+  /// In en, this message translates to:
+  /// **'Insert'**
+  String get insert;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

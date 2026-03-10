@@ -530,7 +530,7 @@ void main() {
     });
 
     group('grid title', () {
-      testWidgets('должен обрезать длинное название',
+      testWidgets('должен обрезать длинное название в 2 строки',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildCard(
           title: 'A' * 200,
@@ -538,8 +538,21 @@ void main() {
         await tester.pumpAndSettle();
 
         final Text text = tester.widget<Text>(find.text('A' * 200));
-        expect(text.maxLines, 1);
+        expect(text.maxLines, 2);
         expect(text.overflow, TextOverflow.ellipsis);
+      });
+
+      testWidgets('должен показывать Tooltip с полным названием',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildCard(
+          title: 'Wolfenstein II: The New Colossus',
+        ));
+        await tester.pumpAndSettle();
+
+        final Finder tooltipFinder = find.byType(Tooltip);
+        expect(tooltipFinder, findsOneWidget);
+        final Tooltip tooltip = tester.widget<Tooltip>(tooltipFinder);
+        expect(tooltip.message, 'Wolfenstein II: The New Colossus');
       });
     });
 

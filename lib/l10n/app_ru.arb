@@ -758,5 +758,9 @@
   "browseSearchHint": "Поиск...",
   "browseBackToBrowse": "Назад к обзору",
 
-  "typeToFilterHint": "Фильтр..."
+  "typeToFilterHint": "Фильтр...",
+
+  "insertLink": "Вставить ссылку",
+  "linkText": "Текст",
+  "insert": "Вставить"
 }

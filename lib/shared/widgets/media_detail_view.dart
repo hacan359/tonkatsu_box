@@ -10,6 +10,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import 'cached_image.dart';
+import 'mini_markdown_text.dart';
 import 'source_badge.dart';
 import 'star_rating_bar.dart';
 import '../utils/duration_formatter.dart';
@@ -56,7 +57,7 @@ class MediaDetailChip {
 /// Отображает единый layout для игр, фильмов и сериалов:
 /// постер + информация, статус, комментарии, заметки.
 /// Специфичные секции передаются через [extraSections].
-class MediaDetailView extends StatelessWidget {
+class MediaDetailView extends StatefulWidget {
   /// Создаёт [MediaDetailView].
   const MediaDetailView({
     required this.title,
@@ -194,20 +195,78 @@ class MediaDetailView extends StatelessWidget {
   final ValueChanged<String?> onUserCommentSave;
 
   @override
+  State<MediaDetailView> createState() => _MediaDetailViewState();
+}
+
+/// Какое поле сейчас редактируется inline.
+enum _EditingField { none, author, user }
+
+class _MediaDetailViewState extends State<MediaDetailView> {
+  _EditingField _editingField = _EditingField.none;
+  late final TextEditingController _authorController;
+  late final TextEditingController _userController;
+
+  @override
+  void initState() {
+    super.initState();
+    _authorController =
+        TextEditingController(text: widget.authorComment);
+    _userController =
+        TextEditingController(text: widget.userComment);
+  }
+
+  @override
+  void didUpdateWidget(MediaDetailView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Синхронизируем контроллеры, если текст изменился извне
+    // (но только когда поле не в режиме редактирования).
+    if (oldWidget.authorComment != widget.authorComment &&
+        _editingField != _EditingField.author) {
+      _authorController.text = widget.authorComment ?? '';
+    }
+    if (oldWidget.userComment != widget.userComment &&
+        _editingField != _EditingField.user) {
+      _userController.text = widget.userComment ?? '';
+    }
+  }
+
+  @override
+  void dispose() {
+    _authorController.dispose();
+    _userController.dispose();
+    super.dispose();
+  }
+
+  void _startEditing(_EditingField field) {
+    setState(() => _editingField = field);
+  }
+
+  void _finishEditing() {
+    if (_editingField == _EditingField.author) {
+      final String text = _authorController.text;
+      widget.onAuthorCommentSave(text.isEmpty ? null : text);
+    } else if (_editingField == _EditingField.user) {
+      final String text = _userController.text;
+      widget.onUserCommentSave(text.isEmpty ? null : text);
+    }
+    setState(() => _editingField = _EditingField.none);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final Widget content = ListView(
       padding: const EdgeInsets.all(AppSpacing.md),
       children: <Widget>[
         _buildHeader(),
-        if (statusWidget != null) ...<Widget>[
+        if (widget.statusWidget != null) ...<Widget>[
           const SizedBox(height: AppSpacing.md),
           _buildStatusSection(context),
         ],
-        if (onUserRatingChanged != null) ...<Widget>[
+        if (widget.onUserRatingChanged != null) ...<Widget>[
           const SizedBox(height: AppSpacing.md),
           _buildUserRatingSection(context),
         ],
-        if (addedAt != null) ...<Widget>[
+        if (widget.addedAt != null) ...<Widget>[
           const SizedBox(height: AppSpacing.sm),
           _buildActivityDatesRow(context),
         ],
@@ -215,13 +274,15 @@ class MediaDetailView extends StatelessWidget {
         _buildUserNotesSection(context),
         const SizedBox(height: AppSpacing.md),
         _buildAuthorCommentSection(context),
-        if (extraSections != null && extraSections!.isNotEmpty) ...<Widget>[
+        if (widget.extraSections != null &&
+            widget.extraSections!.isNotEmpty) ...<Widget>[
           const SizedBox(height: AppSpacing.md),
           _buildExtraSectionsExpansion(context),
         ],
-        if (recommendationSections != null &&
-            recommendationSections!.isNotEmpty)
-          for (final Widget section in recommendationSections!) ...<Widget>[
+        if (widget.recommendationSections != null &&
+            widget.recommendationSections!.isNotEmpty)
+          for (final Widget section
+              in widget.recommendationSections!) ...<Widget>[
             const SizedBox(height: AppSpacing.md),
             section,
           ],
@@ -229,14 +290,14 @@ class MediaDetailView extends StatelessWidget {
       ],
     );
 
-    if (embedded) return content;
+    if (widget.embedded) return content;
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.background,
         surfaceTintColor: Colors.transparent,
         foregroundColor: AppColors.textPrimary,
-        title: Text(title, style: AppTypography.h2),
+        title: Text(widget.title, style: AppTypography.h2),
       ),
       body: content,
     );
@@ -264,24 +325,24 @@ class MediaDetailView extends StatelessWidget {
               Row(
                 children: <Widget>[
                   SourceBadge(
-                    source: source,
+                    source: widget.source,
                     size: SourceBadgeSize.medium,
-                    onTap: externalUrl != null
-                        ? () => _launchExternalUrl(externalUrl!)
+                    onTap: widget.externalUrl != null
+                        ? () => _launchExternalUrl(widget.externalUrl!)
                         : null,
                   ),
                   const SizedBox(width: 6),
                   Icon(
-                    typeIcon,
+                    widget.typeIcon,
                     size: 16,
-                    color: accentColor,
+                    color: widget.accentColor,
                   ),
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
-                      typeLabel,
+                      widget.typeLabel,
                       style: AppTypography.bodySmall.copyWith(
-                        color: accentColor,
+                        color: widget.accentColor,
                         fontWeight: FontWeight.w600,
                       ),
                       maxLines: 1,
@@ -290,22 +351,22 @@ class MediaDetailView extends StatelessWidget {
                   ),
                 ],
               ),
-              if (infoChips.isNotEmpty) ...<Widget>[
+              if (widget.infoChips.isNotEmpty) ...<Widget>[
                 const SizedBox(height: AppSpacing.sm),
                 Wrap(
                   spacing: 6,
                   runSpacing: 4,
                   children: <Widget>[
-                    for (final MediaDetailChip chip in infoChips)
+                    for (final MediaDetailChip chip in widget.infoChips)
                       _buildInfoChip(chip.icon, chip.text, iconColor: chip.iconColor),
                   ],
                 ),
               ],
-              if (description != null &&
-                  description!.isNotEmpty) ...<Widget>[
+              if (widget.description != null &&
+                  widget.description!.isNotEmpty) ...<Widget>[
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  description!,
+                  widget.description!,
                   style: AppTypography.bodySmall.copyWith(
                     color: AppColors.textSecondary,
                     height: 1.4,
@@ -322,16 +383,18 @@ class MediaDetailView extends StatelessWidget {
   }
 
   Widget _buildCoverImage() {
-    if (coverUrl == null || coverUrl!.isEmpty) return _buildPlaceholder();
+    if (widget.coverUrl == null || widget.coverUrl!.isEmpty) {
+      return _buildPlaceholder();
+    }
 
     final bool useLocalCache =
-        cacheImageType != null && cacheImageId != null;
+        widget.cacheImageType != null && widget.cacheImageId != null;
 
     if (useLocalCache) {
       return CachedImage(
-        imageType: cacheImageType!,
-        imageId: cacheImageId!,
-        remoteUrl: coverUrl!,
+        imageType: widget.cacheImageType!,
+        imageId: widget.cacheImageId!,
+        remoteUrl: widget.coverUrl!,
         fit: BoxFit.cover,
         memCacheWidth: 200,
         memCacheHeight: 300,
@@ -341,7 +404,7 @@ class MediaDetailView extends StatelessWidget {
     }
 
     return CachedNetworkImage(
-      imageUrl: coverUrl!,
+      imageUrl: widget.coverUrl!,
       fit: BoxFit.cover,
       memCacheWidth: 200,
       memCacheHeight: 300,
@@ -369,7 +432,7 @@ class MediaDetailView extends StatelessWidget {
     return Container(
       color: AppColors.surfaceLight,
       child: Icon(
-        placeholderIcon,
+        widget.placeholderIcon,
         size: 32,
         color: AppColors.textTertiary,
       ),
@@ -404,7 +467,7 @@ class MediaDetailView extends StatelessWidget {
   }
 
   Widget _buildStatusSection(BuildContext context) {
-    return statusWidget!;
+    return widget.statusWidget!;
   }
 
   Widget _buildUserRatingSection(BuildContext context) {
@@ -423,10 +486,10 @@ class MediaDetailView extends StatelessWidget {
               S.of(context).detailMyRating,
               style: AppTypography.h3.copyWith(fontWeight: FontWeight.w600),
             ),
-            if (userRating != null) ...<Widget>[
+            if (widget.userRating != null) ...<Widget>[
               const SizedBox(width: AppSpacing.sm),
               Text(
-                S.of(context).detailRatingValue(userRating!),
+                S.of(context).detailRatingValue(widget.userRating!),
                 style: AppTypography.bodySmall.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -436,8 +499,8 @@ class MediaDetailView extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         StarRatingBar(
-          rating: userRating,
-          onChanged: onUserRatingChanged!,
+          rating: widget.userRating,
+          onChanged: widget.onUserRatingChanged!,
         ),
       ],
     );
@@ -452,40 +515,42 @@ class MediaDetailView extends StatelessWidget {
         _buildDateChip(
           icon: Icons.add_circle_outline,
           label: l.activityDatesAdded,
-          date: addedAt,
+          date: widget.addedAt,
         ),
         _buildDateChip(
           icon: Icons.play_circle_outline,
           label: l.activityDatesStarted,
-          date: startedAt,
-          editable: onActivityDateChanged != null,
-          onTap: onActivityDateChanged != null
-              ? () => _pickActivityDate(context, 'started', startedAt)
+          date: widget.startedAt,
+          editable: widget.onActivityDateChanged != null,
+          onTap: widget.onActivityDateChanged != null
+              ? () => _pickActivityDate(
+                    context, 'started', widget.startedAt)
               : null,
         ),
         _buildDateChip(
           icon: Icons.check_circle_outline,
           label: l.activityDatesCompleted,
-          date: completedAt,
-          editable: onActivityDateChanged != null,
-          onTap: onActivityDateChanged != null
-              ? () => _pickActivityDate(context, 'completed', completedAt)
+          date: widget.completedAt,
+          editable: widget.onActivityDateChanged != null,
+          onTap: widget.onActivityDateChanged != null
+              ? () => _pickActivityDate(
+                    context, 'completed', widget.completedAt)
               : null,
         ),
-        if (completionTime != null)
+        if (widget.completionTime != null)
           _buildCompletionTimeChip(l),
-        if (lastActivityAt != null)
+        if (widget.lastActivityAt != null)
           _buildDateChip(
             icon: Icons.update,
             label: l.activityDatesLastActivity,
-            date: lastActivityAt,
+            date: widget.lastActivityAt,
           ),
       ],
     );
   }
 
   Widget _buildCompletionTimeChip(S l) {
-    final String formatted = formatCompletionTime(completionTime!, l);
+    final String formatted = formatCompletionTime(widget.completionTime!, l);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
@@ -579,7 +644,7 @@ class MediaDetailView extends StatelessWidget {
     );
 
     if (picked != null && context.mounted) {
-      await onActivityDateChanged!(type, picked);
+      await widget.onActivityDateChanged!(type, picked);
     }
   }
 
@@ -598,7 +663,7 @@ class MediaDetailView extends StatelessWidget {
         iconColor: AppColors.textSecondary,
         collapsedIconColor: AppColors.textSecondary,
         children: <Widget>[
-          for (final Widget section in extraSections!) ...<Widget>[
+          for (final Widget section in widget.extraSections!) ...<Widget>[
             const SizedBox(height: AppSpacing.sm),
             section,
           ],
@@ -609,6 +674,7 @@ class MediaDetailView extends StatelessWidget {
 
   Widget _buildAuthorCommentSection(BuildContext context) {
     final S l = S.of(context);
+    final bool isEditing = _editingField == _EditingField.author;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -636,19 +702,18 @@ class MediaDetailView extends StatelessWidget {
                 ],
               ),
             ),
-            if (isEditable)
+            if (widget.isEditable)
               IconButton(
-                onPressed: () => _editComment(
-                  context,
-                  title: l.detailEditAuthorReview,
-                  hint: l.detailWriteReviewHint,
-                  initialValue: authorComment,
-                  onSave: onAuthorCommentSave,
+                onPressed: isEditing
+                    ? _finishEditing
+                    : () => _startEditing(_EditingField.author),
+                icon: Icon(
+                  isEditing ? Icons.check : Icons.edit,
+                  size: 18,
                 ),
-                icon: const Icon(Icons.edit, size: 18),
                 iconSize: 18,
                 visualDensity: VisualDensity.compact,
-                tooltip: l.edit,
+                tooltip: isEditing ? l.done : l.edit,
               ),
           ],
         ),
@@ -660,26 +725,22 @@ class MediaDetailView extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 6),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(AppSpacing.md - 4),
-          decoration: BoxDecoration(
-            color: AppColors.movieAccent.withAlpha(20),
-            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-            border: Border.all(
-              color: AppColors.movieAccent.withAlpha(40),
-            ),
-          ),
-          child: hasAuthorComment
-              ? Text(
-                  authorComment!,
+        _buildCommentContainer(
+          accentColor: AppColors.movieAccent,
+          isEditing: isEditing,
+          controller: _authorController,
+          hint: l.detailWriteReviewHint,
+          hasContent: widget.hasAuthorComment,
+          displayWidget: widget.hasAuthorComment
+              ? MiniMarkdownText(
+                  text: widget.authorComment!,
                   style: AppTypography.body.copyWith(
                     fontStyle: FontStyle.italic,
                     height: 1.5,
                   ),
                 )
               : Text(
-                  isEditable
+                  widget.isEditable
                       ? l.detailNoReviewEditable
                       : l.detailNoReviewReadonly,
                   style: AppTypography.body.copyWith(
@@ -694,6 +755,7 @@ class MediaDetailView extends StatelessWidget {
 
   Widget _buildUserNotesSection(BuildContext context) {
     final S l = S.of(context);
+    final bool isEditing = _editingField == _EditingField.user;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -706,7 +768,7 @@ class MediaDetailView extends StatelessWidget {
                   Icon(
                     Icons.note_alt_outlined,
                     size: 18,
-                    color: accentColor,
+                    color: widget.accentColor,
                   ),
                   const SizedBox(width: 6),
                   Flexible(
@@ -722,34 +784,29 @@ class MediaDetailView extends StatelessWidget {
               ),
             ),
             IconButton(
-              onPressed: () => _editComment(
-                context,
-                title: l.detailEditMyNotes,
-                hint: l.detailWriteNotesHint,
-                initialValue: userComment,
-                onSave: onUserCommentSave,
+              onPressed: isEditing
+                  ? _finishEditing
+                  : () => _startEditing(_EditingField.user),
+              icon: Icon(
+                isEditing ? Icons.check : Icons.edit,
+                size: 18,
               ),
-              icon: const Icon(Icons.edit, size: 18),
               iconSize: 18,
               visualDensity: VisualDensity.compact,
-              tooltip: l.edit,
+              tooltip: isEditing ? l.done : l.edit,
             ),
           ],
         ),
         const SizedBox(height: 6),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(AppSpacing.md - 4),
-          decoration: BoxDecoration(
-            color: accentColor.withAlpha(20),
-            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-            border: Border.all(
-              color: accentColor.withAlpha(40),
-            ),
-          ),
-          child: hasUserComment
-              ? Text(
-                  userComment!,
+        _buildCommentContainer(
+          accentColor: widget.accentColor,
+          isEditing: isEditing,
+          controller: _userController,
+          hint: l.detailWriteNotesHint,
+          hasContent: widget.hasUserComment,
+          displayWidget: widget.hasUserComment
+              ? MiniMarkdownText(
+                  text: widget.userComment!,
                   style: AppTypography.body.copyWith(height: 1.5),
                 )
               : Text(
@@ -764,45 +821,195 @@ class MediaDetailView extends StatelessWidget {
     );
   }
 
-  Future<void> _editComment(
-    BuildContext context, {
-    required String title,
+  /// Общий контейнер для секции комментария: вид или inline-редактирование.
+  Widget _buildCommentContainer({
+    required Color accentColor,
+    required bool isEditing,
+    required TextEditingController controller,
     required String hint,
-    required ValueChanged<String?> onSave,
-    String? initialValue,
-  }) async {
-    final TextEditingController controller =
-        TextEditingController(text: initialValue);
+    required bool hasContent,
+    required Widget displayWidget,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.md - 4),
+      decoration: BoxDecoration(
+        color: accentColor.withAlpha(20),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+        border: Border.all(
+          color: accentColor.withAlpha(isEditing ? 80 : 40),
+        ),
+      ),
+      child: isEditing
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Row(
+                  children: <Widget>[
+                    _MarkdownToolbarButton(
+                      icon: Icons.format_bold,
+                      tooltip: 'Bold',
+                      onPressed: () =>
+                          _wrapSelection(controller, '**'),
+                    ),
+                    _MarkdownToolbarButton(
+                      icon: Icons.format_italic,
+                      tooltip: 'Italic',
+                      onPressed: () =>
+                          _wrapSelection(controller, '*'),
+                    ),
+                    _MarkdownToolbarButton(
+                      icon: Icons.link,
+                      tooltip: S.of(context).insertLink,
+                      onPressed: () =>
+                          _insertLink(context, controller),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                TextField(
+                  controller: controller,
+                  maxLines: 5,
+                  minLines: 2,
+                  autofocus: true,
+                  style: AppTypography.body.copyWith(height: 1.5),
+                  decoration: InputDecoration(
+                    hintText: hint,
+                    border: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    filled: false,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              ],
+            )
+          : displayWidget,
+    );
+  }
 
-    final String? result = await showDialog<String>(
+  static void _wrapSelection(
+    TextEditingController controller,
+    String marker,
+  ) {
+    final TextSelection selection = controller.selection;
+    final String text = controller.text;
+
+    if (!selection.isValid) return;
+
+    if (selection.isCollapsed) {
+      final int pos = selection.baseOffset;
+      controller.text =
+          '${text.substring(0, pos)}$marker$marker${text.substring(pos)}';
+      controller.selection =
+          TextSelection.collapsed(offset: pos + marker.length);
+    } else {
+      final String selected =
+          text.substring(selection.start, selection.end);
+      controller.text =
+          '${text.substring(0, selection.start)}$marker$selected$marker${text.substring(selection.end)}';
+      controller.selection = TextSelection(
+        baseOffset: selection.start + marker.length,
+        extentOffset: selection.end + marker.length,
+      );
+    }
+  }
+
+  static Future<void> _insertLink(
+    BuildContext context,
+    TextEditingController controller,
+  ) async {
+    final TextEditingController textCtrl = TextEditingController();
+    final TextEditingController urlCtrl = TextEditingController();
+
+    final TextSelection selection = controller.selection;
+    if (selection.isValid && !selection.isCollapsed) {
+      textCtrl.text =
+          controller.text.substring(selection.start, selection.end);
+    }
+
+    final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext ctx) => AlertDialog(
-        scrollable: true,
-        title: Text(title),
-        content: TextField(
-          controller: controller,
-          maxLines: 5,
-          decoration: InputDecoration(
-            hintText: hint,
-            border: const OutlineInputBorder(),
-          ),
-          autofocus: true,
+        title: Text(S.of(ctx).insertLink),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            TextField(
+              controller: textCtrl,
+              decoration: InputDecoration(
+                labelText: S.of(ctx).linkText,
+                hintText: 'Guide',
+              ),
+              autofocus: true,
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: urlCtrl,
+              decoration: const InputDecoration(
+                labelText: 'URL',
+                hintText: 'https://example.com',
+              ),
+              keyboardType: TextInputType.url,
+            ),
+          ],
         ),
         actions: <Widget>[
           TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
+            onPressed: () => Navigator.of(ctx).pop(false),
             child: Text(S.of(ctx).cancel),
           ),
           FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(controller.text),
-            child: Text(S.of(ctx).save),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(S.of(ctx).insert),
           ),
         ],
       ),
     );
 
-    if (result == null) return;
-    onSave(result.isEmpty ? null : result);
+    if (confirmed != true || urlCtrl.text.isEmpty) return;
+
+    final String linkText =
+        textCtrl.text.isNotEmpty ? textCtrl.text : urlCtrl.text;
+    final String markdown = '[$linkText](${urlCtrl.text})';
+
+    final int start = selection.isValid && !selection.isCollapsed
+        ? selection.start
+        : (selection.isValid ? selection.baseOffset : controller.text.length);
+    final int end = selection.isValid && !selection.isCollapsed
+        ? selection.end
+        : start;
+
+    controller.text =
+        '${controller.text.substring(0, start)}$markdown${controller.text.substring(end)}';
+    controller.selection =
+        TextSelection.collapsed(offset: start + markdown.length);
+  }
+}
+
+/// Кнопка мини-тулбара для markdown-разметки.
+class _MarkdownToolbarButton extends StatelessWidget {
+  const _MarkdownToolbarButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 18),
+      iconSize: 18,
+      visualDensity: VisualDensity.compact,
+      tooltip: tooltip,
+      color: AppColors.textSecondary,
+    );
   }
 }
 

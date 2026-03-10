@@ -323,13 +323,17 @@ class _MediaPosterCardState extends State<MediaPosterCard>
   }
 
   Widget _buildGridTitle() {
-    return Text(
-      widget.title,
-      style: _isCompact
-          ? AppTypography.posterTitle.copyWith(fontSize: 9)
-          : AppTypography.posterTitle,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
+    return Tooltip(
+      message: widget.title,
+      waitDuration: const Duration(milliseconds: 500),
+      child: Text(
+        widget.title,
+        style: _isCompact
+            ? AppTypography.posterTitle.copyWith(fontSize: 9)
+            : AppTypography.posterTitle,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+      ),
     );
   }
 
@@ -426,14 +430,17 @@ class _MediaPosterCardState extends State<MediaPosterCard>
   Widget _buildCachedImage({required Widget placeholder}) {
     if (widget.imageUrl.isEmpty) return placeholder;
 
-    return CachedImage(
-      imageType: widget.cacheImageType,
-      imageId: widget.cacheImageId,
-      remoteUrl: widget.imageUrl,
-      fit: BoxFit.cover,
-      memCacheWidth: _posterDecodeWidth,
-      placeholder: placeholder,
-      errorWidget: placeholder,
+    return ColoredBox(
+      color: AppColors.surface,
+      child: CachedImage(
+        imageType: widget.cacheImageType,
+        imageId: widget.cacheImageId,
+        remoteUrl: widget.imageUrl,
+        fit: BoxFit.contain,
+        memCacheWidth: _posterDecodeWidth,
+        placeholder: placeholder,
+        errorWidget: placeholder,
+      ),
     );
   }
 }

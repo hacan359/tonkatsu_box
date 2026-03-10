@@ -2142,4 +2142,13 @@ class SRu extends S {
 
   @override
   String get typeToFilterHint => 'Фильтр...';
+
+  @override
+  String get insertLink => 'Вставить ссылку';
+
+  @override
+  String get linkText => 'Текст';
+
+  @override
+  String get insert => 'Вставить';
 }
