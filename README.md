@@ -102,6 +102,9 @@ Arrange your collection on a free-form board — drag posters around, add text n
 ### 🌐 English & Russian
 The entire interface is available in English and Russian with runtime language switching. Switch anytime in **Settings → Language** — all menus, statuses, labels, and messages update instantly without restarting the app.
 
+### 📊 Tier Lists
+Create tier lists to rank items from your collections. Drag and drop items into S/A/B/C/D/F tiers. Customize tiers — rename, change colors, add or remove. Create a tier list from all items or scope it to a specific collection. Export as a shareable PNG image.
+
 ### 📤 Share with Friends
 Export your collections as `.xcoll` (lightweight) or `.xcollx` (full offline copy with all images and data). Friends can import them and fork to create their own version.
 
