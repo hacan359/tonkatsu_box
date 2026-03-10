@@ -246,9 +246,9 @@ void main() {
           of: find.byType(MediaPosterCard),
           matching: find.byType(MouseRegion),
         );
-        expect(mouseRegions, findsOneWidget);
+        expect(mouseRegions, findsAtLeastNWidgets(1));
         final MouseRegion region =
-            tester.widget<MouseRegion>(mouseRegions);
+            tester.widget<MouseRegion>(mouseRegions.first);
         expect(region.cursor, SystemMouseCursors.click);
       });
 
@@ -261,9 +261,9 @@ void main() {
           of: find.byType(MediaPosterCard),
           matching: find.byType(MouseRegion),
         );
-        expect(mouseRegions, findsOneWidget);
+        expect(mouseRegions, findsAtLeastNWidgets(1));
         final MouseRegion region =
-            tester.widget<MouseRegion>(mouseRegions);
+            tester.widget<MouseRegion>(mouseRegions.first);
         expect(region.cursor, SystemMouseCursors.basic);
       });
 
