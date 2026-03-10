@@ -8,6 +8,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gal/gal.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -153,12 +154,15 @@ class _TierListDetailScreenState
       final List<int> pngBytes = byteData.buffer.asUint8List();
 
       if (Platform.isAndroid) {
-        // Android: сохраняем в Pictures
-        final Directory? dir = await getExternalStorageDirectory();
-        if (dir == null) return;
-        final String filePath =
-            '${dir.path}/tier_list_${state.tierList.id}.png';
-        await File(filePath).writeAsBytes(pngBytes);
+        // Android: сохраняем в галерею через Gal
+        final bool hasAccess = await Gal.requestAccess();
+        if (!hasAccess) return;
+        final Directory tempDir = await getTemporaryDirectory();
+        final String tempPath =
+            '${tempDir.path}/tier_list_${state.tierList.id}.png';
+        await File(tempPath).writeAsBytes(pngBytes);
+        await Gal.putImage(tempPath, album: 'Tonkatsu Box');
+        await File(tempPath).delete();
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(l.tierListImageSaved)),

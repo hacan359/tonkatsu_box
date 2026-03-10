@@ -59,6 +59,9 @@ dependencies:
   # Archive
   archive: ^4.0.2
 
+  # Gallery
+  gal: ^2.3.0
+
   # URL
   url_launcher: ^6.2.0
 
