@@ -423,7 +423,7 @@ abstract final class DatabaseSchema {
     ''');
   }
 
-  /// Таблица определений тиров (S/A/B/C/D/F + кастомные).
+  /// Таблица определений тиров (S/A/B/C + кастомные).
   static Future<void> createTierDefinitionsTable(Database db) async {
     await db.execute('''
       CREATE TABLE tier_definitions (

@@ -238,7 +238,7 @@ Quick notes for content to find later when internet is available:
 Rank collection items across customizable tiers:
 
 - **Create tier lists** — global (all items) or scoped to a specific collection
-- **Default tiers** — S/A/B/C/D/F with preset colors, auto-created on first open
+- **Default tiers** — S/A/B/C with preset colors, auto-created on first open
 - **Drag-and-drop** — move items between tiers and the Unranked pool via Draggable/DragTarget
 - **Customize tiers** — rename labels, change colors (12-color picker), add/remove tiers
 - **Unranked pool** — items not yet placed in any tier, shown below with divider

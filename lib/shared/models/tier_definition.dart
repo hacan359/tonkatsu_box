@@ -2,7 +2,7 @@
 
 import 'dart:ui';
 
-/// Определение тира (S, A, B, C, D, F или кастомный).
+/// Определение тира (S, A, B, C или кастомный).
 ///
 /// Описывает один уровень в тир-листе: ключ, метку, цвет и порядок.
 class TierDefinition {
@@ -82,7 +82,7 @@ class TierDefinition {
     );
   }
 
-  /// Набор тиров по умолчанию: S / A / B / C / D / F.
+  /// Набор тиров по умолчанию: S / A / B / C.
   static const List<TierDefinition> defaults = <TierDefinition>[
     TierDefinition(
       tierKey: 'S',
@@ -107,18 +107,6 @@ class TierDefinition {
       label: 'C',
       color: Color(0xFF44BB44),
       sortOrder: 3,
-    ),
-    TierDefinition(
-      tierKey: 'D',
-      label: 'D',
-      color: Color(0xFF4488FF),
-      sortOrder: 4,
-    ),
-    TierDefinition(
-      tierKey: 'F',
-      label: 'F',
-      color: Color(0xFF888888),
-      sortOrder: 5,
     ),
   ];
 

@@ -7,8 +7,8 @@
 ## [Unreleased]
 
 ### Added
-- **Tier Lists feature** — full-featured tier list system for ranking collection items. Create global tier lists (all items) or scoped to a specific collection. Drag-and-drop items between tiers (S/A/B/C/D/F + custom). Customizable tier labels and colors via color picker (12 presets). Export tier list as PNG image (RepaintBoundary capture with "made by Tonkatsu Box" branding). New navigation tab with `Icons.leaderboard`
-- **Tier Lists models** — `TierList` (id, name, collectionId, isGlobal), `TierDefinition` (tierKey, label, color, sortOrder with static S/A/B/C/D/F defaults), `TierListEntry` (collectionItemId, tierKey, sortOrder). All models with `fromDb`/`toDb`/`copyWith`/`toExport`/`fromExport`
+- **Tier Lists feature** — full-featured tier list system for ranking collection items. Create global tier lists (all items) or scoped to a specific collection. Drag-and-drop items between tiers (S/A/B/C + custom). Customizable tier labels and colors via color picker (12 presets). Export tier list as PNG image (RepaintBoundary capture with "made by Tonkatsu Box" branding). New navigation tab with `Icons.leaderboard`
+- **Tier Lists models** — `TierList` (id, name, collectionId, isGlobal), `TierDefinition` (tierKey, label, color, sortOrder with static S/A/B/C defaults), `TierListEntry` (collectionItemId, tierKey, sortOrder). All models with `fromDb`/`toDb`/`copyWith`/`toExport`/`fromExport`
 - **Tier Lists database** — 3 new SQLite tables (`tier_lists`, `tier_definitions`, `tier_list_entries`) via migration v26. `TierListDao` with full CRUD, reorder, and batch operations
 - **Tier Lists providers** — `TierListsNotifier` (AsyncNotifier for list management with optimistic updates) and `TierListDetailNotifier` (FamilyNotifier for single tier list state: definitions, entries, items, drag-and-drop operations)
 - **Tier Lists .xcollx export/import** — tier lists included in full export with `itemIdMapping` pattern (`media_type:external_id` → new item ID) for cross-collection entry resolution on import

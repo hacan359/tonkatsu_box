@@ -61,13 +61,13 @@ void main() {
     });
 
     group('defaults', () {
-      test('должен содержать 6 тиров', () {
-        expect(TierDefinition.defaults, hasLength(6));
+      test('должен содержать 4 тира', () {
+        expect(TierDefinition.defaults, hasLength(4));
       });
 
-      test('должен начинаться с S и заканчиваться F', () {
+      test('должен начинаться с S и заканчиваться C', () {
         expect(TierDefinition.defaults.first.tierKey, 'S');
-        expect(TierDefinition.defaults.last.tierKey, 'F');
+        expect(TierDefinition.defaults.last.tierKey, 'C');
       });
 
       test('должен иметь последовательные sortOrder', () {
@@ -79,7 +79,7 @@ void main() {
       test('все тиры должны иметь уникальные ключи', () {
         final Set<String> keys =
             TierDefinition.defaults.map((TierDefinition d) => d.tierKey).toSet();
-        expect(keys, hasLength(6));
+        expect(keys, hasLength(4));
       });
     });
 
