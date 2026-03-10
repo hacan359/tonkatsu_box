@@ -12,9 +12,16 @@
 - **Tier Lists database** — 3 new SQLite tables (`tier_lists`, `tier_definitions`, `tier_list_entries`) via migration v26. `TierListDao` with full CRUD, reorder, and batch operations
 - **Tier Lists providers** — `TierListsNotifier` (AsyncNotifier for list management with optimistic updates) and `TierListDetailNotifier` (FamilyNotifier for single tier list state: definitions, entries, items, drag-and-drop operations)
 - **Tier Lists .xcollx export/import** — tier lists included in full export with `itemIdMapping` pattern (`media_type:external_id` → new item ID) for cross-collection entry resolution on import
-- **Tier Lists from collection screen** — popup menu action to create a tier list scoped to a collection, with auto-navigation to detail screen
+- **Tier Lists from collection screen** — `IconButton(Icons.leaderboard)` in collection AppBar opens filtered tier lists for that collection. Popup menu action to create a scoped tier list with auto-navigation to detail screen
+- **Collection tier lists provider** — `collectionTierListsProvider` (FamilyAsyncNotifier) loads tier lists filtered by `collectionId` via `TierListDao.getTierListsByCollection()`. Create/rename/delete invalidate global `tierListsProvider`
 - **Tier Lists localization** — 21 new keys in EN and RU (navTierLists, tierListCreate, tierListUnranked, tierListExportImage, etc.)
-- **Tier Lists tests** — 79 new tests: models (29), DAO (17), providers (59), widgets (20)
+- **Tier Lists tests** — 99 new tests: models (29), DAO (17), providers (79), widgets (20)
+
+### Changed
+- **Default tier definitions** — reduced from 6 (S/A/B/C/D/F) to 4 (S/A/B/C). Users can still add custom tiers via the "+" button
+- **TierListsScreen** — added optional `collectionId` parameter. When set, shows only tier lists for that collection and creates new ones scoped to it
+- **CreateTierListDialog** — `_submit` validates that a collection is selected when scope is "From collection". Uses `collectionTierListsProvider` for collection-scoped creation
+- **Landing page (docs/index.html)** — added Tier Lists feature card, meta keywords (`tier list maker, tier list generator`), updated hero subtitle and JSON-LD description
 
 ## [0.19.0] - 2026-03-10
 

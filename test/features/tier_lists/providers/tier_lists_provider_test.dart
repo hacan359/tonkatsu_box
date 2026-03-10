@@ -384,4 +384,561 @@ void main() {
       });
     });
   });
+
+  group('CollectionTierListsNotifier', () {
+    const int collectionId = 10;
+
+    final TierList colTierList1 = createTestTierList(
+      id: 10,
+      name: 'Col Tier A',
+      collectionId: collectionId,
+    );
+    final TierList colTierList2 = createTestTierList(
+      id: 11,
+      name: 'Col Tier B',
+      collectionId: collectionId,
+    );
+
+    group('build', () {
+      test('should load tier lists for specific collection', () async {
+        when(() => mockDao.getTierListsByCollection(collectionId))
+            .thenAnswer((_) async => <TierList>[colTierList1, colTierList2]);
+        // Stub global provider dependency (invalidated by some methods)
+        when(() => mockDao.getAllTierLists())
+            .thenAnswer((_) async => <TierList>[]);
+
+        final ProviderContainer container = createContainer();
+        container.read(collectionTierListsProvider(collectionId));
+        await pump();
+
+        final AsyncValue<List<TierList>> state =
+            container.read(collectionTierListsProvider(collectionId));
+        expect(state.valueOrNull, <TierList>[colTierList1, colTierList2]);
+      });
+
+      test('should return empty list when collection has no tier lists',
+          () async {
+        when(() => mockDao.getTierListsByCollection(collectionId))
+            .thenAnswer((_) async => <TierList>[]);
+        when(() => mockDao.getAllTierLists())
+            .thenAnswer((_) async => <TierList>[]);
+
+        final ProviderContainer container = createContainer();
+        container.read(collectionTierListsProvider(collectionId));
+        await pump();
+
+        final AsyncValue<List<TierList>> state =
+            container.read(collectionTierListsProvider(collectionId));
+        expect(state.valueOrNull, <TierList>[]);
+      });
+
+      test('should set error state when dao throws', () async {
+        when(() => mockDao.getTierListsByCollection(collectionId))
+            .thenThrow(Exception('DB error'));
+
+        final ProviderContainer container = createContainer();
+        container.read(collectionTierListsProvider(collectionId));
+        await pump();
+
+        final AsyncValue<List<TierList>> state =
+            container.read(collectionTierListsProvider(collectionId));
+        expect(state.hasError, isTrue);
+      });
+    });
+
+    group('refresh', () {
+      test('should reload tier lists from dao', () async {
+        when(() => mockDao.getTierListsByCollection(collectionId))
+            .thenAnswer((_) async => <TierList>[colTierList1]);
+        when(() => mockDao.getAllTierLists())
+            .thenAnswer((_) async => <TierList>[]);
+
+        final ProviderContainer container = createContainer();
+        container.listen(
+          collectionTierListsProvider(collectionId),
+          (Object? _, Object? _) {},
+        );
+        await pump();
+
+        // Change what dao returns
+        when(() => mockDao.getTierListsByCollection(collectionId))
+            .thenAnswer(
+          (_) async => <TierList>[colTierList1, colTierList2],
+        );
+
+        await container
+            .read(collectionTierListsProvider(collectionId).notifier)
+            .refresh();
+        await pump();
+
+        final AsyncValue<List<TierList>> state =
+            container.read(collectionTierListsProvider(collectionId));
+        expect(state.valueOrNull, <TierList>[colTierList1, colTierList2]);
+      });
+
+      test('should set error state when refresh fails', () async {
+        when(() => mockDao.getTierListsByCollection(collectionId))
+            .thenAnswer((_) async => <TierList>[colTierList1]);
+        when(() => mockDao.getAllTierLists())
+            .thenAnswer((_) async => <TierList>[]);
+
+        final ProviderContainer container = createContainer();
+        container.listen(
+          collectionTierListsProvider(collectionId),
+          (Object? _, Object? _) {},
+        );
+        await pump();
+
+        when(() => mockDao.getTierListsByCollection(collectionId))
+            .thenThrow(Exception('refresh error'));
+
+        await container
+            .read(collectionTierListsProvider(collectionId).notifier)
+            .refresh();
+        await pump();
+
+        final AsyncValue<List<TierList>> state =
+            container.read(collectionTierListsProvider(collectionId));
+        expect(state.hasError, isTrue);
+      });
+    });
+
+    group('create', () {
+      test('should create tier list with collection arg and prepend to state',
+          () async {
+        when(() => mockDao.getTierListsByCollection(collectionId))
+            .thenAnswer((_) async => <TierList>[colTierList1]);
+        when(() => mockDao.getAllTierLists())
+            .thenAnswer((_) async => <TierList>[]);
+        when(
+          () => mockDao.createTierList(
+            any(),
+            collectionId: any(named: 'collectionId'),
+          ),
+        ).thenAnswer((_) async => colTierList2);
+
+        final ProviderContainer container = createContainer();
+        container.listen(
+          collectionTierListsProvider(collectionId),
+          (Object? _, Object? _) {},
+        );
+        await pump();
+
+        final TierList result = await container
+            .read(collectionTierListsProvider(collectionId).notifier)
+            .create('Col Tier B');
+
+        expect(result, colTierList2);
+
+        final AsyncValue<List<TierList>> state =
+            container.read(collectionTierListsProvider(collectionId));
+        expect(state.valueOrNull, <TierList>[colTierList2, colTierList1]);
+      });
+
+      test('should pass arg as collectionId to dao', () async {
+        when(() => mockDao.getTierListsByCollection(collectionId))
+            .thenAnswer((_) async => <TierList>[]);
+        when(() => mockDao.getAllTierLists())
+            .thenAnswer((_) async => <TierList>[]);
+        when(
+          () => mockDao.createTierList(
+            any(),
+            collectionId: any(named: 'collectionId'),
+          ),
+        ).thenAnswer((_) async => colTierList1);
+
+        final ProviderContainer container = createContainer();
+        container.listen(
+          collectionTierListsProvider(collectionId),
+          (Object? _, Object? _) {},
+        );
+        await pump();
+
+        await container
+            .read(collectionTierListsProvider(collectionId).notifier)
+            .create('Col Tier A');
+
+        verify(
+          () => mockDao.createTierList(
+            'Col Tier A',
+            collectionId: collectionId,
+          ),
+        ).called(1);
+      });
+
+      test('should invalidate global tierListsProvider', () async {
+        when(() => mockDao.getTierListsByCollection(collectionId))
+            .thenAnswer((_) async => <TierList>[]);
+        when(() => mockDao.getAllTierLists())
+            .thenAnswer((_) async => <TierList>[]);
+        when(
+          () => mockDao.createTierList(
+            any(),
+            collectionId: any(named: 'collectionId'),
+          ),
+        ).thenAnswer((_) async => colTierList1);
+
+        final ProviderContainer container = createContainer();
+        // Listen to both providers to track invalidation
+        container.listen(
+          collectionTierListsProvider(collectionId),
+          (Object? _, Object? _) {},
+        );
+        container.listen(tierListsProvider, (Object? _, Object? _) {});
+        await pump();
+
+        // Reset call count before create
+        reset(mockDao);
+        when(() => mockDao.getAllTierLists())
+            .thenAnswer((_) async => <TierList>[]);
+        when(
+          () => mockDao.createTierList(
+            any(),
+            collectionId: any(named: 'collectionId'),
+          ),
+        ).thenAnswer((_) async => colTierList1);
+
+        await container
+            .read(collectionTierListsProvider(collectionId).notifier)
+            .create('Col Tier A');
+        await pump();
+
+        // Global provider should have been re-fetched via invalidation
+        verify(() => mockDao.getAllTierLists()).called(1);
+      });
+
+      test('should use empty list when state has no value', () async {
+        when(() => mockDao.getTierListsByCollection(collectionId))
+            .thenThrow(Exception('initial error'));
+        when(() => mockDao.getAllTierLists())
+            .thenAnswer((_) async => <TierList>[]);
+        when(
+          () => mockDao.createTierList(
+            any(),
+            collectionId: any(named: 'collectionId'),
+          ),
+        ).thenAnswer((_) async => colTierList1);
+
+        final ProviderContainer container = createContainer();
+        container.listen(
+          collectionTierListsProvider(collectionId),
+          (Object? _, Object? _) {},
+        );
+        await pump();
+
+        expect(
+          container.read(collectionTierListsProvider(collectionId)).hasError,
+          isTrue,
+        );
+
+        final TierList result = await container
+            .read(collectionTierListsProvider(collectionId).notifier)
+            .create('Col Tier A');
+
+        expect(result, colTierList1);
+
+        final AsyncValue<List<TierList>> state =
+            container.read(collectionTierListsProvider(collectionId));
+        expect(state.valueOrNull, <TierList>[colTierList1]);
+      });
+    });
+
+    group('rename', () {
+      test('should rename tier list and update state', () async {
+        when(() => mockDao.getTierListsByCollection(collectionId))
+            .thenAnswer(
+          (_) async => <TierList>[colTierList1, colTierList2],
+        );
+        when(() => mockDao.getAllTierLists())
+            .thenAnswer((_) async => <TierList>[]);
+        when(() => mockDao.renameTierList(any(), any()))
+            .thenAnswer((_) async {});
+
+        final ProviderContainer container = createContainer();
+        container.listen(
+          collectionTierListsProvider(collectionId),
+          (Object? _, Object? _) {},
+        );
+        await pump();
+
+        await container
+            .read(collectionTierListsProvider(collectionId).notifier)
+            .rename(10, 'Renamed Tier');
+
+        final List<TierList>? tierLists =
+            container.read(collectionTierListsProvider(collectionId)).valueOrNull;
+        expect(tierLists, isNotNull);
+        expect(tierLists![0].name, 'Renamed Tier');
+        expect(tierLists[1].name, 'Col Tier B');
+      });
+
+      test('should call dao with correct parameters', () async {
+        when(() => mockDao.getTierListsByCollection(collectionId))
+            .thenAnswer((_) async => <TierList>[colTierList1]);
+        when(() => mockDao.getAllTierLists())
+            .thenAnswer((_) async => <TierList>[]);
+        when(() => mockDao.renameTierList(any(), any()))
+            .thenAnswer((_) async {});
+
+        final ProviderContainer container = createContainer();
+        container.listen(
+          collectionTierListsProvider(collectionId),
+          (Object? _, Object? _) {},
+        );
+        await pump();
+
+        await container
+            .read(collectionTierListsProvider(collectionId).notifier)
+            .rename(10, 'Updated Name');
+
+        verify(() => mockDao.renameTierList(10, 'Updated Name')).called(1);
+      });
+
+      test('should not modify other tier lists when renaming', () async {
+        when(() => mockDao.getTierListsByCollection(collectionId))
+            .thenAnswer(
+          (_) async => <TierList>[colTierList1, colTierList2],
+        );
+        when(() => mockDao.getAllTierLists())
+            .thenAnswer((_) async => <TierList>[]);
+        when(() => mockDao.renameTierList(any(), any()))
+            .thenAnswer((_) async {});
+
+        final ProviderContainer container = createContainer();
+        container.listen(
+          collectionTierListsProvider(collectionId),
+          (Object? _, Object? _) {},
+        );
+        await pump();
+
+        await container
+            .read(collectionTierListsProvider(collectionId).notifier)
+            .rename(11, 'Only This One');
+
+        final List<TierList>? tierLists =
+            container.read(collectionTierListsProvider(collectionId)).valueOrNull;
+        expect(tierLists, hasLength(2));
+        expect(tierLists![0].name, 'Col Tier A');
+        expect(tierLists[1].name, 'Only This One');
+      });
+
+      test('should invalidate global tierListsProvider', () async {
+        when(() => mockDao.getTierListsByCollection(collectionId))
+            .thenAnswer((_) async => <TierList>[colTierList1]);
+        when(() => mockDao.getAllTierLists())
+            .thenAnswer((_) async => <TierList>[]);
+        when(() => mockDao.renameTierList(any(), any()))
+            .thenAnswer((_) async {});
+
+        final ProviderContainer container = createContainer();
+        container.listen(
+          collectionTierListsProvider(collectionId),
+          (Object? _, Object? _) {},
+        );
+        container.listen(tierListsProvider, (Object? _, Object? _) {});
+        await pump();
+
+        reset(mockDao);
+        when(() => mockDao.getAllTierLists())
+            .thenAnswer((_) async => <TierList>[]);
+        when(() => mockDao.renameTierList(any(), any()))
+            .thenAnswer((_) async {});
+
+        await container
+            .read(collectionTierListsProvider(collectionId).notifier)
+            .rename(10, 'New');
+        await pump();
+
+        verify(() => mockDao.getAllTierLists()).called(1);
+      });
+
+      test('should use empty list when state has no value', () async {
+        when(() => mockDao.getTierListsByCollection(collectionId))
+            .thenThrow(Exception('error'));
+        when(() => mockDao.getAllTierLists())
+            .thenAnswer((_) async => <TierList>[]);
+        when(() => mockDao.renameTierList(any(), any()))
+            .thenAnswer((_) async {});
+
+        final ProviderContainer container = createContainer();
+        container.listen(
+          collectionTierListsProvider(collectionId),
+          (Object? _, Object? _) {},
+        );
+        await pump();
+
+        expect(
+          container.read(collectionTierListsProvider(collectionId)).hasError,
+          isTrue,
+        );
+
+        await container
+            .read(collectionTierListsProvider(collectionId).notifier)
+            .rename(999, 'Whatever');
+
+        final AsyncValue<List<TierList>> state =
+            container.read(collectionTierListsProvider(collectionId));
+        expect(state.valueOrNull, <TierList>[]);
+      });
+    });
+
+    group('delete', () {
+      test('should delete tier list and remove from state', () async {
+        when(() => mockDao.getTierListsByCollection(collectionId))
+            .thenAnswer(
+          (_) async => <TierList>[colTierList1, colTierList2],
+        );
+        when(() => mockDao.getAllTierLists())
+            .thenAnswer((_) async => <TierList>[]);
+        when(() => mockDao.deleteTierList(any()))
+            .thenAnswer((_) async {});
+
+        final ProviderContainer container = createContainer();
+        container.listen(
+          collectionTierListsProvider(collectionId),
+          (Object? _, Object? _) {},
+        );
+        await pump();
+
+        await container
+            .read(collectionTierListsProvider(collectionId).notifier)
+            .delete(10);
+
+        final List<TierList>? tierLists =
+            container.read(collectionTierListsProvider(collectionId)).valueOrNull;
+        expect(tierLists, <TierList>[colTierList2]);
+      });
+
+      test('should call dao with correct id', () async {
+        when(() => mockDao.getTierListsByCollection(collectionId))
+            .thenAnswer((_) async => <TierList>[colTierList1]);
+        when(() => mockDao.getAllTierLists())
+            .thenAnswer((_) async => <TierList>[]);
+        when(() => mockDao.deleteTierList(any()))
+            .thenAnswer((_) async {});
+
+        final ProviderContainer container = createContainer();
+        container.listen(
+          collectionTierListsProvider(collectionId),
+          (Object? _, Object? _) {},
+        );
+        await pump();
+
+        await container
+            .read(collectionTierListsProvider(collectionId).notifier)
+            .delete(10);
+
+        verify(() => mockDao.deleteTierList(10)).called(1);
+      });
+
+      test('should result in empty list when deleting last item', () async {
+        when(() => mockDao.getTierListsByCollection(collectionId))
+            .thenAnswer((_) async => <TierList>[colTierList1]);
+        when(() => mockDao.getAllTierLists())
+            .thenAnswer((_) async => <TierList>[]);
+        when(() => mockDao.deleteTierList(any()))
+            .thenAnswer((_) async {});
+
+        final ProviderContainer container = createContainer();
+        container.listen(
+          collectionTierListsProvider(collectionId),
+          (Object? _, Object? _) {},
+        );
+        await pump();
+
+        await container
+            .read(collectionTierListsProvider(collectionId).notifier)
+            .delete(10);
+
+        final List<TierList>? tierLists =
+            container.read(collectionTierListsProvider(collectionId)).valueOrNull;
+        expect(tierLists, <TierList>[]);
+      });
+
+      test('should not remove anything when id not found', () async {
+        when(() => mockDao.getTierListsByCollection(collectionId))
+            .thenAnswer(
+          (_) async => <TierList>[colTierList1, colTierList2],
+        );
+        when(() => mockDao.getAllTierLists())
+            .thenAnswer((_) async => <TierList>[]);
+        when(() => mockDao.deleteTierList(any()))
+            .thenAnswer((_) async {});
+
+        final ProviderContainer container = createContainer();
+        container.listen(
+          collectionTierListsProvider(collectionId),
+          (Object? _, Object? _) {},
+        );
+        await pump();
+
+        await container
+            .read(collectionTierListsProvider(collectionId).notifier)
+            .delete(999);
+
+        final List<TierList>? tierLists =
+            container.read(collectionTierListsProvider(collectionId)).valueOrNull;
+        expect(tierLists, <TierList>[colTierList1, colTierList2]);
+      });
+
+      test('should invalidate global tierListsProvider', () async {
+        when(() => mockDao.getTierListsByCollection(collectionId))
+            .thenAnswer((_) async => <TierList>[colTierList1]);
+        when(() => mockDao.getAllTierLists())
+            .thenAnswer((_) async => <TierList>[]);
+        when(() => mockDao.deleteTierList(any()))
+            .thenAnswer((_) async {});
+
+        final ProviderContainer container = createContainer();
+        container.listen(
+          collectionTierListsProvider(collectionId),
+          (Object? _, Object? _) {},
+        );
+        container.listen(tierListsProvider, (Object? _, Object? _) {});
+        await pump();
+
+        reset(mockDao);
+        when(() => mockDao.getAllTierLists())
+            .thenAnswer((_) async => <TierList>[]);
+        when(() => mockDao.deleteTierList(any()))
+            .thenAnswer((_) async {});
+
+        await container
+            .read(collectionTierListsProvider(collectionId).notifier)
+            .delete(10);
+        await pump();
+
+        verify(() => mockDao.getAllTierLists()).called(1);
+      });
+
+      test('should use empty list when state has no value', () async {
+        when(() => mockDao.getTierListsByCollection(collectionId))
+            .thenThrow(Exception('error'));
+        when(() => mockDao.getAllTierLists())
+            .thenAnswer((_) async => <TierList>[]);
+        when(() => mockDao.deleteTierList(any()))
+            .thenAnswer((_) async {});
+
+        final ProviderContainer container = createContainer();
+        container.listen(
+          collectionTierListsProvider(collectionId),
+          (Object? _, Object? _) {},
+        );
+        await pump();
+
+        expect(
+          container.read(collectionTierListsProvider(collectionId)).hasError,
+          isTrue,
+        );
+
+        await container
+            .read(collectionTierListsProvider(collectionId).notifier)
+            .delete(10);
+
+        final AsyncValue<List<TierList>> state =
+            container.read(collectionTierListsProvider(collectionId));
+        expect(state.valueOrNull, <TierList>[]);
+      });
+    });
+  });
 }

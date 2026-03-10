@@ -276,7 +276,7 @@ void main() {
         ).called(1);
         verify(
           () => mockTxn.insert('tier_definitions', any()),
-        ).called(6);
+        ).called(4);
       });
     });
 

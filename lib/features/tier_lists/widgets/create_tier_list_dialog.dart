@@ -154,10 +154,18 @@ class _CreateTierListDialogState
     if (name.isEmpty) return;
 
     final int? collectionId = _isGlobal ? null : _selectedCollectionId;
+    if (!_isGlobal && collectionId == null) return;
 
-    final TierList tierList = await ref
-        .read(tierListsProvider.notifier)
-        .create(name, collectionId: collectionId);
+    final TierList tierList;
+    if (collectionId != null) {
+      tierList = await ref
+          .read(collectionTierListsProvider(collectionId).notifier)
+          .create(name);
+    } else {
+      tierList = await ref
+          .read(tierListsProvider.notifier)
+          .create(name);
+    }
 
     if (context.mounted) {
       Navigator.of(context).pop(tierList);

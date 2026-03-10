@@ -244,6 +244,7 @@ Rank collection items across customizable tiers:
 - **Unranked pool** — items not yet placed in any tier, shown below with divider
 - **Export as image** — capture tier list as PNG via RepaintBoundary (2x pixel ratio) with branded footer. Platform-aware: FilePicker on desktop, Pictures directory on Android
 - **Create from collection** — popup menu on collection screen to create a scoped tier list
+- **Browse collection tier lists** — `Icons.leaderboard` button in collection AppBar opens filtered tier lists screen for that collection
 - **Navigation tab** — dedicated tab in NavigationShell with `Icons.leaderboard`
 - **.xcollx support** — tier lists included in full export/import with `itemIdMapping` for entry resolution
 

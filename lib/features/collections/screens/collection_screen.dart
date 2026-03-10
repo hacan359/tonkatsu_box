@@ -25,6 +25,7 @@ import '../widgets/collection_filter_bar.dart';
 import '../widgets/collection_items_view.dart';
 import '../../../shared/models/tier_list.dart';
 import '../../tier_lists/screens/tier_list_detail_screen.dart';
+import '../../tier_lists/screens/tier_lists_screen.dart';
 import '../../tier_lists/providers/tier_lists_provider.dart';
 import 'item_detail_screen.dart';
 
@@ -210,6 +211,13 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             ref: ref,
             collectionId: widget.collectionId,
           ),
+        ),
+      if (!_isCanvasMode && !_isUncategorized)
+        IconButton(
+          icon: const Icon(Icons.leaderboard),
+          color: AppColors.textSecondary,
+          tooltip: l.tierListTitle,
+          onPressed: _navigateToTierLists,
         ),
       if (kCanvasEnabled && !_isUncategorized)
         IconButton(
@@ -451,6 +459,13 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     }
   }
 
+  void _navigateToTierLists() {
+    Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (BuildContext context) =>
+          TierListsScreen(collectionId: widget.collectionId),
+    ));
+  }
+
   Future<void> _handleCreateTierList() async {
     if (_collection == null) return;
     final S l = S.of(context);
@@ -483,9 +498,10 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     controller.dispose();
     if (name == null || name.isEmpty || !mounted) return;
 
+    if (widget.collectionId == null) return;
     final TierList tierList = await ref
-        .read(tierListsProvider.notifier)
-        .create(name, collectionId: widget.collectionId);
+        .read(collectionTierListsProvider(widget.collectionId!).notifier)
+        .create(name);
 
     if (mounted) {
       Navigator.of(context).push(MaterialPageRoute<void>(

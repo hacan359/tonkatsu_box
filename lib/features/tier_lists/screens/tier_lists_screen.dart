@@ -15,16 +15,21 @@ import 'tier_list_detail_screen.dart';
 
 /// Экран списка тир-листов.
 ///
-/// Показывает все тир-листы с FAB для создания нового.
+/// Если [collectionId] указан — показывает только тир-листы этой коллекции.
+/// Если null — показывает все тир-листы (глобальная вкладка навигации).
 class TierListsScreen extends ConsumerWidget {
   /// Создаёт [TierListsScreen].
-  const TierListsScreen({super.key});
+  const TierListsScreen({this.collectionId, super.key});
+
+  /// ID коллекции для фильтрации. Null = все тир-листы.
+  final int? collectionId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final S l = S.of(context);
-    final AsyncValue<List<TierList>> tierListsAsync =
-        ref.watch(tierListsProvider);
+    final AsyncValue<List<TierList>> tierListsAsync = collectionId != null
+        ? ref.watch(collectionTierListsProvider(collectionId!))
+        : ref.watch(tierListsProvider);
 
     return Scaffold(
       appBar: const AutoBreadcrumbAppBar(),
@@ -51,7 +56,10 @@ class TierListsScreen extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.sm),
             itemBuilder: (BuildContext context, int index) {
               final TierList tierList = tierLists[index];
-              return _TierListCard(tierList: tierList);
+              return _TierListCard(
+                tierList: tierList,
+                collectionId: collectionId,
+              );
             },
           );
         },
@@ -67,7 +75,9 @@ class TierListsScreen extends ConsumerWidget {
   Future<void> _showCreateDialog(BuildContext context, WidgetRef ref) async {
     final TierList? result = await showDialog<TierList>(
       context: context,
-      builder: (BuildContext context) => const CreateTierListDialog(),
+      builder: (BuildContext context) => CreateTierListDialog(
+        preselectedCollectionId: collectionId,
+      ),
     );
     if (result != null && context.mounted) {
       Navigator.of(context).push(MaterialPageRoute<void>(
@@ -79,13 +89,16 @@ class TierListsScreen extends ConsumerWidget {
 }
 
 class _TierListCard extends ConsumerWidget {
-  const _TierListCard({required this.tierList});
+  const _TierListCard({
+    required this.tierList,
+    this.collectionId,
+  });
 
   final TierList tierList;
+  final int? collectionId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final S l = S.of(context);
     return Card(
       color: AppColors.surfaceLight,
       child: InkWell(
@@ -120,8 +133,8 @@ class _TierListCard extends ConsumerWidget {
                     const SizedBox(height: 2),
                     Text(
                       tierList.isGlobal
-                          ? l.tierListScopeAll
-                          : l.tierListScopeCollection,
+                          ? S.of(context).tierListScopeAll
+                          : S.of(context).tierListScopeCollection,
                       style: AppTypography.bodySmall.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -205,7 +218,15 @@ class _TierListCard extends ConsumerWidget {
       ),
     );
     if (newName != null && newName.isNotEmpty) {
-      await ref.read(tierListsProvider.notifier).rename(tierList.id, newName);
+      if (collectionId != null) {
+        await ref
+            .read(collectionTierListsProvider(collectionId!).notifier)
+            .rename(tierList.id, newName);
+      } else {
+        await ref
+            .read(tierListsProvider.notifier)
+            .rename(tierList.id, newName);
+      }
     }
   }
 
@@ -232,7 +253,13 @@ class _TierListCard extends ConsumerWidget {
       ),
     );
     if (confirmed == true) {
-      await ref.read(tierListsProvider.notifier).delete(tierList.id);
+      if (collectionId != null) {
+        await ref
+            .read(collectionTierListsProvider(collectionId!).notifier)
+            .delete(tierList.id);
+      } else {
+        await ref.read(tierListsProvider.notifier).delete(tierList.id);
+      }
     }
   }
 }
