@@ -266,6 +266,10 @@ class DatabaseService {
   /// Удаляет все фильмы из кеша.
   Future<void> clearMovies() => movieDao.clearMovies();
 
+  /// Удаляет устаревшие фильмы из кэша.
+  Future<int> clearStaleMovies({int maxAgeSeconds = 86400 * 30}) =>
+      movieDao.clearStaleMovies(maxAgeSeconds: maxAgeSeconds);
+
   // ==================== TV Shows (delegates to TvShowDao) ====================
 
   /// Возвращает сериал по TMDB ID или null, если не найден.
@@ -294,6 +298,10 @@ class DatabaseService {
 
   /// Удаляет все сериалы из кеша.
   Future<void> clearTvShows() => tvShowDao.clearTvShows();
+
+  /// Удаляет устаревшие сериалы из кэша.
+  Future<int> clearStaleTvShows({int maxAgeSeconds = 86400 * 30}) =>
+      tvShowDao.clearStaleTvShows(maxAgeSeconds: maxAgeSeconds);
 
   // ==================== TV Seasons (delegates to TvShowDao) ====================
 
@@ -328,6 +336,10 @@ class DatabaseService {
   /// Удаляет кешированные эпизоды сериала.
   Future<void> clearEpisodesByShow(int showId) =>
       tvShowDao.clearEpisodesByShow(showId);
+
+  /// Удаляет устаревшие эпизоды из кэша.
+  Future<int> clearStaleEpisodes({int maxAgeSeconds = 86400 * 30}) =>
+      tvShowDao.clearStaleEpisodes(maxAgeSeconds: maxAgeSeconds);
 
   // ==================== Watched Episodes (delegates to TvShowDao) ====================
 

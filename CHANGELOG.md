@@ -10,11 +10,20 @@
 - **Searchable filter dialogs** — `SearchFilter.searchable` property enables a search dialog (with text filter field) instead of plain `PopupMenuButton` for filters with many options. Enabled for `IgdbGenreFilter` and `IgdbPlatformFilter` (`filter_dropdown.dart`, `search_source.dart`)
 - **Multi-select platform filter** — `SearchFilter.multiSelect` property enables checkbox-based multi-selection. `IgdbPlatformFilter` supports selecting multiple platforms simultaneously. Dialog shows checkboxes, "Apply (N)" / "Reset" buttons, selected items pinned to top (`filter_dropdown.dart`, `igdb_platform_filter.dart`)
 - **`_SearchableFilterDialog` widget** — reusable dialog with text search field, single-select (tap to choose) and multi-select (checkboxes + confirm) modes. Selected items sorted to top on open (`filter_dropdown.dart`)
+- **Global error handlers** — `AppLogger.setupErrorHandlers()` captures `FlutterError.onError` and `PlatformDispatcher.onError`. `main()` wrapped in `runZonedGuarded` for unhandled zone errors. All exceptions logged with full stack traces via `dart:developer` (`app_logger.dart`, `main.dart`)
+- **TTL eviction for movie/tvShow/episode caches** — `MovieDao.clearStaleMovies()`, `TvShowDao.clearStaleTvShows()`, `TvShowDao.clearStaleEpisodes()` delete entries older than 30 days not linked to a collection. Runs automatically at startup in `SplashScreen` via `Future.wait` (`movie_dao.dart`, `tv_show_dao.dart`, `splash_screen.dart`)
 
 ### Fixed
 - **Collection card mosaic** — cover images no longer stretched/cropped. Changed `BoxFit.cover` → `BoxFit.contain` to preserve original aspect ratio, removed `memCacheHeight` (was forcing square decode), added black border outline around each cover. Grid layout changed to 3+3 (was 3+2) with 6 covers (`collection_card.dart`, `collection_covers_provider.dart`)
 
 ### Changed
+- **`CollectionDao._loadJoinedData()`** — 6 sequential `await` calls replaced with `Future.wait()` for parallel execution. All queries are independent (different tables), `_resolveGenresIfNeeded` still runs after (`collection_dao.dart`)
+- **Collection default view mode** — changed from list to grid (card view) for new collections (`collection_screen.dart`)
+
+### Removed
+- **`ItemStatus.displayLabel()`** — dead code removed. Only `localizedLabel()` (l10n-aware) remains (`item_status.dart`)
+
+
 - **`IgdbApi.browseGames()`** — parameter `platformId: int?` changed to `platformIds: List<int>?` for multi-platform filtering (`igdb_api.dart`)
 - **`IgdbGamesSource.fetch()`** — platform filter value parsing supports both `List<Object>` (multi-select) and `int` (single) via pattern matching (`igdb_games_source.dart`)
 - **`BrowseState.hasFilters`** — now correctly treats empty `List<Object>` as inactive filter (`browse_provider.dart`)

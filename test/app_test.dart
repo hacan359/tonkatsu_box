@@ -30,6 +30,14 @@ void main() {
       mockDb = MockDatabaseService();
       when(() => mockDb.database).thenAnswer((_) async => MockDatabase());
       when(() => mockDb.getPlatformCount()).thenAnswer((_) async => 0);
+      when(() => mockDb.clearStaleGames(maxAgeSeconds: any(named: 'maxAgeSeconds')))
+          .thenAnswer((_) async => 0);
+      when(() => mockDb.clearStaleMovies(maxAgeSeconds: any(named: 'maxAgeSeconds')))
+          .thenAnswer((_) async => 0);
+      when(() => mockDb.clearStaleTvShows(maxAgeSeconds: any(named: 'maxAgeSeconds')))
+          .thenAnswer((_) async => 0);
+      when(() => mockDb.clearStaleEpisodes(maxAgeSeconds: any(named: 'maxAgeSeconds')))
+          .thenAnswer((_) async => 0);
     });
 
     testWidgets('должен рендерить MaterialApp', (WidgetTester tester) async {

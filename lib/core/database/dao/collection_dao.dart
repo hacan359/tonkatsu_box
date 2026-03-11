@@ -824,31 +824,38 @@ class CollectionDao {
       }
     }
 
-    // Загружаем данные параллельно
-    final List<Game> games =
-        gameIds.isNotEmpty ? await _gameDao.getGamesByIds(gameIds) : <Game>[];
-    final List<Movie> movies = movieIds.isNotEmpty
-        ? await _movieDao.getMoviesByTmdbIds(movieIds)
-        : <Movie>[];
-    final List<TvShow> tvShows = tvShowIds.isNotEmpty
-        ? await _tvShowDao.getTvShowsByTmdbIds(tvShowIds)
-        : <TvShow>[];
-    final List<VisualNovel> visualNovels = vnIds.isNotEmpty
-        ? await _visualNovelDao.getVisualNovelsByNumericIds(vnIds)
-        : <VisualNovel>[];
-    final List<Manga> mangas = mangaIds.isNotEmpty
-        ? await _mangaDao.getMangaByIds(mangaIds)
-        : <Manga>[];
+    // Загружаем данные параллельно — все запросы независимы
+    final List<Object> results = await Future.wait(<Future<Object>>[
+      gameIds.isNotEmpty
+          ? _gameDao.getGamesByIds(gameIds)
+          : Future<List<Game>>.value(<Game>[]),
+      movieIds.isNotEmpty
+          ? _movieDao.getMoviesByTmdbIds(movieIds)
+          : Future<List<Movie>>.value(<Movie>[]),
+      tvShowIds.isNotEmpty
+          ? _tvShowDao.getTvShowsByTmdbIds(tvShowIds)
+          : Future<List<TvShow>>.value(<TvShow>[]),
+      vnIds.isNotEmpty
+          ? _visualNovelDao.getVisualNovelsByNumericIds(vnIds)
+          : Future<List<VisualNovel>>.value(<VisualNovel>[]),
+      mangaIds.isNotEmpty
+          ? _mangaDao.getMangaByIds(mangaIds)
+          : Future<List<Manga>>.value(<Manga>[]),
+      platformIds.isNotEmpty
+          ? _gameDao.getPlatformsByIds(platformIds.toList())
+          : Future<List<Platform>>.value(<Platform>[]),
+    ]);
 
-    // Загружаем платформы
-    Map<int, Platform> platformsMap = <int, Platform>{};
-    if (platformIds.isNotEmpty) {
-      final List<Platform> platforms =
-          await _gameDao.getPlatformsByIds(platformIds.toList());
-      platformsMap = <int, Platform>{
-        for (final Platform p in platforms) p.id: p,
-      };
-    }
+    final List<Game> games = results[0] as List<Game>;
+    final List<Movie> movies = results[1] as List<Movie>;
+    final List<TvShow> tvShows = results[2] as List<TvShow>;
+    final List<VisualNovel> visualNovels = results[3] as List<VisualNovel>;
+    final List<Manga> mangas = results[4] as List<Manga>;
+    final List<Platform> platforms = results[5] as List<Platform>;
+
+    final Map<int, Platform> platformsMap = <int, Platform>{
+      for (final Platform p in platforms) p.id: p,
+    };
 
     // Резолвим жанры из числовых ID в имена (если есть нерезолвленные)
     final List<Movie> resolvedMovies = await _resolveGenresIfNeeded(
