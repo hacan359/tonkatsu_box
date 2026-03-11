@@ -545,7 +545,7 @@ class IgdbApi {
   /// Throws [IgdbApiException] при ошибке запроса.
   Future<List<Game>> browseGames({
     int? genreId,
-    int? platformId,
+    List<int>? platformIds,
     int? year,
     (int, int)? decade,
     String sortBy = 'rating desc',
@@ -562,8 +562,8 @@ class IgdbApi {
       if (genreId != null) {
         where.write(' & genres = ($genreId)');
       }
-      if (platformId != null) {
-        where.write(' & platforms = ($platformId)');
+      if (platformIds != null && platformIds.isNotEmpty) {
+        where.write(' & platforms = (${platformIds.join(",")})');
       }
       if (year != null) {
         final int start =

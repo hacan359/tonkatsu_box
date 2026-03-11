@@ -59,9 +59,11 @@ class BrowseState {
   /// Текстовый поисковый запрос.
   final String searchQuery;
 
-  /// Есть ли активные фильтры (не null).
-  bool get hasFilters =>
-      filterValues.values.any((Object? v) => v != null);
+  /// Есть ли активные фильтры (не null и не пустой список).
+  bool get hasFilters => filterValues.values.any(
+        (Object? v) =>
+            v != null && (v is! List<Object> || v.isNotEmpty),
+      );
 
   /// Есть ли текстовый запрос.
   bool get hasSearchQuery => searchQuery.trim().length >= 2;

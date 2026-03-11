@@ -100,6 +100,17 @@ abstract class SearchFilter {
   /// но разные наборы опций (например, жанры Movie vs TV vs IGDB).
   String get cacheKey => key;
 
+  /// Показывать ли поле поиска внутри выпадающего списка.
+  ///
+  /// Включать для фильтров с большим количеством вариантов
+  /// (жанры IGDB, платформы и т.д.).
+  bool get searchable => false;
+
+  /// Поддерживает ли фильтр множественный выбор.
+  ///
+  /// При `true` значение фильтра — `List<Object>` вместо одиночного значения.
+  bool get multiSelect => false;
+
   /// Значение "все" (сброс фильтра).
   FilterOption get allOption;
 }

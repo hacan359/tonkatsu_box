@@ -210,9 +210,11 @@ class _CoverMosaic extends StatelessWidget {
     );
   }
 
-  /// Сетка 3+3: верхний ряд 3 постера, нижний ряд 2 постера + "+N".
+  /// Сетка 3+3: верхний ряд 3 постера, нижний 3 (последний — счётчик).
   Widget _buildGrid(List<CoverInfo> data) {
     if (data.isEmpty) return _buildEmpty();
+
+    final int remaining = totalCount - 6;
 
     return Column(
       children: <Widget>[
@@ -229,7 +231,7 @@ class _CoverMosaic extends StatelessWidget {
           ),
         ),
         const SizedBox(height: CollectionCard._cellGap),
-        // Нижний ряд — 2 постера + "+N"
+        // Нижний ряд — 3 постера (последний может быть счётчиком)
         Expanded(
           child: Row(
             children: <Widget>[
@@ -237,7 +239,11 @@ class _CoverMosaic extends StatelessWidget {
               const SizedBox(width: CollectionCard._cellGap),
               Expanded(child: _poster(data, 4)),
               const SizedBox(width: CollectionCard._cellGap),
-              Expanded(child: _counterCell(totalCount - 5)),
+              Expanded(
+                child: remaining > 0
+                    ? _counterCell(remaining)
+                    : _poster(data, 5),
+              ),
             ],
           ),
         ),
@@ -283,7 +289,7 @@ class _CoverMosaic extends StatelessWidget {
 }
 
 // =============================================================================
-// Обложка-изображение с обрезкой
+// Обложка-изображение с сохранением пропорций
 // =============================================================================
 
 class _CoverImage extends StatelessWidget {
@@ -291,32 +297,30 @@ class _CoverImage extends StatelessWidget {
 
   final CoverInfo cover;
 
-  static final BoxDecoration _cellDecoration = BoxDecoration(
-    color: AppColors.surface,
-    borderRadius: BorderRadius.circular(CollectionCard._cellRadius),
-  );
-  static const Widget _surfacePlaceholder =
-      ColoredBox(color: AppColors.surface);
+  static final BorderRadius _borderRadius =
+      BorderRadius.circular(CollectionCard._cellRadius);
+  static const Widget _emptyPlaceholder = SizedBox.shrink();
 
   @override
   Widget build(BuildContext context) {
+    if (cover.thumbnailUrl == null) {
+      return const SizedBox.expand();
+    }
     return Container(
-      decoration: _cellDecoration,
+      decoration: BoxDecoration(
+        borderRadius: _borderRadius,
+        border: Border.all(color: Colors.black, width: 0.5),
+      ),
       clipBehavior: Clip.antiAlias,
-      child: cover.thumbnailUrl == null
-          ? const SizedBox.expand()
-          : SizedBox.expand(
-              child: CachedImage(
-                imageType: _imageTypeFor(cover.mediaType, cover.platformId),
-                imageId: cover.externalId.toString(),
-                remoteUrl: cover.thumbnailUrl!,
-                fit: BoxFit.cover,
-                memCacheWidth: 200,
-                memCacheHeight: 200,
-                placeholder: _surfacePlaceholder,
-                errorWidget: _surfacePlaceholder,
-              ),
-            ),
+      child: CachedImage(
+        imageType: _imageTypeFor(cover.mediaType, cover.platformId),
+        imageId: cover.externalId.toString(),
+        remoteUrl: cover.thumbnailUrl!,
+        fit: BoxFit.contain,
+        memCacheWidth: 200,
+        placeholder: _emptyPlaceholder,
+        errorWidget: _emptyPlaceholder,
+      ),
     );
   }
 

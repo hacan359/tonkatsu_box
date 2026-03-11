@@ -270,7 +270,7 @@ lib/
 Поиск построен на pluggable-архитектуре с абстракциями `SearchSource` и `SearchFilter`:
 
 - **SearchSource** — описывает источник данных (IGDB, TMDB movies/tv/anime, VNDB). Объявляет фильтры, сортировки, unified `fetch()` method (query + filters simultaneously). `supportsSortDuringSearch` flag for sort dropdown control
-- **SearchFilter** — описывает один фильтр (жанр, год, платформа, тип). `cacheKey` различает фильтры с одинаковым `key` но разными наборами опций
+- **SearchFilter** — описывает один фильтр (жанр, год, платформа, тип). `cacheKey` различает фильтры с одинаковым `key` но разными наборами опций. `searchable` включает диалог с текстовым поиском, `multiSelect` — чекбоксы для множественного выбора
 - **BrowseNotifier** — единый state manager для Browse/Search режимов с пагинацией и переключением источников
 
 #### Экраны
@@ -296,7 +296,7 @@ lib/
 | `lib/features/search/sources/tmdb_movies_source.dart` | **Фильмы TMDB**. Browse через discoverMoviesFiltered (исключая анимацию), search через searchMovies. Фильтры: жанр + год. Сортировка: popular/top_rated/newest |
 | `lib/features/search/sources/tmdb_tv_source.dart` | **Сериалы TMDB**. Browse через discoverTvShowsFiltered (исключая анимацию), search через searchTvShows. Фильтры: жанр + год. Сортировка: popular/top_rated/newest |
 | `lib/features/search/sources/tmdb_anime_source.dart` | **Анимация TMDB**. Объединяет animated movies + TV shows (genre_id=16). Фильтры: тип (series/movies) + жанр + год |
-| `lib/features/search/sources/igdb_games_source.dart` | **Игры IGDB**. Browse через browseGames, search через searchGames. Фильтры: жанр + платформа. Сортировка: popular/rating/newest |
+| `lib/features/search/sources/igdb_games_source.dart` | **Игры IGDB**. Browse через browseGames, search через searchGames. Фильтры: жанр + платформа (multi-select). Сортировка: popular/rating/newest |
 | `lib/features/search/sources/vndb_source.dart` | **Визуальные новеллы VNDB**. Browse через browseVn, search через searchVn. Фильтры: жанр (теги). Сортировка: rating/newest/most_voted |
 | `lib/features/search/sources/anilist_manga_source.dart` | **Манга AniList**. Browse через browseManga, search через searchManga. Фильтры: жанр + формат (Manga/Manhwa/Manhua/One Shot/Light Novel). Сортировка: rating/popular/newest |
 
@@ -308,9 +308,9 @@ lib/
 | Файл | Назначение |
 |------|------------|
 | `lib/features/search/filters/tmdb_genre_filter.dart` | **Жанры TMDB**. `TmdbGenreFilter(type: 'movie'/'tv')`. cacheKey: `genre_movie`/`genre_tv`. Загрузка из movieGenresProvider/tvGenresProvider |
-| `lib/features/search/filters/igdb_genre_filter.dart` | **Жанры IGDB**. `IgdbGenreFilter`. cacheKey: `genre_igdb`. Модель `IgdbGenre`. Загрузка из igdbGenresProvider |
+| `lib/features/search/filters/igdb_genre_filter.dart` | **Жанры IGDB**. `IgdbGenreFilter`. cacheKey: `genre_igdb`. `searchable: true`. Модель `IgdbGenre`. Загрузка из igdbGenresProvider |
 | `lib/features/search/filters/year_filter.dart` | **Фильтр по году**. Группировка по декадам (2020s, 2010s, ..., Before 1970). Статические опции |
-| `lib/features/search/filters/igdb_platform_filter.dart` | **Фильтр по платформе IGDB**. Загрузка платформ из БД |
+| `lib/features/search/filters/igdb_platform_filter.dart` | **Фильтр по платформе IGDB**. `searchable: true`, `multiSelect: true`. Загрузка платформ из БД |
 | `lib/features/search/filters/anime_type_filter.dart` | **Фильтр типа анимации**. Series / Movies |
 
 </details>
@@ -324,7 +324,7 @@ lib/
 |------|------------|
 | `lib/features/search/widgets/browse_grid.dart` | **Грид результатов**. ConsumerStatefulWidget. Бесконечный скролл (пагинация). Viewport fill auto-load: `_scheduleViewportFillCheck()` + `ref.listen` для автоподгрузки на высоких экранах. Grid delegate совпадает с CollectionScreen (maxCrossAxisExtent:150 на desktop, childAspectRatio:0.55). `_collectedIdsProvider` для маркировки "в коллекции" (зелёный чек). Shimmer-загрузка |
 | `lib/features/search/widgets/filter_bar.dart` | **Горизонтальная строка фильтров**. SourceDropdown + FilterDropdown-ы + SortDropdown. ValueKey по source+cacheKey для пересоздания при смене источника |
-| `lib/features/search/widgets/filter_dropdown.dart` | **Дропдаун фильтра**. `FilterDropdown` — PopupMenuButton с async-загрузкой опций, generation-based cancellation, sentinel для "All". `SortDropdown` — дропдаун сортировки |
+| `lib/features/search/widgets/filter_dropdown.dart` | **Дропдаун фильтра**. `FilterDropdown` — PopupMenuButton с async-загрузкой опций, generation-based cancellation, sentinel для "All". Searchable фильтры открывают `_SearchableFilterDialog` (текстовый поиск + single/multi-select). `SortDropdown` — дропдаун сортировки |
 | `lib/features/search/widgets/source_dropdown.dart` | **Дропдаун источника**. Переключение между Movies/TV/Anime/Games с иконками |
 | `lib/features/search/widgets/media_details_sheet.dart` | **Bottom sheet деталей медиа**. DraggableScrollableSheet с постером, заголовком, годом, рейтингом, жанровыми чипами, описанием и кнопкой "Add to Collection" |
 | `lib/features/search/widgets/game_details_sheet.dart` | **Bottom sheet деталей игры**. Обложка, название, год, рейтинг, жанры, платформы, описание, кнопка "Add to Collection" |

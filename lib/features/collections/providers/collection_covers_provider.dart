@@ -15,6 +15,6 @@ final FutureProviderFamily<List<CoverInfo>, int?> collectionCoversProvider =
     FutureProvider.family<List<CoverInfo>, int?>(
   (Ref ref, int? collectionId) async {
     final DatabaseService db = ref.watch(databaseServiceProvider);
-    return db.getCollectionCovers(collectionId, limit: 5);
+    return db.getCollectionCovers(collectionId, limit: 6);
   },
 );

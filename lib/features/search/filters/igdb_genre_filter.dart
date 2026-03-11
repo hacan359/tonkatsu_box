@@ -37,6 +37,9 @@ class IgdbGenreFilter extends SearchFilter {
   String get cacheKey => '${key}_igdb';
 
   @override
+  bool get searchable => true;
+
+  @override
   String placeholder(S l) => l.browseFilterGenre;
 
   @override

@@ -10,7 +10,7 @@ The app uses a forced dark theme (ThemeMode.dark) with a cinematic design system
 - **AppTypography** — Inter font with 8 text styles (h1–caption, posterTitle, posterSubtitle), negative letter-spacing on headings
 - **AppSpacing** — standardized spacing (4–32px), border radii (4–20px), poster aspect ratio (2:3), grid column counts
 - **AppTheme** — centralized ThemeData with styled AppBar, Card, Input, Dialog, BottomSheet, Chip, Button, NavigationRail, TabBar
-- **Adaptive navigation** — NavigationRail sidebar on desktop (≥800px), BottomNavigationBar on mobile (<800px), 5 tabs: Home, Collections, Wishlist, Search, Settings. Logo 48×48 above NavigationRail (desktop)
+- **Adaptive navigation** — NavigationRail sidebar on desktop (≥800px), BottomNavigationBar on mobile (<800px, icon-only labels hidden), 6 tabs: Home, Collections, Tier Lists, Wishlist, Search, Settings. Logo 48×48 above NavigationRail (desktop)
 - **Breadcrumb Navigation** — automatic breadcrumb trail via `BreadcrumbScope` InheritedWidget + `AutoBreadcrumbAppBar`. Height 44px, chevron_right separators (14px, 50% alpha), hover pill effect, last crumb w600/textPrimary, overflow ellipsis (300/180px), mobile collapse (>2 crumbs → first…last), mobile back button, gamepad support, optional `accentColor` border-bottom. Tab root scope from NavigationShell, screen/push scopes from each screen
 
 <details>
@@ -82,7 +82,7 @@ Browse and search across multiple media sources via pluggable source architectur
 | **Movies** | TMDB | Genre, Year (decades) | Popular, Top Rated, Newest |
 | **TV Shows** | TMDB | Genre, Year (decades) | Popular, Top Rated, Newest |
 | **Animation** | TMDB | Type (Series/Movies), Genre, Year | Popular, Top Rated, Newest |
-| **Games** | IGDB | Genre, Platform | Popular, Rating, Newest |
+| **Games** | IGDB | Genre (searchable), Platform (searchable, multi-select) | Popular, Rating, Newest |
 | **Visual Novels** | VNDB | Genre (tags) | Rating, Newest, Most Voted |
 | **Manga** | AniList | Genre, Format (Manga/Manhwa/Manhua/One Shot/Light Novel) | Rating, Popular, Newest |
 
@@ -93,7 +93,7 @@ Unified search and browse — text search and filters work simultaneously (no mo
 
 Features:
 - **Source switching** — dropdown to switch between Movies/TV/Anime/Games/Visual Novels/Manga; filters reset on source change
-- **Filter bar** — horizontal scrollable row with genre/year/platform dropdowns and sort selector
+- **Filter bar** — horizontal scrollable row with genre/year/platform dropdowns and sort selector. Large filters (IGDB genres, platforms) open a searchable dialog with text filter. Platform filter supports multi-select with checkboxes
 - **In-collection markers** — green checkmark badge on items already in any collection (`_collectedIdsProvider`)
 - **Consistent card sizes** — grid delegate matches collection screen (desktop: maxCrossAxisExtent 150px, childAspectRatio 0.55)
 - **Infinite scroll** — automatic pagination with shimmer loading indicators. Viewport fill auto-load: on tall screens where initial results fit without scrollbar, automatically loads more pages
