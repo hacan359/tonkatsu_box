@@ -11,6 +11,9 @@
 - **Multi-select platform filter** — `SearchFilter.multiSelect` property enables checkbox-based multi-selection. `IgdbPlatformFilter` supports selecting multiple platforms simultaneously. Dialog shows checkboxes, "Apply (N)" / "Reset" buttons, selected items pinned to top (`filter_dropdown.dart`, `igdb_platform_filter.dart`)
 - **`_SearchableFilterDialog` widget** — reusable dialog with text search field, single-select (tap to choose) and multi-select (checkboxes + confirm) modes. Selected items sorted to top on open (`filter_dropdown.dart`)
 
+### Fixed
+- **Collection card mosaic** — cover images no longer stretched/cropped. Changed `BoxFit.cover` → `BoxFit.contain` to preserve original aspect ratio, removed `memCacheHeight` (was forcing square decode), added black border outline around each cover. Grid layout changed to 3+3 (was 3+2) with 6 covers (`collection_card.dart`, `collection_covers_provider.dart`)
+
 ### Changed
 - **`IgdbApi.browseGames()`** — parameter `platformId: int?` changed to `platformIds: List<int>?` for multi-platform filtering (`igdb_api.dart`)
 - **`IgdbGamesSource.fetch()`** — platform filter value parsing supports both `List<Object>` (multi-select) and `int` (single) via pattern matching (`igdb_games_source.dart`)

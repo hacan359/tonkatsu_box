@@ -38,7 +38,7 @@ void main() {
         ),
       ];
 
-      when(() => mockDb.getCollectionCovers(42, limit: 5))
+      when(() => mockDb.getCollectionCovers(42, limit: 6))
           .thenAnswer((_) async => covers);
 
       final ProviderContainer container = createContainer();
@@ -51,11 +51,11 @@ void main() {
               );
 
       expect(result.value, covers);
-      verify(() => mockDb.getCollectionCovers(42, limit: 5)).called(1);
+      verify(() => mockDb.getCollectionCovers(42, limit: 6)).called(1);
     });
 
     test('должен вернуть пустой список для пустой коллекции', () async {
-      when(() => mockDb.getCollectionCovers(99, limit: 5))
+      when(() => mockDb.getCollectionCovers(99, limit: 6))
           .thenAnswer((_) async => <CoverInfo>[]);
 
       final ProviderContainer container = createContainer();
@@ -76,7 +76,7 @@ void main() {
         ),
       ];
 
-      when(() => mockDb.getCollectionCovers(null, limit: 5))
+      when(() => mockDb.getCollectionCovers(null, limit: 6))
           .thenAnswer((_) async => covers);
 
       final ProviderContainer container = createContainer();
@@ -86,11 +86,11 @@ void main() {
           await container.read(collectionCoversProvider(null).future);
 
       expect(result, covers);
-      verify(() => mockDb.getCollectionCovers(null, limit: 5)).called(1);
+      verify(() => mockDb.getCollectionCovers(null, limit: 6)).called(1);
     });
 
     test('должен вернуть ошибку при сбое БД', () async {
-      when(() => mockDb.getCollectionCovers(1, limit: 5))
+      when(() => mockDb.getCollectionCovers(1, limit: 6))
           .thenThrow(Exception('DB error'));
 
       final ProviderContainer container = createContainer();

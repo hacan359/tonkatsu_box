@@ -73,7 +73,7 @@ const List<CoverInfo> _testCovers = <CoverInfo>[
   ),
 ];
 
-const List<CoverInfo> _fiveCovers = <CoverInfo>[
+const List<CoverInfo> _sixCovers = <CoverInfo>[
   CoverInfo(externalId: 1, mediaType: MediaType.game, thumbnailUrl: 'url1'),
   CoverInfo(externalId: 2, mediaType: MediaType.movie, thumbnailUrl: 'url2'),
   CoverInfo(externalId: 3, mediaType: MediaType.tvShow, thumbnailUrl: 'url3'),
@@ -84,6 +84,7 @@ const List<CoverInfo> _fiveCovers = <CoverInfo>[
     thumbnailUrl: 'url4',
   ),
   CoverInfo(externalId: 5, mediaType: MediaType.visualNovel, thumbnailUrl: 'url5'),
+  CoverInfo(externalId: 6, mediaType: MediaType.manga, thumbnailUrl: 'url6'),
 ];
 
 Widget _buildTestApp({
@@ -207,7 +208,7 @@ void main() {
       expect(find.byIcon(Icons.folder_rounded), findsOneWidget);
     });
 
-    testWidgets('должен показать +N при total > 5',
+    testWidgets('должен показать +N при total > 6',
         (WidgetTester tester) async {
       final Collection collection = _makeCollection();
 
@@ -222,27 +223,27 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // total=10, 5 постеров + "+5" в 6-й ячейке
-      expect(find.text('+5'), findsOneWidget);
+      // total=10, 6 ячеек, remaining=10-6=4 → "+4" в последней ячейке
+      expect(find.text('+4'), findsOneWidget);
     });
 
-    testWidgets('не должен показывать +N при total <= 5',
+    testWidgets('не должен показывать +N при total <= 6',
         (WidgetTester tester) async {
       final Collection collection = _makeCollection();
-      const CollectionStats fiveItemStats = CollectionStats(
-        total: 5,
+      const CollectionStats sixItemStats = CollectionStats(
+        total: 6,
         completed: 3,
         inProgress: 1,
-        notStarted: 1,
+        notStarted: 2,
         dropped: 0,
         planned: 0,
-        gameCount: 5,
+        gameCount: 6,
       );
 
       await tester.pumpWidget(_buildTestApp(
         overrides: <Override>[
           collectionStatsProvider(collection.id)
-              .overrideWith((Ref ref) async => fiveItemStats),
+              .overrideWith((Ref ref) async => sixItemStats),
           collectionCoversProvider(collection.id)
               .overrideWith((Ref ref) async => _testCovers),
         ],
@@ -250,7 +251,7 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // 5 или меньше — нет "+N"
+      // 6 или меньше — нет "+N"
       expect(find.textContaining('+'), findsNothing);
     });
 
@@ -381,7 +382,7 @@ void main() {
       expect(find.textContaining('Error'), findsOneWidget);
     });
 
-    testWidgets('должен отрендерить все 5 обложек в мозаике',
+    testWidgets('должен отрендерить все 6 обложек в мозаике',
         (WidgetTester tester) async {
       final Collection collection = _makeCollection();
 
@@ -390,15 +391,15 @@ void main() {
           collectionStatsProvider(collection.id)
               .overrideWith((Ref ref) async => _gameStats),
           collectionCoversProvider(collection.id)
-              .overrideWith((Ref ref) async => _fiveCovers),
+              .overrideWith((Ref ref) async => _sixCovers),
         ],
         child: CollectionCard(collection: collection),
       ));
       await tester.pumpAndSettle();
 
-      // Виджет рендерится, все 5 обложек + счётчик
+      // Виджет рендерится, все 6 обложек + счётчик (total=10, remaining=4)
       expect(find.byType(CollectionCard), findsOneWidget);
-      expect(find.text('+5'), findsOneWidget);
+      expect(find.text('+4'), findsOneWidget);
     });
 
     testWidgets('должен показать пустые ячейки при неполных обложках',
@@ -427,7 +428,7 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // 2 обложки + пустые ячейки, без +N (total <= 5)
+      // 2 обложки + пустые ячейки, без +N (total <= 6)
       expect(find.byType(CollectionCard), findsOneWidget);
       expect(find.textContaining('+'), findsNothing);
     });
