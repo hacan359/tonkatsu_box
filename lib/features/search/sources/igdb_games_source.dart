@@ -54,7 +54,13 @@ class IgdbGamesSource extends SearchSource {
     final IgdbApi igdb = ref.read(igdbApiProvider);
 
     final int? genreId = filterValues['genre'] as int?;
-    final int? platformId = filterValues['platform'] as int?;
+    final Object? platformValue = filterValues['platform'];
+    final List<int>? platformIds = switch (platformValue) {
+      final List<Object> list =>
+        list.cast<int>(),
+      final int id => <int>[id],
+      _ => null,
+    };
     final Object? yearValue = filterValues['year'];
 
     int? year;
@@ -73,7 +79,7 @@ class IgdbGamesSource extends SearchSource {
       final List<Game> games = await igdb.searchGames(
         query: query,
         genreId: genreId,
-        platformIds: platformId != null ? <int>[platformId] : null,
+        platformIds: platformIds,
         year: year,
         decade: decade,
         limit: pageSize,
@@ -94,7 +100,7 @@ class IgdbGamesSource extends SearchSource {
 
     final List<Game> games = await igdb.browseGames(
       genreId: genreId,
-      platformId: platformId,
+      platformIds: platformIds,
       year: year,
       decade: decade,
       sortBy: sortBy,

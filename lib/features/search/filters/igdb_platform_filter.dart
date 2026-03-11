@@ -15,6 +15,12 @@ class IgdbPlatformFilter extends SearchFilter {
   String get key => 'platform';
 
   @override
+  bool get searchable => true;
+
+  @override
+  bool get multiSelect => true;
+
+  @override
   String placeholder(S l) => l.browseFilterPlatform;
 
   @override

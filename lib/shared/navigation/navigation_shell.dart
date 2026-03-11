@@ -246,6 +246,8 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
       selectedItemColor: AppColors.textPrimary,
       unselectedItemColor: AppColors.textTertiary,
       type: BottomNavigationBarType.fixed,
+      showSelectedLabels: false,
+      showUnselectedLabels: false,
       items: <BottomNavigationBarItem>[
         BottomNavigationBarItem(
           icon: const Icon(Icons.home_outlined),
