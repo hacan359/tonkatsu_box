@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/shared/models/item_status.dart';
-import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/theme/app_colors.dart';
 
 void main() {
@@ -93,58 +92,6 @@ void main() {
 
         expect(result, ItemStatus.notStarted);
       });
-    });
-
-    group('displayLabel', () {
-      test('notStarted должен отображаться как "Not Started"', () {
-        expect(
-          ItemStatus.notStarted.displayLabel(MediaType.game),
-          'Not Started',
-        );
-      });
-
-      test('inProgress для game должен отображаться как "Playing"', () {
-        expect(
-          ItemStatus.inProgress.displayLabel(MediaType.game),
-          'Playing',
-        );
-      });
-
-      test('inProgress для movie должен отображаться как "Watching"', () {
-        expect(
-          ItemStatus.inProgress.displayLabel(MediaType.movie),
-          'Watching',
-        );
-      });
-
-      test('inProgress для tvShow должен отображаться как "Watching"', () {
-        expect(
-          ItemStatus.inProgress.displayLabel(MediaType.tvShow),
-          'Watching',
-        );
-      });
-
-      test('completed должен отображаться как "Completed"', () {
-        expect(
-          ItemStatus.completed.displayLabel(MediaType.game),
-          'Completed',
-        );
-      });
-
-      test('dropped должен отображаться как "Dropped"', () {
-        expect(
-          ItemStatus.dropped.displayLabel(MediaType.movie),
-          'Dropped',
-        );
-      });
-
-      test('planned должен отображаться как "Planned"', () {
-        expect(
-          ItemStatus.planned.displayLabel(MediaType.tvShow),
-          'Planned',
-        );
-      });
-
     });
 
     group('color', () {

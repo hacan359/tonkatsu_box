@@ -100,7 +100,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       final bool savedGridMode = prefs.getBool(
             '${SettingsKeys.collectionViewModePrefix}uncategorized',
           ) ??
-          false;
+          true;
       if (mounted) {
         setState(() {
           _isGridMode = savedGridMode;
@@ -116,7 +116,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     final bool savedGridMode = prefs.getBool(
           '${SettingsKeys.collectionViewModePrefix}${widget.collectionId}',
         ) ??
-        false;
+        true;
     if (mounted) {
       setState(() {
         _collection = collection;

@@ -222,21 +222,21 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // По умолчанию list mode — иконка grid_view для переключения
-        expect(find.byIcon(Icons.grid_view), findsOneWidget);
+        // По умолчанию grid mode — иконка view_list для переключения
+        expect(find.byIcon(Icons.view_list), findsOneWidget);
       });
 
-      testWidgets('должен переключаться на grid при нажатии',
+      testWidgets('должен переключаться на list при нажатии',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
         // Нажимаем на toggle
-        await tester.tap(find.byIcon(Icons.grid_view));
+        await tester.tap(find.byIcon(Icons.view_list));
         await pumpScreen(tester);
 
-        // Теперь иконка view_list (для обратного переключения)
-        expect(find.byIcon(Icons.view_list), findsOneWidget);
+        // Теперь иконка grid_view (для обратного переключения)
+        expect(find.byIcon(Icons.grid_view), findsOneWidget);
       });
 
       testWidgets('grid mode должен показывать MediaPosterCard',
@@ -244,10 +244,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // Переключаемся на grid
-        await tester.tap(find.byIcon(Icons.grid_view));
-        await pumpScreen(tester);
-
+        // По умолчанию grid mode
         expect(find.byType(MediaPosterCard), findsWidgets);
         expect(find.byType(GridView), findsOneWidget);
       });
@@ -257,25 +254,28 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // По умолчанию list mode
+        // Переключаемся на list
+        await tester.tap(find.byIcon(Icons.view_list));
+        await pumpScreen(tester);
+
         expect(find.byType(MediaPosterCard), findsNothing);
       });
 
-      testWidgets('должен переключаться обратно на list',
+      testWidgets('должен переключаться обратно на grid',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // Grid
-        await tester.tap(find.byIcon(Icons.grid_view));
-        await pumpScreen(tester);
-        expect(find.byType(GridView), findsOneWidget);
-
-        // Обратно на list
+        // List
         await tester.tap(find.byIcon(Icons.view_list));
         await pumpScreen(tester);
         expect(find.byType(GridView), findsNothing);
-        expect(find.byIcon(Icons.grid_view), findsOneWidget);
+
+        // Обратно на grid
+        await tester.tap(find.byIcon(Icons.grid_view));
+        await pumpScreen(tester);
+        expect(find.byType(GridView), findsOneWidget);
+        expect(find.byIcon(Icons.view_list), findsOneWidget);
       });
     });
 
@@ -421,11 +421,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // Переключаемся на grid
-        await tester.tap(find.byIcon(Icons.grid_view));
-        await pumpScreen(tester);
-
-        // Проверяем что MediaPosterCard рендерится
+        // По умолчанию grid mode — MediaPosterCard должен рендериться
         expect(find.byType(MediaPosterCard), findsOneWidget);
 
         // Проверяем что getImageUri вызван с moviePoster
@@ -466,11 +462,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // Переключаемся на grid
-        await tester.tap(find.byIcon(Icons.grid_view));
-        await pumpScreen(tester);
-
-        // Проверяем что MediaPosterCard рендерится
+        // По умолчанию grid mode — MediaPosterCard должен рендериться
         expect(find.byType(MediaPosterCard), findsOneWidget);
 
         // Проверяем что getImageUri вызван с tvShowPoster
@@ -643,10 +635,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // Переключаемся на grid
-        await tester.tap(find.byIcon(Icons.grid_view));
-        await pumpScreen(tester);
-
+        // По умолчанию grid mode — фильтруем
         // Фильтр Movies
         await tester.tap(find.byTooltip('Filter by type'));
         await tester.pumpAndSettle();
@@ -726,30 +715,30 @@ void main() {
         expect(find.byIcon(Icons.grid_view), findsNothing);
       });
 
-      testWidgets('должен загрузить list mode по умолчанию',
+      testWidgets('должен загрузить grid mode по умолчанию',
           (WidgetTester tester) async {
-        // SharedPreferences пусты — default false (list mode)
+        // SharedPreferences пусты — default true (grid mode)
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // List mode по умолчанию: иконка grid_view
-        expect(find.byIcon(Icons.grid_view), findsOneWidget);
+        // Grid mode по умолчанию: иконка view_list
+        expect(find.byIcon(Icons.view_list), findsOneWidget);
       });
 
-      testWidgets('должен сохранять grid mode в SharedPreferences при toggle',
+      testWidgets('должен сохранять list mode в SharedPreferences при toggle',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // Переключаемся на grid
-        await tester.tap(find.byIcon(Icons.grid_view));
+        // Переключаемся на list
+        await tester.tap(find.byIcon(Icons.view_list));
         await pumpScreen(tester);
 
         // Проверяем сохранение в SharedPreferences
         final bool? saved = prefs.getBool(
           '${SettingsKeys.collectionViewModePrefix}1',
         );
-        expect(saved, isTrue);
+        expect(saved, isFalse);
       });
 
       testWidgets('должен сохранять list mode при обратном toggle',

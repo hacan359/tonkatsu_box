@@ -40,22 +40,6 @@ enum ItemStatus {
     return ItemStatus.notStarted;
   }
 
-  /// Отображаемая метка с учётом типа медиа.
-  String displayLabel(MediaType mediaType) {
-    switch (this) {
-      case ItemStatus.notStarted:
-        return 'Not Started';
-      case ItemStatus.inProgress:
-        return mediaType == MediaType.game ? 'Playing' : 'Watching';
-      case ItemStatus.completed:
-        return 'Completed';
-      case ItemStatus.dropped:
-        return 'Dropped';
-      case ItemStatus.planned:
-        return 'Planned';
-    }
-  }
-
   /// Цвет для визуальной индикации статуса.
   Color get color {
     switch (this) {
