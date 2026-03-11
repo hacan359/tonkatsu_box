@@ -194,7 +194,21 @@ Contains full Game/Movie/TvShow/TvSeason/TvEpisode data for offline import. Each
 | tv_seasons | array | TvSeason objects from TMDB (tmdb_show_id, season_number, name, episode_count, poster_url, air_date) |
 | tv_episodes | array | TvEpisode objects from TMDB (tmdb_show_id, season_number, episode_number, name, overview, air_date, still_url, runtime) |
 
-All seven arrays are optional — only non-empty categories are included. Animation items are stored in `movies` (animated films) or `tv_shows` (animated series) based on their `AnimationSource`. Visual novel items are stored in `visual_novels` with VNDB string IDs (e.g. "v17"). Manga items are stored in `mangas` with AniList integer IDs. Seasons are preloaded when a TV show or animation series is added to a collection. Episodes are included from the local cache for each TV show in the collection.
+All seven arrays are optional — only non-empty categories are included.
+
+### Tier Lists Object
+
+Contains tier list data for the exported collection. Only present when the collection has associated tier lists.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | int | Tier list ID (not preserved on import — new ID assigned) |
+| name | string | Tier list name |
+| collection_id | int? | Source collection ID (null for global) |
+| definitions | array | Tier definitions: `{ tier_key, label, color (0xAARRGGBB int), sort_order }` |
+| entries | array | Items placed in tiers: `{ collection_item_id, tier_key, sort_order, external_id, media_type }` |
+
+Entries include `external_id` and `media_type` fields for cross-collection resolution on import. The import process builds an `itemIdMapping` (`"media_type:external_id" → newItemId`) and resolves entries via this map rather than raw collection_item_id values. Animation items are stored in `movies` (animated films) or `tv_shows` (animated series) based on their `AnimationSource`. Visual novel items are stored in `visual_novels` with VNDB string IDs (e.g. "v17"). Manga items are stored in `mangas` with AniList integer IDs. Seasons are preloaded when a TV show or animation series is added to a collection. Episodes are included from the local cache for each TV show in the collection.
 
 When `media` is present during import, data is restored directly from the file via `fromDb()` — no API calls to IGDB/TMDB/VNDB are needed. TV seasons and episodes are also restored if present. When `media` is absent (light export or older full exports), the app fetches data from APIs as before.
 
@@ -216,3 +230,4 @@ When `media` is present during import, data is restored directly from the file v
 4. Restores collection-level canvas (viewport, items, connections)
 5. Restores per-item canvases (embedded in `_canvas` field of each item)
 6. Restores cover images and canvas images from base64 to local disk cache
+7. Restores tier lists — creates tier list, saves definitions, resolves entries via `itemIdMapping` (`media_type:external_id` → new item ID)

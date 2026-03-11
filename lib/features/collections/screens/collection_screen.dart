@@ -23,6 +23,10 @@ import '../providers/vgmaps_panel_provider.dart';
 import '../widgets/collection_canvas_layout.dart';
 import '../widgets/collection_filter_bar.dart';
 import '../widgets/collection_items_view.dart';
+import '../../../shared/models/tier_list.dart';
+import '../../tier_lists/screens/tier_list_detail_screen.dart';
+import '../../tier_lists/screens/tier_lists_screen.dart';
+import '../../tier_lists/providers/tier_lists_provider.dart';
 import 'item_detail_screen.dart';
 
 /// Экран детального просмотра коллекции.
@@ -208,6 +212,13 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             collectionId: widget.collectionId,
           ),
         ),
+      if (!_isCanvasMode && !_isUncategorized)
+        IconButton(
+          icon: const Icon(Icons.leaderboard),
+          color: AppColors.textSecondary,
+          tooltip: l.tierListTitle,
+          onPressed: _navigateToTierLists,
+        ),
       if (kCanvasEnabled && !_isUncategorized)
         IconButton(
           icon: Icon(
@@ -262,6 +273,14 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),
+              PopupMenuItem<String>(
+                value: 'tier_list',
+                child: ListTile(
+                  leading: const Icon(Icons.leaderboard),
+                  title: Text(ml.tierListCreateFromCollection),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
               PopupMenuItem<String>(
                 value: 'export',
                 child: ListTile(
@@ -417,6 +436,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     switch (action) {
       case 'rename':
         _handleRename();
+      case 'tier_list':
+        _handleCreateTierList();
       case 'export':
         _handleExport();
       case 'delete':
@@ -435,6 +456,58 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       setState(() {
         _collection = _collection!.copyWith(name: newName);
       });
+    }
+  }
+
+  void _navigateToTierLists() {
+    Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (BuildContext context) =>
+          TierListsScreen(collectionId: widget.collectionId),
+    ));
+  }
+
+  Future<void> _handleCreateTierList() async {
+    if (_collection == null) return;
+    final S l = S.of(context);
+    final TextEditingController controller =
+        TextEditingController(text: '${_collection!.name} Tier List');
+    final String? name = await showDialog<String>(
+      context: context,
+      builder: (BuildContext ctx) => AlertDialog(
+        title: Text(l.tierListCreateFromCollection),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: InputDecoration(hintText: l.tierListNameHint),
+          onSubmitted: (String value) =>
+              Navigator.of(ctx).pop(value.trim()),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(l.cancel),
+          ),
+          TextButton(
+            onPressed: () =>
+                Navigator.of(ctx).pop(controller.text.trim()),
+            child: Text(l.create),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (name == null || name.isEmpty || !mounted) return;
+
+    if (widget.collectionId == null) return;
+    final TierList tierList = await ref
+        .read(collectionTierListsProvider(widget.collectionId!).notifier)
+        .create(name);
+
+    if (mounted) {
+      Navigator.of(context).push(MaterialPageRoute<void>(
+        builder: (BuildContext context) =>
+            TierListDetailScreen(tierListId: tierList.id),
+      ));
     }
   }
 

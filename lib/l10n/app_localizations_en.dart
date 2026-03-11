@@ -2144,4 +2144,75 @@ class SEn extends S {
 
   @override
   String get insert => 'Insert';
+
+  @override
+  String get navTierLists => 'Tier Lists';
+
+  @override
+  String get tierListCreate => 'New Tier List';
+
+  @override
+  String get tierListCreateFromCollection => 'Create Tier List';
+
+  @override
+  String get tierListNameHint => 'Tier list name';
+
+  @override
+  String get tierListScopeAll => 'All items';
+
+  @override
+  String get tierListScopeCollection => 'From collection';
+
+  @override
+  String tierListFromCollection(String name) {
+    return 'From: $name';
+  }
+
+  @override
+  String tierListRankedCount(int count) {
+    return '$count ranked';
+  }
+
+  @override
+  String get tierListTitle => 'Tier List';
+
+  @override
+  String get tierListUnranked => 'Unranked';
+
+  @override
+  String get tierListExportImage => 'Export as image';
+
+  @override
+  String get tierListImageSaved => 'Tier list saved as image';
+
+  @override
+  String get tierListRename => 'Rename tier';
+
+  @override
+  String get tierListChangeColor => 'Change color';
+
+  @override
+  String get tierListDeleteTier => 'Delete tier';
+
+  @override
+  String get tierListAddTier => 'Add tier';
+
+  @override
+  String get tierListClearAll => 'Clear all';
+
+  @override
+  String get tierListClearConfirm =>
+      'Remove all items from tiers? They will return to Unranked.';
+
+  @override
+  String get tierListDeleteConfirm => 'Delete this tier list?';
+
+  @override
+  String get tierListEmpty => 'No tier lists yet';
+
+  @override
+  String get tierListAllRanked => 'All items ranked!';
+
+  @override
+  String get tierListNoCollections => 'No collections available';
 }

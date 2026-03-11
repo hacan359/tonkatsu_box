@@ -9,6 +9,7 @@ import '../../features/collections/screens/home_screen.dart';
 import '../../features/home/screens/all_items_screen.dart';
 import '../../features/search/screens/search_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
+import '../../features/tier_lists/screens/tier_lists_screen.dart';
 import '../../features/wishlist/providers/wishlist_provider.dart';
 import '../../features/wishlist/screens/wishlist_screen.dart';
 import '../gamepad/gamepad_action.dart';
@@ -23,7 +24,7 @@ import '../../l10n/app_localizations.dart';
 const double navigationBreakpoint = 800;
 
 /// Количество основных табов.
-const int _tabCount = 5;
+const int _tabCount = 6;
 
 /// Индексы вкладок навигации.
 enum NavTab {
@@ -32,6 +33,9 @@ enum NavTab {
 
   /// Коллекции.
   collections,
+
+  /// Тир-листы.
+  tierLists,
 
   /// Вишлист (заметки для поиска).
   wishlist,
@@ -192,6 +196,11 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
                     label: Text(S.of(context).navCollections),
                   ),
                   NavigationRailDestination(
+                    icon: const Icon(Icons.leaderboard_outlined),
+                    selectedIcon: const Icon(Icons.leaderboard),
+                    label: Text(S.of(context).navTierLists),
+                  ),
+                  NavigationRailDestination(
                     icon: _buildWishlistIcon(Icons.bookmark_border),
                     selectedIcon: _buildWishlistIcon(Icons.bookmark),
                     label: Text(S.of(context).navWishlist),
@@ -249,6 +258,11 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
           label: S.of(context).navCollections,
         ),
         BottomNavigationBarItem(
+          icon: const Icon(Icons.leaderboard_outlined),
+          activeIcon: const Icon(Icons.leaderboard),
+          label: S.of(context).navTierLists,
+        ),
+        BottomNavigationBarItem(
           icon: _buildWishlistIcon(Icons.bookmark_border),
           activeIcon: _buildWishlistIcon(Icons.bookmark),
           label: S.of(context).navWishlist,
@@ -283,6 +297,7 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
     final String tabLabel = switch (NavTab.values[tabIndex]) {
       NavTab.home => S.of(context).navMain,
       NavTab.collections => S.of(context).navCollections,
+      NavTab.tierLists => S.of(context).navTierLists,
       NavTab.wishlist => S.of(context).navWishlist,
       NavTab.search => S.of(context).navSearch,
       NavTab.settings => S.of(context).navSettings,
@@ -297,6 +312,7 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
         final Widget screen = switch (NavTab.values[tabIndex]) {
           NavTab.home => const AllItemsScreen(),
           NavTab.collections => const HomeScreen(),
+          NavTab.tierLists => const TierListsScreen(),
           NavTab.wishlist => const WishlistScreen(),
           NavTab.search => const SearchScreen(),
           NavTab.settings => const SettingsScreen(),

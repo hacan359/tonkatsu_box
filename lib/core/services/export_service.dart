@@ -16,6 +16,9 @@ import '../../shared/models/media_type.dart';
 import '../../shared/models/platform.dart' as model;
 import '../../shared/models/tv_episode.dart';
 import '../../shared/models/tv_season.dart';
+import '../../shared/models/tier_definition.dart';
+import '../../shared/models/tier_list.dart';
+import '../../shared/models/tier_list_entry.dart';
 import '../database/database_service.dart';
 import 'image_cache_service.dart';
 import 'xcoll_file.dart';
@@ -156,6 +159,12 @@ class ExportService {
     // Collect full media data for offline import (includes tv_seasons)
     final Map<String, dynamic> media = await _collectMediaData(items);
 
+    // Collect tier list data
+    List<Map<String, dynamic>>? tierLists;
+    if (_database != null) {
+      tierLists = await _collectTierListData(collectionId);
+    }
+
     return XcollFile(
       version: xcollFormatVersion,
       format: ExportFormat.full,
@@ -166,6 +175,7 @@ class ExportService {
       canvas: canvas,
       images: images,
       media: media,
+      tierLists: tierLists,
     );
   }
 
@@ -531,6 +541,54 @@ class ExportService {
       _log.warning('Export failed', e);
       return ExportResult.failure('Export failed: $e');
     }
+  }
+
+  /// Собирает данные тир-листов привязанных к коллекции.
+  ///
+  /// Записи обогащаются `external_id` и `media_type` для разрешения
+  /// при импорте (т.к. `collection_item_id` меняется).
+  Future<List<Map<String, dynamic>>?> _collectTierListData(
+    int collectionId,
+  ) async {
+    final DatabaseService db = _database!;
+    final List<TierList> lists =
+        await db.tierListDao.getTierListsByCollection(collectionId);
+    if (lists.isEmpty) return null;
+
+    // Загружаем элементы коллекции для маппинга id → (external_id, media_type)
+    final List<CollectionItem> items =
+        await db.collectionDao.getCollectionItems(collectionId);
+    final Map<int, CollectionItem> itemsById = <int, CollectionItem>{
+      for (final CollectionItem item in items) item.id: item,
+    };
+
+    final List<Map<String, dynamic>> result = <Map<String, dynamic>>[];
+    for (final TierList tl in lists) {
+      final List<TierDefinition> defs =
+          await db.tierListDao.getTierDefinitions(tl.id);
+      final List<TierListEntry> entries =
+          await db.tierListDao.getTierListEntries(tl.id);
+
+      // Обогащаем entries external_id и media_type
+      final List<Map<String, dynamic>> exportedEntries =
+          <Map<String, dynamic>>[];
+      for (final TierListEntry entry in entries) {
+        final CollectionItem? item = itemsById[entry.collectionItemId];
+        if (item == null) continue;
+        final Map<String, dynamic> entryData = entry.toExport();
+        entryData['external_id'] = item.externalId;
+        entryData['media_type'] = item.mediaType.value;
+        exportedEntries.add(entryData);
+      }
+
+      result.add(<String, dynamic>{
+        'name': tl.name,
+        'definitions':
+            defs.map((TierDefinition d) => d.toExport()).toList(),
+        'entries': exportedEntries,
+      });
+    }
+    return result;
   }
 
   /// Очищает название файла от недопустимых символов.
