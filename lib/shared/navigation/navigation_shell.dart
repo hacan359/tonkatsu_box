@@ -151,19 +151,23 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
       children: <Widget>[
         ColoredBox(
           color: AppColors.surface,
-          child: Column(
-            children: <Widget>[
-              // Логотип выше NavigationRail — всегда виден
-              Padding(
-                padding: const EdgeInsets.only(top: 12, bottom: 8),
-                child: Image.asset(
-                  AppAssets.logo,
-                  width: 48,
-                  height: 48,
-                ),
-              ),
-              Expanded(
-                child: NavigationRail(
+          child: LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              // Если высоки недостаточно — скрываем labels чтобы избежать overflow
+              final bool compact = constraints.maxHeight < 480;
+              return Column(
+                children: <Widget>[
+                  // Логотип выше NavigationRail — всегда виден
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12, bottom: 8),
+                    child: Image.asset(
+                      AppAssets.logo,
+                      width: 48,
+                      height: 48,
+                    ),
+                  ),
+                  Expanded(
+                    child: NavigationRail(
                 selectedIndex: _selectedIndex,
                 onDestinationSelected: _onDestinationSelected,
                 backgroundColor: AppColors.surface,
@@ -183,7 +187,9 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
                   color: AppColors.textTertiary,
                   fontSize: 12,
                 ),
-                labelType: NavigationRailLabelType.all,
+                labelType: compact
+                    ? NavigationRailLabelType.selected
+                    : NavigationRailLabelType.all,
                 destinations: <NavigationRailDestination>[
                   NavigationRailDestination(
                     icon: const Icon(Icons.home_outlined),
@@ -219,6 +225,8 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
               ),
             ),
           ],
+          );
+        },
           ),
         ),
         const VerticalDivider(

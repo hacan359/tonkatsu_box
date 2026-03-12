@@ -12,6 +12,8 @@ import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../data/repositories/game_repository.dart';
 import '../../home/providers/all_items_provider.dart';
+import '../../../core/database/dao/tier_list_dao.dart';
+import '../../tier_lists/providers/tier_list_detail_provider.dart';
 import 'collection_covers_provider.dart';
 import 'sort_utils.dart';
 
@@ -338,6 +340,17 @@ class CollectionItemsNotifier
     required int? targetCollectionId,
     required MediaType mediaType,
   }) async {
+    // Удаляем элемент из тир-листов исходной коллекции до перемещения.
+    final TierListDao tierDao = ref.read(tierListDaoProvider);
+    final List<int> affectedTierListIds =
+        await tierDao.getTierListIdsForItem(itemId);
+    if (_collectionId != null) {
+      await tierDao.removeItemFromCollectionTierLists(
+        itemId,
+        _collectionId!,
+      );
+    }
+
     final bool success = await _repository.moveItemToCollection(
       itemId,
       targetCollectionId,
@@ -361,11 +374,21 @@ class CollectionItemsNotifier
     _invalidateCollectedIds(mediaType);
     ref.invalidate(allItemsNotifierProvider);
 
+    // Инвалидируем тир-листы, содержавшие перемещённый элемент.
+    for (final int tierListId in affectedTierListIds) {
+      ref.invalidate(tierListDetailProvider(tierListId));
+    }
+
     return (success: true, sourceEmpty: sourceEmpty);
   }
 
   /// Удаляет элемент из коллекции.
   Future<void> removeItem(int id, {MediaType? mediaType}) async {
+    // Запоминаем тир-листы до удаления (CASCADE удалит entries из БД).
+    final TierListDao tierDao = ref.read(tierListDaoProvider);
+    final List<int> affectedTierListIds =
+        await tierDao.getTierListIdsForItem(id);
+
     await _repository.removeItem(id);
     await refresh();
     if (mediaType != null) {
@@ -373,6 +396,11 @@ class CollectionItemsNotifier
     }
     ref.invalidate(uncategorizedItemCountProvider);
     ref.invalidate(allItemsNotifierProvider);
+
+    // Инвалидируем тир-листы, содержавшие удалённый элемент.
+    for (final int tierListId in affectedTierListIds) {
+      ref.invalidate(tierListDetailProvider(tierListId));
+    }
   }
 
   void _invalidateCollectedIds(MediaType mediaType) {

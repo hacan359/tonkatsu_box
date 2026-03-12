@@ -10,6 +10,9 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import 'tier_item_card.dart';
 
+/// Минимальная высота ряда тира.
+const double kTierRowMinHeight = kTierItemMinTotalHeight + AppSpacing.xs * 2 + 4;
+
 /// Виджет одного ряда тира.
 ///
 /// Слева — цветная метка, справа — горизонтальный скролл с обложками.
@@ -45,17 +48,17 @@ class TierRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 90,
+    return IntrinsicHeight(
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           // Метка тира
           GestureDetector(
             onTap: onDefinitionTap,
             onLongPress: onDefinitionTap,
             child: Container(
-              width: 60,
-              height: 90,
+              width: 70,
+              constraints: const BoxConstraints(minHeight: kTierRowMinHeight),
               decoration: BoxDecoration(
                 color: definition.color,
                 borderRadius: const BorderRadius.only(
@@ -66,7 +69,7 @@ class TierRow extends StatelessWidget {
               alignment: Alignment.center,
               child: Text(
                 definition.label,
-                style: AppTypography.h3.copyWith(
+                style: AppTypography.h2.copyWith(
                   color: _textColorFor(definition.color),
                   fontWeight: FontWeight.bold,
                 ),
@@ -83,7 +86,8 @@ class TierRow extends StatelessWidget {
               builder: (BuildContext context, List<int?> candidateData,
                   List<dynamic> rejectedData) {
                 return Container(
-                  height: 90,
+                  constraints:
+                      const BoxConstraints(minHeight: kTierRowMinHeight),
                   decoration: BoxDecoration(
                     color: definition.color.withAlpha(20),
                     border: candidateData.isNotEmpty
@@ -106,6 +110,7 @@ class TierRow extends StatelessWidget {
                             vertical: AppSpacing.xs,
                           ),
                           child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: entries.map((TierListEntry entry) {
                               final CollectionItem? item =
                                   itemsMap[entry.collectionItemId];

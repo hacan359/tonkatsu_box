@@ -1015,6 +1015,8 @@
   "tierListEmpty": "No tier lists yet",
   "tierListAllRanked": "All items ranked!",
   "tierListNoCollections": "No collections available",
+  "tierListErrorEmptyName": "Enter a tier list name",
+  "tierListErrorNoCollection": "Select a collection",
   "collectionPickerFilter": "Filter collections...",
   "collectionPickerAlreadyAdded": "✓ Added",
   "collectionPickerAlreadyInCount": "{count, plural, =1{Already in {count} collection} other{Already in {count} collections}}",

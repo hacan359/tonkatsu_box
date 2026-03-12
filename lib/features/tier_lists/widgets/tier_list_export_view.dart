@@ -118,9 +118,9 @@ class _ExportTierRow extends StatelessWidget {
         children: <Widget>[
           // Метка тира
           Container(
-            width: 60,
+            width: 70,
             constraints: const BoxConstraints(
-              minHeight: _kExportItemHeight + 8,
+              minHeight: _kExportItemHeight + kTierItemMinLabelHeight + 8,
             ),
             decoration: BoxDecoration(
               color: definition.color,
@@ -144,7 +144,7 @@ class _ExportTierRow extends StatelessWidget {
           Expanded(
             child: Container(
               constraints: const BoxConstraints(
-                minHeight: _kExportItemHeight + 8,
+                minHeight: _kExportItemHeight + kTierItemMinLabelHeight + 8,
               ),
               decoration: BoxDecoration(
                 color: definition.color.withAlpha(20),

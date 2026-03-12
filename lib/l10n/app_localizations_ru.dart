@@ -2239,6 +2239,12 @@ class SRu extends S {
   String get tierListNoCollections => 'Нет доступных коллекций';
 
   @override
+  String get tierListErrorEmptyName => 'Введите название тир-листа';
+
+  @override
+  String get tierListErrorNoCollection => 'Выберите коллекцию';
+
+  @override
   String get collectionPickerFilter => 'Фильтр коллекций...';
 
   @override

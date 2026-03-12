@@ -801,6 +801,8 @@
   "tierListEmpty": "Тир-листов пока нет",
   "tierListAllRanked": "Все элементы распределены!",
   "tierListNoCollections": "Нет доступных коллекций",
+  "tierListErrorEmptyName": "Введите название тир-листа",
+  "tierListErrorNoCollection": "Выберите коллекцию",
   "collectionPickerFilter": "Фильтр коллекций...",
   "collectionPickerAlreadyAdded": "✓ Добавлено",
   "collectionPickerAlreadyInCount": "{count, plural, one{Уже в {count} коллекции} few{Уже в {count} коллекциях} other{Уже в {count} коллекциях}}"

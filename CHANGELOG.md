@@ -7,6 +7,9 @@
 ## [Unreleased]
 
 ### Added
+- **Tier list item labels** — `TierItemCard` now shows a black label bar under each cover with the full item name (white text, no truncation). Dynamic height via `IntrinsicHeight` in `TierRow` and `_ExportTierRow`. Export PNG also includes labels (`tier_item_card.dart`, `tier_row.dart`, `tier_list_export_view.dart`)
+- **Create tier list dialog validation** — empty name and unselected collection now show inline error messages. Added `tierListErrorEmptyName` and `tierListErrorNoCollection` localization keys (EN + RU) (`create_tier_list_dialog.dart`, `app_en.arb`, `app_ru.arb`)
+- **Tier list cleanup on item removal/move** — `TierListDao.removeItemFromCollectionTierLists()` and `getTierListIdsForItem()` methods. `CollectionsNotifier.removeItem()` and `moveItem()` now invalidate affected tier list detail providers (`tier_list_dao.dart`, `collections_provider.dart`)
 - **Collection picker duplicate detection** — `showCollectionPickerDialog` now accepts `alreadyInCollectionIds` parameter. Collections where the item already exists are shown as disabled with a "✓ Added" badge, sorted to the bottom. Footer displays "Already in N collection(s)" counter. Uncategorized follows the same rules — disabled when `null` is in the set. All 7 `_add*ToAnyCollection` methods in `SearchScreen`, 2 recommendation methods in `ItemDetailScreen` compute and pass `alreadyInCollectionIds` (`collection_picker_dialog.dart`, `search_screen.dart`, `item_detail_screen.dart`)
 - **Cross-type duplicate detection** — `_addMovieToAnyCollection` and `_addTvShowToAnyCollection` now check both their own provider and `collectedAnimationIdsProvider`. Likewise, animation methods check movie/tvShow providers. Ensures the picker highlights collections regardless of the media type the item was added as (`search_screen.dart`, `item_detail_screen.dart`)
 - **Collection picker search filter** — text filter field shown when there are ≥5 collections, with clear button. Client-side name matching (`collection_picker_dialog.dart`)
@@ -14,9 +17,14 @@
 - **New localization keys** — `collectionPickerFilter`, `collectionPickerAlreadyAdded`, `collectionPickerAlreadyInCount` in EN and RU with ICU plurals (`app_en.arb`, `app_ru.arb`)
 
 ### Changed
+- **Tier list card size increase** — cover dimensions 60×82 → 90×120, label width 60 → 70 in tier row and export row (`tier_item_card.dart`, `tier_row.dart`, `tier_list_export_view.dart`)
+- **Create tier list dialog desktop UX** — wider dialog (520px on ≥800px screens), larger padding, bigger font, radio buttons selectable by text label tap, Create button is now `FilledButton` (`create_tier_list_dialog.dart`)
+- **Priority rating sort** — `CollectionSortMode.rating` now uses `userRating` first, falls back to `apiRating`; items with no rating pushed to end/beginning based on direction (`sort_utils.dart`)
 - **`_CanvasTimerMixin` refactoring** — extracted `moveItem()`, `updateViewport()`, `resetViewport()` and timer fields from `CanvasNotifier` and `GameCanvasNotifier` into a shared `_CanvasTimerMixin`. Each notifier implements `_persistViewport()` and `_viewportId`. Eliminates ~90 lines of duplicated code (`canvas_provider.dart`)
 
 ### Fixed
+- **NavigationRail overflow** — wrapped rail in `LayoutBuilder`; switches to `labelType: selected` when height < 480px to prevent 11px bottom overflow (`navigation_shell.dart`)
+- **Tier list ghost items** — items deleted from or moved between collections no longer remain on the old collection's tier list. Entries cleaned up via `removeItemFromCollectionTierLists()` and provider invalidation (`collections_provider.dart`, `tier_list_dao.dart`)
 - **Markdown toolbar link dialog overflow** — wrapped `Column` content in `SingleChildScrollView` to prevent RenderFlex overflow on small screens (`markdown_toolbar.dart`)
 - **Searchable filter dialogs** — `SearchFilter.searchable` property enables a search dialog (with text filter field) instead of plain `PopupMenuButton` for filters with many options. Enabled for `IgdbGenreFilter` and `IgdbPlatformFilter` (`filter_dropdown.dart`, `search_source.dart`)
 - **Multi-select platform filter** — `SearchFilter.multiSelect` property enables checkbox-based multi-selection. `IgdbPlatformFilter` supports selecting multiple platforms simultaneously. Dialog shows checkboxes, "Apply (N)" / "Reset" buttons, selected items pinned to top (`filter_dropdown.dart`, `igdb_platform_filter.dart`)

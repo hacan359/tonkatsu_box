@@ -92,12 +92,11 @@ void main() {
         overrides: buildOverrides(),
       );
 
-      // Tap the create/submit button without entering any text.
-      final Finder textButtons = find.byType(TextButton);
-      expect(textButtons, findsNWidgets(2));
+      // Tap the Create button (FilledButton) without entering any text.
+      final Finder createButton = find.byType(FilledButton);
+      expect(createButton, findsOneWidget);
 
-      // Tap the last TextButton (Create action).
-      await tester.tap(textButtons.last);
+      await tester.tap(createButton);
       await tester.pumpAndSettle();
 
       // createTierList should NOT have been called because name is empty.

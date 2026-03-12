@@ -8,19 +8,26 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/cached_image.dart';
 
 /// Размеры обложки тир-листа.
-const double _kDesktopWidth = 60;
-const double _kDesktopHeight = 82;
+const double kTierItemWidth = 90;
+const double kTierItemImageHeight = 120;
+
+/// Минимальная высота строки подписи.
+const double kTierItemMinLabelHeight = 32;
+
+/// Минимальная полная высота карточки (картинка + подпись).
+const double kTierItemMinTotalHeight = kTierItemImageHeight + kTierItemMinLabelHeight;
 
 /// Карточка элемента в тир-листе.
 ///
-/// Маленькая обложка с Tooltip. Поддерживает drag-and-drop.
+/// Обложка с текстовой подписью снизу. Поддерживает drag-and-drop.
 class TierItemCard extends StatelessWidget {
   /// Создаёт [TierItemCard].
   const TierItemCard({
     required this.item,
     this.isDraggable = false,
-    this.width = _kDesktopWidth,
-    this.height = _kDesktopHeight,
+    this.showLabel = true,
+    this.width = kTierItemWidth,
+    this.height = kTierItemImageHeight,
     super.key,
   });
 
@@ -30,10 +37,13 @@ class TierItemCard extends StatelessWidget {
   /// Включить drag-and-drop.
   final bool isDraggable;
 
-  /// Ширина.
+  /// Показывать текстовую подпись под картинкой.
+  final bool showLabel;
+
+  /// Ширина обложки.
   final double width;
 
-  /// Высота.
+  /// Высота обложки.
   final double height;
 
   @override
@@ -61,23 +71,61 @@ class TierItemCard extends StatelessWidget {
   Widget _buildCard() {
     return Tooltip(
       message: item.itemName,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
-        child: SizedBox(
-          width: width,
-          height: height,
-          child: item.thumbnailUrl != null
-              ? CachedImage(
-                  imageType: item.imageType,
-                  imageId: item.externalId.toString(),
-                  remoteUrl: item.thumbnailUrl!,
-                  fit: BoxFit.cover,
-                  memCacheWidth: (width * 2).toInt(),
-                  memCacheHeight: (height * 2).toInt(),
-                  placeholder: _buildPlaceholder(),
-                  errorWidget: _buildPlaceholder(),
-                )
-              : _buildPlaceholder(),
+      child: SizedBox(
+        width: width,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            // Обложка
+            ClipRRect(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
+              child: SizedBox(
+                width: width,
+                height: height,
+                child: item.thumbnailUrl != null
+                    ? CachedImage(
+                        imageType: item.imageType,
+                        imageId: item.externalId.toString(),
+                        remoteUrl: item.thumbnailUrl!,
+                        fit: BoxFit.cover,
+                        memCacheWidth: (width * 2).toInt(),
+                        memCacheHeight: (height * 2).toInt(),
+                        placeholder: _buildPlaceholder(),
+                        errorWidget: _buildPlaceholder(),
+                      )
+                    : _buildPlaceholder(),
+              ),
+            ),
+            // Подпись
+            if (showLabel)
+              Container(
+                width: width,
+                constraints: const BoxConstraints(
+                  minHeight: kTierItemMinLabelHeight,
+                ),
+                decoration: const BoxDecoration(
+                  color: Colors.black,
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(AppSpacing.radiusXs),
+                    bottomRight: Radius.circular(AppSpacing.radiusXs),
+                  ),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 2,
+                  vertical: 2,
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  item.itemName,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    height: 1.2,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
@@ -92,7 +140,7 @@ class TierItemCard extends StatelessWidget {
         child: Icon(
           Icons.image_not_supported_outlined,
           color: AppColors.textTertiary,
-          size: 20,
+          size: 24,
         ),
       ),
     );

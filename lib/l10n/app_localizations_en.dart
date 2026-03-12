@@ -2217,6 +2217,12 @@ class SEn extends S {
   String get tierListNoCollections => 'No collections available';
 
   @override
+  String get tierListErrorEmptyName => 'Enter a tier list name';
+
+  @override
+  String get tierListErrorNoCollection => 'Select a collection';
+
+  @override
   String get collectionPickerFilter => 'Filter collections...';
 
   @override

@@ -4093,6 +4093,18 @@ abstract class S {
   /// **'No collections available'**
   String get tierListNoCollections;
 
+  /// No description provided for @tierListErrorEmptyName.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a tier list name'**
+  String get tierListErrorEmptyName;
+
+  /// No description provided for @tierListErrorNoCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a collection'**
+  String get tierListErrorNoCollection;
+
   /// No description provided for @collectionPickerFilter.
   ///
   /// In en, this message translates to:
