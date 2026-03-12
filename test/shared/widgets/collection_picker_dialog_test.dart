@@ -2,7 +2,7 @@ import 'package:xerabora/l10n/app_localizations.dart';
 // Тесты для showCollectionPickerDialog.
 //
 // Диалог выбора коллекции: отображает список коллекций,
-// опцию "Without Collection" и кнопку Cancel.
+// опцию "Without Collection", фильтр, маркировку дублей и кнопку Cancel.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -57,12 +57,14 @@ class _DialogTester extends ConsumerWidget {
     this.excludeCollectionId,
     this.showUncategorized = true,
     this.title = 'Choose Collection',
+    this.alreadyInCollectionIds = const <int?>{},
   });
 
   final void Function(CollectionChoice?) onResult;
   final int? excludeCollectionId;
   final bool showUncategorized;
   final String title;
+  final Set<int?> alreadyInCollectionIds;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -77,6 +79,7 @@ class _DialogTester extends ConsumerWidget {
           excludeCollectionId: excludeCollectionId,
           showUncategorized: showUncategorized,
           title: title,
+          alreadyInCollectionIds: alreadyInCollectionIds,
         );
         onResult(choice);
       },
@@ -96,6 +99,7 @@ Widget _buildTestWidget({
   int? excludeCollectionId,
   bool showUncategorized = true,
   String title = 'Choose Collection',
+  Set<int?> alreadyInCollectionIds = const <int?>{},
 }) {
   return ProviderScope(
     overrides: <Override>[
@@ -112,6 +116,7 @@ Widget _buildTestWidget({
           excludeCollectionId: excludeCollectionId,
           showUncategorized: showUncategorized,
           title: title,
+          alreadyInCollectionIds: alreadyInCollectionIds,
         ),
       ),
     ),
@@ -139,6 +144,19 @@ Future<void> _openDialog(WidgetTester tester, Widget widget) async {
 
   await tester.tap(find.text('Open'));
   await tester.pumpAndSettle();
+}
+
+/// Генерирует список коллекций заданной длины.
+List<Collection> _generateCollections(int count) {
+  return List<Collection>.generate(count, (int i) {
+    return Collection(
+      id: i + 1,
+      name: 'Collection ${i + 1}',
+      author: 'Author ${i + 1}',
+      type: CollectionType.own,
+      createdAt: _testDate,
+    );
+  });
 }
 
 void main() {
@@ -304,7 +322,7 @@ void main() {
     });
 
     testWidgets(
-        'должен показывать иконку folder для own-коллекций',
+        'должен показывать иконку folder_rounded для own-коллекций',
         (WidgetTester tester) async {
       await _openDialog(
         tester,
@@ -314,7 +332,7 @@ void main() {
         ),
       );
 
-      expect(find.byIcon(Icons.folder), findsOneWidget);
+      expect(find.byIcon(Icons.folder_rounded), findsOneWidget);
     });
 
     testWidgets(
@@ -343,6 +361,238 @@ void main() {
       );
 
       expect(find.text('Author A'), findsOneWidget);
+    });
+
+    // ==================== Duplicate detection ====================
+
+    group('маркировка дублей', () {
+      testWidgets(
+          'disabled коллекция показывает бейдж "✓ Added"',
+          (WidgetTester tester) async {
+        await _openDialog(
+          tester,
+          _buildTestWidget(
+            collections: <Collection>[_collectionA, _collectionB],
+            showUncategorized: false,
+            alreadyInCollectionIds: <int?>{2},
+          ),
+        );
+
+        expect(find.text('✓ Added'), findsOneWidget);
+      });
+
+      testWidgets(
+          'disabled коллекция не реагирует на нажатие',
+          (WidgetTester tester) async {
+        CollectionChoice? result;
+        bool called = false;
+
+        await _openDialog(
+          tester,
+          _buildTestWidget(
+            onResult: (CollectionChoice? r) {
+              called = true;
+              result = r;
+            },
+            collections: <Collection>[_collectionA, _collectionB],
+            showUncategorized: false,
+            alreadyInCollectionIds: <int?>{2},
+          ),
+        );
+
+        // Пытаемся нажать на disabled коллекцию
+        await tester.tap(find.text('Collection B'));
+        await tester.pumpAndSettle();
+
+        // Диалог не должен закрыться
+        expect(called, isFalse);
+        expect(result, isNull);
+      });
+
+      testWidgets(
+          'Uncategorized disabled и показывает бейдж когда null в alreadyInCollectionIds',
+          (WidgetTester tester) async {
+        bool called = false;
+
+        await _openDialog(
+          tester,
+          _buildTestWidget(
+            onResult: (CollectionChoice? r) => called = true,
+            collections: <Collection>[_collectionA],
+            showUncategorized: true,
+            alreadyInCollectionIds: <int?>{null},
+          ),
+        );
+
+        // Бейдж "✓ Added" должен отображаться
+        expect(find.text('✓ Added'), findsOneWidget);
+
+        // Нажатие не должно закрыть диалог
+        await tester.tap(find.text('Without Collection'));
+        await tester.pumpAndSettle();
+
+        expect(called, isFalse);
+      });
+
+      testWidgets(
+          'Uncategorized активен когда null НЕ в alreadyInCollectionIds',
+          (WidgetTester tester) async {
+        CollectionChoice? result;
+
+        await _openDialog(
+          tester,
+          _buildTestWidget(
+            onResult: (CollectionChoice? r) => result = r,
+            collections: <Collection>[_collectionA],
+            showUncategorized: true,
+            alreadyInCollectionIds: <int?>{1},
+          ),
+        );
+
+        await tester.tap(find.text('Without Collection'));
+        await tester.pumpAndSettle();
+
+        expect(result, isA<WithoutCollection>());
+      });
+
+      testWidgets(
+          'disabled коллекции отображаются ниже активных',
+          (WidgetTester tester) async {
+        await _openDialog(
+          tester,
+          _buildTestWidget(
+            collections: <Collection>[_collectionA, _collectionB],
+            showUncategorized: false,
+            alreadyInCollectionIds: <int?>{1},
+          ),
+        );
+
+        // Collection B (available) should be before Collection A (disabled)
+        final Offset posB = tester.getCenter(find.text('Collection B'));
+        final Offset posA = tester.getCenter(find.text('Collection A'));
+        expect(posB.dy, lessThan(posA.dy));
+      });
+
+      testWidgets(
+          'footer показывает счётчик при наличии дублей',
+          (WidgetTester tester) async {
+        await _openDialog(
+          tester,
+          _buildTestWidget(
+            collections: <Collection>[_collectionA, _collectionB],
+            showUncategorized: false,
+            alreadyInCollectionIds: <int?>{1, 2},
+          ),
+        );
+
+        expect(find.textContaining('2'), findsWidgets);
+      });
+
+      testWidgets(
+          'footer не показывает счётчик без дублей',
+          (WidgetTester tester) async {
+        await _openDialog(
+          tester,
+          _buildTestWidget(
+            collections: <Collection>[_collectionA],
+            showUncategorized: false,
+          ),
+        );
+
+        // Only Cancel button in footer, no counter text
+        expect(find.text('Cancel'), findsOneWidget);
+      });
+    });
+
+    // ==================== Filter ====================
+
+    group('фильтр', () {
+      testWidgets(
+          'поле фильтра показывается при >= 5 коллекций',
+          (WidgetTester tester) async {
+        await _openDialog(
+          tester,
+          _buildTestWidget(
+            collections: _generateCollections(5),
+            showUncategorized: false,
+          ),
+        );
+
+        expect(find.byIcon(Icons.search), findsOneWidget);
+      });
+
+      testWidgets(
+          'поле фильтра скрыто при < 5 коллекций',
+          (WidgetTester tester) async {
+        await _openDialog(
+          tester,
+          _buildTestWidget(
+            collections: _generateCollections(4),
+            showUncategorized: false,
+          ),
+        );
+
+        expect(find.byIcon(Icons.search), findsNothing);
+      });
+
+      testWidgets(
+          'фильтр скрывает несоответствующие коллекции',
+          (WidgetTester tester) async {
+        final List<Collection> collections = <Collection>[
+          Collection(
+            id: 1,
+            name: 'SNES Classics',
+            author: 'User',
+            type: CollectionType.own,
+            createdAt: _testDate,
+          ),
+          Collection(
+            id: 2,
+            name: 'PS1 Games',
+            author: 'User',
+            type: CollectionType.own,
+            createdAt: _testDate,
+          ),
+          Collection(
+            id: 3,
+            name: 'Movies 2025',
+            author: 'User',
+            type: CollectionType.own,
+            createdAt: _testDate,
+          ),
+          Collection(
+            id: 4,
+            name: 'Anime',
+            author: 'User',
+            type: CollectionType.own,
+            createdAt: _testDate,
+          ),
+          Collection(
+            id: 5,
+            name: 'Visual Novels',
+            author: 'User',
+            type: CollectionType.own,
+            createdAt: _testDate,
+          ),
+        ];
+
+        await _openDialog(
+          tester,
+          _buildTestWidget(
+            collections: collections,
+            showUncategorized: false,
+          ),
+        );
+
+        // Enter filter text
+        await tester.enterText(find.byType(TextField), 'game');
+        await tester.pumpAndSettle();
+
+        // Only PS1 Games matches
+        expect(find.text('PS1 Games'), findsOneWidget);
+        expect(find.text('SNES Classics'), findsNothing);
+        expect(find.text('Movies 2025'), findsNothing);
+      });
     });
   });
 }

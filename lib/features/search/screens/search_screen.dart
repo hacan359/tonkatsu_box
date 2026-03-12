@@ -9,6 +9,7 @@ import '../../../shared/constants/platform_features.dart';
 import '../../../core/api/tmdb_api.dart';
 import '../../../core/database/database_service.dart';
 import '../../../core/services/image_cache_service.dart';
+import '../../../shared/models/collected_item_info.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/game.dart';
 import '../../../shared/models/media_type.dart';
@@ -251,11 +252,20 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   Future<void> _addGameToAnyCollection(Game game) async {
     final String gameName = game.name;
 
+    final Map<int, List<CollectedItemInfo>> collectedGames =
+        await ref.read(collectedGameIdsProvider.future);
+    final List<CollectedItemInfo> infos =
+        collectedGames[game.id] ?? <CollectedItemInfo>[];
+    final Set<int?> alreadyIn =
+        infos.map((CollectedItemInfo i) => i.collectionId).toSet();
+
+    if (!mounted) return;
     final S l = S.of(context);
     final CollectionChoice? choice = await showCollectionPickerDialog(
       context: context,
       ref: ref,
       title: l.searchAddToCollection,
+      alreadyInCollectionIds: alreadyIn,
     );
     if (choice == null || !mounted) return;
 
@@ -373,11 +383,24 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   Future<void> _addMovieToAnyCollection(Movie movie) async {
     final String title = movie.title;
 
+    final Map<int, List<CollectedItemInfo>> collectedMovies =
+        await ref.read(collectedMovieIdsProvider.future);
+    final Map<int, List<CollectedItemInfo>> collectedAnimations =
+        await ref.read(collectedAnimationIdsProvider.future);
+    final List<CollectedItemInfo> infos = <CollectedItemInfo>[
+      ...collectedMovies[movie.tmdbId] ?? <CollectedItemInfo>[],
+      ...collectedAnimations[movie.tmdbId] ?? <CollectedItemInfo>[],
+    ];
+    final Set<int?> alreadyIn =
+        infos.map((CollectedItemInfo i) => i.collectionId).toSet();
+
+    if (!mounted) return;
     final S l = S.of(context);
     final CollectionChoice? choice = await showCollectionPickerDialog(
       context: context,
       ref: ref,
       title: l.searchAddToCollection,
+      alreadyInCollectionIds: alreadyIn,
     );
     if (choice == null || !mounted) return;
 
@@ -498,11 +521,24 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   Future<void> _addTvShowToAnyCollection(TvShow tvShow) async {
     final String title = tvShow.title;
 
+    final Map<int, List<CollectedItemInfo>> collectedTvShows =
+        await ref.read(collectedTvShowIdsProvider.future);
+    final Map<int, List<CollectedItemInfo>> collectedAnimations =
+        await ref.read(collectedAnimationIdsProvider.future);
+    final List<CollectedItemInfo> infos = <CollectedItemInfo>[
+      ...collectedTvShows[tvShow.tmdbId] ?? <CollectedItemInfo>[],
+      ...collectedAnimations[tvShow.tmdbId] ?? <CollectedItemInfo>[],
+    ];
+    final Set<int?> alreadyIn =
+        infos.map((CollectedItemInfo i) => i.collectionId).toSet();
+
+    if (!mounted) return;
     final S l = S.of(context);
     final CollectionChoice? choice = await showCollectionPickerDialog(
       context: context,
       ref: ref,
       title: l.searchAddToCollection,
+      alreadyInCollectionIds: alreadyIn,
     );
     if (choice == null || !mounted) return;
 
@@ -627,11 +663,24 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   Future<void> _addAnimationMovieToAnyCollection(Movie movie) async {
     final String title = movie.title;
 
+    final Map<int, List<CollectedItemInfo>> collectedAnimation =
+        await ref.read(collectedAnimationIdsProvider.future);
+    final Map<int, List<CollectedItemInfo>> collectedMovies =
+        await ref.read(collectedMovieIdsProvider.future);
+    final List<CollectedItemInfo> infos = <CollectedItemInfo>[
+      ...collectedAnimation[movie.tmdbId] ?? <CollectedItemInfo>[],
+      ...collectedMovies[movie.tmdbId] ?? <CollectedItemInfo>[],
+    ];
+    final Set<int?> alreadyIn =
+        infos.map((CollectedItemInfo i) => i.collectionId).toSet();
+
+    if (!mounted) return;
     final S l = S.of(context);
     final CollectionChoice? choice = await showCollectionPickerDialog(
       context: context,
       ref: ref,
       title: l.searchAddToCollection,
+      alreadyInCollectionIds: alreadyIn,
     );
     if (choice == null || !mounted) return;
 
@@ -679,11 +728,24 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   Future<void> _addAnimationTvShowToAnyCollection(TvShow tvShow) async {
     final String title = tvShow.title;
 
+    final Map<int, List<CollectedItemInfo>> collectedAnimation =
+        await ref.read(collectedAnimationIdsProvider.future);
+    final Map<int, List<CollectedItemInfo>> collectedTvShows =
+        await ref.read(collectedTvShowIdsProvider.future);
+    final List<CollectedItemInfo> infos = <CollectedItemInfo>[
+      ...collectedAnimation[tvShow.tmdbId] ?? <CollectedItemInfo>[],
+      ...collectedTvShows[tvShow.tmdbId] ?? <CollectedItemInfo>[],
+    ];
+    final Set<int?> alreadyIn =
+        infos.map((CollectedItemInfo i) => i.collectionId).toSet();
+
+    if (!mounted) return;
     final S l = S.of(context);
     final CollectionChoice? choice = await showCollectionPickerDialog(
       context: context,
       ref: ref,
       title: l.searchAddToCollection,
+      alreadyInCollectionIds: alreadyIn,
     );
     if (choice == null || !mounted) return;
 
@@ -822,11 +884,20 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   Future<void> _addVisualNovelToAnyCollection(VisualNovel vn) async {
     final String title = vn.title;
 
+    final Map<int, List<CollectedItemInfo>> collectedVns =
+        await ref.read(collectedVisualNovelIdsProvider.future);
+    final List<CollectedItemInfo> infos =
+        collectedVns[vn.numericId] ?? <CollectedItemInfo>[];
+    final Set<int?> alreadyIn =
+        infos.map((CollectedItemInfo i) => i.collectionId).toSet();
+
+    if (!mounted) return;
     final S l = S.of(context);
     final CollectionChoice? choice = await showCollectionPickerDialog(
       context: context,
       ref: ref,
       title: l.searchAddToCollection,
+      alreadyInCollectionIds: alreadyIn,
     );
     if (choice == null || !mounted) return;
 
@@ -928,11 +999,20 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   Future<void> _addMangaToAnyCollection(Manga manga) async {
     final String title = manga.title;
 
+    final Map<int, List<CollectedItemInfo>> collectedManga =
+        await ref.read(collectedMangaIdsProvider.future);
+    final List<CollectedItemInfo> infos =
+        collectedManga[manga.id] ?? <CollectedItemInfo>[];
+    final Set<int?> alreadyIn =
+        infos.map((CollectedItemInfo i) => i.collectionId).toSet();
+
+    if (!mounted) return;
     final S l = S.of(context);
     final CollectionChoice? choice = await showCollectionPickerDialog(
       context: context,
       ref: ref,
       title: l.searchAddToCollection,
+      alreadyInCollectionIds: alreadyIn,
     );
     if (choice == null || !mounted) return;
 

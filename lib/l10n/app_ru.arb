@@ -800,5 +800,8 @@
   "tierListDeleteConfirm": "Удалить этот тир-лист?",
   "tierListEmpty": "Тир-листов пока нет",
   "tierListAllRanked": "Все элементы распределены!",
-  "tierListNoCollections": "Нет доступных коллекций"
+  "tierListNoCollections": "Нет доступных коллекций",
+  "collectionPickerFilter": "Фильтр коллекций...",
+  "collectionPickerAlreadyAdded": "✓ Добавлено",
+  "collectionPickerAlreadyInCount": "{count, plural, one{Уже в {count} коллекции} few{Уже в {count} коллекциях} other{Уже в {count} коллекциях}}"
 }

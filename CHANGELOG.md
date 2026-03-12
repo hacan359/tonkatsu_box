@@ -7,6 +7,17 @@
 ## [Unreleased]
 
 ### Added
+- **Collection picker duplicate detection** — `showCollectionPickerDialog` now accepts `alreadyInCollectionIds` parameter. Collections where the item already exists are shown as disabled with a "✓ Added" badge, sorted to the bottom. Footer displays "Already in N collection(s)" counter. Uncategorized follows the same rules — disabled when `null` is in the set. All 7 `_add*ToAnyCollection` methods in `SearchScreen`, 2 recommendation methods in `ItemDetailScreen` compute and pass `alreadyInCollectionIds` (`collection_picker_dialog.dart`, `search_screen.dart`, `item_detail_screen.dart`)
+- **Cross-type duplicate detection** — `_addMovieToAnyCollection` and `_addTvShowToAnyCollection` now check both their own provider and `collectedAnimationIdsProvider`. Likewise, animation methods check movie/tvShow providers. Ensures the picker highlights collections regardless of the media type the item was added as (`search_screen.dart`, `item_detail_screen.dart`)
+- **Collection picker search filter** — text filter field shown when there are ≥5 collections, with clear button. Client-side name matching (`collection_picker_dialog.dart`)
+- **Collection picker visual redesign** — replaced `AlertDialog` with `Dialog` + `_CollectionPickerContent` StatefulWidget. Colored icon squares (brand/tertiary), constrained size (400×500), divider footer with counter and Cancel (`collection_picker_dialog.dart`)
+- **New localization keys** — `collectionPickerFilter`, `collectionPickerAlreadyAdded`, `collectionPickerAlreadyInCount` in EN and RU with ICU plurals (`app_en.arb`, `app_ru.arb`)
+
+### Changed
+- **`_CanvasTimerMixin` refactoring** — extracted `moveItem()`, `updateViewport()`, `resetViewport()` and timer fields from `CanvasNotifier` and `GameCanvasNotifier` into a shared `_CanvasTimerMixin`. Each notifier implements `_persistViewport()` and `_viewportId`. Eliminates ~90 lines of duplicated code (`canvas_provider.dart`)
+
+### Fixed
+- **Markdown toolbar link dialog overflow** — wrapped `Column` content in `SingleChildScrollView` to prevent RenderFlex overflow on small screens (`markdown_toolbar.dart`)
 - **Searchable filter dialogs** — `SearchFilter.searchable` property enables a search dialog (with text filter field) instead of plain `PopupMenuButton` for filters with many options. Enabled for `IgdbGenreFilter` and `IgdbPlatformFilter` (`filter_dropdown.dart`, `search_source.dart`)
 - **Multi-select platform filter** — `SearchFilter.multiSelect` property enables checkbox-based multi-selection. `IgdbPlatformFilter` supports selecting multiple platforms simultaneously. Dialog shows checkboxes, "Apply (N)" / "Reset" buttons, selected items pinned to top (`filter_dropdown.dart`, `igdb_platform_filter.dart`)
 - **`_SearchableFilterDialog` widget** — reusable dialog with text search field, single-select (tap to choose) and multi-select (checkboxes + confirm) modes. Selected items sorted to top on open (`filter_dropdown.dart`)

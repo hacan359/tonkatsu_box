@@ -88,27 +88,29 @@ class MarkdownToolbar extends StatelessWidget {
       context: context,
       builder: (BuildContext ctx) => AlertDialog(
         title: Text(S.of(ctx).insertLink),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            TextField(
-              controller: textCtrl,
-              decoration: InputDecoration(
-                labelText: S.of(ctx).linkText,
-                hintText: S.of(ctx).linkHint,
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              TextField(
+                controller: textCtrl,
+                decoration: InputDecoration(
+                  labelText: S.of(ctx).linkText,
+                  hintText: S.of(ctx).linkHint,
+                ),
+                autofocus: true,
               ),
-              autofocus: true,
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: urlCtrl,
-              decoration: InputDecoration(
-                labelText: S.of(ctx).urlLabel,
-                hintText: S.of(ctx).urlHint,
+              const SizedBox(height: 12),
+              TextField(
+                controller: urlCtrl,
+                decoration: InputDecoration(
+                  labelText: S.of(ctx).urlLabel,
+                  hintText: S.of(ctx).urlHint,
+                ),
+                keyboardType: TextInputType.url,
               ),
-              keyboardType: TextInputType.url,
-            ),
-          ],
+            ],
+          ),
         ),
         actions: <Widget>[
           TextButton(

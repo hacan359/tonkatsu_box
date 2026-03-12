@@ -13,6 +13,7 @@ import '../../../shared/widgets/breadcrumb_scope.dart';
 import '../../../shared/widgets/collection_picker_dialog.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../core/database/database_service.dart';
+import '../../../shared/models/collected_item_info.dart';
 import '../../../data/repositories/canvas_repository.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
@@ -864,11 +865,24 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
   // ==================== Add from Recommendations ====================
 
   Future<void> _addMovieFromRecommendations(Movie movie) async {
+    final Map<int, List<CollectedItemInfo>> collectedMovies =
+        await ref.read(collectedMovieIdsProvider.future);
+    final Map<int, List<CollectedItemInfo>> collectedAnimations =
+        await ref.read(collectedAnimationIdsProvider.future);
+    final List<CollectedItemInfo> infos = <CollectedItemInfo>[
+      ...collectedMovies[movie.tmdbId] ?? <CollectedItemInfo>[],
+      ...collectedAnimations[movie.tmdbId] ?? <CollectedItemInfo>[],
+    ];
+    final Set<int?> alreadyIn =
+        infos.map((CollectedItemInfo i) => i.collectionId).toSet();
+
+    if (!mounted) return;
     final S l = S.of(context);
     final CollectionChoice? choice = await showCollectionPickerDialog(
       context: context,
       ref: ref,
       title: l.searchAddToCollection,
+      alreadyInCollectionIds: alreadyIn,
     );
     if (choice == null || !mounted) return;
 
@@ -908,11 +922,24 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
   }
 
   Future<void> _addTvShowFromRecommendations(TvShow tvShow) async {
+    final Map<int, List<CollectedItemInfo>> collectedTvShows =
+        await ref.read(collectedTvShowIdsProvider.future);
+    final Map<int, List<CollectedItemInfo>> collectedAnimations =
+        await ref.read(collectedAnimationIdsProvider.future);
+    final List<CollectedItemInfo> infos = <CollectedItemInfo>[
+      ...collectedTvShows[tvShow.tmdbId] ?? <CollectedItemInfo>[],
+      ...collectedAnimations[tvShow.tmdbId] ?? <CollectedItemInfo>[],
+    ];
+    final Set<int?> alreadyIn =
+        infos.map((CollectedItemInfo i) => i.collectionId).toSet();
+
+    if (!mounted) return;
     final S l = S.of(context);
     final CollectionChoice? choice = await showCollectionPickerDialog(
       context: context,
       ref: ref,
       title: l.searchAddToCollection,
+      alreadyInCollectionIds: alreadyIn,
     );
     if (choice == null || !mounted) return;
 

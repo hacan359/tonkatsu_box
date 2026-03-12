@@ -4092,6 +4092,24 @@ abstract class S {
   /// In en, this message translates to:
   /// **'No collections available'**
   String get tierListNoCollections;
+
+  /// No description provided for @collectionPickerFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter collections...'**
+  String get collectionPickerFilter;
+
+  /// No description provided for @collectionPickerAlreadyAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'✓ Added'**
+  String get collectionPickerAlreadyAdded;
+
+  /// No description provided for @collectionPickerAlreadyInCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Already in {count} collection} other{Already in {count} collections}}'**
+  String collectionPickerAlreadyInCount(int count);
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

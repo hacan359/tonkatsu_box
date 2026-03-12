@@ -159,6 +159,87 @@ abstract class BaseCanvasController {
   Future<void> refresh();
 }
 
+/// Mixin с debounce-логикой для сохранения позиций и viewport канваса.
+///
+/// Используется в [CanvasNotifier] и [GameCanvasNotifier] для устранения
+/// дублирования кода. Классы-потребители обязаны реализовать [_persistViewport]
+/// и [_viewportId].
+mixin _CanvasTimerMixin {
+  Timer? _viewportSaveTimer;
+  Timer? _positionSaveTimer;
+
+  /// Репозиторий для сохранения позиций элементов.
+  CanvasRepository get _timerRepository;
+
+  /// Текущее состояние канваса.
+  CanvasState get state;
+
+  /// Устанавливает новое состояние канваса.
+  set state(CanvasState value);
+
+  /// ID для создания [CanvasViewport] (collectionId или collectionItemId).
+  int get _viewportId;
+
+  /// Сохраняет viewport в БД. Реализуется в каждом Notifier по-своему.
+  void _persistViewport(CanvasViewport viewport);
+
+  /// Отменяет активные таймеры. Вызывать в ref.onDispose.
+  void cancelTimers() {
+    _viewportSaveTimer?.cancel();
+    _positionSaveTimer?.cancel();
+  }
+
+  /// Перемещает элемент на канвасе.
+  ///
+  /// Обновляет state мгновенно, сохраняет в БД с debounce 300ms.
+  void moveItem(int itemId, double x, double y) {
+    state = state.copyWith(
+      items: state.items.map((CanvasItem item) {
+        if (item.id == itemId) {
+          return item.copyWith(x: x, y: y);
+        }
+        return item;
+      }).toList(),
+    );
+
+    _positionSaveTimer?.cancel();
+    _positionSaveTimer = Timer(const Duration(milliseconds: 300), () {
+      _timerRepository.updateItemPosition(itemId, x: x, y: y);
+    });
+  }
+
+  /// Обновляет viewport (зум и позицию камеры).
+  ///
+  /// Сохраняет в БД с debounce 500ms.
+  void updateViewport(double scale, double offsetX, double offsetY) {
+    final CanvasViewport newViewport = CanvasViewport(
+      collectionId: _viewportId,
+      scale: scale,
+      offsetX: offsetX,
+      offsetY: offsetY,
+    );
+
+    state = state.copyWith(viewport: newViewport);
+
+    _viewportSaveTimer?.cancel();
+    _viewportSaveTimer = Timer(const Duration(milliseconds: 500), () {
+      _persistViewport(newViewport);
+    });
+  }
+
+  /// Сбрасывает viewport в значение по умолчанию (scale=1, offset=0,0).
+  void resetViewport() {
+    final CanvasViewport defaultViewport = CanvasViewport(
+      collectionId: _viewportId,
+    );
+
+    state = state.copyWith(viewport: defaultViewport);
+
+    _viewportSaveTimer?.cancel();
+    _persistViewport(defaultViewport);
+  }
+}
+
 /// Провайдер для управления канвасом конкретной коллекции.
 final NotifierProviderFamily<CanvasNotifier, CanvasState, int?>
     canvasNotifierProvider =
@@ -168,14 +249,24 @@ final NotifierProviderFamily<CanvasNotifier, CanvasState, int?>
 
 /// Notifier для управления состоянием канваса.
 class CanvasNotifier extends FamilyNotifier<CanvasState, int?>
+    with _CanvasTimerMixin
     implements BaseCanvasController {
   static final Logger _log = Logger('CanvasNotifier');
 
   late CanvasRepository _repository;
   late int? _collectionId;
-  Timer? _viewportSaveTimer;
-  Timer? _positionSaveTimer;
   bool _isSyncing = false;
+
+  @override
+  CanvasRepository get _timerRepository => _repository;
+
+  @override
+  int get _viewportId => _collectionId!;
+
+  @override
+  void _persistViewport(CanvasViewport viewport) {
+    _repository.saveViewport(viewport);
+  }
 
   @override
   CanvasState build(int? arg) {
@@ -187,10 +278,7 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int?>
       return const CanvasState(isLoading: false, isInitialized: true);
     }
 
-    ref.onDispose(() {
-      _viewportSaveTimer?.cancel();
-      _positionSaveTimer?.cancel();
-    });
+    ref.onDispose(cancelTimers);
 
     // Реактивная синхронизация: при изменении элементов коллекции
     // автоматически добавляем/удаляем элементы канваса
@@ -465,62 +553,6 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int?>
   Future<void> refresh() async {
     state = state.copyWith(isLoading: true, error: null);
     await _loadCanvas();
-  }
-
-  /// Перемещает элемент на канвасе.
-  ///
-  /// Обновляет state мгновенно, сохраняет в БД с debounce.
-  @override
-  void moveItem(int itemId, double x, double y) {
-    // Локальное обновление
-    state = state.copyWith(
-      items: state.items.map((CanvasItem item) {
-        if (item.id == itemId) {
-          return item.copyWith(x: x, y: y);
-        }
-        return item;
-      }).toList(),
-    );
-
-    // Debounced сохранение в БД
-    _positionSaveTimer?.cancel();
-    _positionSaveTimer = Timer(const Duration(milliseconds: 300), () {
-      _repository.updateItemPosition(itemId, x: x, y: y);
-    });
-  }
-
-  /// Обновляет viewport (зум и позицию камеры).
-  ///
-  /// Сохраняет в БД с debounce.
-  @override
-  void updateViewport(double scale, double offsetX, double offsetY) {
-    final CanvasViewport newViewport = CanvasViewport(
-      collectionId: _collectionId!,
-      scale: scale,
-      offsetX: offsetX,
-      offsetY: offsetY,
-    );
-
-    state = state.copyWith(viewport: newViewport);
-
-    // Debounced сохранение
-    _viewportSaveTimer?.cancel();
-    _viewportSaveTimer = Timer(const Duration(milliseconds: 500), () {
-      _repository.saveViewport(newViewport);
-    });
-  }
-
-  /// Сбрасывает viewport в значение по умолчанию (scale=1, offset=0,0).
-  @override
-  void resetViewport() {
-    final CanvasViewport defaultViewport = CanvasViewport(
-      collectionId: _collectionId!,
-    );
-
-    state = state.copyWith(viewport: defaultViewport);
-
-    _viewportSaveTimer?.cancel();
-    _repository.saveViewport(defaultViewport);
   }
 
   /// Сбрасывает позиции всех элементов в сетку по центру канваса.
@@ -885,12 +917,22 @@ final NotifierProviderFamily<GameCanvasNotifier, CanvasState,
 /// с элементами коллекции. Каждый элемент коллекции имеет свой canvas.
 class GameCanvasNotifier
     extends FamilyNotifier<CanvasState, ({int? collectionId, int collectionItemId})>
+    with _CanvasTimerMixin
     implements BaseCanvasController {
   late CanvasRepository _repository;
   late int? _collectionId;
   late int _collectionItemId;
-  Timer? _viewportSaveTimer;
-  Timer? _positionSaveTimer;
+
+  @override
+  CanvasRepository get _timerRepository => _repository;
+
+  @override
+  int get _viewportId => _collectionItemId;
+
+  @override
+  void _persistViewport(CanvasViewport viewport) {
+    _repository.saveGameCanvasViewport(_collectionItemId, viewport);
+  }
 
   @override
   CanvasState build(({int? collectionId, int collectionItemId}) arg) {
@@ -898,10 +940,7 @@ class GameCanvasNotifier
     _collectionItemId = arg.collectionItemId;
     _repository = ref.watch(canvasRepositoryProvider);
 
-    ref.onDispose(() {
-      _viewportSaveTimer?.cancel();
-      _positionSaveTimer?.cancel();
-    });
+    ref.onDispose(cancelTimers);
 
     // Загружаем canvas после инициализации state
     Future<void>.microtask(_loadCanvas);
@@ -1019,55 +1058,6 @@ class GameCanvasNotifier
   Future<void> refresh() async {
     state = state.copyWith(isLoading: true, error: null);
     await _loadCanvas();
-  }
-
-  /// Перемещает элемент на канвасе.
-  @override
-  void moveItem(int itemId, double x, double y) {
-    state = state.copyWith(
-      items: state.items.map((CanvasItem item) {
-        if (item.id == itemId) {
-          return item.copyWith(x: x, y: y);
-        }
-        return item;
-      }).toList(),
-    );
-
-    _positionSaveTimer?.cancel();
-    _positionSaveTimer = Timer(const Duration(milliseconds: 300), () {
-      _repository.updateItemPosition(itemId, x: x, y: y);
-    });
-  }
-
-  /// Обновляет viewport (зум и позицию камеры).
-  @override
-  void updateViewport(double scale, double offsetX, double offsetY) {
-    final CanvasViewport newViewport = CanvasViewport(
-      collectionId: _collectionItemId,
-      scale: scale,
-      offsetX: offsetX,
-      offsetY: offsetY,
-    );
-
-    state = state.copyWith(viewport: newViewport);
-
-    _viewportSaveTimer?.cancel();
-    _viewportSaveTimer = Timer(const Duration(milliseconds: 500), () {
-      _repository.saveGameCanvasViewport(_collectionItemId, newViewport);
-    });
-  }
-
-  /// Сбрасывает viewport в значение по умолчанию.
-  @override
-  void resetViewport() {
-    final CanvasViewport defaultViewport = CanvasViewport(
-      collectionId: _collectionItemId,
-    );
-
-    state = state.copyWith(viewport: defaultViewport);
-
-    _viewportSaveTimer?.cancel();
-    _repository.saveGameCanvasViewport(_collectionItemId, defaultViewport);
   }
 
   /// Сбрасывает позиции элементов в сетку.

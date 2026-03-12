@@ -2215,4 +2215,21 @@ class SEn extends S {
 
   @override
   String get tierListNoCollections => 'No collections available';
+
+  @override
+  String get collectionPickerFilter => 'Filter collections...';
+
+  @override
+  String get collectionPickerAlreadyAdded => '✓ Added';
+
+  @override
+  String collectionPickerAlreadyInCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Already in $count collections',
+      one: 'Already in $count collection',
+    );
+    return '$_temp0';
+  }
 }

@@ -1014,5 +1014,13 @@
   "tierListDeleteConfirm": "Delete this tier list?",
   "tierListEmpty": "No tier lists yet",
   "tierListAllRanked": "All items ranked!",
-  "tierListNoCollections": "No collections available"
+  "tierListNoCollections": "No collections available",
+  "collectionPickerFilter": "Filter collections...",
+  "collectionPickerAlreadyAdded": "✓ Added",
+  "collectionPickerAlreadyInCount": "{count, plural, =1{Already in {count} collection} other{Already in {count} collections}}",
+  "@collectionPickerAlreadyInCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  }
 }
