@@ -6,6 +6,8 @@
 
 ## [Unreleased]
 
+## [0.20.0] - 2026-03-12
+
 ### Added
 - **Tier list item labels** — `TierItemCard` now shows a black label bar under each cover with the full item name (white text, no truncation). Dynamic height via `IntrinsicHeight` in `TierRow` and `_ExportTierRow`. Export PNG also includes labels (`tier_item_card.dart`, `tier_row.dart`, `tier_list_export_view.dart`)
 - **Create tier list dialog validation** — empty name and unselected collection now show inline error messages. Added `tierListErrorEmptyName` and `tierListErrorNoCollection` localization keys (EN + RU) (`create_tier_list_dialog.dart`, `app_en.arb`, `app_ru.arb`)
