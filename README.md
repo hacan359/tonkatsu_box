@@ -77,12 +77,18 @@ Results load as you scroll with automatic pagination. Each card shows the poster
 <p align="center">
   <img src="docs/screenshots/09-search-games.jpg" width="800" alt="Search games across platforms">
 </p>
+<p align="center">
+  <img src="docs/screenshots/10-search-manga.jpg" width="800" alt="Search manga and light novels">
+</p>
+<p align="center">
+  <img src="docs/screenshots/13-custom-discovery-search.jpg" width="800" alt="Custom discovery search">
+</p>
 
 ### 📝 Wishlist
 No internet right now? Jot down the name of a game or movie to search for later. Tag it with a media type, add a note, and tap it when you're ready — the app opens search with the name pre-filled. Mark items as resolved when you've found them.
 
 <p align="center">
-  <img src="docs/screenshots/10-wishlist.jpg" width="800" alt="Wishlist with tagged media types">
+  <img src="docs/screenshots/11-wishlist.jpg" width="800" alt="Wishlist with tagged media types">
 </p>
 
 ### 📊 Track Your Progress
@@ -104,6 +110,10 @@ The entire interface is available in English and Russian with runtime language s
 
 ### 📊 Tier Lists
 Create tier lists to rank items from your collections. Drag and drop items into S/A/B/C tiers. Customize tiers — rename, change colors, add or remove. Create a tier list from all items or scope it to a specific collection. Export as a shareable PNG image.
+
+<p align="center">
+  <img src="docs/screenshots/12-tier-list.jpg" width="800" alt="Tier list with drag-and-drop ranking">
+</p>
 
 ### 📤 Share with Friends
 Export your collections as `.xcoll` (lightweight) or `.xcollx` (full offline copy with all images and data). Friends can import them and fork to create their own version.
@@ -238,15 +248,14 @@ Download any `.xcollx` file, import it from **Settings → Import Collection**, 
 
 ## Documentation
 
-For developers and contributors:
+Full documentation is available on the **[Wiki](https://github.com/hacan359/tonkatsu_box/wiki)**.
+
+For developers and contributors, technical docs are in the `docs/` directory:
 
 | Document | Description |
 |----------|-------------|
-| [Features](docs/FEATURES.md) | Detailed feature list |
+| [Wiki](https://github.com/hacan359/tonkatsu_box/wiki) | User guides, features, how it works |
 | [Architecture](docs/ARCHITECTURE.md) | Project structure, models, database |
-| [Getting Started](docs/GETTING_STARTED.md) | Developer setup guide |
-| [API Keys Guide](docs/guides/API_KEYS.md) | Detailed API key registration instructions |
-| [How It Works](docs/guides/HOW_IT_WORKS.md) | App structure, quick start, sharing |
 | [Roadmap](docs/ROADMAP.md) | Development progress and future plans |
 | [Export Format](docs/RCOLL_FORMAT.md) | `.xcoll` / `.xcollx` file format spec |
 | [Gamepad Support](docs/GAMEPAD.md) | Xbox controller / D-pad navigation |

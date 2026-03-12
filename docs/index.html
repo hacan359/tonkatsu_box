@@ -979,7 +979,7 @@
         <li><a href="#features" data-i18n="nav_features">Features</a></li>
         <li><a href="#how-it-works" data-i18n="nav_get_started">Get Started</a></li>
         <li><a href="#sharing" data-i18n="nav_sharing">Sharing</a></li>
-        <li><a href="https://github.com/hacan359/tonkatsu_box/tree/main/docs" target="_blank" data-i18n="nav_docs">Docs</a></li>
+        <li><a href="https://github.com/hacan359/tonkatsu_box/wiki" target="_blank" data-i18n="nav_docs">Docs</a></li>
       </ul>
       <div class="nav__lang">
         <button class="lang-btn lang-btn--active" data-lang="en">EN</button>
@@ -1160,11 +1160,13 @@
       <div class="slider-track">
         <img src="screenshots/07-search-movies.jpg" alt="Search movies and TV shows" loading="lazy">
         <img src="screenshots/09-search-games.jpg" alt="Search games across platforms" loading="lazy">
+        <img src="screenshots/10-search-manga.jpg" alt="Search manga and light novels" loading="lazy">
+        <img src="screenshots/13-custom-discovery-search.jpg" alt="Custom discovery search" loading="lazy">
       </div>
       <button class="slider-prev" aria-label="Previous">&#8249;</button>
       <button class="slider-next" aria-label="Next">&#8250;</button>
       <div class="slider-dots"></div>
-      <div class="slider-caption" data-i18n="slider_search_caption">Search IGDB, TMDB, and VNDB databases with hundreds of thousands of titles</div>
+      <div class="slider-caption" data-i18n="slider_search_caption">Search IGDB, TMDB, VNDB, and AniList databases with hundreds of thousands of titles</div>
     </div>
   </div>
 
@@ -1176,7 +1178,8 @@
       <div class="slider-track">
         <img src="screenshots/06-item-details.jpg" alt="Item details with status, rating and notes" loading="lazy">
         <img src="screenshots/05-collection-board.jpg" alt="Visual board with game posters" loading="lazy">
-        <img src="screenshots/10-wishlist.jpg" alt="Wishlist with tagged media types" loading="lazy">
+        <img src="screenshots/11-wishlist.jpg" alt="Wishlist with tagged media types" loading="lazy">
+        <img src="screenshots/12-tier-list.jpg" alt="Tier list with drag-and-drop ranking" loading="lazy">
       </div>
       <button class="slider-prev" aria-label="Previous">&#8249;</button>
       <button class="slider-next" aria-label="Next">&#8250;</button>
@@ -1192,30 +1195,30 @@
         <div class="section-label" data-i18n="steps_label">Get Started</div>
         <h2 class="section-title" data-i18n="steps_title">Up and running in minutes</h2>
         <p class="section-subtitle" data-i18n="steps_subtitle">
-          Grab free API keys, install the app, and start building your collection.
+          Install the app and start building your collection — no setup required.
         </p>
       </div>
 
       <div class="steps__grid">
         <div class="step reveal">
           <div class="step__number">01</div>
-          <h3 class="step__title" data-i18n="step1_title">Get API Keys</h3>
+          <h3 class="step__title" data-i18n="step1_title">Install & Run</h3>
           <p class="step__desc" data-i18n="step1_desc">
-            Register for free at <strong>IGDB</strong> (via Twitch) for games and <strong>TMDB</strong> for movies & TV. <strong>VNDB</strong> for visual novels works without a key. Optional: <strong>SteamGridDB</strong> for extra artwork.
-          </p>
-        </div>
-        <div class="step reveal">
-          <div class="step__number">02</div>
-          <h3 class="step__title" data-i18n="step2_title">Install & Run</h3>
-          <p class="step__desc" data-i18n="step2_desc">
             Download the latest release or build from source with Flutter. Available for <strong>Windows</strong>, <strong>Linux</strong> (experimental) and <strong>Android</strong>. A built-in <strong>Welcome Wizard</strong> will guide you through setup on first launch.
           </p>
         </div>
         <div class="step reveal">
+          <div class="step__number">02</div>
+          <h3 class="step__title" data-i18n="step2_title">Start Collecting</h3>
+          <p class="step__desc" data-i18n="step2_desc">
+            Search for your favorite games, movies, anime, visual novels, and manga — organize them into collections, rate, and track progress. Works out of the box.
+          </p>
+        </div>
+        <div class="step reveal">
           <div class="step__number">03</div>
-          <h3 class="step__title" data-i18n="step3_title">Start Collecting</h3>
+          <h3 class="step__title" data-i18n="step3_title">Add Your Own Keys (Optional)</h3>
           <p class="step__desc" data-i18n="step3_desc">
-            Enter your API keys in Settings, search for your favorite titles, and organize them into collections. That's it!
+            Want to use your own API keys? Register for free at <strong>IGDB</strong>, <strong>TMDB</strong>, or <strong>SteamGridDB</strong> and enter them in Settings. Completely optional — everything works without them.
           </p>
         </div>
       </div>
@@ -1329,8 +1332,8 @@
       <ul class="footer__links">
         <li><a href="https://github.com/hacan359/tonkatsu_box" target="_blank">GitHub</a></li>
         <li><a href="https://github.com/hacan359/tonkatsu_box/releases" target="_blank" data-i18n="footer_releases">Releases</a></li>
-        <li><a href="https://github.com/hacan359/tonkatsu_box/tree/main/docs" target="_blank" data-i18n="nav_docs">Docs</a></li>
-        <li><a href="https://github.com/hacan359/tonkatsu_box/blob/main/docs/guides/API_KEYS.md" target="_blank" data-i18n="footer_api_guide">API Keys Guide</a></li>
+        <li><a href="https://github.com/hacan359/tonkatsu_box/wiki" target="_blank" data-i18n="nav_docs">Docs</a></li>
+        <li><a href="https://github.com/hacan359/tonkatsu_box/wiki" target="_blank" data-i18n="footer_api_guide">API Keys Guide</a></li>
         <li><a href="https://github.com/hacan359/tonkatsu_box/issues" target="_blank" data-i18n="footer_issues">Issues</a></li>
       </ul>
     </div>
@@ -1435,7 +1438,7 @@
         nav_features: 'Features',
         nav_get_started: 'Get Started',
         nav_sharing: 'Sharing',
-        nav_docs: 'Docs',
+        nav_docs: 'Wiki',
         nav_download: 'Download',
         hero_badge: 'Open Source \u00b7 MIT License',
         hero_title: 'Your <span class="accent-game">games</span>, <span class="accent-movie">movies</span>, <span class="accent-tv">shows</span>, <span class="accent-anime">anime</span> &amp; <span class="accent-vn">novels</span><br>\u2014 all in one box',
@@ -1514,7 +1517,7 @@
         nav_features: '\u0424\u0443\u043d\u043a\u0446\u0438\u0438',
         nav_get_started: '\u041d\u0430\u0447\u0430\u0442\u044c',
         nav_sharing: '\u0428\u0430\u0440\u0438\u043d\u0433',
-        nav_docs: '\u0414\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u0430\u0446\u0438\u044f',
+        nav_docs: 'Wiki',
         nav_download: '\u0421\u043a\u0430\u0447\u0430\u0442\u044c',
         hero_badge: '\u041e\u0442\u043a\u0440\u044b\u0442\u044b\u0439 \u043a\u043e\u0434 \u00b7 MIT License',
         hero_title: '\u0412\u0430\u0448\u0438 <span class="accent-game">\u0438\u0433\u0440\u044b</span>, <span class="accent-movie">\u0444\u0438\u043b\u044c\u043c\u044b</span>, <span class="accent-tv">\u0441\u0435\u0440\u0438\u0430\u043b\u044b</span>, <span class="accent-anime">\u0430\u043d\u0438\u043c\u0435</span> \u0438 <span class="accent-vn">\u043d\u043e\u0432\u0435\u043b\u043b\u044b</span><br>\u2014 \u0432\u0441\u0451 \u0432 \u043e\u0434\u043d\u043e\u043c \u043c\u0435\u0441\u0442\u0435',
