@@ -1778,6 +1778,23 @@ class SEn extends S {
   String get debugPressButton => 'Press any button\non the gamepad...';
 
   @override
+  String get debugExportLog => 'Export log to file';
+
+  @override
+  String debugLogExported(String path) {
+    return 'Log exported to $path';
+  }
+
+  @override
+  String get debugLogEmpty => 'No events to export';
+
+  @override
+  String get settingsGamepadDebug => 'Gamepad Debug';
+
+  @override
+  String get settingsGamepadDebugSubtitle => 'Test controller input events';
+
+  @override
   String get debugSearchGames => 'Search games';
 
   @override
@@ -2215,6 +2232,12 @@ class SEn extends S {
 
   @override
   String get tierListNoCollections => 'No collections available';
+
+  @override
+  String get tierListErrorEmptyName => 'Enter a tier list name';
+
+  @override
+  String get tierListErrorNoCollection => 'Select a collection';
 
   @override
   String get collectionPickerFilter => 'Filter collections...';

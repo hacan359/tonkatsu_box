@@ -41,11 +41,14 @@ List<CollectionItem> applySortMode(
       );
     case CollectionSortMode.rating:
       sorted.sort((CollectionItem a, CollectionItem b) {
-        // null рейтинг в конец
-        if (a.userRating == null && b.userRating == null) return 0;
-        if (a.userRating == null) return 1;
-        if (b.userRating == null) return -1;
-        return b.userRating!.compareTo(a.userRating!);
+        // Эффективный рейтинг: userRating приоритетнее, fallback на apiRating.
+        final double? rA = a.userRating?.toDouble() ?? a.apiRating;
+        final double? rB = b.userRating?.toDouble() ?? b.apiRating;
+        // Элементы без обоих рейтингов — в конец
+        if (rA == null && rB == null) return 0;
+        if (rA == null) return 1;
+        if (rB == null) return -1;
+        return rB.compareTo(rA);
       });
     case CollectionSortMode.externalRating:
       sorted.sort((CollectionItem a, CollectionItem b) {

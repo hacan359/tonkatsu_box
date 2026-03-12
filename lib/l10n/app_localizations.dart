@@ -3283,6 +3283,36 @@ abstract class S {
   /// **'Press any button\non the gamepad...'**
   String get debugPressButton;
 
+  /// No description provided for @debugExportLog.
+  ///
+  /// In en, this message translates to:
+  /// **'Export log to file'**
+  String get debugExportLog;
+
+  /// No description provided for @debugLogExported.
+  ///
+  /// In en, this message translates to:
+  /// **'Log exported to {path}'**
+  String debugLogExported(String path);
+
+  /// No description provided for @debugLogEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No events to export'**
+  String get debugLogEmpty;
+
+  /// No description provided for @settingsGamepadDebug.
+  ///
+  /// In en, this message translates to:
+  /// **'Gamepad Debug'**
+  String get settingsGamepadDebug;
+
+  /// No description provided for @settingsGamepadDebugSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Test controller input events'**
+  String get settingsGamepadDebugSubtitle;
+
   /// No description provided for @debugSearchGames.
   ///
   /// In en, this message translates to:
@@ -4092,6 +4122,18 @@ abstract class S {
   /// In en, this message translates to:
   /// **'No collections available'**
   String get tierListNoCollections;
+
+  /// No description provided for @tierListErrorEmptyName.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a tier list name'**
+  String get tierListErrorEmptyName;
+
+  /// No description provided for @tierListErrorNoCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a collection'**
+  String get tierListErrorNoCollection;
 
   /// No description provided for @collectionPickerFilter.
   ///

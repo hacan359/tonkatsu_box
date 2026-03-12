@@ -41,7 +41,7 @@ The Home tab shows all items from all collections in a single grid view:
 - **Unified view** — browse all collection items (games, movies, TV shows, animation, visual novels) in one place
 - **Media type filter** — horizontal ChoiceChip row: All, Games, Movies, TV Shows, Animation, Visual Novels, Manga
 - **Platform filter** — when "Games" is selected, a second row of ChoiceChips shows available platforms (All + SNES, GBA, etc.). Resets on media type change
-- **Rating sort** — toggle chip to sort by user rating (ascending/descending)
+- **Rating sort** — toggle chip to sort by priority rating: user rating first, API rating as fallback; items with no rating at the end (ascending/descending)
 - **Default sort** — by date added (newest first)
 - **Collection name** — each card shows which collection the item belongs to
 - **Tap to navigate** — opens the item's detail screen
@@ -239,10 +239,11 @@ Rank collection items across customizable tiers:
 
 - **Create tier lists** — global (all items) or scoped to a specific collection
 - **Default tiers** — S/A/B/C with preset colors, auto-created on first open
-- **Drag-and-drop** — move items between tiers and the Unranked pool via Draggable/DragTarget
+- **Drag-and-drop** — move items between tiers and the Unranked pool via Draggable/DragTarget. Items removed from or moved between collections are automatically cleaned from tier lists
 - **Customize tiers** — rename labels, change colors (12-color picker), add/remove tiers
-- **Unranked pool** — items not yet placed in any tier, shown below with divider
-- **Export as image** — capture tier list as PNG via RepaintBoundary (2x pixel ratio) with branded footer. Platform-aware: FilePicker on desktop, Pictures directory on Android
+- **Unranked pool** — items not yet placed in any tier, shown below with divider. Type-to-filter on desktop to search by name
+- **Item cards** — 90×120 cover with full item name label (black background, white text, dynamic height). Export PNG includes labels
+- **Export as image** — capture tier list as PNG via RepaintBoundary (2x pixel ratio) with branded footer and item labels. Platform-aware: FilePicker on desktop, Pictures directory on Android
 - **Create from collection** — popup menu on collection screen to create a scoped tier list
 - **Browse collection tier lists** — `Icons.leaderboard` button in collection AppBar opens filtered tier lists screen for that collection
 - **Navigation tab** — dedicated tab in NavigationShell with `Icons.leaderboard`

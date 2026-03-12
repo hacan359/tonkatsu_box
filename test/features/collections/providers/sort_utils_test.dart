@@ -298,7 +298,7 @@ void main() {
     });
 
     // ---------------------------------------------------------------
-    // Rating sort
+    // Rating sort (приоритет: userRating → apiRating → null в конец)
     // ---------------------------------------------------------------
     group('CollectionSortMode.rating', () {
       test('по умолчанию высший рейтинг первым', () {
@@ -319,11 +319,12 @@ void main() {
         );
       });
 
-      test('null рейтинг всегда в конце (по умолчанию)', () {
+      test('fallback на apiRating когда userRating отсутствует', () {
+        // Game.rating делится на 10 в _resolvedMedia → apiRating=80/10=8.0
         final List<CollectionItem> items = <CollectionItem>[
-          _makeItem(id: 1, name: 'No Rating'),
-          _makeItem(id: 2, name: 'Has Rating', userRating: 5),
-          _makeItem(id: 3, name: 'Also No Rating'),
+          _makeItem(id: 1, name: 'User 5', userRating: 5),
+          _makeItem(id: 2, name: 'API 8', apiRating: 80.0),
+          _makeItem(id: 3, name: 'User 9', userRating: 9),
         ];
 
         final List<CollectionItem> result = applySortMode(
@@ -331,10 +332,55 @@ void main() {
           CollectionSortMode.rating,
         );
 
-        // Элемент с рейтингом первый, без рейтинга — в конце
-        expect(result.first.id, 2);
-        expect(result[1].userRating, isNull);
+        // userRating 9, apiRating 8.0, userRating 5
+        expect(
+          result.map((CollectionItem i) => i.id).toList(),
+          <int>[3, 2, 1],
+        );
+      });
+
+      test('userRating приоритетнее apiRating при наличии обоих', () {
+        final List<CollectionItem> items = <CollectionItem>[
+          // userRating=3 используется вместо apiRating=95/10=9.5
+          _makeItem(id: 1, name: 'Low user, high api',
+              userRating: 3, apiRating: 95.0),
+          // Только apiRating=70/10=7.0
+          _makeItem(id: 2, name: 'Only api', apiRating: 70.0),
+        ];
+
+        final List<CollectionItem> result = applySortMode(
+          items,
+          CollectionSortMode.rating,
+        );
+
+        // apiRating 7.0 > userRating 3.0
+        expect(
+          result.map((CollectionItem i) => i.id).toList(),
+          <int>[2, 1],
+        );
+      });
+
+      test('элементы без обоих рейтингов — в конце', () {
+        final List<CollectionItem> items = <CollectionItem>[
+          _makeItem(id: 1, name: 'No Rating'),
+          _makeItem(id: 2, name: 'Has User', userRating: 5),
+          // apiRating=60/10=6.0
+          _makeItem(id: 3, name: 'Has API', apiRating: 60.0),
+          _makeItem(id: 4, name: 'Also No Rating'),
+        ];
+
+        final List<CollectionItem> result = applySortMode(
+          items,
+          CollectionSortMode.rating,
+        );
+
+        // С рейтингом первые (6.0, 5.0), без обоих — в конце
+        expect(result[0].id, 3); // apiRating 6.0
+        expect(result[1].id, 2); // userRating 5
         expect(result[2].userRating, isNull);
+        expect(result[2].apiRating, isNull);
+        expect(result[3].userRating, isNull);
+        expect(result[3].apiRating, isNull);
       });
 
       test('isDescending=true — низший рейтинг первым, null в начале', () {
@@ -351,6 +397,26 @@ void main() {
         );
 
         // Инвертированный список: null первым, потом low, потом high
+        expect(
+          result.map((CollectionItem i) => i.id).toList(),
+          <int>[3, 1, 2],
+        );
+      });
+
+      test('isDescending=true с apiRating fallback', () {
+        final List<CollectionItem> items = <CollectionItem>[
+          _makeItem(id: 1, name: 'API 2', apiRating: 20.0), // 20/10=2.0
+          _makeItem(id: 2, name: 'User 8', userRating: 8),
+          _makeItem(id: 3, name: 'None'),
+        ];
+
+        final List<CollectionItem> result = applySortMode(
+          items,
+          CollectionSortMode.rating,
+          isDescending: true,
+        );
+
+        // Инвертированный: none, api 2.0, user 8
         expect(
           result.map((CollectionItem i) => i.id).toList(),
           <int>[3, 1, 2],
@@ -386,11 +452,11 @@ void main() {
         expect(result.length, 2);
       });
 
-      test('смешанные null и ненулевые рейтинги корректно разделяются', () {
+      test('смешанные user/api/null рейтинги корректно сортируются', () {
         final List<CollectionItem> items = <CollectionItem>[
           _makeItem(id: 1, name: 'A'),
           _makeItem(id: 2, name: 'B', userRating: 1),
-          _makeItem(id: 3, name: 'C'),
+          _makeItem(id: 3, name: 'C', apiRating: 50.0), // 50/10=5.0
           _makeItem(id: 4, name: 'D', userRating: 10),
         ];
 
@@ -399,11 +465,11 @@ void main() {
           CollectionSortMode.rating,
         );
 
-        // С рейтингом первые (10 потом 1), затем null
+        // 10, 5.0, 1, null
         expect(result[0].id, 4);
-        expect(result[1].id, 2);
-        expect(result[2].userRating, isNull);
-        expect(result[3].userRating, isNull);
+        expect(result[1].id, 3);
+        expect(result[2].id, 2);
+        expect(result[3].id, 1);
       });
     });
 

@@ -211,6 +211,37 @@ class TierListDao {
     );
   }
 
+  /// Удаляет entries элемента из всех тир-листов конкретной коллекции.
+  ///
+  /// Используется при перемещении элемента в другую коллекцию,
+  /// чтобы он не оставался "призраком" на тир-листах старой коллекции.
+  Future<void> removeItemFromCollectionTierLists(
+    int collectionItemId,
+    int collectionId,
+  ) async {
+    final Database db = await _getDatabase();
+    await db.rawDelete(
+      'DELETE FROM tier_list_entries '
+      'WHERE collection_item_id = ? '
+      'AND tier_list_id IN '
+      '(SELECT id FROM tier_lists WHERE collection_id = ?)',
+      <Object?>[collectionItemId, collectionId],
+    );
+  }
+
+  /// Возвращает ID тир-листов, содержащих указанный элемент.
+  Future<List<int>> getTierListIdsForItem(int collectionItemId) async {
+    final Database db = await _getDatabase();
+    final List<Map<String, dynamic>> rows = await db.rawQuery(
+      'SELECT DISTINCT tier_list_id FROM tier_list_entries '
+      'WHERE collection_item_id = ?',
+      <Object?>[collectionItemId],
+    );
+    return rows
+        .map((Map<String, dynamic> r) => r['tier_list_id'] as int)
+        .toList();
+  }
+
   /// Возвращает количество распределённых элементов в тир-листе.
   Future<int> getRankedCount(int tierListId) async {
     final Database db = await _getDatabase();

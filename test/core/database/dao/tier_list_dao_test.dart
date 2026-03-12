@@ -418,6 +418,80 @@ void main() {
       });
     });
 
+    group('removeItemFromCollectionTierLists', () {
+      test('deletes entries for item in collection tier lists', () async {
+        when(
+          () => mockDb.rawDelete(
+            'DELETE FROM tier_list_entries '
+            'WHERE collection_item_id = ? '
+            'AND tier_list_id IN '
+            '(SELECT id FROM tier_lists WHERE collection_id = ?)',
+            <Object?>[42, 5],
+          ),
+        ).thenAnswer((_) async => 1);
+
+        await dao.removeItemFromCollectionTierLists(42, 5);
+
+        verify(
+          () => mockDb.rawDelete(
+            'DELETE FROM tier_list_entries '
+            'WHERE collection_item_id = ? '
+            'AND tier_list_id IN '
+            '(SELECT id FROM tier_lists WHERE collection_id = ?)',
+            <Object?>[42, 5],
+          ),
+        ).called(1);
+      });
+
+      test('does nothing when no matching entries', () async {
+        when(
+          () => mockDb.rawDelete(
+            any(),
+            any(),
+          ),
+        ).thenAnswer((_) async => 0);
+
+        await dao.removeItemFromCollectionTierLists(999, 999);
+
+        verify(() => mockDb.rawDelete(any(), any())).called(1);
+      });
+    });
+
+    group('getTierListIdsForItem', () {
+      test('returns tier list IDs containing the item', () async {
+        when(
+          () => mockDb.rawQuery(
+            'SELECT DISTINCT tier_list_id FROM tier_list_entries '
+            'WHERE collection_item_id = ?',
+            <Object?>[42],
+          ),
+        ).thenAnswer(
+          (_) async => <Map<String, dynamic>>[
+            <String, dynamic>{'tier_list_id': 1},
+            <String, dynamic>{'tier_list_id': 3},
+          ],
+        );
+
+        final List<int> result = await dao.getTierListIdsForItem(42);
+
+        expect(result, <int>[1, 3]);
+      });
+
+      test('returns empty list when item not in any tier list', () async {
+        when(
+          () => mockDb.rawQuery(
+            'SELECT DISTINCT tier_list_id FROM tier_list_entries '
+            'WHERE collection_item_id = ?',
+            <Object?>[999],
+          ),
+        ).thenAnswer((_) async => <Map<String, dynamic>>[]);
+
+        final List<int> result = await dao.getTierListIdsForItem(999);
+
+        expect(result, isEmpty);
+      });
+    });
+
     group('getRankedCount', () {
       test('returns count of entries', () async {
         when(

@@ -825,6 +825,16 @@
     }
   },
   "debugPressButton": "Press any button\non the gamepad...",
+  "debugExportLog": "Export log to file",
+  "debugLogExported": "Log exported to {path}",
+  "@debugLogExported": {
+    "placeholders": {
+      "path": {"type": "String"}
+    }
+  },
+  "debugLogEmpty": "No events to export",
+  "settingsGamepadDebug": "Gamepad Debug",
+  "settingsGamepadDebugSubtitle": "Test controller input events",
   "debugSearchGames": "Search games",
   "debugEnterGameName": "Enter game name",
   "debugEnterGameNameHint": "Enter a game name to search",
@@ -1015,6 +1025,8 @@
   "tierListEmpty": "No tier lists yet",
   "tierListAllRanked": "All items ranked!",
   "tierListNoCollections": "No collections available",
+  "tierListErrorEmptyName": "Enter a tier list name",
+  "tierListErrorNoCollection": "Select a collection",
   "collectionPickerFilter": "Filter collections...",
   "collectionPickerAlreadyAdded": "✓ Added",
   "collectionPickerAlreadyInCount": "{count, plural, =1{Already in {count} collection} other{Already in {count} collections}}",
