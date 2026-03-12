@@ -104,6 +104,13 @@ Connect your ROM library with RetroAchievements:
 - View available achievements
 - Track your unlocked achievements
 
+### New Data Sources
+
+- [ ] **Steam** — import your Steam library, playtime, and achievements
+- [ ] **Fantlab** — Russian book/fiction database for sci-fi, fantasy, and literature
+- [ ] **Comic Vine** — comics and graphic novels database
+- [ ] **Mustapp** — import watch history and ratings from Mustapp
+
 ### Online Features
 
 - Cloud sync between devices
