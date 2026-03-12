@@ -22,6 +22,7 @@ class TierListView extends ConsumerWidget {
   const TierListView({
     required this.tierListId,
     required this.state,
+    this.filterQuery = '',
     super.key,
   });
 
@@ -30,6 +31,9 @@ class TierListView extends ConsumerWidget {
 
   /// Состояние тир-листа.
   final TierListDetailState state;
+
+  /// Текстовый фильтр для Unranked pool.
+  final String filterQuery;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -86,7 +90,13 @@ class TierListView extends ConsumerWidget {
         // Unranked pool
         _UnrankedPool(
           tierListId: tierListId,
-          items: state.unrankedItems,
+          items: filterQuery.isEmpty
+              ? state.unrankedItems
+              : state.unrankedItems
+                    .where((CollectionItem item) => item.itemName
+                        .toLowerCase()
+                        .contains(filterQuery.toLowerCase()))
+                    .toList(),
         ),
       ],
     );

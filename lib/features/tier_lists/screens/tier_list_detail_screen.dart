@@ -15,6 +15,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
 import '../../../shared/widgets/breadcrumb_scope.dart';
+import '../../../shared/widgets/type_to_filter_overlay.dart';
 import '../providers/tier_list_detail_provider.dart';
 import '../widgets/tier_list_view.dart';
 import '../widgets/tier_list_export_view.dart';
@@ -35,6 +36,7 @@ class TierListDetailScreen extends ConsumerStatefulWidget {
 class _TierListDetailScreenState
     extends ConsumerState<TierListDetailScreen> {
   final GlobalKey _exportKey = GlobalKey();
+  String _filterQuery = '';
 
   @override
   Widget build(BuildContext context) {
@@ -75,26 +77,32 @@ class _TierListDetailScreenState
         ),
         body: state.isLoading
             ? const Center(child: CircularProgressIndicator())
-            : Stack(
-                children: <Widget>[
-                  TierListView(
-                    tierListId: widget.tierListId,
-                    state: state,
-                  ),
-                  // Off-screen export view — must be painted (not Offstage)
-                  // for RepaintBoundary.toImage() to work.
-                  Positioned(
-                    left: -10000,
-                    top: -10000,
-                    child: SizedBox(
-                      width: 800,
-                      child: TierListExportView(
-                        repaintKey: _exportKey,
-                        state: state,
+            : TypeToFilterOverlay(
+                onFilterChanged: (String query) {
+                  setState(() => _filterQuery = query);
+                },
+                child: Stack(
+                  children: <Widget>[
+                    TierListView(
+                      tierListId: widget.tierListId,
+                      state: state,
+                      filterQuery: _filterQuery,
+                    ),
+                    // Off-screen export view — must be painted (not Offstage)
+                    // for RepaintBoundary.toImage() to work.
+                    Positioned(
+                      left: -10000,
+                      top: -10000,
+                      child: SizedBox(
+                        width: 800,
+                        child: TierListExportView(
+                          repaintKey: _exportKey,
+                          state: state,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
       ),
     );

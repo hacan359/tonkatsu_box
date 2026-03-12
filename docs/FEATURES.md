@@ -241,7 +241,7 @@ Rank collection items across customizable tiers:
 - **Default tiers** — S/A/B/C with preset colors, auto-created on first open
 - **Drag-and-drop** — move items between tiers and the Unranked pool via Draggable/DragTarget. Items removed from or moved between collections are automatically cleaned from tier lists
 - **Customize tiers** — rename labels, change colors (12-color picker), add/remove tiers
-- **Unranked pool** — items not yet placed in any tier, shown below with divider
+- **Unranked pool** — items not yet placed in any tier, shown below with divider. Type-to-filter on desktop to search by name
 - **Item cards** — 90×120 cover with full item name label (black background, white text, dynamic height). Export PNG includes labels
 - **Export as image** — capture tier list as PNG via RepaintBoundary (2x pixel ratio) with branded footer and item labels. Platform-aware: FilePicker on desktop, Pictures directory on Android
 - **Create from collection** — popup menu on collection screen to create a scoped tier list
