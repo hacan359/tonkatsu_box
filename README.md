@@ -54,10 +54,24 @@ Multiple search tabs — **Games**, **TV**, **Visual Novels**, and **Manga** —
 - Sort by relevance, release date, or IGDB rating
 - Pick the exact platform version when adding a game to your collection
 
+<p align="center">
+  <img src="docs/screenshots/09-search-games.jpg" width="800" alt="Search games across platforms">
+</p>
+
 **Movies, TV Shows & Anime** (powered by TMDB):
+
+<p align="center">
+  <img src="docs/screenshots/07-search-movies.jpg" width="800" alt="Search movies and TV shows">
+</p>
+
 - Filter by type — All, Movies, TV Shows, or Animation
 - Sort by relevance, release date, or rating
 - Anime is detected automatically by genre — both animated movies and animated series
+- Enable personalized TMDB recommendations in Settings — get tailored suggestions right in the app, browse them and add to your collections
+
+<p align="center">
+  <img src="docs/screenshots/13-custom-discovery-search.jpg" width="800" alt="Personalized TMDB recommendations">
+</p>
 
 **Visual Novels** (powered by VNDB):
 - Browse by genre/tag or search by title
@@ -69,20 +83,17 @@ Multiple search tabs — **Games**, **TV**, **Visual Novels**, and **Manga** —
 - Sort by rating, popularity, or newest
 - No API key required — AniList is free and open
 
-Results load as you scroll with automatic pagination. Each card shows the poster, title, year, rating, and top genres at a glance.
+<p align="center">
+  <img src="docs/screenshots/10-search-manga.jpg" width="800" alt="Search manga and light novels">
+</p>
 
-<p align="center">
-  <img src="docs/screenshots/07-search-movies.jpg" width="800" alt="Search movies and TV shows">
-</p>
-<p align="center">
-  <img src="docs/screenshots/09-search-games.jpg" width="800" alt="Search games across platforms">
-</p>
+Results load as you scroll with automatic pagination. Each card shows the poster, title, year, rating, and top genres at a glance.
 
 ### 📝 Wishlist
 No internet right now? Jot down the name of a game or movie to search for later. Tag it with a media type, add a note, and tap it when you're ready — the app opens search with the name pre-filled. Mark items as resolved when you've found them.
 
 <p align="center">
-  <img src="docs/screenshots/10-wishlist.jpg" width="800" alt="Wishlist with tagged media types">
+  <img src="docs/screenshots/11-wishlist.jpg" width="800" alt="Wishlist with tagged media types">
 </p>
 
 ### 📊 Track Your Progress
@@ -105,70 +116,16 @@ The entire interface is available in English and Russian with runtime language s
 ### 📊 Tier Lists
 Create tier lists to rank items from your collections. Drag and drop items into S/A/B/C tiers. Customize tiers — rename, change colors, add or remove. Create a tier list from all items or scope it to a specific collection. Export as a shareable PNG image.
 
+<p align="center">
+  <img src="docs/screenshots/12-tier-list.jpg" width="800" alt="Tier list with drag-and-drop ranking">
+</p>
+
 ### 📤 Share with Friends
 Export your collections as `.xcoll` (lightweight) or `.xcollx` (full offline copy with all images and data). Friends can import them and fork to create their own version.
 
 ## Getting Started
 
-### Step 1: Get your API keys
-
-The app uses free APIs to search for games, movies, visual novels, manga, and artwork. You'll need to register for API keys (it's free and takes a few minutes). VNDB for visual novels and AniList for manga work without any key.
-
-<details>
-<summary><b>🎮 IGDB — for searching games (required)</b></summary>
-
-IGDB is powered by Twitch, so you'll need a Twitch account.
-
-1. Go to **[dev.twitch.tv/console](https://dev.twitch.tv/console)** and log in (or create a free Twitch account)
-2. Click **Register Your Application**
-3. Fill in the form:
-   - **Name:** `Tonkatsu Box` (or anything you like)
-   - **OAuth Redirect URLs:** `http://localhost`
-   - **Category:** `Application Integration`
-4. Click **Create**
-5. Open your new application and copy the **Client ID**
-6. Click **New Secret** and copy the **Client Secret**
-
-You'll enter both in the app under **Settings → Credentials**.
-
-</details>
-
-<details>
-<summary><b>🎬 TMDB — for searching movies, TV shows & anime (recommended)</b></summary>
-
-1. Go to **[themoviedb.org](https://www.themoviedb.org/)** and create a free account
-2. Go to your profile → **Settings** → **API**
-3. Click **Request an API Key** → choose **Developer**
-4. Fill in the form (for personal/non-commercial use)
-5. Copy your **API Key (v3 auth)**
-
-Enter it in the app under **Settings → Credentials**.
-
-> [!TIP]
-> Without a TMDB key, game search still works — you just won't be able to search for movies, TV shows, or anime.
-
-</details>
-
-<details>
-<summary><b>🖼️ SteamGridDB — for game artwork on boards (optional)</b></summary>
-
-1. Go to **[steamgriddb.com](https://www.steamgriddb.com/)** and create a free account
-2. Go to **Preferences** → **API**
-3. Copy your **API Key**
-
-Enter it in the app under **Settings → Credentials**.
-
-> [!TIP]
-> This key is only needed if you want to add high-quality game artwork (covers, heroes, logos) to your visual boards.
-
-</details>
-
-> **📚 AniList** — for searching manga — requires no setup. Works out of the box.
-
-> [!TIP]
-> On first launch, the app will walk you through a **Welcome Wizard** that explains everything — you can also revisit it later from **Settings → Welcome Guide**.
-
-### Step 2: Install and run
+### Step 1: Install and run
 
 ```bash
 git clone https://github.com/hacan359/tonkatsu_box.git
@@ -182,9 +139,16 @@ flutter run -d windows    # or: flutter run -d linux / -d android
 >
 > Android release builds require a signing keystore. See the [Contributing Guide](docs/CONTRIBUTING.md#android-release-builds) for setup instructions.
 
-### Step 3: Enter your API keys
+### Step 2: Start using the app
 
-Open the app → go to **Settings** → **Credentials** and paste your API keys. You're ready to go!
+The app works out of the box — create collections, import `.xcoll`/`.xcollx` files, manage your wishlist, and organize everything right away. Search for visual novels (VNDB) and manga (AniList) works without any setup.
+
+> [!TIP]
+> On first launch, the app will walk you through a **Welcome Wizard** that explains everything — you can also revisit it later from **Settings → Welcome Guide**.
+
+### Step 3: Add your own API keys (optional)
+
+The app comes with built-in API keys, so everything works from the start. For better stability and higher rate limits, you can register your own free keys in **Settings → Credentials**. See the [API Keys Setup](https://github.com/hacan359/tonkatsu_box/wiki/API-Keys-Setup) guide on the Wiki for details.
 
 ## Sharing Collections
 
@@ -238,15 +202,14 @@ Download any `.xcollx` file, import it from **Settings → Import Collection**, 
 
 ## Documentation
 
-For developers and contributors:
+Full documentation is available on the **[Wiki](https://github.com/hacan359/tonkatsu_box/wiki)**.
+
+For developers and contributors, technical docs are in the `docs/` directory:
 
 | Document | Description |
 |----------|-------------|
-| [Features](docs/FEATURES.md) | Detailed feature list |
+| [Wiki](https://github.com/hacan359/tonkatsu_box/wiki) | User guides, features, how it works |
 | [Architecture](docs/ARCHITECTURE.md) | Project structure, models, database |
-| [Getting Started](docs/GETTING_STARTED.md) | Developer setup guide |
-| [API Keys Guide](docs/guides/API_KEYS.md) | Detailed API key registration instructions |
-| [How It Works](docs/guides/HOW_IT_WORKS.md) | App structure, quick start, sharing |
 | [Roadmap](docs/ROADMAP.md) | Development progress and future plans |
 | [Export Format](docs/RCOLL_FORMAT.md) | `.xcoll` / `.xcollx` file format spec |
 | [Gamepad Support](docs/GAMEPAD.md) | Xbox controller / D-pad navigation |

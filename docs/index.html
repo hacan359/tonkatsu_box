@@ -979,7 +979,7 @@
         <li><a href="#features" data-i18n="nav_features">Features</a></li>
         <li><a href="#how-it-works" data-i18n="nav_get_started">Get Started</a></li>
         <li><a href="#sharing" data-i18n="nav_sharing">Sharing</a></li>
-        <li><a href="https://github.com/hacan359/tonkatsu_box/tree/main/docs" target="_blank" data-i18n="nav_docs">Docs</a></li>
+        <li><a href="https://github.com/hacan359/tonkatsu_box/wiki" target="_blank" data-i18n="nav_docs">Docs</a></li>
       </ul>
       <div class="nav__lang">
         <button class="lang-btn lang-btn--active" data-lang="en">EN</button>
@@ -1033,15 +1033,15 @@
     <div class="container">
       <div class="screenshot-slider" data-autoplay="5000">
         <div class="slider-track">
-          <img src="screenshots/01-main-all.jpg" alt="Main screen — all items with poster grid and ratings" loading="lazy">
-          <img src="screenshots/02-main-games-filtered.jpg" alt="Games filtered by PC platform" loading="lazy">
-          <img src="screenshots/03-collections-list.jpg" alt="Collections list with thumbnails" loading="lazy">
-          <img src="screenshots/04-collection-grid.jpg" alt="Collection grid view with ratings and search" loading="lazy">
+          <img src="screenshots/01-main-all.jpg" alt="Main screen" data-caption="slider_organize_1" loading="lazy">
+          <img src="screenshots/02-main-games-filtered.jpg" alt="Games filtered" data-caption="slider_organize_2" loading="lazy">
+          <img src="screenshots/03-collections-list.jpg" alt="Collections list" data-caption="slider_organize_3" loading="lazy">
+          <img src="screenshots/04-collection-grid.jpg" alt="Collection grid" data-caption="slider_organize_4" loading="lazy">
         </div>
         <button class="slider-prev" aria-label="Previous">&#8249;</button>
         <button class="slider-next" aria-label="Next">&#8250;</button>
         <div class="slider-dots"></div>
-        <div class="slider-caption" data-i18n="slider_organize_caption">Create collections, filter by type and platform, browse as grid or list</div>
+        <div class="slider-caption" data-i18n="slider_organize_1">All items from every collection — browse, filter by type, and sort by rating</div>
       </div>
     </div>
   </section>
@@ -1158,13 +1158,15 @@
     <p class="section-subtitle" data-i18n="slider_search_subtitle">Search IGDB, TMDB, and VNDB databases with hundreds of thousands of titles</p>
     <div class="screenshot-slider" data-autoplay="5000">
       <div class="slider-track">
-        <img src="screenshots/07-search-movies.jpg" alt="Search movies and TV shows" loading="lazy">
-        <img src="screenshots/09-search-games.jpg" alt="Search games across platforms" loading="lazy">
+        <img src="screenshots/07-search-movies.jpg" alt="Search movies" data-caption="slider_search_1" loading="lazy">
+        <img src="screenshots/09-search-games.jpg" alt="Search games" data-caption="slider_search_2" loading="lazy">
+        <img src="screenshots/10-search-manga.jpg" alt="Search manga" data-caption="slider_search_3" loading="lazy">
+        <img src="screenshots/13-custom-discovery-search.jpg" alt="Discovery" data-caption="slider_search_4" loading="lazy">
       </div>
       <button class="slider-prev" aria-label="Previous">&#8249;</button>
       <button class="slider-next" aria-label="Next">&#8250;</button>
       <div class="slider-dots"></div>
-      <div class="slider-caption" data-i18n="slider_search_caption">Search IGDB, TMDB, and VNDB databases with hundreds of thousands of titles</div>
+      <div class="slider-caption" data-i18n="slider_search_1">Search movies, TV shows, and anime — filter by type, sort by rating or release date</div>
     </div>
   </div>
 
@@ -1174,14 +1176,15 @@
     <p class="section-subtitle" data-i18n="slider_track_subtitle">Rate, track progress, organize on visual boards, save ideas in wishlist</p>
     <div class="screenshot-slider" data-autoplay="5000">
       <div class="slider-track">
-        <img src="screenshots/06-item-details.jpg" alt="Item details with status, rating and notes" loading="lazy">
-        <img src="screenshots/05-collection-board.jpg" alt="Visual board with game posters" loading="lazy">
-        <img src="screenshots/10-wishlist.jpg" alt="Wishlist with tagged media types" loading="lazy">
+        <img src="screenshots/06-item-details.jpg" alt="Item details" data-caption="slider_track_1" loading="lazy">
+        <img src="screenshots/05-collection-board.jpg" alt="Visual board" data-caption="slider_track_2" loading="lazy">
+        <img src="screenshots/11-wishlist.jpg" alt="Wishlist" data-caption="slider_track_3" loading="lazy">
+        <img src="screenshots/12-tier-list.jpg" alt="Tier list" data-caption="slider_track_4" loading="lazy">
       </div>
       <button class="slider-prev" aria-label="Previous">&#8249;</button>
       <button class="slider-next" aria-label="Next">&#8250;</button>
       <div class="slider-dots"></div>
-      <div class="slider-caption" data-i18n="slider_track_caption">Rate, track progress, organize on visual boards, save ideas in wishlist</div>
+      <div class="slider-caption" data-i18n="slider_track_1">Track status, rate from 1 to 10, add notes — all details on one screen</div>
     </div>
   </div>
 
@@ -1192,30 +1195,30 @@
         <div class="section-label" data-i18n="steps_label">Get Started</div>
         <h2 class="section-title" data-i18n="steps_title">Up and running in minutes</h2>
         <p class="section-subtitle" data-i18n="steps_subtitle">
-          Grab free API keys, install the app, and start building your collection.
+          Install the app and start building your collection — no setup required.
         </p>
       </div>
 
       <div class="steps__grid">
         <div class="step reveal">
           <div class="step__number">01</div>
-          <h3 class="step__title" data-i18n="step1_title">Get API Keys</h3>
+          <h3 class="step__title" data-i18n="step1_title">Install & Run</h3>
           <p class="step__desc" data-i18n="step1_desc">
-            Register for free at <strong>IGDB</strong> (via Twitch) for games and <strong>TMDB</strong> for movies & TV. <strong>VNDB</strong> for visual novels works without a key. Optional: <strong>SteamGridDB</strong> for extra artwork.
-          </p>
-        </div>
-        <div class="step reveal">
-          <div class="step__number">02</div>
-          <h3 class="step__title" data-i18n="step2_title">Install & Run</h3>
-          <p class="step__desc" data-i18n="step2_desc">
             Download the latest release or build from source with Flutter. Available for <strong>Windows</strong>, <strong>Linux</strong> (experimental) and <strong>Android</strong>. A built-in <strong>Welcome Wizard</strong> will guide you through setup on first launch.
           </p>
         </div>
         <div class="step reveal">
+          <div class="step__number">02</div>
+          <h3 class="step__title" data-i18n="step2_title">Start Collecting</h3>
+          <p class="step__desc" data-i18n="step2_desc">
+            Search for your favorite games, movies, anime, visual novels, and manga — organize them into collections, rate, and track progress. Works out of the box.
+          </p>
+        </div>
+        <div class="step reveal">
           <div class="step__number">03</div>
-          <h3 class="step__title" data-i18n="step3_title">Start Collecting</h3>
+          <h3 class="step__title" data-i18n="step3_title">Add Your Own Keys (Optional)</h3>
           <p class="step__desc" data-i18n="step3_desc">
-            Enter your API keys in Settings, search for your favorite titles, and organize them into collections. That's it!
+            Want to use your own API keys? Register for free at <strong>IGDB</strong>, <strong>TMDB</strong>, or <strong>SteamGridDB</strong> and enter them in Settings. Completely optional — everything works without them.
           </p>
         </div>
       </div>
@@ -1329,8 +1332,8 @@
       <ul class="footer__links">
         <li><a href="https://github.com/hacan359/tonkatsu_box" target="_blank">GitHub</a></li>
         <li><a href="https://github.com/hacan359/tonkatsu_box/releases" target="_blank" data-i18n="footer_releases">Releases</a></li>
-        <li><a href="https://github.com/hacan359/tonkatsu_box/tree/main/docs" target="_blank" data-i18n="nav_docs">Docs</a></li>
-        <li><a href="https://github.com/hacan359/tonkatsu_box/blob/main/docs/guides/API_KEYS.md" target="_blank" data-i18n="footer_api_guide">API Keys Guide</a></li>
+        <li><a href="https://github.com/hacan359/tonkatsu_box/wiki" target="_blank" data-i18n="nav_docs">Docs</a></li>
+        <li><a href="https://github.com/hacan359/tonkatsu_box/wiki" target="_blank" data-i18n="footer_api_guide">API Keys Guide</a></li>
         <li><a href="https://github.com/hacan359/tonkatsu_box/issues" target="_blank" data-i18n="footer_issues">Issues</a></li>
       </ul>
     </div>
@@ -1366,12 +1369,20 @@
       }
       var dots = dotsContainer.querySelectorAll('button');
 
+      var captionEl = slider.querySelector('.slider-caption');
+
       function goTo(index) {
         images[current].classList.remove('active');
         dots[current].classList.remove('active');
         current = (index + images.length) % images.length;
         images[current].classList.add('active');
         dots[current].classList.add('active');
+        var key = images[current].dataset.caption;
+        if (key && captionEl) {
+          captionEl.dataset.i18n = key;
+          var t = translations[currentLang];
+          if (t && t[key]) captionEl.textContent = t[key];
+        }
       }
 
       function next() { goTo(current + 1); }
@@ -1435,7 +1446,7 @@
         nav_features: 'Features',
         nav_get_started: 'Get Started',
         nav_sharing: 'Sharing',
-        nav_docs: 'Docs',
+        nav_docs: 'Wiki',
         nav_download: 'Download',
         hero_badge: 'Open Source \u00b7 MIT License',
         hero_title: 'Your <span class="accent-game">games</span>, <span class="accent-movie">movies</span>, <span class="accent-tv">shows</span>, <span class="accent-anime">anime</span> &amp; <span class="accent-vn">novels</span><br>\u2014 all in one box',
@@ -1496,15 +1507,24 @@
         cta_subtitle: 'Free, open source, and yours to customize.',
         cta_download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download Latest Release',
         cta_star: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg> Star on GitHub',
-        slider_organize_caption: 'Create collections, filter by type and platform, browse as grid or list',
+        slider_organize_1: 'All items from every collection \u2014 browse, filter by type, and sort by rating',
+        slider_organize_2: 'Filter by media type \u2014 games, movies, TV shows, anime, visual novels, manga',
+        slider_organize_3: 'Collections list with cover mosaics and progress stats',
+        slider_organize_4: 'Collection grid view with poster cards, ratings, and search',
         slider_search_label: 'Search',
         slider_search_title: 'Search &amp; Discover',
-        slider_search_subtitle: 'Search IGDB, TMDB, and VNDB databases with hundreds of thousands of titles',
-        slider_search_caption: 'Search IGDB, TMDB, and VNDB databases with hundreds of thousands of titles',
+        slider_search_subtitle: 'Search IGDB, TMDB, VNDB, and AniList databases with hundreds of thousands of titles',
+        slider_search_1: 'Search movies, TV shows, and anime \u2014 filter by type, sort by rating or release date',
+        slider_search_2: 'Search games across hundreds of platforms via IGDB',
+        slider_search_3: 'Search manga and light novels via AniList \u2014 no API key required',
+        slider_search_4: 'Personalized TMDB recommendations \u2014 discover new titles based on your taste',
         slider_track_label: 'Track',
         slider_track_title: 'Track &amp; Visualize',
         slider_track_subtitle: 'Rate, track progress, organize on visual boards, save ideas in wishlist',
-        slider_track_caption: 'Rate, track progress, organize on visual boards, save ideas in wishlist',
+        slider_track_1: 'Track status, rate from 1 to 10, add notes \u2014 all details on one screen',
+        slider_track_2: 'Visual board \u2014 drag posters, add text notes and images, draw connections',
+        slider_track_3: 'Wishlist \u2014 save ideas for later, tag by media type, search when ready',
+        slider_track_4: 'Tier lists \u2014 rank items with drag-and-drop, customize tiers, export as PNG',
         footer_releases: 'Releases',
         footer_api_guide: 'API Keys Guide',
         footer_issues: 'Issues',
@@ -1514,7 +1534,7 @@
         nav_features: '\u0424\u0443\u043d\u043a\u0446\u0438\u0438',
         nav_get_started: '\u041d\u0430\u0447\u0430\u0442\u044c',
         nav_sharing: '\u0428\u0430\u0440\u0438\u043d\u0433',
-        nav_docs: '\u0414\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u0430\u0446\u0438\u044f',
+        nav_docs: 'Wiki',
         nav_download: '\u0421\u043a\u0430\u0447\u0430\u0442\u044c',
         hero_badge: '\u041e\u0442\u043a\u0440\u044b\u0442\u044b\u0439 \u043a\u043e\u0434 \u00b7 MIT License',
         hero_title: '\u0412\u0430\u0448\u0438 <span class="accent-game">\u0438\u0433\u0440\u044b</span>, <span class="accent-movie">\u0444\u0438\u043b\u044c\u043c\u044b</span>, <span class="accent-tv">\u0441\u0435\u0440\u0438\u0430\u043b\u044b</span>, <span class="accent-anime">\u0430\u043d\u0438\u043c\u0435</span> \u0438 <span class="accent-vn">\u043d\u043e\u0432\u0435\u043b\u043b\u044b</span><br>\u2014 \u0432\u0441\u0451 \u0432 \u043e\u0434\u043d\u043e\u043c \u043c\u0435\u0441\u0442\u0435',
@@ -1575,15 +1595,24 @@
         cta_subtitle: '\u0411\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u043e, \u043e\u0442\u043a\u0440\u044b\u0442\u044b\u0439 \u043a\u043e\u0434, \u043f\u043e\u043b\u043d\u043e\u0441\u0442\u044c\u044e \u0432\u0430\u0448.',
         cta_download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> \u0421\u043a\u0430\u0447\u0430\u0442\u044c \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439 \u0440\u0435\u043b\u0438\u0437',
         cta_star: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg> \u0417\u0432\u0435\u0437\u0434\u0430 \u043d\u0430 GitHub',
-        slider_organize_caption: 'Коллекции, фильтры по типу и платформе, сетка и список',
+        slider_organize_1: 'Все элементы из всех коллекций \u2014 фильтрация по типу и сортировка по рейтингу',
+        slider_organize_2: 'Фильтр по типу медиа \u2014 игры, фильмы, сериалы, аниме, новеллы, манга',
+        slider_organize_3: 'Список коллекций с обложками и статистикой прогресса',
+        slider_organize_4: 'Сетка коллекции с постерами, рейтингами и поиском',
         slider_search_label: 'Поиск',
         slider_search_title: 'Поиск и открытия',
-        slider_search_subtitle: 'Ищите в базах IGDB, TMDB и VNDB среди сотен тысяч названий',
-        slider_search_caption: 'Ищите в базах IGDB, TMDB и VNDB среди сотен тысяч названий',
+        slider_search_subtitle: 'Ищите в базах IGDB, TMDB, VNDB и AniList среди сотен тысяч названий',
+        slider_search_1: 'Поиск фильмов, сериалов и аниме \u2014 фильтр по типу, сортировка по рейтингу или дате',
+        slider_search_2: 'Поиск игр по сотням платформ через IGDB',
+        slider_search_3: 'Поиск манги и ранобэ через AniList \u2014 без API-ключа',
+        slider_search_4: 'Персональные рекомендации TMDB \u2014 открывайте новое на основе ваших вкусов',
         slider_track_label: 'Прогресс',
         slider_track_title: 'Отслеживание и визуализация',
         slider_track_subtitle: 'Оценки, прогресс, визуальные доски, вишлист',
-        slider_track_caption: 'Оценки, прогресс, визуальные доски, вишлист',
+        slider_track_1: 'Статус, оценка от 1 до 10, заметки \u2014 все детали на одном экране',
+        slider_track_2: 'Визуальная доска \u2014 перетаскивайте постеры, добавляйте заметки и связи',
+        slider_track_3: 'Вишлист \u2014 сохраняйте идеи на потом, отмечайте тип медиа',
+        slider_track_4: 'Тир-листы \u2014 ранжируйте перетаскиванием, настраивайте уровни, экспорт в PNG',
         footer_releases: '\u0420\u0435\u043b\u0438\u0437\u044b',
         footer_api_guide: '\u0413\u0430\u0439\u0434 \u043f\u043e API \u043a\u043b\u044e\u0447\u0430\u043c',
         footer_issues: '\u0417\u0430\u0434\u0430\u0447\u0438',
