@@ -123,65 +123,7 @@ Export your collections as `.xcoll` (lightweight) or `.xcollx` (full offline cop
 
 ## Getting Started
 
-### Step 1: Get your API keys
-
-The app uses free APIs to search for games, movies, visual novels, manga, and artwork. You'll need to register for API keys (it's free and takes a few minutes). VNDB for visual novels and AniList for manga work without any key.
-
-<details>
-<summary><b>🎮 IGDB — for searching games (required)</b></summary>
-
-IGDB is powered by Twitch, so you'll need a Twitch account.
-
-1. Go to **[dev.twitch.tv/console](https://dev.twitch.tv/console)** and log in (or create a free Twitch account)
-2. Click **Register Your Application**
-3. Fill in the form:
-   - **Name:** `Tonkatsu Box` (or anything you like)
-   - **OAuth Redirect URLs:** `http://localhost`
-   - **Category:** `Application Integration`
-4. Click **Create**
-5. Open your new application and copy the **Client ID**
-6. Click **New Secret** and copy the **Client Secret**
-
-You'll enter both in the app under **Settings → Credentials**.
-
-</details>
-
-<details>
-<summary><b>🎬 TMDB — for searching movies, TV shows & anime (recommended)</b></summary>
-
-1. Go to **[themoviedb.org](https://www.themoviedb.org/)** and create a free account
-2. Go to your profile → **Settings** → **API**
-3. Click **Request an API Key** → choose **Developer**
-4. Fill in the form (for personal/non-commercial use)
-5. Copy your **API Key (v3 auth)**
-
-Enter it in the app under **Settings → Credentials**.
-
-> [!TIP]
-> Without a TMDB key, game search still works — you just won't be able to search for movies, TV shows, or anime.
-
-</details>
-
-<details>
-<summary><b>🖼️ SteamGridDB — for game artwork on boards (optional)</b></summary>
-
-1. Go to **[steamgriddb.com](https://www.steamgriddb.com/)** and create a free account
-2. Go to **Preferences** → **API**
-3. Copy your **API Key**
-
-Enter it in the app under **Settings → Credentials**.
-
-> [!TIP]
-> This key is only needed if you want to add high-quality game artwork (covers, heroes, logos) to your visual boards.
-
-</details>
-
-> **📚 AniList** — for searching manga — requires no setup. Works out of the box.
-
-> [!TIP]
-> On first launch, the app will walk you through a **Welcome Wizard** that explains everything — you can also revisit it later from **Settings → Welcome Guide**.
-
-### Step 2: Install and run
+### Step 1: Install and run
 
 ```bash
 git clone https://github.com/hacan359/tonkatsu_box.git
@@ -195,9 +137,16 @@ flutter run -d windows    # or: flutter run -d linux / -d android
 >
 > Android release builds require a signing keystore. See the [Contributing Guide](docs/CONTRIBUTING.md#android-release-builds) for setup instructions.
 
-### Step 3: Enter your API keys
+### Step 2: Start using the app
 
-Open the app → go to **Settings** → **Credentials** and paste your API keys. You're ready to go!
+The app works out of the box — create collections, import `.xcoll`/`.xcollx` files, manage your wishlist, and organize everything right away. Search for visual novels (VNDB) and manga (AniList) works without any setup.
+
+> [!TIP]
+> On first launch, the app will walk you through a **Welcome Wizard** that explains everything — you can also revisit it later from **Settings → Welcome Guide**.
+
+### Step 3: Add your own API keys (optional)
+
+The app comes with built-in API keys, so everything works from the start. For better stability and higher rate limits, you can register your own free keys in **Settings → Credentials**. See the [API Keys Setup](https://github.com/hacan359/tonkatsu_box/wiki/API-Keys-Setup) guide on the Wiki for details.
 
 ## Sharing Collections
 
