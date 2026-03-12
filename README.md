@@ -59,14 +59,16 @@ Multiple search tabs — **Games**, **TV**, **Visual Novels**, and **Manga** —
 </p>
 
 **Movies, TV Shows & Anime** (powered by TMDB):
+
+<p align="center">
+  <img src="docs/screenshots/07-search-movies.jpg" width="800" alt="Search movies and TV shows">
+</p>
+
 - Filter by type — All, Movies, TV Shows, or Animation
 - Sort by relevance, release date, or rating
 - Anime is detected automatically by genre — both animated movies and animated series
 - Enable personalized TMDB recommendations in Settings — get tailored suggestions right in the app, browse them and add to your collections
 
-<p align="center">
-  <img src="docs/screenshots/07-search-movies.jpg" width="800" alt="Search movies and TV shows">
-</p>
 <p align="center">
   <img src="docs/screenshots/13-custom-discovery-search.jpg" width="800" alt="Personalized TMDB recommendations">
 </p>
