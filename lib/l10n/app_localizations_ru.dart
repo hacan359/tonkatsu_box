@@ -2237,4 +2237,22 @@ class SRu extends S {
 
   @override
   String get tierListNoCollections => 'Нет доступных коллекций';
+
+  @override
+  String get collectionPickerFilter => 'Фильтр коллекций...';
+
+  @override
+  String get collectionPickerAlreadyAdded => '✓ Добавлено';
+
+  @override
+  String collectionPickerAlreadyInCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Уже в $count коллекциях',
+      few: 'Уже в $count коллекциях',
+      one: 'Уже в $count коллекции',
+    );
+    return '$_temp0';
+  }
 }

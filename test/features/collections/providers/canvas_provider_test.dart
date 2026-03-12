@@ -2166,4 +2166,298 @@ void main() {
       );
     });
   });
+
+  group('GameCanvasNotifier', () {
+    late MockCanvasRepository mockRepository;
+    late MockCollectionRepository mockCollectionRepository;
+    final DateTime testDate = DateTime(2024, 6, 15);
+    const int collectionId = 10;
+    const int collectionItemId = 42;
+    const ({int? collectionId, int collectionItemId}) familyArg =
+        (collectionId: collectionId, collectionItemId: collectionItemId);
+
+    final List<CanvasItem> testItems = <CanvasItem>[
+      CanvasItem(
+        id: 1,
+        collectionId: collectionItemId,
+        itemType: CanvasItemType.game,
+        itemRefId: 100,
+        x: 50.0,
+        y: 50.0,
+        zIndex: 0,
+        createdAt: testDate,
+      ),
+      CanvasItem(
+        id: 2,
+        collectionId: collectionItemId,
+        itemType: CanvasItemType.text,
+        x: 250.0,
+        y: 100.0,
+        zIndex: 1,
+        createdAt: testDate,
+      ),
+    ];
+
+    setUp(() {
+      mockRepository = MockCanvasRepository();
+      mockCollectionRepository = MockCollectionRepository();
+    });
+
+    void setupExistingGameCanvas({
+      List<CanvasItem>? items,
+      CanvasViewport? viewport,
+    }) {
+      when(() => mockRepository.hasGameCanvasItems(collectionItemId))
+          .thenAnswer((_) async => true);
+      when(() => mockRepository.getGameCanvasItemsWithData(collectionItemId))
+          .thenAnswer((_) async => items ?? testItems);
+      when(() => mockRepository.getGameCanvasViewport(collectionItemId))
+          .thenAnswer(
+        (_) async =>
+            viewport ?? const CanvasViewport(collectionId: collectionItemId),
+      );
+      when(() => mockRepository.getGameCanvasConnections(collectionItemId))
+          .thenAnswer((_) async => <CanvasConnection>[]);
+    }
+
+    ProviderContainer createGameContainer() {
+      return ProviderContainer(
+        overrides: <Override>[
+          canvasRepositoryProvider.overrideWithValue(mockRepository),
+          collectionRepositoryProvider
+              .overrideWithValue(mockCollectionRepository),
+          collectionItemsNotifierProvider.overrideWith(
+            MockCollectionItemsNotifier.new,
+          ),
+        ],
+      );
+    }
+
+    group('_persistViewport()', () {
+      test(
+        'должен вызвать saveGameCanvasViewport а не saveViewport',
+        () async {
+          setupExistingGameCanvas();
+          when(
+            () => mockRepository.saveGameCanvasViewport(any(), any()),
+          ).thenAnswer((_) async {});
+
+          final ProviderContainer container = createGameContainer();
+          addTearDown(container.dispose);
+
+          container.read(gameCanvasNotifierProvider(familyArg));
+          await Future<void>.delayed(Duration.zero);
+
+          final GameCanvasNotifier notifier = container
+              .read(gameCanvasNotifierProvider(familyArg).notifier);
+          notifier.resetViewport();
+
+          verify(
+            () => mockRepository.saveGameCanvasViewport(
+              collectionItemId,
+              any(),
+            ),
+          ).called(1);
+          verifyNever(() => mockRepository.saveViewport(any()));
+        },
+      );
+
+      test(
+        'должен использовать collectionItemId при updateViewport',
+        () async {
+          setupExistingGameCanvas();
+          when(
+            () => mockRepository.saveGameCanvasViewport(any(), any()),
+          ).thenAnswer((_) async {});
+
+          final ProviderContainer container = createGameContainer();
+          addTearDown(container.dispose);
+
+          container.read(gameCanvasNotifierProvider(familyArg));
+          await Future<void>.delayed(Duration.zero);
+
+          final GameCanvasNotifier notifier = container
+              .read(gameCanvasNotifierProvider(familyArg).notifier);
+          notifier.updateViewport(2.0, -100.0, -200.0);
+
+          // Ждём debounce 500ms
+          await Future<void>.delayed(const Duration(milliseconds: 550));
+
+          final CanvasViewport captured = verify(
+            () => mockRepository.saveGameCanvasViewport(
+              collectionItemId,
+              captureAny(),
+            ),
+          ).captured.single as CanvasViewport;
+
+          expect(captured.collectionId, collectionItemId);
+          expect(captured.scale, 2.0);
+          expect(captured.offsetX, -100.0);
+          expect(captured.offsetY, -200.0);
+        },
+      );
+    });
+
+    group('moveItem()', () {
+      test(
+        'должен обновить позицию элемента в state мгновенно',
+        () async {
+          setupExistingGameCanvas();
+
+          final ProviderContainer container = createGameContainer();
+          addTearDown(container.dispose);
+
+          container.read(gameCanvasNotifierProvider(familyArg));
+          await Future<void>.delayed(Duration.zero);
+
+          final GameCanvasNotifier notifier = container
+              .read(gameCanvasNotifierProvider(familyArg).notifier);
+          notifier.moveItem(1, 777.0, 888.0);
+
+          final CanvasState state =
+              container.read(gameCanvasNotifierProvider(familyArg));
+          final CanvasItem movedItem = state.items.firstWhere(
+            (CanvasItem item) => item.id == 1,
+          );
+          expect(movedItem.x, 777.0);
+          expect(movedItem.y, 888.0);
+        },
+      );
+
+      test(
+        'должен сохранить позицию в БД с debounce 300ms',
+        () async {
+          setupExistingGameCanvas();
+          when(
+            () => mockRepository.updateItemPosition(
+              any(),
+              x: any(named: 'x'),
+              y: any(named: 'y'),
+            ),
+          ).thenAnswer((_) async {});
+
+          final ProviderContainer container = createGameContainer();
+          addTearDown(container.dispose);
+
+          container.read(gameCanvasNotifierProvider(familyArg));
+          await Future<void>.delayed(Duration.zero);
+
+          final GameCanvasNotifier notifier = container
+              .read(gameCanvasNotifierProvider(familyArg).notifier);
+          notifier.moveItem(1, 100.0, 200.0);
+
+          // Сразу — не сохранено
+          verifyNever(
+            () => mockRepository.updateItemPosition(
+              any(),
+              x: any(named: 'x'),
+              y: any(named: 'y'),
+            ),
+          );
+
+          // Ждём debounce
+          await Future<void>.delayed(const Duration(milliseconds: 350));
+
+          verify(
+            () => mockRepository.updateItemPosition(
+              1,
+              x: 100.0,
+              y: 200.0,
+            ),
+          ).called(1);
+        },
+      );
+    });
+
+    group('resetViewport()', () {
+      test(
+        'должен сбросить viewport с collectionId = collectionItemId',
+        () async {
+          const CanvasViewport zoomedViewport = CanvasViewport(
+            collectionId: collectionItemId,
+            scale: 3.0,
+            offsetX: -500.0,
+            offsetY: -300.0,
+          );
+          setupExistingGameCanvas(viewport: zoomedViewport);
+          when(
+            () => mockRepository.saveGameCanvasViewport(any(), any()),
+          ).thenAnswer((_) async {});
+
+          final ProviderContainer container = createGameContainer();
+          addTearDown(container.dispose);
+
+          container.read(gameCanvasNotifierProvider(familyArg));
+          await Future<void>.delayed(Duration.zero);
+
+          expect(
+            container
+                .read(gameCanvasNotifierProvider(familyArg))
+                .viewport
+                .scale,
+            3.0,
+          );
+
+          final GameCanvasNotifier notifier = container
+              .read(gameCanvasNotifierProvider(familyArg).notifier);
+          notifier.resetViewport();
+
+          final CanvasState state =
+              container.read(gameCanvasNotifierProvider(familyArg));
+          expect(state.viewport.scale, 1.0);
+          expect(state.viewport.offsetX, 0.0);
+          expect(state.viewport.offsetY, 0.0);
+          expect(state.viewport.collectionId, collectionItemId);
+        },
+      );
+    });
+
+    group('cancelTimers()', () {
+      test(
+        'должен не вызвать репозиторий после dispose',
+        () async {
+          setupExistingGameCanvas();
+          when(
+            () => mockRepository.updateItemPosition(
+              any(),
+              x: any(named: 'x'),
+              y: any(named: 'y'),
+            ),
+          ).thenAnswer((_) async {});
+          when(
+            () => mockRepository.saveGameCanvasViewport(any(), any()),
+          ).thenAnswer((_) async {});
+
+          final ProviderContainer container = createGameContainer();
+
+          container.read(gameCanvasNotifierProvider(familyArg));
+          await Future<void>.delayed(Duration.zero);
+
+          final GameCanvasNotifier notifier = container
+              .read(gameCanvasNotifierProvider(familyArg).notifier);
+
+          // Запускаем debounce-таймеры
+          notifier.moveItem(1, 100.0, 200.0);
+          notifier.updateViewport(2.0, -50.0, -50.0);
+
+          // Dispose отменяет таймеры
+          container.dispose();
+
+          // Ждём после dispose — таймеры должны были быть отменены
+          await Future<void>.delayed(const Duration(milliseconds: 600));
+
+          verifyNever(
+            () => mockRepository.updateItemPosition(
+              any(),
+              x: any(named: 'x'),
+              y: any(named: 'y'),
+            ),
+          );
+          verifyNever(
+            () => mockRepository.saveGameCanvasViewport(any(), any()),
+          );
+        },
+      );
+    });
+  });
 }
