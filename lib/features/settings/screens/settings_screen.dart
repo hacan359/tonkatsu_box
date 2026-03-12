@@ -20,6 +20,7 @@ import 'credits_screen.dart';
 import 'database_screen.dart';
 import 'trakt_import_screen.dart';
 import 'debug_hub_screen.dart';
+import 'gamepad_debug_screen.dart';
 
 /// Breakpoint для переключения ширины контента.
 const double _desktopBreakpoint = 800;
@@ -212,6 +213,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: l.settingsVersion,
             value: _appVersion.isNotEmpty ? _appVersion : '...',
             showChevron: false,
+          ),
+        ],
+      ),
+
+      // Gamepad Debug — доступен во всех окружениях
+      const SizedBox(height: AppSpacing.md),
+      SettingsGroup(
+        title: l.settingsGamepadDebug,
+        children: <Widget>[
+          SettingsTile(
+            title: l.settingsGamepadDebug,
+            value: l.settingsGamepadDebugSubtitle,
+            onTap: () => _pushScreen(const GamepadDebugScreen()),
           ),
         ],
       ),

@@ -1,11 +1,14 @@
 // Debug-экран для отображения raw событий геймпада.
 
 import 'dart:async';
+import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gamepads/gamepads.dart';
 import 'package:logging/logging.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../../../core/services/gamepad_service.dart';
 import '../../../l10n/app_localizations.dart';
@@ -94,6 +97,75 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
     super.dispose();
   }
 
+  Future<void> _exportLog() async {
+    final S l = S.of(context);
+
+    if (_rawEvents.isEmpty && _serviceEvents.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l.debugLogEmpty)),
+        );
+      }
+      return;
+    }
+
+    final StringBuffer buffer = StringBuffer();
+    buffer.writeln('=== Gamepad Debug Log ===');
+    buffer.writeln('Exported: ${DateTime.now().toIso8601String()}');
+    buffer.writeln();
+
+    buffer.writeln('--- Raw Events (${_rawEvents.length}) ---');
+    for (final _EventEntry entry in _rawEvents.reversed) {
+      buffer.writeln('${_formatTime(entry.time)}  ${entry.text}');
+    }
+    buffer.writeln();
+
+    buffer.writeln('--- Service Events (${_serviceEvents.length}) ---');
+    for (final _EventEntry entry in _serviceEvents.reversed) {
+      buffer.writeln('${_formatTime(entry.time)}  ${entry.text}');
+    }
+
+    final String content = buffer.toString();
+
+    try {
+      if (Platform.isAndroid) {
+        final Directory dir = await getApplicationDocumentsDirectory();
+        final String timestamp = DateTime.now()
+            .toIso8601String()
+            .replaceAll(':', '-')
+            .split('.')
+            .first;
+        final String filePath = '${dir.path}/gamepad_log_$timestamp.txt';
+        await File(filePath).writeAsString(content);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l.debugLogExported(filePath))),
+          );
+        }
+      } else {
+        final String? outputPath = await FilePicker.platform.saveFile(
+          dialogTitle: l.debugExportLog,
+          fileName: 'gamepad_log.txt',
+          type: FileType.custom,
+          allowedExtensions: <String>['txt'],
+        );
+        if (outputPath == null) return;
+        await File(outputPath).writeAsString(content);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l.debugLogExported(outputPath))),
+          );
+        }
+      }
+    } on Exception catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
@@ -102,6 +174,11 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
       child: Scaffold(
       appBar: AutoBreadcrumbAppBar(
         actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.save_alt),
+            tooltip: l.debugExportLog,
+            onPressed: _exportLog,
+          ),
           IconButton(
             icon: const Icon(Icons.delete_outline),
             tooltip: l.debugClearLogs,
@@ -116,29 +193,42 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            // Raw events
-            Expanded(
-              child: _buildEventColumn(
-                title: l.debugRawEvents,
-                events: _rawEvents,
-                scrollController: _rawScrollController,
-                color: AppColors.brand,
-              ),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            // Service events
-            Expanded(
-              child: _buildEventColumn(
-                title: l.debugServiceEvents,
-                events: _serviceEvents,
-                scrollController: _serviceScrollController,
-                color: AppColors.tvShowAccent,
-              ),
-            ),
-          ],
+        child: LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            final bool isNarrow = constraints.maxWidth < 600;
+
+            final Widget rawColumn = _buildEventColumn(
+              title: l.debugRawEvents,
+              events: _rawEvents,
+              scrollController: _rawScrollController,
+              color: AppColors.brand,
+            );
+            final Widget serviceColumn = _buildEventColumn(
+              title: l.debugServiceEvents,
+              events: _serviceEvents,
+              scrollController: _serviceScrollController,
+              color: AppColors.tvShowAccent,
+            );
+
+            if (isNarrow) {
+              return Column(
+                children: <Widget>[
+                  Expanded(child: rawColumn),
+                  const SizedBox(height: AppSpacing.md),
+                  Expanded(child: serviceColumn),
+                ],
+              );
+            }
+
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Expanded(child: rawColumn),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(child: serviceColumn),
+              ],
+            );
+          },
         ),
       ),
     ),
@@ -165,14 +255,17 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
               ),
             ),
             const SizedBox(width: AppSpacing.xs),
-            Text(
-              title,
-              style: AppTypography.bodySmall.copyWith(
-                color: color,
-                fontWeight: FontWeight.w600,
+            Flexible(
+              child: Text(
+                title,
+                overflow: TextOverflow.ellipsis,
+                style: AppTypography.bodySmall.copyWith(
+                  color: color,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
-            const Spacer(),
+            const SizedBox(width: AppSpacing.xs),
             Text(
               S.of(context).debugEventsCount(events.length),
               style: AppTypography.bodySmall.copyWith(

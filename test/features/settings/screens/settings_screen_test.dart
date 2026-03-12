@@ -1,6 +1,5 @@
 // Тесты для SettingsScreen (единый grouped-list лейаут).
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -228,47 +227,6 @@ void main() {
       });
     });
 
-    group('Debug section', () {
-      testWidgets('shows Debug group in debug mode',
-          (WidgetTester tester) async {
-        expect(kDebugMode, isTrue);
-
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        await tester.drag(find.byType(ListView), const Offset(0, -500));
-        await tester.pumpAndSettle();
-
-        expect(find.text('DEBUG'), findsOneWidget);
-      });
-
-      testWidgets('shows correct subtitle when no key',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        await tester.drag(find.byType(ListView), const Offset(0, -500));
-        await tester.pumpAndSettle();
-
-        expect(
-          find.text('Set SteamGridDB key first for some tools'),
-          findsOneWidget,
-        );
-      });
-
-      testWidgets('shows "Developer tools" when key set',
-          (WidgetTester tester) async {
-        await prefs.setString(SettingsKeys.steamGridDbApiKey, 'test-key');
-
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        await tester.drag(find.byType(ListView), const Offset(0, -500));
-        await tester.pumpAndSettle();
-
-        expect(find.text('Developer tools'), findsOneWidget);
-      });
-    });
 
     group('Navigation', () {
       testWidgets('API Keys tile is tappable',

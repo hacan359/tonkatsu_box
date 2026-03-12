@@ -825,6 +825,16 @@
     }
   },
   "debugPressButton": "Press any button\non the gamepad...",
+  "debugExportLog": "Export log to file",
+  "debugLogExported": "Log exported to {path}",
+  "@debugLogExported": {
+    "placeholders": {
+      "path": {"type": "String"}
+    }
+  },
+  "debugLogEmpty": "No events to export",
+  "settingsGamepadDebug": "Gamepad Debug",
+  "settingsGamepadDebugSubtitle": "Test controller input events",
   "debugSearchGames": "Search games",
   "debugEnterGameName": "Enter game name",
   "debugEnterGameNameHint": "Enter a game name to search",

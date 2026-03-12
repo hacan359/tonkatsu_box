@@ -1798,6 +1798,23 @@ class SRu extends S {
   String get debugPressButton => 'Нажмите любую кнопку\nна геймпаде...';
 
   @override
+  String get debugExportLog => 'Экспорт лога в файл';
+
+  @override
+  String debugLogExported(String path) {
+    return 'Лог сохранён в $path';
+  }
+
+  @override
+  String get debugLogEmpty => 'Нет событий для экспорта';
+
+  @override
+  String get settingsGamepadDebug => 'Отладка геймпада';
+
+  @override
+  String get settingsGamepadDebugSubtitle => 'Тест событий контроллера';
+
+  @override
   String get debugSearchGames => 'Поиск игр';
 
   @override
