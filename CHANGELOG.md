@@ -6,6 +6,18 @@
 
 ## [Unreleased]
 
+### Added
+- **Platform names on game cards in search** — `BrowseGrid` now passes `platformMap` to `MediaPosterCard.platformLabel` for game results. Shows up to 3 platform abbreviations with "+N" overflow (e.g. "PC, PS4, XONE +1"). Platform data loaded from `SearchScreen._platformMap` (`browse_grid.dart`, `search_screen.dart`)
+- **Platform names on tier list game cards** — `TierItemCard` shows platform abbreviation below the item name for games with an assigned platform. Displayed in both the interactive tier list view and PNG export (`tier_item_card.dart`)
+- **Commit convention guide** — `docs/COMMITS.md` with Conventional Commits format, type table, scope examples, branch naming rules. `CONTRIBUTING.md` updated with link to the new guide (`COMMITS.md`, `CONTRIBUTING.md`)
+
+### Changed
+- **`BrowseNotifier.setSearchQuery()`** — new method to update `searchQuery` in state without triggering `_fetch()`. Used by `FilterBar.onBeforeFilterChange` callback to sync pending search text before filter application (`browse_provider.dart`)
+- **`FilterBar.onBeforeFilterChange`** — new optional `VoidCallback` parameter, invoked before `setFilter()`. `SearchScreen` passes `_syncSearchText` to preserve typed-but-unsubmitted search text when user changes a filter (`filter_bar.dart`, `search_screen.dart`)
+
+### Fixed
+- **Search text lost when changing filters** — when user typed a search query without pressing Enter and then changed a filter (e.g. platform), the search text was only in the `TextEditingController` but not in `BrowseState.searchQuery`, so `_fetch()` ran without the query. Now `FilterBar` syncs the controller text into the provider before applying the filter (`browse_provider.dart`, `filter_bar.dart`, `search_screen.dart`)
+
 ## [0.20.0] - 2026-03-12
 
 ### Added
