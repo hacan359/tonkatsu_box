@@ -108,6 +108,7 @@ lib/
 | `lib/core/api/steamgriddb_api.dart` | **SteamGridDB API клиент**. Bearer token авторизация. Методы: `searchGames()`, `getGrids()`, `getHeroes()`, `getLogos()`, `getIcons()`, `validateApiKey()` |
 | `lib/core/api/vndb_api.dart` | **VNDB API клиент**. Публичный API без авторизации (~200 req/min). Методы: `searchVn()`, `browseVn()`, `getVnById()`, `getVnByIds()`, `fetchTags()`. Провайдер: `vndbApiProvider` |
 | `lib/core/api/anilist_api.dart` | **AniList API клиент**. Публичный GraphQL API без авторизации (90 req/min). Методы: `searchManga()`, `browseManga()` (query/genre/format/sort), `getMangaById()`, `getMangaByIds()` (batch по 50). `AniListApiException` с statusCode. Провайдер: `aniListApiProvider` |
+| `lib/core/api/steam_api.dart` | **Steam Web API клиент**. Получение библиотеки пользователя. DTO: `SteamOwnedGame` (appId, name, playtimeMinutes, lastPlayed, playtimeHours, shouldSkip — фильтр DLC/саундтреков/демо). `SteamApiException` с statusCode. Провайдер: `steamApiProvider` |
 | `lib/core/api/tmdb_api.dart` | **TMDB API клиент**. Bearer token авторизация. Методы: `searchMovies(query, {year})`, `searchTvShows(query, {firstAirDateYear})`, `multiSearch()`, `getMovieDetails()`, `getTvShowDetails()`, `getPopularMovies()`, `getPopularTvShows()`, `getMovieGenres()`, `getTvGenres()`, `getSeasonEpisodes(tmdbShowId, seasonNumber)`, `setLanguage(language)`, `getMovieRecommendations()`, `getTvShowRecommendations()`, `getMovieReviews()`, `getTvShowReviews()`, `discoverMovies()`, `discoverTvShows()`. Lazy-cached genre map (`_movieGenreMap`, `_tvGenreMap`) — resolves `genre_ids` to `genres` in all list endpoints. Cache cleared on `setLanguage()` and `clearApiKey()` |
 | `lib/shared/constants/platform_features.dart` | **Флаги платформы**. `kCanvasEnabled` (true на всех платформах), `kVgMapsEnabled` (только Windows), `kScreenshotEnabled` (только Windows). VGMaps скрыт на не-Windows платформах |
 | `lib/shared/constants/api_defaults.dart` | **Встроенные API ключи**. `ApiDefaults` — `abstract final class` с `String.fromEnvironment` для TMDB и SteamGridDB ключей, инжектируемых при сборке через `--dart-define`. Геттеры `hasTmdbKey`, `hasSteamGridDbKey`. Используется в `SettingsNotifier._loadFromPrefs()` как fallback: user key → built-in → null |
@@ -127,6 +128,7 @@ lib/
 | `lib/core/services/export_service.dart` | **Сервис экспорта**. Создаёт XcollFile из коллекции. Режимы: v2 light (.xcoll — ID элементов), v2 full (.xcollx — + canvas + per-item canvas + base64 обложки). Зависимости: `CanvasRepository`, `ImageCacheService`. Методы: `createLightExport()`, `createFullExport()`, `exportToFile()` |
 | `lib/core/services/import_service.dart` | **Сервис импорта**. Импортирует XcollFile в коллекцию. items + canvas (viewport/items/connections) + per-item canvas + восстановление обложек из base64. Прогресс через `ImportStage` enum и `ImportProgressCallback`. Зависимости: `DatabaseService`, `CanvasRepository`, `GameRepository`, `ImageCacheService` |
 | `lib/core/services/update_service.dart` | **Сервис проверки обновлений**. Класс `UpdateInfo` (currentVersion, latestVersion, releaseUrl, hasUpdate, releaseNotes). Класс `UpdateService` — запрос GitHub Releases API, semver сравнение (`isNewer()`), 24-часовой throttle через SharedPreferences. Провайдеры: `updateServiceProvider`, `updateCheckProvider` (FutureProvider) |
+| `lib/core/services/steam_import_service.dart` | **Сервис импорта Steam библиотеки**. Модели: `SteamImportStage` (enum), `SteamImportProgress` (stage/current/total/stats), `SteamImportResult` (imported/wishlisted/skipped/total/collectionId). Метод `importLibrary()`: fetch Steam library → filter DLC → create collection → for each game: IGDB search → best match (exact/substring/first) → add to collection (PC platform, status by playtime) or wishlist. Rate limiting: 1100ms delay every 4 requests. Провайдер: `steamImportServiceProvider` (зависит от steamApi, igdbApi, databaseService) |
 | `lib/core/services/trakt_zip_import_service.dart` | **Сервис импорта Trakt.tv ZIP**. Модели: `TraktZipInfo` (результат валидации), `TraktImportOptions` (параметры импорта), `TraktImportResult` (результат с success/failure). Методы: `validateZip()` (парсинг ZIP, подсчёт элементов, username), `importFromZip()` (полный цикл: чтение ZIP → парсинг JSON → fetching TMDB → создание/обновление элементов коллекции → эпизоды → рейтинги → watchlist). Анимация-детекция через TMDB genres. Конфликт-резолюция: статус по иерархии, рейтинг только если null, эпизоды merge. Прогресс через `ImportProgress`/`ImportStage`. Провайдер: `traktZipImportServiceProvider` (зависит от tmdbApi, collectionRepository, databaseService, wishlistRepository) |
 
 </details>
@@ -475,6 +477,7 @@ lib/
 | `lib/features/settings/screens/cache_screen.dart` | **Тонкая обёртка** для push-навигации. `BreadcrumbScope > Scaffold > Align(topCenter) > ConstrainedBox(600) > SingleChildScrollView > CacheContent` |
 | `lib/features/settings/screens/database_screen.dart` | **Тонкая обёртка** для push-навигации. `BreadcrumbScope > Scaffold > Align(topCenter) > ConstrainedBox(600) > SingleChildScrollView > DatabaseContent` |
 | `lib/features/settings/screens/trakt_import_screen.dart` | **Тонкая обёртка** для push-навигации. `BreadcrumbScope > Scaffold > Align(topCenter) > ConstrainedBox(600) > SingleChildScrollView > TraktImportContent(onImportComplete: pop)` |
+| `lib/features/settings/screens/steam_import_screen.dart` | **Тонкая обёртка** для push-навигации. `BreadcrumbScope > Scaffold > Align(topCenter) > ConstrainedBox(600) > SingleChildScrollView > SteamImportContent` |
 | `lib/features/settings/screens/debug_hub_screen.dart` | **Хаб отладки** (только kDebugMode). `SettingsGroup`/`SettingsTile` с 4 debug tools: SteamGridDB, Image Debug, Gamepad, Demo Collections. SteamGridDB недоступен без API ключа |
 | `lib/features/settings/screens/steamgriddb_debug_screen.dart` | **Debug-экран SteamGridDB**. 5 табов: Search, Grids, Heroes, Logos, Icons. Тестирование всех API эндпоинтов |
 | `lib/features/settings/screens/image_debug_screen.dart` | **Debug-экран IGDB Media**. Проверка URL изображений в коллекциях: постеры, thumbnail, превью |
@@ -492,6 +495,7 @@ Content-виджеты — извлечённое тело подэкранов,
 | `database_content.dart` | **Управление БД**. ConsumerWidget. Export/Import Config (JSON). Reset Database с диалогом подтверждения |
 | `credits_content.dart` | **Атрибуция API-провайдеров**. StatelessWidget. 2 `SettingsGroup`: Data Providers (TMDB/IGDB/SteamGridDB/VNDB/AniList — plain text, name + description + link) и Open Source (MIT license, GitHub link, View Licenses button) |
 | `trakt_import_content.dart` | **Импорт Trakt.tv**. ConsumerStatefulWidget. File picker, ZIP validation, preview, options, progress dialog. Callback `onImportComplete` |
+| `steam_import_content.dart` | **Импорт Steam**. ConsumerStatefulWidget. 3 состояния: ввод (API key + Steam ID с кликабельными ссылками), прогресс (LinearProgressIndicator + live stats), результат (imported/wishlisted/skipped + навигация на коллекцию). Инвалидирует collections, allItems, wishlist провайдеры после импорта |
 
 ---
 
@@ -937,6 +941,8 @@ CREATE TABLE manga_cache (
 | `wishlistRepositoryProvider` | Provider | Репозиторий вишлиста |
 | `wishlistProvider` | AsyncNotifierProvider | Список элементов вишлиста (add/resolve/delete/clearResolved) |
 | `activeWishlistCountProvider` | Provider | Количество активных (не resolved) элементов вишлиста |
+| `steamApiProvider` | Provider | Синглтон SteamApi |
+| `steamImportServiceProvider` | Provider | Сервис импорта Steam библиотеки (зависит от steamApi, igdbApi, databaseService) |
 | `traktZipImportServiceProvider` | Provider | Сервис импорта Trakt.tv ZIP (зависит от tmdbApi, collectionRepository, databaseService, wishlistRepository) |
 
 </details>
@@ -971,6 +977,8 @@ CREATE TABLE manga_cache (
                                     [настройки]
                                     +-> TraktImportScreen()
                                         [импорт из Trakt.tv ZIP]
+                                    +-> SteamImportScreen()
+                                        [импорт Steam библиотеки]
                                     +-> SteamGridDbDebugScreen()
                                         [debug, только в debug сборке]
 ```

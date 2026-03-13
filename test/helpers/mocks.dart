@@ -28,6 +28,8 @@ import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/core/services/config_service.dart';
 import 'package:xerabora/core/services/gamepad_service.dart';
 import 'package:xerabora/core/services/image_cache_service.dart';
+import 'package:xerabora/core/api/steam_api.dart';
+import 'package:xerabora/core/services/steam_import_service.dart';
 import 'package:xerabora/core/services/trakt_zip_import_service.dart';
 import 'package:xerabora/data/repositories/canvas_repository.dart';
 import 'package:xerabora/data/repositories/collection_repository.dart';
@@ -111,7 +113,11 @@ class MockVndbApi extends Mock implements VndbApi {}
 
 class MockAniListApi extends Mock implements AniListApi {}
 
+class MockSteamApi extends Mock implements SteamApi {}
+
 // ===== Services =====
+
+class MockSteamImportService extends Mock implements SteamImportService {}
 
 class MockImageCacheService extends Mock implements ImageCacheService {}
 

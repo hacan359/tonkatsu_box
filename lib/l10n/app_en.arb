@@ -1034,5 +1034,65 @@
     "placeholders": {
       "count": { "type": "int" }
     }
-  }
+  },
+
+  "settingsSteamImport": "Steam Library",
+  "settingsSteamImportSubtitle": "Import games via Steam Web API",
+  "steamImportTitle": "Import Steam Library",
+  "steamImportSubtitle": "Games will be matched to IGDB database",
+  "steamImportApiKey": "Steam API Key",
+  "steamImportApiKeyHint": "Get free key at steamcommunity.com/dev/apikey",
+  "steamImportSteamId": "Steam ID (64-bit)",
+  "steamImportSteamIdHint": "Find at steamidfinder.com",
+  "steamImportPublicWarning": "Your Steam profile must be public",
+  "steamImportButton": "Import Library",
+  "steamImportFetchingLibrary": "Fetching Steam library...",
+  "steamImportMatching": "Matching games in IGDB...",
+  "steamImportLookingUp": "Looking up: {name}",
+  "@steamImportLookingUp": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "steamImportImported": "Imported: {count}",
+  "@steamImportImported": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "steamImportWishlisted": "Added to wishlist: {count}",
+  "@steamImportWishlisted": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "steamImportSkipped": "Skipped: {count}",
+  "@steamImportSkipped": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "steamImportComplete": "Import complete!",
+  "steamImportGamesImported": "{count} games imported",
+  "@steamImportGamesImported": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "steamImportWishlistedInIgdb": "{count} added to wishlist",
+  "@steamImportWishlistedInIgdb": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "steamImportSkippedDuplicates": "{count} skipped (duplicates)",
+  "@steamImportSkippedDuplicates": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "steamImportPlayedStatus": "Played games marked as \"In Progress\"",
+  "steamImportPlaytimeComment": "Playtime saved in comments",
+  "steamImportOpenCollection": "Open \"Steam Library\"",
+  "steamImportIgdbRequired": "IGDB connection required. Set up API keys in Settings → Credentials first."
 }

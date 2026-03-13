@@ -106,7 +106,7 @@ Connect your ROM library with RetroAchievements:
 
 ### New Data Sources
 
-- [ ] **Steam** — import your Steam library, playtime, and achievements
+- [x] **Steam** — import your Steam library with playtime tracking, IGDB matching, and wishlist fallback for unfound games
 - [ ] **Fantlab** — Russian book/fiction database for sci-fi, fantasy, and literature
 - [ ] **Comic Vine** — comics and graphic novels database
 - [ ] **Mustapp** — import watch history and ratings from Mustapp

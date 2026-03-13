@@ -810,5 +810,65 @@
   "tierListErrorNoCollection": "Выберите коллекцию",
   "collectionPickerFilter": "Фильтр коллекций...",
   "collectionPickerAlreadyAdded": "✓ Добавлено",
-  "collectionPickerAlreadyInCount": "{count, plural, one{Уже в {count} коллекции} few{Уже в {count} коллекциях} other{Уже в {count} коллекциях}}"
+  "collectionPickerAlreadyInCount": "{count, plural, one{Уже в {count} коллекции} few{Уже в {count} коллекциях} other{Уже в {count} коллекциях}}",
+
+  "settingsSteamImport": "Библиотека Steam",
+  "settingsSteamImportSubtitle": "Импорт игр через Steam Web API",
+  "steamImportTitle": "Импорт библиотеки Steam",
+  "steamImportSubtitle": "Игры будут найдены в базе IGDB",
+  "steamImportApiKey": "API ключ Steam",
+  "steamImportApiKeyHint": "Бесплатный ключ: steamcommunity.com/dev/apikey",
+  "steamImportSteamId": "Steam ID (64-бит)",
+  "steamImportSteamIdHint": "Найти: steamidfinder.com",
+  "steamImportPublicWarning": "Профиль Steam должен быть публичным",
+  "steamImportButton": "Импортировать",
+  "steamImportFetchingLibrary": "Загрузка библиотеки Steam...",
+  "steamImportMatching": "Поиск игр в IGDB...",
+  "steamImportLookingUp": "Ищем: {name}",
+  "@steamImportLookingUp": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "steamImportImported": "Импортировано: {count}",
+  "@steamImportImported": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "steamImportWishlisted": "В вишлист: {count}",
+  "@steamImportWishlisted": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "steamImportSkipped": "Пропущено: {count}",
+  "@steamImportSkipped": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "steamImportComplete": "Импорт завершён!",
+  "steamImportGamesImported": "Импортировано {count} игр",
+  "@steamImportGamesImported": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "steamImportWishlistedInIgdb": "{count} добавлено в вишлист",
+  "@steamImportWishlistedInIgdb": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "steamImportSkippedDuplicates": "{count} пропущено (дубликаты)",
+  "@steamImportSkippedDuplicates": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "steamImportPlayedStatus": "Сыгранные игры отмечены «В процессе»",
+  "steamImportPlaytimeComment": "Время в игре сохранено в комментариях",
+  "steamImportOpenCollection": "Открыть «Steam Library»",
+  "steamImportIgdbRequired": "Требуется подключение к IGDB. Настройте API ключи в Настройки → Подключения."
 }
