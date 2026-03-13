@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../shared/models/collection_item.dart';
+import '../../../shared/models/media_type.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/cached_image.dart';
@@ -115,14 +116,30 @@ class TierItemCard extends StatelessWidget {
                   vertical: 2,
                 ),
                 alignment: Alignment.center,
-                child: Text(
-                  item.itemName,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 10,
-                    height: 1.2,
-                    color: Colors.white,
-                  ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Text(
+                      item.itemName,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        height: 1.2,
+                        color: Colors.white,
+                      ),
+                    ),
+                    if (item.mediaType == MediaType.game &&
+                        item.platform != null)
+                      Text(
+                        item.platform!.displayName,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 8,
+                          height: 1.2,
+                          color: AppColors.textTertiary,
+                        ),
+                      ),
+                  ],
                 ),
               ),
           ],

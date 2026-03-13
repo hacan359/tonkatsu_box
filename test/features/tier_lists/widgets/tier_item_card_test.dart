@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/tier_lists/widgets/tier_item_card.dart';
 import 'package:xerabora/shared/models/collection_item.dart';
+import 'package:xerabora/shared/models/media_type.dart';
+import 'package:xerabora/shared/models/platform.dart';
 import 'package:xerabora/shared/widgets/cached_image.dart';
 
 import '../../../helpers/test_helpers.dart';
@@ -120,6 +122,69 @@ void main() {
             widget.height == customHeight,
       );
       expect(sizedBoxFinder, findsOneWidget);
+    });
+
+    testWidgets('should show platform name for game items',
+        (WidgetTester tester) async {
+      final CollectionItem gameWithPlatform = createTestCollectionItem(
+        id: 10,
+        externalId: 300,
+        platformId: 19,
+        game: createTestGame(id: 300, name: 'Super Mario World'),
+        platform: const Platform(
+          id: 19,
+          name: 'Super Nintendo',
+          abbreviation: 'SNES',
+        ),
+      );
+
+      await tester.pumpApp(
+        TierItemCard(item: gameWithPlatform),
+        settle: false,
+      );
+      await tester.pump();
+
+      expect(find.text('Super Mario World'), findsOneWidget);
+      expect(find.text('SNES'), findsOneWidget);
+    });
+
+    testWidgets('should not show platform for non-game items',
+        (WidgetTester tester) async {
+      final CollectionItem movieItem = createTestCollectionItem(
+        id: 11,
+        externalId: 400,
+        mediaType: MediaType.movie,
+        movie: createTestMovie(tmdbId: 400, title: 'Test Movie'),
+      );
+
+      await tester.pumpApp(
+        TierItemCard(item: movieItem),
+        settle: false,
+      );
+      await tester.pump();
+
+      expect(find.text('Test Movie'), findsOneWidget);
+      // No platform text should appear for movies
+      expect(find.text('SNES'), findsNothing);
+      expect(find.text('Unknown Platform'), findsNothing);
+    });
+
+    testWidgets('should not show platform when platform is null',
+        (WidgetTester tester) async {
+      final CollectionItem gameNoPlatform = createTestCollectionItem(
+        id: 12,
+        externalId: 500,
+        game: createTestGame(id: 500, name: 'No Platform Game'),
+      );
+
+      await tester.pumpApp(
+        TierItemCard(item: gameNoPlatform),
+        settle: false,
+      );
+      await tester.pump();
+
+      expect(find.text('No Platform Game'), findsOneWidget);
+      expect(find.text('Unknown Platform'), findsNothing);
     });
   });
 }
