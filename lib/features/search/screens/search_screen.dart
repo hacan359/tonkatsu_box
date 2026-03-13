@@ -137,6 +137,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   // ==================== Search ====================
 
+  /// Синхронизирует текст из контроллера в провайдер перед сменой фильтра.
+  void _syncSearchText() {
+    final String text = _searchController.text.trim();
+    if (text.length >= 2) {
+      ref.read(browseProvider.notifier).setSearchQuery(text);
+    }
+  }
+
   void _onSearchSubmit() {
     final String query = _searchController.text;
     if (query.length < 2) return;
@@ -1133,7 +1141,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         child: Column(
           children: <Widget>[
             // Фильтр-бар: всегда видим
-            const FilterBar(),
+            FilterBar(onBeforeFilterChange: _syncSearchText),
             // Поле поиска: всегда видимо
             _buildSearchField(),
             const SizedBox(height: AppSpacing.xs),
@@ -1243,6 +1251,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     return BrowseGrid(
       onItemTap: _onItemTap,
       clientFilter: _typeToFilterQuery,
+      platformMap: _platformMap,
     );
   }
 

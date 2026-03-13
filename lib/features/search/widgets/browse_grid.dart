@@ -9,6 +9,7 @@ import '../../../shared/models/game.dart';
 import '../../../shared/models/manga.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/movie.dart';
+import '../../../shared/models/platform.dart';
 import '../../../shared/models/tv_show.dart';
 import '../../../shared/models/visual_novel.dart';
 import '../../../shared/theme/app_colors.dart';
@@ -65,6 +66,7 @@ class BrowseGrid extends ConsumerStatefulWidget {
   const BrowseGrid({
     required this.onItemTap,
     this.clientFilter,
+    this.platformMap = const <int, Platform>{},
     super.key,
   });
 
@@ -73,6 +75,9 @@ class BrowseGrid extends ConsumerStatefulWidget {
 
   /// Клиентский фильтр по названию (type-to-filter).
   final String? clientFilter;
+
+  /// Карта платформ для отображения на карточках игр.
+  final Map<int, Platform> platformMap;
 
   @override
   ConsumerState<BrowseGrid> createState() => _BrowseGridState();
@@ -322,6 +327,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         apiRating: item.rating != null ? item.rating! / 10.0 : null,
         year: item.releaseYear,
         subtitle: item.genresString,
+        platformLabel: _buildPlatformLabel(item.platformIds),
         mediaType: MediaType.game,
         isInCollection: gameIds.contains(item.id),
         onTap: () => widget.onItemTap(item, MediaType.game),
@@ -361,6 +367,20 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     }
 
     return const SizedBox.shrink();
+  }
+
+  /// Строит строку платформ из списка ID.
+  String? _buildPlatformLabel(List<int>? platformIds) {
+    if (platformIds == null || platformIds.isEmpty) return null;
+    if (widget.platformMap.isEmpty) return null;
+    final List<String> allNames = platformIds
+        .where((int id) => widget.platformMap.containsKey(id))
+        .map((int id) => widget.platformMap[id]!.displayName)
+        .toList();
+    if (allNames.isEmpty) return null;
+    if (allNames.length <= 3) return allNames.join(', ');
+    final List<String> shown = allNames.take(3).toList();
+    return '${shown.join(', ')} +${allNames.length - 3}';
   }
 
   /// Извлекает название из элемента для клиентской фильтрации.
