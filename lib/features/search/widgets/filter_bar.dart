@@ -15,7 +15,12 @@ import 'source_dropdown.dart';
 /// Горизонтальный скролл если фильтров много.
 class FilterBar extends ConsumerWidget {
   /// Создаёт [FilterBar].
-  const FilterBar({super.key});
+  const FilterBar({this.onBeforeFilterChange, super.key});
+
+  /// Вызывается перед применением фильтра.
+  ///
+  /// Позволяет синхронизировать текст поиска из контроллера в провайдер.
+  final VoidCallback? onBeforeFilterChange;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -46,6 +51,7 @@ class FilterBar extends ConsumerWidget {
               filter: filter,
               value: browseState.filterValues[filter.key],
               onChanged: (Object? value) {
+                onBeforeFilterChange?.call();
                 ref
                     .read(browseProvider.notifier)
                     .setFilter(filter.key, value);

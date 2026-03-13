@@ -16,17 +16,17 @@ void main() {
     prefs = await SharedPreferences.getInstance();
   });
 
-  Widget buildWidget() {
+  Widget buildWidget({VoidCallback? onBeforeFilterChange}) {
     return ProviderScope(
       overrides: <Override>[
         sharedPreferencesProvider.overrideWithValue(prefs),
       ],
-      child: const MaterialApp(
+      child: MaterialApp(
         localizationsDelegates: S.localizationsDelegates,
         supportedLocales: S.supportedLocales,
-        locale: Locale('en'),
+        locale: const Locale('en'),
         home: Scaffold(
-          body: FilterBar(),
+          body: FilterBar(onBeforeFilterChange: onBeforeFilterChange),
         ),
       ),
     );
@@ -76,6 +76,19 @@ void main() {
         ).first,
       );
       expect(sizedBox.height, 36);
+    });
+
+    testWidgets('accepts onBeforeFilterChange callback',
+        (WidgetTester tester) async {
+      int callCount = 0;
+      await tester.pumpWidget(
+        buildWidget(onBeforeFilterChange: () => callCount++),
+      );
+      await tester.pumpAndSettle();
+
+      // Verify widget renders without errors with callback
+      expect(find.byType(FilterBar), findsOneWidget);
+      expect(callCount, 0);
     });
   });
 }
