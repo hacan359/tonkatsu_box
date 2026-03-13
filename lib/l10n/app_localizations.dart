@@ -4152,6 +4152,150 @@ abstract class S {
   /// In en, this message translates to:
   /// **'{count, plural, =1{Already in {count} collection} other{Already in {count} collections}}'**
   String collectionPickerAlreadyInCount(int count);
+
+  /// No description provided for @settingsSteamImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Steam Library'**
+  String get settingsSteamImport;
+
+  /// No description provided for @settingsSteamImportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Import games via Steam Web API'**
+  String get settingsSteamImportSubtitle;
+
+  /// No description provided for @steamImportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Import Steam Library'**
+  String get steamImportTitle;
+
+  /// No description provided for @steamImportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Games will be matched to IGDB database'**
+  String get steamImportSubtitle;
+
+  /// No description provided for @steamImportApiKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Steam API Key'**
+  String get steamImportApiKey;
+
+  /// No description provided for @steamImportApiKeyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Get free key at steamcommunity.com/dev/apikey'**
+  String get steamImportApiKeyHint;
+
+  /// No description provided for @steamImportSteamId.
+  ///
+  /// In en, this message translates to:
+  /// **'Steam ID (64-bit)'**
+  String get steamImportSteamId;
+
+  /// No description provided for @steamImportSteamIdHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Find at steamidfinder.com'**
+  String get steamImportSteamIdHint;
+
+  /// No description provided for @steamImportPublicWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Steam profile must be public'**
+  String get steamImportPublicWarning;
+
+  /// No description provided for @steamImportButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Import Library'**
+  String get steamImportButton;
+
+  /// No description provided for @steamImportFetchingLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching Steam library...'**
+  String get steamImportFetchingLibrary;
+
+  /// No description provided for @steamImportMatching.
+  ///
+  /// In en, this message translates to:
+  /// **'Matching games in IGDB...'**
+  String get steamImportMatching;
+
+  /// No description provided for @steamImportLookingUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking up: {name}'**
+  String steamImportLookingUp(String name);
+
+  /// No description provided for @steamImportImported.
+  ///
+  /// In en, this message translates to:
+  /// **'Imported: {count}'**
+  String steamImportImported(int count);
+
+  /// No description provided for @steamImportWishlisted.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to wishlist: {count}'**
+  String steamImportWishlisted(int count);
+
+  /// No description provided for @steamImportSkipped.
+  ///
+  /// In en, this message translates to:
+  /// **'Skipped: {count}'**
+  String steamImportSkipped(int count);
+
+  /// No description provided for @steamImportComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Import complete!'**
+  String get steamImportComplete;
+
+  /// No description provided for @steamImportGamesImported.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} games imported'**
+  String steamImportGamesImported(int count);
+
+  /// No description provided for @steamImportWishlistedInIgdb.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} added to wishlist'**
+  String steamImportWishlistedInIgdb(int count);
+
+  /// No description provided for @steamImportSkippedDuplicates.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} skipped (duplicates)'**
+  String steamImportSkippedDuplicates(int count);
+
+  /// No description provided for @steamImportPlayedStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Played games marked as \"In Progress\"'**
+  String get steamImportPlayedStatus;
+
+  /// No description provided for @steamImportPlaytimeComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Playtime saved in comments'**
+  String get steamImportPlaytimeComment;
+
+  /// No description provided for @steamImportOpenCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Open \"Steam Library\"'**
+  String get steamImportOpenCollection;
+
+  /// No description provided for @steamImportIgdbRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'IGDB connection required. Set up API keys in Settings → Credentials first.'**
+  String get steamImportIgdbRequired;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

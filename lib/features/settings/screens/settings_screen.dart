@@ -18,6 +18,7 @@ import 'cache_screen.dart';
 import 'credentials_screen.dart';
 import 'credits_screen.dart';
 import 'database_screen.dart';
+import 'steam_import_screen.dart';
 import 'trakt_import_screen.dart';
 import 'debug_hub_screen.dart';
 import 'gamepad_debug_screen.dart';
@@ -190,6 +191,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: l.settingsTraktImport,
             subtitle: l.settingsTraktImportSubtitle,
             onTap: () => _pushScreen(const TraktImportScreen()),
+          ),
+          SettingsTile(
+            title: l.settingsSteamImport,
+            subtitle: l.settingsSteamImportSubtitle,
+            onTap: () => _pushScreen(const SteamImportScreen()),
           ),
         ],
       ),

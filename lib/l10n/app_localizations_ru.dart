@@ -2278,4 +2278,93 @@ class SRu extends S {
     );
     return '$_temp0';
   }
+
+  @override
+  String get settingsSteamImport => 'Библиотека Steam';
+
+  @override
+  String get settingsSteamImportSubtitle => 'Импорт игр через Steam Web API';
+
+  @override
+  String get steamImportTitle => 'Импорт библиотеки Steam';
+
+  @override
+  String get steamImportSubtitle => 'Игры будут найдены в базе IGDB';
+
+  @override
+  String get steamImportApiKey => 'API ключ Steam';
+
+  @override
+  String get steamImportApiKeyHint =>
+      'Бесплатный ключ: steamcommunity.com/dev/apikey';
+
+  @override
+  String get steamImportSteamId => 'Steam ID (64-бит)';
+
+  @override
+  String get steamImportSteamIdHint => 'Найти: steamidfinder.com';
+
+  @override
+  String get steamImportPublicWarning => 'Профиль Steam должен быть публичным';
+
+  @override
+  String get steamImportButton => 'Импортировать';
+
+  @override
+  String get steamImportFetchingLibrary => 'Загрузка библиотеки Steam...';
+
+  @override
+  String get steamImportMatching => 'Поиск игр в IGDB...';
+
+  @override
+  String steamImportLookingUp(String name) {
+    return 'Ищем: $name';
+  }
+
+  @override
+  String steamImportImported(int count) {
+    return 'Импортировано: $count';
+  }
+
+  @override
+  String steamImportWishlisted(int count) {
+    return 'В вишлист: $count';
+  }
+
+  @override
+  String steamImportSkipped(int count) {
+    return 'Пропущено: $count';
+  }
+
+  @override
+  String get steamImportComplete => 'Импорт завершён!';
+
+  @override
+  String steamImportGamesImported(int count) {
+    return 'Импортировано $count игр';
+  }
+
+  @override
+  String steamImportWishlistedInIgdb(int count) {
+    return '$count добавлено в вишлист';
+  }
+
+  @override
+  String steamImportSkippedDuplicates(int count) {
+    return '$count пропущено (дубликаты)';
+  }
+
+  @override
+  String get steamImportPlayedStatus => 'Сыгранные игры отмечены «В процессе»';
+
+  @override
+  String get steamImportPlaytimeComment =>
+      'Время в игре сохранено в комментариях';
+
+  @override
+  String get steamImportOpenCollection => 'Открыть «Steam Library»';
+
+  @override
+  String get steamImportIgdbRequired =>
+      'Требуется подключение к IGDB. Настройте API ключи в Настройки → Подключения.';
 }

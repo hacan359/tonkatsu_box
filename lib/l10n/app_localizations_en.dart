@@ -2255,4 +2255,93 @@ class SEn extends S {
     );
     return '$_temp0';
   }
+
+  @override
+  String get settingsSteamImport => 'Steam Library';
+
+  @override
+  String get settingsSteamImportSubtitle => 'Import games via Steam Web API';
+
+  @override
+  String get steamImportTitle => 'Import Steam Library';
+
+  @override
+  String get steamImportSubtitle => 'Games will be matched to IGDB database';
+
+  @override
+  String get steamImportApiKey => 'Steam API Key';
+
+  @override
+  String get steamImportApiKeyHint =>
+      'Get free key at steamcommunity.com/dev/apikey';
+
+  @override
+  String get steamImportSteamId => 'Steam ID (64-bit)';
+
+  @override
+  String get steamImportSteamIdHint => 'Find at steamidfinder.com';
+
+  @override
+  String get steamImportPublicWarning => 'Your Steam profile must be public';
+
+  @override
+  String get steamImportButton => 'Import Library';
+
+  @override
+  String get steamImportFetchingLibrary => 'Fetching Steam library...';
+
+  @override
+  String get steamImportMatching => 'Matching games in IGDB...';
+
+  @override
+  String steamImportLookingUp(String name) {
+    return 'Looking up: $name';
+  }
+
+  @override
+  String steamImportImported(int count) {
+    return 'Imported: $count';
+  }
+
+  @override
+  String steamImportWishlisted(int count) {
+    return 'Added to wishlist: $count';
+  }
+
+  @override
+  String steamImportSkipped(int count) {
+    return 'Skipped: $count';
+  }
+
+  @override
+  String get steamImportComplete => 'Import complete!';
+
+  @override
+  String steamImportGamesImported(int count) {
+    return '$count games imported';
+  }
+
+  @override
+  String steamImportWishlistedInIgdb(int count) {
+    return '$count added to wishlist';
+  }
+
+  @override
+  String steamImportSkippedDuplicates(int count) {
+    return '$count skipped (duplicates)';
+  }
+
+  @override
+  String get steamImportPlayedStatus =>
+      'Played games marked as \"In Progress\"';
+
+  @override
+  String get steamImportPlaytimeComment => 'Playtime saved in comments';
+
+  @override
+  String get steamImportOpenCollection => 'Open \"Steam Library\"';
+
+  @override
+  String get steamImportIgdbRequired =>
+      'IGDB connection required. Set up API keys in Settings → Credentials first.';
 }

@@ -21,6 +21,7 @@ import 'package:xerabora/shared/models/visual_novel.dart';
 import 'package:xerabora/shared/models/tier_definition.dart';
 import 'package:xerabora/shared/models/tier_list.dart';
 import 'package:xerabora/shared/models/tier_list_entry.dart';
+import 'package:xerabora/core/api/steam_api.dart';
 import 'package:xerabora/shared/models/wishlist_item.dart';
 
 /// Стандартная тестовая дата для единообразия.
@@ -447,5 +448,23 @@ TierListEntry createTestTierListEntry({
     collectionItemId: collectionItemId,
     tierKey: tierKey,
     sortOrder: sortOrder,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Steam
+// ---------------------------------------------------------------------------
+
+SteamOwnedGame createTestSteamOwnedGame({
+  int appId = 440,
+  String name = 'Team Fortress 2',
+  int playtimeMinutes = 1250,
+  DateTime? lastPlayed,
+}) {
+  return SteamOwnedGame(
+    appId: appId,
+    name: name,
+    playtimeMinutes: playtimeMinutes,
+    lastPlayed: lastPlayed,
   );
 }
