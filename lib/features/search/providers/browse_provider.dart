@@ -187,6 +187,15 @@ class BrowseNotifier extends Notifier<BrowseState> {
     }
   }
 
+  /// Обновить текстовый запрос без запуска поиска.
+  ///
+  /// Используется для синхронизации текста из контроллера перед сменой фильтра.
+  void setSearchQuery(String query) {
+    final String trimmed = query.trim();
+    if (trimmed.length < 2 || state.searchQuery == trimmed) return;
+    state = state.copyWith(searchQuery: trimmed);
+  }
+
   /// Выполнить текстовый поиск.
   Future<void> search(String query) async {
     if (query.trim().length < 2) return;

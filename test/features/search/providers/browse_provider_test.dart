@@ -338,5 +338,39 @@ void main() {
         expect(copied.error, isNull);
       });
     });
+
+    group('setSearchQuery via copyWith', () {
+      test('updates searchQuery without changing other fields', () {
+        const BrowseState original = BrowseState(
+          sourceId: 'games',
+          filterValues: <String, Object?>{'platform': 48},
+          items: <Object>['existing'],
+        );
+
+        final BrowseState updated = original.copyWith(searchQuery: 'mario');
+
+        expect(updated.searchQuery, 'mario');
+        expect(updated.filterValues, <String, Object?>{'platform': 48});
+        expect(updated.items, <Object>['existing']);
+        expect(updated.sourceId, 'games');
+      });
+
+      test('preserves searchQuery when filter changes', () {
+        const BrowseState withQuery = BrowseState(
+          sourceId: 'games',
+          searchQuery: 'zelda',
+        );
+
+        final BrowseState updated = withQuery.copyWith(
+          filterValues: const <String, Object?>{'platform': 48},
+          items: const <Object>[],
+          currentPage: 1,
+          hasMore: false,
+        );
+
+        expect(updated.searchQuery, 'zelda');
+        expect(updated.filterValues, <String, Object?>{'platform': 48});
+      });
+    });
   });
 }

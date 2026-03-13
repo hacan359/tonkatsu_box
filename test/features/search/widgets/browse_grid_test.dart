@@ -11,6 +11,7 @@ import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/models/game.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/movie.dart';
+import 'package:xerabora/shared/models/platform.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
 
 void main() {
@@ -78,6 +79,7 @@ void main() {
     BrowseState? initialState,
     void Function(Object item, MediaType mediaType)? onItemTap,
     List<Override>? extraOverrides,
+    Map<int, Platform> platformMap = const <int, Platform>{},
   }) {
     return ProviderScope(
       overrides: <Override>[
@@ -96,6 +98,7 @@ void main() {
         home: Scaffold(
           body: BrowseGrid(
             onItemTap: onItemTap ?? (_, _) {},
+            platformMap: platformMap,
           ),
         ),
       ),
@@ -632,6 +635,142 @@ void main() {
         await tester.pump();
 
         expect(loadMoreCalls, 0);
+      });
+    });
+
+    group('platform label', () {
+      testWidgets('shows platform abbreviation on game card',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(
+          buildWidget(
+            initialState: const BrowseState(
+              sourceId: 'games',
+              filterValues: <String, Object?>{'genre': 5},
+              items: <Object>[
+                Game(
+                  id: 1,
+                  name: 'Super Mario',
+                  platformIds: <int>[19],
+                  coverUrl: 'https://example.com/mario.jpg',
+                ),
+              ],
+            ),
+            platformMap: const <int, Platform>{
+              19: Platform(id: 19, name: 'Super Nintendo', abbreviation: 'SNES'),
+            },
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Super Mario'), findsOneWidget);
+        expect(find.textContaining('SNES'), findsOneWidget);
+      });
+
+      testWidgets('shows multiple platforms separated by comma',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(
+          buildWidget(
+            initialState: const BrowseState(
+              sourceId: 'games',
+              filterValues: <String, Object?>{'genre': 5},
+              items: <Object>[
+                Game(
+                  id: 2,
+                  name: 'Multi Plat Game',
+                  platformIds: <int>[6, 48],
+                  coverUrl: 'https://example.com/mp.jpg',
+                ),
+              ],
+            ),
+            platformMap: const <int, Platform>{
+              6: Platform(id: 6, name: 'PC (Microsoft Windows)', abbreviation: 'PC'),
+              48: Platform(id: 48, name: 'PlayStation 4', abbreviation: 'PS4'),
+            },
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.textContaining('PC'), findsOneWidget);
+        expect(find.textContaining('PS4'), findsOneWidget);
+      });
+
+      testWidgets('shows +N for more than 3 platforms',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(
+          buildWidget(
+            initialState: const BrowseState(
+              sourceId: 'games',
+              filterValues: <String, Object?>{'genre': 5},
+              items: <Object>[
+                Game(
+                  id: 3,
+                  name: 'Everywhere Game',
+                  platformIds: <int>[6, 48, 49, 130],
+                  coverUrl: 'https://example.com/eg.jpg',
+                ),
+              ],
+            ),
+            platformMap: const <int, Platform>{
+              6: Platform(id: 6, name: 'PC', abbreviation: 'PC'),
+              48: Platform(id: 48, name: 'PlayStation 4', abbreviation: 'PS4'),
+              49: Platform(id: 49, name: 'Xbox One', abbreviation: 'XONE'),
+              130: Platform(id: 130, name: 'Nintendo Switch', abbreviation: 'Switch'),
+            },
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.textContaining('+1'), findsOneWidget);
+      });
+
+      testWidgets('does not show platform when platformMap is empty',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(
+          buildWidget(
+            initialState: const BrowseState(
+              sourceId: 'games',
+              filterValues: <String, Object?>{'genre': 5},
+              items: <Object>[
+                Game(
+                  id: 4,
+                  name: 'No Platform Game',
+                  platformIds: <int>[19],
+                  coverUrl: 'https://example.com/np.jpg',
+                ),
+              ],
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('No Platform Game'), findsOneWidget);
+        expect(find.textContaining('SNES'), findsNothing);
+      });
+
+      testWidgets('uses full name when abbreviation is null',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(
+          buildWidget(
+            initialState: const BrowseState(
+              sourceId: 'games',
+              filterValues: <String, Object?>{'genre': 5},
+              items: <Object>[
+                Game(
+                  id: 5,
+                  name: 'Full Name Game',
+                  platformIds: <int>[999],
+                  coverUrl: 'https://example.com/fn.jpg',
+                ),
+              ],
+            ),
+            platformMap: const <int, Platform>{
+              999: Platform(id: 999, name: 'My Custom Platform'),
+            },
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.textContaining('My Custom Platform'), findsOneWidget);
       });
     });
   });
