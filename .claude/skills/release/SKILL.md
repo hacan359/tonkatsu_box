@@ -148,7 +148,40 @@ Use the Edit tool to make both changes.
 
 ---
 
-## Step 7: Commit, Tag, Push
+## Step 7: Generate Release Notes
+
+Create **user-facing release notes** in English from the CHANGELOG `[X.Y.Z]` section. These notes will be used as the annotated tag message and will appear on the GitHub Release page.
+
+**Rules:**
+- Language: English only
+- Strip all file names, class names, and technical details (no `steam_import_service.dart`, no `collectionStatsProvider`)
+- Rewrite each entry as a short, clear sentence a user would understand
+- Group into: `## What's New`, `## Improvements`, `## Bug Fixes` (skip empty groups)
+- Use bullet points, no bold prefixes
+- Keep it concise: 1 line per feature, max 2 sentences for complex features
+- Add a footer: `**Full Changelog**: https://github.com/hacan359/tonkatsu_box/compare/vPREV...vX.Y.Z`
+
+**Example transformation:**
+
+CHANGELOG (technical):
+```
+### Added
+- **Steam Library import** — new `SteamApi` client (`steam_api.dart`) fetches user's owned games via Steam Web API. `SteamImportService` orchestrates the full import pipeline: fetch library → filter DLC/soundtracks → match each game to IGDB → add to collection. Target collection selector...
+```
+
+Release notes (user-facing):
+```
+## What's New
+- Import your Steam game library — games are automatically matched to IGDB with playtime tracking. Choose to create a new collection or add to an existing one.
+```
+
+**Show the generated release notes to the user** and ask for confirmation before proceeding.
+
+Save the release notes text for use in Step 8.
+
+---
+
+## Step 8: Commit, Tag, Push
 
 ```bash
 # Stage the changed files
@@ -157,8 +190,13 @@ git add pubspec.yaml CHANGELOG.md docs/index.html
 # Create commit
 git commit -m "release: vX.Y.Z"
 
-# Create annotated tag
-git tag -a "vX.Y.Z" -m "Release vX.Y.Z"
+# Create annotated tag with release notes (use HEREDOC for multiline)
+git tag -a "vX.Y.Z" -m "$(cat <<'EOF'
+Release vX.Y.Z
+
+<paste release notes here>
+EOF
+)"
 
 # Push commit and tag
 git push origin HEAD
@@ -167,7 +205,7 @@ git push origin "vX.Y.Z"
 
 ---
 
-## Step 8: Report
+## Step 9: Report
 
 Tell the user:
 - Commit created with hash
