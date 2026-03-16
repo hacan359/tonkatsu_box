@@ -208,12 +208,13 @@ class _PlatformFilterSheetState extends ConsumerState<PlatformFilterSheet> {
                         final bool isSelected =
                             _selectedIds.contains(platform.id);
 
+                        final String label = platform.abbreviation != null
+                            ? '${platform.name} (${platform.abbreviation})'
+                            : platform.name;
+
                         return ListTile(
                           leading: const Icon(Icons.devices, size: 24),
-                          title: Text(platform.name),
-                          subtitle: platform.abbreviation != null
-                              ? Text(platform.abbreviation!)
-                              : null,
+                          title: Text(label),
                           trailing: Checkbox(
                             value: isSelected,
                             onChanged: (_) => _togglePlatform(platform.id),
