@@ -31,7 +31,7 @@ String _formatActivityDate(DateTime date) {
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
   ];
-  return '${months[date.month - 1]} ${date.day}';
+  return '${months[date.month - 1]} ${date.day}, ${date.year}';
 }
 
 /// Чип с иконкой и текстом для отображения метаинформации.
