@@ -78,6 +78,11 @@ class WishlistRepository {
     return _db.deleteWishlistItem(id);
   }
 
+  /// Находит активный (не resolved) элемент по тексту.
+  Future<WishlistItem?> findUnresolved(String text) async {
+    return _db.findUnresolvedWishlistItem(text);
+  }
+
   /// Удаляет все resolved элементы.
   Future<int> clearResolved() async {
     return _db.clearResolvedWishlistItems();
