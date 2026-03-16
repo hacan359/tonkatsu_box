@@ -25,6 +25,7 @@ class CreditsContent extends StatelessWidget {
   static const String _aniListUrl = 'https://anilist.co/';
   static const String _githubUrl =
       'https://github.com/hacan359/tonkatsu_box';
+  static const String _discordUrl = 'https://discord.gg/JZVNPF7cS2';
 
   @override
   Widget build(BuildContext context) {
@@ -88,6 +89,11 @@ class CreditsContent extends StatelessWidget {
               label: 'GitHub',
               linkLabel: 'hacan359/tonkatsu_box',
               url: _githubUrl,
+            ),
+            _buildLinkRow(
+              label: 'Discord',
+              linkLabel: l10n.creditsDiscord,
+              url: _discordUrl,
             ),
             Padding(
               padding: const EdgeInsets.symmetric(

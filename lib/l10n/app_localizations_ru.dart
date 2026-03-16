@@ -749,6 +749,9 @@ class SRu extends S {
   String get creditsViewLicenses => 'Посмотреть лицензии';
 
   @override
+  String get creditsDiscord => 'Discord сервер';
+
+  @override
   String get collectionsNewCollection => 'Новая коллекция';
 
   @override

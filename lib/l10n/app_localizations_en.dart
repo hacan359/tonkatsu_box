@@ -739,6 +739,9 @@ class SEn extends S {
   String get creditsViewLicenses => 'View Open Source Licenses';
 
   @override
+  String get creditsDiscord => 'Join Discord';
+
+  @override
   String get collectionsNewCollection => 'New Collection';
 
   @override

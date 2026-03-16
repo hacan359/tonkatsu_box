@@ -24,6 +24,9 @@
   <a href="https://flutter.dev">
     <img src="https://img.shields.io/badge/Flutter-3.38+-02569B?logo=flutter&logoColor=white" alt="Flutter 3.38+">
   </a>
+  <a href="https://discord.gg/JZVNPF7cS2">
+    <img src="https://img.shields.io/badge/Discord-5865F2?logo=discord&logoColor=white" alt="Discord">
+  </a>
 </p>
 
 ---
@@ -219,6 +222,10 @@ For developers and contributors, technical docs are in the `docs/` directory:
 ## Tech Stack
 
 Flutter 3.38+ / Dart 3.10+ · Riverpod · SQLite · Dio · Material Design 3 · IGDB · TMDB · VNDB · AniList · SteamGridDB
+
+## Community
+
+- [Discord](https://discord.gg/JZVNPF7cS2) — chat, support, feature requests
 
 ## Contributing
 
