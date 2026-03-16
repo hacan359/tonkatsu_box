@@ -16,6 +16,7 @@
 - **Steam test infrastructure** — `MockSteamApi`, `MockSteamImportService` in `mocks.dart`, `createTestSteamOwnedGame` builder in `builders.dart`. 25 tests for `SteamApi` (parsing, errors, shouldSkip), 21 tests for `SteamImportService` (import flow, statuses, duplicate update, wishlist dedup, progress, exact match)
 
 ### Changed
+- **Platform filter shows abbreviations** — platform names in search filter now display as "Name (ABBR)" (e.g. "Nintendo Entertainment System (NES)"). Search matches both full name and abbreviation. Applies to both the filter sheet and filter dropdown (`platform_filter_sheet.dart`, `igdb_platform_filter.dart`)
 - **`BrowseNotifier.setSearchQuery()`** — new method to update `searchQuery` in state without triggering `_fetch()`. Used by `FilterBar.onBeforeFilterChange` callback to sync pending search text before filter application (`browse_provider.dart`)
 - **`FilterBar.onBeforeFilterChange`** — new optional `VoidCallback` parameter, invoked before `setFilter()`. `SearchScreen` passes `_syncSearchText` to preserve typed-but-unsubmitted search text when user changes a filter (`filter_bar.dart`, `search_screen.dart`)
 

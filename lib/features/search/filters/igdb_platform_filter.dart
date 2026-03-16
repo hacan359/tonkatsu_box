@@ -44,7 +44,9 @@ class IgdbPlatformFilter extends SearchFilter {
         .map(
           (app_platform.Platform p) => FilterOption(
             id: p.id.toString(),
-            label: p.name,
+            label: p.abbreviation != null
+                ? '${p.name} (${p.abbreviation})'
+                : p.name,
             value: p.id,
           ),
         )
