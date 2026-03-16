@@ -1435,6 +1435,12 @@ abstract class S {
   /// **'View Open Source Licenses'**
   String get creditsViewLicenses;
 
+  /// No description provided for @creditsDiscord.
+  ///
+  /// In en, this message translates to:
+  /// **'Join Discord'**
+  String get creditsDiscord;
+
   /// No description provided for @collectionsNewCollection.
   ///
   /// In en, this message translates to:
