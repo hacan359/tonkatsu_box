@@ -1525,6 +1525,48 @@ abstract class S {
   /// **'Importing Collection'**
   String get collectionsImporting;
 
+  /// No description provided for @importTargetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Import into...'**
+  String get importTargetTitle;
+
+  /// No description provided for @importCreateNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Create new collection'**
+  String get importCreateNew;
+
+  /// No description provided for @importUseExisting.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to existing collection'**
+  String get importUseExisting;
+
+  /// No description provided for @importNoCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'No collections available'**
+  String get importNoCollections;
+
+  /// No description provided for @importSelectCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Select collection'**
+  String get importSelectCollection;
+
+  /// No description provided for @importErrorLoadingCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading collections'**
+  String get importErrorLoadingCollections;
+
+  /// No description provided for @importStartButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Import'**
+  String get importStartButton;
+
   /// No description provided for @collectionNotFound.
   ///
   /// In en, this message translates to:

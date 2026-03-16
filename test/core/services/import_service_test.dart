@@ -13,6 +13,7 @@ import 'package:xerabora/shared/models/canvas_connection.dart';
 import 'package:xerabora/shared/models/canvas_item.dart';
 import 'package:xerabora/shared/models/canvas_viewport.dart';
 import 'package:xerabora/shared/models/collection.dart';
+import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/game.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/movie.dart';
@@ -40,8 +41,19 @@ void main() {
       expect(result.success, isTrue);
       expect(result.collection, equals(collection));
       expect(result.itemsImported, equals(10));
+      expect(result.itemsUpdated, equals(0));
       expect(result.error, isNull);
       expect(result.isCancelled, isFalse);
+    });
+
+    test('ImportResult.success should store updated count', () {
+      final Collection collection = createTestCollection();
+
+      final ImportResult result =
+          ImportResult.success(collection, 5, updated: 3);
+
+      expect(result.itemsImported, equals(5));
+      expect(result.itemsUpdated, equals(3));
     });
 
     test('ImportResult.failure должен создать неуспешный результат', () {
@@ -2413,6 +2425,193 @@ void main() {
         expect(result.success, isTrue);
         verify(() => mockDb.upsertGames(any())).called(1);
         verifyNever(() => mockDb.upsertPlatforms(any()));
+      });
+    });
+
+    group('import into existing collection', () {
+      late ImportService sutV2;
+
+      setUp(() {
+        sutV2 = ImportService(
+          repository: mockRepo,
+          igdbApi: mockApi,
+          tmdbApi: mockTmdb,
+          database: mockDb,
+          canvasRepository: mockCanvas,
+        );
+      });
+
+      test('should use existing collection when collectionId provided',
+          () async {
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.light,
+          name: 'Import',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'game',
+              'external_id': 100,
+            },
+          ],
+        );
+
+        final Collection existing = createTestCollection(id: 5);
+
+        when(() => mockApi.getGamesByIds(any()))
+            .thenAnswer((_) async => const <Game>[Game(id: 100, name: 'G')]);
+        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockRepo.getById(5))
+            .thenAnswer((_) async => existing);
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              authorComment: any(named: 'authorComment'),
+            )).thenAnswer((_) async => 1);
+
+        final ImportResult result = await sutV2.importFromXcoll(
+          xcoll,
+          collectionId: 5,
+        );
+
+        expect(result.success, isTrue);
+        expect(result.collection?.id, equals(5));
+        verifyNever(() => mockRepo.create(
+              name: any(named: 'name'),
+              author: any(named: 'author'),
+              type: any(named: 'type'),
+            ));
+      });
+
+      test('should return failure when collection not found', () async {
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.light,
+          name: 'Import',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[],
+        );
+
+        when(() => mockRepo.getById(999))
+            .thenAnswer((_) async => null);
+
+        final ImportResult result = await sutV2.importFromXcoll(
+          xcoll,
+          collectionId: 999,
+        );
+
+        expect(result.success, isFalse);
+        expect(result.error, contains('not found'));
+      });
+
+      test('should update existing items instead of skipping', () async {
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.light,
+          name: 'Import',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'game',
+              'external_id': 100,
+              'comment': 'New review',
+              'user_rating': 9,
+            },
+          ],
+        );
+
+        final Collection existing = createTestCollection(id: 5);
+        final CollectionItem existingItem = createTestCollectionItem(
+          id: 42,
+          externalId: 100,
+        );
+
+        when(() => mockApi.getGamesByIds(any()))
+            .thenAnswer((_) async => const <Game>[Game(id: 100, name: 'G')]);
+        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockRepo.getById(5))
+            .thenAnswer((_) async => existing);
+        // addItem returns null = duplicate
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              authorComment: any(named: 'authorComment'),
+            )).thenAnswer((_) async => null);
+        when(() => mockRepo.findItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+            )).thenAnswer((_) async => existingItem);
+        when(() => mockDb.updateItemAuthorComment(any(), any()))
+            .thenAnswer((_) async {});
+        when(() => mockDb.updateItemUserRating(any(), any()))
+            .thenAnswer((_) async {});
+
+        final ImportResult result = await sutV2.importFromXcoll(
+          xcoll,
+          collectionId: 5,
+        );
+
+        expect(result.success, isTrue);
+        expect(result.itemsImported, equals(0));
+        expect(result.itemsUpdated, equals(1));
+        verify(() => mockDb.updateItemAuthorComment(42, 'New review'))
+            .called(1);
+        verify(() => mockDb.updateItemUserRating(42, 9)).called(1);
+      });
+
+      test('should skip canvas and tier lists for existing collection',
+          () async {
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.full,
+          name: 'Full Import',
+          author: 'Author',
+          created: testDate,
+          items: const <Map<String, dynamic>>[],
+          canvas: const ExportCanvas(
+            items: <Map<String, dynamic>>[
+              <String, dynamic>{
+                'id': 1,
+                'type': 'text',
+                'x': 0.0,
+                'y': 0.0,
+                'width': 100.0,
+                'height': 50.0,
+                'content': 'test',
+              },
+            ],
+          ),
+          tierLists: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'name': 'TL',
+              'definitions': <dynamic>[],
+              'entries': <dynamic>[],
+            },
+          ],
+        );
+
+        final Collection existing = createTestCollection(id: 5);
+
+        when(() => mockRepo.getById(5))
+            .thenAnswer((_) async => existing);
+
+        final ImportResult result = await sutV2.importFromXcoll(
+          xcoll,
+          collectionId: 5,
+        );
+
+        expect(result.success, isTrue);
+        // Canvas should NOT be imported
+        verifyNever(() => mockCanvas.createItem(any()));
+        verifyNever(() => mockCanvas.createConnection(any()));
       });
     });
   });
