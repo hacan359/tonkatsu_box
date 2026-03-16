@@ -5,9 +5,11 @@ import 'package:mocktail/mocktail.dart';
 import 'package:xerabora/core/api/igdb_api.dart';
 import 'package:xerabora/core/api/steam_api.dart';
 import 'package:xerabora/core/services/steam_import_service.dart';
+import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/game.dart';
 import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
+import 'package:xerabora/shared/models/wishlist_item.dart';
 
 import '../../helpers/test_helpers.dart';
 
@@ -56,11 +58,6 @@ void main() {
           steamId: any(named: 'steamId'),
         )).thenAnswer((_) async => games);
 
-    when(() => mockDb.createCollection(
-          name: any(named: 'name'),
-          author: any(named: 'author'),
-        )).thenAnswer((_) async => createTestCollection(id: collectionId));
-
     when(() => mockIgdbApi.searchGames(
           query: any(named: 'query'),
           limit: any(named: 'limit'),
@@ -100,44 +97,42 @@ void main() {
           mediaTypeHint: any(named: 'mediaTypeHint'),
           note: any(named: 'note'),
         )).thenAnswer((_) async => createTestWishlistItem());
+
+    when(() => mockDb.findUnresolvedWishlistItem(any()))
+        .thenAnswer((_) async => null);
+
+    when(() => mockDb.updateWishlistItem(
+          any(),
+          note: any(named: 'note'),
+        )).thenAnswer((_) async {});
+
+    when(() => mockDb.updateItemStatus(
+          any(),
+          any(),
+          mediaType: any(named: 'mediaType'),
+        )).thenAnswer((_) async {});
   }
 
   group('SteamImportService', () {
     group('importLibrary', () {
-      test('creates "Steam Library" collection', () async {
-        setupStandardMocks();
-
-        await sut.importLibrary(
-          apiKey: 'key',
-          steamId: '123',
-          authorName: 'Test Author',
-          onProgress: (_) {},
-        );
-
-        verify(() => mockDb.createCollection(
-              name: 'Steam Library',
-              author: 'Test Author',
-            )).called(1);
-      });
-
-      test('imports found games into collection', () async {
+      test('should import found games into collection', () async {
         setupStandardMocks();
 
         final SteamImportResult result = await sut.importLibrary(
           apiKey: 'key',
           steamId: '123',
-          authorName: 'Author',
+          collectionId: 1,
           onProgress: (_) {},
         );
 
         expect(result.imported, 2);
         expect(result.wishlisted, 0);
-        expect(result.skipped, 0);
+        expect(result.updated, 0);
         expect(result.total, 2);
         expect(result.collectionId, 1);
       });
 
-      test('sets inProgress for played games', () async {
+      test('should set inProgress for played games', () async {
         setupStandardMocks(
           library: <SteamOwnedGame>[
             createTestSteamOwnedGame(
@@ -150,7 +145,7 @@ void main() {
         await sut.importLibrary(
           apiKey: 'key',
           steamId: '123',
-          authorName: 'Author',
+          collectionId: 1,
           onProgress: (_) {},
         );
 
@@ -163,7 +158,7 @@ void main() {
             )).called(1);
       });
 
-      test('sets notStarted for unplayed games', () async {
+      test('should set notStarted for unplayed games', () async {
         setupStandardMocks(
           library: <SteamOwnedGame>[
             createTestSteamOwnedGame(
@@ -176,7 +171,7 @@ void main() {
         await sut.importLibrary(
           apiKey: 'key',
           steamId: '123',
-          authorName: 'Author',
+          collectionId: 1,
           onProgress: (_) {},
         );
 
@@ -189,7 +184,7 @@ void main() {
             )).called(1);
       });
 
-      test('saves playtime as user comment', () async {
+      test('should save playtime as user comment', () async {
         setupStandardMocks(
           library: <SteamOwnedGame>[
             createTestSteamOwnedGame(
@@ -202,7 +197,7 @@ void main() {
         await sut.importLibrary(
           apiKey: 'key',
           steamId: '123',
-          authorName: 'Author',
+          collectionId: 1,
           onProgress: (_) {},
         );
 
@@ -210,7 +205,7 @@ void main() {
             .called(1);
       });
 
-      test('saves lastPlayed as startedAt', () async {
+      test('should save lastPlayed as startedAt', () async {
         final DateTime lastPlayed = DateTime(2024, 1, 28);
         setupStandardMocks(
           library: <SteamOwnedGame>[
@@ -225,7 +220,7 @@ void main() {
         await sut.importLibrary(
           apiKey: 'key',
           steamId: '123',
-          authorName: 'Author',
+          collectionId: 1,
           onProgress: (_) {},
         );
 
@@ -235,7 +230,7 @@ void main() {
             )).called(1);
       });
 
-      test('does not update comment for zero playtime', () async {
+      test('should not update comment for zero playtime', () async {
         setupStandardMocks(
           library: <SteamOwnedGame>[
             createTestSteamOwnedGame(
@@ -248,14 +243,14 @@ void main() {
         await sut.importLibrary(
           apiKey: 'key',
           steamId: '123',
-          authorName: 'Author',
+          collectionId: 1,
           onProgress: (_) {},
         );
 
         verifyNever(() => mockDb.updateItemUserComment(any(), any()));
       });
 
-      test('filters DLC and soundtracks', () async {
+      test('should filter DLC and soundtracks', () async {
         setupStandardMocks(
           library: <SteamOwnedGame>[
             createTestSteamOwnedGame(name: 'Real Game'),
@@ -267,7 +262,7 @@ void main() {
         final SteamImportResult result = await sut.importLibrary(
           apiKey: 'key',
           steamId: '123',
-          authorName: 'Author',
+          collectionId: 1,
           onProgress: (_) {},
         );
 
@@ -276,29 +271,50 @@ void main() {
         expect(result.imported, 1);
       });
 
-      test('skips duplicates already in collection', () async {
+      test('should update duplicates instead of skipping', () async {
         setupStandardMocks(
           library: <SteamOwnedGame>[
-            createTestSteamOwnedGame(name: 'Already Added'),
+            createTestSteamOwnedGame(
+              name: 'Already Added',
+              playtimeMinutes: 300,
+              lastPlayed: DateTime(2024, 6, 15),
+            ),
           ],
         );
 
         // Override findCollectionItem to return existing item
+        final CollectionItem collectionItem = createTestCollectionItem(
+          status: ItemStatus.notStarted,
+        );
         when(() => mockDb.findCollectionItem(
               collectionId: any(named: 'collectionId'),
               mediaType: any(named: 'mediaType'),
               externalId: any(named: 'externalId'),
-            )).thenAnswer((_) async => createTestCollectionItem());
+            )).thenAnswer((_) async => collectionItem);
 
         final SteamImportResult result = await sut.importLibrary(
           apiKey: 'key',
           steamId: '123',
-          authorName: 'Author',
+          collectionId: 1,
           onProgress: (_) {},
         );
 
-        expect(result.skipped, 1);
+        expect(result.updated, 1);
         expect(result.imported, 0);
+        // Should update status, comment, and dates
+        verify(() => mockDb.updateItemStatus(
+              collectionItem.id,
+              ItemStatus.inProgress,
+              mediaType: MediaType.game,
+            )).called(1);
+        verify(() => mockDb.updateItemUserComment(
+              collectionItem.id,
+              'Steam: 5.0h',
+            )).called(1);
+        verify(() => mockDb.updateItemActivityDates(
+              collectionItem.id,
+              startedAt: DateTime(2024, 6, 15),
+            )).called(1);
         verifyNever(() => mockDb.addItemToCollection(
               collectionId: any(named: 'collectionId'),
               mediaType: any(named: 'mediaType'),
@@ -308,7 +324,71 @@ void main() {
             ));
       });
 
-      test('adds to wishlist when IGDB returns empty', () async {
+      test('should not downgrade status from completed', () async {
+        setupStandardMocks(
+          library: <SteamOwnedGame>[
+            createTestSteamOwnedGame(
+              name: 'Completed Game',
+              playtimeMinutes: 100,
+            ),
+          ],
+        );
+
+        when(() => mockDb.findCollectionItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+            )).thenAnswer((_) async => createTestCollectionItem(
+              status: ItemStatus.completed,
+            ));
+
+        await sut.importLibrary(
+          apiKey: 'key',
+          steamId: '123',
+          collectionId: 1,
+          onProgress: (_) {},
+        );
+
+        verifyNever(() => mockDb.updateItemStatus(
+              any(),
+              any(),
+              mediaType: any(named: 'mediaType'),
+            ));
+      });
+
+      test('should not downgrade status from inProgress', () async {
+        setupStandardMocks(
+          library: <SteamOwnedGame>[
+            createTestSteamOwnedGame(
+              name: 'In Progress Game',
+              playtimeMinutes: 100,
+            ),
+          ],
+        );
+
+        when(() => mockDb.findCollectionItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+            )).thenAnswer((_) async => createTestCollectionItem(
+              status: ItemStatus.inProgress,
+            ));
+
+        await sut.importLibrary(
+          apiKey: 'key',
+          steamId: '123',
+          collectionId: 1,
+          onProgress: (_) {},
+        );
+
+        verifyNever(() => mockDb.updateItemStatus(
+              any(),
+              any(),
+              mediaType: any(named: 'mediaType'),
+            ));
+      });
+
+      test('should add to wishlist when IGDB returns empty', () async {
         setupStandardMocks(
           library: <SteamOwnedGame>[
             createTestSteamOwnedGame(name: 'Unknown Game'),
@@ -324,7 +404,7 @@ void main() {
         final SteamImportResult result = await sut.importLibrary(
           apiKey: 'key',
           steamId: '123',
-          authorName: 'Author',
+          collectionId: 1,
           onProgress: (_) {},
         );
 
@@ -337,7 +417,7 @@ void main() {
             )).called(1);
       });
 
-      test('adds to wishlist on IGDB API error', () async {
+      test('should add to wishlist on IGDB API error', () async {
         setupStandardMocks(
           library: <SteamOwnedGame>[
             createTestSteamOwnedGame(name: 'Error Game'),
@@ -352,7 +432,7 @@ void main() {
         final SteamImportResult result = await sut.importLibrary(
           apiKey: 'key',
           steamId: '123',
-          authorName: 'Author',
+          collectionId: 1,
           onProgress: (_) {},
         );
 
@@ -360,7 +440,7 @@ void main() {
         expect(result.imported, 0);
       });
 
-      test('throws on empty library', () async {
+      test('should throw on empty library', () async {
         when(() => mockSteamApi.getOwnedGames(
               apiKey: any(named: 'apiKey'),
               steamId: any(named: 'steamId'),
@@ -370,14 +450,14 @@ void main() {
           () => sut.importLibrary(
             apiKey: 'key',
             steamId: '123',
-            authorName: 'Author',
+            collectionId: 1,
             onProgress: (_) {},
           ),
           throwsA(isA<SteamApiException>()),
         );
       });
 
-      test('calls onProgress callback', () async {
+      test('should call onProgress callback', () async {
         setupStandardMocks(
           library: <SteamOwnedGame>[
             createTestSteamOwnedGame(name: 'Game 1'),
@@ -390,7 +470,7 @@ void main() {
         await sut.importLibrary(
           apiKey: 'key',
           steamId: '123',
-          authorName: 'Author',
+          collectionId: 1,
           onProgress: progressUpdates.add,
         );
 
@@ -409,7 +489,7 @@ void main() {
         );
       });
 
-      test('prefers exact match over first result', () async {
+      test('should prefer exact match over first result', () async {
         setupStandardMocks(
           library: <SteamOwnedGame>[
             createTestSteamOwnedGame(name: 'Portal'),
@@ -428,7 +508,7 @@ void main() {
         await sut.importLibrary(
           apiKey: 'key',
           steamId: '123',
-          authorName: 'Author',
+          collectionId: 1,
           onProgress: (_) {},
         );
 
@@ -438,10 +518,112 @@ void main() {
             )).called(1);
       });
     });
+
+    group('wishlist deduplication', () {
+      test('should skip adding when unresolved wishlist item exists', () async {
+        setupStandardMocks(
+          library: <SteamOwnedGame>[
+            createTestSteamOwnedGame(name: 'Unknown Game'),
+          ],
+        );
+
+        when(() => mockIgdbApi.searchGames(
+              query: any(named: 'query'),
+              limit: any(named: 'limit'),
+            )).thenAnswer((_) async => <Game>[]);
+
+        // Existing wishlist item
+        when(() => mockDb.findUnresolvedWishlistItem('Unknown Game'))
+            .thenAnswer((_) async => createTestWishlistItem(
+                  text: 'Unknown Game',
+                ));
+
+        await sut.importLibrary(
+          apiKey: 'key',
+          steamId: '123',
+          collectionId: 1,
+          onProgress: (_) {},
+        );
+
+        verifyNever(() => mockDb.addWishlistItem(
+              text: any(named: 'text'),
+              mediaTypeHint: any(named: 'mediaTypeHint'),
+              note: any(named: 'note'),
+            ));
+      });
+
+      test('should update wishlist note when playtime changed', () async {
+        setupStandardMocks(
+          library: <SteamOwnedGame>[
+            createTestSteamOwnedGame(
+              name: 'Unknown Game',
+              playtimeMinutes: 90,
+            ),
+          ],
+        );
+
+        when(() => mockIgdbApi.searchGames(
+              query: any(named: 'query'),
+              limit: any(named: 'limit'),
+            )).thenAnswer((_) async => <Game>[]);
+
+        final WishlistItem existingItem = createTestWishlistItem(
+          id: 42,
+          text: 'Unknown Game',
+          note: 'Steam: 0.5h',
+        );
+        when(() => mockDb.findUnresolvedWishlistItem('Unknown Game'))
+            .thenAnswer((_) async => existingItem);
+
+        await sut.importLibrary(
+          apiKey: 'key',
+          steamId: '123',
+          collectionId: 1,
+          onProgress: (_) {},
+        );
+
+        verify(() => mockDb.updateWishlistItem(42, note: 'Steam: 1.5h'))
+            .called(1);
+        verifyNever(() => mockDb.addWishlistItem(
+              text: any(named: 'text'),
+              mediaTypeHint: any(named: 'mediaTypeHint'),
+              note: any(named: 'note'),
+            ));
+      });
+
+      test('should create wishlist item when no duplicate exists', () async {
+        setupStandardMocks(
+          library: <SteamOwnedGame>[
+            createTestSteamOwnedGame(name: 'New Game'),
+          ],
+        );
+
+        when(() => mockIgdbApi.searchGames(
+              query: any(named: 'query'),
+              limit: any(named: 'limit'),
+            )).thenAnswer((_) async => <Game>[]);
+
+        when(() => mockDb.findUnresolvedWishlistItem('New Game'))
+            .thenAnswer((_) async => null);
+
+        await sut.importLibrary(
+          apiKey: 'key',
+          steamId: '123',
+          collectionId: 1,
+          onProgress: (_) {},
+        );
+
+        verify(() => mockDb.addWishlistItem(
+              text: 'New Game',
+              mediaTypeHint: MediaType.game,
+              note: any(named: 'note'),
+            )).called(1);
+      });
+    });
   });
 
   group('SteamImportProgress', () {
-    test('progress returns 0 when total is 0', () {
+    test('should return 0 when total is 0', () {
       const SteamImportProgress progress = SteamImportProgress(
         stage: SteamImportStage.fetchingLibrary,
         current: 0,
@@ -451,7 +633,7 @@ void main() {
       expect(progress.progress, 0.0);
     });
 
-    test('progress returns fraction when total > 0', () {
+    test('should return fraction when total > 0', () {
       const SteamImportProgress progress = SteamImportProgress(
         stage: SteamImportStage.matchingGames,
         current: 50,
@@ -463,18 +645,18 @@ void main() {
   });
 
   group('SteamImportResult', () {
-    test('stores all fields', () {
+    test('should store all fields', () {
       const SteamImportResult result = SteamImportResult(
         imported: 10,
         wishlisted: 5,
-        skipped: 2,
+        updated: 2,
         total: 17,
         collectionId: 42,
       );
 
       expect(result.imported, 10);
       expect(result.wishlisted, 5);
-      expect(result.skipped, 2);
+      expect(result.updated, 2);
       expect(result.total, 17);
       expect(result.collectionId, 42);
     });

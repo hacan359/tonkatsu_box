@@ -842,8 +842,8 @@
       "count": {"type": "int"}
     }
   },
-  "steamImportSkipped": "Пропущено: {count}",
-  "@steamImportSkipped": {
+  "steamImportUpdated": "Обновлено: {count}",
+  "@steamImportUpdated": {
     "placeholders": {
       "count": {"type": "int"}
     }
@@ -861,14 +861,20 @@
       "count": {"type": "int"}
     }
   },
-  "steamImportSkippedDuplicates": "{count} пропущено (дубликаты)",
-  "@steamImportSkippedDuplicates": {
+  "steamImportUpdatedDuplicates": "{count} обновлено (существующие)",
+  "@steamImportUpdatedDuplicates": {
     "placeholders": {
       "count": {"type": "int"}
     }
   },
   "steamImportPlayedStatus": "Сыгранные игры отмечены «В процессе»",
   "steamImportPlaytimeComment": "Время в игре сохранено в комментариях",
-  "steamImportOpenCollection": "Открыть «Steam Library»",
+  "steamImportTargetCollection": "Целевая коллекция",
+  "steamImportCreateNew": "Создать новую коллекцию",
+  "steamImportUseExisting": "Использовать существующую",
+  "steamImportNoCollections": "Нет доступных коллекций",
+  "steamImportSelectCollection": "Выберите коллекцию",
+  "steamImportErrorLoadingCollections": "Ошибка загрузки коллекций",
+  "steamImportOpenCollection": "Открыть коллекцию",
   "steamImportIgdbRequired": "Требуется подключение к IGDB. Настройте API ключи в Настройки → Подключения."
 }

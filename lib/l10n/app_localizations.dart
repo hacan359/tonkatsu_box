@@ -4243,11 +4243,11 @@ abstract class S {
   /// **'Added to wishlist: {count}'**
   String steamImportWishlisted(int count);
 
-  /// No description provided for @steamImportSkipped.
+  /// No description provided for @steamImportUpdated.
   ///
   /// In en, this message translates to:
-  /// **'Skipped: {count}'**
-  String steamImportSkipped(int count);
+  /// **'Updated: {count}'**
+  String steamImportUpdated(int count);
 
   /// No description provided for @steamImportComplete.
   ///
@@ -4267,11 +4267,11 @@ abstract class S {
   /// **'{count} added to wishlist'**
   String steamImportWishlistedInIgdb(int count);
 
-  /// No description provided for @steamImportSkippedDuplicates.
+  /// No description provided for @steamImportUpdatedDuplicates.
   ///
   /// In en, this message translates to:
-  /// **'{count} skipped (duplicates)'**
-  String steamImportSkippedDuplicates(int count);
+  /// **'{count} updated (existing)'**
+  String steamImportUpdatedDuplicates(int count);
 
   /// No description provided for @steamImportPlayedStatus.
   ///
@@ -4285,10 +4285,46 @@ abstract class S {
   /// **'Playtime saved in comments'**
   String get steamImportPlaytimeComment;
 
+  /// No description provided for @steamImportTargetCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Target collection'**
+  String get steamImportTargetCollection;
+
+  /// No description provided for @steamImportCreateNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Create new collection'**
+  String get steamImportCreateNew;
+
+  /// No description provided for @steamImportUseExisting.
+  ///
+  /// In en, this message translates to:
+  /// **'Use existing collection'**
+  String get steamImportUseExisting;
+
+  /// No description provided for @steamImportNoCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'No collections available'**
+  String get steamImportNoCollections;
+
+  /// No description provided for @steamImportSelectCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Select collection'**
+  String get steamImportSelectCollection;
+
+  /// No description provided for @steamImportErrorLoadingCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading collections'**
+  String get steamImportErrorLoadingCollections;
+
   /// No description provided for @steamImportOpenCollection.
   ///
   /// In en, this message translates to:
-  /// **'Open \"Steam Library\"'**
+  /// **'Open collection'**
   String get steamImportOpenCollection;
 
   /// No description provided for @steamImportIgdbRequired.

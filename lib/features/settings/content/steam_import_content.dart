@@ -4,12 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/database/database_service.dart';
 import '../../../core/services/steam_import_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
+import '../../../shared/models/collection.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../collections/providers/collection_covers_provider.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../collections/screens/collection_screen.dart';
 import '../../home/providers/all_items_provider.dart';
@@ -37,6 +40,10 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
   SteamImportProgress? _progress;
   SteamImportResult? _result;
 
+  // Выбор коллекции
+  bool _useNewCollection = true;
+  int? _selectedCollectionId;
+
   @override
   void dispose() {
     _apiKeyController.dispose();
@@ -47,6 +54,7 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
   bool get _canStart =>
       _apiKeyController.text.trim().isNotEmpty &&
       _steamIdController.text.trim().isNotEmpty &&
+      (_useNewCollection || _selectedCollectionId != null) &&
       !_isImporting;
 
   bool get _igdbConnected =>
@@ -188,6 +196,8 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
             ],
           ),
         ),
+        const SizedBox(height: AppSpacing.sm),
+        _buildCollectionSelector(l),
         Padding(
           padding: const EdgeInsets.all(AppSpacing.md),
           child: FilledButton.icon(
@@ -196,6 +206,108 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
             label: Text(l.steamImportButton),
           ),
         ),
+      ],
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Collection selector
+  // ---------------------------------------------------------------------------
+
+  Widget _buildCollectionSelector(S l) {
+    final AsyncValue<List<Collection>> collectionsAsync =
+        ref.watch(collectionsProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+          child: Text(
+            l.steamImportTargetCollection,
+            style: AppTypography.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ),
+        RadioGroup<bool>(
+          groupValue: _useNewCollection,
+          onChanged: (bool? value) {
+            if (value == null || _isImporting) return;
+            setState(() {
+              _useNewCollection = value;
+              if (value) _selectedCollectionId = null;
+            });
+          },
+          child: Column(
+            children: <Widget>[
+              ListTile(
+                title: Text(l.steamImportCreateNew),
+                leading: const Radio<bool>(value: true),
+                dense: true,
+                onTap: _isImporting
+                    ? null
+                    : () => setState(() {
+                          _useNewCollection = true;
+                          _selectedCollectionId = null;
+                        }),
+              ),
+              ListTile(
+                title: Text(l.steamImportUseExisting),
+                leading: const Radio<bool>(value: false),
+                dense: true,
+                onTap: _isImporting
+                    ? null
+                    : () => setState(() {
+                          _useNewCollection = false;
+                        }),
+              ),
+            ],
+          ),
+        ),
+        if (!_useNewCollection)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            child: collectionsAsync.when(
+              data: (List<Collection> collections) {
+                if (collections.isEmpty) {
+                  return Text(
+                    l.steamImportNoCollections,
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  );
+                }
+                return DropdownButtonFormField<int>(
+                  initialValue: _selectedCollectionId,
+                  hint: Text(l.steamImportSelectCollection),
+                  isExpanded: true,
+                  items: collections.map((Collection c) {
+                    return DropdownMenuItem<int>(
+                      value: c.id,
+                      child: Text(c.name, overflow: TextOverflow.ellipsis),
+                    );
+                  }).toList(),
+                  onChanged: _isImporting
+                      ? null
+                      : (int? value) {
+                          setState(() => _selectedCollectionId = value);
+                        },
+                );
+              },
+              loading: () =>
+                  const Center(child: CircularProgressIndicator()),
+              error: (Object e, StackTrace s) => Text(
+                l.steamImportErrorLoadingCollections,
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.statusDropped,
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -261,9 +373,9 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
                 l.steamImportWishlisted(progress.wishlistedCount),
               ),
               _buildStatRow(
-                Icons.skip_next,
-                AppColors.textTertiary,
-                l.steamImportSkipped(progress.skippedCount),
+                Icons.sync,
+                AppColors.statusInProgress,
+                l.steamImportUpdated(progress.updatedCount),
               ),
             ],
           ),
@@ -304,9 +416,9 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
                     l.steamImportWishlistedInIgdb(result.wishlisted),
                   ),
                   _buildStatRow(
-                    Icons.skip_next,
-                    AppColors.textTertiary,
-                    l.steamImportSkippedDuplicates(result.skipped),
+                    Icons.sync,
+                    AppColors.statusInProgress,
+                    l.steamImportUpdatedDuplicates(result.updated),
                   ),
                   const SizedBox(height: AppSpacing.md),
                   Text(
@@ -408,13 +520,26 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
     });
 
     try {
+      // Определяем целевую коллекцию
+      final int collectionId;
+      if (_useNewCollection) {
+        final DatabaseService db = ref.read(databaseServiceProvider);
+        final Collection collection = await db.createCollection(
+          name: 'Steam Library',
+          author: authorName,
+        );
+        collectionId = collection.id;
+      } else {
+        collectionId = _selectedCollectionId!;
+      }
+
       final SteamImportService service =
           ref.read(steamImportServiceProvider);
 
       final SteamImportResult result = await service.importLibrary(
         apiKey: apiKey,
         steamId: steamId,
-        authorName: authorName,
+        collectionId: collectionId,
         onProgress: (SteamImportProgress progress) {
           if (mounted) {
             setState(() => _progress = progress);
@@ -425,6 +550,8 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
       if (!mounted) return;
 
       ref.invalidate(collectionsProvider);
+      ref.invalidate(collectionStatsProvider(collectionId));
+      ref.invalidate(collectionCoversProvider(collectionId));
       ref.invalidate(allItemsNotifierProvider);
       ref.invalidate(wishlistProvider);
 

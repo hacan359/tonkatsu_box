@@ -2332,8 +2332,8 @@ class SRu extends S {
   }
 
   @override
-  String steamImportSkipped(int count) {
-    return 'Пропущено: $count';
+  String steamImportUpdated(int count) {
+    return 'Обновлено: $count';
   }
 
   @override
@@ -2350,8 +2350,8 @@ class SRu extends S {
   }
 
   @override
-  String steamImportSkippedDuplicates(int count) {
-    return '$count пропущено (дубликаты)';
+  String steamImportUpdatedDuplicates(int count) {
+    return '$count обновлено (существующие)';
   }
 
   @override
@@ -2362,7 +2362,25 @@ class SRu extends S {
       'Время в игре сохранено в комментариях';
 
   @override
-  String get steamImportOpenCollection => 'Открыть «Steam Library»';
+  String get steamImportTargetCollection => 'Целевая коллекция';
+
+  @override
+  String get steamImportCreateNew => 'Создать новую коллекцию';
+
+  @override
+  String get steamImportUseExisting => 'Использовать существующую';
+
+  @override
+  String get steamImportNoCollections => 'Нет доступных коллекций';
+
+  @override
+  String get steamImportSelectCollection => 'Выберите коллекцию';
+
+  @override
+  String get steamImportErrorLoadingCollections => 'Ошибка загрузки коллекций';
+
+  @override
+  String get steamImportOpenCollection => 'Открыть коллекцию';
 
   @override
   String get steamImportIgdbRequired =>

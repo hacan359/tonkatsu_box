@@ -814,6 +814,10 @@ class DatabaseService {
   Future<void> deleteWishlistItem(int id) =>
       wishlistDao.deleteWishlistItem(id);
 
+  /// Находит активный (не resolved) элемент вишлиста по тексту.
+  Future<WishlistItem?> findUnresolvedWishlistItem(String text) =>
+      wishlistDao.findUnresolvedByText(text);
+
   /// Удаляет все resolved элементы вишлиста.
   Future<int> clearResolvedWishlistItems() =>
       wishlistDao.clearResolvedWishlistItems();
