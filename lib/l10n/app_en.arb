@@ -1066,8 +1066,8 @@
       "count": {"type": "int"}
     }
   },
-  "steamImportSkipped": "Skipped: {count}",
-  "@steamImportSkipped": {
+  "steamImportUpdated": "Updated: {count}",
+  "@steamImportUpdated": {
     "placeholders": {
       "count": {"type": "int"}
     }
@@ -1085,14 +1085,20 @@
       "count": {"type": "int"}
     }
   },
-  "steamImportSkippedDuplicates": "{count} skipped (duplicates)",
-  "@steamImportSkippedDuplicates": {
+  "steamImportUpdatedDuplicates": "{count} updated (existing)",
+  "@steamImportUpdatedDuplicates": {
     "placeholders": {
       "count": {"type": "int"}
     }
   },
   "steamImportPlayedStatus": "Played games marked as \"In Progress\"",
   "steamImportPlaytimeComment": "Playtime saved in comments",
-  "steamImportOpenCollection": "Open \"Steam Library\"",
+  "steamImportTargetCollection": "Target collection",
+  "steamImportCreateNew": "Create new collection",
+  "steamImportUseExisting": "Use existing collection",
+  "steamImportNoCollections": "No collections available",
+  "steamImportSelectCollection": "Select collection",
+  "steamImportErrorLoadingCollections": "Error loading collections",
+  "steamImportOpenCollection": "Open collection",
   "steamImportIgdbRequired": "IGDB connection required. Set up API keys in Settings → Credentials first."
 }

@@ -2309,8 +2309,8 @@ class SEn extends S {
   }
 
   @override
-  String steamImportSkipped(int count) {
-    return 'Skipped: $count';
+  String steamImportUpdated(int count) {
+    return 'Updated: $count';
   }
 
   @override
@@ -2327,8 +2327,8 @@ class SEn extends S {
   }
 
   @override
-  String steamImportSkippedDuplicates(int count) {
-    return '$count skipped (duplicates)';
+  String steamImportUpdatedDuplicates(int count) {
+    return '$count updated (existing)';
   }
 
   @override
@@ -2339,7 +2339,25 @@ class SEn extends S {
   String get steamImportPlaytimeComment => 'Playtime saved in comments';
 
   @override
-  String get steamImportOpenCollection => 'Open \"Steam Library\"';
+  String get steamImportTargetCollection => 'Target collection';
+
+  @override
+  String get steamImportCreateNew => 'Create new collection';
+
+  @override
+  String get steamImportUseExisting => 'Use existing collection';
+
+  @override
+  String get steamImportNoCollections => 'No collections available';
+
+  @override
+  String get steamImportSelectCollection => 'Select collection';
+
+  @override
+  String get steamImportErrorLoadingCollections => 'Error loading collections';
+
+  @override
+  String get steamImportOpenCollection => 'Open collection';
 
   @override
   String get steamImportIgdbRequired =>

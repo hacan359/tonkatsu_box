@@ -7,6 +7,7 @@ import '../../shared/models/collection_item.dart';
 import '../../shared/models/game.dart';
 import '../../shared/models/item_status.dart';
 import '../../shared/models/media_type.dart';
+import '../../shared/models/wishlist_item.dart';
 import '../api/igdb_api.dart';
 import '../api/steam_api.dart';
 import '../database/database_service.dart';
@@ -37,7 +38,7 @@ class SteamImportProgress {
     this.currentName,
     this.importedCount = 0,
     this.wishlistedCount = 0,
-    this.skippedCount = 0,
+    this.updatedCount = 0,
   });
 
   /// Текущий этап.
@@ -58,8 +59,8 @@ class SteamImportProgress {
   /// Количество добавленных в вишлист (не найдены в IGDB).
   final int wishlistedCount;
 
-  /// Количество пропущенных (дубликаты).
-  final int skippedCount;
+  /// Количество обновлённых (дубликаты с обновлёнными данными).
+  final int updatedCount;
 
   /// Прогресс в долях (0.0 – 1.0).
   double get progress => total > 0 ? current / total : 0;
@@ -71,7 +72,7 @@ class SteamImportResult {
   const SteamImportResult({
     required this.imported,
     required this.wishlisted,
-    required this.skipped,
+    required this.updated,
     required this.total,
     required this.collectionId,
   });
@@ -82,13 +83,13 @@ class SteamImportResult {
   /// Количество добавленных в вишлист (не найдены в IGDB).
   final int wishlisted;
 
-  /// Количество пропущенных (дубликаты).
-  final int skipped;
+  /// Количество обновлённых (дубликаты с обновлёнными данными).
+  final int updated;
 
   /// Общее количество игр в библиотеке (после фильтрации DLC).
   final int total;
 
-  /// ID созданной коллекции.
+  /// ID коллекции импорта.
   final int collectionId;
 }
 
@@ -134,12 +135,12 @@ class SteamImportService {
   ///
   /// [apiKey] — Steam Web API ключ.
   /// [steamId] — 64-битный Steam ID пользователя.
-  /// [authorName] — имя автора для коллекции (из Settings).
+  /// [collectionId] — ID целевой коллекции.
   /// [onProgress] — callback прогресса.
   Future<SteamImportResult> importLibrary({
     required String apiKey,
     required String steamId,
-    required String authorName,
+    required int collectionId,
     required void Function(SteamImportProgress) onProgress,
   }) async {
     // 1. Получить библиотеку Steam
@@ -169,17 +170,10 @@ class SteamImportService {
       throw const SteamApiException('No games found in this Steam library');
     }
 
-    // 3. Создать коллекцию
-    final int collectionId = (await _db.createCollection(
-      name: 'Steam Library',
-      author: authorName,
-    ))
-        .id;
-
-    // 4. Для каждой игры — поиск в IGDB + добавление
+    // 3. Для каждой игры — поиск в IGDB + добавление/обновление
     int imported = 0;
     int wishlisted = 0;
-    int skipped = 0;
+    int updated = 0;
 
     for (int i = 0; i < games.length; i++) {
       final SteamOwnedGame steamGame = games[i];
@@ -191,7 +185,7 @@ class SteamImportService {
         currentName: steamGame.name,
         importedCount: imported,
         wishlistedCount: wishlisted,
-        skippedCount: skipped,
+        updatedCount: updated,
       ));
 
       try {
@@ -216,7 +210,8 @@ class SteamImportService {
           externalId: match.id,
         );
         if (existing != null) {
-          skipped++;
+          await _updateExistingItem(existing, steamGame);
+          updated++;
           continue;
         }
 
@@ -263,7 +258,7 @@ class SteamImportService {
     }
 
     _log.info('Steam import complete: $imported imported, '
-        '$wishlisted wishlisted, $skipped skipped');
+        '$wishlisted wishlisted, $updated updated');
 
     onProgress(SteamImportProgress(
       stage: SteamImportStage.completed,
@@ -271,23 +266,71 @@ class SteamImportService {
       total: games.length,
       importedCount: imported,
       wishlistedCount: wishlisted,
-      skippedCount: skipped,
+      updatedCount: updated,
     ));
 
     return SteamImportResult(
       imported: imported,
       wishlisted: wishlisted,
-      skipped: skipped,
+      updated: updated,
       total: games.length,
       collectionId: collectionId,
     );
   }
 
+  /// Обновляет существующий элемент коллекции данными из Steam.
+  ///
+  /// Обновляет статус (только повышение: notStarted → inProgress),
+  /// playtime комментарий и дату последней игры.
+  Future<void> _updateExistingItem(
+    CollectionItem existing,
+    SteamOwnedGame steamGame,
+  ) async {
+    // Повышаем статус только с notStarted → inProgress
+    if (steamGame.playtimeMinutes > 0 &&
+        existing.status == ItemStatus.notStarted) {
+      await _db.updateItemStatus(
+        existing.id,
+        ItemStatus.inProgress,
+        mediaType: MediaType.game,
+      );
+    }
+
+    // Обновляем playtime комментарий
+    if (steamGame.playtimeMinutes > 0) {
+      final String playtimeText = _formatPlaytime(steamGame);
+      await _db.updateItemUserComment(existing.id, 'Steam: $playtimeText');
+    }
+
+    // Обновляем startedAt если есть данные
+    if (steamGame.lastPlayed != null) {
+      await _db.updateItemActivityDates(
+        existing.id,
+        startedAt: steamGame.lastPlayed,
+      );
+    }
+  }
+
   /// Добавляет ненайденную Steam игру в вишлист.
+  ///
+  /// Если в вишлисте уже есть активный элемент с таким же именем,
+  /// обновляет его заметку вместо создания дубликата.
   Future<void> _addToWishlist(SteamOwnedGame steamGame) async {
     final String? note = steamGame.playtimeMinutes > 0
         ? 'Steam: ${_formatPlaytime(steamGame)}'
         : null;
+
+    // Проверяем наличие дубликата в вишлисте
+    final WishlistItem? existing =
+        await _db.findUnresolvedWishlistItem(steamGame.name);
+
+    if (existing != null) {
+      // Обновляем заметку если есть новые данные о playtime
+      if (note != null && note != existing.note) {
+        await _db.updateWishlistItem(existing.id, note: note);
+      }
+      return;
+    }
 
     await _db.addWishlistItem(
       text: steamGame.name,

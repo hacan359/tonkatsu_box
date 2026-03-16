@@ -309,5 +309,53 @@ void main() {
         expect(count, 3);
       });
     });
+
+    group('findUnresolvedByText', () {
+      test('should return matching unresolved item', () async {
+        when(
+          () => mockDb.query(
+            'wishlist',
+            where: 'text = ? AND is_resolved = 0',
+            whereArgs: <Object?>['Chrono Trigger'],
+            limit: 1,
+          ),
+        ).thenAnswer(
+          (_) async => <Map<String, dynamic>>[
+            <String, dynamic>{
+              'id': 5,
+              'text': 'Chrono Trigger',
+              'media_type_hint': 'game',
+              'note': 'SNES',
+              'is_resolved': 0,
+              'created_at': 1705320000,
+              'resolved_at': null,
+            },
+          ],
+        );
+
+        final WishlistItem? result =
+            await dao.findUnresolvedByText('Chrono Trigger');
+
+        expect(result, isNotNull);
+        expect(result!.id, 5);
+        expect(result.text, 'Chrono Trigger');
+      });
+
+      test('should return null when no match found', () async {
+        when(
+          () => mockDb.query(
+            'wishlist',
+            where: 'text = ? AND is_resolved = 0',
+            whereArgs: <Object?>['Nonexistent'],
+            limit: 1,
+          ),
+        ).thenAnswer((_) async => <Map<String, dynamic>>[]);
+
+        final WishlistItem? result =
+            await dao.findUnresolvedByText('Nonexistent');
+
+        expect(result, isNull);
+      });
+    });
   });
 }

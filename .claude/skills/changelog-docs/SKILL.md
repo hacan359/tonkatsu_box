@@ -53,6 +53,13 @@ File `CHANGELOG.md` in the project root. Format: [Keep a Changelog](https://keep
 - Do not include intermediate fixes (lint fix, test fix) — only the final result
 - If CHANGELOG.md doesn't exist — create it with a header and [Unreleased] section
 
+**Unreleased consolidation rule:**
+- `[Unreleased]` describes the **cumulative difference** between the last release and the current state
+- When enhancing, fixing, or changing something that is already in `[Unreleased]` and was **never released** — update the existing entry in place, do NOT create a separate Fixed/Changed entry
+- Separate "Fixed" and "Changed" entries are only for things that were broken/different in a **released** version (i.e., users actually experienced the old behavior)
+- Example: if `[Unreleased]` says "Added Steam import" and you later add collection selector to it — rewrite the Added entry to include the selector, don't add a new entry
+- Think of it as: when a user reads the release notes, they should see the final state of each feature, not the development history
+
 ### 3. Update docs/
 
 Check each file in `docs/` against the current state of the code:

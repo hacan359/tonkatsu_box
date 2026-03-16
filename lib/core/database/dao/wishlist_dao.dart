@@ -143,6 +143,21 @@ class WishlistDao {
     );
   }
 
+  /// Находит активный (не resolved) элемент вишлиста по тексту.
+  ///
+  /// Возвращает первый найденный элемент или null.
+  Future<WishlistItem?> findUnresolvedByText(String text) async {
+    final Database db = await _getDatabase();
+    final List<Map<String, dynamic>> rows = await db.query(
+      'wishlist',
+      where: 'text = ? AND is_resolved = 0',
+      whereArgs: <Object?>[text],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return WishlistItem.fromDb(rows.first);
+  }
+
   /// Удаляет все resolved элементы вишлиста.
   ///
   /// Возвращает количество удалённых записей.

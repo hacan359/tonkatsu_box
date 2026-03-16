@@ -495,7 +495,7 @@ Content-виджеты — извлечённое тело подэкранов,
 | `database_content.dart` | **Управление БД**. ConsumerWidget. Export/Import Config (JSON). Reset Database с диалогом подтверждения |
 | `credits_content.dart` | **Атрибуция API-провайдеров**. StatelessWidget. 2 `SettingsGroup`: Data Providers (TMDB/IGDB/SteamGridDB/VNDB/AniList — plain text, name + description + link) и Open Source (MIT license, GitHub link, View Licenses button) |
 | `trakt_import_content.dart` | **Импорт Trakt.tv**. ConsumerStatefulWidget. File picker, ZIP validation, preview, options, progress dialog. Callback `onImportComplete` |
-| `steam_import_content.dart` | **Импорт Steam**. ConsumerStatefulWidget. 3 состояния: ввод (API key + Steam ID с кликабельными ссылками), прогресс (LinearProgressIndicator + live stats), результат (imported/wishlisted/skipped + навигация на коллекцию). Инвалидирует collections, allItems, wishlist провайдеры после импорта |
+| `steam_import_content.dart` | **Импорт Steam**. ConsumerStatefulWidget. 3 состояния: ввод (API key + Steam ID + выбор коллекции Radio/Dropdown), прогресс (LinearProgressIndicator + live stats), результат (imported/wishlisted/updated + навигация на коллекцию). Выбор целевой коллекции: создать новую или использовать существующую. Дубликаты обновляются (playtime, status, dates). Инвалидирует collections, collectionStats, collectionCovers, allItems, wishlist провайдеры после импорта |
 
 ---
 
