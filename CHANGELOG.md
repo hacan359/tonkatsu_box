@@ -19,6 +19,8 @@
 - **`FilterBar.onBeforeFilterChange`** — new optional `VoidCallback` parameter, invoked before `setFilter()`. `SearchScreen` passes `_syncSearchText` to preserve typed-but-unsubmitted search text when user changes a filter (`filter_bar.dart`, `search_screen.dart`)
 
 ### Fixed
+- **Activity dates missing year** — date chips on detail screens and episode watched dates showed "Jan 15" without year. Now displays "Jan 15, 2025" (`media_detail_view.dart`, `episode_tracker_section.dart`)
+- **Trakt import wishlist duplicates** — re-importing from Trakt created duplicate wishlist entries. Now checks `findUnresolved()` before adding. Also fixed missing provider invalidation: `collectionStatsProvider`, `collectionCoversProvider`, `wishlistProvider` now refresh after import. Radio button ListTiles now respond to text tap (`trakt_import_content.dart`, `trakt_zip_import_service.dart`, `wishlist_repository.dart`)
 - **Search text lost when changing filters** — when user typed a search query without pressing Enter and then changed a filter (e.g. platform), the search text was only in the `TextEditingController` but not in `BrowseState.searchQuery`, so `_fetch()` ran without the query. Now `FilterBar` syncs the controller text into the provider before applying the filter (`browse_provider.dart`, `filter_bar.dart`, `search_screen.dart`)
 
 ## [0.20.0] - 2026-03-12

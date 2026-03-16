@@ -621,6 +621,9 @@ void main() {
               text: 'test',
               createdAt: testDate,
             ));
+
+        when(() => mockWishlist.findUnresolved(any()))
+            .thenAnswer((_) async => null);
       }
 
       test('должен создать новую коллекцию когда collectionId == null',

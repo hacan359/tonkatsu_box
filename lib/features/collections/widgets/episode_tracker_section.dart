@@ -461,7 +461,7 @@ class EpisodeTile extends ConsumerWidget {
     if (isWatched && watchedAt != null) {
       subtitleParts.add(
         S.of(context).episodeWatchedDate(
-          '${_months[watchedAt!.month - 1]} ${watchedAt!.day}',
+          '${_months[watchedAt!.month - 1]} ${watchedAt!.day}, ${watchedAt!.year}',
         ),
       );
     }

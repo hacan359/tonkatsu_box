@@ -519,13 +519,13 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('Added: '), findsOneWidget);
-        expect(find.text('Jan 15'), findsOneWidget);
+        expect(find.text('Jan 15, 2025'), findsOneWidget);
         expect(find.text('Started: '), findsOneWidget);
-        expect(find.text('Feb 1'), findsOneWidget);
+        expect(find.text('Feb 1, 2025'), findsOneWidget);
         expect(find.text('Completed: '), findsOneWidget);
-        expect(find.text('Mar 10'), findsOneWidget);
+        expect(find.text('Mar 10, 2025'), findsOneWidget);
         expect(find.text('Last Activity: '), findsOneWidget);
-        expect(find.text('Mar 12'), findsOneWidget);
+        expect(find.text('Mar 12, 2025'), findsOneWidget);
       });
 
       testWidgets('не должен отображать даты когда addedAt == null',
@@ -662,9 +662,9 @@ void main() {
         expect(find.text('User text'), findsOneWidget);
         // Activity dates row
         expect(find.text('Added: '), findsOneWidget);
-        expect(find.text('Jun 1'), findsOneWidget);
+        expect(find.text('Jun 1, 2025'), findsOneWidget);
         expect(find.text('Started: '), findsOneWidget);
-        expect(find.text('Jun 5'), findsOneWidget);
+        expect(find.text('Jun 5, 2025'), findsOneWidget);
         // Extra sections inside collapsed ExpansionTile
         expect(find.text('Activity & Progress'), findsOneWidget);
         await tester.tap(find.text('Activity & Progress'));

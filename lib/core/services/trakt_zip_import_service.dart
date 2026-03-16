@@ -14,6 +14,7 @@ import '../../shared/models/collection_item.dart';
 import '../../shared/models/item_status.dart';
 import '../../shared/models/media_type.dart';
 import '../../shared/models/movie.dart';
+import '../../shared/models/wishlist_item.dart';
 import '../../shared/models/tv_show.dart';
 import '../api/tmdb_api.dart';
 import '../database/database_service.dart';
@@ -804,16 +805,20 @@ class TraktZipImportService {
             }
           }
 
-          // Фоллбэк: добавляем в Wishlist как текст
+          // Фоллбэк: добавляем в Wishlist как текст (с дедупликацией)
           final MediaType hint = entry.type == 'movie'
               ? MediaType.movie
               : MediaType.tvShow;
 
-          await _wishlistRepository.add(
-            text: entry.title,
-            mediaTypeHint: hint,
-          );
-          wishlistItemsAdded++;
+          final WishlistItem? existingWishlist =
+              await _wishlistRepository.findUnresolved(entry.title);
+          if (existingWishlist == null) {
+            await _wishlistRepository.add(
+              text: entry.title,
+              mediaTypeHint: hint,
+            );
+            wishlistItemsAdded++;
+          }
         }
       }
 
