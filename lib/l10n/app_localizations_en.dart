@@ -803,6 +803,27 @@ class SEn extends S {
   String get collectionsImporting => 'Importing Collection';
 
   @override
+  String get importTargetTitle => 'Import into...';
+
+  @override
+  String get importCreateNew => 'Create new collection';
+
+  @override
+  String get importUseExisting => 'Add to existing collection';
+
+  @override
+  String get importNoCollections => 'No collections available';
+
+  @override
+  String get importSelectCollection => 'Select collection';
+
+  @override
+  String get importErrorLoadingCollections => 'Error loading collections';
+
+  @override
+  String get importStartButton => 'Import';
+
+  @override
   String get collectionNotFound => 'Collection not found';
 
   @override

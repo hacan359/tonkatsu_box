@@ -12,6 +12,7 @@ import '../../../shared/models/collection.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../collections/providers/canvas_provider.dart';
 import '../../collections/providers/collection_covers_provider.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../collections/screens/collection_screen.dart';
@@ -552,6 +553,8 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
       ref.invalidate(collectionsProvider);
       ref.invalidate(collectionStatsProvider(collectionId));
       ref.invalidate(collectionCoversProvider(collectionId));
+      ref.invalidate(collectionItemsNotifierProvider(collectionId));
+      ref.invalidate(canvasNotifierProvider(collectionId));
       ref.invalidate(allItemsNotifierProvider);
       ref.invalidate(wishlistProvider);
 

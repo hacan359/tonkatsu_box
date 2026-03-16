@@ -14,6 +14,7 @@ import '../../../shared/models/collection.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../collections/providers/canvas_provider.dart';
 import '../../collections/providers/collection_covers_provider.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../home/providers/all_items_provider.dart';
@@ -439,8 +440,11 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
     if (result.success) {
       ref.invalidate(collectionsProvider);
       if (result.collection != null) {
-        ref.invalidate(collectionStatsProvider(result.collection!.id));
-        ref.invalidate(collectionCoversProvider(result.collection!.id));
+        final int cid = result.collection!.id;
+        ref.invalidate(collectionStatsProvider(cid));
+        ref.invalidate(collectionCoversProvider(cid));
+        ref.invalidate(collectionItemsNotifierProvider(cid));
+        ref.invalidate(canvasNotifierProvider(cid));
       }
       ref.invalidate(allItemsNotifierProvider);
       ref.invalidate(wishlistProvider);

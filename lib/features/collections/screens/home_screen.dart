@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/import_service.dart';
+import '../../../core/services/xcoll_file.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
@@ -13,10 +14,13 @@ import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/type_to_filter_overlay.dart';
 import '../../home/providers/all_items_provider.dart';
+import '../providers/canvas_provider.dart';
+import '../providers/collection_covers_provider.dart';
 import '../providers/collections_provider.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../widgets/collection_card.dart';
 import '../widgets/create_collection_dialog.dart';
+import '../widgets/import_progress_dialog.dart';
 import 'collection_screen.dart';
 
 /// Главный экран приложения.
@@ -343,14 +347,43 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<void> _importCollection(BuildContext context, WidgetRef ref) async {
     final ImportService importService = ref.read(importServiceProvider);
 
-    // Показываем диалог прогресса
+    // 1. Выбираем и парсим файл
+    final XcollFile? xcoll;
+    try {
+      xcoll = await importService.pickAndParseFile();
+    } on FormatException catch (e) {
+      if (!context.mounted) return;
+      context.showSnack(
+        '${S.of(context).settingsError}: ${e.message}',
+        type: SnackType.error,
+      );
+      return;
+    }
+    if (xcoll == null) return; // Отменено
+
+    if (!context.mounted) return;
+
+    // 2. Спрашиваем: создать новую или использовать существующую
+    final int? targetCollectionId = await showDialog<int>(
+      context: context,
+      builder: (BuildContext dialogContext) =>
+          _ImportTargetDialog(collections: ref.read(collectionsProvider)),
+    );
+    // null = отменено, 0 = создать новую, >0 = ID существующей
+    if (targetCollectionId == null || !context.mounted) return;
+
+    final int? collectionId =
+        targetCollectionId == 0 ? null : targetCollectionId;
+
+    // 3. Импорт с прогрессом
     final ValueNotifier<ImportProgress?> progressNotifier =
         ValueNotifier<ImportProgress?>(null);
 
     ImportResult? importResult;
 
-    // Запускаем импорт
-    final Future<ImportResult> importFuture = importService.importFromFile(
+    final Future<ImportResult> importFuture = importService.importFromXcoll(
+      xcoll,
+      collectionId: collectionId,
       onProgress: (ImportProgress progress) {
         progressNotifier.value = progress;
       },
@@ -359,20 +392,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       return result;
     });
 
-    // Показываем диалог с прогрессом
     final bool? dialogResult = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext dialogContext) => _ImportProgressDialog(
+      builder: (BuildContext dialogContext) => ImportProgressDialog(
         progressNotifier: progressNotifier,
         importFuture: importFuture,
       ),
     );
 
-    // Очищаем ValueNotifier
     progressNotifier.dispose();
 
-    // Если диалог был закрыт до завершения импорта или результат не получен
     if (dialogResult == null || importResult == null) return;
 
     final ImportResult result = importResult!;
@@ -380,16 +410,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (!context.mounted) return;
 
     if (result.success && result.collection != null) {
-      // Обновляем список коллекций и All Items
+      final int cid = result.collection!.id;
       ref.invalidate(collectionsProvider);
+      ref.invalidate(collectionStatsProvider(cid));
+      ref.invalidate(collectionCoversProvider(cid));
+      ref.invalidate(collectionItemsNotifierProvider(cid));
+      ref.invalidate(canvasNotifierProvider(cid));
       ref.invalidate(allItemsNotifierProvider);
 
-      context.showSnack(
-        S.of(context).collectionsImported(result.collection!.name, result.itemsImported ?? 0),
-        type: SnackType.success,
+      final StringBuffer message = StringBuffer(
+        S.of(context).collectionsImported(
+          result.collection!.name,
+          result.itemsImported ?? 0,
+        ),
       );
+      if (result.itemsUpdated > 0) {
+        message.write(', ${S.of(context).steamImportUpdated(result.itemsUpdated)}');
+      }
 
-      // Переходим к импортированной коллекции
+      context.showSnack(message.toString(), type: SnackType.success);
       _navigateToCollection(context, result.collection!);
     } else if (!result.isCancelled && result.error != null) {
       context.showSnack(result.error!, type: SnackType.error);
@@ -397,75 +436,121 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-/// Диалог прогресса импорта.
-class _ImportProgressDialog extends StatelessWidget {
-  const _ImportProgressDialog({
-    required this.progressNotifier,
-    required this.importFuture,
-  });
+/// Диалог выбора целевой коллекции для импорта.
+///
+/// Возвращает 0 для "Создать новую", ID для существующей, null для отмены.
+class _ImportTargetDialog extends StatefulWidget {
+  const _ImportTargetDialog({required this.collections});
 
-  final ValueNotifier<ImportProgress?> progressNotifier;
-  final Future<ImportResult> importFuture;
+  final AsyncValue<List<Collection>> collections;
+
+  @override
+  State<_ImportTargetDialog> createState() => _ImportTargetDialogState();
+}
+
+class _ImportTargetDialogState extends State<_ImportTargetDialog> {
+  bool _createNew = true;
+  int? _selectedId;
 
   @override
   Widget build(BuildContext context) {
+    final S l = S.of(context);
+
     return AlertDialog(
       scrollable: true,
-      title: Text(S.of(context).collectionsImporting),
-      content: ValueListenableBuilder<ImportProgress?>(
-        valueListenable: progressNotifier,
-        builder: (BuildContext context, ImportProgress? progress, Widget? child) {
-          if (progress == null) {
-            return const SizedBox(
-              height: 100,
-              child: Center(child: CircularProgressIndicator()),
-            );
-          }
-
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(
-                progress.stage.description,
-                style: Theme.of(context).textTheme.bodyMedium,
+      title: Text(l.importTargetTitle),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          RadioGroup<bool>(
+            groupValue: _createNew,
+            onChanged: (bool? value) {
+              if (value == null) return;
+              setState(() {
+                _createNew = value;
+                if (value) _selectedId = null;
+              });
+            },
+            child: Column(
+              children: <Widget>[
+                ListTile(
+                  title: Text(l.importCreateNew),
+                  leading: const Radio<bool>(value: true),
+                  dense: true,
+                  onTap: () => setState(() {
+                    _createNew = true;
+                    _selectedId = null;
+                  }),
+                ),
+                ListTile(
+                  title: Text(l.importUseExisting),
+                  leading: const Radio<bool>(value: false),
+                  dense: true,
+                  onTap: () => setState(() {
+                    _createNew = false;
+                  }),
+                ),
+              ],
+            ),
+          ),
+          if (!_createNew)
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
               ),
-              if (progress.message != null) ...<Widget>[
-                const SizedBox(height: 4),
-                Text(
-                  progress.message!,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+              child: widget.collections.when(
+                data: (List<Collection> collections) {
+                  if (collections.isEmpty) {
+                    return Text(
+                      l.importNoCollections,
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
                       ),
+                    );
+                  }
+                  return DropdownButtonFormField<int>(
+                    initialValue: _selectedId,
+                    hint: Text(l.importSelectCollection),
+                    isExpanded: true,
+                    items: collections.map((Collection c) {
+                      return DropdownMenuItem<int>(
+                        value: c.id,
+                        child: Text(
+                          c.name,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (int? value) {
+                      setState(() => _selectedId = value);
+                    },
+                  );
+                },
+                loading: () =>
+                    const Center(child: CircularProgressIndicator()),
+                error: (Object e, StackTrace s) => Text(
+                  l.importErrorLoadingCollections,
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.statusDropped,
+                  ),
                 ),
-              ],
-              const SizedBox(height: 16),
-              LinearProgressIndicator(
-                value: progress.total > 0 ? progress.progress : null,
               ),
-              if (progress.total > 0) ...<Widget>[
-                const SizedBox(height: 8),
-                Text(
-                  '${progress.current} / ${progress.total}',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
-            ],
-          );
-        },
+            ),
+        ],
       ),
       actions: <Widget>[
-        FutureBuilder<ImportResult>(
-          future: importFuture,
-          builder: (BuildContext context, AsyncSnapshot<ImportResult> snapshot) {
-            if (snapshot.connectionState == ConnectionState.done) {
-              return FilledButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: Text(S.of(context).done),
-              );
-            }
-            return const SizedBox.shrink();
-          },
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l.cancel),
+        ),
+        FilledButton(
+          onPressed: _createNew || _selectedId != null
+              ? () => Navigator.of(context).pop(
+                    _createNew ? 0 : _selectedId,
+                  )
+              : null,
+          child: Text(l.importStartButton),
         ),
       ],
     );

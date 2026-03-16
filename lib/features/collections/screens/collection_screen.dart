@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/services/import_service.dart';
+import '../../../core/services/xcoll_file.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
 import '../../../shared/widgets/breadcrumb_scope.dart';
 import '../../../data/repositories/collection_repository.dart';
@@ -16,7 +19,10 @@ import '../../../shared/models/steamgriddb_image.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/widgets/type_to_filter_overlay.dart';
+import '../../home/providers/all_items_provider.dart';
+import '../widgets/import_progress_dialog.dart';
 import '../helpers/collection_actions.dart';
+import '../providers/collection_covers_provider.dart';
 import '../providers/collections_provider.dart';
 import '../providers/steamgriddb_panel_provider.dart';
 import '../providers/vgmaps_panel_provider.dart';
@@ -289,6 +295,15 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                   contentPadding: EdgeInsets.zero,
                 ),
               ),
+              if (_collection!.isEditable)
+                PopupMenuItem<String>(
+                  value: 'import',
+                  child: ListTile(
+                    leading: const Icon(Icons.file_download_outlined),
+                    title: Text(ml.collectionsImportCollection),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
               const PopupMenuDivider(),
               PopupMenuItem<String>(
                 value: 'delete',
@@ -440,6 +455,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         _handleCreateTierList();
       case 'export':
         _handleExport();
+      case 'import':
+        _handleImportIntoCollection();
       case 'delete':
         _handleDelete();
     }
@@ -531,6 +548,78 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       collectionId: widget.collectionId,
       collection: _collection!,
     );
+  }
+
+  Future<void> _handleImportIntoCollection() async {
+    final ImportService importService = ref.read(importServiceProvider);
+
+    final XcollFile? xcoll;
+    try {
+      xcoll = await importService.pickAndParseFile();
+    } on FormatException catch (e) {
+      if (!mounted) return;
+      context.showSnack(
+        '${S.of(context).settingsError}: ${e.message}',
+        type: SnackType.error,
+      );
+      return;
+    }
+    if (xcoll == null || !mounted) return;
+
+    final ValueNotifier<ImportProgress?> progressNotifier =
+        ValueNotifier<ImportProgress?>(null);
+
+    ImportResult? importResult;
+
+    final Future<ImportResult> importFuture = importService.importFromXcoll(
+      xcoll,
+      collectionId: widget.collectionId,
+      onProgress: (ImportProgress progress) {
+        progressNotifier.value = progress;
+      },
+    ).then((ImportResult result) {
+      importResult = result;
+      return result;
+    });
+
+    await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) => ImportProgressDialog(
+        progressNotifier: progressNotifier,
+        importFuture: importFuture,
+      ),
+    );
+
+    progressNotifier.dispose();
+
+    if (importResult == null || !mounted) return;
+
+    final ImportResult result = importResult!;
+
+    if (result.success) {
+      // Обновляем элементы коллекции и статистику
+      ref.invalidate(
+        collectionItemsNotifierProvider(widget.collectionId),
+      );
+      ref.invalidate(collectionStatsProvider(widget.collectionId));
+      ref.invalidate(collectionCoversProvider(widget.collectionId));
+      ref.invalidate(allItemsNotifierProvider);
+
+      final S l = S.of(context);
+      final StringBuffer message = StringBuffer(
+        l.collectionsImported(
+          _collection?.name ?? '',
+          result.itemsImported ?? 0,
+        ),
+      );
+      if (result.itemsUpdated > 0) {
+        message.write(', ${l.steamImportUpdated(result.itemsUpdated)}');
+      }
+      context.showSnack(message.toString(), type: SnackType.success);
+    } else if (!result.isCancelled && result.error != null) {
+      context.showSnack(result.error!, type: SnackType.error);
+    }
   }
 
   Future<void> _handleMoveItem(CollectionItem item) async {

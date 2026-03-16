@@ -290,6 +290,14 @@
   "collectionsImported": "Импортирована \"{name}\" — {count} элементов",
   "collectionsImporting": "Импорт коллекции",
 
+  "importTargetTitle": "Импортировать в...",
+  "importCreateNew": "Создать новую коллекцию",
+  "importUseExisting": "Добавить в существующую",
+  "importNoCollections": "Нет доступных коллекций",
+  "importSelectCollection": "Выберите коллекцию",
+  "importErrorLoadingCollections": "Ошибка загрузки коллекций",
+  "importStartButton": "Импортировать",
+
   "collectionNotFound": "Коллекция не найдена",
   "collectionAddItems": "Добавить элементы",
   "collectionSwitchToList": "Переключить на список",

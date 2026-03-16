@@ -54,14 +54,16 @@ class ImportResult {
     required this.success,
     this.collection,
     this.itemsImported,
+    this.itemsUpdated = 0,
     this.error,
   });
 
   /// Успешный результат.
-  const ImportResult.success(Collection col, int items)
+  const ImportResult.success(Collection col, int items, {int updated = 0})
       : success = true,
         collection = col,
         itemsImported = items,
+        itemsUpdated = updated,
         error = null;
 
   /// Неуспешный результат.
@@ -69,6 +71,7 @@ class ImportResult {
       : success = false,
         collection = null,
         itemsImported = null,
+        itemsUpdated = 0,
         error = message;
 
   /// Отменённый импорт.
@@ -76,6 +79,7 @@ class ImportResult {
       : success = false,
         collection = null,
         itemsImported = null,
+        itemsUpdated = 0,
         error = null;
 
   /// Успешность операции.
@@ -86,6 +90,9 @@ class ImportResult {
 
   /// Количество импортированных элементов.
   final int? itemsImported;
+
+  /// Количество обновлённых элементов (дубликаты).
+  final int itemsUpdated;
 
   /// Сообщение об ошибке.
   final String? error;
@@ -260,10 +267,13 @@ class ImportService {
 
   /// Импортирует коллекцию из файла.
   ///
+  /// [collectionId] — если указан, импортирует в существующую коллекцию
+  /// с обновлением дублей. Если null — создаёт новую коллекцию.
   /// [onProgress] — callback для отслеживания прогресса.
   ///
   /// Возвращает [ImportResult] с результатом операции.
   Future<ImportResult> importFromFile({
+    int? collectionId,
     ImportProgressCallback? onProgress,
   }) async {
     try {
@@ -278,7 +288,11 @@ class ImportService {
         return const ImportResult.cancelled();
       }
 
-      return importFromXcoll(xcoll, onProgress: onProgress);
+      return importFromXcoll(
+        xcoll,
+        collectionId: collectionId,
+        onProgress: onProgress,
+      );
     } on FormatException catch (e) {
       return ImportResult.failure('Invalid file format: ${e.message}');
     } catch (e) {
@@ -287,18 +301,24 @@ class ImportService {
   }
 
   /// Импортирует коллекцию из [XcollFile].
+  ///
+  /// [collectionId] — если указан, импортирует в существующую коллекцию.
   Future<ImportResult> importFromXcoll(
     XcollFile xcoll, {
+    int? collectionId,
     ImportProgressCallback? onProgress,
   }) async {
-    return _importV2(xcoll, onProgress: onProgress);
+    return _importV2(xcoll, collectionId: collectionId, onProgress: onProgress);
   }
 
   // ==================== v2 Import (.xcoll / .xcollx) ====================
 
   /// Импорт v2 файла (.xcoll / .xcollx).
+  ///
+  /// [collectionId] — если указан, импортирует в существующую коллекцию.
   Future<ImportResult> _importV2(
     XcollFile xcoll, {
+    int? collectionId,
     ImportProgressCallback? onProgress,
   }) async {
     try {
@@ -312,29 +332,42 @@ class ImportService {
         await _fetchMediaFromApi(xcoll.items, onProgress: onProgress);
       }
 
-      // Создание коллекции
-      onProgress?.call(const ImportProgress(
-        stage: ImportStage.creatingCollection,
-        current: 0,
-        total: 1,
-      ));
+      // Создание или получение коллекции
+      final Collection collection;
+      if (collectionId != null) {
+        final Collection? existing =
+            await _repository.getById(collectionId);
+        if (existing == null) {
+          return ImportResult.failure(
+            'Collection with id $collectionId not found',
+          );
+        }
+        collection = existing;
+      } else {
+        onProgress?.call(const ImportProgress(
+          stage: ImportStage.creatingCollection,
+          current: 0,
+          total: 1,
+        ));
 
-      final Collection collection = await _repository.create(
-        name: xcoll.name,
-        author: xcoll.author,
-        type: CollectionType.own,
-      );
+        collection = await _repository.create(
+          name: xcoll.name,
+          author: xcoll.author,
+          type: CollectionType.own,
+        );
 
-      onProgress?.call(const ImportProgress(
-        stage: ImportStage.creatingCollection,
-        current: 1,
-        total: 1,
-      ));
+        onProgress?.call(const ImportProgress(
+          stage: ImportStage.creatingCollection,
+          current: 1,
+          total: 1,
+        ));
+      }
 
       // Добавление элементов в коллекцию
       // Маппинг (media_type:external_id) → new collection_item_id для тир-листов
       final Map<String, int> itemIdMapping = <String, int>{};
       int addedCount = 0;
+      int updatedCount = 0;
       for (int i = 0; i < xcoll.items.length; i++) {
         final Map<String, dynamic> itemData = xcoll.items[i];
 
@@ -367,11 +400,36 @@ class ImportService {
             await _importPerItemCanvas(
                 perItemCanvas, itemId, collection.id);
           }
+        } else if (collectionId != null) {
+          // Элемент уже существует — обновляем данные из файла
+          final bool didUpdate = await _updateExistingItem(
+            collectionId: collection.id,
+            parsed: parsed,
+          );
+          if (didUpdate) {
+            updatedCount++;
+          }
+          // Для тир-листов нужен ID существующего элемента
+          final CollectionItem? existing = await _repository.findItem(
+            collectionId: collection.id,
+            mediaType: parsed.mediaType,
+            externalId: parsed.externalId,
+          );
+          if (existing != null) {
+            final String key =
+                '${parsed.mediaType.value}:${parsed.externalId}';
+            itemIdMapping[key] = existing.id;
+          }
         }
       }
 
-      // Импорт canvas (для full export)
-      if (xcoll.isFull && _canvasRepository != null) {
+      // Canvas, images и tier lists — только для новых коллекций.
+      // При импорте в существующую коллекцию пропускаем: canvas items
+      // не имеют unique constraint и будут дублироваться.
+      final bool isNewCollection = collectionId == null;
+
+      // Импорт canvas (для full export, только новая коллекция)
+      if (xcoll.isFull && _canvasRepository != null && isNewCollection) {
         onProgress?.call(const ImportProgress(
           stage: ImportStage.importingCanvas,
           current: 0,
@@ -402,10 +460,11 @@ class ImportService {
         await _restoreImages(xcoll.images, onProgress: onProgress);
       }
 
-      // Восстановление тир-листов (для full export)
+      // Восстановление тир-листов (для full export, только новая коллекция)
       if (xcoll.isFull &&
           xcoll.tierLists != null &&
-          xcoll.tierLists!.isNotEmpty) {
+          xcoll.tierLists!.isNotEmpty &&
+          isNewCollection) {
         await _importTierLists(
           xcoll.tierLists!,
           collection.id,
@@ -421,7 +480,7 @@ class ImportService {
         message: 'Imported $addedCount items',
       ));
 
-      return ImportResult.success(collection, addedCount);
+      return ImportResult.success(collection, addedCount, updated: updatedCount);
     } on IgdbApiException catch (e) {
       return ImportResult.failure(
           'Failed to fetch games from IGDB: ${e.message}');
@@ -430,6 +489,45 @@ class ImportService {
     } catch (e) {
       return ImportResult.failure('Import failed: $e');
     }
+  }
+
+  // ==================== Update Existing Item ====================
+
+  /// Обновляет существующий элемент коллекции данными из файла импорта.
+  ///
+  /// Обновляет authorComment и userRating если они пустые в БД,
+  /// но заданы в файле. Возвращает true если хотя бы одно поле обновлено.
+  Future<bool> _updateExistingItem({
+    required int collectionId,
+    required CollectionItem parsed,
+  }) async {
+    final CollectionItem? existing = await _repository.findItem(
+      collectionId: collectionId,
+      mediaType: parsed.mediaType,
+      externalId: parsed.externalId,
+    );
+    if (existing == null) return false;
+
+    bool didUpdate = false;
+
+    // Обновляем authorComment если локальный пуст, а в файле есть
+    if (existing.authorComment == null &&
+        parsed.authorComment != null &&
+        parsed.authorComment!.isNotEmpty) {
+      await _database.updateItemAuthorComment(
+        existing.id,
+        parsed.authorComment,
+      );
+      didUpdate = true;
+    }
+
+    // Обновляем userRating если локальный пуст, а в файле есть
+    if (existing.userRating == null && parsed.userRating != null) {
+      await _database.updateItemUserRating(existing.id, parsed.userRating);
+      didUpdate = true;
+    }
+
+    return didUpdate;
   }
 
   // ==================== Media Restore (Embedded) ====================

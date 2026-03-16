@@ -347,6 +347,14 @@
   },
   "collectionsImporting": "Importing Collection",
 
+  "importTargetTitle": "Import into...",
+  "importCreateNew": "Create new collection",
+  "importUseExisting": "Add to existing collection",
+  "importNoCollections": "No collections available",
+  "importSelectCollection": "Select collection",
+  "importErrorLoadingCollections": "Error loading collections",
+  "importStartButton": "Import",
+
   "collectionNotFound": "Collection not found",
   "collectionAddItems": "Add Items",
   "collectionSwitchToList": "Switch to List",

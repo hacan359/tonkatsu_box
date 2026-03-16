@@ -814,6 +814,27 @@ class SRu extends S {
   String get collectionsImporting => 'Импорт коллекции';
 
   @override
+  String get importTargetTitle => 'Импортировать в...';
+
+  @override
+  String get importCreateNew => 'Создать новую коллекцию';
+
+  @override
+  String get importUseExisting => 'Добавить в существующую';
+
+  @override
+  String get importNoCollections => 'Нет доступных коллекций';
+
+  @override
+  String get importSelectCollection => 'Выберите коллекцию';
+
+  @override
+  String get importErrorLoadingCollections => 'Ошибка загрузки коллекций';
+
+  @override
+  String get importStartButton => 'Импортировать';
+
+  @override
   String get collectionNotFound => 'Коллекция не найдена';
 
   @override
