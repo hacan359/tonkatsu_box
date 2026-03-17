@@ -166,12 +166,12 @@ void main() {
         (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget());
 
-      expect(find.text('All'), findsOneWidget);
-      expect(find.text('Games'), findsOneWidget);
-      expect(find.text('Movies'), findsOneWidget);
-      expect(find.text('TV Shows'), findsOneWidget);
-      expect(find.text('Animation'), findsOneWidget);
-      expect(find.text('Visual Novels'), findsOneWidget);
+      expect(find.widgetWithText(ChoiceChip, 'All'), findsOneWidget);
+      expect(find.widgetWithText(ChoiceChip, 'Games'), findsOneWidget);
+      expect(find.widgetWithText(ChoiceChip, 'Movies'), findsOneWidget);
+      expect(find.widgetWithText(ChoiceChip, 'TV Shows'), findsOneWidget);
+      expect(find.widgetWithText(ChoiceChip, 'Animation'), findsOneWidget);
+      expect(find.widgetWithText(ChoiceChip, 'Visual Novels'), findsOneWidget);
     });
 
     testWidgets('показывает счётчики на чипсах после загрузки',
@@ -185,7 +185,7 @@ void main() {
       expect(find.text('Movies (1)'), findsOneWidget);
       expect(find.text('TV Shows (1)'), findsOneWidget);
       // Animation = 0 → без счётчика
-      expect(find.text('Animation'), findsOneWidget);
+      expect(find.widgetWithText(ChoiceChip, 'Animation'), findsOneWidget);
       expect(find.text('Visual Novels (1)'), findsOneWidget);
     });
 

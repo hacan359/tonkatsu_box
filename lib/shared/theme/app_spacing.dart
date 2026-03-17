@@ -41,6 +41,12 @@ abstract final class AppSpacing {
 
   // ==================== Сетка ====================
 
+  /// 16px — зазор между карточками в grid.
+  static const double gridGap = 16;
+
+  /// 20px — отступ контента от краёв экрана.
+  static const double screenPadding = 20;
+
   /// Соотношение сторон постера (2:3).
   static const double posterAspectRatio = 2.0 / 3.0;
 

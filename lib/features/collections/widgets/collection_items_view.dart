@@ -113,8 +113,8 @@ class CollectionItemsView extends ConsumerWidget {
     final bool isLandscape = isLandscapeMobile(context);
     final bool isDesktop = screenWidth >= navigationBreakpoint && !kIsMobile;
 
-    final double gridPadding = isLandscape ? AppSpacing.sm : AppSpacing.md;
-    final double crossSpacing = isLandscape ? AppSpacing.sm : AppSpacing.md;
+    final double gridPadding = isLandscape ? AppSpacing.sm : AppSpacing.screenPadding;
+    final double crossSpacing = isLandscape ? AppSpacing.sm : AppSpacing.gridGap;
     final double mainSpacing = isLandscape ? AppSpacing.sm : AppSpacing.lg;
 
     final SliverGridDelegate gridDelegate;
@@ -165,6 +165,7 @@ class CollectionItemsView extends ConsumerWidget {
             year: item.releaseYear,
             platformLabel: item.platform?.displayName,
             subtitle: item.genresString,
+            mediaType: item.mediaType,
             status: item.status,
             onTap: () => onItemTap(item),
           );

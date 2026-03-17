@@ -69,8 +69,8 @@ void main() {
         expect(theme.cardTheme.color, equals(AppColors.surface));
       });
 
-      test('elevation должен быть 0', () {
-        expect(theme.cardTheme.elevation, equals(0));
+      test('elevation должен быть 2', () {
+        expect(theme.cardTheme.elevation, equals(2));
       });
     });
 
