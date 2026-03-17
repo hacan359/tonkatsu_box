@@ -85,4 +85,22 @@ abstract final class AppTypography {
     color: AppColors.textSecondary,
     height: 1.3,
   );
+
+  /// Название на карточке (grid).
+  static const TextStyle cardTitle = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 13,
+    fontWeight: FontWeight.w600,
+    color: AppColors.textPrimary,
+    height: 1.3,
+  );
+
+  /// Подпись на карточке (grid).
+  static const TextStyle cardSubtitle = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 11,
+    fontWeight: FontWeight.w400,
+    color: AppColors.textSecondary,
+    height: 1.3,
+  );
 }

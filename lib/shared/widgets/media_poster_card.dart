@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/services/image_cache_service.dart';
+import '../../l10n/app_localizations.dart';
 import '../constants/media_type_theme.dart';
 import '../models/item_status.dart';
 import '../models/media_type.dart';
@@ -221,15 +222,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            Text(
-                              _subtitleText,
-                              style: _isCompact
-                                  ? AppTypography.posterSubtitle
-                                      .copyWith(fontSize: 7)
-                                  : AppTypography.posterSubtitle,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                            _buildSubtitleRow(context),
                           ],
                         ),
                       ),
@@ -369,13 +362,45 @@ class _MediaPosterCardState extends State<MediaPosterCard>
     );
   }
 
-  /// Сформированный subtitle: platform · year · genre (или пустая строка).
-  String get _subtitleText {
+  /// Subtitle row: platform · year · genre · MediaType (в цвете).
+  Widget _buildSubtitleRow(BuildContext context) {
+    final TextStyle baseStyle = _isCompact
+        ? AppTypography.posterSubtitle.copyWith(fontSize: 7)
+        : AppTypography.posterSubtitle;
+
     final List<String> parts = <String>[];
     if (widget.platformLabel != null) parts.add(widget.platformLabel!);
     if (widget.year != null) parts.add(widget.year.toString());
     if (widget.subtitle != null) parts.add(widget.subtitle!);
-    return parts.isNotEmpty ? parts.join(' \u00b7 ') : '';
+
+    final String prefix = parts.isNotEmpty ? parts.join(' \u00b7 ') : '';
+
+    if (widget.mediaType == null) {
+      return Text(
+        prefix,
+        style: baseStyle,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      );
+    }
+
+    final String typeLabel = widget.mediaType!.localizedLabel(S.of(context));
+    final Color typeColor = MediaTypeTheme.colorFor(widget.mediaType!);
+
+    return Text.rich(
+      TextSpan(
+        children: <InlineSpan>[
+          if (prefix.isNotEmpty)
+            TextSpan(text: '$prefix \u00b7 ', style: baseStyle),
+          TextSpan(
+            text: typeLabel,
+            style: baseStyle.copyWith(color: typeColor),
+          ),
+        ],
+      ),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    );
   }
 
   bool get _hasAnyRating =>

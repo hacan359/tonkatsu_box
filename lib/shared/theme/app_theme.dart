@@ -47,12 +47,12 @@ abstract final class AppTheme {
       surfaceTintColor: Colors.transparent,
     ),
     cardTheme: CardThemeData(
-      elevation: 0,
+      elevation: 2,
+      shadowColor: Colors.black26,
       color: AppColors.surface,
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        side: const BorderSide(color: AppColors.surfaceBorder),
       ),
     ),
     inputDecorationTheme: InputDecorationTheme(
