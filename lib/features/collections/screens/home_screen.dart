@@ -7,6 +7,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/models/collection.dart';
+import '../../../shared/models/collection_list_sort_mode.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -19,6 +20,7 @@ import '../providers/collection_covers_provider.dart';
 import '../providers/collections_provider.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../widgets/collection_card.dart';
+import '../widgets/collection_list_tile.dart';
 import '../widgets/create_collection_dialog.dart';
 import '../widgets/import_progress_dialog.dart';
 import 'collection_screen.dart';
@@ -44,9 +46,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final bool isLandscape = isLandscapeMobile(context);
     final S l = S.of(context);
 
+    final CollectionListSortMode sortMode =
+        ref.watch(collectionListSortProvider);
+    final bool sortDesc = ref.watch(collectionListSortDescProvider);
+    final bool isGridView = ref.watch(collectionListViewModeProvider);
+
     return Scaffold(
       appBar: AutoBreadcrumbAppBar(
         actions: <Widget>[
+          _SortPopupButton(
+            sortMode: sortMode,
+            descending: sortDesc,
+            isLandscape: isLandscape,
+          ),
+          IconButton(
+            icon: Icon(
+              isGridView ? Icons.view_list : Icons.grid_view,
+              size: isLandscape ? 20 : null,
+            ),
+            color: AppColors.textSecondary,
+            tooltip: isGridView
+                ? l.collectionListViewList
+                : l.collectionListViewGrid,
+            onPressed: () =>
+                ref.read(collectionListViewModeProvider.notifier).toggle(),
+          ),
           IconButton(
             icon: Icon(Icons.add, size: isLandscape ? 20 : null),
             color: AppColors.textSecondary,
@@ -88,6 +112,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       return _buildEmptyState(context);
     }
 
+    final CollectionListSortMode sortMode =
+        ref.watch(collectionListSortProvider);
+    final bool sortDesc = ref.watch(collectionListSortDescProvider);
+    final bool isGridView = ref.watch(collectionListViewModeProvider);
+
     // Фильтрация коллекций по имени
     List<Collection> filteredCollections = collections;
     if (_typeToFilterQuery.isNotEmpty) {
@@ -97,14 +126,47 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           .toList();
     }
 
-    // Все элементы грида: uncategorized (опционально) + отфильтрованные коллекции
+    // Сортировка
+    filteredCollections = _sortCollections(filteredCollections, sortMode, sortDesc);
+
+    if (isGridView) {
+      return _buildGrid(context, ref, filteredCollections, uncategorizedCount);
+    }
+    return _buildList(context, ref, filteredCollections, uncategorizedCount);
+  }
+
+  List<Collection> _sortCollections(
+    List<Collection> collections,
+    CollectionListSortMode mode,
+    bool descending,
+  ) {
+    final List<Collection> sorted = List<Collection>.of(collections);
+    switch (mode) {
+      case CollectionListSortMode.createdDate:
+        sorted.sort((Collection a, Collection b) => descending
+            ? a.createdAt.compareTo(b.createdAt)
+            : b.createdAt.compareTo(a.createdAt));
+      case CollectionListSortMode.alphabetical:
+        sorted.sort((Collection a, Collection b) => descending
+            ? b.name.toLowerCase().compareTo(a.name.toLowerCase())
+            : a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    }
+    return sorted;
+  }
+
+  Widget _buildGrid(
+    BuildContext context,
+    WidgetRef ref,
+    List<Collection> collections,
+    int uncategorizedCount,
+  ) {
     final List<Widget> gridItems = <Widget>[
       if (uncategorizedCount > 0 && _typeToFilterQuery.isEmpty)
         UncategorizedCard(
           count: uncategorizedCount,
           onTap: () => _navigateToUncategorized(context),
         ),
-      ...filteredCollections.map((Collection c) => CollectionCard(
+      ...collections.map((Collection c) => CollectionCard(
             collection: c,
             onTap: () => _navigateToCollection(context, c),
             onLongPress: () => _showCollectionOptions(context, ref, c),
@@ -123,6 +185,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         itemCount: gridItems.length,
         itemBuilder: (BuildContext context, int index) => gridItems[index],
+      ),
+    );
+  }
+
+  Widget _buildList(
+    BuildContext context,
+    WidgetRef ref,
+    List<Collection> collections,
+    int uncategorizedCount,
+  ) {
+    final int offset =
+        (uncategorizedCount > 0 && _typeToFilterQuery.isEmpty) ? 1 : 0;
+
+    return RefreshIndicator(
+      onRefresh: () => ref.read(collectionsProvider.notifier).refresh(),
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+        itemCount: collections.length + offset,
+        itemBuilder: (BuildContext context, int index) {
+          if (index == 0 && offset == 1) {
+            return UncategorizedListTile(
+              count: uncategorizedCount,
+              onTap: () => _navigateToUncategorized(context),
+            );
+          }
+          final Collection c = collections[index - offset];
+          return CollectionListTile(
+            collection: c,
+            onTap: () => _navigateToCollection(context, c),
+            onLongPress: () => _showCollectionOptions(context, ref, c),
+          );
+        },
       ),
     );
   }
@@ -433,6 +527,80 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     } else if (!result.isCancelled && result.error != null) {
       context.showSnack(result.error!, type: SnackType.error);
     }
+  }
+}
+
+/// Кнопка сортировки списка коллекций с popup menu.
+class _SortPopupButton extends ConsumerWidget {
+  const _SortPopupButton({
+    required this.sortMode,
+    required this.descending,
+    required this.isLandscape,
+  });
+
+  final CollectionListSortMode sortMode;
+  final bool descending;
+  final bool isLandscape;
+
+  bool get _isNonDefault =>
+      sortMode != CollectionListSortMode.createdDate || descending;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final S l = S.of(context);
+
+    return PopupMenuButton<String>(
+      icon: Icon(
+        Icons.sort,
+        size: isLandscape ? 20 : null,
+        color: _isNonDefault ? AppColors.brand : AppColors.textSecondary,
+      ),
+      tooltip: sortMode.localizedDisplayLabel(l),
+      onSelected: (String value) {
+        switch (value) {
+          case 'created_date':
+            ref
+                .read(collectionListSortProvider.notifier)
+                .setSortMode(CollectionListSortMode.createdDate);
+          case 'alphabetical':
+            ref
+                .read(collectionListSortProvider.notifier)
+                .setSortMode(CollectionListSortMode.alphabetical);
+          case 'toggle_direction':
+            ref.read(collectionListSortDescProvider.notifier).toggle();
+        }
+      },
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+        CheckedPopupMenuItem<String>(
+          value: 'created_date',
+          checked: sortMode == CollectionListSortMode.createdDate,
+          child: Text(l.collectionListSortCreatedDate),
+        ),
+        CheckedPopupMenuItem<String>(
+          value: 'alphabetical',
+          checked: sortMode == CollectionListSortMode.alphabetical,
+          child: Text(l.collectionListSortAlphabetical),
+        ),
+        const PopupMenuDivider(),
+        PopupMenuItem<String>(
+          value: 'toggle_direction',
+          child: Row(
+            children: <Widget>[
+              Icon(
+                descending ? Icons.arrow_upward : Icons.arrow_downward,
+                size: 18,
+                color: AppColors.textSecondary,
+              ),
+              const SizedBox(width: 8),
+              Text(sortMode.localizedDescription(
+                l,
+                descending: !descending,
+              )),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }
 

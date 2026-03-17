@@ -2409,4 +2409,28 @@ class SRu extends S {
   @override
   String get steamImportIgdbRequired =>
       'Требуется подключение к IGDB. Настройте API ключи в Настройки → Подключения.';
+
+  @override
+  String get collectionListSortCreatedDate => 'Дата создания';
+
+  @override
+  String get collectionListSortAlphabetical => 'Название';
+
+  @override
+  String get collectionListSortCreatedDateNewest => 'Сначала новые';
+
+  @override
+  String get collectionListSortCreatedDateOldest => 'Сначала старые';
+
+  @override
+  String get collectionListSortAlphabeticalAZ => 'А → Я';
+
+  @override
+  String get collectionListSortAlphabeticalZA => 'Я → А';
+
+  @override
+  String get collectionListViewGrid => 'Сетка';
+
+  @override
+  String get collectionListViewList => 'Список';
 }
