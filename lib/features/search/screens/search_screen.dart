@@ -27,6 +27,7 @@ import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
 import '../../../shared/widgets/collection_picker_dialog.dart';
 import '../../../shared/widgets/type_to_filter_overlay.dart';
 import '../../collections/providers/collections_provider.dart';
+import '../../collections/screens/item_detail_screen.dart';
 import '../providers/browse_provider.dart';
 import '../widgets/browse_grid.dart';
 import '../widgets/discover_customize_sheet.dart';
@@ -194,6 +195,80 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       // Episode pre-cache failed (network/API error) — not critical,
       // episodes will be fetched on demand when user opens the show.
     }
+  }
+
+  // ==================== Open in collection ====================
+
+  Future<void> _openItemInCollection(
+    int externalId,
+    MediaType mediaType,
+  ) async {
+    // Получаем List<CollectedItemInfo> для этого элемента
+    final List<CollectedItemInfo> infos = await _getCollectedInfos(
+      externalId,
+      mediaType,
+    );
+    if (infos.isEmpty || !mounted) return;
+
+    if (infos.length == 1) {
+      _navigateToItemDetail(infos.first);
+      return;
+    }
+
+    // Несколько коллекций — показываем диалог выбора
+    if (!mounted) return;
+    final CollectedItemInfo? chosen = await showDialog<CollectedItemInfo>(
+      context: context,
+      builder: (BuildContext context) {
+        final S l = S.of(context);
+        return SimpleDialog(
+          title: Text(l.openInCollection),
+          children: infos.map((CollectedItemInfo info) {
+            return SimpleDialogOption(
+              onPressed: () => Navigator.of(context).pop(info),
+              child: Text(info.collectionName ?? l.collectionsUncategorized),
+            );
+          }).toList(),
+        );
+      },
+    );
+    if (chosen != null && mounted) {
+      _navigateToItemDetail(chosen);
+    }
+  }
+
+  Future<List<CollectedItemInfo>> _getCollectedInfos(
+    int externalId,
+    MediaType mediaType,
+  ) async {
+    final Map<int, List<CollectedItemInfo>> collected;
+    switch (mediaType) {
+      case MediaType.game:
+        collected = await ref.read(collectedGameIdsProvider.future);
+      case MediaType.movie:
+        collected = await ref.read(collectedMovieIdsProvider.future);
+      case MediaType.tvShow:
+        collected = await ref.read(collectedTvShowIdsProvider.future);
+      case MediaType.animation:
+        collected = await ref.read(collectedAnimationIdsProvider.future);
+      case MediaType.visualNovel:
+        collected = await ref.read(collectedVisualNovelIdsProvider.future);
+      case MediaType.manga:
+        collected = await ref.read(collectedMangaIdsProvider.future);
+    }
+    return collected[externalId] ?? <CollectedItemInfo>[];
+  }
+
+  void _navigateToItemDetail(CollectedItemInfo info) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => ItemDetailScreen(
+          collectionId: info.collectionId,
+          itemId: info.recordId,
+          isEditable: true,
+        ),
+      ),
+    );
   }
 
   // ==================== Item tap handler ====================
@@ -1250,6 +1325,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     // Есть запрос (текст и/или фильтры) → показываем грид результатов
     return BrowseGrid(
       onItemTap: _onItemTap,
+      onOpenInCollection: _openItemInCollection,
       clientFilter: _typeToFilterQuery,
       platformMap: _platformMap,
     );

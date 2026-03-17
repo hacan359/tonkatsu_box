@@ -379,5 +379,36 @@ void main() {
       });
     });
 
+    group('cloneItemToCollection', () {
+      test('должен возвращать ID нового элемента при успехе', () async {
+        when(() => mockDb.cloneItemToCollection(10, 5))
+            .thenAnswer((_) async => 99);
+
+        final int? result = await repository.cloneItemToCollection(10, 5);
+
+        expect(result, 99);
+        verify(() => mockDb.cloneItemToCollection(10, 5)).called(1);
+      });
+
+      test('должен возвращать null при дубликате', () async {
+        when(() => mockDb.cloneItemToCollection(10, 5))
+            .thenAnswer((_) async => null);
+
+        final int? result = await repository.cloneItemToCollection(10, 5);
+
+        expect(result, isNull);
+        verify(() => mockDb.cloneItemToCollection(10, 5)).called(1);
+      });
+
+      test('должен делегировать вызов в DatabaseService', () async {
+        when(() => mockDb.cloneItemToCollection(any(), any()))
+            .thenAnswer((_) async => 42);
+
+        await repository.cloneItemToCollection(7, 3);
+
+        verify(() => mockDb.cloneItemToCollection(7, 3)).called(1);
+      });
+    });
+
   });
 }

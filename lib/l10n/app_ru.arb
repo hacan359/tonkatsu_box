@@ -885,5 +885,20 @@
   "steamImportSelectCollection": "Выберите коллекцию",
   "steamImportErrorLoadingCollections": "Ошибка загрузки коллекций",
   "steamImportOpenCollection": "Открыть коллекцию",
-  "steamImportIgdbRequired": "Требуется подключение к IGDB. Настройте API ключи в Настройки → Подключения."
+  "steamImportIgdbRequired": "Требуется подключение к IGDB. Настройте API ключи в Настройки → Подключения.",
+
+  "collectionListSortCreatedDate": "Дата создания",
+  "collectionListSortAlphabetical": "Название",
+  "collectionListSortCreatedDateNewest": "Сначала новые",
+  "collectionListSortCreatedDateOldest": "Сначала старые",
+  "collectionListSortAlphabeticalAZ": "А → Я",
+  "collectionListSortAlphabeticalZA": "Я → А",
+  "collectionListViewGrid": "Сетка",
+  "collectionListViewList": "Список",
+
+  "collectionCopyToCollection": "Копировать в коллекцию",
+  "collectionItemCopiedTo": "{name} скопирован в {collection}",
+  "collectionItemAlreadyInTarget": "{name} уже есть в {collection}",
+
+  "openInCollection": "Открыть в коллекции"
 }

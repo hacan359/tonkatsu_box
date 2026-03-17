@@ -371,6 +371,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
               onItemMove: _canEdit
                   ? (CollectionItem item) => _handleMoveItem(item)
                   : null,
+              onItemClone: _canEdit
+                  ? (CollectionItem item) => _handleCloneItem(item)
+                  : null,
               onItemRemove: _canEdit
                   ? (CollectionItem item) => _handleRemoveItem(item)
                   : null,
@@ -636,6 +639,15 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         collectionId: widget.collectionId!,
       );
     }
+  }
+
+  Future<void> _handleCloneItem(CollectionItem item) async {
+    await CollectionActions.cloneItem(
+      context: context,
+      ref: ref,
+      collectionId: widget.collectionId,
+      item: item,
+    );
   }
 
   Future<void> _handleRemoveItem(CollectionItem item) async {

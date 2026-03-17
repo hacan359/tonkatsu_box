@@ -529,6 +529,47 @@ class CollectionDao {
     }
   }
 
+  /// Клонирует элемент в другую коллекцию (полная копия).
+  ///
+  /// Копирует все поля исходного элемента, переопределяя только
+  /// `id`, `collection_id`, `added_at` и `sort_order`.
+  /// Устойчиво к добавлению новых колонок в таблицу.
+  /// Возвращает ID нового элемента или null при дубликате.
+  Future<int?> cloneItemToCollection(
+    int itemId,
+    int targetCollectionId,
+  ) async {
+    final Database db = await _getDatabase();
+
+    final List<Map<String, dynamic>> rows = await db.query(
+      'collection_items',
+      where: 'id = ?',
+      whereArgs: <Object?>[itemId],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+
+    final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    final int sortOrder = await getNextSortOrder(targetCollectionId);
+
+    // Копируем все поля, переопределяя только целевые.
+    final Map<String, dynamic> clone = Map<String, dynamic>.of(rows.first)
+      ..remove('id')
+      ..['collection_id'] = targetCollectionId
+      ..['added_at'] = now
+      ..['sort_order'] = sortOrder;
+
+    try {
+      final int newId = await db.insert('collection_items', clone);
+      return newId;
+    } on DatabaseException catch (e) {
+      if (e.isUniqueConstraintError()) {
+        return null;
+      }
+      rethrow;
+    }
+  }
+
   /// Возвращает уникальные platform_id из игр в коллекциях.
   ///
   /// Если [collectionId] указан, фильтрует по этой коллекции.

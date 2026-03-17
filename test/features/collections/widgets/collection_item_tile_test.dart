@@ -730,6 +730,57 @@ void main() {
         );
       });
 
+      testWidgets('должен показать пункт Clone в контекстном меню',
+          (WidgetTester tester) async {
+        final CollectionItem item = _makeItem(
+          game: _makeGame(name: 'Clone Test Game'),
+        );
+
+        await tester.pumpWidget(_buildTestApp(
+          CollectionItemTile(
+            item: item,
+            isEditable: true,
+            onMove: () {},
+            onClone: () {},
+            onRemove: () {},
+          ),
+        ));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byIcon(Icons.more_vert));
+        await tester.pumpAndSettle();
+
+        expect(find.byIcon(Icons.copy_outlined), findsOneWidget);
+        expect(find.text('Copy to collection'), findsOneWidget);
+      });
+
+      testWidgets('должен вызвать onClone при нажатии на Clone',
+          (WidgetTester tester) async {
+        bool cloned = false;
+        final CollectionItem item = _makeItem(
+          game: _makeGame(name: 'Clone Callback Game'),
+        );
+
+        await tester.pumpWidget(_buildTestApp(
+          CollectionItemTile(
+            item: item,
+            isEditable: true,
+            onMove: () {},
+            onClone: () => cloned = true,
+            onRemove: () {},
+          ),
+        ));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byIcon(Icons.more_vert));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byIcon(Icons.copy_outlined));
+        await tester.pumpAndSettle();
+
+        expect(cloned, isTrue);
+      });
+
       testWidgets('должен вызвать onMove при нажатии на Move',
           (WidgetTester tester) async {
         bool moved = false;

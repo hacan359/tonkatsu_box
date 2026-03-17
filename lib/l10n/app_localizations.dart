@@ -4380,6 +4380,78 @@ abstract class S {
   /// In en, this message translates to:
   /// **'IGDB connection required. Set up API keys in Settings → Credentials first.'**
   String get steamImportIgdbRequired;
+
+  /// No description provided for @collectionListSortCreatedDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date Created'**
+  String get collectionListSortCreatedDate;
+
+  /// No description provided for @collectionListSortAlphabetical.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get collectionListSortAlphabetical;
+
+  /// No description provided for @collectionListSortCreatedDateNewest.
+  ///
+  /// In en, this message translates to:
+  /// **'Newest first'**
+  String get collectionListSortCreatedDateNewest;
+
+  /// No description provided for @collectionListSortCreatedDateOldest.
+  ///
+  /// In en, this message translates to:
+  /// **'Oldest first'**
+  String get collectionListSortCreatedDateOldest;
+
+  /// No description provided for @collectionListSortAlphabeticalAZ.
+  ///
+  /// In en, this message translates to:
+  /// **'A to Z'**
+  String get collectionListSortAlphabeticalAZ;
+
+  /// No description provided for @collectionListSortAlphabeticalZA.
+  ///
+  /// In en, this message translates to:
+  /// **'Z to A'**
+  String get collectionListSortAlphabeticalZA;
+
+  /// No description provided for @collectionListViewGrid.
+  ///
+  /// In en, this message translates to:
+  /// **'Grid view'**
+  String get collectionListViewGrid;
+
+  /// No description provided for @collectionListViewList.
+  ///
+  /// In en, this message translates to:
+  /// **'List view'**
+  String get collectionListViewList;
+
+  /// No description provided for @collectionCopyToCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy to collection'**
+  String get collectionCopyToCollection;
+
+  /// No description provided for @collectionItemCopiedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} copied to {collection}'**
+  String collectionItemCopiedTo(Object collection, Object name);
+
+  /// No description provided for @collectionItemAlreadyInTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is already in {collection}'**
+  String collectionItemAlreadyInTarget(Object collection, Object name);
+
+  /// No description provided for @openInCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in collection'**
+  String get openInCollection;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

@@ -6,6 +6,7 @@ import '../../../data/repositories/collection_repository.dart';
 import '../../../shared/models/collected_item_info.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
+import '../../../shared/models/collection_list_sort_mode.dart';
 import '../../../shared/models/collection_sort_mode.dart';
 import '../../../shared/models/game.dart';
 import '../../../shared/models/item_status.dart';
@@ -189,6 +190,117 @@ class CollectionSortDescNotifier extends FamilyNotifier<bool, int?> {
   }
 }
 
+// ==================== Collection List Sort & View ====================
+
+/// Ключ SharedPreferences для режима сортировки списка коллекций.
+const String _collectionListSortModeKey = 'collection_list_sort_mode';
+
+/// Ключ SharedPreferences для направления сортировки списка коллекций.
+const String _collectionListSortDescKey = 'collection_list_sort_desc';
+
+/// Ключ SharedPreferences для режима отображения (grid/list).
+const String _collectionListGridViewKey = 'collection_list_grid_view';
+
+/// Провайдер режима сортировки списка коллекций.
+final NotifierProvider<CollectionListSortNotifier, CollectionListSortMode>
+    collectionListSortProvider =
+    NotifierProvider<CollectionListSortNotifier, CollectionListSortMode>(
+  CollectionListSortNotifier.new,
+);
+
+/// Notifier для режима сортировки списка коллекций.
+class CollectionListSortNotifier extends Notifier<CollectionListSortMode> {
+  @override
+  CollectionListSortMode build() {
+    _loadFromPrefs();
+    return CollectionListSortMode.createdDate;
+  }
+
+  Future<void> _loadFromPrefs() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? value = prefs.getString(_collectionListSortModeKey);
+    if (value != null) {
+      state = CollectionListSortMode.fromString(value);
+    }
+  }
+
+  /// Устанавливает режим сортировки и сохраняет в SharedPreferences.
+  Future<void> setSortMode(CollectionListSortMode mode) async {
+    state = mode;
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_collectionListSortModeKey, mode.value);
+  }
+}
+
+/// Провайдер направления сортировки списка коллекций.
+final NotifierProvider<CollectionListSortDescNotifier, bool>
+    collectionListSortDescProvider =
+    NotifierProvider<CollectionListSortDescNotifier, bool>(
+  CollectionListSortDescNotifier.new,
+);
+
+/// Notifier для направления сортировки списка коллекций.
+class CollectionListSortDescNotifier extends Notifier<bool> {
+  @override
+  bool build() {
+    _loadFromPrefs();
+    return false;
+  }
+
+  Future<void> _loadFromPrefs() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final bool? value = prefs.getBool(_collectionListSortDescKey);
+    if (value != null) {
+      state = value;
+    }
+  }
+
+  /// Переключает направление сортировки.
+  Future<void> toggle() async {
+    state = !state;
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_collectionListSortDescKey, state);
+  }
+
+  /// Устанавливает направление сортировки.
+  Future<void> setDescending({required bool descending}) async {
+    state = descending;
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_collectionListSortDescKey, descending);
+  }
+}
+
+/// Провайдер режима отображения списка коллекций (grid/list).
+final NotifierProvider<CollectionListViewModeNotifier, bool>
+    collectionListViewModeProvider =
+    NotifierProvider<CollectionListViewModeNotifier, bool>(
+  CollectionListViewModeNotifier.new,
+);
+
+/// Notifier для режима отображения (true = grid, false = list).
+class CollectionListViewModeNotifier extends Notifier<bool> {
+  @override
+  bool build() {
+    _loadFromPrefs();
+    return true;
+  }
+
+  Future<void> _loadFromPrefs() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final bool? value = prefs.getBool(_collectionListGridViewKey);
+    if (value != null) {
+      state = value;
+    }
+  }
+
+  /// Переключает режим отображения.
+  Future<void> toggle() async {
+    state = !state;
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_collectionListGridViewKey, state);
+  }
+}
+
 // ==================== Collection Items ====================
 
 /// Провайдер для управления элементами в конкретной коллекции.
@@ -324,6 +436,30 @@ class CollectionItemsNotifier
     if (id == null) return false;
 
     await refresh();
+    _invalidateCollectedIds(mediaType);
+    ref.invalidate(uncategorizedItemCountProvider);
+    ref.invalidate(allItemsNotifierProvider);
+    return true;
+  }
+
+  /// Клонирует элемент в другую коллекцию (полная копия).
+  ///
+  /// Возвращает true при успехе, false если элемент уже в целевой коллекции.
+  Future<bool> cloneItem(
+    int itemId, {
+    required int targetCollectionId,
+    required MediaType mediaType,
+  }) async {
+    final int? newId = await _repository.cloneItemToCollection(
+      itemId,
+      targetCollectionId,
+    );
+    if (newId == null) return false;
+
+    // Инвалидируем целевую коллекцию и статистики.
+    ref.invalidate(collectionItemsNotifierProvider(targetCollectionId));
+    ref.invalidate(collectionStatsProvider(targetCollectionId));
+    ref.invalidate(collectionCoversProvider(targetCollectionId));
     _invalidateCollectedIds(mediaType);
     ref.invalidate(uncategorizedItemCountProvider);
     ref.invalidate(allItemsNotifierProvider);

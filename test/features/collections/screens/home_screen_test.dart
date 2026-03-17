@@ -9,6 +9,7 @@ import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/data/repositories/collection_repository.dart';
 import 'package:xerabora/features/collections/screens/home_screen.dart';
 import 'package:xerabora/features/collections/widgets/collection_card.dart';
+import 'package:xerabora/features/collections/widgets/collection_list_tile.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/models/collection.dart';
@@ -218,6 +219,144 @@ void main() {
       await tester.pump();
 
       expect(find.byType(GridView), findsOneWidget);
+    });
+
+    group('кнопка переключения grid/list', () {
+      testWidgets('должна показываться в AppBar',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pump();
+        await tester.pump();
+
+        // По умолчанию grid — показывается иконка переключения на list
+        expect(find.byIcon(Icons.view_list), findsOneWidget);
+      });
+
+      testWidgets('должна переключать на ListView',
+          (WidgetTester tester) async {
+        final List<Collection> collections = <Collection>[
+          Collection(
+            id: 1,
+            name: 'Test Collection',
+            author: 'User',
+            type: CollectionType.own,
+            createdAt: DateTime.now(),
+          ),
+        ];
+
+        await tester.pumpWidget(createWidget(collections: collections));
+        await tester.pump();
+        await tester.pump();
+
+        // Изначально grid
+        expect(find.byType(GridView), findsOneWidget);
+        expect(find.byType(CollectionCard), findsOneWidget);
+
+        // Нажимаем на кнопку переключения
+        await tester.tap(find.byIcon(Icons.view_list));
+        await tester.pump();
+        await tester.pump();
+
+        // Теперь list
+        expect(find.byType(ListView), findsOneWidget);
+        expect(find.byType(CollectionListTile), findsOneWidget);
+      });
+
+      testWidgets('должна переключать обратно на GridView',
+          (WidgetTester tester) async {
+        final List<Collection> collections = <Collection>[
+          Collection(
+            id: 1,
+            name: 'Test Collection',
+            author: 'User',
+            type: CollectionType.own,
+            createdAt: DateTime.now(),
+          ),
+        ];
+
+        await tester.pumpWidget(createWidget(collections: collections));
+        await tester.pump();
+        await tester.pump();
+
+        // Переключаем на list
+        await tester.tap(find.byIcon(Icons.view_list));
+        await tester.pump();
+        await tester.pump();
+
+        expect(find.byType(ListView), findsOneWidget);
+
+        // Переключаем обратно на grid
+        await tester.tap(find.byIcon(Icons.grid_view));
+        await tester.pump();
+        await tester.pump();
+
+        expect(find.byType(GridView), findsOneWidget);
+        expect(find.byType(CollectionCard), findsOneWidget);
+      });
+    });
+
+    group('кнопка сортировки', () {
+      testWidgets('должна показываться в AppBar',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pump();
+        await tester.pump();
+
+        expect(find.byIcon(Icons.sort), findsOneWidget);
+      });
+
+      testWidgets('должна открывать popup при нажатии',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+        await tester.pump();
+        await tester.pump();
+
+        await tester.tap(find.byIcon(Icons.sort));
+        await tester.pumpAndSettle();
+
+        // Должны быть пункты меню
+        expect(find.text('Date Created'), findsOneWidget);
+        expect(find.text('Name'), findsOneWidget);
+      });
+
+      testWidgets('должна сортировать по алфавиту',
+          (WidgetTester tester) async {
+        final List<Collection> collections = <Collection>[
+          Collection(
+            id: 1,
+            name: 'Zebra',
+            author: 'User',
+            type: CollectionType.own,
+            createdAt: DateTime(2024),
+          ),
+          Collection(
+            id: 2,
+            name: 'Alpha',
+            author: 'User',
+            type: CollectionType.own,
+            createdAt: DateTime(2025),
+          ),
+        ];
+
+        await tester.pumpWidget(createWidget(collections: collections));
+        await tester.pump();
+        await tester.pump();
+
+        // Открываем popup
+        await tester.tap(find.byIcon(Icons.sort));
+        await tester.pumpAndSettle();
+
+        // Выбираем "Name"
+        await tester.tap(find.text('Name'));
+        await tester.pumpAndSettle();
+
+        // Проверяем порядок — Alpha должна быть первой
+        final List<CollectionCard> cards = tester
+            .widgetList<CollectionCard>(find.byType(CollectionCard))
+            .toList();
+        expect(cards[0].collection.name, 'Alpha');
+        expect(cards[1].collection.name, 'Zebra');
+      });
     });
   });
 }

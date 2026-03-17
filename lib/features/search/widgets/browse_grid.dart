@@ -65,6 +65,7 @@ class BrowseGrid extends ConsumerStatefulWidget {
   /// Создаёт [BrowseGrid].
   const BrowseGrid({
     required this.onItemTap,
+    this.onOpenInCollection,
     this.clientFilter,
     this.platformMap = const <int, Platform>{},
     super.key,
@@ -72,6 +73,9 @@ class BrowseGrid extends ConsumerStatefulWidget {
 
   /// Callback при тапе на элемент.
   final void Function(Object item, MediaType mediaType) onItemTap;
+
+  /// Callback "Открыть в коллекции" (externalId, mediaType).
+  final void Function(int externalId, MediaType mediaType)? onOpenInCollection;
 
   /// Клиентский фильтр по названию (type-to-filter).
   final String? clientFilter;
@@ -282,7 +286,13 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     Set<int> vnIds,
     Set<int> mangaIds,
   ) {
+    VoidCallback? openCallback(int externalId, MediaType mediaType, bool inCollection) {
+      if (!inCollection || widget.onOpenInCollection == null) return null;
+      return () => widget.onOpenInCollection!(externalId, mediaType);
+    }
+
     if (item is Movie) {
+      final bool inColl = tmdbIds.contains(item.tmdbId);
       return MediaPosterCard(
         variant: CardVariant.grid,
         title: item.title,
@@ -293,8 +303,9 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         year: item.releaseYear,
         subtitle: item.genresString,
         mediaType: MediaType.movie,
-        isInCollection: tmdbIds.contains(item.tmdbId),
+        isInCollection: inColl,
         onTap: () => widget.onItemTap(item, MediaType.movie),
+        onOpenInCollection: openCallback(item.tmdbId, MediaType.movie, inColl),
       );
     }
 
@@ -302,6 +313,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
       final MediaType type = _isAnimation(item)
           ? MediaType.animation
           : MediaType.tvShow;
+      final bool inColl = tmdbIds.contains(item.tmdbId);
       return MediaPosterCard(
         variant: CardVariant.grid,
         title: item.title,
@@ -312,12 +324,14 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         year: item.firstAirYear,
         subtitle: item.genresString,
         mediaType: type,
-        isInCollection: tmdbIds.contains(item.tmdbId),
+        isInCollection: inColl,
         onTap: () => widget.onItemTap(item, type),
+        onOpenInCollection: openCallback(item.tmdbId, type, inColl),
       );
     }
 
     if (item is Game) {
+      final bool inColl = gameIds.contains(item.id);
       return MediaPosterCard(
         variant: CardVariant.grid,
         title: item.name,
@@ -329,12 +343,14 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         subtitle: item.genresString,
         platformLabel: _buildPlatformLabel(item.platformIds),
         mediaType: MediaType.game,
-        isInCollection: gameIds.contains(item.id),
+        isInCollection: inColl,
         onTap: () => widget.onItemTap(item, MediaType.game),
+        onOpenInCollection: openCallback(item.id, MediaType.game, inColl),
       );
     }
 
     if (item is VisualNovel) {
+      final bool inColl = vnIds.contains(item.numericId);
       return MediaPosterCard(
         variant: CardVariant.grid,
         title: item.title,
@@ -345,12 +361,14 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         year: item.releaseYear,
         subtitle: item.genresString,
         mediaType: MediaType.visualNovel,
-        isInCollection: vnIds.contains(item.numericId),
+        isInCollection: inColl,
         onTap: () => widget.onItemTap(item, MediaType.visualNovel),
+        onOpenInCollection: openCallback(item.numericId, MediaType.visualNovel, inColl),
       );
     }
 
     if (item is Manga) {
+      final bool inColl = mangaIds.contains(item.id);
       return MediaPosterCard(
         variant: CardVariant.grid,
         title: item.title,
@@ -361,8 +379,9 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         year: item.releaseYear,
         subtitle: item.genresString,
         mediaType: MediaType.manga,
-        isInCollection: mangaIds.contains(item.id),
+        isInCollection: inColl,
         onTap: () => widget.onItemTap(item, MediaType.manga),
+        onOpenInCollection: openCallback(item.id, MediaType.manga, inColl),
       );
     }
 

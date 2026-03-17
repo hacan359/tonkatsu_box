@@ -1109,5 +1109,20 @@
   "steamImportSelectCollection": "Select collection",
   "steamImportErrorLoadingCollections": "Error loading collections",
   "steamImportOpenCollection": "Open collection",
-  "steamImportIgdbRequired": "IGDB connection required. Set up API keys in Settings → Credentials first."
+  "steamImportIgdbRequired": "IGDB connection required. Set up API keys in Settings → Credentials first.",
+
+  "collectionListSortCreatedDate": "Date Created",
+  "collectionListSortAlphabetical": "Name",
+  "collectionListSortCreatedDateNewest": "Newest first",
+  "collectionListSortCreatedDateOldest": "Oldest first",
+  "collectionListSortAlphabeticalAZ": "A to Z",
+  "collectionListSortAlphabeticalZA": "Z to A",
+  "collectionListViewGrid": "Grid view",
+  "collectionListViewList": "List view",
+
+  "collectionCopyToCollection": "Copy to collection",
+  "collectionItemCopiedTo": "{name} copied to {collection}",
+  "collectionItemAlreadyInTarget": "{name} is already in {collection}",
+
+  "openInCollection": "Open in collection"
 }

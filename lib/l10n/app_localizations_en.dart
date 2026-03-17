@@ -2386,4 +2386,44 @@ class SEn extends S {
   @override
   String get steamImportIgdbRequired =>
       'IGDB connection required. Set up API keys in Settings → Credentials first.';
+
+  @override
+  String get collectionListSortCreatedDate => 'Date Created';
+
+  @override
+  String get collectionListSortAlphabetical => 'Name';
+
+  @override
+  String get collectionListSortCreatedDateNewest => 'Newest first';
+
+  @override
+  String get collectionListSortCreatedDateOldest => 'Oldest first';
+
+  @override
+  String get collectionListSortAlphabeticalAZ => 'A to Z';
+
+  @override
+  String get collectionListSortAlphabeticalZA => 'Z to A';
+
+  @override
+  String get collectionListViewGrid => 'Grid view';
+
+  @override
+  String get collectionListViewList => 'List view';
+
+  @override
+  String get collectionCopyToCollection => 'Copy to collection';
+
+  @override
+  String collectionItemCopiedTo(Object collection, Object name) {
+    return '$name copied to $collection';
+  }
+
+  @override
+  String collectionItemAlreadyInTarget(Object collection, Object name) {
+    return '$name is already in $collection';
+  }
+
+  @override
+  String get openInCollection => 'Open in collection';
 }

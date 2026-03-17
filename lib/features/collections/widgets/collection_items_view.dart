@@ -30,6 +30,7 @@ class CollectionItemsView extends ConsumerWidget {
     required this.canEdit,
     required this.onItemTap,
     this.onItemMove,
+    this.onItemClone,
     this.onItemRemove,
     super.key,
   });
@@ -51,6 +52,9 @@ class CollectionItemsView extends ConsumerWidget {
 
   /// Callback перемещения элемента.
   final ValueChanged<CollectionItem>? onItemMove;
+
+  /// Callback копирования элемента.
+  final ValueChanged<CollectionItem>? onItemClone;
 
   /// Callback удаления элемента.
   final ValueChanged<CollectionItem>? onItemRemove;
@@ -95,6 +99,7 @@ class CollectionItemsView extends ConsumerWidget {
             item: item,
             isEditable: canEdit,
             onMove: canEdit ? () => onItemMove?.call(item) : null,
+            onClone: canEdit ? () => onItemClone?.call(item) : null,
             onRemove: canEdit ? () => onItemRemove?.call(item) : null,
             onTap: () => onItemTap(item),
           );
