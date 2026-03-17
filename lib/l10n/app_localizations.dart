@@ -4452,6 +4452,66 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Open in collection'**
   String get openInCollection;
+
+  /// No description provided for @importResultTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Import Results'**
+  String get importResultTitle;
+
+  /// No description provided for @importResultComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'{source} import complete!'**
+  String importResultComplete(String source);
+
+  /// No description provided for @importResultFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'{source} import failed'**
+  String importResultFailed(String source);
+
+  /// No description provided for @importResultImported.
+  ///
+  /// In en, this message translates to:
+  /// **'Imported'**
+  String get importResultImported;
+
+  /// No description provided for @importResultWishlisted.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to Wishlist'**
+  String get importResultWishlisted;
+
+  /// No description provided for @importResultUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated'**
+  String get importResultUpdated;
+
+  /// No description provided for @importResultSkipped.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} skipped'**
+  String importResultSkipped(int count);
+
+  /// No description provided for @importResultOpenCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Collection'**
+  String get importResultOpenCollection;
+
+  /// No description provided for @importResultWishlistHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Items not found in the database were saved to your Wishlist for later.'**
+  String get importResultWishlistHint;
+
+  /// No description provided for @importResultSourceCollectionFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Collection File'**
+  String get importResultSourceCollectionFile;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

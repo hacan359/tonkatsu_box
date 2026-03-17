@@ -1124,5 +1124,31 @@
   "collectionItemCopiedTo": "{name} copied to {collection}",
   "collectionItemAlreadyInTarget": "{name} is already in {collection}",
 
-  "openInCollection": "Open in collection"
+  "openInCollection": "Open in collection",
+
+  "importResultTitle": "Import Results",
+  "importResultComplete": "{source} import complete!",
+  "@importResultComplete": {
+    "placeholders": {
+      "source": {"type": "String"}
+    }
+  },
+  "importResultFailed": "{source} import failed",
+  "@importResultFailed": {
+    "placeholders": {
+      "source": {"type": "String"}
+    }
+  },
+  "importResultImported": "Imported",
+  "importResultWishlisted": "Added to Wishlist",
+  "importResultUpdated": "Updated",
+  "importResultSkipped": "{count} skipped",
+  "@importResultSkipped": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "importResultOpenCollection": "Open Collection",
+  "importResultWishlistHint": "Items not found in the database were saved to your Wishlist for later.",
+  "importResultSourceCollectionFile": "Collection File"
 }

@@ -166,6 +166,7 @@ lib/
 | `lib/shared/models/canvas_viewport.dart` | **Модель viewport канваса**. Поля: collectionId, scale, offsetX, offsetY. Хранит зум и позицию камеры |
 | `lib/shared/models/canvas_connection.dart` | **Модель связи канваса**. Enum `ConnectionStyle` (solid/dashed/arrow). Поля: id, collectionId, collectionItemId (null для коллекционного canvas, int для per-item), fromItemId, toItemId, label, color (hex), style, createdAt |
 | `lib/shared/models/wishlist_item.dart` | **Модель элемента вишлиста**. Поля: id, text, mediaTypeHint (MediaType?), note, isResolved, createdAt, resolvedAt. Методы: `fromDb()`, `toDb()`, `copyWith()`. Геттер `hasNote` |
+| `lib/shared/models/universal_import_result.dart` | **Универсальный результат импорта**. Используется Steam и Trakt импортёрами. Поля: sourceName, success, collection, importedByType/wishlistedByType/updatedByType (Map<MediaType, int>), untypedImported/untypedUpdated, skipped, errors, fatalError. Computed: totalImported, totalWishlisted, totalUpdated, hasWishlistItems, effectiveCollectionId |
 | `lib/shared/models/tmdb_review.dart` | **Модель TMDB отзыва**. Поля: id, author, content, rating (double?), url, createdAt. Метод: `fromJson()` |
 
 </details>
@@ -481,6 +482,7 @@ lib/
 | `lib/features/settings/screens/database_screen.dart` | **Тонкая обёртка** для push-навигации. `BreadcrumbScope > Scaffold > Align(topCenter) > ConstrainedBox(600) > SingleChildScrollView > DatabaseContent` |
 | `lib/features/settings/screens/trakt_import_screen.dart` | **Тонкая обёртка** для push-навигации. `BreadcrumbScope > Scaffold > Align(topCenter) > ConstrainedBox(600) > SingleChildScrollView > TraktImportContent(onImportComplete: pop)` |
 | `lib/features/settings/screens/steam_import_screen.dart` | **Тонкая обёртка** для push-навигации. `BreadcrumbScope > Scaffold > Align(topCenter) > ConstrainedBox(600) > SingleChildScrollView > SteamImportContent` |
+| `lib/features/settings/screens/import_result_screen.dart` | **Экран результатов импорта** — единый для Steam и Trakt. Celebration header, `_ResultCard` с breakdown по MediaType (иконки/цвета через `MediaTypeTheme`), wishlist hint, skipped count, кнопки "Open Collection" / "Done". StatelessWidget, принимает `UniversalImportResult` |
 | `lib/features/settings/screens/debug_hub_screen.dart` | **Хаб отладки** (только kDebugMode). `SettingsGroup`/`SettingsTile` с 4 debug tools: SteamGridDB, Image Debug, Gamepad, Demo Collections. SteamGridDB недоступен без API ключа |
 | `lib/features/settings/screens/steamgriddb_debug_screen.dart` | **Debug-экран SteamGridDB**. 5 табов: Search, Grids, Heroes, Logos, Icons. Тестирование всех API эндпоинтов |
 | `lib/features/settings/screens/image_debug_screen.dart` | **Debug-экран IGDB Media**. Проверка URL изображений в коллекциях: постеры, thumbnail, превью |

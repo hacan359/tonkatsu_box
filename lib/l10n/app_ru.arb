@@ -900,5 +900,31 @@
   "collectionItemCopiedTo": "{name} скопирован в {collection}",
   "collectionItemAlreadyInTarget": "{name} уже есть в {collection}",
 
-  "openInCollection": "Открыть в коллекции"
+  "openInCollection": "Открыть в коллекции",
+
+  "importResultTitle": "Результаты импорта",
+  "importResultComplete": "Импорт {source} завершён!",
+  "@importResultComplete": {
+    "placeholders": {
+      "source": {"type": "String"}
+    }
+  },
+  "importResultFailed": "Импорт {source} не удался",
+  "@importResultFailed": {
+    "placeholders": {
+      "source": {"type": "String"}
+    }
+  },
+  "importResultImported": "Импортировано",
+  "importResultWishlisted": "В список желаний",
+  "importResultUpdated": "Обновлено",
+  "importResultSkipped": "{count} пропущено",
+  "@importResultSkipped": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "importResultOpenCollection": "Открыть коллекцию",
+  "importResultWishlistHint": "Элементы, не найденные в базе данных, сохранены в Список желаний.",
+  "importResultSourceCollectionFile": "Файл коллекции"
 }

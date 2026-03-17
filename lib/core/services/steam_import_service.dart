@@ -4,9 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
 import '../../shared/models/collection_item.dart';
+import '../../shared/models/collection.dart';
 import '../../shared/models/game.dart';
 import '../../shared/models/item_status.dart';
 import '../../shared/models/media_type.dart';
+import '../../shared/models/universal_import_result.dart';
 import '../../shared/models/wishlist_item.dart';
 import '../api/igdb_api.dart';
 import '../api/steam_api.dart';
@@ -365,10 +367,45 @@ class SteamImportService {
   }
 
   /// Форматирует время в игре.
-  String _formatPlaytime(SteamOwnedGame game) {
+  static String _formatPlaytime(SteamOwnedGame game) {
     if (game.playtimeMinutes >= 60) {
       return '${game.playtimeHours.toStringAsFixed(1)}h';
     }
     return '${game.playtimeMinutes}min';
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Extension: toUniversal()
+// ---------------------------------------------------------------------------
+
+/// Конвертация [SteamImportResult] в [UniversalImportResult].
+extension SteamImportResultToUniversal on SteamImportResult {
+  /// Преобразует в универсальный результат.
+  UniversalImportResult toUniversal({Collection? collection}) {
+    final Map<MediaType, int> importedByType = <MediaType, int>{};
+    final Map<MediaType, int> wishlistedByType = <MediaType, int>{};
+    final Map<MediaType, int> updatedByType = <MediaType, int>{};
+
+    if (imported > 0) {
+      importedByType[MediaType.game] = imported;
+    }
+    if (wishlisted > 0) {
+      wishlistedByType[MediaType.game] = wishlisted;
+    }
+    if (updated > 0) {
+      updatedByType[MediaType.game] = updated;
+    }
+
+    return UniversalImportResult(
+      sourceName: 'Steam',
+      success: true,
+      collection: collection,
+      collectionId: collectionId,
+      importedByType: importedByType,
+      wishlistedByType: wishlistedByType,
+      updatedByType: updatedByType,
+      skipped: (total - imported - wishlisted - updated).clamp(0, total),
+    );
   }
 }

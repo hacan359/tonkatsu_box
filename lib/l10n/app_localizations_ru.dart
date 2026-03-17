@@ -2449,4 +2449,41 @@ class SRu extends S {
 
   @override
   String get openInCollection => 'Открыть в коллекции';
+
+  @override
+  String get importResultTitle => 'Результаты импорта';
+
+  @override
+  String importResultComplete(String source) {
+    return 'Импорт $source завершён!';
+  }
+
+  @override
+  String importResultFailed(String source) {
+    return 'Импорт $source не удался';
+  }
+
+  @override
+  String get importResultImported => 'Импортировано';
+
+  @override
+  String get importResultWishlisted => 'В список желаний';
+
+  @override
+  String get importResultUpdated => 'Обновлено';
+
+  @override
+  String importResultSkipped(int count) {
+    return '$count пропущено';
+  }
+
+  @override
+  String get importResultOpenCollection => 'Открыть коллекцию';
+
+  @override
+  String get importResultWishlistHint =>
+      'Элементы, не найденные в базе данных, сохранены в Список желаний.';
+
+  @override
+  String get importResultSourceCollectionFile => 'Файл коллекции';
 }
