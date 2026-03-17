@@ -2426,4 +2426,41 @@ class SEn extends S {
 
   @override
   String get openInCollection => 'Open in collection';
+
+  @override
+  String get importResultTitle => 'Import Results';
+
+  @override
+  String importResultComplete(String source) {
+    return '$source import complete!';
+  }
+
+  @override
+  String importResultFailed(String source) {
+    return '$source import failed';
+  }
+
+  @override
+  String get importResultImported => 'Imported';
+
+  @override
+  String get importResultWishlisted => 'Added to Wishlist';
+
+  @override
+  String get importResultUpdated => 'Updated';
+
+  @override
+  String importResultSkipped(int count) {
+    return '$count skipped';
+  }
+
+  @override
+  String get importResultOpenCollection => 'Open Collection';
+
+  @override
+  String get importResultWishlistHint =>
+      'Items not found in the database were saved to your Wishlist for later.';
+
+  @override
+  String get importResultSourceCollectionFile => 'Collection File';
 }

@@ -15,10 +15,10 @@ import '../../../shared/theme/app_typography.dart';
 import '../../collections/providers/canvas_provider.dart';
 import '../../collections/providers/collection_covers_provider.dart';
 import '../../collections/providers/collections_provider.dart';
-import '../../collections/screens/collection_screen.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
 import '../providers/settings_provider.dart';
+import '../screens/import_result_screen.dart';
 import '../widgets/settings_group.dart';
 
 /// Контент экрана импорта библиотеки Steam.
@@ -67,7 +67,11 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
     final S l = S.of(context);
 
     if (_result != null) {
-      return _buildResultSection(l);
+      // Result is shown on ImportResultScreen — this should not happen
+      // but keep as fallback.
+      return Center(
+        child: Text(l.steamImportComplete, style: AppTypography.h3),
+      );
     }
 
     return Column(
@@ -386,89 +390,6 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
   }
 
   // ---------------------------------------------------------------------------
-  // Result
-  // ---------------------------------------------------------------------------
-
-  Widget _buildResultSection(S l) {
-    final SteamImportResult result = _result!;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        SettingsGroup(
-          title: l.steamImportComplete,
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.sm,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  _buildStatRow(
-                    Icons.check_circle,
-                    AppColors.statusCompleted,
-                    l.steamImportGamesImported(result.imported),
-                  ),
-                  _buildStatRow(
-                    Icons.bookmark_add,
-                    AppColors.brand,
-                    l.steamImportWishlistedInIgdb(result.wishlisted),
-                  ),
-                  _buildStatRow(
-                    Icons.sync,
-                    AppColors.statusInProgress,
-                    l.steamImportUpdatedDuplicates(result.updated),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  Text(
-                    l.steamImportPlayedStatus,
-                    style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  Text(
-                    l.steamImportPlaytimeComment,
-                    style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.md),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-          child: FilledButton.icon(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (BuildContext context) => CollectionScreen(
-                    collectionId: result.collectionId,
-                  ),
-                ),
-              );
-            },
-            icon: const Icon(Icons.collections_bookmark),
-            label: Text(l.steamImportOpenCollection),
-          ),
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-          child: OutlinedButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l.done),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ---------------------------------------------------------------------------
   // Helpers
   // ---------------------------------------------------------------------------
 
@@ -558,10 +479,24 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
       ref.invalidate(allItemsNotifierProvider);
       ref.invalidate(wishlistProvider);
 
+      // Fetch collection for result screen
+      final Collection? resultCollection =
+          await ref.read(databaseServiceProvider).getCollectionById(collectionId);
+
       setState(() {
         _isImporting = false;
         _result = result;
       });
+
+      if (!mounted) return;
+
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (BuildContext context) => ImportResultScreen(
+            result: result.toUniversal(collection: resultCollection),
+          ),
+        ),
+      );
     } on Exception catch (e) {
       if (!mounted) return;
       setState(() => _isImporting = false);

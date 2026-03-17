@@ -19,6 +19,7 @@ import '../../collections/providers/collection_covers_provider.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
+import '../screens/import_result_screen.dart';
 import '../widgets/settings_group.dart';
 
 /// Контент экрана импорта из Trakt.tv ZIP-выгрузки.
@@ -449,21 +450,18 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
       ref.invalidate(allItemsNotifierProvider);
       ref.invalidate(wishlistProvider);
 
-      final StringBuffer message = StringBuffer(
-        S.of(context).traktImportedItems(result.itemsImported),
-      );
-      if (result.itemsUpdated > 0) {
-        message.write(', updated ${result.itemsUpdated}');
-      }
-      if (result.itemsSkipped > 0) {
-        message.write(', skipped ${result.itemsSkipped}');
-      }
-      if (result.wishlistItemsAdded > 0) {
-        message.write(', ${result.wishlistItemsAdded} to wishlist');
-      }
+      if (!mounted) return;
 
-      context.showSnack(message.toString(), type: SnackType.success);
-      widget.onImportComplete?.call();
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (BuildContext context) => ImportResultScreen(
+            result: result.toUniversal(),
+          ),
+        ),
+      );
+      if (mounted) {
+        widget.onImportComplete?.call();
+      }
     } else if (result.error != null) {
       context.showSnack(result.error!, type: SnackType.error);
     }

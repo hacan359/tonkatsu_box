@@ -16,6 +16,7 @@ import '../../shared/models/media_type.dart';
 import '../../shared/models/movie.dart';
 import '../../shared/models/wishlist_item.dart';
 import '../../shared/models/tv_show.dart';
+import '../../shared/models/universal_import_result.dart';
 import '../api/tmdb_api.dart';
 import '../database/database_service.dart';
 import 'import_service.dart';
@@ -119,6 +120,9 @@ class TraktImportResult {
     this.itemsSkipped = 0,
     this.itemsUpdated = 0,
     this.wishlistItemsAdded = 0,
+    this.importedByType = const <MediaType, int>{},
+    this.wishlistedByType = const <MediaType, int>{},
+    this.updatedByType = const <MediaType, int>{},
     this.errors = const <String>[],
     this.error,
   });
@@ -130,6 +134,9 @@ class TraktImportResult {
     this.itemsSkipped = 0,
     this.itemsUpdated = 0,
     this.wishlistItemsAdded = 0,
+    this.importedByType = const <MediaType, int>{},
+    this.wishlistedByType = const <MediaType, int>{},
+    this.updatedByType = const <MediaType, int>{},
     this.errors = const <String>[],
   })  : success = true,
         error = null;
@@ -142,6 +149,9 @@ class TraktImportResult {
         itemsSkipped = 0,
         itemsUpdated = 0,
         wishlistItemsAdded = 0,
+        importedByType = const <MediaType, int>{},
+        wishlistedByType = const <MediaType, int>{},
+        updatedByType = const <MediaType, int>{},
         errors = const <String>[],
         error = message;
 
@@ -162,6 +172,15 @@ class TraktImportResult {
 
   /// Количество элементов, добавленных в вишлист.
   final int wishlistItemsAdded;
+
+  /// Количество импортированных элементов по типу медиа.
+  final Map<MediaType, int> importedByType;
+
+  /// Количество добавленных в вишлист по типу медиа.
+  final Map<MediaType, int> wishlistedByType;
+
+  /// Количество обновлённых элементов по типу медиа.
+  final Map<MediaType, int> updatedByType;
 
   /// Ошибки по отдельным элементам.
   final List<String> errors;
@@ -539,6 +558,11 @@ class TraktZipImportService {
       int itemsSkipped = 0;
       int itemsUpdated = 0;
 
+      // Per-type tracking
+      final Map<MediaType, int> importedByType = <MediaType, int>{};
+      final Map<MediaType, int> wishlistedByType = <MediaType, int>{};
+      final Map<MediaType, int> updatedByType = <MediaType, int>{};
+
       final int totalItems = watchedMovies.length + watchedShows.length;
       int itemProgress = 0;
 
@@ -559,8 +583,20 @@ class TraktZipImportService {
         }
 
         if (!fetchedMovies.containsKey(traktMovie.tmdbId)) {
+          // Wishlist fallback: TMDB data unavailable → add to wishlist
+          const MediaType hintType = MediaType.movie;
+          final WishlistItem? existingWl =
+              await _wishlistRepository.findUnresolved(traktMovie.title);
+          if (existingWl == null) {
+            await _wishlistRepository.add(
+              text: traktMovie.title,
+              mediaTypeHint: hintType,
+            );
+            wishlistedByType[hintType] =
+                (wishlistedByType[hintType] ?? 0) + 1;
+          }
           errors.add(
-            'Skipped "${traktMovie.title}" (TMDB data not available)',
+            'Wishlisted "${traktMovie.title}" (TMDB data not available)',
           );
           itemsSkipped++;
           itemProgress++;
@@ -584,8 +620,12 @@ class TraktZipImportService {
         switch (result) {
           case _ImportItemResult.added:
             itemsImported++;
+            importedByType[mediaType] =
+                (importedByType[mediaType] ?? 0) + 1;
           case _ImportItemResult.updated:
             itemsUpdated++;
+            updatedByType[mediaType] =
+                (updatedByType[mediaType] ?? 0) + 1;
           case _ImportItemResult.skipped:
             itemsSkipped++;
         }
@@ -610,8 +650,20 @@ class TraktZipImportService {
         }
 
         if (!fetchedShows.containsKey(traktShow.tmdbId)) {
+          // Wishlist fallback: TMDB data unavailable → add to wishlist
+          const MediaType hintType = MediaType.tvShow;
+          final WishlistItem? existingWl =
+              await _wishlistRepository.findUnresolved(traktShow.title);
+          if (existingWl == null) {
+            await _wishlistRepository.add(
+              text: traktShow.title,
+              mediaTypeHint: hintType,
+            );
+            wishlistedByType[hintType] =
+                (wishlistedByType[hintType] ?? 0) + 1;
+          }
           errors.add(
-            'Skipped "${traktShow.title}" (TMDB data not available)',
+            'Wishlisted "${traktShow.title}" (TMDB data not available)',
           );
           itemsSkipped++;
           itemProgress++;
@@ -639,8 +691,12 @@ class TraktZipImportService {
         switch (result) {
           case _ImportItemResult.added:
             itemsImported++;
+            importedByType[mediaType] =
+                (importedByType[mediaType] ?? 0) + 1;
           case _ImportItemResult.updated:
             itemsUpdated++;
+            updatedByType[mediaType] =
+                (updatedByType[mediaType] ?? 0) + 1;
           case _ImportItemResult.skipped:
             itemsSkipped++;
         }
@@ -724,6 +780,8 @@ class TraktZipImportService {
                 rating.rating.clamp(1, 10),
               );
               itemsUpdated++;
+              updatedByType[resolved.mediaType] =
+                  (updatedByType[resolved.mediaType] ?? 0) + 1;
             }
           } else {
             // Элемент не существует — нужно ли добавлять?
@@ -745,6 +803,8 @@ class TraktZipImportService {
                   rating.rating.clamp(1, 10),
                 );
                 itemsImported++;
+                importedByType[resolved.mediaType] =
+                    (importedByType[resolved.mediaType] ?? 0) + 1;
               }
             }
           }
@@ -796,6 +856,8 @@ class TraktZipImportService {
                 );
                 if (itemId != null) {
                   itemsImported++;
+                  importedByType[resolved.mediaType] =
+                      (importedByType[resolved.mediaType] ?? 0) + 1;
                   continue;
                 }
               }
@@ -829,12 +891,19 @@ class TraktZipImportService {
         total: 1,
       ));
 
+      // Total wishlist = watched fallback + watchlist section
+      final int totalWishlistAdded = wishlistItemsAdded +
+          wishlistedByType.values.fold<int>(0, (int s, int v) => s + v);
+
       return TraktImportResult.success(
         collection: collection,
         itemsImported: itemsImported,
         itemsSkipped: itemsSkipped,
         itemsUpdated: itemsUpdated,
-        wishlistItemsAdded: wishlistItemsAdded,
+        wishlistItemsAdded: totalWishlistAdded,
+        importedByType: importedByType,
+        wishlistedByType: wishlistedByType,
+        updatedByType: updatedByType,
         errors: errors,
       );
     } on Exception catch (e) {
@@ -1171,3 +1240,31 @@ class TraktZipImportService {
 
 /// Результат импорта отдельного элемента.
 enum _ImportItemResult { added, updated, skipped }
+
+// ---------------------------------------------------------------------------
+// Extension: toUniversal()
+// ---------------------------------------------------------------------------
+
+/// Конвертация [TraktImportResult] в [UniversalImportResult].
+extension TraktImportResultToUniversal on TraktImportResult {
+  /// Преобразует в универсальный результат.
+  UniversalImportResult toUniversal() {
+    if (!success) {
+      return UniversalImportResult.failure(
+        sourceName: 'Trakt',
+        error: error ?? 'Unknown error',
+      );
+    }
+
+    return UniversalImportResult(
+      sourceName: 'Trakt',
+      success: true,
+      collection: collection,
+      importedByType: importedByType,
+      wishlistedByType: wishlistedByType,
+      updatedByType: updatedByType,
+      skipped: itemsSkipped,
+      errors: errors,
+    );
+  }
+}

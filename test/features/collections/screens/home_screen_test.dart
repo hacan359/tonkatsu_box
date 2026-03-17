@@ -357,6 +357,52 @@ void main() {
         expect(cards[0].collection.name, 'Alpha');
         expect(cards[1].collection.name, 'Zebra');
       });
+
+      testWidgets('toggle direction должен инвертировать порядок',
+          (WidgetTester tester) async {
+        final List<Collection> collections = <Collection>[
+          Collection(
+            id: 1,
+            name: 'Old',
+            author: 'User',
+            type: CollectionType.own,
+            createdAt: DateTime(2020),
+          ),
+          Collection(
+            id: 2,
+            name: 'New',
+            author: 'User',
+            type: CollectionType.own,
+            createdAt: DateTime(2025),
+          ),
+        ];
+
+        await tester.pumpWidget(createWidget(collections: collections));
+        await tester.pump();
+        await tester.pump();
+
+        // По умолчанию: Date Created, newest first → New, Old
+        List<CollectionCard> cards = tester
+            .widgetList<CollectionCard>(find.byType(CollectionCard))
+            .toList();
+        expect(cards[0].collection.name, 'New');
+        expect(cards[1].collection.name, 'Old');
+
+        // Открываем popup и нажимаем toggle direction
+        await tester.tap(find.byIcon(Icons.sort));
+        await tester.pumpAndSettle();
+
+        // Нажимаем пункт с направлением (содержит "Oldest first")
+        await tester.tap(find.text('Oldest first'));
+        await tester.pumpAndSettle();
+
+        // Теперь порядок инвертирован: Old, New
+        cards = tester
+            .widgetList<CollectionCard>(find.byType(CollectionCard))
+            .toList();
+        expect(cards[0].collection.name, 'Old');
+        expect(cards[1].collection.name, 'New');
+      });
     });
   });
 }
