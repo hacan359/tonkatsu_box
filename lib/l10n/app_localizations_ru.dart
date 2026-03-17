@@ -2433,4 +2433,17 @@ class SRu extends S {
 
   @override
   String get collectionListViewList => 'Список';
+
+  @override
+  String get collectionCopyToCollection => 'Копировать в коллекцию';
+
+  @override
+  String collectionItemCopiedTo(Object collection, Object name) {
+    return '$name скопирован в $collection';
+  }
+
+  @override
+  String collectionItemAlreadyInTarget(Object collection, Object name) {
+    return '$name уже есть в $collection';
+  }
 }

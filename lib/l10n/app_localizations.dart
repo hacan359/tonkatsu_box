@@ -4428,6 +4428,24 @@ abstract class S {
   /// In en, this message translates to:
   /// **'List view'**
   String get collectionListViewList;
+
+  /// No description provided for @collectionCopyToCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy to collection'**
+  String get collectionCopyToCollection;
+
+  /// No description provided for @collectionItemCopiedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} copied to {collection}'**
+  String collectionItemCopiedTo(Object collection, Object name);
+
+  /// No description provided for @collectionItemAlreadyInTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is already in {collection}'**
+  String collectionItemAlreadyInTarget(Object collection, Object name);
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

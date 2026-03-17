@@ -26,6 +26,7 @@ import '../../../shared/models/tv_show.dart';
 import '../../../shared/widgets/media_detail_view.dart';
 import '../../../shared/widgets/source_badge.dart';
 import '../../../shared/constants/platform_features.dart';
+import '../helpers/collection_actions.dart';
 import '../providers/canvas_provider.dart';
 import '../providers/collections_provider.dart';
 import '../providers/steamgriddb_panel_provider.dart';
@@ -226,6 +227,15 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     }
   }
 
+  Future<void> _cloneToCollection(CollectionItem item) async {
+    await CollectionActions.cloneItem(
+      context: context,
+      ref: ref,
+      collectionId: widget.collectionId,
+      item: item,
+    );
+  }
+
   Future<void> _removeFromCollection(CollectionItem item) async {
     final bool? confirmed = await showDialog<bool>(
       context: context,
@@ -342,6 +352,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                   switch (value) {
                     case 'move':
                       _moveToCollection(item);
+                    case 'clone':
+                      _cloneToCollection(item);
                     case 'remove':
                       _removeFromCollection(item);
                   }
@@ -353,6 +365,14 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                     child: ListTile(
                       leading: const Icon(Icons.drive_file_move_outlined),
                       title: Text(S.of(context).collectionMoveToCollection),
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
+                  PopupMenuItem<String>(
+                    value: 'clone',
+                    child: ListTile(
+                      leading: const Icon(Icons.copy_outlined),
+                      title: Text(S.of(context).collectionCopyToCollection),
                       contentPadding: EdgeInsets.zero,
                     ),
                   ),

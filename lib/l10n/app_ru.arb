@@ -894,5 +894,9 @@
   "collectionListSortAlphabeticalAZ": "А → Я",
   "collectionListSortAlphabeticalZA": "Я → А",
   "collectionListViewGrid": "Сетка",
-  "collectionListViewList": "Список"
+  "collectionListViewList": "Список",
+
+  "collectionCopyToCollection": "Копировать в коллекцию",
+  "collectionItemCopiedTo": "{name} скопирован в {collection}",
+  "collectionItemAlreadyInTarget": "{name} уже есть в {collection}"
 }

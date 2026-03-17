@@ -2410,4 +2410,17 @@ class SEn extends S {
 
   @override
   String get collectionListViewList => 'List view';
+
+  @override
+  String get collectionCopyToCollection => 'Copy to collection';
+
+  @override
+  String collectionItemCopiedTo(Object collection, Object name) {
+    return '$name copied to $collection';
+  }
+
+  @override
+  String collectionItemAlreadyInTarget(Object collection, Object name) {
+    return '$name is already in $collection';
+  }
 }

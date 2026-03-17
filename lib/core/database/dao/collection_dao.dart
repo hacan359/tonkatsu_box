@@ -529,6 +529,60 @@ class CollectionDao {
     }
   }
 
+  /// Клонирует элемент в другую коллекцию (полная копия).
+  ///
+  /// Создаёт новую запись с данными из исходного элемента [itemId]
+  /// в целевой коллекции [targetCollectionId].
+  /// Возвращает ID нового элемента или null при дубликате.
+  Future<int?> cloneItemToCollection(
+    int itemId,
+    int targetCollectionId,
+  ) async {
+    final Database db = await _getDatabase();
+
+    // Читаем исходный элемент
+    final List<Map<String, dynamic>> rows = await db.query(
+      'collection_items',
+      where: 'id = ?',
+      whereArgs: <Object?>[itemId],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+
+    final Map<String, dynamic> source = rows.first;
+    final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    final int sortOrder = await getNextSortOrder(targetCollectionId);
+
+    try {
+      final int newId = await db.insert(
+        'collection_items',
+        <String, dynamic>{
+          'collection_id': targetCollectionId,
+          'media_type': source['media_type'],
+          'external_id': source['external_id'],
+          'platform_id': source['platform_id'],
+          'status': source['status'],
+          'author_comment': source['author_comment'],
+          'user_comment': source['user_comment'],
+          'user_rating': source['user_rating'],
+          'current_season': source['current_season'],
+          'current_episode': source['current_episode'],
+          'started_at': source['started_at'],
+          'completed_at': source['completed_at'],
+          'last_activity_at': source['last_activity_at'],
+          'added_at': now,
+          'sort_order': sortOrder,
+        },
+      );
+      return newId;
+    } on DatabaseException catch (e) {
+      if (e.isUniqueConstraintError()) {
+        return null;
+      }
+      rethrow;
+    }
+  }
+
   /// Возвращает уникальные platform_id из игр в коллекциях.
   ///
   /// Если [collectionId] указан, фильтрует по этой коллекции.

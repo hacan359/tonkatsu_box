@@ -579,6 +579,10 @@ class DatabaseService {
   Future<bool> updateItemCollectionId(int id, int? collectionId) =>
       collectionDao.updateItemCollectionId(id, collectionId);
 
+  /// Клонирует элемент в другую коллекцию (полная копия).
+  Future<int?> cloneItemToCollection(int itemId, int targetCollectionId) =>
+      collectionDao.cloneItemToCollection(itemId, targetCollectionId);
+
   /// Возвращает уникальные platform_id из игр в коллекциях.
   Future<List<int>> getUniquePlatformIds({int? collectionId}) =>
       collectionDao.getUniquePlatformIds(collectionId: collectionId);

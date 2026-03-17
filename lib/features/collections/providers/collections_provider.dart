@@ -442,6 +442,30 @@ class CollectionItemsNotifier
     return true;
   }
 
+  /// Клонирует элемент в другую коллекцию (полная копия).
+  ///
+  /// Возвращает true при успехе, false если элемент уже в целевой коллекции.
+  Future<bool> cloneItem(
+    int itemId, {
+    required int targetCollectionId,
+    required MediaType mediaType,
+  }) async {
+    final int? newId = await _repository.cloneItemToCollection(
+      itemId,
+      targetCollectionId,
+    );
+    if (newId == null) return false;
+
+    // Инвалидируем целевую коллекцию и статистики.
+    ref.invalidate(collectionItemsNotifierProvider(targetCollectionId));
+    ref.invalidate(collectionStatsProvider(targetCollectionId));
+    ref.invalidate(collectionCoversProvider(targetCollectionId));
+    _invalidateCollectedIds(mediaType);
+    ref.invalidate(uncategorizedItemCountProvider);
+    ref.invalidate(allItemsNotifierProvider);
+    return true;
+  }
+
   /// Перемещает элемент в другую коллекцию.
   ///
   /// Возвращает `({success: true, sourceEmpty: ...})` при успехе,

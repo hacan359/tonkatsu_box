@@ -102,6 +102,63 @@ class CollectionActions {
     }
   }
 
+  /// Копирование элемента в другую коллекцию (полная копия).
+  static Future<void> cloneItem({
+    required BuildContext context,
+    required WidgetRef ref,
+    required int? collectionId,
+    required CollectionItem item,
+  }) async {
+    final bool isUncategorized = collectionId == null;
+    final S l = S.of(context);
+
+    final CollectionChoice? choice = await showCollectionPickerDialog(
+      context: context,
+      ref: ref,
+      excludeCollectionId: collectionId,
+      showUncategorized: !isUncategorized,
+      title: l.collectionCopyToCollection,
+    );
+    if (choice == null || !context.mounted) return;
+
+    final int? targetCollectionId;
+    final String targetName;
+    switch (choice) {
+      case ChosenCollection(:final Collection collection):
+        targetCollectionId = collection.id;
+        targetName = collection.name;
+      case WithoutCollection():
+        // Clone в uncategorized не поддерживается — нужен конкретный ID.
+        return;
+    }
+
+    final bool success = await ref
+        .read(
+          collectionItemsNotifierProvider(collectionId).notifier,
+        )
+        .cloneItem(
+          item.id,
+          targetCollectionId: targetCollectionId,
+          mediaType: item.mediaType,
+        );
+
+    if (!context.mounted) return;
+
+    if (success) {
+      context.showSnack(
+        S.of(context).collectionItemCopiedTo(item.itemName, targetName),
+        type: SnackType.success,
+      );
+    } else {
+      context.showSnack(
+        S.of(context).collectionItemAlreadyInTarget(
+              item.itemName,
+              targetName,
+            ),
+      );
+    }
+  }
+
   /// Предложение удалить опустевшую коллекцию.
   ///
   /// Возвращает `true`, если коллекция была удалена.

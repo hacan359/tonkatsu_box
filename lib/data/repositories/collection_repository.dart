@@ -216,6 +216,16 @@ class CollectionRepository {
     return _db.updateItemCollectionId(itemId, targetCollectionId);
   }
 
+  /// Клонирует элемент в другую коллекцию (полная копия).
+  ///
+  /// Возвращает ID нового элемента или null при дубликате.
+  Future<int?> cloneItemToCollection(
+    int itemId,
+    int targetCollectionId,
+  ) async {
+    return _db.cloneItemToCollection(itemId, targetCollectionId);
+  }
+
   /// Удаляет элемент из коллекции.
   Future<void> removeItem(int id) async {
     await _db.removeItemFromCollection(id);

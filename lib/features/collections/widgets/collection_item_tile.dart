@@ -26,6 +26,7 @@ class CollectionItemTile extends StatelessWidget {
     this.showDragHandle = false,
     this.dragIndex = 0,
     this.onMove,
+    this.onClone,
     this.onRemove,
     this.onTap,
     super.key,
@@ -45,6 +46,9 @@ class CollectionItemTile extends StatelessWidget {
 
   /// Callback перемещения в другую коллекцию.
   final VoidCallback? onMove;
+
+  /// Callback копирования в другую коллекцию.
+  final VoidCallback? onClone;
 
   /// Callback удаления из коллекции.
   final VoidCallback? onRemove;
@@ -206,8 +210,8 @@ class CollectionItemTile extends StatelessWidget {
                     ),
                   ),
 
-                  // Move / Remove меню
-                  if (onMove != null || onRemove != null)
+                  // Move / Clone / Remove меню
+                  if (onMove != null || onClone != null || onRemove != null)
                     _buildContextMenu(context),
                 ],
               ),
@@ -299,6 +303,8 @@ class CollectionItemTile extends StatelessWidget {
         switch (value) {
           case 'move':
             onMove?.call();
+          case 'clone':
+            onClone?.call();
           case 'remove':
             onRemove?.call();
         }
@@ -316,7 +322,16 @@ class CollectionItemTile extends StatelessWidget {
                 contentPadding: EdgeInsets.zero,
               ),
             ),
-          if (onMove != null && onRemove != null)
+          if (onClone != null)
+            PopupMenuItem<String>(
+              value: 'clone',
+              child: ListTile(
+                leading: const Icon(Icons.copy_outlined),
+                title: Text(ml.collectionCopyToCollection),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+          if ((onMove != null || onClone != null) && onRemove != null)
             const PopupMenuDivider(),
           if (onRemove != null)
             PopupMenuItem<String>(
