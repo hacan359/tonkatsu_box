@@ -296,23 +296,9 @@ class SettingsNotifier extends Notifier<SettingsState> {
       showRecommendations: showRecommendations,
     );
 
-    // Устанавливаем credentials в API, если они есть
-    if (loadedState.hasValidToken && clientId != null && accessToken != null) {
-      _igdbApi.setCredentials(clientId: clientId, accessToken: accessToken);
-    }
-
-    // Устанавливаем SteamGridDB API ключ, если есть
-    if (steamGridDbApiKey != null && steamGridDbApiKey.isNotEmpty) {
-      _steamGridDbApi.setApiKey(steamGridDbApiKey);
-    }
-
-    // Устанавливаем язык контента TMDB
+    // API ключи уже установлены при создании провайдеров через apiKeysProvider.
+    // Здесь устанавливаем только язык TMDB (не ключ, а параметр запросов).
     _tmdbApi.setLanguage(tmdbLanguage);
-
-    // Устанавливаем TMDB API ключ, если есть
-    if (tmdbApiKey != null && tmdbApiKey.isNotEmpty) {
-      _tmdbApi.setApiKey(tmdbApiKey);
-    }
 
     // Загружаем количество платформ отложенно
     Future<void>.microtask(_loadPlatformCount);
@@ -323,6 +309,27 @@ class SettingsNotifier extends Notifier<SettingsState> {
     }
 
     return loadedState;
+  }
+
+  /// Синхронизирует API клиенты с текущим state.
+  ///
+  /// Вызывается после importConfig, когда ключи могли измениться.
+  void _syncApiClients() {
+    if (state.hasValidToken &&
+        state.clientId != null &&
+        state.accessToken != null) {
+      _igdbApi.setCredentials(
+        clientId: state.clientId!,
+        accessToken: state.accessToken!,
+      );
+    }
+    if (state.steamGridDbApiKey != null &&
+        state.steamGridDbApiKey!.isNotEmpty) {
+      _steamGridDbApi.setApiKey(state.steamGridDbApiKey!);
+    }
+    if (state.tmdbApiKey != null && state.tmdbApiKey!.isNotEmpty) {
+      _tmdbApi.setApiKey(state.tmdbApiKey!);
+    }
   }
 
   /// Автоматически получает токен при наличии credentials.
@@ -564,6 +571,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
 
     if (result.success) {
       state = _loadFromPrefs();
+      _syncApiClients();
       await _loadPlatformCount();
     }
 

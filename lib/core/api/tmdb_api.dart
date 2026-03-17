@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
+import '../services/api_key_initializer.dart';
 import '../../shared/models/movie.dart';
 import '../../shared/models/tmdb_review.dart';
 import '../../shared/models/tv_episode.dart';
@@ -38,8 +39,16 @@ class TmdbPagedResult<T> {
 }
 
 /// Провайдер для TMDB API клиента.
+///
+/// При создании устанавливает API ключ из [apiKeysProvider],
+/// загруженного в main() до runApp().
 final Provider<TmdbApi> tmdbApiProvider = Provider<TmdbApi>((Ref ref) {
-  return TmdbApi();
+  final TmdbApi api = TmdbApi();
+  final ApiKeys keys = ref.read(apiKeysProvider);
+  if (keys.tmdbApiKey != null && keys.tmdbApiKey!.isNotEmpty) {
+    api.setApiKey(keys.tmdbApiKey!);
+  }
+  return api;
 });
 
 /// Исключение при ошибках TMDB API.

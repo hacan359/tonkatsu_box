@@ -4,13 +4,22 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
+import '../services/api_key_initializer.dart';
 import '../../shared/models/steamgriddb_game.dart';
 import '../../shared/models/steamgriddb_image.dart';
 
 /// Провайдер для SteamGridDB API клиента.
+///
+/// При создании устанавливает API ключ из [apiKeysProvider],
+/// загруженного в main() до runApp().
 final Provider<SteamGridDbApi> steamGridDbApiProvider =
     Provider<SteamGridDbApi>((Ref ref) {
-  return SteamGridDbApi();
+  final SteamGridDbApi api = SteamGridDbApi();
+  final ApiKeys keys = ref.read(apiKeysProvider);
+  if (keys.steamGridDbApiKey != null && keys.steamGridDbApiKey!.isNotEmpty) {
+    api.setApiKey(keys.steamGridDbApiKey!);
+  }
+  return api;
 });
 
 /// Исключение при ошибках SteamGridDB API.

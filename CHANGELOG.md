@@ -6,6 +6,9 @@
 
 ## [Unreleased]
 
+### Fixed
+- **API key race condition on first launch** — API requests failed with "API key not set" on first app launch because `SettingsNotifier.build()` set API keys after UI had already started making requests. Added `ApiKeys` class (`api_key_initializer.dart`) that loads keys from SharedPreferences synchronously in `main()` before `runApp()`. API providers (`tmdbApiProvider`, `igdbApiProvider`, `steamGridDbApiProvider`) now read keys from `apiKeysProvider` at creation time. `SettingsNotifier._loadFromPrefs()` no longer sets API keys (they are already set); `_syncApiClients()` added for `importConfig()` re-sync (`api_key_initializer.dart`, `main.dart`, `tmdb_api.dart`, `igdb_api.dart`, `steamgriddb_api.dart`, `settings_provider.dart`)
+
 ## [0.21.0] - 2026-03-16
 
 ### Added

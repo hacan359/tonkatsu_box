@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:xerabora/core/services/api_key_initializer.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/features/settings/screens/credentials_screen.dart';
 import 'package:xerabora/features/settings/widgets/inline_text_field.dart';
@@ -25,6 +26,7 @@ void main() {
       return ProviderScope(
         overrides: <Override>[
           sharedPreferencesProvider.overrideWithValue(prefs),
+          apiKeysProvider.overrideWithValue(const ApiKeys()),
         ],
         child: MaterialApp(
           localizationsDelegates: S.localizationsDelegates,
