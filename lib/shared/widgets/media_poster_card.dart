@@ -50,6 +50,7 @@ class MediaPosterCard extends StatefulWidget {
     this.platformLabel,
     this.onTap,
     this.onLongPress,
+    this.onOpenInCollection,
     super.key,
   });
 
@@ -100,6 +101,9 @@ class MediaPosterCard extends StatefulWidget {
 
   /// Обработчик долгого нажатия.
   final VoidCallback? onLongPress;
+
+  /// Обработчик "Открыть в коллекции" (только если isInCollection).
+  final VoidCallback? onOpenInCollection;
 
   @override
   State<MediaPosterCard> createState() => _MediaPosterCardState();
@@ -308,18 +312,23 @@ class _MediaPosterCardState extends State<MediaPosterCard>
               Positioned(
                 top: _isCompact ? 2 : AppSpacing.xs,
                 right: _isCompact ? 2 : AppSpacing.xs,
-                child: Container(
-                  padding: EdgeInsets.all(_isCompact ? 2 : 4),
-                  decoration: const BoxDecoration(
-                    color: AppColors.success,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.check,
-                    color: Colors.white,
-                    size: _isCompact ? 8 : 12,
-                  ),
-                ),
+                child: widget.onOpenInCollection != null
+                    ? _InCollectionButton(
+                        compact: _isCompact,
+                        onTap: widget.onOpenInCollection!,
+                      )
+                    : Container(
+                        padding: EdgeInsets.all(_isCompact ? 2 : 4),
+                        decoration: const BoxDecoration(
+                          color: AppColors.success,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.check,
+                          color: Colors.white,
+                          size: _isCompact ? 8 : 12,
+                        ),
+                      ),
               ),
 
             // Статус-бейдж (bottom-left)
@@ -456,6 +465,37 @@ class _MediaPosterCardState extends State<MediaPosterCard>
         memCacheWidth: _posterDecodeWidth,
         placeholder: placeholder,
         errorWidget: placeholder,
+      ),
+    );
+  }
+}
+
+/// Кнопка "Открыть в коллекции" поверх постера.
+class _InCollectionButton extends StatelessWidget {
+  const _InCollectionButton({
+    required this.compact,
+    required this.onTap,
+  });
+
+  final bool compact;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.success,
+      shape: const CircleBorder(),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: EdgeInsets.all(compact ? 2 : 4),
+          child: Icon(
+            Icons.open_in_new,
+            color: Colors.white,
+            size: compact ? 8 : 12,
+          ),
+        ),
       ),
     );
   }

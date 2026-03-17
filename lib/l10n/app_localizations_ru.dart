@@ -2446,4 +2446,7 @@ class SRu extends S {
   String collectionItemAlreadyInTarget(Object collection, Object name) {
     return '$name уже есть в $collection';
   }
+
+  @override
+  String get openInCollection => 'Открыть в коллекции';
 }

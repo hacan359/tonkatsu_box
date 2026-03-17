@@ -898,5 +898,7 @@
 
   "collectionCopyToCollection": "Копировать в коллекцию",
   "collectionItemCopiedTo": "{name} скопирован в {collection}",
-  "collectionItemAlreadyInTarget": "{name} уже есть в {collection}"
+  "collectionItemAlreadyInTarget": "{name} уже есть в {collection}",
+
+  "openInCollection": "Открыть в коллекции"
 }

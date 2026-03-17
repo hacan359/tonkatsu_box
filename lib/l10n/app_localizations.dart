@@ -4446,6 +4446,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'{name} is already in {collection}'**
   String collectionItemAlreadyInTarget(Object collection, Object name);
+
+  /// No description provided for @openInCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in collection'**
+  String get openInCollection;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

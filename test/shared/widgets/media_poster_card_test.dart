@@ -27,6 +27,7 @@ void main() {
     IconData? placeholderIcon,
     VoidCallback? onTap,
     VoidCallback? onLongPress,
+    VoidCallback? onOpenInCollection,
   }) {
     return MaterialApp(
             localizationsDelegates: S.localizationsDelegates,
@@ -51,6 +52,7 @@ void main() {
             placeholderIcon: placeholderIcon,
             onTap: onTap,
             onLongPress: onLongPress,
+            onOpenInCollection: onOpenInCollection,
           ),
         ),
       ),
@@ -588,6 +590,56 @@ void main() {
           }
         }
         expect(foundSuccessBadge, isTrue);
+      });
+    });
+
+    group('onOpenInCollection', () {
+      testWidgets('должен показать кнопку open_in_new вместо check',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildCard(
+          isInCollection: true,
+          onOpenInCollection: () {},
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.byIcon(Icons.open_in_new), findsOneWidget);
+        expect(find.byIcon(Icons.check), findsNothing);
+      });
+
+      testWidgets('должен показать обычный check если onOpenInCollection null',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildCard(isInCollection: true));
+        await tester.pumpAndSettle();
+
+        expect(find.byIcon(Icons.check), findsOneWidget);
+        expect(find.byIcon(Icons.open_in_new), findsNothing);
+      });
+
+      testWidgets('должен вызвать onOpenInCollection при тапе',
+          (WidgetTester tester) async {
+        bool opened = false;
+        await tester.pumpWidget(buildCard(
+          isInCollection: true,
+          onOpenInCollection: () => opened = true,
+        ));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byIcon(Icons.open_in_new));
+        await tester.pumpAndSettle();
+
+        expect(opened, isTrue);
+      });
+
+      testWidgets('не должен показать кнопку если не в коллекции',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(buildCard(
+          isInCollection: false,
+          onOpenInCollection: () {},
+        ));
+        await tester.pumpAndSettle();
+
+        expect(find.byIcon(Icons.open_in_new), findsNothing);
+        expect(find.byIcon(Icons.check), findsNothing);
       });
     });
   });

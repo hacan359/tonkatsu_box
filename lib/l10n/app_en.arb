@@ -1122,5 +1122,7 @@
 
   "collectionCopyToCollection": "Copy to collection",
   "collectionItemCopiedTo": "{name} copied to {collection}",
-  "collectionItemAlreadyInTarget": "{name} is already in {collection}"
+  "collectionItemAlreadyInTarget": "{name} is already in {collection}",
+
+  "openInCollection": "Open in collection"
 }

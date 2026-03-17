@@ -2423,4 +2423,7 @@ class SEn extends S {
   String collectionItemAlreadyInTarget(Object collection, Object name) {
     return '$name is already in $collection';
   }
+
+  @override
+  String get openInCollection => 'Open in collection';
 }
