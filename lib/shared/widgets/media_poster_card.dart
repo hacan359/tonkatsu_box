@@ -362,22 +362,26 @@ class _MediaPosterCardState extends State<MediaPosterCard>
     );
   }
 
-  /// Subtitle row: platform · year · genre · MediaType (в цвете).
+  /// Subtitle row: platform · year · MediaType (цветной) · genre.
   Widget _buildSubtitleRow(BuildContext context) {
     final TextStyle baseStyle = _isCompact
         ? AppTypography.posterSubtitle.copyWith(fontSize: 7)
         : AppTypography.posterSubtitle;
 
-    final List<String> parts = <String>[];
-    if (widget.platformLabel != null) parts.add(widget.platformLabel!);
-    if (widget.year != null) parts.add(widget.year.toString());
-    if (widget.subtitle != null) parts.add(widget.subtitle!);
+    // Части до типа: platform, year.
+    final List<String> before = <String>[];
+    if (widget.platformLabel != null) before.add(widget.platformLabel!);
+    if (widget.year != null) before.add(widget.year.toString());
+    final String beforeText = before.join(' \u00b7 ');
 
-    final String prefix = parts.isNotEmpty ? parts.join(' \u00b7 ') : '';
+    // Часть после типа: genre/subtitle.
+    final String? afterText = widget.subtitle;
 
     if (widget.mediaType == null) {
+      final List<String> all = <String>[...before];
+      if (afterText != null) all.add(afterText);
       return Text(
-        prefix,
+        all.join(' \u00b7 '),
         style: baseStyle,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
@@ -390,12 +394,14 @@ class _MediaPosterCardState extends State<MediaPosterCard>
     return Text.rich(
       TextSpan(
         children: <InlineSpan>[
-          if (prefix.isNotEmpty)
-            TextSpan(text: '$prefix \u00b7 ', style: baseStyle),
+          if (beforeText.isNotEmpty)
+            TextSpan(text: '$beforeText \u00b7 ', style: baseStyle),
           TextSpan(
             text: typeLabel,
             style: baseStyle.copyWith(color: typeColor),
           ),
+          if (afterText != null)
+            TextSpan(text: ' \u00b7 $afterText', style: baseStyle),
         ],
       ),
       maxLines: 1,
