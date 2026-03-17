@@ -84,6 +84,9 @@
 - [x] MediaCard — poster 64×96
 - [x] Image caching — eager download on add, magic bytes validation, Windows file lock fix
 - [x] StatusChipRow + StatusRibbon — piano-style segmented status bar (icon-only, flat color, full-width), Material icon ribbon on list cards, Material icon badge on poster cards
+- [x] Card shadows — replaced flat borders with elevation shadows (elevation 2, Colors.black26)
+- [x] Media type labels — colored type name in poster card subtitle (platform · year · Type · genre), MediaTypeLegend widget on AllItemsScreen
+- [x] Spacing constants — gridGap (16px), screenPadding (20px), cardTitle/cardSubtitle typography tokens
 
 ### 📋 UI Restoration (completed)
 
