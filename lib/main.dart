@@ -9,6 +9,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'app.dart';
 import 'core/logging/app_logger.dart';
+import 'core/services/api_key_initializer.dart';
 import 'features/settings/providers/settings_provider.dart';
 
 /// Точка входа в приложение.
@@ -29,10 +30,14 @@ Future<void> main() async {
       // Инициализация SharedPreferences
       final SharedPreferences prefs = await SharedPreferences.getInstance();
 
+      // Загрузить API ключи ДО runApp, чтобы избежать race condition
+      final ApiKeys apiKeys = ApiKeys.fromPrefs(prefs);
+
       runApp(
         ProviderScope(
           overrides: <Override>[
             sharedPreferencesProvider.overrideWithValue(prefs),
+            apiKeysProvider.overrideWithValue(apiKeys),
           ],
           child: const TonkatsuBoxApp(),
         ),

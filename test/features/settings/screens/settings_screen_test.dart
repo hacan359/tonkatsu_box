@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:xerabora/core/services/api_key_initializer.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/features/settings/screens/settings_screen.dart';
 import 'package:xerabora/features/settings/widgets/settings_group.dart';
@@ -25,6 +26,7 @@ void main() {
     return ProviderScope(
       overrides: <Override>[
         sharedPreferencesProvider.overrideWithValue(prefs),
+        apiKeysProvider.overrideWithValue(const ApiKeys()),
       ],
       child: MaterialApp(
         localizationsDelegates: S.localizationsDelegates,
@@ -323,6 +325,7 @@ void main() {
           ProviderScope(
             overrides: <Override>[
               sharedPreferencesProvider.overrideWithValue(prefs),
+              apiKeysProvider.overrideWithValue(const ApiKeys()),
               settingsNotifierProvider.overrideWith(
                 () => _TestSettingsNotifier(errorMessage),
               ),

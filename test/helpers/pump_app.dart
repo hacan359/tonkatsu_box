@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:xerabora/core/services/api_key_initializer.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
@@ -58,6 +59,7 @@ extension PumpApp on WidgetTester {
       ProviderScope(
         overrides: <Override>[
           sharedPreferencesProvider.overrideWithValue(prefs),
+          apiKeysProvider.overrideWithValue(const ApiKeys()),
           ...overrides,
         ],
         child: MaterialApp(

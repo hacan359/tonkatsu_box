@@ -9,6 +9,7 @@ import 'package:xerabora/core/api/steamgriddb_api.dart';
 import 'package:xerabora/core/api/tmdb_api.dart';
 import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
+import 'package:xerabora/core/services/api_key_initializer.dart';
 import 'package:xerabora/shared/constants/api_defaults.dart';
 
 import '../../../helpers/test_helpers.dart';
@@ -45,6 +46,7 @@ void main() {
     final ProviderContainer container = ProviderContainer(
       overrides: <Override>[
         sharedPreferencesProvider.overrideWithValue(prefs),
+        apiKeysProvider.overrideWithValue(const ApiKeys()),
         igdbApiProvider.overrideWithValue(mockIgdbApi),
         steamGridDbApiProvider.overrideWithValue(mockSteamGridDbApi),
         tmdbApiProvider.overrideWithValue(mockTmdbApi),
@@ -114,8 +116,7 @@ void main() {
 
   group('SettingsNotifier', () {
     group('build / _loadFromPrefs', () {
-      test('должен загрузить TMDB ключ из prefs и установить в TmdbApi',
-          () async {
+      test('должен загрузить TMDB ключ из prefs в state', () async {
         final ProviderContainer container = await createContainer(
           initialPrefs: <String, Object>{
             'tmdb_api_key': 'saved_tmdb_key',
@@ -126,11 +127,12 @@ void main() {
             container.read(settingsNotifierProvider);
 
         expect(state.tmdbApiKey, equals('saved_tmdb_key'));
-        verify(() => mockTmdbApi.setApiKey('saved_tmdb_key')).called(1);
+        // API ключ устанавливается в провайдере через apiKeysProvider,
+        // а не в _loadFromPrefs — поэтому setApiKey не вызывается.
+        verifyNever(() => mockTmdbApi.setApiKey(any()));
       });
 
-      test('не должен вызывать setApiKey на TmdbApi когда ключ отсутствует',
-          () async {
+      test('tmdbApiKey null когда ключ отсутствует', () async {
         final ProviderContainer container = await createContainer();
 
         final SettingsState state =
@@ -140,8 +142,7 @@ void main() {
         verifyNever(() => mockTmdbApi.setApiKey(any()));
       });
 
-      test('не должен вызывать setApiKey на TmdbApi когда ключ пустой',
-          () async {
+      test('tmdbApiKey null когда ключ пустой', () async {
         final ProviderContainer container = await createContainer(
           initialPrefs: <String, Object>{
             'tmdb_api_key': '',
@@ -157,8 +158,7 @@ void main() {
         verifyNever(() => mockTmdbApi.setApiKey(any()));
       });
 
-      test('должен загрузить SteamGridDB ключ и установить в SteamGridDbApi',
-          () async {
+      test('должен загрузить SteamGridDB ключ в state', () async {
         final ProviderContainer container = await createContainer(
           initialPrefs: <String, Object>{
             'steamgriddb_api_key': 'saved_sgdb_key',
@@ -169,7 +169,8 @@ void main() {
             container.read(settingsNotifierProvider);
 
         expect(state.steamGridDbApiKey, equals('saved_sgdb_key'));
-        verify(() => mockSteamGridDbApi.setApiKey('saved_sgdb_key')).called(1);
+        // API ключ устанавливается в провайдере через apiKeysProvider
+        verifyNever(() => mockSteamGridDbApi.setApiKey(any()));
       });
 
       test('должен загрузить все ключи из prefs одновременно', () async {
@@ -198,12 +199,14 @@ void main() {
         expect(state.steamGridDbApiKey, equals('sgdb_key'));
         expect(state.tmdbApiKey, equals('tmdb_key'));
 
-        verify(() => mockIgdbApi.setCredentials(
-              clientId: 'cid',
-              accessToken: 'token123',
-            )).called(1);
-        verify(() => mockSteamGridDbApi.setApiKey('sgdb_key')).called(1);
-        verify(() => mockTmdbApi.setApiKey('tmdb_key')).called(1);
+        // API ключи устанавливаются через apiKeysProvider в провайдерах,
+        // а не через _loadFromPrefs
+        verifyNever(() => mockIgdbApi.setCredentials(
+              clientId: any(named: 'clientId'),
+              accessToken: any(named: 'accessToken'),
+            ));
+        verifyNever(() => mockSteamGridDbApi.setApiKey(any()));
+        verifyNever(() => mockTmdbApi.setApiKey(any()));
       });
     });
 

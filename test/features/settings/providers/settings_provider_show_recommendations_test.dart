@@ -8,6 +8,7 @@ import 'package:xerabora/core/api/igdb_api.dart';
 import 'package:xerabora/core/api/steamgriddb_api.dart';
 import 'package:xerabora/core/api/tmdb_api.dart';
 import 'package:xerabora/core/database/database_service.dart';
+import 'package:xerabora/core/services/api_key_initializer.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 
 import '../../../helpers/test_helpers.dart';
@@ -38,6 +39,7 @@ void main() {
     final ProviderContainer container = ProviderContainer(
       overrides: <Override>[
         sharedPreferencesProvider.overrideWithValue(prefs),
+        apiKeysProvider.overrideWithValue(const ApiKeys()),
         igdbApiProvider.overrideWithValue(mockIgdbApi),
         steamGridDbApiProvider.overrideWithValue(mockSteamGridDbApi),
         tmdbApiProvider.overrideWithValue(mockTmdbApi),
@@ -182,6 +184,7 @@ void main() {
           final ProviderContainer container2 = ProviderContainer(
             overrides: <Override>[
               sharedPreferencesProvider.overrideWithValue(prefs),
+              apiKeysProvider.overrideWithValue(const ApiKeys()),
               igdbApiProvider.overrideWithValue(mockIgdbApi),
               steamGridDbApiProvider.overrideWithValue(mockSteamGridDbApi),
               tmdbApiProvider.overrideWithValue(mockTmdbApi),

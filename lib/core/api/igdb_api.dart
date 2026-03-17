@@ -2,12 +2,24 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
+import '../services/api_key_initializer.dart';
 import '../../shared/models/game.dart';
 import '../../shared/models/platform.dart';
 
 /// Провайдер для IGDB API клиента.
+///
+/// При создании устанавливает credentials из [apiKeysProvider],
+/// загруженного в main() до runApp().
 final Provider<IgdbApi> igdbApiProvider = Provider<IgdbApi>((Ref ref) {
-  return IgdbApi();
+  final IgdbApi api = IgdbApi();
+  final ApiKeys keys = ref.read(apiKeysProvider);
+  if (keys.igdbClientId != null && keys.igdbAccessToken != null) {
+    api.setCredentials(
+      clientId: keys.igdbClientId!,
+      accessToken: keys.igdbAccessToken!,
+    );
+  }
+  return api;
 });
 
 /// Результат аутентификации в Twitch OAuth.
