@@ -560,35 +560,34 @@ class _SortPopupButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final S l = S.of(context);
 
-    return PopupMenuButton<CollectionListSortMode?>(
+    return PopupMenuButton<String>(
       icon: Icon(
         Icons.sort,
         size: isLandscape ? 20 : null,
         color: _isNonDefault ? AppColors.brand : AppColors.textSecondary,
       ),
       tooltip: sortMode.localizedDisplayLabel(l),
-      onSelected: (CollectionListSortMode? value) {
-        if (value != null) {
-          onSortModeChanged(value);
-        } else {
+      onSelected: (String value) {
+        if (value == 'toggle_direction') {
           onToggleDirection();
+        } else {
+          onSortModeChanged(CollectionListSortMode.fromString(value));
         }
       },
-      itemBuilder: (BuildContext context) =>
-          <PopupMenuEntry<CollectionListSortMode?>>[
-        CheckedPopupMenuItem<CollectionListSortMode?>(
-          value: CollectionListSortMode.createdDate,
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+        CheckedPopupMenuItem<String>(
+          value: CollectionListSortMode.createdDate.value,
           checked: sortMode == CollectionListSortMode.createdDate,
           child: Text(l.collectionListSortCreatedDate),
         ),
-        CheckedPopupMenuItem<CollectionListSortMode?>(
-          value: CollectionListSortMode.alphabetical,
+        CheckedPopupMenuItem<String>(
+          value: CollectionListSortMode.alphabetical.value,
           checked: sortMode == CollectionListSortMode.alphabetical,
           child: Text(l.collectionListSortAlphabetical),
         ),
         const PopupMenuDivider(),
-        PopupMenuItem<CollectionListSortMode?>(
-          value: null,
+        PopupMenuItem<String>(
+          value: 'toggle_direction',
           child: Row(
             children: <Widget>[
               Icon(
