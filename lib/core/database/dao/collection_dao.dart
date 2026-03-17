@@ -531,8 +531,9 @@ class CollectionDao {
 
   /// Клонирует элемент в другую коллекцию (полная копия).
   ///
-  /// Создаёт новую запись с данными из исходного элемента [itemId]
-  /// в целевой коллекции [targetCollectionId].
+  /// Копирует все поля исходного элемента, переопределяя только
+  /// `id`, `collection_id`, `added_at` и `sort_order`.
+  /// Устойчиво к добавлению новых колонок в таблицу.
   /// Возвращает ID нового элемента или null при дубликате.
   Future<int?> cloneItemToCollection(
     int itemId,
@@ -540,7 +541,6 @@ class CollectionDao {
   ) async {
     final Database db = await _getDatabase();
 
-    // Читаем исходный элемент
     final List<Map<String, dynamic>> rows = await db.query(
       'collection_items',
       where: 'id = ?',
@@ -549,31 +549,18 @@ class CollectionDao {
     );
     if (rows.isEmpty) return null;
 
-    final Map<String, dynamic> source = rows.first;
     final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     final int sortOrder = await getNextSortOrder(targetCollectionId);
 
+    // Копируем все поля, переопределяя только целевые.
+    final Map<String, dynamic> clone = Map<String, dynamic>.of(rows.first)
+      ..remove('id')
+      ..['collection_id'] = targetCollectionId
+      ..['added_at'] = now
+      ..['sort_order'] = sortOrder;
+
     try {
-      final int newId = await db.insert(
-        'collection_items',
-        <String, dynamic>{
-          'collection_id': targetCollectionId,
-          'media_type': source['media_type'],
-          'external_id': source['external_id'],
-          'platform_id': source['platform_id'],
-          'status': source['status'],
-          'author_comment': source['author_comment'],
-          'user_comment': source['user_comment'],
-          'user_rating': source['user_rating'],
-          'current_season': source['current_season'],
-          'current_episode': source['current_episode'],
-          'started_at': source['started_at'],
-          'completed_at': source['completed_at'],
-          'last_activity_at': source['last_activity_at'],
-          'added_at': now,
-          'sort_order': sortOrder,
-        },
-      );
+      final int newId = await db.insert('collection_items', clone);
       return newId;
     } on DatabaseException catch (e) {
       if (e.isUniqueConstraintError()) {

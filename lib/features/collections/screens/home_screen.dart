@@ -58,6 +58,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             sortMode: sortMode,
             descending: sortDesc,
             isLandscape: isLandscape,
+            onSortModeChanged: (CollectionListSortMode mode) =>
+                ref.read(collectionListSortProvider.notifier).setSortMode(mode),
+            onToggleDirection: () =>
+                ref.read(collectionListSortDescProvider.notifier).toggle(),
           ),
           IconButton(
             icon: Icon(
@@ -91,7 +95,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         },
         child: collectionsAsync.when(
           data: (List<Collection> collections) =>
-              _buildCollectionsList(context, ref, collections),
+              _buildCollectionsList(
+                context, ref, collections,
+                sortMode: sortMode,
+                sortDesc: sortDesc,
+                isGridView: isGridView,
+              ),
           loading: () => _buildLoadingState(),
           error: (Object error, StackTrace stack) =>
               _buildErrorState(context, ref, error),
@@ -103,19 +112,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildCollectionsList(
     BuildContext context,
     WidgetRef ref,
-    List<Collection> collections,
-  ) {
+    List<Collection> collections, {
+    required CollectionListSortMode sortMode,
+    required bool sortDesc,
+    required bool isGridView,
+  }) {
     final int uncategorizedCount =
         ref.watch(uncategorizedItemCountProvider).valueOrNull ?? 0;
 
     if (collections.isEmpty && uncategorizedCount == 0) {
       return _buildEmptyState(context);
     }
-
-    final CollectionListSortMode sortMode =
-        ref.watch(collectionListSortProvider);
-    final bool sortDesc = ref.watch(collectionListSortDescProvider);
-    final bool isGridView = ref.watch(collectionListViewModeProvider);
 
     // Фильтрация коллекций по имени
     List<Collection> filteredCollections = collections;
@@ -531,59 +538,57 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 }
 
 /// Кнопка сортировки списка коллекций с popup menu.
-class _SortPopupButton extends ConsumerWidget {
+class _SortPopupButton extends StatelessWidget {
   const _SortPopupButton({
     required this.sortMode,
     required this.descending,
     required this.isLandscape,
+    required this.onSortModeChanged,
+    required this.onToggleDirection,
   });
 
   final CollectionListSortMode sortMode;
   final bool descending;
   final bool isLandscape;
+  final ValueChanged<CollectionListSortMode> onSortModeChanged;
+  final VoidCallback onToggleDirection;
 
   bool get _isNonDefault =>
       sortMode != CollectionListSortMode.createdDate || descending;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final S l = S.of(context);
 
-    return PopupMenuButton<String>(
+    return PopupMenuButton<CollectionListSortMode?>(
       icon: Icon(
         Icons.sort,
         size: isLandscape ? 20 : null,
         color: _isNonDefault ? AppColors.brand : AppColors.textSecondary,
       ),
       tooltip: sortMode.localizedDisplayLabel(l),
-      onSelected: (String value) {
-        switch (value) {
-          case 'created_date':
-            ref
-                .read(collectionListSortProvider.notifier)
-                .setSortMode(CollectionListSortMode.createdDate);
-          case 'alphabetical':
-            ref
-                .read(collectionListSortProvider.notifier)
-                .setSortMode(CollectionListSortMode.alphabetical);
-          case 'toggle_direction':
-            ref.read(collectionListSortDescProvider.notifier).toggle();
+      onSelected: (CollectionListSortMode? value) {
+        if (value != null) {
+          onSortModeChanged(value);
+        } else {
+          onToggleDirection();
         }
       },
-      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-        CheckedPopupMenuItem<String>(
-          value: 'created_date',
+      itemBuilder: (BuildContext context) =>
+          <PopupMenuEntry<CollectionListSortMode?>>[
+        CheckedPopupMenuItem<CollectionListSortMode?>(
+          value: CollectionListSortMode.createdDate,
           checked: sortMode == CollectionListSortMode.createdDate,
           child: Text(l.collectionListSortCreatedDate),
         ),
-        CheckedPopupMenuItem<String>(
-          value: 'alphabetical',
+        CheckedPopupMenuItem<CollectionListSortMode?>(
+          value: CollectionListSortMode.alphabetical,
           checked: sortMode == CollectionListSortMode.alphabetical,
           child: Text(l.collectionListSortAlphabetical),
         ),
         const PopupMenuDivider(),
-        PopupMenuItem<String>(
-          value: 'toggle_direction',
+        PopupMenuItem<CollectionListSortMode?>(
+          value: null,
           child: Row(
             children: <Widget>[
               Icon(
