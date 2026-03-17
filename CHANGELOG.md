@@ -6,6 +6,12 @@
 
 ## [Unreleased]
 
+### Added
+- **Copy item to another collection** — full clone of collection items (status, ratings, comments, progress, activity dates) via "Copy to collection" in context menu on list tiles and detail screens. Canvas and tier-list entries are not copied. Uncategorized hidden from clone target picker. Schema-resilient DAO implementation (`collection_dao.dart`, `collection_repository.dart`, `collections_provider.dart`, `collection_actions.dart`, `collection_item_tile.dart`, `item_detail_screen.dart`)
+- **Collection list sorting** — sort collections by date created or alphabetically (A→Z / Z→A) with direction toggle. Sort mode persisted in SharedPreferences. Sort popup button in HomeScreen AppBar with visual indicator when non-default. `CollectionListSortMode` enum, `CollectionListSortNotifier`, `CollectionListSortDescNotifier` (`collection_list_sort_mode.dart`, `collections_provider.dart`, `home_screen.dart`)
+- **Collection list grid/list view toggle** — switch between grid (iOS-style folder cards) and list (simple text tiles) view. Preference persisted in SharedPreferences. `CollectionListTile`, `UncategorizedListTile` widgets, `CollectionListViewModeNotifier` (`collection_list_tile.dart`, `collections_provider.dart`, `home_screen.dart`)
+- **"Open in collection" button on search cards** — when an item is already in a collection, the check badge on search result cards becomes a clickable button that navigates to `ItemDetailScreen`. If the item is in multiple collections, a picker dialog is shown. Works for all 6 media types (`media_poster_card.dart`, `browse_grid.dart`, `search_screen.dart`)
+
 ### Fixed
 - **API key race condition on first launch** — API requests failed with "API key not set" on first app launch because `SettingsNotifier.build()` set API keys after UI had already started making requests. Added `ApiKeys` class (`api_key_initializer.dart`) that loads keys from SharedPreferences synchronously in `main()` before `runApp()`. API providers (`tmdbApiProvider`, `igdbApiProvider`, `steamGridDbApiProvider`) now read keys from `apiKeysProvider` at creation time. `SettingsNotifier._loadFromPrefs()` no longer sets API keys (they are already set); `_syncApiClients()` added for `importConfig()` re-sync (`api_key_initializer.dart`, `main.dart`, `tmdb_api.dart`, `igdb_api.dart`, `steamgriddb_api.dart`, `settings_provider.dart`)
 

@@ -62,6 +62,9 @@
 - [x] Wishlist — quick notes for deferred content search. WishlistItem model, DB migration v19 (wishlist table), WishlistRepository, WishlistNotifier (AsyncNotifierProvider), WishlistScreen with FAB/popup menu/filter/clear resolved, AddWishlistDialog with optional media type hint, 5th navigation tab with badge (active count), tap-to-search integration with SearchScreen(initialQuery)
 - [x] Trakt.tv ZIP Import — offline import from Trakt data export (ZIP archive). TraktZipImportService with validateZip/importFromZip, TraktImportScreen with file picker/preview/options/progress dialog. Watched movies/shows → collection items (completed), ratings → userRating (if null), watchlist → planned/wishlist, episodes → episode tracker. Animation detection via TMDB genres. Conflict resolution (status hierarchy, dropped never overwritten). `archive` package for cross-platform ZIP extraction
 - [x] i18n Localization (EN/RU) — Flutter `gen_l10n` with 521 ARB keys, ICU plural forms for Russian, runtime language switcher in Settings, localized enum labels (ItemStatus, MediaType, CollectionSortMode, SearchSortField), `AppStrings` removed
+- [x] Copy to Collection — clone items between collections (full copy of status, ratings, comments, progress, dates). "Copy to collection" in context menu alongside "Move". Canvas and tier-list entries not copied
+- [x] Collection List Sort & View — sort by date created or alphabetically with direction toggle, grid/list view switcher. All preferences persisted in SharedPreferences. `CollectionListSortMode`, `CollectionListTile`
+- [x] Open in Collection — search result cards with "in collection" badge become clickable, navigating to `ItemDetailScreen`. Multi-collection picker when item exists in several collections
 
 ---
 
