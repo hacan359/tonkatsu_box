@@ -2435,6 +2435,27 @@ class SRu extends S {
   String get collectionListViewList => 'Список';
 
   @override
+  String get collectionListViewTable => 'Таблица';
+
+  @override
+  String get collectionTableName => 'Название';
+
+  @override
+  String get collectionTableType => 'Тип';
+
+  @override
+  String get collectionTablePlatform => 'Платформа';
+
+  @override
+  String get collectionTableStatus => 'Статус';
+
+  @override
+  String get collectionTableRating => 'Оценка';
+
+  @override
+  String get collectionTableYear => 'Год';
+
+  @override
   String get collectionCopyToCollection => 'Копировать в коллекцию';
 
   @override

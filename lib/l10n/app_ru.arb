@@ -895,6 +895,13 @@
   "collectionListSortAlphabeticalZA": "Я → А",
   "collectionListViewGrid": "Сетка",
   "collectionListViewList": "Список",
+  "collectionListViewTable": "Таблица",
+  "collectionTableName": "Название",
+  "collectionTableType": "Тип",
+  "collectionTablePlatform": "Платформа",
+  "collectionTableStatus": "Статус",
+  "collectionTableRating": "Оценка",
+  "collectionTableYear": "Год",
 
   "collectionCopyToCollection": "Копировать в коллекцию",
   "collectionItemCopiedTo": "{name} скопирован в {collection}",

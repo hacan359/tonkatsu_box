@@ -55,6 +55,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   bool _collectionLoading = true;
   bool _isCanvasMode = false;
   bool _isGridMode = false;
+  bool _isTableMode = false;
   bool _isViewModeLocked = false;
   MediaType? _filterType;
   int? _filterPlatformId;
@@ -103,13 +104,16 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   Future<void> _loadCollection() async {
     if (_isUncategorized) {
       final SharedPreferences prefs = ref.read(sharedPreferencesProvider);
-      final bool savedGridMode = prefs.getBool(
-            '${SettingsKeys.collectionViewModePrefix}uncategorized',
-          ) ??
-          true;
+      const String viewKey =
+          '${SettingsKeys.collectionViewModePrefix}uncategorized';
+      const String tableKey =
+          '${SettingsKeys.collectionTableModePrefix}uncategorized';
+      final bool savedGridMode = prefs.getBool(viewKey) ?? true;
+      final bool savedTableMode = prefs.getBool(tableKey) ?? false;
       if (mounted) {
         setState(() {
           _isGridMode = savedGridMode;
+          _isTableMode = savedTableMode;
           _collectionLoading = false;
         });
       }
@@ -119,14 +123,17 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     final CollectionRepository repo = ref.read(collectionRepositoryProvider);
     final Collection? collection = await repo.getById(widget.collectionId!);
     final SharedPreferences prefs = ref.read(sharedPreferencesProvider);
-    final bool savedGridMode = prefs.getBool(
-          '${SettingsKeys.collectionViewModePrefix}${widget.collectionId}',
-        ) ??
-        true;
+    final String viewKey =
+        '${SettingsKeys.collectionViewModePrefix}${widget.collectionId}';
+    final String tableKey =
+        '${SettingsKeys.collectionTableModePrefix}${widget.collectionId}';
+    final bool savedGridMode = prefs.getBool(viewKey) ?? true;
+    final bool savedTableMode = prefs.getBool(tableKey) ?? false;
     if (mounted) {
       setState(() {
         _collection = collection;
         _isGridMode = savedGridMode;
+        _isTableMode = savedTableMode;
         _collectionLoading = false;
       });
     }
@@ -339,6 +346,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             searchController: _searchController,
             searchQuery: _searchQuery,
             isGridMode: _isGridMode,
+            isTableMode: _isTableMode,
             onFilterTypeChanged: (MediaType? type) {
               setState(() {
                 _filterType = type;
@@ -349,13 +357,30 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
               setState(() => _filterPlatformId = id);
             },
             onGridModeChanged: () {
-              setState(() => _isGridMode = !_isGridMode);
-              ref
-                  .read(sharedPreferencesProvider)
-                  .setBool(
-                    '${SettingsKeys.collectionViewModePrefix}${widget.collectionId ?? "uncategorized"}',
-                    _isGridMode,
-                  );
+              setState(() {
+                // Цикл: grid → list → table → grid
+                if (_isGridMode) {
+                  _isGridMode = false;
+                  _isTableMode = false;
+                } else if (!_isTableMode) {
+                  _isTableMode = true;
+                } else {
+                  _isGridMode = true;
+                  _isTableMode = false;
+                }
+              });
+              final String colKey =
+                  widget.collectionId?.toString() ?? 'uncategorized';
+              final SharedPreferences prefs =
+                  ref.read(sharedPreferencesProvider);
+              prefs.setBool(
+                '${SettingsKeys.collectionViewModePrefix}$colKey',
+                _isGridMode,
+              );
+              prefs.setBool(
+                '${SettingsKeys.collectionTableModePrefix}$colKey',
+                _isTableMode,
+              );
             },
           ),
 
@@ -366,6 +391,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
               collectionId: widget.collectionId,
               items: _applyFilters(items),
               isGridMode: _isGridMode,
+              isTableMode: _isTableMode,
               canEdit: _canEdit,
               onItemTap: _showItemDetails,
               onItemMove: _canEdit

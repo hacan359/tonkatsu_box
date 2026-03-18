@@ -4429,6 +4429,48 @@ abstract class S {
   /// **'List view'**
   String get collectionListViewList;
 
+  /// No description provided for @collectionListViewTable.
+  ///
+  /// In en, this message translates to:
+  /// **'Table view'**
+  String get collectionListViewTable;
+
+  /// No description provided for @collectionTableName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get collectionTableName;
+
+  /// No description provided for @collectionTableType.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get collectionTableType;
+
+  /// No description provided for @collectionTablePlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Platform'**
+  String get collectionTablePlatform;
+
+  /// No description provided for @collectionTableStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get collectionTableStatus;
+
+  /// No description provided for @collectionTableRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Rating'**
+  String get collectionTableRating;
+
+  /// No description provided for @collectionTableYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Year'**
+  String get collectionTableYear;
+
   /// No description provided for @collectionCopyToCollection.
   ///
   /// In en, this message translates to:

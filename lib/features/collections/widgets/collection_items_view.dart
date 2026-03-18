@@ -16,6 +16,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../providers/collections_provider.dart';
 import 'collection_item_tile.dart';
+import 'collection_table_view.dart';
 
 /// View для отображения элементов коллекции в grid/list/reorder режиме.
 ///
@@ -27,6 +28,7 @@ class CollectionItemsView extends ConsumerWidget {
     required this.collectionId,
     required this.items,
     required this.isGridMode,
+    this.isTableMode = false,
     required this.canEdit,
     required this.onItemTap,
     this.onItemMove,
@@ -43,6 +45,9 @@ class CollectionItemsView extends ConsumerWidget {
 
   /// Режим отображения — grid или list.
   final bool isGridMode;
+
+  /// Режим таблицы (Excel-like).
+  final bool isTableMode;
 
   /// Можно ли редактировать (move/remove/reorder).
   final bool canEdit;
@@ -66,6 +71,16 @@ class CollectionItemsView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     if (items.isEmpty) {
       return _buildEmptyState(context);
+    }
+
+    if (isTableMode) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+        child: CollectionTableView(
+          items: items,
+          onItemTap: onItemTap,
+        ),
+      );
     }
 
     if (isGridMode) {

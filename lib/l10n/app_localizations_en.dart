@@ -2412,6 +2412,27 @@ class SEn extends S {
   String get collectionListViewList => 'List view';
 
   @override
+  String get collectionListViewTable => 'Table view';
+
+  @override
+  String get collectionTableName => 'Name';
+
+  @override
+  String get collectionTableType => 'Type';
+
+  @override
+  String get collectionTablePlatform => 'Platform';
+
+  @override
+  String get collectionTableStatus => 'Status';
+
+  @override
+  String get collectionTableRating => 'Rating';
+
+  @override
+  String get collectionTableYear => 'Year';
+
+  @override
   String get collectionCopyToCollection => 'Copy to collection';
 
   @override

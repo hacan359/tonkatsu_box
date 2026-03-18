@@ -231,12 +231,12 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // Нажимаем на toggle
+        // Нажимаем на toggle (grid → list)
         await tester.tap(find.byIcon(Icons.view_list));
         await pumpScreen(tester);
 
-        // Теперь иконка grid_view (для обратного переключения)
-        expect(find.byIcon(Icons.grid_view), findsOneWidget);
+        // Теперь иконка table_chart_outlined (следующий = table)
+        expect(find.byIcon(Icons.table_chart_outlined), findsOneWidget);
       });
 
       testWidgets('grid mode должен показывать MediaPosterCard',
@@ -261,17 +261,21 @@ void main() {
         expect(find.byType(MediaPosterCard), findsNothing);
       });
 
-      testWidgets('должен переключаться обратно на grid',
+      testWidgets('должен переключаться обратно на grid через table',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // List
+        // Grid → List
         await tester.tap(find.byIcon(Icons.view_list));
         await pumpScreen(tester);
         expect(find.byType(GridView), findsNothing);
 
-        // Обратно на grid
+        // List → Table
+        await tester.tap(find.byIcon(Icons.table_chart_outlined));
+        await pumpScreen(tester);
+
+        // Table → Grid
         await tester.tap(find.byIcon(Icons.grid_view));
         await pumpScreen(tester);
         expect(find.byType(GridView), findsOneWidget);
