@@ -29,19 +29,23 @@ Tonkatsu Box is a free, open-source app to organize your media collections. Sear
   <img src="docs/screenshots/01-main-all.jpg" width="800" alt="Main screen">
 </p>
 
-<div align="center">
-  <table>
-    <tr>
-      <td><img src="docs/screenshots/04-collection-grid.jpg" width="280" alt="Collection grid"></td>
-      <td><img src="docs/screenshots/05-collection-board.jpg" width="280" alt="Visual board"></td>
-      <td><img src="docs/screenshots/09-search-games.jpg" width="280" alt="Game search"></td>
-      <td><img src="docs/screenshots/06-item-details.jpg" width="280" alt="Item details"></td>
-      <td><img src="docs/screenshots/12-tier-list.jpg" width="280" alt="Tier list"></td>
-      <td><img src="docs/screenshots/07-search-movies.jpg" width="280" alt="Movie search"></td>
-      <td><img src="docs/screenshots/11-wishlist.jpg" width="280" alt="Wishlist"></td>
-    </tr>
-  </table>
-</div>
+## Screenshots
+
+| All Items | Collection Grid |
+|---|---|
+| <img src="docs/screenshots/02-main-games-filtered.jpg" alt="All Items"> | <img src="docs/screenshots/04-collection-grid.jpg" alt="Collection Grid"> |
+
+| Visual Board | Item Details |
+|---|---|
+| <img src="docs/screenshots/05-collection-board.jpg" alt="Visual Board"> | <img src="docs/screenshots/06-item-details.jpg" alt="Item Details"> |
+
+| Game Search | Movie Search |
+|---|---|
+| <img src="docs/screenshots/09-search-games.jpg" alt="Game Search"> | <img src="docs/screenshots/07-search-movies.jpg" alt="Movie Search"> |
+
+| Tier List | Wishlist |
+|---|---|
+| <img src="docs/screenshots/12-tier-list.jpg" alt="Tier List"> | <img src="docs/screenshots/11-wishlist.jpg" alt="Wishlist"> |
 
 ## Features
 
