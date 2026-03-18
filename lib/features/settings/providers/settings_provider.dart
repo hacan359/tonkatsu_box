@@ -42,6 +42,12 @@ abstract class SettingsKeys {
 
   /// Показывать ли секцию рекомендаций на странице элемента.
   static const String showRecommendations = 'show_recommendations';
+
+  /// Имя пользователя RetroAchievements.
+  static const String raUsername = 'ra_username';
+
+  /// API ключ RetroAchievements.
+  static const String raApiKey = 'ra_api_key';
 }
 
 /// Состояние настроек IGDB.
@@ -238,6 +244,17 @@ class SettingsNotifier extends Notifier<SettingsState> {
     _tmdbApi = ref.watch(tmdbApiProvider);
     _dbService = ref.watch(databaseServiceProvider);
 
+    // При auto-refresh токена из IgdbApi — сохраняем в prefs и обновляем state.
+    _igdbApi.onTokenRefreshed = (String accessToken, int expiresAt) {
+      _prefs.setString(SettingsKeys.accessToken, accessToken);
+      _prefs.setInt(SettingsKeys.tokenExpires, expiresAt);
+      state = state.copyWith(
+        accessToken: accessToken,
+        tokenExpires: expiresAt,
+        connectionStatus: ConnectionStatus.connected,
+      );
+    };
+
     return _loadFromPrefs();
   }
 
@@ -283,11 +300,23 @@ class SettingsNotifier extends Notifier<SettingsState> {
     final bool showRecommendations =
         _prefs.getBool(SettingsKeys.showRecommendations) ?? true;
 
+    // Определяем начальный статус подключения:
+    // - токен валиден → connected (не нужно ждать verify)
+    // - есть credentials, но токен истёк → запустим авто-верификацию
+    // - нет credentials → unknown
+    final bool hasValidToken = accessToken != null &&
+        tokenExpires != null &&
+        tokenExpires > DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
+    final ConnectionStatus initialStatus =
+        hasValidToken ? ConnectionStatus.connected : ConnectionStatus.unknown;
+
     final SettingsState loadedState = SettingsState(
       clientId: clientId,
       clientSecret: clientSecret,
       accessToken: accessToken,
       tokenExpires: tokenExpires,
+      connectionStatus: initialStatus,
       steamGridDbApiKey: steamGridDbApiKey,
       tmdbApiKey: tmdbApiKey,
       defaultAuthor: defaultAuthor,
@@ -321,6 +350,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
       _igdbApi.setCredentials(
         clientId: state.clientId!,
         accessToken: state.accessToken!,
+        clientSecret: state.clientSecret,
       );
     }
     if (state.steamGridDbApiKey != null &&
@@ -345,6 +375,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
       _igdbApi.setCredentials(
         clientId: state.clientId!,
         accessToken: authResult.accessToken,
+        clientSecret: state.clientSecret,
       );
       state = state.copyWith(
         accessToken: authResult.accessToken,
@@ -406,6 +437,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
       _igdbApi.setCredentials(
         clientId: state.clientId!,
         accessToken: authResult.accessToken,
+        clientSecret: state.clientSecret,
       );
 
       state = state.copyWith(
@@ -598,6 +630,8 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await _prefs.remove(SettingsKeys.tmdbApiKey);
     await _prefs.remove(SettingsKeys.defaultAuthor);
     await _prefs.remove(SettingsKeys.showRecommendations);
+    await _prefs.remove(SettingsKeys.raUsername);
+    await _prefs.remove(SettingsKeys.raApiKey);
 
     _igdbApi.clearCredentials();
     _steamGridDbApi.clearApiKey();

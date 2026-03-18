@@ -18,6 +18,7 @@ import 'cache_screen.dart';
 import 'credentials_screen.dart';
 import 'credits_screen.dart';
 import 'database_screen.dart';
+import 'ra_import_screen.dart';
 import 'steam_import_screen.dart';
 import 'trakt_import_screen.dart';
 import 'debug_hub_screen.dart';
@@ -196,6 +197,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: l.settingsSteamImport,
             subtitle: l.settingsSteamImportSubtitle,
             onTap: () => _pushScreen(const SteamImportScreen()),
+          ),
+          SettingsTile(
+            title: l.settingsRaImport,
+            subtitle: l.settingsRaImportSubtitle,
+            onTap: () => _pushScreen(const RaImportScreen()),
           ),
         ],
       ),

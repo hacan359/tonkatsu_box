@@ -2463,4 +2463,103 @@ class SEn extends S {
 
   @override
   String get importResultSourceCollectionFile => 'Collection File';
+
+  @override
+  String get settingsRaImport => 'RetroAchievements';
+
+  @override
+  String get settingsRaImportSubtitle => 'Import games from RetroAchievements';
+
+  @override
+  String get raImportTitle => 'RetroAchievements Import';
+
+  @override
+  String get raImportSubtitle => 'Games will be matched to IGDB database';
+
+  @override
+  String get raImportIgdbRequired =>
+      'IGDB connection required. Set up API keys in Settings → Credentials first.';
+
+  @override
+  String get raUsername => 'Username';
+
+  @override
+  String get raApiKey => 'API Key';
+
+  @override
+  String get raGetApiKey =>
+      'Get your API key at retroachievements.org/controlpanel.php';
+
+  @override
+  String get raImportOptions => 'Options';
+
+  @override
+  String get raImportOptionWishlist => 'Add unmatched games to Wishlist';
+
+  @override
+  String get raImportStart => 'Start Import';
+
+  @override
+  String get raImportTargetCollection => 'Target collection';
+
+  @override
+  String get raImportNewCollection => 'Create new collection';
+
+  @override
+  String get raImportExistingCollection => 'Use existing collection';
+
+  @override
+  String get raImportNoCollections => 'No collections available';
+
+  @override
+  String get raImportSelectCollection => 'Select collection';
+
+  @override
+  String get raImportErrorLoadingCollections => 'Error loading collections';
+
+  @override
+  String get raImportFetchingLibrary => 'Fetching RA library...';
+
+  @override
+  String raImportMatching(String title) {
+    return 'Matching: $title';
+  }
+
+  @override
+  String get raImportComplete => 'Import complete!';
+
+  @override
+  String raImportAdded(int count) {
+    return '$count games added';
+  }
+
+  @override
+  String raImportUpdated(int count) {
+    return '$count games updated';
+  }
+
+  @override
+  String raImportToWishlist(int count) {
+    return '$count added to Wishlist';
+  }
+
+  @override
+  String raConnectionFailed(String error) {
+    return 'Connection failed: $error';
+  }
+
+  @override
+  String raImportFailed(String error) {
+    return 'Import failed: $error';
+  }
+
+  @override
+  String raProfilePoints(int points) {
+    return '$points points';
+  }
+
+  @override
+  String raProfileMemberSince(String date) {
+    return 'Member since $date';
+  }
 }

@@ -30,6 +30,8 @@ import 'package:xerabora/core/services/gamepad_service.dart';
 import 'package:xerabora/core/services/image_cache_service.dart';
 import 'package:xerabora/core/api/steam_api.dart';
 import 'package:xerabora/core/services/steam_import_service.dart';
+import 'package:xerabora/core/api/ra_api.dart';
+import 'package:xerabora/core/services/ra_to_igdb_mapper.dart';
 import 'package:xerabora/core/services/trakt_zip_import_service.dart';
 import 'package:xerabora/data/repositories/canvas_repository.dart';
 import 'package:xerabora/data/repositories/collection_repository.dart';
@@ -115,6 +117,8 @@ class MockAniListApi extends Mock implements AniListApi {}
 
 class MockSteamApi extends Mock implements SteamApi {}
 
+class MockRaApi extends Mock implements RaApi {}
+
 // ===== Services =====
 
 class MockSteamImportService extends Mock implements SteamImportService {}
@@ -123,6 +127,8 @@ class MockImageCacheService extends Mock implements ImageCacheService {}
 
 class MockTraktZipImportService extends Mock
     implements TraktZipImportService {}
+
+class MockRaToIgdbMapper extends Mock implements RaToIgdbMapper {}
 
 // ===== Repositories =====
 

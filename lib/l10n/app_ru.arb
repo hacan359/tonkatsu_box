@@ -926,5 +926,73 @@
   },
   "importResultOpenCollection": "Открыть коллекцию",
   "importResultWishlistHint": "Элементы, не найденные в базе данных, сохранены в Список желаний.",
-  "importResultSourceCollectionFile": "Файл коллекции"
+  "importResultSourceCollectionFile": "Файл коллекции",
+
+  "settingsRaImport": "RetroAchievements",
+  "settingsRaImportSubtitle": "Импорт игр из RetroAchievements",
+  "raImportTitle": "Импорт RetroAchievements",
+  "raImportSubtitle": "Игры будут найдены в базе IGDB",
+  "raImportIgdbRequired": "Требуется подключение к IGDB. Настройте API ключи в Настройки → Подключения.",
+  "raUsername": "Имя пользователя",
+  "raApiKey": "Ключ API",
+  "raGetApiKey": "Получите ключ на retroachievements.org/controlpanel.php",
+  "raImportOptions": "Параметры",
+  "raImportOptionWishlist": "Добавить ненайденные в Список желаний",
+  "raImportStart": "Начать импорт",
+  "raImportTargetCollection": "Целевая коллекция",
+  "raImportNewCollection": "Создать новую коллекцию",
+  "raImportExistingCollection": "Использовать существующую",
+  "raImportNoCollections": "Нет доступных коллекций",
+  "raImportSelectCollection": "Выберите коллекцию",
+  "raImportErrorLoadingCollections": "Ошибка загрузки коллекций",
+  "raImportFetchingLibrary": "Загрузка библиотеки RA...",
+  "raImportMatching": "Поиск: {title}",
+  "@raImportMatching": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "raImportComplete": "Импорт завершён!",
+  "raImportAdded": "Добавлено: {count}",
+  "@raImportAdded": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "raImportUpdated": "Обновлено: {count}",
+  "@raImportUpdated": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "raImportToWishlist": "В вишлист: {count}",
+  "@raImportToWishlist": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "raConnectionFailed": "Ошибка подключения: {error}",
+  "@raConnectionFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "raImportFailed": "Ошибка импорта: {error}",
+  "@raImportFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "raProfilePoints": "{points} очков",
+  "@raProfilePoints": {
+    "placeholders": {
+      "points": {"type": "int"}
+    }
+  },
+  "raProfileMemberSince": "Участник с {date}",
+  "@raProfileMemberSince": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  }
 }

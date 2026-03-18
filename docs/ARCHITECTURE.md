@@ -4,14 +4,14 @@
 
 ## Обзор
 
-Tonkatsu Box — кроссплатформенное приложение на Flutter для управления коллекциями ретро-игр, фильмов, сериалов, визуальных новелл и манги с интеграцией IGDB, TMDB, SteamGridDB, VNDB и AniList API.
+Tonkatsu Box — кроссплатформенное приложение на Flutter для управления коллекциями ретро-игр, фильмов, сериалов, визуальных новелл и манги с интеграцией IGDB, TMDB, SteamGridDB, VNDB, AniList и RetroAchievements API.
 
 | Слой | Технология |
 |------|------------|
 | UI | Flutter (Material 3) |
 | State | Riverpod |
 | Database | SQLite (sqflite_ffi на desktop, sqflite на Android) |
-| API | IGDB (Twitch OAuth), TMDB (Bearer token), SteamGridDB (Bearer token), VNDB (public, no auth), AniList (public GraphQL, no auth) |
+| API | IGDB (Twitch OAuth), TMDB (Bearer token), SteamGridDB (Bearer token), VNDB (public, no auth), AniList (public GraphQL, no auth), RetroAchievements (username + API key) |
 | Platform | Windows Desktop, Linux Desktop, Android (VGMaps недоступен) |
 
 > [!IMPORTANT]
@@ -24,10 +24,10 @@ Tonkatsu Box — кроссплатформенное приложение на 
 ```mermaid
 graph TB
     subgraph core ["🔧 Core"]
-        api["API<br/><small>igdb_api, tmdb_api,<br/>steamgriddb_api, vndb_api,<br/>anilist_api</small>"]
+        api["API<br/><small>igdb_api, tmdb_api,<br/>steamgriddb_api, vndb_api,<br/>anilist_api, ra_api</small>"]
         database["Database<br/><small>database_service + 8 DAOs<br/>SQLite, 19 таблиц</small>"]
         logging["Logging<br/><small>AppLogger<br/>package:logging</small>"]
-        services["Services<br/><small>export, import,<br/>image_cache, config</small>"]
+        services["Services<br/><small>export, import,<br/>image_cache, config,<br/>ra_import, ra_to_igdb_mapper</small>"]
     end
 
     subgraph data ["💾 Data"]
@@ -45,7 +45,7 @@ graph TB
     end
 
     subgraph shared ["🧩 Shared"]
-        models["Models<br/><small>23 модели:<br/>Game, Movie, TvShow,<br/>VisualNovel, Manga, Collection,<br/>CanvasItem, WishlistItem...</small>"]
+        models["Models<br/><small>25 моделей:<br/>Game, Movie, TvShow,<br/>VisualNovel, Manga, Collection,<br/>CanvasItem, WishlistItem,<br/>RaGameProgress, RaUserProfile...</small>"]
         widgets["Widgets<br/><small>CachedImage, MediaPosterCard,<br/>BreadcrumbAppBar,<br/>StarRatingBar...</small>"]
         theme["Theme<br/><small>AppColors, AppTypography,<br/>AppSpacing, AppTheme</small>"]
         navigation["Navigation<br/><small>NavigationShell<br/>Rail / BottomBar</small>"]
@@ -104,11 +104,12 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/core/api/igdb_api.dart` | **IGDB API клиент**. OAuth через Twitch, поиск игр, загрузка платформ, browse с фильтрами, жанры. Методы: `getAccessToken()`, `searchGames()`, `fetchPlatforms()`, `browseGames()`, `getGenres()`, `getTopGamesByPlatform()` |
+| `lib/core/api/igdb_api.dart` | **IGDB API клиент**. OAuth через Twitch, поиск игр, загрузка платформ, browse с фильтрами, жанры. Auto-refresh: `_igdbPost()` wrapper перехватывает HTTP 401, обновляет OAuth токен через `getAccessToken(clientId, clientSecret)`, повторяет запрос. `onTokenRefreshed` callback для сохранения токена. Методы: `getAccessToken()`, `searchGames()`, `fetchPlatforms()`, `browseGames()`, `getGenres()`, `getTopGamesByPlatform()` |
 | `lib/core/api/steamgriddb_api.dart` | **SteamGridDB API клиент**. Bearer token авторизация. Методы: `searchGames()`, `getGrids()`, `getHeroes()`, `getLogos()`, `getIcons()`, `validateApiKey()` |
 | `lib/core/api/vndb_api.dart` | **VNDB API клиент**. Публичный API без авторизации (~200 req/min). Методы: `searchVn()`, `browseVn()`, `getVnById()`, `getVnByIds()`, `fetchTags()`. Провайдер: `vndbApiProvider` |
 | `lib/core/api/anilist_api.dart` | **AniList API клиент**. Публичный GraphQL API без авторизации (90 req/min). Методы: `searchManga()`, `browseManga()` (query/genre/format/sort), `getMangaById()`, `getMangaByIds()` (batch по 50). `AniListApiException` с statusCode. Провайдер: `aniListApiProvider` |
 | `lib/core/api/steam_api.dart` | **Steam Web API клиент**. Получение библиотеки пользователя. DTO: `SteamOwnedGame` (appId, name, playtimeMinutes, lastPlayed, playtimeHours, shouldSkip — фильтр DLC/саундтреков/демо). `SteamApiException` с statusCode. Провайдер: `steamApiProvider` |
+| `lib/core/api/ra_api.dart` | **RetroAchievements API клиент**. Публичный Web API, аутентификация через username + API key в query-параметрах. Методы: `validateCredentials()`, `getUserProfile()`, `getCompletedGames()` (paginated, 500/page, rate-limited 1 req/sec), `getUserAwardDates()` (beaten/mastered dates). `RaApiException` с statusCode. Провайдер: `raApiProvider` |
 | `lib/core/api/tmdb_api.dart` | **TMDB API клиент**. Bearer token авторизация. Методы: `searchMovies(query, {year})`, `searchTvShows(query, {firstAirDateYear})`, `multiSearch()`, `getMovieDetails()`, `getTvShowDetails()`, `getPopularMovies()`, `getPopularTvShows()`, `getMovieGenres()`, `getTvGenres()`, `getSeasonEpisodes(tmdbShowId, seasonNumber)`, `setLanguage(language)`, `getMovieRecommendations()`, `getTvShowRecommendations()`, `getMovieReviews()`, `getTvShowReviews()`, `discoverMovies()`, `discoverTvShows()`. Lazy-cached genre map (`_movieGenreMap`, `_tvGenreMap`) — resolves `genre_ids` to `genres` in all list endpoints. Cache cleared on `setLanguage()` and `clearApiKey()` |
 | `lib/shared/constants/platform_features.dart` | **Флаги платформы**. `kCanvasEnabled` (true на всех платформах), `kVgMapsEnabled` (только Windows), `kScreenshotEnabled` (только Windows). VGMaps скрыт на не-Windows платформах |
 | `lib/shared/constants/api_defaults.dart` | **Встроенные API ключи**. `ApiDefaults` — `abstract final class` с `String.fromEnvironment` для TMDB и SteamGridDB ключей, инжектируемых при сборке через `--dart-define`. Геттеры `hasTmdbKey`, `hasSteamGridDbKey`. Используется в `SettingsNotifier._loadFromPrefs()` как fallback: user key → built-in → null |
@@ -122,7 +123,7 @@ lib/
 | `lib/core/database/dao/canvas_dao.dart` | **DAO канваса**. CRUD для `canvas_items`, `canvas_viewport`, `canvas_connections`, `game_canvas_viewport`. Методы: `getCanvasItems()`, `insertCanvasItem()`, `updateCanvasItem()`, `deleteCanvasItem()`, `insertCanvasItemsBatch()`, `deleteCanvasItemsBatch()`, `getCanvasConnections()`, viewport операции. Batch методы используют `Transaction` + `Batch` для массовых INSERT/DELETE |
 | `lib/core/database/dao/wishlist_dao.dart` | **DAO вишлиста**. CRUD для `wishlist`. Методы: `addWishlistItem()`, `getWishlistItems()`, `getWishlistItemCount()`, `updateWishlistItem()`, `resolveWishlistItem()`, `deleteWishlistItem()`, `clearResolvedWishlistItems()` |
 | `lib/core/logging/app_logger.dart` | **Утилита логирования**. `abstract final class AppLogger` — инициализация `package:logging` с выводом через `dart:developer`. `setupErrorHandlers()` перехватывает `FlutterError.onError` и `PlatformDispatcher.onError`. `main()` обёрнут в `runZonedGuarded`. Все core-классы используют `static final Logger _log = Logger('ClassName')` |
-| `lib/core/services/api_key_initializer.dart` | **Ранняя инициализация API ключей**. Класс `ApiKeys` (immutable, 4 nullable поля: tmdbApiKey, steamGridDbApiKey, igdbClientId, igdbAccessToken). Фабрика `fromPrefs(SharedPreferences)` — загружает ключи с приоритетом: user key → built-in (ApiDefaults) → null. Вызывается в `main()` до `runApp()` для устранения race condition. Провайдер: `apiKeysProvider` (override в ProviderScope) |
+| `lib/core/services/api_key_initializer.dart` | **Ранняя инициализация API ключей**. Класс `ApiKeys` (immutable, 7 nullable полей: tmdbApiKey, steamGridDbApiKey, igdbClientId, igdbClientSecret, igdbAccessToken, raUsername, raApiKey). Фабрика `fromPrefs(SharedPreferences)` — загружает ключи с приоритетом: user key → built-in (ApiDefaults) → null. Вызывается в `main()` до `runApp()` для устранения race condition. Провайдер: `apiKeysProvider` (override в ProviderScope) |
 | `lib/core/services/config_service.dart` | **Сервис конфигурации**. Экспорт/импорт 8 ключей SharedPreferences в JSON файл. Класс `ConfigResult` (success/failure/cancelled). Методы: `collectSettings()`, `applySettings()`, `exportToFile()`, `importFromFile()` |
 | `lib/core/services/image_cache_service.dart` | **Сервис кэширования изображений**. Enum `ImageType` (platformLogo, gameCover, moviePoster, tvShowPoster, vnCover, mangaCover, canvasImage). Локальное хранение изображений в папках по типу. SharedPreferences для enable/disable и custom path. Валидация magic bytes (JPEG/PNG/WebP) при скачивании и при чтении из кэша. Безопасное удаление файлов (`_tryDelete`) при Windows file lock. Методы: `getImageUri()` (cache-first с fallback на remoteUrl + magic bytes проверка), `downloadImage()` (+ валидация), `downloadImages()`, `readImageBytes()`, `saveImageBytes()`, `clearCache()`, `getCacheSize()`, `getCachedCount()`. Провайдер `imageCacheServiceProvider` |
 | `lib/core/services/xcoll_file.dart` | **Модель файла экспорта/импорта**. Формат v2 (.xcoll/.xcollx, items + canvas + images). Классы: `XcollFile`, `ExportFormat` (light/full), `ExportCanvas`. Файлы v1 выбрасывают `FormatException` |
@@ -130,6 +131,8 @@ lib/
 | `lib/core/services/import_service.dart` | **Сервис импорта**. Импортирует XcollFile в коллекцию (новую или существующую через `collectionId`). items + canvas (viewport/items/connections) + per-item canvas + восстановление обложек из base64. При импорте в существующую коллекцию: дубликаты обновляются (authorComment, userRating), canvas и tier lists пропускаются. `ImportResult.itemsUpdated` — счётчик обновлённых. Прогресс через `ImportStage` enum и `ImportProgressCallback`. Зависимости: `DatabaseService`, `CanvasRepository`, `GameRepository`, `ImageCacheService` |
 | `lib/core/services/update_service.dart` | **Сервис проверки обновлений**. Класс `UpdateInfo` (currentVersion, latestVersion, releaseUrl, hasUpdate, releaseNotes). Класс `UpdateService` — запрос GitHub Releases API, semver сравнение (`isNewer()`), 24-часовой throttle через SharedPreferences. Провайдеры: `updateServiceProvider`, `updateCheckProvider` (FutureProvider) |
 | `lib/core/services/steam_import_service.dart` | **Сервис импорта Steam библиотеки**. Модели: `SteamImportStage` (enum), `SteamImportProgress` (stage/current/total/stats), `SteamImportResult` (imported/wishlisted/skipped/total/collectionId). Метод `importLibrary()`: fetch Steam library → filter DLC → create collection → for each game: IGDB search → best match (exact/substring/first) → add to collection (PC platform, status by playtime) or wishlist. Rate limiting: 1100ms delay every 4 requests. Провайдер: `steamImportServiceProvider` (зависит от steamApi, igdbApi, databaseService) |
+| `lib/core/services/ra_import_service.dart` | **Сервис импорта RetroAchievements**. Модели: `RaImportStage` (enum: fetchingLibrary/matchingGames/completed), `RaImportProgress` (stage/current/total/currentName/addedCount/updatedCount/unmatchedCount), `RaImportResult` (totalGames/added/updated/unmatched/unmatchedTitles/collectionId) + `toUniversal()` extension. Метод `importFromProfile()`: fetch RA library + award dates параллельно → для каждой игры: IGDB поиск через `RaToIgdbMapper` → add to collection (platform mapping, status by achievement progress) или update existing (status upgrade only, RA comment merge, activity dates) → wishlist fallback для unmatched. Rate limiting: 300ms between IGDB requests. Провайдер: `raImportServiceProvider` (зависит от raApi, igdbApi, databaseService) |
+| `lib/core/services/ra_to_igdb_mapper.dart` | **Маппер RA → IGDB**. `RaToIgdbMapper` — поиск IGDB игры по RA данным. `consolePlatformMap` — статическая таблица 30+ RA ConsoleID → IGDB PlatformID (Genesis, N64, SNES, GB, GBA, GBC, NES, PS1, PS2, PSP, Dreamcast, DS, 3DS, Arcade и др.). `findIgdbGame()` — поиск с platform filter → fallback без платформы. `_bestMatch()` — exact match → starts-with → first result. Нормализация: lowercase, только буквы и цифры |
 | `lib/core/services/trakt_zip_import_service.dart` | **Сервис импорта Trakt.tv ZIP**. Модели: `TraktZipInfo` (результат валидации), `TraktImportOptions` (параметры импорта), `TraktImportResult` (результат с success/failure). Методы: `validateZip()` (парсинг ZIP, подсчёт элементов, username), `importFromZip()` (полный цикл: чтение ZIP → парсинг JSON → fetching TMDB → создание/обновление элементов коллекции → эпизоды → рейтинги → watchlist). Анимация-детекция через TMDB genres. Конфликт-резолюция: статус по иерархии, рейтинг только если null, эпизоды merge. Прогресс через `ImportProgress`/`ImportStage`. Провайдер: `traktZipImportServiceProvider` (зависит от tmdbApi, collectionRepository, databaseService, wishlistRepository) |
 
 </details>
@@ -139,7 +142,7 @@ lib/
 ### 📦 Models (Модели данных)
 
 <details>
-<summary><strong>23 модели</strong> — развернуть таблицу</summary>
+<summary><strong>25 моделей</strong> — развернуть таблицу</summary>
 
 | Файл | Назначение |
 |------|------------|
@@ -167,6 +170,8 @@ lib/
 | `lib/shared/models/canvas_connection.dart` | **Модель связи канваса**. Enum `ConnectionStyle` (solid/dashed/arrow). Поля: id, collectionId, collectionItemId (null для коллекционного canvas, int для per-item), fromItemId, toItemId, label, color (hex), style, createdAt |
 | `lib/shared/models/wishlist_item.dart` | **Модель элемента вишлиста**. Поля: id, text, mediaTypeHint (MediaType?), note, isResolved, createdAt, resolvedAt. Методы: `fromDb()`, `toDb()`, `copyWith()`. Геттер `hasNote` |
 | `lib/shared/models/universal_import_result.dart` | **Универсальный результат импорта**. Используется Steam и Trakt импортёрами. Поля: sourceName, success, collection, importedByType/wishlistedByType/updatedByType (Map<MediaType, int>), untypedImported/untypedUpdated, skipped, errors, fatalError. Computed: totalImported, totalWishlisted, totalUpdated, hasWishlistItems, effectiveCollectionId |
+| `lib/shared/models/ra_game_progress.dart` | **Прогресс игры RetroAchievements**. Поля: gameId, title, consoleName, consoleId, numAwarded, maxPossible, hardcoreMode, highestAwardKind, lastPlayedAt. Computed: `completionRate` (0.0–1.0), `itemStatus` (mastered/completed/beaten → completed, >0 achievements → inProgress, 0 → planned). Метод: `fromJson()` (API_GetUserCompletionProgress) |
+| `lib/shared/models/ra_user_profile.dart` | **Профиль пользователя RetroAchievements**. Поля: user, totalPoints, memberSince, userPic, richPresenceMsg, totalTruePoints. Computed: `userPicUrl` (full URL). Метод: `fromJson()` (API_GetUserProfile) |
 | `lib/shared/models/tmdb_review.dart` | **Модель TMDB отзыва**. Поля: id, author, content, rating (double?), url, createdAt. Метод: `fromJson()` |
 
 </details>
@@ -483,6 +488,7 @@ lib/
 | `lib/features/settings/screens/database_screen.dart` | **Тонкая обёртка** для push-навигации. `BreadcrumbScope > Scaffold > Align(topCenter) > ConstrainedBox(600) > SingleChildScrollView > DatabaseContent` |
 | `lib/features/settings/screens/trakt_import_screen.dart` | **Тонкая обёртка** для push-навигации. `BreadcrumbScope > Scaffold > Align(topCenter) > ConstrainedBox(600) > SingleChildScrollView > TraktImportContent(onImportComplete: pop)` |
 | `lib/features/settings/screens/steam_import_screen.dart` | **Тонкая обёртка** для push-навигации. `BreadcrumbScope > Scaffold > Align(topCenter) > ConstrainedBox(600) > SingleChildScrollView > SteamImportContent` |
+| `lib/features/settings/screens/ra_import_screen.dart` | **Тонкая обёртка** для push-навигации. `BreadcrumbScope > Scaffold > Align(topCenter) > ConstrainedBox(600) > SingleChildScrollView > RaImportContent` |
 | `lib/features/settings/screens/import_result_screen.dart` | **Экран результатов импорта** — единый для Steam и Trakt. Celebration header, `_ResultCard` с breakdown по MediaType (иконки/цвета через `MediaTypeTheme`), wishlist hint, skipped count, кнопки "Open Collection" / "Done". StatelessWidget, принимает `UniversalImportResult` |
 | `lib/features/settings/screens/debug_hub_screen.dart` | **Хаб отладки** (только kDebugMode). `SettingsGroup`/`SettingsTile` с 4 debug tools: SteamGridDB, Image Debug, Gamepad, Demo Collections. SteamGridDB недоступен без API ключа |
 | `lib/features/settings/screens/steamgriddb_debug_screen.dart` | **Debug-экран SteamGridDB**. 5 табов: Search, Grids, Heroes, Logos, Icons. Тестирование всех API эндпоинтов |
@@ -501,6 +507,7 @@ Content-виджеты — извлечённое тело подэкранов,
 | `database_content.dart` | **Управление БД**. ConsumerWidget. Export/Import Config (JSON). Reset Database с диалогом подтверждения |
 | `credits_content.dart` | **Атрибуция API-провайдеров**. StatelessWidget. 2 `SettingsGroup`: Data Providers (TMDB/IGDB/SteamGridDB/VNDB/AniList — plain text, name + description + link) и Open Source (MIT license, GitHub link, View Licenses button) |
 | `trakt_import_content.dart` | **Импорт Trakt.tv**. ConsumerStatefulWidget. File picker, ZIP validation, preview, options, progress dialog. Callback `onImportComplete` |
+| `ra_import_content.dart` | **Импорт RetroAchievements**. ConsumerStatefulWidget. 3 состояния: ввод (username + API key + profile check + collection selector Radio/Dropdown + wishlist option), прогресс (LinearProgressIndicator + live stats: added/updated/wishlisted + current game name), результат (навигация на ImportResultScreen). Credentials загружаются из и сохраняются в SharedPreferences. Профиль preview: аватар, очки, дата регистрации, rich presence. IGDB connection warning. Инвалидирует collections, collectionStats, collectionCovers, allItems, wishlist провайдеры после импорта |
 | `steam_import_content.dart` | **Импорт Steam**. ConsumerStatefulWidget. 3 состояния: ввод (API key + Steam ID + выбор коллекции Radio/Dropdown), прогресс (LinearProgressIndicator + live stats), результат (imported/wishlisted/updated + навигация на коллекцию). Выбор целевой коллекции: создать новую или использовать существующую. Дубликаты обновляются (playtime, status, dates). Инвалидирует collections, collectionStats, collectionCovers, allItems, wishlist провайдеры после импорта |
 
 ---

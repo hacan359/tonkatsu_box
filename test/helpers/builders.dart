@@ -22,6 +22,8 @@ import 'package:xerabora/shared/models/tier_definition.dart';
 import 'package:xerabora/shared/models/tier_list.dart';
 import 'package:xerabora/shared/models/tier_list_entry.dart';
 import 'package:xerabora/core/api/steam_api.dart';
+import 'package:xerabora/shared/models/ra_game_progress.dart';
+import 'package:xerabora/shared/models/ra_user_profile.dart';
 import 'package:xerabora/shared/models/wishlist_item.dart';
 
 /// Стандартная тестовая дата для единообразия.
@@ -466,5 +468,51 @@ SteamOwnedGame createTestSteamOwnedGame({
     name: name,
     playtimeMinutes: playtimeMinutes,
     lastPlayed: lastPlayed,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// RetroAchievements
+// ---------------------------------------------------------------------------
+
+RaGameProgress createTestRaGameProgress({
+  int gameId = 1234,
+  String title = 'Super Mario World',
+  String consoleName = 'SNES',
+  int consoleId = 3,
+  int numAwarded = 50,
+  int maxPossible = 96,
+  bool hardcoreMode = true,
+  String? highestAwardKind,
+  DateTime? lastPlayedAt,
+}) {
+  return RaGameProgress(
+    gameId: gameId,
+    title: title,
+    consoleName: consoleName,
+    consoleId: consoleId,
+    numAwarded: numAwarded,
+    maxPossible: maxPossible,
+    hardcoreMode: hardcoreMode,
+    highestAwardKind: highestAwardKind,
+    lastPlayedAt: lastPlayedAt,
+  );
+}
+
+RaUserProfile createTestRaUserProfile({
+  String user = 'TestUser',
+  int totalPoints = 5000,
+  String memberSince = '2024-03-15 11:27:24',
+  String? userPic,
+  String? richPresenceMsg,
+  int totalTruePoints = 8000,
+}) {
+  return RaUserProfile(
+    user: user,
+    totalPoints: totalPoints,
+    memberSince: memberSince,
+    userPic: userPic,
+    richPresenceMsg: richPresenceMsg,
+    totalTruePoints: totalTruePoints,
   );
 }
