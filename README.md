@@ -31,7 +31,7 @@
 
 ---
 
-Tonkatsu Box is a free, open-source collection manager for retro games, movies, TV shows, anime, visual novels, and manga. Search IGDB, TMDB, VNDB, and AniList databases with hundreds of thousands of titles, organize them into custom collections, track your backlog and progress, rate everything from 1 to 10, create visual boards with drag-and-drop, import your watch history from Trakt.tv, and share collections with friends. Available for Windows, Linux, and Android in English and Russian.
+Tonkatsu Box is a free, open-source collection manager for retro games, movies, TV shows, anime, visual novels, and manga. Search IGDB, TMDB, VNDB, and AniList databases with hundreds of thousands of titles, organize them into custom collections, track your backlog and progress, rate everything from 1 to 10, create visual boards with drag-and-drop, import your watch history from Trakt.tv, Steam library, or RetroAchievements progress, and share collections with friends. Available for Windows, Linux, and Android in English and Russian.
 
 <p align="center">
   <img src="docs/screenshots/01-main-all.jpg" width="800" alt="Main screen — browse all your games, movies, TV shows, anime, and visual novels">
@@ -179,6 +179,16 @@ Already tracking movies and TV shows on [Trakt.tv](https://trakt.tv)? Import you
 
 The importer brings in your watched items (as completed), ratings (1–10), watchlist (as planned), and even individual watched episodes — all matched to TMDB metadata. Animated content is automatically detected and categorized as anime.
 
+### Importing from RetroAchievements
+
+Track retro game achievements on [RetroAchievements](https://retroachievements.org/)? Import your entire library:
+
+1. Go to **Settings** → **Import** → **RetroAchievements**
+2. Enter your RA username and API key ([get one here](https://retroachievements.org/controlpanel.php))
+3. Verify your profile, choose a target collection, and hit **Start Import**
+
+The importer maps 50+ retro consoles to IGDB platforms, brings in achievement progress (e.g., "24/50 achievements"), sets statuses based on awards (mastered/beaten → Completed), and tracks activity dates. Unmatched games go to your Wishlist.
+
 ### Demo Collections
 
 Want to try the app with pre-built content? Check out [**Tonkatsu Collections**](https://github.com/hacan359/tonkatsu-collections) — the largest open library of ready-to-import retro game databases:
@@ -199,6 +209,8 @@ Download any `.xcollx` file, import it from **Settings → Import Collection**, 
 | VGMaps browser (level maps) | ✅ | — | — |
 | Export & import | ✅ | ✅ | ✅ |
 | Trakt.tv import | ✅ | ✅ | ✅ |
+| Steam import | ✅ | ✅ | ✅ |
+| RetroAchievements import | ✅ | ✅ | ✅ |
 | Language (EN / RU) | ✅ | ✅ | ✅ |
 
 > **Note:** Linux support is experimental — the build is included in releases but has not been extensively tested yet.
@@ -237,6 +249,7 @@ Contributions are welcome! See the [Contributing Guide](docs/CONTRIBUTING.md) fo
 - Game data provided by [IGDB](https://www.igdb.com/).
 - Visual novel data provided by [VNDB](https://vndb.org/).
 - Manga data provided by [AniList](https://anilist.co/).
+- Achievement data provided by [RetroAchievements](https://retroachievements.org/).
 - Artwork provided by [SteamGridDB](https://www.steamgriddb.com/).
 
 ## License

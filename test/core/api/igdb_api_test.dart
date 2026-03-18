@@ -761,5 +761,213 @@ void main() {
         verify(() => mockDio.close()).called(1);
       });
     });
+
+    group('_igdbPost auto-refresh', () {
+      /// Настраивает SUT с clientSecret для авто-обновления токена.
+      void setupWithSecret() {
+        sut.setCredentials(
+          clientId: testClientId,
+          accessToken: testAccessToken,
+          clientSecret: testClientSecret,
+        );
+      }
+
+      test('should retry request after 401 when token refresh succeeds',
+          () async {
+        setupWithSecret();
+
+        int igdbCallCount = 0;
+
+        // IGDB POST (uses options + data).
+        when(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            )).thenAnswer((_) async {
+          igdbCallCount++;
+          if (igdbCallCount == 1) {
+            throw DioException(
+              response: Response<dynamic>(
+                statusCode: 401,
+                requestOptions: RequestOptions(),
+              ),
+              requestOptions: RequestOptions(),
+            );
+          }
+          // Retry call succeeds.
+          return Response<dynamic>(
+            data: <Map<String, dynamic>>[],
+            statusCode: 200,
+            requestOptions: RequestOptions(),
+          );
+        });
+
+        // Twitch auth POST (uses queryParameters).
+        when(() => mockDio.post<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'access_token': 'new_token',
+                'expires_in': 5000000,
+                'token_type': 'bearer',
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        final List<Game> result =
+            await sut.searchGames(query: 'test');
+
+        expect(result, isEmpty);
+        // 2 IGDB calls: original 401 + retry.
+        expect(igdbCallCount, equals(2));
+        // 1 Twitch auth call.
+        verify(() => mockDio.post<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).called(1);
+      });
+
+      test('should rethrow 401 when no clientSecret for refresh', () async {
+        // Без clientSecret.
+        sut.setCredentials(
+          clientId: testClientId,
+          accessToken: testAccessToken,
+        );
+
+        when(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            )).thenThrow(DioException(
+          response: Response<dynamic>(
+            statusCode: 401,
+            requestOptions: RequestOptions(),
+          ),
+          requestOptions: RequestOptions(),
+        ));
+
+        expect(
+          () => sut.searchGames(query: 'test'),
+          throwsA(isA<IgdbApiException>()),
+        );
+      });
+
+      test('should rethrow 401 when token refresh fails', () async {
+        setupWithSecret();
+
+        // Все POST вызовы возвращают 401.
+        when(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            )).thenThrow(DioException(
+          response: Response<dynamic>(
+            statusCode: 401,
+            requestOptions: RequestOptions(),
+          ),
+          requestOptions: RequestOptions(),
+        ));
+
+        // getAccessToken also throws (uses queryParameters).
+        when(() => mockDio.post<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenThrow(DioException(
+          response: Response<dynamic>(
+            statusCode: 401,
+            requestOptions: RequestOptions(),
+          ),
+          requestOptions: RequestOptions(),
+        ));
+
+        expect(
+          () => sut.searchGames(query: 'test'),
+          throwsA(isA<IgdbApiException>()),
+        );
+      });
+
+      test('should call onTokenRefreshed callback after refresh', () async {
+        setupWithSecret();
+
+        String? refreshedToken;
+        int? refreshedExpiresAt;
+        sut.onTokenRefreshed = (String token, int expiresAt) {
+          refreshedToken = token;
+          refreshedExpiresAt = expiresAt;
+        };
+
+        int callCount = 0;
+
+        when(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            )).thenAnswer((Invocation invocation) async {
+          callCount++;
+          if (callCount == 1) {
+            throw DioException(
+              response: Response<dynamic>(
+                statusCode: 401,
+                requestOptions: RequestOptions(),
+              ),
+              requestOptions: RequestOptions(),
+            );
+          }
+          return Response<dynamic>(
+            data: <Map<String, dynamic>>[],
+            statusCode: 200,
+            requestOptions: RequestOptions(),
+          );
+        });
+
+        when(() => mockDio.post<dynamic>(
+              any(),
+              queryParameters: any(named: 'queryParameters'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              data: <String, dynamic>{
+                'access_token': 'refreshed_token',
+                'expires_in': 5000000,
+                'token_type': 'bearer',
+              },
+              statusCode: 200,
+              requestOptions: RequestOptions(),
+            ));
+
+        await sut.searchGames(query: 'test');
+
+        expect(refreshedToken, equals('refreshed_token'));
+        expect(refreshedExpiresAt, isNotNull);
+      });
+
+      test('should not retry on non-401 errors', () async {
+        setupWithSecret();
+
+        when(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            )).thenThrow(DioException(
+          response: Response<dynamic>(
+            statusCode: 500,
+            requestOptions: RequestOptions(),
+          ),
+          requestOptions: RequestOptions(),
+        ));
+
+        expect(
+          () => sut.searchGames(query: 'test'),
+          throwsA(isA<IgdbApiException>()),
+        );
+
+        // Только 1 вызов post (без retry/refresh).
+        verify(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            )).called(1);
+      });
+    });
   });
 }

@@ -1150,5 +1150,73 @@
   },
   "importResultOpenCollection": "Open Collection",
   "importResultWishlistHint": "Items not found in the database were saved to your Wishlist for later.",
-  "importResultSourceCollectionFile": "Collection File"
+  "importResultSourceCollectionFile": "Collection File",
+
+  "settingsRaImport": "RetroAchievements",
+  "settingsRaImportSubtitle": "Import games from RetroAchievements",
+  "raImportTitle": "RetroAchievements Import",
+  "raImportSubtitle": "Games will be matched to IGDB database",
+  "raImportIgdbRequired": "IGDB connection required. Set up API keys in Settings → Credentials first.",
+  "raUsername": "Username",
+  "raApiKey": "API Key",
+  "raGetApiKey": "Get your API key at retroachievements.org/controlpanel.php",
+  "raImportOptions": "Options",
+  "raImportOptionWishlist": "Add unmatched games to Wishlist",
+  "raImportStart": "Start Import",
+  "raImportTargetCollection": "Target collection",
+  "raImportNewCollection": "Create new collection",
+  "raImportExistingCollection": "Use existing collection",
+  "raImportNoCollections": "No collections available",
+  "raImportSelectCollection": "Select collection",
+  "raImportErrorLoadingCollections": "Error loading collections",
+  "raImportFetchingLibrary": "Fetching RA library...",
+  "raImportMatching": "Matching: {title}",
+  "@raImportMatching": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "raImportComplete": "Import complete!",
+  "raImportAdded": "{count} games added",
+  "@raImportAdded": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "raImportUpdated": "{count} games updated",
+  "@raImportUpdated": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "raImportToWishlist": "{count} added to Wishlist",
+  "@raImportToWishlist": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "raConnectionFailed": "Connection failed: {error}",
+  "@raConnectionFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "raImportFailed": "Import failed: {error}",
+  "@raImportFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "raProfilePoints": "{points} points",
+  "@raProfilePoints": {
+    "placeholders": {
+      "points": {"type": "int"}
+    }
+  },
+  "raProfileMemberSince": "Member since {date}",
+  "@raProfileMemberSince": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  }
 }

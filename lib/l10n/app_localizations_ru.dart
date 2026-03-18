@@ -2486,4 +2486,103 @@ class SRu extends S {
 
   @override
   String get importResultSourceCollectionFile => 'Файл коллекции';
+
+  @override
+  String get settingsRaImport => 'RetroAchievements';
+
+  @override
+  String get settingsRaImportSubtitle => 'Импорт игр из RetroAchievements';
+
+  @override
+  String get raImportTitle => 'Импорт RetroAchievements';
+
+  @override
+  String get raImportSubtitle => 'Игры будут найдены в базе IGDB';
+
+  @override
+  String get raImportIgdbRequired =>
+      'Требуется подключение к IGDB. Настройте API ключи в Настройки → Подключения.';
+
+  @override
+  String get raUsername => 'Имя пользователя';
+
+  @override
+  String get raApiKey => 'Ключ API';
+
+  @override
+  String get raGetApiKey =>
+      'Получите ключ на retroachievements.org/controlpanel.php';
+
+  @override
+  String get raImportOptions => 'Параметры';
+
+  @override
+  String get raImportOptionWishlist => 'Добавить ненайденные в Список желаний';
+
+  @override
+  String get raImportStart => 'Начать импорт';
+
+  @override
+  String get raImportTargetCollection => 'Целевая коллекция';
+
+  @override
+  String get raImportNewCollection => 'Создать новую коллекцию';
+
+  @override
+  String get raImportExistingCollection => 'Использовать существующую';
+
+  @override
+  String get raImportNoCollections => 'Нет доступных коллекций';
+
+  @override
+  String get raImportSelectCollection => 'Выберите коллекцию';
+
+  @override
+  String get raImportErrorLoadingCollections => 'Ошибка загрузки коллекций';
+
+  @override
+  String get raImportFetchingLibrary => 'Загрузка библиотеки RA...';
+
+  @override
+  String raImportMatching(String title) {
+    return 'Поиск: $title';
+  }
+
+  @override
+  String get raImportComplete => 'Импорт завершён!';
+
+  @override
+  String raImportAdded(int count) {
+    return 'Добавлено: $count';
+  }
+
+  @override
+  String raImportUpdated(int count) {
+    return 'Обновлено: $count';
+  }
+
+  @override
+  String raImportToWishlist(int count) {
+    return 'В вишлист: $count';
+  }
+
+  @override
+  String raConnectionFailed(String error) {
+    return 'Ошибка подключения: $error';
+  }
+
+  @override
+  String raImportFailed(String error) {
+    return 'Ошибка импорта: $error';
+  }
+
+  @override
+  String raProfilePoints(int points) {
+    return '$points очков';
+  }
+
+  @override
+  String raProfileMemberSince(String date) {
+    return 'Участник с $date';
+  }
 }

@@ -17,6 +17,7 @@ final Provider<IgdbApi> igdbApiProvider = Provider<IgdbApi>((Ref ref) {
     api.setCredentials(
       clientId: keys.igdbClientId!,
       accessToken: keys.igdbAccessToken!,
+      clientSecret: keys.igdbClientSecret,
     );
   }
   return api;
@@ -74,11 +75,16 @@ class IgdbApiException implements Exception {
 ///
 /// Использует Twitch OAuth для аутентификации.
 /// Документация: https://api-docs.igdb.com/
+/// Callback при обновлении токена IGDB.
+typedef IgdbTokenRefreshedCallback = void Function(
+  String accessToken,
+  int expiresAt,
+);
+
 class IgdbApi {
   /// Создаёт экземпляр [IgdbApi].
   IgdbApi({Dio? dio}) : _dio = dio ?? Dio();
 
-  // ignore: unused_field
   static final Logger _log = Logger('IgdbApi');
 
   static const String _twitchAuthUrl = 'https://id.twitch.tv/oauth2/token';
@@ -87,20 +93,31 @@ class IgdbApi {
   final Dio _dio;
 
   String? _clientId;
+  String? _clientSecret;
   String? _accessToken;
+
+  /// Callback, вызываемый при автоматическом обновлении токена.
+  ///
+  /// Позволяет сохранить новый токен в SharedPreferences.
+  IgdbTokenRefreshedCallback? onTokenRefreshed;
+
+  bool _isRefreshing = false;
 
   /// Устанавливает учётные данные для API.
   void setCredentials({
     required String clientId,
     required String accessToken,
+    String? clientSecret,
   }) {
     _clientId = clientId;
+    _clientSecret = clientSecret;
     _accessToken = accessToken;
   }
 
   /// Очищает учётные данные.
   void clearCredentials() {
     _clientId = null;
+    _clientSecret = null;
     _accessToken = null;
   }
 
@@ -176,14 +193,8 @@ class IgdbApi {
       const int limit = 500;
 
       while (true) {
-        final Response<dynamic> response = await _dio.post<dynamic>(
-          '$_igdbBaseUrl/platforms',
-          options: Options(
-            headers: <String, dynamic>{
-              'Client-ID': _clientId,
-              'Authorization': 'Bearer $_accessToken',
-            },
-          ),
+        final Response<dynamic> response = await _igdbPost(
+          '/platforms',
           data: 'fields id,name,abbreviation; limit $limit; offset $offset;',
         );
 
@@ -210,16 +221,7 @@ class IgdbApi {
 
       return allPlatforms;
     } on DioException catch (e) {
-      final int? statusCode = e.response?.statusCode;
-      String message = 'Failed to fetch platforms';
-
-      if (statusCode == 401) {
-        message = 'Invalid or expired access token';
-      } else if (statusCode == 429) {
-        message = 'Rate limit exceeded. Please try again later';
-      }
-
-      throw IgdbApiException(message, statusCode: statusCode);
+      throw _handleDioException(e, 'Failed to fetch platforms');
     }
   }
 
@@ -233,14 +235,8 @@ class IgdbApi {
 
     try {
       final String idList = ids.join(',');
-      final Response<dynamic> response = await _dio.post<dynamic>(
-        '$_igdbBaseUrl/platforms',
-        options: Options(
-          headers: <String, dynamic>{
-            'Client-ID': _clientId,
-            'Authorization': 'Bearer $_accessToken',
-          },
-        ),
+      final Response<dynamic> response = await _igdbPost(
+        '/platforms',
         data:
             'fields id,name,abbreviation; where id = ($idList); limit 500;',
       );
@@ -258,16 +254,7 @@ class IgdbApi {
               Platform.fromJson(item as Map<String, dynamic>))
           .toList();
     } on DioException catch (e) {
-      final int? statusCode = e.response?.statusCode;
-      String message = 'Failed to fetch platforms by IDs';
-
-      if (statusCode == 401) {
-        message = 'Invalid or expired access token';
-      } else if (statusCode == 429) {
-        message = 'Rate limit exceeded. Please try again later';
-      }
-
-      throw IgdbApiException(message, statusCode: statusCode);
+      throw _handleDioException(e, 'Failed to fetch platforms by IDs');
     }
   }
 
@@ -343,14 +330,8 @@ class IgdbApi {
         body.write(' offset $offset;');
       }
 
-      final Response<dynamic> response = await _dio.post<dynamic>(
-        '$_igdbBaseUrl/games',
-        options: Options(
-          headers: <String, dynamic>{
-            'Client-ID': _clientId,
-            'Authorization': 'Bearer $_accessToken',
-          },
-        ),
+      final Response<dynamic> response = await _igdbPost(
+        '/games',
         data: body.toString(),
       );
 
@@ -378,14 +359,8 @@ class IgdbApi {
     _ensureCredentials();
 
     try {
-      final Response<dynamic> response = await _dio.post<dynamic>(
-        '$_igdbBaseUrl/games',
-        options: Options(
-          headers: <String, dynamic>{
-            'Client-ID': _clientId,
-            'Authorization': 'Bearer $_accessToken',
-          },
-        ),
+      final Response<dynamic> response = await _igdbPost(
+        '/games',
         data: '$_gameFields where id = $gameId;',
       );
 
@@ -430,14 +405,8 @@ class IgdbApi {
 
         final String idsString = batch.join(',');
 
-        final Response<dynamic> response = await _dio.post<dynamic>(
-          '$_igdbBaseUrl/games',
-          options: Options(
-            headers: <String, dynamic>{
-              'Client-ID': _clientId,
-              'Authorization': 'Bearer $_accessToken',
-            },
-          ),
+        final Response<dynamic> response = await _igdbPost(
+          '/games',
           data: '$_gameFields where id = ($idsString); limit 500;',
         );
 
@@ -487,14 +456,8 @@ class IgdbApi {
       body.write(' sort rating desc;');
       body.write(' limit $limit;');
 
-      final Response<dynamic> response = await _dio.post<dynamic>(
-        '$_igdbBaseUrl/games',
-        options: Options(
-          headers: <String, dynamic>{
-            'Client-ID': _clientId,
-            'Authorization': 'Bearer $_accessToken',
-          },
-        ),
+      final Response<dynamic> response = await _igdbPost(
+        '/games',
         data: body.toString(),
       );
 
@@ -522,14 +485,8 @@ class IgdbApi {
     _ensureCredentials();
 
     try {
-      final Response<dynamic> response = await _dio.post<dynamic>(
-        '$_igdbBaseUrl/genres',
-        options: Options(
-          headers: <String, dynamic>{
-            'Client-ID': _clientId,
-            'Authorization': 'Bearer $_accessToken',
-          },
-        ),
+      final Response<dynamic> response = await _igdbPost(
+        '/genres',
         data: 'fields id,name; limit 50; sort name asc;',
       );
 
@@ -603,14 +560,8 @@ class IgdbApi {
         body.write(' offset $offset;');
       }
 
-      final Response<dynamic> response = await _dio.post<dynamic>(
-        '$_igdbBaseUrl/games',
-        options: Options(
-          headers: <String, dynamic>{
-            'Client-ID': _clientId,
-            'Authorization': 'Bearer $_accessToken',
-          },
-        ),
+      final Response<dynamic> response = await _igdbPost(
+        '/games',
         data: body.toString(),
       );
 
@@ -647,6 +598,68 @@ class IgdbApi {
     }
 
     return IgdbApiException(message, statusCode: statusCode);
+  }
+
+  /// POST запрос к IGDB API с автоматическим обновлением токена при 401.
+  ///
+  /// При получении 401 пытается обновить токен и повторить запрос один раз.
+  Future<Response<dynamic>> _igdbPost(
+    String endpoint, {
+    required String data,
+  }) async {
+    try {
+      return await _dio.post<dynamic>(
+        '$_igdbBaseUrl$endpoint',
+        options: Options(
+          headers: <String, dynamic>{
+            'Client-ID': _clientId,
+            'Authorization': 'Bearer $_accessToken',
+          },
+        ),
+        data: data,
+      );
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401 && await _tryRefreshToken()) {
+        // Повторяем запрос с новым токеном.
+        return _dio.post<dynamic>(
+          '$_igdbBaseUrl$endpoint',
+          options: Options(
+            headers: <String, dynamic>{
+              'Client-ID': _clientId,
+              'Authorization': 'Bearer $_accessToken',
+            },
+          ),
+          data: data,
+        );
+      }
+      rethrow;
+    }
+  }
+
+  /// Пытается обновить токен при 401 ошибке.
+  ///
+  /// Возвращает `true` если токен обновлён и запрос можно повторить.
+  Future<bool> _tryRefreshToken() async {
+    if (_isRefreshing) return false;
+    if (_clientId == null || _clientSecret == null) return false;
+
+    _isRefreshing = true;
+    try {
+      _log.info('Auto-refreshing IGDB token...');
+      final TwitchAuthResult result = await getAccessToken(
+        clientId: _clientId!,
+        clientSecret: _clientSecret!,
+      );
+      _accessToken = result.accessToken;
+      onTokenRefreshed?.call(result.accessToken, result.expiresAt);
+      _log.info('IGDB token refreshed successfully');
+      return true;
+    } on IgdbApiException catch (e) {
+      _log.warning('IGDB token refresh failed: $e');
+      return false;
+    } finally {
+      _isRefreshing = false;
+    }
   }
 
   void _ensureCredentials() {

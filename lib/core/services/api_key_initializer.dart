@@ -15,7 +15,10 @@ class ApiKeys {
     this.tmdbApiKey,
     this.steamGridDbApiKey,
     this.igdbClientId,
+    this.igdbClientSecret,
     this.igdbAccessToken,
+    this.raUsername,
+    this.raApiKey,
   });
 
   /// Загружает ключи из SharedPreferences с fallback на встроенные.
@@ -39,19 +42,36 @@ class ApiKeys {
                 ? ApiDefaults.steamGridDbApiKey
                 : null);
 
-    // IGDB: client ID + access token из prefs
-    final String? igdbClientId = prefs.getString(SettingsKeys.clientId);
+    // IGDB: user key → built-in → null
+    final String? userClientId = prefs.getString(SettingsKeys.clientId);
+    final String? igdbClientId =
+        (userClientId != null && userClientId.isNotEmpty)
+            ? userClientId
+            : (ApiDefaults.hasIgdbKey ? ApiDefaults.igdbClientId : null);
+    final String? userClientSecret =
+        prefs.getString(SettingsKeys.clientSecret);
+    final String? igdbClientSecret =
+        (userClientSecret != null && userClientSecret.isNotEmpty)
+            ? userClientSecret
+            : (ApiDefaults.hasIgdbKey ? ApiDefaults.igdbClientSecret : null);
     final String? igdbAccessToken = prefs.getString(SettingsKeys.accessToken);
+
+    // RetroAchievements: username + API key из prefs
+    final String? raUsername = prefs.getString(SettingsKeys.raUsername);
+    final String? raApiKey = prefs.getString(SettingsKeys.raApiKey);
 
     return ApiKeys(
       tmdbApiKey: tmdbApiKey,
       steamGridDbApiKey: steamGridDbApiKey,
-      igdbClientId: (igdbClientId != null && igdbClientId.isNotEmpty)
-          ? igdbClientId
-          : null,
+      igdbClientId: igdbClientId,
+      igdbClientSecret: igdbClientSecret,
       igdbAccessToken: (igdbAccessToken != null && igdbAccessToken.isNotEmpty)
           ? igdbAccessToken
           : null,
+      raUsername: (raUsername != null && raUsername.isNotEmpty)
+          ? raUsername
+          : null,
+      raApiKey: (raApiKey != null && raApiKey.isNotEmpty) ? raApiKey : null,
     );
   }
 
@@ -64,8 +84,17 @@ class ApiKeys {
   /// Client ID для IGDB.
   final String? igdbClientId;
 
+  /// Client Secret для IGDB.
+  final String? igdbClientSecret;
+
   /// OAuth access token для IGDB.
   final String? igdbAccessToken;
+
+  /// Имя пользователя RetroAchievements.
+  final String? raUsername;
+
+  /// API ключ RetroAchievements.
+  final String? raApiKey;
 }
 
 /// Провайдер загруженных API ключей.

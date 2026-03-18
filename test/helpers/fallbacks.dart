@@ -17,6 +17,7 @@ import 'package:xerabora/shared/models/tv_episode.dart';
 import 'package:xerabora/shared/models/tv_season.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
 import 'package:xerabora/core/services/image_cache_service.dart';
+import 'package:xerabora/shared/models/ra_game_progress.dart';
 import 'package:xerabora/shared/models/tier_definition.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -54,6 +55,17 @@ void registerAllFallbacks() {
 
   // Tier lists
   registerFallbackValue(<TierDefinition>[]);
+
+  // RA
+  registerFallbackValue(const RaGameProgress(
+    gameId: 0,
+    title: 'fallback',
+    consoleName: '',
+    consoleId: 0,
+    numAwarded: 0,
+    maxPossible: 0,
+    hardcoreMode: false,
+  ));
 
   // Other
   registerFallbackValue(Uint8List(0));

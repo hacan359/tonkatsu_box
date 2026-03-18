@@ -4512,6 +4512,168 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Collection File'**
   String get importResultSourceCollectionFile;
+
+  /// No description provided for @settingsRaImport.
+  ///
+  /// In en, this message translates to:
+  /// **'RetroAchievements'**
+  String get settingsRaImport;
+
+  /// No description provided for @settingsRaImportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Import games from RetroAchievements'**
+  String get settingsRaImportSubtitle;
+
+  /// No description provided for @raImportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'RetroAchievements Import'**
+  String get raImportTitle;
+
+  /// No description provided for @raImportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Games will be matched to IGDB database'**
+  String get raImportSubtitle;
+
+  /// No description provided for @raImportIgdbRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'IGDB connection required. Set up API keys in Settings → Credentials first.'**
+  String get raImportIgdbRequired;
+
+  /// No description provided for @raUsername.
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
+  String get raUsername;
+
+  /// No description provided for @raApiKey.
+  ///
+  /// In en, this message translates to:
+  /// **'API Key'**
+  String get raApiKey;
+
+  /// No description provided for @raGetApiKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Get your API key at retroachievements.org/controlpanel.php'**
+  String get raGetApiKey;
+
+  /// No description provided for @raImportOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Options'**
+  String get raImportOptions;
+
+  /// No description provided for @raImportOptionWishlist.
+  ///
+  /// In en, this message translates to:
+  /// **'Add unmatched games to Wishlist'**
+  String get raImportOptionWishlist;
+
+  /// No description provided for @raImportStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Import'**
+  String get raImportStart;
+
+  /// No description provided for @raImportTargetCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Target collection'**
+  String get raImportTargetCollection;
+
+  /// No description provided for @raImportNewCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Create new collection'**
+  String get raImportNewCollection;
+
+  /// No description provided for @raImportExistingCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Use existing collection'**
+  String get raImportExistingCollection;
+
+  /// No description provided for @raImportNoCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'No collections available'**
+  String get raImportNoCollections;
+
+  /// No description provided for @raImportSelectCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Select collection'**
+  String get raImportSelectCollection;
+
+  /// No description provided for @raImportErrorLoadingCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading collections'**
+  String get raImportErrorLoadingCollections;
+
+  /// No description provided for @raImportFetchingLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching RA library...'**
+  String get raImportFetchingLibrary;
+
+  /// No description provided for @raImportMatching.
+  ///
+  /// In en, this message translates to:
+  /// **'Matching: {title}'**
+  String raImportMatching(String title);
+
+  /// No description provided for @raImportComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Import complete!'**
+  String get raImportComplete;
+
+  /// No description provided for @raImportAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} games added'**
+  String raImportAdded(int count);
+
+  /// No description provided for @raImportUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} games updated'**
+  String raImportUpdated(int count);
+
+  /// No description provided for @raImportToWishlist.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} added to Wishlist'**
+  String raImportToWishlist(int count);
+
+  /// No description provided for @raConnectionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection failed: {error}'**
+  String raConnectionFailed(String error);
+
+  /// No description provided for @raImportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Import failed: {error}'**
+  String raImportFailed(String error);
+
+  /// No description provided for @raProfilePoints.
+  ///
+  /// In en, this message translates to:
+  /// **'{points} points'**
+  String raProfilePoints(int points);
+
+  /// No description provided for @raProfileMemberSince.
+  ///
+  /// In en, this message translates to:
+  /// **'Member since {date}'**
+  String raProfileMemberSince(String date);
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {
