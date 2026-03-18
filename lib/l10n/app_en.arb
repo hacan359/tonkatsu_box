@@ -1119,6 +1119,13 @@
   "collectionListSortAlphabeticalZA": "Z to A",
   "collectionListViewGrid": "Grid view",
   "collectionListViewList": "List view",
+  "collectionListViewTable": "Table view",
+  "collectionTableName": "Name",
+  "collectionTableType": "Type",
+  "collectionTablePlatform": "Platform",
+  "collectionTableStatus": "Status",
+  "collectionTableRating": "Rating",
+  "collectionTableYear": "Year",
 
   "collectionCopyToCollection": "Copy to collection",
   "collectionItemCopiedTo": "{name} copied to {collection}",

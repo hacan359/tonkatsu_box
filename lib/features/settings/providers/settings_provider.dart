@@ -25,6 +25,9 @@ abstract class SettingsKeys {
   /// Префикс для сохранения режима отображения коллекции (grid/list).
   static const String collectionViewModePrefix = 'collection_view_mode_';
 
+  /// Префикс для сохранения табличного режима коллекции.
+  static const String collectionTableModePrefix = 'collection_table_mode_';
+
   /// Имя автора по умолчанию для новых и форкнутых коллекций.
   static const String defaultAuthor = 'default_author';
 

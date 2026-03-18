@@ -29,6 +29,7 @@ class CollectionFilterBar extends ConsumerWidget {
     required this.searchController,
     required this.searchQuery,
     required this.isGridMode,
+    this.isTableMode = false,
     required this.onFilterTypeChanged,
     required this.onPlatformFilterChanged,
     required this.onGridModeChanged,
@@ -59,13 +60,16 @@ class CollectionFilterBar extends ConsumerWidget {
   /// Режим отображения (grid/list).
   final bool isGridMode;
 
+  /// Режим таблицы.
+  final bool isTableMode;
+
   /// Callback изменения фильтра по типу.
   final ValueChanged<MediaType?> onFilterTypeChanged;
 
   /// Callback изменения фильтра по платформе.
   final ValueChanged<int?> onPlatformFilterChanged;
 
-  /// Callback переключения grid/list.
+  /// Callback переключения grid/list/table.
   final VoidCallback onGridModeChanged;
 
   /// Ключ для "All" фильтра (без типа медиа).
@@ -392,11 +396,19 @@ class CollectionFilterBar extends ConsumerWidget {
       height: _filterRowHeight,
       child: IconButton(
         icon: Icon(
-          isGridMode ? Icons.view_list : Icons.grid_view,
+          isTableMode
+              ? Icons.grid_view
+              : isGridMode
+                  ? Icons.view_list
+                  : Icons.table_chart_outlined,
           size: 18,
           color: AppColors.textSecondary,
         ),
-        tooltip: isGridMode ? 'List view' : 'Grid view',
+        tooltip: isTableMode
+            ? S.of(context).collectionListViewGrid
+            : isGridMode
+                ? S.of(context).collectionListViewList
+                : S.of(context).collectionListViewTable,
         padding: EdgeInsets.zero,
         constraints: const BoxConstraints(),
         visualDensity: VisualDensity.compact,
