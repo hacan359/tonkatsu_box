@@ -178,13 +178,17 @@ class RaImportService {
     int unmatched = 0;
     final List<String> unmatchedTitles = <String>[];
 
-    for (int i = 0; i < raGames.length; i++) {
-      final RaGameProgress raGame = raGames[i];
+    // Фильтруем не-игровые записи (Hubs, Events, Standalone).
+    final List<RaGameProgress> games =
+        raGames.where((RaGameProgress g) => g.isRealGame).toList();
+
+    for (int i = 0; i < games.length; i++) {
+      final RaGameProgress raGame = games[i];
 
       onProgress(RaImportProgress(
         stage: RaImportStage.matchingGames,
         current: i + 1,
-        total: raGames.length,
+        total: games.length,
         currentName: raGame.title,
         addedCount: added,
         updatedCount: updated,
@@ -239,8 +243,8 @@ class RaImportService {
 
     onProgress(RaImportProgress(
       stage: RaImportStage.completed,
-      current: raGames.length,
-      total: raGames.length,
+      current: games.length,
+      total: games.length,
       addedCount: added,
       updatedCount: updated,
       unmatchedCount: unmatched,
@@ -248,11 +252,11 @@ class RaImportService {
 
     _log.info(
       'RA import done: $added added, $updated updated, '
-      '$unmatched unmatched out of ${raGames.length}',
+      '$unmatched unmatched out of ${games.length}',
     );
 
     return RaImportResult(
-      totalGames: raGames.length,
+      totalGames: games.length,
       added: added,
       updated: updated,
       unmatched: unmatched,

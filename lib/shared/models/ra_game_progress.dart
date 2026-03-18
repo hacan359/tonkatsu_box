@@ -65,6 +65,12 @@ class RaGameProgress {
   /// Дата последней активности (получение ачивки).
   final DateTime? lastPlayedAt;
 
+  /// Не-игровые ConsoleID (Hubs, Events, Standalone).
+  static const Set<int> _nonGameConsoleIds = <int>{100, 101, 102};
+
+  /// Это реальная игра (не ивент, хаб или standalone).
+  bool get isRealGame => !_nonGameConsoleIds.contains(consoleId);
+
   /// Процент прохождения (0.0–1.0).
   double get completionRate =>
       maxPossible > 0 ? numAwarded / maxPossible : 0.0;
