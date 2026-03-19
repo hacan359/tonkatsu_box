@@ -6,6 +6,8 @@
 
 ## [Unreleased]
 
+## [0.22.0] - 2026-03-19
+
 ### Added
 - **Separate debug/release database** — debug and profile builds use `tonkatsu_box_dev/` folder, release builds use `tonkatsu_box/` to prevent test data from polluting user collections. Database path and build mode logged at startup (`database_service.dart`)
 - **Per-tab Discover sections** — Discover feed now shows only relevant sections per search tab: Movies (Top Rated Movies, Upcoming), TV (Popular TV Shows, Top Rated TV Shows), Anime (Anime). Trending available on all tabs but disabled by default — users enable it via Customize sheet. `discoverSectionsPerSource` mapping, `DiscoverFeed.sourceId`, `DiscoverCustomizeSheet.sourceId` filter sections dynamically (`discover_provider.dart`, `discover_feed.dart`, `discover_customize_sheet.dart`, `search_screen.dart`)
@@ -25,8 +27,6 @@
 - **Collection list sorting** — sort collections by date created or alphabetically (A→Z / Z→A) with direction toggle. Sort mode persisted in SharedPreferences. Sort popup button in HomeScreen AppBar with visual indicator when non-default. `CollectionListSortMode` enum, `CollectionListSortNotifier`, `CollectionListSortDescNotifier` (`collection_list_sort_mode.dart`, `collections_provider.dart`, `home_screen.dart`)
 - **Collection list grid/list view toggle** — switch between grid (iOS-style folder cards) and list (simple text tiles) view. Preference persisted in SharedPreferences. `CollectionListTile`, `UncategorizedListTile` widgets, `CollectionListViewModeNotifier` (`collection_list_tile.dart`, `collections_provider.dart`, `home_screen.dart`)
 - **"Open in collection" button on search cards** — when an item is already in a collection, the check badge on search result cards becomes a clickable button that navigates to `ItemDetailScreen`. If the item is in multiple collections, a picker dialog is shown. Works for all 6 media types (`media_poster_card.dart`, `browse_grid.dart`, `search_screen.dart`)
-
-### Changed
 - **Card shadows instead of borders** — `CardThemeData` updated: `elevation: 0` → `2`, added `shadowColor: Colors.black26`, removed `BorderSide(color: surfaceBorder)`. Cards now use subtle shadow instead of flat border (`app_theme.dart`)
 
 ### Fixed
