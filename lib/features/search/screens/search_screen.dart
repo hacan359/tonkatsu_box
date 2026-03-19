@@ -1171,7 +1171,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         maxWidth: screenSize.width,
         maxHeight: screenSize.height * 0.85,
       ),
-      builder: (BuildContext _) => const DiscoverCustomizeSheet(),
+      builder: (BuildContext _) => DiscoverCustomizeSheet(
+        sourceId: ref.read(browseProvider).sourceId,
+      ),
     );
   }
 
@@ -1313,6 +1315,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       // TMDB источники — показываем Discover feed
       if (sourceId == 'movies' || sourceId == 'tv' || sourceId == 'anime') {
         return DiscoverFeed(
+          sourceId: sourceId,
           onAddMovie: (Movie movie) => _addMovieToAnyCollection(movie),
           onAddTvShow: (TvShow tvShow) => _addTvShowToAnyCollection(tvShow),
         );

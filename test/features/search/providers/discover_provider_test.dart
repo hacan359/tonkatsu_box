@@ -26,7 +26,10 @@ void main() {
       });
 
       test('topRatedMovies имеет ключ "top_rated_movies"', () {
-        expect(DiscoverSectionId.topRatedMovies.key, equals('top_rated_movies'));
+        expect(
+          DiscoverSectionId.topRatedMovies.key,
+          equals('top_rated_movies'),
+        );
       });
 
       test('popularTvShows имеет ключ "popular_tv_shows"', () {
@@ -118,15 +121,92 @@ void main() {
     });
   });
 
+  group('discoverSectionsPerSource', () {
+    test('movies содержит trending, topRatedMovies и upcoming', () {
+      final Set<DiscoverSectionId>? sections =
+          discoverSectionsPerSource['movies'];
+
+      expect(sections, isNotNull);
+      expect(sections!.length, equals(3));
+      expect(sections, contains(DiscoverSectionId.trending));
+      expect(sections, contains(DiscoverSectionId.topRatedMovies));
+      expect(sections, contains(DiscoverSectionId.upcoming));
+    });
+
+    test('tv содержит trending, popularTvShows и topRatedTvShows', () {
+      final Set<DiscoverSectionId>? sections =
+          discoverSectionsPerSource['tv'];
+
+      expect(sections, isNotNull);
+      expect(sections!.length, equals(3));
+      expect(sections, contains(DiscoverSectionId.trending));
+      expect(sections, contains(DiscoverSectionId.popularTvShows));
+      expect(sections, contains(DiscoverSectionId.topRatedTvShows));
+    });
+
+    test('anime содержит trending и anime', () {
+      final Set<DiscoverSectionId>? sections =
+          discoverSectionsPerSource['anime'];
+
+      expect(sections, isNotNull);
+      expect(sections!.length, equals(2));
+      expect(sections, contains(DiscoverSectionId.trending));
+      expect(sections, contains(DiscoverSectionId.anime));
+    });
+
+    test('trending доступен на всех TMDB вкладках', () {
+      for (final String sourceId in discoverSectionsPerSource.keys) {
+        expect(
+          discoverSectionsPerSource[sourceId],
+          contains(DiscoverSectionId.trending),
+          reason: '$sourceId должен содержать trending',
+        );
+      }
+    });
+
+    test('все не-trending секции покрыты маппингом без пересечений', () {
+      final Set<DiscoverSectionId> allNonTrending = <DiscoverSectionId>{};
+      for (final Set<DiscoverSectionId> sections
+          in discoverSectionsPerSource.values) {
+        final Set<DiscoverSectionId> nonTrending = sections
+            .where(
+              (DiscoverSectionId s) => s != DiscoverSectionId.trending,
+            )
+            .toSet();
+        // Нет пересечений
+        expect(
+          allNonTrending.intersection(nonTrending),
+          isEmpty,
+        );
+        allNonTrending.addAll(nonTrending);
+      }
+
+      // Все не-trending секции покрыты
+      final Set<DiscoverSectionId> allNonTrendingExpected =
+          DiscoverSectionId.values
+              .where(
+                (DiscoverSectionId s) => s != DiscoverSectionId.trending,
+              )
+              .toSet();
+      expect(allNonTrending, equals(allNonTrendingExpected));
+    });
+
+    test('неизвестный sourceId возвращает null', () {
+      expect(discoverSectionsPerSource['games'], isNull);
+      expect(discoverSectionsPerSource['vn'], isNull);
+      expect(discoverSectionsPerSource['manga'], isNull);
+    });
+  });
+
   group('DiscoverSettings', () {
     group('constructor', () {
-      test('по умолчанию включает все 6 секций', () {
+      test('по умолчанию включает 5 секций (без trending)', () {
         const DiscoverSettings settings = DiscoverSettings();
 
-        expect(settings.enabledSections.length, equals(6));
+        expect(settings.enabledSections.length, equals(5));
         expect(
           settings.enabledSections,
-          containsAll(DiscoverSectionId.values),
+          isNot(contains(DiscoverSectionId.trending)),
         );
       });
 
@@ -139,7 +219,7 @@ void main() {
       test('принимает пользовательские enabledSections', () {
         const DiscoverSettings settings = DiscoverSettings(
           enabledSections: <DiscoverSectionId>{
-            DiscoverSectionId.trending,
+            DiscoverSectionId.topRatedMovies,
             DiscoverSectionId.anime,
           },
         );
@@ -147,7 +227,7 @@ void main() {
         expect(settings.enabledSections.length, equals(2));
         expect(
           settings.enabledSections,
-          contains(DiscoverSectionId.trending),
+          contains(DiscoverSectionId.topRatedMovies),
         );
         expect(settings.enabledSections, contains(DiscoverSectionId.anime));
       });
@@ -168,14 +248,11 @@ void main() {
     });
 
     group('defaultSections', () {
-      test('содержит все 6 секций', () {
-        expect(DiscoverSettings.defaultSections.length, equals(6));
-      });
-
-      test('содержит trending', () {
+      test('содержит 5 секций (без trending)', () {
+        expect(DiscoverSettings.defaultSections.length, equals(5));
         expect(
           DiscoverSettings.defaultSections,
-          contains(DiscoverSectionId.trending),
+          isNot(contains(DiscoverSectionId.trending)),
         );
       });
 
@@ -249,13 +326,16 @@ void main() {
       test('изменяет hideOwned сохраняя enabledSections', () {
         const DiscoverSettings original = DiscoverSettings(
           enabledSections: <DiscoverSectionId>{
-            DiscoverSectionId.trending,
+            DiscoverSectionId.topRatedMovies,
           },
         );
         final DiscoverSettings copy = original.copyWith(hideOwned: true);
 
         expect(copy.enabledSections.length, equals(1));
-        expect(copy.enabledSections, contains(DiscoverSectionId.trending));
+        expect(
+          copy.enabledSections,
+          contains(DiscoverSectionId.topRatedMovies),
+        );
         expect(copy.hideOwned, isTrue);
       });
 
@@ -291,7 +371,8 @@ void main() {
           hideOwned: true,
         );
 
-        expect(original.enabledSections.length, equals(6));
+        // 5 = все дефолтные (без trending)
+        expect(original.enabledSections.length, equals(5));
         expect(original.hideOwned, isFalse);
       });
     });
@@ -322,13 +403,16 @@ void main() {
         final DiscoverSettings state =
             container.read(discoverSettingsProvider);
 
-        expect(state.enabledSections, equals(DiscoverSettings.defaultSections));
+        expect(
+          state.enabledSections,
+          equals(DiscoverSettings.defaultSections),
+        );
         expect(state.hideOwned, isFalse);
       });
 
       test('загружает сохранённые секции из prefs', () async {
         final List<String> savedKeys = <String>[
-          DiscoverSectionId.trending.key,
+          DiscoverSectionId.topRatedMovies.key,
           DiscoverSectionId.anime.key,
         ];
 
@@ -344,7 +428,7 @@ void main() {
         expect(state.enabledSections.length, equals(2));
         expect(
           state.enabledSections,
-          contains(DiscoverSectionId.trending),
+          contains(DiscoverSectionId.topRatedMovies),
         );
         expect(state.enabledSections, contains(DiscoverSectionId.anime));
       });
@@ -397,7 +481,7 @@ void main() {
 
       test('игнорирует невалидные ключи секций в prefs', () async {
         final List<String> savedKeys = <String>[
-          DiscoverSectionId.trending.key,
+          DiscoverSectionId.topRatedMovies.key,
           'invalid_section_key',
           DiscoverSectionId.anime.key,
         ];
@@ -414,7 +498,7 @@ void main() {
         expect(state.enabledSections.length, equals(2));
         expect(
           state.enabledSections,
-          contains(DiscoverSectionId.trending),
+          contains(DiscoverSectionId.topRatedMovies),
         );
         expect(state.enabledSections, contains(DiscoverSectionId.anime));
       });
@@ -471,12 +555,35 @@ void main() {
           containsAll(DiscoverSectionId.values),
         );
       });
+
+      test('загружает trending из prefs если пользователь включил', () async {
+        final List<String> savedKeys = <String>[
+          DiscoverSectionId.trending.key,
+          DiscoverSectionId.anime.key,
+        ];
+
+        final ProviderContainer container = await createContainer(
+          initialPrefs: <String, Object>{
+            DiscoverSettingsKeys.sections: jsonEncode(savedKeys),
+          },
+        );
+
+        final DiscoverSettings state =
+            container.read(discoverSettingsProvider);
+
+        expect(state.enabledSections.length, equals(2));
+        expect(
+          state.enabledSections,
+          contains(DiscoverSectionId.trending),
+        );
+        expect(state.enabledSections, contains(DiscoverSectionId.anime));
+      });
     });
 
     group('toggleSection', () {
       test('добавляет секцию, которой нет в наборе', () async {
         final List<String> savedKeys = <String>[
-          DiscoverSectionId.trending.key,
+          DiscoverSectionId.topRatedMovies.key,
         ];
 
         final ProviderContainer container = await createContainer(
@@ -496,14 +603,14 @@ void main() {
         expect(state.enabledSections.length, equals(2));
         expect(
           state.enabledSections,
-          contains(DiscoverSectionId.trending),
+          contains(DiscoverSectionId.topRatedMovies),
         );
         expect(state.enabledSections, contains(DiscoverSectionId.anime));
       });
 
       test('удаляет секцию, которая есть в наборе', () async {
         final List<String> savedKeys = <String>[
-          DiscoverSectionId.trending.key,
+          DiscoverSectionId.topRatedMovies.key,
           DiscoverSectionId.anime.key,
         ];
 
@@ -516,7 +623,7 @@ void main() {
         final DiscoverSettingsNotifier notifier =
             container.read(discoverSettingsProvider.notifier);
 
-        await notifier.toggleSection(DiscoverSectionId.trending);
+        await notifier.toggleSection(DiscoverSectionId.topRatedMovies);
 
         final DiscoverSettings state =
             container.read(discoverSettingsProvider);
@@ -524,14 +631,14 @@ void main() {
         expect(state.enabledSections.length, equals(1));
         expect(state.enabledSections, contains(DiscoverSectionId.anime));
         expect(
-          state.enabledSections.contains(DiscoverSectionId.trending),
+          state.enabledSections.contains(DiscoverSectionId.topRatedMovies),
           isFalse,
         );
       });
 
       test('сохраняет изменения в SharedPreferences при добавлении', () async {
         final List<String> savedKeys = <String>[
-          DiscoverSectionId.trending.key,
+          DiscoverSectionId.topRatedMovies.key,
         ];
 
         final ProviderContainer container = await createContainer(
@@ -550,13 +657,13 @@ void main() {
         expect(storedJson, isNotNull);
         final List<dynamic> storedKeys =
             jsonDecode(storedJson!) as List<dynamic>;
-        expect(storedKeys, contains(DiscoverSectionId.trending.key));
+        expect(storedKeys, contains(DiscoverSectionId.topRatedMovies.key));
         expect(storedKeys, contains(DiscoverSectionId.anime.key));
       });
 
       test('сохраняет изменения в SharedPreferences при удалении', () async {
         final List<String> savedKeys = <String>[
-          DiscoverSectionId.trending.key,
+          DiscoverSectionId.topRatedMovies.key,
           DiscoverSectionId.anime.key,
         ];
 
@@ -569,14 +676,17 @@ void main() {
         final DiscoverSettingsNotifier notifier =
             container.read(discoverSettingsProvider.notifier);
 
-        await notifier.toggleSection(DiscoverSectionId.trending);
+        await notifier.toggleSection(DiscoverSectionId.topRatedMovies);
 
         final String? storedJson =
             prefs.getString(DiscoverSettingsKeys.sections);
         expect(storedJson, isNotNull);
         final List<dynamic> storedKeys =
             jsonDecode(storedJson!) as List<dynamic>;
-        expect(storedKeys, isNot(contains(DiscoverSectionId.trending.key)));
+        expect(
+          storedKeys,
+          isNot(contains(DiscoverSectionId.topRatedMovies.key)),
+        );
         expect(storedKeys, contains(DiscoverSectionId.anime.key));
       });
 
@@ -612,7 +722,7 @@ void main() {
         final DiscoverSettingsNotifier notifier =
             container.read(discoverSettingsProvider.notifier);
 
-        await notifier.toggleSection(DiscoverSectionId.trending);
+        await notifier.toggleSection(DiscoverSectionId.topRatedMovies);
 
         final DiscoverSettings state =
             container.read(discoverSettingsProvider);
@@ -626,19 +736,19 @@ void main() {
         final DiscoverSettingsNotifier notifier =
             container.read(discoverSettingsProvider.notifier);
 
-        // Первый toggle — удаляем trending (он есть по умолчанию)
-        await notifier.toggleSection(DiscoverSectionId.trending);
+        // Первый toggle — удаляем topRatedMovies (есть по умолчанию)
+        await notifier.toggleSection(DiscoverSectionId.topRatedMovies);
         DiscoverSettings state = container.read(discoverSettingsProvider);
         expect(
-          state.enabledSections.contains(DiscoverSectionId.trending),
+          state.enabledSections.contains(DiscoverSectionId.topRatedMovies),
           isFalse,
         );
 
-        // Второй toggle — возвращаем trending
-        await notifier.toggleSection(DiscoverSectionId.trending);
+        // Второй toggle — возвращаем topRatedMovies
+        await notifier.toggleSection(DiscoverSectionId.topRatedMovies);
         state = container.read(discoverSettingsProvider);
         expect(
-          state.enabledSections.contains(DiscoverSectionId.trending),
+          state.enabledSections.contains(DiscoverSectionId.topRatedMovies),
           isTrue,
         );
       });
@@ -692,7 +802,7 @@ void main() {
 
       test('не изменяет enabledSections', () async {
         final List<String> savedKeys = <String>[
-          DiscoverSectionId.trending.key,
+          DiscoverSectionId.topRatedMovies.key,
           DiscoverSectionId.anime.key,
         ];
 
@@ -713,12 +823,13 @@ void main() {
         expect(state.enabledSections.length, equals(2));
         expect(
           state.enabledSections,
-          contains(DiscoverSectionId.trending),
+          contains(DiscoverSectionId.topRatedMovies),
         );
         expect(state.enabledSections, contains(DiscoverSectionId.anime));
       });
 
-      test('повторная установка того же значения не вызывает ошибку', () async {
+      test('повторная установка того же значения не вызывает ошибку',
+          () async {
         final ProviderContainer container = await createContainer(
           initialPrefs: <String, Object>{
             DiscoverSettingsKeys.hideOwned: true,
@@ -766,7 +877,7 @@ void main() {
           state.enabledSections,
           equals(DiscoverSettings.defaultSections),
         );
-        expect(state.enabledSections.length, equals(6));
+        expect(state.enabledSections.length, equals(5));
       });
 
       test('восстанавливает hideOwned в false', () async {
@@ -807,7 +918,8 @@ void main() {
         expect(storedJson, isNotNull);
         final List<dynamic> storedKeys =
             jsonDecode(storedJson!) as List<dynamic>;
-        expect(storedKeys.length, equals(6));
+        // 5 = все дефолтные (без trending)
+        expect(storedKeys.length, equals(5));
 
         // Проверяем prefs — hideOwned сохранён как false
         final bool? storedHideOwned =
@@ -819,8 +931,9 @@ void main() {
           () async {
         final ProviderContainer container = await createContainer(
           initialPrefs: <String, Object>{
-            DiscoverSettingsKeys.sections:
-                jsonEncode(<String>[DiscoverSectionId.trending.key]),
+            DiscoverSettingsKeys.sections: jsonEncode(
+              <String>[DiscoverSectionId.topRatedMovies.key],
+            ),
             DiscoverSettingsKeys.hideOwned: true,
           },
         );
@@ -850,16 +963,16 @@ void main() {
             container.read(discoverSettingsProvider.notifier);
 
         await notifier.resetToDefault();
-        await notifier.toggleSection(DiscoverSectionId.trending);
+        await notifier.toggleSection(DiscoverSectionId.topRatedMovies);
         await notifier.setHideOwned(value: true);
 
         final DiscoverSettings state =
             container.read(discoverSettingsProvider);
 
-        // trending удалён из дефолтных 6
-        expect(state.enabledSections.length, equals(5));
+        // topRatedMovies удалён из дефолтных 5
+        expect(state.enabledSections.length, equals(4));
         expect(
-          state.enabledSections.contains(DiscoverSectionId.trending),
+          state.enabledSections.contains(DiscoverSectionId.topRatedMovies),
           isFalse,
         );
         expect(state.hideOwned, isTrue);
@@ -874,8 +987,8 @@ void main() {
         final DiscoverSettingsNotifier notifier =
             container.read(discoverSettingsProvider.notifier);
 
-        // Удаляем trending
-        await notifier.toggleSection(DiscoverSectionId.trending);
+        // Удаляем topRatedMovies
+        await notifier.toggleSection(DiscoverSectionId.topRatedMovies);
         // Включаем hideOwned
         await notifier.setHideOwned(value: true);
 
@@ -885,8 +998,9 @@ void main() {
         expect(sectionsJson, isNotNull);
         final List<dynamic> keys =
             jsonDecode(sectionsJson!) as List<dynamic>;
-        expect(keys, isNot(contains(DiscoverSectionId.trending.key)));
-        expect(keys.length, equals(5));
+        expect(keys, isNot(contains(DiscoverSectionId.topRatedMovies.key)));
+        // 5 дефолтных - 1 удалённая = 4
+        expect(keys.length, equals(4));
 
         final bool? hideOwned =
             prefs.getBool(DiscoverSettingsKeys.hideOwned);
@@ -901,8 +1015,8 @@ void main() {
         final DiscoverSettingsNotifier notifier1 =
             container1.read(discoverSettingsProvider.notifier);
 
-        await notifier1.toggleSection(DiscoverSectionId.trending);
         await notifier1.toggleSection(DiscoverSectionId.topRatedMovies);
+        await notifier1.toggleSection(DiscoverSectionId.upcoming);
         await notifier1.setHideOwned(value: true);
 
         // Читаем raw данные из SharedPreferences
@@ -926,13 +1040,13 @@ void main() {
         final DiscoverSettings state2 =
             container2.read(discoverSettingsProvider);
 
-        expect(state2.enabledSections.length, equals(4));
+        expect(state2.enabledSections.length, equals(3));
         expect(
-          state2.enabledSections.contains(DiscoverSectionId.trending),
+          state2.enabledSections.contains(DiscoverSectionId.topRatedMovies),
           isFalse,
         );
         expect(
-          state2.enabledSections.contains(DiscoverSectionId.topRatedMovies),
+          state2.enabledSections.contains(DiscoverSectionId.upcoming),
           isFalse,
         );
         expect(state2.hideOwned, isTrue);

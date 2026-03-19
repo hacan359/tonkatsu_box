@@ -31,13 +31,18 @@ final FutureProvider<Set<int>> _existingTmdbIdsProvider =
 /// Лента подборок Discover.
 ///
 /// Показывается на экране поиска когда поле поиска пустое.
+/// Фильтрует секции по текущему [sourceId].
 class DiscoverFeed extends ConsumerWidget {
   /// Создаёт [DiscoverFeed].
   const DiscoverFeed({
+    required this.sourceId,
     required this.onAddMovie,
     required this.onAddTvShow,
     super.key,
   });
+
+  /// ID текущего источника (movies, tv, anime).
+  final String sourceId;
 
   /// Callback добавления фильма в коллекцию.
   final void Function(Movie movie) onAddMovie;
@@ -52,15 +57,21 @@ class DiscoverFeed extends ConsumerWidget {
     final Set<int> ownedIds =
         ref.watch(_existingTmdbIdsProvider).valueOrNull ?? <int>{};
 
+    // Секции, доступные для текущей вкладки
+    final Set<DiscoverSectionId> available =
+        discoverSectionsPerSource[sourceId] ?? <DiscoverSectionId>{};
+
     final List<Widget> sections = <Widget>[];
 
-    if (settings.enabledSections.contains(DiscoverSectionId.trending)) {
+    if (available.contains(DiscoverSectionId.trending) &&
+        settings.enabledSections.contains(DiscoverSectionId.trending)) {
       sections.add(
         _buildTrendingSection(context, ref, l, ownedIds, settings),
       );
     }
 
-    if (settings.enabledSections.contains(DiscoverSectionId.topRatedMovies)) {
+    if (available.contains(DiscoverSectionId.topRatedMovies) &&
+        settings.enabledSections.contains(DiscoverSectionId.topRatedMovies)) {
       sections.add(
         _buildMovieSection(
           context,
@@ -74,7 +85,8 @@ class DiscoverFeed extends ConsumerWidget {
       );
     }
 
-    if (settings.enabledSections.contains(DiscoverSectionId.popularTvShows)) {
+    if (available.contains(DiscoverSectionId.popularTvShows) &&
+        settings.enabledSections.contains(DiscoverSectionId.popularTvShows)) {
       sections.add(
         _buildTvShowSection(
           context,
@@ -88,7 +100,8 @@ class DiscoverFeed extends ConsumerWidget {
       );
     }
 
-    if (settings.enabledSections.contains(DiscoverSectionId.upcoming)) {
+    if (available.contains(DiscoverSectionId.upcoming) &&
+        settings.enabledSections.contains(DiscoverSectionId.upcoming)) {
       sections.add(
         _buildMovieSection(
           context,
@@ -102,7 +115,8 @@ class DiscoverFeed extends ConsumerWidget {
       );
     }
 
-    if (settings.enabledSections.contains(DiscoverSectionId.anime)) {
+    if (available.contains(DiscoverSectionId.anime) &&
+        settings.enabledSections.contains(DiscoverSectionId.anime)) {
       sections.add(
         _buildTvShowSection(
           context,
@@ -116,7 +130,8 @@ class DiscoverFeed extends ConsumerWidget {
       );
     }
 
-    if (settings.enabledSections.contains(DiscoverSectionId.topRatedTvShows)) {
+    if (available.contains(DiscoverSectionId.topRatedTvShows) &&
+        settings.enabledSections.contains(DiscoverSectionId.topRatedTvShows)) {
       sections.add(
         _buildTvShowSection(
           context,
@@ -180,67 +195,28 @@ class DiscoverFeed extends ConsumerWidget {
     Set<int> ownedIds,
     DiscoverSettings settings,
   ) {
-    // Объединяем трендовые фильмы и сериалы
-    final AsyncValue<List<Movie>> moviesAsync =
-        ref.watch(discoverTrendingMoviesProvider);
-    final AsyncValue<List<TvShow>> tvAsync =
-        ref.watch(discoverTrendingTvShowsProvider);
-
-    final List<DiscoverItem> items = <DiscoverItem>[];
-
-    // Берём до 10 фильмов и до 10 сериалов, чередуя
-    final List<Movie> movies = moviesAsync.valueOrNull ?? <Movie>[];
-    final List<TvShow> tvShows = tvAsync.valueOrNull ?? <TvShow>[];
-
-    int mi = 0;
-    int ti = 0;
-    while (items.length < 20 && (mi < movies.length || ti < tvShows.length)) {
-      if (mi < movies.length) {
-        final Movie m = movies[mi++];
-        final bool owned = ownedIds.contains(m.tmdbId);
-        if (!settings.hideOwned || !owned) {
-          items.add(DiscoverItem(
-            title: m.title,
-            tmdbId: m.tmdbId,
-            posterUrl: m.posterUrl,
-            year: m.releaseYear,
-            rating: m.formattedRating,
-            isOwned: owned,
-            isMovie: true,
-          ));
-        }
-      }
-      if (ti < tvShows.length) {
-        final TvShow s = tvShows[ti++];
-        final bool owned = ownedIds.contains(s.tmdbId);
-        if (!settings.hideOwned || !owned) {
-          items.add(DiscoverItem(
-            title: s.title,
-            tmdbId: s.tmdbId,
-            posterUrl: s.posterUrl,
-            year: s.firstAirYear,
-            rating: s.formattedRating,
-            isOwned: owned,
-            isMovie: false,
-          ));
-        }
-      }
+    // Movies → trending фильмы, TV/Anime → trending сериалы.
+    // TMDB trending API не поддерживает фильтр по жанру,
+    // поэтому anime и tv используют один провайдер.
+    if (sourceId == 'movies') {
+      return _buildMovieSection(
+        context,
+        ref,
+        title: l.discoverTrending,
+        icon: Icons.local_fire_department,
+        provider: discoverTrendingMoviesProvider,
+        ownedIds: ownedIds,
+        settings: settings,
+      );
     }
-
-    if (moviesAsync.isLoading || tvAsync.isLoading) {
-      return _buildShimmerRow(context, l.discoverTrending);
-    }
-
-    return DiscoverRow(
+    return _buildTvShowSection(
+      context,
+      ref,
       title: l.discoverTrending,
       icon: Icons.local_fire_department,
-      items: items,
-      onTap: (DiscoverItem item) => _onTapTrendingItem(
-        context,
-        item,
-        movies,
-        tvShows,
-      ),
+      provider: discoverTrendingTvShowsProvider,
+      ownedIds: ownedIds,
+      settings: settings,
     );
   }
 
@@ -338,29 +314,6 @@ class DiscoverFeed extends ConsumerWidget {
       loading: () => _buildShimmerRow(context, title),
       error: (_, _) => const SizedBox.shrink(),
     );
-  }
-
-  void _onTapTrendingItem(
-    BuildContext context,
-    DiscoverItem item,
-    List<Movie> movies,
-    List<TvShow> tvShows,
-  ) {
-    if (item.isMovie) {
-      for (final Movie m in movies) {
-        if (m.tmdbId == item.tmdbId) {
-          _showMovieSheet(context, m);
-          return;
-        }
-      }
-    } else {
-      for (final TvShow s in tvShows) {
-        if (s.tmdbId == item.tmdbId) {
-          _showTvShowSheet(context, s);
-          return;
-        }
-      }
-    }
   }
 
   void _showMovieSheet(BuildContext context, Movie movie) {
