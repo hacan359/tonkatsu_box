@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
@@ -147,7 +148,12 @@ class DatabaseService {
     // AppSupport вместо Documents — Documents может быть под OneDrive,
     // который блокирует создание файлов (PathAccessException).
     final Directory appDir = await getApplicationSupportDirectory();
-    final String dbDir = p.join(appDir.path, 'tonkatsu_box');
+
+    // Debug → отдельная папка, чтобы не засорять основную коллекцию
+    const String folderName =
+        kReleaseMode ? 'tonkatsu_box' : 'tonkatsu_box_dev';
+
+    final String dbDir = p.join(appDir.path, folderName);
     final String dbPath = p.join(dbDir, 'tonkatsu_box.db');
 
     // Создаём директорию, если не существует
@@ -155,6 +161,10 @@ class DatabaseService {
     if (!dir.existsSync()) {
       await dir.create(recursive: true);
     }
+
+    _log.info(
+      'Database path: $dbPath (${kReleaseMode ? 'release' : 'debug'} mode)',
+    );
 
     return databaseFactory.openDatabase(
       dbPath,
