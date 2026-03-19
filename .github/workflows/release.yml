@@ -163,11 +163,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Extract changelog notes
+      - name: Extract release notes from tag
         run: |
           VERSION="${{ github.ref_name }}"
-          SEMVER="${VERSION#v}"
-          sed -n "/^## \[${SEMVER}\]/,/^## \[/p" CHANGELOG.md | head -n -1 > release_notes.md
+          git tag -l --format='%(contents)' "$VERSION" > release_notes.md
           if [ ! -s release_notes.md ]; then
             echo "Release ${VERSION}" > release_notes.md
           fi
