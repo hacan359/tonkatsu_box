@@ -11,11 +11,15 @@ import '../providers/discover_provider.dart';
 
 /// Bottom sheet для настройки секций Discover.
 ///
+/// Показывает только секции, доступные для текущего [sourceId].
 /// Constraints (ширина и высота) задаются вызывающим кодом через
 /// параметр `constraints` в [showModalBottomSheet].
 class DiscoverCustomizeSheet extends ConsumerWidget {
   /// Создаёт [DiscoverCustomizeSheet].
-  const DiscoverCustomizeSheet({super.key});
+  const DiscoverCustomizeSheet({required this.sourceId, super.key});
+
+  /// ID текущего источника (movies, tv, anime).
+  final String sourceId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -61,60 +65,12 @@ class DiscoverCustomizeSheet extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.md),
 
-                // Секции
-                _buildSectionToggle(
+                // Секции — только доступные для текущей вкладки
+                ..._buildAvailableSections(
                   context: context,
+                  l: l,
                   notifier: notifier,
-                  section: DiscoverSectionId.trending,
-                  label: l.discoverTrending,
-                  icon: Icons.local_fire_department,
-                  isEnabled: settings.enabledSections
-                      .contains(DiscoverSectionId.trending),
-                ),
-                _buildSectionToggle(
-                  context: context,
-                  notifier: notifier,
-                  section: DiscoverSectionId.topRatedMovies,
-                  label: l.discoverTopRatedMovies,
-                  icon: Icons.star,
-                  isEnabled: settings.enabledSections
-                      .contains(DiscoverSectionId.topRatedMovies),
-                ),
-                _buildSectionToggle(
-                  context: context,
-                  notifier: notifier,
-                  section: DiscoverSectionId.popularTvShows,
-                  label: l.discoverPopularTvShows,
-                  icon: Icons.tv,
-                  isEnabled: settings.enabledSections
-                      .contains(DiscoverSectionId.popularTvShows),
-                ),
-                _buildSectionToggle(
-                  context: context,
-                  notifier: notifier,
-                  section: DiscoverSectionId.upcoming,
-                  label: l.discoverUpcoming,
-                  icon: Icons.upcoming,
-                  isEnabled: settings.enabledSections
-                      .contains(DiscoverSectionId.upcoming),
-                ),
-                _buildSectionToggle(
-                  context: context,
-                  notifier: notifier,
-                  section: DiscoverSectionId.anime,
-                  label: l.discoverAnime,
-                  icon: Icons.animation,
-                  isEnabled: settings.enabledSections
-                      .contains(DiscoverSectionId.anime),
-                ),
-                _buildSectionToggle(
-                  context: context,
-                  notifier: notifier,
-                  section: DiscoverSectionId.topRatedTvShows,
-                  label: l.discoverTopRatedTvShows,
-                  icon: Icons.star_border,
-                  isEnabled: settings.enabledSections
-                      .contains(DiscoverSectionId.topRatedTvShows),
+                  settings: settings,
                 ),
 
                 const SizedBox(height: AppSpacing.lg),
@@ -183,6 +139,57 @@ class DiscoverCustomizeSheet extends ConsumerWidget {
         ),
       ],
     );
+  }
+
+  List<Widget> _buildAvailableSections({
+    required BuildContext context,
+    required S l,
+    required DiscoverSettingsNotifier notifier,
+    required DiscoverSettings settings,
+  }) {
+    final Set<DiscoverSectionId> available =
+        discoverSectionsPerSource[sourceId] ?? <DiscoverSectionId>{};
+
+    final Map<DiscoverSectionId, ({String label, IconData icon})> sectionMeta =
+        <DiscoverSectionId, ({String label, IconData icon})>{
+      DiscoverSectionId.trending: (
+        label: l.discoverTrending,
+        icon: Icons.local_fire_department,
+      ),
+      DiscoverSectionId.topRatedMovies: (
+        label: l.discoverTopRatedMovies,
+        icon: Icons.star,
+      ),
+      DiscoverSectionId.upcoming: (
+        label: l.discoverUpcoming,
+        icon: Icons.upcoming,
+      ),
+      DiscoverSectionId.popularTvShows: (
+        label: l.discoverPopularTvShows,
+        icon: Icons.tv,
+      ),
+      DiscoverSectionId.topRatedTvShows: (
+        label: l.discoverTopRatedTvShows,
+        icon: Icons.star_border,
+      ),
+      DiscoverSectionId.anime: (
+        label: l.discoverAnime,
+        icon: Icons.animation,
+      ),
+    };
+
+    return <Widget>[
+      for (final DiscoverSectionId section in available)
+        if (sectionMeta.containsKey(section))
+          _buildSectionToggle(
+            context: context,
+            notifier: notifier,
+            section: section,
+            label: sectionMeta[section]!.label,
+            icon: sectionMeta[section]!.icon,
+            isEnabled: settings.enabledSections.contains(section),
+          ),
+    ];
   }
 
   Widget _buildSectionToggle({

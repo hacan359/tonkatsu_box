@@ -55,12 +55,32 @@ enum DiscoverSectionId {
   }
 }
 
+/// Маппинг секций Discover по sourceId.
+///
+/// Определяет какие секции показывать на каждой вкладке поиска.
+const Map<String, Set<DiscoverSectionId>> discoverSectionsPerSource =
+    <String, Set<DiscoverSectionId>>{
+  'movies': <DiscoverSectionId>{
+    DiscoverSectionId.trending,
+    DiscoverSectionId.topRatedMovies,
+    DiscoverSectionId.upcoming,
+  },
+  'tv': <DiscoverSectionId>{
+    DiscoverSectionId.trending,
+    DiscoverSectionId.popularTvShows,
+    DiscoverSectionId.topRatedTvShows,
+  },
+  'anime': <DiscoverSectionId>{
+    DiscoverSectionId.trending,
+    DiscoverSectionId.anime,
+  },
+};
+
 /// Состояние настроек Discover.
 class DiscoverSettings {
   /// Создаёт [DiscoverSettings].
   const DiscoverSettings({
     this.enabledSections = const <DiscoverSectionId>{
-      DiscoverSectionId.trending,
       DiscoverSectionId.topRatedMovies,
       DiscoverSectionId.popularTvShows,
       DiscoverSectionId.upcoming,
@@ -78,7 +98,6 @@ class DiscoverSettings {
 
   /// Все секции по умолчанию.
   static const Set<DiscoverSectionId> defaultSections = <DiscoverSectionId>{
-    DiscoverSectionId.trending,
     DiscoverSectionId.topRatedMovies,
     DiscoverSectionId.popularTvShows,
     DiscoverSectionId.upcoming,
@@ -174,7 +193,6 @@ class DiscoverSettingsNotifier extends Notifier<DiscoverSettings> {
 /// Трендовые фильмы.
 final FutureProvider<List<Movie>> discoverTrendingMoviesProvider =
     FutureProvider<List<Movie>>((Ref ref) async {
-  // Пересчитать при смене языка TMDB
   ref.watch(settingsNotifierProvider
       .select((SettingsState s) => s.tmdbLanguage));
   final TmdbApi tmdb = ref.watch(tmdbApiProvider);
