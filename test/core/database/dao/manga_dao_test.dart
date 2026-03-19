@@ -35,7 +35,7 @@ void main() {
         verify(
           () => mockDb.insert(
             'manga_cache',
-            manga.toDb(),
+            any(),
             conflictAlgorithm: ConflictAlgorithm.replace,
           ),
         ).called(1);
