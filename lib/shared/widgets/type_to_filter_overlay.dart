@@ -91,12 +91,20 @@ class TypeToFilterOverlayState extends State<TypeToFilterOverlay>
   }
 
   void _hide() {
+    // Фокус на wrapper ДО анимации — чтобы фокус не был на TextField overlay
+    _wrapperFocus.requestFocus();
     _animationController.reverse().then((_) {
       if (mounted) {
         setState(() => _isVisible = false);
         _controller.clear();
-        // Возвращаем фокус обёртке ПОСЛЕ перестроения widget tree
-        _scheduleWrapperFocusRestore();
+        // Фокус на wrapper ПОСЛЕ rebuild — setState может сбросить фокус
+        // когда overlay с TextField убирается из дерева
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && !_wrapperFocus.hasFocus &&
+              !_isExternalTextFieldFocused()) {
+            _wrapperFocus.requestFocus();
+          }
+        });
       }
     });
   }
@@ -120,7 +128,13 @@ class TypeToFilterOverlayState extends State<TypeToFilterOverlay>
       if (_wrapperFocus.hasFocus || _textFieldFocus.hasFocus) return;
       if (_isExternalTextFieldFocused()) return;
       _dismissInstantly();
-      _wrapperFocus.requestFocus();
+      // requestFocus после СЛЕДУЮЩЕГО rebuild (dismissInstantly делает setState)
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_wrapperFocus.hasFocus &&
+            !_isExternalTextFieldFocused()) {
+          _wrapperFocus.requestFocus();
+        }
+      });
     });
   }
 

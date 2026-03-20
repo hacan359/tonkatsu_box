@@ -83,7 +83,7 @@ void main() {
       await tester.pumpWidget(createWidget());
       await tester.pump();
 
-      expect(find.byTooltip('New Collection'), findsOneWidget);
+      expect(find.byTooltip('New Collection (Ctrl+N)'), findsOneWidget);
       expect(find.byIcon(Icons.add), findsOneWidget);
     });
 

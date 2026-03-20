@@ -6,6 +6,9 @@
 
 ## [Unreleased]
 
+### Added
+- **Keyboard shortcuts for desktop** — full keyboard navigation and hotkeys across all screens. Global shortcuts in `NavigationShell` via `CallbackShortcuts`: Ctrl+1..6 (tab switch), Ctrl+Tab/Shift+Tab (cycle tabs), Escape/Alt+Left (back), Ctrl+F (search), F5 (refresh), F1 (contextual help dialog). Screen-level shortcuts: HomeScreen (Ctrl+N create, Ctrl+I import, Ctrl+Shift+V toggle view, Delete/F2 on focused card), CollectionScreen (Ctrl+N/E/I, Ctrl+Shift+V, Ctrl+B board toggle, Delete/Ctrl+M/Ctrl+Delete/F2), ItemDetailScreen (Ctrl+B/L board/lock toggle, Ctrl+M move, Alt+0..5 rating), TierListsScreen (Ctrl+N create, Delete/F2 on focused card), TierListDetailScreen (Ctrl+E export, Ctrl+Enter add tier, Ctrl+Shift+D clear all), WishlistScreen (Ctrl+N add, Ctrl+H toggle resolved, Ctrl+Shift+D clear resolved), SearchScreen (shortcutGroup for F1). Keyboard focus tracking on `CollectionCard`, `MediaPosterCard`, `_TierListCard` with `onFocusChanged` callbacks. F1 dialog (`KeyboardShortcutsDialog`) shows global + current screen shortcuts with styled key badges. Tooltip hints with shortcut keys on all action buttons (desktop only). New utility module `shortcut_helper.dart` with `wrapWithScreenShortcuts()` and `tooltipWithShortcut()`. Mobile-safe: all shortcuts gated behind `kIsMobile` check (`lib/shared/keyboard/keyboard_shortcuts.dart`, `keyboard_shortcuts_dialog.dart`, `shortcut_helper.dart`, `navigation_shell.dart`, `home_screen.dart`, `collection_screen.dart`, `item_detail_screen.dart`, `tier_lists_screen.dart`, `tier_list_detail_screen.dart`, `wishlist_screen.dart`, `search_screen.dart`, `collection_card.dart`, `collection_items_view.dart`, `media_poster_card.dart`)
+
 ## [0.22.0] - 2026-03-19
 
 ### Added

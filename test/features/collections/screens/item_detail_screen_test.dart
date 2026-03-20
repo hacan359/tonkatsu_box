@@ -346,7 +346,7 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        expect(find.byTooltip('Board'), findsOneWidget);
+        expect(find.byTooltip('Board (Ctrl+B)'), findsOneWidget);
         expect(find.byIcon(Icons.dashboard_outlined), findsOneWidget);
       });
 
@@ -368,7 +368,7 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        expect(find.byTooltip('Board'), findsNothing);
+        expect(find.byTooltip('Board (Ctrl+B)'), findsNothing);
         expect(find.byIcon(Icons.dashboard_outlined), findsNothing);
       });
 
@@ -419,8 +419,8 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        expect(find.byTooltip('Lock board'), findsNothing);
-        expect(find.byTooltip('Unlock board'), findsNothing);
+        expect(find.byTooltip('Lock board (Ctrl+L)'), findsNothing);
+        expect(find.byTooltip('Unlock board (Ctrl+L)'), findsNothing);
       });
 
       testWidgets('должен показывать замок на canvas view (editable)',
@@ -441,10 +441,10 @@ void main() {
         await tester.pumpAndSettle();
 
         // Переключаемся на Canvas
-        await tester.tap(find.byTooltip('Board'));
+        await tester.tap(find.byTooltip('Board (Ctrl+B)'));
         await pumpFrames(tester);
 
-        expect(find.byTooltip('Lock board'), findsOneWidget);
+        expect(find.byTooltip('Lock board (Ctrl+L)'), findsOneWidget);
         expect(find.byIcon(Icons.lock_open), findsOneWidget);
       });
 
@@ -466,11 +466,11 @@ void main() {
         await tester.pumpAndSettle();
 
         // Переключаемся на Canvas
-        await tester.tap(find.byTooltip('Board'));
+        await tester.tap(find.byTooltip('Board (Ctrl+B)'));
         await pumpFrames(tester);
 
-        expect(find.byTooltip('Lock board'), findsNothing);
-        expect(find.byTooltip('Unlock board'), findsNothing);
+        expect(find.byTooltip('Lock board (Ctrl+L)'), findsNothing);
+        expect(find.byTooltip('Unlock board (Ctrl+L)'), findsNothing);
       });
 
       testWidgets('должен переключать состояние замка',
@@ -491,22 +491,22 @@ void main() {
         await tester.pumpAndSettle();
 
         // Переключаемся на Canvas
-        await tester.tap(find.byTooltip('Board'));
+        await tester.tap(find.byTooltip('Board (Ctrl+B)'));
         await pumpFrames(tester);
 
         // Блокируем
-        await tester.tap(find.byTooltip('Lock board'));
+        await tester.tap(find.byTooltip('Lock board (Ctrl+L)'));
         await pumpFrames(tester);
 
         expect(find.byIcon(Icons.lock), findsOneWidget);
-        expect(find.byTooltip('Unlock board'), findsOneWidget);
+        expect(find.byTooltip('Unlock board (Ctrl+L)'), findsOneWidget);
 
         // Разблокируем
-        await tester.tap(find.byTooltip('Unlock board'));
+        await tester.tap(find.byTooltip('Unlock board (Ctrl+L)'));
         await pumpFrames(tester);
 
         expect(find.byIcon(Icons.lock_open), findsOneWidget);
-        expect(find.byTooltip('Lock board'), findsOneWidget);
+        expect(find.byTooltip('Lock board (Ctrl+L)'), findsOneWidget);
       });
 
       testWidgets('не должен показывать замок для uncategorized',
@@ -527,8 +527,8 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        expect(find.byTooltip('Lock board'), findsNothing);
-        expect(find.byTooltip('Unlock board'), findsNothing);
+        expect(find.byTooltip('Lock board (Ctrl+L)'), findsNothing);
+        expect(find.byTooltip('Unlock board (Ctrl+L)'), findsNothing);
       });
     });
   });
@@ -820,7 +820,7 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.byTooltip('Board'), findsNothing);
+      expect(find.byTooltip('Board (Ctrl+B)'), findsNothing);
       expect(find.byIcon(Icons.dashboard_outlined), findsNothing);
     });
   });
@@ -1381,7 +1381,7 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      expect(find.byTooltip('Board'), findsNothing);
+      expect(find.byTooltip('Board (Ctrl+B)'), findsNothing);
       expect(find.byIcon(Icons.dashboard_outlined), findsNothing);
     });
   });

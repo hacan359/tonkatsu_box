@@ -34,6 +34,7 @@ class CollectionItemsView extends ConsumerWidget {
     this.onItemMove,
     this.onItemClone,
     this.onItemRemove,
+    this.onItemFocusChanged,
     super.key,
   });
 
@@ -63,6 +64,9 @@ class CollectionItemsView extends ConsumerWidget {
 
   /// Callback удаления элемента.
   final ValueChanged<CollectionItem>? onItemRemove;
+
+  /// Callback при изменении фокуса на элементе (для клавиатурных действий).
+  final void Function(CollectionItem item, bool hasFocus)? onItemFocusChanged;
 
   /// Максимальная ширина карточки на десктопе.
   static const double _desktopMaxCardWidth = 150;
@@ -183,6 +187,9 @@ class CollectionItemsView extends ConsumerWidget {
             mediaType: item.mediaType,
             status: item.status,
             onTap: () => onItemTap(item),
+            onFocusChanged: onItemFocusChanged != null
+                ? (bool hasFocus) => onItemFocusChanged!(item, hasFocus)
+                : null,
           );
         },
       ),

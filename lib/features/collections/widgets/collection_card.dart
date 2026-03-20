@@ -26,6 +26,7 @@ class CollectionCard extends ConsumerStatefulWidget {
     required this.collection,
     this.onTap,
     this.onLongPress,
+    this.onFocusChanged,
     super.key,
   });
 
@@ -37,6 +38,9 @@ class CollectionCard extends ConsumerStatefulWidget {
 
   /// Callback при долгом нажатии.
   final VoidCallback? onLongPress;
+
+  /// Callback при изменении фокуса (для трекинга клавиатурного выделения).
+  final ValueChanged<bool>? onFocusChanged;
 
   /// Радиус скругления квадрата мозаики.
   static const double mosaicRadius = 16;
@@ -61,6 +65,7 @@ class _CollectionCardState extends ConsumerState<CollectionCard>
     with SingleTickerProviderStateMixin {
   late final AnimationController _hoverController;
   late final Animation<double> _dimAnimation;
+  final FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
@@ -78,6 +83,7 @@ class _CollectionCardState extends ConsumerState<CollectionCard>
 
   @override
   void dispose() {
+    _focusNode.dispose();
     _hoverController.dispose();
     super.dispose();
   }
@@ -89,9 +95,31 @@ class _CollectionCardState extends ConsumerState<CollectionCard>
     final AsyncValue<List<CoverInfo>> coversAsync =
         ref.watch(collectionCoversProvider(widget.collection.id));
 
-    return MouseRegion(
+    return Actions(
+      actions: <Type, Action<Intent>>{
+        ActivateIntent: CallbackAction<ActivateIntent>(
+          onInvoke: (ActivateIntent intent) {
+            widget.onTap?.call();
+            return null;
+          },
+        ),
+      },
+      child: Focus(
+        focusNode: _focusNode,
+        onFocusChange: (bool hasFocus) {
+          if (hasFocus) {
+            _hoverController.forward();
+            widget.onFocusChanged?.call(true);
+          } else {
+            _hoverController.reverse();
+            widget.onFocusChanged?.call(false);
+          }
+        },
+        child: MouseRegion(
       onEnter: (_) => _hoverController.forward(),
-      onExit: (_) => _hoverController.reverse(),
+      onExit: (_) {
+        if (!_focusNode.hasFocus) _hoverController.reverse();
+      },
       cursor: widget.onTap != null
           ? SystemMouseCursors.click
           : SystemMouseCursors.basic,
@@ -178,6 +206,8 @@ class _CollectionCardState extends ConsumerState<CollectionCard>
               ),
             ],
           ),
+        ),
+      ),
         ),
       ),
     );

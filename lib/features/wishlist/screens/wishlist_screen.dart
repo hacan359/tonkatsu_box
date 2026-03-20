@@ -1,10 +1,13 @@
 // Экран вишлиста — заметки для отложенного поиска контента.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
+import '../../../shared/constants/platform_features.dart';
+import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/wishlist_item.dart';
 import '../../../shared/theme/app_colors.dart';
@@ -25,6 +28,16 @@ class WishlistScreen extends ConsumerStatefulWidget {
   /// Создаёт [WishlistScreen].
   const WishlistScreen({super.key});
 
+  /// Группа хоткеев этого экрана для легенды F1.
+  static const ShortcutGroup shortcutGroup = ShortcutGroup(
+    title: 'Вишлист',
+    entries: <ShortcutEntry>[
+      ShortcutEntry(keys: 'Ctrl+N', description: 'Добавить элемент'),
+      ShortcutEntry(keys: 'Ctrl+H', description: 'Показать/скрыть выполненные'),
+      ShortcutEntry(keys: 'Ctrl+Shift+D', description: 'Очистить выполненные'),
+    ],
+  );
+
   @override
   ConsumerState<WishlistScreen> createState() => _WishlistScreenState();
 }
@@ -39,7 +52,11 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
     final AsyncValue<List<WishlistItem>> itemsAsync =
         ref.watch(wishlistProvider);
 
-    return Scaffold(
+    return CallbackShortcuts(
+      bindings: _buildScreenShortcuts(),
+      child: Focus(
+        autofocus: true,
+        child: Scaffold(
       appBar: AutoBreadcrumbAppBar(
         actions: <Widget>[
           IconButton(
@@ -110,10 +127,25 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         heroTag: 'wishlist_add',
+        tooltip: kIsMobile ? null : '${S.of(context).wishlistAddTitle} (Ctrl+N)',
         onPressed: () => _addItem(context),
         child: const Icon(Icons.add),
       ),
+    ),
+      ),
     );
+  }
+
+  Map<ShortcutActivator, VoidCallback> _buildScreenShortcuts() {
+    if (kIsMobile) return <ShortcutActivator, VoidCallback>{};
+    return <ShortcutActivator, VoidCallback>{
+      const SingleActivator(LogicalKeyboardKey.keyN, control: true):
+          () => _addItem(context),
+      const SingleActivator(LogicalKeyboardKey.keyH, control: true):
+          () => setState(() => _showResolved = !_showResolved),
+      const SingleActivator(LogicalKeyboardKey.keyD, control: true, shift: true):
+          () => _confirmClearResolved(context),
+    };
   }
 
   Widget _buildEmptyState(BuildContext context) {
