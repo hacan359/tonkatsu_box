@@ -60,14 +60,10 @@ class _TierListsScreenState extends ConsumerState<TierListsScreen> {
               const SingleActivator(LogicalKeyboardKey.keyN, control: true):
                   () => _showCreateDialog(context),
               const SingleActivator(LogicalKeyboardKey.delete): () {
-                if (_focusedTierList != null) {
-                  _handleDelete(context, _focusedTierList!);
-                }
+                if (_focusedTierList != null) _handleDelete(context, _focusedTierList!);
               },
               const SingleActivator(LogicalKeyboardKey.f2): () {
-                if (_focusedTierList != null) {
-                  _handleRename(context, _focusedTierList!);
-                }
+                if (_focusedTierList != null) _handleRename(context, _focusedTierList!);
               },
             },
       child: Focus(

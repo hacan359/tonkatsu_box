@@ -60,24 +60,30 @@ Map<ShortcutActivator, VoidCallback> buildGlobalShortcuts({
         () => onSwitchTab(5),
 
     // Ctrl+Tab / Ctrl+Shift+Tab — циклическое переключение
-    const SingleActivator(LogicalKeyboardKey.tab, control: true): onNextTab,
+    const SingleActivator(LogicalKeyboardKey.tab, control: true):
+        onNextTab,
     const SingleActivator(LogicalKeyboardKey.tab, control: true, shift: true):
         onPreviousTab,
 
     // Escape — назад
-    const SingleActivator(LogicalKeyboardKey.escape): onBack,
+    const SingleActivator(LogicalKeyboardKey.escape):
+        onBack,
 
     // Alt+Left — назад (браузерный стиль)
-    const SingleActivator(LogicalKeyboardKey.arrowLeft, alt: true): onBack,
+    const SingleActivator(LogicalKeyboardKey.arrowLeft, alt: true):
+        onBack,
 
     // Ctrl+F — фокус на поиск
-    const SingleActivator(LogicalKeyboardKey.keyF, control: true): onSearch,
+    const SingleActivator(LogicalKeyboardKey.keyF, control: true):
+        onSearch,
 
     // F5 — обновить
-    const SingleActivator(LogicalKeyboardKey.f5): onRefresh,
+    const SingleActivator(LogicalKeyboardKey.f5):
+        onRefresh,
 
     // F1 — показать легенду хоткеев
-    const SingleActivator(LogicalKeyboardKey.f1): onShowHelp,
+    const SingleActivator(LogicalKeyboardKey.f1):
+        onShowHelp,
   };
 }
 

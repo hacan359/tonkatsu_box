@@ -306,52 +306,32 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     if (kIsMobile) return <ShortcutActivator, VoidCallback>{};
 
     return <ShortcutActivator, VoidCallback>{
-      // Ctrl+B — переключить Board/Canvas
       if (_hasCanvas)
-        const SingleActivator(LogicalKeyboardKey.keyB, control: true): () {
-          setState(() => _showCanvas = !_showCanvas);
-        },
-      // Ctrl+L — lock/unlock канвас
+        const SingleActivator(LogicalKeyboardKey.keyB, control: true):
+            () => setState(() => _showCanvas = !_showCanvas),
       if (widget.isEditable && _hasCanvas && _showCanvas)
         const SingleActivator(LogicalKeyboardKey.keyL, control: true): () {
-          setState(() {
-            _isViewModeLocked = !_isViewModeLocked;
-          });
+          setState(() { _isViewModeLocked = !_isViewModeLocked; });
           if (_isViewModeLocked) {
-            ref
-                .read(
-                    steamGridDbPanelProvider(widget.collectionId).notifier)
-                .closePanel();
-            ref
-                .read(vgMapsPanelProvider(widget.collectionId).notifier)
-                .closePanel();
+            ref.read(steamGridDbPanelProvider(widget.collectionId).notifier).closePanel();
+            ref.read(vgMapsPanelProvider(widget.collectionId).notifier).closePanel();
           }
         },
-      // Ctrl+M — переместить в коллекцию
       if (widget.isEditable)
-        const SingleActivator(LogicalKeyboardKey.keyM, control: true): () {
-          _moveToCollection(item);
-        },
-      // Alt+1..5 — установить рейтинг
-      const SingleActivator(LogicalKeyboardKey.digit1, alt: true): () {
-        _updateUserRating(item.id, 1);
-      },
-      const SingleActivator(LogicalKeyboardKey.digit2, alt: true): () {
-        _updateUserRating(item.id, 2);
-      },
-      const SingleActivator(LogicalKeyboardKey.digit3, alt: true): () {
-        _updateUserRating(item.id, 3);
-      },
-      const SingleActivator(LogicalKeyboardKey.digit4, alt: true): () {
-        _updateUserRating(item.id, 4);
-      },
-      const SingleActivator(LogicalKeyboardKey.digit5, alt: true): () {
-        _updateUserRating(item.id, 5);
-      },
-      // Alt+0 — сбросить рейтинг
-      const SingleActivator(LogicalKeyboardKey.digit0, alt: true): () {
-        _updateUserRating(item.id, null);
-      },
+        const SingleActivator(LogicalKeyboardKey.keyM, control: true):
+            () => _moveToCollection(item),
+      const SingleActivator(LogicalKeyboardKey.digit1, alt: true):
+          () => _updateUserRating(item.id, 1),
+      const SingleActivator(LogicalKeyboardKey.digit2, alt: true):
+          () => _updateUserRating(item.id, 2),
+      const SingleActivator(LogicalKeyboardKey.digit3, alt: true):
+          () => _updateUserRating(item.id, 3),
+      const SingleActivator(LogicalKeyboardKey.digit4, alt: true):
+          () => _updateUserRating(item.id, 4),
+      const SingleActivator(LogicalKeyboardKey.digit5, alt: true):
+          () => _updateUserRating(item.id, 5),
+      const SingleActivator(LogicalKeyboardKey.digit0, alt: true):
+          () => _updateUserRating(item.id, null),
     };
   }
 

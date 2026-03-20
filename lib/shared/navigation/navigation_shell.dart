@@ -83,6 +83,21 @@ class NavigationShell extends ConsumerStatefulWidget {
 class _NavigationShellState extends ConsumerState<NavigationShell> {
   late int _selectedIndex = widget.initialTab?.index ?? NavTab.home.index;
 
+  @override
+  void dispose() {
+    for (final FocusScopeNode node in _tabFocusScopeNodes) {
+      node.dispose();
+    }
+    super.dispose();
+  }
+
+  /// FocusScopeNode для каждого таба — при фокусе на scope
+  /// он автоматически перенаправляет фокус на autofocus-потомка.
+  final List<FocusScopeNode> _tabFocusScopeNodes = List<FocusScopeNode>.generate(
+    _tabCount,
+    (int i) => FocusScopeNode(debugLabel: 'tab-$i-scope'),
+  );
+
   /// Табы, которые уже были посещены и инициализированы.
   ///
   /// HomeScreen строится сразу, остальные — при первом переключении.
@@ -359,9 +374,12 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
       },
     );
 
-    return BreadcrumbScope(
-      label: tabLabel,
-      child: _navigatorWidgets[tabIndex]!,
+    return FocusScope(
+      node: _tabFocusScopeNodes[tabIndex],
+      child: BreadcrumbScope(
+        label: tabLabel,
+        child: _navigatorWidgets[tabIndex]!,
+      ),
     );
   }
 
@@ -375,6 +393,12 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
     }
     _initializedTabs.add(index);
     setState(() => _selectedIndex = index);
+    // Явно фокусируем контент нового таба — ноды TTF/CallbackShortcuts
+    // внутри таба являются потомками этого Focus и получат key events.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _tabFocusScopeNodes[index].requestFocus();
+    });
   }
 
   /// Обработка кнопки «назад» (Android back, Gamepad B).

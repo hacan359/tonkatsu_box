@@ -242,50 +242,33 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     return <ShortcutActivator, VoidCallback>{
       if (_canEdit)
         const SingleActivator(LogicalKeyboardKey.keyN, control: true):
-            () => CollectionActions.addItems(
-                  context: context,
-                  ref: ref,
-                  collectionId: widget.collectionId,
-                ),
+            () => CollectionActions.addItems(context: context, ref: ref, collectionId: widget.collectionId),
       if (!_isUncategorized && _collection != null)
         const SingleActivator(LogicalKeyboardKey.keyE, control: true):
-            () => CollectionActions.exportCollection(
-                  context: context,
-                  ref: ref,
-                  collectionId: widget.collectionId,
-                  collection: _collection!,
-                ),
+            () => CollectionActions.exportCollection(context: context, ref: ref, collectionId: widget.collectionId, collection: _collection!),
       if (_canEdit && !_isUncategorized)
         const SingleActivator(LogicalKeyboardKey.keyI, control: true):
-            () => _handleImportIntoCollection(),
+            _handleImportIntoCollection,
       const SingleActivator(
         LogicalKeyboardKey.keyV,
         control: true,
         shift: true,
-      ): () => _handleCycleViewMode(),
+      ): _handleCycleViewMode,
       if (kCanvasEnabled && !_isUncategorized)
         const SingleActivator(LogicalKeyboardKey.keyB, control: true):
             () => setState(() => _isCanvasMode = !_isCanvasMode),
-      // Delete — удалить сфокусированный элемент
       if (_canEdit)
         const SingleActivator(LogicalKeyboardKey.delete):
-            () {
-              if (_focusedItem != null) _handleRemoveItem(_focusedItem!);
-            },
-      // Ctrl+M — переместить сфокусированный элемент
+            () { if (_focusedItem != null) _handleRemoveItem(_focusedItem!); },
       if (_canEdit)
         const SingleActivator(LogicalKeyboardKey.keyM, control: true):
-            () {
-              if (_focusedItem != null) _handleMoveItem(_focusedItem!);
-            },
-      // Ctrl+Delete — удалить текущую коллекцию
+            () { if (_focusedItem != null) _handleMoveItem(_focusedItem!); },
       if (!_isUncategorized)
         const SingleActivator(LogicalKeyboardKey.delete, control: true):
-            () => _handleDelete(),
-      // F2 — переименовать текущую коллекцию
+            _handleDelete,
       if (!_isUncategorized && _collection != null && _collection!.isEditable)
         const SingleActivator(LogicalKeyboardKey.f2):
-            () => _handleRename(),
+            _handleRename,
     };
   }
 
