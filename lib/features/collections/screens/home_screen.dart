@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/import_service.dart';
@@ -6,6 +7,7 @@ import '../../../core/services/xcoll_file.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
+import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_list_sort_mode.dart';
 import '../../../shared/theme/app_colors.dart';
@@ -32,12 +34,26 @@ class HomeScreen extends ConsumerStatefulWidget {
   /// Создаёт [HomeScreen].
   const HomeScreen({super.key});
 
+  /// Группа хоткеев этого экрана для легенды F1.
+  static const ShortcutGroup shortcutGroup = ShortcutGroup(
+    title: 'Коллекции',
+    entries: <ShortcutEntry>[
+      ShortcutEntry(keys: 'Ctrl+N', description: 'Создать коллекцию'),
+      ShortcutEntry(keys: 'Ctrl+I', description: 'Импорт коллекции'),
+      ShortcutEntry(keys: 'Ctrl+Shift+V', description: 'Переключить вид'),
+      ShortcutEntry(keys: 'Delete', description: 'Удалить коллекцию'),
+      ShortcutEntry(keys: 'F2', description: 'Переименовать коллекцию'),
+      ShortcutEntry(keys: 'Enter', description: 'Открыть коллекцию'),
+    ],
+  );
+
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   String _typeToFilterQuery = '';
+  Collection? _focusedCollection;
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +67,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final bool sortDesc = ref.watch(collectionListSortDescProvider);
     final bool isGridView = ref.watch(collectionListViewModeProvider);
 
-    return Scaffold(
+    return CallbackShortcuts(
+      bindings: _buildScreenShortcuts(ref),
+      child: Focus(
+        autofocus: true,
+        child: Scaffold(
       appBar: AutoBreadcrumbAppBar(
         actions: <Widget>[
           _SortPopupButton(
@@ -69,22 +89,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               size: isLandscape ? 20 : null,
             ),
             color: AppColors.textSecondary,
-            tooltip: isGridView
-                ? l.collectionListViewList
-                : l.collectionListViewGrid,
+            tooltip: kIsMobile
+                ? (isGridView
+                    ? l.collectionListViewList
+                    : l.collectionListViewGrid)
+                : (isGridView
+                    ? '${l.collectionListViewList} (Ctrl+Shift+V)'
+                    : '${l.collectionListViewGrid} (Ctrl+Shift+V)'),
             onPressed: () =>
                 ref.read(collectionListViewModeProvider.notifier).toggle(),
           ),
           IconButton(
             icon: Icon(Icons.add, size: isLandscape ? 20 : null),
             color: AppColors.textSecondary,
-            tooltip: l.collectionsNewCollection,
+            tooltip: kIsMobile
+                ? l.collectionsNewCollection
+                : '${l.collectionsNewCollection} (Ctrl+N)',
             onPressed: () => _createCollection(context, ref),
           ),
           IconButton(
             icon: Icon(Icons.file_download_outlined, size: isLandscape ? 20 : null),
             color: AppColors.textSecondary,
-            tooltip: l.collectionsImportCollection,
+            tooltip: kIsMobile
+                ? l.collectionsImportCollection
+                : '${l.collectionsImportCollection} (Ctrl+I)',
             onPressed: () => _importCollection(context, ref),
           ),
         ],
@@ -106,7 +134,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               _buildErrorState(context, ref, error),
         ),
       ),
+    ),
+      ),
     );
+  }
+
+  Map<ShortcutActivator, VoidCallback> _buildScreenShortcuts(WidgetRef ref) {
+    if (kIsMobile) return <ShortcutActivator, VoidCallback>{};
+    return <ShortcutActivator, VoidCallback>{
+      const SingleActivator(LogicalKeyboardKey.keyN, control: true):
+          () => _createCollection(context, ref),
+      const SingleActivator(LogicalKeyboardKey.keyI, control: true):
+          () => _importCollection(context, ref),
+      const SingleActivator(
+        LogicalKeyboardKey.keyV,
+        control: true,
+        shift: true,
+      ): () => ref.read(collectionListViewModeProvider.notifier).toggle(),
+      const SingleActivator(LogicalKeyboardKey.delete):
+          () {
+            if (_focusedCollection == null) return;
+            _deleteCollection(context, ref, _focusedCollection!);
+          },
+      const SingleActivator(LogicalKeyboardKey.f2):
+          () {
+            if (_focusedCollection == null) return;
+            _renameCollection(context, ref, _focusedCollection!);
+          },
+      const SingleActivator(LogicalKeyboardKey.enter):
+          () {
+            if (_focusedCollection == null) return;
+            _navigateToCollection(context, _focusedCollection!);
+          },
+    };
   }
 
   Widget _buildCollectionsList(
@@ -177,6 +237,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             collection: c,
             onTap: () => _navigateToCollection(context, c),
             onLongPress: () => _showCollectionOptions(context, ref, c),
+            onFocusChanged: (bool hasFocus) {
+              setState(() => _focusedCollection = hasFocus ? c : null);
+            },
           )),
     ];
 

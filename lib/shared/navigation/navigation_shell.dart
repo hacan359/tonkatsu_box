@@ -5,15 +5,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../features/collections/screens/collection_screen.dart';
 import '../../features/collections/screens/home_screen.dart';
 import '../../features/home/screens/all_items_screen.dart';
+import '../../features/collections/screens/item_detail_screen.dart';
 import '../../features/search/screens/search_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
+import '../../features/tier_lists/screens/tier_list_detail_screen.dart';
 import '../../features/tier_lists/screens/tier_lists_screen.dart';
 import '../../features/wishlist/providers/wishlist_provider.dart';
 import '../../features/wishlist/screens/wishlist_screen.dart';
 import '../gamepad/gamepad_action.dart';
 import '../gamepad/widgets/gamepad_listener.dart';
+import '../keyboard/keyboard_shortcuts.dart';
+import '../keyboard/keyboard_shortcuts_dialog.dart';
 import '../theme/app_assets.dart';
 import '../theme/app_colors.dart';
 import '../widgets/breadcrumb_scope.dart';
@@ -123,24 +128,45 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
           SystemNavigator.pop();
         }
       },
-      child: GamepadListener(
-        onTabSwitch: _onGamepadTabSwitch,
-        onNavigate: _onGamepadNavigate,
-        onConfirm: _onGamepadConfirm,
-        onScroll: _onGamepadScroll,
-        onBack: () {
-          _handleBack();
-        },
-        child: Scaffold(
-          body: useRail
-              ? _buildRailLayout()
-              : Column(
-                  children: <Widget>[
-                    Expanded(child: _buildContent()),
-                    const UpdateBanner(),
-                  ],
-                ),
-          bottomNavigationBar: useRail ? null : _buildBottomNav(),
+      child: CallbackShortcuts(
+        bindings: buildGlobalShortcuts(
+          onSwitchTab: _onDestinationSelected,
+          onNextTab: () => _onDestinationSelected(
+            (_selectedIndex + 1) % _tabCount,
+          ),
+          onPreviousTab: () => _onDestinationSelected(
+            (_selectedIndex - 1 + _tabCount) % _tabCount,
+          ),
+          onBack: () => _handleBack(),
+          onSearch: () => _onDestinationSelected(NavTab.search.index),
+          onRefresh: _onRefresh,
+          onShowHelp: () => KeyboardShortcutsDialog.show(
+            context,
+            screenGroups: _currentScreenShortcutGroups(),
+          ),
+        ),
+        child: Focus(
+          autofocus: true,
+          child: GamepadListener(
+            onTabSwitch: _onGamepadTabSwitch,
+            onNavigate: _onGamepadNavigate,
+            onConfirm: _onGamepadConfirm,
+            onScroll: _onGamepadScroll,
+            onBack: () {
+              _handleBack();
+            },
+            child: Scaffold(
+              body: useRail
+                  ? _buildRailLayout()
+                  : Column(
+                      children: <Widget>[
+                        Expanded(child: _buildContent()),
+                        const UpdateBanner(),
+                      ],
+                    ),
+              bottomNavigationBar: useRail ? null : _buildBottomNav(),
+            ),
+          ),
         ),
       ),
     );
@@ -378,6 +404,34 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
       label: Text('$count'),
       child: Icon(icon),
     );
+  }
+
+  /// Возвращает группы хоткеев для текущего таба (для F1 диалога).
+  List<ShortcutGroup> _currentScreenShortcutGroups() {
+    return switch (NavTab.values[_selectedIndex]) {
+      NavTab.home => const <ShortcutGroup>[],
+      NavTab.collections => const <ShortcutGroup>[
+          HomeScreen.shortcutGroup,
+          CollectionScreen.shortcutGroup,
+          ItemDetailScreen.shortcutGroup,
+        ],
+      NavTab.tierLists => const <ShortcutGroup>[
+          TierListsScreen.shortcutGroup,
+          TierListDetailScreen.shortcutGroup,
+        ],
+      NavTab.wishlist => const <ShortcutGroup>[WishlistScreen.shortcutGroup],
+      NavTab.search => const <ShortcutGroup>[SearchScreen.shortcutGroup],
+      NavTab.settings => const <ShortcutGroup>[],
+    };
+  }
+
+  /// F5 — обновить текущий таб (pop до корня и пересоздать).
+  void _onRefresh() {
+    final NavigatorState? tabNav =
+        _navigatorKeys[_selectedIndex].currentState;
+    if (tabNav == null) return;
+    tabNav.popUntil((Route<dynamic> route) => route.isFirst);
+    // Инвалидация произойдёт через Riverpod провайдеры на экранах
   }
 
   void _onGamepadTabSwitch(GamepadAction action) {

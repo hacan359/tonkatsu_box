@@ -697,7 +697,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        expect(find.byTooltip('Add Items'), findsOneWidget);
+        expect(find.byTooltip('Add Items (Ctrl+N)'), findsOneWidget);
         expect(find.byIcon(Icons.add), findsOneWidget);
       });
     });
@@ -922,8 +922,8 @@ void main() {
         await pumpScreen(tester);
 
         // В list mode замок не виден
-        expect(find.byTooltip('Lock board'), findsNothing);
-        expect(find.byTooltip('Unlock board'), findsNothing);
+        expect(find.byTooltip('Lock board (Ctrl+L)'), findsNothing);
+        expect(find.byTooltip('Unlock board (Ctrl+L)'), findsNothing);
       });
 
       testWidgets('должен показывать замок при переключении на Canvas mode',
@@ -932,11 +932,11 @@ void main() {
         await pumpScreen(tester);
 
         // Переключаемся на Canvas mode через IconButton
-        await tester.tap(find.byTooltip('Switch to Board'));
+        await tester.tap(find.byTooltip('Switch to Board (Ctrl+B)'));
         await pumpScreen(tester);
 
         // Замок виден (collection.isEditable = true для own)
-        expect(find.byTooltip('Lock board'), findsOneWidget);
+        expect(find.byTooltip('Lock board (Ctrl+L)'), findsOneWidget);
         expect(find.byIcon(Icons.lock_open), findsOneWidget);
       });
 
@@ -956,11 +956,11 @@ void main() {
         await pumpScreen(tester);
 
         // Переключаемся на Canvas mode через IconButton
-        await tester.tap(find.byTooltip('Switch to Board'));
+        await tester.tap(find.byTooltip('Switch to Board (Ctrl+B)'));
         await pumpScreen(tester);
 
         // Замок виден (imported теперь editable)
-        expect(find.byTooltip('Lock board'), findsOneWidget);
+        expect(find.byTooltip('Lock board (Ctrl+L)'), findsOneWidget);
       });
 
       testWidgets('должен переключать состояние замка',
@@ -969,22 +969,22 @@ void main() {
         await pumpScreen(tester);
 
         // Переключаемся на Canvas mode через IconButton
-        await tester.tap(find.byTooltip('Switch to Board'));
+        await tester.tap(find.byTooltip('Switch to Board (Ctrl+B)'));
         await pumpScreen(tester);
 
         // Нажимаем замок (lock_open → lock)
-        await tester.tap(find.byTooltip('Lock board'));
+        await tester.tap(find.byTooltip('Lock board (Ctrl+L)'));
         await pumpScreen(tester);
 
         expect(find.byIcon(Icons.lock), findsOneWidget);
-        expect(find.byTooltip('Unlock board'), findsOneWidget);
+        expect(find.byTooltip('Unlock board (Ctrl+L)'), findsOneWidget);
 
         // Нажимаем замок (lock → lock_open)
-        await tester.tap(find.byTooltip('Unlock board'));
+        await tester.tap(find.byTooltip('Unlock board (Ctrl+L)'));
         await pumpScreen(tester);
 
         expect(find.byIcon(Icons.lock_open), findsOneWidget);
-        expect(find.byTooltip('Lock board'), findsOneWidget);
+        expect(find.byTooltip('Lock board (Ctrl+L)'), findsOneWidget);
       });
     });
   });

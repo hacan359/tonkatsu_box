@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -6,6 +7,7 @@ import '../../../core/services/import_service.dart';
 import '../../../core/services/xcoll_file.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
+import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
 import '../../../shared/widgets/breadcrumb_scope.dart';
 import '../../../data/repositories/collection_repository.dart';
@@ -46,6 +48,22 @@ class CollectionScreen extends ConsumerStatefulWidget {
   /// ID коллекции (null для uncategorized).
   final int? collectionId;
 
+  /// Группа хоткеев этого экрана для легенды F1.
+  static const ShortcutGroup shortcutGroup = ShortcutGroup(
+    title: 'Коллекция',
+    entries: <ShortcutEntry>[
+      ShortcutEntry(keys: 'Ctrl+N', description: 'Добавить элементы'),
+      ShortcutEntry(keys: 'Ctrl+E', description: 'Экспорт коллекции'),
+      ShortcutEntry(keys: 'Ctrl+I', description: 'Импорт в коллекцию'),
+      ShortcutEntry(keys: 'Ctrl+Shift+V', description: 'Переключить вид'),
+      ShortcutEntry(keys: 'Ctrl+B', description: 'Переключить Board/Canvas'),
+      ShortcutEntry(keys: 'Delete', description: 'Удалить элемент'),
+      ShortcutEntry(keys: 'Ctrl+M', description: 'Переместить элемент'),
+      ShortcutEntry(keys: 'Ctrl+Delete', description: 'Удалить коллекцию'),
+      ShortcutEntry(keys: 'F2', description: 'Переименовать коллекцию'),
+    ],
+  );
+
   @override
   ConsumerState<CollectionScreen> createState() => _CollectionScreenState();
 }
@@ -61,6 +79,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   int? _filterPlatformId;
   String _searchQuery = '';
   String _typeToFilterQuery = '';
+  CollectionItem? _focusedItem;
   final TextEditingController _searchController = TextEditingController();
 
   /// Реальная возможность редактирования с учётом режима просмотра.
@@ -174,7 +193,11 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     final S l = S.of(context);
     return BreadcrumbScope(
       label: _localizedDisplayName(context),
-      child: Scaffold(
+      child: CallbackShortcuts(
+        bindings: _buildScreenShortcuts(l),
+        child: Focus(
+          autofocus: true,
+          child: Scaffold(
         appBar: AutoBreadcrumbAppBar(
           actions: _buildAppBarActions(l),
         ),
@@ -209,7 +232,61 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                 child: _buildListLayout(itemsAsync, statsAsync),
               ),
       ),
+        ),
+      ),
     );
+  }
+
+  Map<ShortcutActivator, VoidCallback> _buildScreenShortcuts(S l) {
+    if (kIsMobile) return <ShortcutActivator, VoidCallback>{};
+    return <ShortcutActivator, VoidCallback>{
+      if (_canEdit)
+        const SingleActivator(LogicalKeyboardKey.keyN, control: true):
+            () => CollectionActions.addItems(
+                  context: context,
+                  ref: ref,
+                  collectionId: widget.collectionId,
+                ),
+      if (!_isUncategorized && _collection != null)
+        const SingleActivator(LogicalKeyboardKey.keyE, control: true):
+            () => CollectionActions.exportCollection(
+                  context: context,
+                  ref: ref,
+                  collectionId: widget.collectionId,
+                  collection: _collection!,
+                ),
+      if (_canEdit && !_isUncategorized)
+        const SingleActivator(LogicalKeyboardKey.keyI, control: true):
+            () => _handleImportIntoCollection(),
+      const SingleActivator(
+        LogicalKeyboardKey.keyV,
+        control: true,
+        shift: true,
+      ): () => _handleCycleViewMode(),
+      if (kCanvasEnabled && !_isUncategorized)
+        const SingleActivator(LogicalKeyboardKey.keyB, control: true):
+            () => setState(() => _isCanvasMode = !_isCanvasMode),
+      // Delete — удалить сфокусированный элемент
+      if (_canEdit)
+        const SingleActivator(LogicalKeyboardKey.delete):
+            () {
+              if (_focusedItem != null) _handleRemoveItem(_focusedItem!);
+            },
+      // Ctrl+M — переместить сфокусированный элемент
+      if (_canEdit)
+        const SingleActivator(LogicalKeyboardKey.keyM, control: true):
+            () {
+              if (_focusedItem != null) _handleMoveItem(_focusedItem!);
+            },
+      // Ctrl+Delete — удалить текущую коллекцию
+      if (!_isUncategorized)
+        const SingleActivator(LogicalKeyboardKey.delete, control: true):
+            () => _handleDelete(),
+      // F2 — переименовать текущую коллекцию
+      if (!_isUncategorized && _collection != null && _collection!.isEditable)
+        const SingleActivator(LogicalKeyboardKey.f2):
+            () => _handleRename(),
+    };
   }
 
   List<Widget> _buildAppBarActions(S l) {
@@ -218,7 +295,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         IconButton(
           icon: const Icon(Icons.add),
           color: AppColors.textSecondary,
-          tooltip: l.collectionAddItems,
+          tooltip: kIsMobile
+              ? l.collectionAddItems
+              : '${l.collectionAddItems} (Ctrl+N)',
           onPressed: () => CollectionActions.addItems(
             context: context,
             ref: ref,
@@ -238,7 +317,11 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             _isCanvasMode ? Icons.list : Icons.dashboard,
           ),
           color: AppColors.textSecondary,
-          tooltip: _isCanvasMode ? l.collectionSwitchToList : l.collectionSwitchToBoard,
+          tooltip: kIsMobile
+              ? (_isCanvasMode ? l.collectionSwitchToList : l.collectionSwitchToBoard)
+              : (_isCanvasMode
+                  ? '${l.collectionSwitchToList} (Ctrl+B)'
+                  : '${l.collectionSwitchToBoard} (Ctrl+B)'),
           onPressed: () {
             setState(() {
               _isCanvasMode = !_isCanvasMode;
@@ -253,7 +336,13 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           color: _isViewModeLocked
               ? AppColors.warning
               : AppColors.textSecondary,
-          tooltip: _isViewModeLocked ? l.collectionUnlockBoard : l.collectionLockBoard,
+          tooltip: _isViewModeLocked
+              ? (kIsMobile
+                  ? l.collectionUnlockBoard
+                  : '${l.collectionUnlockBoard} (Ctrl+L)')
+              : (kIsMobile
+                  ? l.collectionLockBoard
+                  : '${l.collectionLockBoard} (Ctrl+L)'),
           onPressed: () {
             setState(() {
               _isViewModeLocked = !_isViewModeLocked;
@@ -356,32 +445,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             onPlatformFilterChanged: (int? id) {
               setState(() => _filterPlatformId = id);
             },
-            onGridModeChanged: () {
-              setState(() {
-                // Цикл: grid → list → table → grid
-                if (_isGridMode) {
-                  _isGridMode = false;
-                  _isTableMode = false;
-                } else if (!_isTableMode) {
-                  _isTableMode = true;
-                } else {
-                  _isGridMode = true;
-                  _isTableMode = false;
-                }
-              });
-              final String colKey =
-                  widget.collectionId?.toString() ?? 'uncategorized';
-              final SharedPreferences prefs =
-                  ref.read(sharedPreferencesProvider);
-              prefs.setBool(
-                '${SettingsKeys.collectionViewModePrefix}$colKey',
-                _isGridMode,
-              );
-              prefs.setBool(
-                '${SettingsKeys.collectionTableModePrefix}$colKey',
-                _isTableMode,
-              );
-            },
+            onGridModeChanged: _handleCycleViewMode,
           ),
 
         // Список элементов
@@ -403,6 +467,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
               onItemRemove: _canEdit
                   ? (CollectionItem item) => _handleRemoveItem(item)
                   : null,
+              onItemFocusChanged: (CollectionItem item, bool hasFocus) {
+                setState(() => _focusedItem = hasFocus ? item : null);
+              },
             ),
             loading: () =>
                 const Center(child: CircularProgressIndicator()),
@@ -473,6 +540,32 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  /// Переключает режим отображения: grid → list → table → grid.
+  void _handleCycleViewMode() {
+    setState(() {
+      if (_isGridMode) {
+        _isGridMode = false;
+        _isTableMode = false;
+      } else if (!_isTableMode) {
+        _isTableMode = true;
+      } else {
+        _isGridMode = true;
+        _isTableMode = false;
+      }
+    });
+    final String colKey =
+        widget.collectionId?.toString() ?? 'uncategorized';
+    final SharedPreferences prefs = ref.read(sharedPreferencesProvider);
+    prefs.setBool(
+      '${SettingsKeys.collectionViewModePrefix}$colKey',
+      _isGridMode,
+    );
+    prefs.setBool(
+      '${SettingsKeys.collectionTableModePrefix}$colKey',
+      _isTableMode,
     );
   }
 

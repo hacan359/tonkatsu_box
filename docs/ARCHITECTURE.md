@@ -391,7 +391,10 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/shared/navigation/navigation_shell.dart` | **NavigationShell**. Адаптивная навигация: `NavigationRail` (боковая панель) при ширине >= 800px, `BottomNavigationBar` при < 800px. 5 табов: Home (AllItemsScreen), Collections (HomeScreen), Wishlist (WishlistScreen), Search, Settings. Lazy IndexedStack — AllItemsScreen загружается eager, остальные строятся при первом переключении на таб. Badge на иконке Wishlist из `activeWishlistCountProvider`. Desktop: логотип 48x48 вынесен в Column выше Rail (не в Rail.leading) |
+| `lib/shared/navigation/navigation_shell.dart` | **NavigationShell**. Адаптивная навигация: `NavigationRail` (боковая панель) при ширине >= 800px, `BottomNavigationBar` при < 800px. 6 табов: Home (AllItemsScreen), Collections (HomeScreen), Tier Lists (TierListsScreen), Wishlist (WishlistScreen), Search, Settings. Lazy IndexedStack — AllItemsScreen загружается eager, остальные строятся при первом переключении на таб. Badge на иконке Wishlist из `activeWishlistCountProvider`. Desktop: логотип 48x48 вынесен в Column выше Rail (не в Rail.leading). Global keyboard shortcuts via `CallbackShortcuts` (Ctrl+1..6, Ctrl+Tab, Escape, Ctrl+F, F5, F1). F1 dialog aggregates screen-specific `shortcutGroup` |
+| `lib/shared/keyboard/keyboard_shortcuts.dart` | **Keyboard shortcuts infrastructure**. `ShortcutEntry`/`ShortcutGroup` models for F1 legend. `buildGlobalShortcuts()` returns `Map<ShortcutActivator, VoidCallback>` for NavigationShell. `isTextFieldFocused()` utility. `globalShortcutGroup` constant. All gated behind `kIsMobile` |
+| `lib/shared/keyboard/keyboard_shortcuts_dialog.dart` | **F1 help dialog**. `KeyboardShortcutsDialog` shows global + screen-specific shortcuts with styled `_KeyBadge` widgets. `show()` static method |
+| `lib/shared/keyboard/shortcut_helper.dart` | **Shortcut utilities**. `wrapWithScreenShortcuts()` wraps widget in `CallbackShortcuts` + `Focus` (noop on mobile). `tooltipWithShortcut()` appends shortcut to tooltip label |
 
 <details>
 <summary><strong>Общие виджеты</strong> — развернуть таблицу</summary>
