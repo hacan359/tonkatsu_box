@@ -26,6 +26,7 @@ class CollectionCard extends ConsumerStatefulWidget {
     required this.collection,
     this.onTap,
     this.onLongPress,
+    this.onSecondaryTap,
     this.onFocusChanged,
     super.key,
   });
@@ -38,6 +39,9 @@ class CollectionCard extends ConsumerStatefulWidget {
 
   /// Callback при долгом нажатии.
   final VoidCallback? onLongPress;
+
+  /// Callback при правом клике (координаты для showMenu).
+  final void Function(Offset globalPosition)? onSecondaryTap;
 
   /// Callback при изменении фокуса (для трекинга клавиатурного выделения).
   final ValueChanged<bool>? onFocusChanged;
@@ -126,6 +130,10 @@ class _CollectionCardState extends ConsumerState<CollectionCard>
       child: GestureDetector(
         onTap: widget.onTap,
         onLongPress: widget.onLongPress,
+        onSecondaryTapUp: widget.onSecondaryTap != null
+            ? (TapUpDetails details) =>
+                widget.onSecondaryTap!(details.globalPosition)
+            : null,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 5),
           child: Column(

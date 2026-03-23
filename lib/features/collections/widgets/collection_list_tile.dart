@@ -17,6 +17,7 @@ class CollectionListTile extends ConsumerWidget {
     required this.collection,
     this.onTap,
     this.onLongPress,
+    this.onSecondaryTap,
     super.key,
   });
 
@@ -29,12 +30,20 @@ class CollectionListTile extends ConsumerWidget {
   /// Callback при долгом нажатии.
   final VoidCallback? onLongPress;
 
+  /// Callback при правом клике (координаты для showMenu).
+  final void Function(Offset globalPosition)? onSecondaryTap;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AsyncValue<CollectionStats> statsAsync =
         ref.watch(collectionStatsProvider(collection.id));
 
-    return ListTile(
+    return GestureDetector(
+      onSecondaryTapUp: onSecondaryTap != null
+          ? (TapUpDetails details) =>
+              onSecondaryTap!(details.globalPosition)
+          : null,
+      child: ListTile(
       leading: const Icon(Icons.folder_rounded, color: AppColors.textSecondary),
       title: Text(
         collection.name,
@@ -60,6 +69,7 @@ class CollectionListTile extends ConsumerWidget {
       ),
       onTap: onTap,
       onLongPress: onLongPress,
+    ),
     );
   }
 }

@@ -237,6 +237,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             collection: c,
             onTap: () => _navigateToCollection(context, c),
             onLongPress: () => _showCollectionOptions(context, ref, c),
+            onSecondaryTap: (Offset pos) =>
+                _showCollectionContextMenu(context, ref, c, pos),
             onFocusChanged: (bool hasFocus) {
               setState(() => _focusedCollection = hasFocus ? c : null);
             },
@@ -285,6 +287,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             collection: c,
             onTap: () => _navigateToCollection(context, c),
             onLongPress: () => _showCollectionOptions(context, ref, c),
+            onSecondaryTap: (Offset pos) =>
+                _showCollectionContextMenu(context, ref, c, pos),
           );
         },
       ),
@@ -408,6 +412,70 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (context.mounted) {
         context.showSnack(S.of(context).collectionsFailedToCreate('$e'), type: SnackType.error);
       }
+    }
+  }
+
+  /// Контекстное меню ПКМ для коллекции (десктоп).
+  Future<void> _showCollectionContextMenu(
+    BuildContext context,
+    WidgetRef ref,
+    Collection collection,
+    Offset position,
+  ) async {
+    final S l = S.of(context);
+    final RenderBox overlay =
+        Overlay.of(context).context.findRenderObject()! as RenderBox;
+
+    final String? value = await showMenu<String>(
+      context: context,
+      position: RelativeRect.fromRect(
+        position & const Size(1, 1),
+        Offset.zero & overlay.size,
+      ),
+      items: <PopupMenuEntry<String>>[
+        PopupMenuItem<String>(
+          value: 'open',
+          child: ListTile(
+            leading: const Icon(Icons.open_in_new),
+            title: Text(l.open),
+            contentPadding: EdgeInsets.zero,
+          ),
+        ),
+        if (collection.isEditable)
+          PopupMenuItem<String>(
+            value: 'rename',
+            child: ListTile(
+              leading: const Icon(Icons.edit),
+              title: Text(l.rename),
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
+        const PopupMenuDivider(),
+        PopupMenuItem<String>(
+          value: 'delete',
+          child: ListTile(
+            leading: const Icon(
+              Icons.delete,
+              color: AppColors.error,
+            ),
+            title: Text(
+              l.delete,
+              style: const TextStyle(color: AppColors.error),
+            ),
+            contentPadding: EdgeInsets.zero,
+          ),
+        ),
+      ],
+    );
+
+    if (value == null || !context.mounted) return;
+    switch (value) {
+      case 'open':
+        _navigateToCollection(context, collection);
+      case 'rename':
+        await _renameCollection(context, ref, collection);
+      case 'delete':
+        await _deleteCollection(context, ref, collection);
     }
   }
 
