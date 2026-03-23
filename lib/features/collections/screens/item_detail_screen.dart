@@ -1,6 +1,7 @@
 // Единый экран детального просмотра элемента коллекции.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/image_cache_service.dart';
@@ -40,6 +41,7 @@ import '../widgets/status_chip_row.dart';
 import '../widgets/steamgriddb_panel.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../widgets/vgmaps_panel.dart';
+import '../../../shared/keyboard/keyboard_shortcuts.dart';
 
 /// Конфигурация медиа-типа для отображения в детальном экране.
 class _MediaConfig {
@@ -100,6 +102,18 @@ class ItemDetailScreen extends ConsumerStatefulWidget {
 
   /// Можно ли редактировать комментарий автора.
   final bool isEditable;
+
+  /// Группа хоткеев этого экрана для легенды F1.
+  static const ShortcutGroup shortcutGroup = ShortcutGroup(
+    title: 'Деталь элемента',
+    entries: <ShortcutEntry>[
+      ShortcutEntry(keys: 'Ctrl+B', description: 'Переключить Board/Canvas'),
+      ShortcutEntry(keys: 'Ctrl+L', description: 'Lock/Unlock канвас'),
+      ShortcutEntry(keys: 'Ctrl+M', description: 'Переместить в коллекцию'),
+      ShortcutEntry(keys: 'Alt+1..5', description: 'Установить рейтинг'),
+      ShortcutEntry(keys: 'Alt+0', description: 'Сбросить рейтинг'),
+    ],
+  );
 
   @override
   ConsumerState<ItemDetailScreen> createState() => _ItemDetailScreenState();
@@ -286,13 +300,52 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
 
   // ==================== Content ====================
 
+  Map<ShortcutActivator, VoidCallback> _buildScreenShortcuts(
+    CollectionItem item,
+  ) {
+    if (kIsMobile) return <ShortcutActivator, VoidCallback>{};
+
+    return <ShortcutActivator, VoidCallback>{
+      if (_hasCanvas)
+        const SingleActivator(LogicalKeyboardKey.keyB, control: true):
+            () => setState(() => _showCanvas = !_showCanvas),
+      if (widget.isEditable && _hasCanvas && _showCanvas)
+        const SingleActivator(LogicalKeyboardKey.keyL, control: true): () {
+          setState(() { _isViewModeLocked = !_isViewModeLocked; });
+          if (_isViewModeLocked) {
+            ref.read(steamGridDbPanelProvider(widget.collectionId).notifier).closePanel();
+            ref.read(vgMapsPanelProvider(widget.collectionId).notifier).closePanel();
+          }
+        },
+      if (widget.isEditable)
+        const SingleActivator(LogicalKeyboardKey.keyM, control: true):
+            () => _moveToCollection(item),
+      const SingleActivator(LogicalKeyboardKey.digit1, alt: true):
+          () => _updateUserRating(item.id, 1),
+      const SingleActivator(LogicalKeyboardKey.digit2, alt: true):
+          () => _updateUserRating(item.id, 2),
+      const SingleActivator(LogicalKeyboardKey.digit3, alt: true):
+          () => _updateUserRating(item.id, 3),
+      const SingleActivator(LogicalKeyboardKey.digit4, alt: true):
+          () => _updateUserRating(item.id, 4),
+      const SingleActivator(LogicalKeyboardKey.digit5, alt: true):
+          () => _updateUserRating(item.id, 5),
+      const SingleActivator(LogicalKeyboardKey.digit0, alt: true):
+          () => _updateUserRating(item.id, null),
+    };
+  }
+
   Widget _buildContent(CollectionItem item) {
     _currentItemName = item.itemName;
     final _MediaConfig config = _getMediaConfig(item);
 
     return BreadcrumbScope(
       label: item.itemName,
-      child: Scaffold(
+      child: CallbackShortcuts(
+        bindings: _buildScreenShortcuts(item),
+        child: Focus(
+          autofocus: true,
+          child: Scaffold(
         appBar: AutoBreadcrumbAppBar(
           actions: <Widget>[
             // Board toggle кнопка
@@ -306,7 +359,9 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                 color: _showCanvas
                     ? AppColors.brand
                     : AppColors.textSecondary,
-                tooltip: S.of(context).boardTab,
+                tooltip: !kIsMobile
+                    ? '${S.of(context).boardTab} (Ctrl+B)'
+                    : S.of(context).boardTab,
                 onPressed: () {
                   setState(() {
                     _showCanvas = !_showCanvas;
@@ -323,8 +378,12 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                     ? AppColors.warning
                     : AppColors.textSecondary,
                 tooltip: _isViewModeLocked
-                    ? S.of(context).collectionUnlockBoard
-                    : S.of(context).collectionLockBoard,
+                    ? (!kIsMobile
+                        ? '${S.of(context).collectionUnlockBoard} (Ctrl+L)'
+                        : S.of(context).collectionUnlockBoard)
+                    : (!kIsMobile
+                        ? '${S.of(context).collectionLockBoard} (Ctrl+L)'
+                        : S.of(context).collectionLockBoard),
                 onPressed: () {
                   setState(() {
                     _isViewModeLocked = !_isViewModeLocked;
@@ -400,6 +459,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         body: _showCanvas && _hasCanvas
             ? _buildCanvasView()
             : _buildDetailView(item, config),
+      ),
+        ),
       ),
     );
   }

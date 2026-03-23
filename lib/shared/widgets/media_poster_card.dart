@@ -52,6 +52,7 @@ class MediaPosterCard extends StatefulWidget {
     this.onTap,
     this.onLongPress,
     this.onOpenInCollection,
+    this.onFocusChanged,
     super.key,
   });
 
@@ -105,6 +106,9 @@ class MediaPosterCard extends StatefulWidget {
 
   /// Обработчик "Открыть в коллекции" (только если isInCollection).
   final VoidCallback? onOpenInCollection;
+
+  /// Callback при изменении фокуса (для трекинга клавиатурного выделения).
+  final ValueChanged<bool>? onFocusChanged;
 
   @override
   State<MediaPosterCard> createState() => _MediaPosterCardState();
@@ -176,6 +180,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
           } else {
             _hoverController?.reverse();
           }
+          widget.onFocusChanged?.call(hasFocus);
         },
         child: MouseRegion(
           onEnter: (_) => _hoverController?.forward(),

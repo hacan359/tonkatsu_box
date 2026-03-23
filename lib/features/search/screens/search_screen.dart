@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/constants/platform_features.dart';
+import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../core/api/tmdb_api.dart';
 import '../../../core/database/database_service.dart';
 import '../../../core/services/image_cache_service.dart';
@@ -68,6 +69,16 @@ class SearchScreen extends ConsumerStatefulWidget {
 
   /// Начальный запрос поиска (предзаполняет поле и запускает поиск).
   final String? initialQuery;
+
+  /// Группа хоткеев этого экрана для легенды F1.
+  static const ShortcutGroup shortcutGroup = ShortcutGroup(
+    title: 'Поиск',
+    entries: <ShortcutEntry>[
+      ShortcutEntry(keys: 'Ctrl+F', description: 'Фокус в поле поиска'),
+      ShortcutEntry(keys: 'Escape', description: 'Очистить / назад'),
+      ShortcutEntry(keys: 'Enter', description: 'Выполнить поиск'),
+    ],
+  );
 
   @override
   ConsumerState<SearchScreen> createState() => _SearchScreenState();

@@ -1,17 +1,19 @@
 // Экран деталей одного тир-листа.
 
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gal/gal.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/constants/platform_features.dart';
+import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
 import '../../../shared/widgets/breadcrumb_scope.dart';
@@ -27,6 +29,16 @@ class TierListDetailScreen extends ConsumerStatefulWidget {
 
   /// ID тир-листа.
   final int tierListId;
+
+  /// Группа хоткеев этого экрана для легенды F1.
+  static const ShortcutGroup shortcutGroup = ShortcutGroup(
+    title: 'Тир-лист',
+    entries: <ShortcutEntry>[
+      ShortcutEntry(keys: 'Ctrl+E', description: 'Экспорт как изображение'),
+      ShortcutEntry(keys: 'Ctrl+Enter', description: 'Добавить тир'),
+      ShortcutEntry(keys: 'Ctrl+Shift+D', description: 'Очистить все'),
+    ],
+  );
 
   @override
   ConsumerState<TierListDetailScreen> createState() =>
@@ -46,14 +58,20 @@ class _TierListDetailScreenState
 
     return BreadcrumbScope(
       label: state.isLoading ? l.tierListTitle : state.tierList.name,
-      child: Scaffold(
+      child: CallbackShortcuts(
+        bindings: _buildScreenShortcuts(state),
+        child: Focus(
+          autofocus: true,
+          child: Scaffold(
         appBar: AutoBreadcrumbAppBar(
           actions: <Widget>[
             if (!state.isLoading)
               IconButton(
                 icon: const Icon(Icons.image_outlined),
                 color: AppColors.textSecondary,
-                tooltip: l.tierListExportImage,
+                tooltip: kIsMobile
+                    ? l.tierListExportImage
+                    : '${l.tierListExportImage} (Ctrl+E)',
                 onPressed: () => _exportAsImage(context, state),
               ),
             if (!state.isLoading)
@@ -105,13 +123,70 @@ class _TierListDetailScreenState
                 ),
               ),
       ),
+        ),
+      ),
     );
+  }
+
+  Map<ShortcutActivator, VoidCallback> _buildScreenShortcuts(
+    TierListDetailState state,
+  ) {
+    if (kIsMobile || state.isLoading) {
+      return <ShortcutActivator, VoidCallback>{};
+    }
+    return <ShortcutActivator, VoidCallback>{
+      const SingleActivator(LogicalKeyboardKey.keyE, control: true):
+          () => _exportAsImage(context, state),
+      const SingleActivator(LogicalKeyboardKey.enter, control: true):
+          () => _addTier(context),
+      const SingleActivator(
+        LogicalKeyboardKey.keyD,
+        control: true,
+        shift: true,
+      ): () => _confirmClear(context),
+    };
   }
 
   void _handleMenuAction(String action, TierListDetailState state) {
     switch (action) {
       case 'clear':
         _confirmClear(context);
+    }
+  }
+
+  Future<void> _addTier(BuildContext context) async {
+    final S l = S.of(context);
+    final TextEditingController controller = TextEditingController();
+    final String? tierName = await showDialog<String>(
+      context: context,
+      builder: (BuildContext ctx) => AlertDialog(
+        title: Text(l.tierListAddTier),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: InputDecoration(hintText: l.tierListNameHint),
+          onSubmitted: (String value) =>
+              Navigator.of(ctx).pop(value.trim()),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(l.cancel),
+          ),
+          TextButton(
+            onPressed: () =>
+                Navigator.of(ctx).pop(controller.text.trim()),
+            child: Text(l.add),
+          ),
+        ],
+      ),
+    );
+    if (tierName != null && tierName.isNotEmpty) {
+      final String tierKey =
+          '${tierName.toLowerCase().replaceAll(' ', '_')}_${DateTime.now().millisecondsSinceEpoch}';
+      await ref
+          .read(tierListDetailProvider(widget.tierListId).notifier)
+          .addTier(tierKey, tierName, AppColors.brand);
     }
   }
 
