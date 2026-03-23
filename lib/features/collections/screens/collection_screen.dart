@@ -367,6 +367,22 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                 ),
               ),
               PopupMenuItem<String>(
+                value: 'copy_as_list',
+                child: ListTile(
+                  leading: const Icon(Icons.content_copy),
+                  title: Text(ml.copyAsList),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              PopupMenuItem<String>(
+                value: 'copy_as_text',
+                child: ListTile(
+                  leading: const Icon(Icons.text_snippet_outlined),
+                  title: Text(ml.copyAsText),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              PopupMenuItem<String>(
                 value: 'export',
                 child: ListTile(
                   leading: const Icon(Icons.file_upload_outlined),
@@ -558,6 +574,10 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         _handleRename();
       case 'tier_list':
         _handleCreateTierList();
+      case 'copy_as_list':
+        _handleCopyAsList();
+      case 'copy_as_text':
+        _handleCopyAsText();
       case 'export':
         _handleExport();
       case 'import':
@@ -643,6 +663,22 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     if (deleted && mounted) {
       Navigator.of(context).pop();
     }
+  }
+
+  Future<void> _handleCopyAsList() async {
+    await CollectionActions.copyAsList(
+      context: context,
+      ref: ref,
+      collectionId: widget.collectionId,
+    );
+  }
+
+  Future<void> _handleCopyAsText() async {
+    await CollectionActions.copyAsText(
+      context: context,
+      ref: ref,
+      collectionId: widget.collectionId,
+    );
   }
 
   Future<void> _handleExport() async {

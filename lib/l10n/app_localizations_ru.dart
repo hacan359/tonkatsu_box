@@ -2606,4 +2606,55 @@ class SRu extends S {
   String raProfileMemberSince(String date) {
     return 'Участник с $date';
   }
+
+  @override
+  String get copyAsList => 'Копировать списком';
+
+  @override
+  String get copyAsText => 'Копировать как текст…';
+
+  @override
+  String copiedToClipboard(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Скопировано $count элементов',
+      few: 'Скопировано $count элемента',
+      one: 'Скопирован 1 элемент',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get textExportTemplate => 'Шаблон';
+
+  @override
+  String get textExportTokens => 'Токены';
+
+  @override
+  String get textExportPreview => 'Предпросмотр';
+
+  @override
+  String get textExportSortBy => 'Сортировка';
+
+  @override
+  String get textExportSortCurrent => 'Текущий порядок';
+
+  @override
+  String get textExportSortName => 'Название А→Я';
+
+  @override
+  String get textExportSortRating => 'Рейтинг ↓';
+
+  @override
+  String get textExportSortYear => 'Год ↓';
+
+  @override
+  String get textExportSortAdded => 'Дата добавления ↓';
+
+  @override
+  String get textExportCopy => 'Копировать';
+
+  @override
+  String get textExportEmptyTemplate => 'Шаблон пустой';
 }

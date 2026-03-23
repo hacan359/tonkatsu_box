@@ -1001,5 +1001,20 @@
     "placeholders": {
       "date": {"type": "String"}
     }
-  }
+  },
+
+  "copyAsList": "Копировать списком",
+  "copyAsText": "Копировать как текст…",
+  "copiedToClipboard": "{count,plural, =1{Скопирован 1 элемент} few{Скопировано {count} элемента} other{Скопировано {count} элементов}}",
+  "textExportTemplate": "Шаблон",
+  "textExportTokens": "Токены",
+  "textExportPreview": "Предпросмотр",
+  "textExportSortBy": "Сортировка",
+  "textExportSortCurrent": "Текущий порядок",
+  "textExportSortName": "Название А→Я",
+  "textExportSortRating": "Рейтинг ↓",
+  "textExportSortYear": "Год ↓",
+  "textExportSortAdded": "Дата добавления ↓",
+  "textExportCopy": "Копировать",
+  "textExportEmptyTemplate": "Шаблон пустой"
 }
