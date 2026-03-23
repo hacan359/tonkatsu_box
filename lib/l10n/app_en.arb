@@ -1245,5 +1245,6 @@
   "textExportSortYear": "Year ↓",
   "textExportSortAdded": "Date added ↓",
   "textExportCopy": "Copy",
-  "textExportEmptyTemplate": "Template is empty"
+  "textExportEmptyTemplate": "Template is empty",
+  "filtersClear": "Clear"
 }

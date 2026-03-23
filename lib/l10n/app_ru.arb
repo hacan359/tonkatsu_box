@@ -1016,5 +1016,6 @@
   "textExportSortYear": "Год ↓",
   "textExportSortAdded": "Дата добавления ↓",
   "textExportCopy": "Копировать",
-  "textExportEmptyTemplate": "Шаблон пустой"
+  "textExportEmptyTemplate": "Шаблон пустой",
+  "filtersClear": "Сбросить"
 }

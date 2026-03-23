@@ -21,6 +21,7 @@ import '../keyboard/keyboard_shortcuts.dart';
 import '../keyboard/keyboard_shortcuts_dialog.dart';
 import '../theme/app_assets.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
 import '../widgets/breadcrumb_scope.dart';
 import '../widgets/update_banner.dart';
 import '../../l10n/app_localizations.dart';
@@ -212,7 +213,10 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
                 selectedIndex: _selectedIndex,
                 onDestinationSelected: _onDestinationSelected,
                 backgroundColor: AppColors.surface,
-                indicatorColor: AppColors.brand.withAlpha(30),
+                indicatorColor: AppColors.brand.withAlpha(40),
+                indicatorShape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                ),
                 selectedIconTheme: const IconThemeData(
                   color: AppColors.textPrimary,
                 ),

@@ -2627,4 +2627,7 @@ class SEn extends S {
 
   @override
   String get textExportEmptyTemplate => 'Template is empty';
+
+  @override
+  String get filtersClear => 'Clear';
 }

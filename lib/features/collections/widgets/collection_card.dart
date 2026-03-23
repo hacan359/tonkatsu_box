@@ -235,7 +235,14 @@ class _CoverMosaic extends StatelessWidget {
   static final BorderRadius _cellBorderRadius =
       BorderRadius.circular(CollectionCard._cellRadius);
   static final BoxDecoration _emptyCellDecoration = BoxDecoration(
-    color: AppColors.surface,
+    gradient: const LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: <Color>[
+        AppColors.surface,
+        AppColors.surfaceLight,
+      ],
+    ),
     borderRadius: _cellBorderRadius,
   );
 

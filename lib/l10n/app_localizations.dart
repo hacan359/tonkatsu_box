@@ -4800,6 +4800,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Template is empty'**
   String get textExportEmptyTemplate;
+
+  /// No description provided for @filtersClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get filtersClear;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {
