@@ -1,9 +1,11 @@
 // Вспомогательные методы действий для CollectionScreen.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/export_service.dart';
+import '../../../core/services/text_export_service.dart';
 import '../../../core/services/xcoll_file.dart';
 import '../../../data/repositories/canvas_repository.dart';
 import '../../../l10n/app_localizations.dart';
@@ -14,6 +16,7 @@ import '../../../shared/models/steamgriddb_image.dart';
 import '../../../shared/widgets/collection_picker_dialog.dart';
 import '../providers/canvas_provider.dart';
 import '../providers/collections_provider.dart';
+import '../widgets/copy_as_text_dialog.dart';
 import '../widgets/create_collection_dialog.dart';
 import '../../search/screens/search_screen.dart';
 
@@ -321,7 +324,69 @@ class CollectionActions {
     }
   }
 
-  /// Экспорт коллекции в файл.
+  /// Быстрое копирование списка в буфер обмена (дефолтный шаблон).
+  static Future<void> copyAsList({
+    required BuildContext context,
+    required WidgetRef ref,
+    required int? collectionId,
+  }) async {
+    final List<CollectionItem>? items =
+        ref.read(collectionItemsNotifierProvider(collectionId)).valueOrNull;
+
+    if (items == null || items.isEmpty) {
+      if (context.mounted) {
+        context.showSnack('Items not loaded yet', type: SnackType.error);
+      }
+      return;
+    }
+
+    final TextExportService service = TextExportService();
+    final String text = service.applyTemplate(
+      TextExportService.defaultTemplate,
+      items,
+    );
+
+    await Clipboard.setData(ClipboardData(text: text));
+
+    if (context.mounted) {
+      context.showSnack(
+        S.of(context).copiedToClipboard(items.length),
+        type: SnackType.success,
+      );
+    }
+  }
+
+  /// Открывает диалог копирования коллекции как текста с шаблоном.
+  static Future<void> copyAsText({
+    required BuildContext context,
+    required WidgetRef ref,
+    required int? collectionId,
+  }) async {
+    final List<CollectionItem>? items =
+        ref.read(collectionItemsNotifierProvider(collectionId)).valueOrNull;
+
+    if (items == null || items.isEmpty) {
+      if (context.mounted) {
+        context.showSnack('Items not loaded yet', type: SnackType.error);
+      }
+      return;
+    }
+
+    if (!context.mounted) return;
+
+    final bool? copied = await showCopyAsTextDialog(
+      context: context,
+      items: items,
+    );
+
+    if (copied == true && context.mounted) {
+      context.showSnack(
+        S.of(context).copiedToClipboard(items.length),
+        type: SnackType.success,
+      );
+    }
+  }
+
   static Future<void> exportCollection({
     required BuildContext context,
     required WidgetRef ref,

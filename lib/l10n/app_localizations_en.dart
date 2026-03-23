@@ -2583,4 +2583,48 @@ class SEn extends S {
   String raProfileMemberSince(String date) {
     return 'Member since $date';
   }
+
+  @override
+  String get copyAsList => 'Copy as List';
+
+  @override
+  String get copyAsText => 'Copy as Text…';
+
+  @override
+  String copiedToClipboard(int count) {
+    return 'Copied $count items to clipboard';
+  }
+
+  @override
+  String get textExportTemplate => 'Template';
+
+  @override
+  String get textExportTokens => 'Tokens';
+
+  @override
+  String get textExportPreview => 'Preview';
+
+  @override
+  String get textExportSortBy => 'Sort by';
+
+  @override
+  String get textExportSortCurrent => 'Current order';
+
+  @override
+  String get textExportSortName => 'Name A→Z';
+
+  @override
+  String get textExportSortRating => 'Rating ↓';
+
+  @override
+  String get textExportSortYear => 'Year ↓';
+
+  @override
+  String get textExportSortAdded => 'Date added ↓';
+
+  @override
+  String get textExportCopy => 'Copy';
+
+  @override
+  String get textExportEmptyTemplate => 'Template is empty';
 }

@@ -4716,6 +4716,90 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Member since {date}'**
   String raProfileMemberSince(String date);
+
+  /// No description provided for @copyAsList.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy as List'**
+  String get copyAsList;
+
+  /// No description provided for @copyAsText.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy as Text…'**
+  String get copyAsText;
+
+  /// No description provided for @copiedToClipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied {count} items to clipboard'**
+  String copiedToClipboard(int count);
+
+  /// No description provided for @textExportTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Template'**
+  String get textExportTemplate;
+
+  /// No description provided for @textExportTokens.
+  ///
+  /// In en, this message translates to:
+  /// **'Tokens'**
+  String get textExportTokens;
+
+  /// No description provided for @textExportPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get textExportPreview;
+
+  /// No description provided for @textExportSortBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort by'**
+  String get textExportSortBy;
+
+  /// No description provided for @textExportSortCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Current order'**
+  String get textExportSortCurrent;
+
+  /// No description provided for @textExportSortName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name A→Z'**
+  String get textExportSortName;
+
+  /// No description provided for @textExportSortRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Rating ↓'**
+  String get textExportSortRating;
+
+  /// No description provided for @textExportSortYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Year ↓'**
+  String get textExportSortYear;
+
+  /// No description provided for @textExportSortAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Date added ↓'**
+  String get textExportSortAdded;
+
+  /// No description provided for @textExportCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get textExportCopy;
+
+  /// No description provided for @textExportEmptyTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Template is empty'**
+  String get textExportEmptyTemplate;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

@@ -1225,5 +1225,25 @@
     "placeholders": {
       "date": {"type": "String"}
     }
-  }
+  },
+
+  "copyAsList": "Copy as List",
+  "copyAsText": "Copy as Text…",
+  "copiedToClipboard": "Copied {count} items to clipboard",
+  "@copiedToClipboard": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "textExportTemplate": "Template",
+  "textExportTokens": "Tokens",
+  "textExportPreview": "Preview",
+  "textExportSortBy": "Sort by",
+  "textExportSortCurrent": "Current order",
+  "textExportSortName": "Name A→Z",
+  "textExportSortRating": "Rating ↓",
+  "textExportSortYear": "Year ↓",
+  "textExportSortAdded": "Date added ↓",
+  "textExportCopy": "Copy",
+  "textExportEmptyTemplate": "Template is empty"
 }
