@@ -2657,4 +2657,7 @@ class SRu extends S {
 
   @override
   String get textExportEmptyTemplate => 'Шаблон пустой';
+
+  @override
+  String get filtersClear => 'Сбросить';
 }

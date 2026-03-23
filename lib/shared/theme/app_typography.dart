@@ -44,7 +44,7 @@ abstract final class AppTypography {
   /// Основной текст.
   static const TextStyle body = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: FontWeight.normal,
     color: AppColors.textPrimary,
     height: 1.4,
@@ -53,7 +53,7 @@ abstract final class AppTypography {
   /// Мелкий текст (даты, мета-информация).
   static const TextStyle bodySmall = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: FontWeight.normal,
     color: AppColors.textSecondary,
     height: 1.4,
@@ -62,7 +62,7 @@ abstract final class AppTypography {
   /// Подпись (badge, chip, label).
   static const TextStyle caption = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: FontWeight.w500,
     color: AppColors.textTertiary,
     height: 1.2,
@@ -71,7 +71,7 @@ abstract final class AppTypography {
   /// Название на постерной карточке.
   static const TextStyle posterTitle = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
     height: 1.3,
@@ -80,7 +80,7 @@ abstract final class AppTypography {
   /// Подпись на постерной карточке (год, жанр).
   static const TextStyle posterSubtitle = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: FontWeight.w400,
     color: AppColors.textSecondary,
     height: 1.3,

@@ -273,7 +273,13 @@ class _MediaDetailViewState extends State<MediaDetailView> {
         ],
         const SizedBox(height: AppSpacing.md),
         _buildUserNotesSection(context),
-        const SizedBox(height: AppSpacing.md),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+          child: Divider(
+            color: AppColors.surfaceBorder.withAlpha(80),
+            height: 1,
+          ),
+        ),
         _buildAuthorCommentSection(context),
         if (widget.extraSections != null &&
             widget.extraSections!.isNotEmpty) ...<Widget>[

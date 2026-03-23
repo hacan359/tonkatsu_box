@@ -3,7 +3,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/app_localizations.dart';
+import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/theme/app_typography.dart';
 import '../models/search_source.dart';
 import '../providers/browse_provider.dart';
 import 'filter_dropdown.dart';
@@ -27,6 +30,8 @@ class FilterBar extends ConsumerWidget {
     final BrowseState browseState = ref.watch(browseProvider);
     final SearchSource source = browseState.source;
     final List<SearchFilter> filters = source.filters;
+    final bool hasActiveFilters = browseState.filterValues.values
+        .any((Object? v) => v != null);
 
     return SizedBox(
       height: 36,
@@ -70,6 +75,30 @@ class FilterBar extends ConsumerWidget {
                 ref.read(browseProvider.notifier).setSort(sortBy);
               },
             ),
+          // Clear filters
+          if (hasActiveFilters) ...<Widget>[
+            const SizedBox(width: 6),
+            ActionChip(
+              avatar: Icon(
+                Icons.close,
+                size: 14,
+                color: AppColors.error.withAlpha(180),
+              ),
+              label: Text(
+                S.of(context).filtersClear,
+                style: AppTypography.caption.copyWith(
+                  color: AppColors.error.withAlpha(180),
+                ),
+              ),
+              side: BorderSide(
+                color: AppColors.error.withAlpha(60),
+              ),
+              visualDensity: VisualDensity.compact,
+              onPressed: () {
+                ref.read(browseProvider.notifier).clearFilters();
+              },
+            ),
+          ],
         ],
       ),
     );
