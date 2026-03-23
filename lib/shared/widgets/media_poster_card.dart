@@ -51,6 +51,7 @@ class MediaPosterCard extends StatefulWidget {
     this.platformLabel,
     this.onTap,
     this.onLongPress,
+    this.onSecondaryTap,
     this.onOpenInCollection,
     this.onFocusChanged,
     super.key,
@@ -103,6 +104,9 @@ class MediaPosterCard extends StatefulWidget {
 
   /// Обработчик долгого нажатия.
   final VoidCallback? onLongPress;
+
+  /// Обработчик правого клика (координаты для showMenu).
+  final void Function(Offset globalPosition)? onSecondaryTap;
 
   /// Обработчик "Открыть в коллекции" (только если isInCollection).
   final VoidCallback? onOpenInCollection;
@@ -199,6 +203,10 @@ class _MediaPosterCardState extends State<MediaPosterCard>
             child: GestureDetector(
               onTap: widget.onTap,
               onLongPress: widget.onLongPress,
+              onSecondaryTapUp: widget.onSecondaryTap != null
+                  ? (TapUpDetails details) =>
+                      widget.onSecondaryTap!(details.globalPosition)
+                  : null,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[

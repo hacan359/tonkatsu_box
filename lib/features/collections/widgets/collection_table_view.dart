@@ -45,6 +45,7 @@ class CollectionTableView extends StatefulWidget {
   const CollectionTableView({
     required this.items,
     required this.onItemTap,
+    this.onItemSecondaryTap,
     super.key,
   });
 
@@ -53,6 +54,10 @@ class CollectionTableView extends StatefulWidget {
 
   /// Callback нажатия на элемент.
   final ValueChanged<CollectionItem> onItemTap;
+
+  /// Callback правого клика на элемент (координаты + элемент).
+  final void Function(CollectionItem item, Offset globalPosition)?
+      onItemSecondaryTap;
 
   @override
   State<CollectionTableView> createState() => _CollectionTableViewState();
@@ -114,6 +119,10 @@ class _CollectionTableViewState extends State<CollectionTableView> {
                       key: ValueKey<int>(item.id),
                       item: item,
                       onTap: () => widget.onItemTap(item),
+                      onSecondaryTap: widget.onItemSecondaryTap != null
+                          ? (Offset pos) =>
+                              widget.onItemSecondaryTap!(item, pos)
+                          : null,
                       thumbWidth: _thumbWidth,
                       thumbHeight: _thumbHeight,
                       thumbRadius: _thumbRadius,
@@ -289,6 +298,7 @@ class _TableRow extends StatefulWidget {
   const _TableRow({
     required this.item,
     required this.onTap,
+    this.onSecondaryTap,
     required this.thumbWidth,
     required this.thumbHeight,
     required this.thumbRadius,
@@ -297,6 +307,7 @@ class _TableRow extends StatefulWidget {
 
   final CollectionItem item;
   final VoidCallback onTap;
+  final void Function(Offset globalPosition)? onSecondaryTap;
   final double thumbWidth;
   final double thumbHeight;
   final double thumbRadius;
@@ -315,8 +326,13 @@ class _TableRowState extends State<_TableRow> {
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
-      child: InkWell(
-        onTap: widget.onTap,
+      child: GestureDetector(
+        onSecondaryTapUp: widget.onSecondaryTap != null
+            ? (TapUpDetails details) =>
+                widget.onSecondaryTap!(details.globalPosition)
+            : null,
+        child: InkWell(
+          onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 120),
           color: _hovered
@@ -432,6 +448,7 @@ class _TableRowState extends State<_TableRow> {
             ],
           ),
         ),
+      ),
       ),
     );
   }

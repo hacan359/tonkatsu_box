@@ -1,5 +1,6 @@
 // Виджет-тесты для CollectionItemsView.
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -712,6 +713,138 @@ void main() {
           // ReorderableListView не оборачивается в RefreshIndicator
           expect(find.byType(RefreshIndicator), findsNothing);
           expect(find.byType(ReorderableListView), findsOneWidget);
+        },
+      );
+    });
+
+    // ==================== Контекстное меню ПКМ ====================
+
+    group('контекстное меню ПКМ', () {
+      testWidgets(
+        'должен показать контекстное меню при правом клике в list-режиме',
+        (WidgetTester tester) async {
+          final List<CollectionItem> items = <CollectionItem>[
+            _makeItem(id: 1, gameName: 'Right Click Game'),
+          ];
+          bool moveCalled = false;
+          bool cloneCalled = false;
+          bool removeCalled = false;
+
+          await tester.pumpWidget(_buildTestApp(
+            overrides: _defaultOverrides(),
+            child: CollectionItemsView(
+              collectionId: 1,
+              items: items,
+              isGridMode: false,
+              canEdit: true,
+              onItemTap: (_) {},
+              onItemMove: (_) => moveCalled = true,
+              onItemClone: (_) => cloneCalled = true,
+              onItemRemove: (_) => removeCalled = true,
+            ),
+          ));
+          await tester.pumpAndSettle();
+
+          // Правый клик на карточке.
+          final Offset center =
+              tester.getCenter(find.byType(CollectionItemTile));
+          final TestGesture gesture = await tester.createGesture(
+            kind: PointerDeviceKind.mouse,
+            buttons: kSecondaryMouseButton,
+          );
+          await gesture.addPointer(location: center);
+          await gesture.down(center);
+          await gesture.up();
+          await tester.pumpAndSettle();
+
+          // Контекстное меню должно появиться с тремя опциями.
+          expect(find.byType(PopupMenuItem<String>), findsNWidgets(3));
+
+          // Не вызвано пока не выбрали.
+          expect(moveCalled, isFalse);
+          expect(cloneCalled, isFalse);
+          expect(removeCalled, isFalse);
+        },
+      );
+
+      testWidgets(
+        'должен вызвать onItemMove при выборе "move" из контекстного меню',
+        (WidgetTester tester) async {
+          final List<CollectionItem> items = <CollectionItem>[
+            _makeItem(id: 1, gameName: 'Move Game'),
+          ];
+          CollectionItem? movedItem;
+
+          await tester.pumpWidget(_buildTestApp(
+            overrides: _defaultOverrides(),
+            child: CollectionItemsView(
+              collectionId: 1,
+              items: items,
+              isGridMode: false,
+              canEdit: true,
+              onItemTap: (_) {},
+              onItemMove: (CollectionItem item) => movedItem = item,
+              onItemClone: (_) {},
+              onItemRemove: (_) {},
+            ),
+          ));
+          await tester.pumpAndSettle();
+
+          // Правый клик.
+          final Offset center =
+              tester.getCenter(find.byType(CollectionItemTile));
+          final TestGesture gesture = await tester.createGesture(
+            kind: PointerDeviceKind.mouse,
+            buttons: kSecondaryMouseButton,
+          );
+          await gesture.addPointer(location: center);
+          await gesture.down(center);
+          await gesture.up();
+          await tester.pumpAndSettle();
+
+          // Нажимаем на пункт "move".
+          await tester.tap(find.byType(PopupMenuItem<String>).first);
+          await tester.pumpAndSettle();
+
+          expect(movedItem, isNotNull);
+          expect(movedItem!.id, equals(1));
+        },
+      );
+
+      testWidgets(
+        'не должен показывать контекстное меню при canEdit=false',
+        (WidgetTester tester) async {
+          final List<CollectionItem> items = <CollectionItem>[
+            _makeItem(id: 1, gameName: 'Read Only Game'),
+          ];
+
+          await tester.pumpWidget(_buildTestApp(
+            overrides: _defaultOverrides(),
+            child: CollectionItemsView(
+              collectionId: 1,
+              items: items,
+              isGridMode: false,
+              canEdit: false,
+              onItemTap: (_) {},
+              onItemMove: (_) {},
+            ),
+          ));
+          await tester.pumpAndSettle();
+
+          // Правый клик.
+          final Offset center =
+              tester.getCenter(find.byType(CollectionItemTile));
+          final TestGesture gesture = await tester.createGesture(
+            kind: PointerDeviceKind.mouse,
+            buttons: kSecondaryMouseButton,
+          );
+          await gesture.addPointer(location: center);
+          await gesture.down(center);
+          await gesture.up();
+          await tester.pumpAndSettle();
+
+          // Контекстное меню не должно появиться.
+          expect(find.byType(PopupMenuItem<String>), findsNothing);
         },
       );
     });

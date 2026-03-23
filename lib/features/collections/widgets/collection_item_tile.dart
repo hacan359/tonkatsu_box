@@ -28,6 +28,7 @@ class CollectionItemTile extends StatelessWidget {
     this.onMove,
     this.onClone,
     this.onRemove,
+    this.onSecondaryTap,
     this.onTap,
     super.key,
   });
@@ -53,12 +54,20 @@ class CollectionItemTile extends StatelessWidget {
   /// Callback удаления из коллекции.
   final VoidCallback? onRemove;
 
+  /// Callback правого клика (координаты для showMenu).
+  final void Function(Offset globalPosition)? onSecondaryTap;
+
   /// Callback нажатия (открыть детали).
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return GestureDetector(
+      onSecondaryTapUp: onSecondaryTap != null
+          ? (TapUpDetails details) =>
+              onSecondaryTap!(details.globalPosition)
+          : null,
+      child: Card(
       margin: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
         vertical: AppSpacing.xs,
@@ -224,6 +233,7 @@ class CollectionItemTile extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 

@@ -10,6 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:xerabora/features/collections/providers/collections_provider.dart';
 import 'package:xerabora/shared/models/collection.dart';
+import 'package:xerabora/shared/models/collection_list_sort_mode.dart';
 import 'package:xerabora/shared/widgets/collection_picker_dialog.dart';
 
 /// Тестовые коллекции.
@@ -100,11 +101,19 @@ Widget _buildTestWidget({
   bool showUncategorized = true,
   String title = 'Choose Collection',
   Set<int?> alreadyInCollectionIds = const <int?>{},
+  CollectionListSortMode sortMode = CollectionListSortMode.createdDate,
+  bool sortDescending = false,
 }) {
   return ProviderScope(
     overrides: <Override>[
       collectionsProvider.overrideWith(
         () => _FakeCollectionsNotifier(collections),
+      ),
+      collectionListSortProvider.overrideWith(
+        () => _FakeListSortNotifier(sortMode),
+      ),
+      collectionListSortDescProvider.overrideWith(
+        () => _FakeListSortDescNotifier(sortDescending),
       ),
     ],
     child: MaterialApp(
@@ -594,5 +603,258 @@ void main() {
         expect(find.text('Movies 2025'), findsNothing);
       });
     });
+
+    // ==================== Сортировка ====================
+
+    group('сортировка', () {
+      testWidgets(
+          'должен сортировать по алфавиту A→Z',
+          (WidgetTester tester) async {
+        final Collection cBanana = Collection(
+          id: 1,
+          name: 'Banana',
+          author: 'User',
+          type: CollectionType.own,
+          createdAt: DateTime(2026, 1, 1),
+        );
+        final Collection cApple = Collection(
+          id: 2,
+          name: 'Apple',
+          author: 'User',
+          type: CollectionType.own,
+          createdAt: DateTime(2026, 1, 2),
+        );
+        final Collection cCherry = Collection(
+          id: 3,
+          name: 'Cherry',
+          author: 'User',
+          type: CollectionType.own,
+          createdAt: DateTime(2026, 1, 3),
+        );
+
+        await _openDialog(
+          tester,
+          _buildTestWidget(
+            collections: <Collection>[cBanana, cApple, cCherry],
+            showUncategorized: false,
+            sortMode: CollectionListSortMode.alphabetical,
+            sortDescending: false,
+          ),
+        );
+
+        // A→Z: Apple, Banana, Cherry
+        final Offset posApple = tester.getCenter(find.text('Apple'));
+        final Offset posBanana = tester.getCenter(find.text('Banana'));
+        final Offset posCherry = tester.getCenter(find.text('Cherry'));
+        expect(posApple.dy, lessThan(posBanana.dy));
+        expect(posBanana.dy, lessThan(posCherry.dy));
+      });
+
+      testWidgets(
+          'должен сортировать по алфавиту Z→A (descending)',
+          (WidgetTester tester) async {
+        final Collection cBanana = Collection(
+          id: 1,
+          name: 'Banana',
+          author: 'User',
+          type: CollectionType.own,
+          createdAt: DateTime(2026, 1, 1),
+        );
+        final Collection cApple = Collection(
+          id: 2,
+          name: 'Apple',
+          author: 'User',
+          type: CollectionType.own,
+          createdAt: DateTime(2026, 1, 2),
+        );
+        final Collection cCherry = Collection(
+          id: 3,
+          name: 'Cherry',
+          author: 'User',
+          type: CollectionType.own,
+          createdAt: DateTime(2026, 1, 3),
+        );
+
+        await _openDialog(
+          tester,
+          _buildTestWidget(
+            collections: <Collection>[cBanana, cApple, cCherry],
+            showUncategorized: false,
+            sortMode: CollectionListSortMode.alphabetical,
+            sortDescending: true,
+          ),
+        );
+
+        // Z→A: Cherry, Banana, Apple
+        final Offset posCherry = tester.getCenter(find.text('Cherry'));
+        final Offset posBanana = tester.getCenter(find.text('Banana'));
+        final Offset posApple = tester.getCenter(find.text('Apple'));
+        expect(posCherry.dy, lessThan(posBanana.dy));
+        expect(posBanana.dy, lessThan(posApple.dy));
+      });
+
+      testWidgets(
+          'должен сортировать по дате создания (ascending)',
+          (WidgetTester tester) async {
+        final Collection cOldest = Collection(
+          id: 1,
+          name: 'Oldest',
+          author: 'User',
+          type: CollectionType.own,
+          createdAt: DateTime(2025, 1, 1),
+        );
+        final Collection cNewest = Collection(
+          id: 2,
+          name: 'Newest',
+          author: 'User',
+          type: CollectionType.own,
+          createdAt: DateTime(2026, 6, 1),
+        );
+        final Collection cMiddle = Collection(
+          id: 3,
+          name: 'Middle',
+          author: 'User',
+          type: CollectionType.own,
+          createdAt: DateTime(2026, 3, 1),
+        );
+
+        await _openDialog(
+          tester,
+          _buildTestWidget(
+            collections: <Collection>[cOldest, cNewest, cMiddle],
+            showUncategorized: false,
+            sortMode: CollectionListSortMode.createdDate,
+            sortDescending: false,
+          ),
+        );
+
+        // Ascending: Oldest, Middle, Newest
+        final Offset posOldest = tester.getCenter(find.text('Oldest'));
+        final Offset posMiddle = tester.getCenter(find.text('Middle'));
+        final Offset posNewest = tester.getCenter(find.text('Newest'));
+        expect(posOldest.dy, lessThan(posMiddle.dy));
+        expect(posMiddle.dy, lessThan(posNewest.dy));
+      });
+
+      testWidgets(
+          'должен сортировать по дате создания descending (новые сверху)',
+          (WidgetTester tester) async {
+        final Collection cOldest = Collection(
+          id: 1,
+          name: 'Oldest',
+          author: 'User',
+          type: CollectionType.own,
+          createdAt: DateTime(2025, 1, 1),
+        );
+        final Collection cNewest = Collection(
+          id: 2,
+          name: 'Newest',
+          author: 'User',
+          type: CollectionType.own,
+          createdAt: DateTime(2026, 6, 1),
+        );
+
+        await _openDialog(
+          tester,
+          _buildTestWidget(
+            collections: <Collection>[cOldest, cNewest],
+            showUncategorized: false,
+            sortMode: CollectionListSortMode.createdDate,
+            sortDescending: true,
+          ),
+        );
+
+        // Descending: Newest, Oldest
+        final Offset posNewest = tester.getCenter(find.text('Newest'));
+        final Offset posOldest = tester.getCenter(find.text('Oldest'));
+        expect(posNewest.dy, lessThan(posOldest.dy));
+      });
+
+      testWidgets(
+          'должен переключать сортировку при нажатии на кнопку',
+          (WidgetTester tester) async {
+        final Collection cBanana = Collection(
+          id: 1,
+          name: 'Banana',
+          author: 'User',
+          type: CollectionType.own,
+          createdAt: DateTime(2026, 1, 1),
+        );
+        final Collection cApple = Collection(
+          id: 2,
+          name: 'Apple',
+          author: 'User',
+          type: CollectionType.own,
+          createdAt: DateTime(2026, 1, 2),
+        );
+
+        await _openDialog(
+          tester,
+          _buildTestWidget(
+            collections: <Collection>[cBanana, cApple],
+            showUncategorized: false,
+            sortMode: CollectionListSortMode.alphabetical,
+            sortDescending: false,
+          ),
+        );
+
+        // A→Z: Apple первый
+        Offset posApple = tester.getCenter(find.text('Apple'));
+        Offset posBanana = tester.getCenter(find.text('Banana'));
+        expect(posApple.dy, lessThan(posBanana.dy));
+
+        // Нажимаем на кнопку сортировки — должно переключиться на Z→A
+        await tester.tap(find.byIcon(Icons.arrow_upward));
+        await tester.pumpAndSettle();
+
+        // Z→A: Banana первый
+        posApple = tester.getCenter(find.text('Apple'));
+        posBanana = tester.getCenter(find.text('Banana'));
+        expect(posBanana.dy, lessThan(posApple.dy));
+      });
+
+      testWidgets(
+          'должен отображать кнопку сортировки с текстом',
+          (WidgetTester tester) async {
+        await _openDialog(
+          tester,
+          _buildTestWidget(
+            collections: <Collection>[_collectionA, _collectionB],
+            showUncategorized: false,
+            sortMode: CollectionListSortMode.alphabetical,
+            sortDescending: false,
+          ),
+        );
+
+        // Должна быть иконка стрелки и текст сортировки
+        expect(find.byIcon(Icons.arrow_upward), findsOneWidget);
+      });
+    });
   });
+}
+
+/// Fake [CollectionListSortNotifier] для тестов.
+class _FakeListSortNotifier extends CollectionListSortNotifier {
+  _FakeListSortNotifier(this._mode);
+
+  final CollectionListSortMode _mode;
+
+  @override
+  CollectionListSortMode build() => _mode;
+
+  @override
+  Future<void> setSortMode(CollectionListSortMode mode) async {}
+}
+
+/// Fake [CollectionListSortDescNotifier] для тестов.
+class _FakeListSortDescNotifier extends CollectionListSortDescNotifier {
+  _FakeListSortDescNotifier(this._descending);
+
+  final bool _descending;
+
+  @override
+  bool build() => _descending;
+
+  @override
+  Future<void> toggle() async {}
 }

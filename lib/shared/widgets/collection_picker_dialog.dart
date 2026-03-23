@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../models/collection.dart';
+import '../models/collection_list_sort_mode.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 import '../../features/collections/providers/collections_provider.dart';
@@ -51,6 +52,10 @@ Future<CollectionChoice?> showCollectionPickerDialog({
   final AsyncValue<List<Collection>> collectionsAsync =
       ref.read(collectionsProvider);
 
+  final CollectionListSortMode initialSortMode =
+      ref.read(collectionListSortProvider);
+  final bool initialDescending = ref.read(collectionListSortDescProvider);
+
   final List<Collection> collections =
       collectionsAsync.valueOrNull ?? <Collection>[];
   final List<Collection> editableCollections = collections
@@ -68,6 +73,8 @@ Future<CollectionChoice?> showCollectionPickerDialog({
         collections: editableCollections,
         showUncategorized: showUncategorized,
         alreadyInCollectionIds: alreadyInCollectionIds,
+        initialSortMode: initialSortMode,
+        initialDescending: initialDescending,
       ),
     ),
   );
@@ -80,12 +87,16 @@ class _CollectionPickerContent extends StatefulWidget {
     required this.collections,
     required this.showUncategorized,
     required this.alreadyInCollectionIds,
+    required this.initialSortMode,
+    required this.initialDescending,
   });
 
   final String title;
   final List<Collection> collections;
   final bool showUncategorized;
   final Set<int?> alreadyInCollectionIds;
+  final CollectionListSortMode initialSortMode;
+  final bool initialDescending;
 
   @override
   State<_CollectionPickerContent> createState() =>
@@ -95,6 +106,15 @@ class _CollectionPickerContent extends StatefulWidget {
 class _CollectionPickerContentState extends State<_CollectionPickerContent> {
   final TextEditingController _filterController = TextEditingController();
   String _filterQuery = '';
+  late CollectionListSortMode _sortMode;
+  late bool _descending;
+
+  @override
+  void initState() {
+    super.initState();
+    _sortMode = widget.initialSortMode;
+    _descending = widget.initialDescending;
+  }
 
   @override
   void dispose() {
@@ -111,15 +131,58 @@ class _CollectionPickerContentState extends State<_CollectionPickerContent> {
   }
 
   List<Collection> get _sortedCollections {
-    final List<Collection> available = _filteredCollections
+    final List<Collection> filtered = List<Collection>.of(_filteredCollections);
+
+    // Сортируем
+    filtered.sort((Collection a, Collection b) {
+      final int result;
+      switch (_sortMode) {
+        case CollectionListSortMode.alphabetical:
+          result = a.name.toLowerCase().compareTo(b.name.toLowerCase());
+        case CollectionListSortMode.createdDate:
+          result = a.createdAt.compareTo(b.createdAt);
+      }
+      return _descending ? -result : result;
+    });
+
+    // Уже добавленные — в конец
+    final List<Collection> available = filtered
         .where(
             (Collection c) => !widget.alreadyInCollectionIds.contains(c.id))
         .toList();
-    final List<Collection> already = _filteredCollections
+    final List<Collection> already = filtered
         .where(
             (Collection c) => widget.alreadyInCollectionIds.contains(c.id))
         .toList();
     return <Collection>[...available, ...already];
+  }
+
+  void _toggleSort() {
+    setState(() {
+      if (_sortMode == CollectionListSortMode.alphabetical) {
+        if (_descending) {
+          // Z→A → дата ↓
+          _sortMode = CollectionListSortMode.createdDate;
+          _descending = false;
+        } else {
+          // A→Z → Z→A
+          _descending = true;
+        }
+      } else {
+        if (_descending) {
+          // дата ↑ → A→Z
+          _sortMode = CollectionListSortMode.alphabetical;
+          _descending = false;
+        } else {
+          // дата ↓ → дата ↑
+          _descending = true;
+        }
+      }
+    });
+  }
+
+  String _sortLabel(S l) {
+    return _sortMode.localizedDescription(l, descending: _descending);
   }
 
   int get _alreadyCount => widget.alreadyInCollectionIds.length;
@@ -135,12 +198,47 @@ class _CollectionPickerContentState extends State<_CollectionPickerContent> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          // Title
+          // Title + sort
           Padding(
-            padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
-            child: Text(
-              widget.title,
-              style: AppTypography.h3,
+            padding: const EdgeInsets.fromLTRB(24, 20, 12, 0),
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: Text(
+                    widget.title,
+                    style: AppTypography.h3,
+                  ),
+                ),
+                InkWell(
+                  onTap: _toggleSort,
+                  borderRadius: BorderRadius.circular(6),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Icon(
+                          _descending
+                              ? Icons.arrow_downward
+                              : Icons.arrow_upward,
+                          size: 14,
+                          color: AppColors.brand,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          _sortLabel(l),
+                          style: AppTypography.caption.copyWith(
+                            color: AppColors.brand,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
 

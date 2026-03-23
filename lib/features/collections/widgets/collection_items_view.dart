@@ -83,6 +83,10 @@ class CollectionItemsView extends ConsumerWidget {
         child: CollectionTableView(
           items: items,
           onItemTap: onItemTap,
+          onItemSecondaryTap: canEdit
+              ? (CollectionItem item, Offset pos) =>
+                  _showItemContextMenu(context, pos, item)
+              : null,
         ),
       );
     }
@@ -120,6 +124,13 @@ class CollectionItemsView extends ConsumerWidget {
             onMove: canEdit ? () => onItemMove?.call(item) : null,
             onClone: canEdit ? () => onItemClone?.call(item) : null,
             onRemove: canEdit ? () => onItemRemove?.call(item) : null,
+            onSecondaryTap: canEdit
+                ? (Offset pos) => _showItemContextMenu(
+                      context,
+                      pos,
+                      item,
+                    )
+                : null,
             onTap: () => onItemTap(item),
           );
         },
@@ -187,6 +198,13 @@ class CollectionItemsView extends ConsumerWidget {
             mediaType: item.mediaType,
             status: item.status,
             onTap: () => onItemTap(item),
+            onSecondaryTap: canEdit
+                ? (Offset pos) => _showItemContextMenu(
+                      context,
+                      pos,
+                      item,
+                    )
+                : null,
             onFocusChanged: onItemFocusChanged != null
                 ? (bool hasFocus) => onItemFocusChanged!(item, hasFocus)
                 : null,
@@ -236,10 +254,84 @@ class CollectionItemsView extends ConsumerWidget {
           dragIndex: index,
           onMove: canEdit ? () => onItemMove?.call(item) : null,
           onRemove: canEdit ? () => onItemRemove?.call(item) : null,
+          onSecondaryTap: canEdit
+              ? (Offset pos) => _showItemContextMenu(
+                    context,
+                    pos,
+                    item,
+                  )
+              : null,
           onTap: () => onItemTap(item),
         );
       },
     );
+  }
+
+  /// Показывает контекстное меню ПКМ для элемента коллекции.
+  void _showItemContextMenu(
+    BuildContext context,
+    Offset position,
+    CollectionItem item,
+  ) {
+    final S l = S.of(context);
+    final RenderBox overlay =
+        Overlay.of(context).context.findRenderObject()! as RenderBox;
+
+    showMenu<String>(
+      context: context,
+      position: RelativeRect.fromRect(
+        position & const Size(1, 1),
+        Offset.zero & overlay.size,
+      ),
+      items: <PopupMenuEntry<String>>[
+        if (onItemMove != null)
+          PopupMenuItem<String>(
+            value: 'move',
+            child: ListTile(
+              leading: const Icon(Icons.drive_file_move_outlined),
+              title: Text(l.collectionMoveToCollection),
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
+        if (onItemClone != null)
+          PopupMenuItem<String>(
+            value: 'clone',
+            child: ListTile(
+              leading: const Icon(Icons.copy_outlined),
+              title: Text(l.collectionCopyToCollection),
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
+        if ((onItemMove != null || onItemClone != null) &&
+            onItemRemove != null)
+          const PopupMenuDivider(),
+        if (onItemRemove != null)
+          PopupMenuItem<String>(
+            value: 'remove',
+            child: ListTile(
+              leading: const Icon(
+                Icons.remove_circle_outline,
+                color: AppColors.error,
+              ),
+              title: Text(
+                l.remove,
+                style: const TextStyle(color: AppColors.error),
+              ),
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
+      ],
+    ).then((String? value) {
+      if (value == null) return;
+      switch (value) {
+        case 'move':
+          onItemMove?.call(item);
+        case 'clone':
+          onItemClone?.call(item);
+        case 'remove':
+          onItemRemove?.call(item);
+      }
+    });
   }
 
   Widget _buildEmptyState(BuildContext context) {

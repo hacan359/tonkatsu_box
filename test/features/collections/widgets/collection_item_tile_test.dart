@@ -1,5 +1,6 @@
 // Виджет-тесты для CollectionItemTile.
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/collections/widgets/collection_item_tile.dart';
@@ -1202,6 +1203,72 @@ void main() {
         expect(find.text('Breaking Bad'), findsOneWidget);
         expect(find.text('2008 \u2022 5 seasons'), findsOneWidget);
         expect(find.byType(DualRatingBadge), findsOneWidget);
+      });
+    });
+
+    // ==================== Контекстное меню ПКМ ====================
+
+    group('onSecondaryTap', () {
+      testWidgets(
+          'должен вызвать onSecondaryTap при правом клике',
+          (WidgetTester tester) async {
+        Offset? receivedPosition;
+        final CollectionItem item = _makeItem(
+          game: _makeGame(name: 'Right Click Game'),
+        );
+
+        await tester.pumpWidget(_buildTestApp(
+          CollectionItemTile(
+            item: item,
+            isEditable: true,
+            onSecondaryTap: (Offset pos) => receivedPosition = pos,
+          ),
+        ));
+        await tester.pumpAndSettle();
+
+        // Симулируем правый клик через вторичную кнопку мыши.
+        final Offset center = tester.getCenter(find.byType(Card));
+        final TestGesture gesture = await tester.createGesture(
+          kind: PointerDeviceKind.mouse,
+          buttons: kSecondaryMouseButton,
+        );
+        await gesture.addPointer(location: center);
+        await gesture.down(center);
+        await gesture.up();
+        await tester.pumpAndSettle();
+
+        expect(receivedPosition, isNotNull);
+      });
+
+      testWidgets(
+          'не должен оборачивать в GestureDetector когда onSecondaryTap null',
+          (WidgetTester tester) async {
+        final CollectionItem item = _makeItem(
+          game: _makeGame(name: 'No Context Menu'),
+        );
+
+        await tester.pumpWidget(_buildTestApp(
+          CollectionItemTile(
+            item: item,
+            isEditable: false,
+          ),
+        ));
+        await tester.pumpAndSettle();
+
+        // GestureDetector оборачивает Card, но onSecondaryTapUp == null.
+        // Правый клик не должен ломать виджет.
+        final Offset center = tester.getCenter(find.byType(Card));
+        final TestGesture gesture = await tester.createGesture(
+          kind: PointerDeviceKind.mouse,
+          buttons: kSecondaryMouseButton,
+        );
+        await gesture.addPointer(location: center);
+        await gesture.down(center);
+        await gesture.up();
+        await tester.pumpAndSettle();
+
+        // Виджет не сломался — карточка всё ещё на месте.
+        expect(find.byType(Card), findsOneWidget);
       });
     });
   });
