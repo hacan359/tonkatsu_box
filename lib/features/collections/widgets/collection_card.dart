@@ -119,7 +119,20 @@ class _CollectionCardState extends ConsumerState<CollectionCard>
             widget.onFocusChanged?.call(false);
           }
         },
-        child: MouseRegion(
+        child: AnimatedBuilder(
+          animation: _hoverController,
+          builder: (BuildContext context, Widget? animatedChild) {
+            return Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(CollectionCard.mosaicRadius + 2),
+                border: _focusNode.hasFocus
+                    ? Border.all(color: AppColors.brand, width: 2)
+                    : null,
+              ),
+              child: animatedChild,
+            );
+          },
+          child: MouseRegion(
       onEnter: (_) => _hoverController.forward(),
       onExit: (_) {
         if (!_focusNode.hasFocus) _hoverController.reverse();
@@ -216,7 +229,8 @@ class _CollectionCardState extends ConsumerState<CollectionCard>
           ),
         ),
       ),
-        ),
+      ),
+      ),
       ),
     );
   }

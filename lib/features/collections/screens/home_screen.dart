@@ -245,18 +245,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           )),
     ];
 
-    return RefreshIndicator(
-      onRefresh: () => ref.read(collectionsProvider.notifier).refresh(),
-      child: GridView.builder(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-          maxCrossAxisExtent: 273,
-          crossAxisSpacing: 8,
-          mainAxisSpacing: 8,
-          childAspectRatio: 1,
+    return FocusTraversalGroup(
+      policy: WidgetOrderTraversalPolicy(),
+      child: RefreshIndicator(
+        onRefresh: () => ref.read(collectionsProvider.notifier).refresh(),
+        child: GridView.builder(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+            maxCrossAxisExtent: 273,
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
+            childAspectRatio: 1,
+          ),
+          itemCount: gridItems.length,
+          itemBuilder: (BuildContext context, int index) => gridItems[index],
         ),
-        itemCount: gridItems.length,
-        itemBuilder: (BuildContext context, int index) => gridItems[index],
       ),
     );
   }
