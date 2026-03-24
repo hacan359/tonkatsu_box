@@ -66,9 +66,7 @@ class _TierListsScreenState extends ConsumerState<TierListsScreen> {
                 if (_focusedTierList != null) _handleRename(context, _focusedTierList!);
               },
             },
-      child: Focus(
-        autofocus: true,
-        child: Scaffold(
+      child: Scaffold(
       appBar: const AutoBreadcrumbAppBar(),
       body: tierListsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -113,7 +111,6 @@ class _TierListsScreenState extends ConsumerState<TierListsScreen> {
         child: const Icon(Icons.add, color: AppColors.textPrimary),
       ),
     ),
-      ),
     );
   }
 

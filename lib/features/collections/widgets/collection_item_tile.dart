@@ -29,6 +29,7 @@ class CollectionItemTile extends StatelessWidget {
     this.onClone,
     this.onRemove,
     this.onSecondaryTap,
+    this.onLongPress,
     this.onTap,
     super.key,
   });
@@ -56,6 +57,9 @@ class CollectionItemTile extends StatelessWidget {
 
   /// Callback правого клика (координаты для showMenu).
   final void Function(Offset globalPosition)? onSecondaryTap;
+
+  /// Callback долгого нажатия / Y на геймпаде (контекстное меню).
+  final VoidCallback? onLongPress;
 
   /// Callback нажатия (открыть детали).
   final VoidCallback? onTap;
@@ -98,6 +102,7 @@ class CollectionItemTile extends StatelessWidget {
           // Основное содержимое
           InkWell(
             onTap: onTap,
+            onLongPress: onLongPress,
             borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
             child: Padding(
               padding: const EdgeInsets.all(AppSpacing.md - 4),

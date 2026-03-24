@@ -195,9 +195,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       label: _localizedDisplayName(context),
       child: CallbackShortcuts(
         bindings: _buildScreenShortcuts(l),
-        child: Focus(
-          autofocus: true,
-          child: Scaffold(
+        child: Scaffold(
         appBar: AutoBreadcrumbAppBar(
           actions: _buildAppBarActions(l),
         ),
@@ -232,7 +230,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                 child: _buildListLayout(itemsAsync, statsAsync),
               ),
       ),
-        ),
       ),
     );
   }

@@ -4,6 +4,8 @@ import 'dart:async';
 
 import 'package:gamepads/gamepads.dart';
 
+import 'gamepad_mappings.dart';
+
 /// Абстракция источника событий геймпада (для тестов).
 abstract class GamepadEventSource {
   /// Стрим сырых событий от геймпада.
@@ -19,21 +21,24 @@ class RealGamepadEventSource implements GamepadEventSource {
 /// Сервис обработки событий геймпада.
 ///
 /// Преобразует сырые [GamepadEvent] в семантические [GamepadServiceEvent]:
-/// - Нормализация аналоговых осей Windows JOYINFOEX (0–65535 → -1.0–1.0)
-/// - Маппинг D-pad POV hat в дискретные button-события
+/// - Нормализация аналоговых осей через [GamepadMapping] (кроссплатформенно)
+/// - Маппинг D-pad в дискретные button-события
 /// - Дедзона для аналоговых стиков (порог [stickDeadzone])
 /// - Edge detection для триггеров (один раз при пересечении порога)
 /// - Debounce для D-pad и кнопок ([buttonDebounceMs])
 ///
-/// Для тестов можно передать кастомный [GamepadEventSource].
+/// Для тестов можно передать кастомный [GamepadEventSource] и [GamepadMapping].
 class GamepadService {
   /// Создаёт [GamepadService].
   ///
   /// [source] — источник событий (по умолчанию [RealGamepadEventSource]).
-  GamepadService({GamepadEventSource? source})
-      : _source = source ?? RealGamepadEventSource();
+  /// [mapping] — платформенный маппинг (по умолчанию определяется автоматически).
+  GamepadService({GamepadEventSource? source, GamepadMapping? mapping})
+      : _source = source ?? RealGamepadEventSource(),
+        _mapping = mapping ?? GamepadMapping.forCurrentPlatform();
 
   final GamepadEventSource _source;
+  final GamepadMapping _mapping;
   StreamSubscription<GamepadEvent>? _subscription;
   final StreamController<GamepadServiceEvent> _controller =
       StreamController<GamepadServiceEvent>.broadcast();
@@ -44,30 +49,20 @@ class GamepadService {
   /// Debounce для цифровых кнопок и D-pad (мс).
   static const int buttonDebounceMs = 150;
 
-  /// Центр диапазона Windows JOYINFOEX (16-bit unsigned).
-  static const double _axisCenter = 32767.5;
-
-  /// Полуразмах диапазона для нормализации в -1.0..1.0.
-  static const double _axisRange = 32767.5;
-
   /// Порог триггера для интерпретации как цифровое нажатие.
   static const double _triggerThreshold = 0.5;
-
-  // POV hat значения (degrees × 100 в JOYINFOEX).
-  static const int _povUp = 0;
-  static const int _povRight = 9000;
-  static const int _povDown = 18000;
-  static const int _povLeft = 27000;
-  static const int _povReleased = 65535;
 
   /// Последнее время нажатия каждой кнопки (для debounce).
   final Map<String, int> _lastButtonTime = <String, int>{};
 
   /// Последнее направление D-pad (для предотвращения повторных событий).
-  String? _lastPovDirection;
+  String? _lastDpadDirection;
 
   /// Состояние триггера: -1 = LT, 0 = центр, 1 = RT.
   int _triggerState = 0;
+
+  /// Текущий маппинг платформы (для debug screen).
+  GamepadMapping get mapping => _mapping;
 
   /// Стрим обработанных событий.
   Stream<GamepadServiceEvent> get events => _controller.stream;
@@ -98,86 +93,57 @@ class GamepadService {
   /// Маппит сырое событие в сервисное.
   ///
   /// Возвращает null если событие отфильтровано (дедзона, debounce,
-  /// повторное POV-направление, триггер в центральной зоне).
+  /// повторное D-pad направление, триггер в центральной зоне).
   GamepadServiceEvent? _mapEvent(GamepadEvent event) {
     final String key = event.key;
     final double value = event.value;
 
-    // D-pad (POV hat switch)
-    if (key == 'pov') {
-      return _mapPov(value, event);
+    // D-pad
+    final String? dpadDirection = _mapping.mapDpad(key, value);
+    if (dpadDirection != null) {
+      return _mapDpad(dpadDirection, event);
+    }
+    // D-pad released (POV hat) — сброс состояния
+    if (key == _mapping.povAxis && dpadDirection == null) {
+      _lastDpadDirection = null;
+      return null;
     }
 
-    // Аналоговые стики: dwXpos, dwYpos (left), dwRpos, dwUpos (right)
-    if (_isStickAxis(key)) {
-      final double normalized =
-          ((value - _axisCenter) / _axisRange).clamp(-1.0, 1.0);
+    // Аналоговые стики
+    if (_mapping.isStickAxis(key)) {
+      final double normalized = _mapping.normalizeAxis(value);
       if (normalized.abs() < stickDeadzone) return null;
       return GamepadServiceEvent(
-        key: key,
+        key: _mapping.normalizeAxisKey(key),
         value: normalized,
         type: GamepadServiceEventType.analog,
         rawEvent: event,
       );
     }
 
-    // Триггеры: dwZpos (общая ось LT/RT)
-    if (key == 'dwZpos') {
-      return _mapTrigger(value, event);
+    // Триггеры
+    if (_mapping.isTriggerAxis(key)) {
+      return _mapTrigger(key, value, event);
     }
 
-    // Цифровые кнопки (button-0 .. button-7)
+    // Цифровые кнопки (button-0 .. button-N)
     if (value == 1.0) {
-      // Нажатие — с debounce
-      final int now = DateTime.now().millisecondsSinceEpoch;
-      final int? lastTime = _lastButtonTime[key];
-      if (lastTime != null && (now - lastTime) < buttonDebounceMs) {
-        return null;
-      }
-      _lastButtonTime[key] = now;
-
-      return GamepadServiceEvent(
-        key: key,
-        value: value,
-        type: GamepadServiceEventType.button,
-        rawEvent: event,
-      );
+      return _mapButton(key, event);
     }
 
     // Отпускание кнопки (value == 0.0) — не генерируем событие
     return null;
   }
 
-  /// Маппинг POV hat в кнопочные события.
-  ///
-  /// POV отправляет значения в сотых долях градуса:
-  /// 0=вверх, 9000=вправо, 18000=вниз, 27000=влево, 65535=отпущено.
-  /// Диагонали (4500, 13500, 22500, 31500) игнорируются.
-  ///
-  /// Направление трекается: повторное событие с тем же направлением
-  /// не генерируется (POV шлёт события непрерывно при удержании).
-  GamepadServiceEvent? _mapPov(double value, GamepadEvent rawEvent) {
-    final int pov = value.round();
-    final String? direction = _povToDirection(pov);
-
-    if (direction == null) {
-      // Отпущено или неизвестное значение — сброс состояния
-      _lastPovDirection = null;
-      return null;
-    }
-
+  /// Маппинг D-pad направления с debounce и deduplicate.
+  GamepadServiceEvent? _mapDpad(String direction, GamepadEvent rawEvent) {
     // Не повторяем то же направление (POV шлёт события непрерывно)
-    if (direction == _lastPovDirection) return null;
-    _lastPovDirection = direction;
+    if (direction == _lastDpadDirection) return null;
+    _lastDpadDirection = direction;
 
     // Debounce
     final String syntheticKey = 'dpad-$direction';
-    final int now = DateTime.now().millisecondsSinceEpoch;
-    final int? lastTime = _lastButtonTime[syntheticKey];
-    if (lastTime != null && (now - lastTime) < buttonDebounceMs) {
-      return null;
-    }
-    _lastButtonTime[syntheticKey] = now;
+    if (!_debounce(syntheticKey)) return null;
 
     return GamepadServiceEvent(
       key: syntheticKey,
@@ -187,64 +153,79 @@ class GamepadService {
     );
   }
 
-  /// Edge detection для триггеров.
-  ///
-  /// Windows Xbox контроллер использует общую ось [dwZpos] для LT и RT:
-  /// - Центр (~32767) = ни один триггер не нажат
-  /// - Значения ниже = LT нажат (нормализованное < -[_triggerThreshold])
-  /// - Значения выше = RT нажат (нормализованное > [_triggerThreshold])
-  ///
-  /// Событие генерируется только при пересечении порога (один раз за нажатие).
-  GamepadServiceEvent? _mapTrigger(double value, GamepadEvent rawEvent) {
-    final double normalized =
-        ((value - _axisCenter) / _axisRange).clamp(-1.0, 1.0);
-
-    final int newState;
-    if (normalized < -_triggerThreshold) {
-      newState = -1; // LT нажат
-    } else if (normalized > _triggerThreshold) {
-      newState = 1; // RT нажат
-    } else {
-      newState = 0; // Центр — ни один триггер
-    }
-
-    // Нет изменения состояния — не генерируем событие
-    if (newState == _triggerState) return null;
-    _triggerState = newState;
-
-    // Возврат в центр — сброс без события
-    if (newState == 0) return null;
+  /// Маппинг кнопки с debounce.
+  GamepadServiceEvent? _mapButton(String key, GamepadEvent rawEvent) {
+    if (!_debounce(key)) return null;
 
     return GamepadServiceEvent(
-      key: 'dwZpos',
-      value: normalized,
-      type: GamepadServiceEventType.trigger,
+      key: key,
+      value: 1.0,
+      type: GamepadServiceEventType.button,
       rawEvent: rawEvent,
     );
   }
 
-  String? _povToDirection(int pov) {
-    switch (pov) {
-      case _povUp:
-        return 'up';
-      case _povRight:
-        return 'right';
-      case _povDown:
-        return 'down';
-      case _povLeft:
-        return 'left';
-      case _povReleased:
-        return null;
-      default:
-        return null; // Диагонали и прочее — игнорируем
+  /// Edge detection для триггеров.
+  ///
+  /// Для shared axis (Windows dwZpos): нормализованное значение,
+  /// отрицательное = LT, положительное = RT.
+  /// Для separate axes (Linux/Android): каждый триггер отдельно.
+  GamepadServiceEvent? _mapTrigger(
+    String key,
+    double value,
+    GamepadEvent rawEvent,
+  ) {
+    final double normalized = _mapping.normalizeAxis(value);
+
+    if (_mapping.triggersSharedAxis) {
+      // Windows: общая ось — LT отрицательный, RT положительный
+      final int newState;
+      if (normalized < -_triggerThreshold) {
+        newState = -1; // LT
+      } else if (normalized > _triggerThreshold) {
+        newState = 1; // RT
+      } else {
+        newState = 0; // Центр
+      }
+
+      if (newState == _triggerState) return null;
+      _triggerState = newState;
+      if (newState == 0) return null;
+
+      return GamepadServiceEvent(
+        key: 'trigger',
+        value: newState.toDouble(),
+        type: GamepadServiceEventType.trigger,
+        rawEvent: rawEvent,
+      );
+    } else {
+      // Linux/Android: раздельные оси
+      final bool isLeft = key == _mapping.leftTrigger;
+      final bool pressed = normalized.abs() > _triggerThreshold;
+      final int newState = pressed ? (isLeft ? -1 : 1) : 0;
+
+      if (newState == _triggerState) return null;
+      _triggerState = newState;
+      if (newState == 0) return null;
+
+      return GamepadServiceEvent(
+        key: 'trigger',
+        value: newState.toDouble(),
+        type: GamepadServiceEventType.trigger,
+        rawEvent: rawEvent,
+      );
     }
   }
 
-  bool _isStickAxis(String key) {
-    return key == 'dwXpos' ||
-        key == 'dwYpos' ||
-        key == 'dwRpos' ||
-        key == 'dwUpos';
+  /// Debounce проверка. Возвращает true если событие прошло.
+  bool _debounce(String key) {
+    final int now = DateTime.now().millisecondsSinceEpoch;
+    final int? lastTime = _lastButtonTime[key];
+    if (lastTime != null && (now - lastTime) < buttonDebounceMs) {
+      return false;
+    }
+    _lastButtonTime[key] = now;
+    return true;
   }
 }
 
@@ -270,19 +251,19 @@ class GamepadServiceEvent {
     required this.rawEvent,
   });
 
-  /// Ключ кнопки/оси.
+  /// Ключ кнопки/оси (нормализованный).
   ///
-  /// Для кнопок: `button-0` .. `button-7`.
-  /// Для D-pad: `dpad-up`, `dpad-down`, `dpad-left`, `dpad-right`.
-  /// Для стиков: `dwXpos`, `dwYpos`, `dwRpos`, `dwUpos`.
-  /// Для триггеров: `dwZpos`.
+  /// Кнопки: `button-0` .. `button-N`.
+  /// D-pad: `dpad-up`, `dpad-down`, `dpad-left`, `dpad-right`.
+  /// Стики: `stick-left-x`, `stick-left-y`, `stick-right-x`, `stick-right-y`.
+  /// Триггеры: `trigger`.
   final String key;
 
   /// Нормализованное значение.
   ///
   /// Кнопки/D-pad: 1.0 (нажато).
   /// Стики: -1.0 .. 1.0 (после дедзоны).
-  /// Триггеры: -1.0 (LT) .. 1.0 (RT).
+  /// Триггеры: -1.0 (LT) / 1.0 (RT).
   final double value;
 
   /// Тип события.

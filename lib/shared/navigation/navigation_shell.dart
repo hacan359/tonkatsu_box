@@ -162,26 +162,30 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
             screenGroups: _currentScreenShortcutGroups(),
           ),
         ),
-        child: Focus(
-          autofocus: true,
-          child: GamepadListener(
-            onTabSwitch: _onGamepadTabSwitch,
-            onNavigate: _onGamepadNavigate,
-            onConfirm: _onGamepadConfirm,
-            onScroll: _onGamepadScroll,
-            onBack: () {
-              _handleBack();
-            },
-            child: Scaffold(
-              body: useRail
-                  ? _buildRailLayout()
-                  : Column(
-                      children: <Widget>[
-                        Expanded(child: _buildContent()),
-                        const UpdateBanner(),
-                      ],
-                    ),
-              bottomNavigationBar: useRail ? null : _buildBottomNav(),
+        child: FocusTraversalGroup(
+          policy: ReadingOrderTraversalPolicy(),
+          child: Focus(
+            autofocus: true,
+            child: GamepadListener(
+              onTabSwitch: _onGamepadTabSwitch,
+              onNavigate: _onGamepadNavigate,
+              onConfirm: _onGamepadConfirm,
+              onContextMenu: _onGamepadContextMenu,
+              onScroll: _onGamepadScroll,
+              onBack: () {
+                _handleBack();
+              },
+              child: Scaffold(
+                body: useRail
+                    ? _buildRailLayout()
+                    : Column(
+                        children: <Widget>[
+                          Expanded(child: _buildContent()),
+                          const UpdateBanner(),
+                        ],
+                      ),
+                bottomNavigationBar: useRail ? null : _buildBottomNav(),
+              ),
             ),
           ),
         ),
@@ -406,7 +410,10 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
     // внутри таба являются потомками этого Focus и получат key events.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      _tabFocusScopeNodes[index].requestFocus();
+      final FocusScopeNode scope = _tabFocusScopeNodes[index];
+      scope.requestFocus();
+      // Фокус сразу на первый элемент контента (для геймпада)
+      scope.nextFocus();
     });
   }
 
@@ -507,6 +514,49 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
     if (focusContext == null) return;
 
     Actions.maybeInvoke(focusContext, const ActivateIntent());
+  }
+
+  /// Y кнопка → контекстное меню (аналог ПКМ / long press).
+  ///
+  /// Находит фокусированный виджет, ищет ближайший [InkWell] с onLongPress
+  /// и вызывает его. Если InkWell не найден — ничего не делает.
+  void _onGamepadContextMenu() {
+    final FocusNode? primaryFocus = FocusManager.instance.primaryFocus;
+    final BuildContext? focusContext = primaryFocus?.context;
+    if (focusContext == null) return;
+
+    // Ищем InkWell в поддереве фокусированного элемента или его предках
+    InkWell? inkWell;
+    focusContext.visitAncestorElements((Element element) {
+      if (element.widget is InkWell) {
+        inkWell = element.widget as InkWell;
+        return false;
+      }
+      return true;
+    });
+
+    if (inkWell?.onLongPress != null) {
+      inkWell!.onLongPress!();
+      return;
+    }
+
+    // Fallback: ищем в потомках
+    focusContext.visitChildElements((Element element) {
+      void visit(Element el) {
+        if (inkWell != null) return;
+        if (el.widget is InkWell) {
+          final InkWell candidate = el.widget as InkWell;
+          if (candidate.onLongPress != null) {
+            inkWell = candidate;
+            return;
+          }
+        }
+        el.visitChildElements(visit);
+      }
+      visit(element);
+    });
+
+    inkWell?.onLongPress?.call();
   }
 
   /// Left Stick → скролл через синтетический PointerScrollEvent.

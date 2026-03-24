@@ -17,6 +17,10 @@ bool get kScreenshotEnabled => Platform.isWindows;
 /// Мобильная платформа (Android / iOS).
 bool get kIsMobile => Platform.isAndroid || Platform.isIOS;
 
+/// Геймпад поддерживается на десктопах и Android (handhelds).
+/// Не поддерживается только на iOS (нет пакета gamepads).
+bool get kGamepadSupported => !Platform.isIOS;
+
 /// Ландшафтный режим на мобильном устройстве.
 bool isLandscapeMobile(BuildContext context) {
   return kIsMobile &&

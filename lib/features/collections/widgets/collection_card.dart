@@ -99,17 +99,28 @@ class _CollectionCardState extends ConsumerState<CollectionCard>
     final AsyncValue<List<CoverInfo>> coversAsync =
         ref.watch(collectionCoversProvider(widget.collection.id));
 
-    return Actions(
-      actions: <Type, Action<Intent>>{
-        ActivateIntent: CallbackAction<ActivateIntent>(
-          onInvoke: (ActivateIntent intent) {
-            widget.onTap?.call();
-            return null;
-          },
-        ),
+    return AnimatedBuilder(
+      animation: _hoverController,
+      builder: (BuildContext context, Widget? animatedChild) {
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius:
+                BorderRadius.circular(CollectionCard.mosaicRadius + 2),
+            border: _focusNode.hasFocus
+                ? Border.all(color: AppColors.brand, width: 2)
+                : null,
+          ),
+          child: animatedChild,
+        );
       },
-      child: Focus(
+      child: InkWell(
         focusNode: _focusNode,
+        onTap: widget.onTap,
+        onLongPress: widget.onLongPress,
+        onSecondaryTapUp: widget.onSecondaryTap != null
+            ? (TapUpDetails details) =>
+                widget.onSecondaryTap!(details.globalPosition)
+            : null,
         onFocusChange: (bool hasFocus) {
           if (hasFocus) {
             _hoverController.forward();
@@ -119,21 +130,14 @@ class _CollectionCardState extends ConsumerState<CollectionCard>
             widget.onFocusChanged?.call(false);
           }
         },
-        child: MouseRegion(
-      onEnter: (_) => _hoverController.forward(),
-      onExit: (_) {
-        if (!_focusNode.hasFocus) _hoverController.reverse();
-      },
-      cursor: widget.onTap != null
-          ? SystemMouseCursors.click
-          : SystemMouseCursors.basic,
-      child: GestureDetector(
-        onTap: widget.onTap,
-        onLongPress: widget.onLongPress,
-        onSecondaryTapUp: widget.onSecondaryTap != null
-            ? (TapUpDetails details) =>
-                widget.onSecondaryTap!(details.globalPosition)
-            : null,
+        onHover: (bool hovering) {
+          if (hovering) {
+            _hoverController.forward();
+          } else if (!_focusNode.hasFocus) {
+            _hoverController.reverse();
+          }
+        },
+        borderRadius: BorderRadius.circular(CollectionCard.mosaicRadius),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 5),
           child: Column(
@@ -214,8 +218,6 @@ class _CollectionCardState extends ConsumerState<CollectionCard>
               ),
             ],
           ),
-        ),
-      ),
         ),
       ),
     );

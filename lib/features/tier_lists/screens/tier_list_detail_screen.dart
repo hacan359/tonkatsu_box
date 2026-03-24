@@ -60,9 +60,7 @@ class _TierListDetailScreenState
       label: state.isLoading ? l.tierListTitle : state.tierList.name,
       child: CallbackShortcuts(
         bindings: _buildScreenShortcuts(state),
-        child: Focus(
-          autofocus: true,
-          child: Scaffold(
+        child: Scaffold(
         appBar: AutoBreadcrumbAppBar(
           actions: <Widget>[
             if (!state.isLoading)
@@ -123,7 +121,6 @@ class _TierListDetailScreenState
                 ),
               ),
       ),
-        ),
       ),
     );
   }

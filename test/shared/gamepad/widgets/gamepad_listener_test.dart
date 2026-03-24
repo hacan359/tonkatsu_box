@@ -11,6 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gamepads/gamepads.dart';
 
+import 'package:xerabora/core/services/gamepad_mappings.dart';
 import 'package:xerabora/core/services/gamepad_service.dart';
 import 'package:xerabora/shared/gamepad/gamepad_action.dart';
 import 'package:xerabora/shared/gamepad/gamepad_provider.dart';
@@ -56,7 +57,10 @@ void main() {
 
   setUp(() {
     mockSource = MockGamepadEventSource();
-    service = GamepadService(source: mockSource);
+    service = GamepadService(
+      source: mockSource,
+      mapping: const WindowsGamepadMapping(),
+    );
     service.start();
   });
 
@@ -458,7 +462,7 @@ void main() {
         _event(key: 'button-4', value: 1.0, type: KeyType.button),
       );
 
-      expect(receivedAction, GamepadAction.previousTab);
+      expect(receivedAction, GamepadAction.previousTab); // LB не navigation → не блокируется
 
       textFieldFocus.dispose();
     });

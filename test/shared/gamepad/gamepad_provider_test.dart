@@ -123,8 +123,8 @@ void main() {
       expect(GamepadAction.values, contains(GamepadAction.openMenu));
     });
 
-    test('содержит 21 значение', () {
-      expect(GamepadAction.values, hasLength(21));
+    test('содержит 22 значения', () {
+      expect(GamepadAction.values, hasLength(22));
     });
   });
 

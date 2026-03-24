@@ -527,17 +527,16 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // MouseRegion внутри CollectionCard с click курсором
-      final Finder mouseRegions = find.descendant(
+      // InkWell внутри CollectionCard с onTap
+      final Finder inkWells = find.descendant(
         of: find.byType(CollectionCard),
-        matching: find.byType(MouseRegion),
+        matching: find.byType(InkWell),
       );
-      final MouseRegion mouseRegion =
-          tester.widget<MouseRegion>(mouseRegions.first);
-      expect(mouseRegion.cursor, SystemMouseCursors.click);
+      final InkWell inkWell = tester.widget<InkWell>(inkWells.first);
+      expect(inkWell.onTap, isNotNull);
     });
 
-    testWidgets('должен иметь basic курсор без onTap',
+    testWidgets('InkWell не имеет onTap без onTap параметра',
         (WidgetTester tester) async {
       final Collection collection = _makeCollection();
 
@@ -552,13 +551,12 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      final Finder mouseRegions = find.descendant(
+      final Finder inkWells = find.descendant(
         of: find.byType(CollectionCard),
-        matching: find.byType(MouseRegion),
+        matching: find.byType(InkWell),
       );
-      final MouseRegion mouseRegion =
-          tester.widget<MouseRegion>(mouseRegions.first);
-      expect(mouseRegion.cursor, SystemMouseCursors.basic);
+      final InkWell inkWell = tester.widget<InkWell>(inkWells.first);
+      expect(inkWell.onTap, isNull);
     });
   });
 

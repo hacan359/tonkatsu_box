@@ -54,9 +54,7 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
 
     return CallbackShortcuts(
       bindings: _buildScreenShortcuts(),
-      child: Focus(
-        autofocus: true,
-        child: Scaffold(
+      child: Scaffold(
       appBar: AutoBreadcrumbAppBar(
         actions: <Widget>[
           IconButton(
@@ -132,7 +130,6 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
         child: const Icon(Icons.add),
       ),
     ),
-      ),
     );
   }
 
@@ -326,6 +323,7 @@ class _WishlistTile extends StatelessWidget {
               : null,
         ),
         subtitle: _buildSubtitle(context),
+        onLongPress: onEdit,
         trailing: PopupMenuButton<String>(
           onSelected: (String value) {
             switch (value) {

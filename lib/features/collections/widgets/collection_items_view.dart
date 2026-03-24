@@ -131,6 +131,13 @@ class CollectionItemsView extends ConsumerWidget {
                       item,
                     )
                 : null,
+            onLongPress: canEdit
+                ? () => _showItemContextMenu(
+                      context,
+                      _centerOfContext(context),
+                      item,
+                    )
+                : null,
             onTap: () => onItemTap(item),
           );
         },
@@ -205,6 +212,13 @@ class CollectionItemsView extends ConsumerWidget {
                       item,
                     )
                 : null,
+            onLongPress: canEdit
+                ? () => _showItemContextMenu(
+                      context,
+                      _centerOfContext(context),
+                      item,
+                    )
+                : null,
             onFocusChanged: onItemFocusChanged != null
                 ? (bool hasFocus) => onItemFocusChanged!(item, hasFocus)
                 : null,
@@ -261,6 +275,13 @@ class CollectionItemsView extends ConsumerWidget {
                     item,
                   )
               : null,
+          onLongPress: canEdit
+              ? () => _showItemContextMenu(
+                    context,
+                    _centerOfContext(context),
+                    item,
+                  )
+              : null,
           onTap: () => onItemTap(item),
         );
       },
@@ -268,6 +289,12 @@ class CollectionItemsView extends ConsumerWidget {
   }
 
   /// Показывает контекстное меню ПКМ для элемента коллекции.
+  /// Центр экрана — fallback позиция для контекстного меню без курсора.
+  Offset _centerOfContext(BuildContext context) {
+    final Size size = MediaQuery.sizeOf(context);
+    return Offset(size.width / 2, size.height / 2);
+  }
+
   void _showItemContextMenu(
     BuildContext context,
     Offset position,
