@@ -6,11 +6,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/core/services/api_key_initializer.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
+import 'package:xerabora/features/settings/providers/profile_provider.dart';
 import 'package:xerabora/features/settings/screens/settings_screen.dart';
 import 'package:xerabora/features/settings/widgets/settings_group.dart';
 import 'package:xerabora/features/settings/widgets/settings_tile.dart';
 import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/features/settings/widgets/inline_text_field.dart';
+import 'package:xerabora/shared/models/profile.dart';
 import 'package:xerabora/shared/widgets/auto_breadcrumb_app_bar.dart';
 import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 
@@ -27,6 +29,9 @@ void main() {
       overrides: <Override>[
         sharedPreferencesProvider.overrideWithValue(prefs),
         apiKeysProvider.overrideWithValue(const ApiKeys()),
+        profilesDataProvider.overrideWith(
+          (Ref ref) => ProfilesData.defaultData(),
+        ),
       ],
       child: MaterialApp(
         localizationsDelegates: S.localizationsDelegates,
@@ -175,6 +180,9 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
+        await tester.drag(find.byType(ListView), const Offset(0, -100));
+        await tester.pumpAndSettle();
+
         expect(find.text('Cache'), findsOneWidget);
         expect(find.text('Database'), findsOneWidget);
       });
@@ -221,7 +229,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        await tester.drag(find.byType(ListView), const Offset(0, -500));
+        await tester.drag(find.byType(ListView), const Offset(0, -600));
         await tester.pumpAndSettle();
 
         expect(find.text('Welcome Guide'), findsOneWidget);
@@ -249,6 +257,9 @@ void main() {
 
       testWidgets('Cache tile is tappable', (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
+        await tester.pumpAndSettle();
+
+        await tester.drag(find.byType(ListView), const Offset(0, -100));
         await tester.pumpAndSettle();
 
         final Finder cacheTile = find.ancestor(
@@ -360,7 +371,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pump();
 
-        await tester.drag(find.byType(ListView), const Offset(0, -500));
+        await tester.drag(find.byType(ListView), const Offset(0, -600));
         await tester.pump();
 
         expect(find.text('...'), findsOneWidget);

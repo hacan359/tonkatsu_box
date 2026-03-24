@@ -8,6 +8,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../shared/models/collected_item_info.dart';
+import '../../shared/models/profile.dart';
+import '../services/profile_service.dart';
 import '../../shared/models/collection.dart';
 import '../../shared/models/collection_item.dart';
 import '../../shared/models/cover_info.dart';
@@ -153,7 +155,22 @@ class DatabaseService {
     const String folderName =
         kReleaseMode ? 'tonkatsu_box' : 'tonkatsu_box_dev';
 
-    final String dbDir = p.join(appDir.path, folderName);
+    // Если профильная система инициализирована — используем путь профиля
+    final String basePath = p.join(appDir.path, folderName);
+    final String dbDir;
+    final File profilesFile = File(p.join(basePath, 'profiles.json'));
+    if (profilesFile.existsSync()) {
+      final ProfileService profileService = ProfileService();
+      final ProfilesData data = await profileService.loadProfiles();
+      dbDir = p.join(
+        basePath,
+        'profiles',
+        data.currentProfileId,
+      );
+    } else {
+      dbDir = basePath;
+    }
+
     final String dbPath = p.join(dbDir, 'tonkatsu_box.db');
 
     // Создаём директорию, если не существует

@@ -355,6 +355,12 @@ abstract class S {
   /// **'Cancel'**
   String get cancel;
 
+  /// No description provided for @confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get confirm;
+
   /// No description provided for @create.
   ///
   /// In en, this message translates to:
@@ -4806,6 +4812,114 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Clear'**
   String get filtersClear;
+
+  /// No description provided for @profiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Profiles'**
+  String get profiles;
+
+  /// No description provided for @currentProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Current: {name}'**
+  String currentProfile(String name);
+
+  /// No description provided for @switchProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch Profile'**
+  String get switchProfile;
+
+  /// No description provided for @addProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Profile'**
+  String get addProfile;
+
+  /// No description provided for @createProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Profile'**
+  String get createProfile;
+
+  /// No description provided for @editProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Profile'**
+  String get editProfile;
+
+  /// No description provided for @deleteProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Profile'**
+  String get deleteProfile;
+
+  /// No description provided for @deleteProfileConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete profile {name}? This will delete all collections, wishlist, and settings. This cannot be undone.'**
+  String deleteProfileConfirm(String name);
+
+  /// No description provided for @cannotDeleteLastProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot delete the last profile'**
+  String get cannotDeleteLastProfile;
+
+  /// No description provided for @profileName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get profileName;
+
+  /// No description provided for @profileColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get profileColor;
+
+  /// No description provided for @whoIsPlayingToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Who\'s playing today?'**
+  String get whoIsPlayingToday;
+
+  /// No description provided for @dontAskAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t ask again'**
+  String get dontAskAgain;
+
+  /// No description provided for @profileStats.
+  ///
+  /// In en, this message translates to:
+  /// **'{collections} collections, {items} items'**
+  String profileStats(int collections, int items);
+
+  /// No description provided for @switchingProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Switching profile…'**
+  String get switchingProfile;
+
+  /// No description provided for @appWillRestart.
+  ///
+  /// In en, this message translates to:
+  /// **'The app will restart to apply changes.'**
+  String get appWillRestart;
+
+  /// No description provided for @profileCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile created'**
+  String get profileCreated;
+
+  /// No description provided for @profileDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile deleted'**
+  String get profileDeleted;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

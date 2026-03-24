@@ -50,6 +50,7 @@
   "searchSortRatingDisplay": "Рейтинг",
 
   "cancel": "Отмена",
+  "confirm": "ОК",
   "create": "Создать",
   "save": "Сохранить",
   "add": "Добавить",
@@ -1017,5 +1018,24 @@
   "textExportSortAdded": "Дата добавления ↓",
   "textExportCopy": "Копировать",
   "textExportEmptyTemplate": "Шаблон пустой",
-  "filtersClear": "Сбросить"
+  "filtersClear": "Сбросить",
+
+  "profiles": "Профили",
+  "currentProfile": "Текущий: {name}",
+  "switchProfile": "Сменить профиль",
+  "addProfile": "Добавить профиль",
+  "createProfile": "Создать профиль",
+  "editProfile": "Редактировать профиль",
+  "deleteProfile": "Удалить профиль",
+  "deleteProfileConfirm": "Удалить профиль {name}? Все коллекции, вишлист и настройки будут удалены. Это действие нельзя отменить.",
+  "cannotDeleteLastProfile": "Нельзя удалить последний профиль",
+  "profileName": "Имя",
+  "profileColor": "Цвет",
+  "whoIsPlayingToday": "Кто сегодня играет?",
+  "dontAskAgain": "Не спрашивать снова",
+  "profileStats": "{collections,plural, =1{1 коллекция} few{{collections} коллекции} other{{collections} коллекций}}, {items,plural, =1{1 элемент} few{{items} элемента} other{{items} элементов}}",
+  "switchingProfile": "Переключение профиля…",
+  "appWillRestart": "Приложение перезапустится для применения изменений.",
+  "profileCreated": "Профиль создан",
+  "profileDeleted": "Профиль удалён"
 }

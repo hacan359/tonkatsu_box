@@ -138,6 +138,9 @@ class SRu extends S {
   String get cancel => 'Отмена';
 
   @override
+  String get confirm => 'ОК';
+
+  @override
   String get create => 'Создать';
 
   @override
@@ -2660,4 +2663,79 @@ class SRu extends S {
 
   @override
   String get filtersClear => 'Сбросить';
+
+  @override
+  String get profiles => 'Профили';
+
+  @override
+  String currentProfile(String name) {
+    return 'Текущий: $name';
+  }
+
+  @override
+  String get switchProfile => 'Сменить профиль';
+
+  @override
+  String get addProfile => 'Добавить профиль';
+
+  @override
+  String get createProfile => 'Создать профиль';
+
+  @override
+  String get editProfile => 'Редактировать профиль';
+
+  @override
+  String get deleteProfile => 'Удалить профиль';
+
+  @override
+  String deleteProfileConfirm(String name) {
+    return 'Удалить профиль $name? Все коллекции, вишлист и настройки будут удалены. Это действие нельзя отменить.';
+  }
+
+  @override
+  String get cannotDeleteLastProfile => 'Нельзя удалить последний профиль';
+
+  @override
+  String get profileName => 'Имя';
+
+  @override
+  String get profileColor => 'Цвет';
+
+  @override
+  String get whoIsPlayingToday => 'Кто сегодня играет?';
+
+  @override
+  String get dontAskAgain => 'Не спрашивать снова';
+
+  @override
+  String profileStats(int collections, int items) {
+    String _temp0 = intl.Intl.pluralLogic(
+      collections,
+      locale: localeName,
+      other: '$collections коллекций',
+      few: '$collections коллекции',
+      one: '1 коллекция',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      items,
+      locale: localeName,
+      other: '$items элементов',
+      few: '$items элемента',
+      one: '1 элемент',
+    );
+    return '$_temp0, $_temp1';
+  }
+
+  @override
+  String get switchingProfile => 'Переключение профиля…';
+
+  @override
+  String get appWillRestart =>
+      'Приложение перезапустится для применения изменений.';
+
+  @override
+  String get profileCreated => 'Профиль создан';
+
+  @override
+  String get profileDeleted => 'Профиль удалён';
 }

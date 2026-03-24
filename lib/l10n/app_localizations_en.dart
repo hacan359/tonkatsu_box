@@ -138,6 +138,9 @@ class SEn extends S {
   String get cancel => 'Cancel';
 
   @override
+  String get confirm => 'OK';
+
+  @override
   String get create => 'Create';
 
   @override
@@ -2630,4 +2633,64 @@ class SEn extends S {
 
   @override
   String get filtersClear => 'Clear';
+
+  @override
+  String get profiles => 'Profiles';
+
+  @override
+  String currentProfile(String name) {
+    return 'Current: $name';
+  }
+
+  @override
+  String get switchProfile => 'Switch Profile';
+
+  @override
+  String get addProfile => 'Add Profile';
+
+  @override
+  String get createProfile => 'Create Profile';
+
+  @override
+  String get editProfile => 'Edit Profile';
+
+  @override
+  String get deleteProfile => 'Delete Profile';
+
+  @override
+  String deleteProfileConfirm(String name) {
+    return 'Delete profile $name? This will delete all collections, wishlist, and settings. This cannot be undone.';
+  }
+
+  @override
+  String get cannotDeleteLastProfile => 'Cannot delete the last profile';
+
+  @override
+  String get profileName => 'Name';
+
+  @override
+  String get profileColor => 'Color';
+
+  @override
+  String get whoIsPlayingToday => 'Who\'s playing today?';
+
+  @override
+  String get dontAskAgain => 'Don\'t ask again';
+
+  @override
+  String profileStats(int collections, int items) {
+    return '$collections collections, $items items';
+  }
+
+  @override
+  String get switchingProfile => 'Switching profile…';
+
+  @override
+  String get appWillRestart => 'The app will restart to apply changes.';
+
+  @override
+  String get profileCreated => 'Profile created';
+
+  @override
+  String get profileDeleted => 'Profile deleted';
 }

@@ -13,8 +13,11 @@ import '../../features/search/screens/search_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
 import '../../features/tier_lists/screens/tier_list_detail_screen.dart';
 import '../../features/tier_lists/screens/tier_lists_screen.dart';
+import '../../features/settings/providers/profile_provider.dart';
+import '../../shared/models/profile.dart';
 import '../../features/wishlist/providers/wishlist_provider.dart';
 import '../../features/wishlist/screens/wishlist_screen.dart';
+import '../theme/app_typography.dart';
 import '../gamepad/gamepad_action.dart';
 import '../gamepad/widgets/gamepad_listener.dart';
 import '../keyboard/keyboard_shortcuts.dart';
@@ -188,6 +191,36 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
     );
   }
 
+  Widget _buildProfileIndicator(bool compact) {
+    final Profile profile = ref.watch(currentProfileProvider);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Tooltip(
+        message: profile.name,
+        child: Container(
+          width: compact ? 24 : 28,
+          height: compact ? 24 : 28,
+          decoration: BoxDecoration(
+            color: profile.colorValue,
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: Text(
+              profile.name.isNotEmpty
+                  ? profile.name[0].toUpperCase()
+                  : '?',
+              style: AppTypography.caption.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: compact ? 10 : 12,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildRailLayout() {
     return Row(
       children: <Widget>[
@@ -201,13 +234,15 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
                 children: <Widget>[
                   // Логотип выше NavigationRail — всегда виден
                   Padding(
-                    padding: const EdgeInsets.only(top: 12, bottom: 8),
+                    padding: const EdgeInsets.only(top: 12, bottom: 4),
                     child: Image.asset(
                       AppAssets.logo,
                       width: 48,
                       height: 48,
                     ),
                   ),
+                  // Profile indicator
+                  _buildProfileIndicator(compact),
                   Expanded(
                     child: NavigationRail(
                 selectedIndex: _selectedIndex,

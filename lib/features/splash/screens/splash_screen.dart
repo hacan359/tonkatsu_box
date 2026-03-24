@@ -7,8 +7,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/database/database_service.dart';
+import '../../../features/settings/providers/profile_provider.dart';
 import '../../../features/settings/providers/settings_provider.dart';
 import '../../../features/welcome/screens/welcome_screen.dart';
+import '../../../shared/models/profile.dart';
+import 'profile_picker_screen.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/navigation/navigation_shell.dart';
 import '../../../shared/theme/app_assets.dart';
@@ -113,12 +116,53 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       final SharedPreferences prefs = ref.read(sharedPreferencesProvider);
       final bool welcomeCompleted =
           prefs.getBool(kWelcomeCompletedKey) ?? false;
-      if (welcomeCompleted) {
-        _navigateToHome();
-      } else {
+      if (!welcomeCompleted) {
         _navigateToWelcome();
+        return;
+      }
+
+      // Проверяем нужно ли показать выбор профиля
+      final ProfilesData data = ref.read(profilesDataProvider);
+      final bool skipPicker =
+          prefs.getBool(kSkipProfilePickerKey) ?? false;
+      final bool skipOnce =
+          prefs.getBool('skip_picker_once') ?? false;
+      if (skipOnce) {
+        prefs.remove('skip_picker_once');
+      }
+
+      if (data.profiles.length > 1 && !skipPicker && !skipOnce) {
+        _navigateToProfilePicker();
+      } else {
+        _navigateToHome();
       }
     }
+  }
+
+  void _navigateToProfilePicker() {
+    if (!mounted) return;
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder<void>(
+        pageBuilder: (
+          BuildContext context,
+          Animation<double> animation,
+          Animation<double> secondaryAnimation,
+        ) {
+          return const ProfilePickerScreen();
+        },
+        transitionsBuilder: (
+          BuildContext context,
+          Animation<double> animation,
+          Animation<double> secondaryAnimation,
+          Widget child,
+        ) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+        transitionDuration: Duration(
+          milliseconds: kIsMobile ? 200 : 500,
+        ),
+      ),
+    );
   }
 
   void _navigateToHome() {

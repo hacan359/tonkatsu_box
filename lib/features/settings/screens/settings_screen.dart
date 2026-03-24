@@ -23,6 +23,9 @@ import 'steam_import_screen.dart';
 import 'trakt_import_screen.dart';
 import 'debug_hub_screen.dart';
 import 'gamepad_debug_screen.dart';
+import 'profiles_screen.dart';
+import '../../../shared/models/profile.dart';
+import '../providers/profile_provider.dart';
 
 /// Breakpoint для переключения ширины контента.
 const double _desktopBreakpoint = 800;
@@ -88,7 +91,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final SettingsState settings = ref.watch(settingsNotifierProvider);
     final S l = S.of(context);
 
+    final Profile currentProfile = ref.watch(currentProfileProvider);
+
     return <Widget>[
+      // PROFILES
+      SettingsGroup(
+        title: l.profiles,
+        children: <Widget>[
+          SettingsTile(
+            title: l.currentProfile(currentProfile.name),
+            value: '',
+            onTap: () => _pushScreen(const ProfilesScreen()),
+          ),
+        ],
+      ),
+      const SizedBox(height: AppSpacing.md),
+
       // PROFILE
       SettingsGroup(
         title: l.settingsProfile,

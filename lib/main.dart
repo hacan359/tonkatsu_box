@@ -10,7 +10,15 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'app.dart';
 import 'core/logging/app_logger.dart';
 import 'core/services/api_key_initializer.dart';
+import 'core/services/profile_service.dart';
+import 'features/settings/providers/profile_provider.dart';
 import 'features/settings/providers/settings_provider.dart';
+import 'shared/models/profile.dart';
+
+/// Глобальные данные инициализации, перечитываемые при перезапуске.
+late SharedPreferences _prefs;
+late ApiKeys _apiKeys;
+late ProfilesData _profilesData;
 
 /// Точка входа в приложение.
 Future<void> main() async {
@@ -27,24 +35,70 @@ Future<void> main() async {
         databaseFactory = databaseFactoryFfi;
       }
 
-      // Инициализация SharedPreferences
-      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      await _loadAppState();
 
-      // Загрузить API ключи ДО runApp, чтобы избежать race condition
-      final ApiKeys apiKeys = ApiKeys.fromPrefs(prefs);
-
-      runApp(
-        ProviderScope(
-          overrides: <Override>[
-            sharedPreferencesProvider.overrideWithValue(prefs),
-            apiKeysProvider.overrideWithValue(apiKeys),
-          ],
-          child: const TonkatsuBoxApp(),
-        ),
-      );
+      runApp(const AppRestartScope(child: TonkatsuBoxApp()));
     },
     (Object error, StackTrace stack) {
       Logger('main').severe('Unhandled exception', error, stack);
     },
   );
+}
+
+/// Загружает SharedPreferences, API keys и профильные данные.
+Future<void> _loadAppState() async {
+  _prefs = await SharedPreferences.getInstance();
+  _apiKeys = ApiKeys.fromPrefs(_prefs);
+
+  final ProfileService profileService = ProfileService();
+  await profileService.migrateIfNeeded();
+  _profilesData = await profileService.loadProfiles();
+}
+
+/// Обёртка для перезапуска приложения на мобильных платформах.
+///
+/// Меняет [Key] у [ProviderScope], что пересоздаёт все провайдеры с нуля.
+/// На десктопе перезапуск происходит через `Process.start + exit(0)`.
+class AppRestartScope extends StatefulWidget {
+  /// Создаёт [AppRestartScope].
+  const AppRestartScope({required this.child, super.key});
+
+  /// Дочерний виджет (обычно [TonkatsuBoxApp]).
+  final Widget child;
+
+  /// Перезапускает приложение: перечитывает профили и пересоздаёт ProviderScope.
+  static Future<void> restart(BuildContext context) async {
+    final _AppRestartScopeState? state =
+        context.findAncestorStateOfType<_AppRestartScopeState>();
+    await state?._restart();
+  }
+
+  @override
+  State<AppRestartScope> createState() => _AppRestartScopeState();
+}
+
+class _AppRestartScopeState extends State<AppRestartScope> {
+  Key _key = UniqueKey();
+
+  Future<void> _restart() async {
+    await _loadAppState();
+    if (mounted) {
+      setState(() => _key = UniqueKey());
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ProviderScope(
+      key: _key,
+      overrides: <Override>[
+        sharedPreferencesProvider.overrideWithValue(_prefs),
+        apiKeysProvider.overrideWithValue(_apiKeys),
+        profilesDataProvider.overrideWith(
+          (Ref ref) => _profilesData,
+        ),
+      ],
+      child: widget.child,
+    );
+  }
 }

@@ -1,12 +1,15 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../shared/models/profile.dart';
+import 'profile_service.dart';
 
 /// Ключи для SharedPreferences.
 class _CacheKeys {
@@ -67,7 +70,19 @@ class ImageCacheService {
     // AppSupport вместо Documents — Documents может быть под OneDrive,
     // который блокирует создание файлов (PathAccessException).
     final Directory appDir = await getApplicationSupportDirectory();
-    return p.join(appDir.path, 'tonkatsu_box', 'image_cache');
+    const String folderName =
+        kReleaseMode ? 'tonkatsu_box' : 'tonkatsu_box_dev';
+    final String basePath = p.join(appDir.path, folderName);
+
+    // Если профильная система инициализирована — кэш в папке профиля
+    final File profilesFile = File(p.join(basePath, 'profiles.json'));
+    if (profilesFile.existsSync()) {
+      final ProfileService profileService = ProfileService();
+      final ProfilesData data = await profileService.loadProfiles();
+      return p.join(basePath, 'profiles', data.currentProfileId, 'image_cache');
+    }
+
+    return p.join(basePath, 'image_cache');
   }
 
   /// Возвращает путь к директории для конкретного типа изображений.
