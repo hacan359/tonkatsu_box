@@ -21,16 +21,16 @@ import '../gamepad_provider.dart';
 /// - A — заблокирован (ввод текста)
 /// - B — снятие фокуса с TextField
 ///
-/// Маппинг кнопок Xbox контроллера (Windows JOYINFOEX):
+/// Маппинг кнопок (кроссплатформенный, нормализованные ключи):
 /// - `button-0` (A) → confirm
 /// - `button-1` (B) → back
 /// - `button-4` (LB) → previousTab
 /// - `button-5` (RB) → nextTab
 /// - `button-7` (Start) → openMenu
-/// - `dpad-*` (POV hat) → navigate
-/// - `dwXpos`/`dwYpos` (Left Stick) → scroll
-/// - `dwRpos`/`dwUpos` (Right Stick) → pan
-/// - `dwZpos` (Triggers) → sub-tab switch
+/// - `dpad-*` → navigate
+/// - `stick-left-x`/`stick-left-y` (Left Stick) → scroll
+/// - `stick-right-x`/`stick-right-y` (Right Stick) → pan
+/// - `trigger` (Triggers) → sub-tab switch
 class GamepadListener extends ConsumerStatefulWidget {
   /// Создаёт [GamepadListener].
   const GamepadListener({
@@ -88,7 +88,7 @@ class _GamepadListenerState extends ConsumerState<GamepadListener> {
   void initState() {
     super.initState();
     // На мобильных платформах геймпад не используется — пропускаем подписку.
-    if (!kIsMobile) {
+    if (kGamepadSupported) {
       final GamepadService service = ref.read(gamepadServiceProvider);
       _subscription = service.events.listen(_handleEvent);
     }
@@ -185,22 +185,20 @@ class _GamepadListenerState extends ConsumerState<GamepadListener> {
     }
   }
 
-  /// Маппинг аналоговых стиков.
+  /// Маппинг аналоговых стиков (нормализованные ключи).
   ///
   /// Значения нормализованы [GamepadService]: -1.0 (лево/верх) .. 1.0 (право/низ).
-  /// - `dwXpos`/`dwYpos` — Left Stick → скролл
-  /// - `dwRpos`/`dwUpos` — Right Stick → панорама
   GamepadAction? _mapAnalog(String key, double value) {
     switch (key) {
-      case 'dwXpos': // Left Stick X → горизонтальный скролл
+      case 'stick-left-x':
         return value > 0
             ? GamepadAction.scrollRight
             : GamepadAction.scrollLeft;
-      case 'dwYpos': // Left Stick Y → вертикальный скролл
+      case 'stick-left-y':
         return value > 0 ? GamepadAction.scrollDown : GamepadAction.scrollUp;
-      case 'dwRpos': // Right Stick X → горизонтальная панорама
+      case 'stick-right-x':
         return value > 0 ? GamepadAction.panRight : GamepadAction.panLeft;
-      case 'dwUpos': // Right Stick Y → вертикальная панорама
+      case 'stick-right-y':
         return value > 0 ? GamepadAction.panDown : GamepadAction.panUp;
       default:
         return null;
@@ -209,7 +207,7 @@ class _GamepadListenerState extends ConsumerState<GamepadListener> {
 
   /// Маппинг триггеров в переключение суб-табов.
   ///
-  /// Значение нормализовано [GamepadService]: отрицательное = LT, положительное = RT.
+  /// Значение: отрицательное = LT, положительное = RT.
   /// Edge detection уже применён в сервисе — приходит одно событие за нажатие.
   GamepadAction? _mapTrigger(double value) {
     if (value < 0) {

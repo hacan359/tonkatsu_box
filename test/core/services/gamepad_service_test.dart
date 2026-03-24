@@ -2,6 +2,7 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gamepads/gamepads.dart';
+import 'package:xerabora/core/services/gamepad_mappings.dart';
 import 'package:xerabora/core/services/gamepad_service.dart';
 
 import '../../helpers/test_helpers.dart';
@@ -28,7 +29,10 @@ void main() {
 
   setUp(() {
     source = MockGamepadEventSource();
-    service = GamepadService(source: source);
+    service = GamepadService(
+      source: source,
+      mapping: const WindowsGamepadMapping(),
+    );
     service.start();
   });
 
@@ -47,7 +51,7 @@ void main() {
       await Future<void>.delayed(Duration.zero);
 
       expect(events, hasLength(1));
-      expect(events.first.key, equals('dwXpos'));
+      expect(events.first.key, equals('stick-left-x'));
       expect(events.first.value, closeTo(1.0, 0.01));
       expect(events.first.type, equals(GamepadServiceEventType.analog));
     });
@@ -73,9 +77,9 @@ void main() {
       await Future<void>.delayed(Duration.zero);
 
       expect(events, hasLength(2));
-      expect(events[0].key, equals('dwRpos'));
+      expect(events[0].key, equals('stick-right-x'));
       expect(events[0].value, closeTo(-1.0, 0.01));
-      expect(events[1].key, equals('dwUpos'));
+      expect(events[1].key, equals('stick-right-y'));
       expect(events[1].value, closeTo(1.0, 0.01));
     });
 
@@ -251,7 +255,7 @@ void main() {
       await Future<void>.delayed(Duration.zero);
 
       expect(events, hasLength(1));
-      expect(events.first.key, equals('dwZpos'));
+      expect(events.first.key, equals('trigger'));
       expect(events.first.value, closeTo(-1.0, 0.01));
       expect(events.first.type, equals(GamepadServiceEventType.trigger));
     });
@@ -482,22 +486,28 @@ void main() {
       final List<GamepadServiceEvent> events = <GamepadServiceEvent>[];
       service.events.listen(events.add);
 
-      final List<String> stickAxes = <String>[
+      final List<String> rawAxes = <String>[
         'dwXpos',
         'dwYpos',
         'dwRpos',
         'dwUpos',
       ];
+      final List<String> normalizedAxes = <String>[
+        'stick-left-x',
+        'stick-left-y',
+        'stick-right-x',
+        'stick-right-y',
+      ];
 
-      for (final String axis in stickAxes) {
+      for (final String axis in rawAxes) {
         // Значение за пределами дедзоны
         source.emit(_event(key: axis, value: 60000));
         await Future<void>.delayed(Duration.zero);
       }
 
       expect(events, hasLength(4));
-      for (int i = 0; i < stickAxes.length; i++) {
-        expect(events[i].key, equals(stickAxes[i]));
+      for (int i = 0; i < normalizedAxes.length; i++) {
+        expect(events[i].key, equals(normalizedAxes[i]));
         expect(events[i].type, equals(GamepadServiceEventType.analog));
       }
     });

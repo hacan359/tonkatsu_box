@@ -13,7 +13,7 @@ import 'gamepad_action.dart';
 final Provider<GamepadService> gamepadServiceProvider =
     Provider<GamepadService>((Ref ref) {
   final GamepadService service = GamepadService();
-  if (!kIsMobile) {
+  if (kGamepadSupported) {
     service.start();
   }
   ref.onDispose(service.dispose);
