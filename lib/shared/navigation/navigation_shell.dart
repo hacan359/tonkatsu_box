@@ -162,26 +162,29 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
             screenGroups: _currentScreenShortcutGroups(),
           ),
         ),
-        child: Focus(
-          autofocus: true,
-          child: GamepadListener(
-            onTabSwitch: _onGamepadTabSwitch,
-            onNavigate: _onGamepadNavigate,
-            onConfirm: _onGamepadConfirm,
-            onScroll: _onGamepadScroll,
-            onBack: () {
-              _handleBack();
-            },
-            child: Scaffold(
-              body: useRail
-                  ? _buildRailLayout()
-                  : Column(
-                      children: <Widget>[
-                        Expanded(child: _buildContent()),
-                        const UpdateBanner(),
-                      ],
-                    ),
-              bottomNavigationBar: useRail ? null : _buildBottomNav(),
+        child: FocusTraversalGroup(
+          policy: ReadingOrderTraversalPolicy(),
+          child: Focus(
+            autofocus: true,
+            child: GamepadListener(
+              onTabSwitch: _onGamepadTabSwitch,
+              onNavigate: _onGamepadNavigate,
+              onConfirm: _onGamepadConfirm,
+              onScroll: _onGamepadScroll,
+              onBack: () {
+                _handleBack();
+              },
+              child: Scaffold(
+                body: useRail
+                    ? _buildRailLayout()
+                    : Column(
+                        children: <Widget>[
+                          Expanded(child: _buildContent()),
+                          const UpdateBanner(),
+                        ],
+                      ),
+                bottomNavigationBar: useRail ? null : _buildBottomNav(),
+              ),
             ),
           ),
         ),
