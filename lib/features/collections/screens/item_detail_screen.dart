@@ -344,7 +344,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       child: CallbackShortcuts(
         bindings: _buildScreenShortcuts(item),
         child: Focus(
-          autofocus: true,
+          canRequestFocus: false,
           child: Scaffold(
         appBar: AutoBreadcrumbAppBar(
           actions: <Widget>[

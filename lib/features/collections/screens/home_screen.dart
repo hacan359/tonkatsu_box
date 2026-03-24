@@ -70,7 +70,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return CallbackShortcuts(
       bindings: _buildScreenShortcuts(ref),
       child: Focus(
-        autofocus: true,
+        canRequestFocus: false,
         child: Scaffold(
       appBar: AutoBreadcrumbAppBar(
         actions: <Widget>[

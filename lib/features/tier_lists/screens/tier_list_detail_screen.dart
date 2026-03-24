@@ -61,7 +61,7 @@ class _TierListDetailScreenState
       child: CallbackShortcuts(
         bindings: _buildScreenShortcuts(state),
         child: Focus(
-          autofocus: true,
+          canRequestFocus: false,
           child: Scaffold(
         appBar: AutoBreadcrumbAppBar(
           actions: <Widget>[

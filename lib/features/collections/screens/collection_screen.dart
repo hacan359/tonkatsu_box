@@ -196,7 +196,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       child: CallbackShortcuts(
         bindings: _buildScreenShortcuts(l),
         child: Focus(
-          autofocus: true,
+          canRequestFocus: false,
           child: Scaffold(
         appBar: AutoBreadcrumbAppBar(
           actions: _buildAppBarActions(l),

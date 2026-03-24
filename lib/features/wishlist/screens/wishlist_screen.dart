@@ -55,7 +55,7 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
     return CallbackShortcuts(
       bindings: _buildScreenShortcuts(),
       child: Focus(
-        autofocus: true,
+        canRequestFocus: false,
         child: Scaffold(
       appBar: AutoBreadcrumbAppBar(
         actions: <Widget>[

@@ -67,7 +67,7 @@ class _TierListsScreenState extends ConsumerState<TierListsScreen> {
               },
             },
       child: Focus(
-        autofocus: true,
+        canRequestFocus: false,
         child: Scaffold(
       appBar: const AutoBreadcrumbAppBar(),
       body: tierListsAsync.when(
