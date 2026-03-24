@@ -28,6 +28,7 @@ import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/core/services/config_service.dart';
 import 'package:xerabora/core/services/gamepad_service.dart';
 import 'package:xerabora/core/services/image_cache_service.dart';
+import 'package:xerabora/core/services/profile_service.dart';
 import 'package:xerabora/core/api/steam_api.dart';
 import 'package:xerabora/core/services/steam_import_service.dart';
 import 'package:xerabora/core/api/ra_api.dart';
@@ -129,6 +130,8 @@ class MockTraktZipImportService extends Mock
     implements TraktZipImportService {}
 
 class MockRaToIgdbMapper extends Mock implements RaToIgdbMapper {}
+
+class MockProfileService extends Mock implements ProfileService {}
 
 // ===== Repositories =====
 

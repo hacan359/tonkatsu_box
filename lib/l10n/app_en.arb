@@ -50,6 +50,7 @@
   "searchSortRatingDisplay": "Rating",
 
   "cancel": "Cancel",
+  "confirm": "OK",
   "create": "Create",
   "save": "Save",
   "add": "Add",
@@ -1246,5 +1247,40 @@
   "textExportSortAdded": "Date added ↓",
   "textExportCopy": "Copy",
   "textExportEmptyTemplate": "Template is empty",
-  "filtersClear": "Clear"
+  "filtersClear": "Clear",
+
+  "profiles": "Profiles",
+  "currentProfile": "Current: {name}",
+  "@currentProfile": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "switchProfile": "Switch Profile",
+  "addProfile": "Add Profile",
+  "createProfile": "Create Profile",
+  "editProfile": "Edit Profile",
+  "deleteProfile": "Delete Profile",
+  "deleteProfileConfirm": "Delete profile {name}? This will delete all collections, wishlist, and settings. This cannot be undone.",
+  "@deleteProfileConfirm": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "cannotDeleteLastProfile": "Cannot delete the last profile",
+  "profileName": "Name",
+  "profileColor": "Color",
+  "whoIsPlayingToday": "Who's playing today?",
+  "dontAskAgain": "Don't ask again",
+  "profileStats": "{collections} collections, {items} items",
+  "@profileStats": {
+    "placeholders": {
+      "collections": {"type": "int"},
+      "items": {"type": "int"}
+    }
+  },
+  "switchingProfile": "Switching profile…",
+  "appWillRestart": "The app will restart to apply changes.",
+  "profileCreated": "Profile created",
+  "profileDeleted": "Profile deleted"
 }

@@ -22,6 +22,7 @@ import 'package:xerabora/shared/models/tier_definition.dart';
 import 'package:xerabora/shared/models/tier_list.dart';
 import 'package:xerabora/shared/models/tier_list_entry.dart';
 import 'package:xerabora/core/api/steam_api.dart';
+import 'package:xerabora/shared/models/profile.dart';
 import 'package:xerabora/shared/models/ra_game_progress.dart';
 import 'package:xerabora/shared/models/ra_user_profile.dart';
 import 'package:xerabora/shared/models/wishlist_item.dart';
@@ -514,5 +515,48 @@ RaUserProfile createTestRaUserProfile({
     userPic: userPic,
     richPresenceMsg: richPresenceMsg,
     totalTruePoints: totalTruePoints,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Profile
+// ---------------------------------------------------------------------------
+
+Profile createTestProfile({
+  String id = 'test-profile',
+  String name = 'Test Player',
+  String color = '#EF7B44',
+  DateTime? createdAt,
+}) {
+  return Profile(
+    id: id,
+    name: name,
+    color: color,
+    createdAt: createdAt ?? testDate,
+  );
+}
+
+ProfilesData createTestProfilesData({
+  int version = 1,
+  String currentProfileId = 'test-profile',
+  List<Profile>? profiles,
+}) {
+  return ProfilesData(
+    version: version,
+    currentProfileId: currentProfileId,
+    profiles: profiles ??
+        <Profile>[
+          createTestProfile(),
+        ],
+  );
+}
+
+ProfileStats createTestProfileStats({
+  int collectionsCount = 3,
+  int itemsCount = 15,
+}) {
+  return ProfileStats(
+    collectionsCount: collectionsCount,
+    itemsCount: itemsCount,
   );
 }

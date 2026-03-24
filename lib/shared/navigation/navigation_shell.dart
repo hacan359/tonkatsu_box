@@ -13,6 +13,7 @@ import '../../features/search/screens/search_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
 import '../../features/tier_lists/screens/tier_list_detail_screen.dart';
 import '../../features/tier_lists/screens/tier_lists_screen.dart';
+import '../../features/settings/providers/profile_provider.dart';
 import '../../features/wishlist/providers/wishlist_provider.dart';
 import '../../features/wishlist/screens/wishlist_screen.dart';
 import '../gamepad/gamepad_action.dart';
@@ -201,7 +202,7 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
                 children: <Widget>[
                   // Логотип выше NavigationRail — всегда виден
                   Padding(
-                    padding: const EdgeInsets.only(top: 12, bottom: 8),
+                    padding: const EdgeInsets.only(top: 12, bottom: 4),
                     child: Image.asset(
                       AppAssets.logo,
                       width: 48,
@@ -262,8 +263,10 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
                     label: Text(S.of(context).navSearch),
                   ),
                   NavigationRailDestination(
-                    icon: const Icon(Icons.settings_outlined),
-                    selectedIcon: const Icon(Icons.settings),
+                    icon: Icon(Icons.settings_outlined,
+                        color: ref.watch(currentProfileProvider).colorValue),
+                    selectedIcon: Icon(Icons.settings,
+                        color: ref.watch(currentProfileProvider).colorValue),
                     label: Text(S.of(context).navSettings),
                   ),
                 ],
@@ -328,8 +331,10 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
           label: S.of(context).navSearch,
         ),
         BottomNavigationBarItem(
-          icon: const Icon(Icons.settings_outlined),
-          activeIcon: const Icon(Icons.settings),
+          icon: Icon(Icons.settings_outlined,
+              color: ref.watch(currentProfileProvider).colorValue),
+          activeIcon: Icon(Icons.settings,
+              color: ref.watch(currentProfileProvider).colorValue),
           label: S.of(context).navSettings,
         ),
       ],

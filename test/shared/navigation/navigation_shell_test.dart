@@ -15,8 +15,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/core/services/update_service.dart';
+import 'package:xerabora/features/settings/providers/profile_provider.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/features/wishlist/providers/wishlist_provider.dart';
+import 'package:xerabora/shared/models/profile.dart';
 import 'package:xerabora/shared/navigation/navigation_shell.dart';
 
 void main() {
@@ -86,6 +88,9 @@ void main() {
           activeWishlistCountProvider.overrideWithValue(0),
           updateCheckProvider.overrideWith(
             (Ref ref) async => null,
+          ),
+          profilesDataProvider.overrideWith(
+            (Ref ref) => ProfilesData.defaultData(),
           ),
         ],
         child: MaterialApp(
@@ -227,6 +232,10 @@ void main() {
                 find.byType(BottomNavigationBar));
         bar.onTap!(5);
         await tester.pump();
+        await tester.pump();
+
+        // Скроллим чтобы API Keys стал видимым (PROFILES section сдвигает контент)
+        await tester.drag(find.byType(ListView).last, const Offset(0, -100));
         await tester.pump();
 
         // Нажимаем на API Keys
