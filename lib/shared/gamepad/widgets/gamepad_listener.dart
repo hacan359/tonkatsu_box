@@ -43,6 +43,7 @@ class GamepadListener extends ConsumerStatefulWidget {
     this.onScroll,
     this.onPan,
     this.onZoom,
+    this.onContextMenu,
     this.onMenu,
     super.key,
   });
@@ -74,7 +75,10 @@ class GamepadListener extends ConsumerStatefulWidget {
   /// Triggers analog — зум.
   final void Function(GamepadAction action)? onZoom;
 
-  /// Start — контекстное меню.
+  /// Y — контекстное меню элемента (аналог ПКМ).
+  final VoidCallback? onContextMenu;
+
+  /// Start — системное меню.
   final VoidCallback? onMenu;
 
   @override
@@ -163,7 +167,9 @@ class _GamepadListenerState extends ConsumerState<GamepadListener> {
         return GamepadAction.confirm;
       case 'button-1': // B
         return GamepadAction.back;
-      // button-2 = X, button-3 = Y — не назначены
+      // button-2 = X — не назначена
+      case 'button-3': // Y — контекстное меню (аналог ПКМ)
+        return GamepadAction.contextMenu;
       case 'button-4': // LB (Left Bumper)
         return GamepadAction.previousTab;
       case 'button-5': // RB (Right Bumper)
@@ -246,6 +252,8 @@ class _GamepadListenerState extends ConsumerState<GamepadListener> {
       case GamepadAction.zoomIn:
       case GamepadAction.zoomOut:
         widget.onZoom?.call(action);
+      case GamepadAction.contextMenu:
+        widget.onContextMenu?.call();
       case GamepadAction.openMenu:
         widget.onMenu?.call();
     }

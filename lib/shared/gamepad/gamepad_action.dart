@@ -42,7 +42,10 @@ enum GamepadAction {
   zoomIn,
   zoomOut,
 
-  /// Start / Menu — контекстное меню.
+  /// Y — контекстное меню элемента (аналог ПКМ).
+  contextMenu,
+
+  /// Start / Menu — системное меню.
   openMenu,
 }
 

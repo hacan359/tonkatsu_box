@@ -323,6 +323,7 @@ class _WishlistTile extends StatelessWidget {
               : null,
         ),
         subtitle: _buildSubtitle(context),
+        onLongPress: onEdit,
         trailing: PopupMenuButton<String>(
           onSelected: (String value) {
             switch (value) {
