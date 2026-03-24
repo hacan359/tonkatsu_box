@@ -69,9 +69,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return CallbackShortcuts(
       bindings: _buildScreenShortcuts(ref),
-      child: Focus(
-        canRequestFocus: false,
-        child: Scaffold(
+      child: Scaffold(
       appBar: AutoBreadcrumbAppBar(
         actions: <Widget>[
           _SortPopupButton(
@@ -135,7 +133,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
       ),
     ),
-      ),
     );
   }
 

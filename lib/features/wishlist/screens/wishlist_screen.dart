@@ -54,9 +54,7 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
 
     return CallbackShortcuts(
       bindings: _buildScreenShortcuts(),
-      child: Focus(
-        canRequestFocus: false,
-        child: Scaffold(
+      child: Scaffold(
       appBar: AutoBreadcrumbAppBar(
         actions: <Widget>[
           IconButton(
@@ -132,7 +130,6 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
         child: const Icon(Icons.add),
       ),
     ),
-      ),
     );
   }
 

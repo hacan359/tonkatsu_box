@@ -343,9 +343,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       label: item.itemName,
       child: CallbackShortcuts(
         bindings: _buildScreenShortcuts(item),
-        child: Focus(
-          canRequestFocus: false,
-          child: Scaffold(
+        child: Scaffold(
         appBar: AutoBreadcrumbAppBar(
           actions: <Widget>[
             // Board toggle кнопка
@@ -460,7 +458,6 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
             ? _buildCanvasView()
             : _buildDetailView(item, config),
       ),
-        ),
       ),
     );
   }
