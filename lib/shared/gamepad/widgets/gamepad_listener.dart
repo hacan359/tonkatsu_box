@@ -23,14 +23,14 @@ import '../gamepad_provider.dart';
 ///
 /// Маппинг кнопок (кроссплатформенный, нормализованные ключи):
 /// - `button-0` (A) → confirm
-/// - `button-1` (B) → back
-/// - `button-4` (LB) → previousTab
-/// - `button-5` (RB) → nextTab
+/// - `button-1` (B) → back (аналог Esc)
+/// - `button-4` (LB) → previousTab (главные вкладки)
+/// - `button-5` (RB) → nextTab (главные вкладки)
 /// - `button-7` (Start) → openMenu
-/// - `dpad-*` → navigate
+/// - `dpad-*` → navigate (контент)
 /// - `stick-left-x`/`stick-left-y` (Left Stick) → scroll
 /// - `stick-right-x`/`stick-right-y` (Right Stick) → pan
-/// - `trigger` (Triggers) → sub-tab switch
+/// - `trigger` LT/RT → переключение фильтров/суб-табов верхней панели
 class GamepadListener extends ConsumerStatefulWidget {
   /// Создаёт [GamepadListener].
   const GamepadListener({
@@ -205,7 +205,7 @@ class _GamepadListenerState extends ConsumerState<GamepadListener> {
     }
   }
 
-  /// Маппинг триггеров в переключение суб-табов.
+  /// Маппинг триггеров в переключение фильтров/суб-табов верхней панели.
   ///
   /// Значение: отрицательное = LT, положительное = RT.
   /// Edge detection уже применён в сервисе — приходит одно событие за нажатие.

@@ -462,7 +462,7 @@ void main() {
         _event(key: 'button-4', value: 1.0, type: KeyType.button),
       );
 
-      expect(receivedAction, GamepadAction.previousTab);
+      expect(receivedAction, GamepadAction.previousTab); // LB не navigation → не блокируется
 
       textFieldFocus.dispose();
     });
