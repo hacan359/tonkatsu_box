@@ -6,6 +6,8 @@
 
 ## [Unreleased]
 
+## [0.23.0] - 2026-03-25
+
 ### Added
 - **Search source grouping** — `SearchSource` now declares `groupId`, `groupName`, `groupIcon` for visual grouping in the source picker popup. `SourceDropdown` displays grouped items with section headers (TMDB, IGDB, AniList, VNDB) and dividers. `groupedSearchSources` helper in `search_sources.dart` auto-groups sources by `groupId`. No new providers — `browseProvider` remains the single source of truth. Adding a new source only requires implementing `SearchSource` and appending to the registry (`search_source.dart`, `source_dropdown.dart`, `search_sources.dart`, all 6 source files)
 - **AniList Anime source (dormant)** — `Anime` model with `fromJson`/`fromDb`/`toDb`/`copyWith`, `AniListApi.browseAnime()`/`getAnimeById()`/`getAnimeByIds()` with GraphQL queries, `AniListAnimeSource` with genre and status filters. Source is not yet registered in `searchSources` — pending DB table, DAO, DetailsSheet, and browse_grid/search_screen integration (see `dev/unwork/anime_metadata.md`). 7 localization keys EN+RU (`anime.dart`, `anilist_api.dart`, `anilist_anime_source.dart`, `anilist_anime_genre_filter.dart`, `anilist_anime_status_filter.dart`)
