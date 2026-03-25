@@ -153,10 +153,11 @@ Use the Edit tool to make both changes.
 Create **user-facing release notes** in English from the CHANGELOG `[X.Y.Z]` section. These notes will be used as the annotated tag message and will appear on the GitHub Release page.
 
 **Rules:**
-- Language: English only
+- **Bilingual:** First the full English section, then a horizontal rule `---`, then the full Russian section (NOT inline per-line translation)
 - Strip all file names, class names, and technical details (no `steam_import_service.dart`, no `collectionStatsProvider`)
 - Rewrite each entry as a short, clear sentence a user would understand
 - Group into: `## What's New`, `## Improvements`, `## Bug Fixes` (skip empty groups)
+- Russian section uses: `## Что нового`, `## Улучшения`, `## Исправления`
 - Use bullet points, no bold prefixes
 - Keep it concise: 1 line per feature, max 2 sentences for complex features
 - Add a footer: `**Full Changelog**: https://github.com/hacan359/tonkatsu_box/compare/vPREV...vX.Y.Z`
@@ -166,13 +167,18 @@ Create **user-facing release notes** in English from the CHANGELOG `[X.Y.Z]` sec
 CHANGELOG (technical):
 ```
 ### Added
-- **Steam Library import** — new `SteamApi` client (`steam_api.dart`) fetches user's owned games via Steam Web API. `SteamImportService` orchestrates the full import pipeline: fetch library → filter DLC/soundtracks → match each game to IGDB → add to collection. Target collection selector...
+- **Steam Library import** — new `SteamApi` client (`steam_api.dart`) fetches user's owned games...
 ```
 
 Release notes (user-facing):
 ```
 ## What's New
-- Import your Steam game library — games are automatically matched to IGDB with playtime tracking. Choose to create a new collection or add to an existing one.
+- Import your Steam game library — games are automatically matched to IGDB with playtime tracking.
+
+---
+
+## Что нового
+- Импорт библиотеки Steam — игры автоматически привязываются к IGDB с отслеживанием времени.
 ```
 
 **Show the generated release notes to the user** and ask for confirmation before proceeding.
