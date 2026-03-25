@@ -19,6 +19,15 @@ class TmdbMoviesSource extends SearchSource {
   String get id => 'movies';
 
   @override
+  String get groupId => 'tmdb';
+
+  @override
+  String get groupName => 'TMDB';
+
+  @override
+  IconData get groupIcon => Icons.movie_outlined;
+
+  @override
   String label(S l) => l.mediaTypeMovie;
 
   @override

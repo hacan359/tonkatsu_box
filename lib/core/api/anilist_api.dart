@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
+import '../../shared/models/anime.dart';
 import '../../shared/models/manga.dart';
 
 /// Провайдер для AniList API клиента.
@@ -132,6 +133,87 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
           role
         }
       }
+    }
+  }
+}
+''';
+
+  /// GraphQL query для поиска/browse аниме.
+  static const String _animeSearchQuery = r'''
+query ($page: Int, $perPage: Int, $search: String, $genre: String,
+       $status: MediaStatus, $sort: [MediaSort]) {
+  Page(page: $page, perPage: $perPage) {
+    pageInfo {
+      total
+      currentPage
+      lastPage
+      hasNextPage
+    }
+    media(type: ANIME, search: $search, genre: $genre,
+          status: $status, sort: $sort) {
+      id
+      title { romaji english native }
+      coverImage { large medium }
+      description(asHtml: false)
+      genres
+      averageScore
+      meanScore
+      popularity
+      status
+      season
+      seasonYear
+      startDate { year month day }
+      episodes
+      format
+      studios(isMain: true) { nodes { name } }
+    }
+  }
+}
+''';
+
+  /// GraphQL query для получения аниме по ID.
+  static const String _animeGetByIdQuery = r'''
+query ($id: Int) {
+  Media(id: $id, type: ANIME) {
+    id
+    title { romaji english native }
+    coverImage { large medium }
+    description(asHtml: false)
+    genres
+    averageScore
+    meanScore
+    popularity
+    status
+    season
+    seasonYear
+    startDate { year month day }
+    episodes
+    format
+    studios(isMain: true) { nodes { name } }
+  }
+}
+''';
+
+  /// GraphQL query для получения нескольких аниме по ID.
+  static const String _animeGetByIdsQuery = r'''
+query ($page: Int, $perPage: Int, $ids: [Int]) {
+  Page(page: $page, perPage: $perPage) {
+    media(type: ANIME, id_in: $ids) {
+      id
+      title { romaji english native }
+      coverImage { large medium }
+      description(asHtml: false)
+      genres
+      averageScore
+      meanScore
+      popularity
+      status
+      season
+      seasonYear
+      startDate { year month day }
+      episodes
+      format
+      studios(isMain: true) { nodes { name } }
     }
   }
 }
@@ -310,6 +392,199 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
     } on DioException catch (e) {
       throw _handleDioException(e, 'Failed to fetch manga by IDs');
     }
+  }
+
+  /// Просматривает аниме с фильтрами.
+  ///
+  /// [genre] — жанр (например "Action").
+  /// [status] — статус: RELEASING, FINISHED, NOT_YET_RELEASED, CANCELLED.
+  /// [sort] — сортировка: SCORE_DESC, POPULARITY_DESC, TRENDING_DESC и др.
+  ///
+  /// Возвращает кортеж (список, есть ли ещё, кол-во страниц).
+  /// Throws [AniListApiException] при ошибке.
+  Future<(List<Anime>, bool hasMore, int totalPages)> browseAnime({
+    String? query,
+    String? genre,
+    String? status,
+    String sort = 'POPULARITY_DESC',
+    int page = 1,
+    int perPage = 20,
+  }) async {
+    try {
+      final Map<String, dynamic> variables = <String, dynamic>{
+        'page': page,
+        'perPage': perPage,
+        'sort': <String>[sort],
+      };
+
+      if (query != null && query.trim().isNotEmpty) {
+        variables['search'] = query;
+      }
+      if (genre != null) {
+        variables['genre'] = genre;
+      }
+      if (status != null) {
+        variables['status'] = status;
+      }
+
+      final Response<dynamic> response = await _dio.post<dynamic>(
+        _baseUrl,
+        data: <String, dynamic>{
+          'query': _animeSearchQuery,
+          'variables': variables,
+        },
+      );
+
+      return _parseAnimePageResponse(response);
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'Failed to search anime');
+    }
+  }
+
+  /// Получает аниме по AniList ID.
+  ///
+  /// Возвращает аниме или null, если не найдено.
+  /// Throws [AniListApiException] при ошибке.
+  Future<Anime?> getAnimeById(int id) async {
+    try {
+      final Response<dynamic> response = await _dio.post<dynamic>(
+        _baseUrl,
+        data: <String, dynamic>{
+          'query': _animeGetByIdQuery,
+          'variables': <String, dynamic>{'id': id},
+        },
+      );
+
+      if (response.statusCode != 200 || response.data == null) {
+        throw AniListApiException(
+          'Failed to fetch anime',
+          statusCode: response.statusCode,
+        );
+      }
+
+      final Map<String, dynamic> data =
+          response.data as Map<String, dynamic>;
+      final Map<String, dynamic>? dataField =
+          data['data'] as Map<String, dynamic>?;
+      if (dataField == null) {
+        _checkErrors(data);
+        return null;
+      }
+
+      final Map<String, dynamic>? media =
+          dataField['Media'] as Map<String, dynamic>?;
+      if (media == null) return null;
+
+      return Anime.fromJson(media);
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'Failed to fetch anime');
+    }
+  }
+
+  /// Получает несколько аниме по списку ID.
+  ///
+  /// Throws [AniListApiException] при ошибке.
+  Future<List<Anime>> getAnimeByIds(List<int> ids) async {
+    if (ids.isEmpty) return <Anime>[];
+
+    final List<Anime> allAnime = <Anime>[];
+
+    for (int i = 0; i < ids.length; i += _maxPerPage) {
+      final List<int> batch = ids.sublist(
+        i,
+        i + _maxPerPage > ids.length ? ids.length : i + _maxPerPage,
+      );
+      final List<Anime> batchResult = await _fetchAnimeBatch(batch);
+      allAnime.addAll(batchResult);
+    }
+
+    return allAnime;
+  }
+
+  Future<List<Anime>> _fetchAnimeBatch(List<int> ids) async {
+    try {
+      final Response<dynamic> response = await _dio.post<dynamic>(
+        _baseUrl,
+        data: <String, dynamic>{
+          'query': _animeGetByIdsQuery,
+          'variables': <String, dynamic>{
+            'page': 1,
+            'perPage': ids.length,
+            'ids': ids,
+          },
+        },
+      );
+
+      if (response.statusCode != 200 || response.data == null) {
+        throw AniListApiException(
+          'Failed to fetch anime by IDs',
+          statusCode: response.statusCode,
+        );
+      }
+
+      final Map<String, dynamic> data =
+          response.data as Map<String, dynamic>;
+      final Map<String, dynamic>? dataField =
+          data['data'] as Map<String, dynamic>?;
+      if (dataField == null) {
+        _checkErrors(data);
+        return <Anime>[];
+      }
+
+      final Map<String, dynamic>? pageData =
+          dataField['Page'] as Map<String, dynamic>?;
+      if (pageData == null) return <Anime>[];
+
+      final List<dynamic> mediaList =
+          pageData['media'] as List<dynamic>? ?? <dynamic>[];
+
+      return mediaList
+          .map((dynamic item) =>
+              Anime.fromJson(item as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'Failed to fetch anime by IDs');
+    }
+  }
+
+  /// Парсит Page response из AniList GraphQL (аниме).
+  (List<Anime>, bool hasMore, int totalPages) _parseAnimePageResponse(
+    Response<dynamic> response,
+  ) {
+    if (response.statusCode != 200 || response.data == null) {
+      throw AniListApiException(
+        'Unexpected response',
+        statusCode: response.statusCode,
+      );
+    }
+
+    final Map<String, dynamic> data =
+        response.data as Map<String, dynamic>;
+    final Map<String, dynamic>? dataField =
+        data['data'] as Map<String, dynamic>?;
+    if (dataField == null) {
+      _checkErrors(data);
+      return (<Anime>[], false, 0);
+    }
+
+    final Map<String, dynamic>? pageData =
+        dataField['Page'] as Map<String, dynamic>?;
+    if (pageData == null) return (<Anime>[], false, 0);
+
+    final Map<String, dynamic>? pageInfo =
+        pageData['pageInfo'] as Map<String, dynamic>?;
+    final bool hasMore = pageInfo?['hasNextPage'] as bool? ?? false;
+    final int lastPage = pageInfo?['lastPage'] as int? ?? 1;
+
+    final List<dynamic> mediaList =
+        pageData['media'] as List<dynamic>? ?? <dynamic>[];
+
+    final List<Anime> animes = mediaList
+        .map((dynamic item) =>
+            Anime.fromJson(item as Map<String, dynamic>))
+        .toList();
+
+    return (animes, hasMore, lastPage);
   }
 
   /// Парсит Page response из AniList GraphQL.

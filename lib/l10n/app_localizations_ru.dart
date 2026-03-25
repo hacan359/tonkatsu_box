@@ -1272,6 +1272,9 @@ class SRu extends S {
   String get searchSourceManga => 'Манга';
 
   @override
+  String get searchSourceAnime => 'Аниме';
+
+  @override
   String get searchHintManga => 'Поиск манги...';
 
   @override
@@ -2163,6 +2166,9 @@ class SRu extends S {
   String get browseSortMostVoted => 'По голосам';
 
   @override
+  String get browseSortTrending => 'В тренде';
+
+  @override
   String get browseAnimeTypeSeries => 'Сериалы';
 
   @override
@@ -2183,6 +2189,21 @@ class SRu extends S {
   @override
   String get browseSortDisabledHint =>
       'Сортировка недоступна при текстовом поиске';
+
+  @override
+  String get animeFilterStatus => 'Статус';
+
+  @override
+  String get animeStatusAiring => 'Выходит';
+
+  @override
+  String get animeStatusFinished => 'Завершено';
+
+  @override
+  String get animeStatusNotYetAired => 'Ещё не вышло';
+
+  @override
+  String get animeStatusCancelled => 'Отменено';
 
   @override
   String get typeToFilterHint => 'Фильтр...';

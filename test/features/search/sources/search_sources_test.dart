@@ -30,12 +30,12 @@ void main() {
       expect(searchSources[3], isA<IgdbGamesSource>());
     });
 
-    test('fifth source is VndbSource', () {
-      expect(searchSources[4], isA<VndbSource>());
+    test('fifth source is AniListMangaSource', () {
+      expect(searchSources[4], isA<AniListMangaSource>());
     });
 
-    test('sixth source is AniListMangaSource', () {
-      expect(searchSources[5], isA<AniListMangaSource>());
+    test('sixth source is VndbSource', () {
+      expect(searchSources[5], isA<VndbSource>());
     });
 
     test('all sources have unique ids', () {
@@ -47,8 +47,14 @@ void main() {
     test('source ids match expected values', () {
       final List<String> ids =
           searchSources.map((SearchSource s) => s.id).toList();
-      expect(ids,
-          <String>['movies', 'tv', 'anime', 'games', 'visual_novels', 'manga']);
+      expect(ids, <String>[
+        'movies',
+        'tv',
+        'anime',
+        'games',
+        'manga',
+        'visual_novels',
+      ]);
     });
   });
 
@@ -71,6 +77,11 @@ void main() {
     test('returns correct source for "games"', () {
       final SearchSource source = getSearchSourceById('games');
       expect(source, isA<IgdbGamesSource>());
+    });
+
+    test('returns correct source for "manga"', () {
+      final SearchSource source = getSearchSourceById('manga');
+      expect(source, isA<AniListMangaSource>());
     });
 
     test('returns correct source for "visual_novels"', () {

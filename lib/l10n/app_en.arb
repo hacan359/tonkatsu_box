@@ -579,6 +579,7 @@
   "searchHintVisualNovels": "Search visual novels...",
   "searchSourceVisualNovels": "Visual Novels",
   "searchSourceManga": "Manga",
+  "searchSourceAnime": "Anime",
   "searchHintManga": "Search manga...",
   "searchSelectPlatform": "Select Platform",
   "searchAddToCollection": "Add to Collection",
@@ -984,6 +985,7 @@
   "browseSortTopRated": "Top Rated",
   "browseSortNewest": "Newest",
   "browseSortMostVoted": "Most Voted",
+  "browseSortTrending": "Trending",
   "browseAnimeTypeSeries": "Series",
   "browseAnimeTypeMovies": "Movies",
   "browseEmptyFilters": "Choose a filter or search",
@@ -991,6 +993,12 @@
   "browseSearchHint": "Search...",
   "browseBackToBrowse": "Back to browse",
   "browseSortDisabledHint": "Sorting unavailable during text search",
+
+  "animeFilterStatus": "Status",
+  "animeStatusAiring": "Airing",
+  "animeStatusFinished": "Finished",
+  "animeStatusNotYetAired": "Not Yet Aired",
+  "animeStatusCancelled": "Cancelled",
 
   "typeToFilterHint": "Filter...",
 

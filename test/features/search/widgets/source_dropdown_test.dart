@@ -26,7 +26,8 @@ void main() {
   }
 
   group('SourceDropdown', () {
-    testWidgets('renders current source icon', (WidgetTester tester) async {
+    testWidgets('renders current source group icon',
+        (WidgetTester tester) async {
       await tester.pumpWidget(buildWidget());
       await tester.pumpAndSettle();
 
@@ -40,19 +41,7 @@ void main() {
       expect(find.byIcon(Icons.keyboard_arrow_down), findsOneWidget);
     });
 
-    testWidgets('opens popup menu on tap', (WidgetTester tester) async {
-      await tester.pumpWidget(buildWidget());
-      await tester.pumpAndSettle();
-
-      // Tap the dropdown
-      await tester.tap(find.byType(SourceDropdown));
-      await tester.pumpAndSettle();
-
-      // Should show all source options
-      expect(find.byType(PopupMenuItem<String>), findsNWidgets(6));
-    });
-
-    testWidgets('shows all registered sources in popup',
+    testWidgets('opens popup with grouped items on tap',
         (WidgetTester tester) async {
       await tester.pumpWidget(buildWidget());
       await tester.pumpAndSettle();
@@ -60,10 +49,45 @@ void main() {
       await tester.tap(find.byType(SourceDropdown));
       await tester.pumpAndSettle();
 
-      // Each source should have its icon
-      for (final SearchSource source in searchSources) {
-        expect(find.byIcon(source.icon), findsAtLeast(1));
+      // Should show one PopupMenuItem per source (selectable)
+      // + one per group header (disabled) + dividers
+      final int sourceCount = searchSources.length;
+      final int groupCount = groupedSearchSources.length;
+
+      // Total PopupMenuItem = sources (with value) + group headers (disabled)
+      expect(
+        find.byType(PopupMenuItem<String>),
+        findsNWidgets(sourceCount + groupCount),
+      );
+    });
+
+    testWidgets('shows group headers as disabled items',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(buildWidget());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(SourceDropdown));
+      await tester.pumpAndSettle();
+
+      // Group headers should be present as text
+      for (final SourceGroupEntry group in groupedSearchSources) {
+        expect(find.text(group.groupName), findsAtLeast(1));
       }
+    });
+
+    testWidgets('shows dividers between groups',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(buildWidget());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(SourceDropdown));
+      await tester.pumpAndSettle();
+
+      // Dividers = groups - 1
+      expect(
+        find.byType(PopupMenuDivider),
+        findsNWidgets(groupedSearchSources.length - 1),
+      );
     });
 
     testWidgets('calls onChanged when different source selected',
@@ -78,11 +102,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Open popup
       await tester.tap(find.byType(SourceDropdown));
       await tester.pumpAndSettle();
 
-      // Select TV source (tap on tv icon in popup)
+      // Select TV source
       final Finder tvMenuItem = find.byWidgetPredicate(
         (Widget w) =>
             w is PopupMenuItem<String> && w.value == 'tv',
@@ -106,11 +129,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Open popup
       await tester.tap(find.byType(SourceDropdown));
       await tester.pumpAndSettle();
 
-      // Select same source (movies)
       final Finder moviesMenuItem = find.byWidgetPredicate(
         (Widget w) =>
             w is PopupMenuItem<String> && w.value == 'movies',

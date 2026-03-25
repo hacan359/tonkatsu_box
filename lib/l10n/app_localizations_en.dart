@@ -1259,6 +1259,9 @@ class SEn extends S {
   String get searchSourceManga => 'Manga';
 
   @override
+  String get searchSourceAnime => 'Anime';
+
+  @override
   String get searchHintManga => 'Search manga...';
 
   @override
@@ -2142,6 +2145,9 @@ class SEn extends S {
   String get browseSortMostVoted => 'Most Voted';
 
   @override
+  String get browseSortTrending => 'Trending';
+
+  @override
   String get browseAnimeTypeSeries => 'Series';
 
   @override
@@ -2161,6 +2167,21 @@ class SEn extends S {
 
   @override
   String get browseSortDisabledHint => 'Sorting unavailable during text search';
+
+  @override
+  String get animeFilterStatus => 'Status';
+
+  @override
+  String get animeStatusAiring => 'Airing';
+
+  @override
+  String get animeStatusFinished => 'Finished';
+
+  @override
+  String get animeStatusNotYetAired => 'Not Yet Aired';
+
+  @override
+  String get animeStatusCancelled => 'Cancelled';
 
   @override
   String get typeToFilterHint => 'Filter...';

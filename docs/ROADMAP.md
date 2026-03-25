@@ -103,6 +103,8 @@
 - [x] AniList Manga Integration — Manga as 6th media type via AniList GraphQL API (public, no auth, 90 req/min). Manga model, AniListApi client (searchManga, browseManga, getMangaById, getMangaByIds with batch pagination), AnilistMangaSource (genre + format filters, 3 sort modes), MangaDetailsSheet, DB migration v25 (manga_cache table), MangaDao, export/import support, AniList attribution in Credits. Full canvas, collection, and All Items support
 - [x] Keyboard shortcuts — global (Ctrl+1..6 tabs, Ctrl+Tab cycle, Escape/Alt+Left back, Ctrl+F search, F5 refresh, F1 help) and per-screen shortcuts (Ctrl+N create, Delete/F2 on focused items, Ctrl+E export, Alt+0..5 rating). F1 contextual help dialog, tooltip hints, focus tracking on cards. Desktop-only, mobile-safe
 - [x] Cross-platform gamepad — Windows + Linux + Android handheld support. GamepadMapping abstraction, normalized keys, LB/RB tabs, LT/RT filters, D-pad content nav, Y = context menu. FocusTraversalGroup, auto-focus on tab switch
+- [x] Search source grouping — `SearchSource.groupId`/`groupName`/`groupIcon` for visual grouping in SourceDropdown. Grouped popup with section headers and dividers. `groupedSearchSources` helper auto-groups from registry order
+- [ ] AniList Anime Integration — Anime model + API methods ready (browseAnime, getAnimeById, getAnimeByIds), AniListAnimeSource + filters ready but dormant. Pending: anime_cache DB table, AnimeDao, AnimeDetailsSheet, browse_grid/search_screen integration
 
 ---
 
