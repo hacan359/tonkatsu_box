@@ -36,6 +36,9 @@ class SRu extends S {
   String get statusWatching => 'Смотрю';
 
   @override
+  String get statusInProgress => 'В процессе';
+
+  @override
   String get statusCompleted => 'Завершено';
 
   @override
@@ -43,6 +46,9 @@ class SRu extends S {
 
   @override
   String get statusPlanned => 'Запланировано';
+
+  @override
+  String get homeFilterAll => 'Все';
 
   @override
   String get mediaTypeGame => 'Игра';
