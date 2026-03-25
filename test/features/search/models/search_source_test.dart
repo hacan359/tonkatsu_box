@@ -250,6 +250,15 @@ class _TestSource extends SearchSource {
   String get id => 'test_source';
 
   @override
+  String get groupId => 'test';
+
+  @override
+  String get groupName => 'Test';
+
+  @override
+  IconData get groupIcon => Icons.star;
+
+  @override
   String label(dynamic l) => 'Test Source';
 
   @override

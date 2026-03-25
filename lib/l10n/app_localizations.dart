@@ -2359,6 +2359,12 @@ abstract class S {
   /// **'Manga'**
   String get searchSourceManga;
 
+  /// No description provided for @searchSourceAnime.
+  ///
+  /// In en, this message translates to:
+  /// **'Anime'**
+  String get searchSourceAnime;
+
   /// No description provided for @searchHintManga.
   ///
   /// In en, this message translates to:
@@ -3949,6 +3955,12 @@ abstract class S {
   /// **'Most Voted'**
   String get browseSortMostVoted;
 
+  /// No description provided for @browseSortTrending.
+  ///
+  /// In en, this message translates to:
+  /// **'Trending'**
+  String get browseSortTrending;
+
   /// No description provided for @browseAnimeTypeSeries.
   ///
   /// In en, this message translates to:
@@ -3990,6 +4002,36 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Sorting unavailable during text search'**
   String get browseSortDisabledHint;
+
+  /// No description provided for @animeFilterStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get animeFilterStatus;
+
+  /// No description provided for @animeStatusAiring.
+  ///
+  /// In en, this message translates to:
+  /// **'Airing'**
+  String get animeStatusAiring;
+
+  /// No description provided for @animeStatusFinished.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished'**
+  String get animeStatusFinished;
+
+  /// No description provided for @animeStatusNotYetAired.
+  ///
+  /// In en, this message translates to:
+  /// **'Not Yet Aired'**
+  String get animeStatusNotYetAired;
+
+  /// No description provided for @animeStatusCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get animeStatusCancelled;
 
   /// No description provided for @typeToFilterHint.
   ///

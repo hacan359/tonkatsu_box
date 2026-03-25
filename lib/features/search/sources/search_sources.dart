@@ -1,25 +1,34 @@
 // Реестр источников поиска.
 
+import 'package:flutter/widgets.dart';
+
 import '../models/search_source.dart';
+import 'anilist_manga_source.dart';
 import 'igdb_games_source.dart';
 import 'tmdb_anime_source.dart';
 import 'tmdb_movies_source.dart';
 import 'tmdb_tv_source.dart';
-import 'anilist_manga_source.dart';
 import 'vndb_source.dart';
 
 /// Все зарегистрированные источники поиска.
 ///
-/// Порядок = порядок в дропдауне.
-/// Добавление нового источника — добавить в этот список.
+/// Порядок = порядок в popup. Источники одной группы идут подряд.
+/// Добавление нового источника — добавить в этот список рядом с группой.
 final List<SearchSource> searchSources = List<SearchSource>.unmodifiable(
   <SearchSource>[
+    // TMDB
     TmdbMoviesSource(),
     TmdbTvSource(),
     TmdbAnimeSource(),
+    // IGDB
     IgdbGamesSource(),
-    VndbSource(),
+    // AniList
+    // TODO: AniListAnimeSource() — раскомментировать после добавления
+    // таблицы anime_cache, AnimeDao, DetailsSheet, browse_grid, search_screen.
+    // См. dev/unwork/anime_metadata.md
     AniListMangaSource(),
+    // VNDB
+    VndbSource(),
   ],
 );
 
@@ -30,3 +39,35 @@ SearchSource getSearchSourceById(String id) {
     orElse: () => searchSources.first,
   );
 }
+
+/// Одна группа источников для отображения в popup.
+typedef SourceGroupEntry = ({
+  String groupId,
+  String groupName,
+  IconData groupIcon,
+  List<SearchSource> sources,
+});
+
+/// Группирует источники по [SearchSource.groupId], сохраняя порядок.
+///
+/// Используется в [SourceDropdown] для построения popup с секциями.
+final List<SourceGroupEntry> groupedSearchSources = () {
+  final List<SourceGroupEntry> groups = <SourceGroupEntry>[];
+  String? currentGroupId;
+
+  for (final SearchSource source in searchSources) {
+    if (source.groupId != currentGroupId) {
+      currentGroupId = source.groupId;
+      groups.add((
+        groupId: source.groupId,
+        groupName: source.groupName,
+        groupIcon: source.groupIcon,
+        sources: <SearchSource>[source],
+      ));
+    } else {
+      groups.last.sources.add(source);
+    }
+  }
+
+  return List<SourceGroupEntry>.unmodifiable(groups);
+}();

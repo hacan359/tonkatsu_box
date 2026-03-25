@@ -18,6 +18,15 @@ class IgdbGamesSource extends SearchSource {
   String get id => 'games';
 
   @override
+  String get groupId => 'igdb';
+
+  @override
+  String get groupName => 'IGDB';
+
+  @override
+  IconData get groupIcon => Icons.videogame_asset_outlined;
+
+  @override
   String label(S l) => l.mediaTypeGame;
 
   @override

@@ -19,6 +19,15 @@ class VndbSource extends SearchSource {
   String get id => 'visual_novels';
 
   @override
+  String get groupId => 'vndb';
+
+  @override
+  String get groupName => 'VNDB';
+
+  @override
+  IconData get groupIcon => Icons.menu_book_outlined;
+
+  @override
   String label(S l) => l.searchSourceVisualNovels;
 
   @override

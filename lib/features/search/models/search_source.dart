@@ -61,10 +61,11 @@ class BrowseSortOption {
 
   /// Локализованное название сортировки.
   String label(S l) => switch (id) {
-        'popular' => l.browseSortPopular,
-        'top_rated' || 'rating' => l.browseSortTopRated,
+        'popular' || 'popularity' => l.browseSortPopular,
+        'top_rated' || 'rating' || 'score' => l.browseSortTopRated,
         'newest' => l.browseSortNewest,
         'most_voted' => l.browseSortMostVoted,
+        'trending' => l.browseSortTrending,
         _ => id,
       };
 
@@ -150,6 +151,18 @@ class BrowseResult {
 abstract class SearchSource {
   /// Уникальный идентификатор.
   String get id;
+
+  /// ID группы источников ('tmdb', 'igdb', 'anilist', 'vndb').
+  ///
+  /// Используется для визуальной группировки в popup выбора источника.
+  /// Источники с одинаковым [groupId] отображаются в одной секции.
+  String get groupId;
+
+  /// Название группы для отображения ('TMDB', 'IGDB', 'AniList', 'VNDB').
+  String get groupName;
+
+  /// Иконка группы для заголовка секции в popup.
+  IconData get groupIcon;
 
   /// Отображаемое имя (локализованное).
   String label(S l);

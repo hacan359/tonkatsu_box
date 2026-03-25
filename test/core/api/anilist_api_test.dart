@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:xerabora/core/api/anilist_api.dart';
+import 'package:xerabora/shared/models/anime.dart';
 import 'package:xerabora/shared/models/manga.dart';
 
 import '../../helpers/test_helpers.dart';
@@ -462,6 +463,257 @@ void main() {
         final List<Manga> results =
             await api.getMangaByIds(<int>[1]);
 
+        expect(results, isEmpty);
+      });
+    });
+
+    // === Anime methods ===
+
+    Map<String, dynamic> animeJson({
+      int id = 1,
+      String title = 'Cowboy Bebop',
+    }) {
+      return <String, dynamic>{
+        'id': id,
+        'title': <String, dynamic>{
+          'romaji': title,
+          'english': title,
+        },
+        'averageScore': 86,
+        'status': 'FINISHED',
+        'episodes': 26,
+        'format': 'TV',
+        'season': 'SPRING',
+        'seasonYear': 1998,
+      };
+    }
+
+    Map<String, dynamic> animePageResponse({
+      List<Map<String, dynamic>>? media,
+      bool hasNextPage = false,
+      int lastPage = 1,
+    }) {
+      return <String, dynamic>{
+        'data': <String, dynamic>{
+          'Page': <String, dynamic>{
+            'pageInfo': <String, dynamic>{
+              'total': 1,
+              'currentPage': 1,
+              'lastPage': lastPage,
+              'hasNextPage': hasNextPage,
+            },
+            'media': media ?? <Map<String, dynamic>>[animeJson()],
+          },
+        },
+      };
+    }
+
+    group('browseAnime', () {
+      test('должен вернуть результаты', () async {
+        when(() => mockDio.post<dynamic>(
+              any(),
+              data: any(named: 'data'),
+            )).thenAnswer(
+          (_) async => makeResponse(
+            animePageResponse(hasNextPage: true, lastPage: 5),
+          ),
+        );
+
+        final (List<Anime> results, bool hasMore, int totalPages) =
+            await api.browseAnime();
+
+        expect(results, hasLength(1));
+        expect(results.first.id, 1);
+        expect(results.first.title, 'Cowboy Bebop');
+        expect(hasMore, isTrue);
+        expect(totalPages, 5);
+      });
+
+      test('должен передать query в переменные', () async {
+        Map<String, dynamic>? capturedData;
+        when(() => mockDio.post<dynamic>(
+              any(),
+              data: any(named: 'data'),
+            )).thenAnswer((Invocation inv) async {
+          capturedData = inv.namedArguments[const Symbol('data')]
+              as Map<String, dynamic>?;
+          return makeResponse(
+            animePageResponse(media: <Map<String, dynamic>>[]),
+          );
+        });
+
+        await api.browseAnime(query: 'bebop');
+
+        final Map<String, dynamic> variables =
+            capturedData!['variables'] as Map<String, dynamic>;
+        expect(variables['search'], 'bebop');
+      });
+
+      test('должен передать genre и status в переменные', () async {
+        Map<String, dynamic>? capturedData;
+        when(() => mockDio.post<dynamic>(
+              any(),
+              data: any(named: 'data'),
+            )).thenAnswer((Invocation inv) async {
+          capturedData = inv.namedArguments[const Symbol('data')]
+              as Map<String, dynamic>?;
+          return makeResponse(
+            animePageResponse(media: <Map<String, dynamic>>[]),
+          );
+        });
+
+        await api.browseAnime(genre: 'Action', status: 'RELEASING');
+
+        final Map<String, dynamic> variables =
+            capturedData!['variables'] as Map<String, dynamic>;
+        expect(variables['genre'], 'Action');
+        expect(variables['status'], 'RELEASING');
+      });
+
+      test('должен выбросить AniListApiException при DioException', () async {
+        when(() => mockDio.post<dynamic>(
+              any(),
+              data: any(named: 'data'),
+            )).thenThrow(DioException(
+          type: DioExceptionType.connectionTimeout,
+          requestOptions: RequestOptions(path: ''),
+        ));
+
+        expect(
+          () => api.browseAnime(),
+          throwsA(isA<AniListApiException>()),
+        );
+      });
+
+      test('должен обработать null data в ответе', () async {
+        when(() => mockDio.post<dynamic>(
+              any(),
+              data: any(named: 'data'),
+            )).thenAnswer(
+          (_) async => makeResponse(<String, dynamic>{
+            'data': <String, dynamic>{},
+          }),
+        );
+
+        final (List<Anime> results, bool hasMore, int totalPages) =
+            await api.browseAnime();
+
+        expect(results, isEmpty);
+        expect(hasMore, isFalse);
+        expect(totalPages, 0);
+      });
+    });
+
+    group('getAnimeById', () {
+      test('должен вернуть аниме по ID', () async {
+        when(() => mockDio.post<dynamic>(
+              any(),
+              data: any(named: 'data'),
+            )).thenAnswer(
+          (_) async => makeResponse(<String, dynamic>{
+            'data': <String, dynamic>{
+              'Media': animeJson(id: 1),
+            },
+          }),
+        );
+
+        final Anime? anime = await api.getAnimeById(1);
+
+        expect(anime, isNotNull);
+        expect(anime!.id, 1);
+      });
+
+      test('должен вернуть null для null Media', () async {
+        when(() => mockDio.post<dynamic>(
+              any(),
+              data: any(named: 'data'),
+            )).thenAnswer(
+          (_) async => makeResponse(<String, dynamic>{
+            'data': <String, dynamic>{
+              'Media': null,
+            },
+          }),
+        );
+
+        final Anime? anime = await api.getAnimeById(999999);
+        expect(anime, isNull);
+      });
+
+      test('должен обработать ошибку ответа', () async {
+        when(() => mockDio.post<dynamic>(
+              any(),
+              data: any(named: 'data'),
+            )).thenAnswer(
+          (_) async => makeResponse(
+            <String, dynamic>{},
+            statusCode: 404,
+          ),
+        );
+
+        expect(
+          () => api.getAnimeById(1),
+          throwsA(isA<AniListApiException>()),
+        );
+      });
+    });
+
+    group('getAnimeByIds', () {
+      test('должен вернуть пустой список для пустого массива', () async {
+        final List<Anime> results = await api.getAnimeByIds(<int>[]);
+        expect(results, isEmpty);
+      });
+
+      test('должен загрузить несколько аниме', () async {
+        when(() => mockDio.post<dynamic>(
+              any(),
+              data: any(named: 'data'),
+            )).thenAnswer(
+          (_) async => makeResponse(<String, dynamic>{
+            'data': <String, dynamic>{
+              'Page': <String, dynamic>{
+                'media': <dynamic>[
+                  animeJson(id: 1, title: 'Bebop'),
+                  animeJson(id: 2, title: 'Eva'),
+                ],
+              },
+            },
+          }),
+        );
+
+        final List<Anime> results =
+            await api.getAnimeByIds(<int>[1, 2]);
+        expect(results, hasLength(2));
+      });
+
+      test('должен обработать DioException', () async {
+        when(() => mockDio.post<dynamic>(
+              any(),
+              data: any(named: 'data'),
+            )).thenThrow(DioException(
+          type: DioExceptionType.connectionError,
+          requestOptions: RequestOptions(path: ''),
+        ));
+
+        try {
+          await api.getAnimeByIds(<int>[1]);
+          fail('Should throw');
+        } on AniListApiException catch (e) {
+          expect(e.message, contains('internet'));
+        }
+      });
+
+      test('должен обработать null Page в ответе', () async {
+        when(() => mockDio.post<dynamic>(
+              any(),
+              data: any(named: 'data'),
+            )).thenAnswer(
+          (_) async => makeResponse(<String, dynamic>{
+            'data': <String, dynamic>{},
+          }),
+        );
+
+        final List<Anime> results =
+            await api.getAnimeByIds(<int>[1]);
         expect(results, isEmpty);
       });
     });

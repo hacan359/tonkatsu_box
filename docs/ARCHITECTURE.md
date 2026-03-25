@@ -107,7 +107,7 @@ lib/
 | `lib/core/api/igdb_api.dart` | **IGDB API клиент**. OAuth через Twitch, поиск игр, загрузка платформ, browse с фильтрами, жанры. Auto-refresh: `_igdbPost()` wrapper перехватывает HTTP 401, обновляет OAuth токен через `getAccessToken(clientId, clientSecret)`, повторяет запрос. `onTokenRefreshed` callback для сохранения токена. Методы: `getAccessToken()`, `searchGames()`, `fetchPlatforms()`, `browseGames()`, `getGenres()`, `getTopGamesByPlatform()` |
 | `lib/core/api/steamgriddb_api.dart` | **SteamGridDB API клиент**. Bearer token авторизация. Методы: `searchGames()`, `getGrids()`, `getHeroes()`, `getLogos()`, `getIcons()`, `validateApiKey()` |
 | `lib/core/api/vndb_api.dart` | **VNDB API клиент**. Публичный API без авторизации (~200 req/min). Методы: `searchVn()`, `browseVn()`, `getVnById()`, `getVnByIds()`, `fetchTags()`. Провайдер: `vndbApiProvider` |
-| `lib/core/api/anilist_api.dart` | **AniList API клиент**. Публичный GraphQL API без авторизации (90 req/min). Методы: `searchManga()`, `browseManga()` (query/genre/format/sort), `getMangaById()`, `getMangaByIds()` (batch по 50). `AniListApiException` с statusCode. Провайдер: `aniListApiProvider` |
+| `lib/core/api/anilist_api.dart` | **AniList API клиент**. Публичный GraphQL API без авторизации (90 req/min). Manga: `searchManga()`, `browseManga()` (query/genre/format/sort), `getMangaById()`, `getMangaByIds()` (batch по 50). Anime: `browseAnime()` (query/genre/status/sort), `getAnimeById()`, `getAnimeByIds()`. `AniListApiException` с statusCode. Провайдер: `aniListApiProvider` |
 | `lib/core/api/steam_api.dart` | **Steam Web API клиент**. Получение библиотеки пользователя. DTO: `SteamOwnedGame` (appId, name, playtimeMinutes, lastPlayed, playtimeHours, shouldSkip — фильтр DLC/саундтреков/демо). `SteamApiException` с statusCode. Провайдер: `steamApiProvider` |
 | `lib/core/api/ra_api.dart` | **RetroAchievements API клиент**. Публичный Web API, аутентификация через username + API key в query-параметрах. Методы: `validateCredentials()`, `getUserProfile()`, `getCompletedGames()` (paginated, 500/page, rate-limited 1 req/sec), `getUserAwardDates()` (beaten/mastered dates). `RaApiException` с statusCode. Провайдер: `raApiProvider` |
 | `lib/core/api/tmdb_api.dart` | **TMDB API клиент**. Bearer token авторизация. Методы: `searchMovies(query, {year})`, `searchTvShows(query, {firstAirDateYear})`, `multiSearch()`, `getMovieDetails()`, `getTvShowDetails()`, `getPopularMovies()`, `getPopularTvShows()`, `getMovieGenres()`, `getTvGenres()`, `getSeasonEpisodes(tmdbShowId, seasonNumber)`, `setLanguage(language)`, `getMovieRecommendations()`, `getTvShowRecommendations()`, `getMovieReviews()`, `getTvShowReviews()`, `discoverMovies()`, `discoverTvShows()`. Lazy-cached genre map (`_movieGenreMap`, `_tvGenreMap`) — resolves `genre_ids` to `genres` in all list endpoints. Cache cleared on `setLanguage()` and `clearApiKey()` |
@@ -284,7 +284,7 @@ lib/
 
 Поиск построен на pluggable-архитектуре с абстракциями `SearchSource` и `SearchFilter`:
 
-- **SearchSource** — описывает источник данных (IGDB, TMDB movies/tv/anime, VNDB). Объявляет фильтры, сортировки, unified `fetch()` method (query + filters simultaneously). `supportsSortDuringSearch` flag for sort dropdown control
+- **SearchSource** — описывает источник данных (IGDB, TMDB movies/tv/anime, VNDB, AniList). Объявляет фильтры, сортировки, unified `fetch()` method (query + filters simultaneously). `supportsSortDuringSearch` flag for sort dropdown control. `groupId`/`groupName`/`groupIcon` for visual grouping in source picker popup
 - **SearchFilter** — описывает один фильтр (жанр, год, платформа, тип). `cacheKey` различает фильтры с одинаковым `key` но разными наборами опций. `searchable` включает диалог с текстовым поиском, `multiSelect` — чекбоксы для множественного выбора
 - **BrowseNotifier** — единый state manager для Browse/Search режимов с пагинацией и переключением источников
 
@@ -299,7 +299,7 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
-| `lib/features/search/models/search_source.dart` | **Абстракции**. `SearchSource` (id, label, icon, filters, fetch(query?, filterValues, sortBy, page), sortOptions, supportsSortDuringSearch), `SearchFilter` (key, cacheKey, placeholder, options, allOption), `FilterOption`, `BrowseSortOption`, `BrowseResult` |
+| `lib/features/search/models/search_source.dart` | **Абстракции**. `SearchSource` (id, groupId, groupName, groupIcon, label, icon, filters, fetch(query?, filterValues, sortBy, page), sortOptions, supportsSortDuringSearch), `SearchFilter` (key, cacheKey, placeholder, options, allOption), `FilterOption`, `BrowseSortOption`, `BrowseResult` |
 
 </details>
 
@@ -340,7 +340,7 @@ lib/
 | `lib/features/search/widgets/browse_grid.dart` | **Грид результатов**. ConsumerStatefulWidget. Бесконечный скролл (пагинация). Viewport fill auto-load: `_scheduleViewportFillCheck()` + `ref.listen` для автоподгрузки на высоких экранах. Grid delegate совпадает с CollectionScreen (maxCrossAxisExtent:150 на desktop, childAspectRatio:0.55). `_collectedIdsProvider` для маркировки "в коллекции" (зелёный чек). Shimmer-загрузка |
 | `lib/features/search/widgets/filter_bar.dart` | **Горизонтальная строка фильтров**. SourceDropdown + FilterDropdown-ы + SortDropdown. ValueKey по source+cacheKey для пересоздания при смене источника |
 | `lib/features/search/widgets/filter_dropdown.dart` | **Дропдаун фильтра**. `FilterDropdown` — PopupMenuButton с async-загрузкой опций, generation-based cancellation, sentinel для "All". Searchable фильтры открывают `_SearchableFilterDialog` (текстовый поиск + single/multi-select). `SortDropdown` — дропдаун сортировки |
-| `lib/features/search/widgets/source_dropdown.dart` | **Дропдаун источника**. Переключение между Movies/TV/Anime/Games с иконками |
+| `lib/features/search/widgets/source_dropdown.dart` | **Дропдаун источника**. Grouped popup with section headers (TMDB/IGDB/AniList/VNDB) and dividers. Uses `groupedSearchSources` from `search_sources.dart` |
 | `lib/features/search/widgets/media_details_sheet.dart` | **Bottom sheet деталей медиа**. DraggableScrollableSheet с постером, заголовком, годом, рейтингом, жанровыми чипами, описанием и кнопкой "Add to Collection" |
 | `lib/features/search/widgets/game_details_sheet.dart` | **Bottom sheet деталей игры**. Обложка, название, год, рейтинг, жанры, платформы, описание, кнопка "Add to Collection" |
 | `lib/features/search/widgets/discover_feed.dart` | **Лента Discover**. ConsumerWidget. Показывается при пустом поиске. Горизонтальные ряды: Trending, Top Rated Movies, Popular TV Shows, Upcoming, Anime, Top Rated TV Shows. Shimmer-загрузка. Скрытие элементов из коллекций через `_existingTmdbIdsProvider` |
