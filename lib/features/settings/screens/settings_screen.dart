@@ -4,11 +4,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
+import '../../../core/services/update_service.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/inline_text_field.dart';
 import '../widgets/settings_group.dart';
@@ -239,11 +241,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: l.settingsCreditsLicenses,
             onTap: () => _pushScreen(const CreditsScreen()),
           ),
-          SettingsTile(
-            title: l.settingsVersion,
-            value: _appVersion.isNotEmpty ? _appVersion : '...',
-            showChevron: false,
-          ),
+          _buildVersionTile(l),
         ],
       ),
 
@@ -407,6 +405,33 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildVersionTile(S l) {
+    final UpdateInfo? updateInfo =
+        ref.watch(updateCheckProvider).valueOrNull;
+    final bool hasUpdate = updateInfo?.hasUpdate ?? false;
+    final String versionText = _appVersion.isNotEmpty ? _appVersion : '...';
+
+    if (!hasUpdate) {
+      return SettingsTile(
+        title: l.settingsVersion,
+        value: versionText,
+        showChevron: false,
+      );
+    }
+
+    return SettingsTile(
+      title: l.updateAvailable(updateInfo!.latestVersion),
+      value: l.updateCurrent(versionText),
+      titleColor: AppColors.statusInProgress,
+      onTap: () {
+        launchUrl(
+          Uri.parse(updateInfo.releaseUrl),
+          mode: LaunchMode.externalApplication,
+        );
+      },
     );
   }
 }

@@ -13,7 +13,9 @@ import 'package:xerabora/data/repositories/collection_repository.dart';
 import 'package:xerabora/features/home/screens/all_items_screen.dart';
 import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
+import 'package:xerabora/features/settings/providers/profile_provider.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
+import 'package:xerabora/shared/models/profile.dart';
 import 'package:xerabora/shared/models/collection.dart';
 import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/item_status.dart';
@@ -108,7 +110,7 @@ void main() {
 
   setUp(() async {
     SharedPreferences.setMockInitialValues(<String, Object>{
-      'home_status_filter': 'all',
+      'home_status_filter_test': 'all',
     });
     prefs = await SharedPreferences.getInstance();
 
@@ -144,6 +146,12 @@ void main() {
         collectionRepositoryProvider.overrideWithValue(mockRepo),
         databaseServiceProvider.overrideWithValue(mockDb),
         sharedPreferencesProvider.overrideWithValue(prefs),
+        currentProfileProvider.overrideWithValue(Profile(
+          id: 'test',
+          name: 'Test',
+          color: '#FF0000',
+          createdAt: DateTime(2025),
+        )),
       ],
       child: const MaterialApp(
         localizationsDelegates: S.localizationsDelegates,

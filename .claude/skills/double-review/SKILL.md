@@ -33,6 +33,16 @@ description: Two-stage code review with improvements and optimizations. Use befo
 - [ ] Sensitive data is not logged?
 - [ ] No hardcoded secrets?
 
+#### SharedPreferences — Per-Profile Storage
+The app supports multiple user profiles. User-specific preferences MUST be stored per-profile, not globally.
+- [ ] New SharedPreferences keys include profile ID suffix: `'key_${profileId}'` (via `ref.read(currentProfileProvider).id`)?
+- [ ] Notifier reads profile ID in a getter (e.g. `String get _prefsKey => '${_baseKey}_${ref.read(currentProfileProvider).id}'`) — NOT cached in a field (profile can change)?
+- [ ] Global-only keys (API credentials, app-wide settings like language) are explicitly justified as global?
+- [ ] When adding a new persisted preference, consider: does this setting make sense to share across profiles or should each profile have its own value?
+
+**Examples of per-profile keys:** sort mode, view mode, status filter, last selected source, last opened collection.
+**Examples of global keys:** API keys, language, theme, update check timestamp.
+
 #### Cross-Platform Compatibility
 - [ ] No hardcoded Windows paths (`C:\`, `AppData`, backslashes)?
 - [ ] File paths use `package:path` (`p.join()`) instead of string concatenation?

@@ -16,6 +16,7 @@ class SettingsTile extends StatelessWidget {
     required this.title,
     this.subtitle,
     this.value,
+    this.titleColor,
     this.onTap,
     this.trailing,
     this.showChevron = true,
@@ -30,6 +31,9 @@ class SettingsTile extends StatelessWidget {
 
   /// Значение справа (серым цветом).
   final String? value;
+
+  /// Цвет заголовка (по умолчанию — textPrimary).
+  final Color? titleColor;
 
   /// Обработчик нажатия.
   final VoidCallback? onTap;
@@ -59,7 +63,7 @@ class SettingsTile extends StatelessWidget {
                   Text(
                     title,
                     style: AppTypography.body.copyWith(
-                      color: AppColors.textPrimary,
+                      color: titleColor ?? AppColors.textPrimary,
                     ),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,

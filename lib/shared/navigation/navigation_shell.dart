@@ -24,7 +24,7 @@ import '../theme/app_assets.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../widgets/breadcrumb_scope.dart';
-import '../widgets/update_banner.dart';
+import '../../core/services/update_service.dart';
 import '../../l10n/app_localizations.dart';
 
 /// Порог ширины для переключения NavigationRail ↔ BottomNavigationBar.
@@ -178,12 +178,7 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
               child: Scaffold(
                 body: useRail
                     ? _buildRailLayout()
-                    : Column(
-                        children: <Widget>[
-                          Expanded(child: _buildContent()),
-                          const UpdateBanner(),
-                        ],
-                      ),
+                    : _buildContent(),
                 bottomNavigationBar: useRail ? null : _buildBottomNav(),
               ),
             ),
@@ -267,10 +262,8 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
                     label: Text(S.of(context).navSearch),
                   ),
                   NavigationRailDestination(
-                    icon: Icon(Icons.settings_outlined,
-                        color: ref.watch(currentProfileProvider).colorValue),
-                    selectedIcon: Icon(Icons.settings,
-                        color: ref.watch(currentProfileProvider).colorValue),
+                    icon: _buildSettingsIcon(Icons.settings_outlined),
+                    selectedIcon: _buildSettingsIcon(Icons.settings),
                     label: Text(S.of(context).navSettings),
                   ),
                 ],
@@ -286,14 +279,7 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
           width: 1,
           color: AppColors.surfaceBorder,
         ),
-        Expanded(
-          child: Column(
-            children: <Widget>[
-              Expanded(child: _buildContent()),
-              const UpdateBanner(),
-            ],
-          ),
-        ),
+        Expanded(child: _buildContent()),
       ],
     );
   }
@@ -335,10 +321,8 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
           label: S.of(context).navSearch,
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.settings_outlined,
-              color: ref.watch(currentProfileProvider).colorValue),
-          activeIcon: Icon(Icons.settings,
-              color: ref.watch(currentProfileProvider).colorValue),
+          icon: _buildSettingsIcon(Icons.settings_outlined),
+          activeIcon: _buildSettingsIcon(Icons.settings),
           label: S.of(context).navSettings,
         ),
       ],
@@ -444,6 +428,18 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
       label: Text('$count'),
       child: Icon(icon),
     );
+  }
+
+  Widget _buildSettingsIcon(IconData icon) {
+    final Color profileColor = ref.watch(currentProfileProvider).colorValue;
+    final bool hasUpdate =
+        ref.watch(updateCheckProvider).valueOrNull?.hasUpdate ?? false;
+
+    final Widget iconWidget = Icon(icon, color: profileColor);
+
+    if (!hasUpdate) return iconWidget;
+
+    return _PulsingBadge(child: iconWidget);
   }
 
   /// Возвращает группы хоткеев для текущего таба (для F1 диалога).
@@ -586,6 +582,57 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
         position: Offset(size.width / 2, size.height / 2),
         scrollDelta: Offset(dx, dy),
       ),
+    );
+  }
+}
+
+/// Badge с пульсирующей анимацией для индикации обновления.
+class _PulsingBadge extends StatefulWidget {
+  const _PulsingBadge({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_PulsingBadge> createState() => _PulsingBadgeState();
+}
+
+class _PulsingBadgeState extends State<_PulsingBadge>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+    _animation = Tween<double>(begin: 0.4, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (BuildContext context, Widget? child) {
+        return Badge(
+          backgroundColor: AppColors.statusInProgress.withAlpha(
+            (_animation.value * 255).round(),
+          ),
+          smallSize: 8,
+          child: child,
+        );
+      },
+      child: widget.child,
     );
   }
 }

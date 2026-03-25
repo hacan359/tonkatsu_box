@@ -222,8 +222,10 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         ? _statusLabel(filterStatus, l)
         : l.homeFilterAll;
 
-    return PopupMenuButton<ItemStatus?>(
-      onSelected: (ItemStatus? status) {
+    return PopupMenuButton<String>(
+      onSelected: (String value) {
+        final ItemStatus? status =
+            value == 'all' ? null : ItemStatus.fromString(value);
         ref.read(homeStatusFilterProvider.notifier).setFilter(status);
       },
       offset: const Offset(0, 36),
@@ -231,10 +233,10 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
       ),
       color: AppColors.surface,
-      itemBuilder: (BuildContext context) => <PopupMenuEntry<ItemStatus?>>[
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
         // "All" option
-        PopupMenuItem<ItemStatus?>(
-          value: null,
+        PopupMenuItem<String>(
+          value: 'all',
           height: 36,
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -264,8 +266,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         const PopupMenuDivider(height: 8),
         // Status options
         for (final ItemStatus status in _statusOrder)
-          PopupMenuItem<ItemStatus?>(
-            value: status,
+          PopupMenuItem<String>(
+            value: status.value,
             height: 36,
             child: Row(
               mainAxisSize: MainAxisSize.min,
