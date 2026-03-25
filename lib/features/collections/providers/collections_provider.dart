@@ -16,6 +16,7 @@ import '../../../data/repositories/game_repository.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../../../core/database/dao/tier_list_dao.dart';
 import '../../tier_lists/providers/tier_list_detail_provider.dart';
+import '../../settings/providers/profile_provider.dart';
 import '../../settings/providers/settings_provider.dart';
 import 'collection_covers_provider.dart';
 import 'sort_utils.dart';
@@ -319,11 +320,18 @@ final NotifierProvider<HomeStatusFilterNotifier, ItemStatus?>
 );
 
 /// Notifier для фильтра статуса на главном экране.
+///
+/// Сохраняет выбор per-profile: ключ `home_status_filter_{profileId}`.
 class HomeStatusFilterNotifier extends Notifier<ItemStatus?> {
+  String get _prefsKey {
+    final String profileId = ref.read(currentProfileProvider).id;
+    return '${_homeStatusFilterKey}_$profileId';
+  }
+
   @override
   ItemStatus? build() {
     final SharedPreferences prefs = ref.watch(sharedPreferencesProvider);
-    final String? value = prefs.getString(_homeStatusFilterKey);
+    final String? value = prefs.getString(_prefsKey);
     if (value == null) return ItemStatus.inProgress;
     if (value == 'all') return null;
     return ItemStatus.fromString(value);
@@ -333,7 +341,7 @@ class HomeStatusFilterNotifier extends Notifier<ItemStatus?> {
   void setFilter(ItemStatus? status) {
     state = status;
     ref.read(sharedPreferencesProvider).setString(
-      _homeStatusFilterKey,
+      _prefsKey,
       status?.value ?? 'all',
     );
   }
