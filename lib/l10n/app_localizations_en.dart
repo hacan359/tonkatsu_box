@@ -36,6 +36,9 @@ class SEn extends S {
   String get statusWatching => 'Watching';
 
   @override
+  String get statusInProgress => 'In Progress';
+
+  @override
   String get statusCompleted => 'Completed';
 
   @override
@@ -43,6 +46,9 @@ class SEn extends S {
 
   @override
   String get statusPlanned => 'Planned';
+
+  @override
+  String get homeFilterAll => 'All';
 
   @override
   String get mediaTypeGame => 'Game';

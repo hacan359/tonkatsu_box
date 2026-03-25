@@ -996,4 +996,19 @@ class CollectionDao {
       return withGenres(item, resolved);
     }).toList();
   }
+
+  /// Возвращает ID коллекций, содержащих элементы с указанным статусом.
+  ///
+  /// Результат включает `null` если есть "бесколлекционные" элементы
+  /// с этим статусом (Uncategorized).
+  Future<Set<int?>> getCollectionIdsWithStatus(ItemStatus status) async {
+    final Database db = await _getDatabase();
+    final List<Map<String, dynamic>> rows = await db.rawQuery(
+      'SELECT DISTINCT collection_id FROM collection_items WHERE status = ?',
+      <Object?>[status.value],
+    );
+    return rows
+        .map((Map<String, dynamic> row) => row['collection_id'] as int?)
+        .toSet();
+  }
 }

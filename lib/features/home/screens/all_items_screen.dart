@@ -9,7 +9,7 @@ import '../../../shared/constants/media_type_theme.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
-import '../../../shared/models/collection_sort_mode.dart';
+import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/platform.dart';
 import '../../../shared/navigation/navigation_shell.dart';
@@ -52,9 +52,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         ref.watch(allItemsNotifierProvider);
     final Map<int, String> collectionNames =
         ref.watch(collectionNamesProvider);
-    final CollectionSortMode currentSort =
-        ref.watch(allItemsSortProvider);
-    final bool isDescending = ref.watch(allItemsSortDescProvider);
+    final ItemStatus? filterStatus = ref.watch(homeStatusFilterProvider);
 
     return Scaffold(
       appBar: const AutoBreadcrumbAppBar(),
@@ -64,7 +62,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         },
         child: Column(
           children: <Widget>[
-            _buildChipsRow(itemsAsync, currentSort, isDescending),
+            _buildChipsRow(itemsAsync, filterStatus),
             if (_showLegend)
               MediaTypeLegend(
                 onHide: () => setState(() => _showLegend = false),
@@ -73,7 +71,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
             Expanded(
               child: itemsAsync.when(
                 data: (List<CollectionItem> items) {
-                  final List<CollectionItem> filtered = _applyFilter(items);
+                  final List<CollectionItem> filtered =
+                      _applyFilter(items, filterStatus);
                   if (filtered.isEmpty) {
                     return _buildEmptyState(items.isEmpty);
                   }
@@ -91,11 +90,19 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     );
   }
 
-  List<CollectionItem> _applyFilter(List<CollectionItem> items) {
+  List<CollectionItem> _applyFilter(
+    List<CollectionItem> items,
+    ItemStatus? filterStatus,
+  ) {
     List<CollectionItem> result = items;
     if (_filterType != null) {
       result = result
           .where((CollectionItem item) => item.mediaType == _filterType)
+          .toList();
+    }
+    if (filterStatus != null) {
+      result = result
+          .where((CollectionItem item) => item.status == filterStatus)
           .toList();
     }
     if (_filterPlatformId != null) {
@@ -117,12 +124,12 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
 
   Widget _buildChipsRow(
     AsyncValue<List<CollectionItem>> itemsAsync,
-    CollectionSortMode currentSort,
-    bool isDescending,
+    ItemStatus? filterStatus,
   ) {
     final List<CollectionItem>? items = itemsAsync.valueOrNull;
     final Map<MediaType, int> counts = _countByMediaType(items);
     final int total = items?.length ?? 0;
+    final S l = S.of(context);
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -134,29 +141,24 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         child: Row(
           children: <Widget>[
             // Media type chips
-            _buildMediaChip(null, S.of(context).allItemsAll, total),
+            _buildMediaChip(null, l.allItemsAll, total),
             const SizedBox(width: AppSpacing.xs),
-            _buildMediaChip(MediaType.game, S.of(context).allItemsGames, counts[MediaType.game]),
+            _buildMediaChip(MediaType.game, l.allItemsGames, counts[MediaType.game]),
             const SizedBox(width: AppSpacing.xs),
-            _buildMediaChip(
-                MediaType.movie, S.of(context).allItemsMovies, counts[MediaType.movie]),
+            _buildMediaChip(MediaType.movie, l.allItemsMovies, counts[MediaType.movie]),
             const SizedBox(width: AppSpacing.xs),
-            _buildMediaChip(
-                MediaType.tvShow, S.of(context).allItemsTvShows, counts[MediaType.tvShow]),
+            _buildMediaChip(MediaType.tvShow, l.allItemsTvShows, counts[MediaType.tvShow]),
             const SizedBox(width: AppSpacing.xs),
-            _buildMediaChip(
-                MediaType.animation, S.of(context).allItemsAnimation, counts[MediaType.animation]),
+            _buildMediaChip(MediaType.animation, l.allItemsAnimation, counts[MediaType.animation]),
             const SizedBox(width: AppSpacing.xs),
-            _buildMediaChip(
-                MediaType.visualNovel, S.of(context).allItemsVisualNovels, counts[MediaType.visualNovel]),
+            _buildMediaChip(MediaType.visualNovel, l.allItemsVisualNovels, counts[MediaType.visualNovel]),
             const SizedBox(width: AppSpacing.xs),
-            _buildMediaChip(
-                MediaType.manga, S.of(context).allItemsManga, counts[MediaType.manga]),
+            _buildMediaChip(MediaType.manga, l.allItemsManga, counts[MediaType.manga]),
 
             const SizedBox(width: AppSpacing.md),
 
-            // Sort by rating chip
-            _buildSortChip(currentSort, isDescending),
+            // Status filter dropdown chip
+            _buildStatusDropdownChip(l, filterStatus),
           ],
         ),
       ),
@@ -212,51 +214,141 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     );
   }
 
-  Widget _buildSortChip(CollectionSortMode currentSort, bool isDescending) {
-    final bool isRatingSort = currentSort == CollectionSortMode.rating;
-    final IconData sortIcon = isRatingSort
-        ? (isDescending ? Icons.arrow_upward : Icons.arrow_downward)
-        : Icons.star_outline;
+  Widget _buildStatusDropdownChip(S l, ItemStatus? filterStatus) {
+    final bool isActive = filterStatus != null;
+    final Color chipColor =
+        isActive ? filterStatus.color : AppColors.textSecondary;
+    final String label = isActive
+        ? _statusLabel(filterStatus, l)
+        : l.homeFilterAll;
 
-    return ActionChip(
-      avatar: Icon(
-        sortIcon,
-        size: 16,
-        color: isRatingSort ? AppColors.ratingStar : AppColors.textTertiary,
+    return PopupMenuButton<ItemStatus?>(
+      onSelected: (ItemStatus? status) {
+        ref.read(homeStatusFilterProvider.notifier).setFilter(status);
+      },
+      offset: const Offset(0, 36),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
       ),
-      label: Text(
-        isRatingSort
-            ? (isDescending ? S.of(context).allItemsRatingAsc : S.of(context).allItemsRatingDesc)
-            : S.of(context).allItemsRating,
-        style: AppTypography.bodySmall.copyWith(
-          color: isRatingSort ? AppColors.ratingStar : AppColors.textSecondary,
-          fontWeight: isRatingSort ? FontWeight.w600 : FontWeight.normal,
+      color: AppColors.surface,
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<ItemStatus?>>[
+        // "All" option
+        PopupMenuItem<ItemStatus?>(
+          value: null,
+          height: 36,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Icon(
+                Icons.filter_list_off,
+                size: 16,
+                color: filterStatus == null
+                    ? AppColors.brand
+                    : AppColors.textTertiary,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                l.homeFilterAll,
+                style: AppTypography.body.copyWith(
+                  color: filterStatus == null
+                      ? AppColors.brand
+                      : AppColors.textPrimary,
+                  fontWeight: filterStatus == null
+                      ? FontWeight.w600
+                      : FontWeight.normal,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const PopupMenuDivider(height: 8),
+        // Status options
+        for (final ItemStatus status in _statusOrder)
+          PopupMenuItem<ItemStatus?>(
+            value: status,
+            height: 36,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Icon(
+                  status.materialIcon,
+                  size: 16,
+                  color: filterStatus == status
+                      ? status.color
+                      : AppColors.textTertiary,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  _statusLabel(status, l),
+                  style: AppTypography.body.copyWith(
+                    color: filterStatus == status
+                        ? status.color
+                        : AppColors.textPrimary,
+                    fontWeight: filterStatus == status
+                        ? FontWeight.w600
+                        : FontWeight.normal,
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+      child: Container(
+        height: 28,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        decoration: BoxDecoration(
+          color: isActive ? chipColor.withAlpha(25) : AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isActive ? chipColor.withAlpha(80) : AppColors.surfaceBorder,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(
+              isActive ? filterStatus.materialIcon : Icons.filter_list,
+              size: 14,
+              color: isActive ? chipColor : AppColors.textTertiary,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: AppTypography.bodySmall.copyWith(
+                color: isActive ? chipColor : AppColors.textSecondary,
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+            const SizedBox(width: 2),
+            Icon(
+              Icons.keyboard_arrow_down,
+              size: 14,
+              color: isActive ? chipColor : AppColors.textTertiary,
+            ),
+          ],
         ),
       ),
-      backgroundColor: isRatingSort
-          ? AppColors.ratingStar.withAlpha(25)
-          : AppColors.surface,
-      side: BorderSide(
-        color: isRatingSort
-            ? AppColors.ratingStar.withAlpha(80)
-            : AppColors.surfaceBorder,
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      visualDensity: VisualDensity.compact,
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      onPressed: () {
-        if (isRatingSort) {
-          // Переключаем направление
-          ref.read(allItemsSortDescProvider.notifier).toggle();
-        } else {
-          // Включаем сортировку по рейтингу
-          ref.read(allItemsSortProvider.notifier)
-              .setSortMode(CollectionSortMode.rating);
-        }
-      },
     );
+  }
+
+  /// Порядок статусов в chips.
+  static const List<ItemStatus> _statusOrder = <ItemStatus>[
+    ItemStatus.inProgress,
+    ItemStatus.planned,
+    ItemStatus.notStarted,
+    ItemStatus.completed,
+    ItemStatus.dropped,
+  ];
+
+  /// Универсальная метка статуса (не привязана к MediaType).
+  static String _statusLabel(ItemStatus status, S l) {
+    return switch (status) {
+      ItemStatus.notStarted => l.statusNotStarted,
+      ItemStatus.inProgress => l.statusInProgress,
+      ItemStatus.completed => l.statusCompleted,
+      ItemStatus.dropped => l.statusDropped,
+      ItemStatus.planned => l.statusPlanned,
+    };
   }
 
   Widget _buildPlatformChipsRow() {

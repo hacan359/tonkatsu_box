@@ -151,6 +151,12 @@ abstract class S {
   /// **'Watching'**
   String get statusWatching;
 
+  /// No description provided for @statusInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'In Progress'**
+  String get statusInProgress;
+
   /// No description provided for @statusCompleted.
   ///
   /// In en, this message translates to:
@@ -168,6 +174,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Planned'**
   String get statusPlanned;
+
+  /// No description provided for @homeFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get homeFilterAll;
 
   /// No description provided for @mediaTypeGame.
   ///

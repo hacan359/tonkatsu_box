@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/database/dao/collection_dao.dart';
 import '../../../core/database/database_service.dart';
 import '../../../data/repositories/collection_repository.dart';
 import '../../../shared/models/collected_item_info.dart';
@@ -15,6 +16,7 @@ import '../../../data/repositories/game_repository.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../../../core/database/dao/tier_list_dao.dart';
 import '../../tier_lists/providers/tier_list_detail_provider.dart';
+import '../../settings/providers/settings_provider.dart';
 import 'collection_covers_provider.dart';
 import 'sort_utils.dart';
 
@@ -300,6 +302,57 @@ class CollectionListViewModeNotifier extends Notifier<bool> {
     await prefs.setBool(_collectionListGridViewKey, state);
   }
 }
+
+// ==================== Home Status Filter ====================
+
+/// Ключ SharedPreferences для фильтра статуса на главной.
+const String _homeStatusFilterKey = 'home_status_filter';
+
+/// Провайдер фильтра статуса на главном экране.
+///
+/// `null` означает "Все" (без фильтра).
+/// По умолчанию: [ItemStatus.inProgress].
+final NotifierProvider<HomeStatusFilterNotifier, ItemStatus?>
+    homeStatusFilterProvider =
+    NotifierProvider<HomeStatusFilterNotifier, ItemStatus?>(
+  HomeStatusFilterNotifier.new,
+);
+
+/// Notifier для фильтра статуса на главном экране.
+class HomeStatusFilterNotifier extends Notifier<ItemStatus?> {
+  @override
+  ItemStatus? build() {
+    final SharedPreferences prefs = ref.watch(sharedPreferencesProvider);
+    final String? value = prefs.getString(_homeStatusFilterKey);
+    if (value == null) return ItemStatus.inProgress;
+    if (value == 'all') return null;
+    return ItemStatus.fromString(value);
+  }
+
+  /// Устанавливает фильтр статуса и сохраняет в SharedPreferences.
+  void setFilter(ItemStatus? status) {
+    state = status;
+    ref.read(sharedPreferencesProvider).setString(
+      _homeStatusFilterKey,
+      status?.value ?? 'all',
+    );
+  }
+}
+
+/// ID коллекций, содержащих элементы с указанным статусом.
+///
+/// Пересчитывается при изменении фильтра или обновлении коллекций.
+final FutureProvider<Set<int?>> filteredCollectionIdsProvider =
+    FutureProvider<Set<int?>>((Ref ref) async {
+  final ItemStatus? status = ref.watch(homeStatusFilterProvider);
+  if (status == null) return const <int?>{};
+
+  // Зависимость от collectionsProvider гарантирует пересчёт при изменении данных
+  ref.watch(collectionsProvider);
+
+  final CollectionDao dao = ref.read(collectionDaoProvider);
+  return dao.getCollectionIdsWithStatus(status);
+});
 
 // ==================== Collection Items ====================
 

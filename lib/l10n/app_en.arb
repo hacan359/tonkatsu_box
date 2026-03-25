@@ -12,9 +12,11 @@
   "statusNotStarted": "Not Started",
   "statusPlaying": "Playing",
   "statusWatching": "Watching",
+  "statusInProgress": "In Progress",
   "statusCompleted": "Completed",
   "statusDropped": "Dropped",
   "statusPlanned": "Planned",
+  "homeFilterAll": "All",
 
   "mediaTypeGame": "Game",
   "mediaTypeMovie": "Movie",

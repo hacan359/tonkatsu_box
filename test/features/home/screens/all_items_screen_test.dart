@@ -107,7 +107,9 @@ void main() {
   ];
 
   setUp(() async {
-    SharedPreferences.setMockInitialValues(<String, Object>{});
+    SharedPreferences.setMockInitialValues(<String, Object>{
+      'home_status_filter': 'all',
+    });
     prefs = await SharedPreferences.getInstance();
 
     mockRepo = MockCollectionRepository();
@@ -166,7 +168,7 @@ void main() {
         (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget());
 
-      expect(find.widgetWithText(ChoiceChip, 'All'), findsOneWidget);
+      expect(find.widgetWithText(ChoiceChip, 'All'), findsAtLeast(1));
       expect(find.widgetWithText(ChoiceChip, 'Games'), findsOneWidget);
       expect(find.widgetWithText(ChoiceChip, 'Movies'), findsOneWidget);
       expect(find.widgetWithText(ChoiceChip, 'TV Shows'), findsOneWidget);
@@ -189,10 +191,12 @@ void main() {
       expect(find.text('Visual Novels (1)'), findsOneWidget);
     });
 
-    testWidgets('показывает чипс Rating', (WidgetTester tester) async {
+    testWidgets('показывает dropdown фильтра статуса',
+        (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget());
 
-      expect(find.text('Rating'), findsOneWidget);
+      // Dropdown chip с текстом "All" для статуса
+      expect(find.byIcon(Icons.filter_list), findsOneWidget);
     });
 
     testWidgets('показывает loading state при запуске',

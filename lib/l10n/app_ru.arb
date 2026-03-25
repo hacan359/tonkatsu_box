@@ -12,9 +12,11 @@
   "statusNotStarted": "Не начато",
   "statusPlaying": "Играю",
   "statusWatching": "Смотрю",
+  "statusInProgress": "В процессе",
   "statusCompleted": "Завершено",
   "statusDropped": "Брошено",
   "statusPlanned": "Запланировано",
+  "homeFilterAll": "Все",
 
   "mediaTypeGame": "Игра",
   "mediaTypeMovie": "Фильм",
