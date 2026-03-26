@@ -12,6 +12,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/navigation/navigation_shell.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../home/providers/all_items_provider.dart';
+import '../../wishlist/providers/wishlist_provider.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/settings_group.dart';
 
@@ -197,6 +198,9 @@ class DatabaseContent extends ConsumerWidget {
       ref.invalidate(collectedMovieIdsProvider);
       ref.invalidate(collectedTvShowIdsProvider);
       ref.invalidate(collectedAnimationIdsProvider);
+      ref.invalidate(collectedVisualNovelIdsProvider);
+      ref.invalidate(collectedMangaIdsProvider);
+      ref.invalidate(wishlistProvider);
 
       if (context.mounted) {
         context.showSnack(
