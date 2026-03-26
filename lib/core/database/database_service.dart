@@ -26,6 +26,7 @@ import '../../shared/models/visual_novel.dart';
 import '../../shared/models/wishlist_item.dart';
 import 'dao/canvas_dao.dart';
 import 'dao/collection_dao.dart';
+import 'dao/custom_media_dao.dart';
 import 'dao/game_dao.dart';
 import 'dao/movie_dao.dart';
 import 'dao/tv_show_dao.dart';
@@ -93,6 +94,12 @@ final Provider<WishlistDao> wishlistDaoProvider =
   return ref.watch(databaseServiceProvider).wishlistDao;
 });
 
+/// Провайдер для [CustomMediaDao].
+final Provider<CustomMediaDao> customMediaDaoProvider =
+    Provider<CustomMediaDao>((Ref ref) {
+  return ref.watch(databaseServiceProvider).customMediaDao;
+});
+
 /// Сервис для работы с SQLite базой данных.
 ///
 /// Управляет инициализацией базы данных и CRUD операциями для платформ.
@@ -125,6 +132,9 @@ class DatabaseService {
   /// DAO для работы с мангой.
   late final MangaDao mangaDao = MangaDao(() => database);
 
+  /// DAO для работы с кастомными элементами.
+  late final CustomMediaDao customMediaDao = CustomMediaDao(() => database);
+
   /// DAO для работы с коллекциями и элементами коллекций.
   late final CollectionDao collectionDao = CollectionDao(
     () => database,
@@ -133,6 +143,7 @@ class DatabaseService {
     tvShowDao: tvShowDao,
     visualNovelDao: visualNovelDao,
     mangaDao: mangaDao,
+    customMediaDao: customMediaDao,
   );
 
   /// DAO для работы с канвасом.
@@ -186,7 +197,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 26,
+        version: 27,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {

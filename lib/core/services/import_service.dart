@@ -13,6 +13,7 @@ import '../../shared/models/canvas_item.dart';
 import '../../shared/models/canvas_viewport.dart';
 import '../../shared/models/collection.dart';
 import '../../shared/models/collection_item.dart';
+import '../../shared/models/custom_media.dart';
 import '../../shared/models/item_status.dart';
 import '../../shared/models/tier_definition.dart';
 import '../../shared/models/tier_list.dart';
@@ -623,6 +624,8 @@ class ImportService {
         media['visual_novels'] as List<dynamic>? ?? <dynamic>[];
     final List<dynamic> rawMangas =
         media['mangas'] as List<dynamic>? ?? <dynamic>[];
+    final List<dynamic> rawCustom =
+        media['custom_items'] as List<dynamic>? ?? <dynamic>[];
 
     final int total = rawGames.length +
         rawMovies.length +
@@ -631,7 +634,8 @@ class ImportService {
         rawEpisodes.length +
         rawPlatforms.length +
         rawVisualNovels.length +
-        rawMangas.length;
+        rawMangas.length +
+        rawCustom.length;
     final int cachedAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     int current = 0;
 
@@ -795,6 +799,26 @@ class ImportService {
         ));
       }
       await _database.upsertMangas(mangas);
+    }
+
+    // Восстановление кастомных элементов
+    if (rawCustom.isNotEmpty) {
+      final List<CustomMedia> customItems = <CustomMedia>[];
+      for (final dynamic raw in rawCustom) {
+        final Map<String, dynamic> row =
+            Map<String, dynamic>.from(raw as Map<String, dynamic>);
+        if (!row.containsKey('cached_at') || row['cached_at'] == null) {
+          row['cached_at'] = cachedAt;
+        }
+        customItems.add(CustomMedia.fromDb(row));
+        current++;
+        onProgress?.call(ImportProgress(
+          stage: ImportStage.restoringMedia,
+          current: current,
+          total: total,
+        ));
+      }
+      await _database.customMediaDao.upsertAll(customItems);
     }
   }
 

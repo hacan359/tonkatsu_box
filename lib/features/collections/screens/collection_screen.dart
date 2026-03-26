@@ -7,6 +7,7 @@ import '../../../core/services/import_service.dart';
 import '../../../core/services/xcoll_file.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
+import '../../../shared/models/custom_media.dart';
 import '../widgets/create_custom_item_dialog.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
@@ -599,10 +600,28 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
 
   Future<void> _handleCreateCustomItem() async {
     final CustomItemData? data = await CreateCustomItemDialog.show(context);
-    if (data != null && mounted) {
-      // Прототип: просто показываем снекбар с данными
+    if (data == null || !mounted) return;
+
+    final CustomMedia customMedia = CustomMedia(
+      id: 0,
+      title: data.title,
+      altTitle: data.altTitle,
+      description: data.description,
+      coverUrl: data.coverUrl,
+      year: data.year,
+      genres: data.genres,
+      platformName: data.platform,
+    );
+
+    final bool success = await ref
+        .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
+        .addCustomItem(customMedia);
+
+    if (!mounted) return;
+
+    if (success) {
       context.showSnack(
-        '${S.of(context).customItemCreated}: ${data.title} (${data.mediaType.name})',
+        '${S.of(context).customItemCreated}: ${data.title}',
         type: SnackType.success,
       );
     }

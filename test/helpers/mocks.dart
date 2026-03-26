@@ -20,6 +20,7 @@ import 'package:xerabora/core/database/dao/collection_dao.dart';
 import 'package:xerabora/core/database/dao/game_dao.dart';
 import 'package:xerabora/core/database/dao/movie_dao.dart';
 import 'package:xerabora/core/database/dao/tv_show_dao.dart';
+import 'package:xerabora/core/database/dao/custom_media_dao.dart';
 import 'package:xerabora/core/database/dao/manga_dao.dart';
 import 'package:xerabora/core/database/dao/visual_novel_dao.dart';
 import 'package:xerabora/core/database/dao/tier_list_dao.dart';
@@ -95,6 +96,8 @@ class MockTvShowDao extends Mock implements TvShowDao {}
 class MockVisualNovelDao extends Mock implements VisualNovelDao {}
 
 class MockMangaDao extends Mock implements MangaDao {}
+
+class MockCustomMediaDao extends Mock implements CustomMediaDao {}
 
 class MockCollectionDao extends Mock implements CollectionDao {}
 

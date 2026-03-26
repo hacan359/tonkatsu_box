@@ -5,6 +5,7 @@ import '../../../core/database/dao/collection_dao.dart';
 import '../../../core/database/database_service.dart';
 import '../../../data/repositories/collection_repository.dart';
 import '../../../shared/models/collected_item_info.dart';
+import '../../../shared/models/custom_media.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/collection_list_sort_mode.dart';
@@ -498,6 +499,29 @@ class CollectionItemsNotifier
 
     await refresh();
     _invalidateCollectedIds(mediaType);
+    ref.invalidate(uncategorizedItemCountProvider);
+    ref.invalidate(allItemsNotifierProvider);
+    return true;
+  }
+
+  /// Создаёт кастомный элемент и добавляет его в коллекцию.
+  ///
+  /// Создаёт запись в `custom_items`, затем добавляет `CollectionItem`
+  /// с `mediaType = custom` и `externalId = customItem.id`.
+  Future<bool> addCustomItem(CustomMedia customMedia) async {
+    // 1. Создаём запись в custom_items
+    final int customId = await _db.customMediaDao.create(customMedia);
+
+    // 2. Добавляем в коллекцию
+    final int? itemId = await _repository.addItem(
+      collectionId: _collectionId,
+      mediaType: MediaType.custom,
+      externalId: customId,
+    );
+
+    if (itemId == null) return false;
+
+    await refresh();
     ref.invalidate(uncategorizedItemCountProvider);
     ref.invalidate(allItemsNotifierProvider);
     return true;
