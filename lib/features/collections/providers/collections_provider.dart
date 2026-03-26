@@ -526,13 +526,16 @@ class CollectionItemsNotifier
       if (localCoverPath != null) {
         // Из локального файла — копируем в кэш
         final File sourceFile = File(localCoverPath);
+        debugPrint('Custom cover: localPath=$localCoverPath exists=${sourceFile.existsSync()}');
         if (sourceFile.existsSync()) {
           final Uint8List bytes = await sourceFile.readAsBytes();
-          await cache.saveImageBytes(
+          debugPrint('Custom cover: ${bytes.length} bytes, saving as customId=$customId');
+          final bool saved = await cache.saveImageBytes(
             ImageType.customCover,
             customId.toString(),
             bytes,
           );
+          debugPrint('Custom cover saved: $saved');
         }
       } else if (customMedia.coverUrl != null &&
           customMedia.coverUrl!.isNotEmpty) {
