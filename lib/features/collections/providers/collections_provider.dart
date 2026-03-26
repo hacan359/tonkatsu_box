@@ -1,9 +1,13 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/database/dao/collection_dao.dart';
 import '../../../core/database/database_service.dart';
 import '../../../data/repositories/collection_repository.dart';
+import '../../../core/services/image_cache_service.dart';
 import '../../../shared/models/collected_item_info.dart';
 import '../../../shared/models/custom_media.dart';
 import '../../../shared/models/collection.dart';
@@ -508,11 +512,29 @@ class CollectionItemsNotifier
   ///
   /// Создаёт запись в `custom_items`, затем добавляет `CollectionItem`
   /// с `mediaType = custom` и `externalId = customItem.id`.
-  Future<bool> addCustomItem(CustomMedia customMedia) async {
+  /// При [localCoverPath] != null — копирует файл в кэш изображений.
+  Future<bool> addCustomItem(
+    CustomMedia customMedia, {
+    String? localCoverPath,
+  }) async {
     // 1. Создаём запись в custom_items
     final int customId = await _db.customMediaDao.create(customMedia);
 
-    // 2. Добавляем в коллекцию
+    // 2. Если есть локальная обложка, копируем в кэш
+    if (localCoverPath != null) {
+      final ImageCacheService cache = ref.read(imageCacheServiceProvider);
+      final File sourceFile = File(localCoverPath);
+      if (sourceFile.existsSync()) {
+        final Uint8List bytes = await sourceFile.readAsBytes();
+        await cache.saveImageBytes(
+          ImageType.customCover,
+          customId.toString(),
+          bytes,
+        );
+      }
+    }
+
+    // 3. Добавляем в коллекцию
     final int? itemId = await _repository.addItem(
       collectionId: _collectionId,
       mediaType: MediaType.custom,

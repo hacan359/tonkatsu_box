@@ -398,7 +398,7 @@ class CollectionItem with Exportable {
           genresString: customMedia?.genres,
           genres: customMedia?.genreList,
           mediaStatus: null,
-          source: DataSource.igdb,
+          source: DataSource.local,
           imageType: ImageType.customCover,
           placeholderIcon: Icons.dashboard_customize,
         );

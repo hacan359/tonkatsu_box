@@ -607,15 +607,16 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       title: data.title,
       altTitle: data.altTitle,
       description: data.description,
-      coverUrl: data.coverUrl,
+      coverUrl: data.coverUrl ?? data.localCoverPath,
       year: data.year,
       genres: data.genres,
       platformName: data.platform,
+      externalUrl: data.externalUrl,
     );
 
     final bool success = await ref
         .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
-        .addCustomItem(customMedia);
+        .addCustomItem(customMedia, localCoverPath: data.localCoverPath);
 
     if (!mounted) return;
 
