@@ -1,5 +1,6 @@
 // Экран-хаб настроек приложения с единым grouped-list лейаутом.
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +8,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
@@ -20,6 +22,10 @@ import 'cache_screen.dart';
 import 'credentials_screen.dart';
 import 'credits_screen.dart';
 import 'database_screen.dart';
+import '../../../core/services/backup_service.dart';
+import '../../collections/providers/collections_provider.dart';
+import '../../home/providers/all_items_provider.dart';
+import '../../wishlist/providers/wishlist_provider.dart';
 import 'ra_import_screen.dart';
 import 'steam_import_screen.dart';
 import 'trakt_import_screen.dart';
@@ -198,6 +204,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: l.settingsDatabase,
             subtitle: l.settingsDatabaseSubtitle,
             onTap: () => _pushScreen(const DatabaseScreen()),
+          ),
+        ],
+      ),
+      const SizedBox(height: AppSpacing.md),
+
+      // BACKUP
+      SettingsGroup(
+        title: l.settingsBackup,
+        subtitle: l.settingsBackupSubtitle,
+        children: <Widget>[
+          SettingsTile(
+            title: l.settingsBackupAll,
+            subtitle: l.settingsBackupAllSubtitle,
+            onTap: () => _handleBackup(context, ref, l),
+          ),
+          SettingsTile(
+            title: l.settingsRestoreBackup,
+            subtitle: l.settingsRestoreBackupSubtitle,
+            onTap: () => _handleRestore(context, ref, l),
           ),
         ],
       ),
@@ -434,4 +459,181 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       },
     );
   }
+
+  Future<void> _handleBackup(
+    BuildContext context,
+    WidgetRef ref,
+    S l,
+  ) async {
+    context.showSnack(
+      l.settingsBackupAll,
+      loading: true,
+      duration: const Duration(seconds: 60),
+    );
+
+    final BackupService service = ref.read(backupServiceProvider);
+    final BackupResult result = await service.createBackup();
+
+    if (!context.mounted) return;
+
+    if (result.success) {
+      context.showSnack(
+        l.backupSuccess(result.collectionsCount, result.itemsCount),
+        type: SnackType.success,
+      );
+    } else if (!result.isCancelled) {
+      context.showSnack(
+        result.error ?? 'Backup failed',
+        type: SnackType.error,
+      );
+    } else {
+      context.hideSnack();
+    }
+  }
+
+  Future<void> _handleRestore(
+    BuildContext context,
+    WidgetRef ref,
+    S l,
+  ) async {
+    // 1. Выбор файла
+    final bool useAny = defaultTargetPlatform == TargetPlatform.android;
+    final FilePickerResult? picked = await FilePicker.platform.pickFiles(
+      dialogTitle: l.settingsRestoreBackup,
+      type: useAny ? FileType.any : FileType.custom,
+      allowedExtensions: useAny ? null : <String>['zip'],
+      allowMultiple: false,
+    );
+
+    if (picked == null || picked.files.isEmpty) return;
+    final String? zipPath = picked.files.first.path;
+    if (zipPath == null) return;
+
+    // 2. Читаем манифест
+    final BackupService service = ref.read(backupServiceProvider);
+    final BackupManifest? manifest = await service.readManifest(zipPath);
+
+    if (manifest == null) {
+      if (context.mounted) {
+        context.showSnack(l.restoreInvalidArchive, type: SnackType.error);
+      }
+      return;
+    }
+
+    // 3. Диалог подтверждения
+    if (!context.mounted) return;
+    final _RestoreOptions? options = await showDialog<_RestoreOptions>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        bool restoreWishlist = true;
+        bool restoreSettings = false;
+        return StatefulBuilder(
+          builder: (BuildContext ctx, StateSetter setState) {
+            final S dl = S.of(ctx);
+            return AlertDialog(
+              title: Text(dl.restoreConfirmTitle),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(dl.restoreConfirmBody(
+                    manifest.collectionsCount,
+                    manifest.itemsCount,
+                    manifest.wishlistCount,
+                  )),
+                  const SizedBox(height: 8),
+                  Text(
+                    dl.restoreConfirmHint,
+                    style: Theme.of(ctx).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 16),
+                  CheckboxListTile(
+                    value: restoreWishlist,
+                    onChanged: (bool? v) =>
+                        setState(() => restoreWishlist = v ?? true),
+                    title: Text(dl.restoreWishlist),
+                    controlAffinity: ListTileControlAffinity.leading,
+                    dense: true,
+                  ),
+                  if (manifest.includesConfig)
+                    CheckboxListTile(
+                      value: restoreSettings,
+                      onChanged: (bool? v) =>
+                          setState(() => restoreSettings = v ?? false),
+                      title: Text(dl.restoreSettings),
+                      controlAffinity: ListTileControlAffinity.leading,
+                      dense: true,
+                    ),
+                ],
+              ),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: Text(dl.cancel),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(
+                    _RestoreOptions(
+                      restoreWishlist: restoreWishlist,
+                      restoreSettings: restoreSettings,
+                    ),
+                  ),
+                  child: Text(dl.restore),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (options == null) return;
+
+    // 4. Выполнение восстановления
+    if (!context.mounted) return;
+    context.showSnack(
+      l.settingsRestoreBackup,
+      loading: true,
+      duration: const Duration(seconds: 120),
+    );
+
+    final RestoreResult result = await service.restoreFromBackup(
+      zipPath: zipPath,
+      restoreWishlist: options.restoreWishlist,
+      restoreSettings: options.restoreSettings,
+    );
+
+    if (!context.mounted) return;
+
+    if (result.success) {
+      // Инвалидируем провайдеры чтобы UI отобразил восстановленные данные
+      ref.invalidate(collectionsProvider);
+      ref.invalidate(allItemsNotifierProvider);
+      ref.invalidate(wishlistProvider);
+
+      context.showSnack(
+        l.restoreSuccess(result.collectionsRestored, result.itemsRestored),
+        type: SnackType.success,
+        duration: const Duration(seconds: 4),
+      );
+    } else if (!result.isCancelled) {
+      context.showSnack(
+        result.error ?? 'Restore failed',
+        type: SnackType.error,
+      );
+    } else {
+      context.hideSnack();
+    }
+  }
+}
+
+/// Опции восстановления из диалога подтверждения.
+class _RestoreOptions {
+  const _RestoreOptions({
+    required this.restoreWishlist,
+    required this.restoreSettings,
+  });
+
+  final bool restoreWishlist;
+  final bool restoreSettings;
 }

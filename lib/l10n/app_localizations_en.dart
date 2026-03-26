@@ -147,6 +147,9 @@ class SEn extends S {
   String get confirm => 'OK';
 
   @override
+  String get restore => 'Restore';
+
+  @override
   String get create => 'Create';
 
   @override
@@ -325,6 +328,55 @@ class SEn extends S {
 
   @override
   String get settingsStorageSubtitle => 'Image cache and database';
+
+  @override
+  String get settingsBackup => 'Backup';
+
+  @override
+  String get settingsBackupSubtitle => 'Full data backup and restore';
+
+  @override
+  String get settingsBackupAll => 'Backup All Data';
+
+  @override
+  String get settingsBackupAllSubtitle =>
+      'All collections, wishlist, and settings';
+
+  @override
+  String get settingsRestoreBackup => 'Restore from Backup';
+
+  @override
+  String get settingsRestoreBackupSubtitle => 'Import backup archive';
+
+  @override
+  String backupSuccess(int collections, int items) {
+    return 'Backup saved: $collections collections, $items items';
+  }
+
+  @override
+  String get restoreConfirmTitle => 'Restore Backup?';
+
+  @override
+  String restoreConfirmBody(int collections, int items, int wishlist) {
+    return '$collections collections, $items items, $wishlist wishlist entries';
+  }
+
+  @override
+  String get restoreConfirmHint => 'Existing collections will not be affected';
+
+  @override
+  String get restoreSettings => 'Restore settings';
+
+  @override
+  String get restoreWishlist => 'Restore wishlist';
+
+  @override
+  String restoreSuccess(int collections, int items) {
+    return 'Restored $collections collections, $items items';
+  }
+
+  @override
+  String get restoreInvalidArchive => 'Invalid backup archive';
 
   @override
   String get settingsImport => 'Import';

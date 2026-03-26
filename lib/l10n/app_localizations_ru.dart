@@ -147,6 +147,9 @@ class SRu extends S {
   String get confirm => 'ОК';
 
   @override
+  String get restore => 'Восстановить';
+
+  @override
   String get create => 'Создать';
 
   @override
@@ -325,6 +328,54 @@ class SRu extends S {
 
   @override
   String get settingsStorageSubtitle => 'Кэш изображений и база данных';
+
+  @override
+  String get settingsBackup => 'Резервное копирование';
+
+  @override
+  String get settingsBackupSubtitle => 'Полный бэкап и восстановление данных';
+
+  @override
+  String get settingsBackupAll => 'Создать бэкап';
+
+  @override
+  String get settingsBackupAllSubtitle => 'Все коллекции, вишлист и настройки';
+
+  @override
+  String get settingsRestoreBackup => 'Восстановить из бэкапа';
+
+  @override
+  String get settingsRestoreBackupSubtitle => 'Импорт архива бэкапа';
+
+  @override
+  String backupSuccess(int collections, int items) {
+    return 'Бэкап сохранён: $collections коллекций, $items элементов';
+  }
+
+  @override
+  String get restoreConfirmTitle => 'Восстановить бэкап?';
+
+  @override
+  String restoreConfirmBody(int collections, int items, int wishlist) {
+    return '$collections коллекций, $items элементов, $wishlist записей вишлиста';
+  }
+
+  @override
+  String get restoreConfirmHint => 'Существующие коллекции не будут затронуты';
+
+  @override
+  String get restoreSettings => 'Восстановить настройки';
+
+  @override
+  String get restoreWishlist => 'Восстановить вишлист';
+
+  @override
+  String restoreSuccess(int collections, int items) {
+    return 'Восстановлено $collections коллекций, $items элементов';
+  }
+
+  @override
+  String get restoreInvalidArchive => 'Некорректный архив бэкапа';
 
   @override
   String get settingsImport => 'Импорт';

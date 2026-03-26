@@ -8,6 +8,7 @@
 
 ### Added
 - **Export with personal data** — optional "Include personal data" checkbox in export format dialog. When enabled, `.xcoll`/`.xcollx` files include user status, dates (started, completed, last activity), personal notes (user_comment), episode progress (current_season, current_episode), sort order, and added_at. New `user_data: true` flag in file header. Import auto-restores all user data when present; old files without the flag import as before (backward compatible). `CollectionItem.toExport({includeUserData})`, `XcollFile.includesUserData`, `ImportService._restoreUserData()`. 2 localization keys EN+RU. 14 new tests (`collection_item.dart`, `xcoll_file.dart`, `export_service.dart`, `import_service.dart`, `collection_actions.dart`, `app_en.arb`, `app_ru.arb`)
+- **Full backup & restore** — one-button backup of all collections (full export with user data, canvas, images, tier lists), wishlist, and app settings into a single `.zip` archive. Restore from backup with confirmation dialog showing manifest preview (collection/item/wishlist counts), checkboxes for wishlist and settings restoration. Collections always created as new (no merge). Wishlist deduplicated by text. `BackupService` with `createBackup()`, `readManifest()`, `restoreFromBackup()`. `BackupManifest` model for ZIP metadata. Settings → Backup section with "Backup All Data" and "Restore from Backup" tiles. 15 localization keys EN+RU (`backup_service.dart`, `settings_screen.dart`, `app_en.arb`, `app_ru.arb`)
 
 ## [0.23.0] - 2026-03-25
 

@@ -53,6 +53,7 @@
 
   "cancel": "Отмена",
   "confirm": "ОК",
+  "restore": "Восстановить",
   "create": "Создать",
   "save": "Сохранить",
   "add": "Добавить",
@@ -117,6 +118,39 @@
   "settingsApiKeysSubtitle": "Настройка подключений к базам данных",
   "settingsStorage": "Хранилище",
   "settingsStorageSubtitle": "Кэш изображений и база данных",
+  "settingsBackup": "Резервное копирование",
+  "settingsBackupSubtitle": "Полный бэкап и восстановление данных",
+  "settingsBackupAll": "Создать бэкап",
+  "settingsBackupAllSubtitle": "Все коллекции, вишлист и настройки",
+  "settingsRestoreBackup": "Восстановить из бэкапа",
+  "settingsRestoreBackupSubtitle": "Импорт архива бэкапа",
+  "backupSuccess": "Бэкап сохранён: {collections} коллекций, {items} элементов",
+  "@backupSuccess": {
+    "placeholders": {
+      "collections": {"type": "int"},
+      "items": {"type": "int"}
+    }
+  },
+  "restoreConfirmTitle": "Восстановить бэкап?",
+  "restoreConfirmBody": "{collections} коллекций, {items} элементов, {wishlist} записей вишлиста",
+  "@restoreConfirmBody": {
+    "placeholders": {
+      "collections": {"type": "int"},
+      "items": {"type": "int"},
+      "wishlist": {"type": "int"}
+    }
+  },
+  "restoreConfirmHint": "Существующие коллекции не будут затронуты",
+  "restoreSettings": "Восстановить настройки",
+  "restoreWishlist": "Восстановить вишлист",
+  "restoreSuccess": "Восстановлено {collections} коллекций, {items} элементов",
+  "@restoreSuccess": {
+    "placeholders": {
+      "collections": {"type": "int"},
+      "items": {"type": "int"}
+    }
+  },
+  "restoreInvalidArchive": "Некорректный архив бэкапа",
   "settingsImport": "Импорт",
   "settingsImportSubtitle": "Импорт коллекций из внешних сервисов",
   "settingsContentLanguage": "Язык контента",
