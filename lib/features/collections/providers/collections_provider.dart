@@ -520,10 +520,11 @@ class CollectionItemsNotifier
     try {
       // 1. Создаём запись в custom_items
       final int customId = await _db.customMediaDao.create(customMedia);
+      final ImageCacheService cache = ref.read(imageCacheServiceProvider);
 
-      // 2. Если есть локальная обложка, копируем в кэш
+      // 2. Кэшируем обложку
       if (localCoverPath != null) {
-        final ImageCacheService cache = ref.read(imageCacheServiceProvider);
+        // Из локального файла — копируем в кэш
         final File sourceFile = File(localCoverPath);
         if (sourceFile.existsSync()) {
           final Uint8List bytes = await sourceFile.readAsBytes();
@@ -533,6 +534,14 @@ class CollectionItemsNotifier
             bytes,
           );
         }
+      } else if (customMedia.coverUrl != null &&
+          customMedia.coverUrl!.isNotEmpty) {
+        // Из URL — скачиваем в кэш
+        await cache.downloadImage(
+          type: ImageType.customCover,
+          imageId: customId.toString(),
+          remoteUrl: customMedia.coverUrl!,
+        );
       }
 
       // 3. Добавляем в коллекцию
