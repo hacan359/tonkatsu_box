@@ -1014,10 +1014,40 @@ class SRu extends S {
   String get customItemCreateButton => 'Создать';
 
   @override
+  String get customItemEdit => 'Редактировать элемент';
+
+  @override
+  String get customItemAddCover => 'Добавить обложку';
+
+  @override
+  String get customItemCoverSource => 'Источник обложки';
+
+  @override
+  String get customItemCoverFromFile => 'Из файла';
+
+  @override
+  String get customItemCoverFromUrl => 'По URL';
+
+  @override
+  String get customItemAddGenre => 'Добавить';
+
+  @override
+  String get customItemSearchHint => 'Поиск или свой вариант...';
+
+  @override
+  String get customItemUseCustom => 'Использовать свой';
+
+  @override
+  String get customItemExternalUrl => 'Внешний URL';
+
+  @override
   String get customItemErrorEmptyTitle => 'Название обязательно';
 
   @override
-  String get customItemCreated => 'Элемент создан (прототип)';
+  String get customItemCreated => 'Элемент создан';
+
+  @override
+  String get customItemUpdated => 'Элемент обновлён';
 
   @override
   String get collectionFilterAll => 'Все';

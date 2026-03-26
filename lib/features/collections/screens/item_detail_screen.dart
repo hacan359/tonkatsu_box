@@ -29,6 +29,7 @@ import '../../../shared/widgets/media_detail_view.dart';
 import '../../../shared/widgets/source_badge.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../helpers/collection_actions.dart';
+import '../widgets/create_custom_item_dialog.dart';
 import '../providers/canvas_provider.dart';
 import '../providers/collections_provider.dart';
 import '../providers/steamgriddb_panel_provider.dart';
@@ -290,6 +291,45 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     }
   }
 
+  Future<void> _editCustomItem(CollectionItem item) async {
+    if (item.customMedia == null) return;
+
+    final CustomItemData? data = await CreateCustomItemDialog.edit(
+      context,
+      item.customMedia!,
+    );
+    if (data == null || !mounted) return;
+
+    // Обновляем custom_items в БД
+    final CustomMedia updated = item.customMedia!.copyWith(
+      title: data.title,
+      altTitle: data.altTitle,
+      description: data.description,
+      coverUrl: data.coverUrl ?? data.localCoverPath,
+      year: data.year,
+      genres: data.genres,
+      platformName: data.platform,
+      externalUrl: data.externalUrl,
+    );
+
+    final DatabaseService db = ref.read(databaseServiceProvider);
+    await db.customMediaDao.update(updated);
+
+    // Рефрешим коллекцию
+    ref
+        .read(
+          collectionItemsNotifierProvider(widget.collectionId).notifier,
+        )
+        .refresh();
+
+    if (mounted) {
+      context.showSnack(
+        S.of(context).customItemUpdated,
+        type: SnackType.success,
+      );
+    }
+  }
+
   CollectionItem? _findItem(List<CollectionItem> items) {
     for (final CollectionItem item in items) {
       if (item.id == widget.itemId) {
@@ -398,6 +438,14 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                         .closePanel();
                   }
                 },
+              ),
+            // Edit button (только для кастомных элементов)
+            if (widget.isEditable && item.mediaType == MediaType.custom)
+              IconButton(
+                icon: const Icon(Icons.edit_outlined),
+                color: AppColors.textSecondary,
+                tooltip: S.of(context).customItemEdit,
+                onPressed: () => _editCustomItem(item),
               ),
             // Popup menu
             if (widget.isEditable)

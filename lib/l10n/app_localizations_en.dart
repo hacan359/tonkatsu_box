@@ -1003,10 +1003,40 @@ class SEn extends S {
   String get customItemCreateButton => 'Create';
 
   @override
+  String get customItemEdit => 'Edit Custom Item';
+
+  @override
+  String get customItemAddCover => 'Add cover';
+
+  @override
+  String get customItemCoverSource => 'Cover source';
+
+  @override
+  String get customItemCoverFromFile => 'From file';
+
+  @override
+  String get customItemCoverFromUrl => 'From URL';
+
+  @override
+  String get customItemAddGenre => 'Add';
+
+  @override
+  String get customItemSearchHint => 'Search or type custom...';
+
+  @override
+  String get customItemUseCustom => 'Use custom value';
+
+  @override
+  String get customItemExternalUrl => 'External URL';
+
+  @override
   String get customItemErrorEmptyTitle => 'Title is required';
 
   @override
-  String get customItemCreated => 'Custom item created (prototype)';
+  String get customItemCreated => 'Custom item created';
+
+  @override
+  String get customItemUpdated => 'Custom item updated';
 
   @override
   String get collectionFilterAll => 'All';

@@ -1903,6 +1903,60 @@ abstract class S {
   /// **'Create'**
   String get customItemCreateButton;
 
+  /// No description provided for @customItemEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Custom Item'**
+  String get customItemEdit;
+
+  /// No description provided for @customItemAddCover.
+  ///
+  /// In en, this message translates to:
+  /// **'Add cover'**
+  String get customItemAddCover;
+
+  /// No description provided for @customItemCoverSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover source'**
+  String get customItemCoverSource;
+
+  /// No description provided for @customItemCoverFromFile.
+  ///
+  /// In en, this message translates to:
+  /// **'From file'**
+  String get customItemCoverFromFile;
+
+  /// No description provided for @customItemCoverFromUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'From URL'**
+  String get customItemCoverFromUrl;
+
+  /// No description provided for @customItemAddGenre.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get customItemAddGenre;
+
+  /// No description provided for @customItemSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search or type custom...'**
+  String get customItemSearchHint;
+
+  /// No description provided for @customItemUseCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Use custom value'**
+  String get customItemUseCustom;
+
+  /// No description provided for @customItemExternalUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'External URL'**
+  String get customItemExternalUrl;
+
   /// No description provided for @customItemErrorEmptyTitle.
   ///
   /// In en, this message translates to:
@@ -1912,8 +1966,14 @@ abstract class S {
   /// No description provided for @customItemCreated.
   ///
   /// In en, this message translates to:
-  /// **'Custom item created (prototype)'**
+  /// **'Custom item created'**
   String get customItemCreated;
+
+  /// No description provided for @customItemUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom item updated'**
+  String get customItemUpdated;
 
   /// No description provided for @collectionFilterAll.
   ///
