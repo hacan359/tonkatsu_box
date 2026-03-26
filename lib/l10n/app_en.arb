@@ -53,6 +53,7 @@
 
   "cancel": "Cancel",
   "confirm": "OK",
+  "restore": "Restore",
   "create": "Create",
   "save": "Save",
   "add": "Add",
@@ -117,6 +118,39 @@
   "settingsApiKeysSubtitle": "Configure connections to databases",
   "settingsStorage": "Storage",
   "settingsStorageSubtitle": "Image cache and database",
+  "settingsBackup": "Backup",
+  "settingsBackupSubtitle": "Full data backup and restore",
+  "settingsBackupAll": "Backup All Data",
+  "settingsBackupAllSubtitle": "All collections, wishlist, and settings",
+  "settingsRestoreBackup": "Restore from Backup",
+  "settingsRestoreBackupSubtitle": "Import backup archive",
+  "backupSuccess": "Backup saved: {collections} collections, {items} items",
+  "@backupSuccess": {
+    "placeholders": {
+      "collections": {"type": "int"},
+      "items": {"type": "int"}
+    }
+  },
+  "restoreConfirmTitle": "Restore Backup?",
+  "restoreConfirmBody": "{collections} collections, {items} items, {wishlist} wishlist entries",
+  "@restoreConfirmBody": {
+    "placeholders": {
+      "collections": {"type": "int"},
+      "items": {"type": "int"},
+      "wishlist": {"type": "int"}
+    }
+  },
+  "restoreConfirmHint": "Existing collections will not be affected",
+  "restoreSettings": "Restore settings",
+  "restoreWishlist": "Restore wishlist",
+  "restoreSuccess": "Restored {collections} collections, {items} items",
+  "@restoreSuccess": {
+    "placeholders": {
+      "collections": {"type": "int"},
+      "items": {"type": "int"}
+    }
+  },
+  "restoreInvalidArchive": "Invalid backup archive",
   "settingsImport": "Import",
   "settingsImportSubtitle": "Import collections from external services",
   "settingsContentLanguage": "Content Language",

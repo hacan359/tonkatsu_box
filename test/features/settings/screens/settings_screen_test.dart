@@ -194,7 +194,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        await tester.drag(find.byType(ListView), const Offset(0, -300));
+        await tester.drag(find.byType(ListView), const Offset(0, -500));
         await tester.pumpAndSettle();
 
         expect(find.text('Trakt Import'), findsOneWidget);
@@ -229,7 +229,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        await tester.drag(find.byType(ListView), const Offset(0, -600));
+        await tester.drag(find.byType(ListView), const Offset(0, -800));
         await tester.pumpAndSettle();
 
         expect(find.text('Welcome Guide'), findsOneWidget);
@@ -295,7 +295,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        await tester.drag(find.byType(ListView), const Offset(0, -300));
+        await tester.drag(find.byType(ListView), const Offset(0, -500));
         await tester.pumpAndSettle();
 
         final Finder traktTile = find.ancestor(
@@ -371,7 +371,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pump();
 
-        await tester.drag(find.byType(ListView), const Offset(0, -600));
+        await tester.drag(find.byType(ListView), const Offset(0, -800));
         await tester.pump();
 
         expect(find.text('...'), findsOneWidget);

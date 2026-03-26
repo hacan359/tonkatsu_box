@@ -373,6 +373,12 @@ abstract class S {
   /// **'OK'**
   String get confirm;
 
+  /// No description provided for @restore.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get restore;
+
   /// No description provided for @create.
   ///
   /// In en, this message translates to:
@@ -720,6 +726,90 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Image cache and database'**
   String get settingsStorageSubtitle;
+
+  /// No description provided for @settingsBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup'**
+  String get settingsBackup;
+
+  /// No description provided for @settingsBackupSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Full data backup and restore'**
+  String get settingsBackupSubtitle;
+
+  /// No description provided for @settingsBackupAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup All Data'**
+  String get settingsBackupAll;
+
+  /// No description provided for @settingsBackupAllSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'All collections, wishlist, and settings'**
+  String get settingsBackupAllSubtitle;
+
+  /// No description provided for @settingsRestoreBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore from Backup'**
+  String get settingsRestoreBackup;
+
+  /// No description provided for @settingsRestoreBackupSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Import backup archive'**
+  String get settingsRestoreBackupSubtitle;
+
+  /// No description provided for @backupSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup saved: {collections} collections, {items} items'**
+  String backupSuccess(int collections, int items);
+
+  /// No description provided for @restoreConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore Backup?'**
+  String get restoreConfirmTitle;
+
+  /// No description provided for @restoreConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{collections} collections, {items} items, {wishlist} wishlist entries'**
+  String restoreConfirmBody(int collections, int items, int wishlist);
+
+  /// No description provided for @restoreConfirmHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Existing collections will not be affected'**
+  String get restoreConfirmHint;
+
+  /// No description provided for @restoreSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore settings'**
+  String get restoreSettings;
+
+  /// No description provided for @restoreWishlist.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore wishlist'**
+  String get restoreWishlist;
+
+  /// No description provided for @restoreSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Restored {collections} collections, {items} items'**
+  String restoreSuccess(int collections, int items);
+
+  /// No description provided for @restoreInvalidArchive.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid backup archive'**
+  String get restoreInvalidArchive;
 
   /// No description provided for @settingsImport.
   ///
