@@ -653,6 +653,7 @@ class CollectionDao {
       'animationCount': 0,
       'visualNovelCount': 0,
       'mangaCount': 0,
+      'customCount': 0,
     };
 
     for (final Map<String, dynamic> row in result) {
@@ -676,6 +677,8 @@ class CollectionDao {
               (stats['visualNovelCount'] ?? 0) + count;
         case 'manga':
           stats['mangaCount'] = (stats['mangaCount'] ?? 0) + count;
+        case 'custom':
+          stats['customCount'] = (stats['customCount'] ?? 0) + count;
       }
 
       // Подсчёт по статусам
@@ -862,6 +865,8 @@ class CollectionDao {
           vnIds.add(item.externalId);
         case MediaType.manga:
           mangaIds.add(item.externalId);
+        case MediaType.custom:
+          break; // Кастомные элементы не требуют загрузки из API
       }
     }
 
@@ -952,6 +957,8 @@ class CollectionDao {
           return item.copyWith(visualNovel: vnMap[item.externalId]);
         case MediaType.manga:
           return item.copyWith(manga: mangaMap[item.externalId]);
+        case MediaType.custom:
+          return item; // Данные уже загружены или будут загружены отдельно
       }
     }).toList();
   }

@@ -139,6 +139,7 @@ class CollectionFilterBar extends ConsumerWidget {
         MediaType.animation => stats?.animationCount,
         MediaType.visualNovel => stats?.visualNovelCount,
         MediaType.manga => stats?.mangaCount,
+        MediaType.custom => stats?.customCount,
       };
       label = '${filterType!.localizedLabel(l)}${count != null ? ' ($count)' : ''}';
     }

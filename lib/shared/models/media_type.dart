@@ -20,7 +20,10 @@ enum MediaType {
   visualNovel('visual_novel'),
 
   /// Манга (AniList).
-  manga('manga');
+  manga('manga'),
+
+  /// Кастомный элемент (созданный пользователем).
+  custom('custom');
 
   const MediaType(this.value);
 
@@ -54,6 +57,8 @@ enum MediaType {
         return 'Visual Novel';
       case MediaType.manga:
         return 'Manga';
+      case MediaType.custom:
+        return 'Custom';
     }
   }
 
@@ -72,6 +77,8 @@ enum MediaType {
         return l.mediaTypeVisualNovel;
       case MediaType.manga:
         return l.mediaTypeManga;
+      case MediaType.custom:
+        return l.mediaTypeCustom;
     }
   }
 }

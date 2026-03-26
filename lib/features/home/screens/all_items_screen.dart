@@ -688,6 +688,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         return item.visualNovel?.releaseYear;
       case MediaType.manga:
         return item.manga?.releaseYear;
+      case MediaType.custom:
+        return item.customMedia?.year;
     }
   }
 
@@ -708,6 +710,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         return ImageType.vnCover;
       case MediaType.manga:
         return ImageType.mangaCover;
+      case MediaType.custom:
+        return ImageType.customCover;
     }
   }
 }

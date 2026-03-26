@@ -7,6 +7,7 @@ import '../../../core/services/import_service.dart';
 import '../../../core/services/xcoll_file.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
+import '../widgets/create_custom_item_dialog.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
 import '../../../shared/widgets/breadcrumb_scope.dart';
@@ -348,6 +349,16 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             return <PopupMenuEntry<String>>[
               if (_collection!.isEditable)
                 PopupMenuItem<String>(
+                  value: 'custom_item',
+                  child: ListTile(
+                    leading: const Icon(Icons.add_box_outlined,
+                        color: AppColors.brand),
+                    title: Text(ml.customItemCreate),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              if (_collection!.isEditable)
+                PopupMenuItem<String>(
                   value: 'rename',
                   child: ListTile(
                     leading: const Icon(Icons.edit),
@@ -567,6 +578,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
 
   void _handleMenuAction(String action) {
     switch (action) {
+      case 'custom_item':
+        _handleCreateCustomItem();
       case 'rename':
         _handleRename();
       case 'tier_list':
@@ -581,6 +594,17 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         _handleImportIntoCollection();
       case 'delete':
         _handleDelete();
+    }
+  }
+
+  Future<void> _handleCreateCustomItem() async {
+    final CustomItemData? data = await CreateCustomItemDialog.show(context);
+    if (data != null && mounted) {
+      // Прототип: просто показываем снекбар с данными
+      context.showSnack(
+        '${S.of(context).customItemCreated}: ${data.title} (${data.mediaType.name})',
+        type: SnackType.success,
+      );
     }
   }
 

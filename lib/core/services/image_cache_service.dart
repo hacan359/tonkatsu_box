@@ -35,7 +35,10 @@ enum ImageType {
   mangaCover('manga_covers'),
 
   /// Обложки визуальных новелл.
-  vnCover('vn_covers');
+  vnCover('vn_covers'),
+
+  /// Обложки кастомных элементов.
+  customCover('custom_covers');
 
   const ImageType(this.folder);
 

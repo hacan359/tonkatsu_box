@@ -30,6 +30,7 @@ class CollectionStats {
     this.animationCount = 0,
     this.visualNovelCount = 0,
     this.mangaCount = 0,
+    this.customCount = 0,
   });
 
   /// Общее количество элементов.
@@ -67,6 +68,9 @@ class CollectionStats {
 
   /// Количество манги.
   final int mangaCount;
+
+  /// Количество кастомных элементов.
+  final int customCount;
 
   /// Возвращает процент завершения (0-100).
   double get completionPercent {
@@ -304,6 +308,7 @@ class CollectionRepository {
       animationCount: raw['animationCount'] ?? 0,
       visualNovelCount: raw['visualNovelCount'] ?? 0,
       mangaCount: raw['mangaCount'] ?? 0,
+      customCount: raw['customCount'] ?? 0,
     );
   }
 

@@ -297,6 +297,7 @@ class CanvasRepository {
           return item.copyWith(visualNovel: vnMap[item.itemRefId]);
         case CanvasItemType.manga:
           return item.copyWith(manga: mangaMap[item.itemRefId]);
+        case CanvasItemType.custom:
         case CanvasItemType.text:
         case CanvasItemType.image:
         case CanvasItemType.link:

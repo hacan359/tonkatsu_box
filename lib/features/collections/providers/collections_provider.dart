@@ -614,6 +614,8 @@ class CollectionItemsNotifier
         ref.invalidate(collectedVisualNovelIdsProvider);
       case MediaType.manga:
         ref.invalidate(collectedMangaIdsProvider);
+      case MediaType.custom:
+        break; // Кастомные элементы не имеют collected IDs провайдера
     }
   }
 

@@ -561,6 +561,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       MediaType.tvShow => item.tvShow?.externalUrl,
       MediaType.visualNovel => item.visualNovel?.externalUrl,
       MediaType.manga => item.manga?.externalUrl,
+      MediaType.custom => item.customMedia?.externalUrl,
     };
 
     return _MediaConfig(
@@ -597,6 +598,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
           : l.animatedMovie,
       MediaType.visualNovel => l.mediaTypeVisualNovel,
       MediaType.manga => l.mediaTypeManga,
+      MediaType.custom => item.customMedia?.platformName ?? l.mediaTypeCustom,
     };
   }
 
@@ -778,6 +780,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       MediaType.animation => l.animationNotFound,
       MediaType.visualNovel => l.visualNovelNotFound,
       MediaType.manga => l.mangaNotFound,
+      MediaType.custom => l.unknownCustom,
       null => l.gameNotFound,
     };
   }

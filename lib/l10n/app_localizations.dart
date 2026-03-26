@@ -217,6 +217,12 @@ abstract class S {
   /// **'Manga'**
   String get mediaTypeManga;
 
+  /// No description provided for @mediaTypeCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get mediaTypeCustom;
+
   /// No description provided for @sortManualDisplay.
   ///
   /// In en, this message translates to:
@@ -1807,6 +1813,108 @@ abstract class S {
   /// **'Status, dates, notes, episode progress'**
   String get collectionExportIncludeUserDataDesc;
 
+  /// No description provided for @customItemCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Custom Item'**
+  String get customItemCreate;
+
+  /// No description provided for @customItemTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get customItemTitle;
+
+  /// No description provided for @customItemTitleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. My Homebrew Game'**
+  String get customItemTitleHint;
+
+  /// No description provided for @customItemAltTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Alternative title'**
+  String get customItemAltTitle;
+
+  /// No description provided for @customItemAltTitleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Original language name'**
+  String get customItemAltTitleHint;
+
+  /// No description provided for @customItemCoverUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover image URL'**
+  String get customItemCoverUrl;
+
+  /// No description provided for @customItemYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Year'**
+  String get customItemYear;
+
+  /// No description provided for @customItemGenres.
+  ///
+  /// In en, this message translates to:
+  /// **'Genres'**
+  String get customItemGenres;
+
+  /// No description provided for @customItemGenresHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. RPG, Action, Puzzle'**
+  String get customItemGenresHint;
+
+  /// No description provided for @customItemPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Platform'**
+  String get customItemPlatform;
+
+  /// No description provided for @customItemPlatformHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. PC, SNES, Custom'**
+  String get customItemPlatformHint;
+
+  /// No description provided for @customItemDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get customItemDescription;
+
+  /// No description provided for @customItemDescriptionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Brief description or notes'**
+  String get customItemDescriptionHint;
+
+  /// No description provided for @customItemOptionalFields.
+  ///
+  /// In en, this message translates to:
+  /// **'More fields'**
+  String get customItemOptionalFields;
+
+  /// No description provided for @customItemCreateButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get customItemCreateButton;
+
+  /// No description provided for @customItemErrorEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title is required'**
+  String get customItemErrorEmptyTitle;
+
+  /// No description provided for @customItemCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom item created (prototype)'**
+  String get customItemCreated;
+
   /// No description provided for @collectionFilterAll.
   ///
   /// In en, this message translates to:
@@ -1854,6 +1962,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Manga'**
   String get collectionFilterManga;
+
+  /// No description provided for @collectionFilterCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get collectionFilterCustom;
 
   /// No description provided for @collectionItemMovedTo.
   ///
@@ -3307,6 +3421,12 @@ abstract class S {
   /// **'Unknown Manga'**
   String get unknownManga;
 
+  /// No description provided for @unknownCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown Custom Item'**
+  String get unknownCustom;
+
   /// No description provided for @unknownPlatform.
   ///
   /// In en, this message translates to:
@@ -3366,6 +3486,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Manga'**
   String get allItemsManga;
+
+  /// No description provided for @allItemsCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get allItemsCustom;
 
   /// No description provided for @allItemsRatingAsc.
   ///

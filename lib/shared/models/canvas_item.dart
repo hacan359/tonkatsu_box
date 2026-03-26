@@ -31,6 +31,9 @@ enum CanvasItemType {
   /// Карточка манги.
   manga('manga'),
 
+  /// Карточка кастомного элемента.
+  custom('custom'),
+
   /// Текстовый блок.
   text('text'),
 
@@ -68,6 +71,8 @@ enum CanvasItemType {
         return CanvasItemType.visualNovel;
       case MediaType.manga:
         return CanvasItemType.manga;
+      case MediaType.custom:
+        return CanvasItemType.custom;
     }
   }
 
@@ -78,7 +83,8 @@ enum CanvasItemType {
       this == tvShow ||
       this == animation ||
       this == visualNovel ||
-      this == manga;
+      this == manga ||
+      this == custom;
 }
 
 /// Модель элемента на канвасе коллекции.
@@ -293,6 +299,7 @@ class CanvasItem with Exportable {
       CanvasItemType.animation => MediaType.animation,
       CanvasItemType.visualNovel => MediaType.visualNovel,
       CanvasItemType.manga => MediaType.manga,
+      CanvasItemType.custom => MediaType.custom,
       _ => null,
     };
   }
