@@ -154,6 +154,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
             _buildMediaChip(MediaType.visualNovel, l.allItemsVisualNovels, counts[MediaType.visualNovel]),
             const SizedBox(width: AppSpacing.xs),
             _buildMediaChip(MediaType.manga, l.allItemsManga, counts[MediaType.manga]),
+            _buildMediaChip(MediaType.custom, l.allItemsCustom, counts[MediaType.custom]),
 
             const SizedBox(width: AppSpacing.md),
 

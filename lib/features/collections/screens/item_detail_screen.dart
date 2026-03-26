@@ -19,6 +19,7 @@ import '../../../data/repositories/canvas_repository.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/item_status.dart';
+import '../../../shared/models/custom_media.dart';
 import '../../../shared/models/manga.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/movie.dart';
@@ -637,6 +638,22 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         text: '${item.formattedRating}/10',
         iconColor: AppColors.ratingStar,
       ));
+    }
+    // Custom-специфичные чипы: altTitle, platformName
+    if (item.mediaType == MediaType.custom && item.customMedia != null) {
+      final CustomMedia c = item.customMedia!;
+      if (c.altTitle != null && c.altTitle!.isNotEmpty) {
+        chips.add(MediaDetailChip(
+          icon: Icons.translate,
+          text: c.altTitle!,
+        ));
+      }
+      if (c.platformName != null && c.platformName!.isNotEmpty) {
+        chips.add(MediaDetailChip(
+          icon: Icons.sports_esports,
+          text: c.platformName!,
+        ));
+      }
     }
     // Manga-специфичные чипы: chapters, volumes, format, authors
     if (item.mediaType == MediaType.manga && item.manga != null) {

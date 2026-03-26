@@ -212,6 +212,8 @@ class CollectionFilterBar extends ConsumerWidget {
               MediaType.visualNovel.value, ml.collectionFilterVisualNovels, stats?.visualNovelCount),
           _buildMediaTypeMenuItem(
               MediaType.manga.value, ml.collectionFilterManga, stats?.mangaCount),
+          _buildMediaTypeMenuItem(
+              MediaType.custom.value, ml.collectionFilterCustom, stats?.customCount),
         ];
       },
     );

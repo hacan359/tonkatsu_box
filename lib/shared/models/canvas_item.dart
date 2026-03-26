@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 import '../../core/services/image_cache_service.dart';
+import 'custom_media.dart';
 import 'exportable.dart';
 import 'game.dart';
 import 'manga.dart';
@@ -111,6 +112,7 @@ class CanvasItem with Exportable {
     this.tvShow,
     this.visualNovel,
     this.manga,
+    this.customMedia,
   });
 
   /// Создаёт [CanvasItem] из записи базы данных.
@@ -216,6 +218,9 @@ class CanvasItem with Exportable {
   /// Данные манги (joined, не сохраняются в БД).
   final Manga? manga;
 
+  /// Данные кастомного элемента (joined, не сохраняются в БД).
+  final CustomMedia? customMedia;
+
   // -- Unified media accessors (для медиа-типов) --
 
   /// Название медиа-элемента (game/movie/tvShow/visualNovel).
@@ -227,6 +232,7 @@ class CanvasItem with Exportable {
       CanvasItemType.animation => movie?.title ?? tvShow?.title,
       CanvasItemType.visualNovel => visualNovel?.title,
       CanvasItemType.manga => manga?.title,
+      CanvasItemType.custom => customMedia?.title,
       _ => null,
     };
   }
@@ -242,6 +248,7 @@ class CanvasItem with Exportable {
           : movie?.posterThumbUrl,
       CanvasItemType.visualNovel => visualNovel?.imageUrl,
       CanvasItemType.manga => manga?.coverUrl,
+      CanvasItemType.custom => customMedia?.coverUrl,
       _ => null,
     };
   }
@@ -257,6 +264,7 @@ class CanvasItem with Exportable {
           : ImageType.moviePoster,
       CanvasItemType.visualNovel => ImageType.vnCover,
       CanvasItemType.manga => ImageType.mangaCover,
+      CanvasItemType.custom => ImageType.customCover,
       _ => ImageType.gameCover,
     };
   }
@@ -273,6 +281,7 @@ class CanvasItem with Exportable {
       CanvasItemType.visualNovel =>
         (itemRefId ?? 0).toString(),
       CanvasItemType.manga => (manga?.id ?? 0).toString(),
+      CanvasItemType.custom => (customMedia?.id ?? 0).toString(),
       _ => '0',
     };
   }
@@ -286,6 +295,7 @@ class CanvasItem with Exportable {
       CanvasItemType.animation => Icons.animation,
       CanvasItemType.visualNovel => Icons.menu_book,
       CanvasItemType.manga => Icons.auto_stories,
+      CanvasItemType.custom => Icons.dashboard_customize,
       _ => Icons.note,
     };
   }
@@ -369,6 +379,7 @@ class CanvasItem with Exportable {
     TvShow? tvShow,
     VisualNovel? visualNovel,
     Manga? manga,
+    CustomMedia? customMedia,
   }) {
     return CanvasItem(
       id: id ?? this.id,
@@ -388,6 +399,7 @@ class CanvasItem with Exportable {
       tvShow: tvShow ?? this.tvShow,
       visualNovel: visualNovel ?? this.visualNovel,
       manga: manga ?? this.manga,
+      customMedia: customMedia ?? this.customMedia,
     );
   }
 
