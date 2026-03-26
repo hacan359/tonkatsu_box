@@ -1,5 +1,7 @@
 // Модель кастомного медиа-элемента (созданного пользователем).
 
+import 'media_type.dart';
+
 /// Кастомный медиа-элемент.
 ///
 /// Представляет элемент, созданный пользователем вручную — без API.
@@ -9,6 +11,7 @@ class CustomMedia {
   const CustomMedia({
     required this.id,
     required this.title,
+    this.displayType,
     this.altTitle,
     this.description,
     this.coverUrl,
@@ -21,9 +24,13 @@ class CustomMedia {
 
   /// Создаёт [CustomMedia] из записи базы данных.
   factory CustomMedia.fromDb(Map<String, dynamic> row) {
+    final String? displayTypeValue = row['display_type'] as String?;
     return CustomMedia(
       id: row['id'] as int,
       title: row['title'] as String,
+      displayType: displayTypeValue != null
+          ? MediaType.fromString(displayTypeValue)
+          : null,
       altTitle: row['alt_title'] as String?,
       description: row['description'] as String?,
       coverUrl: row['cover_url'] as String?,
@@ -40,6 +47,12 @@ class CustomMedia {
 
   /// Основное название.
   final String title;
+
+  /// Визуальный тип для отображения (цвет, иконка).
+  ///
+  /// Если null — используется стандартный custom стиль (бирюзовый).
+  /// Если game/movie/etc — карточка выглядит как соответствующий тип.
+  final MediaType? displayType;
 
   /// Альтернативное название (оригинальный язык).
   final String? altTitle;
@@ -74,6 +87,7 @@ class CustomMedia {
     return <String, dynamic>{
       'id': id,
       'title': title,
+      'display_type': displayType?.value,
       'alt_title': altTitle,
       'description': description,
       'cover_url': coverUrl,
@@ -96,6 +110,8 @@ class CustomMedia {
   CustomMedia copyWith({
     int? id,
     String? title,
+    MediaType? displayType,
+    bool clearDisplayType = false,
     String? altTitle,
     bool clearAltTitle = false,
     String? description,
@@ -114,6 +130,8 @@ class CustomMedia {
     return CustomMedia(
       id: id ?? this.id,
       title: title ?? this.title,
+      displayType:
+          clearDisplayType ? null : (displayType ?? this.displayType),
       altTitle: clearAltTitle ? null : (altTitle ?? this.altTitle),
       description:
           clearDescription ? null : (description ?? this.description),

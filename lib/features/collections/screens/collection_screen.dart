@@ -602,12 +602,15 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     final CustomItemData? data = await CreateCustomItemDialog.show(context);
     if (data == null || !mounted) return;
 
+    // Для локальных файлов coverUrl оставляем null —
+    // файл будет скопирован в кэш через addCustomItem.
     final CustomMedia customMedia = CustomMedia(
       id: 0,
       title: data.title,
+      displayType: data.mediaType != MediaType.custom ? data.mediaType : null,
       altTitle: data.altTitle,
       description: data.description,
-      coverUrl: data.coverUrl ?? data.localCoverPath,
+      coverUrl: data.coverUrl,
       year: data.year,
       genres: data.genres,
       platformName: data.platform,

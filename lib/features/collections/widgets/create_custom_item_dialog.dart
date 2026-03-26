@@ -145,14 +145,18 @@ class _CreateCustomItemDialogState
       db.getAllPlatforms(),
       db.getIgdbGenres(),
       db.movieDao.getTmdbGenreMap('movie'),
+      db.movieDao.getTmdbGenreMap('tv'),
     ]);
     _platforms = results[0] as List<model.Platform>;
     final List<Map<String, dynamic>> igdbRows =
         results[1] as List<Map<String, dynamic>>;
     _igdbGenres =
         igdbRows.map((Map<String, dynamic> r) => r['name'] as String).toList();
-    final Map<String, String> tmdbMap = results[2] as Map<String, String>;
-    _tmdbGenres = tmdbMap.values.toSet().toList()..sort();
+    final Map<String, String> movieGenres = results[2] as Map<String, String>;
+    final Map<String, String> tvGenres = results[3] as Map<String, String>;
+    _tmdbGenres = <String>{...movieGenres.values, ...tvGenres.values}
+        .toList()
+      ..sort();
     if (mounted) setState(() => _refsLoaded = true);
   }
 

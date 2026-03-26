@@ -623,7 +623,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       typeLabel: _typeLabel(item),
       cacheImageType: item.imageType,
       cacheImageId: item.externalId.toString(),
-      accentColor: MediaTypeTheme.colorFor(item.mediaType),
+      accentColor: MediaTypeTheme.colorFor(item.displayMediaType),
       infoChips: _buildChips(item),
       description: item.itemDescription,
       hasEpisodeTracker: item.mediaType == MediaType.tvShow ||

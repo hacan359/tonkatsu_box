@@ -468,6 +468,7 @@ abstract final class DatabaseSchema {
       CREATE TABLE IF NOT EXISTS custom_items (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
+        display_type TEXT,
         alt_title TEXT,
         description TEXT,
         cover_url TEXT,

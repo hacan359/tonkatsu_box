@@ -384,6 +384,8 @@ class CollectionItem with Exportable {
           placeholderIcon: Icons.auto_stories,
         );
       case MediaType.custom:
+        final MediaType displayType =
+            customMedia?.displayType ?? MediaType.custom;
         return (
           name: customMedia?.title,
           coverUrl: customMedia?.coverUrl,
@@ -400,7 +402,9 @@ class CollectionItem with Exportable {
           mediaStatus: null,
           source: DataSource.local,
           imageType: ImageType.customCover,
-          placeholderIcon: Icons.dashboard_customize,
+          placeholderIcon: displayType == MediaType.custom
+              ? Icons.dashboard_customize
+              : _placeholderIconFor(displayType),
         );
     }
   }
@@ -419,8 +423,25 @@ class CollectionItem with Exportable {
     return _resolvedMedia.name ?? fallback;
   }
 
+  /// Тип медиа для отображения (учитывает displayType кастомных элементов).
+  MediaType get displayMediaType =>
+      mediaType == MediaType.custom && customMedia?.displayType != null
+          ? customMedia!.displayType!
+          : mediaType;
+
   /// Название платформы или placeholder.
   String get platformName => platform?.displayName ?? 'Unknown Platform';
+
+  /// Иконка-заглушка для заданного типа медиа.
+  static IconData _placeholderIconFor(MediaType type) => switch (type) {
+        MediaType.game => Icons.videogame_asset,
+        MediaType.movie => Icons.movie_outlined,
+        MediaType.tvShow => Icons.tv_outlined,
+        MediaType.animation => Icons.animation,
+        MediaType.visualNovel => Icons.menu_book,
+        MediaType.manga => Icons.auto_stories,
+        MediaType.custom => Icons.dashboard_customize,
+      };
 
   /// Есть ли комментарий автора.
   bool get hasAuthorComment =>
