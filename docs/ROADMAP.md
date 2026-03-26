@@ -67,6 +67,7 @@
 - [x] Open in Collection — search result cards with "in collection" badge become clickable, navigating to `ItemDetailScreen`. Multi-collection picker when item exists in several collections
 - [x] Right-click context menus — desktop right-click on collection items (Move/Copy/Remove) in all view modes and on collection cards (Open/Rename/Delete) on home screen. Sort toggle in collection picker dialog
 - [x] Copy as Text — template-based text export to clipboard with 10 tokens, smart cleanup, sort options, live preview, and template persistence in SharedPreferences
+- [x] Export with Personal Data — optional checkbox in export dialog to include user status, dates, notes, and episode progress in `.xcoll`/`.xcollx` files. Backward-compatible import with `user_data` flag
 - [x] User Profiles — multi-profile system with isolated databases and image caches per profile. Profile picker at startup, profile management in Settings, colored avatar indicators in navigation. Seamless profile switching on Android (ProviderScope restart) and desktop (process restart)
 
 ---

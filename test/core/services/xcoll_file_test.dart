@@ -419,6 +419,74 @@ void main() {
       });
     });
 
+    group('includesUserData', () {
+      test('должен парсить user_data = true из JSON', () {
+        final Map<String, dynamic> json = <String, dynamic>{
+          'version': 2,
+          'format': 'light',
+          'name': 'With User Data',
+          'author': 'Author',
+          'created': testDate.toIso8601String(),
+          'user_data': true,
+          'items': <dynamic>[],
+        };
+
+        final XcollFile xcoll = XcollFile.fromJson(json);
+
+        expect(xcoll.includesUserData, isTrue);
+      });
+
+      test('должен быть false когда user_data отсутствует', () {
+        final Map<String, dynamic> json = <String, dynamic>{
+          'version': 2,
+          'format': 'light',
+          'name': 'Without User Data',
+          'author': 'Author',
+          'created': testDate.toIso8601String(),
+          'items': <dynamic>[],
+        };
+
+        final XcollFile xcoll = XcollFile.fromJson(json);
+
+        expect(xcoll.includesUserData, isFalse);
+      });
+
+      test('должен сериализовать user_data в JSON только когда true', () {
+        final XcollFile withUserData = XcollFile(
+          version: 2,
+          name: 'Test',
+          author: 'Author',
+          created: testDate,
+          includesUserData: true,
+        );
+
+        final XcollFile withoutUserData = XcollFile(
+          version: 2,
+          name: 'Test',
+          author: 'Author',
+          created: testDate,
+        );
+
+        expect(withUserData.toJson()['user_data'], isTrue);
+        expect(withoutUserData.toJson().containsKey('user_data'), isFalse);
+      });
+
+      test('round-trip user_data через JSON', () {
+        final XcollFile original = XcollFile(
+          version: 2,
+          name: 'User Data RT',
+          author: 'Author',
+          created: testDate,
+          includesUserData: true,
+        );
+
+        final String jsonStr = original.toJsonString();
+        final XcollFile restored = XcollFile.fromJsonString(jsonStr);
+
+        expect(restored.includesUserData, isTrue);
+      });
+    });
+
     test('fromJsonString/toJsonString round-trip', () {
       const ExportCanvas canvas = ExportCanvas(
         viewport: <String, dynamic>{'x': 5, 'y': 10, 'zoom': 1.5},

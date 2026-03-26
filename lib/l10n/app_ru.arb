@@ -321,6 +321,8 @@
   "collectionExportLightDesc": "Только элементы, файл меньше",
   "collectionExportFull": "Полный (.xcollx)",
   "collectionExportFullDesc": "С изображениями и доской — работает офлайн",
+  "collectionExportIncludeUserData": "Включить личные данные",
+  "collectionExportIncludeUserDataDesc": "Статус, даты, заметки, прогресс эпизодов",
   "collectionFilterAll": "Все",
   "collectionFilterByType": "Фильтр по типу",
   "collectionFilterGames": "Игры",

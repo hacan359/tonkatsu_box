@@ -102,10 +102,13 @@ class ExportService {
   /// через [CollectionItem.toExport].
   XcollFile createLightExport(
     Collection collection,
-    List<CollectionItem> items,
-  ) {
-    final List<Map<String, dynamic>> exportItems =
-        items.map((CollectionItem i) => i.toExport()).toList();
+    List<CollectionItem> items, {
+    bool includeUserData = false,
+  }) {
+    final List<Map<String, dynamic>> exportItems = items
+        .map((CollectionItem i) =>
+            i.toExport(includeUserData: includeUserData))
+        .toList();
 
     return XcollFile(
       version: xcollFormatVersion,
@@ -113,6 +116,7 @@ class ExportService {
       name: collection.name,
       author: collection.author,
       created: collection.createdAt,
+      includesUserData: includeUserData,
       items: exportItems,
     );
   }
@@ -127,10 +131,13 @@ class ExportService {
   Future<XcollFile> createFullExport(
     Collection collection,
     List<CollectionItem> items,
-    int collectionId,
-  ) async {
-    final List<Map<String, dynamic>> exportItems =
-        items.map((CollectionItem i) => i.toExport()).toList();
+    int collectionId, {
+    bool includeUserData = false,
+  }) async {
+    final List<Map<String, dynamic>> exportItems = items
+        .map((CollectionItem i) =>
+            i.toExport(includeUserData: includeUserData))
+        .toList();
 
     // Collection-level canvas
     ExportCanvas? canvas;
@@ -171,6 +178,7 @@ class ExportService {
       name: collection.name,
       author: collection.author,
       created: collection.createdAt,
+      includesUserData: includeUserData,
       items: exportItems,
       canvas: canvas,
       images: images,
@@ -490,16 +498,26 @@ class ExportService {
     Collection collection,
     List<CollectionItem> items, {
     ExportFormat format = ExportFormat.light,
+    bool includeUserData = false,
   }) async {
     try {
       final XcollFile xcoll;
       final String extension;
 
       if (format == ExportFormat.full) {
-        xcoll = await createFullExport(collection, items, collection.id);
+        xcoll = await createFullExport(
+          collection,
+          items,
+          collection.id,
+          includeUserData: includeUserData,
+        );
         extension = 'xcollx';
       } else {
-        xcoll = createLightExport(collection, items);
+        xcoll = createLightExport(
+          collection,
+          items,
+          includeUserData: includeUserData,
+        );
         extension = 'xcoll';
       }
 

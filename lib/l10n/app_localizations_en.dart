@@ -896,6 +896,13 @@ class SEn extends S {
   String get collectionExportFullDesc => 'With images & canvas — works offline';
 
   @override
+  String get collectionExportIncludeUserData => 'Include personal data';
+
+  @override
+  String get collectionExportIncludeUserDataDesc =>
+      'Status, dates, notes, episode progress';
+
+  @override
   String get collectionFilterAll => 'All';
 
   @override

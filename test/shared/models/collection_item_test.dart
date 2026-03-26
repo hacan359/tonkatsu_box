@@ -465,6 +465,150 @@ void main() {
         expect(json.containsKey('comment'), isTrue);
         expect(json['comment'], isNull);
       });
+
+      test('должен включать user data при includeUserData = true', () {
+        final DateTime startedAt = DateTime(2024, 2, 1);
+        final DateTime completedAt = DateTime(2024, 3, 15);
+        final DateTime lastActivity = DateTime(2024, 3, 15);
+        final CollectionItem item = CollectionItem(
+          id: 6,
+          collectionId: 10,
+          mediaType: MediaType.tvShow,
+          externalId: 1399,
+          currentSeason: 3,
+          currentEpisode: 5,
+          status: ItemStatus.inProgress,
+          authorComment: 'Отличный сериал',
+          userComment: 'Мои заметки',
+          userRating: 9,
+          sortOrder: 2,
+          addedAt: testAddedAt,
+          startedAt: startedAt,
+          completedAt: completedAt,
+          lastActivityAt: lastActivity,
+        );
+
+        final Map<String, dynamic> json =
+            item.toExport(includeUserData: true);
+
+        // Базовые поля
+        expect(json['media_type'], 'tv_show');
+        expect(json['external_id'], 1399);
+        expect(json['comment'], 'Отличный сериал');
+        expect(json['user_rating'], 9);
+
+        // User data поля
+        expect(json['status'], 'in_progress');
+        expect(json['user_comment'], 'Мои заметки');
+        expect(json['current_season'], 3);
+        expect(json['current_episode'], 5);
+        expect(json['sort_order'], 2);
+        expect(json['added_at'], testAddedAtUnix);
+        expect(
+          json['started_at'],
+          startedAt.millisecondsSinceEpoch ~/ 1000,
+        );
+        expect(
+          json['completed_at'],
+          completedAt.millisecondsSinceEpoch ~/ 1000,
+        );
+        expect(
+          json['last_activity_at'],
+          lastActivity.millisecondsSinceEpoch ~/ 1000,
+        );
+      });
+
+      test('не должен включать user data при includeUserData = false', () {
+        final CollectionItem item = CollectionItem(
+          id: 7,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.completed,
+          userComment: 'Заметки',
+          addedAt: testAddedAt,
+          startedAt: DateTime(2024, 1, 1),
+        );
+
+        final Map<String, dynamic> json = item.toExport();
+
+        expect(json.containsKey('status'), isFalse);
+        expect(json.containsKey('user_comment'), isFalse);
+        expect(json.containsKey('started_at'), isFalse);
+        expect(json.containsKey('completed_at'), isFalse);
+        expect(json.containsKey('last_activity_at'), isFalse);
+        expect(json.containsKey('current_season'), isFalse);
+        expect(json.containsKey('current_episode'), isFalse);
+        expect(json.containsKey('added_at'), isFalse);
+        expect(json.containsKey('sort_order'), isFalse);
+      });
+
+      test('должен обрабатывать null даты при includeUserData = true', () {
+        final CollectionItem item = CollectionItem(
+          id: 8,
+          collectionId: 10,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+        );
+
+        final Map<String, dynamic> json =
+            item.toExport(includeUserData: true);
+
+        expect(json['started_at'], isNull);
+        expect(json['completed_at'], isNull);
+        expect(json['last_activity_at'], isNull);
+        expect(json['user_comment'], isNull);
+      });
+
+      test('round-trip: toExport(includeUserData) → fromExport сохраняет все данные', () {
+        final DateTime startedAt = DateTime(2024, 2, 1);
+        final DateTime completedAt = DateTime(2024, 3, 15);
+        final CollectionItem original = CollectionItem(
+          id: 9,
+          collectionId: 10,
+          mediaType: MediaType.tvShow,
+          externalId: 1399,
+          currentSeason: 3,
+          currentEpisode: 5,
+          status: ItemStatus.completed,
+          authorComment: 'Рецензия',
+          userComment: 'Мои заметки',
+          userRating: 8,
+          sortOrder: 3,
+          addedAt: testAddedAt,
+          startedAt: startedAt,
+          completedAt: completedAt,
+        );
+
+        final Map<String, dynamic> exported =
+            original.toExport(includeUserData: true);
+        final CollectionItem restored = CollectionItem.fromExport(exported);
+
+        expect(restored.mediaType, original.mediaType);
+        expect(restored.externalId, original.externalId);
+        expect(restored.status, original.status);
+        expect(restored.authorComment, original.authorComment);
+        expect(restored.userComment, original.userComment);
+        expect(restored.userRating, original.userRating);
+        expect(restored.currentSeason, original.currentSeason);
+        expect(restored.currentEpisode, original.currentEpisode);
+        expect(restored.sortOrder, original.sortOrder);
+        // Даты сравниваем с точностью до секунды (unix timestamp)
+        expect(
+          restored.addedAt.millisecondsSinceEpoch ~/ 1000,
+          original.addedAt.millisecondsSinceEpoch ~/ 1000,
+        );
+        expect(
+          restored.startedAt?.millisecondsSinceEpoch,
+          startedAt.millisecondsSinceEpoch ~/ 1000 * 1000,
+        );
+        expect(
+          restored.completedAt?.millisecondsSinceEpoch,
+          completedAt.millisecondsSinceEpoch ~/ 1000 * 1000,
+        );
+      });
     });
 
     group('fromExport', () {
@@ -589,6 +733,88 @@ void main() {
         );
 
         expect(item.addedAt, customDate);
+      });
+
+      test('должен парсить user data поля из экспорта', () {
+        final int startedAtUnix = DateTime(2024, 2, 1).millisecondsSinceEpoch ~/ 1000;
+        final int completedAtUnix = DateTime(2024, 3, 15).millisecondsSinceEpoch ~/ 1000;
+        final int lastActivityUnix = DateTime(2024, 3, 15).millisecondsSinceEpoch ~/ 1000;
+        final Map<String, dynamic> json = <String, dynamic>{
+          'media_type': 'tv_show',
+          'external_id': 1399,
+          'comment': 'Рецензия',
+          'user_comment': 'Мои заметки',
+          'user_rating': 9,
+          'status': 'completed',
+          'current_season': 5,
+          'current_episode': 16,
+          'sort_order': 7,
+          'added_at': testAddedAtUnix,
+          'started_at': startedAtUnix,
+          'completed_at': completedAtUnix,
+          'last_activity_at': lastActivityUnix,
+        };
+
+        final CollectionItem item = CollectionItem.fromExport(json);
+
+        expect(item.authorComment, 'Рецензия');
+        expect(item.userComment, 'Мои заметки');
+        expect(item.userRating, 9);
+        expect(item.status, ItemStatus.completed);
+        expect(item.currentSeason, 5);
+        expect(item.currentEpisode, 16);
+        expect(item.sortOrder, 7);
+        expect(
+          item.addedAt.millisecondsSinceEpoch ~/ 1000,
+          testAddedAtUnix,
+        );
+        expect(
+          item.startedAt?.millisecondsSinceEpoch,
+          startedAtUnix * 1000,
+        );
+        expect(
+          item.completedAt?.millisecondsSinceEpoch,
+          completedAtUnix * 1000,
+        );
+        expect(
+          item.lastActivityAt?.millisecondsSinceEpoch,
+          lastActivityUnix * 1000,
+        );
+      });
+
+      test('должен использовать дефолты для отсутствующих user data полей', () {
+        final Map<String, dynamic> json = <String, dynamic>{
+          'media_type': 'game',
+          'external_id': 100,
+        };
+
+        final CollectionItem item = CollectionItem.fromExport(json);
+
+        expect(item.userComment, isNull);
+        expect(item.sortOrder, 0);
+        expect(item.startedAt, isNull);
+        expect(item.completedAt, isNull);
+        expect(item.lastActivityAt, isNull);
+      });
+
+      test('added_at из файла имеет приоритет над параметром addedAt', () {
+        final int fileAddedAtUnix = DateTime(2023, 1, 1).millisecondsSinceEpoch ~/ 1000;
+        final DateTime paramAddedAt = DateTime(2025, 1, 1);
+        final Map<String, dynamic> json = <String, dynamic>{
+          'media_type': 'game',
+          'external_id': 100,
+          'added_at': fileAddedAtUnix,
+        };
+
+        final CollectionItem item = CollectionItem.fromExport(
+          json,
+          addedAt: paramAddedAt,
+        );
+
+        expect(
+          item.addedAt.millisecondsSinceEpoch ~/ 1000,
+          fileAddedAtUnix,
+        );
       });
     });
 

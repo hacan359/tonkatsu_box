@@ -89,6 +89,7 @@ class XcollFile {
     required this.created,
     this.format = ExportFormat.light,
     this.description,
+    this.includesUserData = false,
     this.items = const <Map<String, dynamic>>[],
     this.canvas,
     this.images = const <String, String>{},
@@ -186,6 +187,8 @@ class XcollFile {
         ?.map((dynamic tl) => tl as Map<String, dynamic>)
         .toList();
 
+    final bool includesUserData = json['user_data'] as bool? ?? false;
+
     return XcollFile(
       version: 2,
       format: format,
@@ -193,6 +196,7 @@ class XcollFile {
       author: author,
       created: created,
       description: description,
+      includesUserData: includesUserData,
       items: items,
       canvas: canvas,
       images: images,
@@ -231,6 +235,10 @@ class XcollFile {
   /// Описание коллекции (опционально).
   final String? description;
 
+  /// Включает ли экспорт пользовательские данные
+  /// (статус, даты, заметки, прогресс эпизодов).
+  final bool includesUserData;
+
   // -- v2 поля --
 
   /// Элементы коллекции (v2).
@@ -266,6 +274,7 @@ class XcollFile {
       'author': author,
       'created': created.toUtc().toIso8601String(),
       if (description != null) 'description': description,
+      if (includesUserData) 'user_data': true,
       'items': items,
       if (canvas != null) 'canvas': canvas!.toJson(),
       if (images.isNotEmpty) 'images': images,

@@ -158,6 +158,54 @@ void main() {
         expect(xcoll.items[0].containsKey('user_comment'), isFalse);
         expect(xcoll.items[0].containsKey('added_at'), isFalse);
       });
+
+      test('должен включать user data при includeUserData = true', () {
+        final Collection collection = createTestCollection();
+        final CollectionItem item = createTestCollectionItem(
+          mediaType: MediaType.game,
+          externalId: 42,
+          status: ItemStatus.completed,
+          authorComment: 'Great',
+        );
+
+        final XcollFile xcoll = sut.createLightExport(
+          collection,
+          <CollectionItem>[item],
+          includeUserData: true,
+        );
+
+        expect(xcoll.includesUserData, isTrue);
+        expect(xcoll.items[0].containsKey('status'), isTrue);
+        expect(xcoll.items[0]['status'], 'completed');
+        expect(xcoll.items[0].containsKey('added_at'), isTrue);
+        expect(xcoll.items[0].containsKey('sort_order'), isTrue);
+      });
+
+      test('user_data должен сериализоваться в JSON', () {
+        final Collection collection = createTestCollection();
+        final XcollFile xcoll = sut.createLightExport(
+          collection,
+          <CollectionItem>[],
+          includeUserData: true,
+        );
+
+        final Map<String, dynamic> json = xcoll.toJson();
+        expect(json['user_data'], isTrue);
+
+        final String jsonStr = xcoll.toJsonString();
+        final Map<String, dynamic> parsed =
+            jsonDecode(jsonStr) as Map<String, dynamic>;
+        expect(parsed['user_data'], isTrue);
+      });
+
+      test('includesUserData по умолчанию false', () {
+        final Collection collection = createTestCollection();
+        final XcollFile xcoll =
+            sut.createLightExport(collection, <CollectionItem>[]);
+
+        expect(xcoll.includesUserData, isFalse);
+        expect(xcoll.toJson().containsKey('user_data'), isFalse);
+      });
     });
 
     group('createFullExport (v2 full)', () {

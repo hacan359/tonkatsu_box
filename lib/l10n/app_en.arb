@@ -383,6 +383,8 @@
   "collectionExportLightDesc": "Items only, smaller file",
   "collectionExportFull": "Full (.xcollx)",
   "collectionExportFullDesc": "With images & canvas — works offline",
+  "collectionExportIncludeUserData": "Include personal data",
+  "collectionExportIncludeUserDataDesc": "Status, dates, notes, episode progress",
   "collectionFilterAll": "All",
   "collectionFilterByType": "Filter by type",
   "collectionFilterGames": "Games",

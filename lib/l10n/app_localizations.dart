@@ -1705,6 +1705,18 @@ abstract class S {
   /// **'With images & canvas — works offline'**
   String get collectionExportFullDesc;
 
+  /// No description provided for @collectionExportIncludeUserData.
+  ///
+  /// In en, this message translates to:
+  /// **'Include personal data'**
+  String get collectionExportIncludeUserData;
+
+  /// No description provided for @collectionExportIncludeUserDataDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Status, dates, notes, episode progress'**
+  String get collectionExportIncludeUserDataDesc;
+
   /// No description provided for @collectionFilterAll.
   ///
   /// In en, this message translates to:

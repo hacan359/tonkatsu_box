@@ -407,9 +407,11 @@ class CollectionActions {
 
     // Выбор формата экспорта
     if (!context.mounted) return;
-    final ExportFormat? chosen = await _showExportFormatDialog(context);
+    final ({ExportFormat format, bool includeUserData})? chosen =
+        await _showExportFormatDialog(context);
     if (chosen == null) return;
-    final ExportFormat format = chosen;
+    final ExportFormat format = chosen.format;
+    final bool includeUserData = chosen.includeUserData;
 
     // Показываем индикатор
     if (context.mounted) {
@@ -423,8 +425,12 @@ class CollectionActions {
     }
 
     final ExportService exportService = ref.read(exportServiceProvider);
-    final ExportResult result =
-        await exportService.exportToFile(collection, items, format: format);
+    final ExportResult result = await exportService.exportToFile(
+      collection,
+      items,
+      format: format,
+      includeUserData: includeUserData,
+    );
 
     if (!context.mounted) return;
 
@@ -448,43 +454,63 @@ class CollectionActions {
   }
 
   /// Диалог выбора формата экспорта.
-  static Future<ExportFormat?> _showExportFormatDialog(
+  static Future<({ExportFormat format, bool includeUserData})?> _showExportFormatDialog(
     BuildContext context,
   ) {
-    return showDialog<ExportFormat>(
+    return showDialog<({ExportFormat format, bool includeUserData})>(
       context: context,
       builder: (BuildContext dialogContext) {
         final S dl = S.of(dialogContext);
-        return AlertDialog(
-          scrollable: true,
-          title: Text(dl.collectionExportFormat),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Text(dl.collectionChooseExportFormat),
-              const SizedBox(height: 16),
-              ListTile(
-                leading: const Icon(Icons.description_outlined),
-                title: Text(dl.collectionExportLight),
-                subtitle: Text(dl.collectionExportLightDesc),
-                onTap: () =>
-                    Navigator.of(dialogContext).pop(ExportFormat.light),
+        bool includeUserData = false;
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return AlertDialog(
+              scrollable: true,
+              title: Text(dl.collectionExportFormat),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text(dl.collectionChooseExportFormat),
+                  const SizedBox(height: 16),
+                  ListTile(
+                    leading: const Icon(Icons.description_outlined),
+                    title: Text(dl.collectionExportLight),
+                    subtitle: Text(dl.collectionExportLightDesc),
+                    onTap: () => Navigator.of(dialogContext).pop(
+                      (format: ExportFormat.light, includeUserData: includeUserData),
+                    ),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.folder_zip_outlined),
+                    title: Text(dl.collectionExportFull),
+                    subtitle: Text(dl.collectionExportFullDesc),
+                    onTap: () => Navigator.of(dialogContext).pop(
+                      (format: ExportFormat.full, includeUserData: includeUserData),
+                    ),
+                  ),
+                  const Divider(),
+                  CheckboxListTile(
+                    value: includeUserData,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        includeUserData = value ?? false;
+                      });
+                    },
+                    title: Text(dl.collectionExportIncludeUserData),
+                    subtitle: Text(dl.collectionExportIncludeUserDataDesc),
+                    controlAffinity: ListTileControlAffinity.leading,
+                    dense: true,
+                  ),
+                ],
               ),
-              ListTile(
-                leading: const Icon(Icons.folder_zip_outlined),
-                title: Text(dl.collectionExportFull),
-                subtitle: Text(dl.collectionExportFullDesc),
-                onTap: () =>
-                    Navigator.of(dialogContext).pop(ExportFormat.full),
-              ),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: Text(dl.cancel),
-            ),
-          ],
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: Text(dl.cancel),
+                ),
+              ],
+            );
+          },
         );
       },
     );

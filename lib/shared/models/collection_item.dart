@@ -118,8 +118,29 @@ class CollectionItem with Exportable {
           ? ItemStatus.fromString(json['status'] as String)
           : ItemStatus.notStarted,
       authorComment: json['comment'] as String?,
+      userComment: json['user_comment'] as String?,
       userRating: json['user_rating'] as int?,
-      addedAt: addedAt ?? DateTime.now(),
+      sortOrder: (json['sort_order'] as int?) ?? 0,
+      addedAt: json['added_at'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(
+              (json['added_at'] as int) * 1000,
+            )
+          : addedAt ?? DateTime.now(),
+      startedAt: json['started_at'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(
+              (json['started_at'] as int) * 1000,
+            )
+          : null,
+      completedAt: json['completed_at'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(
+              (json['completed_at'] as int) * 1000,
+            )
+          : null,
+      lastActivityAt: json['last_activity_at'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(
+              (json['last_activity_at'] as int) * 1000,
+            )
+          : null,
     );
   }
 
@@ -484,15 +505,36 @@ class CollectionItem with Exportable {
   }
 
   /// Преобразует в Map для экспорта.
+  ///
+  /// При [includeUserData] = true добавляет пользовательские данные:
+  /// статус, даты, заметки, прогресс сериалов, порядок сортировки.
   @override
-  Map<String, dynamic> toExport() {
-    return <String, dynamic>{
+  Map<String, dynamic> toExport({bool includeUserData = false}) {
+    final Map<String, dynamic> data = <String, dynamic>{
       'media_type': mediaType.value,
       'external_id': externalId,
       'platform_id': platformId,
       'comment': authorComment,
       'user_rating': userRating,
     };
+    if (includeUserData) {
+      data['status'] = status.value;
+      data['user_comment'] = userComment;
+      data['current_season'] = currentSeason;
+      data['current_episode'] = currentEpisode;
+      data['added_at'] = addedAt.millisecondsSinceEpoch ~/ 1000;
+      data['sort_order'] = sortOrder;
+      data['started_at'] = startedAt != null
+          ? startedAt!.millisecondsSinceEpoch ~/ 1000
+          : null;
+      data['completed_at'] = completedAt != null
+          ? completedAt!.millisecondsSinceEpoch ~/ 1000
+          : null;
+      data['last_activity_at'] = lastActivityAt != null
+          ? lastActivityAt!.millisecondsSinceEpoch ~/ 1000
+          : null;
+    }
+    return data;
   }
 
   /// Создаёт копию с изменёнными полями.
