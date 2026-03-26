@@ -1,6 +1,6 @@
 import 'dart:io';
-import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -517,36 +517,41 @@ class CollectionItemsNotifier
     CustomMedia customMedia, {
     String? localCoverPath,
   }) async {
-    // 1. Создаём запись в custom_items
-    final int customId = await _db.customMediaDao.create(customMedia);
+    try {
+      // 1. Создаём запись в custom_items
+      final int customId = await _db.customMediaDao.create(customMedia);
 
-    // 2. Если есть локальная обложка, копируем в кэш
-    if (localCoverPath != null) {
-      final ImageCacheService cache = ref.read(imageCacheServiceProvider);
-      final File sourceFile = File(localCoverPath);
-      if (sourceFile.existsSync()) {
-        final Uint8List bytes = await sourceFile.readAsBytes();
-        await cache.saveImageBytes(
-          ImageType.customCover,
-          customId.toString(),
-          bytes,
-        );
+      // 2. Если есть локальная обложка, копируем в кэш
+      if (localCoverPath != null) {
+        final ImageCacheService cache = ref.read(imageCacheServiceProvider);
+        final File sourceFile = File(localCoverPath);
+        if (sourceFile.existsSync()) {
+          final Uint8List bytes = await sourceFile.readAsBytes();
+          await cache.saveImageBytes(
+            ImageType.customCover,
+            customId.toString(),
+            bytes,
+          );
+        }
       }
+
+      // 3. Добавляем в коллекцию
+      final int? itemId = await _repository.addItem(
+        collectionId: _collectionId,
+        mediaType: MediaType.custom,
+        externalId: customId,
+      );
+
+      if (itemId == null) return false;
+
+      await refresh();
+      ref.invalidate(uncategorizedItemCountProvider);
+      ref.invalidate(allItemsNotifierProvider);
+      return true;
+    } catch (e, stack) {
+      debugPrint('addCustomItem error: $e\n$stack');
+      return false;
     }
-
-    // 3. Добавляем в коллекцию
-    final int? itemId = await _repository.addItem(
-      collectionId: _collectionId,
-      mediaType: MediaType.custom,
-      externalId: customId,
-    );
-
-    if (itemId == null) return false;
-
-    await refresh();
-    ref.invalidate(uncategorizedItemCountProvider);
-    ref.invalidate(allItemsNotifierProvider);
-    return true;
   }
 
   /// Клонирует элемент в другую коллекцию (полная копия).
