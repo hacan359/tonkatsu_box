@@ -141,6 +141,7 @@ Includes everything from light export plus `canvas`, `images`, and `media`:
 | author | string | yes | Creator name |
 | created | string | yes | ISO 8601 date |
 | description | string | no | Collection description |
+| user_data | boolean | no | `true` if items include personal data (status, dates, notes). Absent or `false` for catalog-only exports |
 | items | array | yes | List of collection items |
 | canvas | object | no | Collection-level canvas (full only) |
 | images | object | no | Base64 cover images (full only) |
@@ -154,7 +155,22 @@ Includes everything from light export plus `canvas`, `images`, and `media`:
 | external_id | number | yes | IGDB ID (games), TMDB ID (movies/TV), VNDB numeric ID (visual novels), or AniList ID (manga) |
 | platform_id | number | no | IGDB platform ID (games) or AnimationSource (animation: 0=movie, 1=tvShow) |
 | comment | string | no | Author's comment |
+| user_rating | number | no | User rating (1-10) |
 | _canvas | object | no | Per-item canvas data (full only) |
+
+**User data fields** (present only when top-level `user_data` is `true`):
+
+| Field | Type | Description |
+|-------|------|-------------|
+| status | string | `"not_started"`, `"in_progress"`, `"completed"`, `"dropped"`, or `"planned"` |
+| user_comment | string | User's personal notes |
+| current_season | number | Current season (TV shows) |
+| current_episode | number | Current episode (TV shows) |
+| added_at | number | Unix timestamp (seconds) when item was added |
+| sort_order | number | Manual sort position |
+| started_at | number | Unix timestamp (seconds) when started |
+| completed_at | number | Unix timestamp (seconds) when completed |
+| last_activity_at | number | Unix timestamp (seconds) of last activity |
 
 ### Canvas Object
 

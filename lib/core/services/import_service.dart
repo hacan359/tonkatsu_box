@@ -13,6 +13,7 @@ import '../../shared/models/canvas_item.dart';
 import '../../shared/models/canvas_viewport.dart';
 import '../../shared/models/collection.dart';
 import '../../shared/models/collection_item.dart';
+import '../../shared/models/item_status.dart';
 import '../../shared/models/tier_definition.dart';
 import '../../shared/models/tier_list.dart';
 import '../../shared/models/game.dart';
@@ -385,6 +386,7 @@ class ImportService {
           externalId: parsed.externalId,
           platformId: parsed.platformId,
           authorComment: parsed.authorComment,
+          status: xcoll.includesUserData ? parsed.status : ItemStatus.notStarted,
         );
 
         if (itemId != null) {
@@ -392,6 +394,11 @@ class ImportService {
           final String key =
               '${parsed.mediaType.value}:${parsed.externalId}';
           itemIdMapping[key] = itemId;
+
+          // Восстановление пользовательских данных из файла
+          if (xcoll.includesUserData && _hasUserData(parsed)) {
+            await _restoreUserData(itemId, parsed);
+          }
 
           // Импорт per-item canvas (для full export)
           final Map<String, dynamic>? perItemCanvas =
@@ -405,6 +412,7 @@ class ImportService {
           final bool didUpdate = await _updateExistingItem(
             collectionId: collection.id,
             parsed: parsed,
+            includesUserData: xcoll.includesUserData,
           );
           if (didUpdate) {
             updatedCount++;
@@ -496,10 +504,13 @@ class ImportService {
   /// Обновляет существующий элемент коллекции данными из файла импорта.
   ///
   /// Обновляет authorComment и userRating если они пустые в БД,
-  /// но заданы в файле. Возвращает true если хотя бы одно поле обновлено.
+  /// но заданы в файле. При [includesUserData] = true также обновляет
+  /// статус, даты, заметки и прогресс.
+  /// Возвращает true если хотя бы одно поле обновлено.
   Future<bool> _updateExistingItem({
     required int collectionId,
     required CollectionItem parsed,
+    bool includesUserData = false,
   }) async {
     final CollectionItem? existing = await _repository.findItem(
       collectionId: collectionId,
@@ -527,7 +538,62 @@ class ImportService {
       didUpdate = true;
     }
 
+    // Обновляем пользовательские данные если файл их содержит
+    if (includesUserData && _hasUserData(parsed)) {
+      await _restoreUserData(existing.id, parsed);
+      didUpdate = true;
+    }
+
     return didUpdate;
+  }
+
+  /// Проверяет, содержит ли элемент хотя бы одно пользовательское поле.
+  bool _hasUserData(CollectionItem parsed) {
+    return parsed.status != ItemStatus.notStarted ||
+        parsed.userComment != null ||
+        parsed.userRating != null ||
+        parsed.startedAt != null ||
+        parsed.completedAt != null ||
+        parsed.lastActivityAt != null ||
+        parsed.currentSeason > 0 ||
+        parsed.currentEpisode > 0;
+  }
+
+  /// Восстанавливает пользовательские данные элемента из файла импорта.
+  ///
+  /// Вызывается при импорте файла с user_data = true.
+  /// Обновляет статус, заметки, рейтинг, даты активности и прогресс.
+  Future<void> _restoreUserData(int itemId, CollectionItem parsed) async {
+    if (parsed.status != ItemStatus.notStarted) {
+      await _database.updateItemStatus(
+        itemId,
+        parsed.status,
+        mediaType: parsed.mediaType,
+      );
+    }
+    if (parsed.userComment != null) {
+      await _database.updateItemUserComment(itemId, parsed.userComment);
+    }
+    if (parsed.userRating != null) {
+      await _database.updateItemUserRating(itemId, parsed.userRating);
+    }
+    if (parsed.startedAt != null ||
+        parsed.completedAt != null ||
+        parsed.lastActivityAt != null) {
+      await _database.updateItemActivityDates(
+        itemId,
+        startedAt: parsed.startedAt,
+        completedAt: parsed.completedAt,
+        lastActivityAt: parsed.lastActivityAt,
+      );
+    }
+    if (parsed.currentSeason > 0 || parsed.currentEpisode > 0) {
+      await _database.updateItemProgress(
+        itemId,
+        currentSeason: parsed.currentSeason,
+        currentEpisode: parsed.currentEpisode,
+      );
+    }
   }
 
   // ==================== Media Restore (Embedded) ====================

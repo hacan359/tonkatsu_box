@@ -908,6 +908,13 @@ class SRu extends S {
       'С изображениями и доской — работает офлайн';
 
   @override
+  String get collectionExportIncludeUserData => 'Включить личные данные';
+
+  @override
+  String get collectionExportIncludeUserDataDesc =>
+      'Статус, даты, заметки, прогресс эпизодов';
+
+  @override
   String get collectionFilterAll => 'Все';
 
   @override
