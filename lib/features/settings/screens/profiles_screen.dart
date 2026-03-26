@@ -71,7 +71,8 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
 
   Future<void> _editProfile(Profile profile) async {
     final ProfilesData data = ref.read(profilesDataProvider);
-    final bool canDelete = data.profiles.length > 1;
+    final bool isActive = profile.id == data.currentProfileId;
+    final bool canDelete = data.profiles.length > 1 && !isActive;
 
     final EditProfileResult? result = await EditProfileDialog.show(
       context,
