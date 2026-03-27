@@ -344,7 +344,7 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
 
   Widget _buildImportButton(BuildContext context) {
     final S l = S.of(context);
-    final SettingsState settings = ref.watch(settingsProvider);
+    final SettingsState settings = ref.watch(settingsNotifierProvider);
     final bool hasOwnTmdbKey =
         settings.hasTmdbKey && !settings.isTmdbKeyBuiltIn;
     final bool canImport =
