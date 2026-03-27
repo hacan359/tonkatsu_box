@@ -12,7 +12,7 @@
 - **Full backup & restore** — one-button backup of all collections (full export with user data, canvas, images, tier lists), wishlist, and app settings into a single `.zip` archive. Restore from backup with confirmation dialog showing manifest preview (collection/item/wishlist counts), checkboxes for wishlist and settings restoration. Collections always created as new (no merge). Wishlist deduplicated by text. `BackupService` with `createBackup()`, `readManifest()`, `restoreFromBackup()`. `BackupManifest` model for ZIP metadata. Settings → Backup section with "Backup All Data" and "Restore from Backup" tiles. 15 localization keys EN+RU (`backup_service.dart`, `settings_screen.dart`, `app_en.arb`, `app_ru.arb`)
 
 ### Changed
-- **Trakt import: new export format support** — auto-detect flat ZIP structure (`trakt-export-*.zip`) alongside legacy nested format (`username/watched/*.json`). Username extracted from `user-profile.json` for new format. Both formats fully backward compatible (`trakt_zip_import_service.dart`)
+- **Trakt import: Trakt v3 export format support** — auto-detect flat ZIP structure (`trakt-export-*.zip`) from Trakt v3 alongside legacy nested format (`username/watched/*.json`). Username extracted from `user-profile.json` for new format. Both formats fully backward compatible (`trakt_zip_import_service.dart`)
 - **Trakt import: own TMDB API key required** — import button disabled with warning banner when using built-in TMDB key. Directs user to add own key in Settings → Credentials (`trakt_import_content.dart`, 1 localization key EN+RU)
 
 ## [0.23.0] - 2026-03-25
