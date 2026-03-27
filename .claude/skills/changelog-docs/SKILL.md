@@ -83,7 +83,7 @@ Check each file in `docs/` against the current state of the code:
 ### 4. Verification
 
 ```bash
-powershell.exe -Command "cd D:\CODE\xerabora; flutter analyze"
+powershell.exe -Command "cd D:\CODE\xerabora; flutter analyze --fatal-infos --fatal-warnings"
 powershell.exe -Command "cd D:\CODE\xerabora; flutter test"
 ```
 
@@ -94,5 +94,5 @@ powershell.exe -Command "cd D:\CODE\xerabora; flutter test"
 - [ ] docs/FEATURES.md contains new features
 - [ ] docs/GETTING_STARTED.md is current (if new settings were added)
 - [ ] docs/ROADMAP.md is updated (if items were completed)
-- [ ] `flutter analyze` has no warnings
+- [ ] `flutter analyze --fatal-infos --fatal-warnings` passes
 - [ ] `flutter test` — all tests pass

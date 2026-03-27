@@ -10,8 +10,10 @@ analyzer:
     strict-raw-types: true    # Запрет raw generic типов
 
   errors:
-    # Превратить warnings и infos в errors для консистентности с CI
-    # CI использует --fatal-infos --fatal-warnings
+    # Превратить warnings и infos в errors для консистентности с CI.
+    # CI использует --fatal-infos --fatal-warnings — все правила ниже
+    # должны быть error, чтобы локальный `flutter analyze` без флагов
+    # ловил те же проблемы.
     missing_return: error
     missing_required_param: error
     must_be_immutable: error
@@ -20,6 +22,13 @@ analyzer:
     unused_local_variable: error
     prefer_const_declarations: error
     unrelated_type_equality_checks: error
+    unnecessary_import: error
+    unnecessary_non_null_assertion: error
+    unnecessary_null_comparison: error
+    unnecessary_type_check: error
+    unnecessary_cast: error
+    sort_constructors_first: error
+    dangling_library_doc_comments: error
 
   exclude:
     - "**/*.g.dart"

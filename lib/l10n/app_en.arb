@@ -318,6 +318,7 @@
   "traktSelectCollection": "Select collection",
   "traktErrorLoadingCollections": "Error loading collections",
   "traktStartImport": "Start Import",
+  "traktRequiresOwnTmdbKey": "Trakt import requires your own TMDB API key. Add it in Settings → Credentials.",
   "traktInvalidExport": "Invalid Trakt export",
   "traktImportedItems": "Imported {count} items",
   "@traktImportedItems": {

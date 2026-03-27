@@ -16,7 +16,7 @@
 **ВАЖНО:** Flutter SDK установлен только на Windows, не в WSL!
 
 ```bash
-powershell.exe -Command "cd D:\CODE\xerabora; flutter analyze"
+powershell.exe -Command "cd D:\CODE\xerabora; flutter analyze --fatal-infos --fatal-warnings"
 powershell.exe -Command "cd D:\CODE\xerabora; flutter test"
 powershell.exe -Command "cd D:\CODE\xerabora; flutter run -d windows"
 ```
@@ -221,7 +221,7 @@ fetchUsers(limit) {}    // Нет типов
 
 ### 3. Проверки перед завершением
 ```bash
-flutter analyze    # Без warnings и errors
+flutter analyze --fatal-infos --fatal-warnings  # Должен совпадать с CI
 flutter test       # Все тесты проходят
 ```
 
