@@ -118,6 +118,8 @@ class TierRow extends StatelessWidget {
                                 return const SizedBox.shrink();
                               }
                               return Padding(
+                                key: ValueKey<int>(
+                                    entry.collectionItemId),
                                 padding: const EdgeInsets.only(
                                   right: AppSpacing.xs,
                                 ),

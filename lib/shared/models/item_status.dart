@@ -88,6 +88,24 @@ enum ItemStatus {
     }
   }
 
+  /// Локализованная метка без привязки к типу медиа.
+  ///
+  /// Для контекстов где тип неизвестен (заголовки таблиц, фильтры).
+  String genericLabel(S l) {
+    switch (this) {
+      case ItemStatus.notStarted:
+        return l.statusNotStarted;
+      case ItemStatus.inProgress:
+        return l.statusInProgress;
+      case ItemStatus.completed:
+        return l.statusCompleted;
+      case ItemStatus.dropped:
+        return l.statusDropped;
+      case ItemStatus.planned:
+        return l.statusPlanned;
+    }
+  }
+
   /// Приоритет для сортировки по статусу (меньше = выше в списке).
   ///
   /// Активные элементы показываются первыми, завершённые — последними.

@@ -67,6 +67,22 @@ class _CollectionTableViewState extends State<CollectionTableView> {
   TableColumn _sortColumn = TableColumn.name;
   bool _sortAscending = true;
 
+  // Фильтрация: null = все, иначе — конкретное значение.
+  ItemStatus? _filterStatus;
+  MediaType? _filterType;
+  int? _filterRating;
+
+  @override
+  void didUpdateWidget(CollectionTableView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Сброс фильтров при изменении данных — избегаем stale state.
+    if (!identical(oldWidget.items, widget.items)) {
+      _filterStatus = null;
+      _filterType = null;
+      _filterRating = null;
+    }
+  }
+
   /// Ширина миниатюры.
   static const double _thumbWidth = 32.0;
 
@@ -101,6 +117,9 @@ class _CollectionTableViewState extends State<CollectionTableView> {
                 sortColumn: _sortColumn,
                 sortAscending: _sortAscending,
                 onSort: _toggleSort,
+                filterStatus: _filterStatus,
+                filterType: _filterType,
+                filterRating: _filterRating,
                 l: l,
               ),
               Expanded(
@@ -139,17 +158,64 @@ class _CollectionTableViewState extends State<CollectionTableView> {
 
   void _toggleSort(TableColumn column) {
     setState(() {
-      if (_sortColumn == column) {
-        _sortAscending = !_sortAscending;
-      } else {
-        _sortColumn = column;
-        _sortAscending = true;
+      switch (column) {
+        case TableColumn.status:
+          _filterStatus = _cycleFilter<ItemStatus>(
+            _filterStatus,
+            widget.items.map((CollectionItem i) => i.status),
+            (ItemStatus a, ItemStatus b) => a.index.compareTo(b.index),
+          );
+        case TableColumn.type:
+          _filterType = _cycleFilter<MediaType>(
+            _filterType,
+            widget.items.map((CollectionItem i) => i.mediaType),
+            (MediaType a, MediaType b) => a.index.compareTo(b.index),
+          );
+        case TableColumn.rating:
+          _filterRating = _cycleFilter<int>(
+            _filterRating,
+            widget.items.map((CollectionItem i) => i.userRating ?? 0),
+            (int a, int b) => a.compareTo(b),
+          );
+        default:
+          if (_sortColumn == column) {
+            _sortAscending = !_sortAscending;
+          } else {
+            _sortColumn = column;
+            _sortAscending = true;
+          }
       }
     });
   }
 
+  /// Циклически переключает фильтр по уникальным значениям.
+  /// null → first → next → ... → null (сброс).
+  T? _cycleFilter<T>(
+    T? current,
+    Iterable<T> values,
+    int Function(T, T) compare,
+  ) {
+    final List<T> available = values.toSet().toList()..sort(compare);
+    if (available.length <= 1) return current;
+    if (current == null) return available.first;
+    final int idx = available.indexOf(current);
+    return idx < available.length - 1 ? available[idx + 1] : null;
+  }
+
   List<CollectionItem> _sortedItems() {
-    final List<CollectionItem> list = List<CollectionItem>.of(widget.items);
+    final bool hasFilter =
+        _filterStatus != null || _filterType != null || _filterRating != null;
+
+    final List<CollectionItem> list = hasFilter
+        ? widget.items
+            .where((CollectionItem i) =>
+                (_filterStatus == null || i.status == _filterStatus) &&
+                (_filterType == null || i.mediaType == _filterType) &&
+                (_filterRating == null ||
+                    (i.userRating ?? 0) == _filterRating))
+            .toList()
+        : List<CollectionItem>.of(widget.items);
+
     final int dir = _sortAscending ? 1 : -1;
 
     list.sort((CollectionItem a, CollectionItem b) {
@@ -197,12 +263,18 @@ class _TableHeader extends StatelessWidget {
     required this.sortAscending,
     required this.onSort,
     required this.l,
+    this.filterStatus,
+    this.filterType,
+    this.filterRating,
   });
 
   final TableColumn sortColumn;
   final bool sortAscending;
   final ValueChanged<TableColumn> onSort;
   final S l;
+  final ItemStatus? filterStatus;
+  final MediaType? filterType;
+  final int? filterRating;
 
   @override
   Widget build(BuildContext context) {
@@ -224,14 +296,37 @@ class _TableHeader extends StatelessWidget {
           // Name
           _col(l.collectionTableName, TableColumn.name, flex: 3),
           // Type
-          _col(l.collectionTableType, TableColumn.type, width: 44),
+          _col(
+            filterType != null
+                ? filterType!.localizedLabel(l)
+                : l.collectionTableType,
+            TableColumn.type,
+            width: 44,
+            isFiltered: filterType != null,
+          ),
           // Platform
           _col(l.collectionTablePlatform, TableColumn.platform, flex: 1),
           // Status
-          _col(l.collectionTableStatus, TableColumn.status, width: 88),
+          _col(
+            filterStatus != null
+                ? filterStatus!.genericLabel(l)
+                : l.collectionTableStatus,
+            TableColumn.status,
+            width: 88,
+            isFiltered: filterStatus != null,
+          ),
           // Rating
-          _col(l.collectionTableRating, TableColumn.rating,
-              width: 52, alignEnd: true),
+          _col(
+            filterRating != null
+                ? (filterRating == 0
+                    ? '\u2014'
+                    : '\u2605 $filterRating')
+                : l.collectionTableRating,
+            TableColumn.rating,
+            width: 52,
+            alignEnd: true,
+            isFiltered: filterRating != null,
+          ),
           // Year
           _col(l.collectionTableYear, TableColumn.year,
               width: 52, alignEnd: true),
@@ -246,9 +341,12 @@ class _TableHeader extends StatelessWidget {
     int flex = 0,
     double? width,
     bool alignEnd = false,
+    bool isFiltered = false,
   }) {
     final bool isActive = column == sortColumn;
+    final bool highlighted = isActive || isFiltered;
     final Widget cell = InkWell(
+      key: ValueKey<TableColumn>(column),
       onTap: () => onSort(column),
       borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
       child: Padding(
@@ -257,7 +355,7 @@ class _TableHeader extends StatelessWidget {
           TextSpan(
             text: label,
             children: <InlineSpan>[
-              if (isActive)
+              if (isActive && !isFiltered)
                 WidgetSpan(
                   alignment: PlaceholderAlignment.middle,
                   child: Padding(
@@ -271,11 +369,23 @@ class _TableHeader extends StatelessWidget {
                     ),
                   ),
                 ),
+              if (isFiltered)
+                const WidgetSpan(
+                  alignment: PlaceholderAlignment.middle,
+                  child: Padding(
+                    padding: EdgeInsets.only(left: 2),
+                    child: Icon(
+                      Icons.filter_list_rounded,
+                      size: 12,
+                      color: AppColors.brand,
+                    ),
+                  ),
+                ),
             ],
           ),
           style: AppTypography.caption.copyWith(
-            color: isActive ? AppColors.brand : AppColors.textSecondary,
-            fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+            color: highlighted ? AppColors.brand : AppColors.textSecondary,
+            fontWeight: highlighted ? FontWeight.w600 : FontWeight.normal,
             letterSpacing: 0.3,
           ),
           maxLines: 1,

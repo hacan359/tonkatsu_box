@@ -50,6 +50,7 @@ class TierListView extends ConsumerWidget {
         // Тиры
         for (final TierDefinition def in state.definitions)
           Padding(
+            key: ValueKey<String>('tier_${def.tierKey}'),
             padding: const EdgeInsets.only(bottom: AppSpacing.xs),
             child: TierRow(
               tierListId: tierListId,
@@ -295,7 +296,11 @@ class _UnrankedPool extends ConsumerWidget {
                   spacing: AppSpacing.xs,
                   runSpacing: AppSpacing.xs,
                   children: items.map((CollectionItem item) {
-                    return TierItemCard(item: item, isDraggable: true);
+                    return TierItemCard(
+                      key: ValueKey<int>(item.id),
+                      item: item,
+                      isDraggable: true,
+                    );
                   }).toList(),
                 ),
         );

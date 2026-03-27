@@ -79,10 +79,23 @@ void main() {
 
   /// Находит InkWell заголовка таблицы по тексту колонки.
   ///
-  /// Заголовки рендерятся через Text.rich(TextSpan(text: label)),
-  /// поэтому find.text() не всегда находит их (для active column
-  /// добавляется WidgetSpan с иконкой). Используем textContaining.
+  /// Для стабильного поиска при фильтрации (текст заголовка меняется)
+  /// используем Key-based fallback.
   Finder headerFinder(String label) {
+    // Имя колонки → TableColumn для Key-based поиска
+    const Map<String, TableColumn> columnMap = <String, TableColumn>{
+      'Name': TableColumn.name,
+      'Type': TableColumn.type,
+      'Platform': TableColumn.platform,
+      'Status': TableColumn.status,
+      'Rating': TableColumn.rating,
+      'Year': TableColumn.year,
+      'Added': TableColumn.added,
+    };
+    final TableColumn? column = columnMap[label];
+    if (column != null) {
+      return find.byKey(ValueKey<TableColumn>(column));
+    }
     return find.ancestor(
       of: find.textContaining(label),
       matching: find.byType(InkWell),
@@ -285,40 +298,95 @@ void main() {
         expect(names, <String>['Beta Movie', 'Alpha Game', 'Gamma Show']);
       });
 
-      testWidgets('should sort by rating with nulls as zero',
+      testWidgets('should filter by rating on tap, cycle through values',
           (WidgetTester tester) async {
         await pumpTableView(tester, items: threeItems());
 
+        // First tap: filter to first rating value (0 = null rating)
         await tester.tap(headerFinder('Rating').first);
         await tester.pumpAndSettle();
 
-        // Ascending: tvGamma(null=0) < movieBeta(7) < gameAlpha(9)
-        final List<String> names = itemNamesInOrder(tester);
-        expect(names, <String>['Gamma Show', 'Beta Movie', 'Alpha Game']);
+        // Only Gamma Show has null rating (0)
+        List<String> names = itemNamesInOrder(tester);
+        expect(names, <String>['Gamma Show']);
+
+        // Second tap: next rating value (7)
+        await tester.tap(headerFinder('Rating').first);
+        await tester.pumpAndSettle();
+        names = itemNamesInOrder(tester);
+        expect(names, <String>['Beta Movie']);
+
+        // Third tap: next rating value (9)
+        await tester.tap(headerFinder('Rating').first);
+        await tester.pumpAndSettle();
+        names = itemNamesInOrder(tester);
+        expect(names, <String>['Alpha Game']);
+
+        // Fourth tap: reset to show all
+        await tester.tap(headerFinder('Rating').first);
+        await tester.pumpAndSettle();
+        names = itemNamesInOrder(tester);
+        expect(names.length, 3);
       });
 
-      testWidgets('should sort by status index ascending',
+      testWidgets('should filter by status on tap, cycle through values',
           (WidgetTester tester) async {
         await pumpTableView(tester, items: threeItems());
 
+        // First tap: filter to first status (inProgress)
         await tester.tap(headerFinder('Status').first);
         await tester.pumpAndSettle();
 
-        // Enum index: inProgress(1) < completed(2) < planned(4)
-        final List<String> names = itemNamesInOrder(tester);
-        expect(names, <String>['Beta Movie', 'Alpha Game', 'Gamma Show']);
+        List<String> names = itemNamesInOrder(tester);
+        expect(names, <String>['Beta Movie']);
+
+        // Second tap: next status (completed)
+        await tester.tap(headerFinder('Status').first);
+        await tester.pumpAndSettle();
+        names = itemNamesInOrder(tester);
+        expect(names, <String>['Alpha Game']);
+
+        // Third tap: next status (planned)
+        await tester.tap(headerFinder('Status').first);
+        await tester.pumpAndSettle();
+        names = itemNamesInOrder(tester);
+        expect(names, <String>['Gamma Show']);
+
+        // Fourth tap: reset
+        await tester.tap(headerFinder('Status').first);
+        await tester.pumpAndSettle();
+        names = itemNamesInOrder(tester);
+        expect(names.length, 3);
       });
 
-      testWidgets('should sort by type index ascending',
+      testWidgets('should filter by type on tap, cycle through values',
           (WidgetTester tester) async {
         await pumpTableView(tester, items: threeItems());
 
+        // First tap: filter to first type (game)
         await tester.tap(headerFinder('Type').first);
         await tester.pumpAndSettle();
 
-        // MediaType index: game(0) < movie(1) < tvShow(2)
-        final List<String> names = itemNamesInOrder(tester);
-        expect(names, <String>['Alpha Game', 'Beta Movie', 'Gamma Show']);
+        List<String> names = itemNamesInOrder(tester);
+        expect(names, <String>['Alpha Game']);
+
+        // Second tap: next type (movie)
+        await tester.tap(headerFinder('Type').first);
+        await tester.pumpAndSettle();
+        names = itemNamesInOrder(tester);
+        expect(names, <String>['Beta Movie']);
+
+        // Third tap: next type (tvShow)
+        await tester.tap(headerFinder('Type').first);
+        await tester.pumpAndSettle();
+        names = itemNamesInOrder(tester);
+        expect(names, <String>['Gamma Show']);
+
+        // Fourth tap: reset
+        await tester.tap(headerFinder('Type').first);
+        await tester.pumpAndSettle();
+        names = itemNamesInOrder(tester);
+        expect(names.length, 3);
       });
 
       testWidgets('should sort by platform name ascending',
@@ -418,21 +486,23 @@ void main() {
         expect(names.first, 'Alpha Game');
       });
 
-      testWidgets('should sort by type descending when tapped twice',
+      testWidgets('should not filter when only one value exists',
           (WidgetTester tester) async {
-        await pumpTableView(tester, items: threeItems());
+        // All three items have different status — test with same status
+        // Use threeItems but override all to same status
+        final List<CollectionItem> sameStatus = <CollectionItem>[
+          gameAlpha.copyWith(status: ItemStatus.completed),
+          movieBeta.copyWith(status: ItemStatus.completed),
+          tvGamma.copyWith(status: ItemStatus.completed),
+        ];
+        await pumpTableView(tester, items: sameStatus);
 
-        // First tap: ascending by type
-        await tester.tap(headerFinder('Type').first);
+        // Tap Status — single value, no filter applied
+        await tester.tap(headerFinder('Status').first);
         await tester.pumpAndSettle();
 
-        // Second tap: descending by type
-        await tester.tap(headerFinder('Type').first);
-        await tester.pumpAndSettle();
-
-        // MediaType index descending: tvShow(2) > movie(1) > game(0)
         final List<String> names = itemNamesInOrder(tester);
-        expect(names, <String>['Gamma Show', 'Beta Movie', 'Alpha Game']);
+        expect(names.length, 3);
       });
     });
   });
