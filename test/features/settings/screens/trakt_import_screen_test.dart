@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/core/services/trakt_zip_import_service.dart';
 import 'package:xerabora/features/collections/providers/collections_provider.dart';
+import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/features/settings/screens/trakt_import_screen.dart';
 import 'package:xerabora/features/settings/widgets/settings_group.dart';
 import 'package:xerabora/l10n/app_localizations.dart';
@@ -30,6 +31,9 @@ void main() {
         traktZipImportServiceProvider.overrideWithValue(mockService),
         collectionsProvider.overrideWith(
           () => _TestCollectionsNotifier(collections),
+        ),
+        settingsNotifierProvider.overrideWith(
+          () => _FakeSettingsNotifier(),
         ),
       ],
       child: MaterialApp(
@@ -172,5 +176,13 @@ class _TestCollectionsNotifier extends CollectionsNotifier {
   @override
   Future<List<Collection>> build() async {
     return _collections;
+  }
+}
+
+/// Fake settings notifier с дефолтным состоянием (без TMDB ключа).
+class _FakeSettingsNotifier extends SettingsNotifier {
+  @override
+  SettingsState build() {
+    return const SettingsState();
   }
 }
