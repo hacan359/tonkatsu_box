@@ -15,6 +15,10 @@
 - **Trakt import: Trakt v3 export format support** — auto-detect flat ZIP structure (`trakt-export-*.zip`) from Trakt v3 alongside legacy nested format (`username/watched/*.json`). Username extracted from `user-profile.json` for new format. Both formats fully backward compatible (`trakt_zip_import_service.dart`)
 - **Trakt import: own TMDB API key required** — import button disabled with warning banner when using built-in TMDB key. Directs user to add own key in Settings → Credentials (`trakt_import_content.dart`, 1 localization key EN+RU)
 
+### Fixed
+- **Table view column filtering** — clicking Status/Type/Rating headers now cycles through values present in the collection instead of just toggling asc/desc sort. Only values that exist in the current collection are shown. Filter resets when items change externally. `ItemStatus.genericLabel()` added for media-type-agnostic labels (`collection_table_view.dart`, `item_status.dart`)
+- **Tier list drag flicker** — added `ValueKey` to tier rows, tier items, and unranked pool items to preserve widget identity across state rebuilds. Fixes all cards flickering when moving a single item between tiers (`tier_list_view.dart`, `tier_row.dart`)
+
 ## [0.23.0] - 2026-03-25
 
 ### Added
