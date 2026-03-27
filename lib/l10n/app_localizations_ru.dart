@@ -767,7 +767,7 @@ class SRu extends S {
 
   @override
   String get traktRequiresOwnTmdbKey =>
-      'Trakt import requires your own TMDB API key. Add it in Settings → Credentials.';
+      'Для импорта из Trakt необходим собственный TMDB API ключ. Добавьте его в Настройки → Учётные данные.';
 
   @override
   String get traktInvalidExport => 'Некорректный экспорт Trakt';
