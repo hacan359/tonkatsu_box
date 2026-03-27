@@ -28,7 +28,11 @@ String urlToImageId(String url) {
 }
 
 /// Изображение на канвасе.
-class CanvasImageItem extends ConsumerWidget {
+///
+/// Использует StatefulWidget для кэширования декодированных base64-байтов.
+/// Без кэширования каждый rebuild канваса (при перемещении, зуме)
+/// вызывает base64Decode заново, что приводит к морганию изображения.
+class CanvasImageItem extends ConsumerStatefulWidget {
   /// Создаёт [CanvasImageItem].
   const CanvasImageItem({required this.item, super.key});
 
@@ -36,8 +40,16 @@ class CanvasImageItem extends ConsumerWidget {
   final CanvasItem item;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final Map<String, dynamic>? data = item.data;
+  ConsumerState<CanvasImageItem> createState() => _CanvasImageItemState();
+}
+
+class _CanvasImageItemState extends ConsumerState<CanvasImageItem> {
+  Uint8List? _cachedBytes;
+  String? _cachedBase64Source;
+
+  @override
+  Widget build(BuildContext context) {
+    final Map<String, dynamic>? data = widget.item.data;
     final String? url = data?['url'] as String?;
     final String? base64Data = data?['base64'] as String?;
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
@@ -66,10 +78,15 @@ class CanvasImageItem extends ConsumerWidget {
         ),
       );
     } else if (base64Data != null && base64Data.isNotEmpty) {
-      final Uint8List bytes = base64Decode(base64Data);
+      // Кэшируем декодированные байты — пересоздаём только при смене данных
+      if (_cachedBytes == null || _cachedBase64Source != base64Data) {
+        _cachedBytes = base64Decode(base64Data);
+        _cachedBase64Source = base64Data;
+      }
       imageWidget = Image.memory(
-        bytes,
+        _cachedBytes!,
         fit: BoxFit.cover,
+        gaplessPlayback: true,
         errorBuilder:
             (BuildContext context, Object error, StackTrace? stackTrace) =>
                 Center(
