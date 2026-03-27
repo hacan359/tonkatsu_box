@@ -163,16 +163,19 @@ class _CollectionTableViewState extends State<CollectionTableView> {
           _filterStatus = _cycleFilter<ItemStatus>(
             _filterStatus,
             widget.items.map((CollectionItem i) => i.status),
+            (ItemStatus a, ItemStatus b) => a.index.compareTo(b.index),
           );
         case TableColumn.type:
           _filterType = _cycleFilter<MediaType>(
             _filterType,
             widget.items.map((CollectionItem i) => i.mediaType),
+            (MediaType a, MediaType b) => a.index.compareTo(b.index),
           );
         case TableColumn.rating:
           _filterRating = _cycleFilter<int>(
             _filterRating,
             widget.items.map((CollectionItem i) => i.userRating ?? 0),
+            (int a, int b) => a.compareTo(b),
           );
         default:
           if (_sortColumn == column) {
@@ -187,8 +190,12 @@ class _CollectionTableViewState extends State<CollectionTableView> {
 
   /// Циклически переключает фильтр по уникальным значениям.
   /// null → first → next → ... → null (сброс).
-  T? _cycleFilter<T>(T? current, Iterable<T> values) {
-    final List<T> available = values.toSet().toList();
+  T? _cycleFilter<T>(
+    T? current,
+    Iterable<T> values,
+    int Function(T, T) compare,
+  ) {
+    final List<T> available = values.toSet().toList()..sort(compare);
     if (available.length <= 1) return current;
     if (current == null) return available.first;
     final int idx = available.indexOf(current);
@@ -339,6 +346,7 @@ class _TableHeader extends StatelessWidget {
     final bool isActive = column == sortColumn;
     final bool highlighted = isActive || isFiltered;
     final Widget cell = InkWell(
+      key: ValueKey<TableColumn>(column),
       onTap: () => onSort(column),
       borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
       child: Padding(
@@ -362,10 +370,10 @@ class _TableHeader extends StatelessWidget {
                   ),
                 ),
               if (isFiltered)
-                WidgetSpan(
+                const WidgetSpan(
                   alignment: PlaceholderAlignment.middle,
                   child: Padding(
-                    padding: const EdgeInsets.only(left: 2),
+                    padding: EdgeInsets.only(left: 2),
                     child: Icon(
                       Icons.filter_list_rounded,
                       size: 12,
