@@ -52,11 +52,21 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
   bool _isValidating = false;
   String? _validationError;
 
+  bool get _hasOwnTmdbKey {
+    final SettingsState settings = ref.read(settingsNotifierProvider);
+    return settings.hasTmdbKey && !settings.isTmdbKeyBuiltIn;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final SettingsState settings = ref.watch(settingsNotifierProvider);
+    final bool hasOwnKey =
+        settings.hasTmdbKey && !settings.isTmdbKeyBuiltIn;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
+        if (!hasOwnKey) _buildTmdbKeyWarning(context),
         _buildFilePickerSection(context),
         if (_zipInfo != null && _zipInfo!.isValid) ...<Widget>[
           const SizedBox(height: AppSpacing.md),
@@ -67,6 +77,36 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
           _buildImportButton(context),
         ],
       ],
+    );
+  }
+
+  Widget _buildTmdbKeyWarning(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.md, 0, AppSpacing.md, AppSpacing.md,
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.sm),
+        decoration: BoxDecoration(
+          color: AppColors.warning.withAlpha(25),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+          border: Border.all(color: AppColors.warning.withAlpha(80)),
+        ),
+        child: Row(
+          children: <Widget>[
+            const Icon(Icons.warning_amber_rounded,
+                color: AppColors.warning, size: 20),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Text(
+                S.of(context).traktRequiresOwnTmdbKey,
+                style: AppTypography.bodySmall
+                    .copyWith(color: AppColors.warning),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -343,10 +383,6 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
   }
 
   Widget _buildImportButton(BuildContext context) {
-    final S l = S.of(context);
-    final SettingsState settings = ref.watch(settingsNotifierProvider);
-    final bool hasOwnTmdbKey =
-        settings.hasTmdbKey && !settings.isTmdbKeyBuiltIn;
     final bool canImport =
         _importWatched || _importRatings || _importWatchlist;
     final bool hasTarget =
@@ -354,34 +390,11 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          if (!hasOwnTmdbKey)
-            Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-              child: Row(
-                children: <Widget>[
-                  const Icon(Icons.warning_amber_rounded,
-                      color: AppColors.warning, size: 18),
-                  const SizedBox(width: AppSpacing.xs),
-                  Expanded(
-                    child: Text(
-                      l.traktRequiresOwnTmdbKey,
-                      style: AppTypography.caption
-                          .copyWith(color: AppColors.warning),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          FilledButton.icon(
-            onPressed:
-                canImport && hasTarget && hasOwnTmdbKey ? _startImport : null,
-            icon: const Icon(Icons.download),
-            label: Text(l.traktStartImport),
-          ),
-        ],
+      child: FilledButton.icon(
+        onPressed:
+            canImport && hasTarget && _hasOwnTmdbKey ? _startImport : null,
+        icon: const Icon(Icons.download),
+        label: Text(S.of(context).traktStartImport),
       ),
     );
   }
