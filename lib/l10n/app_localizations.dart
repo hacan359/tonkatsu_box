@@ -1855,6 +1855,12 @@ abstract class S {
   /// **'Year'**
   String get customItemYear;
 
+  /// No description provided for @customItemMyRating.
+  ///
+  /// In en, this message translates to:
+  /// **'My Rating'**
+  String get customItemMyRating;
+
   /// No description provided for @customItemGenres.
   ///
   /// In en, this message translates to:

@@ -979,6 +979,9 @@ class SEn extends S {
   String get customItemYear => 'Year';
 
   @override
+  String get customItemMyRating => 'My Rating';
+
+  @override
   String get customItemGenres => 'Genres';
 
   @override

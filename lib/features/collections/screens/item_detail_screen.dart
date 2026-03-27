@@ -1,5 +1,8 @@
 // Единый экран детального просмотра элемента коллекции.
 
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -300,12 +303,30 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     );
     if (data == null || !mounted) return;
 
+    // Определяем coverUrl: при локальном файле — кэшируем и ставим маркер
+    String? newCoverUrl = data.coverUrl;
+    if (data.localCoverPath != null) {
+      final File sourceFile = File(data.localCoverPath!);
+      if (sourceFile.existsSync()) {
+        final ImageCacheService cache = ref.read(imageCacheServiceProvider);
+        final Uint8List bytes = await sourceFile.readAsBytes();
+        final bool saved = await cache.saveImageBytes(
+          ImageType.customCover,
+          item.externalId.toString(),
+          bytes,
+        );
+        if (saved) {
+          newCoverUrl = CustomMedia.localCoverMarker;
+        }
+      }
+    }
+
     // Обновляем custom_items в БД
     final CustomMedia updated = item.customMedia!.copyWith(
       title: data.title,
       altTitle: data.altTitle,
       description: data.description,
-      coverUrl: data.coverUrl ?? data.localCoverPath,
+      coverUrl: newCoverUrl,
       year: data.year,
       genres: data.genres,
       platformName: data.platform,

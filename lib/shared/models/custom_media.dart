@@ -7,6 +7,16 @@ import 'media_type.dart';
 /// Представляет элемент, созданный пользователем вручную — без API.
 /// Аналог [Game], [Movie], [TvShow] для типа [MediaType.custom].
 class CustomMedia {
+  /// Маркер cover_url для обложек, загруженных с ПК.
+  ///
+  /// CachedImage получает непустой imageUrl и проверяет кэш,
+  /// где файл уже лежит. До remoteUrl дело не доходит.
+  static const String localCoverMarker = 'local://cover';
+
+  /// Проверяет, является ли URL маркером локальной обложки.
+  static bool isLocalCover(String? url) =>
+      url != null && url.startsWith('local://');
+
   /// Создаёт экземпляр [CustomMedia].
   const CustomMedia({
     required this.id,

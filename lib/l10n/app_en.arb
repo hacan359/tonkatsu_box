@@ -427,6 +427,7 @@
   "customItemAltTitleHint": "Original language name",
   "customItemCoverUrl": "Cover image URL",
   "customItemYear": "Year",
+  "customItemMyRating": "My Rating",
   "customItemGenres": "Genres",
   "customItemGenresHint": "e.g. RPG, Action, Puzzle",
   "customItemPlatform": "Platform",

@@ -15,14 +15,5 @@ class MigrationV27 extends Migration {
   @override
   Future<void> migrate(Database db) async {
     await DatabaseSchema.createCustomItemsTable(db);
-
-    // Если таблица уже существовала без display_type — добавляем колонку.
-    try {
-      await db.execute(
-        'ALTER TABLE custom_items ADD COLUMN display_type TEXT',
-      );
-    } on DatabaseException {
-      // Колонка уже существует (таблица создана с ней) — игнорируем.
-    }
   }
 }

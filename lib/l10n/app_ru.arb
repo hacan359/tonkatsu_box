@@ -365,6 +365,7 @@
   "customItemAltTitleHint": "Название на оригинальном языке",
   "customItemCoverUrl": "URL обложки",
   "customItemYear": "Год",
+  "customItemMyRating": "Мой рейтинг",
   "customItemGenres": "Жанры",
   "customItemGenresHint": "напр. RPG, Экшен, Головоломка",
   "customItemPlatform": "Платформа",

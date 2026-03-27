@@ -118,8 +118,7 @@ class _CreateCustomItemDialogState
 
   // Справочники для автокомплита
   List<model.Platform> _platforms = <model.Platform>[];
-  List<String> _igdbGenres = <String>[];
-  List<String> _tmdbGenres = <String>[];
+  List<String> _allGenres = <String>[];
   bool _refsLoaded = false;
 
   bool get _isEditing => widget.existing != null;
@@ -149,7 +148,7 @@ class _CreateCustomItemDialogState
       widget.existing!.id.toString(),
     );
     final File file = File(path);
-    if (file.existsSync() && mounted) {
+    if (await file.exists() && mounted) {
       setState(() => _cachedCoverPath = path);
     }
   }
@@ -165,12 +164,15 @@ class _CreateCustomItemDialogState
     _platforms = results[0] as List<model.Platform>;
     final List<Map<String, dynamic>> igdbRows =
         results[1] as List<Map<String, dynamic>>;
-    _igdbGenres =
+    final List<String> igdbGenres =
         igdbRows.map((Map<String, dynamic> r) => r['name'] as String).toList();
     final Map<String, String> movieGenres = results[2] as Map<String, String>;
     final Map<String, String> tvGenres = results[3] as Map<String, String>;
-    _tmdbGenres = <String>{...movieGenres.values, ...tvGenres.values}
-        .toList()
+    _allGenres = <String>{
+      ...igdbGenres,
+      ...movieGenres.values,
+      ...tvGenres.values,
+    }.toList()
       ..sort();
     if (mounted) setState(() => _refsLoaded = true);
   }
@@ -222,10 +224,6 @@ class _CreateCustomItemDialogState
 
   Color get _accentColor => MediaTypeTheme.colorFor(_selectedType);
 
-  List<String> get _currentGenres {
-    final Set<String> all = <String>{..._igdbGenres, ..._tmdbGenres};
-    return all.toList()..sort();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -412,9 +410,9 @@ class _CreateCustomItemDialogState
             _buildCoverPlaceholder(),
       );
     }
-    // URL обложки (не маркер local://cover)
+    // URL обложки (не маркер локальной обложки)
     final String url = _coverUrlController.text.trim();
-    if (url.isNotEmpty && !url.startsWith('local://')) {
+    if (url.isNotEmpty && !CustomMedia.isLocalCover(url)) {
       return Image.network(
         url,
         fit: BoxFit.cover,
@@ -626,7 +624,7 @@ class _CreateCustomItemDialogState
               ),
             ),
             const Spacer(),
-            if (_refsLoaded && _currentGenres.isNotEmpty)
+            if (_refsLoaded && _allGenres.isNotEmpty)
               TextButton.icon(
                 onPressed: _pickGenres,
                 icon: const Icon(Icons.add, size: 16),
@@ -668,7 +666,7 @@ class _CreateCustomItemDialogState
       context: context,
       builder: (BuildContext ctx) => _MultiSelectGenreDialog(
         title: S.of(context).customItemGenres,
-        items: _currentGenres,
+        items: _allGenres,
         selected: current,
       ),
     );
@@ -728,7 +726,7 @@ class _CreateCustomItemDialogState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(
-          'My Rating',
+          l.customItemMyRating,
           style: AppTypography.bodySmall.copyWith(
             color: AppColors.textSecondary,
             fontWeight: FontWeight.w600,

@@ -990,6 +990,9 @@ class SRu extends S {
   String get customItemYear => 'Год';
 
   @override
+  String get customItemMyRating => 'Мой рейтинг';
+
+  @override
   String get customItemGenres => 'Жанры';
 
   @override

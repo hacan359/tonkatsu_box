@@ -518,13 +518,10 @@ class CollectionItemsNotifier
     String? localCoverPath,
   }) async {
     try {
-      // 1. Создаём запись в custom_items
       final int customId = await _db.customMediaDao.create(customMedia);
       final ImageCacheService cache = ref.read(imageCacheServiceProvider);
 
-      // 2. Кэшируем обложку
       if (localCoverPath != null) {
-        // Из локального файла — копируем в кэш
         final File sourceFile = File(localCoverPath);
         if (sourceFile.existsSync()) {
           final Uint8List bytes = await sourceFile.readAsBytes();
@@ -533,17 +530,16 @@ class CollectionItemsNotifier
             customId.toString(),
             bytes,
           );
-          // Маркер в cover_url — чтобы CachedImage получил непустой
-          // imageUrl и проверил кэш (где файл уже лежит).
+          // Маркер в cover_url — CachedImage получит непустой imageUrl
+          // и найдёт файл в кэше, не обращаясь к сети.
           if (saved) {
             await _db.customMediaDao.update(
-              customMedia.copyWith(id: customId, coverUrl: 'local://cover'),
+              customMedia.copyWith(id: customId, coverUrl: CustomMedia.localCoverMarker),
             );
           }
         }
       } else if (customMedia.coverUrl != null &&
           customMedia.coverUrl!.isNotEmpty) {
-        // Из URL — скачиваем в кэш
         await cache.downloadImage(
           type: ImageType.customCover,
           imageId: customId.toString(),
@@ -551,7 +547,6 @@ class CollectionItemsNotifier
         );
       }
 
-      // 3. Добавляем в коллекцию
       final int? itemId = await _repository.addItem(
         collectionId: _collectionId,
         mediaType: MediaType.custom,
