@@ -109,13 +109,13 @@ When adding a new `MediaType`, `CanvasItemType`, or similar enum value, check AL
 
 #### Code Style
 - [ ] Follows Dart style guide?
-- [ ] `flutter analyze` has no warnings?
+- [ ] `flutter analyze --fatal-infos --fatal-warnings` passes?
 - [ ] Imports organized (dart, package, relative)?
 
 ### Actions After Round 2:
 1. Apply all optimizations
 2. Ensure tests still pass
-3. Run `flutter analyze`
+3. Run `flutter analyze --fatal-infos --fatal-warnings`
 4. Proceed to Round 3
 
 ---
@@ -165,7 +165,7 @@ grep -c '"@' lib/l10n/app_en.arb lib/l10n/app_ru.arb
 1. Add missing keys to both ARB files (EN and RU)
 2. Replace hardcoded strings with `S.of(context).key`
 3. Run `flutter gen-l10n` if ARB files changed
-4. Run `flutter analyze` and `flutter test`
+4. Run `flutter analyze --fatal-infos --fatal-warnings` and `flutter test`
 5. Task is ready to commit
 
 ---
