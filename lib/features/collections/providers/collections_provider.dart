@@ -1,10 +1,15 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/database/dao/collection_dao.dart';
 import '../../../core/database/database_service.dart';
 import '../../../data/repositories/collection_repository.dart';
+import '../../../core/services/image_cache_service.dart';
 import '../../../shared/models/collected_item_info.dart';
+import '../../../shared/models/custom_media.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/collection_list_sort_mode.dart';
@@ -503,6 +508,63 @@ class CollectionItemsNotifier
     return true;
   }
 
+  /// Создаёт кастомный элемент и добавляет его в коллекцию.
+  ///
+  /// Создаёт запись в `custom_items`, затем добавляет `CollectionItem`
+  /// с `mediaType = custom` и `externalId = customItem.id`.
+  /// При [localCoverPath] != null — копирует файл в кэш изображений.
+  Future<bool> addCustomItem(
+    CustomMedia customMedia, {
+    String? localCoverPath,
+  }) async {
+    try {
+      final int customId = await _db.customMediaDao.create(customMedia);
+      final ImageCacheService cache = ref.read(imageCacheServiceProvider);
+
+      if (localCoverPath != null) {
+        final File sourceFile = File(localCoverPath);
+        if (sourceFile.existsSync()) {
+          final Uint8List bytes = await sourceFile.readAsBytes();
+          final bool saved = await cache.saveImageBytes(
+            ImageType.customCover,
+            customId.toString(),
+            bytes,
+          );
+          // Маркер в cover_url — CachedImage получит непустой imageUrl
+          // и найдёт файл в кэше, не обращаясь к сети.
+          if (saved) {
+            await _db.customMediaDao.update(
+              customMedia.copyWith(id: customId, coverUrl: CustomMedia.localCoverMarker),
+            );
+          }
+        }
+      } else if (customMedia.coverUrl != null &&
+          customMedia.coverUrl!.isNotEmpty) {
+        await cache.downloadImage(
+          type: ImageType.customCover,
+          imageId: customId.toString(),
+          remoteUrl: customMedia.coverUrl!,
+        );
+      }
+
+      final int? itemId = await _repository.addItem(
+        collectionId: _collectionId,
+        mediaType: MediaType.custom,
+        externalId: customId,
+      );
+
+      if (itemId == null) return false;
+
+      await refresh();
+      ref.invalidate(uncategorizedItemCountProvider);
+      ref.invalidate(allItemsNotifierProvider);
+      return true;
+    } catch (e, stack) {
+      debugPrint('addCustomItem error: $e\n$stack'); // TODO: remove after stabilization
+      return false;
+    }
+  }
+
   /// Клонирует элемент в другую коллекцию (полная копия).
   ///
   /// Возвращает true при успехе, false если элемент уже в целевой коллекции.
@@ -614,6 +676,8 @@ class CollectionItemsNotifier
         ref.invalidate(collectedVisualNovelIdsProvider);
       case MediaType.manga:
         ref.invalidate(collectedMangaIdsProvider);
+      case MediaType.custom:
+        break; // Кастомные элементы не имеют collected IDs провайдера
     }
   }
 

@@ -6,8 +6,8 @@ import 'package:xerabora/shared/models/media_type.dart';
 void main() {
   group('MediaType', () {
     group('значения enum', () {
-      test('должен содержать 6 значений', () {
-        expect(MediaType.values.length, 6);
+      test('должен содержать 7 значений', () {
+        expect(MediaType.values.length, 7);
       });
 
       test('должен содержать game', () {

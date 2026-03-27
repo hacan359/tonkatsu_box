@@ -53,6 +53,7 @@ void main() {
   late MockTvShowDao mockTvShowDao;
   late MockVisualNovelDao mockVisualNovelDao;
   late MockMangaDao mockMangaDao;
+  late MockCustomMediaDao mockCustomMediaDao;
   late CollectionDao dao;
 
   setUp(() {
@@ -63,6 +64,7 @@ void main() {
     mockTvShowDao = MockTvShowDao();
     mockVisualNovelDao = MockVisualNovelDao();
     mockMangaDao = MockMangaDao();
+    mockCustomMediaDao = MockCustomMediaDao();
     dao = CollectionDao(
       () async => mockDb,
       gameDao: mockGameDao,
@@ -70,6 +72,7 @@ void main() {
       tvShowDao: mockTvShowDao,
       visualNovelDao: mockVisualNovelDao,
       mangaDao: mockMangaDao,
+      customMediaDao: mockCustomMediaDao,
     );
   });
 

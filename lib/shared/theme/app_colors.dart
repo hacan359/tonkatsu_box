@@ -63,6 +63,9 @@ abstract final class AppColors {
   /// Акцентный цвет для манги (голубой AniList).
   static const Color mangaAccent = Color(0xFF3DB4F2);
 
+  /// Акцентный цвет для кастомных элементов (бирюзовый).
+  static const Color customAccent = Color(0xFF26A69A);
+
   // ==================== Семантические цвета ====================
 
   /// Цвет успеха (completed, done).

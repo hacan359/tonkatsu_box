@@ -160,6 +160,8 @@ class TextExportService {
         return 'Visual Novel';
       case MediaType.manga:
         return 'Manga';
+      case MediaType.custom:
+        return 'Custom';
     }
   }
 }

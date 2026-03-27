@@ -69,6 +69,9 @@ class SEn extends S {
   String get mediaTypeManga => 'Manga';
 
   @override
+  String get mediaTypeCustom => 'Custom';
+
+  @override
   String get sortManualDisplay => 'Manual';
 
   @override
@@ -955,6 +958,94 @@ class SEn extends S {
       'Status, dates, notes, episode progress';
 
   @override
+  String get customItemCreate => 'Create Custom Item';
+
+  @override
+  String get customItemTitle => 'Title';
+
+  @override
+  String get customItemTitleHint => 'e.g. My Homebrew Game';
+
+  @override
+  String get customItemAltTitle => 'Alternative title';
+
+  @override
+  String get customItemAltTitleHint => 'Original language name';
+
+  @override
+  String get customItemCoverUrl => 'Cover image URL';
+
+  @override
+  String get customItemYear => 'Year';
+
+  @override
+  String get customItemMyRating => 'My Rating';
+
+  @override
+  String get customItemGenres => 'Genres';
+
+  @override
+  String get customItemGenresHint => 'e.g. RPG, Action, Puzzle';
+
+  @override
+  String get customItemPlatform => 'Platform';
+
+  @override
+  String get customItemPlatformHint => 'e.g. PC, SNES, Custom';
+
+  @override
+  String get customItemDescription => 'Description';
+
+  @override
+  String get customItemDescriptionHint => 'Brief description or notes';
+
+  @override
+  String get customItemOptionalFields => 'More fields';
+
+  @override
+  String get customItemCreateButton => 'Create';
+
+  @override
+  String get customItemEdit => 'Edit Custom Item';
+
+  @override
+  String get customItemAddCover => 'Add cover';
+
+  @override
+  String get customItemCoverSource => 'Cover source';
+
+  @override
+  String get customItemCoverRatio =>
+      'Recommended aspect ratio: 2:3 (e.g. 600×900)';
+
+  @override
+  String get customItemCoverFromFile => 'From file';
+
+  @override
+  String get customItemCoverFromUrl => 'From URL';
+
+  @override
+  String get customItemAddGenre => 'Add';
+
+  @override
+  String get customItemSearchHint => 'Search or type custom...';
+
+  @override
+  String get customItemUseCustom => 'Use custom value';
+
+  @override
+  String get customItemExternalUrl => 'External URL';
+
+  @override
+  String get customItemErrorEmptyTitle => 'Title is required';
+
+  @override
+  String get customItemCreated => 'Custom item created';
+
+  @override
+  String get customItemUpdated => 'Custom item updated';
+
+  @override
   String get collectionFilterAll => 'All';
 
   @override
@@ -977,6 +1068,9 @@ class SEn extends S {
 
   @override
   String get collectionFilterManga => 'Manga';
+
+  @override
+  String get collectionFilterCustom => 'Custom';
 
   @override
   String collectionItemMovedTo(String name, String collection) {
@@ -1794,6 +1888,9 @@ class SEn extends S {
   String get unknownManga => 'Unknown Manga';
 
   @override
+  String get unknownCustom => 'Unknown Custom Item';
+
+  @override
   String get unknownPlatform => 'Unknown Platform';
 
   @override
@@ -1824,6 +1921,9 @@ class SEn extends S {
 
   @override
   String get allItemsManga => 'Manga';
+
+  @override
+  String get allItemsCustom => 'Custom';
 
   @override
   String get allItemsRatingAsc => 'Rating ↑';

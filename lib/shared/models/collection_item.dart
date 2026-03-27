@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/services/image_cache_service.dart';
+import 'custom_media.dart';
 import 'data_source.dart';
 import 'exportable.dart';
 import 'game.dart';
@@ -41,6 +42,7 @@ class CollectionItem with Exportable {
     this.tvShow,
     this.visualNovel,
     this.manga,
+    this.customMedia,
     this.platform,
   });
 
@@ -57,6 +59,7 @@ class CollectionItem with Exportable {
     TvShow? tvShow,
     VisualNovel? visualNovel,
     Manga? manga,
+    CustomMedia? customMedia,
     Platform? platform,
   }) {
     return CollectionItem(
@@ -95,6 +98,7 @@ class CollectionItem with Exportable {
       tvShow: tvShow,
       visualNovel: visualNovel,
       manga: manga,
+      customMedia: customMedia,
       platform: platform,
     );
   }
@@ -209,6 +213,9 @@ class CollectionItem with Exportable {
 
   /// Данные манги (joined).
   final Manga? manga;
+
+  /// Данные кастомного медиа (joined).
+  final CustomMedia? customMedia;
 
   /// Данные платформы (joined).
   final Platform? platform;
@@ -376,6 +383,29 @@ class CollectionItem with Exportable {
           imageType: ImageType.mangaCover,
           placeholderIcon: Icons.auto_stories,
         );
+      case MediaType.custom:
+        final MediaType displayType =
+            customMedia?.displayType ?? MediaType.custom;
+        return (
+          name: customMedia?.title,
+          coverUrl: customMedia?.coverUrl,
+          thumbUrl: customMedia?.coverUrl,
+          description: customMedia?.description,
+          rating: null,
+          formattedRating: null,
+          releaseYear: customMedia?.year,
+          runtime: null,
+          totalSeasons: null,
+          totalEpisodes: null,
+          genresString: customMedia?.genres,
+          genres: customMedia?.genreList,
+          mediaStatus: null,
+          source: DataSource.local,
+          imageType: ImageType.customCover,
+          placeholderIcon: displayType == MediaType.custom
+              ? Icons.dashboard_customize
+              : _placeholderIconFor(displayType),
+        );
     }
   }
 
@@ -388,12 +418,30 @@ class CollectionItem with Exportable {
       MediaType.animation => 'Unknown Animation',
       MediaType.visualNovel => 'Unknown Visual Novel',
       MediaType.manga => 'Unknown Manga',
+      MediaType.custom => 'Unknown Custom Item',
     };
     return _resolvedMedia.name ?? fallback;
   }
 
+  /// Тип медиа для отображения (учитывает displayType кастомных элементов).
+  MediaType get displayMediaType =>
+      mediaType == MediaType.custom && customMedia?.displayType != null
+          ? customMedia!.displayType!
+          : mediaType;
+
   /// Название платформы или placeholder.
   String get platformName => platform?.displayName ?? 'Unknown Platform';
+
+  /// Иконка-заглушка для заданного типа медиа.
+  static IconData _placeholderIconFor(MediaType type) => switch (type) {
+        MediaType.game => Icons.videogame_asset,
+        MediaType.movie => Icons.movie_outlined,
+        MediaType.tvShow => Icons.tv_outlined,
+        MediaType.animation => Icons.animation,
+        MediaType.visualNovel => Icons.menu_book,
+        MediaType.manga => Icons.auto_stories,
+        MediaType.custom => Icons.dashboard_customize,
+      };
 
   /// Есть ли комментарий автора.
   bool get hasAuthorComment =>
@@ -566,6 +614,7 @@ class CollectionItem with Exportable {
     TvShow? tvShow,
     VisualNovel? visualNovel,
     Manga? manga,
+    CustomMedia? customMedia,
     Platform? platform,
   }) {
     return CollectionItem(
@@ -593,6 +642,7 @@ class CollectionItem with Exportable {
       tvShow: tvShow ?? this.tvShow,
       visualNovel: visualNovel ?? this.visualNovel,
       manga: manga ?? this.manga,
+      customMedia: customMedia ?? this.customMedia,
       platform: platform ?? this.platform,
     );
   }

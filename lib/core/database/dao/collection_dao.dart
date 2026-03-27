@@ -13,7 +13,9 @@ import '../../../shared/models/movie.dart';
 import '../../../shared/models/platform.dart';
 import '../../../shared/models/manga.dart';
 import '../../../shared/models/tv_show.dart';
+import '../../../shared/models/custom_media.dart';
 import '../../../shared/models/visual_novel.dart';
+import 'custom_media_dao.dart';
 import 'game_dao.dart';
 import 'manga_dao.dart';
 import 'movie_dao.dart';
@@ -30,11 +32,13 @@ class CollectionDao {
     required TvShowDao tvShowDao,
     required VisualNovelDao visualNovelDao,
     required MangaDao mangaDao,
+    required CustomMediaDao customMediaDao,
   })  : _gameDao = gameDao,
         _movieDao = movieDao,
         _tvShowDao = tvShowDao,
         _visualNovelDao = visualNovelDao,
-        _mangaDao = mangaDao;
+        _mangaDao = mangaDao,
+        _customMediaDao = customMediaDao;
 
   final Future<Database> Function() _getDatabase;
   final GameDao _gameDao;
@@ -42,6 +46,7 @@ class CollectionDao {
   final TvShowDao _tvShowDao;
   final VisualNovelDao _visualNovelDao;
   final MangaDao _mangaDao;
+  final CustomMediaDao _customMediaDao;
 
   // ==================== Collections ====================
 
@@ -653,6 +658,7 @@ class CollectionDao {
       'animationCount': 0,
       'visualNovelCount': 0,
       'mangaCount': 0,
+      'customCount': 0,
     };
 
     for (final Map<String, dynamic> row in result) {
@@ -676,6 +682,8 @@ class CollectionDao {
               (stats['visualNovelCount'] ?? 0) + count;
         case 'manga':
           stats['mangaCount'] = (stats['mangaCount'] ?? 0) + count;
+        case 'custom':
+          stats['customCount'] = (stats['customCount'] ?? 0) + count;
       }
 
       // Подсчёт по статусам
@@ -839,6 +847,7 @@ class CollectionDao {
     final List<int> tvShowIds = <int>[];
     final List<int> vnIds = <int>[];
     final List<int> mangaIds = <int>[];
+    final List<int> customIds = <int>[];
     final Set<int> platformIds = <int>{};
 
     for (final CollectionItem item in items) {
@@ -862,6 +871,8 @@ class CollectionDao {
           vnIds.add(item.externalId);
         case MediaType.manga:
           mangaIds.add(item.externalId);
+        case MediaType.custom:
+          customIds.add(item.externalId);
       }
     }
 
@@ -882,6 +893,9 @@ class CollectionDao {
       mangaIds.isNotEmpty
           ? _mangaDao.getMangaByIds(mangaIds)
           : Future<List<Manga>>.value(<Manga>[]),
+      customIds.isNotEmpty
+          ? _customMediaDao.getByIds(customIds)
+          : Future<List<CustomMedia>>.value(<CustomMedia>[]),
       platformIds.isNotEmpty
           ? _gameDao.getPlatformsByIds(platformIds.toList())
           : Future<List<Platform>>.value(<Platform>[]),
@@ -892,7 +906,8 @@ class CollectionDao {
     final List<TvShow> tvShows = results[2] as List<TvShow>;
     final List<VisualNovel> visualNovels = results[3] as List<VisualNovel>;
     final List<Manga> mangas = results[4] as List<Manga>;
-    final List<Platform> platforms = results[5] as List<Platform>;
+    final List<CustomMedia> customMediaList = results[5] as List<CustomMedia>;
+    final List<Platform> platforms = results[6] as List<Platform>;
 
     final Map<int, Platform> platformsMap = <int, Platform>{
       for (final Platform p in platforms) p.id: p,
@@ -928,6 +943,9 @@ class CollectionDao {
     final Map<int, Manga> mangaMap = <int, Manga>{
       for (final Manga m in mangas) m.id: m,
     };
+    final Map<int, CustomMedia> customMap = <int, CustomMedia>{
+      for (final CustomMedia c in customMediaList) c.id: c,
+    };
 
     // Собираем результат
     return items.map((CollectionItem item) {
@@ -952,6 +970,8 @@ class CollectionDao {
           return item.copyWith(visualNovel: vnMap[item.externalId]);
         case MediaType.manga:
           return item.copyWith(manga: mangaMap[item.externalId]);
+        case MediaType.custom:
+          return item.copyWith(customMedia: customMap[item.externalId]);
       }
     }).toList();
   }

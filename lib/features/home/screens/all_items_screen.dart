@@ -154,6 +154,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
             _buildMediaChip(MediaType.visualNovel, l.allItemsVisualNovels, counts[MediaType.visualNovel]),
             const SizedBox(width: AppSpacing.xs),
             _buildMediaChip(MediaType.manga, l.allItemsManga, counts[MediaType.manga]),
+            _buildMediaChip(MediaType.custom, l.allItemsCustom, counts[MediaType.custom]),
 
             const SizedBox(width: AppSpacing.md),
 
@@ -688,6 +689,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         return item.visualNovel?.releaseYear;
       case MediaType.manga:
         return item.manga?.releaseYear;
+      case MediaType.custom:
+        return item.customMedia?.year;
     }
   }
 
@@ -708,6 +711,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         return ImageType.vnCover;
       case MediaType.manga:
         return ImageType.mangaCover;
+      case MediaType.custom:
+        return ImageType.customCover;
     }
   }
 }

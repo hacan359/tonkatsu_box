@@ -266,6 +266,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         collected = await ref.read(collectedVisualNovelIdsProvider.future);
       case MediaType.manga:
         collected = await ref.read(collectedMangaIdsProvider.future);
+      case MediaType.custom:
+        return <CollectedItemInfo>[]; // Кастомные элементы не ищутся через API
     }
     return collected[externalId] ?? <CollectedItemInfo>[];
   }

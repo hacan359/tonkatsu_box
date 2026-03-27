@@ -20,7 +20,10 @@ enum DataSource {
   vndb('VNDB', Color(0xFF2A5FC1)),
 
   /// AniList — база данных манги и аниме.
-  anilist('AniList', Color(0xFF3DB4F2));
+  anilist('AniList', Color(0xFF3DB4F2)),
+
+  /// Локальный источник (кастомные элементы).
+  local('Custom', Color(0xFF26A69A));
 
   const DataSource(this.label, this.color);
 

@@ -1,5 +1,7 @@
 // Единый экран детального просмотра элемента коллекции.
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,6 +21,7 @@ import '../../../data/repositories/canvas_repository.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/item_status.dart';
+import '../../../shared/models/custom_media.dart';
 import '../../../shared/models/manga.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/movie.dart';
@@ -28,6 +31,7 @@ import '../../../shared/widgets/media_detail_view.dart';
 import '../../../shared/widgets/source_badge.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../helpers/collection_actions.dart';
+import '../widgets/create_custom_item_dialog.dart';
 import '../providers/canvas_provider.dart';
 import '../providers/collections_provider.dart';
 import '../providers/steamgriddb_panel_provider.dart';
@@ -289,6 +293,63 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     }
   }
 
+  Future<void> _editCustomItem(CollectionItem item) async {
+    if (item.customMedia == null) return;
+
+    final CustomItemData? data = await CreateCustomItemDialog.edit(
+      context,
+      item.customMedia!,
+    );
+    if (data == null || !mounted) return;
+
+    // Определяем coverUrl: при локальном файле — кэшируем и ставим маркер
+    String? newCoverUrl = data.coverUrl;
+    if (data.localCoverPath != null) {
+      final File sourceFile = File(data.localCoverPath!);
+      if (sourceFile.existsSync()) {
+        final ImageCacheService cache = ref.read(imageCacheServiceProvider);
+        final Uint8List bytes = await sourceFile.readAsBytes();
+        final bool saved = await cache.saveImageBytes(
+          ImageType.customCover,
+          item.externalId.toString(),
+          bytes,
+        );
+        if (saved) {
+          newCoverUrl = CustomMedia.localCoverMarker;
+        }
+      }
+    }
+
+    // Обновляем custom_items в БД
+    final CustomMedia updated = item.customMedia!.copyWith(
+      title: data.title,
+      altTitle: data.altTitle,
+      description: data.description,
+      coverUrl: newCoverUrl,
+      year: data.year,
+      genres: data.genres,
+      platformName: data.platform,
+      externalUrl: data.externalUrl,
+    );
+
+    final DatabaseService db = ref.read(databaseServiceProvider);
+    await db.customMediaDao.update(updated);
+
+    // Рефрешим коллекцию
+    ref
+        .read(
+          collectionItemsNotifierProvider(widget.collectionId).notifier,
+        )
+        .refresh();
+
+    if (mounted) {
+      context.showSnack(
+        S.of(context).customItemUpdated,
+        type: SnackType.success,
+      );
+    }
+  }
+
   CollectionItem? _findItem(List<CollectionItem> items) {
     for (final CollectionItem item in items) {
       if (item.id == widget.itemId) {
@@ -397,6 +458,14 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                         .closePanel();
                   }
                 },
+              ),
+            // Edit button (только для кастомных элементов)
+            if (widget.isEditable && item.mediaType == MediaType.custom)
+              IconButton(
+                icon: const Icon(Icons.edit_outlined),
+                color: AppColors.textSecondary,
+                tooltip: S.of(context).customItemEdit,
+                onPressed: () => _editCustomItem(item),
               ),
             // Popup menu
             if (widget.isEditable)
@@ -561,6 +630,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       MediaType.tvShow => item.tvShow?.externalUrl,
       MediaType.visualNovel => item.visualNovel?.externalUrl,
       MediaType.manga => item.manga?.externalUrl,
+      MediaType.custom => item.customMedia?.externalUrl,
     };
 
     return _MediaConfig(
@@ -573,7 +643,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       typeLabel: _typeLabel(item),
       cacheImageType: item.imageType,
       cacheImageId: item.externalId.toString(),
-      accentColor: MediaTypeTheme.colorFor(item.mediaType),
+      accentColor: MediaTypeTheme.colorFor(item.displayMediaType),
       infoChips: _buildChips(item),
       description: item.itemDescription,
       hasEpisodeTracker: item.mediaType == MediaType.tvShow ||
@@ -597,6 +667,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
           : l.animatedMovie,
       MediaType.visualNovel => l.mediaTypeVisualNovel,
       MediaType.manga => l.mediaTypeManga,
+      MediaType.custom => item.customMedia?.platformName ?? l.mediaTypeCustom,
     };
   }
 
@@ -635,6 +706,22 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         text: '${item.formattedRating}/10',
         iconColor: AppColors.ratingStar,
       ));
+    }
+    // Custom-специфичные чипы: altTitle, platformName
+    if (item.mediaType == MediaType.custom && item.customMedia != null) {
+      final CustomMedia c = item.customMedia!;
+      if (c.altTitle != null && c.altTitle!.isNotEmpty) {
+        chips.add(MediaDetailChip(
+          icon: Icons.translate,
+          text: c.altTitle!,
+        ));
+      }
+      if (c.platformName != null && c.platformName!.isNotEmpty) {
+        chips.add(MediaDetailChip(
+          icon: Icons.sports_esports,
+          text: c.platformName!,
+        ));
+      }
     }
     // Manga-специфичные чипы: chapters, volumes, format, authors
     if (item.mediaType == MediaType.manga && item.manga != null) {
@@ -778,6 +865,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       MediaType.animation => l.animationNotFound,
       MediaType.visualNovel => l.visualNovelNotFound,
       MediaType.manga => l.mangaNotFound,
+      MediaType.custom => l.unknownCustom,
       null => l.gameNotFound,
     };
   }

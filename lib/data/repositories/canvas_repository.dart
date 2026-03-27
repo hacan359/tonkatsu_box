@@ -7,6 +7,7 @@ import '../../shared/models/canvas_connection.dart';
 import '../../shared/models/canvas_item.dart';
 import '../../shared/models/canvas_viewport.dart';
 import '../../shared/models/collection_item.dart';
+import '../../shared/models/custom_media.dart';
 import '../../shared/models/game.dart';
 import '../../shared/models/movie.dart';
 import '../../shared/models/tv_show.dart';
@@ -232,12 +233,19 @@ class CanvasRepository {
         .map((CanvasItem item) => item.itemRefId!)
         .toList();
 
+    final List<int> customIds = items
+        .where((CanvasItem item) =>
+            item.itemType == CanvasItemType.custom && item.itemRefId != null)
+        .map((CanvasItem item) => item.itemRefId!)
+        .toList();
+
     // Если нет медиа-элементов, возвращаем как есть
     if (gameIds.isEmpty &&
         movieTmdbIds.isEmpty &&
         tvShowTmdbIds.isEmpty &&
         vnIds.isEmpty &&
-        mangaIds.isEmpty) {
+        mangaIds.isEmpty &&
+        customIds.isEmpty) {
       return items;
     }
 
@@ -258,6 +266,9 @@ class CanvasRepository {
       mangaIds.isNotEmpty
           ? _db.getMangaByIds(mangaIds)
           : Future<List<Manga>>.value(<Manga>[]),
+      customIds.isNotEmpty
+          ? _db.customMediaDao.getByIds(customIds)
+          : Future<List<CustomMedia>>.value(<CustomMedia>[]),
     ]);
 
     final Map<int, Game> gamesMap = <int, Game>{
@@ -275,6 +286,9 @@ class CanvasRepository {
     };
     final Map<int, Manga> mangaMap = <int, Manga>{
       for (final Manga m in results[4] as List<Manga>) m.id: m,
+    };
+    final Map<int, CustomMedia> customMap = <int, CustomMedia>{
+      for (final CustomMedia c in results[5] as List<CustomMedia>) c.id: c,
     };
 
     return items.map((CanvasItem item) {
@@ -297,6 +311,8 @@ class CanvasRepository {
           return item.copyWith(visualNovel: vnMap[item.itemRefId]);
         case CanvasItemType.manga:
           return item.copyWith(manga: mangaMap[item.itemRefId]);
+        case CanvasItemType.custom:
+          return item.copyWith(customMedia: customMap[item.itemRefId]);
         case CanvasItemType.text:
         case CanvasItemType.image:
         case CanvasItemType.link:

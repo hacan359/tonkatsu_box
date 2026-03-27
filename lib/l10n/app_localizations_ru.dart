@@ -69,6 +69,9 @@ class SRu extends S {
   String get mediaTypeManga => 'Манга';
 
   @override
+  String get mediaTypeCustom => 'Своё';
+
+  @override
   String get sortManualDisplay => 'Вручную';
 
   @override
@@ -966,6 +969,94 @@ class SRu extends S {
       'Статус, даты, заметки, прогресс эпизодов';
 
   @override
+  String get customItemCreate => 'Создать свой элемент';
+
+  @override
+  String get customItemTitle => 'Название';
+
+  @override
+  String get customItemTitleHint => 'напр. Моя самодельная игра';
+
+  @override
+  String get customItemAltTitle => 'Альтернативное название';
+
+  @override
+  String get customItemAltTitleHint => 'Название на оригинальном языке';
+
+  @override
+  String get customItemCoverUrl => 'URL обложки';
+
+  @override
+  String get customItemYear => 'Год';
+
+  @override
+  String get customItemMyRating => 'Мой рейтинг';
+
+  @override
+  String get customItemGenres => 'Жанры';
+
+  @override
+  String get customItemGenresHint => 'напр. RPG, Экшен, Головоломка';
+
+  @override
+  String get customItemPlatform => 'Платформа';
+
+  @override
+  String get customItemPlatformHint => 'напр. PC, SNES, Custom';
+
+  @override
+  String get customItemDescription => 'Описание';
+
+  @override
+  String get customItemDescriptionHint => 'Краткое описание или заметки';
+
+  @override
+  String get customItemOptionalFields => 'Дополнительные поля';
+
+  @override
+  String get customItemCreateButton => 'Создать';
+
+  @override
+  String get customItemEdit => 'Редактировать элемент';
+
+  @override
+  String get customItemAddCover => 'Добавить обложку';
+
+  @override
+  String get customItemCoverSource => 'Источник обложки';
+
+  @override
+  String get customItemCoverRatio =>
+      'Рекомендуемое соотношение: 2:3 (напр. 600×900)';
+
+  @override
+  String get customItemCoverFromFile => 'Из файла';
+
+  @override
+  String get customItemCoverFromUrl => 'По URL';
+
+  @override
+  String get customItemAddGenre => 'Добавить';
+
+  @override
+  String get customItemSearchHint => 'Поиск или свой вариант...';
+
+  @override
+  String get customItemUseCustom => 'Использовать свой';
+
+  @override
+  String get customItemExternalUrl => 'Внешний URL';
+
+  @override
+  String get customItemErrorEmptyTitle => 'Название обязательно';
+
+  @override
+  String get customItemCreated => 'Элемент создан';
+
+  @override
+  String get customItemUpdated => 'Элемент обновлён';
+
+  @override
   String get collectionFilterAll => 'Все';
 
   @override
@@ -988,6 +1079,9 @@ class SRu extends S {
 
   @override
   String get collectionFilterManga => 'Манга';
+
+  @override
+  String get collectionFilterCustom => 'Своё';
 
   @override
   String collectionItemMovedTo(String name, String collection) {
@@ -1812,6 +1906,9 @@ class SRu extends S {
   String get unknownManga => 'Неизвестная манга';
 
   @override
+  String get unknownCustom => 'Неизвестный элемент';
+
+  @override
   String get unknownPlatform => 'Неизвестная платформа';
 
   @override
@@ -1842,6 +1939,9 @@ class SRu extends S {
 
   @override
   String get allItemsManga => 'Манга';
+
+  @override
+  String get allItemsCustom => 'Своё';
 
   @override
   String get allItemsRatingAsc => 'Оценка ↑';

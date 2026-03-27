@@ -27,6 +27,7 @@ abstract final class DatabaseSchema {
     await createTierListsTable(db);
     await createTierDefinitionsTable(db);
     await createTierListEntriesTable(db);
+    await createCustomItemsTable(db);
   }
 
   /// Таблица платформ (IGDB).
@@ -458,6 +459,25 @@ abstract final class DatabaseSchema {
     await db.execute('''
       CREATE UNIQUE INDEX idx_tier_entry
       ON tier_list_entries(tier_list_id, collection_item_id)
+    ''');
+  }
+
+  /// Создаёт таблицу кастомных элементов.
+  static Future<void> createCustomItemsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS custom_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        display_type TEXT,
+        alt_title TEXT,
+        description TEXT,
+        cover_url TEXT,
+        year INTEGER,
+        genres TEXT,
+        platform_name TEXT,
+        external_url TEXT,
+        cached_at INTEGER NOT NULL
+      )
     ''');
   }
 }

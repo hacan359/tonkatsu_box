@@ -20,6 +20,7 @@
 - [x] Offline image caching
 - [x] Static reference data — genres (TMDB EN+RU, IGDB), tags (VNDB), platforms (220 IGDB) embedded in migration v24. No runtime API calls needed for reference data
 - [x] Tier Lists — rank collection items across customizable S/A/B/C tiers with drag-and-drop, color picker, PNG export, .xcollx support
+- [x] Custom items — manually create collection entries with custom cover, genres, platform, rating, displayType styling. Export/import support
 
 ---
 

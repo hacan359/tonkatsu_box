@@ -25,7 +25,7 @@ Tonkatsu Box — кроссплатформенное приложение на 
 graph TB
     subgraph core ["🔧 Core"]
         api["API<br/><small>igdb_api, tmdb_api,<br/>steamgriddb_api, vndb_api,<br/>anilist_api, ra_api</small>"]
-        database["Database<br/><small>database_service + 8 DAOs<br/>SQLite, 19 таблиц</small>"]
+        database["Database<br/><small>database_service + 9 DAOs<br/>SQLite, 20 таблиц</small>"]
         logging["Logging<br/><small>AppLogger<br/>package:logging</small>"]
         services["Services<br/><small>export, import,<br/>image_cache, config,<br/>ra_import, ra_to_igdb_mapper</small>"]
     end
@@ -45,7 +45,7 @@ graph TB
     end
 
     subgraph shared ["🧩 Shared"]
-        models["Models<br/><small>25 моделей:<br/>Game, Movie, TvShow,<br/>VisualNovel, Manga, Collection,<br/>CanvasItem, WishlistItem,<br/>RaGameProgress, RaUserProfile...</small>"]
+        models["Models<br/><small>26 моделей:<br/>Game, Movie, TvShow,<br/>VisualNovel, Manga, CustomMedia,<br/>Collection, CanvasItem, WishlistItem,<br/>RaGameProgress, RaUserProfile...</small>"]
         widgets["Widgets<br/><small>CachedImage, MediaPosterCard,<br/>BreadcrumbAppBar,<br/>StarRatingBar...</small>"]
         theme["Theme<br/><small>AppColors, AppTypography,<br/>AppSpacing, AppTheme</small>"]
         navigation["Navigation<br/><small>NavigationShell<br/>Rail / BottomBar</small>"]
@@ -121,6 +121,7 @@ lib/
 | `lib/core/database/dao/manga_dao.dart` | **DAO манги**. CRUD для `manga_cache`. Методы: `upsertManga()`, `upsertMangas()`, `getManga()`, `getMangaByIds()` |
 | `lib/core/database/dao/collection_dao.dart` | **DAO коллекций**. CRUD для `collections`, `collection_items`. Методы: `getCollections()`, `insertCollection()`, `getCollectionItemsWithData()`, `addItemToCollection()`, `updateItemStatus()`, `reorderItems()` (batch), `getCollectionStats()`, `findCollectionItem()` и др. Авторезолвинг жанров через `_resolveGenresIfNeeded<T>()` |
 | `lib/core/database/dao/canvas_dao.dart` | **DAO канваса**. CRUD для `canvas_items`, `canvas_viewport`, `canvas_connections`, `game_canvas_viewport`. Методы: `getCanvasItems()`, `insertCanvasItem()`, `updateCanvasItem()`, `deleteCanvasItem()`, `insertCanvasItemsBatch()`, `deleteCanvasItemsBatch()`, `getCanvasConnections()`, viewport операции. Batch методы используют `Transaction` + `Batch` для массовых INSERT/DELETE |
+| `lib/core/database/dao/custom_media_dao.dart` | **DAO кастомных элементов**. CRUD для `custom_items`. Методы: `create()`, `update()`, `getById()`, `getByIds()`, `delete()`, `deleteByIds()` |
 | `lib/core/database/dao/wishlist_dao.dart` | **DAO вишлиста**. CRUD для `wishlist`. Методы: `addWishlistItem()`, `getWishlistItems()`, `getWishlistItemCount()`, `updateWishlistItem()`, `resolveWishlistItem()`, `deleteWishlistItem()`, `clearResolvedWishlistItems()` |
 | `lib/core/logging/app_logger.dart` | **Утилита логирования**. `abstract final class AppLogger` — инициализация `package:logging` с выводом через `dart:developer`. `setupErrorHandlers()` перехватывает `FlutterError.onError` и `PlatformDispatcher.onError`. `main()` обёрнут в `runZonedGuarded`. Все core-классы используют `static final Logger _log = Logger('ClassName')` |
 | `lib/core/services/api_key_initializer.dart` | **Ранняя инициализация API ключей**. Класс `ApiKeys` (immutable, 7 nullable полей: tmdbApiKey, steamGridDbApiKey, igdbClientId, igdbClientSecret, igdbAccessToken, raUsername, raApiKey). Фабрика `fromPrefs(SharedPreferences)` — загружает ключи с приоритетом: user key → built-in (ApiDefaults) → null. Вызывается в `main()` до `runApp()` для устранения race condition. Провайдер: `apiKeysProvider` (override в ProviderScope) |
@@ -160,7 +161,8 @@ lib/
 | `lib/shared/models/manga.dart` | **Модель манги**. Поля: aniListId, title, titleEnglish, titleNative, coverUrl, coverMediumUrl, description, genres (List\<String\>), averageScore (0-100), meanScore, popularity, status, startYear, chapters, volumes, format, countryOfOrigin, staff (List\<MangaStaff\>). Computed: `rating10`, `formattedRating`, `releaseYear`, `genresString`, `formatLabel`, `statusLabel`, `staffString`. Класс `MangaStaff` (name, role). Методы: `fromJson()`, `fromDb()`, `toDb()`, `toExport()`, `copyWith()` |
 | `lib/shared/models/cover_info.dart` | **Модель обложки коллекции**. Легковесная модель для мозаики карточек: externalId, mediaType, platformId, thumbnailUrl. Конструктор `fromDb()` |
 | `lib/shared/models/data_source.dart` | **Enum источника данных**. `DataSource` (igdb, tmdb, steamGridDb, vgMaps, vndb, anilist) — извлечён из `source_badge.dart`. Поля: `label`, `color`. Реэкспортируется из `source_badge.dart` |
-| `lib/shared/models/media_type.dart` | **Enum типа медиа**. Значения: `game`, `movie`, `tvShow`, `animation`, `visualNovel`, `manga`. `AnimationSource` — abstract final class с константами `movie = 0`, `tvShow = 1` для дискриминации источника анимации через `platform_id`. Свойства: `label`, `icon`. Методы: `fromString()` |
+| `lib/shared/models/custom_media.dart` | **Модель кастомного элемента**. Поля: id, title, altTitle, description, coverUrl, year, genres, platformName, externalUrl, displayType (MediaType?). Константа `localCoverMarker` для обложек с ПК. Методы: `fromDb()`, `toDb()`, `toExport()`, `copyWith()`. Static: `isLocalCover()` |
+| `lib/shared/models/media_type.dart` | **Enum типа медиа**. Значения: `game`, `movie`, `tvShow`, `animation`, `visualNovel`, `manga`, `custom`. `AnimationSource` — abstract final class с константами `movie = 0`, `tvShow = 1` для дискриминации источника анимации через `platform_id`. Свойства: `label`, `icon`. Методы: `fromString()` |
 | `lib/shared/models/item_status.dart` | **Enum статуса элемента**. Значения: `notStarted`, `inProgress`, `completed`, `dropped`, `planned`. Свойства: `materialIcon` (IconData), `color`, `statusSortPriority`. Методы: `fromString()`, `displayLabel()`, `localizedLabel()` |
 | `lib/shared/models/collection_sort_mode.dart` | **Enum режима сортировки коллекции**. Значения: `manual`, `addedDate`, `status`, `name`, `rating`. Свойства: `value`, `displayLabel`, `shortLabel`, `description`. Метод: `fromString()`. Хранится в SharedPreferences per collection |
 | `lib/shared/models/collection_list_sort_mode.dart` | **Enum сортировки списка коллекций** на Home Screen. Значения: `createdDate`, `alphabetical`. Метод: `fromString()`, `localizedDisplayLabel()`, `localizedDescription()`. Хранится в SharedPreferences глобально |

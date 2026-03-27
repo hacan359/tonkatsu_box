@@ -7,6 +7,8 @@ import '../../../core/services/import_service.dart';
 import '../../../core/services/xcoll_file.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
+import '../../../shared/models/custom_media.dart';
+import '../widgets/create_custom_item_dialog.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
 import '../../../shared/widgets/breadcrumb_scope.dart';
@@ -348,6 +350,16 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             return <PopupMenuEntry<String>>[
               if (_collection!.isEditable)
                 PopupMenuItem<String>(
+                  value: 'custom_item',
+                  child: ListTile(
+                    leading: const Icon(Icons.add_box_outlined,
+                        color: AppColors.brand),
+                    title: Text(ml.customItemCreate),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              if (_collection!.isEditable)
+                PopupMenuItem<String>(
                   value: 'rename',
                   child: ListTile(
                     leading: const Icon(Icons.edit),
@@ -567,6 +579,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
 
   void _handleMenuAction(String action) {
     switch (action) {
+      case 'custom_item':
+        _handleCreateCustomItem();
       case 'rename':
         _handleRename();
       case 'tier_list':
@@ -581,6 +595,39 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         _handleImportIntoCollection();
       case 'delete':
         _handleDelete();
+    }
+  }
+
+  Future<void> _handleCreateCustomItem() async {
+    final CustomItemData? data = await CreateCustomItemDialog.show(context);
+    if (data == null || !mounted) return;
+
+    // Для локальных файлов coverUrl оставляем null —
+    // файл будет скопирован в кэш через addCustomItem.
+    final CustomMedia customMedia = CustomMedia(
+      id: 0,
+      title: data.title,
+      displayType: data.mediaType != MediaType.custom ? data.mediaType : null,
+      altTitle: data.altTitle,
+      description: data.description,
+      coverUrl: data.coverUrl,
+      year: data.year,
+      genres: data.genres,
+      platformName: data.platform,
+      externalUrl: data.externalUrl,
+    );
+
+    final bool success = await ref
+        .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
+        .addCustomItem(customMedia, localCoverPath: data.localCoverPath);
+
+    if (!mounted) return;
+
+    if (success) {
+      context.showSnack(
+        '${S.of(context).customItemCreated}: ${data.title}',
+        type: SnackType.success,
+      );
     }
   }
 
