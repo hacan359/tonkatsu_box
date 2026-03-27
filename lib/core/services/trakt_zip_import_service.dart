@@ -948,7 +948,7 @@ class TraktZipImportService {
 
       final String content = utf8.decode(file.content as List<int>);
 
-      if (isFlat!) {
+      if (isFlat) {
         files[file.name] = content;
       } else {
         if (username == 'Unknown' &&
