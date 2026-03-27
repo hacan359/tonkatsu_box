@@ -342,35 +342,40 @@ class TraktZipImportService {
       int ratedShowCount = 0;
       int watchlistCount = 0;
 
-      final String? watchedMovies = files['watched/watched-movies.json'];
+      final String? watchedMovies = _getFile(
+          files, 'watched/watched-movies.json', 'watched-movies.json');
       if (watchedMovies != null) {
         final List<dynamic> list =
             jsonDecode(watchedMovies) as List<dynamic>;
         watchedMovieCount = list.length;
       }
 
-      final String? watchedShows = files['watched/watched-shows.json'];
+      final String? watchedShows = _getFile(
+          files, 'watched/watched-shows.json', 'watched-shows.json');
       if (watchedShows != null) {
         final List<dynamic> list =
             jsonDecode(watchedShows) as List<dynamic>;
         watchedShowCount = list.length;
       }
 
-      final String? ratingsMovies = files['ratings/ratings-movies.json'];
+      final String? ratingsMovies = _getFile(
+          files, 'ratings/ratings-movies.json', 'ratings-movies.json');
       if (ratingsMovies != null) {
         final List<dynamic> list =
             jsonDecode(ratingsMovies) as List<dynamic>;
         ratedMovieCount = list.length;
       }
 
-      final String? ratingsShows = files['ratings/ratings-shows.json'];
+      final String? ratingsShows = _getFile(
+          files, 'ratings/ratings-shows.json', 'ratings-shows.json');
       if (ratingsShows != null) {
         final List<dynamic> list =
             jsonDecode(ratingsShows) as List<dynamic>;
         ratedShowCount = list.length;
       }
 
-      final String? watchlist = files['lists/watchlist.json'];
+      final String? watchlist = _getFile(
+          files, 'lists/watchlist.json', 'lists-watchlist.json');
       if (watchlist != null) {
         final List<dynamic> list =
             jsonDecode(watchlist) as List<dynamic>;
@@ -428,24 +433,33 @@ class TraktZipImportService {
 
       // 2. Парсинг JSON
       final List<_TraktMovie> watchedMovies = options.importWatched
-          ? _parseWatchedMovies(files['watched/watched-movies.json'])
+          ? _parseWatchedMovies(_getFile(
+              files, 'watched/watched-movies.json', 'watched-movies.json'))
           : <_TraktMovie>[];
 
       final List<_TraktShow> watchedShows = options.importWatched
-          ? _parseWatchedShows(files['watched/watched-shows.json'])
+          ? _parseWatchedShows(_getFile(
+              files, 'watched/watched-shows.json', 'watched-shows.json'))
           : <_TraktShow>[];
 
       final List<_TraktRating> movieRatings = options.importRatings
-          ? _parseRatings(files['ratings/ratings-movies.json'], 'movie')
+          ? _parseRatings(
+              _getFile(
+                  files, 'ratings/ratings-movies.json', 'ratings-movies.json'),
+              'movie')
           : <_TraktRating>[];
 
       final List<_TraktRating> showRatings = options.importRatings
-          ? _parseRatings(files['ratings/ratings-shows.json'], 'show')
+          ? _parseRatings(
+              _getFile(
+                  files, 'ratings/ratings-shows.json', 'ratings-shows.json'),
+              'show')
           : <_TraktRating>[];
 
       final List<_TraktWatchlistEntry> watchlistEntries =
           options.importWatchlist
-              ? _parseWatchlist(files['lists/watchlist.json'])
+              ? _parseWatchlist(_getFile(
+                  files, 'lists/watchlist.json', 'lists-watchlist.json'))
               : <_TraktWatchlistEntry>[];
 
       // Собираем уникальные TMDB ID
@@ -922,23 +936,52 @@ class TraktZipImportService {
     final Map<String, String> files = <String, String>{};
     String username = 'Unknown';
 
+    // Автодетект формата: новый формат имеет JSON файлы в корне (глубина 1),
+    // старый — в подпапке username/ (глубина >= 2).
+    final bool isFlat = archive.any((ArchiveFile f) {
+      final List<String> parts = f.name.split('/');
+      return f.isFile && f.name.endsWith('.json') && parts.length == 1;
+    });
+
     for (final ArchiveFile file in archive) {
+      if (!file.isFile || !file.name.endsWith('.json')) continue;
       final List<String> parts = file.name.split('/');
+      final String content = utf8.decode(file.content as List<int>);
 
-      if (username == 'Unknown' &&
-          parts.isNotEmpty &&
-          parts[0].isNotEmpty) {
-        username = parts[0];
+      if (isFlat) {
+        // Новый формат: файлы в корне ZIP
+        files[file.name] = content;
+      } else {
+        // Старый формат: username/subdir/file.json
+        if (username == 'Unknown' &&
+            parts.isNotEmpty &&
+            parts[0].isNotEmpty) {
+          username = parts[0];
+        }
+        if (parts.length >= 2) {
+          final String relativePath = parts.sublist(1).join('/');
+          files[relativePath] = content;
+        }
       }
+    }
 
-      if (file.isFile && file.name.endsWith('.json') && parts.length >= 2) {
-        final String relativePath = parts.sublist(1).join('/');
-        final String content = utf8.decode(file.content as List<int>);
-        files[relativePath] = content;
+    // Новый формат: username из user-profile.json
+    if (isFlat && files.containsKey('user-profile.json')) {
+      try {
+        final Map<String, dynamic> profile =
+            jsonDecode(files['user-profile.json']!) as Map<String, dynamic>;
+        username = (profile['username'] as String?) ?? username;
+      } on FormatException {
+        // Невалидный JSON — оставляем Unknown
       }
     }
 
     return (files: files, username: username);
+  }
+
+  /// Возвращает содержимое файла, пробуя старый и новый ключи.
+  String? _getFile(Map<String, String> files, String oldKey, String newKey) {
+    return files[oldKey] ?? files[newKey];
   }
 
   /// Парсит watched-movies.json.
