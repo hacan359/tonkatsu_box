@@ -67,11 +67,21 @@ class _CollectionTableViewState extends State<CollectionTableView> {
   TableColumn _sortColumn = TableColumn.name;
   bool _sortAscending = true;
 
-  // Циклическая фильтрация для колонок с дискретными значениями.
-  // null = показать все, иначе — конкретное значение.
+  // Фильтрация: null = все, иначе — конкретное значение.
   ItemStatus? _filterStatus;
   MediaType? _filterType;
   int? _filterRating;
+
+  @override
+  void didUpdateWidget(CollectionTableView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Сброс фильтров при изменении данных — избегаем stale state.
+    if (!identical(oldWidget.items, widget.items)) {
+      _filterStatus = null;
+      _filterType = null;
+      _filterRating = null;
+    }
+  }
 
   /// Ширина миниатюры.
   static const double _thumbWidth = 32.0;
@@ -150,11 +160,20 @@ class _CollectionTableViewState extends State<CollectionTableView> {
     setState(() {
       switch (column) {
         case TableColumn.status:
-          _cycleStatusFilter();
+          _filterStatus = _cycleFilter<ItemStatus>(
+            _filterStatus,
+            widget.items.map((CollectionItem i) => i.status),
+          );
         case TableColumn.type:
-          _cycleTypeFilter();
+          _filterType = _cycleFilter<MediaType>(
+            _filterType,
+            widget.items.map((CollectionItem i) => i.mediaType),
+          );
         case TableColumn.rating:
-          _cycleRatingFilter();
+          _filterRating = _cycleFilter<int>(
+            _filterRating,
+            widget.items.map((CollectionItem i) => i.userRating ?? 0),
+          );
         default:
           if (_sortColumn == column) {
             _sortAscending = !_sortAscending;
@@ -166,74 +185,29 @@ class _CollectionTableViewState extends State<CollectionTableView> {
     });
   }
 
-  void _cycleStatusFilter() {
-    final List<ItemStatus> available = widget.items
-        .map((CollectionItem i) => i.status)
-        .toSet()
-        .toList()
-      ..sort((ItemStatus a, ItemStatus b) => a.index.compareTo(b.index));
-    if (available.length <= 1) return;
-    if (_filterStatus == null) {
-      _filterStatus = available.first;
-    } else {
-      final int idx = available.indexOf(_filterStatus!);
-      _filterStatus =
-          idx < available.length - 1 ? available[idx + 1] : null;
-    }
-  }
-
-  void _cycleTypeFilter() {
-    final List<MediaType> available = widget.items
-        .map((CollectionItem i) => i.mediaType)
-        .toSet()
-        .toList()
-      ..sort((MediaType a, MediaType b) => a.index.compareTo(b.index));
-    if (available.length <= 1) return;
-    if (_filterType == null) {
-      _filterType = available.first;
-    } else {
-      final int idx = available.indexOf(_filterType!);
-      _filterType =
-          idx < available.length - 1 ? available[idx + 1] : null;
-    }
-  }
-
-  void _cycleRatingFilter() {
-    final List<int> available = widget.items
-        .map((CollectionItem i) => i.userRating ?? 0)
-        .toSet()
-        .toList()
-      ..sort();
-    if (available.length <= 1) return;
-    if (_filterRating == null) {
-      _filterRating = available.first;
-    } else {
-      final int idx = available.indexOf(_filterRating!);
-      _filterRating =
-          idx < available.length - 1 ? available[idx + 1] : null;
-    }
+  /// Циклически переключает фильтр по уникальным значениям.
+  /// null → first → next → ... → null (сброс).
+  T? _cycleFilter<T>(T? current, Iterable<T> values) {
+    final List<T> available = values.toSet().toList();
+    if (available.length <= 1) return current;
+    if (current == null) return available.first;
+    final int idx = available.indexOf(current);
+    return idx < available.length - 1 ? available[idx + 1] : null;
   }
 
   List<CollectionItem> _sortedItems() {
-    List<CollectionItem> list = List<CollectionItem>.of(widget.items);
+    final bool hasFilter =
+        _filterStatus != null || _filterType != null || _filterRating != null;
 
-    // Применяем активные фильтры
-    if (_filterStatus != null) {
-      list = list
-          .where((CollectionItem i) => i.status == _filterStatus)
-          .toList();
-    }
-    if (_filterType != null) {
-      list = list
-          .where((CollectionItem i) => i.mediaType == _filterType)
-          .toList();
-    }
-    if (_filterRating != null) {
-      list = list
-          .where(
-              (CollectionItem i) => (i.userRating ?? 0) == _filterRating)
-          .toList();
-    }
+    final List<CollectionItem> list = hasFilter
+        ? widget.items
+            .where((CollectionItem i) =>
+                (_filterStatus == null || i.status == _filterStatus) &&
+                (_filterType == null || i.mediaType == _filterType) &&
+                (_filterRating == null ||
+                    (i.userRating ?? 0) == _filterRating))
+            .toList()
+        : List<CollectionItem>.of(widget.items);
 
     final int dir = _sortAscending ? 1 : -1;
 
@@ -328,7 +302,7 @@ class _TableHeader extends StatelessWidget {
           // Status
           _col(
             filterStatus != null
-                ? filterStatus!.localizedLabel(l, MediaType.game)
+                ? filterStatus!.genericLabel(l)
                 : l.collectionTableStatus,
             TableColumn.status,
             width: 88,
