@@ -133,14 +133,6 @@ class TierListView extends ConsumerWidget {
                   _changeColor(context, ref, def);
                 },
               ),
-              ListTile(
-                leading: const Icon(Icons.add),
-                title: Text(l.tierListAddTier),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _addTier(context, ref);
-                },
-              ),
               if (state.definitions.length > 1)
                 ListTile(
                   leading: const Icon(Icons.delete, color: AppColors.error),
@@ -217,40 +209,6 @@ class TierListView extends ConsumerWidget {
     }
   }
 
-  Future<void> _addTier(BuildContext context, WidgetRef ref) async {
-    final TextEditingController controller = TextEditingController();
-    final S l = S.of(context);
-    final String? label = await showDialog<String>(
-      context: context,
-      builder: (BuildContext ctx) => AlertDialog(
-        title: Text(l.tierListAddTier),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: InputDecoration(hintText: l.tierListNameHint),
-          onSubmitted: (String value) =>
-              Navigator.of(ctx).pop(value.trim()),
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(l.cancel),
-          ),
-          TextButton(
-            onPressed: () =>
-                Navigator.of(ctx).pop(controller.text.trim()),
-            child: Text(l.create),
-          ),
-        ],
-      ),
-    );
-    if (label != null && label.isNotEmpty) {
-      final String key = 'custom_${DateTime.now().millisecondsSinceEpoch}';
-      await ref
-          .read(tierListDetailProvider(tierListId).notifier)
-          .addTier(key, label, AppColors.textTertiary);
-    }
-  }
 }
 
 class _UnrankedPool extends ConsumerWidget {

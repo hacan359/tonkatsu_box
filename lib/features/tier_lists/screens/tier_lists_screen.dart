@@ -230,6 +230,10 @@ class _TierListCard extends ConsumerWidget {
             ));
           },
           onLongPress: () => _showContextMenu(context, ref),
+          onSecondaryTapUp: kIsMobile
+              ? null
+              : (TapUpDetails details) =>
+                  _showPopupMenu(context, ref, details.globalPosition),
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Row(
@@ -272,6 +276,52 @@ class _TierListCard extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  void _showPopupMenu(
+    BuildContext context,
+    WidgetRef ref,
+    Offset globalPosition,
+  ) {
+    final S l = S.of(context);
+    final RelativeRect position = RelativeRect.fromLTRB(
+      globalPosition.dx,
+      globalPosition.dy,
+      globalPosition.dx,
+      globalPosition.dy,
+    );
+    showMenu<String>(
+      context: context,
+      position: position,
+      items: <PopupMenuEntry<String>>[
+        PopupMenuItem<String>(
+          value: 'rename',
+          child: ListTile(
+            leading: const Icon(Icons.edit),
+            title: Text(l.rename),
+            contentPadding: EdgeInsets.zero,
+          ),
+        ),
+        PopupMenuItem<String>(
+          value: 'delete',
+          child: ListTile(
+            leading: const Icon(Icons.delete, color: AppColors.error),
+            title: Text(
+              l.delete,
+              style: const TextStyle(color: AppColors.error),
+            ),
+            contentPadding: EdgeInsets.zero,
+          ),
+        ),
+      ],
+    ).then((String? action) {
+      if (!context.mounted || action == null) return;
+      if (action == 'rename') {
+        _handleRename(context, ref);
+      } else if (action == 'delete') {
+        _handleDelete(context, ref);
+      }
+    });
   }
 
   void _showContextMenu(BuildContext context, WidgetRef ref) {

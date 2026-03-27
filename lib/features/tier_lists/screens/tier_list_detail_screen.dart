@@ -65,6 +65,15 @@ class _TierListDetailScreenState
           actions: <Widget>[
             if (!state.isLoading)
               IconButton(
+                icon: const Icon(Icons.add),
+                color: AppColors.textSecondary,
+                tooltip: kIsMobile
+                    ? l.tierListAddTier
+                    : '${l.tierListAddTier} (Ctrl+Enter)',
+                onPressed: () => _addTier(context),
+              ),
+            if (!state.isLoading)
+              IconButton(
                 icon: const Icon(Icons.image_outlined),
                 color: AppColors.textSecondary,
                 tooltip: kIsMobile
