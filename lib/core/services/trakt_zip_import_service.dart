@@ -936,23 +936,21 @@ class TraktZipImportService {
     final Map<String, String> files = <String, String>{};
     String username = 'Unknown';
 
-    // Автодетект формата: новый формат имеет JSON файлы в корне (глубина 1),
-    // старый — в подпапке username/ (глубина >= 2).
-    final bool isFlat = archive.any((ArchiveFile f) {
-      final List<String> parts = f.name.split('/');
-      return f.isFile && f.name.endsWith('.json') && parts.length == 1;
-    });
-
+    // Автодетект формата за один проход: новый формат имеет JSON в корне
+    // (глубина 1), старый — в подпапке username/ (глубина >= 2).
+    bool? isFlat;
     for (final ArchiveFile file in archive) {
       if (!file.isFile || !file.name.endsWith('.json')) continue;
       final List<String> parts = file.name.split('/');
+
+      // Определяем формат по первому JSON файлу
+      isFlat ??= parts.length == 1;
+
       final String content = utf8.decode(file.content as List<int>);
 
-      if (isFlat) {
-        // Новый формат: файлы в корне ZIP
+      if (isFlat!) {
         files[file.name] = content;
       } else {
-        // Старый формат: username/subdir/file.json
         if (username == 'Unknown' &&
             parts.isNotEmpty &&
             parts[0].isNotEmpty) {
@@ -966,7 +964,7 @@ class TraktZipImportService {
     }
 
     // Новый формат: username из user-profile.json
-    if (isFlat && files.containsKey('user-profile.json')) {
+    if ((isFlat ?? false) && files.containsKey('user-profile.json')) {
       try {
         final Map<String, dynamic> profile =
             jsonDecode(files['user-profile.json']!) as Map<String, dynamic>;

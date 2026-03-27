@@ -52,21 +52,16 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
   bool _isValidating = false;
   String? _validationError;
 
-  bool get _hasOwnTmdbKey {
-    final SettingsState settings = ref.read(settingsNotifierProvider);
-    return settings.hasTmdbKey && !settings.isTmdbKeyBuiltIn;
-  }
-
   @override
   Widget build(BuildContext context) {
     final SettingsState settings = ref.watch(settingsNotifierProvider);
-    final bool hasOwnKey =
+    final bool hasOwnTmdbKey =
         settings.hasTmdbKey && !settings.isTmdbKeyBuiltIn;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        if (!hasOwnKey) _buildTmdbKeyWarning(context),
+        if (!hasOwnTmdbKey) _buildTmdbKeyWarning(context),
         _buildFilePickerSection(context),
         if (_zipInfo != null && _zipInfo!.isValid) ...<Widget>[
           const SizedBox(height: AppSpacing.md),
@@ -74,7 +69,7 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
           const SizedBox(height: AppSpacing.md),
           _buildOptionsSection(context),
           const SizedBox(height: AppSpacing.md),
-          _buildImportButton(context),
+          _buildImportButton(context, hasOwnTmdbKey: hasOwnTmdbKey),
         ],
       ],
     );
@@ -382,7 +377,10 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
     );
   }
 
-  Widget _buildImportButton(BuildContext context) {
+  Widget _buildImportButton(
+    BuildContext context, {
+    required bool hasOwnTmdbKey,
+  }) {
     final bool canImport =
         _importWatched || _importRatings || _importWatchlist;
     final bool hasTarget =
@@ -392,7 +390,7 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       child: FilledButton.icon(
         onPressed:
-            canImport && hasTarget && _hasOwnTmdbKey ? _startImport : null,
+            canImport && hasTarget && hasOwnTmdbKey ? _startImport : null,
         icon: const Icon(Icons.download),
         label: Text(S.of(context).traktStartImport),
       ),
