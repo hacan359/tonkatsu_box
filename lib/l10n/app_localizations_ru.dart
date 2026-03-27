@@ -1023,6 +1023,10 @@ class SRu extends S {
   String get customItemCoverSource => 'Источник обложки';
 
   @override
+  String get customItemCoverRatio =>
+      'Рекомендуемое соотношение: 2:3 (напр. 600×900)';
+
+  @override
   String get customItemCoverFromFile => 'Из файла';
 
   @override

@@ -295,7 +295,15 @@ class CanvasItem with Exportable {
       CanvasItemType.animation => Icons.animation,
       CanvasItemType.visualNovel => Icons.menu_book,
       CanvasItemType.manga => Icons.auto_stories,
-      CanvasItemType.custom => Icons.dashboard_customize,
+      CanvasItemType.custom => switch (customMedia?.displayType) {
+        MediaType.game => Icons.videogame_asset,
+        MediaType.movie => Icons.movie_outlined,
+        MediaType.tvShow => Icons.tv_outlined,
+        MediaType.animation => Icons.animation,
+        MediaType.visualNovel => Icons.menu_book,
+        MediaType.manga => Icons.auto_stories,
+        _ => Icons.dashboard_customize,
+      },
       _ => Icons.note,
     };
   }
@@ -309,7 +317,7 @@ class CanvasItem with Exportable {
       CanvasItemType.animation => MediaType.animation,
       CanvasItemType.visualNovel => MediaType.visualNovel,
       CanvasItemType.manga => MediaType.manga,
-      CanvasItemType.custom => MediaType.custom,
+      CanvasItemType.custom => customMedia?.displayType ?? MediaType.custom,
       _ => null,
     };
   }

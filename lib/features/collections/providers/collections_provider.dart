@@ -526,16 +526,20 @@ class CollectionItemsNotifier
       if (localCoverPath != null) {
         // Из локального файла — копируем в кэш
         final File sourceFile = File(localCoverPath);
-        debugPrint('Custom cover: localPath=$localCoverPath exists=${sourceFile.existsSync()}');
         if (sourceFile.existsSync()) {
           final Uint8List bytes = await sourceFile.readAsBytes();
-          debugPrint('Custom cover: ${bytes.length} bytes, saving as customId=$customId');
           final bool saved = await cache.saveImageBytes(
             ImageType.customCover,
             customId.toString(),
             bytes,
           );
-          debugPrint('Custom cover saved: $saved');
+          // Маркер в cover_url — чтобы CachedImage получил непустой
+          // imageUrl и проверил кэш (где файл уже лежит).
+          if (saved) {
+            await _db.customMediaDao.update(
+              customMedia.copyWith(id: customId, coverUrl: 'local://cover'),
+            );
+          }
         }
       } else if (customMedia.coverUrl != null &&
           customMedia.coverUrl!.isNotEmpty) {
@@ -561,7 +565,7 @@ class CollectionItemsNotifier
       ref.invalidate(allItemsNotifierProvider);
       return true;
     } catch (e, stack) {
-      debugPrint('addCustomItem error: $e\n$stack');
+      debugPrint('addCustomItem error: $e\n$stack'); // TODO: remove after stabilization
       return false;
     }
   }

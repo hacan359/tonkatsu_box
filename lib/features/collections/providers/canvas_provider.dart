@@ -1038,6 +1038,8 @@ class GameCanvasNotifier
       movie: collectionItem.movie,
       tvShow: collectionItem.tvShow,
       visualNovel: collectionItem.visualNovel,
+      manga: collectionItem.manga,
+      customMedia: collectionItem.customMedia,
     );
 
     await _repository.saveGameCanvasViewport(

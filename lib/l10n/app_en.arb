@@ -438,6 +438,7 @@
   "customItemEdit": "Edit Custom Item",
   "customItemAddCover": "Add cover",
   "customItemCoverSource": "Cover source",
+  "customItemCoverRatio": "Recommended aspect ratio: 2:3 (e.g. 600×900)",
   "customItemCoverFromFile": "From file",
   "customItemCoverFromUrl": "From URL",
   "customItemAddGenre": "Add",

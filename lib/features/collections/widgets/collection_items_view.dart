@@ -202,7 +202,7 @@ class CollectionItemsView extends ConsumerWidget {
             year: item.releaseYear,
             platformLabel: item.platform?.displayName,
             subtitle: item.genresString,
-            mediaType: item.mediaType,
+            mediaType: item.displayMediaType,
             status: item.status,
             onTap: () => onItemTap(item),
             onSecondaryTap: canEdit

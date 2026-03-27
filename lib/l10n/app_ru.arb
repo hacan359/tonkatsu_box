@@ -376,6 +376,7 @@
   "customItemEdit": "Редактировать элемент",
   "customItemAddCover": "Добавить обложку",
   "customItemCoverSource": "Источник обложки",
+  "customItemCoverRatio": "Рекомендуемое соотношение: 2:3 (напр. 600×900)",
   "customItemCoverFromFile": "Из файла",
   "customItemCoverFromUrl": "По URL",
   "customItemAddGenre": "Добавить",

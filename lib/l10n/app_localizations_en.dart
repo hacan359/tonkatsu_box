@@ -1012,6 +1012,10 @@ class SEn extends S {
   String get customItemCoverSource => 'Cover source';
 
   @override
+  String get customItemCoverRatio =>
+      'Recommended aspect ratio: 2:3 (e.g. 600×900)';
+
+  @override
   String get customItemCoverFromFile => 'From file';
 
   @override

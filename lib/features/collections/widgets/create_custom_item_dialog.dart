@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/services/image_cache_service.dart';
 import '../../../core/database/database_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
@@ -112,6 +113,7 @@ class _CreateCustomItemDialogState
   String? _titleError;
   int? _selectedYear;
   String? _localCoverPath;
+  String? _cachedCoverPath;
   int? _userRating;
 
   // Справочники для автокомплита
@@ -137,6 +139,19 @@ class _CreateCustomItemDialogState
         TextEditingController(text: e?.externalUrl ?? '');
     _selectedYear = e?.year;
     _loadReferences();
+    if (_isEditing) _loadCachedCover();
+  }
+
+  Future<void> _loadCachedCover() async {
+    final ImageCacheService cache = ref.read(imageCacheServiceProvider);
+    final String path = await cache.getLocalImagePath(
+      ImageType.customCover,
+      widget.existing!.id.toString(),
+    );
+    final File file = File(path);
+    if (file.existsSync() && mounted) {
+      setState(() => _cachedCoverPath = path);
+    }
   }
 
   Future<void> _loadReferences() async {
@@ -207,8 +222,10 @@ class _CreateCustomItemDialogState
 
   Color get _accentColor => MediaTypeTheme.colorFor(_selectedType);
 
-  List<String> get _currentGenres =>
-      _selectedType == MediaType.game ? _igdbGenres : _tmdbGenres;
+  List<String> get _currentGenres {
+    final Set<String> all = <String>{..._igdbGenres, ..._tmdbGenres};
+    return all.toList()..sort();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -377,6 +394,7 @@ class _CreateCustomItemDialogState
   // ==================== Cover ====================
 
   Widget _buildCoverPreview() {
+    // Локальный файл, только что выбранный пользователем
     if (_localCoverPath != null) {
       return Image.file(
         File(_localCoverPath!),
@@ -385,9 +403,20 @@ class _CreateCustomItemDialogState
             _buildCoverPlaceholder(),
       );
     }
-    if (_coverUrlController.text.trim().isNotEmpty) {
+    // Кэшированная обложка (при редактировании)
+    if (_cachedCoverPath != null) {
+      return Image.file(
+        File(_cachedCoverPath!),
+        fit: BoxFit.cover,
+        errorBuilder: (_, Object e, StackTrace? s) =>
+            _buildCoverPlaceholder(),
+      );
+    }
+    // URL обложки (не маркер local://cover)
+    final String url = _coverUrlController.text.trim();
+    if (url.isNotEmpty && !url.startsWith('local://')) {
       return Image.network(
-        _coverUrlController.text.trim(),
+        url,
         fit: BoxFit.cover,
         errorBuilder: (_, Object e, StackTrace? s) =>
             _buildCoverPlaceholder(),
@@ -426,6 +455,16 @@ class _CreateCustomItemDialogState
       builder: (BuildContext ctx) => SimpleDialog(
         title: Text(l.customItemCoverSource),
         children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Text(
+              l.customItemCoverRatio,
+              style: AppTypography.caption.copyWith(
+                color: AppColors.textTertiary,
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
           SimpleDialogOption(
             onPressed: () => Navigator.of(ctx).pop('file'),
             child: ListTile(
@@ -618,19 +657,23 @@ class _CreateCustomItemDialogState
   }
 
   Future<void> _pickGenres() async {
-    final String? result = await _showSearchableListDialog(
-      title: S.of(context).customItemGenres,
-      items: _currentGenres,
-      allowCustom: true,
-      currentValue: null,
+    // Текущие жанры из текстового поля
+    final Set<String> current = _genresController.text
+        .split(',')
+        .map((String s) => s.trim())
+        .where((String s) => s.isNotEmpty)
+        .toSet();
+
+    final Set<String>? result = await showDialog<Set<String>>(
+      context: context,
+      builder: (BuildContext ctx) => _MultiSelectGenreDialog(
+        title: S.of(context).customItemGenres,
+        items: _currentGenres,
+        selected: current,
+      ),
     );
     if (result != null && mounted) {
-      final String current = _genresController.text.trim();
-      if (current.isEmpty) {
-        _genresController.text = result;
-      } else {
-        _genresController.text = '$current, $result';
-      }
+      _genresController.text = result.join(', ');
       setState(() {});
     }
   }
@@ -787,6 +830,140 @@ class _CreateCustomItemDialogState
         items: items,
         allowCustom: allowCustom,
         currentValue: currentValue,
+      ),
+    );
+  }
+}
+
+// ==================== Multi-Select Genre Dialog ====================
+
+class _MultiSelectGenreDialog extends StatefulWidget {
+  const _MultiSelectGenreDialog({
+    required this.title,
+    required this.items,
+    required this.selected,
+  });
+
+  final String title;
+  final List<String> items;
+  final Set<String> selected;
+
+  @override
+  State<_MultiSelectGenreDialog> createState() =>
+      _MultiSelectGenreDialogState();
+}
+
+class _MultiSelectGenreDialogState extends State<_MultiSelectGenreDialog> {
+  final TextEditingController _searchController = TextEditingController();
+  late final Set<String> _selected;
+  List<String> _filtered = <String>[];
+
+  @override
+  void initState() {
+    super.initState();
+    _selected = Set<String>.of(widget.selected);
+    _filtered = widget.items;
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _filter(String query) {
+    if (query.isEmpty) {
+      _filtered = widget.items;
+    } else {
+      final String lower = query.toLowerCase();
+      _filtered = widget.items
+          .where((String item) => item.toLowerCase().contains(lower))
+          .toList();
+    }
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final S l = S.of(context);
+    return Dialog(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 400, maxHeight: 500),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text(widget.title,
+                  style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: AppSpacing.sm),
+              TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: l.customItemSearchHint,
+                  prefixIcon: const Icon(Icons.search, size: 20),
+                  isDense: true,
+                ),
+                onChanged: _filter,
+                autofocus: true,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: _filtered.length,
+                  itemBuilder: (BuildContext ctx, int index) {
+                    final String item = _filtered[index];
+                    final bool isSelected = _selected.contains(item);
+                    return CheckboxListTile(
+                      title: Text(item, style: AppTypography.bodySmall),
+                      value: isSelected,
+                      dense: true,
+                      visualDensity: VisualDensity.compact,
+                      controlAffinity: ListTileControlAffinity.leading,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          if (value == true) {
+                            _selected.add(item);
+                          } else {
+                            _selected.remove(item);
+                          }
+                        });
+                      },
+                    );
+                  },
+                ),
+              ),
+              const Divider(),
+              OverflowBar(
+                alignment: MainAxisAlignment.end,
+                spacing: AppSpacing.sm,
+                children: <Widget>[
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text(l.cancel),
+                  ),
+                  // Кнопка добавить кастомный жанр
+                  TextButton(
+                    onPressed: () {
+                      final String text = _searchController.text.trim();
+                      if (text.isNotEmpty) {
+                        setState(() => _selected.add(text));
+                        _searchController.clear();
+                        _filter('');
+                      }
+                    },
+                    child: Text(l.customItemUseCustom),
+                  ),
+                  FilledButton(
+                    onPressed: () => Navigator.of(context).pop(_selected),
+                    child: Text(l.confirm),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -1921,6 +1921,12 @@ abstract class S {
   /// **'Cover source'**
   String get customItemCoverSource;
 
+  /// No description provided for @customItemCoverRatio.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended aspect ratio: 2:3 (e.g. 600×900)'**
+  String get customItemCoverRatio;
+
   /// No description provided for @customItemCoverFromFile.
   ///
   /// In en, this message translates to:
