@@ -759,6 +759,10 @@ class SEn extends S {
   String get traktStartImport => 'Start Import';
 
   @override
+  String get traktRequiresOwnTmdbKey =>
+      'Trakt import requires your own TMDB API key. Add it in Settings → Credentials.';
+
+  @override
   String get traktInvalidExport => 'Invalid Trakt export';
 
   @override

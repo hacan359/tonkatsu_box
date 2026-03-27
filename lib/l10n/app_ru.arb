@@ -292,6 +292,7 @@
   "traktSelectCollection": "Выберите коллекцию",
   "traktErrorLoadingCollections": "Ошибка загрузки коллекций",
   "traktStartImport": "Начать импорт",
+  "traktRequiresOwnTmdbKey": "Для импорта из Trakt необходим собственный TMDB API ключ. Добавьте его в Настройки → Учётные данные.",
   "traktInvalidExport": "Некорректный экспорт Trakt",
   "traktImportedItems": "Импортировано элементов: {count}",
   "traktImporting": "Импорт из Trakt",

@@ -1471,6 +1471,12 @@ abstract class S {
   /// **'Start Import'**
   String get traktStartImport;
 
+  /// No description provided for @traktRequiresOwnTmdbKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Trakt import requires your own TMDB API key. Add it in Settings → Credentials.'**
+  String get traktRequiresOwnTmdbKey;
+
   /// No description provided for @traktInvalidExport.
   ///
   /// In en, this message translates to:

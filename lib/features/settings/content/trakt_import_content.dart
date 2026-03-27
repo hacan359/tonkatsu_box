@@ -19,6 +19,7 @@ import '../../collections/providers/collection_covers_provider.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
+import '../providers/settings_provider.dart';
 import '../screens/import_result_screen.dart';
 import '../widgets/settings_group.dart';
 
@@ -342,6 +343,10 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
   }
 
   Widget _buildImportButton(BuildContext context) {
+    final S l = S.of(context);
+    final SettingsState settings = ref.watch(settingsProvider);
+    final bool hasOwnTmdbKey =
+        settings.hasTmdbKey && !settings.isTmdbKeyBuiltIn;
     final bool canImport =
         _importWatched || _importRatings || _importWatchlist;
     final bool hasTarget =
@@ -349,10 +354,34 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      child: FilledButton.icon(
-        onPressed: canImport && hasTarget ? _startImport : null,
-        icon: const Icon(Icons.download),
-        label: Text(S.of(context).traktStartImport),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          if (!hasOwnTmdbKey)
+            Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+              child: Row(
+                children: <Widget>[
+                  const Icon(Icons.warning_amber_rounded,
+                      color: AppColors.warning, size: 18),
+                  const SizedBox(width: AppSpacing.xs),
+                  Expanded(
+                    child: Text(
+                      l.traktRequiresOwnTmdbKey,
+                      style: AppTypography.caption
+                          .copyWith(color: AppColors.warning),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          FilledButton.icon(
+            onPressed:
+                canImport && hasTarget && hasOwnTmdbKey ? _startImport : null,
+            icon: const Icon(Icons.download),
+            label: Text(l.traktStartImport),
+          ),
+        ],
       ),
     );
   }
