@@ -49,6 +49,7 @@ class MediaPosterCard extends StatefulWidget {
     this.mediaType,
     this.placeholderIcon,
     this.platformLabel,
+    this.platformColor,
     this.onTap,
     this.onLongPress,
     this.onSecondaryTap,
@@ -95,6 +96,9 @@ class MediaPosterCard extends StatefulWidget {
 
   /// Краткое название платформы (SNES, GBA). Grid/compact only.
   final String? platformLabel;
+
+  /// Цвет семейства платформы (Sony=синий, Nintendo=красный и т.д.).
+  final Color? platformColor;
 
   /// Тип медиа — для цвета рамки и иконки placeholder (canvas).
   final MediaType? mediaType;
@@ -349,6 +353,34 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                       ),
               ),
 
+            // Платформа-бейдж (top-right, только когда нет "в коллекции")
+            if (widget.platformLabel != null &&
+                widget.platformColor != null &&
+                !widget.isInCollection)
+              Positioned(
+                top: _isCompact ? 2 : AppSpacing.xs,
+                right: _isCompact ? 2 : AppSpacing.xs,
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: _isCompact ? 3 : 5,
+                    vertical: _isCompact ? 1 : 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: widget.platformColor!.withAlpha(210),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  child: Text(
+                    widget.platformLabel!,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: _isCompact ? 7 : 9,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ),
+              ),
+
             // Статус-бейдж (bottom-left)
             if (widget.status != null &&
                 widget.status != ItemStatus.notStarted)
@@ -406,9 +438,11 @@ class _MediaPosterCardState extends State<MediaPosterCard>
         ? AppTypography.posterSubtitle.copyWith(fontSize: 7)
         : AppTypography.posterSubtitle;
 
-    // Части до типа: platform, year.
+    // Части до типа: platform (если нет бейджа на обложке), year.
     final List<String> before = <String>[];
-    if (widget.platformLabel != null) before.add(widget.platformLabel!);
+    if (widget.platformLabel != null && widget.platformColor == null) {
+      before.add(widget.platformLabel!);
+    }
     if (widget.year != null) before.add(widget.year.toString());
     final String beforeText = before.join(' \u00b7 ');
 
