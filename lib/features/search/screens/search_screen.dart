@@ -348,12 +348,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   Future<void> _addGameToAnyCollection(Game game) async {
     final String gameName = game.name;
 
+    // Для игр не блокируем коллекции — та же игра на другой платформе разрешена.
+    // Сохраняем infos для проверки конкретной платформы после выбора.
     final Map<int, List<CollectedItemInfo>> collectedGames =
         await ref.read(collectedGameIdsProvider.future);
     final List<CollectedItemInfo> infos =
         collectedGames[game.id] ?? <CollectedItemInfo>[];
-    final Set<int?> alreadyIn =
-        infos.map((CollectedItemInfo i) => i.collectionId).toSet();
 
     if (!mounted) return;
     final S l = S.of(context);
@@ -361,7 +361,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       context: context,
       ref: ref,
       title: l.searchAddToCollection,
-      alreadyInCollectionIds: alreadyIn,
+      // Не блокируем коллекции — игру можно добавить на другой платформе.
+      alreadyInCollectionIds: const <int?>{},
     );
     if (choice == null || !mounted) return;
 
@@ -376,7 +377,17 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         collectionName = l.collectionsUncategorized;
     }
 
-    final int? platformId = await _showPlatformSelectionDialog(game);
+    // Показываем какие платформы уже добавлены в выбранную коллекцию.
+    final Set<int> alreadyPlatforms = infos
+        .where((CollectedItemInfo i) => i.collectionId == collectionId)
+        .map((CollectedItemInfo i) => i.platformId)
+        .whereType<int>()
+        .toSet();
+
+    final int? platformId = await _showPlatformSelectionDialog(
+      game,
+      alreadyAddedPlatformIds: alreadyPlatforms,
+    );
     if (platformId == null || !mounted) return;
 
     await ref.read(databaseServiceProvider).upsertGame(game);
@@ -891,7 +902,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   // ==================== Shared dialogs ====================
 
-  Future<int?> _showPlatformSelectionDialog(Game game) async {
+  Future<int?> _showPlatformSelectionDialog(
+    Game game, {
+    Set<int> alreadyAddedPlatformIds = const <int>{},
+  }) async {
     final List<int>? platformIds = game.platformIds;
 
     if (platformIds == null || platformIds.isEmpty) {
@@ -913,8 +927,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             final Platform? platform = _platformMap[id];
             final String platformName =
                 platform?.displayName ?? 'Platform $id';
+            final bool alreadyAdded = alreadyAddedPlatformIds.contains(id);
             return ListTile(
-              leading: const Icon(Icons.videogame_asset, size: 24),
+              leading: Icon(
+                alreadyAdded
+                    ? Icons.check_circle
+                    : Icons.videogame_asset,
+                size: 24,
+                color: alreadyAdded ? AppColors.success : null,
+              ),
               title: Text(platformName),
               onTap: () => Navigator.of(context).pop(id),
             );

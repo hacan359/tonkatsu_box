@@ -393,9 +393,17 @@ class ImportService {
 
         if (itemId != null) {
           addedCount++;
-          final String key =
-              '${parsed.mediaType.value}:${parsed.externalId}';
+          final String key = _itemMappingKey(
+            parsed.mediaType,
+            parsed.externalId,
+            parsed.platformId,
+          );
           itemIdMapping[key] = itemId;
+          // Fallback ключ без платформы для обратной совместимости
+          // со старыми экспортами, где tier-list/tag entries не содержат platform_id.
+          final String fallbackKey =
+              '${parsed.mediaType.value}:${parsed.externalId}';
+          itemIdMapping.putIfAbsent(fallbackKey, () => itemId);
 
           // Восстановление пользовательских данных из файла
           if (xcoll.includesUserData && _hasUserData(parsed)) {
@@ -424,11 +432,18 @@ class ImportService {
             collectionId: collection.id,
             mediaType: parsed.mediaType,
             externalId: parsed.externalId,
+            platformId: parsed.platformId,
           );
           if (existing != null) {
-            final String key =
-                '${parsed.mediaType.value}:${parsed.externalId}';
+            final String key = _itemMappingKey(
+              parsed.mediaType,
+              parsed.externalId,
+              parsed.platformId,
+            );
             itemIdMapping[key] = existing.id;
+            final String fallbackKey =
+                '${parsed.mediaType.value}:${parsed.externalId}';
+            itemIdMapping.putIfAbsent(fallbackKey, () => existing.id);
           }
         }
       }
@@ -531,6 +546,7 @@ class ImportService {
       collectionId: collectionId,
       mediaType: parsed.mediaType,
       externalId: parsed.externalId,
+      platformId: parsed.platformId,
     );
     if (existing == null) return false;
 
@@ -1295,14 +1311,18 @@ class ImportService {
         final Map<String, dynamic> entryData =
             entryRaw as Map<String, dynamic>;
 
-        // Разрешаем collection_item_id через external_id + media_type
+        // Разрешаем collection_item_id через external_id + media_type + platform_id
         final int? externalId = entryData['external_id'] as int?;
         final String? mediaType = entryData['media_type'] as String?;
+        final int? platformId = entryData['platform_id'] as int?;
 
         if (externalId == null || mediaType == null) continue;
 
-        final String key = '$mediaType:$externalId';
-        final int? newItemId = itemIdMapping[key];
+        // Пробуем ключ с платформой, затем без (обратная совместимость).
+        final String keyWithPlatform = '$mediaType:$externalId:$platformId';
+        final String keyWithout = '$mediaType:$externalId';
+        final int? newItemId =
+            itemIdMapping[keyWithPlatform] ?? itemIdMapping[keyWithout];
         if (newItemId == null) continue;
 
         final String tierKey = entryData['tier_key'] as String;
@@ -1352,13 +1372,32 @@ class ImportService {
 
       final String? mediaType = itemData['media_type'] as String?;
       final int? externalId = itemData['external_id'] as int?;
+      final int? platformId = itemData['platform_id'] as int?;
       if (mediaType == null || externalId == null) continue;
 
-      final String key = '$mediaType:$externalId';
-      final int? itemId = itemIdMapping[key];
+      // Пробуем ключ с платформой, затем без (обратная совместимость).
+      final String keyWithPlatform = '$mediaType:$externalId:$platformId';
+      final String keyWithout = '$mediaType:$externalId';
+      final int? itemId =
+          itemIdMapping[keyWithPlatform] ?? itemIdMapping[keyWithout];
       if (itemId == null) continue;
 
       await _database.tagDao.setItemTag(itemId, tagId);
     }
+  }
+
+  /// Ключ маппинга для элемента.
+  ///
+  /// Для игр включает platform_id чтобы различать версии на разных платформах.
+  /// Для остальных типов — только media_type:external_id.
+  static String _itemMappingKey(
+    MediaType mediaType,
+    int externalId,
+    int? platformId,
+  ) {
+    if (mediaType == MediaType.game && platformId != null) {
+      return '${mediaType.value}:$externalId:$platformId';
+    }
+    return '${mediaType.value}:$externalId';
   }
 }

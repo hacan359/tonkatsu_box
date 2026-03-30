@@ -10,6 +10,7 @@ class CollectedItemInfo {
     required this.recordId,
     required this.collectionId,
     required this.collectionName,
+    this.platformId,
   });
 
   /// ID записи в таблице collection_items.
@@ -20,6 +21,9 @@ class CollectedItemInfo {
 
   /// Название коллекции (null для элементов без коллекции).
   final String? collectionName;
+
+  /// ID платформы (для игр). Позволяет различать версии на разных платформах.
+  final int? platformId;
 
   @override
   String toString() =>

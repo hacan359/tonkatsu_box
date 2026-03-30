@@ -206,7 +206,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 29,
+        version: 30,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -536,11 +536,13 @@ class DatabaseService {
     required int? collectionId,
     required MediaType mediaType,
     required int externalId,
+    int? platformId,
   }) =>
       collectionDao.findCollectionItem(
         collectionId: collectionId,
         mediaType: mediaType,
         externalId: externalId,
+        platformId: platformId,
       );
 
   /// Добавляет элемент в коллекцию.

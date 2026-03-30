@@ -183,11 +183,13 @@ class CollectionRepository {
     required int? collectionId,
     required MediaType mediaType,
     required int externalId,
+    int? platformId,
   }) async {
     return _db.findCollectionItem(
       collectionId: collectionId,
       mediaType: mediaType,
       externalId: externalId,
+      platformId: platformId,
     );
   }
 
