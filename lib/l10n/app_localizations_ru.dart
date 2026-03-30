@@ -1061,6 +1061,50 @@ class SRu extends S {
   String get customItemUpdated => 'Элемент обновлён';
 
   @override
+  String get tagLabel => 'Тег';
+
+  @override
+  String get tagsLabel => 'Теги';
+
+  @override
+  String get tagCreate => 'Новый тег';
+
+  @override
+  String get tagCreateHint => 'Название тега';
+
+  @override
+  String get tagRename => 'Переименовать тег';
+
+  @override
+  String get tagDelete => 'Удалить тег';
+
+  @override
+  String tagDeleteConfirm(String name) {
+    return 'Удалить тег «$name»? Элементы останутся без тега.';
+  }
+
+  @override
+  String get tagManage => 'Управление тегами';
+
+  @override
+  String get tagAssign => 'Назначить теги';
+
+  @override
+  String get tagNone => 'Нет тегов';
+
+  @override
+  String get tagCreated => 'Тег создан';
+
+  @override
+  String get tagRenamed => 'Тег переименован';
+
+  @override
+  String get tagDeleted => 'Тег удалён';
+
+  @override
+  String get tagFilterAll => 'Все теги';
+
+  @override
   String get collectionFilterAll => 'Все';
 
   @override

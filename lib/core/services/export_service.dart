@@ -17,6 +17,7 @@ import '../../shared/models/platform.dart' as model;
 import '../../shared/models/tv_episode.dart';
 import '../../shared/models/tv_season.dart';
 import '../../shared/models/tier_definition.dart';
+import '../../shared/models/collection_tag.dart';
 import '../../shared/models/tier_list.dart';
 import '../../shared/models/tier_list_entry.dart';
 import '../database/database_service.dart';
@@ -172,6 +173,21 @@ class ExportService {
       tierLists = await _collectTierListData(collectionId);
     }
 
+    // Collect tag data and enrich items with tag_name for import resolution
+    List<Map<String, dynamic>>? tags;
+    if (_database != null) {
+      final _TagExportResult tagResult =
+          await _collectTagData(collectionId, items);
+      tags = tagResult.tags;
+      // Записываем tag_name в каждый элемент для восстановления при импорте.
+      for (int i = 0; i < items.length; i++) {
+        final String? tagName = tagResult.itemTagNames[i];
+        if (tagName != null) {
+          exportItems[i]['tag_name'] = tagName;
+        }
+      }
+    }
+
     return XcollFile(
       version: xcollFormatVersion,
       format: ExportFormat.full,
@@ -184,6 +200,7 @@ class ExportService {
       images: images,
       media: media,
       tierLists: tierLists,
+      tags: tags,
     );
   }
 
@@ -618,6 +635,37 @@ class ExportService {
     return result;
   }
 
+  /// Собирает данные тегов коллекции и маппинг item index → tag name.
+  Future<_TagExportResult> _collectTagData(
+    int collectionId,
+    List<CollectionItem> items,
+  ) async {
+    final DatabaseService db = _database!;
+    final List<CollectionTag> tags =
+        await db.tagDao.getTagsByCollection(collectionId);
+
+    if (tags.isEmpty) {
+      return _TagExportResult(
+        tags: null,
+        itemTagNames: List<String?>.filled(items.length, null),
+      );
+    }
+
+    final Map<int, String> tagNameById = <int, String>{
+      for (final CollectionTag tag in tags) tag.id: tag.name,
+    };
+
+    final List<String?> itemTagNames = items
+        .map((CollectionItem item) =>
+            item.tagId != null ? tagNameById[item.tagId] : null)
+        .toList();
+
+    return _TagExportResult(
+      tags: tags.map((CollectionTag tag) => tag.toExport()).toList(),
+      itemTagNames: itemTagNames,
+    );
+  }
+
   /// Очищает название файла от недопустимых символов.
   String _sanitizeFileName(String name) {
     return name
@@ -626,4 +674,15 @@ class ExportService {
         .replaceAll(RegExp('_+'), '_')
         .trim();
   }
+}
+
+/// Результат сбора тегов для экспорта.
+class _TagExportResult {
+  _TagExportResult({required this.tags, required this.itemTagNames});
+
+  /// Экспортные данные тегов (null если тегов нет).
+  final List<Map<String, dynamic>>? tags;
+
+  /// Имя тега для каждого элемента (по индексу, null если без тега).
+  final List<String?> itemTagNames;
 }

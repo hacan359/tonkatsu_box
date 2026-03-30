@@ -38,6 +38,7 @@ import '../providers/steamgriddb_panel_provider.dart';
 import '../providers/vgmaps_panel_provider.dart';
 import '../widgets/canvas_view.dart';
 import '../widgets/episode_tracker_section.dart';
+import '../widgets/item_tags_section.dart';
 import '../widgets/manga_progress_section.dart';
 import '../widgets/recommendations_section.dart';
 import '../widgets/reviews_section.dart';
@@ -565,6 +566,14 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       onActivityDateChanged: widget.isEditable
           ? (String type, DateTime date) =>
               _updateActivityDate(item.id, type, date)
+          : null,
+      tagWidget: widget.collectionId != null
+          ? ItemTagsSection(
+              collectionId: widget.collectionId!,
+              itemId: item.id,
+              currentTagId: item.tagId,
+              isEditable: widget.isEditable,
+            )
           : null,
       extraSections: <Widget>[
         if (widget.collectionId == null)

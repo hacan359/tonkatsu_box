@@ -19,6 +19,7 @@ import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../data/repositories/game_repository.dart';
 import '../../home/providers/all_items_provider.dart';
+import '../../../core/database/dao/tag_dao.dart';
 import '../../../core/database/dao/tier_list_dao.dart';
 import '../../tier_lists/providers/tier_list_detail_provider.dart';
 import '../../settings/providers/profile_provider.dart';
@@ -609,6 +610,10 @@ class CollectionItemsNotifier
         _collectionId!,
       );
     }
+
+    // Обнуляем тег элемента (теги привязаны к коллекции).
+    final TagDao tagDao = ref.read(tagDaoProvider);
+    await tagDao.setItemTag(itemId, null);
 
     final bool success = await _repository.moveItemToCollection(
       itemId,

@@ -388,6 +388,25 @@
   "customItemErrorEmptyTitle": "Название обязательно",
   "customItemCreated": "Элемент создан",
   "customItemUpdated": "Элемент обновлён",
+  "tagLabel": "Тег",
+  "tagsLabel": "Теги",
+  "tagCreate": "Новый тег",
+  "tagCreateHint": "Название тега",
+  "tagRename": "Переименовать тег",
+  "tagDelete": "Удалить тег",
+  "tagDeleteConfirm": "Удалить тег «{name}»? Элементы останутся без тега.",
+  "@tagDeleteConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "tagManage": "Управление тегами",
+  "tagAssign": "Назначить теги",
+  "tagNone": "Нет тегов",
+  "tagCreated": "Тег создан",
+  "tagRenamed": "Тег переименован",
+  "tagDeleted": "Тег удалён",
+  "tagFilterAll": "Все теги",
   "collectionFilterAll": "Все",
   "collectionFilterByType": "Фильтр по типу",
   "collectionFilterGames": "Игры",

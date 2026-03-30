@@ -28,6 +28,7 @@ abstract final class DatabaseSchema {
     await createTierDefinitionsTable(db);
     await createTierListEntriesTable(db);
     await createCustomItemsTable(db);
+    await createCollectionTagsTable(db);
   }
 
   /// Таблица платформ (IGDB).
@@ -244,7 +245,9 @@ abstract final class DatabaseSchema {
         completed_at INTEGER,
         last_activity_at INTEGER,
         user_rating INTEGER,
-        FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE
+        tag_id INTEGER,
+        FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE,
+        FOREIGN KEY (tag_id) REFERENCES collection_tags(id) ON DELETE SET NULL
       )
     ''');
 
@@ -480,4 +483,24 @@ abstract final class DatabaseSchema {
       )
     ''');
   }
+
+  /// Создаёт таблицу тегов коллекции.
+  static Future<void> createCollectionTagsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS collection_tags (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        collection_id INTEGER NOT NULL,
+        name TEXT NOT NULL,
+        color INTEGER,
+        sort_order INTEGER NOT NULL DEFAULT 0,
+        created_at INTEGER NOT NULL,
+        FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE
+      )
+    ''');
+    await db.execute('''
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_collection_tags_name
+      ON collection_tags(collection_id, name)
+    ''');
+  }
+
 }

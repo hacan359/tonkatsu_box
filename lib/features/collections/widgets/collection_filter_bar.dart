@@ -487,4 +487,5 @@ class CollectionFilterBar extends ConsumerWidget {
       },
     );
   }
+
 }

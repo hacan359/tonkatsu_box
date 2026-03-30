@@ -1050,6 +1050,50 @@ class SEn extends S {
   String get customItemUpdated => 'Custom item updated';
 
   @override
+  String get tagLabel => 'Tag';
+
+  @override
+  String get tagsLabel => 'Tags';
+
+  @override
+  String get tagCreate => 'New tag';
+
+  @override
+  String get tagCreateHint => 'Tag name';
+
+  @override
+  String get tagRename => 'Rename tag';
+
+  @override
+  String get tagDelete => 'Delete tag';
+
+  @override
+  String tagDeleteConfirm(String name) {
+    return 'Delete tag \"$name\"? Items will be untagged.';
+  }
+
+  @override
+  String get tagManage => 'Manage tags';
+
+  @override
+  String get tagAssign => 'Assign tags';
+
+  @override
+  String get tagNone => 'No tags';
+
+  @override
+  String get tagCreated => 'Tag created';
+
+  @override
+  String get tagRenamed => 'Tag renamed';
+
+  @override
+  String get tagDeleted => 'Tag deleted';
+
+  @override
+  String get tagFilterAll => 'All tags';
+
+  @override
   String get collectionFilterAll => 'All';
 
   @override

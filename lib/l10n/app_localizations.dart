@@ -1993,6 +1993,90 @@ abstract class S {
   /// **'Custom item updated'**
   String get customItemUpdated;
 
+  /// No description provided for @tagLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Tag'**
+  String get tagLabel;
+
+  /// No description provided for @tagsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get tagsLabel;
+
+  /// No description provided for @tagCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'New tag'**
+  String get tagCreate;
+
+  /// No description provided for @tagCreateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tag name'**
+  String get tagCreateHint;
+
+  /// No description provided for @tagRename.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename tag'**
+  String get tagRename;
+
+  /// No description provided for @tagDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete tag'**
+  String get tagDelete;
+
+  /// No description provided for @tagDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete tag \"{name}\"? Items will be untagged.'**
+  String tagDeleteConfirm(String name);
+
+  /// No description provided for @tagManage.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage tags'**
+  String get tagManage;
+
+  /// No description provided for @tagAssign.
+  ///
+  /// In en, this message translates to:
+  /// **'Assign tags'**
+  String get tagAssign;
+
+  /// No description provided for @tagNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No tags'**
+  String get tagNone;
+
+  /// No description provided for @tagCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Tag created'**
+  String get tagCreated;
+
+  /// No description provided for @tagRenamed.
+  ///
+  /// In en, this message translates to:
+  /// **'Tag renamed'**
+  String get tagRenamed;
+
+  /// No description provided for @tagDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Tag deleted'**
+  String get tagDeleted;
+
+  /// No description provided for @tagFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All tags'**
+  String get tagFilterAll;
+
   /// No description provided for @collectionFilterAll.
   ///
   /// In en, this message translates to:

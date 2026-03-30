@@ -10,6 +10,7 @@ import 'package:xerabora/shared/models/canvas_connection.dart';
 import 'package:xerabora/shared/models/canvas_item.dart';
 import 'package:xerabora/shared/models/collection.dart';
 import 'package:xerabora/shared/models/collection_item.dart';
+import 'package:xerabora/shared/models/collection_tag.dart';
 import 'package:xerabora/shared/models/game.dart';
 import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
@@ -108,6 +109,7 @@ CollectionItem createTestCollectionItem({
   MediaType mediaType = MediaType.game,
   int externalId = 100,
   int? platformId,
+  int? tagId,
   ItemStatus status = ItemStatus.notStarted,
   String? authorComment,
   String? userComment,
@@ -132,6 +134,7 @@ CollectionItem createTestCollectionItem({
     mediaType: mediaType,
     externalId: externalId,
     platformId: platformId,
+    tagId: tagId,
     status: status,
     authorComment: authorComment,
     userComment: userComment,
@@ -558,5 +561,27 @@ ProfileStats createTestProfileStats({
   return ProfileStats(
     collectionsCount: collectionsCount,
     itemsCount: itemsCount,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// CollectionTag
+// ---------------------------------------------------------------------------
+
+CollectionTag createTestCollectionTag({
+  int id = 1,
+  int collectionId = 1,
+  String name = 'RPG',
+  int? color,
+  int sortOrder = 0,
+  int createdAt = 1700000000,
+}) {
+  return CollectionTag(
+    id: id,
+    collectionId: collectionId,
+    name: name,
+    color: color,
+    sortOrder: sortOrder,
+    createdAt: createdAt,
   );
 }

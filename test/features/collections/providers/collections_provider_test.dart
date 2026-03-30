@@ -527,12 +527,16 @@ void main() {
   // ===========================================================
   group('CollectionItemsNotifier.moveItem', () {
     late MockTierListDao mockTierListDao;
+    late MockTagDao mockTagDao;
 
     setUp(() {
       mockTierListDao = MockTierListDao();
+      mockTagDao = MockTagDao();
       // Стаб для rebuild при invalidate tierListDetailProvider
       when(() => mockTierListDao.getTierListById(any()))
           .thenAnswer((_) async => null);
+      when(() => mockTagDao.setItemTag(any(), any()))
+          .thenAnswer((_) async {});
     });
 
     ProviderContainer createMoveContainer({
@@ -549,6 +553,7 @@ void main() {
           collectionRepositoryProvider.overrideWithValue(mockRepository),
           sharedPreferencesProvider.overrideWithValue(sharedPrefs),
           tierListDaoProvider.overrideWithValue(mockTierListDao),
+          tagDaoProvider.overrideWithValue(mockTagDao),
         ],
       );
       addTearDown(container.dispose);
@@ -628,6 +633,7 @@ void main() {
           collectionRepositoryProvider.overrideWithValue(mockRepository),
           sharedPreferencesProvider.overrideWithValue(sharedPrefs),
           tierListDaoProvider.overrideWithValue(mockTierListDao),
+          tagDaoProvider.overrideWithValue(mockTagDao),
         ],
       );
       addTearDown(container.dispose);
