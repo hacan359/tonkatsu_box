@@ -29,6 +29,7 @@ import 'dao/collection_dao.dart';
 import 'dao/custom_media_dao.dart';
 import 'dao/game_dao.dart';
 import 'dao/movie_dao.dart';
+import 'dao/tag_dao.dart';
 import 'dao/tv_show_dao.dart';
 import 'dao/manga_dao.dart';
 import 'dao/visual_novel_dao.dart';
@@ -100,6 +101,11 @@ final Provider<CustomMediaDao> customMediaDaoProvider =
   return ref.watch(databaseServiceProvider).customMediaDao;
 });
 
+/// Провайдер для [TagDao].
+final Provider<TagDao> tagDaoProvider = Provider<TagDao>((Ref ref) {
+  return ref.watch(databaseServiceProvider).tagDao;
+});
+
 /// Сервис для работы с SQLite базой данных.
 ///
 /// Управляет инициализацией базы данных и CRUD операциями для платформ.
@@ -152,6 +158,9 @@ class DatabaseService {
   /// DAO для работы с тир-листами.
   late final TierListDao tierListDao = TierListDao(() => database);
 
+  /// DAO для работы с тегами коллекций.
+  late final TagDao tagDao = TagDao(() => database);
+
   /// DAO для работы с вишлистом.
   late final WishlistDao wishlistDao = WishlistDao(() => database);
 
@@ -197,7 +206,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 28,
+        version: 29,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {

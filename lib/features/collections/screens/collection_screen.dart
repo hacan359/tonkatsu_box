@@ -18,6 +18,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
+import '../../../shared/models/collection_tag.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/steamgriddb_image.dart';
 import '../../settings/providers/settings_provider.dart';
@@ -27,12 +28,14 @@ import '../../home/providers/all_items_provider.dart';
 import '../widgets/import_progress_dialog.dart';
 import '../helpers/collection_actions.dart';
 import '../providers/collection_covers_provider.dart';
+import '../providers/collection_tags_provider.dart';
 import '../providers/collections_provider.dart';
 import '../providers/steamgriddb_panel_provider.dart';
 import '../providers/vgmaps_panel_provider.dart';
 import '../widgets/collection_canvas_layout.dart';
 import '../widgets/collection_filter_bar.dart';
 import '../widgets/collection_items_view.dart';
+import '../widgets/tag_management_dialog.dart';
 import '../../../shared/models/tier_list.dart';
 import '../../tier_lists/screens/tier_list_detail_screen.dart';
 import '../../tier_lists/screens/tier_lists_screen.dart';
@@ -376,6 +379,14 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                 ),
               ),
               PopupMenuItem<String>(
+                value: 'manage_tags',
+                child: ListTile(
+                  leading: const Icon(Icons.label_outlined),
+                  title: Text(ml.tagManage),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              PopupMenuItem<String>(
                 value: 'copy_as_list',
                 child: ListTile(
                   leading: const Icon(Icons.content_copy),
@@ -462,6 +473,11 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             data: (List<CollectionItem> items) => CollectionItemsView(
               collectionId: widget.collectionId,
               items: _applyFilters(items),
+              tags: widget.collectionId != null
+                  ? (ref.watch(collectionTagsProvider(widget.collectionId!))
+                          .valueOrNull ??
+                      <CollectionTag>[])
+                  : <CollectionTag>[],
               isGridMode: _isGridMode,
               isTableMode: _isTableMode,
               canEdit: _canEdit,
@@ -585,6 +601,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         _handleRename();
       case 'tier_list':
         _handleCreateTierList();
+      case 'manage_tags':
+        TagManagementDialog.show(context, widget.collectionId!);
       case 'copy_as_list':
         _handleCopyAsList();
       case 'copy_as_text':

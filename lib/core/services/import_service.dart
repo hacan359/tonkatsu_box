@@ -13,6 +13,7 @@ import '../../shared/models/canvas_item.dart';
 import '../../shared/models/canvas_viewport.dart';
 import '../../shared/models/collection.dart';
 import '../../shared/models/collection_item.dart';
+import '../../shared/models/collection_tag.dart';
 import '../../shared/models/custom_media.dart';
 import '../../shared/models/item_status.dart';
 import '../../shared/models/tier_definition.dart';
@@ -476,6 +477,19 @@ class ImportService {
           isNewCollection) {
         await _importTierLists(
           xcoll.tierLists!,
+          collection.id,
+          itemIdMapping,
+        );
+      }
+
+      // Восстановление тегов (для full export, только новая коллекция)
+      if (xcoll.isFull &&
+          xcoll.tags != null &&
+          xcoll.tags!.isNotEmpty &&
+          isNewCollection) {
+        await _importTags(
+          xcoll.tags!,
+          xcoll.items,
           collection.id,
           itemIdMapping,
         );
@@ -1301,6 +1315,50 @@ class ImportService {
           sortOrder,
         );
       }
+    }
+  }
+
+  /// Импортирует теги коллекции и назначает tag_id элементам.
+  ///
+  /// Создаёт теги из [tagsData], затем проходит по [exportedItems]
+  /// и ставит `tag_id` элементам по `tag_name`.
+  Future<void> _importTags(
+    List<Map<String, dynamic>> tagsData,
+    List<Map<String, dynamic>> exportedItems,
+    int collectionId,
+    Map<String, int> itemIdMapping,
+  ) async {
+    // Создаём теги и строим маппинг name → newTagId.
+    final Map<String, int> tagNameToId = <String, int>{};
+    for (final Map<String, dynamic> tagData in tagsData) {
+      final String name = tagData['name'] as String? ?? 'Imported Tag';
+      final int? color = tagData['color'] as int?;
+
+      final CollectionTag tag = await _database.tagDao.createTag(
+        collectionId,
+        name,
+        color: color,
+      );
+      tagNameToId[name] = tag.id;
+    }
+
+    // Назначаем tag_id элементам по tag_name.
+    for (final Map<String, dynamic> itemData in exportedItems) {
+      final String? tagName = itemData['tag_name'] as String?;
+      if (tagName == null) continue;
+
+      final int? tagId = tagNameToId[tagName];
+      if (tagId == null) continue;
+
+      final String? mediaType = itemData['media_type'] as String?;
+      final int? externalId = itemData['external_id'] as int?;
+      if (mediaType == null || externalId == null) continue;
+
+      final String key = '$mediaType:$externalId';
+      final int? itemId = itemIdMapping[key];
+      if (itemId == null) continue;
+
+      await _database.tagDao.setItemTag(itemId, tagId);
     }
   }
 }

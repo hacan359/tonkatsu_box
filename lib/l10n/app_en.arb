@@ -450,6 +450,25 @@
   "customItemErrorEmptyTitle": "Title is required",
   "customItemCreated": "Custom item created",
   "customItemUpdated": "Custom item updated",
+  "tagLabel": "Tag",
+  "tagsLabel": "Tags",
+  "tagCreate": "New tag",
+  "tagCreateHint": "Tag name",
+  "tagRename": "Rename tag",
+  "tagDelete": "Delete tag",
+  "tagDeleteConfirm": "Delete tag \"{name}\"? Items will be untagged.",
+  "@tagDeleteConfirm": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "tagManage": "Manage tags",
+  "tagAssign": "Assign tags",
+  "tagNone": "No tags",
+  "tagCreated": "Tag created",
+  "tagRenamed": "Tag renamed",
+  "tagDeleted": "Tag deleted",
+  "tagFilterAll": "All tags",
   "collectionFilterAll": "All",
   "collectionFilterByType": "Filter by type",
   "collectionFilterGames": "Games",

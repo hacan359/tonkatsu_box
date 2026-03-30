@@ -146,6 +146,7 @@ Includes everything from light export plus `canvas`, `images`, and `media`:
 | canvas | object | no | Collection-level canvas (full only) |
 | images | object | no | Base64 cover images (full only) |
 | media | object | no | Embedded Game/Movie/TvShow/VisualNovel/Manga/TvSeason/TvEpisode data for offline import (full only) |
+| tags | array | no | Collection tag definitions (full only). Each: `{ name, color?, sort_order }` |
 
 ### Item Object
 
@@ -157,6 +158,7 @@ Includes everything from light export plus `canvas`, `images`, and `media`:
 | comment | string | no | Author's comment |
 | user_rating | number | no | User rating (1-10) |
 | _canvas | object | no | Per-item canvas data (full only) |
+| tag_name | string | no | Name of the assigned tag/section (full only, resolved to `tag_id` on import) |
 
 **User data fields** (present only when top-level `user_data` is `true`):
 
@@ -225,6 +227,18 @@ Contains tier list data for the exported collection. Only present when the colle
 | entries | array | Items placed in tiers: `{ collection_item_id, tier_key, sort_order, external_id, media_type }` |
 
 Entries include `external_id` and `media_type` fields for cross-collection resolution on import. The import process builds an `itemIdMapping` (`"media_type:external_id" → newItemId`) and resolves entries via this map rather than raw collection_item_id values. Animation items are stored in `movies` (animated films) or `tv_shows` (animated series) based on their `AnimationSource`. Visual novel items are stored in `visual_novels` with VNDB string IDs (e.g. "v17"). Manga items are stored in `mangas` with AniList integer IDs. Seasons are preloaded when a TV show or animation series is added to a collection. Episodes are included from the local cache for each TV show in the collection.
+
+### Tags Object
+
+Contains tag (section) definitions for the exported collection. Only present in full exports when the collection has tags.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| name | string | Tag name |
+| color | int? | Tag color (0xAARRGGBB int), null for default |
+| sort_order | int | Display order |
+
+Item-tag assignments are stored per-item via the `tag_name` field (see Item Object). On import, tags are created first, then items are matched by `tag_name` to assign `tag_id`.
 
 When `media` is present during import, data is restored directly from the file via `fromDb()` — no API calls to IGDB/TMDB/VNDB are needed. TV seasons and episodes are also restored if present. When `media` is absent (light export or older full exports), the app fetches data from APIs as before.
 

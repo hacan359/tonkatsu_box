@@ -74,6 +74,7 @@ class MediaDetailView extends StatefulWidget {
     this.infoChips = const <MediaDetailChip>[],
     this.description,
     this.statusWidget,
+    this.tagWidget,
     this.extraSections,
     this.recommendationSections,
     this.authorComment,
@@ -124,6 +125,9 @@ class MediaDetailView extends StatefulWidget {
 
   /// Виджет выбора статуса.
   final Widget? statusWidget;
+
+  /// Виджет выбора тега (секции) коллекции.
+  final Widget? tagWidget;
 
   /// Дополнительные секции (например, Progress для сериалов).
   final List<Widget>? extraSections;
@@ -345,7 +349,7 @@ class _MediaDetailViewState extends State<MediaDetailView> {
                     color: widget.accentColor,
                   ),
                   const SizedBox(width: 6),
-                  Expanded(
+                  Flexible(
                     child: Text(
                       widget.typeLabel,
                       style: AppTypography.bodySmall.copyWith(
@@ -356,6 +360,10 @@ class _MediaDetailViewState extends State<MediaDetailView> {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  if (widget.tagWidget != null) ...<Widget>[
+                    const SizedBox(width: 6),
+                    Flexible(child: widget.tagWidget!),
+                  ],
                 ],
               ),
               if (widget.infoChips.isNotEmpty) ...<Widget>[

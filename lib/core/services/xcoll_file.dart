@@ -95,6 +95,7 @@ class XcollFile {
     this.images = const <String, String>{},
     this.media = const <String, dynamic>{},
     this.tierLists,
+    this.tags,
   });
 
   /// Создаёт [XcollFile] из JSON строки.
@@ -187,6 +188,12 @@ class XcollFile {
         ?.map((dynamic tl) => tl as Map<String, dynamic>)
         .toList();
 
+    // Tags (optional, full export only)
+    final List<dynamic>? rawTags = json['tags'] as List<dynamic>?;
+    final List<Map<String, dynamic>>? tags = rawTags
+        ?.map((dynamic t) => t as Map<String, dynamic>)
+        .toList();
+
     final bool includesUserData = json['user_data'] as bool? ?? false;
 
     return XcollFile(
@@ -202,6 +209,7 @@ class XcollFile {
       images: images,
       media: media,
       tierLists: tierLists,
+      tags: tags,
     );
   }
 
@@ -262,6 +270,9 @@ class XcollFile {
   /// Тир-листы привязанные к коллекции (только full export).
   final List<Map<String, dynamic>>? tierLists;
 
+  /// Теги коллекции с привязками к элементам (только full export).
+  final List<Map<String, dynamic>>? tags;
+
   /// Является ли полным экспортом.
   bool get isFull => format == ExportFormat.full;
 
@@ -280,6 +291,7 @@ class XcollFile {
       if (images.isNotEmpty) 'images': images,
       if (media.isNotEmpty) 'media': media,
       if (tierLists != null) 'tier_lists': tierLists,
+      if (tags != null) 'tags': tags,
     };
   }
 

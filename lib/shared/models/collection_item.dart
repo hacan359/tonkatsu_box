@@ -31,6 +31,7 @@ class CollectionItem with Exportable {
     this.completedAt,
     this.lastActivityAt,
     this.platformId,
+    this.tagId,
     this.currentSeason = 0,
     this.currentEpisode = 0,
     this.sortOrder = 0,
@@ -68,6 +69,7 @@ class CollectionItem with Exportable {
       mediaType: MediaType.fromString(row['media_type'] as String),
       externalId: row['external_id'] as int,
       platformId: row['platform_id'] as int?,
+      tagId: row['tag_id'] as int?,
       currentSeason: (row['current_season'] as int?) ?? 0,
       currentEpisode: (row['current_episode'] as int?) ?? 0,
       sortOrder: (row['sort_order'] as int?) ?? 0,
@@ -165,6 +167,9 @@ class CollectionItem with Exportable {
 
   /// ID платформы (только для игр).
   final int? platformId;
+
+  /// ID тега (секции) внутри коллекции (null = без тега).
+  final int? tagId;
 
   /// Текущий сезон (для сериалов).
   final int currentSeason;
@@ -517,6 +522,7 @@ class CollectionItem with Exportable {
         'added_at', 'sort_order',
         'started_at', 'completed_at', 'last_activity_at',
         'status', 'current_season', 'current_episode',
+        'tag_id',
       };
 
   @override
@@ -532,6 +538,7 @@ class CollectionItem with Exportable {
       'media_type': mediaType.value,
       'external_id': externalId,
       'platform_id': platformId,
+      'tag_id': tagId,
       'current_season': currentSeason,
       'current_episode': currentEpisode,
       'status': status.value,
@@ -593,6 +600,8 @@ class CollectionItem with Exportable {
     MediaType? mediaType,
     int? externalId,
     int? platformId,
+    int? tagId,
+    bool clearTagId = false,
     int? currentSeason,
     int? currentEpisode,
     int? sortOrder,
@@ -624,6 +633,7 @@ class CollectionItem with Exportable {
       mediaType: mediaType ?? this.mediaType,
       externalId: externalId ?? this.externalId,
       platformId: platformId ?? this.platformId,
+      tagId: clearTagId ? null : (tagId ?? this.tagId),
       currentSeason: currentSeason ?? this.currentSeason,
       currentEpisode: currentEpisode ?? this.currentEpisode,
       sortOrder: sortOrder ?? this.sortOrder,

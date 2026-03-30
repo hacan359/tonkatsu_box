@@ -54,6 +54,9 @@ class MediaPosterCard extends StatefulWidget {
     this.onSecondaryTap,
     this.onOpenInCollection,
     this.onFocusChanged,
+    this.tagName,
+    this.tagColor,
+    this.onTagTap,
     super.key,
   });
 
@@ -113,6 +116,15 @@ class MediaPosterCard extends StatefulWidget {
 
   /// Callback при изменении фокуса (для трекинга клавиатурного выделения).
   final ValueChanged<bool>? onFocusChanged;
+
+  /// Название тега (секции) элемента. Grid/compact only.
+  final String? tagName;
+
+  /// Цвет тега (ARGB int). Grid/compact only.
+  final int? tagColor;
+
+  /// Callback при тапе на тег-бейдж (для выбора/смены тега).
+  final void Function(Offset globalPosition)? onTagTap;
 
   @override
   State<MediaPosterCard> createState() => _MediaPosterCardState();
@@ -356,6 +368,19 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                   ),
                 ),
               ),
+
+            // Тег-бейдж (bottom-right) — кликабельный для выбора тега
+            if (widget.onTagTap != null || widget.tagName != null)
+              Positioned(
+                bottom: _isCompact ? 2 : AppSpacing.xs,
+                right: _isCompact ? 2 : AppSpacing.xs,
+                child: _TagBadge(
+                  tagName: widget.tagName,
+                  tagColor: widget.tagColor,
+                  compact: _isCompact,
+                  onTap: widget.onTagTap,
+                ),
+              ),
           ],
         ),
       ),
@@ -515,6 +540,70 @@ class _MediaPosterCardState extends State<MediaPosterCard>
 }
 
 /// Кнопка "Открыть в коллекции" поверх постера.
+class _TagBadge extends StatelessWidget {
+  const _TagBadge({
+    required this.tagName,
+    required this.tagColor,
+    required this.compact,
+    this.onTap,
+  });
+
+  final String? tagName;
+  final int? tagColor;
+  final bool compact;
+  final void Function(Offset globalPosition)? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color accentColor = tagColor != null
+        ? Color(tagColor!)
+        : AppColors.brand;
+    final bool hasTag = tagName != null;
+
+    final Widget badge = Container(
+      constraints: BoxConstraints(
+        maxWidth: compact ? 50 : 70,
+      ),
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 3 : 5,
+        vertical: compact ? 1 : 2,
+      ),
+      decoration: BoxDecoration(
+        color: hasTag
+            ? accentColor.withAlpha(200)
+            : AppColors.surface.withAlpha(180),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: hasTag
+          ? Text(
+              tagName!,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: compact ? 7 : 9,
+                fontWeight: FontWeight.w600,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            )
+          : Icon(
+              Icons.label_outline,
+              size: compact ? 10 : 14,
+              color: AppColors.textTertiary,
+            ),
+    );
+
+    if (onTap == null) return badge;
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTapDown: (TapDownDetails details) {
+        onTap!(details.globalPosition);
+      },
+      child: badge,
+    );
+  }
+}
+
 class _InCollectionButton extends StatelessWidget {
   const _InCollectionButton({
     required this.compact,

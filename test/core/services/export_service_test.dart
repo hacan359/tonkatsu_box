@@ -18,6 +18,7 @@ import 'package:xerabora/shared/models/movie.dart';
 import 'package:xerabora/shared/models/platform.dart';
 import 'package:xerabora/shared/models/tv_episode.dart';
 import 'package:xerabora/shared/models/tv_season.dart';
+import 'package:xerabora/shared/models/collection_tag.dart';
 import 'package:xerabora/shared/models/tier_list.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
 
@@ -1412,12 +1413,14 @@ void main() {
       late MockImageCacheService mockImageCache;
       late MockDatabaseService mockDatabase;
       late MockTierListDao mockTierListDao;
+      late MockTagDao mockTagDao;
 
       setUp(() {
         mockCanvasRepo = MockCanvasRepository();
         mockImageCache = MockImageCacheService();
         mockDatabase = MockDatabaseService();
         mockTierListDao = MockTierListDao();
+        mockTagDao = MockTagDao();
 
         when(() => mockCanvasRepo.getViewport(any()))
             .thenAnswer((_) async => null);
@@ -1434,6 +1437,9 @@ void main() {
         when(() => mockDatabase.tierListDao).thenReturn(mockTierListDao);
         when(() => mockTierListDao.getTierListsByCollection(any()))
             .thenAnswer((_) async => <TierList>[]);
+        when(() => mockDatabase.tagDao).thenReturn(mockTagDao);
+        when(() => mockTagDao.getTagsByCollection(any()))
+            .thenAnswer((_) async => <CollectionTag>[]);
       });
 
       test('должен включить tv_seasons для tvShow элементов', () async {
@@ -1666,12 +1672,14 @@ void main() {
       late MockImageCacheService mockImageCache;
       late MockDatabaseService mockDatabase;
       late MockTierListDao mockTierListDao;
+      late MockTagDao mockTagDao;
 
       setUp(() {
         mockCanvasRepo = MockCanvasRepository();
         mockImageCache = MockImageCacheService();
         mockDatabase = MockDatabaseService();
         mockTierListDao = MockTierListDao();
+        mockTagDao = MockTagDao();
 
         when(() => mockCanvasRepo.getViewport(any()))
             .thenAnswer((_) async => null);
@@ -1690,6 +1698,9 @@ void main() {
         when(() => mockDatabase.tierListDao).thenReturn(mockTierListDao);
         when(() => mockTierListDao.getTierListsByCollection(any()))
             .thenAnswer((_) async => <TierList>[]);
+        when(() => mockDatabase.tagDao).thenReturn(mockTagDao);
+        when(() => mockTagDao.getTagsByCollection(any()))
+            .thenAnswer((_) async => <CollectionTag>[]);
       });
 
       test('должен включить tv_episodes для tvShow элементов', () async {
@@ -1828,12 +1839,14 @@ void main() {
       late MockImageCacheService mockImageCache;
       late MockDatabaseService mockDatabase;
       late MockTierListDao mockTierListDao;
+      late MockTagDao mockTagDao;
 
       setUp(() {
         mockCanvasRepo = MockCanvasRepository();
         mockImageCache = MockImageCacheService();
         mockDatabase = MockDatabaseService();
         mockTierListDao = MockTierListDao();
+        mockTagDao = MockTagDao();
 
         when(() => mockCanvasRepo.getViewport(any()))
             .thenAnswer((_) async => null);
@@ -1848,6 +1861,9 @@ void main() {
         when(() => mockDatabase.tierListDao).thenReturn(mockTierListDao);
         when(() => mockTierListDao.getTierListsByCollection(any()))
             .thenAnswer((_) async => <TierList>[]);
+        when(() => mockDatabase.tagDao).thenReturn(mockTagDao);
+        when(() => mockTagDao.getTagsByCollection(any()))
+            .thenAnswer((_) async => <CollectionTag>[]);
       });
 
       test('должен включить platforms для game элементов', () async {
