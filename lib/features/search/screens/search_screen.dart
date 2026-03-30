@@ -315,7 +315,21 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   Future<void> _addGameToCollection(Game game) async {
     final String gameName = game.name;
 
-    final int? platformId = await _showPlatformSelectionDialog(game);
+    // Показываем какие платформы уже добавлены в текущую коллекцию.
+    final Map<int, List<CollectedItemInfo>> collectedGames =
+        await ref.read(collectedGameIdsProvider.future);
+    final List<CollectedItemInfo> infos =
+        collectedGames[game.id] ?? <CollectedItemInfo>[];
+    final Set<int> alreadyPlatforms = infos
+        .where((CollectedItemInfo i) => i.collectionId == widget.collectionId)
+        .map((CollectedItemInfo i) => i.platformId)
+        .whereType<int>()
+        .toSet();
+
+    final int? platformId = await _showPlatformSelectionDialog(
+      game,
+      alreadyAddedPlatformIds: alreadyPlatforms,
+    );
     if (platformId == null || !mounted) return;
 
     await ref.read(databaseServiceProvider).upsertGame(game);
