@@ -251,24 +251,33 @@ class CollectionDao {
     required int? collectionId,
     required MediaType mediaType,
     required int externalId,
+    int? platformId,
   }) async {
     final Database db = await _getDatabase();
-    String where;
+    final StringBuffer where = StringBuffer();
     final List<Object?> whereArgs = <Object?>[];
 
     if (collectionId != null) {
-      where = 'collection_id = ? AND media_type = ? AND external_id = ?';
+      where.write('collection_id = ? AND media_type = ? AND external_id = ?');
       whereArgs.addAll(
         <Object?>[collectionId, mediaType.value, externalId],
       );
     } else {
-      where = 'collection_id IS NULL AND media_type = ? AND external_id = ?';
+      where.write(
+        'collection_id IS NULL AND media_type = ? AND external_id = ?',
+      );
       whereArgs.addAll(<Object?>[mediaType.value, externalId]);
+    }
+
+    // Для игр уточняем по платформе (unique index включает platform_id).
+    if (platformId != null) {
+      where.write(' AND platform_id = ?');
+      whereArgs.add(platformId);
     }
 
     final List<Map<String, dynamic>> rows = await db.query(
       'collection_items',
-      where: where,
+      where: where.toString(),
       whereArgs: whereArgs,
       limit: 1,
     );
@@ -742,7 +751,7 @@ class CollectionDao {
   ) async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.rawQuery('''
-      SELECT ci.id, ci.external_id, ci.collection_id, c.name
+      SELECT ci.id, ci.external_id, ci.collection_id, ci.platform_id, c.name
       FROM collection_items ci
       LEFT JOIN collections c ON c.id = ci.collection_id
       WHERE ci.media_type = ?
@@ -757,6 +766,7 @@ class CollectionDao {
         recordId: row['id'] as int,
         collectionId: row['collection_id'] as int?,
         collectionName: row['name'] as String?,
+        platformId: row['platform_id'] as int?,
       );
       result.putIfAbsent(externalId, () => <CollectedItemInfo>[]).add(info);
     }

@@ -25,7 +25,7 @@ Tonkatsu Box — кроссплатформенное приложение на 
 graph TB
     subgraph core ["🔧 Core"]
         api["API<br/><small>igdb_api, tmdb_api,<br/>steamgriddb_api, vndb_api,<br/>anilist_api, ra_api</small>"]
-        database["Database<br/><small>database_service + 10 DAOs<br/>SQLite, 21 таблица</small>"]
+        database["Database<br/><small>database_service + 10 DAOs<br/>SQLite, 24 таблицы</small>"]
         logging["Logging<br/><small>AppLogger<br/>package:logging</small>"]
         services["Services<br/><small>export, import,<br/>image_cache, config,<br/>ra_import, ra_to_igdb_mapper</small>"]
     end
@@ -113,7 +113,7 @@ lib/
 | `lib/core/api/tmdb_api.dart` | **TMDB API клиент**. Bearer token авторизация. Методы: `searchMovies(query, {year})`, `searchTvShows(query, {firstAirDateYear})`, `multiSearch()`, `getMovieDetails()`, `getTvShowDetails()`, `getPopularMovies()`, `getPopularTvShows()`, `getMovieGenres()`, `getTvGenres()`, `getSeasonEpisodes(tmdbShowId, seasonNumber)`, `setLanguage(language)`, `getMovieRecommendations()`, `getTvShowRecommendations()`, `getMovieReviews()`, `getTvShowReviews()`, `discoverMovies()`, `discoverTvShows()`. Lazy-cached genre map (`_movieGenreMap`, `_tvGenreMap`) — resolves `genre_ids` to `genres` in all list endpoints. Cache cleared on `setLanguage()` and `clearApiKey()` |
 | `lib/shared/constants/platform_features.dart` | **Флаги платформы**. `kCanvasEnabled` (true на всех платформах), `kVgMapsEnabled` (только Windows), `kScreenshotEnabled` (только Windows). VGMaps скрыт на не-Windows платформах |
 | `lib/shared/constants/api_defaults.dart` | **Встроенные API ключи**. `ApiDefaults` — `abstract final class` с `String.fromEnvironment` для TMDB и SteamGridDB ключей, инжектируемых при сборке через `--dart-define`. Геттеры `hasTmdbKey`, `hasSteamGridDbKey`. Используется в `SettingsNotifier._loadFromPrefs()` как fallback: user key → built-in → null |
-| `lib/core/database/database_service.dart` | **SQLite сервис (фасад)**. Инициализация БД, миграции (версия 25), делегирование операций в 8 DAO. Использует `databaseFactory.openDatabase()` — кроссплатформенный вызов (FFI на desktop, нативный плагин на Android). 19 таблиц: `platforms`, `games`, `collections`, `collection_items`, `canvas_items`, `canvas_viewport`, `canvas_connections`, `game_canvas_viewport`, `movies_cache`, `tv_shows_cache`, `tv_seasons_cache`, `tv_episodes_cache`, `watched_episodes`, `tmdb_genres`, `wishlist`, `visual_novels_cache`, `vndb_tags`, `igdb_genres`, `manga_cache`. DAO экземпляры: `gameDao`, `movieDao`, `tvShowDao`, `visualNovelDao`, `mangaDao`, `collectionDao`, `canvasDao`, `wishlistDao`. Публичный API сохранён — все методы делегируют в соответствующие DAO |
+| `lib/core/database/database_service.dart` | **SQLite сервис (фасад)**. Инициализация БД, миграции (версия 30), делегирование операций в 10 DAO. Использует `databaseFactory.openDatabase()` — кроссплатформенный вызов (FFI на desktop, нативный плагин на Android). 24 таблицы: `platforms`, `games`, `collections`, `collection_items`, `canvas_items`, `canvas_viewport`, `canvas_connections`, `game_canvas_viewport`, `movies_cache`, `tv_shows_cache`, `tv_seasons_cache`, `tv_episodes_cache`, `watched_episodes`, `tmdb_genres`, `wishlist`, `visual_novels_cache`, `vndb_tags`, `igdb_genres`, `manga_cache`, `tier_lists`, `tier_definitions`, `tier_list_entries`, `custom_items`, `collection_tags`. DAO экземпляры: `gameDao`, `movieDao`, `tvShowDao`, `visualNovelDao`, `mangaDao`, `collectionDao`, `canvasDao`, `customMediaDao`, `tagDao`, `wishlistDao`. Публичный API сохранён — все методы делегируют в соответствующие DAO |
 | `lib/core/database/dao/game_dao.dart` | **DAO игр**. CRUD для таблиц `games`, `platforms`, `igdb_genres`. Методы: `upsertGame()`, `upsertGames()`, `getGamesByIds()`, `upsertPlatform()`, `upsertPlatforms()`, `getPlatformsByIds()`, `getUniquePlatformIds()`, `getIgdbGenres()`, `clearGames()` и др. Batch-операции через транзакции |
 | `lib/core/database/dao/movie_dao.dart` | **DAO фильмов**. CRUD для `movies_cache`, `tmdb_genres`. Методы: `upsertMovie()`, `upsertMovies()`, `getMovieByTmdbId()`, `getMoviesByTmdbIds()`, `getTmdbGenreMap()`, `clearMovies()` и др. |
 | `lib/core/database/dao/tv_show_dao.dart` | **DAO сериалов**. CRUD для `tv_shows_cache`, `tv_seasons_cache`, `tv_episodes_cache`, `watched_episodes`. Методы для шоу, сезонов, эпизодов и отслеживания просмотра. Batch upsert через транзакции |
@@ -542,7 +542,7 @@ Content-виджеты — извлечённое тело подэкранов,
 ## 🗄️ База данных
 
 > [!IMPORTANT]
-> SQLite через `sqflite_common_ffi` на desktop, нативный `sqflite` на Android. Текущая версия БД: **25**. Миграции инкрементальные (v1 -> v2 -> ... -> v25). Всего **19 таблиц**. Статические справочники (platforms, tmdb_genres, igdb_genres, vndb_tags) предзаполнены миграцией v24 и не удаляются при сбросе данных.
+> SQLite через `sqflite_common_ffi` на desktop, нативный `sqflite` на Android. Текущая версия БД: **30**. Миграции инкрементальные (v1 -> v2 -> ... -> v30). Всего **24 таблицы**. Статические справочники (platforms, tmdb_genres, igdb_genres, vndb_tags) предзаполнены миграцией v24 и не удаляются при сбросе данных.
 
 ### ER-диаграмма
 

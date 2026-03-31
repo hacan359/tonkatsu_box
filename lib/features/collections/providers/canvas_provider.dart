@@ -204,40 +204,51 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int?>
     final List<CanvasItem> canvasItems =
         await _repository.getItems(cId);
 
-    // Строим множество ключей (type, refId) для элементов коллекции
-    final Set<(String, int)> collectionMediaKeys = <(String, int)>{
-      for (final CollectionItem ci in allItems)
-        (CanvasItemType.fromMediaType(ci.mediaType).value, ci.externalId),
-    };
+    // Считаем сколько копий каждого (type, refId) в коллекции и на canvas.
+    // Если на canvas больше копий чем в коллекции — лишние удаляем.
+    final Map<(String, int), int> collMediaCounts =
+        <(String, int), int>{};
+    for (final CollectionItem ci in allItems) {
+      final (String, int) key =
+          (CanvasItemType.fromMediaType(ci.mediaType).value, ci.externalId);
+      collMediaCounts[key] = (collMediaCounts[key] ?? 0) + 1;
+    }
 
-    // Удаляем сиротские медиа-элементы (удалены из коллекции) одной транзакцией
-    final List<int> orphanIds = <int>[
-      for (final CanvasItem item in canvasItems)
-        if (item.itemType.isMediaItem &&
-            item.itemRefId != null &&
-            !collectionMediaKeys.contains(
-              (item.itemType.value, item.itemRefId!),
-            ))
-          item.id,
-    ];
+    // Для каждого ключа оставляем не больше элементов чем в коллекции.
+    final Map<(String, int), int> seenCounts = <(String, int), int>{};
+    final List<int> orphanIds = <int>[];
+    for (final CanvasItem item in canvasItems) {
+      if (item.itemType.isMediaItem && item.itemRefId != null) {
+        final (String, int) key = (item.itemType.value, item.itemRefId!);
+        final int allowed = collMediaCounts[key] ?? 0;
+        final int seen = seenCounts[key] ?? 0;
+        if (seen >= allowed) {
+          orphanIds.add(item.id);
+        } else {
+          seenCounts[key] = seen + 1;
+        }
+      }
+    }
     if (orphanIds.isNotEmpty) {
       await _repository.deleteItemsBatch(orphanIds);
     }
 
-    // Строим множество ключей (type, refId) для существующих canvas-элементов
-    final Set<(String, int)> canvasMediaKeys = <(String, int)>{
-      for (final CanvasItem item in canvasItems)
-        if (item.itemType.isMediaItem && item.itemRefId != null)
-          (item.itemType.value, item.itemRefId!),
-    };
-
-    // Находим недостающие элементы
-    final List<CollectionItem> missingItems = allItems
-        .where((CollectionItem i) {
+    // seenCounts содержит количество canvas-элементов, оставшихся после
+    // удаления orphans. Находим элементы коллекции, для которых на canvas
+    // меньше копий чем нужно.
+    final List<CollectionItem> missingItems = <CollectionItem>[];
+    final Map<(String, int), int> addedCounts = <(String, int), int>{};
+    for (final CollectionItem i in allItems) {
       final String typeValue =
           CanvasItemType.fromMediaType(i.mediaType).value;
-      return !canvasMediaKeys.contains((typeValue, i.externalId));
-    }).toList();
+      final (String, int) key = (typeValue, i.externalId);
+      final int onCanvas = seenCounts[key] ?? 0;
+      final int alreadyAdded = addedCounts[key] ?? 0;
+      if (onCanvas + alreadyAdded < collMediaCounts[key]!) {
+        missingItems.add(i);
+        addedCounts[key] = alreadyAdded + 1;
+      }
+    }
 
     if (missingItems.isEmpty) return;
 

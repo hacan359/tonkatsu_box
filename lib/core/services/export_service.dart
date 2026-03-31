@@ -622,6 +622,9 @@ class ExportService {
         final Map<String, dynamic> entryData = entry.toExport();
         entryData['external_id'] = item.externalId;
         entryData['media_type'] = item.mediaType.value;
+        if (item.platformId != null) {
+          entryData['platform_id'] = item.platformId;
+        }
         exportedEntries.add(entryData);
       }
 

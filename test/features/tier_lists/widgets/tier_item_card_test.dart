@@ -124,9 +124,10 @@ void main() {
       expect(sizedBoxFinder, findsOneWidget);
     });
 
-    testWidgets('should show platform name for game items',
+    testWidgets('should show platform overlay for mapped platforms',
         (WidgetTester tester) async {
-      final CollectionItem gameWithPlatform = createTestCollectionItem(
+      // SNES (id: 19) has an overlay asset → text badge hidden
+      final CollectionItem gameWithOverlay = createTestCollectionItem(
         id: 10,
         externalId: 300,
         platformId: 19,
@@ -139,13 +140,40 @@ void main() {
       );
 
       await tester.pumpApp(
-        TierItemCard(item: gameWithPlatform),
+        TierItemCard(item: gameWithOverlay),
         settle: false,
       );
       await tester.pump();
 
       expect(find.text('Super Mario World'), findsOneWidget);
-      expect(find.text('SNES'), findsOneWidget);
+      // Overlay replaces text badge for mapped platforms
+      expect(find.text('SNES'), findsNothing);
+      expect(find.byType(Image), findsOneWidget);
+    });
+
+    testWidgets('should show platform text badge for unmapped platforms',
+        (WidgetTester tester) async {
+      // id: 9999 has no overlay → text badge shown
+      final CollectionItem gameWithTextBadge = createTestCollectionItem(
+        id: 10,
+        externalId: 300,
+        platformId: 9999,
+        game: createTestGame(id: 300, name: 'Super Mario World'),
+        platform: const Platform(
+          id: 9999,
+          name: 'Unknown Console',
+          abbreviation: 'UNK',
+        ),
+      );
+
+      await tester.pumpApp(
+        TierItemCard(item: gameWithTextBadge),
+        settle: false,
+      );
+      await tester.pump();
+
+      expect(find.text('Super Mario World'), findsOneWidget);
+      expect(find.text('UNK'), findsOneWidget);
     });
 
     testWidgets('should not show platform for non-game items',

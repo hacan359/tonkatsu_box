@@ -251,15 +251,26 @@ abstract final class DatabaseSchema {
       )
     ''');
 
+    // Игры: unique с platform_id (одна игра на разных платформах разрешена).
     await db.execute('''
-      CREATE UNIQUE INDEX idx_ci_coll
-      ON collection_items(collection_id, media_type, external_id)
-      WHERE collection_id IS NOT NULL
+      CREATE UNIQUE INDEX idx_ci_coll_game
+      ON collection_items(collection_id, media_type, external_id, platform_id)
+      WHERE collection_id IS NOT NULL AND media_type = 'game'
     ''');
     await db.execute('''
-      CREATE UNIQUE INDEX idx_ci_uncat
+      CREATE UNIQUE INDEX idx_ci_coll_other
+      ON collection_items(collection_id, media_type, external_id)
+      WHERE collection_id IS NOT NULL AND media_type != 'game'
+    ''');
+    await db.execute('''
+      CREATE UNIQUE INDEX idx_ci_uncat_game
+      ON collection_items(media_type, external_id, platform_id)
+      WHERE collection_id IS NULL AND media_type = 'game'
+    ''');
+    await db.execute('''
+      CREATE UNIQUE INDEX idx_ci_uncat_other
       ON collection_items(media_type, external_id)
-      WHERE collection_id IS NULL
+      WHERE collection_id IS NULL AND media_type != 'game'
     ''');
 
     await db.execute('''

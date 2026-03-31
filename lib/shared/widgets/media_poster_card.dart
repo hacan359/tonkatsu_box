@@ -49,6 +49,8 @@ class MediaPosterCard extends StatefulWidget {
     this.mediaType,
     this.placeholderIcon,
     this.platformLabel,
+    this.platformColor,
+    this.platformOverlayAsset,
     this.onTap,
     this.onLongPress,
     this.onSecondaryTap,
@@ -95,6 +97,14 @@ class MediaPosterCard extends StatefulWidget {
 
   /// Краткое название платформы (SNES, GBA). Grid/compact only.
   final String? platformLabel;
+
+  /// Цвет семейства платформы (Sony=синий, Nintendo=красный и т.д.).
+  final Color? platformColor;
+
+  /// Путь к ассету оверлея платформы (PNG 600×900).
+  ///
+  /// Если задан, рисуется поверх постера вместо текстового бейджа.
+  final String? platformOverlayAsset;
 
   /// Тип медиа — для цвета рамки и иконки placeholder (canvas).
   final MediaType? mediaType;
@@ -263,8 +273,10 @@ class _MediaPosterCardState extends State<MediaPosterCard>
   }
 
   Widget _buildGridPoster() {
+    final bool hasOverlay =
+        widget.platformOverlayAsset != null && !widget.isInCollection;
     final double borderRadius =
-        _isCompact ? AppSpacing.radiusSm : AppSpacing.radiusMd;
+        hasOverlay ? 0 : (_isCompact ? AppSpacing.radiusSm : AppSpacing.radiusMd);
 
     return Expanded(
       child: ClipRRect(
@@ -276,6 +288,16 @@ class _MediaPosterCardState extends State<MediaPosterCard>
             _buildCachedImage(
               placeholder: _buildGridPlaceholder(),
             ),
+
+            // Оверлей платформы (сразу поверх постера, под бейджами)
+            if (widget.platformOverlayAsset != null &&
+                !widget.isInCollection)
+              Positioned.fill(
+                child: Image.asset(
+                  widget.platformOverlayAsset!,
+                  fit: BoxFit.fill,
+                ),
+              ),
 
             // Затемнение: idle ~25%, hover → прозрачный.
             AnimatedBuilder(
@@ -313,8 +335,8 @@ class _MediaPosterCardState extends State<MediaPosterCard>
               },
             ),
 
-            // Рейтинг badge (top-left)
-            if (_hasAnyRating)
+            // Рейтинг badge (top-left, скрыт при оверлее — выносится в subtitle)
+            if (_hasAnyRating && !hasOverlay)
               Positioned(
                 top: _isCompact ? 2 : AppSpacing.xs,
                 left: _isCompact ? 2 : AppSpacing.xs,
@@ -347,6 +369,35 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                           size: _isCompact ? 8 : 12,
                         ),
                       ),
+              ),
+
+            // Платформа-бейдж (top-right, fallback когда нет оверлея)
+            if (widget.platformOverlayAsset == null &&
+                widget.platformLabel != null &&
+                widget.platformColor != null &&
+                !widget.isInCollection)
+              Positioned(
+                top: _isCompact ? 2 : AppSpacing.xs,
+                right: _isCompact ? 2 : AppSpacing.xs,
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: _isCompact ? 3 : 5,
+                    vertical: _isCompact ? 1 : 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: widget.platformColor!.withAlpha(210),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  child: Text(
+                    widget.platformLabel!,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: _isCompact ? 7 : 9,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ),
               ),
 
             // Статус-бейдж (bottom-left)
@@ -400,27 +451,63 @@ class _MediaPosterCardState extends State<MediaPosterCard>
     );
   }
 
-  /// Subtitle row: platform · year · MediaType (цветной) · genre.
+  /// Subtitle row: [rating ·] platform · year · MediaType (цветной) · genre.
   Widget _buildSubtitleRow(BuildContext context) {
+    final bool hasOverlay =
+        widget.platformOverlayAsset != null && !widget.isInCollection;
     final TextStyle baseStyle = _isCompact
         ? AppTypography.posterSubtitle.copyWith(fontSize: 7)
         : AppTypography.posterSubtitle;
 
-    // Части до типа: platform, year.
+    // Части до типа: rating (если оверлей), platform, year.
     final List<String> before = <String>[];
-    if (widget.platformLabel != null) before.add(widget.platformLabel!);
+    String? overlayRating;
+    if (hasOverlay && _hasAnyRating) {
+      final bool hasUser = widget.userRating != null;
+      final bool hasApi =
+          widget.apiRating != null && widget.apiRating! > 0;
+      if (hasUser && hasApi) {
+        overlayRating =
+            '★${widget.userRating} / ${widget.apiRating!.toStringAsFixed(1)}';
+      } else if (hasUser) {
+        overlayRating = '★${widget.userRating}';
+      } else if (hasApi) {
+        overlayRating = '★${widget.apiRating!.toStringAsFixed(1)}';
+      }
+    }
+    if (widget.platformLabel != null && widget.platformColor == null) {
+      before.add(widget.platformLabel!);
+    }
     if (widget.year != null) before.add(widget.year.toString());
     final String beforeText = before.join(' \u00b7 ');
 
     // Часть после типа: genre/subtitle.
     final String? afterText = widget.subtitle;
 
+    const Color ratingColor = Color(0xFFFFD700); // gold
+
     if (widget.mediaType == null) {
       final List<String> all = <String>[...before];
       if (afterText != null) all.add(afterText);
-      return Text(
-        all.join(' \u00b7 '),
-        style: baseStyle,
+      if (overlayRating == null) {
+        return Text(
+          all.join(' \u00b7 '),
+          style: baseStyle,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        );
+      }
+      return Text.rich(
+        TextSpan(
+          children: <InlineSpan>[
+            TextSpan(
+              text: overlayRating,
+              style: baseStyle.copyWith(color: ratingColor),
+            ),
+            if (all.isNotEmpty)
+              TextSpan(text: ' \u00b7 ${all.join(' \u00b7 ')}', style: baseStyle),
+          ],
+        ),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       );
@@ -432,6 +519,11 @@ class _MediaPosterCardState extends State<MediaPosterCard>
     return Text.rich(
       TextSpan(
         children: <InlineSpan>[
+          if (overlayRating != null)
+            TextSpan(
+              text: '$overlayRating \u00b7 ',
+              style: baseStyle.copyWith(color: ratingColor),
+            ),
           if (beforeText.isNotEmpty)
             TextSpan(text: '$beforeText \u00b7 ', style: baseStyle),
           TextSpan(

@@ -224,9 +224,9 @@ Contains tier list data for the exported collection. Only present when the colle
 | name | string | Tier list name |
 | collection_id | int? | Source collection ID (null for global) |
 | definitions | array | Tier definitions: `{ tier_key, label, color (0xAARRGGBB int), sort_order }` |
-| entries | array | Items placed in tiers: `{ collection_item_id, tier_key, sort_order, external_id, media_type }` |
+| entries | array | Items placed in tiers: `{ collection_item_id, tier_key, sort_order, external_id, media_type, platform_id? }` |
 
-Entries include `external_id` and `media_type` fields for cross-collection resolution on import. The import process builds an `itemIdMapping` (`"media_type:external_id" → newItemId`) and resolves entries via this map rather than raw collection_item_id values. Animation items are stored in `movies` (animated films) or `tv_shows` (animated series) based on their `AnimationSource`. Visual novel items are stored in `visual_novels` with VNDB string IDs (e.g. "v17"). Manga items are stored in `mangas` with AniList integer IDs. Seasons are preloaded when a TV show or animation series is added to a collection. Episodes are included from the local cache for each TV show in the collection.
+Entries include `external_id`, `media_type`, and optional `platform_id` fields for cross-collection resolution on import. The import process builds an `itemIdMapping` (`"media_type:external_id[:platform_id]" → newItemId`) and resolves entries via this map rather than raw collection_item_id values. For games, the key includes `platform_id` to distinguish the same game on different platforms; lookup falls back to a key without platform for backward compatibility with older exports. Animation items are stored in `movies` (animated films) or `tv_shows` (animated series) based on their `AnimationSource`. Visual novel items are stored in `visual_novels` with VNDB string IDs (e.g. "v17"). Manga items are stored in `mangas` with AniList integer IDs. Seasons are preloaded when a TV show or animation series is added to a collection. Episodes are included from the local cache for each TV show in the collection.
 
 ### Tags Object
 

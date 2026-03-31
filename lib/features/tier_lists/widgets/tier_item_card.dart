@@ -77,24 +77,65 @@ class TierItemCard extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            // Обложка
+            // Обложка с платформенным бейджем
             ClipRRect(
               borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
               child: SizedBox(
                 width: width,
                 height: height,
-                child: item.thumbnailUrl != null
-                    ? CachedImage(
-                        imageType: item.imageType,
-                        imageId: item.externalId.toString(),
-                        remoteUrl: item.thumbnailUrl!,
-                        fit: BoxFit.cover,
-                        memCacheWidth: (width * 2).toInt(),
-                        memCacheHeight: (height * 2).toInt(),
-                        placeholder: _buildPlaceholder(),
-                        errorWidget: _buildPlaceholder(),
-                      )
-                    : _buildPlaceholder(),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: <Widget>[
+                    item.thumbnailUrl != null
+                        ? CachedImage(
+                            imageType: item.imageType,
+                            imageId: item.externalId.toString(),
+                            remoteUrl: item.thumbnailUrl!,
+                            fit: BoxFit.cover,
+                            memCacheWidth: (width * 2).toInt(),
+                            memCacheHeight: (height * 2).toInt(),
+                            placeholder: _buildPlaceholder(),
+                            errorWidget: _buildPlaceholder(),
+                          )
+                        : _buildPlaceholder(),
+                    // Оверлей (платформа для игр, mediaType для фильмов/сериалов)
+                    if (item.platform?.overlayAsset != null ||
+                        item.mediaType.overlayAsset != null)
+                      Positioned.fill(
+                        child: Image.asset(
+                          item.platform?.overlayAsset ??
+                              item.mediaType.overlayAsset!,
+                          fit: BoxFit.fill,
+                        ),
+                      ),
+                    // Текстовый бейдж (fallback без оверлея)
+                    if (item.mediaType == MediaType.game &&
+                        item.platform != null &&
+                        item.platform!.overlayAsset == null)
+                      Positioned(
+                        top: 2,
+                        right: 2,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 3,
+                            vertical: 1,
+                          ),
+                          decoration: BoxDecoration(
+                            color: item.platform!.familyColor.withAlpha(210),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                          child: Text(
+                            item.platform!.displayName,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 7,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
             // Подпись
@@ -128,17 +169,6 @@ class TierItemCard extends StatelessWidget {
                         color: Colors.white,
                       ),
                     ),
-                    if (item.mediaType == MediaType.game &&
-                        item.platform != null)
-                      Text(
-                        item.platform!.displayName,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 8,
-                          height: 1.2,
-                          color: AppColors.textTertiary,
-                        ),
-                      ),
                   ],
                 ),
               ),

@@ -491,6 +491,9 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                       apiRating: item.apiRating,
                       year: _yearFor(item),
                       platformLabel: item.platform?.displayName,
+                      platformColor: item.platform?.familyColor,
+                      platformOverlayAsset:
+                          item.platform?.overlayAsset ?? item.mediaType.overlayAsset,
                       mediaType: item.mediaType,
                       status: item.status,
                       onTap: () =>

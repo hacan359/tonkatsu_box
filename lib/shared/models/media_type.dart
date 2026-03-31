@@ -81,6 +81,18 @@ enum MediaType {
         return l.mediaTypeCustom;
     }
   }
+
+  /// Путь к ассету оверлея для данного типа медиа, или `null`.
+  ///
+  /// Используется для фильмов и сериалов (Blu-ray шаблон).
+  /// Для игр оверлей определяется через [Platform.overlayAsset].
+  String? get overlayAsset => switch (this) {
+        MediaType.movie ||
+        MediaType.tvShow ||
+        MediaType.animation =>
+          'assets/images/platform_overlays/blu-ray.png',
+        _ => null,
+      };
 }
 
 /// Тип источника анимации (фильм или сериал).
