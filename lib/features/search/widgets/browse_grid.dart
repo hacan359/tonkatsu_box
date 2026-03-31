@@ -301,7 +301,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         cacheImageId: item.tmdbId.toString(),
         apiRating: item.rating,
         year: item.releaseYear,
-        subtitle: item.genresString,
+
         mediaType: MediaType.movie,
         isInCollection: inColl,
         onTap: () => widget.onItemTap(item, MediaType.movie),
@@ -322,7 +322,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         cacheImageId: item.tmdbId.toString(),
         apiRating: item.rating,
         year: item.firstAirYear,
-        subtitle: item.genresString,
+
         mediaType: type,
         isInCollection: inColl,
         onTap: () => widget.onItemTap(item, type),
@@ -340,7 +340,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         cacheImageId: item.id.toString(),
         apiRating: item.rating != null ? item.rating! / 10.0 : null,
         year: item.releaseYear,
-        subtitle: item.genresString,
+
         platformLabel: _buildPlatformLabel(item.platformIds),
         mediaType: MediaType.game,
         isInCollection: inColl,
@@ -359,7 +359,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         cacheImageId: item.numericId.toString(),
         apiRating: item.rating10,
         year: item.releaseYear,
-        subtitle: item.genresString,
+
         mediaType: MediaType.visualNovel,
         isInCollection: inColl,
         onTap: () => widget.onItemTap(item, MediaType.visualNovel),
@@ -377,7 +377,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         cacheImageId: item.id.toString(),
         apiRating: item.rating10,
         year: item.releaseYear,
-        subtitle: item.genresString,
+
         mediaType: MediaType.manga,
         isInCollection: inColl,
         onTap: () => widget.onItemTap(item, MediaType.manga),
