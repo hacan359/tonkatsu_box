@@ -50,6 +50,7 @@ class MediaPosterCard extends StatefulWidget {
     this.placeholderIcon,
     this.platformLabel,
     this.platformColor,
+    this.platformOverlayAsset,
     this.onTap,
     this.onLongPress,
     this.onSecondaryTap,
@@ -99,6 +100,11 @@ class MediaPosterCard extends StatefulWidget {
 
   /// Цвет семейства платформы (Sony=синий, Nintendo=красный и т.д.).
   final Color? platformColor;
+
+  /// Путь к ассету оверлея платформы (PNG 600×900).
+  ///
+  /// Если задан, рисуется поверх постера вместо текстового бейджа.
+  final String? platformOverlayAsset;
 
   /// Тип медиа — для цвета рамки и иконки placeholder (canvas).
   final MediaType? mediaType;
@@ -267,8 +273,10 @@ class _MediaPosterCardState extends State<MediaPosterCard>
   }
 
   Widget _buildGridPoster() {
+    final bool hasOverlay =
+        widget.platformOverlayAsset != null && !widget.isInCollection;
     final double borderRadius =
-        _isCompact ? AppSpacing.radiusSm : AppSpacing.radiusMd;
+        hasOverlay ? 0 : (_isCompact ? AppSpacing.radiusSm : AppSpacing.radiusMd);
 
     return Expanded(
       child: ClipRRect(
@@ -280,6 +288,16 @@ class _MediaPosterCardState extends State<MediaPosterCard>
             _buildCachedImage(
               placeholder: _buildGridPlaceholder(),
             ),
+
+            // Оверлей платформы (сразу поверх постера, под бейджами)
+            if (widget.platformOverlayAsset != null &&
+                !widget.isInCollection)
+              Positioned.fill(
+                child: Image.asset(
+                  widget.platformOverlayAsset!,
+                  fit: BoxFit.fill,
+                ),
+              ),
 
             // Затемнение: idle ~25%, hover → прозрачный.
             AnimatedBuilder(
@@ -353,8 +371,9 @@ class _MediaPosterCardState extends State<MediaPosterCard>
                       ),
               ),
 
-            // Платформа-бейдж (top-right, только когда нет "в коллекции")
-            if (widget.platformLabel != null &&
+            // Платформа-бейдж (top-right, fallback когда нет оверлея)
+            if (widget.platformOverlayAsset == null &&
+                widget.platformLabel != null &&
                 widget.platformColor != null &&
                 !widget.isInCollection)
               Positioned(
