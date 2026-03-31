@@ -78,42 +78,6 @@ class TvShowDao {
     await db.delete('tv_shows_cache');
   }
 
-  /// Удаляет устаревшие сериалы из кэша.
-  ///
-  /// Сериалы, привязанные к коллекции, не удаляются.
-  /// [maxAgeSeconds] — максимальный возраст записи в секундах.
-  Future<int> clearStaleTvShows({int maxAgeSeconds = 86400 * 30}) async {
-    final Database db = await _getDatabase();
-    final int threshold =
-        DateTime.now().millisecondsSinceEpoch ~/ 1000 - maxAgeSeconds;
-    return db.rawDelete('''
-      DELETE FROM tv_shows_cache
-      WHERE cached_at < ?
-        AND tmdb_id NOT IN (
-          SELECT external_id FROM collection_items
-          WHERE media_type IN ('tv_show', 'animation')
-        )
-    ''', <Object?>[threshold]);
-  }
-
-  /// Удаляет устаревшие эпизоды из кэша.
-  ///
-  /// Эпизоды сериалов, находящихся в коллекции, не удаляются.
-  /// [maxAgeSeconds] — максимальный возраст записи в секундах.
-  Future<int> clearStaleEpisodes({int maxAgeSeconds = 86400 * 30}) async {
-    final Database db = await _getDatabase();
-    final int threshold =
-        DateTime.now().millisecondsSinceEpoch ~/ 1000 - maxAgeSeconds;
-    return db.rawDelete('''
-      DELETE FROM tv_episodes_cache
-      WHERE cached_at < ?
-        AND tmdb_show_id NOT IN (
-          SELECT external_id FROM collection_items
-          WHERE media_type IN ('tv_show', 'animation')
-        )
-    ''', <Object?>[threshold]);
-  }
-
   // ==================== TV Seasons ====================
 
   /// Возвращает сезоны сериала.

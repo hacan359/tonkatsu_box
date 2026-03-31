@@ -73,24 +73,6 @@ class MovieDao {
     await db.delete('movies_cache');
   }
 
-  /// Удаляет устаревшие фильмы из кэша.
-  ///
-  /// Элементы, привязанные к коллекции, не удаляются.
-  /// [maxAgeSeconds] — максимальный возраст записи в секундах.
-  Future<int> clearStaleMovies({int maxAgeSeconds = 86400 * 30}) async {
-    final Database db = await _getDatabase();
-    final int threshold =
-        DateTime.now().millisecondsSinceEpoch ~/ 1000 - maxAgeSeconds;
-    return db.rawDelete('''
-      DELETE FROM movies_cache
-      WHERE cached_at < ?
-        AND tmdb_id NOT IN (
-          SELECT external_id FROM collection_items
-          WHERE media_type = 'movie'
-        )
-    ''', <Object?>[threshold]);
-  }
-
   /// Возвращает маппинг ID → имя жанров из кэша.
   ///
   /// [type] — тип медиа: `'movie'` или `'tv'`.
