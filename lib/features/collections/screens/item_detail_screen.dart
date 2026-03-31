@@ -624,6 +624,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       onUserRatingChanged: (int? rating) =>
           _updateUserRating(item.id, rating),
       accentColor: config.accentColor,
+      platformOverlayAsset: item.platform?.overlayAsset,
       embedded: true,
     );
   }

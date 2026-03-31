@@ -93,6 +93,7 @@ class MediaDetailView extends StatefulWidget {
     this.cacheImageType,
     this.cacheImageId,
     this.accentColor = AppColors.brand,
+    this.platformOverlayAsset,
     super.key,
   });
 
@@ -192,6 +193,9 @@ class MediaDetailView extends StatefulWidget {
 
   /// Акцентный цвет (зависит от типа медиа).
   final Color accentColor;
+
+  /// Путь к ассету оверлея платформы (PNG 600×900).
+  final String? platformOverlayAsset;
 
   /// Колбэк сохранения комментария автора.
   final ValueChanged<String?> onAuthorCommentSave;
@@ -320,11 +324,23 @@ class _MediaDetailViewState extends State<MediaDetailView> {
       children: <Widget>[
         // Обложка/постер (увеличена до 100×150)
         ClipRRect(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+          borderRadius: BorderRadius.circular(
+            widget.platformOverlayAsset != null ? 0 : AppSpacing.radiusSm,
+          ),
           child: SizedBox(
             width: 100,
             height: 150,
-            child: _buildCoverImage(),
+            child: Stack(
+              fit: StackFit.expand,
+              children: <Widget>[
+                _buildCoverImage(),
+                if (widget.platformOverlayAsset != null)
+                  Image.asset(
+                    widget.platformOverlayAsset!,
+                    fit: BoxFit.fill,
+                  ),
+              ],
+            ),
           ),
         ),
         const SizedBox(width: AppSpacing.md),

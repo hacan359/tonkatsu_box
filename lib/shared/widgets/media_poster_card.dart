@@ -335,8 +335,8 @@ class _MediaPosterCardState extends State<MediaPosterCard>
               },
             ),
 
-            // Рейтинг badge (top-left)
-            if (_hasAnyRating)
+            // Рейтинг badge (top-left, скрыт при оверлее — выносится в subtitle)
+            if (_hasAnyRating && !hasOverlay)
               Positioned(
                 top: _isCompact ? 2 : AppSpacing.xs,
                 left: _isCompact ? 2 : AppSpacing.xs,
@@ -451,14 +451,30 @@ class _MediaPosterCardState extends State<MediaPosterCard>
     );
   }
 
-  /// Subtitle row: platform · year · MediaType (цветной) · genre.
+  /// Subtitle row: [rating ·] platform · year · MediaType (цветной) · genre.
   Widget _buildSubtitleRow(BuildContext context) {
+    final bool hasOverlay =
+        widget.platformOverlayAsset != null && !widget.isInCollection;
     final TextStyle baseStyle = _isCompact
         ? AppTypography.posterSubtitle.copyWith(fontSize: 7)
         : AppTypography.posterSubtitle;
 
-    // Части до типа: platform (если нет бейджа на обложке), year.
+    // Части до типа: rating (если оверлей), platform, year.
     final List<String> before = <String>[];
+    String? overlayRating;
+    if (hasOverlay && _hasAnyRating) {
+      final bool hasUser = widget.userRating != null;
+      final bool hasApi =
+          widget.apiRating != null && widget.apiRating! > 0;
+      if (hasUser && hasApi) {
+        overlayRating =
+            '★${widget.userRating} / ${widget.apiRating!.toStringAsFixed(1)}';
+      } else if (hasUser) {
+        overlayRating = '★${widget.userRating}';
+      } else if (hasApi) {
+        overlayRating = '★${widget.apiRating!.toStringAsFixed(1)}';
+      }
+    }
     if (widget.platformLabel != null && widget.platformColor == null) {
       before.add(widget.platformLabel!);
     }
@@ -468,12 +484,30 @@ class _MediaPosterCardState extends State<MediaPosterCard>
     // Часть после типа: genre/subtitle.
     final String? afterText = widget.subtitle;
 
+    const Color ratingColor = Color(0xFFFFD700); // gold
+
     if (widget.mediaType == null) {
       final List<String> all = <String>[...before];
       if (afterText != null) all.add(afterText);
-      return Text(
-        all.join(' \u00b7 '),
-        style: baseStyle,
+      if (overlayRating == null) {
+        return Text(
+          all.join(' \u00b7 '),
+          style: baseStyle,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        );
+      }
+      return Text.rich(
+        TextSpan(
+          children: <InlineSpan>[
+            TextSpan(
+              text: overlayRating,
+              style: baseStyle.copyWith(color: ratingColor),
+            ),
+            if (all.isNotEmpty)
+              TextSpan(text: ' \u00b7 ${all.join(' \u00b7 ')}', style: baseStyle),
+          ],
+        ),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       );
@@ -485,6 +519,11 @@ class _MediaPosterCardState extends State<MediaPosterCard>
     return Text.rich(
       TextSpan(
         children: <InlineSpan>[
+          if (overlayRating != null)
+            TextSpan(
+              text: '$overlayRating \u00b7 ',
+              style: baseStyle.copyWith(color: ratingColor),
+            ),
           if (beforeText.isNotEmpty)
             TextSpan(text: '$beforeText \u00b7 ', style: baseStyle),
           TextSpan(
