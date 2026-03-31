@@ -226,14 +226,32 @@ class ProfileService {
     return true;
   }
 
-  /// Получает статистику профиля (открывает БД readonly).
-  Future<ProfileStats> getProfileStats(String profileId) async {
+  /// Получает статистику профиля.
+  ///
+  /// Для текущего профиля использует уже открытую БД через [DatabaseService],
+  /// чтобы не закрыть singleton-подключение sqflite.
+  /// Для других профилей открывает БД отдельным подключением.
+  Future<ProfileStats> getProfileStats(
+    String profileId, {
+    DatabaseService? currentDb,
+  }) async {
     final String dbPath = await getDatabasePath(profileId);
     final File dbFile = File(dbPath);
 
     if (!dbFile.existsSync()) return ProfileStats.empty;
 
     try {
+      // Для текущего профиля — используем уже открытую БД
+      if (currentDb != null) {
+        final int collectionsCount = await currentDb.getCollectionCount();
+        final int itemsCount = await currentDb.getTotalItemCount();
+        return ProfileStats(
+          collectionsCount: collectionsCount,
+          itemsCount: itemsCount,
+        );
+      }
+
+      // Для других профилей — открываем отдельно
       final Database db = await databaseFactory.openDatabase(
         dbPath,
         options: OpenDatabaseOptions(readOnly: true),

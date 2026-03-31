@@ -682,10 +682,7 @@ class ImportService {
       for (final dynamic raw in rawGames) {
         final Map<String, dynamic> row =
             Map<String, dynamic>.from(raw as Map<String, dynamic>);
-        // Устанавливаем cached_at, если отсутствует
-        if (!row.containsKey('cached_at') || row['cached_at'] == null) {
-          row['cached_at'] = cachedAt;
-        }
+        row['cached_at'] = cachedAt;
         games.add(Game.fromDb(row));
         current++;
         onProgress?.call(ImportProgress(
@@ -703,9 +700,7 @@ class ImportService {
       for (final dynamic raw in rawMovies) {
         final Map<String, dynamic> row =
             Map<String, dynamic>.from(raw as Map<String, dynamic>);
-        if (!row.containsKey('cached_at') || row['cached_at'] == null) {
-          row['cached_at'] = cachedAt;
-        }
+        row['cached_at'] = cachedAt;
         movies.add(Movie.fromDb(row));
         current++;
         onProgress?.call(ImportProgress(
@@ -723,9 +718,7 @@ class ImportService {
       for (final dynamic raw in rawTvShows) {
         final Map<String, dynamic> row =
             Map<String, dynamic>.from(raw as Map<String, dynamic>);
-        if (!row.containsKey('cached_at') || row['cached_at'] == null) {
-          row['cached_at'] = cachedAt;
-        }
+        row['cached_at'] = cachedAt;
         tvShows.add(TvShow.fromDb(row));
         current++;
         onProgress?.call(ImportProgress(
@@ -760,9 +753,7 @@ class ImportService {
       for (final dynamic raw in rawEpisodes) {
         final Map<String, dynamic> row =
             Map<String, dynamic>.from(raw as Map<String, dynamic>);
-        if (!row.containsKey('cached_at') || row['cached_at'] == null) {
-          row['cached_at'] = cachedAt;
-        }
+        row['cached_at'] = cachedAt;
         episodes.add(TvEpisode.fromDb(row));
         current++;
         onProgress?.call(ImportProgress(
@@ -817,9 +808,7 @@ class ImportService {
       for (final dynamic raw in rawMangas) {
         final Map<String, dynamic> row =
             Map<String, dynamic>.from(raw as Map<String, dynamic>);
-        if (!row.containsKey('cached_at') || row['cached_at'] == null) {
-          row['cached_at'] = cachedAt;
-        }
+        row['cached_at'] = cachedAt;
         mangas.add(Manga.fromDb(row));
         current++;
         onProgress?.call(ImportProgress(
@@ -837,9 +826,7 @@ class ImportService {
       for (final dynamic raw in rawCustom) {
         final Map<String, dynamic> row =
             Map<String, dynamic>.from(raw as Map<String, dynamic>);
-        if (!row.containsKey('cached_at') || row['cached_at'] == null) {
-          row['cached_at'] = cachedAt;
-        }
+        row['cached_at'] = cachedAt;
         customItems.add(CustomMedia.fromDb(row));
         current++;
         onProgress?.call(ImportProgress(

@@ -191,20 +191,6 @@ class GameDao {
     await db.delete('games');
   }
 
-  /// Удаляет устаревшие игры из кеша.
-  ///
-  /// [maxAgeSeconds] — максимальный возраст записи в секундах.
-  Future<int> clearStaleGames({int maxAgeSeconds = 86400 * 30}) async {
-    final Database db = await _getDatabase();
-    final int threshold =
-        DateTime.now().millisecondsSinceEpoch ~/ 1000 - maxAgeSeconds;
-    return db.delete(
-      'games',
-      where: 'cached_at < ?',
-      whereArgs: <Object?>[threshold],
-    );
-  }
-
   // ==================== IGDB Genres ====================
 
   /// Возвращает все жанры IGDB из кэша.

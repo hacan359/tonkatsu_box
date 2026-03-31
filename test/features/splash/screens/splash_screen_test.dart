@@ -28,16 +28,6 @@ void main() {
 
     // Pre-warm вызывает .database getter — возвращаем готовый Future.
     when(() => mockDb.database).thenAnswer((_) async => MockDatabase());
-
-    // Stale cache cleanup вызывается после инициализации DB.
-    when(() => mockDb.clearStaleGames(maxAgeSeconds: any(named: 'maxAgeSeconds')))
-        .thenAnswer((_) async => 0);
-    when(() => mockDb.clearStaleMovies(maxAgeSeconds: any(named: 'maxAgeSeconds')))
-        .thenAnswer((_) async => 0);
-    when(() => mockDb.clearStaleTvShows(maxAgeSeconds: any(named: 'maxAgeSeconds')))
-        .thenAnswer((_) async => 0);
-    when(() => mockDb.clearStaleEpisodes(maxAgeSeconds: any(named: 'maxAgeSeconds')))
-        .thenAnswer((_) async => 0);
   });
 
   Widget buildTestWidget() {

@@ -289,9 +289,6 @@ class DatabaseService {
   /// Удаляет все игры из кеша.
   Future<void> clearGames() => gameDao.clearGames();
 
-  /// Удаляет устаревшие игры из кеша.
-  Future<int> clearStaleGames({int maxAgeSeconds = 86400 * 30}) =>
-      gameDao.clearStaleGames(maxAgeSeconds: maxAgeSeconds);
 
   // ==================== Movies Cache (delegates to MovieDao) ====================
 
@@ -313,9 +310,6 @@ class DatabaseService {
   /// Удаляет все фильмы из кеша.
   Future<void> clearMovies() => movieDao.clearMovies();
 
-  /// Удаляет устаревшие фильмы из кэша.
-  Future<int> clearStaleMovies({int maxAgeSeconds = 86400 * 30}) =>
-      movieDao.clearStaleMovies(maxAgeSeconds: maxAgeSeconds);
 
   // ==================== TV Shows (delegates to TvShowDao) ====================
 
@@ -346,9 +340,6 @@ class DatabaseService {
   /// Удаляет все сериалы из кеша.
   Future<void> clearTvShows() => tvShowDao.clearTvShows();
 
-  /// Удаляет устаревшие сериалы из кэша.
-  Future<int> clearStaleTvShows({int maxAgeSeconds = 86400 * 30}) =>
-      tvShowDao.clearStaleTvShows(maxAgeSeconds: maxAgeSeconds);
 
   // ==================== TV Seasons (delegates to TvShowDao) ====================
 
@@ -384,9 +375,6 @@ class DatabaseService {
   Future<void> clearEpisodesByShow(int showId) =>
       tvShowDao.clearEpisodesByShow(showId);
 
-  /// Удаляет устаревшие эпизоды из кэша.
-  Future<int> clearStaleEpisodes({int maxAgeSeconds = 86400 * 30}) =>
-      tvShowDao.clearStaleEpisodes(maxAgeSeconds: maxAgeSeconds);
 
   // ==================== Watched Episodes (delegates to TvShowDao) ====================
 
@@ -635,6 +623,9 @@ class DatabaseService {
   /// Возвращает уникальные platform_id из игр в коллекциях.
   Future<List<int>> getUniquePlatformIds({int? collectionId}) =>
       collectionDao.getUniquePlatformIds(collectionId: collectionId);
+
+  /// Возвращает общее количество элементов во всех коллекциях.
+  Future<int> getTotalItemCount() => collectionDao.getTotalItemCount();
 
   /// Возвращает количество элементов в коллекции.
   Future<int> getCollectionItemCount(
