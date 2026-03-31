@@ -372,7 +372,8 @@ class CollectionItemsView extends ConsumerWidget {
       year: item.releaseYear,
       platformLabel: item.platform?.displayName,
       platformColor: item.platform?.familyColor,
-      platformOverlayAsset: item.platform?.overlayAsset,
+      platformOverlayAsset:
+          item.platform?.overlayAsset ?? item.mediaType.overlayAsset,
       mediaType: item.displayMediaType,
       status: item.status,
       tagName: tag?.name,

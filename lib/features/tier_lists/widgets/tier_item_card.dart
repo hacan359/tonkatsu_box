@@ -98,12 +98,13 @@ class TierItemCard extends StatelessWidget {
                             errorWidget: _buildPlaceholder(),
                           )
                         : _buildPlaceholder(),
-                    // Оверлей платформы (поверх постера)
-                    if (item.mediaType == MediaType.game &&
-                        item.platform?.overlayAsset != null)
+                    // Оверлей (платформа для игр, mediaType для фильмов/сериалов)
+                    if (item.platform?.overlayAsset != null ||
+                        item.mediaType.overlayAsset != null)
                       Positioned.fill(
                         child: Image.asset(
-                          item.platform!.overlayAsset!,
+                          item.platform?.overlayAsset ??
+                              item.mediaType.overlayAsset!,
                           fit: BoxFit.fill,
                         ),
                       ),
