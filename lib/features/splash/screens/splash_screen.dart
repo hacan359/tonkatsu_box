@@ -1,6 +1,5 @@
 // Анимированный splash screen с логотипом Tonkatsu Box.
 
-import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -93,13 +92,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     // предотвращая конкуренцию за main thread и ANR на слабых устройствах.
     final DatabaseService db = ref.read(databaseServiceProvider);
     db.database.then((_) {
-      // Очистка устаревших кэшей в фоне (не блокирует навигацию)
-      unawaited(Future.wait(<Future<int>>[
-        db.clearStaleGames(),
-        db.clearStaleMovies(),
-        db.clearStaleTvShows(),
-        db.clearStaleEpisodes(),
-      ]));
       _dbDone = true;
       _tryNavigate();
     });

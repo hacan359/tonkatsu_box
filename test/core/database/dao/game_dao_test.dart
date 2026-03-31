@@ -408,22 +408,6 @@ void main() {
       });
     });
 
-    group('clearStaleGames', () {
-      test('deletes games older than threshold', () async {
-        when(
-          () => mockDb.delete(
-            'games',
-            where: 'cached_at < ?',
-            whereArgs: any(named: 'whereArgs'),
-          ),
-        ).thenAnswer((_) async => 3);
-
-        final int count = await dao.clearStaleGames();
-
-        expect(count, 3);
-      });
-    });
-
     // ==================== IGDB Genres ====================
 
     group('getIgdbGenres', () {

@@ -601,6 +601,14 @@ class CollectionDao {
         .toList();
   }
 
+  /// Возвращает общее количество элементов во всех коллекциях.
+  Future<int> getTotalItemCount() async {
+    final Database db = await _getDatabase();
+    final List<Map<String, dynamic>> result =
+        await db.rawQuery('SELECT COUNT(*) as count FROM collection_items');
+    return result.first['count'] as int;
+  }
+
   /// Возвращает количество элементов в коллекции.
   ///
   /// Если [collectionId] == null, считает uncategorized элементы.

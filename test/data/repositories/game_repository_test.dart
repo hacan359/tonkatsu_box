@@ -254,20 +254,6 @@ void main() {
       });
     });
 
-    group('clearStaleCache', () {
-      test('delegates to database service', () async {
-        when(() => mockDb.clearStaleGames(maxAgeSeconds: any(named: 'maxAgeSeconds')))
-            .thenAnswer((_) async => 5);
-
-        final int deleted = await repository.clearStaleCache();
-
-        expect(deleted, 5);
-        verify(() => mockDb.clearStaleGames(
-              maxAgeSeconds: GameRepository.cacheMaxAge,
-            )).called(1);
-      });
-    });
-
     group('getCacheSize', () {
       test('returns game count from database', () async {
         when(() => mockDb.getGameCount()).thenAnswer((_) async => 150);

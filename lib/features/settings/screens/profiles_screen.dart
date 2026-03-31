@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/database/database_service.dart';
 import '../../../core/services/profile_service.dart';
 import '../providers/settings_provider.dart';
 import '../../../l10n/app_localizations.dart';
@@ -38,10 +39,17 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
   Future<void> _loadStats() async {
     final ProfileService service = ref.read(profileServiceProvider);
     final ProfilesData data = ref.read(profilesDataProvider);
+    final DatabaseService db = ref.read(databaseServiceProvider);
 
     final Map<String, ProfileStats> loaded = <String, ProfileStats>{};
     for (final Profile profile in data.profiles) {
-      loaded[profile.id] = await service.getProfileStats(profile.id);
+      // Для текущего профиля используем уже открытую БД,
+      // чтобы не закрыть singleton-подключение sqflite.
+      final bool isCurrent = profile.id == data.currentProfileId;
+      loaded[profile.id] = await service.getProfileStats(
+        profile.id,
+        currentDb: isCurrent ? db : null,
+      );
     }
     if (mounted) {
       setState(() => _stats.addAll(loaded));

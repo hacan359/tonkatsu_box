@@ -150,12 +150,6 @@ class GameRepository {
     return _db.searchGamesInCache(query, limit: limit);
   }
 
-  /// Очищает устаревший кеш.
-  ///
-  /// Возвращает количество удалённых записей.
-  Future<int> clearStaleCache() async {
-    return _db.clearStaleGames(maxAgeSeconds: cacheMaxAge);
-  }
 
   /// Возвращает количество игр в кеше.
   Future<int> getCacheSize() async {
