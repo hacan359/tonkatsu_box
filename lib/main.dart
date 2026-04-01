@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
@@ -47,6 +48,9 @@ Future<void> main() async {
 
 /// Загружает SharedPreferences, API keys и профильные данные.
 Future<void> _loadAppState() async {
+  if (!kReleaseMode) {
+    SharedPreferences.setPrefix('flutter_dev.');
+  }
   _prefs = await SharedPreferences.getInstance();
   _apiKeys = ApiKeys.fromPrefs(_prefs);
 
