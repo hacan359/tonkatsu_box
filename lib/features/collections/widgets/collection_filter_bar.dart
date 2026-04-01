@@ -399,19 +399,13 @@ class CollectionFilterBar extends ConsumerWidget {
       height: _filterRowHeight,
       child: IconButton(
         icon: Icon(
-          isTableMode
-              ? Icons.grid_view
-              : isGridMode
-                  ? Icons.view_list
-                  : Icons.table_chart_outlined,
+          isTableMode ? Icons.grid_view : Icons.table_chart_outlined,
           size: 18,
           color: AppColors.textSecondary,
         ),
         tooltip: isTableMode
             ? S.of(context).collectionListViewGrid
-            : isGridMode
-                ? S.of(context).collectionListViewList
-                : S.of(context).collectionListViewTable,
+            : S.of(context).collectionListViewTable,
         padding: EdgeInsets.zero,
         constraints: const BoxConstraints(),
         visualDensity: VisualDensity.compact,

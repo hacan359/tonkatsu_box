@@ -35,6 +35,7 @@ import '../providers/vgmaps_panel_provider.dart';
 import '../widgets/collection_canvas_layout.dart';
 import '../widgets/collection_filter_bar.dart';
 import '../widgets/collection_items_view.dart';
+import '../widgets/tag_sidebar.dart';
 import '../widgets/tag_management_dialog.dart';
 import '../../../shared/models/tier_list.dart';
 import '../../tier_lists/screens/tier_list_detail_screen.dart';
@@ -82,6 +83,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   bool _isViewModeLocked = false;
   MediaType? _filterType;
   int? _filterPlatformId;
+  Set<int> _filterTagIds = <int>{};
   String _searchQuery = '';
   String _typeToFilterQuery = '';
   CollectionItem? _focusedItem;
@@ -441,71 +443,99 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     AsyncValue<List<CollectionItem>> itemsAsync,
     AsyncValue<CollectionStats> statsAsync,
   ) {
-    return Column(
-      children: <Widget>[
-        // Фильтры — только если есть элементы
-        if ((statsAsync.valueOrNull?.total ?? 0) > 0)
-          CollectionFilterBar(
-            collectionId: widget.collectionId,
-            statsAsync: statsAsync,
-            itemsAsync: itemsAsync,
-            filterType: _filterType,
-            filterPlatformId: _filterPlatformId,
-            searchController: _searchController,
-            searchQuery: _searchQuery,
-            isGridMode: _isGridMode,
-            isTableMode: _isTableMode,
-            onFilterTypeChanged: (MediaType? type) {
-              setState(() {
-                _filterType = type;
-                _filterPlatformId = null;
-              });
-            },
-            onPlatformFilterChanged: (int? id) {
-              setState(() => _filterPlatformId = id);
-            },
-            onGridModeChanged: _handleCycleViewMode,
-          ),
+    final List<CollectionTag> tags = widget.collectionId != null
+        ? (ref.watch(collectionTagsProvider(widget.collectionId!))
+                .valueOrNull ??
+            <CollectionTag>[])
+        : <CollectionTag>[];
 
-        // Список элементов
+    return Row(
+      children: <Widget>[
         Expanded(
-          child: itemsAsync.when(
-            data: (List<CollectionItem> items) => CollectionItemsView(
-              collectionId: widget.collectionId,
-              items: _applyFilters(items),
-              tags: widget.collectionId != null
-                  ? (ref.watch(collectionTagsProvider(widget.collectionId!))
-                          .valueOrNull ??
-                      <CollectionTag>[])
-                  : <CollectionTag>[],
-              isGridMode: _isGridMode,
-              isTableMode: _isTableMode,
-              canEdit: _canEdit,
-              onItemTap: _showItemDetails,
-              onItemMove: _canEdit
-                  ? (CollectionItem item) => _handleMoveItem(item)
-                  : null,
-              onItemClone: _canEdit
-                  ? (CollectionItem item) => _handleCloneItem(item)
-                  : null,
-              onItemRemove: _canEdit
-                  ? (CollectionItem item) => _handleRemoveItem(item)
-                  : null,
-              onItemFocusChanged: (CollectionItem item, bool hasFocus) {
-                setState(() => _focusedItem = hasFocus ? item : null);
-              },
-            ),
-            loading: () =>
-                const Center(child: CircularProgressIndicator()),
-            error: (Object error, StackTrace stack) =>
-                _buildErrorState(context, error),
+          child: Column(
+            children: <Widget>[
+              // Фильтры — только если есть элементы
+              if ((statsAsync.valueOrNull?.total ?? 0) > 0)
+                CollectionFilterBar(
+                  collectionId: widget.collectionId,
+                  statsAsync: statsAsync,
+                  itemsAsync: itemsAsync,
+                  filterType: _filterType,
+                  filterPlatformId: _filterPlatformId,
+                  searchController: _searchController,
+                  searchQuery: _searchQuery,
+                  isGridMode: _isGridMode,
+                  isTableMode: _isTableMode,
+                  onFilterTypeChanged: (MediaType? type) {
+                    setState(() {
+                      _filterType = type;
+                      _filterPlatformId = null;
+                    });
+                  },
+                  onPlatformFilterChanged: (int? id) {
+                    setState(() => _filterPlatformId = id);
+                  },
+                  onGridModeChanged: _handleCycleViewMode,
+                ),
+
+              // Список элементов
+              Expanded(
+                child: itemsAsync.when(
+                  data: (List<CollectionItem> items) => CollectionItemsView(
+                    collectionId: widget.collectionId,
+                    items: _applyFilters(items),
+                    tags: tags,
+                    isGridMode: _isGridMode,
+                    isTableMode: _isTableMode,
+                    canEdit: _canEdit,
+                    onItemTap: _showItemDetails,
+                    onItemMove: _canEdit
+                        ? (CollectionItem item) => _handleMoveItem(item)
+                        : null,
+                    onItemClone: _canEdit
+                        ? (CollectionItem item) => _handleCloneItem(item)
+                        : null,
+                    onItemRemove: _canEdit
+                        ? (CollectionItem item) => _handleRemoveItem(item)
+                        : null,
+                    onItemFocusChanged: (CollectionItem item, bool hasFocus) {
+                      setState(() => _focusedItem = hasFocus ? item : null);
+                    },
+                  ),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (Object error, StackTrace stack) =>
+                      _buildErrorState(context, error),
+                ),
+              ),
+            ],
           ),
         ),
+
+        // Боковая панель тегов
+        if (tags.length >= 2)
+          TagSidebar(
+            tags: tags,
+            selectedTagIds: _filterTagIds,
+            onTagToggled: (int? tagId) {
+              setState(() {
+                if (tagId == null) {
+                  _filterTagIds = <int>{};
+                } else if (_filterTagIds.contains(tagId)) {
+                  _filterTagIds = Set<int>.from(_filterTagIds)
+                    ..remove(tagId);
+                } else {
+                  _filterTagIds = Set<int>.from(_filterTagIds)
+                    ..add(tagId);
+                }
+              });
+            },
+          ),
       ],
     );
   }
 
-  /// Применяет фильтры по типу и поисковой строке.
+  /// Применяет фильтры по типу, платформе, тегу и поисковой строке.
   List<CollectionItem> _applyFilters(List<CollectionItem> items) {
     List<CollectionItem> result = items;
 
@@ -520,6 +550,13 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           .where(
             (CollectionItem item) => item.platformId == _filterPlatformId,
           )
+          .toList();
+    }
+
+    if (_filterTagIds.isNotEmpty) {
+      result = result
+          .where((CollectionItem item) =>
+              item.tagId != null && _filterTagIds.contains(item.tagId))
           .toList();
     }
 
@@ -567,13 +604,11 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     );
   }
 
-  /// Переключает режим отображения: grid → list → table → grid.
+  /// Переключает режим отображения: grid → table → grid.
   void _handleCycleViewMode() {
     setState(() {
       if (_isGridMode) {
         _isGridMode = false;
-        _isTableMode = false;
-      } else if (!_isTableMode) {
         _isTableMode = true;
       } else {
         _isGridMode = true;

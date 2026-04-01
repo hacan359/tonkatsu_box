@@ -6,6 +6,17 @@
 
 ## [Unreleased]
 
+### Added
+- **Table view inline editing** — click Rating cell to set 1–10 stars via popup (with hover highlight and clear button), click Status chip to change status via dropdown (5 options with colored icons, auto-sets `startedAt`/`completedAt`), click Tag cell to assign/remove tag via popup. All editable only when collection is not locked (`collection_table_view.dart`, `collection_items_view.dart`)
+- **Tag column in table view** — new `TableColumn.tag` between Status and Rating. Colored chip for assigned tag, em-dash when untagged. Supports cyclic header filter and alphabetical sorting (`collection_table_view.dart`)
+- **Platform cyclic filter** — clicking Platform column header now cycles through platform values (like Status/Type/Rating) instead of toggling sort direction. Header shows current filter value (`collection_table_view.dart`)
+- **Tag sidebar** — vertical bookmark-style panel on the right side of collection view. Appears when collection has 2+ tags. Multi-select: click tags to toggle, "All" resets. Filters items by selected tags across both grid and table views (`tag_sidebar.dart`, `collection_screen.dart`)
+- **HSL color picker for tags** — tag management dialog now includes a palette of 18 preset colors plus HSL sliders (Hue/Saturation/Lightness) with gradient tracks, live preview, and hex code display. Color dot on each tag row opens the picker. "No color" button to reset (`tag_management_dialog.dart`)
+- 4 localization keys EN+RU: `tagSidebarAll`, `colorPickerTitle`, `colorPickerNoColor`, `colorPickerApply`
+
+### Changed
+- **View toggle simplified** — collection view mode cycles Grid → Table → Grid (List view temporarily hidden). Filter bar icon and tooltip updated accordingly (`collection_screen.dart`, `collection_filter_bar.dart`)
+
 ## [0.24.0] - 2026-03-31
 
 ### Added

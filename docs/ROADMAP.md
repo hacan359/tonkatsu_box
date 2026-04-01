@@ -50,7 +50,7 @@
 - [x] Android Lite — collections, search, details, episode tracker, export/import (no Canvas). Platform feature flags
 - [x] Activity Dates — started_at, completed_at, last_activity_at for all collection items. Auto-set on status change. DatePicker for manual editing. Watched dates in episode tracker
 - [x] Canvas Lock — view-only mode toggle (lock icon in AppBar) for own/fork collections. Closes side panels when locked. Available on collection and per-item canvas
-- [x] View Mode Persistence — grid/list/table toggle saved per-collection in SharedPreferences. 3-way cycle: grid → list → table
+- [x] View Mode Persistence — grid/table toggle saved per-collection in SharedPreferences. 2-way cycle: grid → table (list view temporarily hidden)
 - [x] Animation Tab — 4th search tab combining animated movies and TV shows from TMDB (genre Animation, ID=16). MediaType.animation enum, AnimationSource discriminator (movie=0, tvShow=1), adaptive animation config in unified `ItemDetailScreen`, purple accent color, filter chip in collections, canvas support
 - [x] Legacy Removal — removed CollectionGame/GameStatus, collectionGamesNotifierProvider, v1 .rcoll format, 'playing' status mapping. DB migration v14. Unified on CollectionItem/ItemStatus only
 - [x] User Rating — userRating field (1-10) on CollectionItem, DB migration v15, StarRatingBar widget (10 clickable stars), My Rating section on detail screens, sort by rating. Author's Comment renamed to Author's Review with description subtitle

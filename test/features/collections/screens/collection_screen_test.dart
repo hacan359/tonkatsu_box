@@ -216,27 +216,27 @@ void main() {
       expect(find.text('Breaking Bad'), findsOneWidget);
     });
 
-    group('grid/list toggle', () {
+    group('grid/table toggle', () {
       testWidgets('должен показывать кнопку переключения',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // По умолчанию grid mode — иконка view_list для переключения
-        expect(find.byIcon(Icons.view_list), findsOneWidget);
+        // По умолчанию grid mode — иконка table_chart_outlined для переключения
+        expect(find.byIcon(Icons.table_chart_outlined), findsOneWidget);
       });
 
-      testWidgets('должен переключаться на list при нажатии',
+      testWidgets('должен переключаться на table при нажатии',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // Нажимаем на toggle (grid → list)
-        await tester.tap(find.byIcon(Icons.view_list));
+        // Нажимаем на toggle (grid → table)
+        await tester.tap(find.byIcon(Icons.table_chart_outlined));
         await pumpScreen(tester);
 
-        // Теперь иконка table_chart_outlined (следующий = table)
-        expect(find.byIcon(Icons.table_chart_outlined), findsOneWidget);
+        // Теперь иконка grid_view (следующий = grid)
+        expect(find.byIcon(Icons.grid_view), findsOneWidget);
       });
 
       testWidgets('grid mode должен показывать MediaPosterCard',
@@ -249,37 +249,33 @@ void main() {
         expect(find.byType(GridView), findsOneWidget);
       });
 
-      testWidgets('list mode не должен содержать MediaPosterCard',
+      testWidgets('table mode не должен содержать MediaPosterCard',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // Переключаемся на list
-        await tester.tap(find.byIcon(Icons.view_list));
+        // Переключаемся на table
+        await tester.tap(find.byIcon(Icons.table_chart_outlined));
         await pumpScreen(tester);
 
         expect(find.byType(MediaPosterCard), findsNothing);
       });
 
-      testWidgets('должен переключаться обратно на grid через table',
+      testWidgets('должен переключаться обратно на grid из table',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // Grid → List
-        await tester.tap(find.byIcon(Icons.view_list));
-        await pumpScreen(tester);
-        expect(find.byType(GridView), findsNothing);
-
-        // List → Table
+        // Grid → Table
         await tester.tap(find.byIcon(Icons.table_chart_outlined));
         await pumpScreen(tester);
+        expect(find.byType(GridView), findsNothing);
 
         // Table → Grid
         await tester.tap(find.byIcon(Icons.grid_view));
         await pumpScreen(tester);
         expect(find.byType(GridView), findsOneWidget);
-        expect(find.byIcon(Icons.view_list), findsOneWidget);
+        expect(find.byIcon(Icons.table_chart_outlined), findsOneWidget);
       });
     });
 
@@ -702,7 +698,7 @@ void main() {
       });
     });
 
-    group('сохранение режима отображения (grid/list)', () {
+    group('сохранение режима отображения (grid/table)', () {
       testWidgets('должен загрузить grid mode из SharedPreferences',
           (WidgetTester tester) async {
         // Сохраняем grid mode = true для коллекции 1
@@ -714,8 +710,8 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // Grid mode загружен: иконка view_list (обратное переключение)
-        expect(find.byIcon(Icons.view_list), findsOneWidget);
+        // Grid mode загружен: иконка table_chart_outlined (переключение на table)
+        expect(find.byIcon(Icons.table_chart_outlined), findsOneWidget);
         expect(find.byIcon(Icons.grid_view), findsNothing);
       });
 
@@ -725,27 +721,31 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // Grid mode по умолчанию: иконка view_list
-        expect(find.byIcon(Icons.view_list), findsOneWidget);
+        // Grid mode по умолчанию: иконка table_chart_outlined
+        expect(find.byIcon(Icons.table_chart_outlined), findsOneWidget);
       });
 
-      testWidgets('должен сохранять list mode в SharedPreferences при toggle',
+      testWidgets('должен сохранять table mode в SharedPreferences при toggle',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // Переключаемся на list
-        await tester.tap(find.byIcon(Icons.view_list));
+        // Переключаемся на table
+        await tester.tap(find.byIcon(Icons.table_chart_outlined));
         await pumpScreen(tester);
 
         // Проверяем сохранение в SharedPreferences
-        final bool? saved = prefs.getBool(
+        final bool? savedGrid = prefs.getBool(
           '${SettingsKeys.collectionViewModePrefix}1',
         );
-        expect(saved, isFalse);
+        final bool? savedTable = prefs.getBool(
+          '${SettingsKeys.collectionTableModePrefix}1',
+        );
+        expect(savedGrid, isFalse);
+        expect(savedTable, isTrue);
       });
 
-      testWidgets('должен сохранять list mode при обратном toggle',
+      testWidgets('должен сохранять grid mode при обратном toggle',
           (WidgetTester tester) async {
         // Начинаем с grid mode
         await prefs.setBool(
@@ -756,20 +756,24 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // Переключаемся обратно на list
-        await tester.tap(find.byIcon(Icons.view_list));
+        // Grid → Table
+        await tester.tap(find.byIcon(Icons.table_chart_outlined));
+        await pumpScreen(tester);
+
+        // Table → Grid
+        await tester.tap(find.byIcon(Icons.grid_view));
         await pumpScreen(tester);
 
         // Проверяем сохранение в SharedPreferences
-        final bool? saved = prefs.getBool(
+        final bool? savedGrid = prefs.getBool(
           '${SettingsKeys.collectionViewModePrefix}1',
         );
-        expect(saved, isFalse);
+        expect(savedGrid, isTrue);
       });
 
       testWidgets('разные коллекции сохраняют режим независимо',
           (WidgetTester tester) async {
-        // Коллекция 1 — grid, коллекция 2 — list (по умолчанию)
+        // Коллекция 1 — grid
         await prefs.setBool(
           '${SettingsKeys.collectionViewModePrefix}1',
           true,
@@ -779,7 +783,7 @@ void main() {
         await pumpScreen(tester);
 
         // Коллекция 1 в grid mode
-        expect(find.byIcon(Icons.view_list), findsOneWidget);
+        expect(find.byIcon(Icons.table_chart_outlined), findsOneWidget);
 
         // Проверяем что для коллекции 2 ключ не установлен
         final bool? saved2 = prefs.getBool(

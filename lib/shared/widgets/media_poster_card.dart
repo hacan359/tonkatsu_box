@@ -649,7 +649,7 @@ class _TagBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final Color accentColor = tagColor != null
         ? Color(tagColor!)
-        : AppColors.brand;
+        : AppColors.textSecondary;
     final bool hasTag = tagName != null;
 
     final Widget badge = Container(

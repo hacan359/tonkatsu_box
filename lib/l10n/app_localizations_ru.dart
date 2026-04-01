@@ -1105,6 +1105,18 @@ class SRu extends S {
   String get tagFilterAll => 'Все теги';
 
   @override
+  String get tagSidebarAll => 'Все';
+
+  @override
+  String get colorPickerTitle => 'Цвет';
+
+  @override
+  String get colorPickerNoColor => 'Без цвета';
+
+  @override
+  String get colorPickerApply => 'Применить';
+
+  @override
   String get collectionFilterAll => 'Все';
 
   @override

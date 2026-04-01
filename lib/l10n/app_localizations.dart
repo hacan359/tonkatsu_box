@@ -2077,6 +2077,30 @@ abstract class S {
   /// **'All tags'**
   String get tagFilterAll;
 
+  /// No description provided for @tagSidebarAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get tagSidebarAll;
+
+  /// No description provided for @colorPickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get colorPickerTitle;
+
+  /// No description provided for @colorPickerNoColor.
+  ///
+  /// In en, this message translates to:
+  /// **'No color'**
+  String get colorPickerNoColor;
+
+  /// No description provided for @colorPickerApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get colorPickerApply;
+
   /// No description provided for @collectionFilterAll.
   ///
   /// In en, this message translates to:
