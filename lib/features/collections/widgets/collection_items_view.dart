@@ -19,6 +19,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/media_poster_card.dart';
+import '../../settings/providers/settings_provider.dart';
 import '../providers/collections_provider.dart';
 import 'collection_item_tile.dart';
 import 'collection_table_view.dart';
@@ -301,8 +302,11 @@ class CollectionItemsView extends ConsumerWidget {
       );
     }
 
+    final SettingsState settings = ref.watch(settingsNotifierProvider);
+
     if (!_hasTagGroups) {
-      return _buildFlatGridView(context, ref, gridDelegate, gridPadding);
+      return _buildFlatGridView(
+          context, ref, gridDelegate, gridPadding, settings);
     }
 
     final S l = S.of(context);
@@ -337,6 +341,7 @@ class CollectionItemsView extends ConsumerWidget {
                       groups[i].items[index],
                       isLandscape,
                       tagById,
+                      settings,
                     );
                   },
                   childCount: groups[i].items.length,
@@ -358,6 +363,7 @@ class CollectionItemsView extends ConsumerWidget {
     WidgetRef ref,
     SliverGridDelegate gridDelegate,
     double gridPadding,
+    SettingsState settings,
   ) {
     final bool isLandscape = isLandscapeMobile(context);
     final Map<int, CollectionTag> tagById = <int, CollectionTag>{
@@ -372,7 +378,8 @@ class CollectionItemsView extends ConsumerWidget {
         gridDelegate: gridDelegate,
         itemCount: items.length,
         itemBuilder: (BuildContext context, int index) {
-          return _buildGridCard(context, items[index], isLandscape, tagById);
+          return _buildGridCard(
+              context, items[index], isLandscape, tagById, settings);
         },
       ),
     );
@@ -383,6 +390,7 @@ class CollectionItemsView extends ConsumerWidget {
     CollectionItem item,
     bool isLandscape,
     Map<int, CollectionTag> tagById,
+    SettingsState settings,
   ) {
     final CollectionTag? tag =
         item.tagId != null ? tagById[item.tagId] : null;
@@ -399,8 +407,7 @@ class CollectionItemsView extends ConsumerWidget {
       year: item.releaseYear,
       platformLabel: item.platform?.displayName,
       platformColor: item.platform?.familyColor,
-      platformOverlayAsset:
-          item.platform?.overlayAsset ?? item.mediaType.overlayAsset,
+      platformOverlayAsset: settings.resolveOverlayFor(item),
       mediaType: item.displayMediaType,
       status: item.status,
       tagName: tag?.name,

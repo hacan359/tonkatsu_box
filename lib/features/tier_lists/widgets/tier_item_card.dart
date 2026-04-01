@@ -29,6 +29,7 @@ class TierItemCard extends StatelessWidget {
     this.showLabel = true,
     this.width = kTierItemWidth,
     this.height = kTierItemImageHeight,
+    this.platformOverlayAsset,
     super.key,
   });
 
@@ -46,6 +47,9 @@ class TierItemCard extends StatelessWidget {
 
   /// Высота обложки.
   final double height;
+
+  /// Путь к overlay PNG (null = без overlay).
+  final String? platformOverlayAsset;
 
   @override
   Widget build(BuildContext context) {
@@ -99,19 +103,17 @@ class TierItemCard extends StatelessWidget {
                           )
                         : _buildPlaceholder(),
                     // Оверлей (платформа для игр, mediaType для фильмов/сериалов)
-                    if (item.platform?.overlayAsset != null ||
-                        item.mediaType.overlayAsset != null)
+                    if (platformOverlayAsset != null)
                       Positioned.fill(
                         child: Image.asset(
-                          item.platform?.overlayAsset ??
-                              item.mediaType.overlayAsset!,
+                          platformOverlayAsset!,
                           fit: BoxFit.fill,
                         ),
                       ),
                     // Текстовый бейдж (fallback без оверлея)
                     if (item.mediaType == MediaType.game &&
                         item.platform != null &&
-                        item.platform!.overlayAsset == null)
+                        platformOverlayAsset == null)
                       Positioned(
                         top: 2,
                         right: 2,

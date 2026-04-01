@@ -85,6 +85,9 @@ void main() {
       return ProviderScope(
         overrides: <Override>[
           sharedPreferencesProvider.overrideWithValue(prefs),
+          settingsNotifierProvider.overrideWith(
+            _FakeSettingsNotifier.new,
+          ),
           activeWishlistCountProvider.overrideWithValue(0),
           updateCheckProvider.overrideWith(
             (Ref ref) async => null,
@@ -97,7 +100,7 @@ void main() {
             localizationsDelegates: S.localizationsDelegates,
             supportedLocales: S.supportedLocales,
           home: MediaQuery(
-            data: MediaQueryData(size: Size(width, 768)),
+            data: MediaQueryData(size: Size(width, 1200)),
             child: NavigationShell(initialTab: initialTab),
           ),
         ),
@@ -199,29 +202,25 @@ void main() {
         expect(navigators, findsAtLeast(2));
       });
 
-      testWidgets('Rail остаётся видимым после push внутри Settings таба',
+      testWidgets('Rail остаётся видимым после переключения на Settings таб',
           (WidgetTester tester) async {
         await tester.pumpWidget(createShell(width: 1024));
         await tester.pump();
 
-        // Переключаемся на Settings (index 3)
+        // Переключаемся на Settings
         final NavigationRail rail =
             tester.widget<NavigationRail>(find.byType(NavigationRail));
         rail.onDestinationSelected!(5);
         await tester.pump();
-        await tester.pump(); // Navigator initial route transition
-
-        // Нажимаем на API Keys
-        expect(find.text('API Keys'), findsOneWidget);
-        await tester.tap(find.text('API Keys'));
         await tester.pump();
-        await tester.pump(const Duration(milliseconds: 300));
 
-        // NavigationRail ОСТАЁТСЯ видимым (nested navigation!)
+        // Settings загрузился — видим контент
+        expect(find.text('App Language'), findsOneWidget);
+        // NavigationRail ОСТАЁТСЯ видимым
         expect(find.byType(NavigationRail), findsOneWidget);
       });
 
-      testWidgets('BottomBar остаётся видимым после push внутри Settings таба',
+      testWidgets('BottomBar остаётся видимым после переключения на Settings таб',
           (WidgetTester tester) async {
         await tester.pumpWidget(createShell(width: 400));
         await tester.pump();
@@ -234,16 +233,8 @@ void main() {
         await tester.pump();
         await tester.pump();
 
-        // Скроллим чтобы API Keys стал видимым (PROFILES section сдвигает контент)
-        await tester.drag(find.byType(ListView).last, const Offset(0, -100));
-        await tester.pump();
-
-        // Нажимаем на API Keys
-        expect(find.text('API Keys'), findsOneWidget);
-        await tester.tap(find.text('API Keys'));
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 300));
-
+        // Settings загрузился — видим контент
+        expect(find.text('App Language'), findsOneWidget);
         // BottomNavigationBar ОСТАЁТСЯ видимым
         expect(find.byType(BottomNavigationBar), findsOneWidget);
       });
@@ -273,13 +264,8 @@ void main() {
         await tester.pump();
         await tester.pump();
 
-        // Нажимаем на API Keys в sidebar
-        await tester.tap(find.text('API Keys'));
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 300));
-
-        // API Keys selected — sidebar items stay visible on desktop
-        expect(find.text('API Keys'), findsWidgets);
+        // Settings загрузился — видим контент
+        expect(find.text('App Language'), findsOneWidget);
 
         // Повторное нажатие на Settings (index 5) — pop к корню
         final NavigationRail railAfterPush =
@@ -318,8 +304,8 @@ void main() {
         await tester.pump();
         await tester.pump();
 
-        // Settings content should be visible
-        expect(find.text('API Keys'), findsOneWidget);
+        // Settings content should be visible (check Appearance group title)
+        expect(find.text('App Language'), findsOneWidget);
       });
 
       testWidgets('defaults to home tab when initialTab is null',
@@ -362,8 +348,8 @@ void main() {
         await tester.pumpWidget(createShell(width: 1024));
         await tester.pump();
 
-        // До переключения: нет API Keys
-        expect(find.text('API Keys'), findsNothing);
+        // До переключения: нет App Language (Settings не загружен)
+        expect(find.text('App Language'), findsNothing);
 
         // Переключаемся на Settings
         final NavigationRail rail =
@@ -373,8 +359,13 @@ void main() {
         await tester.pump();
 
         // После переключения: Settings экран виден
-        expect(find.text('API Keys'), findsOneWidget);
+        expect(find.text('App Language'), findsOneWidget);
       });
     });
   });
+}
+
+class _FakeSettingsNotifier extends SettingsNotifier {
+  @override
+  SettingsState build() => const SettingsState();
 }

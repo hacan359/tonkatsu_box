@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../shared/constants/api_defaults.dart';
+import '../../../shared/models/collection_item.dart';
 import '../../../core/api/igdb_api.dart';
 import '../../../core/api/steamgriddb_api.dart';
 import '../../../core/api/tmdb_api.dart';
@@ -46,6 +47,12 @@ abstract class SettingsKeys {
   /// Показывать ли секцию рекомендаций на странице элемента.
   static const String showRecommendations = 'show_recommendations';
 
+  /// Показывать ли Blu-ray overlay на фильмах/сериалах/аниме.
+  static const String showBlurayOverlay = 'show_bluray_overlay';
+
+  /// Показывать ли платформенный overlay на играх.
+  static const String showPlatformOverlay = 'show_platform_overlay';
+
   /// Имя пользователя RetroAchievements.
   static const String raUsername = 'ra_username';
 
@@ -71,6 +78,8 @@ class SettingsState {
     this.tmdbLanguage = SettingsKeys.tmdbLanguageDefault,
     this.appLanguage = SettingsKeys.appLanguageDefault,
     this.showRecommendations = true,
+    this.showBlurayOverlay = true,
+    this.showPlatformOverlay = true,
   });
 
   /// Client ID для IGDB API.
@@ -114,6 +123,33 @@ class SettingsState {
 
   /// Показывать ли секцию рекомендаций.
   final bool showRecommendations;
+
+  /// Показывать ли Blu-ray overlay на фильмах/сериалах/аниме.
+  final bool showBlurayOverlay;
+
+  /// Показывать ли платформенный overlay на играх.
+  final bool showPlatformOverlay;
+
+  /// Возвращает overlay asset с учётом настроек.
+  ///
+  /// Для игр проверяет [showPlatformOverlay], для фильмов/сериалов/аниме —
+  /// [showBlurayOverlay]. Возвращает null если overlay отключён.
+  String? resolveOverlay({
+    String? platformOverlay,
+    String? mediaTypeOverlay,
+  }) {
+    if (platformOverlay != null && showPlatformOverlay) return platformOverlay;
+    if (mediaTypeOverlay != null && showBlurayOverlay) return mediaTypeOverlay;
+    return null;
+  }
+
+  /// Возвращает overlay asset для элемента коллекции с учётом настроек.
+  String? resolveOverlayFor(CollectionItem item) {
+    return resolveOverlay(
+      platformOverlay: item.platform?.overlayAsset,
+      mediaTypeOverlay: item.mediaType.overlayAsset,
+    );
+  }
 
   /// Возвращает имя автора (или 'User' если не задано).
   String get authorName => (defaultAuthor != null && defaultAuthor!.isNotEmpty)
@@ -180,6 +216,8 @@ class SettingsState {
     String? tmdbLanguage,
     String? appLanguage,
     bool? showRecommendations,
+    bool? showBlurayOverlay,
+    bool? showPlatformOverlay,
   }) {
     return SettingsState(
       clientId: clientId ?? this.clientId,
@@ -196,6 +234,8 @@ class SettingsState {
       tmdbLanguage: tmdbLanguage ?? this.tmdbLanguage,
       appLanguage: appLanguage ?? this.appLanguage,
       showRecommendations: showRecommendations ?? this.showRecommendations,
+      showBlurayOverlay: showBlurayOverlay ?? this.showBlurayOverlay,
+      showPlatformOverlay: showPlatformOverlay ?? this.showPlatformOverlay,
     );
   }
 }
@@ -302,6 +342,10 @@ class SettingsNotifier extends Notifier<SettingsState> {
             SettingsKeys.appLanguageDefault;
     final bool showRecommendations =
         _prefs.getBool(SettingsKeys.showRecommendations) ?? true;
+    final bool showBlurayOverlay =
+        _prefs.getBool(SettingsKeys.showBlurayOverlay) ?? true;
+    final bool showPlatformOverlay =
+        _prefs.getBool(SettingsKeys.showPlatformOverlay) ?? true;
 
     // Определяем начальный статус подключения:
     // - токен валиден → connected (не нужно ждать verify)
@@ -326,6 +370,8 @@ class SettingsNotifier extends Notifier<SettingsState> {
       tmdbLanguage: tmdbLanguage,
       appLanguage: appLanguage,
       showRecommendations: showRecommendations,
+      showBlurayOverlay: showBlurayOverlay,
+      showPlatformOverlay: showPlatformOverlay,
     );
 
     // API ключи уже установлены при создании провайдеров через apiKeysProvider.
@@ -508,6 +554,18 @@ class SettingsNotifier extends Notifier<SettingsState> {
     state = state.copyWith(showRecommendations: enabled);
   }
 
+  /// Включает/выключает Blu-ray overlay на фильмах/сериалах/аниме.
+  Future<void> setShowBlurayOverlay({required bool enabled}) async {
+    await _prefs.setBool(SettingsKeys.showBlurayOverlay, enabled);
+    state = state.copyWith(showBlurayOverlay: enabled);
+  }
+
+  /// Включает/выключает платформенный overlay на играх.
+  Future<void> setShowPlatformOverlay({required bool enabled}) async {
+    await _prefs.setBool(SettingsKeys.showPlatformOverlay, enabled);
+    state = state.copyWith(showPlatformOverlay: enabled);
+  }
+
   /// Сбрасывает TMDB API ключ на встроенный.
   ///
   /// Удаляет пользовательский ключ из SharedPreferences.
@@ -633,6 +691,8 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await _prefs.remove(SettingsKeys.tmdbApiKey);
     await _prefs.remove(SettingsKeys.defaultAuthor);
     await _prefs.remove(SettingsKeys.showRecommendations);
+    await _prefs.remove(SettingsKeys.showBlurayOverlay);
+    await _prefs.remove(SettingsKeys.showPlatformOverlay);
     await _prefs.remove(SettingsKeys.raUsername);
     await _prefs.remove(SettingsKeys.raApiKey);
 

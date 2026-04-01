@@ -13,6 +13,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
+import '../../settings/providers/settings_provider.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
@@ -123,6 +124,9 @@ class _TierListDetailScreenState
                         child: TierListExportView(
                           repaintKey: _exportKey,
                           state: state,
+                          overlayResolver: ref
+                              .watch(settingsNotifierProvider)
+                              .resolveOverlayFor,
                         ),
                       ),
                     ),

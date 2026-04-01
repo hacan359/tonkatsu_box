@@ -8,6 +8,7 @@ import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/tier_definition.dart';
 import '../../../shared/models/tier_list_entry.dart';
 import '../../../shared/theme/app_colors.dart';
+import '../../settings/providers/settings_provider.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../providers/tier_list_detail_provider.dart';
@@ -38,6 +39,7 @@ class TierListView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final S l = S.of(context);
+    final SettingsState settings = ref.watch(settingsNotifierProvider);
     final Map<String, List<TierListEntry>> entriesByTier =
         state.entriesByTier;
     final Map<int, CollectionItem> itemsMap = <int, CollectionItem>{
@@ -57,6 +59,7 @@ class TierListView extends ConsumerWidget {
               definition: def,
               entries: entriesByTier[def.tierKey] ?? <TierListEntry>[],
               itemsMap: itemsMap,
+              overlayResolver: settings.resolveOverlayFor,
               onDrop: (int collectionItemId) {
                 ref
                     .read(tierListDetailProvider(tierListId).notifier)
@@ -222,6 +225,8 @@ class _UnrankedPool extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final SettingsState overlaySettings =
+        ref.watch(settingsNotifierProvider);
     return DragTarget<int>(
       onAcceptWithDetails: (DragTargetDetails<int> details) {
         ref
@@ -258,6 +263,8 @@ class _UnrankedPool extends ConsumerWidget {
                       key: ValueKey<int>(item.id),
                       item: item,
                       isDraggable: true,
+                      platformOverlayAsset:
+                          overlaySettings.resolveOverlayFor(item),
                     );
                   }).toList(),
                 ),

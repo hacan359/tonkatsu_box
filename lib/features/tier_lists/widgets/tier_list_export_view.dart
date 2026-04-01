@@ -24,6 +24,7 @@ class TierListExportView extends StatelessWidget {
   const TierListExportView({
     required this.repaintKey,
     required this.state,
+    this.overlayResolver,
     super.key,
   });
 
@@ -32,6 +33,9 @@ class TierListExportView extends StatelessWidget {
 
   /// Состояние тир-листа.
   final TierListDetailState state;
+
+  /// Функция для резолва overlay asset.
+  final String? Function(CollectionItem item)? overlayResolver;
 
   @override
   Widget build(BuildContext context) {
@@ -68,6 +72,7 @@ class TierListExportView extends StatelessWidget {
                     definition: def,
                     entries: entriesByTier[def.tierKey] ?? <TierListEntry>[],
                     itemsMap: itemsMap,
+                    overlayResolver: overlayResolver,
                   ),
                 ),
 
@@ -104,11 +109,13 @@ class _ExportTierRow extends StatelessWidget {
     required this.definition,
     required this.entries,
     required this.itemsMap,
+    this.overlayResolver,
   });
 
   final TierDefinition definition;
   final List<TierListEntry> entries;
   final Map<int, CollectionItem> itemsMap;
+  final String? Function(CollectionItem item)? overlayResolver;
 
   @override
   Widget build(BuildContext context) {
@@ -172,6 +179,8 @@ class _ExportTierRow extends StatelessWidget {
                     item: item,
                     width: _kExportItemWidth,
                     height: _kExportItemHeight,
+                    platformOverlayAsset:
+                        overlayResolver?.call(item),
                   );
                 }).toList(),
               ),

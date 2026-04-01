@@ -511,7 +511,7 @@ lib/
 | `lib/features/settings/screens/steamgriddb_debug_screen.dart` | **Debug-экран SteamGridDB**. 5 табов: Search, Grids, Heroes, Logos, Icons. Тестирование всех API эндпоинтов |
 | `lib/features/settings/screens/image_debug_screen.dart` | **Debug-экран IGDB Media**. Проверка URL изображений в коллекциях: постеры, thumbnail, превью |
 | `lib/features/settings/screens/gamepad_debug_screen.dart` | **Debug-экран Gamepad**. Raw events от Gamepads.events + filtered events от GamepadService в двух колонках |
-| `lib/features/settings/providers/settings_provider.dart` | **State настроек**. Хранение IGDB, SteamGridDB, TMDB credentials в SharedPreferences, валидация токена, синхронизация платформ. Методы: `exportConfig()`, `importConfig()`, `flushDatabase()`, `setTmdbLanguage(language)`, `setAppLanguage(locale)`, `validateTmdbKey()`, `validateSteamGridDbKey()` |
+| `lib/features/settings/providers/settings_provider.dart` | **State настроек**. Хранение IGDB, SteamGridDB, TMDB credentials в SharedPreferences, валидация токена, синхронизация платформ. Overlay toggles (`showBlurayOverlay`, `showPlatformOverlay`) with `resolveOverlayFor(CollectionItem)` helper. Методы: `exportConfig()`, `importConfig()`, `flushDatabase()`, `setTmdbLanguage(language)`, `setAppLanguage(locale)`, `validateTmdbKey()`, `validateSteamGridDbKey()` |
 
 #### Content (`lib/features/settings/content/`)
 
