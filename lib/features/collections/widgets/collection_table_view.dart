@@ -118,8 +118,10 @@ class _CollectionTableViewState extends State<CollectionTableView> {
   /// Радиус скругления миниатюры.
   static const double _thumbRadius = 4.0;
 
-  /// Lookup тегов по id для быстрого доступа.
-  Map<int, CollectionTag> get _tagMap {
+  /// Lookup тегов по id, кэшируется на время build.
+  late Map<int, CollectionTag> _cachedTagMap;
+
+  Map<int, CollectionTag> _buildTagMap() {
     return <int, CollectionTag>{
       for (final CollectionTag t in widget.tags) t.id: t,
     };
@@ -128,8 +130,9 @@ class _CollectionTableViewState extends State<CollectionTableView> {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
+    _cachedTagMap = _buildTagMap();
     final List<CollectionItem> sorted = _sortedItems();
-    final Map<int, CollectionTag> tagMap = _tagMap;
+    final Map<int, CollectionTag> tagMap = _cachedTagMap;
 
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.sm),
@@ -310,7 +313,7 @@ class _CollectionTableViewState extends State<CollectionTableView> {
 
   String _tagName(CollectionItem item) {
     if (item.tagId == null) return '';
-    return _tagMap[item.tagId]?.name ?? '';
+    return _cachedTagMap[item.tagId]?.name ?? '';
   }
 }
 
@@ -404,8 +407,8 @@ class _TableHeader extends StatelessWidget {
             filterTagId != null
                 ? (filterTagId == 0
                     ? '\u2014'
-                    : tagMap[filterTagId]?.name ?? 'Tag')
-                : 'Tag',
+                    : tagMap[filterTagId]?.name ?? l.tagLabel)
+                : l.tagLabel,
             TableColumn.tag,
             width: 80,
             isFiltered: filterTagId != null,

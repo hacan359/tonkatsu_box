@@ -1094,6 +1094,18 @@ class SEn extends S {
   String get tagFilterAll => 'All tags';
 
   @override
+  String get tagSidebarAll => 'All';
+
+  @override
+  String get colorPickerTitle => 'Color';
+
+  @override
+  String get colorPickerNoColor => 'No color';
+
+  @override
+  String get colorPickerApply => 'Apply';
+
+  @override
   String get collectionFilterAll => 'All';
 
   @override

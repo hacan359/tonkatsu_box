@@ -211,7 +211,8 @@ lib/
 | `lib/features/collections/widgets/collection_filter_bar.dart` | **Панель фильтров**. Медиа-тип dropdown, поиск, сортировка, grid/list/table 3-way toggle, платформенные чипсы для игр |
 | `lib/features/collections/widgets/collection_item_tile.dart` | **Плитка элемента коллекции**. List-режим отображения элемента с постером, названием, статусом |
 | `lib/features/collections/widgets/collection_items_view.dart` | **Вью элементов коллекции**. Grid/list/table отображение с фильтрацией и сортировкой |
-| `lib/features/collections/widgets/collection_table_view.dart` | **Табличный вид коллекции**. Sortable columns (Name, Type, Platform, Status, Rating, Year), sticky header with sort indicators, poster thumbnails, media type icons, status chips, star ratings, hover highlight, separator lines |
+| `lib/features/collections/widgets/collection_table_view.dart` | **Табличный вид коллекции**. 8 sortable columns (Name, Type, Platform, Status, Tag, Rating, Year, Added), cyclic header filters (Status/Type/Rating/Tag/Platform), inline-edit popups for Rating (1–10 stars), Status (5 options), Tag (assign/remove). Sticky header, poster thumbnails, media type icons, status chips, tag chips, star ratings, hover highlight |
+| `lib/features/collections/widgets/tag_sidebar.dart` | **Боковая панель тегов**. Vertical bookmark tabs on the right side for multi-select tag filtering. Appears when 2+ tags exist. "All" button resets filter. Color-coded active state with left border accent |
 | `lib/features/collections/widgets/collection_canvas_layout.dart` | **Canvas layout**. Board/Canvas режим коллекции, извлечён из collection_screen |
 | `lib/features/collections/helpers/collection_actions.dart` | **Действия с коллекцией**. Добавление, удаление, перемещение, экспорт элементов |
 | `lib/features/collections/widgets/create_collection_dialog.dart` | **Диалоги**. Создание, переименование, удаление коллекции |
