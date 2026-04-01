@@ -1058,6 +1058,10 @@
 
   "settingsShowRecommendations": "Recommendations",
   "settingsShowRecommendationsSubtitle": "Similar movies and TV shows on detail pages",
+  "settingsShowPlatformOverlay": "Game platform covers",
+  "settingsShowPlatformOverlaySubtitle": "Show platform overlay on game posters (PS5, Switch, etc.)",
+  "settingsShowBlurayOverlay": "Blu-ray covers",
+  "settingsShowBlurayOverlaySubtitle": "Show Blu-ray overlay on movie, TV show, and anime posters",
 
   "uncategorizedBanner": "Add to a collection to unlock Board and episode tracking",
   "uncategorizedBannerAction": "Add to Collection",

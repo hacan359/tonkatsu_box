@@ -140,7 +140,10 @@ void main() {
       );
 
       await tester.pumpApp(
-        TierItemCard(item: gameWithOverlay),
+        TierItemCard(
+          item: gameWithOverlay,
+          platformOverlayAsset: gameWithOverlay.platform?.overlayAsset,
+        ),
         settle: false,
       );
       await tester.pump();

@@ -839,6 +839,10 @@
 
   "settingsShowRecommendations": "Рекомендации",
   "settingsShowRecommendationsSubtitle": "Похожие фильмы и сериалы на странице деталей",
+  "settingsShowPlatformOverlay": "Обложки платформ",
+  "settingsShowPlatformOverlaySubtitle": "Оверлей платформы на постерах игр (PS5, Switch и т.д.)",
+  "settingsShowBlurayOverlay": "Обложки Blu-ray",
+  "settingsShowBlurayOverlaySubtitle": "Оверлей Blu-ray на постерах фильмов, сериалов и аниме",
 
   "uncategorizedBanner": "Добавьте в коллекцию, чтобы открыть Доску и отслеживание серий",
   "uncategorizedBannerAction": "Добавить в коллекцию",

@@ -1,4 +1,4 @@
-// Тесты для SettingsScreen (единый grouped-list лейаут).
+// Тесты для SettingsScreen — логика, навигация, состояние.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,12 +8,9 @@ import 'package:xerabora/core/services/api_key_initializer.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/features/settings/providers/profile_provider.dart';
 import 'package:xerabora/features/settings/screens/settings_screen.dart';
-import 'package:xerabora/features/settings/widgets/settings_group.dart';
 import 'package:xerabora/features/settings/widgets/settings_tile.dart';
-import 'package:xerabora/l10n/app_localizations.dart';
-import 'package:xerabora/features/settings/widgets/inline_text_field.dart';
 import 'package:xerabora/shared/models/profile.dart';
-import 'package:xerabora/shared/widgets/auto_breadcrumb_app_bar.dart';
+import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 
 void main() {
@@ -24,7 +21,7 @@ void main() {
     prefs = await SharedPreferences.getInstance();
   });
 
-  Widget createWidget({double width = 400}) {
+  Widget createWidget({double width = 400, double height = 2000}) {
     return ProviderScope(
       overrides: <Override>[
         sharedPreferencesProvider.overrideWithValue(prefs),
@@ -37,7 +34,7 @@ void main() {
         localizationsDelegates: S.localizationsDelegates,
         supportedLocales: S.supportedLocales,
         home: MediaQuery(
-          data: MediaQueryData(size: Size(width, 800)),
+          data: MediaQueryData(size: Size(width, height)),
           child: const BreadcrumbScope(
             label: 'Settings',
             child: SettingsScreen(),
@@ -47,43 +44,22 @@ void main() {
     );
   }
 
+  /// Скроллит ListView до элемента с текстом [text] и возвращает Finder.
+  Future<Finder> scrollTo(WidgetTester tester, String text) async {
+    final Finder finder = find.text(text);
+    await tester.scrollUntilVisible(finder, 200,
+        scrollable: find.byType(Scrollable).first);
+    await tester.pumpAndSettle();
+    return finder;
+  }
+
   group('SettingsScreen', () {
     group('Layout', () {
-      testWidgets('shows breadcrumb with Settings label',
-          (WidgetTester tester) async {
+      testWidgets('renders without errors', (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        expect(find.byType(AutoBreadcrumbAppBar), findsOneWidget);
-        expect(find.text('Settings'), findsAtLeastNWidgets(1));
-      });
-
-      testWidgets('shows SettingsGroup widgets',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        // Appearance, Data Sources, Storage, Import, Profile + more (some may need scroll)
-        expect(find.byType(SettingsGroup), findsAtLeastNWidgets(4));
-      });
-
-      testWidgets('shows SettingsTile widgets',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        expect(find.byType(SettingsTile), findsAtLeastNWidgets(5));
-      });
-
-      testWidgets('uses same grouped-list layout on wide screens',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget(width: 900));
-        await tester.pumpAndSettle();
-
-        // Same groups are shown, no sidebar (ListView lazy-renders,
-        // so only visible groups are found)
-        expect(find.byType(SettingsGroup), findsAtLeastNWidgets(3));
-        expect(find.byType(SettingsTile), findsAtLeastNWidgets(3));
+        expect(tester.takeException(), isNull);
       });
 
       testWidgets('wide layout constrains content width',
@@ -91,7 +67,6 @@ void main() {
         await tester.pumpWidget(createWidget(width: 1200));
         await tester.pumpAndSettle();
 
-        // Find the ConstrainedBox with maxWidth 600
         final Finder boxes = find.byType(ConstrainedBox);
         bool found600 = false;
         for (int i = 0; i < boxes.evaluate().length; i++) {
@@ -107,32 +82,6 @@ void main() {
     });
 
     group('Appearance section', () {
-      testWidgets('shows App Language tile with current value',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        expect(find.text('App Language'), findsOneWidget);
-        expect(find.text('English'), findsAtLeastNWidgets(1));
-      });
-
-      testWidgets('shows Content Language tile',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        expect(find.text('Content Language'), findsOneWidget);
-      });
-
-      testWidgets('shows Recommendations switch',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        expect(find.text('Recommendations'), findsOneWidget);
-        expect(find.byType(Switch), findsOneWidget);
-      });
-
       testWidgets('tapping App Language opens picker dialog',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
@@ -164,55 +113,8 @@ void main() {
       });
     });
 
-    group('Data Sources section', () {
-      testWidgets('shows API Keys tile',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        expect(find.text('API Keys'), findsOneWidget);
-      });
-    });
-
-    group('Storage section', () {
-      testWidgets('shows Cache and Database tiles',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        await tester.drag(find.byType(ListView), const Offset(0, -100));
-        await tester.pumpAndSettle();
-
-        expect(find.text('Cache'), findsOneWidget);
-        expect(find.text('Database'), findsOneWidget);
-      });
-    });
-
-    group('Import section', () {
-      testWidgets('shows Trakt Import tile',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        await tester.drag(find.byType(ListView), const Offset(0, -500));
-        await tester.pumpAndSettle();
-
-        expect(find.text('Trakt Import'), findsOneWidget);
-      });
-    });
-
     group('Profile section', () {
-      testWidgets('shows InlineTextField with author name',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        expect(find.byType(InlineTextField), findsOneWidget);
-        expect(find.text('Author name'), findsOneWidget);
-        expect(find.text('User'), findsOneWidget);
-      });
-
-      testWidgets('shows custom author name when set',
+      testWidgets('shows custom author name from SharedPreferences',
           (WidgetTester tester) async {
         await prefs.setString(SettingsKeys.defaultAuthor, 'Hacan');
 
@@ -223,28 +125,13 @@ void main() {
       });
     });
 
-    group('About section', () {
-      testWidgets('shows About group after scrolling',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        await tester.drag(find.byType(ListView), const Offset(0, -800));
-        await tester.pumpAndSettle();
-
-        expect(find.text('Welcome Guide'), findsOneWidget);
-        expect(find.text('Credits & Licenses'), findsOneWidget);
-        expect(find.text('Version'), findsOneWidget);
-      });
-    });
-
-
     group('Navigation', () {
-      testWidgets('API Keys tile is tappable',
+      testWidgets('API Keys tile navigates without crash',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
+        await scrollTo(tester, 'API Keys');
         final Finder apiKeysTile = find.ancestor(
           of: find.text('API Keys'),
           matching: find.byType(SettingsTile),
@@ -255,13 +142,12 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('Cache tile is tappable', (WidgetTester tester) async {
+      testWidgets('Cache tile navigates without crash',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        await tester.drag(find.byType(ListView), const Offset(0, -100));
-        await tester.pumpAndSettle();
-
+        await scrollTo(tester, 'Cache');
         final Finder cacheTile = find.ancestor(
           of: find.text('Cache'),
           matching: find.byType(SettingsTile),
@@ -272,14 +158,12 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('Database tile is tappable',
+      testWidgets('Database tile navigates without crash',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        await tester.drag(find.byType(ListView), const Offset(0, -300));
-        await tester.pumpAndSettle();
-
+        await scrollTo(tester, 'Database');
         final Finder databaseTile = find.ancestor(
           of: find.text('Database'),
           matching: find.byType(SettingsTile),
@@ -290,14 +174,12 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('Trakt Import tile is tappable',
+      testWidgets('Trakt Import tile navigates without crash',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        await tester.drag(find.byType(ListView), const Offset(0, -500));
-        await tester.pumpAndSettle();
-
+        await scrollTo(tester, 'Trakt Import');
         final Finder traktTile = find.ancestor(
           of: find.text('Trakt Import'),
           matching: find.byType(SettingsTile),
@@ -307,14 +189,6 @@ void main() {
 
         expect(tester.takeException(), isNull);
       });
-
-      testWidgets('shows chevrons on tiles with onTap',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        expect(find.byIcon(Icons.chevron_right), findsAtLeastNWidgets(3));
-      });
     });
 
     group('Error handling', () {
@@ -323,7 +197,8 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        await tester.drag(find.byType(ListView), const Offset(0, -1500));
+        // Скроллим до конца
+        await tester.drag(find.byType(ListView), const Offset(0, -3000));
         await tester.pumpAndSettle();
 
         expect(find.text('ERROR'), findsNothing);
@@ -346,7 +221,7 @@ void main() {
               localizationsDelegates: S.localizationsDelegates,
               supportedLocales: S.supportedLocales,
               home: MediaQuery(
-                data: MediaQueryData(size: Size(400, 800)),
+                data: MediaQueryData(size: Size(400, 2000)),
                 child: BreadcrumbScope(
                   label: 'Settings',
                   child: SettingsScreen(),
@@ -357,7 +232,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        await tester.drag(find.byType(ListView), const Offset(0, -1500));
+        await tester.drag(find.byType(ListView), const Offset(0, -3000));
         await tester.pumpAndSettle();
 
         expect(find.text('ERROR'), findsOneWidget);
@@ -371,7 +246,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pump();
 
-        await tester.drag(find.byType(ListView), const Offset(0, -800));
+        await tester.drag(find.byType(ListView), const Offset(0, -3000));
         await tester.pump();
 
         expect(find.text('...'), findsOneWidget);

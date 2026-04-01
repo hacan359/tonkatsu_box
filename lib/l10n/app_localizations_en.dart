@@ -2309,6 +2309,20 @@ class SEn extends S {
       'Similar movies and TV shows on detail pages';
 
   @override
+  String get settingsShowPlatformOverlay => 'Game platform covers';
+
+  @override
+  String get settingsShowPlatformOverlaySubtitle =>
+      'Show platform overlay on game posters (PS5, Switch, etc.)';
+
+  @override
+  String get settingsShowBlurayOverlay => 'Blu-ray covers';
+
+  @override
+  String get settingsShowBlurayOverlaySubtitle =>
+      'Show Blu-ray overlay on movie, TV show, and anime posters';
+
+  @override
   String get uncategorizedBanner =>
       'Add to a collection to unlock Board and episode tracking';
 

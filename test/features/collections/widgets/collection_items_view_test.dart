@@ -14,6 +14,7 @@ import 'package:xerabora/shared/models/game.dart';
 import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/widgets/media_poster_card.dart';
+import 'package:xerabora/features/settings/providers/settings_provider.dart';
 
 // -- Тестовые данные --
 
@@ -68,6 +69,9 @@ List<Override> _defaultOverrides({
     ),
     collectionItemsNotifierProvider.overrideWith(
       _FakeItemsNotifier.new,
+    ),
+    settingsNotifierProvider.overrideWith(
+      _FakeSettingsNotifier.new,
     ),
   ];
 }
@@ -911,4 +915,9 @@ class _FakeItemsNotifier extends CollectionItemsNotifier {
 
   @override
   Future<void> reorderItem(int oldIndex, int newIndex) async {}
+}
+
+class _FakeSettingsNotifier extends SettingsNotifier {
+  @override
+  SettingsState build() => const SettingsState();
 }

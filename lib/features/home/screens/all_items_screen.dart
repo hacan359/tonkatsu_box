@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
+import '../../settings/providers/settings_provider.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
@@ -493,7 +494,10 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                       platformLabel: item.platform?.displayName,
                       platformColor: item.platform?.familyColor,
                       platformOverlayAsset:
-                          item.platform?.overlayAsset ?? item.mediaType.overlayAsset,
+                          ref.watch(settingsNotifierProvider).resolveOverlay(
+                            platformOverlay: item.platform?.overlayAsset,
+                            mediaTypeOverlay: item.mediaType.overlayAsset,
+                          ),
                       mediaType: item.mediaType,
                       status: item.status,
                       onTap: () =>

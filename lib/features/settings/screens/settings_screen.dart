@@ -171,6 +171,32 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               },
             ),
           ),
+          SettingsTile(
+            title: l.settingsShowPlatformOverlay,
+            subtitle: l.settingsShowPlatformOverlaySubtitle,
+            showChevron: false,
+            trailing: Switch(
+              value: settings.showPlatformOverlay,
+              onChanged: (bool value) {
+                ref
+                    .read(settingsNotifierProvider.notifier)
+                    .setShowPlatformOverlay(enabled: value);
+              },
+            ),
+          ),
+          SettingsTile(
+            title: l.settingsShowBlurayOverlay,
+            subtitle: l.settingsShowBlurayOverlaySubtitle,
+            showChevron: false,
+            trailing: Switch(
+              value: settings.showBlurayOverlay,
+              onChanged: (bool value) {
+                ref
+                    .read(settingsNotifierProvider.notifier)
+                    .setShowBlurayOverlay(enabled: value);
+              },
+            ),
+          ),
         ],
       ),
       const SizedBox(height: AppSpacing.md),

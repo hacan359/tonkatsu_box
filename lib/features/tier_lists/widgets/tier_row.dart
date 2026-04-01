@@ -25,6 +25,7 @@ class TierRow extends StatelessWidget {
     required this.itemsMap,
     required this.onDrop,
     required this.onDefinitionTap,
+    this.overlayResolver,
     super.key,
   });
 
@@ -45,6 +46,9 @@ class TierRow extends StatelessWidget {
 
   /// Callback при нажатии на метку тира.
   final VoidCallback onDefinitionTap;
+
+  /// Функция для резолва overlay asset (null = overlay из модели).
+  final String? Function(CollectionItem item)? overlayResolver;
 
   @override
   Widget build(BuildContext context) {
@@ -126,6 +130,8 @@ class TierRow extends StatelessWidget {
                                 child: TierItemCard(
                                   item: item,
                                   isDraggable: true,
+                                  platformOverlayAsset:
+                                      overlayResolver?.call(item),
                                 ),
                               );
                             }).toList(),

@@ -146,6 +146,9 @@ void main() {
         collectionRepositoryProvider.overrideWithValue(mockRepo),
         databaseServiceProvider.overrideWithValue(mockDb),
         sharedPreferencesProvider.overrideWithValue(prefs),
+        settingsNotifierProvider.overrideWith(
+          () => _FakeSettingsNotifier(),
+        ),
         currentProfileProvider.overrideWithValue(Profile(
           id: 'test',
           name: 'Test',
@@ -415,4 +418,9 @@ void main() {
       expect(find.widgetWithText(ChoiceChip, 'GBA'), findsNothing);
     });
   });
+}
+
+class _FakeSettingsNotifier extends SettingsNotifier {
+  @override
+  SettingsState build() => const SettingsState();
 }

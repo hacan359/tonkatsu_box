@@ -2329,6 +2329,20 @@ class SRu extends S {
       'Похожие фильмы и сериалы на странице деталей';
 
   @override
+  String get settingsShowPlatformOverlay => 'Обложки платформ';
+
+  @override
+  String get settingsShowPlatformOverlaySubtitle =>
+      'Оверлей платформы на постерах игр (PS5, Switch и т.д.)';
+
+  @override
+  String get settingsShowBlurayOverlay => 'Обложки Blu-ray';
+
+  @override
+  String get settingsShowBlurayOverlaySubtitle =>
+      'Оверлей Blu-ray на постерах фильмов, сериалов и аниме';
+
+  @override
   String get uncategorizedBanner =>
       'Добавьте в коллекцию, чтобы открыть Доску и отслеживание серий';
 

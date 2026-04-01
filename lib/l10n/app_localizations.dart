@@ -4261,6 +4261,30 @@ abstract class S {
   /// **'Similar movies and TV shows on detail pages'**
   String get settingsShowRecommendationsSubtitle;
 
+  /// No description provided for @settingsShowPlatformOverlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Game platform covers'**
+  String get settingsShowPlatformOverlay;
+
+  /// No description provided for @settingsShowPlatformOverlaySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Show platform overlay on game posters (PS5, Switch, etc.)'**
+  String get settingsShowPlatformOverlaySubtitle;
+
+  /// No description provided for @settingsShowBlurayOverlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Blu-ray covers'**
+  String get settingsShowBlurayOverlay;
+
+  /// No description provided for @settingsShowBlurayOverlaySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Blu-ray overlay on movie, TV show, and anime posters'**
+  String get settingsShowBlurayOverlaySubtitle;
+
   /// No description provided for @uncategorizedBanner.
   ///
   /// In en, this message translates to:

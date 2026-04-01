@@ -13,6 +13,12 @@ import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 
+/// Дефолтный SettingsNotifier для тестов (не обращается к API).
+class _DefaultSettingsNotifier extends SettingsNotifier {
+  @override
+  SettingsState build() => const SettingsState();
+}
+
 /// Расширение [WidgetTester] для быстрого pump виджетов в тестовом окружении.
 extension PumpApp on WidgetTester {
   /// Создаёт ProviderScope + MaterialApp с локализацией и делает pumpAndSettle.
@@ -60,6 +66,9 @@ extension PumpApp on WidgetTester {
         overrides: <Override>[
           sharedPreferencesProvider.overrideWithValue(prefs),
           apiKeysProvider.overrideWithValue(const ApiKeys()),
+          settingsNotifierProvider.overrideWith(
+            _DefaultSettingsNotifier.new,
+          ),
           ...overrides,
         ],
         child: MaterialApp(
