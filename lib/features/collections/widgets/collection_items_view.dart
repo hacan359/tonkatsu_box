@@ -10,6 +10,8 @@ import '../../../shared/constants/platform_features.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/collection_sort_mode.dart';
 import '../../../shared/models/collection_tag.dart';
+import '../../../shared/models/item_status.dart';
+import '../../../shared/models/media_type.dart';
 import '../../../core/database/dao/tag_dao.dart';
 import '../../../core/database/database_service.dart';
 import '../../../shared/navigation/navigation_shell.dart';
@@ -89,10 +91,35 @@ class CollectionItemsView extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
         child: CollectionTableView(
           items: items,
+          tags: tags,
           onItemTap: onItemTap,
           onItemSecondaryTap: canEdit
               ? (CollectionItem item, Offset pos) =>
                   _showItemContextMenu(context, pos, item)
+              : null,
+          onRatingChanged: canEdit
+              ? (int itemId, int? rating) {
+                  ref
+                      .read(collectionItemsNotifierProvider(collectionId)
+                          .notifier)
+                      .updateUserRating(itemId, rating);
+                }
+              : null,
+          onStatusChanged: canEdit
+              ? (int itemId, ItemStatus status, MediaType mediaType) {
+                  ref
+                      .read(collectionItemsNotifierProvider(collectionId)
+                          .notifier)
+                      .updateStatus(itemId, status, mediaType);
+                }
+              : null,
+          onTagChanged: canEdit
+              ? (int itemId, int? tagId) async {
+                  final TagDao dao = ref.read(tagDaoProvider);
+                  await dao.setItemTag(itemId, tagId);
+                  ref.invalidate(
+                      collectionItemsNotifierProvider(collectionId));
+                }
               : null,
         ),
       );

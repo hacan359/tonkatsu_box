@@ -453,29 +453,14 @@ void main() {
       });
     });
 
-    group('переключатель grid/list/table', () {
+    group('переключатель grid/table', () {
       testWidgets(
-        'должен показать иконку view_list при grid mode (следующий = list)',
+        'должен показать иконку table_chart_outlined при grid mode (следующий = table)',
         (WidgetTester tester) async {
           await tester.pumpWidget(
             _buildTestApp(
               overrides: _defaultOverrides(),
               child: _buildFilterBar(isGridMode: true),
-            ),
-          );
-          await tester.pumpAndSettle();
-
-          expect(find.byIcon(Icons.view_list), findsOneWidget);
-        },
-      );
-
-      testWidgets(
-        'должен показать иконку table_chart_outlined при list mode (следующий = table)',
-        (WidgetTester tester) async {
-          await tester.pumpWidget(
-            _buildTestApp(
-              overrides: _defaultOverrides(),
-              child: _buildFilterBar(isGridMode: false, isTableMode: false),
             ),
           );
           await tester.pumpAndSettle();
@@ -517,38 +502,19 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byIcon(Icons.view_list));
+        await tester.tap(find.byIcon(Icons.table_chart_outlined));
         await tester.pumpAndSettle();
 
         expect(callbackCalled, isTrue);
       });
 
       testWidgets(
-        'должен иметь tooltip "List view" при grid mode',
+        'должен иметь tooltip "Table view" при grid mode',
         (WidgetTester tester) async {
           await tester.pumpWidget(
             _buildTestApp(
               overrides: _defaultOverrides(),
               child: _buildFilterBar(isGridMode: true),
-            ),
-          );
-          await tester.pumpAndSettle();
-
-          final Finder iconButton = find.byWidgetPredicate(
-            (Widget widget) =>
-                widget is IconButton && widget.tooltip == 'List view',
-          );
-          expect(iconButton, findsOneWidget);
-        },
-      );
-
-      testWidgets(
-        'должен иметь tooltip "Table view" при list mode',
-        (WidgetTester tester) async {
-          await tester.pumpWidget(
-            _buildTestApp(
-              overrides: _defaultOverrides(),
-              child: _buildFilterBar(isGridMode: false, isTableMode: false),
             ),
           );
           await tester.pumpAndSettle();

@@ -107,8 +107,8 @@ void main() {
   // =========================================================================
 
   group('TableColumn', () {
-    test('should have 7 values', () {
-      expect(TableColumn.values.length, 7);
+    test('should have 8 values', () {
+      expect(TableColumn.values.length, 8);
     });
 
     test('should contain all expected columns', () {
@@ -119,6 +119,7 @@ void main() {
           TableColumn.type,
           TableColumn.platform,
           TableColumn.status,
+          TableColumn.tag,
           TableColumn.rating,
           TableColumn.year,
           TableColumn.added,
@@ -217,8 +218,9 @@ void main() {
           (WidgetTester tester) async {
         await pumpTableView(tester, items: <CollectionItem>[tvGamma]);
 
-        // tvGamma has no userRating — em-dash should appear
-        expect(find.text('\u2014'), findsOneWidget);
+        // tvGamma has no userRating and no tag — two em-dashes
+        // (one for rating, one for tag)
+        expect(find.text('\u2014'), findsNWidgets(2));
       });
     });
 
@@ -389,7 +391,7 @@ void main() {
         expect(names.length, 3);
       });
 
-      testWidgets('should sort by platform name ascending',
+      testWidgets('should filter by platform on tap, cycle through values',
           (WidgetTester tester) async {
         final CollectionItem gameZ = createTestCollectionItem(
           id: 10,
@@ -409,33 +411,30 @@ void main() {
           items: <CollectionItem>[gameZ, gameA],
         );
 
-        // Default sort = name ascending: "AAA Game" < "ZZZ Game"
-        List<String> names = tester
-            .widgetList<Text>(find.byType(Text))
-            .where(
-              (Text t) => t.data == 'ZZZ Game' || t.data == 'AAA Game',
-            )
-            .map((Text t) => t.data!)
-            .toList();
-        expect(names, <String>['AAA Game', 'ZZZ Game']);
+        // Both visible initially
+        expect(find.text('ZZZ Game'), findsOneWidget);
+        expect(find.text('AAA Game'), findsOneWidget);
 
-        // Tap "Platform" header — switches to platform ascending
-        // "Aaa Platform" < "Zzz Platform" → same order as name
-        // But we tap twice for descending to prove sorting changed
-        await tester.tap(headerFinder('Platform').first);
-        await tester.pumpAndSettle();
+        // Tap Platform header → filter to first platform ("Aaa Platform")
         await tester.tap(headerFinder('Platform').first);
         await tester.pumpAndSettle();
 
-        // Descending: "Zzz Platform" > "Aaa Platform"
-        names = tester
-            .widgetList<Text>(find.byType(Text))
-            .where(
-              (Text t) => t.data == 'ZZZ Game' || t.data == 'AAA Game',
-            )
-            .map((Text t) => t.data!)
-            .toList();
-        expect(names, <String>['ZZZ Game', 'AAA Game']);
+        expect(find.text('AAA Game'), findsOneWidget);
+        expect(find.text('ZZZ Game'), findsNothing);
+
+        // Tap again → filter to next platform ("Zzz Platform")
+        await tester.tap(headerFinder('Aaa Platform').first);
+        await tester.pumpAndSettle();
+
+        expect(find.text('ZZZ Game'), findsOneWidget);
+        expect(find.text('AAA Game'), findsNothing);
+
+        // Tap again → reset filter (null)
+        await tester.tap(headerFinder('Zzz Platform').first);
+        await tester.pumpAndSettle();
+
+        expect(find.text('ZZZ Game'), findsOneWidget);
+        expect(find.text('AAA Game'), findsOneWidget);
       });
 
       testWidgets('should sort by year with nulls as zero',

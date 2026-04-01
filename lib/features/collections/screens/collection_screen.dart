@@ -567,13 +567,11 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     );
   }
 
-  /// Переключает режим отображения: grid → list → table → grid.
+  /// Переключает режим отображения: grid → table → grid.
   void _handleCycleViewMode() {
     setState(() {
       if (_isGridMode) {
         _isGridMode = false;
-        _isTableMode = false;
-      } else if (!_isTableMode) {
         _isTableMode = true;
       } else {
         _isGridMode = true;
