@@ -20,7 +20,6 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
 import '../../../shared/widgets/breadcrumb_scope.dart';
 import '../../../shared/widgets/media_poster_card.dart';
-import '../../../shared/widgets/media_type_legend.dart';
 import '../../../shared/widgets/type_to_filter_overlay.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../collections/screens/item_detail_screen.dart';
@@ -42,8 +41,6 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   MediaType? _filterType;
   int? _filterPlatformId;
   String _typeToFilterQuery = '';
-  bool _showLegend = true;
-
   /// Максимальная ширина карточки на десктопе.
   static const double _desktopMaxCardWidth = 150;
 
@@ -64,10 +61,6 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         child: Column(
           children: <Widget>[
             _buildChipsRow(itemsAsync, filterStatus),
-            if (_showLegend)
-              MediaTypeLegend(
-                onHide: () => setState(() => _showLegend = false),
-              ),
             if (_filterType == MediaType.game) _buildPlatformChipsRow(),
             Expanded(
               child: itemsAsync.when(
