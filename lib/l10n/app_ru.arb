@@ -420,6 +420,13 @@
   "collectionFilterVisualNovels": "Визуальные новеллы",
   "collectionFilterManga": "Манга",
   "collectionFilterCustom": "Своё",
+  "collectionFilterSearchHint": "Поиск...",
+  "collectionFilterSort": "Сортировка",
+  "collectionFilterAscending": "По возрастанию",
+  "collectionFilterDescending": "По убыванию",
+  "collectionFilterFilters": "Фильтры",
+  "collectionFilterClearAll": "Сбросить все",
+  "collectionFilterPlatform": "Платформа",
 
   "collectionItemMovedTo": "{name} перемещён в {collection}",
   "collectionItemAlreadyExists": "{name} уже есть в {collection}",
@@ -842,7 +849,7 @@
   "settingsShowPlatformOverlay": "Обложки платформ",
   "settingsShowPlatformOverlaySubtitle": "Оверлей платформы на постерах игр (PS5, Switch и т.д.)",
   "settingsShowBlurayOverlay": "Обложки Blu-ray",
-  "settingsShowBlurayOverlaySubtitle": "Оверлей Blu-ray на постерах фильмов, сериалов и аниме",
+  "settingsShowBlurayOverlaySubtitle": "Оверлей Blu-ray на постерах фильмов и сериалов",
 
   "uncategorizedBanner": "Добавьте в коллекцию, чтобы открыть Доску и отслеживание серий",
   "uncategorizedBannerAction": "Добавить в коллекцию",

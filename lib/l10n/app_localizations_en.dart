@@ -1133,6 +1133,27 @@ class SEn extends S {
   String get collectionFilterCustom => 'Custom';
 
   @override
+  String get collectionFilterSearchHint => 'Search...';
+
+  @override
+  String get collectionFilterSort => 'Sort';
+
+  @override
+  String get collectionFilterAscending => 'Ascending';
+
+  @override
+  String get collectionFilterDescending => 'Descending';
+
+  @override
+  String get collectionFilterFilters => 'Filters';
+
+  @override
+  String get collectionFilterClearAll => 'Clear all';
+
+  @override
+  String get collectionFilterPlatform => 'Platform';
+
+  @override
   String collectionItemMovedTo(String name, String collection) {
     return '$name moved to $collection';
   }
@@ -2320,7 +2341,7 @@ class SEn extends S {
 
   @override
   String get settingsShowBlurayOverlaySubtitle =>
-      'Show Blu-ray overlay on movie, TV show, and anime posters';
+      'Show Blu-ray overlay on movie and TV show posters';
 
   @override
   String get uncategorizedBanner =>

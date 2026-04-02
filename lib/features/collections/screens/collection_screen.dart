@@ -81,8 +81,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   bool _isGridMode = false;
   bool _isTableMode = false;
   bool _isViewModeLocked = false;
-  MediaType? _filterType;
-  int? _filterPlatformId;
+  Set<MediaType> _filterTypes = <MediaType>{};
+  Set<int> _filterPlatformIds = <int>{};
   Set<int> _filterTagIds = <int>{};
   String _searchQuery = '';
   String _typeToFilterQuery = '';
@@ -291,6 +291,17 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             collectionId: widget.collectionId,
           ),
         ),
+      if (!_isCanvasMode)
+        IconButton(
+          icon: Icon(
+            _isTableMode ? Icons.grid_view : Icons.table_chart_outlined,
+          ),
+          color: AppColors.textSecondary,
+          tooltip: _isTableMode
+              ? l.collectionListViewGrid
+              : l.collectionListViewTable,
+          onPressed: _handleCycleViewMode,
+        ),
       if (!_isCanvasMode && !_isUncategorized)
         IconButton(
           icon: const Icon(Icons.leaderboard),
@@ -460,22 +471,52 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                   collectionId: widget.collectionId,
                   statsAsync: statsAsync,
                   itemsAsync: itemsAsync,
-                  filterType: _filterType,
-                  filterPlatformId: _filterPlatformId,
+                  filterTypes: _filterTypes,
+                  filterPlatformIds: _filterPlatformIds,
+                  filterTagIds: _filterTagIds,
+                  tags: tags,
                   searchController: _searchController,
                   searchQuery: _searchQuery,
-                  isGridMode: _isGridMode,
-                  isTableMode: _isTableMode,
-                  onFilterTypeChanged: (MediaType? type) {
+                  onTypeToggled: (MediaType? type) {
                     setState(() {
-                      _filterType = type;
-                      _filterPlatformId = null;
+                      if (type == null) {
+                        _filterTypes = <MediaType>{};
+                      } else if (_filterTypes.contains(type)) {
+                        _filterTypes = Set<MediaType>.from(_filterTypes)
+                          ..remove(type);
+                      } else {
+                        _filterTypes = Set<MediaType>.from(_filterTypes)
+                          ..add(type);
+                      }
+                      _filterPlatformIds = <int>{};
                     });
                   },
-                  onPlatformFilterChanged: (int? id) {
-                    setState(() => _filterPlatformId = id);
+                  onPlatformToggled: (int? id) {
+                    setState(() {
+                      if (id == null) {
+                        _filterPlatformIds = <int>{};
+                      } else if (_filterPlatformIds.contains(id)) {
+                        _filterPlatformIds = Set<int>.from(_filterPlatformIds)
+                          ..remove(id);
+                      } else {
+                        _filterPlatformIds = Set<int>.from(_filterPlatformIds)
+                          ..add(id);
+                      }
+                    });
                   },
-                  onGridModeChanged: _handleCycleViewMode,
+                  onTagToggled: (int? tagId) {
+                    setState(() {
+                      if (tagId == null) {
+                        _filterTagIds = <int>{};
+                      } else if (_filterTagIds.contains(tagId)) {
+                        _filterTagIds = Set<int>.from(_filterTagIds)
+                          ..remove(tagId);
+                      } else {
+                        _filterTagIds = Set<int>.from(_filterTagIds)
+                          ..add(tagId);
+                      }
+                    });
+                  },
                 ),
 
               // Список элементов
@@ -485,6 +526,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                     collectionId: widget.collectionId,
                     items: _applyFilters(items),
                     tags: tags,
+                    filterTagIds: _filterTagIds,
                     isGridMode: _isGridMode,
                     isTableMode: _isTableMode,
                     canEdit: _canEdit,
@@ -513,7 +555,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         ),
 
         // Боковая панель тегов
-        if (tags.length >= 2)
+        if (tags.length >= 2 && !kIsMobile)
           TagSidebar(
             tags: tags,
             selectedTagIds: _filterTagIds,
@@ -539,17 +581,18 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   List<CollectionItem> _applyFilters(List<CollectionItem> items) {
     List<CollectionItem> result = items;
 
-    if (_filterType != null) {
+    if (_filterTypes.isNotEmpty) {
       result = result
-          .where((CollectionItem item) => item.mediaType == _filterType)
+          .where((CollectionItem item) =>
+              _filterTypes.contains(item.mediaType))
           .toList();
     }
 
-    if (_filterPlatformId != null) {
+    if (_filterPlatformIds.isNotEmpty) {
       result = result
-          .where(
-            (CollectionItem item) => item.platformId == _filterPlatformId,
-          )
+          .where((CollectionItem item) =>
+              item.platformId != null &&
+              _filterPlatformIds.contains(item.platformId))
           .toList();
     }
 

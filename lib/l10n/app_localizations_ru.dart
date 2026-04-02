@@ -1144,6 +1144,27 @@ class SRu extends S {
   String get collectionFilterCustom => 'Своё';
 
   @override
+  String get collectionFilterSearchHint => 'Поиск...';
+
+  @override
+  String get collectionFilterSort => 'Сортировка';
+
+  @override
+  String get collectionFilterAscending => 'По возрастанию';
+
+  @override
+  String get collectionFilterDescending => 'По убыванию';
+
+  @override
+  String get collectionFilterFilters => 'Фильтры';
+
+  @override
+  String get collectionFilterClearAll => 'Сбросить все';
+
+  @override
+  String get collectionFilterPlatform => 'Платформа';
+
+  @override
   String collectionItemMovedTo(String name, String collection) {
     return '$name перемещён в $collection';
   }
@@ -2340,7 +2361,7 @@ class SRu extends S {
 
   @override
   String get settingsShowBlurayOverlaySubtitle =>
-      'Оверлей Blu-ray на постерах фильмов, сериалов и аниме';
+      'Оверлей Blu-ray на постерах фильмов и сериалов';
 
   @override
   String get uncategorizedBanner =>
