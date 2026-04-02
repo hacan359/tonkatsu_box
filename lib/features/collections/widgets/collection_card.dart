@@ -363,7 +363,7 @@ class _CoverImage extends StatelessWidget {
         imageType: _imageTypeFor(cover.mediaType, cover.platformId),
         imageId: cover.externalId.toString(),
         remoteUrl: cover.thumbnailUrl!,
-        fit: BoxFit.contain,
+        fit: BoxFit.cover,
         memCacheWidth: 200,
         placeholder: _emptyPlaceholder,
         errorWidget: _emptyPlaceholder,

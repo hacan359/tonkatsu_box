@@ -1,4 +1,4 @@
-// Шаг 2 Welcome Wizard — инструкции получения API ключей.
+// Шаг 4 Welcome Wizard — инструкции получения API ключей.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,7 +11,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 
-/// Шаг 2: API Keys — подробные инструкции получения ключей.
+/// Шаг 4: API Keys — подробные инструкции получения ключей.
 class WelcomeStepApiKeys extends StatelessWidget {
   /// Создаёт [WelcomeStepApiKeys].
   const WelcomeStepApiKeys({super.key});
@@ -49,6 +49,38 @@ class WelcomeStepApiKeys extends StatelessWidget {
                     color: AppColors.textTertiary,
                   ),
                   textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+
+          // Rate limit warning
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: AppColors.warning.withAlpha(12),
+              border: Border.all(color: AppColors.warning.withAlpha(40)),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                const Icon(
+                  Icons.info_outline,
+                  size: 16,
+                  color: AppColors.warning,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    l.welcomeApiRateLimitHint,
+                    style: AppTypography.body.copyWith(
+                      color: AppColors.warning,
+                      fontSize: 12,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -420,40 +452,79 @@ class _LinkCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColors.surfaceBorder),
         borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        onTap: () => _openUrl(context),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            border: Border.all(color: AppColors.surfaceBorder),
-            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          ),
-          child: Row(
-            children: <Widget>[
-              Icon(Icons.open_in_new, size: 16, color: color),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      title,
-                      style: AppTypography.h3.copyWith(fontSize: 13),
-                    ),
-                    Text(
-                      subtitle,
-                      style: AppTypography.caption,
-                    ),
-                  ],
+      ),
+      child: Row(
+        children: <Widget>[
+          // Open URL area
+          Expanded(
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: const BorderRadius.horizontal(
+                  left: Radius.circular(AppSpacing.radiusSm),
+                ),
+                onTap: () => _openUrl(context),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                  child: Row(
+                    children: <Widget>[
+                      Icon(Icons.open_in_new, size: 16, color: color),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              title,
+                              style: AppTypography.h3.copyWith(fontSize: 13),
+                            ),
+                            Text(
+                              subtitle,
+                              style: AppTypography.caption,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              Icon(Icons.content_copy, size: 14, color: color.withAlpha(150)),
-            ],
+            ),
           ),
-        ),
+          // Copy URL button
+          Container(
+            width: 1,
+            height: 32,
+            color: AppColors.surfaceBorder,
+          ),
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: const BorderRadius.horizontal(
+                right: Radius.circular(AppSpacing.radiusSm),
+              ),
+              onTap: () => _copyUrl(context),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+                child: Icon(
+                  Icons.content_copy,
+                  size: 14,
+                  color: color.withAlpha(150),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -465,10 +536,14 @@ class _LinkCard extends StatelessWidget {
       mode: LaunchMode.externalApplication,
     );
     if (!launched && context.mounted) {
-      await Clipboard.setData(ClipboardData(text: url));
-      if (context.mounted) {
-        context.showSnack('URL copied to clipboard');
-      }
+      await _copyUrl(context);
+    }
+  }
+
+  Future<void> _copyUrl(BuildContext context) async {
+    await Clipboard.setData(ClipboardData(text: url));
+    if (context.mounted) {
+      context.showSnack(S.of(context).credentialsUrlCopied(url));
     }
   }
 }

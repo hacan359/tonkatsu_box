@@ -76,11 +76,30 @@ class _TierListsScreenState extends ConsumerState<TierListsScreen> {
         data: (List<TierList> tierLists) {
           if (tierLists.isEmpty) {
             return Center(
-              child: Text(
-                l.tierListEmpty,
-                style: AppTypography.body.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Icon(
+                    Icons.leaderboard_outlined,
+                    size: 64,
+                    color: AppColors.textTertiary.withAlpha(120),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Text(
+                    l.tierListEmpty,
+                    style: AppTypography.h2.copyWith(
+                      color: AppColors.textTertiary,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    l.tierListEmptyHint,
+                    textAlign: TextAlign.center,
+                    style: AppTypography.body.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
               ),
             );
           }

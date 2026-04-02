@@ -309,23 +309,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           tooltip: l.tierListTitle,
           onPressed: _navigateToTierLists,
         ),
-      if (kCanvasEnabled && !_isUncategorized)
-        IconButton(
-          icon: Icon(
-            _isCanvasMode ? Icons.list : Icons.dashboard,
-          ),
-          color: AppColors.textSecondary,
-          tooltip: kIsMobile
-              ? (_isCanvasMode ? l.collectionSwitchToList : l.collectionSwitchToBoard)
-              : (_isCanvasMode
-                  ? '${l.collectionSwitchToList} (Ctrl+B)'
-                  : '${l.collectionSwitchToBoard} (Ctrl+B)'),
-          onPressed: () {
-            setState(() {
-              _isCanvasMode = !_isCanvasMode;
-            });
-          },
-        ),
       if (_canEdit && _isCanvasMode && kCanvasEnabled && !_isUncategorized)
         IconButton(
           icon: Icon(
@@ -355,6 +338,23 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                       vgMapsPanelProvider(widget.collectionId).notifier)
                   .closePanel();
             }
+          },
+        ),
+      if (kCanvasEnabled && !_isUncategorized)
+        IconButton(
+          icon: Icon(
+            _isCanvasMode ? Icons.list : Icons.dashboard,
+          ),
+          color: AppColors.textSecondary,
+          tooltip: kIsMobile
+              ? (_isCanvasMode ? l.collectionSwitchToList : l.collectionSwitchToBoard)
+              : (_isCanvasMode
+                  ? '${l.collectionSwitchToList} (Ctrl+B)'
+                  : '${l.collectionSwitchToBoard} (Ctrl+B)'),
+          onPressed: () {
+            setState(() {
+              _isCanvasMode = !_isCanvasMode;
+            });
           },
         ),
       if (!_isUncategorized)

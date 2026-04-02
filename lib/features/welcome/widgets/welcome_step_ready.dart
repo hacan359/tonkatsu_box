@@ -1,4 +1,4 @@
-// Шаг 4 Welcome Wizard — финальный экран с CTA.
+// Шаг 6 Welcome Wizard — финальный экран с CTA.
 
 import 'package:flutter/material.dart';
 
@@ -7,7 +7,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 
-/// Шаг 4: Ready! — финальный экран с кнопками действий.
+/// Шаг 6: Ready! — финальный экран с кнопками действий.
 class WelcomeStepReady extends StatelessWidget {
   /// Создаёт [WelcomeStepReady].
   const WelcomeStepReady({

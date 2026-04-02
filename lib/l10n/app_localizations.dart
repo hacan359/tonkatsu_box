@@ -1582,7 +1582,7 @@ abstract class S {
   /// No description provided for @collectionsNoCollectionsHint.
   ///
   /// In en, this message translates to:
-  /// **'Create your first collection to start tracking\nyour gaming journey.'**
+  /// **'Tap + to create your first collection and start\norganizing your media library.'**
   String get collectionsNoCollectionsHint;
 
   /// No description provided for @collectionsFailedToLoad.
@@ -3367,6 +3367,12 @@ abstract class S {
   /// **'Enter keys in Settings → Credentials after setup'**
   String get welcomeApiEnterKeysHint;
 
+  /// No description provided for @welcomeApiRateLimitHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Built-in keys are shared between all users and have rate limits. For the best experience, use your own keys — it\'s free and takes just a few minutes.'**
+  String get welcomeApiRateLimitHint;
+
   /// No description provided for @welcomeHowTitle.
   ///
   /// In en, this message translates to:
@@ -3390,6 +3396,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Your collections. Create, organize, manage. Grid or list view per collection.'**
   String get welcomeHowCollectionsDesc;
+
+  /// No description provided for @welcomeHowTierListsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Rank and compare items across collections with customizable tier lists.'**
+  String get welcomeHowTierListsDesc;
 
   /// No description provided for @welcomeHowWishlistDesc.
   ///
@@ -3754,7 +3766,7 @@ abstract class S {
   /// No description provided for @allItemsAddViaCollections.
   ///
   /// In en, this message translates to:
-  /// **'Add items via Collections tab'**
+  /// **'Go to Collections → create a collection → add items\nvia Search. They will appear here automatically.'**
   String get allItemsAddViaCollections;
 
   /// No description provided for @allItemsFailedToLoad.
@@ -4696,8 +4708,14 @@ abstract class S {
   /// No description provided for @tierListEmpty.
   ///
   /// In en, this message translates to:
-  /// **'No tier lists yet'**
+  /// **'No Tier Lists Yet'**
   String get tierListEmpty;
+
+  /// No description provided for @tierListEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap + to create a tier list and rank items\nfrom your collections.'**
+  String get tierListEmptyHint;
 
   /// No description provided for @tierListAllRanked.
   ///

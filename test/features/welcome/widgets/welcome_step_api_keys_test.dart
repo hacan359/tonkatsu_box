@@ -1,5 +1,5 @@
 import 'package:xerabora/l10n/app_localizations.dart';
-// Тесты для WelcomeStepApiKeys — шаг 2 Welcome Wizard.
+// Тесты для WelcomeStepApiKeys — шаг 4 Welcome Wizard.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -138,6 +138,23 @@ void main() {
     });
 
     group('hint section', () {
+      testWidgets('shows rate limit warning',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+
+        expect(
+          find.textContaining('rate limits'),
+          findsOneWidget,
+        );
+      });
+
+      testWidgets('shows info icon for rate limit warning',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(createWidget());
+
+        expect(find.byIcon(Icons.info_outline), findsWidgets);
+      });
+
       testWidgets('shows hint text about Settings',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
@@ -146,16 +163,6 @@ void main() {
           find.textContaining('Enter keys in Settings'),
           findsOneWidget,
         );
-      });
-
-      testWidgets('hint has brand-tinted background',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-
-        // Find hint container by its text
-        final Finder hintText =
-            find.textContaining('Enter keys in Settings');
-        expect(hintText, findsOneWidget);
       });
     });
 
@@ -171,20 +178,20 @@ void main() {
       testWidgets('shows 3 copy icons', (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
 
-        // 3 content_copy icons
+        // 3 content_copy icons (separate copy button per _LinkCard)
         expect(find.byIcon(Icons.content_copy), findsNWidgets(3));
       });
 
-      testWidgets('IGDB link card is tappable',
+      testWidgets('IGDB link card has separate open and copy areas',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
 
-        // Find the Twitch Developer Console InkWell
-        final Finder linkCard = find.ancestor(
+        // Each _LinkCard now has 2 InkWells: open URL + copy URL
+        final Finder linkInkWells = find.ancestor(
           of: find.text('Twitch Developer Console'),
           matching: find.byType(InkWell),
         );
-        expect(linkCard, findsOneWidget);
+        expect(linkInkWells, findsOneWidget);
       });
     });
 

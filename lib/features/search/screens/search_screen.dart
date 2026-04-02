@@ -235,9 +235,45 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         return SimpleDialog(
           title: Text(l.openInCollection),
           children: infos.map((CollectedItemInfo info) {
+            final String name =
+                info.collectionName ?? l.collectionsUncategorized;
+            final Platform? platform = info.platformId != null
+                ? _platformMap[info.platformId]
+                : null;
             return SimpleDialogOption(
               onPressed: () => Navigator.of(context).pop(info),
-              child: Text(info.collectionName ?? l.collectionsUncategorized),
+              child: Row(
+                children: <Widget>[
+                  if (platform != null) ...<Widget>[
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: platform.familyColor,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                  ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Text(name),
+                        if (platform != null)
+                          Text(
+                            platform.displayName,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(color: AppColors.textTertiary),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             );
           }).toList(),
         );

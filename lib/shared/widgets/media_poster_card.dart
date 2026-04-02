@@ -616,17 +616,14 @@ class _MediaPosterCardState extends State<MediaPosterCard>
   Widget _buildCachedImage({required Widget placeholder}) {
     if (widget.imageUrl.isEmpty) return placeholder;
 
-    return ColoredBox(
-      color: AppColors.surface,
-      child: CachedImage(
-        imageType: widget.cacheImageType,
-        imageId: widget.cacheImageId,
-        remoteUrl: widget.imageUrl,
-        fit: BoxFit.contain,
-        memCacheWidth: _posterDecodeWidth,
-        placeholder: placeholder,
-        errorWidget: placeholder,
-      ),
+    return CachedImage(
+      imageType: widget.cacheImageType,
+      imageId: widget.cacheImageId,
+      remoteUrl: widget.imageUrl,
+      fit: BoxFit.cover,
+      memCacheWidth: _posterDecodeWidth,
+      placeholder: placeholder,
+      errorWidget: placeholder,
     );
   }
 }

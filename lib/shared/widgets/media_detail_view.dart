@@ -428,7 +428,6 @@ class _MediaDetailViewState extends State<MediaDetailView> {
         remoteUrl: widget.coverUrl!,
         fit: BoxFit.cover,
         memCacheWidth: 200,
-        memCacheHeight: 300,
         placeholder: _buildLoadingPlaceholder(),
         errorWidget: _buildPlaceholder(),
       );
@@ -438,7 +437,6 @@ class _MediaDetailViewState extends State<MediaDetailView> {
       imageUrl: widget.coverUrl!,
       fit: BoxFit.cover,
       memCacheWidth: 200,
-      memCacheHeight: 300,
       placeholder: (BuildContext ctx, String url) =>
           _buildLoadingPlaceholder(),
       errorWidget: (BuildContext ctx, String url, Object error) =>

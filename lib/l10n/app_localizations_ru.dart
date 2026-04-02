@@ -829,7 +829,7 @@ class SRu extends S {
 
   @override
   String get collectionsNoCollectionsHint =>
-      'Создайте свою первую коллекцию, чтобы начать\nвести учёт игрового прогресса.';
+      'Нажмите + чтобы создать первую коллекцию и начать\nорганизовывать свою медиатеку.';
 
   @override
   String get collectionsFailedToLoad => 'Не удалось загрузить коллекции';
@@ -1825,6 +1825,10 @@ class SRu extends S {
       'Введите ключи в Настройки → Учётные данные';
 
   @override
+  String get welcomeApiRateLimitHint =>
+      'Встроенные ключи общие для всех пользователей и имеют лимиты запросов. Для лучшего опыта используйте свои ключи — это бесплатно и займёт пару минут.';
+
+  @override
   String get welcomeHowTitle => 'Как это работает';
 
   @override
@@ -1837,6 +1841,10 @@ class SRu extends S {
   @override
   String get welcomeHowCollectionsDesc =>
       'Ваши коллекции. Создавайте, организуйте, управляйте. Сетка или список.';
+
+  @override
+  String get welcomeHowTierListsDesc =>
+      'Ранжируйте и сравнивайте элементы из коллекций с помощью настраиваемых тир-листов.';
 
   @override
   String get welcomeHowWishlistDesc =>
@@ -2041,7 +2049,7 @@ class SRu extends S {
 
   @override
   String get allItemsAddViaCollections =>
-      'Добавьте элементы через вкладку Коллекции';
+      'Перейдите в Коллекции → создайте коллекцию → добавьте\nэлементы через Поиск. Они появятся здесь автоматически.';
 
   @override
   String get allItemsFailedToLoad => 'Не удалось загрузить элементы';
@@ -2554,7 +2562,11 @@ class SRu extends S {
   String get tierListDeleteConfirm => 'Удалить этот тир-лист?';
 
   @override
-  String get tierListEmpty => 'Тир-листов пока нет';
+  String get tierListEmpty => 'Пока нет тир-листов';
+
+  @override
+  String get tierListEmptyHint =>
+      'Нажмите + чтобы создать тир-лист и ранжировать\nэлементы из ваших коллекций.';
 
   @override
   String get tierListAllRanked => 'Все элементы распределены!';
