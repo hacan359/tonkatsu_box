@@ -316,11 +316,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: <Widget>[
             Icon(
               Icons.shelves,
-              size: 80,
+              size: 64,
               color: AppColors.textTertiary.withAlpha(120),
             ),
-            const SizedBox(height: AppSpacing.lg),
-            Text(l.collectionsNoCollectionsYet, style: AppTypography.h2),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              l.collectionsNoCollectionsYet,
+              style: AppTypography.h2.copyWith(
+                color: AppColors.textTertiary,
+              ),
+            ),
             const SizedBox(height: AppSpacing.sm),
             Text(
               l.collectionsNoCollectionsHint,
