@@ -343,7 +343,7 @@
   "collectionsNewCollection": "New Collection",
   "collectionsImportCollection": "Import Collection",
   "collectionsNoCollectionsYet": "No Collections Yet",
-  "collectionsNoCollectionsHint": "Create your first collection to start tracking\nyour gaming journey.",
+  "collectionsNoCollectionsHint": "Tap + to create your first collection and start\norganizing your media library.",
   "collectionsFailedToLoad": "Failed to load collections",
   "collectionsCount": "Collections ({count})",
   "@collectionsCount": {
@@ -924,7 +924,7 @@
   "allItemsRating": "Rating",
   "allItemsNoItems": "No items yet",
   "allItemsNoMatch": "No items match filter",
-  "allItemsAddViaCollections": "Add items via Collections tab",
+  "allItemsAddViaCollections": "Go to Collections → create a collection → add items\nvia Search. They will appear here automatically.",
   "allItemsFailedToLoad": "Failed to load items",
 
   "debugIgdbMedia": "IGDB Media",
@@ -1148,7 +1148,8 @@
   "tierListClearAll": "Clear all",
   "tierListClearConfirm": "Remove all items from tiers? They will return to Unranked.",
   "tierListDeleteConfirm": "Delete this tier list?",
-  "tierListEmpty": "No tier lists yet",
+  "tierListEmpty": "No Tier Lists Yet",
+  "tierListEmptyHint": "Tap + to create a tier list and rank items\nfrom your collections.",
   "tierListAllRanked": "All items ranked!",
   "tierListNoCollections": "No collections available",
   "tierListErrorEmptyName": "Enter a tier list name",

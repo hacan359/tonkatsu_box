@@ -596,7 +596,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
           Icon(
             noItemsAtAll ? Icons.inbox_outlined : Icons.filter_list_off,
             size: 64,
-            color: AppColors.textTertiary,
+            color: AppColors.textTertiary.withAlpha(120),
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
@@ -609,8 +609,9 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
             const SizedBox(height: AppSpacing.sm),
             Text(
               S.of(context).allItemsAddViaCollections,
+              textAlign: TextAlign.center,
               style: AppTypography.body
-                  .copyWith(color: AppColors.textTertiary),
+                  .copyWith(color: AppColors.textSecondary),
             ),
           ],
         ],

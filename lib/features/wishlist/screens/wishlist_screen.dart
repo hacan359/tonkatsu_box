@@ -150,25 +150,26 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
 
     return Center(
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Icon(
             Icons.bookmark_border,
             size: 64,
-            color: AppColors.textTertiary.withValues(alpha: 0.5),
+            color: AppColors.textTertiary.withAlpha(120),
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
             l.wishlistEmpty,
-            style: AppTypography.body.copyWith(
+            style: AppTypography.h2.copyWith(
               color: AppColors.textTertiary,
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
             l.wishlistEmptyHint,
-            style: AppTypography.bodySmall.copyWith(
-              color: AppColors.textTertiary.withValues(alpha: 0.7),
+            textAlign: TextAlign.center,
+            style: AppTypography.body.copyWith(
+              color: AppColors.textSecondary,
             ),
           ),
         ],

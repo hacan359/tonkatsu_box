@@ -820,7 +820,7 @@ class SEn extends S {
 
   @override
   String get collectionsNoCollectionsHint =>
-      'Create your first collection to start tracking\nyour gaming journey.';
+      'Tap + to create your first collection and start\norganizing your media library.';
 
   @override
   String get collectionsFailedToLoad => 'Failed to load collections';
@@ -2030,7 +2030,8 @@ class SEn extends S {
   String get allItemsNoMatch => 'No items match filter';
 
   @override
-  String get allItemsAddViaCollections => 'Add items via Collections tab';
+  String get allItemsAddViaCollections =>
+      'Go to Collections → create a collection → add items\nvia Search. They will appear here automatically.';
 
   @override
   String get allItemsFailedToLoad => 'Failed to load items';
@@ -2541,7 +2542,11 @@ class SEn extends S {
   String get tierListDeleteConfirm => 'Delete this tier list?';
 
   @override
-  String get tierListEmpty => 'No tier lists yet';
+  String get tierListEmpty => 'No Tier Lists Yet';
+
+  @override
+  String get tierListEmptyHint =>
+      'Tap + to create a tier list and rank items\nfrom your collections.';
 
   @override
   String get tierListAllRanked => 'All items ranked!';

@@ -1582,7 +1582,7 @@ abstract class S {
   /// No description provided for @collectionsNoCollectionsHint.
   ///
   /// In en, this message translates to:
-  /// **'Create your first collection to start tracking\nyour gaming journey.'**
+  /// **'Tap + to create your first collection and start\norganizing your media library.'**
   String get collectionsNoCollectionsHint;
 
   /// No description provided for @collectionsFailedToLoad.
@@ -3766,7 +3766,7 @@ abstract class S {
   /// No description provided for @allItemsAddViaCollections.
   ///
   /// In en, this message translates to:
-  /// **'Add items via Collections tab'**
+  /// **'Go to Collections → create a collection → add items\nvia Search. They will appear here automatically.'**
   String get allItemsAddViaCollections;
 
   /// No description provided for @allItemsFailedToLoad.
@@ -4708,8 +4708,14 @@ abstract class S {
   /// No description provided for @tierListEmpty.
   ///
   /// In en, this message translates to:
-  /// **'No tier lists yet'**
+  /// **'No Tier Lists Yet'**
   String get tierListEmpty;
+
+  /// No description provided for @tierListEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap + to create a tier list and rank items\nfrom your collections.'**
+  String get tierListEmptyHint;
 
   /// No description provided for @tierListAllRanked.
   ///
