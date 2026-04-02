@@ -17,11 +17,19 @@
 
 ### Changed
 - **Welcome wizard updated** — added Tier Lists tab to "How it Works" step (step 5), added rate limit warning for built-in API keys at the top of API Keys step (step 4), separated open/copy actions in API link cards (open_in_new opens URL, content_copy copies to clipboard). Fixed step number comments (2→4, 3→5, 4→6). Localized snackbar message. 2 localization keys EN+RU: `welcomeHowTierListsDesc`, `welcomeApiRateLimitHint` (`welcome_step_api_keys.dart`, `welcome_step_how_it_works.dart`, `welcome_step_ready.dart`)
+- **Empty states unified** — all main tabs (Home, Collections, Tier Lists, Wishlist) now use consistent empty state style: 64px muted icon, `h2` title in `textTertiary`, `body` hint in `textSecondary` with `textAlign: center`. Tier Lists gained icon and "Tap +" hint. Home hint now shows step-by-step guidance. Collections hint updated from "gaming journey" to "media library". 2 localization keys EN+RU: `tierListEmptyHint`, updated `allItemsAddViaCollections`, `collectionsNoCollectionsHint` (`tier_lists_screen.dart`, `all_items_screen.dart`, `home_screen.dart`, `wishlist_screen.dart`)
+- **Canvas toolbar reordered** — lock button moved before the list/board switch for better visual flow (`collection_screen.dart`)
+- **Poster images use BoxFit.cover** — `MediaPosterCard` and `CollectionCard` changed from `BoxFit.contain` to `BoxFit.cover` for consistent image rendering across all screens, eliminating letterbox bars (`media_poster_card.dart`, `collection_card.dart`)
+- **Open in collection dialog improved** — when a game exists in the same collection on multiple platforms, dialog now shows platform name and colored dot alongside collection name, making entries distinguishable (`search_screen.dart`)
 - **Collection filter bar redesigned** — media type dropdown replaced with horizontal `ChoiceChip` row supporting multi-select. Platform and tag filters moved into a collapsible panel (desktop: expand arrow with `AnimatedCrossFade`; mobile: bottom sheet with `ChoiceChip` groups). Search field and sort button remain in the main row. View toggle (Grid/Table) moved to AppBar. Clear button resets all active filters. `CollectionFilterBar` converted from `ConsumerWidget` to `ConsumerStatefulWidget` (`collection_filter_bar.dart`, `collection_screen.dart`)
 - **Tag section dividers conditional** — tag group dividers (horizontal line with tag name and count) in grid/list views now only appear when tag filters are active (`filterTagIds.isNotEmpty`); without tag filters, items display in a flat grid/list (`collection_items_view.dart`)
 - **View toggle simplified** — collection view mode cycles Grid → Table → Grid (List view temporarily hidden). Toggle button moved from filter bar to AppBar (`collection_screen.dart`)
 
+### Removed
+- **Media type legend** — removed `MediaTypeLegend` widget from Home screen. Color-coded filter chips already convey the same information (`media_type_legend.dart` deleted, `all_items_screen.dart`)
+
 ### Fixed
+- **Cover image distortion on detail screen** — removed `memCacheHeight` from detail view cover decoding. Specifying both `cacheWidth` and `cacheHeight` forced Flutter to decode into a fixed aspect ratio, distorting non-standard images (`media_detail_view.dart`)
 - **Tag assignment flickers all images** — assigning a tag to a single collection item no longer causes all poster images to reload. Replaced `ref.invalidate()` / `refresh()` (which set `AsyncLoading` and reloaded all items from DB) with optimistic `updateItemTag()` that updates only the affected item in-place via `copyWith` (`collections_provider.dart`, `item_tags_section.dart`, `collection_items_view.dart`)
 
 ## [0.24.0] - 2026-03-31
