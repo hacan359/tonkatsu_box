@@ -10,7 +10,6 @@ import 'package:xerabora/features/settings/screens/trakt_import_screen.dart';
 import 'package:xerabora/features/settings/widgets/settings_group.dart';
 import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/models/collection.dart';
-import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 
 import '../../../helpers/test_helpers.dart';
 
@@ -41,10 +40,7 @@ void main() {
         supportedLocales: S.supportedLocales,
         home: MediaQuery(
           data: MediaQueryData(size: Size(width, height)),
-          child: const BreadcrumbScope(
-            label: 'Settings',
-            child: TraktImportScreen(),
-          ),
+          child: const TraktImportScreen(),
         ),
       ),
     );
@@ -99,17 +95,6 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('Start Import'), findsNothing);
-      });
-    });
-
-    group('Breadcrumbs', () {
-      testWidgets('shows "Settings" and "Trakt Import" in breadcrumbs',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        expect(find.text('Settings'), findsOneWidget);
-        expect(find.text('Trakt Import'), findsOneWidget);
       });
     });
 

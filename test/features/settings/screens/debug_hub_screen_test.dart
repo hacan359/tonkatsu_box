@@ -7,7 +7,6 @@ import 'package:xerabora/features/settings/screens/debug_hub_screen.dart';
 import 'package:xerabora/features/settings/widgets/settings_group.dart';
 import 'package:xerabora/features/settings/widgets/settings_tile.dart';
 import 'package:xerabora/l10n/app_localizations.dart';
-import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 
 void main() {
   group('DebugHubScreen', () {
@@ -26,22 +25,10 @@ void main() {
         child: const MaterialApp(
           localizationsDelegates: S.localizationsDelegates,
           supportedLocales: S.supportedLocales,
-          home: BreadcrumbScope(
-            label: 'Settings',
-            child: DebugHubScreen(),
-          ),
+          home: DebugHubScreen(),
         ),
       );
     }
-
-    testWidgets('shows breadcrumbs Settings and Debug',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pumpAndSettle();
-
-      expect(find.text('Settings'), findsOneWidget);
-      expect(find.text('Debug'), findsOneWidget);
-    });
 
     testWidgets('shows SettingsGroup widget', (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());

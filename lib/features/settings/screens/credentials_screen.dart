@@ -3,14 +3,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../shared/theme/app_spacing.dart';
-import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
-import '../../../shared/widgets/breadcrumb_scope.dart';
-import '../../../l10n/app_localizations.dart';
 import '../content/credentials_content.dart';
 
 /// Экран настройки API ключей.
 ///
-/// Тонкая обёртка вокруг [CredentialsContent] с Scaffold/AppBar/BreadcrumbScope.
+/// Тонкая обёртка вокруг [CredentialsContent] с Scaffold/AppBar.
 /// Используется при push-навигации на мобильных устройствах.
 class CredentialsScreen extends StatelessWidget {
   /// Создаёт [CredentialsScreen].
@@ -27,23 +24,20 @@ class CredentialsScreen extends StatelessWidget {
     final double width = MediaQuery.sizeOf(context).width;
     final bool isWide = width >= 800;
 
-    return BreadcrumbScope(
-      label: S.of(context).credentialsTitle,
-      child: Scaffold(
-        appBar: const AutoBreadcrumbAppBar(),
-        body: Align(
-          alignment: Alignment.topCenter,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: isWide ? 600 : double.infinity,
+    return Scaffold(
+      appBar: AppBar(),
+      body: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: isWide ? 600 : double.infinity,
+          ),
+          child: SingleChildScrollView(
+            padding: EdgeInsets.symmetric(
+              horizontal: isWide ? AppSpacing.lg : AppSpacing.md,
+              vertical: AppSpacing.sm,
             ),
-            child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(
-                horizontal: isWide ? AppSpacing.lg : AppSpacing.md,
-                vertical: AppSpacing.sm,
-              ),
-              child: CredentialsContent(isInitialSetup: isInitialSetup),
-            ),
+            child: CredentialsContent(isInitialSetup: isInitialSetup),
           ),
         ),
       ),

@@ -16,8 +16,6 @@ import '../../../shared/models/movie.dart';
 import '../../../shared/models/tv_show.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
-import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
-import '../../../shared/widgets/breadcrumb_scope.dart';
 import '../providers/settings_provider.dart';
 
 /// IGDB platform IDs.
@@ -657,10 +655,8 @@ class _DemoCollectionsScreenState
   Widget build(BuildContext context) {
     final bool compact = MediaQuery.sizeOf(context).width < 600;
 
-    return BreadcrumbScope(
-      label: 'Demo Generator',
-      child: Scaffold(
-        appBar: const AutoBreadcrumbAppBar(),
+    return Scaffold(
+      appBar: AppBar(),
         body: Padding(
           padding: EdgeInsets.all(compact ? AppSpacing.sm : AppSpacing.lg),
           child: Column(
@@ -784,7 +780,6 @@ class _DemoCollectionsScreenState
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 }

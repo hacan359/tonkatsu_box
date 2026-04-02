@@ -11,7 +11,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/core/services/api_key_initializer.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/l10n/app_localizations.dart';
-import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 
 /// Дефолтный SettingsNotifier для тестов (не обращается к API).
 class _DefaultSettingsNotifier extends SettingsNotifier {
@@ -26,7 +25,6 @@ extension PumpApp on WidgetTester {
   /// [widget] — тестируемый виджет (будет помещён в `home:`).
   /// [overrides] — дополнительные Riverpod overrides.
   /// [prefs] — SharedPreferences; если null, создаются пустые.
-  /// [breadcrumbLabel] — если указан, оборачивает виджет в BreadcrumbScope.
   /// [wrapInScaffold] — если true, оборачивает виджет в Scaffold.body.
   /// [mediaQuerySize] — если указан, оборачивает виджет в MediaQuery.
   /// [settle] — если true (по умолчанию), вызывает pumpAndSettle.
@@ -34,7 +32,6 @@ extension PumpApp on WidgetTester {
     Widget widget, {
     List<Override> overrides = const <Override>[],
     SharedPreferences? prefs,
-    String? breadcrumbLabel,
     bool wrapInScaffold = false,
     Size? mediaQuerySize,
     bool settle = true,
@@ -48,10 +45,6 @@ extension PumpApp on WidgetTester {
 
     if (wrapInScaffold) {
       child = Scaffold(body: child);
-    }
-
-    if (breadcrumbLabel != null) {
-      child = BreadcrumbScope(label: breadcrumbLabel, child: child);
     }
 
     if (mediaQuerySize != null) {

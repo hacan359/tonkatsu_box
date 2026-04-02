@@ -16,8 +16,6 @@ import '../../../shared/gamepad/gamepad_provider.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
-import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
-import '../../../shared/widgets/breadcrumb_scope.dart';
 
 /// Максимальное количество событий в логе.
 const int _maxEvents = 100;
@@ -169,10 +167,8 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    return BreadcrumbScope(
-      label: l.debugGamepad,
-      child: Scaffold(
-      appBar: AutoBreadcrumbAppBar(
+    return Scaffold(
+      appBar: AppBar(
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.save_alt),
@@ -231,7 +227,6 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
           },
         ),
       ),
-    ),
     );
   }
 

@@ -10,8 +10,6 @@ import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/media_type.dart';
-import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
-import '../../../shared/widgets/breadcrumb_scope.dart';
 import '../../collections/providers/collections_provider.dart';
 
 /// Debug-экран для проверки URL изображений.
@@ -55,10 +53,8 @@ class _ImageDebugScreenState extends ConsumerState<ImageDebugScreen> {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
 
-    return BreadcrumbScope(
-      label: S.of(context).debugIgdbMedia,
-      child: Scaffold(
-      appBar: const AutoBreadcrumbAppBar(),
+    return Scaffold(
+      appBar: AppBar(),
       body: Column(
         children: <Widget>[
           // Выбор коллекции
@@ -97,7 +93,6 @@ class _ImageDebugScreenState extends ConsumerState<ImageDebugScreen> {
           ),
         ],
       ),
-    ),
     );
   }
 

@@ -23,7 +23,6 @@ void main() {
 
         await tester.pumpApp(
           const ImportResultScreen(result: result),
-          breadcrumbLabel: 'Settings',
         );
 
         expect(find.byIcon(Icons.celebration), findsOneWidget);
@@ -44,7 +43,6 @@ void main() {
 
         await tester.pumpApp(
           const ImportResultScreen(result: result),
-          breadcrumbLabel: 'Settings',
         );
 
         // Total imported
@@ -70,7 +68,6 @@ void main() {
 
         await tester.pumpApp(
           const ImportResultScreen(result: result),
-          breadcrumbLabel: 'Settings',
         );
 
         // Wishlist hint text
@@ -96,7 +93,6 @@ void main() {
 
         await tester.pumpApp(
           const ImportResultScreen(result: result),
-          breadcrumbLabel: 'Settings',
         );
 
         expect(find.byIcon(Icons.sync), findsOneWidget);
@@ -114,7 +110,6 @@ void main() {
 
         await tester.pumpApp(
           const ImportResultScreen(result: result),
-          breadcrumbLabel: 'Settings',
         );
 
         expect(find.textContaining('3'), findsWidgets);
@@ -135,7 +130,6 @@ void main() {
 
         await tester.pumpApp(
           ImportResultScreen(result: result),
-          breadcrumbLabel: 'Settings',
         );
 
         expect(find.textContaining('Collection'), findsWidgets);
@@ -151,7 +145,6 @@ void main() {
 
         await tester.pumpApp(
           const ImportResultScreen(result: result),
-          breadcrumbLabel: 'Settings',
         );
 
         expect(find.text('Done'), findsOneWidget);
@@ -169,7 +162,6 @@ void main() {
 
         await tester.pumpApp(
           const ImportResultScreen(result: result),
-          breadcrumbLabel: 'Settings',
         );
 
         expect(find.byIcon(Icons.error_outline), findsOneWidget);
@@ -186,7 +178,6 @@ void main() {
 
         await tester.pumpApp(
           const ImportResultScreen(result: result),
-          breadcrumbLabel: 'Settings',
         );
 
         expect(find.byIcon(Icons.collections_bookmark), findsNothing);
@@ -207,7 +198,6 @@ void main() {
 
         await tester.pumpApp(
           const ImportResultScreen(result: result),
-          breadcrumbLabel: 'Settings',
         );
 
         expect(find.byIcon(Icons.collections_bookmark), findsNothing);

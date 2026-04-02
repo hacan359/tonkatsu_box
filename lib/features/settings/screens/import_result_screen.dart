@@ -9,8 +9,6 @@ import '../../../shared/models/universal_import_result.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
-import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
-import '../../../shared/widgets/breadcrumb_scope.dart';
 import '../../collections/screens/collection_screen.dart';
 
 /// Экран результатов импорта.
@@ -30,10 +28,8 @@ class ImportResultScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final S l = S.of(context);
 
-    return BreadcrumbScope(
-      label: l.importResultTitle,
-      child: Scaffold(
-        appBar: const AutoBreadcrumbAppBar(),
+    return Scaffold(
+      appBar: AppBar(),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
@@ -93,8 +89,7 @@ class ImportResultScreen extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 
   Widget _buildHeader(BuildContext context, S l) {

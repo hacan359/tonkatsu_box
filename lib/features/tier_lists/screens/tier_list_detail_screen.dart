@@ -16,8 +16,6 @@ import '../../../shared/constants/platform_features.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../shared/theme/app_colors.dart';
-import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
-import '../../../shared/widgets/breadcrumb_scope.dart';
 import '../../../shared/widgets/type_to_filter_overlay.dart';
 import '../providers/tier_list_detail_provider.dart';
 import '../widgets/tier_list_view.dart';
@@ -57,12 +55,10 @@ class _TierListDetailScreenState
     final TierListDetailState state =
         ref.watch(tierListDetailProvider(widget.tierListId));
 
-    return BreadcrumbScope(
-      label: state.isLoading ? l.tierListTitle : state.tierList.name,
-      child: CallbackShortcuts(
-        bindings: _buildScreenShortcuts(state),
-        child: Scaffold(
-        appBar: AutoBreadcrumbAppBar(
+    return CallbackShortcuts(
+      bindings: _buildScreenShortcuts(state),
+      child: Scaffold(
+        appBar: AppBar(
           actions: <Widget>[
             if (!state.isLoading)
               IconButton(
@@ -133,7 +129,6 @@ class _TierListDetailScreenState
                   ],
                 ),
               ),
-      ),
       ),
     );
   }

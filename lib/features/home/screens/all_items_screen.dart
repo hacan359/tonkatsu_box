@@ -17,8 +17,6 @@ import '../../../shared/navigation/navigation_shell.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
-import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
-import '../../../shared/widgets/breadcrumb_scope.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/type_to_filter_overlay.dart';
 import '../../collections/providers/collections_provider.dart';
@@ -53,7 +51,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final ItemStatus? filterStatus = ref.watch(homeStatusFilterProvider);
 
     return Scaffold(
-      appBar: const AutoBreadcrumbAppBar(),
+      appBar: AppBar(),
       body: TypeToFilterOverlay(
         onFilterChanged: (String query) {
           setState(() => _typeToFilterQuery = query);
@@ -641,10 +639,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   ) {
     // Определяем isEditable из коллекции
     final bool isEditable;
-    final String colName;
     if (item.isUncategorized) {
       isEditable = true;
-      colName = S.of(context).collectionsUncategorized;
     } else {
       final List<Collection>? collections =
           ref.read(collectionsProvider).valueOrNull;
@@ -654,18 +650,14 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         orElse: () => null,
       );
       isEditable = collection?.isEditable ?? false;
-      colName = collectionNames[item.collectionId!] ?? '';
     }
 
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (BuildContext context) => BreadcrumbScope(
-          label: colName,
-          child: ItemDetailScreen(
-            collectionId: item.collectionId,
-            itemId: item.id,
-            isEditable: isEditable,
-          ),
+        builder: (BuildContext context) => ItemDetailScreen(
+          collectionId: item.collectionId,
+          itemId: item.id,
+          isEditable: isEditable,
         ),
       ),
     );

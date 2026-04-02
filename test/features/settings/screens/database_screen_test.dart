@@ -5,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/features/settings/screens/database_screen.dart';
 import 'package:xerabora/l10n/app_localizations.dart';
-import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 
 void main() {
   group('DatabaseScreen', () {
@@ -24,10 +23,7 @@ void main() {
         child: const MaterialApp(
           localizationsDelegates: S.localizationsDelegates,
           supportedLocales: S.supportedLocales,
-          home: BreadcrumbScope(
-            label: 'Settings',
-            child: DatabaseScreen(),
-          ),
+          home: DatabaseScreen(),
         ),
       );
     }

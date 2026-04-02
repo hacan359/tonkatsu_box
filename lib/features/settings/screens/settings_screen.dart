@@ -11,7 +11,6 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
-import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
 import '../../../core/services/update_service.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/inline_text_field.dart';
@@ -74,7 +73,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final bool isWide = width >= _desktopBreakpoint;
 
     return Scaffold(
-      appBar: const AutoBreadcrumbAppBar(),
+      appBar: AppBar(),
       body: Align(
         alignment: Alignment.topCenter,
         child: ConstrainedBox(

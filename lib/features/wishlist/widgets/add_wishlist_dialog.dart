@@ -6,8 +6,6 @@ import '../../../shared/models/media_type.dart';
 import '../../../shared/models/wishlist_item.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
-import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
-import '../../../shared/widgets/breadcrumb_scope.dart';
 import '../../../shared/widgets/markdown_toolbar.dart';
 
 // Экран-форма для добавления/редактирования элемента вишлиста.
@@ -50,14 +48,9 @@ class AddWishlistForm extends StatefulWidget {
     BuildContext context, {
     WishlistItem? existing,
   }) {
-    final S l = S.of(context);
-    final bool isEditing = existing != null;
     return Navigator.of(context).push<WishlistDialogResult>(
       MaterialPageRoute<WishlistDialogResult>(
-        builder: (BuildContext context) => BreadcrumbScope(
-          label: isEditing ? l.wishlistEditTitle : l.wishlistAddTitle,
-          child: AddWishlistForm(existing: existing),
-        ),
+        builder: (BuildContext context) => AddWishlistForm(existing: existing),
       ),
     );
   }
@@ -116,7 +109,7 @@ class _AddWishlistFormState extends State<AddWishlistForm> {
     final S l = S.of(context);
 
     return Scaffold(
-      appBar: AutoBreadcrumbAppBar(
+      appBar: AppBar(
         actions: <Widget>[
           TextButton(
             onPressed: _submit,

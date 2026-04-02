@@ -24,7 +24,6 @@ import '../../../shared/models/visual_novel.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
-import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
 import '../../../shared/widgets/collection_picker_dialog.dart';
 import '../../../shared/widgets/type_to_filter_overlay.dart';
 import '../../collections/providers/collections_provider.dart';
@@ -1285,7 +1284,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
     return Scaffold(
       resizeToAvoidBottomInset: !isLandscape,
-      appBar: AutoBreadcrumbAppBar(
+      appBar: AppBar(
         actions: <Widget>[
           if (showDiscoverCustomize)
             IconButton(

@@ -230,13 +230,6 @@ void main() {
         expect(find.byIcon(Icons.link), findsOneWidget);
       });
 
-      testWidgets('показывает breadcrumb Add',
-          (WidgetTester tester) async {
-        await pumpForm(tester);
-
-        // Breadcrumb "Add" от BreadcrumbScope.
-        expect(find.text('Add'), findsWidgets);
-      });
     });
 
     group('режим редактирования', () {
@@ -282,12 +275,6 @@ void main() {
         expect(gameChip.selected, true);
       });
 
-      testWidgets('показывает breadcrumb Edit',
-          (WidgetTester tester) async {
-        await pumpForm(tester, existing: existing);
-
-        expect(find.text('Edit'), findsWidgets);
-      });
     });
   });
 }

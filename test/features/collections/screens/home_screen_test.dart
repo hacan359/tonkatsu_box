@@ -14,7 +14,6 @@ import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/models/collection.dart';
 import 'package:xerabora/shared/models/cover_info.dart';
-import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 import 'package:xerabora/shared/widgets/shimmer_loading.dart';
 
 import '../../../helpers/test_helpers.dart';
@@ -61,22 +60,10 @@ void main() {
         child: const MaterialApp(
           localizationsDelegates: S.localizationsDelegates,
           supportedLocales: S.supportedLocales,
-          home: BreadcrumbScope(
-            label: 'Collections',
-            child: HomeScreen(),
-          ),
+          home: HomeScreen(),
         ),
       );
     }
-
-    testWidgets('должен показывать заголовок Collections',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pump();
-      await tester.pump();
-
-      expect(find.text('Collections'), findsOneWidget);
-    });
 
     testWidgets('должен показывать кнопку New Collection в AppBar',
         (WidgetTester tester) async {
@@ -104,10 +91,7 @@ void main() {
         child: const MaterialApp(
           localizationsDelegates: S.localizationsDelegates,
           supportedLocales: S.supportedLocales,
-          home: BreadcrumbScope(
-            label: 'Collections',
-            child: HomeScreen(),
-          ),
+          home: HomeScreen(),
         ),
       ));
       await tester.pump();

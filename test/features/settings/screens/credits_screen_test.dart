@@ -4,20 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/settings/screens/credits_screen.dart';
 import 'package:xerabora/l10n/app_localizations.dart';
-import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 
 void main() {
   Widget createWidget() {
     return const MaterialApp(
       localizationsDelegates: S.localizationsDelegates,
       supportedLocales: S.supportedLocales,
-      home: BreadcrumbScope(
-        label: 'Settings',
-        child: BreadcrumbScope(
-          label: 'Credits',
-          child: CreditsScreen(),
-        ),
-      ),
+      home: CreditsScreen(),
     );
   }
 
