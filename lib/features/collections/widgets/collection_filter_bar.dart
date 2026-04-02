@@ -5,8 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/repositories/collection_repository.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/constants/media_type_theme.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/collection_sort_mode.dart';
+import '../../../shared/models/collection_tag.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/platform.dart';
 import '../../../shared/theme/app_colors.dart';
@@ -16,86 +19,109 @@ import '../providers/collections_provider.dart';
 
 /// Панель фильтров, поиска и сортировки для CollectionScreen.
 ///
-/// Состоит из строки фильтров (тип медиа, поиск, сортировка, grid/list toggle)
-/// и опциональной строки чипсов платформ (при фильтре Games).
-class CollectionFilterBar extends ConsumerWidget {
+/// Desktop: верхняя строка (поиск, сорт, view, кнопка фильтров) +
+/// раскрывающаяся панель (type, platforms, tags).
+/// Mobile: верхняя строка + горизонтальные чипсы активных фильтров.
+class CollectionFilterBar extends ConsumerStatefulWidget {
   /// Создаёт [CollectionFilterBar].
   const CollectionFilterBar({
     required this.collectionId,
     required this.statsAsync,
     required this.itemsAsync,
-    required this.filterType,
-    required this.filterPlatformId,
+    required this.filterTypes,
+    required this.filterPlatformIds,
+    required this.filterTagIds,
+    required this.tags,
     required this.searchController,
     required this.searchQuery,
-    required this.isGridMode,
-    this.isTableMode = false,
-    required this.onFilterTypeChanged,
-    required this.onPlatformFilterChanged,
-    required this.onGridModeChanged,
+    required this.onTypeToggled,
+    required this.onPlatformToggled,
+    required this.onTagToggled,
     super.key,
   });
 
-  /// ID коллекции.
   final int? collectionId;
-
-  /// Статистика коллекции.
   final AsyncValue<CollectionStats> statsAsync;
-
-  /// Элементы коллекции (для платформенных чипсов).
   final AsyncValue<List<CollectionItem>> itemsAsync;
-
-  /// Текущий фильтр по типу медиа.
-  final MediaType? filterType;
-
-  /// Текущий фильтр по платформе.
-  final int? filterPlatformId;
-
-  /// Контроллер поиска.
+  final Set<MediaType> filterTypes;
+  final Set<int> filterPlatformIds;
+  final Set<int> filterTagIds;
+  final List<CollectionTag> tags;
   final TextEditingController searchController;
-
-  /// Текущий текст поиска.
   final String searchQuery;
-
-  /// Режим отображения (grid/list).
-  final bool isGridMode;
-
-  /// Режим таблицы.
-  final bool isTableMode;
-
-  /// Callback изменения фильтра по типу.
-  final ValueChanged<MediaType?> onFilterTypeChanged;
-
-  /// Callback изменения фильтра по платформе.
-  final ValueChanged<int?> onPlatformFilterChanged;
-
-  /// Callback переключения grid/list/table.
-  final VoidCallback onGridModeChanged;
-
-  /// Ключ для "All" фильтра (без типа медиа).
-  static const String _filterAllKey = 'all';
-
-  /// Высота компактных элементов FilterRow.
-  static const double _filterRowHeight = 32;
+  final ValueChanged<MediaType?> onTypeToggled;
+  final ValueChanged<int?> onPlatformToggled;
+  final ValueChanged<int?> onTagToggled;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CollectionFilterBar> createState() =>
+      _CollectionFilterBarState();
+}
+
+class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
+  bool _filtersExpanded = false;
+
+  int get _activeFilterCount {
+    return widget.filterTypes.length +
+        widget.filterPlatformIds.length +
+        widget.filterTagIds.length;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final S l = S.of(context);
+    final CollectionStats? stats = widget.statsAsync.valueOrNull;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        _buildFilterRow(context, ref),
-        if (filterType == MediaType.game)
-          _buildPlatformChipsRow(context),
+        // Строка 1 — type chips (как на Main)
+        _buildTypeChipsRow(l, stats),
+        // Строка 2 — поиск, сорт
+        _buildMainRow(context),
+        // Разделитель-стрелка для раскрытия фильтров
+        if (!kIsMobile) _buildExpandArrow(),
+        // Строка 3 — доп. фильтры
+        if (kIsMobile)
+          _buildMobileChips(context)
+        else
+          _buildDesktopFilterPanel(context),
       ],
     );
   }
 
-  Widget _buildFilterRow(BuildContext context, WidgetRef ref) {
-    final CollectionStats? stats = statsAsync.valueOrNull;
+  Widget _buildTypeChipsRow(S l, CollectionStats? stats) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.sm, AppSpacing.xs, AppSpacing.sm, AppSpacing.sm,
+      ),
+      child: Center(
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              _buildTypeChip(null, l.collectionFilterAll, stats?.total),
+              for (final _TypeEntry e in _typeEntries(l, stats)) ...<Widget>[
+                const SizedBox(width: AppSpacing.xs),
+                _buildTypeChip(e.type, e.label, e.count),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // Строка 1 — всегда видна
+  // ===========================================================================
+
+  Widget _buildMainRow(BuildContext context) {
     final CollectionSortMode currentSort =
-        ref.watch(collectionSortProvider(collectionId));
+        ref.watch(collectionSortProvider(widget.collectionId));
     final bool isDescending =
-        ref.watch(collectionSortDescProvider(collectionId));
+        ref.watch(collectionSortDescProvider(widget.collectionId));
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -104,189 +130,60 @@ class CollectionFilterBar extends ConsumerWidget {
       ),
       child: Row(
         children: <Widget>[
-          // Фильтр по типу медиа
-          _buildMediaTypeDropdown(context, stats),
-
-          const SizedBox(width: AppSpacing.xs),
-
           // Поиск
-          Expanded(child: _buildCompactSearch(context)),
-
+          Expanded(child: _buildSearch(context)),
           const SizedBox(width: AppSpacing.xs),
 
           // Сортировка
-          _buildSortDropdown(context, ref, currentSort, isDescending),
-
-          const SizedBox(width: AppSpacing.xs),
-
-          // Grid ⇄ List
-          _buildViewToggle(context),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMediaTypeDropdown(BuildContext context, CollectionStats? stats) {
-    final S l = S.of(context);
-    String label;
-    if (filterType == null) {
-      label = l.collectionFilterAll;
-    } else {
-      final int? count = switch (filterType!) {
-        MediaType.game => stats?.gameCount,
-        MediaType.movie => stats?.movieCount,
-        MediaType.tvShow => stats?.tvShowCount,
-        MediaType.animation => stats?.animationCount,
-        MediaType.visualNovel => stats?.visualNovelCount,
-        MediaType.manga => stats?.mangaCount,
-        MediaType.custom => stats?.customCount,
-      };
-      label = '${filterType!.localizedLabel(l)}${count != null ? ' ($count)' : ''}';
-    }
-
-    return PopupMenuButton<String>(
-      tooltip: l.collectionFilterByType,
-      onSelected: (String value) {
-        onFilterTypeChanged(
-          value == _filterAllKey ? null : MediaType.fromString(value),
-        );
-      },
-      constraints: const BoxConstraints(),
-      padding: EdgeInsets.zero,
-      position: PopupMenuPosition.under,
-      child: Container(
-        height: _filterRowHeight,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        decoration: BoxDecoration(
-          color: filterType != null
-              ? AppColors.brand.withAlpha(30)
-              : AppColors.surfaceLight,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          border: filterType != null
-              ? Border.all(color: AppColors.brand.withAlpha(100))
-              : null,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Icon(
-              Icons.filter_list,
-              size: 16,
-              color: filterType != null
-                  ? AppColors.brand
-                  : AppColors.textSecondary,
-            ),
-            const SizedBox(width: 4),
-            Text(
-              label,
-              style: AppTypography.bodySmall.copyWith(
-                color: filterType != null
-                    ? AppColors.brand
-                    : AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(width: 2),
-            Icon(
-              Icons.arrow_drop_down,
-              size: 16,
-              color: filterType != null
-                  ? AppColors.brand
-                  : AppColors.textSecondary,
-            ),
+          _buildSortButton(context, currentSort, isDescending),
+          // Mobile: кнопка фильтров
+          if (kIsMobile) ...<Widget>[
+            const SizedBox(width: AppSpacing.xs),
+            _buildFilterToggle(context),
           ],
-        ),
-      ),
-      itemBuilder: (BuildContext context) {
-        final S ml = S.of(context);
-        return <PopupMenuEntry<String>>[
-          _buildMediaTypeMenuItem(_filterAllKey, ml.collectionFilterAll, stats?.total),
-          _buildMediaTypeMenuItem(
-              MediaType.game.value, ml.collectionFilterGames, stats?.gameCount),
-          _buildMediaTypeMenuItem(
-              MediaType.movie.value, ml.collectionFilterMovies, stats?.movieCount),
-          _buildMediaTypeMenuItem(
-              MediaType.tvShow.value, ml.collectionFilterTvShows, stats?.tvShowCount),
-          _buildMediaTypeMenuItem(
-              MediaType.animation.value, ml.collectionFilterAnimation, stats?.animationCount),
-          _buildMediaTypeMenuItem(
-              MediaType.visualNovel.value, ml.collectionFilterVisualNovels, stats?.visualNovelCount),
-          _buildMediaTypeMenuItem(
-              MediaType.manga.value, ml.collectionFilterManga, stats?.mangaCount),
-          _buildMediaTypeMenuItem(
-              MediaType.custom.value, ml.collectionFilterCustom, stats?.customCount),
-        ];
-      },
-    );
-  }
-
-  PopupMenuItem<String> _buildMediaTypeMenuItem(
-    String value,
-    String label,
-    int? count,
-  ) {
-    final bool selected = (value == _filterAllKey && filterType == null) ||
-        (filterType != null && filterType!.value == value);
-    final String displayLabel =
-        count != null && count > 0 ? '$label ($count)' : label;
-    return PopupMenuItem<String>(
-      value: value,
-      child: Row(
-        children: <Widget>[
-          if (selected)
-            const Icon(Icons.check, size: 18, color: AppColors.brand)
-          else
-            const SizedBox(width: 18),
-          const SizedBox(width: AppSpacing.sm),
-          Text(displayLabel),
         ],
       ),
     );
   }
 
-  Widget _buildCompactSearch(BuildContext context) {
+  Widget _buildSearch(BuildContext context) {
     return SizedBox(
-      height: _filterRowHeight,
+      height: 32,
       child: TextField(
-        controller: searchController,
-        style: AppTypography.bodySmall.copyWith(
-          color: AppColors.textPrimary,
-        ),
+        controller: widget.searchController,
+        style: AppTypography.bodySmall.copyWith(color: AppColors.textPrimary),
         decoration: InputDecoration(
-          hintText: 'Search...',
-          hintStyle: AppTypography.bodySmall.copyWith(
-            color: AppColors.textTertiary,
-          ),
-          prefixIcon: const Icon(
-            Icons.search,
-            size: 16,
-            color: AppColors.textTertiary,
-          ),
-          prefixIconConstraints: const BoxConstraints(
-            minWidth: 32,
-            minHeight: 32,
-          ),
-          suffixIcon: searchQuery.isNotEmpty
+          hintText: S.of(context).collectionFilterSearchHint,
+          hintStyle:
+              AppTypography.bodySmall.copyWith(color: AppColors.textTertiary),
+          prefixIcon: const Icon(Icons.search, size: 16,
+              color: AppColors.textTertiary),
+          prefixIconConstraints:
+              const BoxConstraints(minWidth: 32, minHeight: 32),
+          suffixIcon: widget.searchQuery.isNotEmpty
               ? IconButton(
-                  icon: const Icon(
-                    Icons.close,
-                    size: 14,
-                    color: AppColors.textTertiary,
-                  ),
+                  icon: const Icon(Icons.close, size: 14,
+                      color: AppColors.textTertiary),
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(
-                    minWidth: 28,
-                    minHeight: 28,
-                  ),
-                  onPressed: () => searchController.clear(),
+                  constraints:
+                      const BoxConstraints(minWidth: 28, minHeight: 28),
+                  onPressed: () => widget.searchController.clear(),
                 )
               : null,
           filled: true,
           fillColor: AppColors.surfaceLight,
-          contentPadding: const EdgeInsets.symmetric(
-            vertical: AppSpacing.xs,
-          ),
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: AppSpacing.xs),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
             borderSide: BorderSide.none,
           ),
         ),
@@ -294,51 +191,33 @@ class CollectionFilterBar extends ConsumerWidget {
     );
   }
 
-  Widget _buildSortDropdown(
+  Widget _buildSortButton(
     BuildContext context,
-    WidgetRef ref,
     CollectionSortMode currentSort,
     bool isDescending,
   ) {
     return PopupMenuButton<String>(
-      tooltip: 'Sort',
+      tooltip: S.of(context).collectionFilterSort,
       onSelected: (String value) {
         if (value == 'toggle_direction') {
           ref
-              .read(collectionSortDescProvider(collectionId).notifier)
+              .read(collectionSortDescProvider(widget.collectionId).notifier)
               .toggle();
         } else {
-          final CollectionSortMode mode =
-              CollectionSortMode.fromString(value);
           ref
-              .read(collectionSortProvider(collectionId).notifier)
-              .setSortMode(mode);
+              .read(collectionSortProvider(widget.collectionId).notifier)
+              .setSortMode(CollectionSortMode.fromString(value));
         }
       },
       constraints: const BoxConstraints(),
       padding: EdgeInsets.zero,
       position: PopupMenuPosition.under,
-      child: Container(
-        height: _filterRowHeight,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceLight,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Text(
-              currentSort.localizedShortLabel(S.of(context)),
-              style: AppTypography.bodySmall,
-            ),
-            const SizedBox(width: 2),
-            Icon(
-              isDescending ? Icons.arrow_downward : Icons.arrow_upward,
-              size: 14,
-              color: AppColors.textSecondary,
-            ),
-          ],
+      child: _buildBarChip(
+        label: currentSort.localizedShortLabel(S.of(context)),
+        trailing: Icon(
+          isDescending ? Icons.arrow_downward : Icons.arrow_upward,
+          size: 14,
+          color: AppColors.textSecondary,
         ),
       ),
       itemBuilder: (BuildContext context) {
@@ -350,11 +229,7 @@ class CollectionFilterBar extends ConsumerWidget {
               child: Row(
                 children: <Widget>[
                   if (mode == currentSort)
-                    const Icon(
-                      Icons.check,
-                      size: 18,
-                      color: AppColors.brand,
-                    )
+                    const Icon(Icons.check, size: 18, color: AppColors.brand)
                   else
                     const SizedBox(width: 18),
                   const SizedBox(width: AppSpacing.sm),
@@ -363,10 +238,8 @@ class CollectionFilterBar extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
                       Text(mode.localizedDisplayLabel(sl)),
-                      Text(
-                        mode.localizedDescription(sl),
-                        style: AppTypography.caption,
-                      ),
+                      Text(mode.localizedDescription(sl),
+                          style: AppTypography.caption),
                     ],
                   ),
                 ],
@@ -384,7 +257,9 @@ class CollectionFilterBar extends ConsumerWidget {
                   color: AppColors.textSecondary,
                 ),
                 const SizedBox(width: AppSpacing.sm),
-                Text(isDescending ? 'Descending' : 'Ascending'),
+                Text(isDescending
+                    ? S.of(context).collectionFilterDescending
+                    : S.of(context).collectionFilterAscending),
               ],
             ),
           ),
@@ -393,56 +268,229 @@ class CollectionFilterBar extends ConsumerWidget {
     );
   }
 
-  Widget _buildViewToggle(BuildContext context) {
+  Widget _buildFilterToggle(BuildContext context) {
+    final int count = _activeFilterCount;
+
     return SizedBox(
-      width: _filterRowHeight,
-      height: _filterRowHeight,
-      child: IconButton(
-        icon: Icon(
-          isTableMode ? Icons.grid_view : Icons.table_chart_outlined,
-          size: 18,
-          color: AppColors.textSecondary,
-        ),
-        tooltip: isTableMode
-            ? S.of(context).collectionListViewGrid
-            : S.of(context).collectionListViewTable,
-        padding: EdgeInsets.zero,
-        constraints: const BoxConstraints(),
-        visualDensity: VisualDensity.compact,
-        onPressed: onGridModeChanged,
+      width: 32,
+      height: 32,
+      child: Stack(
+        children: <Widget>[
+          IconButton(
+            icon: Icon(
+              _filtersExpanded
+                  ? Icons.filter_list_off
+                  : Icons.tune_rounded,
+              size: 18,
+              color: count > 0 ? AppColors.brand : AppColors.textSecondary,
+            ),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            visualDensity: VisualDensity.compact,
+            onPressed: () {
+              if (kIsMobile) {
+                _showMobileFilterSheet(context);
+              } else {
+                setState(() => _filtersExpanded = !_filtersExpanded);
+              }
+            },
+          ),
+          if (count > 0)
+            Positioned(
+              top: 0,
+              right: 0,
+              child: Container(
+                width: 14,
+                height: 14,
+                decoration: const BoxDecoration(
+                  color: AppColors.brand,
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Text(
+                    count.toString(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 8,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
 
-  Widget _buildPlatformChipsRow(BuildContext context) {
-    final List<CollectionItem>? items = itemsAsync.valueOrNull;
-    if (items == null) return const SizedBox.shrink();
+  // ===========================================================================
+  Widget _buildExpandArrow() {
+    final bool hasFilters =
+        _extractPlatforms().isNotEmpty || widget.tags.isNotEmpty;
+    if (!hasFilters) return const SizedBox.shrink();
 
-    // Уникальные платформы из игр в этой коллекции
-    final Map<int, Platform> platformMap = <int, Platform>{};
-    for (final CollectionItem item in items) {
-      if (item.mediaType == MediaType.game &&
-          item.platformId != null &&
-          item.platformId != -1 &&
-          item.platform != null) {
-        platformMap[item.platformId!] = item.platform!;
+    return GestureDetector(
+      onTap: () => setState(() => _filtersExpanded = !_filtersExpanded),
+      behavior: HitTestBehavior.opaque,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: SizedBox(
+          width: double.infinity,
+          height: 16,
+          child: Center(
+            child: AnimatedRotation(
+              turns: _filtersExpanded ? 0.5 : 0,
+              duration: const Duration(milliseconds: 200),
+              child: Icon(
+                Icons.keyboard_arrow_down_rounded,
+                size: 18,
+                color: _activeFilterCount > 0
+                    ? AppColors.brand
+                    : AppColors.textTertiary,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // Desktop — раскрывающаяся панель фильтров
+  // ===========================================================================
+
+  Widget _buildDesktopFilterPanel(BuildContext context) {
+    return AnimatedCrossFade(
+      duration: const Duration(milliseconds: 200),
+      crossFadeState: _filtersExpanded
+          ? CrossFadeState.showSecond
+          : CrossFadeState.showFirst,
+      firstChild: const SizedBox(width: double.infinity, height: 0),
+      secondChild: _buildFilterPanelContent(context),
+    );
+  }
+
+  Widget _buildFilterPanelContent(BuildContext context) {
+    final S l = S.of(context);
+    final List<Platform> platforms = _extractPlatforms();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.sm, 0, AppSpacing.sm, AppSpacing.sm,
+      ),
+      child: Column(
+        children: <Widget>[
+          // Platform chips
+          if (platforms.isNotEmpty) ...<Widget>[
+            const SizedBox(height: AppSpacing.xs),
+            Center(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    _buildPlatformChip(null, l.collectionFilterAll),
+                    for (final Platform p in platforms) ...<Widget>[
+                      const SizedBox(width: AppSpacing.xs),
+                      _buildPlatformChip(p.id, p.displayName, color: p.familyColor),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ],
+
+          // Tag chips
+          if (widget.tags.isNotEmpty) ...<Widget>[
+            const SizedBox(height: AppSpacing.xs),
+            Center(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    _buildTagChipAll(),
+                    for (final CollectionTag tag in widget.tags) ...<Widget>[
+                      const SizedBox(width: AppSpacing.xs),
+                      _buildTagChip(tag),
+                    ],
+                    // Clear all
+                    if (_activeFilterCount > 0) ...<Widget>[
+                      const SizedBox(width: AppSpacing.md),
+                      _buildClearButton(),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ],
+
+          // Clear (если нет тегов, но есть фильтры)
+          if (widget.tags.isEmpty && _activeFilterCount > 0) ...<Widget>[
+            const SizedBox(height: AppSpacing.xs),
+            _buildClearButton(),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // Mobile — чипсы активных фильтров
+  // ===========================================================================
+
+  Widget _buildMobileChips(BuildContext context) {
+    final List<Widget> chips = <Widget>[];
+    final S l = S.of(context);
+
+    // Active type filters
+    for (final MediaType type in widget.filterTypes) {
+      chips.add(_buildActiveChip(
+        label: type.localizedLabel(l),
+        color: MediaTypeTheme.colorFor(type),
+        onRemove: () => widget.onTypeToggled(type),
+      ));
+    }
+
+    // Active platform filters
+    for (final int platformId in widget.filterPlatformIds) {
+      final String platformName = _findPlatformName(platformId);
+      chips.add(_buildActiveChip(
+        label: platformName,
+        color: AppColors.brand,
+        onRemove: () => widget.onPlatformToggled(platformId),
+      ));
+    }
+
+    // Active tag filters
+    for (final int tagId in widget.filterTagIds) {
+      final CollectionTag? tag =
+          widget.tags.where((CollectionTag t) => t.id == tagId).firstOrNull;
+      if (tag != null) {
+        final Color tagColor =
+            tag.color != null ? Color(tag.color!) : AppColors.textSecondary;
+        chips.add(_buildActiveChip(
+          label: tag.name,
+          color: tagColor,
+          onRemove: () => widget.onTagToggled(tagId),
+        ));
       }
     }
-    if (platformMap.isEmpty) return const SizedBox.shrink();
 
-    final List<Platform> platforms = platformMap.values.toList()
-      ..sort((Platform a, Platform b) => a.name.compareTo(b.name));
+    if (chips.isEmpty) return const SizedBox.shrink();
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.sm, 0, AppSpacing.sm, AppSpacing.xs,
+      ),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
           children: <Widget>[
-            _buildPlatformChip(null, S.of(context).collectionFilterAll),
-            for (final Platform platform in platforms) ...<Widget>[
-              const SizedBox(width: AppSpacing.xs),
-              _buildPlatformChip(platform.id, platform.displayName),
+            for (int i = 0; i < chips.length; i++) ...<Widget>[
+              if (i > 0) const SizedBox(width: AppSpacing.xs),
+              chips[i],
             ],
           ],
         ),
@@ -450,15 +498,232 @@ class CollectionFilterBar extends ConsumerWidget {
     );
   }
 
-  Widget _buildPlatformChip(int? platformId, String label) {
-    final bool selected = filterPlatformId == platformId;
-    const Color accentColor = AppColors.brand;
+  Widget _buildActiveChip({
+    required String label,
+    required Color color,
+    required VoidCallback onRemove,
+  }) {
+    return Container(
+      height: 28,
+      padding: const EdgeInsets.only(left: 10, right: 4),
+      decoration: BoxDecoration(
+        color: color.withAlpha(25),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withAlpha(80)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Text(
+            label,
+            style: AppTypography.bodySmall.copyWith(
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(width: 2),
+          GestureDetector(
+            onTap: onRemove,
+            child: Icon(Icons.close_rounded, size: 14, color: color),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showMobileFilterSheet(BuildContext context) {
+    final S l = S.of(context);
+    final List<Platform> platforms = _extractPlatforms();
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (BuildContext ctx) {
+        // Локальные копии для live-обновления внутри sheet
+        Set<int> sheetPlatforms = Set<int>.from(widget.filterPlatformIds);
+        Set<int> sheetTags = Set<int>.from(widget.filterTagIds);
+
+        return StatefulBuilder(
+          builder: (BuildContext ctx, StateSetter setSheetState) {
+            void togglePlatform(int? id) {
+              setSheetState(() {
+                if (id == null) {
+                  sheetPlatforms = <int>{};
+                } else if (sheetPlatforms.contains(id)) {
+                  sheetPlatforms = Set<int>.from(sheetPlatforms)..remove(id);
+                } else {
+                  sheetPlatforms = Set<int>.from(sheetPlatforms)..add(id);
+                }
+              });
+              widget.onPlatformToggled(id);
+            }
+
+            void toggleTag(int? tagId) {
+              setSheetState(() {
+                if (tagId == null) {
+                  sheetTags = <int>{};
+                } else if (sheetTags.contains(tagId)) {
+                  sheetTags = Set<int>.from(sheetTags)..remove(tagId);
+                } else {
+                  sheetTags = Set<int>.from(sheetTags)..add(tagId);
+                }
+              });
+              widget.onTagToggled(tagId);
+            }
+
+            Widget sheetPlatformChip(int? id, String label, {Color? color}) {
+              final bool selected = id == null
+                  ? sheetPlatforms.isEmpty
+                  : sheetPlatforms.contains(id);
+              final Color accentColor = color ?? AppColors.textPrimary;
+              return ChoiceChip(
+                label: Text(label, style: AppTypography.caption.copyWith(
+                  color: selected ? AppColors.background : accentColor,
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                )),
+                selected: selected,
+                selectedColor: accentColor,
+                backgroundColor: AppColors.surface,
+                side: BorderSide(color: selected ? Colors.transparent : accentColor.withAlpha(50)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                visualDensity: VisualDensity.compact,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                onSelected: (_) => togglePlatform(id),
+              );
+            }
+
+            Widget sheetTagChip(CollectionTag tag) {
+              final bool selected = sheetTags.contains(tag.id);
+              final Color tagColor = tag.color != null ? Color(tag.color!) : AppColors.textSecondary;
+              return ChoiceChip(
+                label: Text(tag.name, style: AppTypography.caption.copyWith(
+                  color: selected ? AppColors.background : tagColor,
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                )),
+                selected: selected,
+                selectedColor: tagColor,
+                backgroundColor: AppColors.surface,
+                side: BorderSide(color: selected ? Colors.transparent : tagColor.withAlpha(60)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                visualDensity: VisualDensity.compact,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                onSelected: (_) => toggleTag(tag.id),
+              );
+            }
+
+            Widget sheetTagAll() {
+              final bool selected = sheetTags.isEmpty;
+              return ChoiceChip(
+                label: Text(l.tagSidebarAll, style: AppTypography.caption.copyWith(
+                  color: selected ? AppColors.background : AppColors.textTertiary,
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                )),
+                selected: selected,
+                selectedColor: AppColors.textPrimary,
+                backgroundColor: AppColors.surface,
+                side: BorderSide(color: selected ? Colors.transparent : AppColors.surfaceBorder),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                visualDensity: VisualDensity.compact,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+                onSelected: (_) => toggleTag(null),
+              );
+            }
+
+            final int activeCount = sheetPlatforms.length + sheetTags.length;
+
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Text(l.collectionFilterFilters, style: AppTypography.h3
+                          .copyWith(color: AppColors.textPrimary)),
+                      if (activeCount > 0)
+                        TextButton(
+                          onPressed: () {
+                            widget.onTypeToggled(null);
+                            togglePlatform(null);
+                            toggleTag(null);
+                          },
+                          child: Text(l.collectionFilterClearAll),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+
+                  if (platforms.isNotEmpty) ...<Widget>[
+                    const SizedBox(height: AppSpacing.md),
+                    Text(l.collectionFilterPlatform, style: AppTypography.bodySmall
+                        .copyWith(color: AppColors.textTertiary)),
+                    const SizedBox(height: AppSpacing.xs),
+                    Wrap(
+                      spacing: AppSpacing.xs,
+                      runSpacing: AppSpacing.xs,
+                      children: <Widget>[
+                        sheetPlatformChip(null, l.collectionFilterAll),
+                        for (final Platform p in platforms)
+                          sheetPlatformChip(p.id, p.displayName, color: p.familyColor),
+                      ],
+                    ),
+                  ],
+
+                  if (widget.tags.isNotEmpty) ...<Widget>[
+                    const SizedBox(height: AppSpacing.md),
+                    Text(l.tagsLabel, style: AppTypography.bodySmall
+                        .copyWith(color: AppColors.textTertiary)),
+                    const SizedBox(height: AppSpacing.xs),
+                    Wrap(
+                      spacing: AppSpacing.xs,
+                      runSpacing: AppSpacing.xs,
+                      children: <Widget>[
+                        sheetTagAll(),
+                        for (final CollectionTag tag in widget.tags)
+                          sheetTagChip(tag),
+                      ],
+                    ),
+                  ],
+
+                  const SizedBox(height: AppSpacing.md),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // ===========================================================================
+  // Shared chips
+  // ===========================================================================
+
+  Widget _buildTypeChip(MediaType? type, String label, int? count) {
+    // null = "All" chip, selected when no filters active
+    final bool selected = type == null
+        ? widget.filterTypes.isEmpty
+        : widget.filterTypes.contains(type);
+    final Color accentColor = type != null
+        ? MediaTypeTheme.colorFor(type)
+        : AppColors.textPrimary;
+
+    final String displayLabel =
+        count != null && count > 0 ? '$label ($count)' : label;
 
     return ChoiceChip(
       label: Text(
-        label,
-        style: AppTypography.caption.copyWith(
-          color: selected ? AppColors.background : AppColors.textTertiary,
+        displayLabel,
+        style: AppTypography.bodySmall.copyWith(
+          color: selected ? AppColors.background : accentColor,
           fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
         ),
       ),
@@ -466,9 +731,38 @@ class CollectionFilterBar extends ConsumerWidget {
       selectedColor: accentColor,
       backgroundColor: AppColors.surface,
       side: BorderSide(
-        color: selected
-            ? Colors.transparent
-            : accentColor.withAlpha(50),
+        color: selected ? Colors.transparent : accentColor.withAlpha(80),
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      visualDensity: VisualDensity.compact,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      onSelected: (bool value) {
+        widget.onTypeToggled(type); // null = clear all types
+      },
+    );
+  }
+
+  Widget _buildPlatformChip(int? platformId, String label, {Color? color}) {
+    final bool selected = platformId == null
+        ? widget.filterPlatformIds.isEmpty
+        : widget.filterPlatformIds.contains(platformId);
+    final Color accentColor = color ?? AppColors.textPrimary;
+
+    return ChoiceChip(
+      label: Text(
+        label,
+        style: AppTypography.caption.copyWith(
+          color: selected ? AppColors.background : accentColor,
+          fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+        ),
+      ),
+      selected: selected,
+      selectedColor: accentColor,
+      backgroundColor: AppColors.surface,
+      side: BorderSide(
+        color: selected ? Colors.transparent : accentColor.withAlpha(50),
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
@@ -477,9 +771,171 @@ class CollectionFilterBar extends ConsumerWidget {
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
       onSelected: (bool value) {
-        onPlatformFilterChanged(value ? platformId : null);
+        widget.onPlatformToggled(platformId); // null = clear all
       },
     );
   }
 
+  Widget _buildTagChipAll() {
+    final bool selected = widget.filterTagIds.isEmpty;
+    return ChoiceChip(
+      label: Text(
+        S.of(context).tagSidebarAll,
+        style: AppTypography.caption.copyWith(
+          color: selected ? AppColors.background : AppColors.textTertiary,
+          fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+        ),
+      ),
+      selected: selected,
+      selectedColor: AppColors.textPrimary,
+      backgroundColor: AppColors.surface,
+      side: BorderSide(
+        color: selected ? Colors.transparent : AppColors.surfaceBorder,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      visualDensity: VisualDensity.compact,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+      onSelected: (bool value) {
+        if (value) widget.onTagToggled(null); // clear all tag filters
+      },
+    );
+  }
+
+  Widget _buildTagChip(CollectionTag tag) {
+    final bool selected = widget.filterTagIds.contains(tag.id);
+    final Color tagColor =
+        tag.color != null ? Color(tag.color!) : AppColors.textSecondary;
+
+    return ChoiceChip(
+      label: Text(
+        tag.name,
+        style: AppTypography.caption.copyWith(
+          color: selected ? AppColors.background : tagColor,
+          fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+        ),
+      ),
+      selected: selected,
+      selectedColor: tagColor,
+      backgroundColor: AppColors.surface,
+      side: BorderSide(
+        color: selected ? Colors.transparent : tagColor.withAlpha(60),
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      visualDensity: VisualDensity.compact,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+      onSelected: (bool value) {
+        widget.onTagToggled(tag.id);
+      },
+    );
+  }
+
+  Widget _buildClearButton() {
+    return GestureDetector(
+      onTap: () {
+        widget.onTypeToggled(null);
+        widget.onPlatformToggled(null);
+        widget.onTagToggled(null);
+      },
+      child: Container(
+        height: 28,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.surfaceBorder),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            const Icon(Icons.close_rounded, size: 14,
+                color: AppColors.textTertiary),
+            const SizedBox(width: 4),
+            Text(
+              S.of(context).clear,
+              style: AppTypography.bodySmall
+                  .copyWith(color: AppColors.textTertiary),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // Helpers
+  // ===========================================================================
+
+  Widget _buildBarChip({required String label, Widget? trailing}) {
+    return Container(
+      height: 32,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceLight,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Text(label, style: AppTypography.bodySmall),
+          if (trailing != null) ...<Widget>[
+            const SizedBox(width: 2),
+            trailing,
+          ],
+        ],
+      ),
+    );
+  }
+
+  List<Platform> _extractPlatforms() {
+    final List<CollectionItem>? items = widget.itemsAsync.valueOrNull;
+    if (items == null) return <Platform>[];
+
+    final Map<int, Platform> map = <int, Platform>{};
+    for (final CollectionItem item in items) {
+      if (item.mediaType == MediaType.game &&
+          item.platformId != null &&
+          item.platformId != -1 &&
+          item.platform != null) {
+        map[item.platformId!] = item.platform!;
+      }
+    }
+    return map.values.toList()
+      ..sort((Platform a, Platform b) => a.name.compareTo(b.name));
+  }
+
+  String _findPlatformName(int platformId) {
+    final List<CollectionItem>? items = widget.itemsAsync.valueOrNull;
+    if (items == null) return '';
+    for (final CollectionItem item in items) {
+      if (item.platformId == platformId && item.platform != null) {
+        return item.platform!.displayName;
+      }
+    }
+    return '';
+  }
+
+  List<_TypeEntry> _typeEntries(S l, CollectionStats? stats) {
+    return <_TypeEntry>[
+      _TypeEntry(MediaType.game, l.collectionFilterGames, stats?.gameCount),
+      _TypeEntry(MediaType.movie, l.collectionFilterMovies, stats?.movieCount),
+      _TypeEntry(MediaType.tvShow, l.collectionFilterTvShows, stats?.tvShowCount),
+      _TypeEntry(MediaType.animation, l.collectionFilterAnimation, stats?.animationCount),
+      _TypeEntry(MediaType.visualNovel, l.collectionFilterVisualNovels, stats?.visualNovelCount),
+      _TypeEntry(MediaType.manga, l.collectionFilterManga, stats?.mangaCount),
+      _TypeEntry(MediaType.custom, l.collectionFilterCustom, stats?.customCount),
+    ];
+  }
+
+}
+
+class _TypeEntry {
+  const _TypeEntry(this.type, this.label, this.count);
+  final MediaType type;
+  final String label;
+  final int? count;
 }

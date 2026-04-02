@@ -482,6 +482,13 @@
   "collectionFilterVisualNovels": "Visual Novels",
   "collectionFilterManga": "Manga",
   "collectionFilterCustom": "Custom",
+  "collectionFilterSearchHint": "Search...",
+  "collectionFilterSort": "Sort",
+  "collectionFilterAscending": "Ascending",
+  "collectionFilterDescending": "Descending",
+  "collectionFilterFilters": "Filters",
+  "collectionFilterClearAll": "Clear all",
+  "collectionFilterPlatform": "Platform",
 
   "collectionItemMovedTo": "{name} moved to {collection}",
   "@collectionItemMovedTo": {

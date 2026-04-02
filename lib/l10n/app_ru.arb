@@ -420,6 +420,13 @@
   "collectionFilterVisualNovels": "Визуальные новеллы",
   "collectionFilterManga": "Манга",
   "collectionFilterCustom": "Своё",
+  "collectionFilterSearchHint": "Поиск...",
+  "collectionFilterSort": "Сортировка",
+  "collectionFilterAscending": "По возрастанию",
+  "collectionFilterDescending": "По убыванию",
+  "collectionFilterFilters": "Фильтры",
+  "collectionFilterClearAll": "Сбросить все",
+  "collectionFilterPlatform": "Платформа",
 
   "collectionItemMovedTo": "{name} перемещён в {collection}",
   "collectionItemAlreadyExists": "{name} уже есть в {collection}",

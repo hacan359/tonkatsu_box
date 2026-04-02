@@ -190,6 +190,8 @@ class ItemTagsSection extends ConsumerWidget {
   Future<void> _setTag(WidgetRef ref, int? tagId) async {
     final TagDao dao = ref.read(tagDaoProvider);
     await dao.setItemTag(itemId, tagId);
-    ref.invalidate(collectionItemsNotifierProvider(collectionId));
+    ref
+        .read(collectionItemsNotifierProvider(collectionId).notifier)
+        .updateItemTag(itemId, tagId);
   }
 }

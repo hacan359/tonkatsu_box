@@ -2155,6 +2155,48 @@ abstract class S {
   /// **'Custom'**
   String get collectionFilterCustom;
 
+  /// No description provided for @collectionFilterSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search...'**
+  String get collectionFilterSearchHint;
+
+  /// No description provided for @collectionFilterSort.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort'**
+  String get collectionFilterSort;
+
+  /// No description provided for @collectionFilterAscending.
+  ///
+  /// In en, this message translates to:
+  /// **'Ascending'**
+  String get collectionFilterAscending;
+
+  /// No description provided for @collectionFilterDescending.
+  ///
+  /// In en, this message translates to:
+  /// **'Descending'**
+  String get collectionFilterDescending;
+
+  /// No description provided for @collectionFilterFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Filters'**
+  String get collectionFilterFilters;
+
+  /// No description provided for @collectionFilterClearAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all'**
+  String get collectionFilterClearAll;
+
+  /// No description provided for @collectionFilterPlatform.
+  ///
+  /// In en, this message translates to:
+  /// **'Platform'**
+  String get collectionFilterPlatform;
+
   /// No description provided for @collectionItemMovedTo.
   ///
   /// In en, this message translates to:

@@ -451,6 +451,21 @@ class CollectionItemsNotifier
     return applySortMode(items, sortMode, isDescending: isDescending);
   }
 
+  /// Обновляет тег элемента без полной перезагрузки списка.
+  void updateItemTag(int itemId, int? tagId) {
+    final List<CollectionItem>? items = state.valueOrNull;
+    if (items == null) return;
+
+    state = AsyncData<List<CollectionItem>>(
+      items.map((CollectionItem item) {
+        if (item.id == itemId) {
+          return item.copyWith(tagId: tagId, clearTagId: tagId == null);
+        }
+        return item;
+      }).toList(),
+    );
+  }
+
   /// Обновляет список элементов.
   Future<void> refresh() async {
     await _loadItems(_sortMode, isDescending: _isDescending);

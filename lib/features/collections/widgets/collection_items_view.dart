@@ -42,6 +42,7 @@ class CollectionItemsView extends ConsumerWidget {
     this.onItemRemove,
     this.onItemFocusChanged,
     this.tags = const <CollectionTag>[],
+    this.filterTagIds = const <int>{},
     super.key,
   });
 
@@ -77,6 +78,11 @@ class CollectionItemsView extends ConsumerWidget {
 
   /// Теги коллекции для группировки.
   final List<CollectionTag> tags;
+
+  /// Выбранные фильтры по тегам.
+  ///
+  /// Группировка с разделителями активна только когда не пусто.
+  final Set<int> filterTagIds;
 
   /// Максимальная ширина карточки на десктопе.
   static const double _desktopMaxCardWidth = 150;
@@ -118,8 +124,10 @@ class CollectionItemsView extends ConsumerWidget {
               ? (int itemId, int? tagId) async {
                   final TagDao dao = ref.read(tagDaoProvider);
                   await dao.setItemTag(itemId, tagId);
-                  ref.invalidate(
-                      collectionItemsNotifierProvider(collectionId));
+                  ref
+                      .read(collectionItemsNotifierProvider(collectionId)
+                          .notifier)
+                      .updateItemTag(itemId, tagId);
                 }
               : null,
         ),
@@ -183,7 +191,7 @@ class CollectionItemsView extends ConsumerWidget {
     return result;
   }
 
-  bool get _hasTagGroups => tags.isNotEmpty;
+  bool get _hasTagGroups => tags.isNotEmpty && filterTagIds.isNotEmpty;
 
   Widget _buildListView(BuildContext context, WidgetRef ref) {
     if (!_hasTagGroups) {
@@ -619,7 +627,7 @@ class CollectionItemsView extends ConsumerWidget {
     dao.setItemTag(item.id, tagId).then((_) {
       container
           .read(collectionItemsNotifierProvider(collectionId).notifier)
-          .refresh();
+          .updateItemTag(item.id, tagId);
     }).catchError((Object error) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

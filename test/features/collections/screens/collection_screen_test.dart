@@ -279,43 +279,23 @@ void main() {
       });
     });
 
-    group('фильтр по типу (dropdown)', () {
-      /// Открывает dropdown фильтра типа и выбирает пункт.
-      Future<void> selectMediaFilter(
+    group('фильтр по типу (chips)', () {
+      /// Тапает на чип типа медиа по тексту.
+      Future<void> selectMediaChip(
         WidgetTester tester,
-        String itemText,
+        String chipText,
       ) async {
-        // Тапаем по кнопке фильтра (содержит иконку filter_list)
-        await tester.tap(find.byTooltip('Filter by type'));
-        await tester.pumpAndSettle();
-        // Тапаем по пункту меню
-        await tester.tap(find.text(itemText).last);
+        await tester.tap(find.text(chipText).first);
         await pumpScreen(tester);
       }
 
-      testWidgets('должен показывать dropdown с All по умолчанию',
+      testWidgets('должен показывать type chips с All',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // Кнопка фильтра показывает "All"
-        expect(find.text('All'), findsOneWidget);
-      });
-
-      testWidgets('dropdown должен содержать все типы',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await pumpScreen(tester);
-
-        // Открываем dropdown
-        await tester.tap(find.byTooltip('Filter by type'));
-        await tester.pumpAndSettle();
-
+        expect(find.byType(ChoiceChip), findsWidgets);
         expect(find.text('All (5)'), findsOneWidget);
-        expect(find.text('Games (1)'), findsOneWidget);
-        expect(find.text('Movies (1)'), findsOneWidget);
-        expect(find.text('TV Shows (1)'), findsOneWidget);
-        expect(find.text('Animation (2)'), findsOneWidget);
       });
 
       testWidgets('Games фильтр должен показывать только игры',
@@ -323,7 +303,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        await selectMediaFilter(tester, 'Games (1)');
+        await selectMediaChip(tester, 'Games (1)');
 
         expect(find.text('Zelda'), findsOneWidget);
         expect(find.text('Inception'), findsNothing);
@@ -335,7 +315,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        await selectMediaFilter(tester, 'Movies (1)');
+        await selectMediaChip(tester, 'Movies (1)');
 
         expect(find.text('Zelda'), findsNothing);
         expect(find.text('Inception'), findsOneWidget);
@@ -347,7 +327,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        await selectMediaFilter(tester, 'TV Shows (1)');
+        await selectMediaChip(tester, 'TV Shows (1)');
 
         expect(find.text('Zelda'), findsNothing);
         expect(find.text('Inception'), findsNothing);
@@ -359,16 +339,12 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // Сначала выбираем Games
-        await selectMediaFilter(tester, 'Games (1)');
+        // Выбираем Games
+        await selectMediaChip(tester, 'Games (1)');
         expect(find.text('Inception'), findsNothing);
 
-        // Затем All — при открытом dropdown "All (5)" содержит checkmark
-        await tester.tap(find.byTooltip('Filter by type'));
-        await tester.pumpAndSettle();
-        // Тапаем по "All (5)" в popup
-        await tester.tap(find.text('All (5)'));
-        await pumpScreen(tester);
+        // Тап на All сбрасывает фильтр
+        await selectMediaChip(tester, 'All (5)');
 
         expect(find.text('Zelda'), findsOneWidget);
         expect(find.text('Inception'), findsOneWidget);
@@ -380,7 +356,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        await selectMediaFilter(tester, 'Animation (2)');
+        await selectMediaChip(tester, 'Animation (2)');
 
         expect(find.text('Zelda'), findsNothing);
         expect(find.text('Inception'), findsNothing);
@@ -615,10 +591,8 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // Фильтр Games
-        await tester.tap(find.byTooltip('Filter by type'));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Games (1)').last);
+        // Фильтр Games — тап на чип
+        await tester.tap(find.text('Games (1)').first);
         await pumpScreen(tester);
 
         // + поиск "Zel"
@@ -635,11 +609,8 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // По умолчанию grid mode — фильтруем
-        // Фильтр Movies
-        await tester.tap(find.byTooltip('Filter by type'));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Movies (1)').last);
+        // Фильтр Movies — тап на чип
+        await tester.tap(find.text('Movies (1)').first);
         await pumpScreen(tester);
 
         // Должен быть 1 MediaPosterCard (Inception)
