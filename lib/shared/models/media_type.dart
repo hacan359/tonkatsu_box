@@ -87,9 +87,7 @@ enum MediaType {
   /// Используется для фильмов и сериалов (Blu-ray шаблон).
   /// Для игр оверлей определяется через [Platform.overlayAsset].
   String? get overlayAsset => switch (this) {
-        MediaType.movie ||
-        MediaType.tvShow ||
-        MediaType.animation =>
+        MediaType.movie || MediaType.tvShow =>
           'assets/images/platform_overlays/blu-ray.png',
         _ => null,
       };

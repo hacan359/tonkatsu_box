@@ -2361,7 +2361,7 @@ class SRu extends S {
 
   @override
   String get settingsShowBlurayOverlaySubtitle =>
-      'Оверлей Blu-ray на постерах фильмов, сериалов и аниме';
+      'Оверлей Blu-ray на постерах фильмов и сериалов';
 
   @override
   String get uncategorizedBanner =>

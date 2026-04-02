@@ -4324,7 +4324,7 @@ abstract class S {
   /// No description provided for @settingsShowBlurayOverlaySubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Show Blu-ray overlay on movie, TV show, and anime posters'**
+  /// **'Show Blu-ray overlay on movie and TV show posters'**
   String get settingsShowBlurayOverlaySubtitle;
 
   /// No description provided for @uncategorizedBanner.

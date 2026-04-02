@@ -2341,7 +2341,7 @@ class SEn extends S {
 
   @override
   String get settingsShowBlurayOverlaySubtitle =>
-      'Show Blu-ray overlay on movie, TV show, and anime posters';
+      'Show Blu-ray overlay on movie and TV show posters';
 
   @override
   String get uncategorizedBanner =>
