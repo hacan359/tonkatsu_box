@@ -3367,6 +3367,12 @@ abstract class S {
   /// **'Enter keys in Settings → Credentials after setup'**
   String get welcomeApiEnterKeysHint;
 
+  /// No description provided for @welcomeApiRateLimitHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Built-in keys are shared between all users and have rate limits. For the best experience, use your own keys — it\'s free and takes just a few minutes.'**
+  String get welcomeApiRateLimitHint;
+
   /// No description provided for @welcomeHowTitle.
   ///
   /// In en, this message translates to:
@@ -3390,6 +3396,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Your collections. Create, organize, manage. Grid or list view per collection.'**
   String get welcomeHowCollectionsDesc;
+
+  /// No description provided for @welcomeHowTierListsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Rank and compare items across collections with customizable tier lists.'**
+  String get welcomeHowTierListsDesc;
 
   /// No description provided for @welcomeHowWishlistDesc.
   ///

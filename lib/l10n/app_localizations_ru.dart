@@ -1825,6 +1825,10 @@ class SRu extends S {
       'Введите ключи в Настройки → Учётные данные';
 
   @override
+  String get welcomeApiRateLimitHint =>
+      'Встроенные ключи общие для всех пользователей и имеют лимиты запросов. Для лучшего опыта используйте свои ключи — это бесплатно и займёт пару минут.';
+
+  @override
   String get welcomeHowTitle => 'Как это работает';
 
   @override
@@ -1837,6 +1841,10 @@ class SRu extends S {
   @override
   String get welcomeHowCollectionsDesc =>
       'Ваши коллекции. Создавайте, организуйте, управляйте. Сетка или список.';
+
+  @override
+  String get welcomeHowTierListsDesc =>
+      'Ранжируйте и сравнивайте элементы из коллекций с помощью настраиваемых тир-листов.';
 
   @override
   String get welcomeHowWishlistDesc =>

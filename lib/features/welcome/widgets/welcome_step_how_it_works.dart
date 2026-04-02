@@ -1,4 +1,4 @@
-// Шаг 3 Welcome Wizard — структура приложения и Quick Start.
+// Шаг 5 Welcome Wizard — структура приложения и Quick Start.
 
 import 'package:flutter/material.dart';
 
@@ -7,7 +7,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 
-/// Шаг 3: How it works — структура приложения, Quick Start, экспорт.
+/// Шаг 5: How it works — структура приложения, Quick Start, экспорт.
 class WelcomeStepHowItWorks extends StatelessWidget {
   /// Создаёт [WelcomeStepHowItWorks].
   const WelcomeStepHowItWorks({super.key});
@@ -59,6 +59,11 @@ class WelcomeStepHowItWorks extends StatelessWidget {
                   icon: Icons.shelves,
                   tab: l.navCollections,
                   desc: l.welcomeHowCollectionsDesc,
+                ),
+                _tabRow(
+                  icon: Icons.leaderboard,
+                  tab: l.navTierLists,
+                  desc: l.welcomeHowTierListsDesc,
                 ),
                 _tabRow(
                   icon: Icons.bookmark,

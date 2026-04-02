@@ -1810,6 +1810,10 @@ class SEn extends S {
       'Enter keys in Settings → Credentials after setup';
 
   @override
+  String get welcomeApiRateLimitHint =>
+      'Built-in keys are shared between all users and have rate limits. For the best experience, use your own keys — it\'s free and takes just a few minutes.';
+
+  @override
   String get welcomeHowTitle => 'How it works';
 
   @override
@@ -1822,6 +1826,10 @@ class SEn extends S {
   @override
   String get welcomeHowCollectionsDesc =>
       'Your collections. Create, organize, manage. Grid or list view per collection.';
+
+  @override
+  String get welcomeHowTierListsDesc =>
+      'Rank and compare items across collections with customizable tier lists.';
 
   @override
   String get welcomeHowWishlistDesc =>

@@ -1,5 +1,5 @@
 import 'package:xerabora/l10n/app_localizations.dart';
-// Тесты для WelcomeStepHowItWorks — шаг 3 Welcome Wizard.
+// Тесты для WelcomeStepHowItWorks — шаг 5 Welcome Wizard.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -38,11 +38,12 @@ void main() {
         expect(find.text('App structure'), findsOneWidget);
       });
 
-      testWidgets('shows all 5 tab names', (WidgetTester tester) async {
+      testWidgets('shows all 6 tab names', (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
 
         expect(find.text('Main'), findsOneWidget);
         expect(find.text('Collections'), findsOneWidget);
+        expect(find.text('Tier Lists'), findsOneWidget);
         expect(find.text('Wishlist'), findsOneWidget);
         expect(find.text('Search'), findsOneWidget);
         expect(find.text('Settings'), findsOneWidget);
@@ -57,6 +58,10 @@ void main() {
         );
         expect(
           find.textContaining('Your collections'),
+          findsOneWidget,
+        );
+        expect(
+          find.textContaining('Rank and compare'),
           findsOneWidget,
         );
         expect(
@@ -78,6 +83,7 @@ void main() {
 
         expect(find.byIcon(Icons.home), findsOneWidget);
         expect(find.byIcon(Icons.shelves), findsOneWidget);
+        expect(find.byIcon(Icons.leaderboard), findsOneWidget);
         expect(find.byIcon(Icons.bookmark), findsOneWidget);
         expect(find.byIcon(Icons.search), findsOneWidget);
         expect(find.byIcon(Icons.settings), findsOneWidget);
