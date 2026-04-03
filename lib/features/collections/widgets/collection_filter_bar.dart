@@ -10,6 +10,7 @@ import '../../../shared/constants/platform_features.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/collection_sort_mode.dart';
 import '../../../shared/models/collection_tag.dart';
+import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/platform.dart';
 import '../../../shared/theme/app_colors.dart';
@@ -31,12 +32,14 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
     required this.filterTypes,
     required this.filterPlatformIds,
     required this.filterTagIds,
+    required this.filterStatus,
     required this.tags,
     required this.searchController,
     required this.searchQuery,
     required this.onTypeToggled,
     required this.onPlatformToggled,
     required this.onTagToggled,
+    required this.onStatusChanged,
     super.key,
   });
 
@@ -46,12 +49,14 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
   final Set<MediaType> filterTypes;
   final Set<int> filterPlatformIds;
   final Set<int> filterTagIds;
+  final ItemStatus? filterStatus;
   final List<CollectionTag> tags;
   final TextEditingController searchController;
   final String searchQuery;
   final ValueChanged<MediaType?> onTypeToggled;
   final ValueChanged<int?> onPlatformToggled;
   final ValueChanged<int?> onTagToggled;
+  final ValueChanged<ItemStatus?> onStatusChanged;
 
   @override
   ConsumerState<CollectionFilterBar> createState() =>
@@ -106,6 +111,8 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
                 const SizedBox(width: AppSpacing.xs),
                 _buildTypeChip(e.type, e.label, e.count),
               ],
+              const SizedBox(width: AppSpacing.md),
+              _buildStatusDropdownChip(l),
             ],
           ),
         ),
@@ -741,6 +748,138 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
       onSelected: (bool value) {
         widget.onTypeToggled(type); // null = clear all types
       },
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Status dropdown
+  // ---------------------------------------------------------------------------
+
+  static const List<ItemStatus> _statusOrder = <ItemStatus>[
+    ItemStatus.inProgress,
+    ItemStatus.planned,
+    ItemStatus.notStarted,
+    ItemStatus.completed,
+    ItemStatus.dropped,
+  ];
+
+  Widget _buildStatusDropdownChip(S l) {
+    final ItemStatus? current = widget.filterStatus;
+    final bool isActive = current != null;
+    final Color chipColor =
+        isActive ? current.color : AppColors.textSecondary;
+    final String label = isActive
+        ? current.genericLabel(l)
+        : l.homeFilterAll;
+
+    return PopupMenuButton<String>(
+      onSelected: (String value) {
+        final ItemStatus? status =
+            value == 'all' ? null : ItemStatus.fromString(value);
+        widget.onStatusChanged(status);
+      },
+      offset: const Offset(0, 36),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+      ),
+      color: AppColors.surface,
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+        PopupMenuItem<String>(
+          value: 'all',
+          height: 36,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Icon(
+                Icons.filter_list_off,
+                size: 16,
+                color: current == null
+                    ? AppColors.brand
+                    : AppColors.textTertiary,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                l.homeFilterAll,
+                style: AppTypography.body.copyWith(
+                  color: current == null
+                      ? AppColors.brand
+                      : AppColors.textPrimary,
+                  fontWeight: current == null
+                      ? FontWeight.w600
+                      : FontWeight.normal,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const PopupMenuDivider(height: 8),
+        for (final ItemStatus status in _statusOrder)
+          PopupMenuItem<String>(
+            value: status.value,
+            height: 36,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Icon(
+                  status.materialIcon,
+                  size: 16,
+                  color: current == status
+                      ? status.color
+                      : AppColors.textTertiary,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  status.genericLabel(l),
+                  style: AppTypography.body.copyWith(
+                    color: current == status
+                        ? status.color
+                        : AppColors.textPrimary,
+                    fontWeight: current == status
+                        ? FontWeight.w600
+                        : FontWeight.normal,
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+      child: Container(
+        height: 28,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        decoration: BoxDecoration(
+          color: isActive ? chipColor.withAlpha(25) : AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isActive
+                ? chipColor.withAlpha(80)
+                : AppColors.surfaceBorder,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(
+              isActive ? current.materialIcon : Icons.filter_list,
+              size: 14,
+              color: isActive ? chipColor : AppColors.textTertiary,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: AppTypography.bodySmall.copyWith(
+                color: isActive ? chipColor : AppColors.textSecondary,
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+            const SizedBox(width: 2),
+            Icon(
+              Icons.keyboard_arrow_down,
+              size: 14,
+              color: isActive ? chipColor : AppColors.textTertiary,
+            ),
+          ],
+        ),
+      ),
     );
   }
 

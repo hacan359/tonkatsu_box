@@ -397,26 +397,6 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         appBar: ScreenAppBar(
           title: item.itemName,
           actions: <Widget>[
-            // Board toggle кнопка
-            if (_hasCanvas)
-              IconButton(
-                icon: Icon(
-                  _showCanvas
-                      ? Icons.dashboard
-                      : Icons.dashboard_outlined,
-                ),
-                color: _showCanvas
-                    ? AppColors.brand
-                    : AppColors.textSecondary,
-                tooltip: !kIsMobile
-                    ? '${S.of(context).boardTab} (Ctrl+B)'
-                    : S.of(context).boardTab,
-                onPressed: () {
-                  setState(() {
-                    _showCanvas = !_showCanvas;
-                  });
-                },
-              ),
             // Lock кнопка (только на Canvas)
             if (widget.isEditable && _hasCanvas && _showCanvas)
               IconButton(
@@ -447,6 +427,26 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                             .notifier)
                         .closePanel();
                   }
+                },
+              ),
+            // Board toggle кнопка
+            if (_hasCanvas)
+              IconButton(
+                icon: Icon(
+                  _showCanvas
+                      ? Icons.dashboard
+                      : Icons.dashboard_outlined,
+                ),
+                color: _showCanvas
+                    ? AppColors.brand
+                    : AppColors.textSecondary,
+                tooltip: !kIsMobile
+                    ? '${S.of(context).boardTab} (Ctrl+B)'
+                    : S.of(context).boardTab,
+                onPressed: () {
+                  setState(() {
+                    _showCanvas = !_showCanvas;
+                  });
                 },
               ),
             // Edit button (только для кастомных элементов)

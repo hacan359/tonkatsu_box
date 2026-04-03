@@ -185,6 +185,8 @@ Widget _buildFilterBar({
   ValueChanged<MediaType?>? onTypeToggled,
   ValueChanged<int?>? onPlatformToggled,
   ValueChanged<int?>? onTagToggled,
+  ValueChanged<ItemStatus?>? onStatusChanged,
+  ItemStatus? filterStatus,
 }) {
   return CollectionFilterBar(
     collectionId: collectionId,
@@ -193,12 +195,14 @@ Widget _buildFilterBar({
     filterTypes: filterTypes,
     filterPlatformIds: filterPlatformIds,
     filterTagIds: filterTagIds,
+    filterStatus: filterStatus,
     tags: tags,
     searchController: searchController ?? TextEditingController(),
     searchQuery: searchQuery,
     onTypeToggled: onTypeToggled ?? (_) {},
     onPlatformToggled: onPlatformToggled ?? (_) {},
     onTagToggled: onTagToggled ?? (_) {},
+    onStatusChanged: onStatusChanged ?? (_) {},
   );
 }
 
@@ -801,7 +805,8 @@ void main() {
           await tester.pumpAndSettle();
 
           expect(find.byType(CollectionFilterBar), findsOneWidget);
-          expect(find.text('All'), findsOneWidget);
+          // Type chip "All" + status dropdown "All"
+          expect(find.text('All'), findsNWidgets(2));
         },
       );
 
