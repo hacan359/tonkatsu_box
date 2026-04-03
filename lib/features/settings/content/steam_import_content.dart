@@ -286,8 +286,12 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
                     ),
                   );
                 }
+                final bool selectedExists = _selectedCollectionId != null &&
+                    collections.any(
+                      (Collection c) => c.id == _selectedCollectionId,
+                    );
                 return DropdownButtonFormField<int>(
-                  initialValue: _selectedCollectionId,
+                  initialValue: selectedExists ? _selectedCollectionId : null,
                   hint: Text(l.steamImportSelectCollection),
                   isExpanded: true,
                   items: collections.map((Collection c) {

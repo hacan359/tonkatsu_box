@@ -351,6 +351,82 @@ class IgdbApi {
     }
   }
 
+  /// Максимальное количество подзапросов в одном multiquery.
+  static const int maxMultiQueryBatch = 10;
+
+  /// Максимальное количество результатов на подзапрос в multiquery.
+  static const int _multiSearchLimit = 20;
+
+  /// Ищет несколько игр по названию в одном multiquery-запросе.
+  ///
+  /// Каждый элемент [queries] содержит название и опциональный platformId.
+  /// Возвращает маппинг: индекс запроса → список найденных игр.
+  /// Throws [IgdbApiException] при ошибке запроса.
+  Future<Map<int, List<Game>>> multiSearchGamesByName(
+    List<({String name, int? platformId})> queries,
+  ) async {
+    if (queries.isEmpty) return <int, List<Game>>{};
+    _ensureCredentials();
+
+    const String fields =
+        'fields id,name,summary,rating,rating_count,first_release_date,'
+        'cover.image_id,genres.name,platforms,url;';
+
+    try {
+      final StringBuffer body = StringBuffer();
+      for (int i = 0; i < queries.length; i++) {
+        final String escaped = queries[i]
+            .name
+            .replaceAll('"', '\\"')
+            .replaceAll('*', '');
+        final String platformFilter = queries[i].platformId != null
+            ? ' & platforms = (${queries[i].platformId})'
+            : '';
+        body.writeln(
+          'query games "q_$i" { $fields '
+          'where name ~ *"$escaped"*$platformFilter; '
+          'limit $_multiSearchLimit; };',
+        );
+      }
+
+      final Response<dynamic> response = await _igdbPost(
+        '/multiquery',
+        data: body.toString(),
+      );
+
+      if (response.statusCode != 200 || response.data == null) {
+        throw IgdbApiException(
+          'Failed to multi-search games',
+          statusCode: response.statusCode,
+        );
+      }
+
+      final List<dynamic> results = response.data as List<dynamic>;
+      final Map<int, List<Game>> mapped = <int, List<Game>>{};
+
+      for (final dynamic entry in results) {
+        final Map<String, dynamic> item = entry as Map<String, dynamic>;
+        final String name = item['name'] as String;
+        final int? index = int.tryParse(name.replaceFirst('q_', ''));
+        if (index == null) continue;
+
+        final List<dynamic> resultList =
+            (item['result'] as List<dynamic>?) ?? <dynamic>[];
+        mapped[index] = resultList
+            .map((dynamic g) => Game.fromJson(g as Map<String, dynamic>))
+            .toList();
+      }
+
+      for (int i = 0; i < queries.length; i++) {
+        mapped.putIfAbsent(i, () => <Game>[]);
+      }
+
+      return mapped;
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'Failed to multi-search games');
+    }
+  }
+
   /// IGDB `external_game_source` для Steam.
   static const int _steamSource = 1;
 

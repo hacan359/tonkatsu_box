@@ -348,8 +348,12 @@ class _TraktImportContentState extends ConsumerState<TraktImportContent> {
                     ),
                   );
                 }
+                final bool selectedExists = _selectedCollectionId != null &&
+                    collections.any(
+                      (Collection c) => c.id == _selectedCollectionId,
+                    );
                 return DropdownButtonFormField<int>(
-                  initialValue: _selectedCollectionId,
+                  initialValue: selectedExists ? _selectedCollectionId : null,
                   hint: Text(l10n.traktSelectCollection),
                   isExpanded: true,
                   items: collections.map((Collection c) {

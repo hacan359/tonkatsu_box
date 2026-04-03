@@ -1,5 +1,7 @@
 // Сервис импорта RetroAchievements → IGDB игры.
 
+import 'dart:math';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
@@ -154,33 +156,72 @@ class RaImportService {
   static final Logger _log = Logger('RaImportService');
 
   /// Импортирует игры из RA профиля в коллекцию.
+  ///
+  /// [collectionId] — ID существующей коллекции.
+  /// [createCollection] — callback для ленивого создания коллекции
+  ///   (вызывается только после успешной загрузки библиотеки RA).
+  ///   Должен быть указан либо [collectionId], либо [createCollection].
   Future<RaImportResult> importFromProfile({
     required String raUsername,
-    required int collectionId,
+    int? collectionId,
+    Future<int> Function()? createCollection,
     required bool addToWishlist,
     required void Function(RaImportProgress) onProgress,
   }) async {
-    final RaToIgdbMapper mapper = RaToIgdbMapper(_igdbApi);
+    if (collectionId == null && createCollection == null) {
+      throw ArgumentError(
+        'Either collectionId or createCollection must be provided',
+      );
+    }
 
     onProgress(const RaImportProgress(
       stage: RaImportStage.fetchingLibrary,
     ));
 
-    // Загружаем игры и даты наград параллельно.
-    final (List<RaGameProgress> raGames, Map<int, DateTime> awardDates) =
-        await (
-      _raApi.getCompletedGames(raUsername),
-      _raApi.getUserAwardDates(raUsername),
-    ).wait;
-
-    int added = 0;
-    int updated = 0;
-    int unmatched = 0;
-    final List<String> unmatchedTitles = <String>[];
+    // Загружаем игры из RA.
+    final List<RaGameProgress> raGames =
+        await _raApi.getCompletedGames(raUsername);
 
     // Фильтруем не-игровые записи (Hubs, Events, Standalone).
     final List<RaGameProgress> games =
         raGames.where((RaGameProgress g) => g.isRealGame).toList();
+
+    if (games.isEmpty) {
+      throw const RaApiException('No games found in this RA profile');
+    }
+
+    // Создание коллекции — только после успешной загрузки.
+    final int targetCollectionId =
+        collectionId ?? await createCollection!();
+
+    // Batch-поиск в IGDB через multiquery (по 10 игр за запрос).
+    onProgress(RaImportProgress(
+      stage: RaImportStage.matchingGames,
+      current: 0,
+      total: games.length,
+    ));
+
+    final Map<int, Game?> igdbMatches = await _batchFindGames(
+      games,
+      onBatchDone: (int processed) {
+        onProgress(RaImportProgress(
+          stage: RaImportStage.matchingGames,
+          current: processed,
+          total: games.length,
+        ));
+      },
+    );
+
+    _log.info(
+      'IGDB matched ${igdbMatches.values.where((Game? g) => g != null).length}'
+      '/${games.length} RA games',
+    );
+
+    // Обработка каждой игры.
+    int added = 0;
+    int updated = 0;
+    int unmatched = 0;
+    final List<String> unmatchedTitles = <String>[];
 
     for (int i = 0; i < games.length; i++) {
       final RaGameProgress raGame = games[i];
@@ -195,8 +236,7 @@ class RaImportService {
         unmatchedCount: unmatched,
       ));
 
-      // Найти в IGDB.
-      final Game? igdbGame = await mapper.findIgdbGame(raGame);
+      final Game? igdbGame = igdbMatches[i];
 
       if (igdbGame == null) {
         unmatched++;
@@ -204,19 +244,17 @@ class RaImportService {
         if (addToWishlist) {
           await _addToWishlistIfNotExists(raGame);
         }
-        // Rate limit.
-        await Future<void>.delayed(const Duration(milliseconds: 300));
         continue;
       }
 
       // Проверить дубликат ТОЛЬКО В ЦЕЛЕВОЙ КОЛЛЕКЦИИ.
       final CollectionItem? existing = await _db.findCollectionItem(
-        collectionId: collectionId,
+        collectionId: targetCollectionId,
         mediaType: MediaType.game,
         externalId: igdbGame.id,
       );
 
-      final DateTime? completedAt = awardDates[raGame.gameId];
+      final DateTime? completedAt = raGame.highestAwardDate;
 
       if (existing != null) {
         final bool wasUpdated = await _updateExistingItem(
@@ -229,16 +267,13 @@ class RaImportService {
         // Кэшировать игру и добавить в коллекцию.
         await _db.upsertGame(igdbGame);
         await _addToCollection(
-          collectionId: collectionId,
+          collectionId: targetCollectionId,
           game: igdbGame,
           raGame: raGame,
           completedAt: completedAt,
         );
         added++;
       }
-
-      // Rate limit: 300ms между IGDB запросами.
-      await Future<void>.delayed(const Duration(milliseconds: 300));
     }
 
     onProgress(RaImportProgress(
@@ -261,8 +296,77 @@ class RaImportService {
       updated: updated,
       unmatched: unmatched,
       unmatchedTitles: unmatchedTitles,
-      collectionId: collectionId,
+      collectionId: targetCollectionId,
     );
+  }
+
+  /// Batch-поиск игр в IGDB через multiquery.
+  ///
+  /// Возвращает маппинг: индекс в [games] → найденная Game (или null).
+  /// [onBatchDone] вызывается после каждого батча с количеством
+  /// обработанных игр.
+  Future<Map<int, Game?>> _batchFindGames(
+    List<RaGameProgress> games, {
+    void Function(int processed)? onBatchDone,
+  }) async {
+    final Map<int, Game?> results = <int, Game?>{};
+    const int batchSize = IgdbApi.maxMultiQueryBatch;
+
+    for (int batchStart = 0;
+        batchStart < games.length;
+        batchStart += batchSize) {
+      final int batchEnd = min(batchStart + batchSize, games.length);
+      final List<RaGameProgress> batch =
+          games.sublist(batchStart, batchEnd);
+
+      // Формируем запросы с платформенным фильтром.
+      final List<({String name, int? platformId})> queries = batch
+          .map((RaGameProgress g) => (
+                name: g.title,
+                platformId: RaToIgdbMapper.consolePlatformMap[g.consoleId],
+              ))
+          .toList();
+
+      Map<int, List<Game>> batchResults;
+      try {
+        batchResults = await _igdbApi.multiSearchGamesByName(queries);
+      } on IgdbApiException catch (e) {
+        _log.warning('Multiquery failed, falling back to single search', e);
+        batchResults = await _fallbackSingleSearch(batch);
+      }
+
+      // Выбираем лучшее совпадение для каждой игры.
+      for (int j = 0; j < batch.length; j++) {
+        final List<Game> candidates = batchResults[j] ?? <Game>[];
+        results[batchStart + j] =
+            RaToIgdbMapper.bestMatch(batch[j].title, candidates);
+      }
+
+      onBatchDone?.call(batchEnd);
+
+      // Rate limiting: пауза каждые 4 батча.
+      final int batchIndex = batchStart ~/ batchSize;
+      if (batchIndex % 4 == 3) {
+        await Future<void>.delayed(const Duration(milliseconds: 1100));
+      }
+    }
+
+    return results;
+  }
+
+  /// Поштучный поиск — fallback при ошибке multiquery.
+  Future<Map<int, List<Game>>> _fallbackSingleSearch(
+    List<RaGameProgress> batch,
+  ) async {
+    final RaToIgdbMapper mapper = RaToIgdbMapper(_igdbApi);
+    final Map<int, List<Game>> results = <int, List<Game>>{};
+    for (int i = 0; i < batch.length; i++) {
+      final Game? game = await mapper.findIgdbGame(batch[i]);
+      results[i] = game != null ? <Game>[game] : <Game>[];
+      // findIgdbGame делает 1-2 запроса, пауза после каждого.
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+    }
+    return results;
   }
 
   /// Обновляет мету существующего элемента. Не понижает статус.
@@ -370,7 +474,6 @@ class RaImportService {
       if (completedAt != null || lastActivity != null) {
         await _db.updateItemActivityDates(
           itemId,
-          startedAt: lastActivity,
           completedAt: completedAt,
           lastActivityAt: lastActivity,
         );

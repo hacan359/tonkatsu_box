@@ -70,26 +70,33 @@ class RaToIgdbMapper {
         final List<Game> fallback =
             await _igdbApi.searchGames(query: raGame.title);
         if (fallback.isEmpty) return null;
-        return _bestMatch(raGame.title, fallback);
+        return bestMatch(raGame.title, fallback);
       }
       return null;
     }
 
-    return _bestMatch(raGame.title, results);
+    return bestMatch(raGame.title, results);
   }
 
-  /// Находит наилучшее совпадение по названию.
-  Game? _bestMatch(String raTitle, List<Game> candidates) {
-    final String normalized = _normalize(raTitle);
+  static final RegExp _nonAlphaNum = RegExp('[^a-z0-9]');
+
+  /// Находит наилучшее совпадение по названию среди кандидатов.
+  ///
+  /// Публичный static — используется как в поштучном поиске,
+  /// так и в batch multiquery.
+  static Game? bestMatch(String title, List<Game> candidates) {
+    if (candidates.isEmpty) return null;
+
+    final String normalized = normalize(title);
 
     // Точное совпадение.
     for (final Game game in candidates) {
-      if (_normalize(game.name) == normalized) return game;
+      if (normalize(game.name) == normalized) return game;
     }
 
     // Starts with.
     for (final Game game in candidates) {
-      final String gameName = _normalize(game.name);
+      final String gameName = normalize(game.name);
       if (gameName.startsWith(normalized) ||
           normalized.startsWith(gameName)) {
         return game;
@@ -101,6 +108,6 @@ class RaToIgdbMapper {
   }
 
   /// Нормализует строку для сравнения: lowercase, только буквы и цифры.
-  static String _normalize(String s) =>
-      s.toLowerCase().replaceAll(RegExp('[^a-z0-9]'), '');
+  static String normalize(String s) =>
+      s.toLowerCase().replaceAll(_nonAlphaNum, '');
 }

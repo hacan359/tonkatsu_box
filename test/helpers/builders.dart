@@ -488,6 +488,7 @@ RaGameProgress createTestRaGameProgress({
   int maxPossible = 96,
   bool hardcoreMode = true,
   String? highestAwardKind,
+  DateTime? highestAwardDate,
   DateTime? lastPlayedAt,
 }) {
   return RaGameProgress(
@@ -499,6 +500,7 @@ RaGameProgress createTestRaGameProgress({
     maxPossible: maxPossible,
     hardcoreMode: hardcoreMode,
     highestAwardKind: highestAwardKind,
+    highestAwardDate: highestAwardDate,
     lastPlayedAt: lastPlayedAt,
   );
 }
