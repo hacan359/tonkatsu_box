@@ -126,6 +126,15 @@ class SEn extends S {
   String get sortExternalRatingDesc => 'Highest first';
 
   @override
+  String get sortLastActivityDisplay => 'Last Activity';
+
+  @override
+  String get sortLastActivityShort => 'Activity';
+
+  @override
+  String get sortLastActivityDesc => 'Recent first';
+
+  @override
   String get searchSortRelevanceShort => 'Rel';
 
   @override

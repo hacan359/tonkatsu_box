@@ -868,8 +868,8 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // По умолчанию addedDate → shortLabel "Date"
-        expect(find.text('Date'), findsOneWidget);
+        // По умолчанию lastActivity → shortLabel "Activity"
+        expect(find.text('Activity'), findsOneWidget);
       });
 
       testWidgets('должен показывать иконку направления сортировки',

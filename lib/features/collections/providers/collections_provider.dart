@@ -137,7 +137,7 @@ class CollectionSortNotifier extends FamilyNotifier<CollectionSortMode, int?> {
   @override
   CollectionSortMode build(int? arg) {
     _loadFromPrefs(arg);
-    return CollectionSortMode.addedDate;
+    return CollectionSortMode.lastActivity;
   }
 
   Future<void> _loadFromPrefs(int? collectionId) async {

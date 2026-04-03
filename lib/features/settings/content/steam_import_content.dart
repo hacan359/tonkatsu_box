@@ -442,32 +442,32 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
     });
 
     try {
-      // Определяем целевую коллекцию
-      final int collectionId;
-      if (_useNewCollection) {
-        final DatabaseService db = ref.read(databaseServiceProvider);
-        final Collection collection = await db.createCollection(
-          name: 'Steam Library',
-          author: authorName,
-        );
-        collectionId = collection.id;
-      } else {
-        collectionId = _selectedCollectionId!;
-      }
-
       final SteamImportService service =
           ref.read(steamImportServiceProvider);
 
+      // Коллекция создаётся лениво — только после успешной загрузки
+      // библиотеки Steam, чтобы не оставлять пустую коллекцию при ошибке.
       final SteamImportResult result = await service.importLibrary(
         apiKey: apiKey,
         steamId: steamId,
-        collectionId: collectionId,
+        collectionId: _useNewCollection ? null : _selectedCollectionId,
+        createCollection: _useNewCollection
+            ? () async {
+                final DatabaseService db = ref.read(databaseServiceProvider);
+                final Collection collection = await db.createCollection(
+                  name: 'Steam Library',
+                  author: authorName,
+                );
+                return collection.id;
+              }
+            : null,
         onProgress: (SteamImportProgress progress) {
           if (mounted) {
             setState(() => _progress = progress);
           }
         },
       );
+      final int collectionId = result.collectionId;
 
       if (!mounted) return;
 

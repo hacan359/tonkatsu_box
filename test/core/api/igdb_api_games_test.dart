@@ -245,6 +245,159 @@ void main() {
       });
     });
 
+    group('lookupSteamGames', () {
+      test('returns games mapped by Steam appId', () async {
+        int callCount = 0;
+        when(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            )).thenAnswer((Invocation inv) async {
+          callCount++;
+          final String url = inv.positionalArguments[0] as String;
+          if (url.contains('/external_games')) {
+            return Response<dynamic>(
+              requestOptions: RequestOptions(path: ''),
+              statusCode: 200,
+              data: <Map<String, dynamic>>[
+                <String, dynamic>{'game': 2963, 'uid': '570'},
+                <String, dynamic>{'game': 231, 'uid': '70'},
+              ],
+            );
+          }
+          // /games endpoint
+          return Response<dynamic>(
+            requestOptions: RequestOptions(path: ''),
+            statusCode: 200,
+            data: <Map<String, dynamic>>[
+              <String, dynamic>{'id': 2963, 'name': 'Dota 2'},
+              <String, dynamic>{'id': 231, 'name': 'Half-Life'},
+            ],
+          );
+        });
+
+        final Map<String, Game> result =
+            await api.lookupSteamGames(<String>['570', '70']);
+
+        expect(result, hasLength(2));
+        expect(result['570']!.name, 'Dota 2');
+        expect(result['70']!.name, 'Half-Life');
+        // 2 calls: external_games + games
+        expect(callCount, 2);
+      });
+
+      test('returns empty map for empty input', () async {
+        final Map<String, Game> result =
+            await api.lookupSteamGames(<String>[]);
+
+        expect(result, isEmpty);
+        verifyNever(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            ));
+      });
+
+      test('posts to /external_games endpoint', () async {
+        String? capturedUrl;
+        String? capturedData;
+
+        when(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            )).thenAnswer((Invocation inv) async {
+          final String url = inv.positionalArguments[0] as String;
+          if (url.contains('/external_games')) {
+            capturedUrl = url;
+            capturedData =
+                inv.namedArguments[const Symbol('data')] as String?;
+            return Response<dynamic>(
+              requestOptions: RequestOptions(path: ''),
+              statusCode: 200,
+              data: <Map<String, dynamic>>[],
+            );
+          }
+          return Response<dynamic>(
+            requestOptions: RequestOptions(path: ''),
+            statusCode: 200,
+            data: <Map<String, dynamic>>[],
+          );
+        });
+
+        await api.lookupSteamGames(<String>['570']);
+
+        expect(capturedUrl, endsWith('/external_games'));
+        expect(capturedData, contains('external_game_source'));
+        expect(capturedData, contains('"570"'));
+      });
+
+      test('handles unmatched appIds gracefully', () async {
+        when(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            )).thenAnswer((Invocation inv) async {
+          final String url = inv.positionalArguments[0] as String;
+          if (url.contains('/external_games')) {
+            // Only one of two appIds matched.
+            return Response<dynamic>(
+              requestOptions: RequestOptions(path: ''),
+              statusCode: 200,
+              data: <Map<String, dynamic>>[
+                <String, dynamic>{'game': 100, 'uid': '570'},
+              ],
+            );
+          }
+          return Response<dynamic>(
+            requestOptions: RequestOptions(path: ''),
+            statusCode: 200,
+            data: <Map<String, dynamic>>[
+              <String, dynamic>{'id': 100, 'name': 'Dota 2'},
+            ],
+          );
+        });
+
+        final Map<String, Game> result =
+            await api.lookupSteamGames(<String>['570', '99999']);
+
+        expect(result, hasLength(1));
+        expect(result['570']!.name, 'Dota 2');
+        expect(result.containsKey('99999'), isFalse);
+      });
+
+      test('throws IgdbApiException on HTTP error', () async {
+        when(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            )).thenThrow(DioException(
+          requestOptions: RequestOptions(path: ''),
+          response: Response<dynamic>(
+            requestOptions: RequestOptions(path: ''),
+            statusCode: 500,
+          ),
+          type: DioExceptionType.badResponse,
+        ));
+
+        expect(
+          () => api.lookupSteamGames(<String>['570']),
+          throwsA(isA<IgdbApiException>()),
+        );
+      });
+
+      test('throws IgdbApiException when credentials not set', () async {
+        final IgdbApi apiWithoutCreds = IgdbApi(dio: mockDio);
+
+        expect(
+          () => apiWithoutCreds.lookupSteamGames(<String>['570']),
+          throwsA(isA<IgdbApiException>()
+              .having((IgdbApiException e) => e.message, 'message',
+                  contains('credentials'))),
+        );
+      });
+    });
+
     group('getGamesByIds', () {
       test('returns list of games for given ids', () async {
         when(() => mockDio.post<dynamic>(
