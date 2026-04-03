@@ -190,9 +190,9 @@ void main() {
       testWidgets('renders TabBar as bottom widget',
           (WidgetTester tester) async {
         await tester.pumpApp(
-          DefaultTabController(
+          const DefaultTabController(
             length: 2,
-            child: const Scaffold(
+            child: Scaffold(
               appBar: ScreenAppBar(
                 title: 'Tabs',
                 bottom: TabBar(
