@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 
-import '../navigation/navigation_shell.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
 
@@ -46,8 +45,6 @@ class ScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isDesktop =
-        MediaQuery.sizeOf(context).width >= navigationBreakpoint;
     final bool canPop = Navigator.of(context).canPop();
 
     return Container(
@@ -73,18 +70,18 @@ class ScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
         toolbarHeight: kScreenAppBarHeight,
         automaticallyImplyLeading: false,
         titleSpacing: 0,
-        leading: !isDesktop && canPop
+        leading: canPop
             ? IconButton(
                 icon: const Icon(Icons.arrow_back, size: 20),
                 color: AppColors.textTertiary,
                 onPressed: () => Navigator.of(context).pop(),
               )
             : null,
-        leadingWidth: !isDesktop && canPop ? 48 : 0,
+        leadingWidth: canPop ? 48 : 0,
         title: title != null
             ? Padding(
                 padding: EdgeInsets.only(
-                  left: isDesktop || !canPop ? 16 : 0,
+                  left: !canPop ? 16 : 0,
                 ),
                 child: Text(
                   title!,
