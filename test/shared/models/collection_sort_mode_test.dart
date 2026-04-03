@@ -6,8 +6,8 @@ import 'package:xerabora/shared/models/collection_sort_mode.dart';
 void main() {
   group('CollectionSortMode', () {
     group('значения enum', () {
-      test('должен содержать 6 значений', () {
-        expect(CollectionSortMode.values.length, 6);
+      test('должен содержать 7 значений', () {
+        expect(CollectionSortMode.values.length, 7);
       });
 
       test('должен содержать все режимы сортировки', () {
