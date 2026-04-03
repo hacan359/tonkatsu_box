@@ -10,11 +10,10 @@ import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/models/custom_media.dart';
 import '../widgets/create_custom_item_dialog.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
-import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
-import '../../../shared/widgets/breadcrumb_scope.dart';
 import '../../../data/repositories/collection_repository.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/widgets/screen_app_bar.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
@@ -99,16 +98,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       _isUncategorized || (_collection != null && _collection!.isEditable);
 
   /// Название для хлебных крошек и заголовка.
-  ///
-  /// Примечание: для uncategorized используется нелокализованная строка,
-  /// так как контекст недоступен в getter. Локализация применяется в UI.
-  String get _displayName =>
-      _isUncategorized ? 'Uncategorized' : (_collection?.name ?? '');
-
-  /// Локализованное название для UI-элементов.
-  String _localizedDisplayName(BuildContext context) =>
-      _isUncategorized ? S.of(context).collectionsUncategorized : (_collection?.name ?? '');
-
   /// Является ли это экраном uncategorized элементов.
   bool get _isUncategorized => widget.collectionId == null;
 
@@ -168,25 +157,19 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   @override
   Widget build(BuildContext context) {
     if (_collectionLoading) {
-      return const BreadcrumbScope(
-        label: '...',
-        child: Scaffold(
-          appBar: AutoBreadcrumbAppBar(),
-          body: Center(child: CircularProgressIndicator()),
-        ),
+      return const Scaffold(
+        appBar: ScreenAppBar(),
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
     if (!_isUncategorized && _collection == null) {
-      return BreadcrumbScope(
-        label: S.of(context).collectionNotFound,
-        child: Scaffold(
-          appBar: const AutoBreadcrumbAppBar(),
-          body: Center(
-            child: Text(
-              S.of(context).collectionNotFound,
-              style: AppTypography.body.copyWith(color: AppColors.textSecondary),
-            ),
+      return Scaffold(
+        appBar: const ScreenAppBar(),
+        body: Center(
+          child: Text(
+            S.of(context).collectionNotFound,
+            style: AppTypography.body.copyWith(color: AppColors.textSecondary),
           ),
         ),
       );
@@ -198,12 +181,13 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         ref.watch(collectionStatsProvider(widget.collectionId));
 
     final S l = S.of(context);
-    return BreadcrumbScope(
-      label: _localizedDisplayName(context),
-      child: CallbackShortcuts(
-        bindings: _buildScreenShortcuts(l),
-        child: Scaffold(
-        appBar: AutoBreadcrumbAppBar(
+    return CallbackShortcuts(
+      bindings: _buildScreenShortcuts(l),
+      child: Scaffold(
+        appBar: ScreenAppBar(
+          title: _isUncategorized
+              ? l.collectionsUncategorized
+              : _collection!.name,
           actions: _buildAppBarActions(l),
         ),
         body: _isCanvasMode
@@ -236,7 +220,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                 },
                 child: _buildListLayout(itemsAsync, statsAsync),
               ),
-      ),
       ),
     );
   }
@@ -631,17 +614,13 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   // =========================================================================
 
   void _showItemDetails(CollectionItem item) {
-    final String colName = _displayName;
     final bool isEditable = _canEdit;
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (BuildContext context) => BreadcrumbScope(
-          label: colName,
-          child: ItemDetailScreen(
-            collectionId: widget.collectionId,
-            itemId: item.id,
-            isEditable: isEditable,
-          ),
+        builder: (BuildContext context) => ItemDetailScreen(
+          collectionId: widget.collectionId,
+          itemId: item.id,
+          isEditable: isEditable,
         ),
       ),
     );

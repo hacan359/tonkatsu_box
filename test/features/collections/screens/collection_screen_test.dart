@@ -187,14 +187,6 @@ void main() {
   }
 
   group('CollectionScreen', () {
-    testWidgets('должен показывать название коллекции',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await pumpScreen(tester);
-
-      expect(find.text('Test Collection'), findsOneWidget);
-    });
-
     testWidgets('не должен показывать header со статистикой',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());

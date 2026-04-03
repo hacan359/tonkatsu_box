@@ -97,7 +97,6 @@ class TierItemCard extends StatelessWidget {
                             remoteUrl: item.thumbnailUrl!,
                             fit: BoxFit.cover,
                             memCacheWidth: (width * 2).toInt(),
-                            memCacheHeight: (height * 2).toInt(),
                             placeholder: _buildPlaceholder(),
                             errorWidget: _buildPlaceholder(),
                           )

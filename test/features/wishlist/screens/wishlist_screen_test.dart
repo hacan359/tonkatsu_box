@@ -5,7 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:xerabora/data/repositories/wishlist_repository.dart';
 import 'package:xerabora/features/wishlist/screens/wishlist_screen.dart';
-import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 import 'package:xerabora/shared/widgets/mini_markdown_text.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/wishlist_item.dart';
@@ -55,10 +54,7 @@ void main() {
             localizationsDelegates: S.localizationsDelegates,
             supportedLocales: S.supportedLocales,
         theme: ThemeData.dark(),
-        home: const BreadcrumbScope(
-          label: 'Wishlist',
-          child: WishlistScreen(),
-        ),
+        home: const WishlistScreen(),
       ),
     );
   }
@@ -221,19 +217,6 @@ void main() {
         // Resolved скрыт
         expect(find.text('Chrono Trigger'), findsOneWidget);
         expect(find.text('Resolved Game'), findsNothing);
-      });
-    });
-
-    group('BreadcrumbAppBar', () {
-      testWidgets('должен показывать Wishlist в хлебных крошках',
-          (WidgetTester tester) async {
-        when(() => mockRepo.getAll())
-            .thenAnswer((_) async => <WishlistItem>[]);
-
-        await tester.pumpWidget(buildScreen());
-        await tester.pumpAndSettle();
-
-        expect(find.text('Wishlist'), findsOneWidget);
       });
     });
 

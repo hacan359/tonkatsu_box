@@ -20,7 +20,6 @@ import 'package:xerabora/shared/models/movie.dart';
 import 'package:xerabora/shared/models/platform.dart';
 import 'package:xerabora/shared/models/tv_season.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
-import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 import 'package:xerabora/shared/widgets/media_detail_view.dart';
 import 'package:xerabora/shared/models/visual_novel.dart';
 import 'package:xerabora/shared/widgets/source_badge.dart';
@@ -75,13 +74,10 @@ void main() {
       child: MaterialApp(
         localizationsDelegates: S.localizationsDelegates,
         supportedLocales: S.supportedLocales,
-        home: BreadcrumbScope(
-          label: 'Test Collection',
-          child: ItemDetailScreen(
-            collectionId: collectionId,
-            itemId: itemId,
-            isEditable: isEditable,
-          ),
+        home: ItemDetailScreen(
+          collectionId: collectionId,
+          itemId: itemId,
+          isEditable: isEditable,
         ),
       ),
     );
@@ -115,26 +111,6 @@ void main() {
         platform: platform,
       );
     }
-
-    testWidgets('должен отображать название игры',
-        (WidgetTester tester) async {
-      const Game game = Game(id: 100, name: 'Chrono Trigger');
-      const Platform platform = Platform(id: 18, name: 'SNES');
-      final CollectionItem item = createGameItem(
-        game: game,
-        platform: platform,
-      );
-
-      await tester.pumpWidget(createTestWidget(
-        collectionId: 1,
-        itemId: 1,
-        isEditable: true,
-        items: <CollectionItem>[item],
-      ));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Chrono Trigger'), findsWidgets);
-    });
 
     testWidgets('должен отображать платформу', (WidgetTester tester) async {
       const Game game = Game(id: 100, name: 'Test Game');
@@ -580,22 +556,6 @@ void main() {
       );
     }
 
-    testWidgets('должен отображать название фильма',
-        (WidgetTester tester) async {
-      final Movie movie = createTestMovie(title: 'Inception');
-      final CollectionItem item = createMovieItem(movie: movie);
-
-      await tester.pumpWidget(createTestWidget(
-        collectionId: 1,
-        itemId: 1,
-        isEditable: true,
-        items: <CollectionItem>[item],
-      ));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Inception'), findsWidgets);
-    });
-
     testWidgets('должен показывать Movie not found для несуществующего ID',
         (WidgetTester tester) async {
       await tester.pumpWidget(createTestWidget(
@@ -876,22 +836,6 @@ void main() {
       );
     }
 
-    testWidgets('должен отображать название сериала',
-        (WidgetTester tester) async {
-      final TvShow tvShow = createTestTvShow(title: 'Breaking Bad');
-      final CollectionItem item = createTvShowItem(tvShow: tvShow);
-
-      await tester.pumpWidget(createTestWidget(
-        collectionId: 1,
-        itemId: 1,
-        isEditable: true,
-        items: <CollectionItem>[item],
-      ));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Breaking Bad'), findsWidgets);
-    });
-
     testWidgets('должен отображать тип медиа TV Show',
         (WidgetTester tester) async {
       final TvShow tvShow = createTestTvShow();
@@ -1133,44 +1077,6 @@ void main() {
     }
 
     group('заголовок', () {
-      testWidgets('должен отображать название (movie source)',
-          (WidgetTester tester) async {
-        final Movie movie = createTestMovie(title: 'Spirited Away');
-        final CollectionItem item = createAnimeItem(
-          movie: movie,
-          platformId: AnimationSource.movie,
-        );
-
-        await tester.pumpWidget(createTestWidget(
-          collectionId: 1,
-          itemId: 1,
-          isEditable: true,
-          items: <CollectionItem>[item],
-        ));
-        await tester.pumpAndSettle();
-
-        expect(find.text('Spirited Away'), findsWidgets);
-      });
-
-      testWidgets('должен отображать название (tvShow source)',
-          (WidgetTester tester) async {
-        final TvShow tvShow = createTestTvShow(title: 'Attack on Titan');
-        final CollectionItem item = createAnimeItem(
-          tvShow: tvShow,
-          platformId: AnimationSource.tvShow,
-        );
-
-        await tester.pumpWidget(createTestWidget(
-          collectionId: 1,
-          itemId: 1,
-          isEditable: true,
-          items: <CollectionItem>[item],
-        ));
-        await tester.pumpAndSettle();
-
-        expect(find.text('Attack on Titan'), findsWidgets);
-      });
-
       testWidgets('должен показывать Animation not found',
           (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
@@ -1439,22 +1345,6 @@ void main() {
         externalUrl: 'https://vndb.org/$id',
       );
     }
-
-    testWidgets('должен отображать название VN',
-        (WidgetTester tester) async {
-      final VisualNovel vn = createTestVn(title: 'Steins;Gate');
-      final CollectionItem item = createVnItem(visualNovel: vn);
-
-      await tester.pumpWidget(createTestWidget(
-        collectionId: 1,
-        itemId: 1,
-        isEditable: true,
-        items: <CollectionItem>[item],
-      ));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Steins;Gate'), findsWidgets);
-    });
 
     testWidgets('должен отображать тип Visual Novel',
         (WidgetTester tester) async {

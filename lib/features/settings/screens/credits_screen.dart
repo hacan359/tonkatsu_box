@@ -2,15 +2,14 @@
 
 import 'package:flutter/material.dart';
 
-import '../../../shared/theme/app_spacing.dart';
-import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
-import '../../../shared/widgets/breadcrumb_scope.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/widgets/screen_app_bar.dart';
 import '../content/credits_content.dart';
 
 /// Экран Credits с атрибуцией API-провайдеров и лицензиями.
 ///
-/// Тонкая обёртка вокруг [CreditsContent] с Scaffold/AppBar/BreadcrumbScope.
+/// Тонкая обёртка вокруг [CreditsContent] с Scaffold/AppBar.
 /// Используется при push-навигации на мобильных устройствах.
 class CreditsScreen extends StatelessWidget {
   /// Создаёт [CreditsScreen].
@@ -21,25 +20,22 @@ class CreditsScreen extends StatelessWidget {
     final double width = MediaQuery.sizeOf(context).width;
     final bool isWide = width >= 800;
 
-    return BreadcrumbScope(
-      label: S.of(context).creditsTitle,
-      child: Scaffold(
-        appBar: const AutoBreadcrumbAppBar(),
-        body: Align(
-          alignment: Alignment.topCenter,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: isWide ? 600 : double.infinity,
+    return Scaffold(
+      appBar: ScreenAppBar(title: S.of(context).settingsCreditsLicenses),
+      body: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: isWide ? 600 : double.infinity,
+          ),
+          child: ListView(
+            padding: EdgeInsets.symmetric(
+              horizontal: isWide ? AppSpacing.lg : AppSpacing.md,
+              vertical: AppSpacing.sm,
             ),
-            child: ListView(
-              padding: EdgeInsets.symmetric(
-                horizontal: isWide ? AppSpacing.lg : AppSpacing.md,
-                vertical: AppSpacing.sm,
-              ),
-              children: const <Widget>[
-                CreditsContent(),
-              ],
-            ),
+            children: const <Widget>[
+              CreditsContent(),
+            ],
           ),
         ),
       ),

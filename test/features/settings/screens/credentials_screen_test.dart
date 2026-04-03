@@ -10,7 +10,6 @@ import 'package:xerabora/features/settings/widgets/inline_text_field.dart';
 import 'package:xerabora/features/settings/widgets/settings_group.dart';
 import 'package:xerabora/features/settings/widgets/status_dot.dart';
 import 'package:xerabora/l10n/app_localizations.dart';
-import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 import 'package:xerabora/shared/widgets/source_badge.dart';
 
 void main() {
@@ -31,31 +30,10 @@ void main() {
         child: MaterialApp(
           localizationsDelegates: S.localizationsDelegates,
           supportedLocales: S.supportedLocales,
-          home: BreadcrumbScope(
-            label: 'Settings',
-            child: CredentialsScreen(isInitialSetup: isInitialSetup),
-          ),
+          home: CredentialsScreen(isInitialSetup: isInitialSetup),
         ),
       );
     }
-
-    group('Breadcrumbs', () {
-      testWidgets('should show Settings breadcrumb',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        expect(find.text('Settings'), findsOneWidget);
-      });
-
-      testWidgets('should show Credentials breadcrumb',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        expect(find.text('Credentials'), findsOneWidget);
-      });
-    });
 
     group('SettingsGroup widgets', () {
       testWidgets('should use SettingsGroup for sections',

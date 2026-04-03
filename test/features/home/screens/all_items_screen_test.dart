@@ -12,7 +12,6 @@ import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/data/repositories/collection_repository.dart';
 import 'package:xerabora/features/home/screens/all_items_screen.dart';
 import 'package:xerabora/l10n/app_localizations.dart';
-import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 import 'package:xerabora/features/settings/providers/profile_provider.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/shared/models/profile.dart';
@@ -159,22 +158,12 @@ void main() {
       child: const MaterialApp(
         localizationsDelegates: S.localizationsDelegates,
         supportedLocales: S.supportedLocales,
-        home: BreadcrumbScope(
-          label: 'Main',
-          child: AllItemsScreen(),
-        ),
+        home: AllItemsScreen(),
       ),
     );
   }
 
   group('AllItemsScreen', () {
-    testWidgets('рендерит AppBar с заголовком Main',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(buildTestWidget());
-
-      expect(find.text('Main'), findsOneWidget);
-    });
-
     testWidgets('показывает чипсы фильтрации по типу медиа',
         (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget());

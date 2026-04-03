@@ -5,8 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_spacing.dart';
-import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
-import '../../../shared/widgets/breadcrumb_scope.dart';
+import '../../../shared/widgets/screen_app_bar.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/settings_group.dart';
 import '../widgets/settings_tile.dart';
@@ -28,10 +27,8 @@ class DebugHubScreen extends ConsumerWidget {
     final double width = MediaQuery.sizeOf(context).width;
     final bool isWide = width >= 800;
 
-    return BreadcrumbScope(
-      label: S.of(context).settingsDebug,
-      child: Scaffold(
-        appBar: const AutoBreadcrumbAppBar(),
+    return Scaffold(
+      appBar: ScreenAppBar(title: S.of(context).settingsDebug),
         body: Align(
           alignment: Alignment.topCenter,
           child: ConstrainedBox(
@@ -81,17 +78,13 @@ class DebugHubScreen extends ConsumerWidget {
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 
   void _push(BuildContext context, Widget screen) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (BuildContext context) => BreadcrumbScope(
-          label: 'Debug',
-          child: screen,
-        ),
+        builder: (BuildContext context) => screen,
       ),
     );
   }

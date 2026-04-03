@@ -6,10 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/api/steamgriddb_api.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
+import '../../../shared/widgets/screen_app_bar.dart';
 import '../../../shared/models/steamgriddb_game.dart';
 import '../../../shared/models/steamgriddb_image.dart';
-import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
-import '../../../shared/widgets/breadcrumb_scope.dart';
 
 /// Экран отладки SteamGridDB API.
 ///
@@ -127,12 +126,11 @@ class _SteamGridDbDebugScreenState
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    return BreadcrumbScope(
-      label: l.debugSteamGridDb,
-      child: DefaultTabController(
+    return DefaultTabController(
       length: 5,
       child: Scaffold(
-        appBar: AutoBreadcrumbAppBar(
+        appBar: ScreenAppBar(
+          title: l.debugSteamGridDb,
           bottom: TabBar(
             isScrollable: true,
             tabs: <Widget>[
@@ -154,7 +152,6 @@ class _SteamGridDbDebugScreenState
           ],
         ),
       ),
-    ),
     );
   }
 

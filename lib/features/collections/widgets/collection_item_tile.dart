@@ -283,7 +283,6 @@ class CollectionItemTile extends StatelessWidget {
                 remoteUrl: item.thumbnailUrl!,
                 fit: BoxFit.cover,
                 memCacheWidth: 96,
-                memCacheHeight: 128,
                 placeholder: Container(
                   color: AppColors.surfaceLight,
                   child: const Center(

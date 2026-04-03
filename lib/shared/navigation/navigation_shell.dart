@@ -23,7 +23,6 @@ import '../keyboard/keyboard_shortcuts_dialog.dart';
 import '../theme/app_assets.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
-import '../widgets/breadcrumb_scope.dart';
 import '../../core/services/update_service.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -342,15 +341,6 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
   }
 
   Widget _buildTabNavigator(int tabIndex) {
-    final String tabLabel = switch (NavTab.values[tabIndex]) {
-      NavTab.home => S.of(context).navMain,
-      NavTab.collections => S.of(context).navCollections,
-      NavTab.tierLists => S.of(context).navTierLists,
-      NavTab.wishlist => S.of(context).navWishlist,
-      NavTab.search => S.of(context).navSearch,
-      NavTab.settings => S.of(context).navSettings,
-    };
-
     // Кэшируем Navigator — тот же widget instance при rebuild
     // гарантирует, что Flutter не пересоздаёт NavigatorState
     // и не теряет историю маршрутов.
@@ -373,10 +363,7 @@ class _NavigationShellState extends ConsumerState<NavigationShell> {
 
     return FocusScope(
       node: _tabFocusScopeNodes[tabIndex],
-      child: BreadcrumbScope(
-        label: tabLabel,
-        child: _navigatorWidgets[tabIndex]!,
-      ),
+      child: _navigatorWidgets[tabIndex]!,
     );
   }
 

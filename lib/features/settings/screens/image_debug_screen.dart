@@ -7,11 +7,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
+import '../../../shared/widgets/screen_app_bar.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/media_type.dart';
-import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
-import '../../../shared/widgets/breadcrumb_scope.dart';
 import '../../collections/providers/collections_provider.dart';
 
 /// Debug-экран для проверки URL изображений.
@@ -55,10 +54,8 @@ class _ImageDebugScreenState extends ConsumerState<ImageDebugScreen> {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
 
-    return BreadcrumbScope(
-      label: S.of(context).debugIgdbMedia,
-      child: Scaffold(
-      appBar: const AutoBreadcrumbAppBar(),
+    return Scaffold(
+      appBar: const ScreenAppBar(title: 'Image Debug'),
       body: Column(
         children: <Widget>[
           // Выбор коллекции
@@ -97,7 +94,6 @@ class _ImageDebugScreenState extends ConsumerState<ImageDebugScreen> {
           ),
         ],
       ),
-    ),
     );
   }
 

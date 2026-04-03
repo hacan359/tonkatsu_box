@@ -11,7 +11,6 @@ import 'package:xerabora/features/settings/screens/settings_screen.dart';
 import 'package:xerabora/features/settings/widgets/settings_tile.dart';
 import 'package:xerabora/shared/models/profile.dart';
 import 'package:xerabora/l10n/app_localizations.dart';
-import 'package:xerabora/shared/widgets/breadcrumb_scope.dart';
 
 void main() {
   late SharedPreferences prefs;
@@ -35,10 +34,7 @@ void main() {
         supportedLocales: S.supportedLocales,
         home: MediaQuery(
           data: MediaQueryData(size: Size(width, height)),
-          child: const BreadcrumbScope(
-            label: 'Settings',
-            child: SettingsScreen(),
-          ),
+          child: const SettingsScreen(),
         ),
       ),
     );
@@ -222,10 +218,7 @@ void main() {
               supportedLocales: S.supportedLocales,
               home: MediaQuery(
                 data: MediaQueryData(size: Size(400, 2000)),
-                child: BreadcrumbScope(
-                  label: 'Settings',
-                  child: SettingsScreen(),
-                ),
+                child: SettingsScreen(),
               ),
             ),
           ),

@@ -11,10 +11,9 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
-import '../../../shared/widgets/auto_breadcrumb_app_bar.dart';
-import '../../../shared/widgets/breadcrumb_scope.dart';
 import '../../../shared/widgets/collection_picker_dialog.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
+import '../../../shared/widgets/screen_app_bar.dart';
 import '../../../core/database/database_service.dart';
 import '../../../shared/models/collected_item_info.dart';
 import '../../../data/repositories/canvas_repository.dart';
@@ -141,30 +140,21 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       data: (List<CollectionItem> items) {
         final CollectionItem? item = _findItem(items);
         if (item == null) {
-          return BreadcrumbScope(
-            label: '...',
-            child: Scaffold(
-              appBar: const AutoBreadcrumbAppBar(),
-              body: Center(child: Text(_notFoundMessage(context, null))),
-            ),
+          return Scaffold(
+            appBar: const ScreenAppBar(),
+            body: Center(child: Text(_notFoundMessage(context, null))),
           );
         }
         return _buildContent(item);
       },
-      loading: () => const BreadcrumbScope(
-        label: '...',
-        child: Scaffold(
-          appBar: AutoBreadcrumbAppBar(),
-          body: Center(child: CircularProgressIndicator()),
-        ),
+      loading: () => const Scaffold(
+        appBar: ScreenAppBar(),
+        body: Center(child: CircularProgressIndicator()),
       ),
-      error: (Object error, StackTrace stack) => BreadcrumbScope(
-        label: '...',
-        child: Scaffold(
-          appBar: const AutoBreadcrumbAppBar(),
-          body: Center(
-            child: Text(S.of(context).errorPrefix(error.toString())),
-          ),
+      error: (Object error, StackTrace stack) => Scaffold(
+        appBar: const ScreenAppBar(),
+        body: Center(
+          child: Text(S.of(context).errorPrefix(error.toString())),
         ),
       ),
     );
@@ -401,12 +391,11 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     _currentItemName = item.itemName;
     final _MediaConfig config = _getMediaConfig(item);
 
-    return BreadcrumbScope(
-      label: item.itemName,
-      child: CallbackShortcuts(
-        bindings: _buildScreenShortcuts(item),
-        child: Scaffold(
-        appBar: AutoBreadcrumbAppBar(
+    return CallbackShortcuts(
+      bindings: _buildScreenShortcuts(item),
+      child: Scaffold(
+        appBar: ScreenAppBar(
+          title: item.itemName,
           actions: <Widget>[
             // Board toggle кнопка
             if (_hasCanvas)
@@ -527,7 +516,6 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         body: _showCanvas && _hasCanvas
             ? _buildCanvasView()
             : _buildDetailView(item, config),
-      ),
       ),
     );
   }

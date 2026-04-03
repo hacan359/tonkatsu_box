@@ -46,7 +46,7 @@ graph TB
 
     subgraph shared ["🧩 Shared"]
         models["Models<br/><small>26 моделей:<br/>Game, Movie, TvShow,<br/>VisualNovel, Manga, CustomMedia,<br/>Collection, CanvasItem, WishlistItem,<br/>RaGameProgress, RaUserProfile...</small>"]
-        widgets["Widgets<br/><small>CachedImage, MediaPosterCard,<br/>BreadcrumbAppBar,<br/>StarRatingBar...</small>"]
+        widgets["Widgets<br/><small>CachedImage, MediaPosterCard,<br/>ScreenAppBar, StarRatingBar...</small>"]
         theme["Theme<br/><small>AppColors, AppTypography,<br/>AppSpacing, AppTheme</small>"]
         navigation["Navigation<br/><small>NavigationShell<br/>Rail / BottomBar</small>"]
     end
@@ -267,7 +267,7 @@ lib/
 | Файл | Назначение |
 |------|------------|
 | `lib/features/wishlist/screens/wishlist_screen.dart` | **Экран вишлиста**. ListView с `_WishlistTile`, FAB для добавления, фильтр resolved (visibility toggle), clear resolved с confirmation. Popup menu: Search/Edit/Resolve/Delete. Тап на элемент → `SearchScreen(initialQuery)`. Resolved: opacity 0.5, strikethrough |
-| `lib/features/wishlist/widgets/add_wishlist_dialog.dart` | **Экран-форма создания/редактирования** (`AddWishlistForm`). Full-page form with `AutoBreadcrumbAppBar`, title validation (min 2 chars), ChoiceChip для типа медиа (showCheckmark: false), TextField для заметки. Breadcrumb "Add"/"Edit". Режим редактирования при `existing` != null |
+| `lib/features/wishlist/widgets/add_wishlist_dialog.dart` | **Экран-форма создания/редактирования** (`AddWishlistForm`). Full-page form with AppBar, title validation (min 2 chars), ChoiceChip для типа медиа (showCheckmark: false), TextField для заметки. Режим редактирования при `existing` != null |
 | `lib/features/wishlist/providers/wishlist_provider.dart` | **State management вишлиста**. `wishlistProvider` — AsyncNotifierProvider с оптимистичным обновлением. Методы: add, resolve, unresolve, updateItem, delete, clearResolved. Сортировка: active first → by createdAt DESC. `activeWishlistCountProvider` — Provider\<int\> для badge навигации |
 
 ---
@@ -430,9 +430,8 @@ lib/
 | `lib/shared/widgets/mini_markdown_text.dart` | **Мини-markdown рендер**. StatefulWidget, парсит `**bold**`, `*italic*`, `[text](url)`, bare URLs через RegExp. Рендерит `Text.rich()` с `TextSpan`/`WidgetSpan`. Ссылки открываются через `url_launcher` (TapGestureRecognizer). Используется в MediaDetailView (заметки/рецензии) и WishlistScreen |
 | `lib/shared/widgets/markdown_toolbar.dart` | **Тулбар markdown-разметки**. StatelessWidget с кнопками Bold/Italic/Link. `wrapSelection()` — оборачивает выделение маркерами или вставляет пустые. `insertLink()` — диалог вставки `[text](url)`. Используется в MediaDetailView и AddWishlistDialog |
 | `lib/shared/widgets/star_rating_bar.dart` | **Виджет рейтинга**. 10 кликабельных звёзд (InkWell, focusable для геймпада). Параметры: `rating: int?`, `starSize: double`, `onChanged: ValueChanged<int?>`. Повторный клик на текущий рейтинг сбрасывает на `null` |
-| `lib/shared/widgets/breadcrumb_scope.dart` | **BreadcrumbScope InheritedWidget**. Accumulates breadcrumb labels up the widget tree via `visitAncestorElements`. Tab root scope set in `NavigationShell`, screen scope in each screen's `build()`, push scope in `MaterialPageRoute.builder` |
-| `lib/shared/widgets/auto_breadcrumb_app_bar.dart` | **AutoBreadcrumbAppBar**. Reads `BreadcrumbScope` chain automatically, generates `BreadcrumbAppBar` with clickable navigation (root→popUntil, intermediate→pop(N), last→current). Supports `actions`, `bottom`, `accentColor` |
-| `lib/shared/widgets/breadcrumb_app_bar.dart` | **Low-level breadcrumb AppBar**. `BreadcrumbAppBar implements PreferredSizeWidget`. Height 44px, chevron_right separators, hover pill effect, mobile collapse (>2→…), mobile back button, overflow ellipsis (300/180px), gamepad support |
+| ~~`breadcrumb_scope.dart`~~ | **Removed.** Breadcrumb system replaced by `ScreenAppBar` |
+| `lib/shared/widgets/screen_app_bar.dart` | **Единый AppBar**. Compact 44px, gradient border (surface → background), localized title (14px semibold), automatic back button on mobile via `canPop()`. Implements `PreferredSizeWidget`. Parameters: `title`, `actions`, `bottom` (TabBar). Used by all screens |
 | `lib/shared/widgets/source_badge.dart` | **Бейдж источника данных**. Re-exports `DataSource` from `data_source.dart`. Размеры: small, medium, large. Цветовая маркировка и текстовая метка. Optional `onTap` — wraps in `InkWell`, shows `open_in_new` icon for external URL |
 | `lib/shared/widgets/media_type_badge.dart` | **Бейдж типа медиа**. Цветная иконка по `MediaType`: синий (игры), красный (фильмы), зелёный (сериалы) |
 | `lib/shared/widgets/collection_picker_dialog.dart` | **Диалог выбора коллекции**. Sealed class `CollectionChoice` (`ChosenCollection` / `WithoutCollection`). Функция `showCollectionPickerDialog()` с `_CollectionPickerContent` StatefulWidget. Параметры: `excludeCollectionId`, `showUncategorized`, `title`, `alreadyInCollectionIds` (Set\<int?\> — disabled коллекции с бейджем "✓ Added", null = Uncategorized). Фильтр по имени (≥5 коллекций), сортировка (available сверху, disabled снизу), footer со счётчиком. Используется в Search, Detail Screens (recommendations), Move to Collection |
@@ -499,13 +498,13 @@ lib/
 | Файл | Назначение |
 |------|------------|
 | `lib/features/settings/screens/settings_screen.dart` | **Хаб настроек**. Единый grouped-list лейаут для всех платформ. `ListView` с `SettingsGroup`/`SettingsTile` — Appearance, Data Sources, Storage, Import, Profile, About, Debug (kDebugMode), Error. Push-навигация на подэкраны. На десктопе (≥ 800px): `Align(topCenter)` + `ConstrainedBox(maxWidth: 600)` |
-| `lib/features/settings/screens/credentials_screen.dart` | **Тонкая обёртка** для push-навигации. `BreadcrumbScope > Scaffold > Align(topCenter) > ConstrainedBox(600) > SingleChildScrollView > CredentialsContent` |
-| `lib/features/settings/screens/credits_screen.dart` | **Тонкая обёртка** для push-навигации. `BreadcrumbScope > Scaffold > Align(topCenter) > ConstrainedBox(600) > ListView > CreditsContent` |
-| `lib/features/settings/screens/cache_screen.dart` | **Тонкая обёртка** для push-навигации. `BreadcrumbScope > Scaffold > Align(topCenter) > ConstrainedBox(600) > SingleChildScrollView > CacheContent` |
-| `lib/features/settings/screens/database_screen.dart` | **Тонкая обёртка** для push-навигации. `BreadcrumbScope > Scaffold > Align(topCenter) > ConstrainedBox(600) > SingleChildScrollView > DatabaseContent` |
-| `lib/features/settings/screens/trakt_import_screen.dart` | **Тонкая обёртка** для push-навигации. `BreadcrumbScope > Scaffold > Align(topCenter) > ConstrainedBox(600) > SingleChildScrollView > TraktImportContent(onImportComplete: pop)` |
-| `lib/features/settings/screens/steam_import_screen.dart` | **Тонкая обёртка** для push-навигации. `BreadcrumbScope > Scaffold > Align(topCenter) > ConstrainedBox(600) > SingleChildScrollView > SteamImportContent` |
-| `lib/features/settings/screens/ra_import_screen.dart` | **Тонкая обёртка** для push-навигации. `BreadcrumbScope > Scaffold > Align(topCenter) > ConstrainedBox(600) > SingleChildScrollView > RaImportContent` |
+| `lib/features/settings/screens/credentials_screen.dart` | **Тонкая обёртка** для push-навигации. `Scaffold > Align(topCenter) > ConstrainedBox(600) > SingleChildScrollView > CredentialsContent` |
+| `lib/features/settings/screens/credits_screen.dart` | **Тонкая обёртка** для push-навигации. `Scaffold > Align(topCenter) > ConstrainedBox(600) > ListView > CreditsContent` |
+| `lib/features/settings/screens/cache_screen.dart` | **Тонкая обёртка** для push-навигации. `Scaffold > Align(topCenter) > ConstrainedBox(600) > SingleChildScrollView > CacheContent` |
+| `lib/features/settings/screens/database_screen.dart` | **Тонкая обёртка** для push-навигации. `Scaffold > Align(topCenter) > ConstrainedBox(600) > SingleChildScrollView > DatabaseContent` |
+| `lib/features/settings/screens/trakt_import_screen.dart` | **Тонкая обёртка** для push-навигации. `Scaffold > Align(topCenter) > ConstrainedBox(600) > SingleChildScrollView > TraktImportContent(onImportComplete: pop)` |
+| `lib/features/settings/screens/steam_import_screen.dart` | **Тонкая обёртка** для push-навигации. `Scaffold > Align(topCenter) > ConstrainedBox(600) > SingleChildScrollView > SteamImportContent` |
+| `lib/features/settings/screens/ra_import_screen.dart` | **Тонкая обёртка** для push-навигации. `Scaffold > Align(topCenter) > ConstrainedBox(600) > SingleChildScrollView > RaImportContent` |
 | `lib/features/settings/screens/import_result_screen.dart` | **Экран результатов импорта** — единый для Steam и Trakt. Celebration header, `_ResultCard` с breakdown по MediaType (иконки/цвета через `MediaTypeTheme`), wishlist hint, skipped count, кнопки "Open Collection" / "Done". StatelessWidget, принимает `UniversalImportResult` |
 | `lib/features/settings/screens/debug_hub_screen.dart` | **Хаб отладки** (только kDebugMode). `SettingsGroup`/`SettingsTile` с 4 debug tools: SteamGridDB, Image Debug, Gamepad, Demo Collections. SteamGridDB недоступен без API ключа |
 | `lib/features/settings/screens/steamgriddb_debug_screen.dart` | **Debug-экран SteamGridDB**. 5 табов: Search, Grids, Heroes, Logos, Icons. Тестирование всех API эндпоинтов |
