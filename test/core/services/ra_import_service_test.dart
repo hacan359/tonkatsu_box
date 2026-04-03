@@ -2,6 +2,7 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:xerabora/core/api/ra_api.dart';
 import 'package:xerabora/core/services/ra_import_service.dart';
 import 'package:xerabora/shared/models/collection.dart';
 import 'package:xerabora/shared/models/collection_item.dart';
@@ -23,43 +24,57 @@ void main() {
   /// Записанные вызовы onProgress.
   late List<RaImportProgress> progressCalls;
 
+  /// Маппинг название → Game для multiquery mock.
+  final Map<String, Game?> igdbGamesByTitle = <String, Game?>{};
+
   void onProgress(RaImportProgress p) => progressCalls.add(p);
+
+  /// Регистрирует Game-ответ для конкретного названия в multiquery mock.
+  void setupIgdbSearchMock({
+    required String query,
+    List<int>? platformIds,
+    List<Game>? results,
+  }) {
+    final List<Game> games = results ?? <Game>[];
+    igdbGamesByTitle[query] = games.isNotEmpty ? games.first : null;
+  }
+
+  /// Настраивает стандартные mocks для RA API.
+  void setupRaApiMocks({
+    List<RaGameProgress>? games,
+  }) {
+    when(() => mockRaApi.getCompletedGames(any()))
+        .thenAnswer((_) async => games ?? <RaGameProgress>[]);
+  }
 
   setUp(() {
     mockRaApi = MockRaApi();
     mockIgdbApi = MockIgdbApi();
     mockDb = MockDatabaseService();
     progressCalls = <RaImportProgress>[];
+    igdbGamesByTitle.clear();
 
     sut = RaImportService(
       raApi: mockRaApi,
       igdbApi: mockIgdbApi,
       database: mockDb,
     );
+
+    // Multiquery mock — использует igdbGamesByTitle, заполняемый
+    // через setupIgdbSearchMock() в каждом тесте.
+    when(() => mockIgdbApi.multiSearchGamesByName(any()))
+        .thenAnswer((Invocation inv) async {
+      final List<({String name, int? platformId})> queries =
+          inv.positionalArguments[0]
+              as List<({String name, int? platformId})>;
+      final Map<int, List<Game>> result = <int, List<Game>>{};
+      for (int i = 0; i < queries.length; i++) {
+        final Game? game = igdbGamesByTitle[queries[i].name];
+        result[i] = game != null ? <Game>[game] : <Game>[];
+      }
+      return result;
+    });
   });
-
-  /// Настраивает стандартные mocks для RA API.
-  void setupRaApiMocks({
-    List<RaGameProgress>? games,
-    Map<int, DateTime>? awardDates,
-  }) {
-    when(() => mockRaApi.getCompletedGames(any()))
-        .thenAnswer((_) async => games ?? <RaGameProgress>[]);
-    when(() => mockRaApi.getUserAwardDates(any()))
-        .thenAnswer((_) async => awardDates ?? <int, DateTime>{});
-  }
-
-  /// Настраивает IGDB mock для поиска игр.
-  void setupIgdbSearchMock({
-    required String query,
-    List<int>? platformIds,
-    List<Game>? results,
-  }) {
-    when(() => mockIgdbApi.searchGames(
-          query: query,
-          platformIds: platformIds,
-        )).thenAnswer((_) async => results ?? <Game>[]);
-  }
 
   /// Настраивает DB mocks для добавления элементов.
   void setupDbMocks() {
@@ -232,6 +247,7 @@ void main() {
           numAwarded: 96,
           maxPossible: 96,
           highestAwardKind: 'mastered-hardcore',
+          highestAwardDate: DateTime(2024, 5, 10),
           lastPlayedAt: DateTime(2024, 6, 15),
         );
 
@@ -242,11 +258,9 @@ void main() {
 
         setupRaApiMocks(
           games: <RaGameProgress>[raGame],
-          awardDates: <int, DateTime>{1234: DateTime(2024, 5, 10)},
         );
         setupIgdbSearchMock(
           query: 'Super Mario World',
-          platformIds: <int>[19],
           results: <Game>[igdbGame],
         );
         setupDbMocks();
@@ -285,7 +299,6 @@ void main() {
         setupRaApiMocks(games: <RaGameProgress>[raGame]);
         setupIgdbSearchMock(
           query: 'Test Game',
-          platformIds: <int>[19],
           results: <Game>[igdbGame],
         );
         setupDbMocks();
@@ -297,7 +310,7 @@ void main() {
           onProgress: onProgress,
         );
 
-        // fetchingLibrary, matchingGames (per game), completed.
+        // fetchingLibrary, matchingGames (0/N), matchingGames (1/N), completed.
         expect(progressCalls.length, greaterThanOrEqualTo(3));
         expect(
           progressCalls.first.stage,
@@ -313,20 +326,18 @@ void main() {
         );
       });
 
-      test('should handle empty RA library', () async {
+      test('should throw on empty RA library', () async {
         setupRaApiMocks();
 
-        final RaImportResult result = await sut.importFromProfile(
-          raUsername: 'TestUser',
-          collectionId: 1,
-          addToWishlist: false,
-          onProgress: onProgress,
+        expect(
+          () => sut.importFromProfile(
+            raUsername: 'TestUser',
+            collectionId: 1,
+            addToWishlist: false,
+            onProgress: onProgress,
+          ),
+          throwsA(isA<RaApiException>()),
         );
-
-        expect(result.totalGames, equals(0));
-        expect(result.added, equals(0));
-        expect(result.updated, equals(0));
-        expect(result.unmatched, equals(0));
       });
 
       test('should count unmatched games when IGDB returns no results',
@@ -343,10 +354,6 @@ void main() {
           platformIds: <int>[19],
           results: <Game>[],
         );
-        // Fallback search without platform.
-        when(() => mockIgdbApi.searchGames(
-              query: 'Unknown Retro Game',
-            )).thenAnswer((_) async => <Game>[]);
         setupDbMocks();
 
         final RaImportResult result = await sut.importFromProfile(
@@ -378,9 +385,6 @@ void main() {
           platformIds: <int>[18],
           results: <Game>[],
         );
-        when(() => mockIgdbApi.searchGames(
-              query: 'Unknown Game',
-            )).thenAnswer((_) async => <Game>[]);
         setupDbMocks();
 
         await sut.importFromProfile(
@@ -410,9 +414,6 @@ void main() {
           platformIds: <int>[18],
           results: <Game>[],
         );
-        when(() => mockIgdbApi.searchGames(
-              query: 'Unknown Game',
-            )).thenAnswer((_) async => <Game>[]);
         setupDbMocks();
 
         await sut.importFromProfile(
@@ -442,9 +443,6 @@ void main() {
           platformIds: <int>[18],
           results: <Game>[],
         );
-        when(() => mockIgdbApi.searchGames(
-              query: 'Unknown Game',
-            )).thenAnswer((_) async => <Game>[]);
         setupDbMocks();
 
         // Wishlist item already exists.
@@ -473,6 +471,7 @@ void main() {
           numAwarded: 96,
           maxPossible: 96,
           highestAwardKind: 'mastered-hardcore',
+          highestAwardDate: DateTime(2024, 5, 10),
           lastPlayedAt: DateTime(2024, 6, 15),
         );
 
@@ -487,7 +486,6 @@ void main() {
 
         setupRaApiMocks(
           games: <RaGameProgress>[raGame],
-          awardDates: <int, DateTime>{1234: DateTime(2024, 5, 10)},
         );
         setupIgdbSearchMock(
           query: 'Mario',
@@ -625,6 +623,7 @@ void main() {
           numAwarded: 96,
           maxPossible: 96,
           highestAwardKind: 'mastered-hardcore',
+          highestAwardDate: completedAt,
           lastPlayedAt: lastPlayed,
         );
 
@@ -639,7 +638,6 @@ void main() {
 
         setupRaApiMocks(
           games: <RaGameProgress>[raGame],
-          awardDates: <int, DateTime>{1234: completedAt},
         );
         setupIgdbSearchMock(
           query: 'Mario',
@@ -676,6 +674,7 @@ void main() {
           gameId: 1234,
           title: 'Mario',
           consoleId: 3,
+          highestAwardDate: completedAt,
           lastPlayedAt: lastPlayed,
         );
 
@@ -683,7 +682,6 @@ void main() {
 
         setupRaApiMocks(
           games: <RaGameProgress>[raGame],
-          awardDates: <int, DateTime>{1234: completedAt},
         );
         setupIgdbSearchMock(
           query: 'Mario',
@@ -701,7 +699,6 @@ void main() {
 
         verify(() => mockDb.updateItemActivityDates(
               42, // itemId from addItemToCollection mock
-              startedAt: lastPlayed,
               completedAt: completedAt,
               lastActivityAt: lastPlayed,
             )).called(1);
@@ -719,7 +716,6 @@ void main() {
 
         setupRaApiMocks(
           games: <RaGameProgress>[raGame],
-          awardDates: <int, DateTime>{},
         );
         setupIgdbSearchMock(
           query: 'Mario',
@@ -749,6 +745,7 @@ void main() {
           gameId: 1234,
           title: 'Mario',
           consoleId: 3,
+          highestAwardDate: DateTime(2024, 5, 10),
           lastPlayedAt: DateTime(2024, 6, 15),
         );
 
@@ -756,7 +753,6 @@ void main() {
 
         setupRaApiMocks(
           games: <RaGameProgress>[raGame],
-          awardDates: <int, DateTime>{1234: DateTime(2024, 5, 10)},
         );
         setupIgdbSearchMock(
           query: 'Mario',
@@ -963,12 +959,8 @@ void main() {
         );
         setupIgdbSearchMock(
           query: 'Unmatched Game',
-          platformIds: <int>[18],
           results: <Game>[],
         );
-        when(() => mockIgdbApi.searchGames(
-              query: 'Unmatched Game',
-            )).thenAnswer((_) async => <Game>[]);
         setupDbMocks();
 
         final RaImportResult result = await sut.importFromProfile(

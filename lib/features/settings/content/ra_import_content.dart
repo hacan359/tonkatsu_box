@@ -299,8 +299,12 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
                     ),
                   );
                 }
+                final bool selectedExists = _selectedCollectionId != null &&
+                    collections.any(
+                      (Collection c) => c.id == _selectedCollectionId,
+                    );
                 return DropdownButtonFormField<int>(
-                  initialValue: _selectedCollectionId,
+                  initialValue: selectedExists ? _selectedCollectionId : null,
                   hint: Text(l.raImportSelectCollection),
                   isExpanded: true,
                   items: collections.map((Collection c) {
@@ -550,19 +554,6 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
     });
 
     try {
-      // Определяем целевую коллекцию.
-      final int collectionId;
-      if (_useNewCollection) {
-        final DatabaseService db = ref.read(databaseServiceProvider);
-        final Collection collection = await db.createCollection(
-          name: 'RA Games',
-          author: authorName,
-        );
-        collectionId = collection.id;
-      } else {
-        collectionId = _selectedCollectionId!;
-      }
-
       // Устанавливаем credentials на API клиенте.
       ref.read(raApiProvider).setCredentials(
             username: username,
@@ -571,9 +562,21 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
 
       final RaImportService service = ref.read(raImportServiceProvider);
 
+      // Коллекция создаётся лениво — только после успешной загрузки
+      // библиотеки RA, чтобы не оставлять пустую коллекцию при ошибке.
       final RaImportResult result = await service.importFromProfile(
         raUsername: username,
-        collectionId: collectionId,
+        collectionId: _useNewCollection ? null : _selectedCollectionId,
+        createCollection: _useNewCollection
+            ? () async {
+                final DatabaseService db = ref.read(databaseServiceProvider);
+                final Collection collection = await db.createCollection(
+                  name: 'RA Games',
+                  author: authorName,
+                );
+                return collection.id;
+              }
+            : null,
         addToWishlist: _addToWishlist,
         onProgress: (RaImportProgress progress) {
           if (mounted) {
@@ -581,6 +584,7 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
           }
         },
       );
+      final int collectionId = result.collectionId;
 
       if (!mounted) return;
 

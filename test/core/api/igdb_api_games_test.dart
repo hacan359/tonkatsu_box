@@ -245,6 +245,170 @@ void main() {
       });
     });
 
+    group('multiSearchGamesByName', () {
+      test('returns parsed games mapped by index', () async {
+        when(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            )).thenAnswer((_) async => Response<dynamic>(
+              requestOptions: RequestOptions(path: ''),
+              statusCode: 200,
+              data: <Map<String, dynamic>>[
+                <String, dynamic>{
+                  'name': 'q_0',
+                  'result': <Map<String, dynamic>>[
+                    <String, dynamic>{'id': 100, 'name': 'Hollow Knight'},
+                  ],
+                },
+                <String, dynamic>{
+                  'name': 'q_1',
+                  'result': <Map<String, dynamic>>[
+                    <String, dynamic>{'id': 200, 'name': 'Celeste'},
+                  ],
+                },
+              ],
+            ));
+
+        final Map<int, List<Game>> result =
+            await api.multiSearchGamesByName(<({String name, int? platformId})>[
+          (name: 'Hollow Knight', platformId: 19),
+          (name: 'Celeste', platformId: null),
+        ]);
+
+        expect(result, hasLength(2));
+        expect(result[0]!.first.name, 'Hollow Knight');
+        expect(result[1]!.first.name, 'Celeste');
+      });
+
+      test('returns empty map for empty queries', () async {
+        final Map<int, List<Game>> result =
+            await api.multiSearchGamesByName(
+                <({String name, int? platformId})>[]);
+
+        expect(result, isEmpty);
+        verifyNever(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            ));
+      });
+
+      test('includes platform filter in query body', () async {
+        String? capturedData;
+
+        when(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            )).thenAnswer((Invocation inv) async {
+          capturedData =
+              inv.namedArguments[const Symbol('data')] as String?;
+          return Response<dynamic>(
+            requestOptions: RequestOptions(path: ''),
+            statusCode: 200,
+            data: <Map<String, dynamic>>[
+              <String, dynamic>{
+                'name': 'q_0',
+                'result': <Map<String, dynamic>>[],
+              },
+            ],
+          );
+        });
+
+        await api.multiSearchGamesByName(
+            <({String name, int? platformId})>[
+          (name: 'Mario', platformId: 19),
+        ]);
+
+        expect(capturedData, contains('platforms = (19)'));
+        expect(capturedData, contains('name ~ *"Mario"*'));
+      });
+
+      test('omits platform filter when platformId is null', () async {
+        String? capturedData;
+
+        when(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            )).thenAnswer((Invocation inv) async {
+          capturedData =
+              inv.namedArguments[const Symbol('data')] as String?;
+          return Response<dynamic>(
+            requestOptions: RequestOptions(path: ''),
+            statusCode: 200,
+            data: <Map<String, dynamic>>[
+              <String, dynamic>{
+                'name': 'q_0',
+                'result': <Map<String, dynamic>>[],
+              },
+            ],
+          );
+        });
+
+        await api.multiSearchGamesByName(
+            <({String name, int? platformId})>[
+          (name: 'Mario', platformId: null),
+        ]);
+
+        expect(capturedData, isNot(contains('platforms = (')));
+        expect(capturedData, contains('name ~ *"Mario"*'));
+      });
+
+      test('posts to /multiquery endpoint', () async {
+        String? capturedUrl;
+
+        when(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            )).thenAnswer((Invocation inv) async {
+          capturedUrl = inv.positionalArguments[0] as String;
+          return Response<dynamic>(
+            requestOptions: RequestOptions(path: ''),
+            statusCode: 200,
+            data: <Map<String, dynamic>>[
+              <String, dynamic>{
+                'name': 'q_0',
+                'result': <Map<String, dynamic>>[],
+              },
+            ],
+          );
+        });
+
+        await api.multiSearchGamesByName(
+            <({String name, int? platformId})>[
+          (name: 'test', platformId: null),
+        ]);
+
+        expect(capturedUrl, endsWith('/multiquery'));
+      });
+
+      test('throws IgdbApiException on HTTP error', () async {
+        when(() => mockDio.post<dynamic>(
+              any(),
+              options: any(named: 'options'),
+              data: any(named: 'data'),
+            )).thenThrow(DioException(
+          requestOptions: RequestOptions(path: ''),
+          response: Response<dynamic>(
+            requestOptions: RequestOptions(path: ''),
+            statusCode: 500,
+          ),
+          type: DioExceptionType.badResponse,
+        ));
+
+        expect(
+          () => api.multiSearchGamesByName(
+              <({String name, int? platformId})>[
+            (name: 'test', platformId: null),
+          ]),
+          throwsA(isA<IgdbApiException>()),
+        );
+      });
+    });
+
     group('lookupSteamGames', () {
       test('returns games mapped by Steam appId', () async {
         int callCount = 0;

@@ -16,6 +16,7 @@ class RaGameProgress {
     required this.maxPossible,
     required this.hardcoreMode,
     this.highestAwardKind,
+    this.highestAwardDate,
     this.lastPlayedAt,
   });
 
@@ -32,6 +33,9 @@ class RaGameProgress {
       maxPossible: json['MaxPossible'] as int? ?? 0,
       hardcoreMode: (json['NumAwardedHardcore'] as int? ?? 0) > 0,
       highestAwardKind: json['HighestAwardKind'] as String?,
+      highestAwardDate: json['HighestAwardDate'] != null
+          ? DateTime.tryParse(json['HighestAwardDate'] as String)
+          : null,
       lastPlayedAt: json['MostRecentAwardedDate'] != null
           ? DateTime.tryParse(json['MostRecentAwardedDate'] as String)
           : null,
@@ -61,6 +65,9 @@ class RaGameProgress {
 
   /// Наивысшая награда: mastered, completed, beaten, или null.
   final String? highestAwardKind;
+
+  /// Дата получения наивысшей награды (beaten/mastered).
+  final DateTime? highestAwardDate;
 
   /// Дата последней активности (получение ачивки).
   final DateTime? lastPlayedAt;
