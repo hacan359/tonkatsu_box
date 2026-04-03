@@ -13,6 +13,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
+import '../../../shared/widgets/screen_app_bar.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../shared/theme/app_colors.dart';
@@ -58,7 +59,8 @@ class _TierListDetailScreenState
     return CallbackShortcuts(
       bindings: _buildScreenShortcuts(state),
       child: Scaffold(
-        appBar: AppBar(
+        appBar: ScreenAppBar(
+          title: state.isLoading ? null : state.tierList.name,
           actions: <Widget>[
             if (!state.isLoading)
               IconButton(

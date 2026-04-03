@@ -2,7 +2,9 @@
 
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/widgets/screen_app_bar.dart';
 import '../content/database_content.dart';
 
 /// Экран управления базой данных.
@@ -19,7 +21,7 @@ class DatabaseScreen extends StatelessWidget {
     final bool isWide = width >= 800;
 
     return Scaffold(
-      appBar: AppBar(),
+      appBar: ScreenAppBar(title: S.of(context).settingsDatabase),
       body: Align(
         alignment: Alignment.topCenter,
         child: ConstrainedBox(

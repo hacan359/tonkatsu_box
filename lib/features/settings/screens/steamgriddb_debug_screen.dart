@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/api/steamgriddb_api.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
+import '../../../shared/widgets/screen_app_bar.dart';
 import '../../../shared/models/steamgriddb_game.dart';
 import '../../../shared/models/steamgriddb_image.dart';
 
@@ -128,7 +129,8 @@ class _SteamGridDbDebugScreenState
     return DefaultTabController(
       length: 5,
       child: Scaffold(
-        appBar: AppBar(
+        appBar: ScreenAppBar(
+          title: l.debugSteamGridDb,
           bottom: TabBar(
             isScrollable: true,
             tabs: <Widget>[

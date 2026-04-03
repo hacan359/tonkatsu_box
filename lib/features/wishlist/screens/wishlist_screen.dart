@@ -14,6 +14,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/mini_markdown_text.dart';
+import '../../../shared/widgets/screen_app_bar.dart';
 import '../../../shared/widgets/type_to_filter_overlay.dart';
 import '../../search/screens/search_screen.dart';
 import '../providers/wishlist_provider.dart';
@@ -54,7 +55,8 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
     return CallbackShortcuts(
       bindings: _buildScreenShortcuts(),
       child: Scaffold(
-      appBar: AppBar(
+      appBar: ScreenAppBar(
+        title: l.navWishlist,
         actions: <Widget>[
           IconButton(
             icon: Icon(

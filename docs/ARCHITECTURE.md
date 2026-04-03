@@ -46,7 +46,7 @@ graph TB
 
     subgraph shared ["🧩 Shared"]
         models["Models<br/><small>26 моделей:<br/>Game, Movie, TvShow,<br/>VisualNovel, Manga, CustomMedia,<br/>Collection, CanvasItem, WishlistItem,<br/>RaGameProgress, RaUserProfile...</small>"]
-        widgets["Widgets<br/><small>CachedImage, MediaPosterCard,<br/>StarRatingBar...</small>"]
+        widgets["Widgets<br/><small>CachedImage, MediaPosterCard,<br/>ScreenAppBar, StarRatingBar...</small>"]
         theme["Theme<br/><small>AppColors, AppTypography,<br/>AppSpacing, AppTheme</small>"]
         navigation["Navigation<br/><small>NavigationShell<br/>Rail / BottomBar</small>"]
     end
@@ -430,7 +430,8 @@ lib/
 | `lib/shared/widgets/mini_markdown_text.dart` | **Мини-markdown рендер**. StatefulWidget, парсит `**bold**`, `*italic*`, `[text](url)`, bare URLs через RegExp. Рендерит `Text.rich()` с `TextSpan`/`WidgetSpan`. Ссылки открываются через `url_launcher` (TapGestureRecognizer). Используется в MediaDetailView (заметки/рецензии) и WishlistScreen |
 | `lib/shared/widgets/markdown_toolbar.dart` | **Тулбар markdown-разметки**. StatelessWidget с кнопками Bold/Italic/Link. `wrapSelection()` — оборачивает выделение маркерами или вставляет пустые. `insertLink()` — диалог вставки `[text](url)`. Используется в MediaDetailView и AddWishlistDialog |
 | `lib/shared/widgets/star_rating_bar.dart` | **Виджет рейтинга**. 10 кликабельных звёзд (InkWell, focusable для геймпада). Параметры: `rating: int?`, `starSize: double`, `onChanged: ValueChanged<int?>`. Повторный клик на текущий рейтинг сбрасывает на `null` |
-| ~~`breadcrumb_scope.dart`~~ | **Removed.** Breadcrumb system replaced by plain `AppBar()` — NavigationRail/BottomBar provides tab context, back button handles return navigation |
+| ~~`breadcrumb_scope.dart`~~ | **Removed.** Breadcrumb system replaced by `ScreenAppBar` |
+| `lib/shared/widgets/screen_app_bar.dart` | **Единый AppBar**. Compact 44px, gradient border (surface → background), localized title (14px semibold), automatic back button on mobile via `canPop()`. Implements `PreferredSizeWidget`. Parameters: `title`, `actions`, `bottom` (TabBar). Used by all screens |
 | `lib/shared/widgets/source_badge.dart` | **Бейдж источника данных**. Re-exports `DataSource` from `data_source.dart`. Размеры: small, medium, large. Цветовая маркировка и текстовая метка. Optional `onTap` — wraps in `InkWell`, shows `open_in_new` icon for external URL |
 | `lib/shared/widgets/media_type_badge.dart` | **Бейдж типа медиа**. Цветная иконка по `MediaType`: синий (игры), красный (фильмы), зелёный (сериалы) |
 | `lib/shared/widgets/collection_picker_dialog.dart` | **Диалог выбора коллекции**. Sealed class `CollectionChoice` (`ChosenCollection` / `WithoutCollection`). Функция `showCollectionPickerDialog()` с `_CollectionPickerContent` StatefulWidget. Параметры: `excludeCollectionId`, `showUncategorized`, `title`, `alreadyInCollectionIds` (Set\<int?\> — disabled коллекции с бейджем "✓ Added", null = Uncategorized). Фильтр по имени (≥5 коллекций), сортировка (available сверху, disabled снизу), footer со счётчиком. Используется в Search, Detail Screens (recommendations), Move to Collection |

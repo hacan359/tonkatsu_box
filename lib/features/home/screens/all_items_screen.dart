@@ -18,6 +18,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/media_poster_card.dart';
+import '../../../shared/widgets/screen_app_bar.dart';
 import '../../../shared/widgets/type_to_filter_overlay.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../collections/screens/item_detail_screen.dart';
@@ -51,7 +52,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final ItemStatus? filterStatus = ref.watch(homeStatusFilterProvider);
 
     return Scaffold(
-      appBar: AppBar(),
+      appBar: ScreenAppBar(title: S.of(context).navMain),
       body: TypeToFilterOverlay(
         onFilterChanged: (String query) {
           setState(() => _typeToFilterQuery = query);

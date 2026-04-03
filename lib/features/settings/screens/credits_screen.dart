@@ -2,7 +2,9 @@
 
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/widgets/screen_app_bar.dart';
 import '../content/credits_content.dart';
 
 /// Экран Credits с атрибуцией API-провайдеров и лицензиями.
@@ -19,7 +21,7 @@ class CreditsScreen extends StatelessWidget {
     final bool isWide = width >= 800;
 
     return Scaffold(
-      appBar: AppBar(),
+      appBar: ScreenAppBar(title: S.of(context).settingsCreditsLicenses),
       body: Align(
         alignment: Alignment.topCenter,
         child: ConstrainedBox(

@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
+import '../../../shared/widgets/screen_app_bar.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../core/services/update_service.dart';
@@ -73,7 +74,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final bool isWide = width >= _desktopBreakpoint;
 
     return Scaffold(
-      appBar: AppBar(),
+      appBar: ScreenAppBar(title: S.of(context).navSettings),
       body: Align(
         alignment: Alignment.topCenter,
         child: ConstrainedBox(

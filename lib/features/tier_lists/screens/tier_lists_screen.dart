@@ -13,6 +13,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../providers/tier_lists_provider.dart';
 import '../widgets/create_tier_list_dialog.dart';
+import '../../../shared/widgets/screen_app_bar.dart';
 import 'tier_list_detail_screen.dart';
 
 /// Экран списка тир-листов.
@@ -66,7 +67,7 @@ class _TierListsScreenState extends ConsumerState<TierListsScreen> {
               },
             },
       child: Scaffold(
-      appBar: AppBar(),
+      appBar: ScreenAppBar(title: l.navTierLists),
       body: tierListsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (Object error, StackTrace stack) => Center(

@@ -13,6 +13,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/collection_picker_dialog.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
+import '../../../shared/widgets/screen_app_bar.dart';
 import '../../../core/database/database_service.dart';
 import '../../../shared/models/collected_item_info.dart';
 import '../../../data/repositories/canvas_repository.dart';
@@ -140,18 +141,18 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         final CollectionItem? item = _findItem(items);
         if (item == null) {
           return Scaffold(
-            appBar: AppBar(),
+            appBar: const ScreenAppBar(),
             body: Center(child: Text(_notFoundMessage(context, null))),
           );
         }
         return _buildContent(item);
       },
-      loading: () => Scaffold(
-        appBar: AppBar(),
-        body: const Center(child: CircularProgressIndicator()),
+      loading: () => const Scaffold(
+        appBar: ScreenAppBar(),
+        body: Center(child: CircularProgressIndicator()),
       ),
       error: (Object error, StackTrace stack) => Scaffold(
-        appBar: AppBar(),
+        appBar: const ScreenAppBar(),
         body: Center(
           child: Text(S.of(context).errorPrefix(error.toString())),
         ),
@@ -393,7 +394,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     return CallbackShortcuts(
       bindings: _buildScreenShortcuts(item),
       child: Scaffold(
-        appBar: AppBar(
+        appBar: ScreenAppBar(
+          title: item.itemName,
           actions: <Widget>[
             // Board toggle кнопка
             if (_hasCanvas)

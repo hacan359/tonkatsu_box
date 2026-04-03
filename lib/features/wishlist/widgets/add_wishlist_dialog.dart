@@ -7,6 +7,7 @@ import '../../../shared/models/wishlist_item.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/markdown_toolbar.dart';
+import '../../../shared/widgets/screen_app_bar.dart';
 
 // Экран-форма для добавления/редактирования элемента вишлиста.
 
@@ -109,7 +110,7 @@ class _AddWishlistFormState extends State<AddWishlistForm> {
     final S l = S.of(context);
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: ScreenAppBar(
         actions: <Widget>[
           TextButton(
             onPressed: _submit,

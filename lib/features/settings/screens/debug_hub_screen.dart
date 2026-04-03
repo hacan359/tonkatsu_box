@@ -3,7 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/widgets/screen_app_bar.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/settings_group.dart';
 import '../widgets/settings_tile.dart';
@@ -26,7 +28,7 @@ class DebugHubScreen extends ConsumerWidget {
     final bool isWide = width >= 800;
 
     return Scaffold(
-      appBar: AppBar(),
+      appBar: ScreenAppBar(title: S.of(context).settingsDebug),
         body: Align(
           alignment: Alignment.topCenter,
           child: ConstrainedBox(

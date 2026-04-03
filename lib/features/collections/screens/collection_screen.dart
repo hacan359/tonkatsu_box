@@ -13,6 +13,7 @@ import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../data/repositories/collection_repository.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/widgets/screen_app_bar.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
@@ -156,15 +157,15 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   @override
   Widget build(BuildContext context) {
     if (_collectionLoading) {
-      return Scaffold(
-        appBar: AppBar(),
-        body: const Center(child: CircularProgressIndicator()),
+      return const Scaffold(
+        appBar: ScreenAppBar(),
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
     if (!_isUncategorized && _collection == null) {
       return Scaffold(
-        appBar: AppBar(),
+        appBar: const ScreenAppBar(),
         body: Center(
           child: Text(
             S.of(context).collectionNotFound,
@@ -183,7 +184,10 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     return CallbackShortcuts(
       bindings: _buildScreenShortcuts(l),
       child: Scaffold(
-        appBar: AppBar(
+        appBar: ScreenAppBar(
+          title: _isUncategorized
+              ? l.collectionsUncategorized
+              : _collection!.name,
           actions: _buildAppBarActions(l),
         ),
         body: _isCanvasMode

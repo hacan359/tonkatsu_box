@@ -14,6 +14,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
+import '../../../shared/widgets/screen_app_bar.dart';
 import '../../../shared/widgets/type_to_filter_overlay.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../providers/canvas_provider.dart';
@@ -69,7 +70,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return CallbackShortcuts(
       bindings: _buildScreenShortcuts(ref),
       child: Scaffold(
-      appBar: AppBar(
+      appBar: ScreenAppBar(
+        title: l.navCollections,
         actions: <Widget>[
           _SortPopupButton(
             sortMode: sortMode,

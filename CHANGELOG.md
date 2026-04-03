@@ -26,7 +26,7 @@
 - **View toggle simplified** — collection view mode cycles Grid → Table → Grid (List view temporarily hidden). Toggle button moved from filter bar to AppBar (`collection_screen.dart`)
 
 ### Removed
-- **Breadcrumbs navigation** — removed entire breadcrumb system (`BreadcrumbScope`, `BreadcrumbAppBar`, `AutoBreadcrumbAppBar`) and all BreadcrumbScope wrappers from 25 screens. NavigationRail/BottomBar already indicates the current tab; back button handles return navigation. Screens now use plain `AppBar()`. Deleted `breadcrumb_scope.dart`, `breadcrumb_app_bar.dart`, `auto_breadcrumb_app_bar.dart` and their tests (~2300 lines removed)
+- **Breadcrumbs navigation** — removed entire breadcrumb system (`BreadcrumbScope`, `BreadcrumbAppBar`, `AutoBreadcrumbAppBar`) and all BreadcrumbScope wrappers from 25 screens. Replaced with `ScreenAppBar` — compact 44px AppBar with subtle gradient border, localized titles on all screens, and automatic back button on mobile. Deleted `breadcrumb_scope.dart`, `breadcrumb_app_bar.dart`, `auto_breadcrumb_app_bar.dart` and their tests (~2300 lines removed). Added `screen_app_bar.dart` (~100 lines)
 - **Media type legend** — removed `MediaTypeLegend` widget from Home screen. Color-coded filter chips already convey the same information (`media_type_legend.dart` deleted, `all_items_screen.dart`)
 
 ### Fixed

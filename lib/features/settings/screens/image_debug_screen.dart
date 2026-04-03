@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
+import '../../../shared/widgets/screen_app_bar.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/media_type.dart';
@@ -54,7 +55,7 @@ class _ImageDebugScreenState extends ConsumerState<ImageDebugScreen> {
     final ColorScheme colorScheme = theme.colorScheme;
 
     return Scaffold(
-      appBar: AppBar(),
+      appBar: const ScreenAppBar(title: 'Image Debug'),
       body: Column(
         children: <Widget>[
           // Выбор коллекции

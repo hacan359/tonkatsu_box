@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
+import '../../../shared/widgets/screen_app_bar.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../core/api/tmdb_api.dart';
@@ -1284,7 +1285,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
     return Scaffold(
       resizeToAvoidBottomInset: !isLandscape,
-      appBar: AppBar(
+      appBar: ScreenAppBar(
+        title: S.of(context).navSearch,
         actions: <Widget>[
           if (showDiscoverCustomize)
             IconButton(

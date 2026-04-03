@@ -13,6 +13,7 @@ import 'package:path_provider/path_provider.dart';
 import '../../../core/services/gamepad_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/gamepad/gamepad_provider.dart';
+import '../../../shared/widgets/screen_app_bar.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -168,7 +169,8 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
   Widget build(BuildContext context) {
     final S l = S.of(context);
     return Scaffold(
-      appBar: AppBar(
+      appBar: ScreenAppBar(
+        title: l.settingsGamepadDebug,
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.save_alt),

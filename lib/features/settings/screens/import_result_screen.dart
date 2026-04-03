@@ -7,6 +7,7 @@ import '../../../shared/constants/media_type_theme.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/universal_import_result.dart';
 import '../../../shared/theme/app_colors.dart';
+import '../../../shared/widgets/screen_app_bar.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../collections/screens/collection_screen.dart';
@@ -29,7 +30,7 @@ class ImportResultScreen extends StatelessWidget {
     final S l = S.of(context);
 
     return Scaffold(
-      appBar: AppBar(),
+      appBar: ScreenAppBar(title: l.importResultTitle),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
