@@ -805,7 +805,8 @@ void main() {
           await tester.pumpAndSettle();
 
           expect(find.byType(CollectionFilterBar), findsOneWidget);
-          expect(find.text('All'), findsOneWidget);
+          // Type chip "All" + status dropdown "All"
+          expect(find.text('All'), findsNWidgets(2));
         },
       );
 
