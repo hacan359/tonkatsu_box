@@ -18,6 +18,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/collection_tag.dart';
+import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/steamgriddb_image.dart';
 import '../../settings/providers/settings_provider.dart';
@@ -83,6 +84,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   Set<MediaType> _filterTypes = <MediaType>{};
   Set<int> _filterPlatformIds = <int>{};
   Set<int> _filterTagIds = <int>{};
+  ItemStatus? _filterStatus;
   String _searchQuery = '';
   String _typeToFilterQuery = '';
   CollectionItem? _focusedItem;
@@ -457,6 +459,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                   filterTypes: _filterTypes,
                   filterPlatformIds: _filterPlatformIds,
                   filterTagIds: _filterTagIds,
+                  filterStatus: _filterStatus,
                   tags: tags,
                   searchController: _searchController,
                   searchQuery: _searchQuery,
@@ -499,6 +502,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                           ..add(tagId);
                       }
                     });
+                  },
+                  onStatusChanged: (ItemStatus? status) {
+                    setState(() => _filterStatus = status);
                   },
                 ),
 
@@ -583,6 +589,12 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       result = result
           .where((CollectionItem item) =>
               item.tagId != null && _filterTagIds.contains(item.tagId))
+          .toList();
+    }
+
+    if (_filterStatus != null) {
+      result = result
+          .where((CollectionItem item) => item.status == _filterStatus)
           .toList();
     }
 
