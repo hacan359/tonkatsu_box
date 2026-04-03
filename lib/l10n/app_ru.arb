@@ -44,6 +44,9 @@
   "sortExternalRatingDisplay": "Внешний рейтинг",
   "sortExternalRatingShort": "IGDB/TMDB",
   "sortExternalRatingDesc": "Сначала лучшие",
+  "sortLastActivityDisplay": "Последняя активность",
+  "sortLastActivityShort": "Активность",
+  "sortLastActivityDesc": "Сначала недавние",
 
   "searchSortRelevanceShort": "Рел",
   "searchSortRelevanceDisplay": "Релевантность",

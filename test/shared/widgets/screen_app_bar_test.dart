@@ -103,7 +103,7 @@ void main() {
         expect(find.byIcon(Icons.arrow_back), findsOneWidget);
       });
 
-      testWidgets('hides back button on desktop even when can pop',
+      testWidgets('shows back button on desktop when can pop',
           (WidgetTester tester) async {
         await tester.pumpApp(
           MediaQuery(
@@ -131,7 +131,7 @@ void main() {
           ),
         );
 
-        expect(find.byIcon(Icons.arrow_back), findsNothing);
+        expect(find.byIcon(Icons.arrow_back), findsOneWidget);
       });
 
       testWidgets('hides back button on mobile at root route',

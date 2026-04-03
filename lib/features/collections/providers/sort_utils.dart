@@ -58,6 +58,14 @@ List<CollectionItem> applySortMode(
         if (b.apiRating == null) return -1;
         return b.apiRating!.compareTo(a.apiRating!);
       });
+    case CollectionSortMode.lastActivity:
+      sorted.sort((CollectionItem a, CollectionItem b) {
+        // null lastActivityAt в конец
+        if (a.lastActivityAt == null && b.lastActivityAt == null) return 0;
+        if (a.lastActivityAt == null) return 1;
+        if (b.lastActivityAt == null) return -1;
+        return b.lastActivityAt!.compareTo(a.lastActivityAt!);
+      });
   }
   if (isDescending) {
     return sorted.reversed.toList();

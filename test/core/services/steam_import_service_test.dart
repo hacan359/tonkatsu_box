@@ -2,7 +2,6 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:xerabora/core/api/igdb_api.dart';
 import 'package:xerabora/core/api/steam_api.dart';
 import 'package:xerabora/core/services/steam_import_service.dart';
 import 'package:xerabora/shared/models/collection_item.dart';
@@ -58,14 +57,15 @@ void main() {
           steamId: any(named: 'steamId'),
         )).thenAnswer((_) async => games);
 
-    when(() => mockIgdbApi.searchGames(
-          query: any(named: 'query'),
-          limit: any(named: 'limit'),
-        )).thenAnswer((Invocation inv) async {
-      final String query = inv.namedArguments[#query] as String;
-      return <Game>[
-        Game(id: query.hashCode.abs(), name: query),
-      ];
+    when(() => mockIgdbApi.lookupSteamGames(any()))
+        .thenAnswer((Invocation inv) async {
+      final List<String> appIds =
+          inv.positionalArguments[0] as List<String>;
+      final Map<String, Game> result = <String, Game>{};
+      for (final String appId in appIds) {
+        result[appId] = Game(id: appId.hashCode.abs(), name: 'Game $appId');
+      }
+      return result;
     });
 
     when(() => mockDb.findCollectionItem(
@@ -89,7 +89,7 @@ void main() {
 
     when(() => mockDb.updateItemActivityDates(
           any(),
-          startedAt: any(named: 'startedAt'),
+          lastActivityAt: any(named: 'lastActivityAt'),
         )).thenAnswer((_) async {});
 
     when(() => mockDb.addWishlistItem(
@@ -205,7 +205,7 @@ void main() {
             .called(1);
       });
 
-      test('should save lastPlayed as startedAt', () async {
+      test('should save lastPlayed as lastActivityAt', () async {
         final DateTime lastPlayed = DateTime(2024, 1, 28);
         setupStandardMocks(
           library: <SteamOwnedGame>[
@@ -226,7 +226,7 @@ void main() {
 
         verify(() => mockDb.updateItemActivityDates(
               100,
-              startedAt: lastPlayed,
+              lastActivityAt: lastPlayed,
             )).called(1);
       });
 
@@ -313,7 +313,7 @@ void main() {
             )).called(1);
         verify(() => mockDb.updateItemActivityDates(
               collectionItem.id,
-              startedAt: DateTime(2024, 6, 15),
+              lastActivityAt: DateTime(2024, 6, 15),
             )).called(1);
         verifyNever(() => mockDb.addItemToCollection(
               collectionId: any(named: 'collectionId'),
@@ -388,18 +388,16 @@ void main() {
             ));
       });
 
-      test('should add to wishlist when IGDB returns empty', () async {
+      test('should add to wishlist when IGDB returns no match', () async {
         setupStandardMocks(
           library: <SteamOwnedGame>[
             createTestSteamOwnedGame(name: 'Unknown Game'),
           ],
         );
 
-        // Override IGDB to return empty
-        when(() => mockIgdbApi.searchGames(
-              query: any(named: 'query'),
-              limit: any(named: 'limit'),
-            )).thenAnswer((_) async => <Game>[]);
+        // Override lookup to return empty (no match for this appId).
+        when(() => mockIgdbApi.lookupSteamGames(any()))
+            .thenAnswer((_) async => <String, Game>{});
 
         final SteamImportResult result = await sut.importLibrary(
           apiKey: 'key',
@@ -415,29 +413,6 @@ void main() {
               mediaTypeHint: MediaType.game,
               note: any(named: 'note'),
             )).called(1);
-      });
-
-      test('should add to wishlist on IGDB API error', () async {
-        setupStandardMocks(
-          library: <SteamOwnedGame>[
-            createTestSteamOwnedGame(name: 'Error Game'),
-          ],
-        );
-
-        when(() => mockIgdbApi.searchGames(
-              query: any(named: 'query'),
-              limit: any(named: 'limit'),
-            )).thenThrow(const IgdbApiException('Rate limited'));
-
-        final SteamImportResult result = await sut.importLibrary(
-          apiKey: 'key',
-          steamId: '123',
-          collectionId: 1,
-          onProgress: (_) {},
-        );
-
-        expect(result.wishlisted, 1);
-        expect(result.imported, 0);
       });
 
       test('should throw on empty library', () async {
@@ -489,21 +464,17 @@ void main() {
         );
       });
 
-      test('should prefer exact match over first result', () async {
+      test('should match by Steam appId via lookupSteamGames', () async {
         setupStandardMocks(
           library: <SteamOwnedGame>[
-            createTestSteamOwnedGame(name: 'Portal'),
+            createTestSteamOwnedGame(appId: 400, name: 'Portal'),
           ],
         );
 
-        // Override IGDB to return multiple results where exact match is second
-        when(() => mockIgdbApi.searchGames(
-              query: any(named: 'query'),
-              limit: any(named: 'limit'),
-            )).thenAnswer((_) async => const <Game>[
-              Game(id: 1, name: 'Portal 2'),
-              Game(id: 2, name: 'Portal'),
-            ]);
+        when(() => mockIgdbApi.lookupSteamGames(any()))
+            .thenAnswer((_) async => <String, Game>{
+                  '400': const Game(id: 2, name: 'Portal'),
+                });
 
         await sut.importLibrary(
           apiKey: 'key',
@@ -512,7 +483,6 @@ void main() {
           onProgress: (_) {},
         );
 
-        // Should pick id: 2 (exact match "Portal")
         verify(() => mockDb.upsertGame(
               any(that: predicate<Game>((Game g) => g.id == 2)),
             )).called(1);
@@ -527,10 +497,8 @@ void main() {
           ],
         );
 
-        when(() => mockIgdbApi.searchGames(
-              query: any(named: 'query'),
-              limit: any(named: 'limit'),
-            )).thenAnswer((_) async => <Game>[]);
+        when(() => mockIgdbApi.lookupSteamGames(any()))
+            .thenAnswer((_) async => <String, Game>{});
 
         // Existing wishlist item
         when(() => mockDb.findUnresolvedWishlistItem('Unknown Game'))
@@ -562,10 +530,8 @@ void main() {
           ],
         );
 
-        when(() => mockIgdbApi.searchGames(
-              query: any(named: 'query'),
-              limit: any(named: 'limit'),
-            )).thenAnswer((_) async => <Game>[]);
+        when(() => mockIgdbApi.lookupSteamGames(any()))
+            .thenAnswer((_) async => <String, Game>{});
 
         final WishlistItem existingItem = createTestWishlistItem(
           id: 42,
@@ -598,10 +564,8 @@ void main() {
           ],
         );
 
-        when(() => mockIgdbApi.searchGames(
-              query: any(named: 'query'),
-              limit: any(named: 'limit'),
-            )).thenAnswer((_) async => <Game>[]);
+        when(() => mockIgdbApi.lookupSteamGames(any()))
+            .thenAnswer((_) async => <String, Game>{});
 
         when(() => mockDb.findUnresolvedWishlistItem('New Game'))
             .thenAnswer((_) async => null);

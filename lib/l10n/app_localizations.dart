@@ -331,6 +331,24 @@ abstract class S {
   /// **'Highest first'**
   String get sortExternalRatingDesc;
 
+  /// No description provided for @sortLastActivityDisplay.
+  ///
+  /// In en, this message translates to:
+  /// **'Last Activity'**
+  String get sortLastActivityDisplay;
+
+  /// No description provided for @sortLastActivityShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity'**
+  String get sortLastActivityShort;
+
+  /// No description provided for @sortLastActivityDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent first'**
+  String get sortLastActivityDesc;
+
   /// No description provided for @searchSortRelevanceShort.
   ///
   /// In en, this message translates to:

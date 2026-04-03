@@ -137,14 +137,25 @@ class SteamImportService {
   ///
   /// [apiKey] — Steam Web API ключ.
   /// [steamId] — 64-битный Steam ID пользователя.
-  /// [collectionId] — ID целевой коллекции.
+  /// [collectionId] — ID целевой коллекции (если уже создана).
+  /// [createCollection] — callback для ленивого создания коллекции.
+  ///   Вызывается только после успешной загрузки библиотеки Steam,
+  ///   чтобы не создавать пустую коллекцию при ошибке API.
+  ///   Должен быть указан либо [collectionId], либо [createCollection].
   /// [onProgress] — callback прогресса.
   Future<SteamImportResult> importLibrary({
     required String apiKey,
     required String steamId,
-    required int collectionId,
+    int? collectionId,
+    Future<int> Function()? createCollection,
     required void Function(SteamImportProgress) onProgress,
   }) async {
+    if (collectionId == null && createCollection == null) {
+      throw ArgumentError(
+        'Either collectionId or createCollection must be provided',
+      );
+    }
+
     // 1. Получить библиотеку Steam
     onProgress(const SteamImportProgress(
       stage: SteamImportStage.fetchingLibrary,
@@ -172,7 +183,24 @@ class SteamImportService {
       throw const SteamApiException('No games found in this Steam library');
     }
 
-    // 3. Для каждой игры — поиск в IGDB + добавление/обновление
+    // 3. Создание коллекции (если нужно) — только после успешной загрузки.
+    final int targetCollectionId =
+        collectionId ?? await createCollection!();
+
+    // 4. Batch-поиск всех игр в IGDB по Steam App ID (1-2 запроса).
+    onProgress(SteamImportProgress(
+      stage: SteamImportStage.matchingGames,
+      current: 0,
+      total: games.length,
+    ));
+
+    final Map<String, Game> igdbMatches = await _igdbApi.lookupSteamGames(
+      games.map((SteamOwnedGame g) => g.appId.toString()).toList(),
+    );
+
+    _log.info('IGDB matched ${igdbMatches.length}/${games.length} games');
+
+    // 5. Обработка каждой игры.
     int imported = 0;
     int wishlisted = 0;
     int updated = 0;
@@ -190,73 +218,57 @@ class SteamImportService {
         updatedCount: updated,
       ));
 
-      try {
-        final List<Game> results = await _igdbApi.searchGames(
-          query: steamGame.name,
-          limit: 5,
-        );
+      final Game? match = igdbMatches[steamGame.appId.toString()];
 
-        final Game? match = _findBestMatch(results, steamGame.name);
-
-        if (match == null) {
-          await _addToWishlist(steamGame);
-          wishlisted++;
-          _log.fine('Not found in IGDB, added to wishlist: ${steamGame.name}');
-          continue;
-        }
-
-        // Проверка дубликата
-        final CollectionItem? existing = await _db.findCollectionItem(
-          collectionId: collectionId,
-          mediaType: MediaType.game,
-          externalId: match.id,
-        );
-        if (existing != null) {
-          await _updateExistingItem(existing, steamGame);
-          updated++;
-          continue;
-        }
-
-        // Кэшировать IGDB игру
-        await _db.upsertGame(match);
-
-        // Добавить в коллекцию
-        final ItemStatus status = steamGame.playtimeMinutes > 0
-            ? ItemStatus.inProgress
-            : ItemStatus.notStarted;
-
-        final int? itemId = await _db.addItemToCollection(
-          collectionId: collectionId,
-          mediaType: MediaType.game,
-          externalId: match.id,
-          platformId: _pcPlatformId,
-          status: status,
-        );
-
-        // Обновить userComment и startedAt (если есть playtime)
-        if (itemId != null && steamGame.playtimeMinutes > 0) {
-          final String playtimeText = _formatPlaytime(steamGame);
-          await _db.updateItemUserComment(itemId, 'Steam: $playtimeText');
-
-          if (steamGame.lastPlayed != null) {
-            await _db.updateItemActivityDates(
-              itemId,
-              startedAt: steamGame.lastPlayed,
-            );
-          }
-        }
-
-        imported++;
-      } on IgdbApiException catch (e) {
-        _log.warning('IGDB error for ${steamGame.name}', e);
+      if (match == null) {
         await _addToWishlist(steamGame);
         wishlisted++;
+        _log.fine('Not found in IGDB, added to wishlist: ${steamGame.name}');
+        continue;
       }
 
-      // Rate limiting: IGDB 4 req/sec
-      if (i % 4 == 3) {
-        await Future<void>.delayed(const Duration(milliseconds: 1100));
+      // Проверка дубликата
+      final CollectionItem? existing = await _db.findCollectionItem(
+        collectionId: targetCollectionId,
+        mediaType: MediaType.game,
+        externalId: match.id,
+      );
+      if (existing != null) {
+        await _updateExistingItem(existing, steamGame);
+        updated++;
+        continue;
       }
+
+      // Кэшировать IGDB игру
+      await _db.upsertGame(match);
+
+      // Добавить в коллекцию
+      final ItemStatus status = steamGame.playtimeMinutes > 0
+          ? ItemStatus.inProgress
+          : ItemStatus.notStarted;
+
+      final int? itemId = await _db.addItemToCollection(
+        collectionId: targetCollectionId,
+        mediaType: MediaType.game,
+        externalId: match.id,
+        platformId: _pcPlatformId,
+        status: status,
+      );
+
+      // Обновить userComment и startedAt (если есть playtime)
+      if (itemId != null && steamGame.playtimeMinutes > 0) {
+        final String playtimeText = _formatPlaytime(steamGame);
+        await _db.updateItemUserComment(itemId, 'Steam: $playtimeText');
+
+        if (steamGame.lastPlayed != null) {
+          await _db.updateItemActivityDates(
+            itemId,
+            lastActivityAt: steamGame.lastPlayed,
+          );
+        }
+      }
+
+      imported++;
     }
 
     _log.info('Steam import complete: $imported imported, '
@@ -276,7 +288,7 @@ class SteamImportService {
       wishlisted: wishlisted,
       updated: updated,
       total: games.length,
-      collectionId: collectionId,
+      collectionId: targetCollectionId,
     );
   }
 
@@ -304,11 +316,11 @@ class SteamImportService {
       await _db.updateItemUserComment(existing.id, 'Steam: $playtimeText');
     }
 
-    // Обновляем startedAt если есть данные
+    // Обновляем lastActivityAt если есть данные
     if (steamGame.lastPlayed != null) {
       await _db.updateItemActivityDates(
         existing.id,
-        startedAt: steamGame.lastPlayed,
+        lastActivityAt: steamGame.lastPlayed,
       );
     }
   }
@@ -341,30 +353,6 @@ class SteamImportService {
     );
   }
 
-  /// Ищет лучшее совпадение IGDB результата с именем Steam игры.
-  Game? _findBestMatch(List<Game> results, String steamName) {
-    if (results.isEmpty) return null;
-
-    final String normalized = steamName.toLowerCase().trim();
-
-    // Точное совпадение
-    for (final Game game in results) {
-      if (game.name.toLowerCase().trim() == normalized) {
-        return game;
-      }
-    }
-
-    // Первый результат содержит имя как подстроку
-    for (final Game game in results) {
-      final String gameLower = game.name.toLowerCase().trim();
-      if (gameLower.contains(normalized) || normalized.contains(gameLower)) {
-        return game;
-      }
-    }
-
-    // Первый результат (IGDB сортирует по релевантности)
-    return results.first;
-  }
 
   /// Форматирует время в игре.
   static String _formatPlaytime(SteamOwnedGame game) {

@@ -44,6 +44,9 @@
   "sortExternalRatingDisplay": "External Rating",
   "sortExternalRatingShort": "IGDB/TMDB",
   "sortExternalRatingDesc": "Highest first",
+  "sortLastActivityDisplay": "Last Activity",
+  "sortLastActivityShort": "Activity",
+  "sortLastActivityDesc": "Recent first",
 
   "searchSortRelevanceShort": "Rel",
   "searchSortRelevanceDisplay": "Relevance",

@@ -351,6 +351,85 @@ class IgdbApi {
     }
   }
 
+  /// IGDB `external_game_source` для Steam.
+  static const int _steamSource = 1;
+
+  /// Ищет игры в IGDB по Steam App ID через `external_games`.
+  ///
+  /// [steamAppIds] — список Steam appId (строки).
+  ///
+  /// Возвращает маппинг: Steam appId → [Game].
+  /// Игры, не найденные в IGDB, отсутствуют в результате.
+  /// Throws [IgdbApiException] при ошибке запроса.
+  Future<Map<String, Game>> lookupSteamGames(
+    List<String> steamAppIds,
+  ) async {
+    if (steamAppIds.isEmpty) return <String, Game>{};
+    _ensureCredentials();
+
+    try {
+      // Шаг 1: Steam appId → IGDB game ID через external_games.
+      final Map<String, int> uidToGameId = <String, int>{};
+
+      for (int offset = 0; offset < steamAppIds.length; offset += 500) {
+        final List<String> batch = steamAppIds.sublist(
+          offset,
+          offset + 500 > steamAppIds.length
+              ? steamAppIds.length
+              : offset + 500,
+        );
+        final String uidList = batch.map((String id) => '"$id"').join(',');
+
+        final Response<dynamic> response = await _igdbPost(
+          '/external_games',
+          data: 'fields game,uid; '
+              'where external_game_source = $_steamSource '
+              '& uid = ($uidList); '
+              'limit 500;',
+        );
+
+        if (response.statusCode != 200 || response.data == null) {
+          throw IgdbApiException(
+            'Failed to lookup Steam games',
+            statusCode: response.statusCode,
+          );
+        }
+
+        final List<dynamic> data = response.data as List<dynamic>;
+        for (final dynamic item in data) {
+          final Map<String, dynamic> map = item as Map<String, dynamic>;
+          final String uid = map['uid'] as String;
+          final int gameId = map['game'] as int;
+          uidToGameId[uid] = gameId;
+        }
+      }
+
+      if (uidToGameId.isEmpty) return <String, Game>{};
+
+      // Шаг 2: загрузить полные данные игр по IGDB ID (без дубликатов).
+      final List<Game> games =
+          await getGamesByIds(uidToGameId.values.toSet().toList());
+
+      // Индексируем по id для быстрого доступа.
+      final Map<int, Game> gamesById = <int, Game>{
+        for (final Game game in games) game.id: game,
+      };
+
+      // Шаг 3: собрать результат Steam appId → Game.
+      final Map<String, Game> result = <String, Game>{};
+      for (final MapEntry<String, int> entry in uidToGameId.entries) {
+        final Game? game = gamesById[entry.value];
+        if (game != null) {
+          result[entry.key] = game;
+        }
+      }
+
+      return result;
+    } on DioException catch (e) {
+      throw _handleDioException(e, 'Failed to lookup Steam games');
+    }
+  }
+
   /// Получает игру по ID.
   ///
   /// Возвращает игру или null, если не найдена.

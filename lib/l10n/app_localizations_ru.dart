@@ -126,6 +126,15 @@ class SRu extends S {
   String get sortExternalRatingDesc => 'Сначала лучшие';
 
   @override
+  String get sortLastActivityDisplay => 'Последняя активность';
+
+  @override
+  String get sortLastActivityShort => 'Активность';
+
+  @override
+  String get sortLastActivityDesc => 'Сначала недавние';
+
+  @override
   String get searchSortRelevanceShort => 'Рел';
 
   @override
