@@ -130,6 +130,7 @@ Connect your retro game library with RetroAchievements:
 
 ### Online Features
 
+- [x] Browse Online Collections — download pre-built collections from `tonkatsu-collections` GitHub repository (Settings > Import)
 - Cloud sync between devices
 - Public collection marketplace
 - Follow other collectors

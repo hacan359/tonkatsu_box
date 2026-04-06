@@ -2813,6 +2813,77 @@ class SRu extends S {
   String get importResultSourceCollectionFile => 'Файл коллекции';
 
   @override
+  String get settingsBrowseCollections => 'Каталог коллекций';
+
+  @override
+  String get settingsBrowseCollectionsSubtitle => 'Скачать готовые коллекции';
+
+  @override
+  String browseCollectionsSummary(int count, int items) {
+    return '$count коллекций, $items элементов';
+  }
+
+  @override
+  String get browseCollectionsSearch => 'Поиск коллекций...';
+
+  @override
+  String get browseCollectionsAllPlatforms => 'Все платформы';
+
+  @override
+  String get browseCollectionsAllCategories => 'Все категории';
+
+  @override
+  String browseCollectionsItems(int count) {
+    return '$count элементов';
+  }
+
+  @override
+  String get browseCollectionsFormatLight => 'Лёгкий (нужны API-ключи)';
+
+  @override
+  String get browseCollectionsFormatFull => 'Полный (офлайн)';
+
+  @override
+  String get browseCollectionsDownloading => 'Загрузка...';
+
+  @override
+  String get browseCollectionsImporting => 'Импорт...';
+
+  @override
+  String browseCollectionsDownloadError(String error) {
+    return 'Ошибка загрузки: $error';
+  }
+
+  @override
+  String browseCollectionsImportSuccess(String name) {
+    return 'Коллекция импортирована: $name';
+  }
+
+  @override
+  String get browseCollectionsEmpty => 'Коллекции не найдены';
+
+  @override
+  String get browseCollectionsRetry => 'Повторить';
+
+  @override
+  String get browseCollectionsLoadError => 'Не удалось загрузить каталог';
+
+  @override
+  String get browseCollectionsImportTarget => 'Импортировать в';
+
+  @override
+  String get browseCollectionsNewCollection => 'Новую коллекцию';
+
+  @override
+  String get browseCollectionsExistingCollection => 'Существующую коллекцию';
+
+  @override
+  String get browseCollectionsSelectCollection => 'Выберите коллекцию';
+
+  @override
+  String get browseCollectionsNoCollections => 'Нет коллекций';
+
+  @override
   String get settingsRaImport => 'RetroAchievements';
 
   @override

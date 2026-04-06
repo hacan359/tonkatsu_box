@@ -448,9 +448,8 @@ class ImportService {
         }
       }
 
-      // Canvas, images и tier lists — только для новых коллекций.
-      // При импорте в существующую коллекцию пропускаем: canvas items
-      // не имеют unique constraint и будут дублироваться.
+      // Canvas — только для новых коллекций: canvas items не имеют
+      // unique constraint и будут дублироваться при повторном импорте.
       final bool isNewCollection = collectionId == null;
 
       // Импорт canvas (для full export, только новая коллекция)
@@ -485,11 +484,10 @@ class ImportService {
         await _restoreImages(xcoll.images, onProgress: onProgress);
       }
 
-      // Восстановление тир-листов (для full export, только новая коллекция)
+      // Восстановление тир-листов (для full export)
       if (xcoll.isFull &&
           xcoll.tierLists != null &&
-          xcoll.tierLists!.isNotEmpty &&
-          isNewCollection) {
+          xcoll.tierLists!.isNotEmpty) {
         await _importTierLists(
           xcoll.tierLists!,
           collection.id,
@@ -497,11 +495,10 @@ class ImportService {
         );
       }
 
-      // Восстановление тегов (для full export, только новая коллекция)
+      // Восстановление тегов (для full export)
       if (xcoll.isFull &&
           xcoll.tags != null &&
-          xcoll.tags!.isNotEmpty &&
-          isNewCollection) {
+          xcoll.tags!.isNotEmpty) {
         await _importTags(
           xcoll.tags!,
           xcoll.items,

@@ -5131,6 +5131,132 @@ abstract class S {
   /// **'Collection File'**
   String get importResultSourceCollectionFile;
 
+  /// No description provided for @settingsBrowseCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse Collections'**
+  String get settingsBrowseCollections;
+
+  /// No description provided for @settingsBrowseCollectionsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Download ready-made collections'**
+  String get settingsBrowseCollectionsSubtitle;
+
+  /// No description provided for @browseCollectionsSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} collections, {items} items'**
+  String browseCollectionsSummary(int count, int items);
+
+  /// No description provided for @browseCollectionsSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search collections...'**
+  String get browseCollectionsSearch;
+
+  /// No description provided for @browseCollectionsAllPlatforms.
+  ///
+  /// In en, this message translates to:
+  /// **'All Platforms'**
+  String get browseCollectionsAllPlatforms;
+
+  /// No description provided for @browseCollectionsAllCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'All Categories'**
+  String get browseCollectionsAllCategories;
+
+  /// No description provided for @browseCollectionsItems.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} items'**
+  String browseCollectionsItems(int count);
+
+  /// No description provided for @browseCollectionsFormatLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light (needs API keys)'**
+  String get browseCollectionsFormatLight;
+
+  /// No description provided for @browseCollectionsFormatFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Full (offline)'**
+  String get browseCollectionsFormatFull;
+
+  /// No description provided for @browseCollectionsDownloading.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading...'**
+  String get browseCollectionsDownloading;
+
+  /// No description provided for @browseCollectionsImporting.
+  ///
+  /// In en, this message translates to:
+  /// **'Importing...'**
+  String get browseCollectionsImporting;
+
+  /// No description provided for @browseCollectionsDownloadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Download failed: {error}'**
+  String browseCollectionsDownloadError(String error);
+
+  /// No description provided for @browseCollectionsImportSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Collection imported: {name}'**
+  String browseCollectionsImportSuccess(String name);
+
+  /// No description provided for @browseCollectionsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No collections found'**
+  String get browseCollectionsEmpty;
+
+  /// No description provided for @browseCollectionsRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get browseCollectionsRetry;
+
+  /// No description provided for @browseCollectionsLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load collections'**
+  String get browseCollectionsLoadError;
+
+  /// No description provided for @browseCollectionsImportTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Import to'**
+  String get browseCollectionsImportTarget;
+
+  /// No description provided for @browseCollectionsNewCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'New collection'**
+  String get browseCollectionsNewCollection;
+
+  /// No description provided for @browseCollectionsExistingCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Existing collection'**
+  String get browseCollectionsExistingCollection;
+
+  /// No description provided for @browseCollectionsSelectCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Select collection'**
+  String get browseCollectionsSelectCollection;
+
+  /// No description provided for @browseCollectionsNoCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'No collections yet'**
+  String get browseCollectionsNoCollections;
+
   /// No description provided for @settingsRaImport.
   ///
   /// In en, this message translates to:

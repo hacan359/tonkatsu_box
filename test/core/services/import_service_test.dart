@@ -2567,8 +2567,7 @@ void main() {
         verify(() => mockDb.updateItemUserRating(42, 9)).called(1);
       });
 
-      test('should skip canvas and tier lists for existing collection',
-          () async {
+      test('should skip canvas for existing collection', () async {
         final XcollFile xcoll = XcollFile(
           version: 2,
           format: ExportFormat.full,
@@ -2589,13 +2588,6 @@ void main() {
               },
             ],
           ),
-          tierLists: const <Map<String, dynamic>>[
-            <String, dynamic>{
-              'name': 'TL',
-              'definitions': <dynamic>[],
-              'entries': <dynamic>[],
-            },
-          ],
         );
 
         final Collection existing = createTestCollection(id: 5);

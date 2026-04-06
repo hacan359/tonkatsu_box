@@ -2792,6 +2792,78 @@ class SEn extends S {
   String get importResultSourceCollectionFile => 'Collection File';
 
   @override
+  String get settingsBrowseCollections => 'Browse Collections';
+
+  @override
+  String get settingsBrowseCollectionsSubtitle =>
+      'Download ready-made collections';
+
+  @override
+  String browseCollectionsSummary(int count, int items) {
+    return '$count collections, $items items';
+  }
+
+  @override
+  String get browseCollectionsSearch => 'Search collections...';
+
+  @override
+  String get browseCollectionsAllPlatforms => 'All Platforms';
+
+  @override
+  String get browseCollectionsAllCategories => 'All Categories';
+
+  @override
+  String browseCollectionsItems(int count) {
+    return '$count items';
+  }
+
+  @override
+  String get browseCollectionsFormatLight => 'Light (needs API keys)';
+
+  @override
+  String get browseCollectionsFormatFull => 'Full (offline)';
+
+  @override
+  String get browseCollectionsDownloading => 'Downloading...';
+
+  @override
+  String get browseCollectionsImporting => 'Importing...';
+
+  @override
+  String browseCollectionsDownloadError(String error) {
+    return 'Download failed: $error';
+  }
+
+  @override
+  String browseCollectionsImportSuccess(String name) {
+    return 'Collection imported: $name';
+  }
+
+  @override
+  String get browseCollectionsEmpty => 'No collections found';
+
+  @override
+  String get browseCollectionsRetry => 'Retry';
+
+  @override
+  String get browseCollectionsLoadError => 'Failed to load collections';
+
+  @override
+  String get browseCollectionsImportTarget => 'Import to';
+
+  @override
+  String get browseCollectionsNewCollection => 'New collection';
+
+  @override
+  String get browseCollectionsExistingCollection => 'Existing collection';
+
+  @override
+  String get browseCollectionsSelectCollection => 'Select collection';
+
+  @override
+  String get browseCollectionsNoCollections => 'No collections yet';
+
+  @override
   String get settingsRaImport => 'RetroAchievements';
 
   @override
