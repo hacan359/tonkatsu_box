@@ -14,6 +14,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../providers/tier_lists_provider.dart';
 import '../widgets/create_tier_list_dialog.dart';
 import '../../../shared/widgets/screen_app_bar.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
 import 'tier_list_detail_screen.dart';
 
 /// Экран списка тир-листов.
@@ -69,7 +70,16 @@ class _TierListsScreenState extends ConsumerState<TierListsScreen> {
       child: Scaffold(
       appBar: ScreenAppBar(title: l.navTierLists),
       body: tierListsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => ListView(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          children: const <Widget>[
+            ShimmerTierListCard(),
+            SizedBox(height: AppSpacing.sm),
+            ShimmerTierListCard(),
+            SizedBox(height: AppSpacing.sm),
+            ShimmerTierListCard(),
+          ],
+        ),
         error: (Object error, StackTrace stack) => Center(
           child: Text(l.errorPrefix(error.toString())),
         ),

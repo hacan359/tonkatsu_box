@@ -876,12 +876,17 @@ class DatabaseService {
   Future<void> clearAllData() async {
     final Database db = await database;
     await db.transaction((Transaction txn) async {
-      // Зависимые таблицы (FK CASCADE)
+      // Зависимые таблицы (FK CASCADE) — удаляем до основных
+      await txn.delete('tier_list_entries');
+      await txn.delete('tier_definitions');
+      await txn.delete('tier_lists');
+      await txn.delete('collection_tags');
       await txn.delete('watched_episodes');
       await txn.delete('canvas_connections');
       await txn.delete('canvas_items');
       await txn.delete('canvas_viewport');
       await txn.delete('game_canvas_viewport');
+      await txn.delete('custom_items');
       await txn.delete('collection_items');
       // Основные таблицы
       await txn.delete('collections');
@@ -890,6 +895,8 @@ class DatabaseService {
       await txn.delete('tv_shows_cache');
       await txn.delete('movies_cache');
       await txn.delete('games');
+      await txn.delete('visual_novels_cache');
+      await txn.delete('manga_cache');
       // Статические справочники (platforms, tmdb_genres, igdb_genres, vndb_tags)
       // не очищаются — они заполнены миграцией v24 и не являются пользовательскими.
       // Wishlist

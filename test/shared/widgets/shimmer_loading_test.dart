@@ -96,6 +96,73 @@ void main() {
     });
   });
 
+  group('ShimmerTierListCard', () {
+    testWidgets('должен рендериться', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
+          home: Scaffold(
+            body: ShimmerTierListCard(),
+          ),
+        ),
+      );
+
+      expect(find.byType(ShimmerTierListCard), findsOneWidget);
+      expect(find.byType(Card), findsOneWidget);
+    });
+
+    testWidgets('должен содержать Row с ShimmerBox элементами',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
+          home: Scaffold(
+            body: ShimmerTierListCard(),
+          ),
+        ),
+      );
+
+      expect(find.byType(Row), findsOneWidget);
+      // Иконка + 2 строки текста + chevron = 4 ShimmerBox
+      expect(find.byType(ShimmerBox), findsNWidgets(4));
+    });
+  });
+
+  group('ShimmerTierListDetail', () {
+    testWidgets('должен рендериться', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
+          home: Scaffold(
+            body: ShimmerTierListDetail(),
+          ),
+        ),
+      );
+
+      expect(find.byType(ShimmerTierListDetail), findsOneWidget);
+      expect(find.byType(ListView), findsOneWidget);
+    });
+
+    testWidgets('должен содержать множество ShimmerBox элементов',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          localizationsDelegates: S.localizationsDelegates,
+          supportedLocales: S.supportedLocales,
+          home: Scaffold(
+            body: ShimmerTierListDetail(),
+          ),
+        ),
+      );
+
+      // 4 тир-ряда (по 4 ShimmerBox каждый) + 1 заголовок + 6 unranked = 23
+      expect(find.byType(ShimmerBox), findsNWidgets(23));
+    });
+  });
+
   group('ShimmerListTile', () {
     testWidgets('должен рендериться', (WidgetTester tester) async {
       await tester.pumpWidget(
