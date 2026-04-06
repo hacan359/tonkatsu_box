@@ -7,6 +7,7 @@
 ## [Unreleased]
 
 ### Added
+- **Browse Online Collections** — new screen in Settings > Import to browse and download pre-built collections from the `tonkatsu-collections` GitHub repository. Features searchable dropdown filters for platform (32 platforms) and category, text search, download with progress indicator, and automatic import via existing `ImportService`. Supports `.xcoll`, `.xcollx`, and `.zip` files. 16 localization keys EN+RU (`collection_browser_service.dart`, `collections_index.dart`, `collection_browser_provider.dart`, `browse_collections_screen.dart`, `browse_collections_content.dart`, `settings_screen.dart`)
 - **Table view inline editing** — click Rating cell to set 1–10 stars via popup (with hover highlight and clear button), click Status chip to change status via dropdown (5 options with colored icons, auto-sets `startedAt`/`completedAt`), click Tag cell to assign/remove tag via popup. All editable only when collection is not locked (`collection_table_view.dart`, `collection_items_view.dart`)
 - **Tag column in table view** — new `TableColumn.tag` between Status and Rating. Colored chip for assigned tag, em-dash when untagged. Supports cyclic header filter and alphabetical sorting (`collection_table_view.dart`)
 - **Platform cyclic filter** — clicking Platform column header now cycles through platform values (like Status/Type/Rating) instead of toggling sort direction. Header shows current filter value (`collection_table_view.dart`)

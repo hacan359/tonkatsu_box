@@ -26,6 +26,7 @@ import '../../../core/services/backup_service.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
+import 'browse_collections_screen.dart';
 import 'ra_import_screen.dart';
 import 'steam_import_screen.dart';
 import 'trakt_import_screen.dart';
@@ -259,6 +260,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         title: l.settingsImport,
         subtitle: l.settingsImportSubtitle,
         children: <Widget>[
+          SettingsTile(
+            title: l.settingsBrowseCollections,
+            subtitle: l.settingsBrowseCollectionsSubtitle,
+            onTap: () => _pushScreen(const BrowseCollectionsScreen()),
+          ),
           SettingsTile(
             title: l.settingsTraktImport,
             subtitle: l.settingsTraktImportSubtitle,

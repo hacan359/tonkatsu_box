@@ -1280,6 +1280,49 @@
   "importResultWishlistHint": "Items not found in the database were saved to your Wishlist for later.",
   "importResultSourceCollectionFile": "Collection File",
 
+  "settingsBrowseCollections": "Browse Collections",
+  "settingsBrowseCollectionsSubtitle": "Download ready-made collections",
+  "browseCollectionsSummary": "{count} collections, {items} items",
+  "@browseCollectionsSummary": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "items": {"type": "int"}
+    }
+  },
+  "browseCollectionsSearch": "Search collections...",
+  "browseCollectionsAllPlatforms": "All Platforms",
+  "browseCollectionsAllCategories": "All Categories",
+  "browseCollectionsItems": "{count} items",
+  "@browseCollectionsItems": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "browseCollectionsFormatLight": "Light (needs API keys)",
+  "browseCollectionsFormatFull": "Full (offline)",
+  "browseCollectionsDownloading": "Downloading...",
+  "browseCollectionsImporting": "Importing...",
+  "browseCollectionsDownloadError": "Download failed: {error}",
+  "@browseCollectionsDownloadError": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "browseCollectionsImportSuccess": "Collection imported: {name}",
+  "@browseCollectionsImportSuccess": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "browseCollectionsEmpty": "No collections found",
+  "browseCollectionsRetry": "Retry",
+  "browseCollectionsLoadError": "Failed to load collections",
+  "browseCollectionsImportTarget": "Import to",
+  "browseCollectionsNewCollection": "New collection",
+  "browseCollectionsExistingCollection": "Existing collection",
+  "browseCollectionsSelectCollection": "Select collection",
+  "browseCollectionsNoCollections": "No collections yet",
+
   "settingsRaImport": "RetroAchievements",
   "settingsRaImportSubtitle": "Import games from RetroAchievements",
   "raImportTitle": "RetroAchievements Import",
