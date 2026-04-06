@@ -17,6 +17,7 @@ import '../../../shared/widgets/screen_app_bar.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../shared/theme/app_colors.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/widgets/type_to_filter_overlay.dart';
 import '../providers/tier_list_detail_provider.dart';
 import '../widgets/tier_list_view.dart';
@@ -100,7 +101,7 @@ class _TierListDetailScreenState
           ],
         ),
         body: state.isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? const ShimmerTierListDetail()
             : TypeToFilterOverlay(
                 onFilterChanged: (String query) {
                   setState(() => _filterQuery = query);

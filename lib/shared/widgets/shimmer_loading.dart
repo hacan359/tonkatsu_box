@@ -103,6 +103,119 @@ class ShimmerPosterCard extends StatelessWidget {
   }
 }
 
+/// Заглушка для карточки тир-листа в списке (shimmer).
+///
+/// Иконка слева + две строки текста + chevron справа.
+/// Повторяет структуру _TierListCard.
+class ShimmerTierListCard extends StatelessWidget {
+  /// Создаёт shimmer-заглушку карточки тир-листа.
+  const ShimmerTierListCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Card(
+      color: AppColors.surfaceLight,
+      child: Padding(
+        padding: EdgeInsets.all(AppSpacing.md),
+        child: Row(
+          children: <Widget>[
+            ShimmerBox(width: 32, height: 32, borderRadius: AppSpacing.radiusSm),
+            SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  ShimmerBox(width: 160, height: 16),
+                  SizedBox(height: AppSpacing.xs),
+                  ShimmerBox(width: 100, height: 12),
+                ],
+              ),
+            ),
+            ShimmerBox(width: 24, height: 24, borderRadius: AppSpacing.radiusSm),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Заглушка для экрана деталей тир-листа (shimmer).
+///
+/// Несколько тир-рядов (цветная полоска + карточки-заглушки).
+class ShimmerTierListDetail extends StatelessWidget {
+  /// Создаёт shimmer-заглушку деталей тир-листа.
+  const ShimmerTierListDetail({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      children: const <Widget>[
+        _ShimmerTierRow(width: 80),
+        SizedBox(height: AppSpacing.sm),
+        _ShimmerTierRow(width: 120),
+        SizedBox(height: AppSpacing.sm),
+        _ShimmerTierRow(width: 60),
+        SizedBox(height: AppSpacing.sm),
+        _ShimmerTierRow(width: 100),
+        SizedBox(height: AppSpacing.lg),
+        // Unranked pool header
+        ShimmerBox(width: 140, height: 16),
+        SizedBox(height: AppSpacing.sm),
+        // Unranked items grid
+        _ShimmerUnrankedPool(),
+      ],
+    );
+  }
+}
+
+class _ShimmerTierRow extends StatelessWidget {
+  const _ShimmerTierRow({required this.width});
+
+  final double width;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: <Widget>[
+        // Tier label
+        ShimmerBox(
+          width: width,
+          height: 56,
+          borderRadius: AppSpacing.radiusSm,
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        // Item placeholders
+        const ShimmerBox(width: 48, height: 56, borderRadius: AppSpacing.radiusSm),
+        const SizedBox(width: AppSpacing.xs),
+        const ShimmerBox(width: 48, height: 56, borderRadius: AppSpacing.radiusSm),
+        const SizedBox(width: AppSpacing.xs),
+        const ShimmerBox(width: 48, height: 56, borderRadius: AppSpacing.radiusSm),
+      ],
+    );
+  }
+}
+
+class _ShimmerUnrankedPool extends StatelessWidget {
+  const _ShimmerUnrankedPool();
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: AppSpacing.xs,
+      runSpacing: AppSpacing.xs,
+      children: List<Widget>.generate(
+        6,
+        (_) => const ShimmerBox(
+          width: 48,
+          height: 56,
+          borderRadius: AppSpacing.radiusSm,
+        ),
+      ),
+    );
+  }
+}
+
 /// Заглушка для горизонтальной карточки списка (shimmer).
 ///
 /// Квадрат-постер слева + три строки текста справа.
