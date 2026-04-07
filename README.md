@@ -23,6 +23,13 @@
 
 ---
 
+> [!WARNING]
+> **This app is in active development.** Updates may include database migrations that change data format. Please **create a backup** before updating (Settings → Backup → Create Backup). Alternatively, you can manually copy the app data folder:
+> - **Windows:** `%APPDATA%\Roaming\Tonkatsu Box\Tonkatsu Box`
+> - **Android:** use the built-in backup feature (Settings → Backup)
+
+---
+
 Tonkatsu Box is a free, open-source app to organize your media collections. Search millions of titles from IGDB, TMDB, VNDB, and AniList. Track your progress, rate everything, create visual boards, and import your library from Steam, Trakt.tv, or RetroAchievements.
 
 <p align="center">

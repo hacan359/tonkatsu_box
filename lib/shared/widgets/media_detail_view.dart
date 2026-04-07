@@ -71,6 +71,7 @@ class MediaDetailView extends StatefulWidget {
     required this.onUserCommentSave,
     this.coverUrl,
     this.externalUrl,
+    this.backdropUrl,
     this.infoChips = const <MediaDetailChip>[],
     this.description,
     this.statusWidget,
@@ -106,6 +107,9 @@ class MediaDetailView extends StatefulWidget {
 
   /// URL внешней страницы (IGDB/TMDB).
   final String? externalUrl;
+
+  /// URL фонового изображения (TMDB backdrop).
+  final String? backdropUrl;
 
   /// Иконка-заглушка при отсутствии обложки.
   final IconData placeholderIcon;
@@ -271,41 +275,107 @@ class _MediaDetailViewState extends State<MediaDetailView> {
       padding: const EdgeInsets.all(AppSpacing.md),
       children: <Widget>[
         _buildHeader(),
-        if (widget.statusWidget != null) ...<Widget>[
-          const SizedBox(height: AppSpacing.md),
-          _buildStatusSection(context),
-        ],
-        if (widget.onUserRatingChanged != null) ...<Widget>[
-          const SizedBox(height: AppSpacing.md),
-          _buildUserRatingSection(context),
-        ],
-        if (widget.addedAt != null) ...<Widget>[
-          const SizedBox(height: AppSpacing.sm),
-          _buildActivityDatesRow(context),
-        ],
-        const SizedBox(height: AppSpacing.md),
-        _TrackerCommentsLayout(
-          trackerSection: widget.trackerSection,
-          notesSection: _buildUserNotesSection(context),
-          authorSection: _buildAuthorCommentSection(context),
-        ),
-        if (widget.extraSections != null &&
-            widget.extraSections!.isNotEmpty) ...<Widget>[
-          const SizedBox(height: AppSpacing.md),
-          _buildExtraSectionsExpansion(context),
-        ],
-        if (widget.recommendationSections != null &&
-            widget.recommendationSections!.isNotEmpty)
-          for (final Widget section
-              in widget.recommendationSections!) ...<Widget>[
-            const SizedBox(height: AppSpacing.md),
-            section,
-          ],
+              if (widget.statusWidget != null) ...<Widget>[
+                const SizedBox(height: AppSpacing.md),
+                _buildStatusSection(context),
+              ],
+              if (widget.onUserRatingChanged != null) ...<Widget>[
+                const SizedBox(height: AppSpacing.md),
+                _buildUserRatingSection(context),
+              ],
+              if (widget.addedAt != null) ...<Widget>[
+                const SizedBox(height: AppSpacing.sm),
+                _buildActivityDatesRow(context),
+              ],
+              const SizedBox(height: AppSpacing.md),
+              _TrackerCommentsLayout(
+                trackerSection: widget.trackerSection,
+                notesSection: _buildUserNotesSection(context),
+                authorSection: _buildAuthorCommentSection(context),
+              ),
+              if (widget.extraSections != null &&
+                  widget.extraSections!.isNotEmpty) ...<Widget>[
+                const SizedBox(height: AppSpacing.md),
+                _buildExtraSectionsExpansion(context),
+              ],
+              if (widget.recommendationSections != null &&
+                  widget.recommendationSections!.isNotEmpty)
+                for (final Widget section
+                    in widget.recommendationSections!) ...<Widget>[
+                  const SizedBox(height: AppSpacing.md),
+                  section,
+                ],
         const SizedBox(height: AppSpacing.lg),
       ],
     );
 
-    if (widget.embedded) return content;
+    // Backdrop — верхние 50% экрана, диагональный fade из нижнего левого
+    // в правый верхний. Основной фон (AppColors.background) остаётся под ним.
+    final Widget withBackdrop = widget.backdropUrl != null
+        ? LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              final double halfHeight = constraints.maxHeight * 0.4;
+              return Stack(
+                children: <Widget>[
+                  // Картинка — верхние 50%
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: halfHeight,
+                    child: CachedNetworkImage(
+                      imageUrl: widget.backdropUrl!,
+                      fit: BoxFit.cover,
+                      alignment: Alignment.topCenter,
+                      errorWidget:
+                          (BuildContext context, String url, Object error) =>
+                              const SizedBox.shrink(),
+                    ),
+                  ),
+                  // Диагональный fade: из правого верхнего в левый нижний
+                  Positioned(
+                    top: 0, left: 0, right: 0, height: halfHeight,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topRight,
+                          end: Alignment.bottomLeft,
+                          colors: <Color>[
+                            AppColors.background,
+                            AppColors.background.withAlpha(200),
+                            AppColors.background.withAlpha(120),
+                          ],
+                          stops: const <double>[0.0, 0.4, 1.0],
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Вертикальный fade к низу
+                  Positioned(
+                    top: 0, left: 0, right: 0, height: halfHeight,
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: <Color>[
+                            Colors.transparent,
+                            AppColors.background,
+                          ],
+                          stops: <double>[0.5, 1.0],
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Контент поверх всего
+                  content,
+                ],
+              );
+            },
+          )
+        : content;
+
+    if (widget.embedded) return withBackdrop;
 
     return Scaffold(
       appBar: AppBar(
@@ -314,7 +384,7 @@ class _MediaDetailViewState extends State<MediaDetailView> {
         foregroundColor: AppColors.textPrimary,
         title: Text(widget.title, style: AppTypography.h2),
       ),
-      body: content,
+      body: withBackdrop,
     );
   }
 

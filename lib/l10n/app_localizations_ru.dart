@@ -1930,6 +1930,16 @@ class SRu extends S {
   }
 
   @override
+  String get updateWarningTitle => 'Перед обновлением';
+
+  @override
+  String get updateWarningBody =>
+      'Приложение в активной разработке. Обновления могут включать миграции базы данных, которые изменяют формат данных.\n\nПожалуйста, создайте бэкап перед обновлением (Настройки → Бэкап). Так вы сможете восстановить данные, если что-то пойдёт не так.';
+
+  @override
+  String get updateWarningProceed => 'Перейти к релизу';
+
+  @override
   String get chooseCollection => 'Выбрать коллекцию';
 
   @override

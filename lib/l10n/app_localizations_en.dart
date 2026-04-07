@@ -1913,6 +1913,16 @@ class SEn extends S {
   }
 
   @override
+  String get updateWarningTitle => 'Before updating';
+
+  @override
+  String get updateWarningBody =>
+      'This app is in active development. Updates may include database migrations that change data format.\n\nPlease create a backup before updating (Settings → Backup). This way you can restore your data if anything goes wrong.';
+
+  @override
+  String get updateWarningProceed => 'Go to release';
+
+  @override
   String get chooseCollection => 'Choose Collection';
 
   @override

@@ -483,12 +483,41 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       title: l.updateAvailable(updateInfo!.latestVersion),
       value: l.updateCurrent(versionText),
       titleColor: AppColors.statusInProgress,
-      onTap: () {
-        launchUrl(
-          Uri.parse(updateInfo.releaseUrl),
-          mode: LaunchMode.externalApplication,
-        );
-      },
+      onTap: () => _showUpdateWarning(l, updateInfo.releaseUrl),
+    );
+  }
+
+  void _showUpdateWarning(S l, String releaseUrl) {
+    showDialog<void>(
+      context: context,
+      builder: (BuildContext ctx) => AlertDialog(
+        title: Row(
+          children: <Widget>[
+            const Icon(Icons.warning_amber_rounded,
+                color: AppColors.warning, size: 24),
+            const SizedBox(width: 8),
+            Expanded(child: Text(l.updateWarningTitle)),
+          ],
+        ),
+        content: Text(l.updateWarningBody),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(l.cancel),
+          ),
+          FilledButton.icon(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              launchUrl(
+                Uri.parse(releaseUrl),
+                mode: LaunchMode.externalApplication,
+              );
+            },
+            icon: const Icon(Icons.open_in_new, size: 16),
+            label: Text(l.updateWarningProceed),
+          ),
+        ],
+      ),
     );
   }
 
