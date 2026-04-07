@@ -1,3 +1,4 @@
+import '../../../shared/constants/platform_features.dart';
 // Welcome Wizard — пошаговый онбординг при первом запуске.
 
 import 'package:flutter/material.dart';
@@ -58,7 +59,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bool compact = MediaQuery.sizeOf(context).width < 600;
+    final bool compact = isCompactScreen(context);
 
     return Scaffold(
       body: SafeArea(

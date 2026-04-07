@@ -1,6 +1,6 @@
+import '../../../shared/constants/platform_features.dart';
 // Секция рекомендаций и похожих на странице элемента коллекции.
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -13,6 +13,8 @@ import '../providers/collections_provider.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../core/services/image_cache_service.dart';
+import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/scrollable_row_with_arrows.dart';
 import '../../search/widgets/media_details_sheet.dart';
 import '../../settings/providers/settings_provider.dart' show SettingsState, settingsNotifierProvider;
@@ -119,10 +121,10 @@ class RecommendationsSection extends ConsumerWidget {
                   title: m.title,
                   posterUrl: m.posterUrl,
                   year: m.releaseYear,
-                  rating: m.formattedRating,
-                  overview: m.overview,
-                  genres: m.genres,
+                  apiRating: m.rating,
                   icon: Icons.movie_outlined,
+                  cacheImageType: ImageType.moviePoster,
+                  cacheImageId: m.tmdbId.toString(),
                   onAddToCollection: () => _showMovieDetails(context, m),
                   isOwned: ownedIds.contains(m.tmdbId),
                 ),
@@ -155,10 +157,10 @@ class RecommendationsSection extends ConsumerWidget {
                   title: s.title,
                   posterUrl: s.posterUrl,
                   year: s.firstAirYear,
-                  rating: s.formattedRating,
-                  overview: s.overview,
-                  genres: s.genres,
+                  apiRating: s.rating,
                   icon: Icons.tv_outlined,
+                  cacheImageType: ImageType.tvShowPoster,
+                  cacheImageId: s.tmdbId.toString(),
                   onAddToCollection: () => _showTvShowDetails(context, s),
                   isOwned: ownedIds.contains(s.tmdbId),
                 ),
@@ -175,14 +177,8 @@ class RecommendationsSection extends ConsumerWidget {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (BuildContext ctx) => MediaDetailsSheet(
-        title: movie.title,
-        icon: Icons.movie_outlined,
-        overview: movie.overview,
-        year: movie.releaseYear,
-        rating: movie.formattedRating,
-        genres: movie.genres,
-        posterUrl: movie.posterUrl,
+      builder: (BuildContext ctx) => MediaDetailsSheet.movie(
+        movie,
         onAddToCollection:
             onAddMovie != null ? () => onAddMovie!(movie) : null,
       ),
@@ -193,14 +189,8 @@ class RecommendationsSection extends ConsumerWidget {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (BuildContext ctx) => MediaDetailsSheet(
-        title: tvShow.title,
-        icon: Icons.tv_outlined,
-        overview: tvShow.overview,
-        year: tvShow.firstAirYear,
-        rating: tvShow.formattedRating,
-        genres: tvShow.genres,
-        posterUrl: tvShow.posterUrl,
+      builder: (BuildContext ctx) => MediaDetailsSheet.tvShow(
+        tvShow,
         onAddToCollection:
             onAddTvShow != null ? () => onAddTvShow!(tvShow) : null,
       ),
@@ -214,23 +204,23 @@ class _RecItem {
     required this.title,
     required this.icon,
     required this.onAddToCollection,
+    required this.cacheImageType,
+    required this.cacheImageId,
     this.posterUrl,
     this.year,
-    this.rating,
-    this.overview,
-    this.genres,
+    this.apiRating,
     this.isOwned = false,
   });
 
   final String title;
   final String? posterUrl;
   final int? year;
-  final String? rating;
-  final String? overview;
-  final List<String>? genres;
   final IconData icon;
   final VoidCallback onAddToCollection;
   final bool isOwned;
+  final double? apiRating;
+  final ImageType cacheImageType;
+  final String cacheImageId;
 }
 
 /// Горизонтальный ряд рекомендаций.
@@ -258,9 +248,9 @@ class _RecommendationRowState extends State<_RecommendationRow> {
 
   @override
   Widget build(BuildContext context) {
-    final bool compact = MediaQuery.sizeOf(context).width < 600;
+    final bool compact = isCompactScreen(context);
     final double posterWidth = compact ? 100 : 130;
-    final double rowHeight = compact ? 175 : 220;
+    final double rowHeight = compact ? 185 : 230;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -278,14 +268,29 @@ class _RecommendationRowState extends State<_RecommendationRow> {
             child: ListView.separated(
               controller: _scrollController,
               scrollDirection: Axis.horizontal,
+              clipBehavior: Clip.none,
+              padding: const EdgeInsets.symmetric(vertical: 4),
               itemCount: widget.items.length,
               separatorBuilder: (_, _) =>
                   const SizedBox(width: AppSpacing.sm),
               itemBuilder: (BuildContext context, int index) {
                 final _RecItem item = widget.items[index];
-                return _RecPosterCard(
-                  item: item,
+                return SizedBox(
                   width: posterWidth,
+                  child: MediaPosterCard(
+                    variant: compact
+                        ? CardVariant.compact
+                        : CardVariant.grid,
+                    title: item.title,
+                    imageUrl: item.posterUrl ?? '',
+                    cacheImageType: item.cacheImageType,
+                    cacheImageId: item.cacheImageId,
+                    year: item.year,
+                    apiRating: item.apiRating,
+                    isInCollection: item.isOwned,
+                    placeholderIcon: item.icon,
+                    onTap: item.onAddToCollection,
+                  ),
                 );
               },
             ),
@@ -296,112 +301,13 @@ class _RecommendationRowState extends State<_RecommendationRow> {
   }
 }
 
-/// Карточка постера рекомендации.
-class _RecPosterCard extends StatelessWidget {
-  const _RecPosterCard({
-    required this.item,
-    required this.width,
-  });
-
-  final _RecItem item;
-  final double width;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: item.onAddToCollection,
-      child: SizedBox(
-        width: width,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Expanded(
-              child: Stack(
-                fit: StackFit.expand,
-                children: <Widget>[
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                    child: _buildPoster(),
-                  ),
-                  if (item.isOwned)
-                    const Positioned(
-                      top: 4,
-                      right: 4,
-                      child: Icon(
-                        Icons.check_circle,
-                        color: AppColors.success,
-                        size: 20,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              item.title,
-              style: AppTypography.posterTitle,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            if (item.year != null)
-              Text(
-                item.year.toString(),
-                style: AppTypography.posterSubtitle,
-                maxLines: 1,
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPoster() {
-    if (item.posterUrl == null || item.posterUrl!.isEmpty) {
-      return Container(
-        color: AppColors.surfaceLight,
-        child: Center(
-          child: Icon(
-            item.icon,
-            color: AppColors.textTertiary,
-            size: 32,
-          ),
-        ),
-      );
-    }
-
-    return CachedNetworkImage(
-      imageUrl: item.posterUrl!,
-      fit: BoxFit.cover,
-      memCacheWidth: 300,
-      placeholder: (_, _) => Container(
-        color: AppColors.surfaceLight,
-        child: const Center(
-          child: SizedBox(
-            width: 16,
-            height: 16,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
-        ),
-      ),
-      errorWidget: (_, _, _) => Container(
-        color: AppColors.surfaceLight,
-        child: Icon(
-          item.icon,
-          color: AppColors.textTertiary,
-          size: 32,
-        ),
-      ),
-    );
-  }
-}
-
 /// Шиммер-заглушка при загрузке.
 class _RecommendationShimmer extends StatelessWidget {
   const _RecommendationShimmer();
 
   @override
   Widget build(BuildContext context) {
-    final bool compact = MediaQuery.sizeOf(context).width < 600;
+    final bool compact = isCompactScreen(context);
     final double posterWidth = compact ? 100 : 130;
     final double rowHeight = compact ? 175 : 220;
 

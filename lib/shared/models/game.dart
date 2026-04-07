@@ -15,6 +15,7 @@ class Game {
     this.platformIds,
     this.externalUrl,
     this.cachedAt,
+    this.artworkUrl,
   });
 
   /// Создаёт [Game] из JSON ответа IGDB API.
@@ -54,6 +55,21 @@ class Game {
       );
     }
 
+    // Извлекаем первый artwork для фонового изображения (не сохраняется в БД).
+    String? artworkUrl;
+    if (json['artworks'] != null) {
+      final List<dynamic> artworks = json['artworks'] as List<dynamic>;
+      if (artworks.isNotEmpty) {
+        final Map<String, dynamic> art =
+            artworks.first as Map<String, dynamic>;
+        final String? artImageId = art['image_id'] as String?;
+        if (artImageId != null) {
+          artworkUrl =
+              'https://images.igdb.com/igdb/image/upload/t_720p/$artImageId.jpg';
+        }
+      }
+    }
+
     return Game(
       id: json['id'] as int,
       name: json['name'] as String,
@@ -66,6 +82,7 @@ class Game {
       platformIds: platformIds,
       externalUrl: json['url'] as String?,
       cachedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      artworkUrl: artworkUrl,
     );
   }
 
@@ -141,6 +158,9 @@ class Game {
   /// Время кеширования (Unix timestamp).
   final int? cachedAt;
 
+  /// URL artwork для фонового изображения (transient, не сохраняется в БД).
+  final String? artworkUrl;
+
   /// Возвращает год релиза или null.
   int? get releaseYear => releaseDate?.year;
 
@@ -215,6 +235,7 @@ class Game {
     List<int>? platformIds,
     String? externalUrl,
     int? cachedAt,
+    String? artworkUrl,
   }) {
     return Game(
       id: id ?? this.id,
@@ -228,6 +249,7 @@ class Game {
       platformIds: platformIds ?? this.platformIds,
       externalUrl: externalUrl ?? this.externalUrl,
       cachedAt: cachedAt ?? this.cachedAt,
+      artworkUrl: artworkUrl ?? this.artworkUrl,
     );
   }
 }

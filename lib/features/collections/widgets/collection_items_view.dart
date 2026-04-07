@@ -405,7 +405,9 @@ class CollectionItemsView extends ConsumerWidget {
 
     return MediaPosterCard(
       key: ValueKey<int>(item.id),
-      variant: isLandscape ? CardVariant.compact : CardVariant.grid,
+      variant: isLandscape || isCompactScreen(context)
+          ? CardVariant.compact
+          : CardVariant.grid,
       title: item.itemName,
       imageUrl: item.thumbnailUrl ?? '',
       cacheImageType: item.imageType,

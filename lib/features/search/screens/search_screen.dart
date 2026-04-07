@@ -485,17 +485,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (BuildContext context) => MediaDetailsSheet(
-        title: movie.title,
-        overview: movie.overview,
-        year: movie.releaseYear,
-        rating: movie.formattedRating,
-        genres: movie.genres,
-        icon: isAnim ? Icons.animation : Icons.movie,
-        extraInfo: movie.runtime != null ? '${movie.runtime} min' : null,
-        posterUrl: movie.posterUrl,
-        cacheImageType: ImageType.moviePoster,
-        cacheImageId: movie.tmdbId.toString(),
+      builder: (BuildContext context) => MediaDetailsSheet.movie(
+        movie,
+        isAnimation: isAnim,
         onAddToCollection: () => isAnim
             ? _addAnimationMovieToAnyCollection(movie)
             : _addMovieToAnyCollection(movie),
@@ -620,17 +612,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (BuildContext context) => MediaDetailsSheet(
-        title: tvShow.title,
-        overview: tvShow.overview,
-        year: tvShow.firstAirYear,
-        rating: tvShow.formattedRating,
-        genres: tvShow.genres,
-        icon: isAnim ? Icons.animation : Icons.tv,
-        extraInfo: tvShow.status,
-        posterUrl: tvShow.posterUrl,
-        cacheImageType: ImageType.tvShowPoster,
-        cacheImageId: tvShow.tmdbId.toString(),
+      builder: (BuildContext context) => MediaDetailsSheet.tvShow(
+        tvShow,
+        isAnimation: isAnim,
         onAddToCollection: () => isAnim
             ? _addAnimationTvShowToAnyCollection(tvShow)
             : _addTvShowToAnyCollection(tvShow),

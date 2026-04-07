@@ -30,6 +30,7 @@ class Manga {
     this.authors,
     this.externalUrl,
     this.updatedAt,
+    this.bannerUrl,
   });
 
   /// Создаёт [Manga] из JSON ответа AniList GraphQL API.
@@ -112,6 +113,7 @@ class Manga {
       authors: authors,
       externalUrl: 'https://anilist.co/manga/$id',
       updatedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      bannerUrl: json['bannerImage'] as String?,
     );
   }
 
@@ -232,6 +234,9 @@ class Manga {
   /// Время кеширования (Unix timestamp).
   final int? updatedAt;
 
+  /// URL баннера (transient, не сохраняется в БД).
+  final String? bannerUrl;
+
   // ===== Computed =====
 
   /// Рейтинг в шкале 0-10.
@@ -351,6 +356,7 @@ class Manga {
     List<String>? authors,
     String? externalUrl,
     int? updatedAt,
+    String? bannerUrl,
   }) {
     return Manga(
       id: id ?? this.id,
@@ -375,6 +381,7 @@ class Manga {
       authors: authors ?? this.authors,
       externalUrl: externalUrl ?? this.externalUrl,
       updatedAt: updatedAt ?? this.updatedAt,
+      bannerUrl: bannerUrl ?? this.bannerUrl,
     );
   }
 
