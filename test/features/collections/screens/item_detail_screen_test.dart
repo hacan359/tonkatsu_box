@@ -49,6 +49,10 @@ void main() {
         .thenAnswer((_) async => <(int, int), DateTime?>{});
     when(() => mockDb.getPlatformCount())
         .thenAnswer((_) async => 0);
+    final MockTrackerDao mockTrackerDao = MockTrackerDao();
+    when(() => mockDb.trackerDao).thenReturn(mockTrackerDao);
+    when(() => mockTrackerDao.getGameData(any(), any()))
+        .thenAnswer((_) async => null);
     when(() => mockTmdbApi.getTvSeasons(any()))
         .thenAnswer((_) async => <TvSeason>[]);
   });

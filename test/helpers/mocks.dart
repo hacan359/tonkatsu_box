@@ -25,6 +25,7 @@ import 'package:xerabora/core/database/dao/manga_dao.dart';
 import 'package:xerabora/core/database/dao/visual_novel_dao.dart';
 import 'package:xerabora/core/database/dao/tag_dao.dart';
 import 'package:xerabora/core/database/dao/tier_list_dao.dart';
+import 'package:xerabora/core/database/dao/tracker_dao.dart';
 import 'package:xerabora/core/database/dao/wishlist_dao.dart';
 import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/core/services/config_service.dart';
@@ -107,6 +108,8 @@ class MockCanvasDao extends Mock implements CanvasDao {}
 class MockTierListDao extends Mock implements TierListDao {}
 
 class MockWishlistDao extends Mock implements WishlistDao {}
+
+class MockTrackerDao extends Mock implements TrackerDao {}
 
 class MockTagDao extends Mock implements TagDao {}
 

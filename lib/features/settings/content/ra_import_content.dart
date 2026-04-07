@@ -455,6 +455,17 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
       final RaApi api = RaApi();
       api.setCredentials(username: username, apiKey: apiKey);
       final RaUserProfile profile = await api.getUserProfile(username);
+
+      // Сохраняем credentials при успешной верификации —
+      // нужны для refresh ачивок в карточке без полного импорта.
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString(SettingsKeys.raUsername, username);
+      await prefs.setString(SettingsKeys.raApiKey, apiKey);
+      ref.read(raApiProvider).setCredentials(
+            username: username,
+            apiKey: apiKey,
+          );
+
       if (mounted) {
         setState(() {
           _profile = profile;

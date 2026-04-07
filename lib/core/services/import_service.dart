@@ -26,11 +26,13 @@ import '../../shared/models/tv_episode.dart';
 import '../../shared/models/tv_season.dart';
 import '../../shared/models/tv_show.dart';
 import '../../shared/models/manga.dart';
+import '../../shared/models/tracker_game_data.dart';
 import '../../shared/models/visual_novel.dart';
 import '../api/anilist_api.dart';
 import '../api/igdb_api.dart';
 import '../api/tmdb_api.dart';
 import '../api/vndb_api.dart';
+import '../database/dao/tracker_dao.dart';
 import '../database/database_service.dart';
 import 'image_cache_service.dart';
 import 'xcoll_file.dart';
@@ -47,6 +49,7 @@ final Provider<ImportService> importServiceProvider =
     database: ref.watch(databaseServiceProvider),
     canvasRepository: ref.watch(canvasRepositoryProvider),
     imageCacheService: ref.watch(imageCacheServiceProvider),
+    trackerDao: ref.watch(trackerDaoProvider),
   );
 });
 
@@ -192,6 +195,7 @@ class ImportService {
     AniListApi? aniListApi,
     CanvasRepository? canvasRepository,
     ImageCacheService? imageCacheService,
+    TrackerDao? trackerDao,
   })  : _repository = repository,
         _igdbApi = igdbApi,
         _tmdbApi = tmdbApi,
@@ -199,7 +203,8 @@ class ImportService {
         _aniListApi = aniListApi,
         _database = database,
         _canvasRepository = canvasRepository,
-        _imageCacheService = imageCacheService;
+        _imageCacheService = imageCacheService,
+        _trackerDao = trackerDao;
 
   final CollectionRepository _repository;
   final IgdbApi _igdbApi;
@@ -209,6 +214,7 @@ class ImportService {
   final DatabaseService _database;
   final CanvasRepository? _canvasRepository;
   final ImageCacheService? _imageCacheService;
+  final TrackerDao? _trackerDao;
 
   static final Logger _log = Logger('ImportService');
 
@@ -505,6 +511,13 @@ class ImportService {
           collection.id,
           itemIdMapping,
         );
+      }
+
+      // Восстановление tracker data (RA progress, только с user data)
+      if (xcoll.trackerData != null &&
+          xcoll.trackerData!.isNotEmpty &&
+          _trackerDao != null) {
+        await _importTrackerData(xcoll.trackerData!);
       }
 
       // Завершено
@@ -1383,5 +1396,15 @@ class ImportService {
       return '${mediaType.value}:$externalId:$platformId';
     }
     return '${mediaType.value}:$externalId';
+  }
+
+  /// Восстанавливает tracker_game_data из xcollx.
+  Future<void> _importTrackerData(
+    List<Map<String, dynamic>> trackerData,
+  ) async {
+    final List<TrackerGameData> items = trackerData
+        .map((Map<String, dynamic> d) => TrackerGameData.fromDb(d))
+        .toList();
+    await _trackerDao!.upsertGameDataBatch(items);
   }
 }

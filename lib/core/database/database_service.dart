@@ -34,6 +34,7 @@ import 'dao/tv_show_dao.dart';
 import 'dao/manga_dao.dart';
 import 'dao/visual_novel_dao.dart';
 import 'dao/tier_list_dao.dart';
+import 'dao/tracker_dao.dart';
 import 'dao/wishlist_dao.dart';
 import 'migrations/migration.dart';
 import 'migrations/migration_registry.dart';
@@ -81,6 +82,12 @@ final Provider<CollectionDao> collectionDaoProvider =
 /// Провайдер для [CanvasDao].
 final Provider<CanvasDao> canvasDaoProvider = Provider<CanvasDao>((Ref ref) {
   return ref.watch(databaseServiceProvider).canvasDao;
+});
+
+/// Провайдер для [TrackerDao].
+final Provider<TrackerDao> trackerDaoProvider =
+    Provider<TrackerDao>((Ref ref) {
+  return ref.watch(databaseServiceProvider).trackerDao;
 });
 
 /// Провайдер для [TierListDao].
@@ -158,6 +165,9 @@ class DatabaseService {
   /// DAO для работы с тир-листами.
   late final TierListDao tierListDao = TierListDao(() => database);
 
+  /// DAO для работы с трекерами (RA, Steam, Trakt).
+  late final TrackerDao trackerDao = TrackerDao(() => database);
+
   /// DAO для работы с тегами коллекций.
   late final TagDao tagDao = TagDao(() => database);
 
@@ -206,7 +216,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 30,
+        version: 31,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -881,6 +891,9 @@ class DatabaseService {
       await txn.delete('tier_definitions');
       await txn.delete('tier_lists');
       await txn.delete('collection_tags');
+      await txn.delete('tracker_achievements');
+      await txn.delete('tracker_game_data');
+      await txn.delete('tracker_profiles');
       await txn.delete('watched_episodes');
       await txn.delete('canvas_connections');
       await txn.delete('canvas_items');

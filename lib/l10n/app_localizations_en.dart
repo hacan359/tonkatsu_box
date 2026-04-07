@@ -2963,6 +2963,103 @@ class SEn extends S {
   }
 
   @override
+  String get raRefresh => 'Refresh achievements';
+
+  @override
+  String get raOpenOnRa => 'Open on RA ↗';
+
+  @override
+  String get raProgress => 'Progress';
+
+  @override
+  String get raHardcore => 'Hardcore';
+
+  @override
+  String get raCompletion => 'Completion';
+
+  @override
+  String get raRecentUnlocks => 'Recent Unlocks';
+
+  @override
+  String get raUpNext => 'Up Next';
+
+  @override
+  String raViewAll(int count) {
+    return 'View All $count Achievements →';
+  }
+
+  @override
+  String get raCollapse => 'Collapse';
+
+  @override
+  String get raMastered => 'Mastered';
+
+  @override
+  String get raHardcoreMastered => 'Hardcore Mastered';
+
+  @override
+  String get raBeaten => 'Beaten';
+
+  @override
+  String get raBeatenSoftcore => 'Beaten Softcore';
+
+  @override
+  String get raHardcoreBeaten => 'Hardcore Beaten';
+
+  @override
+  String get raToday => 'Today';
+
+  @override
+  String get raYesterday => 'Yesterday';
+
+  @override
+  String raDaysAgo(int days) {
+    return '${days}d ago';
+  }
+
+  @override
+  String get raPoints => 'pts';
+
+  @override
+  String get raAchievements => 'ach';
+
+  @override
+  String get raMissable => 'MISSABLE';
+
+  @override
+  String get raFilterAll => 'All';
+
+  @override
+  String get raFilterEarned => 'Earned';
+
+  @override
+  String get raFilterLocked => 'Locked';
+
+  @override
+  String get raFilterMissable => 'Missable';
+
+  @override
+  String get raFilterProgression => 'Progression';
+
+  @override
+  String get raFilterWinCondition => 'Win Condition';
+
+  @override
+  String get raBeatenProgress => 'Beaten Progress';
+
+  @override
+  String get raStatsAchievements => 'achievements';
+
+  @override
+  String get raStatsWorth => 'worth';
+
+  @override
+  String get raStatsPoints => 'points';
+
+  @override
+  String get raStatsUnlocked => 'Unlocked';
+
+  @override
   String get copyAsList => 'Copy as List';
 
   @override

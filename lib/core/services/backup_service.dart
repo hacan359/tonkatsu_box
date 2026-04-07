@@ -15,6 +15,10 @@ import '../../shared/models/collection.dart';
 import '../../shared/models/collection_item.dart';
 import '../../shared/models/media_type.dart';
 import '../../shared/models/wishlist_item.dart';
+import '../../shared/models/tracker_game_data.dart';
+import '../../shared/models/tracker_profile.dart';
+import '../database/dao/tracker_dao.dart';
+import '../database/database_service.dart';
 import 'config_service.dart';
 import 'export_service.dart';
 import 'import_service.dart';
@@ -32,6 +36,7 @@ final Provider<BackupService> backupServiceProvider =
     configService: ref.watch(configServiceProvider),
     collectionRepo: ref.watch(collectionRepositoryProvider),
     wishlistRepo: ref.watch(wishlistRepositoryProvider),
+    trackerDao: ref.watch(trackerDaoProvider),
   );
 });
 
@@ -248,11 +253,13 @@ class BackupService {
     required ConfigService configService,
     required CollectionRepository collectionRepo,
     required WishlistRepository wishlistRepo,
+    TrackerDao? trackerDao,
   })  : _exportService = exportService,
         _importService = importService,
         _configService = configService,
         _collectionRepo = collectionRepo,
-        _wishlistRepo = wishlistRepo;
+        _wishlistRepo = wishlistRepo,
+        _trackerDao = trackerDao;
 
   static final Logger _log = Logger('BackupService');
 
@@ -260,6 +267,7 @@ class BackupService {
   final ImportService _importService;
   final ConfigService _configService;
   final CollectionRepository _collectionRepo;
+  final TrackerDao? _trackerDao;
   final WishlistRepository _wishlistRepo;
 
   // ==================== Backup ====================
@@ -327,7 +335,37 @@ class BackupService {
         wishlistBytes,
       ));
 
-      // 4. Настройки
+      // 4. Tracker data (RA, Steam profiles + game data)
+      if (_trackerDao != null) {
+        final List<TrackerProfile> profiles =
+            await _trackerDao.getAllProfiles();
+        final List<TrackerGameData> gameData = <TrackerGameData>[];
+        for (final TrackerProfile p in profiles) {
+          gameData.addAll(
+            await _trackerDao.getAllGameData(p.trackerType),
+          );
+        }
+        if (profiles.isNotEmpty || gameData.isNotEmpty) {
+          final Map<String, dynamic> trackerExport = <String, dynamic>{
+            'profiles': profiles.map(
+              (TrackerProfile p) => p.toDb(),
+            ).toList(),
+            'game_data': gameData.map(
+              (TrackerGameData d) => d.toDb(),
+            ).toList(),
+          };
+          final String trackerStr =
+              const JsonEncoder.withIndent('  ').convert(trackerExport);
+          final List<int> trackerBytes = utf8.encode(trackerStr);
+          archive.addFile(ArchiveFile(
+            'tracker_data.json',
+            trackerBytes.length,
+            trackerBytes,
+          ));
+        }
+      }
+
+      // 5. Настройки
       final Map<String, Object> config = _configService.collectSettings();
       final String configStr =
           const JsonEncoder.withIndent('  ').convert(config);
@@ -338,7 +376,7 @@ class BackupService {
         configBytes,
       ));
 
-      // 5. Манифест
+      // 6. Манифест
       final Map<String, dynamic> manifest = <String, dynamic>{
         'version': backupFormatVersion,
         'created': DateTime.now().toUtc().toIso8601String(),
@@ -356,7 +394,7 @@ class BackupService {
         manifestBytes,
       ));
 
-      // 6. Кодируем ZIP
+      // 7. Кодируем ZIP
       onProgress?.call(BackupProgress(
         stage: 'saving',
         current: collections.length,
@@ -365,7 +403,7 @@ class BackupService {
 
       final List<int> zipBytes = ZipEncoder().encode(archive);
 
-      // 7. Сохраняем файл
+      // 8. Сохраняем файл
       final String dateSuffix = _dateSuffix();
       final bool useAny = Platform.isAndroid || Platform.isIOS;
       final String? outputPath = await FilePicker.platform.saveFile(
@@ -445,6 +483,7 @@ class BackupService {
       final Map<String, String> collectionFiles = <String, String>{};
       String? wishlistContent;
       String? configContent;
+      String? trackerContent;
 
       for (final ArchiveFile file in archive) {
         if (!file.isFile) continue;
@@ -457,6 +496,8 @@ class BackupService {
           wishlistContent = content;
         } else if (file.name == 'config.json') {
           configContent = content;
+        } else if (file.name == 'tracker_data.json') {
+          trackerContent = content;
         }
       }
 
@@ -512,6 +553,15 @@ class BackupService {
             jsonDecode(configContent) as Map<String, Object?>;
         final int applied = await _configService.applySettings(config);
         settingsApplied = applied > 0;
+      }
+
+      // Восстановление tracker data
+      if (trackerContent != null && _trackerDao != null) {
+        try {
+          await _restoreTrackerData(trackerContent);
+        } catch (e) {
+          _log.warning('Failed to restore tracker data', e);
+        }
       }
 
       return RestoreResult.success(
@@ -582,6 +632,28 @@ class BackupService {
         .toLowerCase();
     final String padded = '${index + 1}'.padLeft(3, '0');
     return '${padded}_$sanitized.xcollx';
+  }
+
+  /// Восстанавливает tracker profiles и game data из JSON.
+  Future<void> _restoreTrackerData(String jsonContent) async {
+    final Map<String, dynamic> data =
+        jsonDecode(jsonContent) as Map<String, dynamic>;
+
+    final List<dynamic> profiles =
+        data['profiles'] as List<dynamic>? ?? <dynamic>[];
+    for (final dynamic p in profiles) {
+      final TrackerProfile profile =
+          TrackerProfile.fromDb(p as Map<String, dynamic>);
+      await _trackerDao!.upsertProfile(profile);
+    }
+
+    final List<dynamic> gameDataList =
+        data['game_data'] as List<dynamic>? ?? <dynamic>[];
+    final List<TrackerGameData> items = gameDataList
+        .map((dynamic d) =>
+            TrackerGameData.fromDb(d as Map<String, dynamic>))
+        .toList();
+    await _trackerDao!.upsertGameDataBatch(items);
   }
 
   /// Генерирует суффикс даты для имени файла.

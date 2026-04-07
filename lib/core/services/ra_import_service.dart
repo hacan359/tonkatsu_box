@@ -11,10 +11,13 @@ import '../../shared/models/game.dart';
 import '../../shared/models/item_status.dart';
 import '../../shared/models/media_type.dart';
 import '../../shared/models/ra_game_progress.dart';
+import '../../shared/models/tracker_game_data.dart';
+import '../../shared/models/tracker_profile.dart';
 import '../../shared/models/universal_import_result.dart';
 import '../../shared/models/wishlist_item.dart';
 import '../api/igdb_api.dart';
 import '../api/ra_api.dart';
+import '../database/dao/tracker_dao.dart';
 import '../database/database_service.dart';
 import 'ra_to_igdb_mapper.dart';
 
@@ -133,6 +136,7 @@ final Provider<RaImportService> raImportServiceProvider =
     raApi: ref.watch(raApiProvider),
     igdbApi: ref.watch(igdbApiProvider),
     database: ref.watch(databaseServiceProvider),
+    trackerDao: ref.watch(trackerDaoProvider),
   );
 });
 
@@ -146,13 +150,16 @@ class RaImportService {
     required RaApi raApi,
     required IgdbApi igdbApi,
     required DatabaseService database,
+    TrackerDao? trackerDao,
   })  : _raApi = raApi,
         _igdbApi = igdbApi,
-        _db = database;
+        _db = database,
+        _trackerDao = trackerDao;
 
   final RaApi _raApi;
   final IgdbApi _igdbApi;
   final DatabaseService _db;
+  final TrackerDao? _trackerDao;
   static final Logger _log = Logger('RaImportService');
 
   /// Импортирует игры из RA профиля в коллекцию.
@@ -274,6 +281,9 @@ class RaImportService {
         );
         added++;
       }
+
+      // Сохраняем tracker_game_data для RA секции в карточке.
+      await _saveTrackerGameData(igdbGame.id, raGame);
     }
 
     onProgress(RaImportProgress(
@@ -388,12 +398,7 @@ class RaImportService {
       changed = true;
     }
 
-    // Author comment: обновляем RA строку в authorComment.
-    final String? raComment = _buildRaComment(raGame);
-    if (raComment != null && raComment != existing.authorComment) {
-      await _db.updateItemAuthorComment(existing.id, raComment);
-      changed = true;
-    }
+    // RA данные теперь в tracker_game_data — authorComment свободен для юзера.
 
     // Activity dates: completedAt и lastActivityAt.
     final DateTime? lastActivity = raGame.lastPlayedAt;
@@ -424,19 +429,6 @@ class RaImportService {
     return (priority[newStatus] ?? 0) > (priority[existing] ?? 0);
   }
 
-  /// Формирует строку RA комментария.
-  String? _buildRaComment(RaGameProgress raGame) {
-    if (raGame.maxPossible <= 0) return null;
-    final String pct = (raGame.completionRate * 100).toStringAsFixed(0);
-    final StringBuffer sb = StringBuffer()
-      ..write('RA: ${raGame.numAwarded}/${raGame.maxPossible} ')
-      ..write('achievements ($pct%)');
-    if (raGame.highestAwardKind != null) {
-      sb.write(' \u2022 ${raGame.highestAwardKind}');
-    }
-    return sb.toString();
-  }
-
   Future<void> _addToWishlistIfNotExists(RaGameProgress raGame) async {
     final String title = '${raGame.title} (${raGame.consoleName})';
     final WishlistItem? existing = await _db.findUnresolvedWishlistItem(title);
@@ -465,7 +457,6 @@ class RaImportService {
       externalId: game.id,
       platformId: platformId,
       status: raGame.itemStatus,
-      authorComment: _buildRaComment(raGame),
     );
 
     // Устанавливаем activity dates.
@@ -479,5 +470,35 @@ class RaImportService {
         );
       }
     }
+  }
+
+  /// Сохраняет/обновляет tracker_game_data для RA игры.
+  Future<void> _saveTrackerGameData(
+    int igdbId,
+    RaGameProgress raGame,
+  ) async {
+    if (_trackerDao == null) return;
+    final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    final int? awardTimestamp = raGame.highestAwardDate != null
+        ? raGame.highestAwardDate!.millisecondsSinceEpoch ~/ 1000
+        : null;
+    final int? lastPlayedTimestamp = raGame.lastPlayedAt != null
+        ? raGame.lastPlayedAt!.millisecondsSinceEpoch ~/ 1000
+        : null;
+
+    await _trackerDao.upsertGameData(TrackerGameData(
+      id: 0,
+      trackerType: TrackerType.ra,
+      gameId: igdbId,
+      trackerGameId: raGame.gameId.toString(),
+      trackerGameTitle: raGame.title,
+      achievementsEarned: raGame.numAwarded,
+      achievementsTotal: raGame.maxPossible,
+      achievementsEarnedHardcore: raGame.numAwardedHardcore,
+      awardKind: raGame.highestAwardKind,
+      awardDate: awardTimestamp,
+      lastPlayedAt: lastPlayedTimestamp,
+      lastSyncedAt: now,
+    ));
   }
 }

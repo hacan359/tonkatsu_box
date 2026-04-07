@@ -117,9 +117,11 @@
 
 Connect your retro game library with RetroAchievements:
 - [x] **Import RA library** — fetch played games with achievement progress, match to IGDB, add to collection with platform mapping (30+ consoles), status from awards (mastered/beaten → completed), unmatched games → Wishlist
+- [x] **Achievement tracker system** — universal tracker tables (profiles, game data, achievements), RA achievements section in game detail card with progress bars, award badges, recent unlocks and upcoming achievements with badge icons. Lazy loading per-game from `GetGameInfoAndUserProgress` API
 - [ ] Link games by ROM hash
-- [ ] View available achievements per game
-- [ ] Track your unlocked achievements in-app
+- [ ] Filter/sort collections by RA completion percentage or award status
+- [ ] Quick Sync button for incremental RA progress updates
+- [ ] RA profile card in Settings with sync controls
 
 ### New Data Sources
 
