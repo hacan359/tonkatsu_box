@@ -472,7 +472,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                     final CollectionItem item = groups[i].items[index];
                     return MediaPosterCard(
                       key: ValueKey<int>(item.id),
-                      variant: isLandscape
+                      variant: isLandscape ||
+                              isCompactScreen(context)
                           ? CardVariant.compact
                           : CardVariant.grid,
                       title: item.itemName,

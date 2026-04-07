@@ -1,3 +1,4 @@
+import '../../../shared/constants/platform_features.dart';
 // Контент экрана настройки API ключей (без Scaffold/AppBar).
 
 import 'package:flutter/material.dart';
@@ -60,7 +61,7 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
   @override
   Widget build(BuildContext context) {
     final SettingsState settings = ref.watch(settingsNotifierProvider);
-    final bool compact = MediaQuery.sizeOf(context).width < 600;
+    final bool compact = isCompactScreen(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

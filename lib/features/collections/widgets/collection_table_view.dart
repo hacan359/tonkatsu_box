@@ -148,9 +148,17 @@ class _CollectionTableViewState extends State<CollectionTableView> {
           borderRadius: const BorderRadius.vertical(
             top: Radius.circular(AppSpacing.radiusMd),
           ),
-          child: Column(
-            children: <Widget>[
-              _TableHeader(
+          child: LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              final double tableWidth =
+                  constraints.maxWidth < 600 ? 600 : constraints.maxWidth;
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: SizedBox(
+                  width: tableWidth,
+                  child: Column(
+                    children: <Widget>[
+                      _TableHeader(
                 sortColumn: _sortColumn,
                 sortAscending: _sortAscending,
                 onSort: _toggleSort,
@@ -194,7 +202,11 @@ class _CollectionTableViewState extends State<CollectionTableView> {
                   },
                 ),
               ),
-            ],
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
         ),
       ),

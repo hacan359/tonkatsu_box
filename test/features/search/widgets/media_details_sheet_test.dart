@@ -117,7 +117,7 @@ void main() {
       expect(find.byType(CachedImage), findsNothing);
     });
 
-    testWidgets('shows genres as Chip widgets',
+    testWidgets('shows genres as compact chips',
         (WidgetTester tester) async {
       await tester.pumpWidget(
         buildTestApp(
@@ -127,7 +127,6 @@ void main() {
       );
       await openSheet(tester);
 
-      expect(find.byType(Chip), findsNWidgets(3));
       expect(find.text('Action'), findsOneWidget);
       expect(find.text('Sci-Fi'), findsOneWidget);
       expect(find.text('Drama'), findsOneWidget);
@@ -140,7 +139,8 @@ void main() {
       );
       await openSheet(tester);
 
-      expect(find.byType(Chip), findsNothing);
+      // No genre chips rendered.
+      expect(find.text('Action'), findsNothing);
     });
 
     testWidgets('does not show genre chips when genres list is empty',
@@ -150,16 +150,18 @@ void main() {
       );
       await openSheet(tester);
 
-      expect(find.byType(Chip), findsNothing);
+      // No genre chips rendered.
+      expect(find.text('Action'), findsNothing);
     });
 
-    testWidgets('shows year chip', (WidgetTester tester) async {
+    testWidgets('shows year inline with title', (WidgetTester tester) async {
       await tester.pumpWidget(
         buildTestApp(title: 'Year Movie', year: 2023),
       );
       await openSheet(tester);
 
-      expect(find.text('2023'), findsOneWidget);
+      // Year is rendered inline in Text.rich with title.
+      expect(find.textContaining('2023'), findsOneWidget);
     });
 
     testWidgets('shows rating chip', (WidgetTester tester) async {
@@ -299,8 +301,8 @@ void main() {
       // pumpAndSettle from completing.
       await openSheetWithPump(tester);
 
-      expect(find.text('Full Movie'), findsOneWidget);
-      expect(find.text('2024'), findsOneWidget);
+      expect(find.textContaining('Full Movie'), findsOneWidget);
+      expect(find.textContaining('2024'), findsOneWidget);
       expect(find.text('9.1'), findsOneWidget);
       expect(find.text('Action'), findsOneWidget);
       expect(find.text('Adventure'), findsOneWidget);

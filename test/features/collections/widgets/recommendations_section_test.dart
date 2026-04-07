@@ -1,6 +1,6 @@
 // Widget tests for RecommendationsSection — owned badge (check_circle).
 
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:xerabora/shared/widgets/cached_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -19,12 +19,12 @@ import 'package:xerabora/shared/models/tv_show.dart';
 
 import '../../../helpers/test_helpers.dart';
 
-/// Pumps enough frames for async providers to resolve without waiting for
-/// CachedNetworkImage animations to settle (which never finish in tests).
+/// Pumps enough frames for async providers and animations to resolve
+/// without waiting for infinite animations (CachedImage placeholder).
 Future<void> pumpUntilResolved(WidgetTester tester) async {
-  await tester.pump();
-  await tester.pump(const Duration(milliseconds: 100));
-  await tester.pump(const Duration(milliseconds: 100));
+  for (int i = 0; i < 10; i++) {
+    await tester.pump(const Duration(milliseconds: 50));
+  }
 }
 
 void main() {
@@ -152,7 +152,7 @@ void main() {
         await pumpUntilResolved(tester);
 
         // Should show exactly one check_circle (for owned movie).
-        expect(find.byIcon(Icons.check_circle), findsOneWidget);
+        expect(find.byIcon(Icons.check), findsOneWidget);
         // Both movie titles should be visible.
         expect(find.text('Owned Movie'), findsOneWidget);
         expect(find.text('Not Owned Movie'), findsOneWidget);
@@ -170,7 +170,7 @@ void main() {
 
         await pumpUntilResolved(tester);
 
-        expect(find.byIcon(Icons.check_circle), findsNothing);
+        expect(find.byIcon(Icons.check), findsNothing);
       });
 
       testWidgets('animation owned IDs also count for movies',
@@ -196,7 +196,7 @@ void main() {
 
         await pumpUntilResolved(tester);
 
-        expect(find.byIcon(Icons.check_circle), findsOneWidget);
+        expect(find.byIcon(Icons.check), findsOneWidget);
       });
     });
 
@@ -224,7 +224,7 @@ void main() {
 
         await pumpUntilResolved(tester);
 
-        expect(find.byIcon(Icons.check_circle), findsOneWidget);
+        expect(find.byIcon(Icons.check), findsOneWidget);
         expect(find.text('Owned Show'), findsOneWidget);
         expect(find.text('Not Owned Show'), findsOneWidget);
       });
@@ -241,7 +241,7 @@ void main() {
 
         await pumpUntilResolved(tester);
 
-        expect(find.byIcon(Icons.check_circle), findsNothing);
+        expect(find.byIcon(Icons.check), findsNothing);
       });
 
       testWidgets('animation owned IDs also count for tv shows',
@@ -267,7 +267,7 @@ void main() {
 
         await pumpUntilResolved(tester);
 
-        expect(find.byIcon(Icons.check_circle), findsOneWidget);
+        expect(find.byIcon(Icons.check), findsOneWidget);
       });
     });
 
@@ -342,7 +342,7 @@ void main() {
 
         await pumpUntilResolved(tester);
 
-        expect(find.byType(CachedNetworkImage), findsOneWidget);
+        expect(find.byType(CachedImage), findsOneWidget);
       });
 
       testWidgets('shows placeholder icon when no posterUrl',
@@ -366,7 +366,7 @@ void main() {
         await pumpUntilResolved(tester);
 
         expect(find.byIcon(Icons.movie_outlined), findsOneWidget);
-        expect(find.byType(CachedNetworkImage), findsNothing);
+        expect(find.byType(CachedImage), findsNothing);
       });
 
       testWidgets('shows year when provided', (WidgetTester tester) async {

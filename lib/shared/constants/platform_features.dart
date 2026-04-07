@@ -26,3 +26,8 @@ bool isLandscapeMobile(BuildContext context) {
   return kIsMobile &&
       MediaQuery.orientationOf(context) == Orientation.landscape;
 }
+
+/// Компактный экран (<600px) — мобила или узкое окно на десктопе.
+bool isCompactScreen(BuildContext context) {
+  return MediaQuery.sizeOf(context).width < 600;
+}

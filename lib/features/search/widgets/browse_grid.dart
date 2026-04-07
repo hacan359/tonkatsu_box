@@ -1,3 +1,4 @@
+import '../../../shared/constants/platform_features.dart';
 // Вертикальный грид результатов Browse/Search.
 
 import 'package:flutter/material.dart';
@@ -256,6 +257,9 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
 
     // Results grid
     final SliverGridDelegate gridDelegate = _buildGridDelegate(context);
+    final CardVariant variant = isCompactScreen(context)
+        ? CardVariant.compact
+        : CardVariant.grid;
 
     return GridView.builder(
       controller: _scrollController,
@@ -273,7 +277,8 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
 
         final Object item = displayItems[index];
         return _buildCard(
-            item, state.source.id, tmdbIds, gameIds, vnIds, mangaIds);
+            item, state.source.id, tmdbIds, gameIds, vnIds, mangaIds,
+            variant);
       },
     );
   }
@@ -285,6 +290,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     Set<int> gameIds,
     Set<int> vnIds,
     Set<int> mangaIds,
+    CardVariant variant,
   ) {
     VoidCallback? openCallback(int externalId, MediaType mediaType, bool inCollection) {
       if (!inCollection || widget.onOpenInCollection == null) return null;
@@ -294,7 +300,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     if (item is Movie) {
       final bool inColl = tmdbIds.contains(item.tmdbId);
       return MediaPosterCard(
-        variant: CardVariant.grid,
+        variant: variant,
         title: item.title,
         imageUrl: item.posterUrl ?? '',
         cacheImageType: ImageType.moviePoster,
@@ -315,7 +321,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
           : MediaType.tvShow;
       final bool inColl = tmdbIds.contains(item.tmdbId);
       return MediaPosterCard(
-        variant: CardVariant.grid,
+        variant: variant,
         title: item.title,
         imageUrl: item.posterUrl ?? '',
         cacheImageType: ImageType.tvShowPoster,
@@ -333,7 +339,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     if (item is Game) {
       final bool inColl = gameIds.contains(item.id);
       return MediaPosterCard(
-        variant: CardVariant.grid,
+        variant: variant,
         title: item.name,
         imageUrl: item.coverUrl ?? '',
         cacheImageType: ImageType.gameCover,
@@ -352,7 +358,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     if (item is VisualNovel) {
       final bool inColl = vnIds.contains(item.numericId);
       return MediaPosterCard(
-        variant: CardVariant.grid,
+        variant: variant,
         title: item.title,
         imageUrl: item.imageUrl ?? '',
         cacheImageType: ImageType.vnCover,
@@ -370,7 +376,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     if (item is Manga) {
       final bool inColl = mangaIds.contains(item.id);
       return MediaPosterCard(
-        variant: CardVariant.grid,
+        variant: variant,
         title: item.title,
         imageUrl: item.coverUrl ?? '',
         cacheImageType: ImageType.mangaCover,

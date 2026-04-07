@@ -1,9 +1,9 @@
+import '../../../shared/constants/platform_features.dart';
 // Лента подборок Discover (показывается при пустом поиске).
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/collected_item_info.dart';
 import '../../../shared/models/movie.dart';
@@ -320,16 +320,8 @@ class DiscoverFeed extends ConsumerWidget {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (BuildContext ctx) => MediaDetailsSheet(
-        title: movie.title,
-        icon: Icons.movie_outlined,
-        overview: movie.overview,
-        year: movie.releaseYear,
-        rating: movie.formattedRating,
-        genres: movie.genres,
-        posterUrl: movie.posterUrl,
-        cacheImageType: ImageType.moviePoster,
-        cacheImageId: movie.tmdbId.toString(),
+      builder: (BuildContext ctx) => MediaDetailsSheet.movie(
+        movie,
         onAddToCollection: () => onAddMovie(movie),
       ),
     );
@@ -339,23 +331,15 @@ class DiscoverFeed extends ConsumerWidget {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (BuildContext ctx) => MediaDetailsSheet(
-        title: tvShow.title,
-        icon: Icons.tv_outlined,
-        overview: tvShow.overview,
-        year: tvShow.firstAirYear,
-        rating: tvShow.formattedRating,
-        genres: tvShow.genres,
-        posterUrl: tvShow.posterUrl,
-        cacheImageType: ImageType.tvShowPoster,
-        cacheImageId: tvShow.tmdbId.toString(),
+      builder: (BuildContext ctx) => MediaDetailsSheet.tvShow(
+        tvShow,
         onAddToCollection: () => onAddTvShow(tvShow),
       ),
     );
   }
 
   Widget _buildShimmerRow(BuildContext context, String title) {
-    final bool compact = MediaQuery.sizeOf(context).width < 600;
+    final bool compact = isCompactScreen(context);
     final double posterWidth = compact ? 100 : 130;
     final double rowHeight = compact ? 175 : 220;
 

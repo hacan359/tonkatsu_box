@@ -1,3 +1,4 @@
+import '../../../shared/constants/platform_features.dart';
 // Экран генерации демо-коллекций (.xcollx) для tonkatsu-collections.
 
 import 'dart:convert';
@@ -654,7 +655,7 @@ class _DemoCollectionsScreenState
 
   @override
   Widget build(BuildContext context) {
-    final bool compact = MediaQuery.sizeOf(context).width < 600;
+    final bool compact = isCompactScreen(context);
 
     return Scaffold(
       appBar: const ScreenAppBar(title: 'Demo Collections'),

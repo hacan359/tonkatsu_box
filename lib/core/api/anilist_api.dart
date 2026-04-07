@@ -58,6 +58,7 @@ query ($page: Int, $perPage: Int, $search: String, $genre: String,
       id
       title { romaji english native }
       coverImage { large medium }
+      bannerImage
       description(asHtml: false)
       genres
       averageScore
@@ -116,6 +117,7 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
       id
       title { romaji english native }
       coverImage { large medium }
+      bannerImage
       description(asHtml: false)
       genres
       averageScore
@@ -154,6 +156,7 @@ query ($page: Int, $perPage: Int, $search: String, $genre: String,
       id
       title { romaji english native }
       coverImage { large medium }
+      bannerImage
       description(asHtml: false)
       genres
       averageScore
@@ -202,6 +205,7 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
       id
       title { romaji english native }
       coverImage { large medium }
+      bannerImage
       description(asHtml: false)
       genres
       averageScore

@@ -1,15 +1,16 @@
 // Bottom sheet с деталями визуальной новеллы.
 
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/models/data_source.dart';
 import '../../../shared/models/visual_novel.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/cached_image.dart';
+import '../../../shared/widgets/source_badge.dart';
 
 /// Bottom sheet с деталями визуальной новеллы.
 class VnDetailsSheet extends StatelessWidget {
@@ -96,11 +97,22 @@ class VnDetailsSheet extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        Text(
-                          visualNovel.title,
-                          style: AppTypography.h2.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                        Text.rich(
+                          TextSpan(children: <InlineSpan>[
+                            TextSpan(
+                              text: visualNovel.title,
+                              style: AppTypography.h2.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            if (visualNovel.releaseYear != null)
+                              TextSpan(
+                                text: '  ${visualNovel.releaseYear}',
+                                style: AppTypography.bodySmall.copyWith(
+                                  color: AppColors.textTertiary,
+                                ),
+                              ),
+                          ]),
                         ),
                         if (visualNovel.altTitle != null) ...<Widget>[
                           const SizedBox(height: AppSpacing.xs),
@@ -112,62 +124,46 @@ class VnDetailsSheet extends StatelessWidget {
                           ),
                         ],
                         const SizedBox(height: AppSpacing.sm),
-
-                        // Бейдж VNDB
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.sm,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: DataSource.vndb.color.withAlpha(51),
-                            borderRadius:
-                                BorderRadius.circular(AppSpacing.radiusSm),
-                          ),
-                          child: Text(
-                            DataSource.vndb.label,
-                            style: AppTypography.caption.copyWith(
-                              color: DataSource.vndb.color,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: AppSpacing.sm),
-                        Wrap(
-                          spacing: AppSpacing.md,
-                          runSpacing: AppSpacing.sm,
+                        Row(
                           children: <Widget>[
-                            if (visualNovel.releaseYear != null)
-                              _buildChip(
-                                Icons.calendar_today,
-                                visualNovel.releaseYear.toString(),
+                            SourceBadge(
+                              source: DataSource.vndb,
+                              onTap: visualNovel.externalUrl != null
+                                  ? () => _launchUrl(visualNovel.externalUrl!)
+                                  : null,
+                            ),
+                            if (visualNovel.formattedRating != null) ...<Widget>[
+                              const SizedBox(width: AppSpacing.sm),
+                              const Icon(Icons.star, size: 14,
+                                  color: AppColors.ratingStar),
+                              const SizedBox(width: 2),
+                              Text(
+                                visualNovel.formattedRating!,
+                                style: AppTypography.bodySmall,
                               ),
-                            if (visualNovel.formattedRating != null)
-                              _buildChip(
-                                Icons.star,
-                                visualNovel.voteCount != null
-                                    ? '${visualNovel.formattedRating}'
-                                      ' (${visualNovel.voteCount})'
-                                    : visualNovel.formattedRating!,
-                              ),
-                            if (visualNovel.lengthLabel != null)
-                              _buildChip(
-                                Icons.timer_outlined,
+                            ],
+                            if (visualNovel.lengthLabel != null) ...<Widget>[
+                              const SizedBox(width: AppSpacing.sm),
+                              const Icon(Icons.timer_outlined, size: 14,
+                                  color: AppColors.brand),
+                              const SizedBox(width: 2),
+                              Text(
                                 visualNovel.lengthLabel!,
+                                style: AppTypography.bodySmall,
                               ),
+                            ],
                           ],
                         ),
                         if (visualNovel.developersString != null) ...<Widget>[
                           const SizedBox(height: AppSpacing.sm),
-                          _buildChip(
+                          _buildInfoChip(
                             Icons.business,
                             visualNovel.developersString!,
                           ),
                         ],
                         if (visualNovel.platformsString != null) ...<Widget>[
-                          const SizedBox(height: AppSpacing.sm),
-                          _buildChip(
+                          const SizedBox(height: AppSpacing.xs),
+                          _buildInfoChip(
                             Icons.devices,
                             visualNovel.platformsString!,
                           ),
@@ -176,12 +172,11 @@ class VnDetailsSheet extends StatelessWidget {
                             visualNovel.tags!.isNotEmpty) ...<Widget>[
                           const SizedBox(height: AppSpacing.sm),
                           Wrap(
-                            spacing: AppSpacing.sm,
-                            runSpacing: AppSpacing.sm,
+                            spacing: 6,
+                            runSpacing: 4,
                             children: visualNovel.tags!
                                 .take(_maxDisplayedTags)
-                                .map((String tag) =>
-                                    Chip(label: Text(tag)))
+                                .map(_buildGenreChip)
                                 .toList(),
                           ),
                         ],
@@ -226,20 +221,42 @@ class VnDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildChip(IconData icon, String label) {
+  Widget _buildInfoChip(IconData icon, String label) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        Icon(
-          icon,
-          size: 16,
-          color: icon == Icons.star
-              ? AppColors.ratingStar
-              : AppColors.brand,
+        Icon(icon, size: 14, color: AppColors.brand),
+        const SizedBox(width: 4),
+        Flexible(
+          child: Text(
+            label,
+            style: AppTypography.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
         ),
-        const SizedBox(width: AppSpacing.xs),
-        Flexible(child: Text(label)),
       ],
     );
+  }
+
+  Widget _buildGenreChip(String tag) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceLight,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+      ),
+      child: Text(
+        tag,
+        style: AppTypography.caption.copyWith(
+          color: AppColors.textSecondary,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _launchUrl(String url) async {
+    final Uri uri = Uri.parse(url);
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 }
