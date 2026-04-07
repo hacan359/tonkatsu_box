@@ -65,6 +65,7 @@ class _MediaConfig {
     required this.hasEpisodeTracker,
     required this.hasMangaProgress,
     this.externalUrl,
+    this.backdropUrl,
     this.tvShow,
     this.manga,
   });
@@ -82,6 +83,7 @@ class _MediaConfig {
   final bool hasEpisodeTracker;
   final bool hasMangaProgress;
   final String? externalUrl;
+  final String? backdropUrl;
   final TvShow? tvShow;
   final Manga? manga;
 }
@@ -534,6 +536,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       title: item.itemName,
       coverUrl: config.coverUrl,
       externalUrl: config.externalUrl,
+      backdropUrl: config.backdropUrl,
       placeholderIcon: config.placeholderIcon,
       source: config.source,
       typeIcon: config.typeIcon,
@@ -656,6 +659,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
               item.platformId == AnimationSource.tvShow),
       hasMangaProgress: item.mediaType == MediaType.manga,
       externalUrl: externalUrl,
+      backdropUrl: item.movie?.backdropUrl ?? item.tvShow?.backdropUrl,
       tvShow: item.tvShow,
       manga: item.manga,
     );

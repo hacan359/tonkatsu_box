@@ -8,6 +8,7 @@ import 'package:archive/archive.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../data/repositories/collection_repository.dart';
 import '../../data/repositories/wishlist_repository.dart';
@@ -377,6 +378,8 @@ class BackupService {
       ));
 
       // 6. Манифест
+      final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+      final String appVersion = packageInfo.version;
       final Map<String, dynamic> manifest = <String, dynamic>{
         'version': backupFormatVersion,
         'created': DateTime.now().toUtc().toIso8601String(),
@@ -384,6 +387,7 @@ class BackupService {
         'items_count': totalItems,
         'wishlist_count': wishlistItems.length,
         'includes_config': true,
+        'app_version': appVersion,
       };
       final String manifestStr =
           const JsonEncoder.withIndent('  ').convert(manifest);
@@ -408,7 +412,7 @@ class BackupService {
       final bool useAny = Platform.isAndroid || Platform.isIOS;
       final String? outputPath = await FilePicker.platform.saveFile(
         dialogTitle: 'Save Backup',
-        fileName: 'tonkatsu-backup-$dateSuffix.zip',
+        fileName: 'tonkatsu-backup-v$appVersion-$dateSuffix.zip',
         type: useAny ? FileType.any : FileType.custom,
         allowedExtensions: useAny ? null : <String>['zip'],
         bytes: Uint8List.fromList(zipBytes),

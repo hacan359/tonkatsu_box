@@ -872,6 +872,9 @@
       "version": {"type": "String"}
     }
   },
+  "updateWarningTitle": "Before updating",
+  "updateWarningBody": "This app is in active development. Updates may include database migrations that change data format.\n\nPlease create a backup before updating (Settings → Backup). This way you can restore your data if anything goes wrong.",
+  "updateWarningProceed": "Go to release",
 
   "chooseCollection": "Choose Collection",
   "withoutCollection": "Without Collection",

@@ -3541,6 +3541,24 @@ abstract class S {
   /// **'Current: v{version}'**
   String updateCurrent(String version);
 
+  /// No description provided for @updateWarningTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Before updating'**
+  String get updateWarningTitle;
+
+  /// No description provided for @updateWarningBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This app is in active development. Updates may include database migrations that change data format.\n\nPlease create a backup before updating (Settings → Backup). This way you can restore your data if anything goes wrong.'**
+  String get updateWarningBody;
+
+  /// No description provided for @updateWarningProceed.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to release'**
+  String get updateWarningProceed;
+
   /// No description provided for @chooseCollection.
   ///
   /// In en, this message translates to:
