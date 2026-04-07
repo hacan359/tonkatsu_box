@@ -29,6 +29,9 @@ abstract final class DatabaseSchema {
     await createTierListEntriesTable(db);
     await createCustomItemsTable(db);
     await createCollectionTagsTable(db);
+    await createTrackerProfilesTable(db);
+    await createTrackerGameDataTable(db);
+    await createTrackerAchievementsTable(db);
   }
 
   /// Таблица платформ (IGDB).
@@ -511,6 +514,87 @@ abstract final class DatabaseSchema {
     await db.execute('''
       CREATE UNIQUE INDEX IF NOT EXISTS idx_collection_tags_name
       ON collection_tags(collection_id, name)
+    ''');
+  }
+
+  /// Таблица профилей внешних трекеров (RA, Steam, Trakt).
+  static Future<void> createTrackerProfilesTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS tracker_profiles (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tracker_type TEXT NOT NULL UNIQUE,
+        user_id TEXT NOT NULL,
+        display_name TEXT NOT NULL,
+        avatar_url TEXT,
+        profile_url TEXT,
+        total_points INTEGER,
+        total_games INTEGER,
+        total_achievements INTEGER,
+        member_since INTEGER,
+        profile_data TEXT,
+        linked_collection_id INTEGER,
+        last_synced_at INTEGER,
+        created_at INTEGER NOT NULL,
+        FOREIGN KEY (linked_collection_id) REFERENCES collections(id) ON DELETE SET NULL
+      )
+    ''');
+  }
+
+  /// Таблица прогресса per-game от трекеров.
+  static Future<void> createTrackerGameDataTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS tracker_game_data (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tracker_type TEXT NOT NULL,
+        game_id INTEGER NOT NULL,
+        tracker_game_id TEXT NOT NULL,
+        tracker_game_title TEXT,
+        achievements_earned INTEGER,
+        achievements_total INTEGER,
+        achievements_earned_hardcore INTEGER,
+        award_kind TEXT,
+        award_date INTEGER,
+        playtime_minutes INTEGER,
+        last_played_at INTEGER,
+        tracker_data TEXT,
+        last_synced_at INTEGER NOT NULL
+      )
+    ''');
+    await db.execute('''
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_tracker_game_data_unique
+      ON tracker_game_data(tracker_type, game_id)
+    ''');
+    await db.execute('''
+      CREATE INDEX IF NOT EXISTS idx_tracker_game_data_game
+      ON tracker_game_data(game_id)
+    ''');
+  }
+
+  /// Таблица конкретных достижений per-game.
+  static Future<void> createTrackerAchievementsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS tracker_achievements (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tracker_type TEXT NOT NULL,
+        tracker_game_id TEXT NOT NULL,
+        achievement_id TEXT NOT NULL,
+        title TEXT NOT NULL,
+        description TEXT,
+        points INTEGER,
+        badge_name TEXT,
+        type TEXT,
+        display_order INTEGER NOT NULL DEFAULT 0,
+        earned INTEGER NOT NULL DEFAULT 0,
+        earned_at INTEGER
+      )
+    ''');
+    await db.execute('''
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_tracker_achievements_unique
+      ON tracker_achievements(tracker_type, tracker_game_id, achievement_id)
+    ''');
+    await db.execute('''
+      CREATE INDEX IF NOT EXISTS idx_tracker_achievements_game
+      ON tracker_achievements(tracker_type, tracker_game_id)
     ''');
   }
 

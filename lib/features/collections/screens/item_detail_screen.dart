@@ -39,6 +39,8 @@ import '../widgets/canvas_view.dart';
 import '../widgets/episode_tracker_section.dart';
 import '../widgets/item_tags_section.dart';
 import '../widgets/manga_progress_section.dart';
+import '../providers/tracker_provider.dart';
+import '../widgets/ra_achievements_section.dart';
 import '../widgets/recommendations_section.dart';
 import '../widgets/reviews_section.dart';
 import '../widgets/status_chip_row.dart';
@@ -563,6 +565,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
               isEditable: widget.isEditable,
             )
           : null,
+      trackerSection: _buildTrackerSection(item),
       extraSections: <Widget>[
         if (widget.collectionId == null)
           _buildUncategorizedBanner(item),
@@ -878,6 +881,22 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         collectionId: widget.collectionId,
         collectionItemId: widget.itemId,
       );
+
+  /// Возвращает RA секцию если для игры есть tracker data, иначе null.
+  ///
+  /// Используем `select` чтобы подписаться только на `hasRaData` —
+  /// экран не перестраивается при загрузке/обновлении ачивок.
+  Widget? _buildTrackerSection(CollectionItem item) {
+    if (item.mediaType != MediaType.game) return null;
+    final bool hasData = ref.watch(
+      trackerDetailProvider(item.externalId).select(
+        (AsyncValue<TrackerDetailState> v) =>
+            v.valueOrNull?.hasRaData ?? false,
+      ),
+    );
+    if (!hasData) return null;
+    return RaAchievementsSection(gameId: item.externalId);
+  }
 
   Widget _buildCanvasView() {
     return Row(

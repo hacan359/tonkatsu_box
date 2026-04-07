@@ -64,8 +64,8 @@ void main() {
         expect(progress.title, equals('Super Mario World'));
         expect(progress.consoleName, equals('SNES'));
         expect(progress.consoleId, equals(3));
-        // Приоритет: NumAwardedHardcore > NumAwarded.
-        expect(progress.numAwarded, equals(50));
+        expect(progress.numAwarded, equals(30));
+        expect(progress.numAwardedHardcore, equals(50));
         expect(progress.maxPossible, equals(96));
         expect(progress.hardcoreMode, isTrue);
         expect(progress.highestAwardKind, equals('beaten-hardcore'));

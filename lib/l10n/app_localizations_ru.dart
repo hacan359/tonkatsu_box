@@ -2983,6 +2983,103 @@ class SRu extends S {
   }
 
   @override
+  String get raRefresh => 'Обновить достижения';
+
+  @override
+  String get raOpenOnRa => 'Открыть на RA ↗';
+
+  @override
+  String get raProgress => 'Прогресс';
+
+  @override
+  String get raHardcore => 'Хардкор';
+
+  @override
+  String get raCompletion => 'Прохождение';
+
+  @override
+  String get raRecentUnlocks => 'Недавние разблокировки';
+
+  @override
+  String get raUpNext => 'Следующие';
+
+  @override
+  String raViewAll(int count) {
+    return 'Все $count достижений →';
+  }
+
+  @override
+  String get raCollapse => 'Свернуть';
+
+  @override
+  String get raMastered => 'Mastered';
+
+  @override
+  String get raHardcoreMastered => 'Hardcore Mastered';
+
+  @override
+  String get raBeaten => 'Beaten';
+
+  @override
+  String get raBeatenSoftcore => 'Beaten Softcore';
+
+  @override
+  String get raHardcoreBeaten => 'Hardcore Beaten';
+
+  @override
+  String get raToday => 'Сегодня';
+
+  @override
+  String get raYesterday => 'Вчера';
+
+  @override
+  String raDaysAgo(int days) {
+    return '$daysд назад';
+  }
+
+  @override
+  String get raPoints => 'очк';
+
+  @override
+  String get raAchievements => 'ач';
+
+  @override
+  String get raMissable => 'MISSABLE';
+
+  @override
+  String get raFilterAll => 'Все';
+
+  @override
+  String get raFilterEarned => 'Получено';
+
+  @override
+  String get raFilterLocked => 'Закрыто';
+
+  @override
+  String get raFilterMissable => 'Missable';
+
+  @override
+  String get raFilterProgression => 'Сюжет';
+
+  @override
+  String get raFilterWinCondition => 'Для прохождения';
+
+  @override
+  String get raBeatenProgress => 'Прогресс прохождения';
+
+  @override
+  String get raStatsAchievements => 'достижений';
+
+  @override
+  String get raStatsWorth => 'на';
+
+  @override
+  String get raStatsPoints => 'очков';
+
+  @override
+  String get raStatsUnlocked => 'Получено';
+
+  @override
   String get copyAsList => 'Копировать списком';
 
   @override

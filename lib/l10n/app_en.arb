@@ -1391,6 +1391,48 @@
     }
   },
 
+  "raRefresh": "Refresh achievements",
+  "raOpenOnRa": "Open on RA ↗",
+  "raProgress": "Progress",
+  "raHardcore": "Hardcore",
+  "raCompletion": "Completion",
+  "raRecentUnlocks": "Recent Unlocks",
+  "raUpNext": "Up Next",
+  "raViewAll": "View All {count} Achievements →",
+  "@raViewAll": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "raCollapse": "Collapse",
+  "raMastered": "Mastered",
+  "raHardcoreMastered": "Hardcore Mastered",
+  "raBeaten": "Beaten",
+  "raBeatenSoftcore": "Beaten Softcore",
+  "raHardcoreBeaten": "Hardcore Beaten",
+  "raToday": "Today",
+  "raYesterday": "Yesterday",
+  "raDaysAgo": "{days}d ago",
+  "@raDaysAgo": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "raPoints": "pts",
+  "raAchievements": "ach",
+  "raMissable": "MISSABLE",
+  "raFilterAll": "All",
+  "raFilterEarned": "Earned",
+  "raFilterLocked": "Locked",
+  "raFilterMissable": "Missable",
+  "raFilterProgression": "Progression",
+  "raFilterWinCondition": "Win Condition",
+  "raBeatenProgress": "Beaten Progress",
+  "raStatsAchievements": "achievements",
+  "raStatsWorth": "worth",
+  "raStatsPoints": "points",
+  "raStatsUnlocked": "Unlocked",
+
   "copyAsList": "Copy as List",
   "copyAsText": "Copy as Text…",
   "copiedToClipboard": "Copied {count} items to clipboard",

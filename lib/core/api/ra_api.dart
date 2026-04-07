@@ -48,6 +48,9 @@ class RaApi {
   String? _username;
   String? _apiKey;
 
+  /// Текущий username (null если не задан).
+  String? get username => _username;
+
   /// Устанавливает credentials.
   void setCredentials({required String username, required String apiKey}) {
     _username = username;
@@ -193,6 +196,30 @@ class RaApi {
       _log.warning('getUserAwardDates failed: $e');
       // Не критично — возвращаем пустой map.
       return <int, DateTime>{};
+    }
+  }
+
+  /// Загружает детали достижений для конкретной игры.
+  ///
+  /// Возвращает Map всех достижений (earned + locked) с датами разблокировки.
+  /// Используется для lazy-загрузки при открытии карточки игры.
+  Future<Map<String, dynamic>> getGameInfoAndUserProgress(
+    String targetUser,
+    int raGameId,
+  ) async {
+    _ensureCredentials();
+    try {
+      final Response<dynamic> response = await _dio.get<dynamic>(
+        '$_baseUrl/API_GetGameInfoAndUserProgress.php',
+        queryParameters: <String, String>{
+          ..._authParams(),
+          'u': targetUser,
+          'g': raGameId.toString(),
+        },
+      );
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      throw _handleError(e, 'getGameInfoAndUserProgress');
     }
   }
 

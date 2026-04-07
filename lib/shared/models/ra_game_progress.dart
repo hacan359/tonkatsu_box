@@ -13,6 +13,7 @@ class RaGameProgress {
     required this.consoleName,
     required this.consoleId,
     required this.numAwarded,
+    required this.numAwardedHardcore,
     required this.maxPossible,
     required this.hardcoreMode,
     this.highestAwardKind,
@@ -27,9 +28,8 @@ class RaGameProgress {
       title: json['Title'] as String? ?? '',
       consoleName: json['ConsoleName'] as String? ?? '',
       consoleId: json['ConsoleID'] as int? ?? 0,
-      numAwarded: json['NumAwardedHardcore'] as int? ??
-          json['NumAwarded'] as int? ??
-          0,
+      numAwarded: json['NumAwarded'] as int? ?? 0,
+      numAwardedHardcore: json['NumAwardedHardcore'] as int? ?? 0,
       maxPossible: json['MaxPossible'] as int? ?? 0,
       hardcoreMode: (json['NumAwardedHardcore'] as int? ?? 0) > 0,
       highestAwardKind: json['HighestAwardKind'] as String?,
@@ -54,8 +54,11 @@ class RaGameProgress {
   /// ID консоли на RetroAchievements.
   final int consoleId;
 
-  /// Количество полученных ачивок.
+  /// Количество полученных ачивок (softcore + hardcore).
   final int numAwarded;
+
+  /// Количество hardcore ачивок.
+  final int numAwardedHardcore;
 
   /// Максимальное количество ачивок.
   final int maxPossible;

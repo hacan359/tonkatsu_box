@@ -20,6 +20,7 @@ void main() {
   late MockRaApi mockRaApi;
   late MockIgdbApi mockIgdbApi;
   late MockDatabaseService mockDb;
+  late MockTrackerDao mockTrackerDao;
 
   /// Записанные вызовы onProgress.
   late List<RaImportProgress> progressCalls;
@@ -51,13 +52,19 @@ void main() {
     mockRaApi = MockRaApi();
     mockIgdbApi = MockIgdbApi();
     mockDb = MockDatabaseService();
+    mockTrackerDao = MockTrackerDao();
     progressCalls = <RaImportProgress>[];
     igdbGamesByTitle.clear();
+
+    // Default mock для TrackerDao.
+    when(() => mockTrackerDao.upsertGameData(any()))
+        .thenAnswer((_) async {});
 
     sut = RaImportService(
       raApi: mockRaApi,
       igdbApi: mockIgdbApi,
       database: mockDb,
+      trackerDao: mockTrackerDao,
     );
 
     // Multiquery mock — использует igdbGamesByTitle, заполняемый
@@ -788,7 +795,8 @@ void main() {
             ));
       });
 
-      test('should update authorComment with RA achievements', () async {
+      test('should not update authorComment (RA data now in tracker_game_data)',
+          () async {
         final RaGameProgress raGame = createTestRaGameProgress(
           gameId: 1234,
           title: 'Mario',
@@ -828,13 +836,11 @@ void main() {
           onProgress: onProgress,
         );
 
-        verify(() => mockDb.updateItemAuthorComment(
-              42,
-              any(that: contains('RA: 50/96 achievements')),
-            )).called(1);
+        // authorComment больше не записывается — RA данные в tracker_game_data.
+        verifyNever(() => mockDb.updateItemAuthorComment(any(), any()));
       });
 
-      test('should update authorComment when RA comment differs', () async {
+      test('should save tracker_game_data for existing item', () async {
         final RaGameProgress raGame = createTestRaGameProgress(
           gameId: 1234,
           title: 'Mario',
@@ -874,15 +880,8 @@ void main() {
           onProgress: onProgress,
         );
 
-        verify(() => mockDb.updateItemAuthorComment(
-              42,
-              any(
-                that: allOf(
-                  contains('RA: 80/96 achievements'),
-                  contains('beaten-hardcore'),
-                ),
-              ),
-            )).called(1);
+        // tracker_game_data сохраняется через TrackerDao.
+        verify(() => mockTrackerDao.upsertGameData(any())).called(1);
       });
 
       test('should not update comment when maxPossible is 0', () async {

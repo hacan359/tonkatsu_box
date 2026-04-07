@@ -5419,6 +5419,192 @@ abstract class S {
   /// **'Member since {date}'**
   String raProfileMemberSince(String date);
 
+  /// No description provided for @raRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh achievements'**
+  String get raRefresh;
+
+  /// No description provided for @raOpenOnRa.
+  ///
+  /// In en, this message translates to:
+  /// **'Open on RA ↗'**
+  String get raOpenOnRa;
+
+  /// No description provided for @raProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress'**
+  String get raProgress;
+
+  /// No description provided for @raHardcore.
+  ///
+  /// In en, this message translates to:
+  /// **'Hardcore'**
+  String get raHardcore;
+
+  /// No description provided for @raCompletion.
+  ///
+  /// In en, this message translates to:
+  /// **'Completion'**
+  String get raCompletion;
+
+  /// No description provided for @raRecentUnlocks.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent Unlocks'**
+  String get raRecentUnlocks;
+
+  /// No description provided for @raUpNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Up Next'**
+  String get raUpNext;
+
+  /// No description provided for @raViewAll.
+  ///
+  /// In en, this message translates to:
+  /// **'View All {count} Achievements →'**
+  String raViewAll(int count);
+
+  /// No description provided for @raCollapse.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse'**
+  String get raCollapse;
+
+  /// No description provided for @raMastered.
+  ///
+  /// In en, this message translates to:
+  /// **'Mastered'**
+  String get raMastered;
+
+  /// No description provided for @raHardcoreMastered.
+  ///
+  /// In en, this message translates to:
+  /// **'Hardcore Mastered'**
+  String get raHardcoreMastered;
+
+  /// No description provided for @raBeaten.
+  ///
+  /// In en, this message translates to:
+  /// **'Beaten'**
+  String get raBeaten;
+
+  /// No description provided for @raBeatenSoftcore.
+  ///
+  /// In en, this message translates to:
+  /// **'Beaten Softcore'**
+  String get raBeatenSoftcore;
+
+  /// No description provided for @raHardcoreBeaten.
+  ///
+  /// In en, this message translates to:
+  /// **'Hardcore Beaten'**
+  String get raHardcoreBeaten;
+
+  /// No description provided for @raToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get raToday;
+
+  /// No description provided for @raYesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get raYesterday;
+
+  /// No description provided for @raDaysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{days}d ago'**
+  String raDaysAgo(int days);
+
+  /// No description provided for @raPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'pts'**
+  String get raPoints;
+
+  /// No description provided for @raAchievements.
+  ///
+  /// In en, this message translates to:
+  /// **'ach'**
+  String get raAchievements;
+
+  /// No description provided for @raMissable.
+  ///
+  /// In en, this message translates to:
+  /// **'MISSABLE'**
+  String get raMissable;
+
+  /// No description provided for @raFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get raFilterAll;
+
+  /// No description provided for @raFilterEarned.
+  ///
+  /// In en, this message translates to:
+  /// **'Earned'**
+  String get raFilterEarned;
+
+  /// No description provided for @raFilterLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked'**
+  String get raFilterLocked;
+
+  /// No description provided for @raFilterMissable.
+  ///
+  /// In en, this message translates to:
+  /// **'Missable'**
+  String get raFilterMissable;
+
+  /// No description provided for @raFilterProgression.
+  ///
+  /// In en, this message translates to:
+  /// **'Progression'**
+  String get raFilterProgression;
+
+  /// No description provided for @raFilterWinCondition.
+  ///
+  /// In en, this message translates to:
+  /// **'Win Condition'**
+  String get raFilterWinCondition;
+
+  /// No description provided for @raBeatenProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Beaten Progress'**
+  String get raBeatenProgress;
+
+  /// No description provided for @raStatsAchievements.
+  ///
+  /// In en, this message translates to:
+  /// **'achievements'**
+  String get raStatsAchievements;
+
+  /// No description provided for @raStatsWorth.
+  ///
+  /// In en, this message translates to:
+  /// **'worth'**
+  String get raStatsWorth;
+
+  /// No description provided for @raStatsPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'points'**
+  String get raStatsPoints;
+
+  /// No description provided for @raStatsUnlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlocked'**
+  String get raStatsUnlocked;
+
   /// No description provided for @copyAsList.
   ///
   /// In en, this message translates to:

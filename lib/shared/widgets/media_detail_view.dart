@@ -75,6 +75,7 @@ class MediaDetailView extends StatefulWidget {
     this.description,
     this.statusWidget,
     this.tagWidget,
+    this.trackerSection,
     this.extraSections,
     this.recommendationSections,
     this.authorComment,
@@ -129,6 +130,9 @@ class MediaDetailView extends StatefulWidget {
 
   /// Виджет выбора тега (секции) коллекции.
   final Widget? tagWidget;
+
+  /// Секция трекера (RA Achievements и т.д.) — рендерится после тегов.
+  final Widget? trackerSection;
 
   /// Дополнительные секции (например, Progress для сериалов).
   final List<Widget>? extraSections;
@@ -280,15 +284,11 @@ class _MediaDetailViewState extends State<MediaDetailView> {
           _buildActivityDatesRow(context),
         ],
         const SizedBox(height: AppSpacing.md),
-        _buildUserNotesSection(context),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-          child: Divider(
-            color: AppColors.surfaceBorder.withAlpha(80),
-            height: 1,
-          ),
+        _TrackerCommentsLayout(
+          trackerSection: widget.trackerSection,
+          notesSection: _buildUserNotesSection(context),
+          authorSection: _buildAuthorCommentSection(context),
         ),
-        _buildAuthorCommentSection(context),
         if (widget.extraSections != null &&
             widget.extraSections!.isNotEmpty) ...<Widget>[
           const SizedBox(height: AppSpacing.md),
@@ -907,5 +907,68 @@ Future<void> _launchExternalUrl(String url) async {
     }
   } on Exception {
     // Ссылка не критична для работы приложения.
+  }
+}
+
+/// Layout виджет: tracker секция + notes + author comment.
+///
+/// Если [trackerSection] не null — на широких экранах (>=600px)
+/// показывает tracker слева и комментарии справа (50/50).
+/// Если [trackerSection] null — обычный вертикальный layout.
+class _TrackerCommentsLayout extends StatelessWidget {
+  const _TrackerCommentsLayout({
+    required this.trackerSection,
+    required this.notesSection,
+    required this.authorSection,
+  });
+
+  final Widget? trackerSection;
+  final Widget notesSection;
+  final Widget authorSection;
+
+  @override
+  Widget build(BuildContext context) {
+    final Widget commentsColumn = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        notesSection,
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+          child: Divider(
+            color: AppColors.surfaceBorder.withAlpha(80),
+            height: 1,
+          ),
+        ),
+        authorSection,
+      ],
+    );
+
+    if (trackerSection == null) return commentsColumn;
+
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        if (constraints.maxWidth >= 600) {
+          return IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Expanded(child: trackerSection!),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(child: commentsColumn),
+              ],
+            ),
+          );
+        }
+        // Мобила / узкое окно — стэк.
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            trackerSection!,
+            const SizedBox(height: AppSpacing.md),
+            commentsColumn,
+          ],
+        );
+      },
+    );
   }
 }

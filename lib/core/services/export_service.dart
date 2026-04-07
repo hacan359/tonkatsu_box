@@ -13,6 +13,7 @@ import '../../shared/models/canvas_viewport.dart';
 import '../../shared/models/collection.dart';
 import '../../shared/models/collection_item.dart';
 import '../../shared/models/media_type.dart';
+import '../../shared/models/tracker_game_data.dart';
 import '../../shared/models/platform.dart' as model;
 import '../../shared/models/tv_episode.dart';
 import '../../shared/models/tv_season.dart';
@@ -20,6 +21,7 @@ import '../../shared/models/tier_definition.dart';
 import '../../shared/models/collection_tag.dart';
 import '../../shared/models/tier_list.dart';
 import '../../shared/models/tier_list_entry.dart';
+import '../database/dao/tracker_dao.dart';
 import '../database/database_service.dart';
 import 'image_cache_service.dart';
 import 'xcoll_file.dart';
@@ -31,6 +33,7 @@ final Provider<ExportService> exportServiceProvider =
     canvasRepository: ref.watch(canvasRepositoryProvider),
     imageCacheService: ref.watch(imageCacheServiceProvider),
     database: ref.watch(databaseServiceProvider),
+    trackerDao: ref.watch(trackerDaoProvider),
   );
 });
 
@@ -85,15 +88,18 @@ class ExportService {
     CanvasRepository? canvasRepository,
     ImageCacheService? imageCacheService,
     DatabaseService? database,
+    TrackerDao? trackerDao,
   })  : _canvasRepository = canvasRepository,
         _imageCacheService = imageCacheService,
-        _database = database;
+        _database = database,
+        _trackerDao = trackerDao;
 
   static final Logger _log = Logger('ExportService');
 
   final CanvasRepository? _canvasRepository;
   final ImageCacheService? _imageCacheService;
   final DatabaseService? _database;
+  final TrackerDao? _trackerDao;
 
   // ==================== v2 Light (.xcoll) ====================
 
@@ -188,6 +194,12 @@ class ExportService {
       }
     }
 
+    // Collect tracker data (RA progress) for games — only with user data
+    List<Map<String, dynamic>>? trackerData;
+    if (includeUserData && _trackerDao != null) {
+      trackerData = await _collectTrackerData(items);
+    }
+
     return XcollFile(
       version: xcollFormatVersion,
       format: ExportFormat.full,
@@ -201,6 +213,7 @@ class ExportService {
       media: media,
       tierLists: tierLists,
       tags: tags,
+      trackerData: trackerData,
     );
   }
 
@@ -667,6 +680,21 @@ class ExportService {
       tags: tags.map((CollectionTag tag) => tag.toExport()).toList(),
       itemTagNames: itemTagNames,
     );
+  }
+
+  /// Собирает tracker_game_data для игр коллекции (single batch query).
+  Future<List<Map<String, dynamic>>?> _collectTrackerData(
+    List<CollectionItem> items,
+  ) async {
+    final List<int> gameIds = items
+        .where((CollectionItem i) => i.mediaType == MediaType.game)
+        .map((CollectionItem i) => i.externalId)
+        .toList();
+    if (gameIds.isEmpty) return null;
+    final List<TrackerGameData> dataList =
+        await _trackerDao!.getGameDataForGameIds(gameIds);
+    if (dataList.isEmpty) return null;
+    return dataList.map((TrackerGameData d) => d.toDb()).toList();
   }
 
   /// Очищает название файла от недопустимых символов.

@@ -18,6 +18,8 @@ import 'package:xerabora/shared/models/tv_season.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
 import 'package:xerabora/core/services/image_cache_service.dart';
 import 'package:xerabora/shared/models/ra_game_progress.dart';
+import 'package:xerabora/shared/models/tracker_game_data.dart';
+import 'package:xerabora/shared/models/tracker_profile.dart';
 import 'package:xerabora/shared/models/tier_definition.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -63,8 +65,19 @@ void registerAllFallbacks() {
     consoleName: '',
     consoleId: 0,
     numAwarded: 0,
+    numAwardedHardcore: 0,
     maxPossible: 0,
     hardcoreMode: false,
+  ));
+
+  // Tracker
+  registerFallbackValue(TrackerType.ra);
+  registerFallbackValue(const TrackerGameData(
+    id: 0,
+    trackerType: TrackerType.ra,
+    gameId: 0,
+    trackerGameId: '0',
+    lastSyncedAt: 0,
   ));
 
   // Other

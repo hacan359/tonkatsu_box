@@ -147,6 +147,7 @@ Includes everything from light export plus `canvas`, `images`, and `media`:
 | images | object | no | Base64 cover images (full only) |
 | media | object | no | Embedded Game/Movie/TvShow/VisualNovel/Manga/TvSeason/TvEpisode data for offline import (full only) |
 | tags | array | no | Collection tag definitions (full only). Each: `{ name, color?, sort_order }` |
+| tracker_data | array | no | Tracker progress data for games (full + user_data only). Each entry is a `tracker_game_data` row: `{ tracker_type, game_id, tracker_game_id, achievements_earned, achievements_total, ... }` |
 
 ### Item Object
 
@@ -240,6 +241,26 @@ Contains tag (section) definitions for the exported collection. Only present in 
 
 Item-tag assignments are stored per-item via the `tag_name` field (see Item Object). On import, tags are created first, then items are matched by `tag_name` to assign `tag_id`.
 
+### Tracker Data Object
+
+Contains RetroAchievements (or other tracker) progress data for games in the collection. Only present in full exports when "Include user data" is enabled and games have tracker data.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| tracker_type | string | Tracker identifier: `"ra"`, `"steam"`, `"trakt"` |
+| game_id | int | IGDB game ID (links to `games.id`) |
+| tracker_game_id | string | Game ID in the tracker (RA GameID, Steam AppID) |
+| tracker_game_title | string? | Game title in the tracker |
+| achievements_earned | int? | Number of earned achievements |
+| achievements_total | int? | Total achievements |
+| achievements_earned_hardcore | int? | Hardcore achievements (RA) |
+| award_kind | string? | Award type: `"mastered-hardcore"`, `"beaten-softcore"`, etc. |
+| award_date | int? | Unix timestamp of award |
+| last_played_at | int? | Unix timestamp of last activity |
+| last_synced_at | int | Unix timestamp of last sync |
+
+On import, tracker data is upserted into `tracker_game_data` via `TrackerDao.upsertGameDataBatch()`. This preserves the RA achievements section in game detail cards without requiring a re-import from RetroAchievements.
+
 When `media` is present during import, data is restored directly from the file via `fromDb()` — no API calls to IGDB/TMDB/VNDB are needed. TV seasons and episodes are also restored if present. When `media` is absent (light export or older full exports), the app fetches data from APIs as before.
 
 ---
@@ -261,3 +282,4 @@ When `media` is present during import, data is restored directly from the file v
 5. Restores per-item canvases (embedded in `_canvas` field of each item)
 6. Restores cover images and canvas images from base64 to local disk cache
 7. Restores tier lists — creates tier list, saves definitions, resolves entries via `itemIdMapping` (`media_type:external_id` → new item ID)
+8. Restores tracker data (RA progress) if present — upserts into `tracker_game_data`
