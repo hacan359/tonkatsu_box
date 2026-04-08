@@ -6,6 +6,8 @@
 
 ## [Unreleased]
 
+## [0.25.0] - 2026-04-08
+
 ### Added
 - **RetroAchievements tracker system** — universal tracker infrastructure with 3 new database tables (`tracker_profiles`, `tracker_game_data`, `tracker_achievements`). RA achievements section in game detail card: stats block (total/unlocked/points/HC), beaten progress panel (progression + win condition bars), achievement list with badge icons, type indicators (missable/progression/win condition), filter chips, award badges (RA-style colored circles: gold=Mastered, silver=Beaten, outline=Softcore). Data loads lazily when opening a game card. Tracker data included in xcollx export (with "Include user data") and full backups. RA credentials saved on Verify Connection (no import required). DB migration v31. 30+ localization keys EN+RU
 - **Link/Unlink RetroAchievements** — RA logo badge in game detail header row (next to IGDB/platform badges). Linked: full-color logo, click opens RA game page. Unlinked: pulsing semi-transparent logo, click opens search dialog to link. "Unlink" button in RA section header with confirmation. Search dialog loads game list from RA API by console, local filtering with exact/prefix/contains ranking. `RaApi.getGameList()` + `RaGameListEntry` model. `TrackerDao.deleteGameData()` with cascading achievement cleanup. Reverse platform mapping `igdbToRaConsoleIds()`. 12 localization keys EN+RU (`ra_link_dialog.dart`, `ra_api.dart`, `ra_to_igdb_mapper.dart`, `tracker_provider.dart`, `tracker_dao.dart`, `item_detail_screen.dart`)
