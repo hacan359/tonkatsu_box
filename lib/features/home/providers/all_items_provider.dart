@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/database/database_service.dart';
+import '../../../core/database/dao/tag_dao.dart';
 import '../../../data/repositories/collection_repository.dart';
+import '../../../shared/models/collection_tag.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/collection_sort_mode.dart';
@@ -186,5 +188,17 @@ final Provider<Map<int, String>> collectionNamesProvider =
   if (collections == null) return <int, String>{};
   return <int, String>{
     for (final Collection c in collections) c.id: c.name,
+  };
+});
+
+// ==================== Tags ====================
+
+/// Карта tagId → CollectionTag для отображения и поиска по тегам на All Items.
+final FutureProvider<Map<int, CollectionTag>> allTagsMapProvider =
+    FutureProvider<Map<int, CollectionTag>>((Ref ref) async {
+  final TagDao tagDao = ref.watch(tagDaoProvider);
+  final List<CollectionTag> tags = await tagDao.getAll();
+  return <int, CollectionTag>{
+    for (final CollectionTag tag in tags) tag.id: tag,
   };
 });

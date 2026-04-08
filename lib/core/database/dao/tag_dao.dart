@@ -97,6 +97,16 @@ class TagDao {
     );
   }
 
+  /// Возвращает все теги из всех коллекций.
+  Future<List<CollectionTag>> getAll() async {
+    final Database db = await _getDatabase();
+    final List<Map<String, dynamic>> rows = await db.query(
+      'collection_tags',
+      orderBy: 'sort_order ASC, name ASC',
+    );
+    return rows.map(CollectionTag.fromDb).toList();
+  }
+
   // ==================== Item tag assignment ====================
 
   /// Назначает тег элементу коллекции.

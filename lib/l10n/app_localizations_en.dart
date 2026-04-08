@@ -1106,6 +1106,9 @@ class SEn extends S {
   String get tagSidebarAll => 'All';
 
   @override
+  String get tagSidebarGroup => 'Group';
+
+  @override
   String get colorPickerTitle => 'Color';
 
   @override

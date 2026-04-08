@@ -10,6 +10,7 @@ import '../../settings/providers/settings_provider.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
+import '../../../shared/models/collection_tag.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/platform.dart';
@@ -49,6 +50,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         ref.watch(allItemsNotifierProvider);
     final Map<int, String> collectionNames =
         ref.watch(collectionNamesProvider);
+    final Map<int, CollectionTag> tagsMap =
+        ref.watch(allTagsMapProvider).valueOrNull ?? <int, CollectionTag>{};
     final ItemStatus? filterStatus = ref.watch(homeStatusFilterProvider);
 
     return Scaffold(
@@ -65,11 +68,11 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
               child: itemsAsync.when(
                 data: (List<CollectionItem> items) {
                   final List<CollectionItem> filtered =
-                      _applyFilter(items, filterStatus);
+                      _applyFilter(items, filterStatus, tagsMap);
                   if (filtered.isEmpty) {
                     return _buildEmptyState(items.isEmpty);
                   }
-                  return _buildGridView(filtered, collectionNames);
+                  return _buildGridView(filtered, collectionNames, tagsMap);
                 },
                 loading: () =>
                     const Center(child: CircularProgressIndicator()),
@@ -86,6 +89,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   List<CollectionItem> _applyFilter(
     List<CollectionItem> items,
     ItemStatus? filterStatus,
+    Map<int, CollectionTag> tagsMap,
   ) {
     List<CollectionItem> result = items;
     if (_filterType != null) {
@@ -108,7 +112,10 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
       result = result
           .where(
             (CollectionItem item) =>
-                item.itemName.toLowerCase().contains(query),
+                item.itemName.toLowerCase().contains(query) ||
+                (item.tagId != null &&
+                    (tagsMap[item.tagId]?.name.toLowerCase().contains(query) ??
+                        false)),
           )
           .toList();
     }
@@ -408,6 +415,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   Widget _buildGridView(
     List<CollectionItem> items,
     Map<int, String> collectionNames,
+    Map<int, CollectionTag> tagsMap,
   ) {
     final double screenWidth = MediaQuery.sizeOf(context).width;
     final bool isLandscape = isLandscapeMobile(context);
@@ -470,6 +478,9 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                 delegate: SliverChildBuilderDelegate(
                   (BuildContext context, int index) {
                     final CollectionItem item = groups[i].items[index];
+                    final CollectionTag? tag = item.tagId != null
+                        ? tagsMap[item.tagId]
+                        : null;
                     return MediaPosterCard(
                       key: ValueKey<int>(item.id),
                       variant: isLandscape ||
@@ -493,6 +504,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                           ),
                       mediaType: item.mediaType,
                       status: item.status,
+                      tagName: tag?.name,
+                      tagColor: tag?.color,
                       onTap: () =>
                           _showItemDetails(item, collectionNames),
                     );

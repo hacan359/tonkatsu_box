@@ -40,6 +40,8 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
     required this.onPlatformToggled,
     required this.onTagToggled,
     required this.onStatusChanged,
+    required this.onGroupToggled,
+    this.groupByTags = false,
     super.key,
   });
 
@@ -57,6 +59,8 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
   final ValueChanged<int?> onPlatformToggled;
   final ValueChanged<int?> onTagToggled;
   final ValueChanged<ItemStatus?> onStatusChanged;
+  final VoidCallback onGroupToggled;
+  final bool groupByTags;
 
   @override
   ConsumerState<CollectionFilterBar> createState() =>
@@ -69,7 +73,7 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
   int get _activeFilterCount {
     return widget.filterTypes.length +
         widget.filterPlatformIds.length +
-        widget.filterTagIds.length;
+        (kIsMobile ? widget.filterTagIds.length : 0);
   }
 
   @override
@@ -408,33 +412,8 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
             ),
           ],
 
-          // Tag chips
-          if (widget.tags.isNotEmpty) ...<Widget>[
-            const SizedBox(height: AppSpacing.xs),
-            Center(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    _buildTagChipAll(),
-                    for (final CollectionTag tag in widget.tags) ...<Widget>[
-                      const SizedBox(width: AppSpacing.xs),
-                      _buildTagChip(tag),
-                    ],
-                    // Clear all
-                    if (_activeFilterCount > 0) ...<Widget>[
-                      const SizedBox(width: AppSpacing.md),
-                      _buildClearButton(),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          ],
-
-          // Clear (если нет тегов, но есть фильтры)
-          if (widget.tags.isEmpty && _activeFilterCount > 0) ...<Widget>[
+          // Clear all (теги на desktop показываются в TagSidebar)
+          if (_activeFilterCount > 0) ...<Widget>[
             const SizedBox(height: AppSpacing.xs),
             _buildClearButton(),
           ],
@@ -693,6 +672,7 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
                       spacing: AppSpacing.xs,
                       runSpacing: AppSpacing.xs,
                       children: <Widget>[
+                        _buildGroupChip(l, setSheetState),
                         sheetTagAll(),
                         for (final CollectionTag tag in widget.tags)
                           sheetTagChip(tag),
@@ -706,6 +686,35 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
             );
           },
         );
+      },
+    );
+  }
+
+  Widget _buildGroupChip(S l, StateSetter setSheetState) {
+    final bool selected = widget.groupByTags;
+    return ChoiceChip(
+      label: Text(l.tagSidebarGroup, style: AppTypography.caption.copyWith(
+        color: selected ? AppColors.background : AppColors.brand,
+        fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+      )),
+      selected: selected,
+      selectedColor: AppColors.brand,
+      backgroundColor: AppColors.surface,
+      side: BorderSide(
+        color: selected ? Colors.transparent : AppColors.brand.withAlpha(60),
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      visualDensity: VisualDensity.compact,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+      avatar: Icon(
+        Icons.workspaces_outlined,
+        size: 14,
+        color: selected ? AppColors.background : AppColors.brand,
+      ),
+      onSelected: (_) {
+        setSheetState(() {});
+        widget.onGroupToggled();
       },
     );
   }
@@ -911,65 +920,6 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
       onSelected: (bool value) {
         widget.onPlatformToggled(platformId); // null = clear all
-      },
-    );
-  }
-
-  Widget _buildTagChipAll() {
-    final bool selected = widget.filterTagIds.isEmpty;
-    return ChoiceChip(
-      label: Text(
-        S.of(context).tagSidebarAll,
-        style: AppTypography.caption.copyWith(
-          color: selected ? AppColors.background : AppColors.textTertiary,
-          fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-        ),
-      ),
-      selected: selected,
-      selectedColor: AppColors.textPrimary,
-      backgroundColor: AppColors.surface,
-      side: BorderSide(
-        color: selected ? Colors.transparent : AppColors.surfaceBorder,
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      visualDensity: VisualDensity.compact,
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-      onSelected: (bool value) {
-        if (value) widget.onTagToggled(null); // clear all tag filters
-      },
-    );
-  }
-
-  Widget _buildTagChip(CollectionTag tag) {
-    final bool selected = widget.filterTagIds.contains(tag.id);
-    final Color tagColor =
-        tag.color != null ? Color(tag.color!) : AppColors.textSecondary;
-
-    return ChoiceChip(
-      label: Text(
-        tag.name,
-        style: AppTypography.caption.copyWith(
-          color: selected ? AppColors.background : tagColor,
-          fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-        ),
-      ),
-      selected: selected,
-      selectedColor: tagColor,
-      backgroundColor: AppColors.surface,
-      side: BorderSide(
-        color: selected ? Colors.transparent : tagColor.withAlpha(60),
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      visualDensity: VisualDensity.compact,
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-      onSelected: (bool value) {
-        widget.onTagToggled(tag.id);
       },
     );
   }

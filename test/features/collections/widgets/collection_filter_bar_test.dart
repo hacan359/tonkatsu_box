@@ -203,6 +203,7 @@ Widget _buildFilterBar({
     onPlatformToggled: onPlatformToggled ?? (_) {},
     onTagToggled: onTagToggled ?? (_) {},
     onStatusChanged: onStatusChanged ?? (_) {},
+    onGroupToggled: () {},
   );
 }
 
@@ -621,88 +622,6 @@ void main() {
     });
 
     group('теги в expand-панели', () {
-      Future<void> expandFilters(WidgetTester tester) async {
-        final Finder arrow = find.byIcon(Icons.keyboard_arrow_down_rounded);
-        if (arrow.evaluate().isNotEmpty) {
-          await tester.tap(arrow);
-          await tester.pumpAndSettle();
-        }
-      }
-
-      testWidgets(
-        'должен показать теги после раскрытия панели',
-        (WidgetTester tester) async {
-          await tester.pumpWidget(
-            _buildTestApp(
-              overrides: _defaultOverrides(),
-              child: _buildFilterBar(tags: _testTags),
-            ),
-          );
-          await tester.pumpAndSettle();
-          await expandFilters(tester);
-
-          expect(find.text('Favorites'), findsOneWidget);
-          expect(find.text('Backlog'), findsOneWidget);
-        },
-      );
-
-      testWidgets(
-        'должен вызвать onTagToggled с id тега при тапе',
-        (WidgetTester tester) async {
-          int? tappedTagId;
-
-          await tester.pumpWidget(
-            _buildTestApp(
-              overrides: _defaultOverrides(),
-              child: _buildFilterBar(
-                tags: _testTags,
-                onTagToggled: (int? id) {
-                  tappedTagId = id;
-                },
-              ),
-            ),
-          );
-          await tester.pumpAndSettle();
-          await expandFilters(tester);
-
-          await tester.tap(find.text('Favorites'));
-          await tester.pumpAndSettle();
-
-          expect(tappedTagId, equals(1));
-        },
-      );
-
-      testWidgets(
-        'должен вызвать onTagToggled с null при тапе на All',
-        (WidgetTester tester) async {
-          int? tappedTagId = 999;
-
-          await tester.pumpWidget(
-            _buildTestApp(
-              overrides: _defaultOverrides(),
-              child: _buildFilterBar(
-                tags: _testTags,
-                filterTagIds: <int>{1},
-                onTagToggled: (int? id) {
-                  tappedTagId = id;
-                },
-              ),
-            ),
-          );
-          await tester.pumpAndSettle();
-          await expandFilters(tester);
-
-          // "All" в строке тегов
-          final Finder allChips = find.text('All');
-          expect(allChips, findsWidgets);
-          // Тапаем последний "All" — это All тегов (первый — All типов)
-          await tester.tap(allChips.last);
-          await tester.pumpAndSettle();
-
-          expect(tappedTagId, isNull);
-        },
-      );
-
       testWidgets(
         'не должен показывать стрелку если нет ни платформ ни тегов',
         (WidgetTester tester) async {

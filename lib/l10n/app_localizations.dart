@@ -2101,6 +2101,12 @@ abstract class S {
   /// **'All'**
   String get tagSidebarAll;
 
+  /// No description provided for @tagSidebarGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Group'**
+  String get tagSidebarGroup;
+
   /// No description provided for @colorPickerTitle.
   ///
   /// In en, this message translates to:

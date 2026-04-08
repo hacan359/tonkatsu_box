@@ -58,6 +58,7 @@ class MediaPosterCard extends StatefulWidget {
     this.onFocusChanged,
     this.tagName,
     this.tagColor,
+    this.tagGlow = false,
     this.onTagTap,
     super.key,
   });
@@ -132,6 +133,9 @@ class MediaPosterCard extends StatefulWidget {
 
   /// Цвет тега (ARGB int). Grid/compact only.
   final int? tagColor;
+
+  /// Включить свечение постера цветом тега.
+  final bool tagGlow;
 
   /// Callback при тапе на тег-бейдж (для выбора/смены тега).
   final void Function(Offset globalPosition)? onTagTap;
@@ -278,11 +282,18 @@ class _MediaPosterCardState extends State<MediaPosterCard>
     final double borderRadius =
         hasOverlay ? 0 : (_isCompact ? AppSpacing.radiusSm : AppSpacing.radiusMd);
 
+    final Color? glowColor = widget.tagGlow && widget.tagColor != null
+        ? Color(widget.tagColor!)
+        : null;
+
     return Expanded(
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(borderRadius),
-        child: Stack(
-          fit: StackFit.expand,
+      child: _TagGlowWrapper(
+        color: glowColor,
+        borderRadius: borderRadius,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(borderRadius),
+          child: Stack(
+            fit: StackFit.expand,
           children: <Widget>[
             // Постер
             _buildCachedImage(
@@ -434,6 +445,7 @@ class _MediaPosterCardState extends State<MediaPosterCard>
               ),
           ],
         ),
+      ),
       ),
     );
   }
@@ -626,6 +638,130 @@ class _MediaPosterCardState extends State<MediaPosterCard>
       errorWidget: placeholder,
     );
   }
+}
+
+/// Обёртка постера с цветной рамкой и бегущим бликом по периметру.
+class _TagGlowWrapper extends StatefulWidget {
+  const _TagGlowWrapper({
+    required this.borderRadius,
+    required this.child,
+    this.color,
+  });
+
+  final Color? color;
+  final double borderRadius;
+  final Widget child;
+
+  @override
+  State<_TagGlowWrapper> createState() => _TagGlowWrapperState();
+}
+
+class _TagGlowWrapperState extends State<_TagGlowWrapper>
+    with SingleTickerProviderStateMixin {
+  AnimationController? _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _syncController();
+  }
+
+  @override
+  void didUpdateWidget(_TagGlowWrapper oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if ((widget.color != null) != (oldWidget.color != null)) {
+      _syncController();
+    }
+  }
+
+  void _syncController() {
+    if (widget.color != null && _controller == null) {
+      _controller = AnimationController(
+        vsync: this,
+        duration: const Duration(seconds: 3),
+      )..repeat();
+    } else if (widget.color == null && _controller != null) {
+      _controller!.dispose();
+      _controller = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.color == null) return widget.child;
+
+    return AnimatedBuilder(
+      animation: _controller!,
+      builder: (BuildContext context, Widget? child) {
+        return CustomPaint(
+          foregroundPainter: _GlowBorderPainter(
+            color: widget.color!,
+            borderRadius: widget.borderRadius,
+            progress: _controller!.value,
+          ),
+          child: child,
+        );
+      },
+      child: widget.child,
+    );
+  }
+}
+
+/// Рисует цветную рамку с бегущим ярким бликом.
+class _GlowBorderPainter extends CustomPainter {
+  _GlowBorderPainter({
+    required this.color,
+    required this.borderRadius,
+    required this.progress,
+  });
+
+  final Color color;
+  final double borderRadius;
+  final double progress;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final RRect rrect = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      Radius.circular(borderRadius),
+    );
+
+    // Базовая рамка.
+    final Paint borderPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5
+      ..color = color.withAlpha(100);
+    canvas.drawRRect(rrect, borderPaint);
+
+    // Бегущий блик — SweepGradient, вращающийся по progress.
+    final double angle = progress * 2 * 3.14159265;
+    final Paint highlightPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.0
+      ..shader = SweepGradient(
+        startAngle: angle,
+        endAngle: angle + 1.0,
+        colors: <Color>[
+          color.withAlpha(0),
+          color.withAlpha(220),
+          color.withAlpha(0),
+        ],
+        stops: const <double>[0.0, 0.5, 1.0],
+        tileMode: TileMode.decal,
+      ).createShader(Offset.zero & size);
+    canvas.drawRRect(rrect, highlightPaint);
+  }
+
+  @override
+  bool shouldRepaint(_GlowBorderPainter oldDelegate) =>
+      progress != oldDelegate.progress ||
+      color != oldDelegate.color;
 }
 
 /// Кнопка "Открыть в коллекции" поверх постера.
