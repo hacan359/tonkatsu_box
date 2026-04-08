@@ -524,7 +524,7 @@ void main() {
             )).called(1);
       });
 
-      test('should not downgrade status for completed items', () async {
+      test('should always sync status from RA for existing items', () async {
         final RaGameProgress raGame = createTestRaGameProgress(
           gameId: 1234,
           title: 'Mario',
@@ -564,14 +564,15 @@ void main() {
           onProgress: onProgress,
         );
 
-        verifyNever(() => mockDb.updateItemStatus(
-              any(),
-              any(),
-              mediaType: any(named: 'mediaType'),
-            ));
+        // Status is always synced from RA (inProgress: 10 achievements, no award).
+        verify(() => mockDb.updateItemStatus(
+              42,
+              ItemStatus.inProgress,
+              mediaType: MediaType.game,
+            )).called(1);
       });
 
-      test('should not downgrade status for dropped items', () async {
+      test('should not set dropped for notStarted/planned items', () async {
         final RaGameProgress raGame = createTestRaGameProgress(
           gameId: 1234,
           title: 'Mario',
@@ -579,6 +580,7 @@ void main() {
           numAwarded: 10,
           maxPossible: 96,
           highestAwardKind: null,
+          lastPlayedAt: DateTime.now().subtract(const Duration(days: 120)),
         );
 
         final Game igdbGame = createTestGame(id: 100, name: 'Mario');
@@ -586,7 +588,7 @@ void main() {
         final CollectionItem existing = createTestCollectionItem(
           id: 42,
           externalId: 100,
-          status: ItemStatus.dropped,
+          status: ItemStatus.planned,
           userComment: null,
         );
 
@@ -611,6 +613,7 @@ void main() {
           onProgress: onProgress,
         );
 
+        // RA wants dropped (>90 days), but current is planned — blocked.
         verifyNever(() => mockDb.updateItemStatus(
               any(),
               any(),
@@ -711,7 +714,8 @@ void main() {
             )).called(1);
       });
 
-      test('should not set activity dates when null', () async {
+      test('should call updateItemActivityDates with null dates when no RA activity',
+          () async {
         final RaGameProgress raGame = createTestRaGameProgress(
           gameId: 1234,
           title: 'Mario',
@@ -738,13 +742,13 @@ void main() {
           onProgress: onProgress,
         );
 
-        // addItemToCollection returns 42, but no dates to set.
-        verifyNever(() => mockDb.updateItemActivityDates(
+        // syncRaDataToCollectionItem called with null dates.
+        verify(() => mockDb.updateItemActivityDates(
               42,
-              startedAt: any(named: 'startedAt'),
-              completedAt: any(named: 'completedAt'),
-              lastActivityAt: any(named: 'lastActivityAt'),
-            ));
+              startedAt: null,
+              completedAt: null,
+              lastActivityAt: null,
+            )).called(1);
       });
 
       test('should handle null addItemToCollection result', () async {

@@ -598,6 +598,27 @@ class DatabaseService {
         lastActivityAt: lastActivityAt,
       );
 
+  /// Возвращает (id, collectionId) всех collection_items
+  /// с указанным external_id и media_type.
+  Future<List<({int id, int? collectionId})>> getItemIdsByExternalId(
+    int externalId,
+    String mediaType,
+  ) async {
+    final Database db = await database;
+    final List<Map<String, dynamic>> rows = await db.query(
+      'collection_items',
+      columns: <String>['id', 'collection_id'],
+      where: 'external_id = ? AND media_type = ?',
+      whereArgs: <Object?>[externalId, mediaType],
+    );
+    return rows
+        .map((Map<String, dynamic> r) => (
+              id: r['id'] as int,
+              collectionId: r['collection_id'] as int?,
+            ))
+        .toList();
+  }
+
   /// Обновляет прогресс просмотра сериала.
   Future<void> updateItemProgress(
     int id, {

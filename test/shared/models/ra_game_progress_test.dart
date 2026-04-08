@@ -223,13 +223,13 @@ void main() {
         expect(progress.itemStatus, equals(ItemStatus.inProgress));
       });
 
-      test('should return planned when numAwarded is 0 and no award', () {
+      test('should return null when numAwarded is 0 and no award', () {
         final RaGameProgress progress = createTestRaGameProgress(
           highestAwardKind: null,
           numAwarded: 0,
         );
 
-        expect(progress.itemStatus, equals(ItemStatus.planned));
+        expect(progress.itemStatus, isNull);
       });
 
       test(
@@ -244,14 +244,14 @@ void main() {
       });
 
       test(
-          'should return planned when award is unrecognized and no achievements',
+          'should return null when award is unrecognized and no achievements',
           () {
         final RaGameProgress progress = createTestRaGameProgress(
           highestAwardKind: 'some-other-award',
           numAwarded: 0,
         );
 
-        expect(progress.itemStatus, equals(ItemStatus.planned));
+        expect(progress.itemStatus, isNull);
       });
     });
   });

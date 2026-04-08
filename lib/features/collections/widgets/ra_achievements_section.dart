@@ -11,6 +11,7 @@ import '../../../shared/models/tracker_achievement.dart';
 import '../../../shared/models/tracker_game_data.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/theme/app_typography.dart';
 import '../providers/tracker_provider.dart';
 
 /// Цвет RA бренда (голубой из лого).
@@ -105,62 +106,61 @@ class _RaAchievementsSectionState
   Widget _buildContent(TrackerDetailState state) {
     final TrackerGameData data = state.gameData!;
 
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: const Color(0xFF181C26),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        border: Border.all(color: _raBlue.withAlpha(30)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          // Header: logo + title + buttons
-          _buildHeader(data),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        // Header: logo + title + buttons
+        _buildHeader(data),
+        const SizedBox(height: 8),
+
+        // Stats block like RA: 2 lines
+        _buildStatsBlock(data, state.achievements),
+
+        // Beaten progress + filter chips — only when achievements loaded and not empty
+        if (state.achievements != null &&
+            !state.isLoadingAchievements &&
+            state.achievements!.isNotEmpty) ...<Widget>[
+          _buildBeatenProgress(state.achievements!),
           const SizedBox(height: 8),
-
-          // Stats block like RA: 2 lines
-          _buildStatsBlock(data, state.achievements),
-
-          // Beaten progress + filter chips — only when achievements loaded and not empty
-          if (state.achievements != null &&
-              !state.isLoadingAchievements &&
-              state.achievements!.isNotEmpty) ...<Widget>[
-            _buildBeatenProgress(state.achievements!),
-            const SizedBox(height: 8),
-            _buildFilterChips(state.achievements!),
-          ],
-
-          // Divider
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6),
-            child: Divider(color: Colors.white.withAlpha(15), height: 1),
-          ),
-
-          // Achievements list
-          if (state.isLoadingAchievements)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 12),
-              child: Center(
-                child: SizedBox(
-                  width: 18, height: 18,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 1.5, color: _raBlue),
-                ),
-              ),
-            )
-          else if (state.achievements != null) ...<Widget>[
-            // Filtered list — preview (6) or full
-            ..._filterAchievements(state.achievements!)
-                .take(_expanded ? state.achievements!.length : 6)
-                .map(_buildAchievementRow),
-
-            // View all / collapse
-            if (state.achievements!.length > 6)
-              _buildViewAllButton(state.achievements!.length),
-          ],
+          _buildFilterChips(state.achievements!),
         ],
-      ),
+
+        // Expand/collapse toggle + divider
+        if (state.achievements != null &&
+            !state.isLoadingAchievements &&
+            state.achievements!.length > 6)
+          _buildViewAllButton(state.achievements!.length),
+
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Divider(
+            color: AppColors.surfaceBorder.withAlpha(80),
+            height: 1,
+          ),
+        ),
+
+        // Achievements list
+        if (state.isLoadingAchievements)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Center(
+              child: SizedBox(
+                width: 18, height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 1.5, color: _raBlue),
+              ),
+            ),
+          )
+        else if (state.achievements != null) ...<Widget>[
+          ..._filterAchievements(state.achievements!)
+              .take(_expanded ? state.achievements!.length : 6)
+              .map(_buildAchievementRow),
+
+          // Collapse внизу — только когда развёрнуто
+          if (_expanded && state.achievements!.length > 6)
+            _buildViewAllButton(state.achievements!.length),
+        ],
+      ],
     );
   }
 
@@ -430,35 +430,45 @@ class _RaAchievementsSectionState
   Widget _buildHeader(TrackerGameData data) {
     return Row(
       children: <Widget>[
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: Image.asset(
-            'assets/images/ra_logo.png',
-            width: 20,
-            height: 20,
-            filterQuality: FilterQuality.medium,
+        Expanded(
+          child: Row(
+            children: <Widget>[
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: Image.asset(
+                  'assets/images/ra_logo.png',
+                  width: 18,
+                  height: 18,
+                  filterQuality: FilterQuality.medium,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  'RetroAchievements',
+                  style: AppTypography.h3.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
           ),
         ),
-        const SizedBox(width: 6),
-        const Expanded(
-          child: Text(
-            'RetroAchievements',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-        if (ref.watch(raApiProvider).hasCredentials)
+        if (ref.watch(raApiProvider).hasCredentials) ...<Widget>[
           _headerButton(
             icon: Icons.refresh,
             tooltip: S.of(context).raRefresh,
             isLoading: _isRefreshing,
             onTap: _refreshData,
           ),
+          _headerButton(
+            icon: Icons.link_off,
+            tooltip: S.of(context).raUnlinkButton,
+            onTap: () => _unlinkRa(context),
+          ),
+        ],
         _headerButton(
           icon: Icons.open_in_new,
           tooltip: S.of(context).raOpenOnRa,
@@ -515,10 +525,10 @@ class _RaAchievementsSectionState
       }
     }
 
-    final TextStyle dim = TextStyle(
-        fontSize: 12, color: AppColors.textTertiary.withAlpha(180));
-    const TextStyle bold = TextStyle(
-        fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textPrimary);
+    final TextStyle dim = AppTypography.caption.copyWith(
+        color: AppColors.textTertiary);
+    final TextStyle bold = AppTypography.caption.copyWith(
+        fontWeight: FontWeight.w600, color: AppColors.textPrimary);
 
     final S l = S.of(context);
 
@@ -547,25 +557,23 @@ class _RaAchievementsSectionState
                   TextSpan(text: '${l.raStatsUnlocked} ', style: dim),
                   TextSpan(
                     text: '$earned',
-                    style: const TextStyle(
-                      fontSize: 12, fontWeight: FontWeight.w600, color: _raBlue),
+                    style: AppTypography.caption.copyWith(
+                      fontWeight: FontWeight.w600, color: _raBlue),
                   ),
                   if (totalPoints > 0) ...<InlineSpan>[
                     TextSpan(text: ' ${l.raStatsWorth} ', style: dim),
                     TextSpan(
                       text: '$earnedPoints',
-                      style: const TextStyle(
-                        fontSize: 12, fontWeight: FontWeight.w600,
-                        color: _raGold),
+                      style: AppTypography.caption.copyWith(
+                        fontWeight: FontWeight.w600, color: _raGold),
                     ),
                   ],
                   if (hardcore > 0 && hardcore != earned) ...<InlineSpan>[
                     TextSpan(text: '  HC ', style: dim),
                     TextSpan(
                       text: '$hardcore',
-                      style: const TextStyle(
-                        fontSize: 12, fontWeight: FontWeight.w600,
-                        color: _hardcoreColor),
+                      style: AppTypography.caption.copyWith(
+                        fontWeight: FontWeight.w600, color: _hardcoreColor),
                     ),
                   ],
                 ]),
@@ -577,8 +585,7 @@ class _RaAchievementsSectionState
             // Completion % + award
             Text(
               pct,
-              style: TextStyle(
-                fontSize: 12,
+              style: AppTypography.caption.copyWith(
                 fontWeight: FontWeight.w700,
                 color: earned == total && total > 0
                     ? _raGold
@@ -755,6 +762,35 @@ class _RaAchievementsSectionState
   void _openRaPage(TrackerGameData data) {
     final Uri uri = Uri.parse(data.raGameUrl);
     launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
+  Future<void> _unlinkRa(BuildContext context) async {
+    final S l = S.of(context);
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext ctx) => AlertDialog(
+        title: Text(l.raUnlinkTitle),
+        content: Text(l.raUnlinkConfirm),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(
+              l.raUnlinkButton,
+              style: const TextStyle(color: AppColors.error),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    await ref
+        .read(trackerDetailProvider(widget.gameId).notifier)
+        .unlinkRaGame();
   }
 
   Widget _buildTypeBadge(TrackerAchievement achievement) {

@@ -1118,6 +1118,41 @@ class SEn extends S {
   String get colorPickerApply => 'Apply';
 
   @override
+  String get raLinkButton => 'Link RetroAchievements';
+
+  @override
+  String get raLinkTitle => 'Find game on RetroAchievements';
+
+  @override
+  String get raLinkSearchHint => 'Search by name...';
+
+  @override
+  String raLinkLoading(String platform) {
+    return 'Loading games for $platform...';
+  }
+
+  @override
+  String get raLinkNotFound => 'No matches found';
+
+  @override
+  String get raLinkSuccess => 'Game linked to RetroAchievements';
+
+  @override
+  String raLinkAchievements(int count) {
+    return '$count achievements';
+  }
+
+  @override
+  String get raUnlinkButton => 'Unlink';
+
+  @override
+  String get raUnlinkTitle => 'Unlink RetroAchievements';
+
+  @override
+  String get raUnlinkConfirm =>
+      'Remove RetroAchievements link and achievement data for this game?';
+
+  @override
   String get collectionFilterAll => 'All';
 
   @override

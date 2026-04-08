@@ -90,18 +90,38 @@ class RaGameProgress {
   /// mastered*/completed*/beaten* → completed,
   /// >0 ачивок → inProgress,
   /// 0 ачивок → planned.
-  ItemStatus get itemStatus {
-    final String? award = highestAwardKind;
-    if (award != null) {
-      // Значения: "beaten-hardcore", "beaten-softcore", "mastered-hardcore",
-      // "completed-hardcore" и т.д.
-      if (award.startsWith('mastered') ||
-          award.startsWith('completed') ||
-          award.startsWith('beaten')) {
+  ItemStatus? get itemStatus => statusFromAward(
+        awardKind: highestAwardKind,
+        numAwarded: numAwarded,
+        lastPlayedAt: lastPlayedAt,
+      );
+
+  /// Маппинг RA данных → [ItemStatus] или null (не менять).
+  ///
+  /// mastered*/completed*/beaten* → completed,
+  /// >0 ачивок + последняя активность >3 месяцев назад → dropped,
+  /// >0 ачивок → inProgress,
+  /// 0 ачивок → null (не трогаем — RA ничего не знает).
+  static ItemStatus? statusFromAward({
+    required String? awardKind,
+    required int numAwarded,
+    DateTime? lastPlayedAt,
+  }) {
+    if (awardKind != null) {
+      if (awardKind.startsWith('mastered') ||
+          awardKind.startsWith('completed') ||
+          awardKind.startsWith('beaten')) {
         return ItemStatus.completed;
       }
     }
-    if (numAwarded > 0) return ItemStatus.inProgress;
-    return ItemStatus.planned;
+    if (numAwarded > 0) {
+      if (lastPlayedAt != null) {
+        final Duration inactivity = DateTime.now().difference(lastPlayedAt);
+        if (inactivity.inDays > 90) return ItemStatus.dropped;
+      }
+      return ItemStatus.inProgress;
+    }
+    // 0 achievements — не трогаем статус (нет данных от RA).
+    return null;
   }
 }

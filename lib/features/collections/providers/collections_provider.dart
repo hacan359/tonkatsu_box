@@ -452,6 +452,32 @@ class CollectionItemsNotifier
   }
 
   /// Обновляет тег элемента без полной перезагрузки списка.
+  /// Оптимистично обновляет даты активности и статус элемента в state.
+  void updateItemDates(
+    int itemId, {
+    DateTime? startedAt,
+    DateTime? lastActivityAt,
+    DateTime? completedAt,
+    ItemStatus? status,
+  }) {
+    final List<CollectionItem>? items = state.valueOrNull;
+    if (items == null) return;
+
+    state = AsyncData<List<CollectionItem>>(
+      items.map((CollectionItem item) {
+        if (item.id == itemId) {
+          return item.copyWith(
+            startedAt: startedAt,
+            lastActivityAt: lastActivityAt,
+            completedAt: completedAt,
+            status: status ?? item.status,
+          );
+        }
+        return item;
+      }).toList(),
+    );
+  }
+
   void updateItemTag(int itemId, int? tagId) {
     final List<CollectionItem>? items = state.valueOrNull;
     if (items == null) return;
