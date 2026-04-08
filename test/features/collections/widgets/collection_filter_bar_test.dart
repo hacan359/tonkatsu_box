@@ -203,6 +203,7 @@ Widget _buildFilterBar({
     onPlatformToggled: onPlatformToggled ?? (_) {},
     onTagToggled: onTagToggled ?? (_) {},
     onStatusChanged: onStatusChanged ?? (_) {},
+    onGroupToggled: () {},
   );
 }
 

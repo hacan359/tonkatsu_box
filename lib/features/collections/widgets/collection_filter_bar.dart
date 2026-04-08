@@ -40,6 +40,8 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
     required this.onPlatformToggled,
     required this.onTagToggled,
     required this.onStatusChanged,
+    required this.onGroupToggled,
+    this.groupByTags = false,
     super.key,
   });
 
@@ -57,6 +59,8 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
   final ValueChanged<int?> onPlatformToggled;
   final ValueChanged<int?> onTagToggled;
   final ValueChanged<ItemStatus?> onStatusChanged;
+  final VoidCallback onGroupToggled;
+  final bool groupByTags;
 
   @override
   ConsumerState<CollectionFilterBar> createState() =>
@@ -668,6 +672,7 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
                       spacing: AppSpacing.xs,
                       runSpacing: AppSpacing.xs,
                       children: <Widget>[
+                        _buildGroupChip(l, setSheetState),
                         sheetTagAll(),
                         for (final CollectionTag tag in widget.tags)
                           sheetTagChip(tag),
@@ -681,6 +686,35 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
             );
           },
         );
+      },
+    );
+  }
+
+  Widget _buildGroupChip(S l, StateSetter setSheetState) {
+    final bool selected = widget.groupByTags;
+    return ChoiceChip(
+      label: Text(l.tagSidebarGroup, style: AppTypography.caption.copyWith(
+        color: selected ? AppColors.background : AppColors.brand,
+        fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+      )),
+      selected: selected,
+      selectedColor: AppColors.brand,
+      backgroundColor: AppColors.surface,
+      side: BorderSide(
+        color: selected ? Colors.transparent : AppColors.brand.withAlpha(60),
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      visualDensity: VisualDensity.compact,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+      avatar: Icon(
+        Icons.workspaces_outlined,
+        size: 14,
+        color: selected ? AppColors.background : AppColors.brand,
+      ),
+      onSelected: (_) {
+        setSheetState(() {});
+        widget.onGroupToggled();
       },
     );
   }

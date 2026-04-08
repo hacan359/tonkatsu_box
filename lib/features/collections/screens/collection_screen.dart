@@ -477,6 +477,10 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                   tags: tags,
                   searchController: _searchController,
                   searchQuery: _searchQuery,
+                  groupByTags: _groupByTags,
+                  onGroupToggled: () {
+                    setState(() => _groupByTags = !_groupByTags);
+                  },
                   onTypeToggled: (MediaType? type) {
                     setState(() {
                       if (type == null) {

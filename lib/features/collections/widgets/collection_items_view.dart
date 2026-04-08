@@ -183,7 +183,11 @@ class CollectionItemsView extends ConsumerWidget {
     for (final CollectionTag tag in tags) {
       final List<CollectionItem> tagItems = grouped[tag.id]!;
       if (tagItems.isNotEmpty) {
-        result.add(_TagGroup(name: tag.name, items: tagItems));
+        result.add(_TagGroup(
+          name: tag.name,
+          color: tag.color != null ? Color(tag.color!) : null,
+          items: tagItems,
+        ));
       }
     }
     if (untagged.isNotEmpty) {
@@ -204,38 +208,12 @@ class CollectionItemsView extends ConsumerWidget {
     final S l = S.of(context);
     final List<_TagGroup> groups = _groupByTag(l.tagNone);
 
-    return RefreshIndicator(
-      onRefresh: () => ref
-          .read(collectionItemsNotifierProvider(collectionId).notifier)
-          .refresh(),
-      child: CustomScrollView(
-        slivers: <Widget>[
-          for (int i = 0; i < groups.length; i++) ...<Widget>[
-            if (groups[i].name != null)
-              SliverToBoxAdapter(
-                child: _buildSectionDivider(
-                  groups[i].name!,
-                  groups[i].items.length,
-                  isFirst: i == 0,
-                ),
-              ),
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (BuildContext context, int index) {
-                  final CollectionItem item = groups[i].items[index];
-                  return _buildListTile(context, item);
-                },
-                childCount: groups[i].items.length,
-              ),
-            ),
-            if (i < groups.length - 1)
-              const SliverToBoxAdapter(
-                child: SizedBox(height: AppSpacing.sm),
-              ),
-          ],
-        ],
-      ),
-    );
+    // Плоский список, отсортированный по тегам.
+    final List<CollectionItem> sorted = <CollectionItem>[
+      for (final _TagGroup g in groups) ...g.items,
+    ];
+
+    return _buildFlatListView(context, ref, sorted);
   }
 
   Widget _buildFlatListView(
@@ -326,45 +304,29 @@ class CollectionItemsView extends ConsumerWidget {
       for (final CollectionTag tag in tags) tag.id: tag,
     };
 
+    // Плоский список, отсортированный по тегам — рендерим как обычный grid.
+    final List<CollectionItem> sorted = <CollectionItem>[
+      for (final _TagGroup g in groups) ...g.items,
+    ];
+
     return RefreshIndicator(
       onRefresh: () => ref
           .read(collectionItemsNotifierProvider(collectionId).notifier)
           .refresh(),
-      child: CustomScrollView(
-        slivers: <Widget>[
-          for (int i = 0; i < groups.length; i++) ...<Widget>[
-            if (groups[i].name != null)
-              SliverToBoxAdapter(
-                child: _buildSectionDivider(
-                  groups[i].name!,
-                  groups[i].items.length,
-                  isFirst: i == 0,
-                ),
-              ),
-            SliverPadding(
-              padding: EdgeInsets.symmetric(horizontal: gridPadding),
-              sliver: SliverGrid(
-                gridDelegate: gridDelegate,
-                delegate: SliverChildBuilderDelegate(
-                  (BuildContext context, int index) {
-                    return _buildGridCard(
-                      context,
-                      groups[i].items[index],
-                      isLandscape,
-                      tagById,
-                      settings,
-                    );
-                  },
-                  childCount: groups[i].items.length,
-                ),
-              ),
-            ),
-            if (i < groups.length - 1)
-              const SliverToBoxAdapter(
-                child: SizedBox(height: AppSpacing.sm),
-              ),
-          ],
-        ],
+      child: GridView.builder(
+        padding: EdgeInsets.all(gridPadding),
+        gridDelegate: gridDelegate,
+        itemCount: sorted.length,
+        itemBuilder: (BuildContext context, int index) {
+          return _buildGridCard(
+            context,
+            sorted[index],
+            isLandscape,
+            tagById,
+            settings,
+            tagGlow: true,
+          );
+        },
       ),
     );
   }
@@ -401,8 +363,9 @@ class CollectionItemsView extends ConsumerWidget {
     CollectionItem item,
     bool isLandscape,
     Map<int, CollectionTag> tagById,
-    SettingsState settings,
-  ) {
+    SettingsState settings, {
+    bool tagGlow = false,
+  }) {
     final CollectionTag? tag =
         item.tagId != null ? tagById[item.tagId] : null;
 
@@ -425,6 +388,7 @@ class CollectionItemsView extends ConsumerWidget {
       status: item.status,
       tagName: tag?.name,
       tagColor: tag?.color,
+      tagGlow: tagGlow,
       onTagTap: canEdit && tags.isNotEmpty
           ? (Offset pos) => _showTagPopup(context, pos, item)
           : null,
@@ -505,48 +469,6 @@ class CollectionItemsView extends ConsumerWidget {
     );
   }
 
-  /// Разделитель секции с названием и количеством.
-  Widget _buildSectionDivider(
-    String name,
-    int count, {
-    required bool isFirst,
-  }) {
-    return Padding(
-      padding: EdgeInsets.only(
-        top: isFirst ? AppSpacing.xs : AppSpacing.md,
-        bottom: AppSpacing.sm,
-      ),
-      child: Row(
-        children: <Widget>[
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Container(
-              height: 1,
-              color: AppColors.surfaceBorder,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-            child: Text(
-              '$name ($count)',
-              style: AppTypography.caption.copyWith(
-                color: AppColors.textTertiary,
-                fontWeight: FontWeight.w500,
-                letterSpacing: 0.5,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Container(
-              height: 1,
-              color: AppColors.surfaceBorder,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-        ],
-      ),
-    );
-  }
 
   /// Показывает контекстное меню ПКМ для элемента коллекции.
   /// Центр экрана — fallback позиция для контекстного меню без курсора.
@@ -742,10 +664,13 @@ class CollectionItemsView extends ConsumerWidget {
 
 /// Группа элементов по тегу.
 class _TagGroup {
-  _TagGroup({required this.name, required this.items});
+  _TagGroup({required this.name, required this.items, this.color});
 
   /// Название тега (null = без разделителя).
   final String? name;
+
+  /// Цвет тега (null = без цвета / untagged).
+  final Color? color;
 
   /// Элементы в группе.
   final List<CollectionItem> items;
