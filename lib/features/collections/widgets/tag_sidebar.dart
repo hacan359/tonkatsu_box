@@ -15,7 +15,9 @@ class TagSidebar extends StatelessWidget {
   const TagSidebar({
     required this.tags,
     required this.onTagToggled,
+    required this.onGroupToggled,
     this.selectedTagIds = const <int>{},
+    this.groupByTags = false,
     super.key,
   });
 
@@ -25,8 +27,14 @@ class TagSidebar extends StatelessWidget {
   /// ID выбранных тегов (пустой = показать все).
   final Set<int> selectedTagIds;
 
+  /// Включена ли группировка по тегам.
+  final bool groupByTags;
+
   /// Callback при переключении тега (null = сброс всех фильтров).
   final ValueChanged<int?> onTagToggled;
+
+  /// Callback переключения режима группировки по тегам.
+  final VoidCallback onGroupToggled;
 
   /// Ширина боковой панели.
   static const double width = 32.0;
@@ -45,12 +53,12 @@ class TagSidebar extends StatelessWidget {
       child: Column(
         children: <Widget>[
           const SizedBox(height: 8),
-          // «Все» — сброс фильтра
+          // Группировка по тегам
           _TagTab(
-            label: S.of(context).tagSidebarAll,
+            label: S.of(context).tagSidebarGroup,
             color: AppColors.brand,
-            isSelected: selectedTagIds.isEmpty,
-            onTap: () => onTagToggled(null),
+            isSelected: groupByTags,
+            onTap: onGroupToggled,
           ),
           const SizedBox(height: 4),
           // Разделитель

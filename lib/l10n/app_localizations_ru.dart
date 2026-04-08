@@ -1117,6 +1117,9 @@ class SRu extends S {
   String get tagSidebarAll => 'Все';
 
   @override
+  String get tagSidebarGroup => 'Группа';
+
+  @override
   String get colorPickerTitle => 'Цвет';
 
   @override

@@ -43,6 +43,7 @@ class CollectionItemsView extends ConsumerWidget {
     this.onItemFocusChanged,
     this.tags = const <CollectionTag>[],
     this.filterTagIds = const <int>{},
+    this.groupByTags = false,
     super.key,
   });
 
@@ -80,9 +81,10 @@ class CollectionItemsView extends ConsumerWidget {
   final List<CollectionTag> tags;
 
   /// Выбранные фильтры по тегам.
-  ///
-  /// Группировка с разделителями активна только когда не пусто.
   final Set<int> filterTagIds;
+
+  /// Включён ли режим группировки по тегам.
+  final bool groupByTags;
 
   /// Максимальная ширина карточки на десктопе.
   static const double _desktopMaxCardWidth = 150;
@@ -191,7 +193,8 @@ class CollectionItemsView extends ConsumerWidget {
     return result;
   }
 
-  bool get _hasTagGroups => tags.isNotEmpty && filterTagIds.isNotEmpty;
+  bool get _hasTagGroups =>
+      tags.isNotEmpty && (groupByTags || filterTagIds.isNotEmpty);
 
   Widget _buildListView(BuildContext context, WidgetRef ref) {
     if (!_hasTagGroups) {

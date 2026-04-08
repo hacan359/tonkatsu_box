@@ -84,6 +84,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   Set<MediaType> _filterTypes = <MediaType>{};
   Set<int> _filterPlatformIds = <int>{};
   Set<int> _filterTagIds = <int>{};
+  bool _groupByTags = false;
   ItemStatus? _filterStatus;
   String _searchQuery = '';
   String _typeToFilterQuery = '';
@@ -445,6 +446,19 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             <CollectionTag>[])
         : <CollectionTag>[];
 
+    // Убираем удалённые теги из фильтра.
+    final Set<int> validTagIds = <int>{
+      for (final CollectionTag tag in tags) tag.id,
+    };
+    if (_filterTagIds.isNotEmpty &&
+        !_filterTagIds.every(validTagIds.contains)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          _filterTagIds = _filterTagIds.intersection(validTagIds);
+        });
+      });
+    }
+
     return Row(
       children: <Widget>[
         Expanded(
@@ -513,9 +527,10 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                 child: itemsAsync.when(
                   data: (List<CollectionItem> items) => CollectionItemsView(
                     collectionId: widget.collectionId,
-                    items: _applyFilters(items),
+                    items: _applyFilters(items, tags),
                     tags: tags,
                     filterTagIds: _filterTagIds,
+                    groupByTags: _groupByTags,
                     isGridMode: _isGridMode,
                     isTableMode: _isTableMode,
                     canEdit: _canEdit,
@@ -544,10 +559,14 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         ),
 
         // Боковая панель тегов
-        if (tags.length >= 2 && !kIsMobile)
+        if (tags.isNotEmpty && !kIsMobile)
           TagSidebar(
             tags: tags,
             selectedTagIds: _filterTagIds,
+            groupByTags: _groupByTags,
+            onGroupToggled: () {
+              setState(() => _groupByTags = !_groupByTags);
+            },
             onTagToggled: (int? tagId) {
               setState(() {
                 if (tagId == null) {
@@ -567,7 +586,10 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   }
 
   /// Применяет фильтры по типу, платформе, тегу и поисковой строке.
-  List<CollectionItem> _applyFilters(List<CollectionItem> items) {
+  List<CollectionItem> _applyFilters(
+    List<CollectionItem> items,
+    List<CollectionTag> tags,
+  ) {
     List<CollectionItem> result = items;
 
     if (_filterTypes.isNotEmpty) {
@@ -598,22 +620,21 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           .toList();
     }
 
-    if (_searchQuery.isNotEmpty) {
-      final String query = _searchQuery.toLowerCase();
-      result = result
-          .where(
-            (CollectionItem item) =>
-                item.itemName.toLowerCase().contains(query),
-          )
-          .toList();
-    }
+    final String textQuery = _searchQuery.isNotEmpty
+        ? _searchQuery
+        : _typeToFilterQuery;
 
-    if (_typeToFilterQuery.isNotEmpty) {
-      final String query = _typeToFilterQuery.toLowerCase();
+    if (textQuery.isNotEmpty) {
+      final String query = textQuery.toLowerCase();
+      final Map<int, String> tagNames = <int, String>{
+        for (final CollectionTag tag in tags) tag.id: tag.name.toLowerCase(),
+      };
       result = result
           .where(
             (CollectionItem item) =>
-                item.itemName.toLowerCase().contains(query),
+                item.itemName.toLowerCase().contains(query) ||
+                (item.tagId != null &&
+                    (tagNames[item.tagId]?.contains(query) ?? false)),
           )
           .toList();
     }
