@@ -41,6 +41,7 @@ class MediaDetailChip {
     required this.icon,
     required this.text,
     this.iconColor,
+    this.onTap,
   });
 
   /// Иконка чипа.
@@ -48,6 +49,9 @@ class MediaDetailChip {
 
   /// Текст чипа.
   final String text;
+
+  /// Callback при тапе (null = не кликабельный).
+  final VoidCallback? onTap;
 
   /// Цвет иконки (по умолчанию [AppColors.textSecondary]).
   final Color? iconColor;
@@ -76,6 +80,7 @@ class MediaDetailView extends StatefulWidget {
     this.description,
     this.statusWidget,
     this.tagWidget,
+    this.raBadge,
     this.trackerSection,
     this.extraSections,
     this.recommendationSections,
@@ -134,6 +139,9 @@ class MediaDetailView extends StatefulWidget {
 
   /// Виджет выбора тега (секции) коллекции.
   final Widget? tagWidget;
+
+  /// RA badge виджет (лого + %).
+  final Widget? raBadge;
 
   /// Секция трекера (RA Achievements и т.д.) — рендерится после тегов.
   final Widget? trackerSection;
@@ -450,6 +458,10 @@ class _MediaDetailViewState extends State<MediaDetailView> {
                     const SizedBox(width: 6),
                     Flexible(child: widget.tagWidget!),
                   ],
+                  if (widget.raBadge != null) ...<Widget>[
+                    const SizedBox(width: 6),
+                    widget.raBadge!,
+                  ],
                 ],
               ),
               if (widget.infoChips.isNotEmpty) ...<Widget>[
@@ -459,7 +471,8 @@ class _MediaDetailViewState extends State<MediaDetailView> {
                   runSpacing: 4,
                   children: <Widget>[
                     for (final MediaDetailChip chip in widget.infoChips)
-                      _buildInfoChip(chip.icon, chip.text, iconColor: chip.iconColor),
+                      _buildInfoChip(chip.icon, chip.text,
+                          iconColor: chip.iconColor, onTap: chip.onTap),
                   ],
                 ),
               ],
@@ -538,12 +551,21 @@ class _MediaDetailViewState extends State<MediaDetailView> {
     );
   }
 
-  Widget _buildInfoChip(IconData icon, String text, {Color? iconColor}) {
-    return Container(
+  Widget _buildInfoChip(
+    IconData icon,
+    String text, {
+    Color? iconColor,
+    VoidCallback? onTap,
+  }) {
+    final Widget chip = Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: AppColors.surfaceLight,
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        border: onTap != null
+            ? Border.all(
+                color: (iconColor ?? AppColors.textSecondary).withAlpha(60))
+            : null,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -563,6 +585,8 @@ class _MediaDetailViewState extends State<MediaDetailView> {
         ],
       ),
     );
+    if (onTap == null) return chip;
+    return GestureDetector(onTap: onTap, child: chip);
   }
 
   Widget _buildStatusSection(BuildContext context) {

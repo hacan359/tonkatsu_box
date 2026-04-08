@@ -19,6 +19,7 @@ import '../api/igdb_api.dart';
 import '../api/ra_api.dart';
 import '../database/dao/tracker_dao.dart';
 import '../database/database_service.dart';
+import 'ra_sync_helpers.dart';
 import 'ra_to_igdb_mapper.dart';
 
 // ---------------------------------------------------------------------------
@@ -379,54 +380,29 @@ class RaImportService {
     return results;
   }
 
-  /// Обновляет мету существующего элемента. Не понижает статус.
+  /// Обновляет мету существующего элемента: статус и даты.
   Future<bool> _updateExistingItem(
     CollectionItem existing,
     RaGameProgress raGame, {
     DateTime? completedAt,
   }) async {
-    bool changed = false;
-
-    // Статус: только повышение.
-    final ItemStatus raStatus = raGame.itemStatus;
-    if (_isHigherStatus(raStatus, existing.status)) {
-      await _db.updateItemStatus(
-        existing.id,
-        raStatus,
-        mediaType: MediaType.game,
-      );
-      changed = true;
-    }
-
-    // RA данные теперь в tracker_game_data — authorComment свободен для юзера.
-
-    // Activity dates: completedAt и lastActivityAt.
+    final ItemStatus? raStatus = raGame.itemStatus;
     final DateTime? lastActivity = raGame.lastPlayedAt;
-    if (completedAt != null || lastActivity != null) {
-      await _db.updateItemActivityDates(
-        existing.id,
-        completedAt: completedAt,
-        lastActivityAt: lastActivity,
-      );
-      changed = true;
+
+    if (raStatus == null && completedAt == null && lastActivity == null) {
+      return false;
     }
 
-    return changed;
-  }
-
-  /// Проверяет что новый статус выше текущего.
-  ///
-  /// completed и dropped не перезаписываются.
-  static bool _isHigherStatus(ItemStatus newStatus, ItemStatus existing) {
-    if (existing == ItemStatus.completed) return false;
-    if (existing == ItemStatus.dropped) return false;
-    const Map<ItemStatus, int> priority = <ItemStatus, int>{
-      ItemStatus.planned: 0,
-      ItemStatus.notStarted: 0,
-      ItemStatus.inProgress: 1,
-      ItemStatus.completed: 2,
-    };
-    return (priority[newStatus] ?? 0) > (priority[existing] ?? 0);
+    await syncRaDataToCollectionItem(
+      db: _db,
+      itemId: existing.id,
+      collectionId: existing.collectionId,
+      status: raStatus,
+      currentStatus: existing.status,
+      lastActivityAt: lastActivity,
+      completedAt: completedAt,
+    );
+    return true;
   }
 
   Future<void> _addToWishlistIfNotExists(RaGameProgress raGame) async {
@@ -456,19 +432,18 @@ class RaImportService {
       mediaType: MediaType.game,
       externalId: game.id,
       platformId: platformId,
-      status: raGame.itemStatus,
+      status: raGame.itemStatus ?? ItemStatus.notStarted,
     );
 
-    // Устанавливаем activity dates.
     if (itemId != null) {
-      final DateTime? lastActivity = raGame.lastPlayedAt;
-      if (completedAt != null || lastActivity != null) {
-        await _db.updateItemActivityDates(
-          itemId,
-          completedAt: completedAt,
-          lastActivityAt: lastActivity,
-        );
-      }
+      await syncRaDataToCollectionItem(
+        db: _db,
+        itemId: itemId,
+        collectionId: collectionId,
+        status: raGame.itemStatus,
+        lastActivityAt: raGame.lastPlayedAt,
+        completedAt: completedAt,
+      );
     }
   }
 

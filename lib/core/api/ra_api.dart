@@ -215,11 +215,37 @@ class RaApi {
           ..._authParams(),
           'u': targetUser,
           'g': raGameId.toString(),
+          'a': '1',
         },
       );
       return response.data as Map<String, dynamic>;
     } on DioException catch (e) {
       throw _handleError(e, 'getGameInfoAndUserProgress');
+    }
+  }
+
+  /// Загружает список всех игр для консоли.
+  ///
+  /// Возвращает список с ID, Title, NumAchievements, ImageIcon.
+  /// Кэшируется на стороне вызывающего.
+  Future<List<RaGameListEntry>> getGameList(int consoleId) async {
+    _ensureCredentials();
+    try {
+      final Response<dynamic> response = await _dio.get<dynamic>(
+        '$_baseUrl/API_GetGameList.php',
+        queryParameters: <String, String>{
+          ..._authParams(),
+          'i': consoleId.toString(),
+        },
+      );
+      final List<dynamic> data = response.data as List<dynamic>;
+      return data
+          .map((dynamic item) =>
+              RaGameListEntry.fromJson(item as Map<String, dynamic>))
+          .where((RaGameListEntry g) => g.numAchievements > 0)
+          .toList();
+    } on DioException catch (e) {
+      throw _handleError(e, 'getGameList');
     }
   }
 
@@ -240,4 +266,57 @@ class RaApi {
     _log.warning('$method failed ($statusCode): $message');
     return RaApiException(message, statusCode: statusCode);
   }
+}
+
+/// Запись из списка игр консоли RA.
+class RaGameListEntry {
+  /// Создаёт [RaGameListEntry].
+  const RaGameListEntry({
+    required this.id,
+    required this.title,
+    required this.consoleId,
+    required this.numAchievements,
+    this.consoleName,
+    this.imageIcon,
+    this.points,
+  });
+
+  /// Создаёт из JSON ответа API.
+  factory RaGameListEntry.fromJson(Map<String, dynamic> json) {
+    return RaGameListEntry(
+      id: json['ID'] as int,
+      title: json['Title'] as String,
+      consoleId: json['ConsoleID'] as int,
+      consoleName: json['ConsoleName'] as String?,
+      imageIcon: json['ImageIcon'] as String?,
+      numAchievements: json['NumAchievements'] as int? ?? 0,
+      points: json['Points'] as int? ?? 0,
+    );
+  }
+
+  /// RA Game ID.
+  final int id;
+
+  /// Название игры.
+  final String title;
+
+  /// RA Console ID.
+  final int consoleId;
+
+  /// Название консоли.
+  final String? consoleName;
+
+  /// Путь к иконке (относительный).
+  final String? imageIcon;
+
+  /// Количество достижений.
+  final int numAchievements;
+
+  /// Очки.
+  final int? points;
+
+  /// Полный URL иконки.
+  String? get imageUrl => imageIcon != null
+      ? 'https://media.retroachievements.org$imageIcon'
+      : null;
 }

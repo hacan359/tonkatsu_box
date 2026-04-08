@@ -156,6 +156,33 @@ class TrackerDao {
     });
   }
 
+  /// Удаляет tracker_game_data и связанные achievements для игры.
+  Future<void> deleteGameData(TrackerType type, int gameId) async {
+    final Database db = await _getDatabase();
+
+    // Сначала получим trackerGameId для удаления achievements.
+    final List<Map<String, dynamic>> rows = await db.query(
+      'tracker_game_data',
+      columns: <String>['tracker_game_id'],
+      where: 'tracker_type = ? AND game_id = ?',
+      whereArgs: <Object?>[type.value, gameId],
+    );
+    if (rows.isNotEmpty) {
+      final String trackerGameId = rows.first['tracker_game_id'] as String;
+      await db.delete(
+        'tracker_achievements',
+        where: 'tracker_type = ? AND tracker_game_id = ?',
+        whereArgs: <Object?>[type.value, trackerGameId],
+      );
+    }
+
+    await db.delete(
+      'tracker_game_data',
+      where: 'tracker_type = ? AND game_id = ?',
+      whereArgs: <Object?>[type.value, gameId],
+    );
+  }
+
   // ==================== Achievements ====================
 
   /// Возвращает достижения для игры.

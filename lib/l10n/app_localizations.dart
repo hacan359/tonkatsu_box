@@ -2125,6 +2125,66 @@ abstract class S {
   /// **'Apply'**
   String get colorPickerApply;
 
+  /// No description provided for @raLinkButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Link RetroAchievements'**
+  String get raLinkButton;
+
+  /// No description provided for @raLinkTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Find game on RetroAchievements'**
+  String get raLinkTitle;
+
+  /// No description provided for @raLinkSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by name...'**
+  String get raLinkSearchHint;
+
+  /// No description provided for @raLinkLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading games for {platform}...'**
+  String raLinkLoading(String platform);
+
+  /// No description provided for @raLinkNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No matches found'**
+  String get raLinkNotFound;
+
+  /// No description provided for @raLinkSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Game linked to RetroAchievements'**
+  String get raLinkSuccess;
+
+  /// No description provided for @raLinkAchievements.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} achievements'**
+  String raLinkAchievements(int count);
+
+  /// No description provided for @raUnlinkButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlink'**
+  String get raUnlinkButton;
+
+  /// No description provided for @raUnlinkTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlink RetroAchievements'**
+  String get raUnlinkTitle;
+
+  /// No description provided for @raUnlinkConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove RetroAchievements link and achievement data for this game?'**
+  String get raUnlinkConfirm;
+
   /// No description provided for @collectionFilterAll.
   ///
   /// In en, this message translates to:

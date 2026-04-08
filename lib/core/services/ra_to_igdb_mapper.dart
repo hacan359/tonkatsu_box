@@ -53,6 +53,18 @@ class RaToIgdbMapper {
     76: 150, // PC Engine CD/TurboGrafx-CD
   };
 
+  /// Обратный маппинг: IGDB Platform ID → список RA Console IDs.
+  ///
+  /// Один IGDB platform может соответствовать нескольким RA консолям
+  /// (региональные варианты).
+  static List<int> igdbToRaConsoleIds(int igdbPlatformId) {
+    return consolePlatformMap.entries
+        .where(
+            (MapEntry<int, int> e) => e.value == igdbPlatformId)
+        .map((MapEntry<int, int> e) => e.key)
+        .toList();
+  }
+
   /// Ищет IGDB игру по данным из RA.
   ///
   /// Возвращает `null` если не найдено.

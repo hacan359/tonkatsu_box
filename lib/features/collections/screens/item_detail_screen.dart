@@ -40,7 +40,13 @@ import '../widgets/episode_tracker_section.dart';
 import '../widgets/item_tags_section.dart';
 import '../widgets/manga_progress_section.dart';
 import '../providers/tracker_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../../../core/api/ra_api.dart';
+import '../../../core/services/ra_to_igdb_mapper.dart';
+import '../../../shared/models/tracker_game_data.dart';
 import '../widgets/ra_achievements_section.dart';
+import '../widgets/ra_link_dialog.dart';
 import '../widgets/recommendations_section.dart';
 import '../widgets/reviews_section.dart';
 import '../widgets/status_chip_row.dart';
@@ -568,6 +574,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
               isEditable: widget.isEditable,
             )
           : null,
+      raBadge: _buildRaBadge(item),
       trackerSection: _buildTrackerSection(item),
       extraSections: <Widget>[
         if (widget.collectionId == null)
@@ -886,10 +893,53 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         collectionItemId: widget.itemId,
       );
 
-  /// Возвращает RA секцию если для игры есть tracker data, иначе null.
+  /// Возвращает RA секцию если для игры есть tracker data,
+  /// или кнопку привязки если RA credentials есть и платформа поддерживается.
   ///
   /// Используем `select` чтобы подписаться только на `hasRaData` —
   /// экран не перестраивается при загрузке/обновлении ачивок.
+  /// RA badge в верхнем ряду: лого + % (или кнопка Link).
+  Widget? _buildRaBadge(CollectionItem item) {
+    if (item.mediaType != MediaType.game) return null;
+
+    final TrackerGameData? raData = ref
+        .watch(trackerDetailProvider(item.externalId))
+        .valueOrNull
+        ?.gameData;
+
+    if (raData != null) {
+      // Привязана — показываем лого RA.
+      return MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: () {
+            final Uri uri = Uri.parse(raData.raGameUrl);
+            launchUrl(uri, mode: LaunchMode.externalApplication);
+          },
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: Image.asset(
+              'assets/images/ra_logo.png',
+              width: 18,
+              height: 18,
+              filterQuality: FilterQuality.medium,
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Не привязана — кнопка Link (если доступно).
+    final bool hasRaCreds = ref.watch(raApiProvider).hasCredentials;
+    if (!hasRaCreds) return null;
+    if (item.platformId == null) return null;
+    if (RaToIgdbMapper.igdbToRaConsoleIds(item.platformId!).isEmpty) {
+      return null;
+    }
+
+    return _PulsingRaLink(onTap: () => _linkRa(item));
+  }
+
   Widget? _buildTrackerSection(CollectionItem item) {
     if (item.mediaType != MediaType.game) return null;
     final bool hasData = ref.watch(
@@ -898,9 +948,10 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
             v.valueOrNull?.hasRaData ?? false,
       ),
     );
-    if (!hasData) return null;
-    return RaAchievementsSection(gameId: item.externalId);
+    if (hasData) return RaAchievementsSection(gameId: item.externalId);
+    return null;
   }
+
 
   Widget _buildCanvasView() {
     return Row(
@@ -1216,4 +1267,85 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
         .updateUserRating(id, rating);
   }
+
+  Future<void> _linkRa(CollectionItem item) async {
+    final RaLinkResult? result = await showRaLinkDialog(
+      context,
+      gameName: item.itemName,
+      platformId: item.platformId,
+    );
+    if (result == null || !mounted) return;
+
+    await ref
+        .read(trackerDetailProvider(item.externalId).notifier)
+        .linkRaGame(
+          raGameId: result.raGameId,
+          raTitle: result.title,
+          achievementsTotal: result.numAchievements,
+        );
+
+    if (mounted) {
+      context.showSnack(S.of(context).raLinkSuccess);
+    }
+  }
 }
+
+/// Мерцающее лого RA для непривязанных игр.
+class _PulsingRaLink extends StatefulWidget {
+  const _PulsingRaLink({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  State<_PulsingRaLink> createState() => _PulsingRaLinkState();
+}
+
+class _PulsingRaLinkState extends State<_PulsingRaLink>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _opacity;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    )..repeat(reverse: true);
+    _opacity = Tween<double>(begin: 0.25, end: 0.6).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedBuilder(
+          animation: _opacity,
+          builder: (BuildContext context, Widget? child) {
+            return Opacity(opacity: _opacity.value, child: child);
+          },
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: Image.asset(
+              'assets/images/ra_logo.png',
+              width: 18,
+              height: 18,
+              filterQuality: FilterQuality.medium,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+

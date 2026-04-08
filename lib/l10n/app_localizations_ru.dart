@@ -1129,6 +1129,41 @@ class SRu extends S {
   String get colorPickerApply => 'Применить';
 
   @override
+  String get raLinkButton => 'Привязать RetroAchievements';
+
+  @override
+  String get raLinkTitle => 'Найти игру в RetroAchievements';
+
+  @override
+  String get raLinkSearchHint => 'Поиск по названию...';
+
+  @override
+  String raLinkLoading(String platform) {
+    return 'Загрузка игр для $platform...';
+  }
+
+  @override
+  String get raLinkNotFound => 'Совпадений не найдено';
+
+  @override
+  String get raLinkSuccess => 'Игра привязана к RetroAchievements';
+
+  @override
+  String raLinkAchievements(int count) {
+    return '$count достижений';
+  }
+
+  @override
+  String get raUnlinkButton => 'Отвязать';
+
+  @override
+  String get raUnlinkTitle => 'Отвязать RetroAchievements';
+
+  @override
+  String get raUnlinkConfirm =>
+      'Удалить привязку к RetroAchievements и данные достижений для этой игры?';
+
+  @override
   String get collectionFilterAll => 'Все';
 
   @override

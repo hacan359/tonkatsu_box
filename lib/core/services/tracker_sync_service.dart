@@ -322,7 +322,20 @@ class TrackerSyncService {
   Future<List<TrackerAchievement>> loadRaGameAchievements(
     int raGameId,
   ) async {
-    if (!_raApi.hasCredentials) return <TrackerAchievement>[];
+    final RaGameFullProgress result =
+        await loadRaGameFullProgress(raGameId);
+    return result.achievements;
+  }
+
+  /// Загружает достижения и game-level данные (award, hardcore, lastPlayed).
+  Future<RaGameFullProgress> loadRaGameFullProgress(
+    int raGameId,
+  ) async {
+    if (!_raApi.hasCredentials) {
+      return const RaGameFullProgress(
+        achievements: <TrackerAchievement>[],
+      );
+    }
     final String username = _raApi.username!;
     final String raGameIdStr = raGameId.toString();
 
@@ -350,7 +363,40 @@ class TrackerSyncService {
       result,
     );
 
-    return result;
+    // Парсим game-level данные.
+    final int? hardcoreEarned = data['NumAwardedToUserHardcore'] as int?;
+    final String? awardKind = data['HighestAwardKind'] as String?;
+    final String? awardDateStr = data['HighestAwardDate'] as String?;
+    int? awardTimestamp;
+    if (awardDateStr != null) {
+      final DateTime? dt = DateTime.tryParse(awardDateStr);
+      if (dt != null) {
+        awardTimestamp = dt.millisecondsSinceEpoch ~/ 1000;
+      }
+    }
+
+    // Даты активности — из earned achievements.
+    int? lastPlayedTimestamp;
+    int? firstPlayedTimestamp;
+    for (final TrackerAchievement ach in result) {
+      if (ach.earned && ach.earnedAt != null) {
+        if (lastPlayedTimestamp == null || ach.earnedAt! > lastPlayedTimestamp) {
+          lastPlayedTimestamp = ach.earnedAt;
+        }
+        if (firstPlayedTimestamp == null || ach.earnedAt! < firstPlayedTimestamp) {
+          firstPlayedTimestamp = ach.earnedAt;
+        }
+      }
+    }
+
+    return RaGameFullProgress(
+      achievements: result,
+      firstPlayedAt: firstPlayedTimestamp,
+      hardcoreEarned: hardcoreEarned,
+      awardKind: awardKind,
+      awardDate: awardTimestamp,
+      lastPlayedAt: lastPlayedTimestamp,
+    );
   }
 
   /// Возвращает закэшированные достижения или загружает из API.
@@ -388,5 +434,35 @@ class TrackerSyncService {
     if (!_raApi.hasCredentials) return <TrackerAchievement>[];
     return loadRaGameAchievements(raGameId);
   }
+}
 
+/// Полный результат загрузки RA игры: достижения + game-level данные.
+class RaGameFullProgress {
+  /// Создаёт [RaGameFullProgress].
+  const RaGameFullProgress({
+    required this.achievements,
+    this.hardcoreEarned,
+    this.awardKind,
+    this.awardDate,
+    this.firstPlayedAt,
+    this.lastPlayedAt,
+  });
+
+  /// Список достижений.
+  final List<TrackerAchievement> achievements;
+
+  /// Hardcore earned count.
+  final int? hardcoreEarned;
+
+  /// Тип награды ('mastered-hardcore', 'beaten-softcore', etc).
+  final String? awardKind;
+
+  /// Timestamp получения award.
+  final int? awardDate;
+
+  /// Timestamp первого earned achievement (started at).
+  final int? firstPlayedAt;
+
+  /// Timestamp последней активности.
+  final int? lastPlayedAt;
 }
