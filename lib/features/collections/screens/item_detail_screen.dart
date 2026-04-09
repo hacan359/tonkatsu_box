@@ -668,7 +668,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       externalUrl: externalUrl,
       backdropUrl: item.game?.artworkUrl
           ?? item.movie?.backdropUrl
-          ?? item.tvShow?.backdropUrl,
+          ?? item.tvShow?.backdropUrl
+          ?? item.manga?.bannerUrl,
       tvShow: item.tvShow,
       manga: item.manga,
     );

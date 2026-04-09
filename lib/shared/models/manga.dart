@@ -163,6 +163,7 @@ class Manga {
       genres: genres,
       authors: authors,
       externalUrl: row['external_url'] as String?,
+      bannerUrl: row['banner_url'] as String?,
       updatedAt: row['updated_at'] as int?,
     );
   }
@@ -320,6 +321,7 @@ class Manga {
       'genres': genres != null ? jsonEncode(genres) : null,
       'authors': authors != null ? jsonEncode(authors) : null,
       'external_url': externalUrl,
+      'banner_url': bannerUrl,
       'updated_at':
           updatedAt ?? DateTime.now().millisecondsSinceEpoch ~/ 1000,
     };

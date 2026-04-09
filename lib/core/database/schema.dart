@@ -424,6 +424,7 @@ abstract final class DatabaseSchema {
         genres TEXT,
         authors TEXT,
         external_url TEXT,
+        banner_url TEXT,
         updated_at INTEGER NOT NULL
       )
     ''');
