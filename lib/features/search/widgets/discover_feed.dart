@@ -14,7 +14,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../providers/discover_provider.dart';
 import 'discover_row.dart';
-import 'media_details_sheet.dart';
+import 'item_details_sheet.dart';
 
 /// Провайдер множества TMDB ID элементов в коллекциях (фильмы + сериалы + анимация).
 final FutureProvider<Set<int>> _existingTmdbIdsProvider =
@@ -320,7 +320,7 @@ class DiscoverFeed extends ConsumerWidget {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (BuildContext ctx) => MediaDetailsSheet.movie(
+      builder: (BuildContext ctx) => ItemDetailsSheet.movie(
         movie,
         onAddToCollection: () => onAddMovie(movie),
       ),
@@ -331,7 +331,7 @@ class DiscoverFeed extends ConsumerWidget {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (BuildContext ctx) => MediaDetailsSheet.tvShow(
+      builder: (BuildContext ctx) => ItemDetailsSheet.tvShow(
         tvShow,
         onAddToCollection: () => onAddTvShow(tvShow),
       ),

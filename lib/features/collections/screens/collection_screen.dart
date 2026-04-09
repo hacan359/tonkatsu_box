@@ -479,7 +479,10 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                   searchQuery: _searchQuery,
                   groupByTags: _groupByTags,
                   onGroupToggled: () {
-                    setState(() => _groupByTags = !_groupByTags);
+                    setState(() {
+                      _groupByTags = !_groupByTags;
+                      _filterTagIds = <int>{};
+                    });
                   },
                   onTypeToggled: (MediaType? type) {
                     setState(() {
@@ -569,7 +572,10 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             selectedTagIds: _filterTagIds,
             groupByTags: _groupByTags,
             onGroupToggled: () {
-              setState(() => _groupByTags = !_groupByTags);
+              setState(() {
+                _groupByTags = !_groupByTags;
+                _filterTagIds = <int>{};
+              });
             },
             onTagToggled: (int? tagId) {
               setState(() {

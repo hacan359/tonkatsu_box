@@ -16,7 +16,7 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../../shared/widgets/scrollable_row_with_arrows.dart';
-import '../../search/widgets/media_details_sheet.dart';
+import '../../search/widgets/item_details_sheet.dart';
 import '../../settings/providers/settings_provider.dart' show SettingsState, settingsNotifierProvider;
 
 /// Создаёт провайдер рекомендаций к фильму.
@@ -177,7 +177,7 @@ class RecommendationsSection extends ConsumerWidget {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (BuildContext ctx) => MediaDetailsSheet.movie(
+      builder: (BuildContext ctx) => ItemDetailsSheet.movie(
         movie,
         onAddToCollection:
             onAddMovie != null ? () => onAddMovie!(movie) : null,
@@ -189,7 +189,7 @@ class RecommendationsSection extends ConsumerWidget {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (BuildContext ctx) => MediaDetailsSheet.tvShow(
+      builder: (BuildContext ctx) => ItemDetailsSheet.tvShow(
         tvShow,
         onAddToCollection:
             onAddTvShow != null ? () => onAddTvShow!(tvShow) : null,
