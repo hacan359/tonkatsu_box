@@ -164,8 +164,8 @@ void main() {
       });
     });
 
-    group('popup menu', () {
-      testWidgets('должен показывать popup menu при нажатии',
+    group('context menu', () {
+      testWidgets('должен показывать context menu при long press',
           (WidgetTester tester) async {
         when(() => mockRepo.getAll())
             .thenAnswer((_) async => <WishlistItem>[item1]);
@@ -173,7 +173,7 @@ void main() {
         await tester.pumpWidget(buildScreen());
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byType(PopupMenuButton<String>));
+        await tester.longPress(find.text('Chrono Trigger'));
         await tester.pumpAndSettle();
 
         expect(find.text('Search'), findsOneWidget);
@@ -190,7 +190,7 @@ void main() {
         await tester.pumpWidget(buildScreen());
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byType(PopupMenuButton<String>));
+        await tester.longPress(find.text('Resolved Game'));
         await tester.pumpAndSettle();
 
         expect(find.text('Unresolve'), findsOneWidget);

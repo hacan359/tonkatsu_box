@@ -313,78 +313,101 @@ class _WishlistTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final S l = S.of(context);
-
     return Opacity(
       opacity: item.isResolved ? 0.5 : 1.0,
-      child: ListTile(
-        leading: _buildLeadingIcon(),
-        title: Text(
-          item.text,
-          style: item.isResolved
-              ? const TextStyle(decoration: TextDecoration.lineThrough)
-              : null,
+      child: GestureDetector(
+        onSecondaryTapUp: (TapUpDetails details) =>
+            _showContextMenu(context, details.globalPosition),
+        child: ListTile(
+          leading: _buildLeadingIcon(),
+          title: Text(
+            item.text,
+            style: item.isResolved
+                ? const TextStyle(decoration: TextDecoration.lineThrough)
+                : null,
+          ),
+          subtitle: _buildSubtitle(context),
+          onLongPress: () => _showContextMenu(
+            context,
+            _centerOfContext(context),
+          ),
+          onTap: onTap,
         ),
-        subtitle: _buildSubtitle(context),
-        onLongPress: onEdit,
-        trailing: PopupMenuButton<String>(
-          onSelected: (String value) {
-            switch (value) {
-              case 'search':
-                onTap();
-              case 'edit':
-                onEdit();
-              case 'resolve':
-                onResolve();
-              case 'delete':
-                onDelete();
-            }
-          },
-          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-            PopupMenuItem<String>(
-              value: 'search',
-              child: ListTile(
-                leading: const Icon(Icons.search),
-                title: Text(l.search),
-                contentPadding: EdgeInsets.zero,
-                dense: true,
-              ),
-            ),
-            PopupMenuItem<String>(
-              value: 'edit',
-              child: ListTile(
-                leading: const Icon(Icons.edit),
-                title: Text(l.edit),
-                contentPadding: EdgeInsets.zero,
-                dense: true,
-              ),
-            ),
-            PopupMenuItem<String>(
-              value: 'resolve',
-              child: ListTile(
-                leading: Icon(
-                  item.isResolved ? Icons.undo : Icons.check_circle_outline,
-                ),
-                title: Text(item.isResolved ? l.wishlistUnresolve : l.wishlistMarkResolved),
-                contentPadding: EdgeInsets.zero,
-                dense: true,
-              ),
-            ),
-            const PopupMenuDivider(),
-            PopupMenuItem<String>(
-              value: 'delete',
-              child: ListTile(
-                leading: const Icon(Icons.delete, color: Colors.red),
-                title: Text(l.delete, style: const TextStyle(color: Colors.red)),
-                contentPadding: EdgeInsets.zero,
-                dense: true,
-              ),
-            ),
-          ],
-        ),
-        onTap: onTap,
       ),
     );
+  }
+
+  Offset _centerOfContext(BuildContext context) {
+    final RenderBox? box = context.findRenderObject() as RenderBox?;
+    if (box == null) return Offset.zero;
+    return box.localToGlobal(box.size.center(Offset.zero));
+  }
+
+  void _showContextMenu(BuildContext context, Offset position) {
+    final S l = S.of(context);
+    final RenderBox overlay =
+        Overlay.of(context).context.findRenderObject()! as RenderBox;
+
+    showMenu<String>(
+      context: context,
+      position: RelativeRect.fromRect(
+        position & const Size(1, 1),
+        Offset.zero & overlay.size,
+      ),
+      items: <PopupMenuEntry<String>>[
+        PopupMenuItem<String>(
+          value: 'search',
+          child: ListTile(
+            leading: const Icon(Icons.search),
+            title: Text(l.search),
+            contentPadding: EdgeInsets.zero,
+            dense: true,
+          ),
+        ),
+        PopupMenuItem<String>(
+          value: 'edit',
+          child: ListTile(
+            leading: const Icon(Icons.edit),
+            title: Text(l.edit),
+            contentPadding: EdgeInsets.zero,
+            dense: true,
+          ),
+        ),
+        PopupMenuItem<String>(
+          value: 'resolve',
+          child: ListTile(
+            leading: Icon(
+              item.isResolved ? Icons.undo : Icons.check_circle_outline,
+            ),
+            title: Text(item.isResolved ? l.wishlistUnresolve : l.wishlistMarkResolved),
+            contentPadding: EdgeInsets.zero,
+            dense: true,
+          ),
+        ),
+        const PopupMenuDivider(),
+        PopupMenuItem<String>(
+          value: 'delete',
+          child: ListTile(
+            leading: const Icon(Icons.delete, color: Colors.red),
+            title: Text(l.delete, style: const TextStyle(color: Colors.red)),
+            contentPadding: EdgeInsets.zero,
+            dense: true,
+          ),
+        ),
+      ],
+    ).then((String? value) {
+      if (value == null) return;
+      switch (value) {
+        case 'search':
+          onTap();
+        case 'edit':
+          onEdit();
+        case 'resolve':
+          onResolve();
+        case 'delete':
+          onDelete();
+      }
+    });
   }
 
   Widget _buildLeadingIcon() {

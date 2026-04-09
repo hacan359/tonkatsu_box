@@ -19,26 +19,44 @@ void main() {
   });
 
   group('RaToIgdbMapper', () {
-    group('consolePlatformMap', () {
-      test('should contain known RA console mappings', () {
-        // SNES
-        expect(RaToIgdbMapper.consolePlatformMap[3], equals(19));
-        // NES
-        expect(RaToIgdbMapper.consolePlatformMap[7], equals(18));
+    group('primaryIgdbPlatformId', () {
+      test('should return primary IGDB ID for known RA consoles', () {
+        // SNES (primary=19, alias=58 Super Famicom)
+        expect(RaToIgdbMapper.primaryIgdbPlatformId(3), equals(19));
+        // NES (primary=18, alias=99 Family Computer)
+        expect(RaToIgdbMapper.primaryIgdbPlatformId(7), equals(18));
         // Genesis/Mega Drive
-        expect(RaToIgdbMapper.consolePlatformMap[1], equals(29));
+        expect(RaToIgdbMapper.primaryIgdbPlatformId(1), equals(29));
         // Nintendo 64
-        expect(RaToIgdbMapper.consolePlatformMap[2], equals(4));
+        expect(RaToIgdbMapper.primaryIgdbPlatformId(2), equals(4));
         // PlayStation
-        expect(RaToIgdbMapper.consolePlatformMap[12], equals(7));
+        expect(RaToIgdbMapper.primaryIgdbPlatformId(12), equals(7));
         // Game Boy
-        expect(RaToIgdbMapper.consolePlatformMap[4], equals(33));
+        expect(RaToIgdbMapper.primaryIgdbPlatformId(4), equals(33));
         // GBA
-        expect(RaToIgdbMapper.consolePlatformMap[5], equals(24));
+        expect(RaToIgdbMapper.primaryIgdbPlatformId(5), equals(24));
       });
 
       test('should return null for unknown console ID', () {
-        expect(RaToIgdbMapper.consolePlatformMap[999], isNull);
+        expect(RaToIgdbMapper.primaryIgdbPlatformId(999), isNull);
+      });
+    });
+
+    group('igdbToRaConsoleIds', () {
+      test('should find RA console by primary IGDB ID', () {
+        // IGDB 19 (SNES) → RA 3
+        expect(RaToIgdbMapper.igdbToRaConsoleIds(19), contains(3));
+      });
+
+      test('should find RA console by alias IGDB ID', () {
+        // IGDB 58 (Super Famicom) → RA 3
+        expect(RaToIgdbMapper.igdbToRaConsoleIds(58), contains(3));
+        // IGDB 99 (Family Computer) → RA 7
+        expect(RaToIgdbMapper.igdbToRaConsoleIds(99), contains(7));
+      });
+
+      test('should return empty list for unknown IGDB ID', () {
+        expect(RaToIgdbMapper.igdbToRaConsoleIds(9999), isEmpty);
       });
     });
 

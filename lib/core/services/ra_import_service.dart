@@ -334,7 +334,7 @@ class RaImportService {
       final List<({String name, int? platformId})> queries = batch
           .map((RaGameProgress g) => (
                 name: g.title,
-                platformId: RaToIgdbMapper.consolePlatformMap[g.consoleId],
+                platformId: RaToIgdbMapper.primaryIgdbPlatformId(g.consoleId),
               ))
           .toList();
 
@@ -426,7 +426,7 @@ class RaImportService {
     DateTime? completedAt,
   }) async {
     final int? platformId =
-        RaToIgdbMapper.consolePlatformMap[raGame.consoleId];
+        RaToIgdbMapper.primaryIgdbPlatformId(raGame.consoleId);
     final int? itemId = await _db.addItemToCollection(
       collectionId: collectionId,
       mediaType: MediaType.game,
