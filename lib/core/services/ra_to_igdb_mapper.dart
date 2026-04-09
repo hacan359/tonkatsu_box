@@ -11,57 +11,87 @@ class RaToIgdbMapper {
 
   final IgdbApi _igdbApi;
 
-  /// RA ConsoleID → IGDB Platform ID.
+  /// RA ConsoleID → список IGDB Platform ID.
   ///
-  /// Источник RA ConsoleID: API_GetConsoleIDs.php
+  /// Первый элемент — основной IGDB ID (используется при импорте из RA).
+  /// Остальные — алиасы (региональные варианты в IGDB).
+  ///
+  /// Источник RA ConsoleID: rcheevos rc_consoles.h
   /// Источник IGDB Platform ID: таблица platforms в БД.
-  static const Map<int, int> consolePlatformMap = <int, int>{
-    1: 29, // Genesis/Mega Drive
-    2: 4, // Nintendo 64
-    3: 19, // SNES/Super Famicom
-    4: 33, // Game Boy
-    5: 24, // Game Boy Advance
-    6: 22, // Game Boy Color
-    7: 18, // NES/Famicom
-    8: 86, // PC Engine/TurboGrafx-16
-    9: 78, // Sega CD
-    10: 30, // 32X
-    11: 64, // Master System
-    12: 7, // PlayStation
-    13: 61, // Atari Lynx
-    14: 119, // Neo Geo Pocket
-    15: 20, // Game Gear
-    16: 21, // GameCube
-    17: 60, // Atari Jaguar
-    18: 49, // Nintendo DS
-    19: 5, // Wii
-    21: 8, // PlayStation 2
-    25: 59, // Atari 2600
-    27: 52, // Arcade
-    28: 68, // Virtual Boy
-    33: 84, // SG-1000
-    39: 32, // Saturn
-    40: 23, // Dreamcast
-    41: 38, // PlayStation Portable
-    43: 50, // 3DO Interactive Multiplayer
-    44: 70, // ColecoVision
-    51: 62, // Atari 7800
-    53: 57, // WonderSwan
-    56: 136, // Neo Geo CD
-    60: 35, // Game & Watch
-    62: 37, // Nintendo 3DS
-    76: 150, // PC Engine CD/TurboGrafx-CD
+  static const Map<int, List<int>> consolePlatformMap = <int, List<int>>{
+    1: <int>[29], // Genesis/Mega Drive
+    2: <int>[4], // Nintendo 64
+    3: <int>[19, 58], // SNES / Super Famicom
+    4: <int>[33], // Game Boy
+    5: <int>[24], // Game Boy Advance
+    6: <int>[22], // Game Boy Color
+    7: <int>[18, 99], // NES / Family Computer
+    8: <int>[86, 128], // PC Engine/TurboGrafx-16 / SuperGrafx
+    9: <int>[78], // Sega CD
+    10: <int>[30], // 32X
+    11: <int>[64], // Master System
+    12: <int>[7], // PlayStation
+    13: <int>[61], // Atari Lynx
+    14: <int>[119, 120], // Neo Geo Pocket / Neo Geo Pocket Color
+    15: <int>[35], // Game Gear
+    16: <int>[21], // GameCube
+    17: <int>[62], // Atari Jaguar
+    18: <int>[20], // Nintendo DS
+    19: <int>[5], // Wii
+    21: <int>[8], // PlayStation 2
+    23: <int>[133], // Magnavox Odyssey 2
+    24: <int>[166], // Pokémon Mini
+    25: <int>[59], // Atari 2600
+    27: <int>[52], // Arcade
+    28: <int>[87], // Virtual Boy
+    29: <int>[27, 53], // MSX / MSX2
+    33: <int>[84], // SG-1000
+    37: <int>[25], // Amstrad CPC
+    38: <int>[75], // Apple II
+    39: <int>[32], // Saturn
+    40: <int>[23], // Dreamcast
+    41: <int>[38], // PlayStation Portable
+    43: <int>[50], // 3DO Interactive Multiplayer
+    44: <int>[68], // ColecoVision
+    45: <int>[67], // Intellivision
+    46: <int>[70], // Vectrex
+    47: <int>[125], // PC-8800
+    49: <int>[274], // PC-FX
+    50: <int>[66], // Atari 5200
+    51: <int>[60], // Atari 7800
+    53: <int>[57, 123, 124], // WonderSwan / WonderSwan Color / SwanCrystal
+    56: <int>[136], // Neo Geo CD
+    57: <int>[127], // Fairchild Channel F
+    60: <int>[307], // Game & Watch
+    62: <int>[37, 137], // Nintendo 3DS / New Nintendo 3DS
+    63: <int>[415], // Watara Supervision
+    71: <int>[438], // Arduboy
+    73: <int>[473], // Arcadia 2001
+    74: <int>[138], // Interton VC 4000
+    75: <int>[505], // Elektor TV Games Computer
+    76: <int>[150], // PC Engine CD/TurboGrafx-CD
+    77: <int>[410], // Atari Jaguar CD
+    78: <int>[159], // Nintendo DSi
+    80: <int>[504], // Uzebox
+    81: <int>[51], // Famicom Disk System
   };
+
+  /// Возвращает основной IGDB Platform ID для RA ConsoleID.
+  ///
+  /// Первый элемент списка — основной ID, используется при импорте из RA.
+  static int? primaryIgdbPlatformId(int raConsoleId) {
+    final List<int>? ids = consolePlatformMap[raConsoleId];
+    return ids?.first;
+  }
 
   /// Обратный маппинг: IGDB Platform ID → список RA Console IDs.
   ///
-  /// Один IGDB platform может соответствовать нескольким RA консолям
-  /// (региональные варианты).
+  /// Проверяет все IGDB ID (основные + алиасы) каждой RA консоли.
   static List<int> igdbToRaConsoleIds(int igdbPlatformId) {
     return consolePlatformMap.entries
         .where(
-            (MapEntry<int, int> e) => e.value == igdbPlatformId)
-        .map((MapEntry<int, int> e) => e.key)
+            (MapEntry<int, List<int>> e) => e.value.contains(igdbPlatformId))
+        .map((MapEntry<int, List<int>> e) => e.key)
         .toList();
   }
 
@@ -69,7 +99,7 @@ class RaToIgdbMapper {
   ///
   /// Возвращает `null` если не найдено.
   Future<Game?> findIgdbGame(RaGameProgress raGame) async {
-    final int? igdbPlatformId = consolePlatformMap[raGame.consoleId];
+    final int? igdbPlatformId = primaryIgdbPlatformId(raGame.consoleId);
 
     final List<Game> results = await _igdbApi.searchGames(
       query: raGame.title,

@@ -1,6 +1,7 @@
 // Единый AppBar для всех экранов приложения.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
@@ -83,18 +84,74 @@ class ScreenAppBar extends StatelessWidget implements PreferredSizeWidget {
                 padding: EdgeInsets.only(
                   left: !canPop ? 16 : 0,
                 ),
-                child: Text(
-                  title!,
-                  style: AppTypography.body.copyWith(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
+                child: _CopyableTitle(title: title!),
               )
             : null,
         actions: actions,
         bottom: bottom,
+      ),
+    );
+  }
+}
+
+class _CopyableTitle extends StatefulWidget {
+  const _CopyableTitle({required this.title});
+
+  final String title;
+
+  @override
+  State<_CopyableTitle> createState() => _CopyableTitleState();
+}
+
+class _CopyableTitleState extends State<_CopyableTitle> {
+  bool _hovering = false;
+  bool _copied = false;
+
+  void _copy() {
+    Clipboard.setData(ClipboardData(text: widget.title));
+    setState(() => _copied = true);
+    Future<void>.delayed(const Duration(seconds: 1), () {
+      if (mounted) setState(() => _copied = false);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovering = true),
+      onExit: (_) => setState(() {
+        _hovering = false;
+        _copied = false;
+      }),
+      child: GestureDetector(
+        onTap: _copy,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Flexible(
+              child: Text(
+                widget.title,
+                style: AppTypography.body.copyWith(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textSecondary,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            if (_hovering) ...<Widget>[
+              const SizedBox(width: 4),
+              Icon(
+                _copied ? Icons.check : Icons.copy,
+                size: 14,
+                color: _copied
+                    ? AppColors.statusCompleted
+                    : AppColors.textTertiary,
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

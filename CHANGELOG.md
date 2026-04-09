@@ -6,6 +6,13 @@
 
 ## [Unreleased]
 
+### Added
+- **Copy title from AppBar** — clicking the title in `ScreenAppBar` copies it to clipboard. Hover shows copy icon, turns to checkmark on success. Works on all screens with titles (`screen_app_bar.dart`)
+- **Wishlist context menu** — right-click (desktop) and long press (mobile) on wishlist items opens context menu with Search, Edit, Resolve/Unresolve, and Delete actions. Replaced trailing `PopupMenuButton` with `showMenu` at cursor/touch position (`wishlist_screen.dart`)
+
+### Changed
+- **RA platform mapping expanded and fixed** — `consolePlatformMap` changed from `Map<int, int>` to `Map<int, List<int>>` to support IGDB aliases (Super Famicom, Family Computer, Neo Geo Pocket Color, WonderSwan Color, etc.). Fixed 7 incorrect mappings (Game Gear→Nintendo DS, Atari Jaguar→Atari 7800, Nintendo DS→Xbox One, Virtual Boy→ColecoVision, ColecoVision→Vectrex, Atari 7800→Atari Jaguar, Game & Watch→Game Gear). Added 22 new platforms (Amstrad CPC, Apple II, Intellivision, Vectrex, PC-8800, Atari 5200, Fairchild Channel F, Arduboy, Arcadia 2001, etc.). New `primaryIgdbPlatformId()` helper for forward lookup. Total: 56 RA→IGDB mappings (was 34) (`ra_to_igdb_mapper.dart`, `ra_import_service.dart`)
+
 ## [0.25.0] - 2026-04-08
 
 ### Added
