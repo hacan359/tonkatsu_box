@@ -273,7 +273,7 @@ class ItemDetailsSheet extends StatelessWidget {
               ),
             ),
             child: Stack(
-            children: <Widget>[
+              children: <Widget>[
               // Backdrop — на весь фон
               if (backdropUrl != null) ...<Widget>[
                 Positioned.fill(
@@ -347,17 +347,17 @@ class ItemDetailsSheet extends StatelessWidget {
                   ),
                 ),
               ),
-            ],
-          ),
+              ],
+            ),
           ),
         );
       },
     );
   }
 
-  /// Header: backdrop (опционально) поверх постера + информация.
+  /// Header: постер + информация + кнопка добавления.
   Widget _buildHeader(BuildContext context) {
-    final Widget content = Padding(
+    return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.sm,
       ),
@@ -524,8 +524,6 @@ class ItemDetailsSheet extends StatelessWidget {
         ],
       ),
     );
-
-    return content;
   }
 
   Widget _buildInfoChip(IconData chipIcon, String label) {
