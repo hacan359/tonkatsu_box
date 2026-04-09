@@ -55,7 +55,7 @@ class Game {
       );
     }
 
-    // Извлекаем первый artwork для фонового изображения (не сохраняется в БД).
+    // Извлекаем первый artwork для фонового изображения.
     String? artworkUrl;
     if (json['artworks'] != null) {
       final List<dynamic> artworks = json['artworks'] as List<dynamic>;
@@ -122,6 +122,7 @@ class Game {
       platformIds: platformIds,
       externalUrl: row['external_url'] as String?,
       cachedAt: row['cached_at'] as int?,
+      artworkUrl: row['artwork_url'] as String?,
     );
   }
 
@@ -158,7 +159,7 @@ class Game {
   /// Время кеширования (Unix timestamp).
   final int? cachedAt;
 
-  /// URL artwork для фонового изображения (transient, не сохраняется в БД).
+  /// URL artwork для фонового изображения.
   final String? artworkUrl;
 
   /// Возвращает год релиза или null.
@@ -201,6 +202,7 @@ class Game {
       'platform_ids': platformIds?.join(','),
       'external_url': externalUrl,
       'cached_at': cachedAt,
+      'artwork_url': artworkUrl,
     };
   }
 
