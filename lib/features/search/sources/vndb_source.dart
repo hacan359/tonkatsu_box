@@ -86,8 +86,8 @@ class VndbSource extends SearchSource {
         totalPages: totalPages,
         currentPage: page,
       );
-    } on VndbApiException catch (e) {
-      throw Exception(e.message);
+    } on VndbApiException {
+      rethrow;
     }
   }
 

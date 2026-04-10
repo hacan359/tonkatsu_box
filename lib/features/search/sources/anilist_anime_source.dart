@@ -88,8 +88,8 @@ class AniListAnimeSource extends SearchSource {
         totalPages: totalPages,
         currentPage: page,
       );
-    } on AniListApiException catch (e) {
-      throw Exception(e.message);
+    } on AniListApiException {
+      rethrow;
     }
   }
 

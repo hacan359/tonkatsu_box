@@ -3,6 +3,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/api/api_error_extract.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../models/search_source.dart';
 import '../sources/search_sources.dart';
@@ -26,6 +27,7 @@ class BrowseState {
     this.currentPage = 1,
     this.hasMore = false,
     this.error,
+    this.errorDetail,
     this.searchQuery = '',
   });
 
@@ -55,6 +57,9 @@ class BrowseState {
 
   /// Сообщение об ошибке.
   final String? error;
+
+  /// Подробная отладочная информация об ошибке (для копирования).
+  final String? errorDetail;
 
   /// Текстовый поисковый запрос.
   final String searchQuery;
@@ -91,6 +96,7 @@ class BrowseState {
     int? currentPage,
     bool? hasMore,
     String? error,
+    String? errorDetail,
     String? searchQuery,
     bool clearError = false,
     bool clearSortBy = false,
@@ -105,6 +111,7 @@ class BrowseState {
       currentPage: currentPage ?? this.currentPage,
       hasMore: hasMore ?? this.hasMore,
       error: clearError ? null : (error ?? this.error),
+      errorDetail: clearError ? null : (errorDetail ?? this.errorDetail),
       searchQuery: searchQuery ?? this.searchQuery,
     );
   }
@@ -257,9 +264,11 @@ class BrowseNotifier extends Notifier<BrowseState> {
       );
     } on Exception catch (e) {
       if (_generation != gen) return;
+      final ApiError err = extractApiError(e);
       state = state.copyWith(
         isLoadingMore: false,
-        error: e.toString(),
+        error: err.message,
+        errorDetail: err.detail,
       );
     }
   }
@@ -295,9 +304,11 @@ class BrowseNotifier extends Notifier<BrowseState> {
       );
     } on Exception catch (e) {
       if (_generation != gen) return;
+      final ApiError err = extractApiError(e);
       state = state.copyWith(
         isLoading: false,
-        error: e.toString(),
+        error: err.message,
+        errorDetail: err.detail,
       );
     }
   }

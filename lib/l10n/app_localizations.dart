@@ -2989,6 +2989,18 @@ abstract class S {
   /// **'Check your internet connection and try again.'**
   String get searchCheckConnection;
 
+  /// No description provided for @copyErrorDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy error details'**
+  String get copyErrorDetails;
+
+  /// No description provided for @errorDetailsCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Error details copied'**
+  String get errorDetailsCopied;
+
   /// No description provided for @searchDescription.
   ///
   /// In en, this message translates to:

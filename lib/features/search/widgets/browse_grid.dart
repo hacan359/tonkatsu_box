@@ -16,6 +16,7 @@ import '../../../shared/models/visual_novel.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/api_error_display.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../utils/genre_utils.dart' show isAnimationGenre;
 import '../../../shared/widgets/shimmer_loading.dart' show ShimmerPosterCard;
@@ -147,28 +148,9 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
 
     // Error state
     if (state.error != null && state.items.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.xl),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              const Icon(
-                Icons.error_outline,
-                size: 48,
-                color: AppColors.textTertiary,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Text(
-                state.error!,
-                style: AppTypography.body.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
+      return ApiErrorDisplay(
+        message: state.error!,
+        detail: state.errorDetail,
       );
     }
 

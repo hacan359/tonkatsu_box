@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
+import 'api_error_detail.dart';
 import '../../shared/models/ra_game_progress.dart';
 import '../../shared/models/ra_user_profile.dart';
 import '../services/api_key_initializer.dart';
@@ -21,13 +22,16 @@ final Provider<RaApi> raApiProvider = Provider<RaApi>((Ref ref) {
 /// Ошибка RetroAchievements API.
 class RaApiException implements Exception {
   /// Создаёт [RaApiException].
-  const RaApiException(this.message, {this.statusCode});
+  const RaApiException(this.message, {this.statusCode, this.detail});
 
   /// Сообщение об ошибке.
   final String message;
 
   /// HTTP код ответа (если есть).
   final int? statusCode;
+
+  /// Подробная отладочная информация (URL, метод, причина).
+  final String? detail;
 
   @override
   String toString() => 'RaApiException($statusCode): $message';
@@ -39,9 +43,15 @@ class RaApiException implements Exception {
 /// в query-параметрах каждого запроса.
 class RaApi {
   /// Создаёт [RaApi].
-  RaApi({Dio? dio}) : _dio = dio ?? Dio();
+  RaApi({Dio? dio})
+      : _dio = dio ??
+            Dio(BaseOptions(
+              connectTimeout: _timeout,
+              receiveTimeout: _timeout,
+            ));
 
   final Dio _dio;
+  static const Duration _timeout = Duration(seconds: 5);
   static const String _baseUrl = 'https://retroachievements.org/API';
   static final Logger _log = Logger('RaApi');
 
@@ -264,7 +274,15 @@ class RaApi {
     final int? statusCode = e.response?.statusCode;
     final String message = e.message ?? 'Unknown error';
     _log.warning('$method failed ($statusCode): $message');
-    return RaApiException(message, statusCode: statusCode);
+    return RaApiException(
+      message,
+      statusCode: statusCode,
+      detail: buildApiErrorDetail(
+        apiName: 'RetroAchievements',
+        exception: e,
+        userMessage: message,
+      ),
+    );
   }
 }
 

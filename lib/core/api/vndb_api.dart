@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
+import 'api_error_detail.dart';
 import '../../shared/models/visual_novel.dart';
 
 /// Провайдер для VNDB API клиента.
@@ -14,13 +15,16 @@ final Provider<VndbApi> vndbApiProvider = Provider<VndbApi>((Ref ref) {
 /// Исключение при ошибках VNDB API.
 class VndbApiException implements Exception {
   /// Создаёт [VndbApiException].
-  const VndbApiException(this.message, {this.statusCode});
+  const VndbApiException(this.message, {this.statusCode, this.detail});
 
   /// Сообщение об ошибке.
   final String message;
 
   /// HTTP код ответа (если есть).
   final int? statusCode;
+
+  /// Подробная отладочная информация (URL, метод, причина).
+  final String? detail;
 
   @override
   String toString() => 'VndbApiException: $message (status: $statusCode)';
@@ -32,11 +36,17 @@ class VndbApiException implements Exception {
 /// Документация: https://api.vndb.org/kana
 class VndbApi {
   /// Создаёт экземпляр [VndbApi].
-  VndbApi({Dio? dio}) : _dio = dio ?? Dio();
+  VndbApi({Dio? dio})
+      : _dio = dio ??
+            Dio(BaseOptions(
+              connectTimeout: _timeout,
+              receiveTimeout: _timeout,
+            ));
 
   // ignore: unused_field
   static final Logger _log = Logger('VndbApi');
 
+  static const Duration _timeout = Duration(seconds: 5);
   static const String _baseUrl = 'https://api.vndb.org/kana';
 
   /// Стандартные поля для запросов VN.
@@ -317,7 +327,15 @@ class VndbApi {
       message = 'No internet connection';
     }
 
-    return VndbApiException(message, statusCode: statusCode);
+    return VndbApiException(
+      message,
+      statusCode: statusCode,
+      detail: buildApiErrorDetail(
+        apiName: 'VNDB',
+        exception: e,
+        userMessage: message,
+      ),
+    );
   }
 
   /// Закрывает HTTP клиент.

@@ -104,6 +104,8 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
+| `lib/core/api/api_error_detail.dart` | **Хелпер детализации ошибок API**. Функция `buildApiErrorDetail()` — собирает debug-строку из `DioException`: API name, URL+method, status, Dio type, underlying cause, response body (truncated to 500 chars). Используется всеми 7 API клиентами |
+| `lib/core/api/api_error_extract.dart` | **Хелпер извлечения ошибок**. Функция `extractApiError()` — Dart 3 pattern matching по 7 типам API exception → `({String message, String? detail})`. Используется в `BrowseNotifier` для передачи detail в UI |
 | `lib/core/api/igdb_api.dart` | **IGDB API клиент**. OAuth через Twitch, поиск игр, загрузка платформ, browse с фильтрами, жанры. Auto-refresh: `_igdbPost()` wrapper перехватывает HTTP 401, обновляет OAuth токен через `getAccessToken(clientId, clientSecret)`, повторяет запрос. `onTokenRefreshed` callback для сохранения токена. Методы: `getAccessToken()`, `searchGames()`, `lookupSteamGames()` (batch: Steam appId → IGDB game via `external_games`), `multiSearchGamesByName()` (batch: name+platform multiquery, 10 per request), `fetchPlatforms()`, `browseGames()`, `getGenres()`, `getTopGamesByPlatform()` |
 | `lib/core/api/steamgriddb_api.dart` | **SteamGridDB API клиент**. Bearer token авторизация. Методы: `searchGames()`, `getGrids()`, `getHeroes()`, `getLogos()`, `getIcons()`, `validateApiKey()` |
 | `lib/core/api/vndb_api.dart` | **VNDB API клиент**. Публичный API без авторизации (~200 req/min). Методы: `searchVn()`, `browseVn()`, `getVnById()`, `getVnByIds()`, `fetchTags()`. Провайдер: `vndbApiProvider` |
@@ -423,6 +425,7 @@ lib/
 
 | Файл | Назначение |
 |------|------------|
+| `lib/shared/widgets/api_error_display.dart` | **ApiErrorDisplay**. Виджет ошибки API: иконка error_outline + сообщение + кнопка "Скопировать детали" (копирует debug info в clipboard через `Clipboard.setData`). Кнопка показывается только при наличии `detail`. Snackbar подтверждение через `showSnack()` |
 | `lib/shared/widgets/section_header.dart` | **SectionHeader**. Заголовок секции с опциональной кнопкой действия справа |
 | `lib/shared/widgets/cached_image.dart` | **Виджет кэшированного изображения**. ConsumerStatefulWidget с FutureBuilder. Логика: cache disabled -> Image.network, cache enabled + file -> Image.file (с sync guard: existsSync + lengthSync > 0), cache enabled + no file -> Image.network + фоновый download через addPostFrameCallback. Corrupt/empty файлы удаляются и перекачиваются (`_deleteAndRedownload` с флагом `_corruptHandled`). Параметры: imageType, imageId, remoteUrl, memCacheWidth/Height, autoDownload, placeholder, errorWidget |
 | `lib/shared/widgets/dual_rating_badge.dart` | **Двойной рейтинг**. Формат `* 8 / 7.5` (userRating / apiRating). Режимы: badge (затемнённый фон 0xCC000000, белый текст), compact (уменьшенные размеры), inline (без фона, для list-карточек). Геттеры `hasRating`, `formattedRating`. Если нет ни одного рейтинга — `SizedBox.shrink()` |
