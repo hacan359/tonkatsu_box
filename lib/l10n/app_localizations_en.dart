@@ -69,6 +69,9 @@ class SEn extends S {
   String get mediaTypeManga => 'Manga';
 
   @override
+  String get mediaTypeAnime => 'Anime';
+
+  @override
   String get mediaTypeCustom => 'Custom';
 
   @override
@@ -1256,6 +1259,20 @@ class SEn extends S {
 
   @override
   String get mangaMarkCompleted => 'Mark as completed';
+
+  @override
+  String get animeProgress => 'Watch Progress';
+
+  @override
+  String get animeEpisodes => 'Episodes';
+
+  @override
+  String get animeMarkCompleted => 'Mark as completed';
+
+  @override
+  String animeNextEpisode(int episode) {
+    return 'Ep $episode airing soon';
+  }
 
   @override
   String get animatedMovie => 'Animated Movie';

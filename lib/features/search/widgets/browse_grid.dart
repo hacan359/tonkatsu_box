@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/models/anime.dart';
 import '../../../shared/models/game.dart';
 import '../../../shared/models/manga.dart';
 import '../../../shared/models/media_type.dart';
@@ -31,6 +32,7 @@ final FutureProvider<
           Set<int> gameIds,
           Set<int> vnIds,
           Set<int> mangaIds,
+          Set<int> animeIds,
         })>
     _collectedIdsProvider = FutureProvider<
         ({
@@ -38,6 +40,7 @@ final FutureProvider<
           Set<int> gameIds,
           Set<int> vnIds,
           Set<int> mangaIds,
+          Set<int> animeIds,
         })>((Ref ref) async {
   final Map<int, List<CollectedItemInfo>> movies =
       await ref.watch(collectedMovieIdsProvider.future);
@@ -51,11 +54,14 @@ final FutureProvider<
       await ref.watch(collectedVisualNovelIdsProvider.future);
   final Map<int, List<CollectedItemInfo>> mangas =
       await ref.watch(collectedMangaIdsProvider.future);
+  final Map<int, List<CollectedItemInfo>> animes =
+      await ref.watch(collectedAnimeIdsProvider.future);
   return (
     tmdbIds: <int>{...movies.keys, ...tvShows.keys, ...animations.keys},
     gameIds: games.keys.toSet(),
     vnIds: visualNovels.keys.toSet(),
     mangaIds: mangas.keys.toSet(),
+    animeIds: animes.keys.toSet(),
   );
 });
 
@@ -213,6 +219,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
               Set<int> gameIds,
               Set<int> vnIds,
               Set<int> mangaIds,
+              Set<int> animeIds,
             })> collectedIds =
         ref.watch(_collectedIdsProvider);
     final Set<int> tmdbIds =
@@ -223,6 +230,8 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         collectedIds.valueOrNull?.vnIds ?? const <int>{};
     final Set<int> mangaIds =
         collectedIds.valueOrNull?.mangaIds ?? const <int>{};
+    final Set<int> animeIds =
+        collectedIds.valueOrNull?.animeIds ?? const <int>{};
 
     // Применяем клиентский фильтр по названию
     final List<Object> displayItems;
@@ -260,7 +269,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         final Object item = displayItems[index];
         return _buildCard(
             item, state.source.id, tmdbIds, gameIds, vnIds, mangaIds,
-            variant);
+            animeIds, variant);
       },
     );
   }
@@ -272,6 +281,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     Set<int> gameIds,
     Set<int> vnIds,
     Set<int> mangaIds,
+    Set<int> animeIds,
     CardVariant variant,
   ) {
     VoidCallback? openCallback(int externalId, MediaType mediaType, bool inCollection) {
@@ -373,6 +383,24 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
       );
     }
 
+    if (item is Anime) {
+      final bool inColl = animeIds.contains(item.id);
+      return MediaPosterCard(
+        variant: variant,
+        title: item.title,
+        imageUrl: item.coverUrl ?? '',
+        cacheImageType: ImageType.animeCover,
+        cacheImageId: item.id.toString(),
+        apiRating: item.rating10,
+        year: item.releaseYear,
+
+        mediaType: MediaType.anime,
+        isInCollection: inColl,
+        onTap: () => widget.onItemTap(item, MediaType.anime),
+        onOpenInCollection: openCallback(item.id, MediaType.anime, inColl),
+      );
+    }
+
     return const SizedBox.shrink();
   }
 
@@ -397,6 +425,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     if (item is TvShow) return item.title;
     if (item is VisualNovel) return item.title;
     if (item is Manga) return item.title;
+    if (item is Anime) return item.title;
     return '';
   }
 

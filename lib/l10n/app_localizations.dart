@@ -217,6 +217,12 @@ abstract class S {
   /// **'Manga'**
   String get mediaTypeManga;
 
+  /// No description provided for @mediaTypeAnime.
+  ///
+  /// In en, this message translates to:
+  /// **'Anime'**
+  String get mediaTypeAnime;
+
   /// No description provided for @mediaTypeCustom.
   ///
   /// In en, this message translates to:
@@ -2382,6 +2388,30 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Mark as completed'**
   String get mangaMarkCompleted;
+
+  /// No description provided for @animeProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch Progress'**
+  String get animeProgress;
+
+  /// No description provided for @animeEpisodes.
+  ///
+  /// In en, this message translates to:
+  /// **'Episodes'**
+  String get animeEpisodes;
+
+  /// No description provided for @animeMarkCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as completed'**
+  String get animeMarkCompleted;
+
+  /// No description provided for @animeNextEpisode.
+  ///
+  /// In en, this message translates to:
+  /// **'Ep {episode} airing soon'**
+  String animeNextEpisode(int episode);
 
   /// No description provided for @animatedMovie.
   ///

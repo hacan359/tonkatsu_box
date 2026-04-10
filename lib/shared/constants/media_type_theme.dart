@@ -28,6 +28,9 @@ abstract final class MediaTypeTheme {
   /// Цвет для манги.
   static const Color mangaColor = AppColors.mangaAccent;
 
+  /// Цвет для аниме.
+  static const Color animeColor = AppColors.animeAccent;
+
   /// Цвет для кастомных элементов.
   static const Color customColor = AppColors.customAccent;
 
@@ -39,6 +42,7 @@ abstract final class MediaTypeTheme {
         MediaType.animation => Icons.animation,
         MediaType.visualNovel => Icons.menu_book,
         MediaType.manga => Icons.auto_stories,
+        MediaType.anime => Icons.play_circle_outline,
         MediaType.custom => Icons.dashboard_customize,
       };
 
@@ -50,6 +54,7 @@ abstract final class MediaTypeTheme {
         MediaType.animation => animationColor,
         MediaType.visualNovel => visualNovelColor,
         MediaType.manga => mangaColor,
+        MediaType.anime => animeColor,
         MediaType.custom => customColor,
       };
 }

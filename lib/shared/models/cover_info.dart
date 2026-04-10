@@ -56,6 +56,7 @@ class CoverInfo {
       case MediaType.game:
       case MediaType.visualNovel:
       case MediaType.manga:
+      case MediaType.anime:
       case MediaType.custom:
         return url;
     }

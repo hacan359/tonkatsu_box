@@ -36,11 +36,12 @@ void main() {
       expect(igdb.sources.first.id, 'games');
     });
 
-    test('anilist group has 1 source', () {
+    test('anilist group has 2 sources', () {
       final SourceGroupEntry anilist = groupedSearchSources
           .firstWhere((SourceGroupEntry g) => g.groupId == 'anilist');
-      expect(anilist.sources.length, 1);
-      expect(anilist.sources.first.id, 'manga');
+      expect(anilist.sources.length, 2);
+      expect(anilist.sources[0].id, 'anilist_anime');
+      expect(anilist.sources[1].id, 'manga');
     });
 
     test('vndb group has 1 source', () {

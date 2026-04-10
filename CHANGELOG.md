@@ -6,6 +6,12 @@
 
 ## [Unreleased]
 
+### Added
+- **Anime (AniList) as new media type** — `MediaType.anime` for Japanese anime with full AniList metadata: episodes, duration, format (TV/OVA/Movie/ONA/Special), source material (Original/Manga/Light Novel), studios, season, banner image for backdrop. New `anime_cache` table (DB migration v33), `AnimeDao`, `ImageType.animeCover`, `AppColors.animeAccent` (pink). AniList GraphQL queries extended with `duration`, `source`, `bannerImage`, `nextAiringEpisode`. Full integration: search (browse + filters), add to collection, detail card with chips, canvas, export/import, backup. `AniListAnimeSource` activated in search sources. Anime filter chip added to collection filter bar and Home/All Items screen. 5 localization keys EN+RU (`anime_dao.dart`, `migration_v33.dart`, `anime_progress_section.dart`, `anilist_anime_source.dart`, + ~35 files updated)
+- **Anime episode progress tracker** — `AnimeProgressSection` with progress bar, "+1 episode" button, manual edit dialog, "Mark as completed" button, and next airing episode info for ongoing anime. Auto-status: +1 from zero → inProgress, mark completed → completed, reset to 0 → notStarted, dropped untouched. Uses existing `currentEpisode` field (no migration needed) (`anime_progress_section.dart`, `collections_provider.dart`)
+- **CopyableText shared widget** — extracted from `ScreenAppBar._CopyableTitle` into reusable `CopyableText` widget. Accepts any child widget + text to copy. Now used in both `ScreenAppBar` and `ItemDetailsSheet` title. Tap to copy, hover shows copy/check icon (`copyable_text.dart`, `screen_app_bar.dart`, `item_details_sheet.dart`)
+- **MediaProgressRow shared widget** — extracted progress row (label + value + progress bar + increment button) from `MangaProgressSection` into reusable `MediaProgressRow`. Now shared between manga and anime progress sections, eliminating code duplication (`media_progress_row.dart`, `manga_progress_section.dart`, `anime_progress_section.dart`)
+
 ## [0.25.1] - 2026-04-10
 
 ### Added
