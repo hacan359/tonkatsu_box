@@ -1602,6 +1602,12 @@ class SEn extends S {
       'Check your internet connection and try again.';
 
   @override
+  String get copyErrorDetails => 'Copy error details';
+
+  @override
+  String get errorDetailsCopied => 'Error details copied';
+
+  @override
   String get searchDescription => 'Description';
 
   @override

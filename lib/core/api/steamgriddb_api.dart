@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
+import 'api_error_detail.dart';
 import '../services/api_key_initializer.dart';
 import '../../shared/models/steamgriddb_game.dart';
 import '../../shared/models/steamgriddb_image.dart';
@@ -25,13 +26,16 @@ final Provider<SteamGridDbApi> steamGridDbApiProvider =
 /// Исключение при ошибках SteamGridDB API.
 class SteamGridDbApiException implements Exception {
   /// Создаёт [SteamGridDbApiException].
-  const SteamGridDbApiException(this.message, {this.statusCode});
+  const SteamGridDbApiException(this.message, {this.statusCode, this.detail});
 
   /// Сообщение об ошибке.
   final String message;
 
   /// HTTP код ответа (если есть).
   final int? statusCode;
+
+  /// Подробная отладочная информация (URL, метод, причина).
+  final String? detail;
 
   @override
   String toString() =>
@@ -44,11 +48,17 @@ class SteamGridDbApiException implements Exception {
 /// Документация: https://www.steamgriddb.com/api/v2
 class SteamGridDbApi {
   /// Создаёт экземпляр [SteamGridDbApi].
-  SteamGridDbApi({Dio? dio}) : _dio = dio ?? Dio();
+  SteamGridDbApi({Dio? dio})
+      : _dio = dio ??
+            Dio(BaseOptions(
+              connectTimeout: _timeout,
+              receiveTimeout: _timeout,
+            ));
 
   // ignore: unused_field
   static final Logger _log = Logger('SteamGridDbApi');
 
+  static const Duration _timeout = Duration(seconds: 5);
   static const String _baseUrl = 'https://www.steamgriddb.com/api/v2';
 
   final Dio _dio;
@@ -215,7 +225,15 @@ class SteamGridDbApi {
       message = 'No internet connection';
     }
 
-    return SteamGridDbApiException(message, statusCode: statusCode);
+    return SteamGridDbApiException(
+      message,
+      statusCode: statusCode,
+      detail: buildApiErrorDetail(
+        apiName: 'SteamGridDB',
+        exception: e,
+        userMessage: message,
+      ),
+    );
   }
 
   void _ensureApiKey() {

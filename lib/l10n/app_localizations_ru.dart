@@ -1614,6 +1614,12 @@ class SRu extends S {
       'Проверьте подключение к интернету и попробуйте снова.';
 
   @override
+  String get copyErrorDetails => 'Скопировать детали ошибки';
+
+  @override
+  String get errorDetailsCopied => 'Детали ошибки скопированы';
+
+  @override
   String get searchDescription => 'Описание';
 
   @override

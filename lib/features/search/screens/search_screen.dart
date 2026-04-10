@@ -34,10 +34,7 @@ import '../widgets/browse_grid.dart';
 import '../widgets/discover_customize_sheet.dart';
 import '../widgets/discover_feed.dart';
 import '../widgets/filter_bar.dart';
-import '../widgets/game_details_sheet.dart';
-import '../widgets/media_details_sheet.dart';
-import '../widgets/manga_details_sheet.dart';
-import '../widgets/vn_details_sheet.dart';
+import '../widgets/item_details_sheet.dart';
 
 /// Экран поиска и просмотра контента.
 ///
@@ -485,7 +482,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (BuildContext context) => MediaDetailsSheet.movie(
+      builder: (BuildContext context) => ItemDetailsSheet.movie(
         movie,
         isAnimation: isAnim,
         onAddToCollection: () => isAnim
@@ -612,7 +609,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (BuildContext context) => MediaDetailsSheet.tvShow(
+      builder: (BuildContext context) => ItemDetailsSheet.tvShow(
         tvShow,
         isAnimation: isAnim,
         onAddToCollection: () => isAnim
@@ -1096,8 +1093,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (BuildContext context) => VnDetailsSheet(
-        visualNovel: vn,
+      builder: (BuildContext context) => ItemDetailsSheet.visualNovel(
+        vn,
         onAddToCollection: () => _addVisualNovelToAnyCollection(vn),
       ),
     );
@@ -1211,8 +1208,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (BuildContext context) => MangaDetailsSheet(
-        manga: manga,
+      builder: (BuildContext context) => ItemDetailsSheet.manga(
+        manga,
         onAddToCollection: () => _addMangaToAnyCollection(manga),
       ),
     );
@@ -1222,8 +1219,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (BuildContext context) => GameDetailsSheet(
-        game: game,
+      builder: (BuildContext context) => ItemDetailsSheet.game(
+        game,
         onAddToCollection: () => _addGameToAnyCollection(game),
       ),
     );

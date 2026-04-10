@@ -14,7 +14,7 @@ class StarRatingBar extends StatelessWidget {
   const StarRatingBar({
     required this.onChanged,
     this.rating,
-    this.starSize = 28.0,
+    this.starSize = 24.0,
     super.key,
   });
 

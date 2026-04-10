@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
+import 'api_error_detail.dart';
 import '../services/api_key_initializer.dart';
 import '../../shared/models/movie.dart';
 import '../../shared/models/tmdb_review.dart';
@@ -54,13 +55,16 @@ final Provider<TmdbApi> tmdbApiProvider = Provider<TmdbApi>((Ref ref) {
 /// Исключение при ошибках TMDB API.
 class TmdbApiException implements Exception {
   /// Создаёт [TmdbApiException].
-  const TmdbApiException(this.message, {this.statusCode});
+  const TmdbApiException(this.message, {this.statusCode, this.detail});
 
   /// Сообщение об ошибке.
   final String message;
 
   /// HTTP код ответа (если есть).
   final int? statusCode;
+
+  /// Подробная отладочная информация (URL, метод, причина).
+  final String? detail;
 
   @override
   String toString() => 'TmdbApiException: $message (status: $statusCode)';
@@ -121,11 +125,16 @@ class MultiSearchResult {
 class TmdbApi {
   /// Создаёт экземпляр [TmdbApi].
   TmdbApi({Dio? dio, String language = 'ru-RU'})
-      : _dio = dio ?? Dio(),
+      : _dio = dio ??
+            Dio(BaseOptions(
+              connectTimeout: _timeout,
+              receiveTimeout: _timeout,
+            )),
         _language = language;
 
   static final Logger _log = Logger('TmdbApi');
 
+  static const Duration _timeout = Duration(seconds: 5);
   static const String _baseUrl = 'https://api.themoviedb.org/3';
 
   final Dio _dio;
@@ -1052,7 +1061,15 @@ class TmdbApi {
       message = 'No internet connection';
     }
 
-    return TmdbApiException(message, statusCode: statusCode);
+    return TmdbApiException(
+      message,
+      statusCode: statusCode,
+      detail: buildApiErrorDetail(
+        apiName: 'TMDB',
+        exception: e,
+        userMessage: message,
+      ),
+    );
   }
 
   // ===== Приватные хелперы =====

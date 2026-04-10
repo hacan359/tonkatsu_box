@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
+import 'api_error_detail.dart';
 import '../../shared/models/anime.dart';
 import '../../shared/models/manga.dart';
 
@@ -16,13 +17,16 @@ final Provider<AniListApi> aniListApiProvider =
 /// Исключение при ошибках AniList API.
 class AniListApiException implements Exception {
   /// Создаёт [AniListApiException].
-  const AniListApiException(this.message, {this.statusCode});
+  const AniListApiException(this.message, {this.statusCode, this.detail});
 
   /// Сообщение об ошибке.
   final String message;
 
   /// HTTP код ответа (если есть).
   final int? statusCode;
+
+  /// Подробная отладочная информация (URL, метод, причина).
+  final String? detail;
 
   @override
   String toString() =>
@@ -36,10 +40,16 @@ class AniListApiException implements Exception {
 /// Документация: https://anilist.gitbook.io/anilist-apiv2-docs
 class AniListApi {
   /// Создаёт экземпляр [AniListApi].
-  AniListApi({Dio? dio}) : _dio = dio ?? Dio();
+  AniListApi({Dio? dio})
+      : _dio = dio ??
+            Dio(BaseOptions(
+              connectTimeout: _timeout,
+              receiveTimeout: _timeout,
+            ));
 
   static final Logger _log = Logger('AniListApi');
 
+  static const Duration _timeout = Duration(seconds: 5);
   static const String _baseUrl = 'https://graphql.anilist.co';
 
   /// GraphQL query для поиска/browse манги.
@@ -660,7 +670,15 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
       message = 'No internet connection';
     }
 
-    return AniListApiException(message, statusCode: statusCode);
+    return AniListApiException(
+      message,
+      statusCode: statusCode,
+      detail: buildApiErrorDetail(
+        apiName: 'AniList',
+        exception: e,
+        userMessage: message,
+      ),
+    );
   }
 
   /// Закрывает HTTP клиент.

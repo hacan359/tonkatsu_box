@@ -282,7 +282,19 @@ class _MediaDetailViewState extends State<MediaDetailView> {
     final Widget content = ListView(
       padding: const EdgeInsets.all(AppSpacing.md),
       children: <Widget>[
-        _buildHeader(),
+        Container(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            color: AppColors.surface.withAlpha(80),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+            border: Border.all(
+              color: AppColors.surfaceBorder.withAlpha(40),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              _buildHeader(),
               if (widget.statusWidget != null) ...<Widget>[
                 const SizedBox(height: AppSpacing.md),
                 _buildStatusSection(context),
@@ -313,73 +325,48 @@ class _MediaDetailViewState extends State<MediaDetailView> {
                   const SizedBox(height: AppSpacing.md),
                   section,
                 ],
-        const SizedBox(height: AppSpacing.lg),
+            ],
+          ),
+        ),
       ],
     );
 
     // Backdrop — верхние 50% экрана, диагональный fade из нижнего левого
     // в правый верхний. Основной фон (AppColors.background) остаётся под ним.
     final Widget withBackdrop = widget.backdropUrl != null
-        ? LayoutBuilder(
-            builder: (BuildContext context, BoxConstraints constraints) {
-              final double halfHeight = constraints.maxHeight * 0.4;
-              return Stack(
-                children: <Widget>[
-                  // Картинка — верхние 50%
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: halfHeight,
-                    child: CachedNetworkImage(
-                      imageUrl: widget.backdropUrl!,
-                      fit: BoxFit.cover,
-                      alignment: Alignment.topCenter,
-                      errorWidget:
-                          (BuildContext context, String url, Object error) =>
-                              const SizedBox.shrink(),
+        ? Stack(
+            children: <Widget>[
+              // Backdrop — на весь фон
+              Positioned.fill(
+                child: CachedNetworkImage(
+                  imageUrl: widget.backdropUrl!,
+                  fit: BoxFit.cover,
+                  alignment: Alignment.center,
+                  errorWidget:
+                      (BuildContext context, String url, Object error) =>
+                          const SizedBox.shrink(),
+                ),
+              ),
+              // Вертикальный gradient для читаемости
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: <Color>[
+                        AppColors.background.withAlpha(120),
+                        AppColors.background.withAlpha(200),
+                        AppColors.background,
+                      ],
+                      stops: const <double>[0.0, 0.35, 0.6],
                     ),
                   ),
-                  // Диагональный fade: из правого верхнего в левый нижний
-                  Positioned(
-                    top: 0, left: 0, right: 0, height: halfHeight,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topRight,
-                          end: Alignment.bottomLeft,
-                          colors: <Color>[
-                            AppColors.background,
-                            AppColors.background.withAlpha(200),
-                            AppColors.background.withAlpha(120),
-                          ],
-                          stops: const <double>[0.0, 0.4, 1.0],
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Вертикальный fade к низу
-                  Positioned(
-                    top: 0, left: 0, right: 0, height: halfHeight,
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: <Color>[
-                            Colors.transparent,
-                            AppColors.background,
-                          ],
-                          stops: <double>[0.5, 1.0],
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Контент поверх всего
-                  content,
-                ],
-              );
-            },
+                ),
+              ),
+              // Контент поверх всего
+              content,
+            ],
           )
         : content;
 

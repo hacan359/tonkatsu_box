@@ -4,6 +4,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
+import 'api_error_detail.dart';
+
 /// Провайдер для Steam API клиента.
 final Provider<SteamApi> steamApiProvider = Provider<SteamApi>((Ref ref) {
   return SteamApi();
@@ -12,13 +14,16 @@ final Provider<SteamApi> steamApiProvider = Provider<SteamApi>((Ref ref) {
 /// Ошибка Steam API.
 class SteamApiException implements Exception {
   /// Создаёт [SteamApiException].
-  const SteamApiException(this.message, {this.statusCode});
+  const SteamApiException(this.message, {this.statusCode, this.detail});
 
   /// Сообщение об ошибке.
   final String message;
 
   /// HTTP код ответа (если есть).
   final int? statusCode;
+
+  /// Подробная отладочная информация (URL, метод, причина).
+  final String? detail;
 
   @override
   String toString() => 'SteamApiException($statusCode): $message';
@@ -80,9 +85,16 @@ class SteamOwnedGame {
 /// Минимальный клиент — только получение библиотеки пользователя.
 class SteamApi {
   /// Создаёт [SteamApi].
-  SteamApi({Dio? dio}) : _dio = dio ?? Dio();
+  SteamApi({Dio? dio})
+      : _dio = dio ??
+            Dio(BaseOptions(
+              connectTimeout: _timeout,
+              receiveTimeout: _timeout,
+            ));
 
   static final Logger _log = Logger('SteamApi');
+
+  static const Duration _timeout = Duration(seconds: 5);
 
   final Dio _dio;
 
@@ -130,7 +142,15 @@ class SteamApi {
         message = e.message ?? 'Network error';
       }
       _log.warning('Steam API error: $message', e);
-      throw SteamApiException(message, statusCode: statusCode);
+      throw SteamApiException(
+        message,
+        statusCode: statusCode,
+        detail: buildApiErrorDetail(
+          apiName: 'Steam',
+          exception: e,
+          userMessage: message,
+        ),
+      );
     }
   }
 }

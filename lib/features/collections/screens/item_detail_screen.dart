@@ -666,7 +666,10 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
               item.platformId == AnimationSource.tvShow),
       hasMangaProgress: item.mediaType == MediaType.manga,
       externalUrl: externalUrl,
-      backdropUrl: item.movie?.backdropUrl ?? item.tvShow?.backdropUrl,
+      backdropUrl: item.game?.artworkUrl
+          ?? item.movie?.backdropUrl
+          ?? item.tvShow?.backdropUrl
+          ?? item.manga?.bannerUrl,
       tvShow: item.tvShow,
       manga: item.manga,
     );

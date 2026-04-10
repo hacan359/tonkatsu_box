@@ -1,10 +1,10 @@
-// Widget tests for MediaDetailsSheet.
+// Widget tests for ItemDetailsSheet.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:xerabora/features/search/widgets/media_details_sheet.dart';
+import 'package:xerabora/features/search/widgets/item_details_sheet.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/widgets/cached_image.dart';
@@ -17,7 +17,7 @@ void main() {
     prefs = await SharedPreferences.getInstance();
   });
 
-  // Helper to build the test widget that opens MediaDetailsSheet
+  // Helper to build the test widget that opens ItemDetailsSheet
   // as a modal bottom sheet.
   Widget buildTestApp({
     required String title,
@@ -45,7 +45,7 @@ void main() {
                   showModalBottomSheet<void>(
                     context: context,
                     isScrollControlled: true,
-                    builder: (_) => MediaDetailsSheet(
+                    builder: (_) => ItemDetailsSheet(
                       title: title,
                       icon: icon,
                       overview: overview,
@@ -84,7 +84,7 @@ void main() {
     }
   }
 
-  group('MediaDetailsSheet', () {
+  group('ItemDetailsSheet', () {
     testWidgets('renders title', (WidgetTester tester) async {
       await tester.pumpWidget(
         buildTestApp(title: 'Inception'),
@@ -184,7 +184,7 @@ void main() {
       await openSheet(tester);
 
       expect(
-        find.byWidgetPredicate((Widget w) => w is FilledButton),
+        find.byIcon(Icons.add),
         findsOneWidget,
       );
     });
@@ -197,7 +197,7 @@ void main() {
       await openSheet(tester);
 
       expect(
-        find.byWidgetPredicate((Widget w) => w is FilledButton),
+        find.byIcon(Icons.add),
         findsNothing,
       );
     });
@@ -221,7 +221,7 @@ void main() {
       expect(find.text('Tap Test'), findsOneWidget);
 
       await tester.tap(
-        find.byWidgetPredicate((Widget w) => w is FilledButton),
+        find.byIcon(Icons.add),
       );
       await tester.pumpAndSettle();
 

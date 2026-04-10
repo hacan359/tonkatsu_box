@@ -27,6 +27,7 @@ class MediaSearchState {
     this.isLoading = false,
     this.isLoadingMore = false,
     this.error,
+    this.errorDetail,
     this.subFilter = TvSubFilter.all,
     this.currentSort = const SearchSort(),
     this.currentMoviePage = 1,
@@ -49,6 +50,9 @@ class MediaSearchState {
 
   /// Сообщение об ошибке.
   final String? error;
+
+  /// Подробная отладочная информация об ошибке (для копирования).
+  final String? errorDetail;
 
   /// Текущий субфильтр (все, фильмы, сериалы, анимация).
   final TvSubFilter subFilter;
@@ -84,6 +88,7 @@ class MediaSearchState {
     bool? isLoading,
     bool? isLoadingMore,
     String? error,
+    String? errorDetail,
     TvSubFilter? subFilter,
     SearchSort? currentSort,
     int? currentMoviePage,
@@ -98,6 +103,7 @@ class MediaSearchState {
       isLoading: isLoading ?? this.isLoading,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       error: clearError ? null : (error ?? this.error),
+      errorDetail: clearError ? null : (errorDetail ?? this.errorDetail),
       subFilter: subFilter ?? this.subFilter,
       currentSort: currentSort ?? this.currentSort,
       currentMoviePage: currentMoviePage ?? this.currentMoviePage,
@@ -116,6 +122,7 @@ class MediaSearchState {
         other.isLoading == isLoading &&
         other.isLoadingMore == isLoadingMore &&
         other.error == error &&
+        other.errorDetail == errorDetail &&
         other.subFilter == subFilter &&
         other.currentSort == currentSort &&
         other.currentMoviePage == currentMoviePage &&
@@ -131,6 +138,7 @@ class MediaSearchState {
         isLoading,
         isLoadingMore,
         error,
+        errorDetail,
         subFilter,
         currentSort,
         currentMoviePage,
@@ -447,6 +455,7 @@ class MediaSearchNotifier extends Notifier<MediaSearchState> {
       if (state.query == query) {
         state = state.copyWith(
           error: e.message,
+          errorDetail: e.detail,
           isLoading: false,
           isLoadingMore: false,
         );

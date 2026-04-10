@@ -53,6 +53,7 @@ abstract final class DatabaseSchema {
         name TEXT NOT NULL,
         summary TEXT,
         cover_url TEXT,
+        artwork_url TEXT,
         release_date INTEGER,
         rating REAL,
         rating_count INTEGER,
@@ -423,6 +424,7 @@ abstract final class DatabaseSchema {
         genres TEXT,
         authors TEXT,
         external_url TEXT,
+        banner_url TEXT,
         updated_at INTEGER NOT NULL
       )
     ''');

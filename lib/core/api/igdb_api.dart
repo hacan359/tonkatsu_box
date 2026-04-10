@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
+import 'api_error_detail.dart';
 import '../services/api_key_initializer.dart';
 import '../../shared/models/game.dart';
 import '../../shared/models/platform.dart';
@@ -59,13 +60,16 @@ class TwitchAuthResult {
 /// Исключение при ошибках IGDB API.
 class IgdbApiException implements Exception {
   /// Создаёт [IgdbApiException].
-  const IgdbApiException(this.message, {this.statusCode});
+  const IgdbApiException(this.message, {this.statusCode, this.detail});
 
   /// Сообщение об ошибке.
   final String message;
 
   /// HTTP код ответа (если есть).
   final int? statusCode;
+
+  /// Подробная отладочная информация (URL, метод, причина).
+  final String? detail;
 
   @override
   String toString() => 'IgdbApiException: $message (status: $statusCode)';
@@ -83,10 +87,16 @@ typedef IgdbTokenRefreshedCallback = void Function(
 
 class IgdbApi {
   /// Создаёт экземпляр [IgdbApi].
-  IgdbApi({Dio? dio}) : _dio = dio ?? Dio();
+  IgdbApi({Dio? dio})
+      : _dio = dio ??
+            Dio(BaseOptions(
+              connectTimeout: _timeout,
+              receiveTimeout: _timeout,
+            ));
 
   static final Logger _log = Logger('IgdbApi');
 
+  static const Duration _timeout = Duration(seconds: 5);
   static const String _twitchAuthUrl = 'https://id.twitch.tv/oauth2/token';
   static const String _igdbBaseUrl = 'https://api.igdb.com/v4';
 
@@ -161,7 +171,15 @@ class IgdbApi {
         message = 'No internet connection';
       }
 
-      throw IgdbApiException(message, statusCode: statusCode);
+      throw IgdbApiException(
+        message,
+        statusCode: statusCode,
+        detail: buildApiErrorDetail(
+          apiName: 'IGDB Auth',
+          exception: e,
+          userMessage: message,
+        ),
+      );
     }
   }
 
@@ -752,7 +770,15 @@ class IgdbApi {
       message = 'No internet connection';
     }
 
-    return IgdbApiException(message, statusCode: statusCode);
+    return IgdbApiException(
+      message,
+      statusCode: statusCode,
+      detail: buildApiErrorDetail(
+        apiName: 'IGDB',
+        exception: e,
+        userMessage: message,
+      ),
+    );
   }
 
   /// POST запрос к IGDB API с автоматическим обновлением токена при 401.

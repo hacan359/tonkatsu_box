@@ -737,6 +737,8 @@
   "searchNoInternet": "No internet connection",
   "searchFailed": "Search failed",
   "searchCheckConnection": "Check your internet connection and try again.",
+  "copyErrorDetails": "Copy error details",
+  "errorDetailsCopied": "Error details copied",
   "searchDescription": "Description",
 
   "platformFilterTitle": "Select Platforms",
