@@ -2,7 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../shared/constants/api_defaults.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/models/collection_item.dart';
+import '../../../core/services/discord_rpc_service.dart';
 import '../../../core/api/igdb_api.dart';
 import '../../../core/api/steamgriddb_api.dart';
 import '../../../core/api/tmdb_api.dart';
@@ -53,6 +55,9 @@ abstract class SettingsKeys {
   /// Показывать ли платформенный overlay на играх.
   static const String showPlatformOverlay = 'show_platform_overlay';
 
+  /// Discord Rich Presence вкл/выкл.
+  static const String discordRpcEnabled = 'discord_rpc_enabled';
+
   /// Имя пользователя RetroAchievements.
   static const String raUsername = 'ra_username';
 
@@ -80,6 +85,7 @@ class SettingsState {
     this.showRecommendations = true,
     this.showBlurayOverlay = true,
     this.showPlatformOverlay = true,
+    this.discordRpcEnabled = false,
   });
 
   /// Client ID для IGDB API.
@@ -129,6 +135,9 @@ class SettingsState {
 
   /// Показывать ли платформенный overlay на играх.
   final bool showPlatformOverlay;
+
+  /// Discord Rich Presence включён.
+  final bool discordRpcEnabled;
 
   /// Возвращает overlay asset с учётом настроек.
   ///
@@ -218,6 +227,7 @@ class SettingsState {
     bool? showRecommendations,
     bool? showBlurayOverlay,
     bool? showPlatformOverlay,
+    bool? discordRpcEnabled,
   }) {
     return SettingsState(
       clientId: clientId ?? this.clientId,
@@ -236,6 +246,7 @@ class SettingsState {
       showRecommendations: showRecommendations ?? this.showRecommendations,
       showBlurayOverlay: showBlurayOverlay ?? this.showBlurayOverlay,
       showPlatformOverlay: showPlatformOverlay ?? this.showPlatformOverlay,
+      discordRpcEnabled: discordRpcEnabled ?? this.discordRpcEnabled,
     );
   }
 }
@@ -346,6 +357,8 @@ class SettingsNotifier extends Notifier<SettingsState> {
         _prefs.getBool(SettingsKeys.showBlurayOverlay) ?? true;
     final bool showPlatformOverlay =
         _prefs.getBool(SettingsKeys.showPlatformOverlay) ?? true;
+    final bool discordRpcEnabled =
+        _prefs.getBool(SettingsKeys.discordRpcEnabled) ?? false;
 
     // Определяем начальный статус подключения:
     // - токен валиден → connected (не нужно ждать verify)
@@ -372,6 +385,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
       showRecommendations: showRecommendations,
       showBlurayOverlay: showBlurayOverlay,
       showPlatformOverlay: showPlatformOverlay,
+      discordRpcEnabled: discordRpcEnabled,
     );
 
     // API ключи уже установлены при создании провайдеров через apiKeysProvider.
@@ -384,6 +398,13 @@ class SettingsNotifier extends Notifier<SettingsState> {
     // Авто-верификация: если есть credentials но нет токена — получаем его
     if (loadedState.hasCredentials && !loadedState.hasValidToken) {
       Future<void>.microtask(_autoVerifyConnection);
+    }
+
+    // Автозапуск Discord RPC если включён
+    if (kDiscordRpcAvailable && loadedState.discordRpcEnabled) {
+      Future<void>.microtask(() {
+        ref.read(discordRpcServiceProvider).enable();
+      });
     }
 
     return loadedState;
@@ -566,6 +587,12 @@ class SettingsNotifier extends Notifier<SettingsState> {
     state = state.copyWith(showPlatformOverlay: enabled);
   }
 
+  /// Включает/выключает Discord Rich Presence.
+  Future<void> setDiscordRpcEnabled({required bool enabled}) async {
+    await _prefs.setBool(SettingsKeys.discordRpcEnabled, enabled);
+    state = state.copyWith(discordRpcEnabled: enabled);
+  }
+
   /// Сбрасывает TMDB API ключ на встроенный.
   ///
   /// Удаляет пользовательский ключ из SharedPreferences.
@@ -693,6 +720,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await _prefs.remove(SettingsKeys.showRecommendations);
     await _prefs.remove(SettingsKeys.showBlurayOverlay);
     await _prefs.remove(SettingsKeys.showPlatformOverlay);
+    await _prefs.remove(SettingsKeys.discordRpcEnabled);
     await _prefs.remove(SettingsKeys.raUsername);
     await _prefs.remove(SettingsKeys.raApiKey);
 

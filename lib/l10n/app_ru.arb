@@ -878,6 +878,8 @@
   "settingsShowPlatformOverlaySubtitle": "Оверлей платформы на постерах игр (PS5, Switch и т.д.)",
   "settingsShowBlurayOverlay": "Обложки Blu-ray",
   "settingsShowBlurayOverlaySubtitle": "Оверлей Blu-ray на постерах фильмов и сериалов",
+  "settingsDiscordRpc": "Discord Rich Presence",
+  "settingsDiscordRpcSubtitle": "Показывать текущий элемент в статусе Discord",
 
   "uncategorizedBanner": "Добавьте в коллекцию, чтобы открыть Доску и отслеживание серий",
   "uncategorizedBannerAction": "Добавить в коллекцию",
