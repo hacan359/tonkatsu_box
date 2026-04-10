@@ -24,6 +24,7 @@
   "mediaTypeAnimation": "Анимация",
   "mediaTypeVisualNovel": "Визуальная новелла",
   "mediaTypeManga": "Манга",
+  "mediaTypeAnime": "Аниме",
   "mediaTypeCustom": "Своё",
 
   "sortManualDisplay": "Вручную",
@@ -463,6 +464,10 @@
   "mangaChapters": "Главы",
   "mangaVolumes": "Тома",
   "mangaMarkCompleted": "Отметить как прочитано",
+  "animeProgress": "Прогресс просмотра",
+  "animeEpisodes": "Эпизоды",
+  "animeMarkCompleted": "Отметить как просмотрено",
+  "animeNextEpisode": "Эп. {episode} скоро выйдет",
   "animatedMovie": "Мультфильм",
   "animatedSeries": "Мультсериал",
 

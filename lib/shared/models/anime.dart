@@ -25,9 +25,14 @@ class Anime {
     this.startMonth,
     this.startDay,
     this.episodes,
+    this.duration,
     this.format,
+    this.source,
     this.genres,
     this.studios,
+    this.bannerUrl,
+    this.nextAiringEpisode,
+    this.nextAiringAt,
     this.externalUrl,
     this.updatedAt,
   });
@@ -94,9 +99,18 @@ class Anime {
       startMonth: dateMap?['month'] as int?,
       startDay: dateMap?['day'] as int?,
       episodes: json['episodes'] as int?,
+      duration: json['duration'] as int?,
       format: json['format'] as String?,
+      source: json['source'] as String?,
       genres: genresList?.map((dynamic g) => g as String).toList(),
       studios: studios,
+      bannerUrl: json['bannerImage'] as String?,
+      nextAiringEpisode:
+          (json['nextAiringEpisode'] as Map<String, dynamic>?)?['episode']
+              as int?,
+      nextAiringAt:
+          (json['nextAiringEpisode'] as Map<String, dynamic>?)?['airingAt']
+              as int?,
       externalUrl: 'https://anilist.co/anime/$id',
       updatedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
     );
@@ -144,9 +158,14 @@ class Anime {
       startMonth: row['start_month'] as int?,
       startDay: row['start_day'] as int?,
       episodes: row['episodes'] as int?,
+      duration: row['duration'] as int?,
       format: row['format'] as String?,
+      source: row['source'] as String?,
       genres: genres,
       studios: studios,
+      bannerUrl: row['banner_url'] as String?,
+      nextAiringEpisode: row['next_airing_episode'] as int?,
+      nextAiringAt: row['next_airing_at'] as int?,
       externalUrl: row['external_url'] as String?,
       updatedAt: row['updated_at'] as int?,
     );
@@ -203,14 +222,29 @@ class Anime {
   /// Количество эпизодов (null если ongoing/неизвестно).
   final int? episodes;
 
+  /// Длительность эпизода в минутах.
+  final int? duration;
+
   /// Формат: TV, TV_SHORT, MOVIE, SPECIAL, OVA, ONA, MUSIC.
   final String? format;
+
+  /// Исходный материал: ORIGINAL, MANGA, LIGHT_NOVEL, VISUAL_NOVEL, VIDEO_GAME.
+  final String? source;
 
   /// Список жанров.
   final List<String>? genres;
 
   /// Список студий.
   final List<String>? studios;
+
+  /// URL баннера (для backdrop).
+  final String? bannerUrl;
+
+  /// Номер следующего выходящего эпизода (для ongoing).
+  final int? nextAiringEpisode;
+
+  /// Unix timestamp выхода следующего эпизода.
+  final int? nextAiringAt;
 
   /// URL страницы на AniList.
   final String? externalUrl;
@@ -276,6 +310,25 @@ class Anime {
   String get episodesString =>
       episodes != null ? '$episodes ep' : '? ep';
 
+  /// Длительность эпизода: "24 min/ep".
+  String? get durationString =>
+      duration != null ? '$duration min/ep' : null;
+
+  /// Человекочитаемый исходный материал.
+  String? get sourceLabel => switch (source) {
+        'ORIGINAL' => 'Original',
+        'MANGA' => 'Based on Manga',
+        'LIGHT_NOVEL' => 'Based on Light Novel',
+        'VISUAL_NOVEL' => 'Based on Visual Novel',
+        'VIDEO_GAME' => 'Based on Video Game',
+        'OTHER' => 'Other',
+        _ => source,
+      };
+
+  /// Есть ли информация о следующем эпизоде.
+  bool get hasNextAiring =>
+      nextAiringEpisode != null && nextAiringAt != null;
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
@@ -308,9 +361,14 @@ class Anime {
       'start_month': startMonth,
       'start_day': startDay,
       'episodes': episodes,
+      'duration': duration,
       'format': format,
+      'source': source,
       'genres': genres != null ? jsonEncode(genres) : null,
       'studios': studios != null ? jsonEncode(studios) : null,
+      'banner_url': bannerUrl,
+      'next_airing_episode': nextAiringEpisode,
+      'next_airing_at': nextAiringAt,
       'external_url': externalUrl,
       'updated_at':
           updatedAt ?? DateTime.now().millisecondsSinceEpoch ~/ 1000,
@@ -343,9 +401,14 @@ class Anime {
     int? startMonth,
     int? startDay,
     int? episodes,
+    int? duration,
     String? format,
+    String? source,
     List<String>? genres,
     List<String>? studios,
+    String? bannerUrl,
+    int? nextAiringEpisode,
+    int? nextAiringAt,
     String? externalUrl,
     int? updatedAt,
   }) {
@@ -367,9 +430,14 @@ class Anime {
       startMonth: startMonth ?? this.startMonth,
       startDay: startDay ?? this.startDay,
       episodes: episodes ?? this.episodes,
+      duration: duration ?? this.duration,
       format: format ?? this.format,
+      source: source ?? this.source,
       genres: genres ?? this.genres,
       studios: studios ?? this.studios,
+      bannerUrl: bannerUrl ?? this.bannerUrl,
+      nextAiringEpisode: nextAiringEpisode ?? this.nextAiringEpisode,
+      nextAiringAt: nextAiringAt ?? this.nextAiringAt,
       externalUrl: externalUrl ?? this.externalUrl,
       updatedAt: updatedAt ?? this.updatedAt,
     );

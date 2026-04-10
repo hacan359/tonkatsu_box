@@ -45,7 +45,7 @@ graph TB
     end
 
     subgraph shared ["🧩 Shared"]
-        models["Models<br/><small>26 моделей:<br/>Game, Movie, TvShow,<br/>VisualNovel, Manga, CustomMedia,<br/>Collection, CanvasItem, WishlistItem,<br/>RaGameProgress, RaUserProfile...</small>"]
+        models["Models<br/><small>27 моделей:<br/>Game, Movie, TvShow, Anime,<br/>VisualNovel, Manga, CustomMedia,<br/>Collection, CanvasItem, WishlistItem,<br/>RaGameProgress, RaUserProfile...</small>"]
         widgets["Widgets<br/><small>CachedImage, MediaPosterCard,<br/>ScreenAppBar, StarRatingBar...</small>"]
         theme["Theme<br/><small>AppColors, AppTypography,<br/>AppSpacing, AppTheme</small>"]
         navigation["Navigation<br/><small>NavigationShell<br/>Rail / BottomBar</small>"]
@@ -121,6 +121,7 @@ lib/
 | `lib/core/database/dao/tv_show_dao.dart` | **DAO сериалов**. CRUD для `tv_shows_cache`, `tv_seasons_cache`, `tv_episodes_cache`, `watched_episodes`. Методы для шоу, сезонов, эпизодов и отслеживания просмотра. Batch upsert через транзакции |
 | `lib/core/database/dao/visual_novel_dao.dart` | **DAO визуальных новелл**. CRUD для `visual_novels_cache`, `vndb_tags`. Методы: `upsertVisualNovel()`, `upsertVisualNovels()`, `getVisualNovel()`, `getVisualNovelsByNumericIds()`, `getVndbTags()` |
 | `lib/core/database/dao/manga_dao.dart` | **DAO манги**. CRUD для `manga_cache`. Методы: `upsertManga()`, `upsertMangas()`, `getManga()`, `getMangaByIds()` |
+| `lib/core/database/dao/anime_dao.dart` | **DAO аниме**. CRUD для `anime_cache`. Методы: `upsertAnime()`, `upsertAnimes()`, `getAnime()`, `getAnimeByIds()`. Провайдер: `animeDaoProvider` |
 | `lib/core/database/dao/collection_dao.dart` | **DAO коллекций**. CRUD для `collections`, `collection_items`. Методы: `getCollections()`, `insertCollection()`, `getCollectionItemsWithData()`, `addItemToCollection()`, `updateItemStatus()`, `reorderItems()` (batch), `getCollectionStats()`, `findCollectionItem()` и др. Авторезолвинг жанров через `_resolveGenresIfNeeded<T>()` |
 | `lib/core/database/dao/canvas_dao.dart` | **DAO канваса**. CRUD для `canvas_items`, `canvas_viewport`, `canvas_connections`, `game_canvas_viewport`. Методы: `getCanvasItems()`, `insertCanvasItem()`, `updateCanvasItem()`, `deleteCanvasItem()`, `insertCanvasItemsBatch()`, `deleteCanvasItemsBatch()`, `getCanvasConnections()`, viewport операции. Batch методы используют `Transaction` + `Batch` для массовых INSERT/DELETE |
 | `lib/core/database/dao/custom_media_dao.dart` | **DAO кастомных элементов**. CRUD для `custom_items`. Методы: `create()`, `update()`, `getById()`, `getByIds()`, `delete()`, `deleteByIds()` |
@@ -426,6 +427,8 @@ lib/
 | Файл | Назначение |
 |------|------------|
 | `lib/shared/widgets/api_error_display.dart` | **ApiErrorDisplay**. Виджет ошибки API: иконка error_outline + сообщение + кнопка "Скопировать детали" (копирует debug info в clipboard через `Clipboard.setData`). Кнопка показывается только при наличии `detail`. Snackbar подтверждение через `showSnack()` |
+| `lib/shared/widgets/copyable_text.dart` | **CopyableText**. Обёртка для текста с копированием по нажатию. Hover показывает иконку copy, нажатие → check + копирование. Принимает `child` Widget и `text` String. Используется в `ScreenAppBar` и `ItemDetailsSheet` |
+| `lib/shared/widgets/media_progress_row.dart` | **MediaProgressRow**. Строка прогресса: label + текущее/общее + прогресс-бар + кнопка "+1". Переиспользуется в `MangaProgressSection` (главы, тома) и `AnimeProgressSection` (эпизоды) |
 | `lib/shared/widgets/section_header.dart` | **SectionHeader**. Заголовок секции с опциональной кнопкой действия справа |
 | `lib/shared/widgets/cached_image.dart` | **Виджет кэшированного изображения**. ConsumerStatefulWidget с FutureBuilder. Логика: cache disabled -> Image.network, cache enabled + file -> Image.file (с sync guard: existsSync + lengthSync > 0), cache enabled + no file -> Image.network + фоновый download через addPostFrameCallback. Corrupt/empty файлы удаляются и перекачиваются (`_deleteAndRedownload` с флагом `_corruptHandled`). Параметры: imageType, imageId, remoteUrl, memCacheWidth/Height, autoDownload, placeholder, errorWidget |
 | `lib/shared/widgets/dual_rating_badge.dart` | **Двойной рейтинг**. Формат `* 8 / 7.5` (userRating / apiRating). Режимы: badge (затемнённый фон 0xCC000000, белый текст), compact (уменьшенные размеры), inline (без фона, для list-карточек). Геттеры `hasRating`, `formattedRating`. Если нет ни одного рейтинга — `SizedBox.shrink()` |

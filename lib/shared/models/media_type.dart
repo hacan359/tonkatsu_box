@@ -13,7 +13,10 @@ enum MediaType {
   /// Сериал (TMDB).
   tvShow('tv_show'),
 
-  /// Анимация (TMDB) — анимационные фильмы и сериалы.
+  /// Анимация (TMDB) — анимационные фильмы и сериалы (Pixar, Disney и т.д.).
+  ///
+  /// Использует модели [Movie]/[TvShow] с [AnimationSource] platformId.
+  /// Не путать с [anime] — японское аниме из AniList.
   animation('animation'),
 
   /// Визуальная новелла (VNDB).
@@ -21,6 +24,12 @@ enum MediaType {
 
   /// Манга (AniList).
   manga('manga'),
+
+  /// Аниме (AniList) — японское аниме с полной метадатой.
+  ///
+  /// Использует собственную модель [Anime] с данными из AniList API.
+  /// Не путать с [animation] — TMDB анимация (мультфильмы).
+  anime('anime'),
 
   /// Кастомный элемент (созданный пользователем).
   custom('custom');
@@ -57,6 +66,8 @@ enum MediaType {
         return 'Visual Novel';
       case MediaType.manga:
         return 'Manga';
+      case MediaType.anime:
+        return 'Anime';
       case MediaType.custom:
         return 'Custom';
     }
@@ -77,6 +88,8 @@ enum MediaType {
         return l.mediaTypeVisualNovel;
       case MediaType.manga:
         return l.mediaTypeManga;
+      case MediaType.anime:
+        return l.mediaTypeAnime;
       case MediaType.custom:
         return l.mediaTypeCustom;
     }

@@ -3,6 +3,7 @@
 import 'package:flutter/widgets.dart';
 
 import '../models/search_source.dart';
+import 'anilist_anime_source.dart';
 import 'anilist_manga_source.dart';
 import 'igdb_games_source.dart';
 import 'tmdb_anime_source.dart';
@@ -23,9 +24,7 @@ final List<SearchSource> searchSources = List<SearchSource>.unmodifiable(
     // IGDB
     IgdbGamesSource(),
     // AniList
-    // TODO: AniListAnimeSource() — раскомментировать после добавления
-    // таблицы anime_cache, AnimeDao, DetailsSheet, browse_grid, search_screen.
-    // См. dev/unwork/anime_metadata.md
+    AniListAnimeSource(),
     AniListMangaSource(),
     // VNDB
     VndbSource(),

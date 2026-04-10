@@ -2,6 +2,7 @@
 
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
+import '../../../shared/models/anime.dart';
 import '../../../shared/models/collected_item_info.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
@@ -15,6 +16,7 @@ import '../../../shared/models/manga.dart';
 import '../../../shared/models/tv_show.dart';
 import '../../../shared/models/custom_media.dart';
 import '../../../shared/models/visual_novel.dart';
+import 'anime_dao.dart';
 import 'custom_media_dao.dart';
 import 'game_dao.dart';
 import 'manga_dao.dart';
@@ -31,12 +33,14 @@ class CollectionDao {
     required MovieDao movieDao,
     required TvShowDao tvShowDao,
     required VisualNovelDao visualNovelDao,
+    required AnimeDao animeDao,
     required MangaDao mangaDao,
     required CustomMediaDao customMediaDao,
   })  : _gameDao = gameDao,
         _movieDao = movieDao,
         _tvShowDao = tvShowDao,
         _visualNovelDao = visualNovelDao,
+        _animeDao = animeDao,
         _mangaDao = mangaDao,
         _customMediaDao = customMediaDao;
 
@@ -45,6 +49,7 @@ class CollectionDao {
   final MovieDao _movieDao;
   final TvShowDao _tvShowDao;
   final VisualNovelDao _visualNovelDao;
+  final AnimeDao _animeDao;
   final MangaDao _mangaDao;
   final CustomMediaDao _customMediaDao;
 
@@ -675,6 +680,7 @@ class CollectionDao {
       'animationCount': 0,
       'visualNovelCount': 0,
       'mangaCount': 0,
+      'animeCount': 0,
       'customCount': 0,
     };
 
@@ -699,6 +705,8 @@ class CollectionDao {
               (stats['visualNovelCount'] ?? 0) + count;
         case 'manga':
           stats['mangaCount'] = (stats['mangaCount'] ?? 0) + count;
+        case 'anime':
+          stats['animeCount'] = (stats['animeCount'] ?? 0) + count;
         case 'custom':
           stats['customCount'] = (stats['customCount'] ?? 0) + count;
       }
@@ -819,6 +827,7 @@ class CollectionDao {
                    ELSE m2.poster_url END
             WHEN 'visual_novel' THEN vn.image_url
             WHEN 'manga' THEN mc.cover_url
+            WHEN 'anime' THEN ac.cover_url
           END AS thumbnail_url
         FROM collection_items ci
         LEFT JOIN games g
@@ -837,6 +846,8 @@ class CollectionDao {
           ON ci.media_type = 'visual_novel' AND ci.external_id = vn.numeric_id
         LEFT JOIN manga_cache mc
           ON ci.media_type = 'manga' AND ci.external_id = mc.id
+        LEFT JOIN anime_cache ac
+          ON ci.media_type = 'anime' AND ci.external_id = ac.id
         WHERE $whereClause
       )
       WHERE thumbnail_url IS NOT NULL
@@ -864,6 +875,7 @@ class CollectionDao {
     final List<int> movieIds = <int>[];
     final List<int> tvShowIds = <int>[];
     final List<int> vnIds = <int>[];
+    final List<int> animeIds = <int>[];
     final List<int> mangaIds = <int>[];
     final List<int> customIds = <int>[];
     final Set<int> platformIds = <int>{};
@@ -887,6 +899,8 @@ class CollectionDao {
           }
         case MediaType.visualNovel:
           vnIds.add(item.externalId);
+        case MediaType.anime:
+          animeIds.add(item.externalId);
         case MediaType.manga:
           mangaIds.add(item.externalId);
         case MediaType.custom:
@@ -911,6 +925,9 @@ class CollectionDao {
       mangaIds.isNotEmpty
           ? _mangaDao.getMangaByIds(mangaIds)
           : Future<List<Manga>>.value(<Manga>[]),
+      animeIds.isNotEmpty
+          ? _animeDao.getAnimeByIds(animeIds)
+          : Future<List<Anime>>.value(<Anime>[]),
       customIds.isNotEmpty
           ? _customMediaDao.getByIds(customIds)
           : Future<List<CustomMedia>>.value(<CustomMedia>[]),
@@ -924,8 +941,9 @@ class CollectionDao {
     final List<TvShow> tvShows = results[2] as List<TvShow>;
     final List<VisualNovel> visualNovels = results[3] as List<VisualNovel>;
     final List<Manga> mangas = results[4] as List<Manga>;
-    final List<CustomMedia> customMediaList = results[5] as List<CustomMedia>;
-    final List<Platform> platforms = results[6] as List<Platform>;
+    final List<Anime> animes = results[5] as List<Anime>;
+    final List<CustomMedia> customMediaList = results[6] as List<CustomMedia>;
+    final List<Platform> platforms = results[7] as List<Platform>;
 
     final Map<int, Platform> platformsMap = <int, Platform>{
       for (final Platform p in platforms) p.id: p,
@@ -961,6 +979,9 @@ class CollectionDao {
     final Map<int, Manga> mangaMap = <int, Manga>{
       for (final Manga m in mangas) m.id: m,
     };
+    final Map<int, Anime> animeMap = <int, Anime>{
+      for (final Anime a in animes) a.id: a,
+    };
     final Map<int, CustomMedia> customMap = <int, CustomMedia>{
       for (final CustomMedia c in customMediaList) c.id: c,
     };
@@ -986,6 +1007,8 @@ class CollectionDao {
           return item.copyWith(movie: moviesMap[item.externalId]);
         case MediaType.visualNovel:
           return item.copyWith(visualNovel: vnMap[item.externalId]);
+        case MediaType.anime:
+          return item.copyWith(anime: animeMap[item.externalId]);
         case MediaType.manga:
           return item.copyWith(manga: mangaMap[item.externalId]);
         case MediaType.custom:

@@ -20,6 +20,7 @@ import '../../../shared/models/platform.dart';
 import '../../../shared/models/tv_episode.dart';
 import '../../../shared/models/tv_season.dart';
 import '../../../shared/models/tv_show.dart';
+import '../../../shared/models/anime.dart';
 import '../../../shared/models/manga.dart';
 import '../../../shared/models/visual_novel.dart';
 import '../../../shared/theme/app_colors.dart';
@@ -299,6 +300,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         collected = await ref.read(collectedVisualNovelIdsProvider.future);
       case MediaType.manga:
         collected = await ref.read(collectedMangaIdsProvider.future);
+      case MediaType.anime:
+        collected = await ref.read(collectedAnimeIdsProvider.future);
       case MediaType.custom:
         return <CollectedItemInfo>[]; // Кастомные элементы не ищутся через API
     }
@@ -330,6 +333,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       _onVisualNovelTap(item);
     } else if (item is Manga) {
       _onMangaTap(item);
+    } else if (item is Anime) {
+      _onAnimeTap(item);
     }
   }
 
@@ -1211,6 +1216,121 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       builder: (BuildContext context) => ItemDetailsSheet.manga(
         manga,
         onAddToCollection: () => _addMangaToAnyCollection(manga),
+      ),
+    );
+  }
+
+  // ==================== Anime actions ====================
+
+  void _onAnimeTap(Anime anime) {
+    if (widget.collectionId != null) {
+      _addAnimeToCollection(anime);
+    } else {
+      _showAnimeDetails(anime);
+    }
+  }
+
+  Future<void> _addAnimeToCollection(Anime anime) async {
+    final String title = anime.title;
+
+    await ref.read(databaseServiceProvider).upsertAnime(anime);
+
+    final bool success = await ref
+        .read(
+            collectionItemsNotifierProvider(widget.collectionId).notifier)
+        .addItem(
+          mediaType: MediaType.anime,
+          externalId: anime.id,
+        );
+
+    if (mounted) {
+      final S l = S.of(context);
+      if (success) {
+        _cacheImage(
+          ImageType.animeCover,
+          anime.id.toString(),
+          anime.coverUrl,
+        );
+        context.showSnack(
+          l.searchAddedToCollection(title),
+          type: SnackType.success,
+        );
+      } else {
+        context.showSnack(
+          l.searchAlreadyInCollection(title),
+          type: SnackType.info,
+        );
+      }
+    }
+  }
+
+  Future<void> _addAnimeToAnyCollection(Anime anime) async {
+    final String title = anime.title;
+
+    final Map<int, List<CollectedItemInfo>> collectedAnime =
+        await ref.read(collectedAnimeIdsProvider.future);
+    final List<CollectedItemInfo> infos =
+        collectedAnime[anime.id] ?? <CollectedItemInfo>[];
+    final Set<int?> alreadyIn =
+        infos.map((CollectedItemInfo i) => i.collectionId).toSet();
+
+    if (!mounted) return;
+    final S l = S.of(context);
+    final CollectionChoice? choice = await showCollectionPickerDialog(
+      context: context,
+      ref: ref,
+      title: l.searchAddToCollection,
+      alreadyInCollectionIds: alreadyIn,
+    );
+    if (choice == null || !mounted) return;
+
+    final int? collectionId;
+    final String collectionName;
+    switch (choice) {
+      case ChosenCollection(:final Collection collection):
+        collectionId = collection.id;
+        collectionName = collection.name;
+      case WithoutCollection():
+        collectionId = null;
+        collectionName = l.collectionsUncategorized;
+    }
+
+    await ref.read(databaseServiceProvider).upsertAnime(anime);
+
+    final bool success = await ref
+        .read(collectionItemsNotifierProvider(collectionId).notifier)
+        .addItem(
+          mediaType: MediaType.anime,
+          externalId: anime.id,
+        );
+
+    if (mounted) {
+      if (success) {
+        _cacheImage(
+          ImageType.animeCover,
+          anime.id.toString(),
+          anime.coverUrl,
+        );
+        context.showSnack(
+          l.searchAddedToNamed(title, collectionName),
+          type: SnackType.success,
+        );
+      } else {
+        context.showSnack(
+          l.searchAlreadyInNamed(title, collectionName),
+          type: SnackType.info,
+        );
+      }
+    }
+  }
+
+  void _showAnimeDetails(Anime anime) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) => ItemDetailsSheet.anime(
+        anime,
+        onAddToCollection: () => _addAnimeToAnyCollection(anime),
       ),
     );
   }

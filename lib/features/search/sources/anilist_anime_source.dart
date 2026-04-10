@@ -83,7 +83,7 @@ class AniListAnimeSource extends SearchSource {
 
       return BrowseResult(
         items: animes,
-        mediaType: MediaType.animation,
+        mediaType: MediaType.anime,
         hasMore: hasMore,
         totalPages: totalPages,
         currentPage: page,

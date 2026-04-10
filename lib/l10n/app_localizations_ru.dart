@@ -69,6 +69,9 @@ class SRu extends S {
   String get mediaTypeManga => 'Манга';
 
   @override
+  String get mediaTypeAnime => 'Аниме';
+
+  @override
   String get mediaTypeCustom => 'Своё';
 
   @override
@@ -1267,6 +1270,20 @@ class SRu extends S {
 
   @override
   String get mangaMarkCompleted => 'Отметить как прочитано';
+
+  @override
+  String get animeProgress => 'Прогресс просмотра';
+
+  @override
+  String get animeEpisodes => 'Эпизоды';
+
+  @override
+  String get animeMarkCompleted => 'Отметить как просмотрено';
+
+  @override
+  String animeNextEpisode(int episode) {
+    return 'Эп. $episode скоро выйдет';
+  }
 
   @override
   String get animatedMovie => 'Мультфильм';

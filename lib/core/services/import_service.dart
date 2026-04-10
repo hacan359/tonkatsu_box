@@ -25,6 +25,7 @@ import '../../shared/models/platform.dart' as model;
 import '../../shared/models/tv_episode.dart';
 import '../../shared/models/tv_season.dart';
 import '../../shared/models/tv_show.dart';
+import '../../shared/models/anime.dart';
 import '../../shared/models/manga.dart';
 import '../../shared/models/tracker_game_data.dart';
 import '../../shared/models/visual_novel.dart';
@@ -155,6 +156,9 @@ enum ImportStage {
 
   /// Загрузка данных манги из AniList.
   fetchingManga('Fetching manga data...'),
+
+  /// Загрузка данных аниме из AniList.
+  fetchingAnime('Fetching anime data...'),
 
   /// Кэширование медиа-данных.
   cachingMedia('Caching media...'),
@@ -664,6 +668,8 @@ class ImportService {
         media['visual_novels'] as List<dynamic>? ?? <dynamic>[];
     final List<dynamic> rawMangas =
         media['mangas'] as List<dynamic>? ?? <dynamic>[];
+    final List<dynamic> rawAnimes =
+        media['animes'] as List<dynamic>? ?? <dynamic>[];
     final List<dynamic> rawCustom =
         media['custom_items'] as List<dynamic>? ?? <dynamic>[];
 
@@ -675,6 +681,7 @@ class ImportService {
         rawPlatforms.length +
         rawVisualNovels.length +
         rawMangas.length +
+        rawAnimes.length +
         rawCustom.length;
     final int cachedAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     int current = 0;
@@ -830,6 +837,24 @@ class ImportService {
       await _database.upsertMangas(mangas);
     }
 
+    // Восстановление аниме
+    if (rawAnimes.isNotEmpty) {
+      final List<Anime> animes = <Anime>[];
+      for (final dynamic raw in rawAnimes) {
+        final Map<String, dynamic> row =
+            Map<String, dynamic>.from(raw as Map<String, dynamic>);
+        row['updated_at'] = cachedAt;
+        animes.add(Anime.fromDb(row));
+        current++;
+        onProgress?.call(ImportProgress(
+          stage: ImportStage.restoringMedia,
+          current: current,
+          total: total,
+        ));
+      }
+      await _database.upsertAnimes(animes);
+    }
+
     // Восстановление кастомных элементов
     if (rawCustom.isNotEmpty) {
       final List<CustomMedia> customItems = <CustomMedia>[];
@@ -865,6 +890,7 @@ class ImportService {
     final List<Map<String, dynamic>> tvShowItems = <Map<String, dynamic>>[];
     final List<Map<String, dynamic>> vnItems = <Map<String, dynamic>>[];
     final List<Map<String, dynamic>> mangaItems = <Map<String, dynamic>>[];
+    final List<Map<String, dynamic>> animeItems = <Map<String, dynamic>>[];
 
     for (final Map<String, dynamic> item in items) {
       final String mediaType = item['media_type'] as String;
@@ -886,6 +912,8 @@ class ImportService {
           vnItems.add(item);
         case 'manga':
           mangaItems.add(item);
+        case 'anime':
+          animeItems.add(item);
       }
     }
 
@@ -1026,12 +1054,41 @@ class ImportService {
       ));
     }
 
+    // Загрузка аниме из AniList
+    final List<int> animeIds = animeItems
+        .where((Map<String, dynamic> i) => i['external_id'] != null)
+        .map((Map<String, dynamic> i) => i['external_id'] as int)
+        .toList();
+    List<Anime> animes = <Anime>[];
+
+    if (animeIds.isNotEmpty && _aniListApi != null) {
+      final AniListApi aniListApi = _aniListApi;
+      onProgress?.call(ImportProgress(
+        stage: ImportStage.fetchingAnime,
+        current: 0,
+        total: animeIds.length,
+        message: 'Fetching ${animeIds.length} anime from AniList...',
+      ));
+
+      try {
+        animes = await aniListApi.getAnimeByIds(animeIds);
+      } on AniListApiException catch (e) {
+        _log.warning('Failed to fetch anime: ${e.message}');
+      }
+      onProgress?.call(ImportProgress(
+        stage: ImportStage.fetchingAnime,
+        current: animeIds.length,
+        total: animeIds.length,
+      ));
+    }
+
     // Кэширование медиа-данных
     final int totalMedia = games.length +
         movies.length +
         tvShows.length +
         visualNovels.length +
-        mangas.length;
+        mangas.length +
+        animes.length;
     onProgress?.call(ImportProgress(
       stage: ImportStage.cachingMedia,
       current: 0,
@@ -1082,6 +1139,16 @@ class ImportService {
     if (mangas.isNotEmpty) {
       await _database.upsertMangas(mangas);
       cachedCount += mangas.length;
+      onProgress?.call(ImportProgress(
+        stage: ImportStage.cachingMedia,
+        current: cachedCount,
+        total: totalMedia,
+      ));
+    }
+
+    if (animes.isNotEmpty) {
+      await _database.upsertAnimes(animes);
+      cachedCount += animes.length;
       onProgress?.call(ImportProgress(
         stage: ImportStage.cachingMedia,
         current: cachedCount,

@@ -37,6 +37,9 @@ enum ImageType {
   /// Обложки визуальных новелл.
   vnCover('vn_covers'),
 
+  /// Обложки аниме.
+  animeCover('anime_covers'),
+
   /// Обложки кастомных элементов.
   customCover('custom_covers');
 

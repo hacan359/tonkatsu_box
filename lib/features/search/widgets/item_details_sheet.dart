@@ -4,9 +4,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../shared/widgets/copyable_text.dart';
+
 import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/game.dart';
+import '../../../shared/models/anime.dart';
 import '../../../shared/models/manga.dart';
 import '../../../shared/models/movie.dart';
 import '../../../shared/models/tv_show.dart';
@@ -150,6 +153,39 @@ class ItemDetailsSheet extends StatelessWidget {
       externalUrl: manga.externalUrl,
       dataSource: DataSource.anilist,
       backdropUrl: manga.bannerUrl,
+      coverHeight: 142,
+      onAddToCollection: onAddToCollection,
+    );
+  }
+
+  /// Создаёт sheet для аниме.
+  factory ItemDetailsSheet.anime(
+    Anime anime, {
+    required VoidCallback onAddToCollection,
+  }) {
+    return ItemDetailsSheet(
+      title: anime.title,
+      icon: Icons.play_circle_outline,
+      overview: anime.description,
+      year: anime.releaseYear,
+      rating: anime.formattedRating,
+      genres: anime.genres,
+      maxGenres: _defaultMaxChips,
+      subtitle: anime.titleEnglish != anime.title ? anime.titleEnglish : null,
+      infoChips: <(IconData, String)>[
+        if (anime.studiosString != null)
+          (Icons.business, anime.studiosString!),
+        (Icons.play_circle_outline, anime.episodesString),
+        if (anime.durationString != null)
+          (Icons.timer_outlined, anime.durationString!),
+      ],
+      extraInfo: anime.formatLabel,
+      posterUrl: anime.coverUrl,
+      cacheImageType: ImageType.animeCover,
+      cacheImageId: anime.id.toString(),
+      externalUrl: anime.externalUrl,
+      dataSource: DataSource.anilist,
+      backdropUrl: anime.bannerUrl,
       coverHeight: 142,
       onAddToCollection: onAddToCollection,
     );
@@ -428,23 +464,27 @@ class ItemDetailsSheet extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    // Название + год
-                    Text.rich(
-                      TextSpan(children: <InlineSpan>[
-                        TextSpan(
-                          text: title,
-                          style: AppTypography.h2.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        if (year != null)
+                    // Название + год (нажатие копирует название)
+                    CopyableText(
+                      text: title,
+                      iconSize: 16,
+                      child: Text.rich(
+                        TextSpan(children: <InlineSpan>[
                           TextSpan(
-                            text: '  $year',
-                            style: AppTypography.bodySmall.copyWith(
-                              color: AppColors.textTertiary,
+                            text: title,
+                            style: AppTypography.h2.copyWith(
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                      ]),
+                          if (year != null)
+                            TextSpan(
+                              text: '  $year',
+                              style: AppTypography.bodySmall.copyWith(
+                                color: AppColors.textTertiary,
+                              ),
+                            ),
+                        ]),
+                      ),
                     ),
                     // Подзаголовок (alt title)
                     if (subtitle != null) ...<Widget>[

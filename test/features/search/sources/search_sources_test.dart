@@ -5,13 +5,14 @@ import 'package:xerabora/features/search/sources/search_sources.dart';
 import 'package:xerabora/features/search/sources/tmdb_anime_source.dart';
 import 'package:xerabora/features/search/sources/tmdb_movies_source.dart';
 import 'package:xerabora/features/search/sources/tmdb_tv_source.dart';
+import 'package:xerabora/features/search/sources/anilist_anime_source.dart';
 import 'package:xerabora/features/search/sources/anilist_manga_source.dart';
 import 'package:xerabora/features/search/sources/vndb_source.dart';
 
 void main() {
   group('searchSources', () {
-    test('contains 6 sources', () {
-      expect(searchSources, hasLength(6));
+    test('contains 7 sources', () {
+      expect(searchSources, hasLength(7));
     });
 
     test('first source is TmdbMoviesSource', () {
@@ -30,12 +31,16 @@ void main() {
       expect(searchSources[3], isA<IgdbGamesSource>());
     });
 
-    test('fifth source is AniListMangaSource', () {
-      expect(searchSources[4], isA<AniListMangaSource>());
+    test('fifth source is AniListAnimeSource', () {
+      expect(searchSources[4], isA<AniListAnimeSource>());
     });
 
-    test('sixth source is VndbSource', () {
-      expect(searchSources[5], isA<VndbSource>());
+    test('sixth source is AniListMangaSource', () {
+      expect(searchSources[5], isA<AniListMangaSource>());
+    });
+
+    test('seventh source is VndbSource', () {
+      expect(searchSources[6], isA<VndbSource>());
     });
 
     test('all sources have unique ids', () {
@@ -52,6 +57,7 @@ void main() {
         'tv',
         'anime',
         'games',
+        'anilist_anime',
         'manga',
         'visual_novels',
       ]);

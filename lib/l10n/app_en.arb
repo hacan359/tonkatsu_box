@@ -24,6 +24,7 @@
   "mediaTypeAnimation": "Animation",
   "mediaTypeVisualNovel": "Visual Novel",
   "mediaTypeManga": "Manga",
+  "mediaTypeAnime": "Anime",
   "mediaTypeCustom": "Custom",
 
   "sortManualDisplay": "Manual",
@@ -542,6 +543,15 @@
   "mangaChapters": "Chapters",
   "mangaVolumes": "Volumes",
   "mangaMarkCompleted": "Mark as completed",
+  "animeProgress": "Watch Progress",
+  "animeEpisodes": "Episodes",
+  "animeMarkCompleted": "Mark as completed",
+  "animeNextEpisode": "Ep {episode} airing soon",
+  "@animeNextEpisode": {
+    "placeholders": {
+      "episode": {"type": "int"}
+    }
+  },
   "animatedMovie": "Animated Movie",
   "animatedSeries": "Animated Series",
 

@@ -11,6 +11,7 @@ import '../../shared/models/custom_media.dart';
 import '../../shared/models/game.dart';
 import '../../shared/models/movie.dart';
 import '../../shared/models/tv_show.dart';
+import '../../shared/models/anime.dart';
 import '../../shared/models/manga.dart';
 import '../../shared/models/visual_novel.dart';
 
@@ -233,6 +234,12 @@ class CanvasRepository {
         .map((CanvasItem item) => item.itemRefId!)
         .toList();
 
+    final List<int> animeIds = items
+        .where((CanvasItem item) =>
+            item.itemType == CanvasItemType.anime && item.itemRefId != null)
+        .map((CanvasItem item) => item.itemRefId!)
+        .toList();
+
     final List<int> customIds = items
         .where((CanvasItem item) =>
             item.itemType == CanvasItemType.custom && item.itemRefId != null)
@@ -245,6 +252,7 @@ class CanvasRepository {
         tvShowTmdbIds.isEmpty &&
         vnIds.isEmpty &&
         mangaIds.isEmpty &&
+        animeIds.isEmpty &&
         customIds.isEmpty) {
       return items;
     }
@@ -266,6 +274,9 @@ class CanvasRepository {
       mangaIds.isNotEmpty
           ? _db.getMangaByIds(mangaIds)
           : Future<List<Manga>>.value(<Manga>[]),
+      animeIds.isNotEmpty
+          ? _db.animeDao.getAnimeByIds(animeIds)
+          : Future<List<Anime>>.value(<Anime>[]),
       customIds.isNotEmpty
           ? _db.customMediaDao.getByIds(customIds)
           : Future<List<CustomMedia>>.value(<CustomMedia>[]),
@@ -287,8 +298,11 @@ class CanvasRepository {
     final Map<int, Manga> mangaMap = <int, Manga>{
       for (final Manga m in results[4] as List<Manga>) m.id: m,
     };
+    final Map<int, Anime> animeMap = <int, Anime>{
+      for (final Anime a in results[5] as List<Anime>) a.id: a,
+    };
     final Map<int, CustomMedia> customMap = <int, CustomMedia>{
-      for (final CustomMedia c in results[5] as List<CustomMedia>) c.id: c,
+      for (final CustomMedia c in results[6] as List<CustomMedia>) c.id: c,
     };
 
     return items.map((CanvasItem item) {
@@ -311,6 +325,8 @@ class CanvasRepository {
           return item.copyWith(visualNovel: vnMap[item.itemRefId]);
         case CanvasItemType.manga:
           return item.copyWith(manga: mangaMap[item.itemRefId]);
+        case CanvasItemType.anime:
+          return item.copyWith(anime: animeMap[item.itemRefId]);
         case CanvasItemType.custom:
           return item.copyWith(customMedia: customMap[item.itemRefId]);
         case CanvasItemType.text:

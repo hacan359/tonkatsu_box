@@ -21,12 +21,14 @@ import '../../shared/models/platform.dart';
 import '../../shared/models/tv_episode.dart';
 import '../../shared/models/tv_season.dart';
 import '../../shared/models/tv_show.dart';
+import '../../shared/models/anime.dart';
 import '../../shared/models/manga.dart';
 import '../../shared/models/visual_novel.dart';
 import '../../shared/models/wishlist_item.dart';
 import 'dao/canvas_dao.dart';
 import 'dao/collection_dao.dart';
 import 'dao/custom_media_dao.dart';
+import 'dao/anime_dao.dart';
 import 'dao/game_dao.dart';
 import 'dao/movie_dao.dart';
 import 'dao/tag_dao.dart';
@@ -71,6 +73,11 @@ final Provider<VisualNovelDao> visualNovelDaoProvider =
 /// Провайдер для [MangaDao].
 final Provider<MangaDao> mangaDaoProvider = Provider<MangaDao>((Ref ref) {
   return ref.watch(databaseServiceProvider).mangaDao;
+});
+
+/// Провайдер для [AnimeDao].
+final Provider<AnimeDao> animeDaoProvider = Provider<AnimeDao>((Ref ref) {
+  return ref.watch(databaseServiceProvider).animeDao;
 });
 
 /// Провайдер для [CollectionDao].
@@ -145,6 +152,9 @@ class DatabaseService {
   /// DAO для работы с мангой.
   late final MangaDao mangaDao = MangaDao(() => database);
 
+  /// DAO для работы с аниме.
+  late final AnimeDao animeDao = AnimeDao(() => database);
+
   /// DAO для работы с кастомными элементами.
   late final CustomMediaDao customMediaDao = CustomMediaDao(() => database);
 
@@ -155,6 +165,7 @@ class DatabaseService {
     movieDao: movieDao,
     tvShowDao: tvShowDao,
     visualNovelDao: visualNovelDao,
+    animeDao: animeDao,
     mangaDao: mangaDao,
     customMediaDao: customMediaDao,
   );
@@ -216,7 +227,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 32,
+        version: 33,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -931,6 +942,7 @@ class DatabaseService {
       await txn.delete('games');
       await txn.delete('visual_novels_cache');
       await txn.delete('manga_cache');
+      await txn.delete('anime_cache');
       // Статические справочники (platforms, tmdb_genres, igdb_genres, vndb_tags)
       // не очищаются — они заполнены миграцией v24 и не являются пользовательскими.
       // Wishlist
@@ -976,6 +988,22 @@ class DatabaseService {
   /// Получает манги по списку ID.
   Future<List<Manga>> getMangaByIds(List<int> ids) =>
       mangaDao.getMangaByIds(ids);
+
+  // ==================== Anime (delegates to AnimeDao) ====================
+
+  /// Сохраняет или обновляет аниме в кэше.
+  Future<void> upsertAnime(Anime anime) => animeDao.upsertAnime(anime);
+
+  /// Сохраняет или обновляет список аниме.
+  Future<void> upsertAnimes(List<Anime> animes) =>
+      animeDao.upsertAnimes(animes);
+
+  /// Получает аниме по AniList ID.
+  Future<Anime?> getAnime(int id) => animeDao.getAnime(id);
+
+  /// Получает аниме по списку ID.
+  Future<List<Anime>> getAnimeByIds(List<int> ids) =>
+      animeDao.getAnimeByIds(ids);
 
   // ==================== Collection Covers (delegates to CollectionDao) ====================
 

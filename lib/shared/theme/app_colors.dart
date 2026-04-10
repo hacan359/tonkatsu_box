@@ -63,6 +63,9 @@ abstract final class AppColors {
   /// Акцентный цвет для манги (голубой AniList).
   static const Color mangaAccent = Color(0xFF3DB4F2);
 
+  /// Акцентный цвет для аниме (розовый AniList).
+  static const Color animeAccent = Color(0xFFE85D75);
+
   /// Акцентный цвет для кастомных элементов (бирюзовый).
   static const Color customAccent = Color(0xFF26A69A);
 

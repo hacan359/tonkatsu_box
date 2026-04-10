@@ -11,6 +11,7 @@ import 'item_status.dart';
 import 'media_type.dart';
 import 'movie.dart';
 import 'platform.dart';
+import 'anime.dart';
 import 'manga.dart';
 import 'tv_show.dart';
 import 'visual_novel.dart';
@@ -42,6 +43,7 @@ class CollectionItem with Exportable {
     this.movie,
     this.tvShow,
     this.visualNovel,
+    this.anime,
     this.manga,
     this.customMedia,
     this.platform,
@@ -59,6 +61,7 @@ class CollectionItem with Exportable {
     Movie? movie,
     TvShow? tvShow,
     VisualNovel? visualNovel,
+    Anime? anime,
     Manga? manga,
     CustomMedia? customMedia,
     Platform? platform,
@@ -99,6 +102,7 @@ class CollectionItem with Exportable {
       movie: movie,
       tvShow: tvShow,
       visualNovel: visualNovel,
+      anime: anime,
       manga: manga,
       customMedia: customMedia,
       platform: platform,
@@ -215,6 +219,9 @@ class CollectionItem with Exportable {
 
   /// Данные визуальной новеллы (joined).
   final VisualNovel? visualNovel;
+
+  /// Данные аниме (joined).
+  final Anime? anime;
 
   /// Данные манги (joined).
   final Manga? manga;
@@ -388,6 +395,25 @@ class CollectionItem with Exportable {
           imageType: ImageType.mangaCover,
           placeholderIcon: Icons.auto_stories,
         );
+      case MediaType.anime:
+        return (
+          name: anime?.title,
+          coverUrl: anime?.coverUrl,
+          thumbUrl: anime?.coverUrlMedium ?? anime?.coverUrl,
+          description: anime?.description,
+          rating: anime?.rating10,
+          formattedRating: anime?.formattedRating,
+          releaseYear: anime?.releaseYear,
+          runtime: null,
+          totalSeasons: null,
+          totalEpisodes: anime?.episodes,
+          genresString: anime?.genresString,
+          genres: anime?.genres,
+          mediaStatus: anime?.statusLabel,
+          source: DataSource.anilist,
+          imageType: ImageType.animeCover,
+          placeholderIcon: Icons.play_circle_outline,
+        );
       case MediaType.custom:
         final MediaType displayType =
             customMedia?.displayType ?? MediaType.custom;
@@ -423,6 +449,7 @@ class CollectionItem with Exportable {
       MediaType.animation => 'Unknown Animation',
       MediaType.visualNovel => 'Unknown Visual Novel',
       MediaType.manga => 'Unknown Manga',
+      MediaType.anime => 'Unknown Anime',
       MediaType.custom => 'Unknown Custom Item',
     };
     return _resolvedMedia.name ?? fallback;
@@ -445,6 +472,7 @@ class CollectionItem with Exportable {
         MediaType.animation => Icons.animation,
         MediaType.visualNovel => Icons.menu_book,
         MediaType.manga => Icons.auto_stories,
+        MediaType.anime => Icons.play_circle_outline,
         MediaType.custom => Icons.dashboard_customize,
       };
 
@@ -622,6 +650,7 @@ class CollectionItem with Exportable {
     Movie? movie,
     TvShow? tvShow,
     VisualNovel? visualNovel,
+    Anime? anime,
     Manga? manga,
     CustomMedia? customMedia,
     Platform? platform,
@@ -651,6 +680,7 @@ class CollectionItem with Exportable {
       movie: movie ?? this.movie,
       tvShow: tvShow ?? this.tvShow,
       visualNovel: visualNovel ?? this.visualNovel,
+      anime: anime ?? this.anime,
       manga: manga ?? this.manga,
       customMedia: customMedia ?? this.customMedia,
       platform: platform ?? this.platform,

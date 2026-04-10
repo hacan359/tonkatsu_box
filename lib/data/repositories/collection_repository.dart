@@ -30,6 +30,7 @@ class CollectionStats {
     this.animationCount = 0,
     this.visualNovelCount = 0,
     this.mangaCount = 0,
+    this.animeCount = 0,
     this.customCount = 0,
   });
 
@@ -68,6 +69,9 @@ class CollectionStats {
 
   /// Количество манги.
   final int mangaCount;
+
+  /// Количество аниме.
+  final int animeCount;
 
   /// Количество кастомных элементов.
   final int customCount;
@@ -310,6 +314,7 @@ class CollectionRepository {
       animationCount: raw['animationCount'] ?? 0,
       visualNovelCount: raw['visualNovelCount'] ?? 0,
       mangaCount: raw['mangaCount'] ?? 0,
+      animeCount: raw['animeCount'] ?? 0,
       customCount: raw['customCount'] ?? 0,
     );
   }

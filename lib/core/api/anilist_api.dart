@@ -177,8 +177,11 @@ query ($page: Int, $perPage: Int, $search: String, $genre: String,
       seasonYear
       startDate { year month day }
       episodes
+      duration
       format
+      source
       studios(isMain: true) { nodes { name } }
+      nextAiringEpisode { airingAt episode }
     }
   }
 }
@@ -191,6 +194,7 @@ query ($id: Int) {
     id
     title { romaji english native }
     coverImage { large medium }
+    bannerImage
     description(asHtml: false)
     genres
     averageScore
@@ -201,8 +205,11 @@ query ($id: Int) {
     seasonYear
     startDate { year month day }
     episodes
+    duration
     format
+    source
     studios(isMain: true) { nodes { name } }
+    nextAiringEpisode { airingAt episode }
   }
 }
 ''';
@@ -226,8 +233,11 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
       seasonYear
       startDate { year month day }
       episodes
+      duration
       format
+      source
       studios(isMain: true) { nodes { name } }
+      nextAiringEpisode { airingAt episode }
     }
   }
 }

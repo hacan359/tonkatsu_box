@@ -722,6 +722,8 @@ class CollectionItemsNotifier
         ref.invalidate(collectedVisualNovelIdsProvider);
       case MediaType.manga:
         ref.invalidate(collectedMangaIdsProvider);
+      case MediaType.anime:
+        ref.invalidate(collectedAnimeIdsProvider);
       case MediaType.custom:
         break; // Кастомные элементы не имеют collected IDs провайдера
     }
@@ -885,8 +887,9 @@ class CollectionItemsNotifier
         }).toList(),
       );
 
-      // Авто-статус для манги
+      // Авто-статус для манги и аниме
       await _autoUpdateMangaStatus(id, currentEpisode, currentSeason);
+      await _autoUpdateAnimeStatus(id, currentEpisode);
     }
   }
 
@@ -928,6 +931,45 @@ class CollectionItemsNotifier
 
     if (targetStatus != null) {
       await updateStatus(id, targetStatus, MediaType.manga);
+    }
+  }
+
+  /// Автоматически обновляет статус аниме на основе прогресса просмотра.
+  Future<void> _autoUpdateAnimeStatus(
+    int id,
+    int? newEpisodeValue,
+  ) async {
+    final CollectionItem? item =
+        state.valueOrNull?.where((CollectionItem i) => i.id == id).firstOrNull;
+    if (item == null ||
+        item.mediaType != MediaType.anime ||
+        item.status == ItemStatus.dropped) {
+      return;
+    }
+
+    final int newEpisode = newEpisodeValue ?? item.currentEpisode;
+    final int? totalEpisodes = item.anime?.episodes;
+
+    ItemStatus? targetStatus;
+
+    if (newEpisode == 0) {
+      if (item.status == ItemStatus.inProgress ||
+          item.status == ItemStatus.completed) {
+        targetStatus = ItemStatus.notStarted;
+      }
+    } else if (totalEpisodes != null && newEpisode >= totalEpisodes) {
+      if (item.status != ItemStatus.completed) {
+        targetStatus = ItemStatus.completed;
+      }
+    } else if (item.status == ItemStatus.notStarted ||
+        item.status == ItemStatus.planned) {
+      targetStatus = ItemStatus.inProgress;
+    } else if (item.status == ItemStatus.completed) {
+      targetStatus = ItemStatus.inProgress;
+    }
+
+    if (targetStatus != null) {
+      await updateStatus(id, targetStatus, MediaType.anime);
     }
   }
 
@@ -1054,6 +1096,16 @@ final FutureProvider<Map<int, List<CollectedItemInfo>>>
     FutureProvider<Map<int, List<CollectedItemInfo>>>((Ref ref) async {
   final DatabaseService db = ref.watch(databaseServiceProvider);
   return db.getCollectedItemInfos(MediaType.manga);
+});
+
+/// Провайдер для информации о нахождении аниме в коллекциях.
+///
+/// Возвращает `Map` anilist_id -> список записей в коллекциях.
+final FutureProvider<Map<int, List<CollectedItemInfo>>>
+    collectedAnimeIdsProvider =
+    FutureProvider<Map<int, List<CollectedItemInfo>>>((Ref ref) async {
+  final DatabaseService db = ref.watch(databaseServiceProvider);
+  return db.getCollectedItemInfos(MediaType.anime);
 });
 
 /// Провайдер для количества uncategorized элементов.

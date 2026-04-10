@@ -5,9 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/manga.dart';
-import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/media_progress_row.dart';
 import '../providers/collections_provider.dart';
 
 /// Секция прогресса чтения манги с прогресс-барами и кнопками.
@@ -69,7 +69,7 @@ class MangaProgressSection extends ConsumerWidget {
         const SizedBox(height: AppSpacing.md),
 
         // Chapters progress
-        _ProgressRow(
+        MediaProgressRow(
           label: l.mangaChapters,
           current: currentChapter,
           total: totalChapters,
@@ -81,7 +81,7 @@ class MangaProgressSection extends ConsumerWidget {
         const SizedBox(height: AppSpacing.sm),
 
         // Volumes progress
-        _ProgressRow(
+        MediaProgressRow(
           label: l.mangaVolumes,
           current: currentVolume,
           total: totalVolumes,
@@ -195,89 +195,3 @@ class MangaProgressSection extends ConsumerWidget {
   }
 }
 
-/// Строка прогресса с меткой, значением, прогресс-баром и кнопками.
-class _ProgressRow extends StatelessWidget {
-  const _ProgressRow({
-    required this.label,
-    required this.current,
-    required this.total,
-    required this.accentColor,
-    required this.onIncrement,
-    required this.onEdit,
-  });
-
-  final String label;
-  final int current;
-  final int? total;
-  final Color accentColor;
-  final VoidCallback onIncrement;
-  final VoidCallback onEdit;
-
-  @override
-  Widget build(BuildContext context) {
-    final String progressText =
-        total != null ? '$current / $total' : '$current';
-    final double? progressValue =
-        total != null && total! > 0 ? current / total! : null;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Row(
-          children: <Widget>[
-            Text(
-              label,
-              style: AppTypography.bodySmall.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const Spacer(),
-            InkWell(
-              onTap: onEdit,
-              borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.xs,
-                  vertical: 2,
-                ),
-                child: Text(
-                  progressText,
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.xs),
-            SizedBox(
-              width: 28,
-              height: 28,
-              child: IconButton(
-                onPressed: onIncrement,
-                icon: const Icon(Icons.add, size: 16),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                style: IconButton.styleFrom(
-                  foregroundColor: accentColor,
-                ),
-              ),
-            ),
-          ],
-        ),
-        if (progressValue != null) ...<Widget>[
-          const SizedBox(height: 4),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
-            child: LinearProgressIndicator(
-              value: progressValue.clamp(0.0, 1.0),
-              minHeight: 4,
-              backgroundColor: AppColors.surfaceLight,
-              valueColor: AlwaysStoppedAnimation<Color>(accentColor),
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-}

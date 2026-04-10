@@ -15,6 +15,7 @@ import '../../../shared/widgets/collection_picker_dialog.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/widgets/screen_app_bar.dart';
 import '../../../core/database/database_service.dart';
+import '../../../shared/models/anime.dart';
 import '../../../shared/models/collected_item_info.dart';
 import '../../../data/repositories/canvas_repository.dart';
 import '../../../shared/models/collection.dart';
@@ -38,6 +39,7 @@ import '../providers/vgmaps_panel_provider.dart';
 import '../widgets/canvas_view.dart';
 import '../widgets/episode_tracker_section.dart';
 import '../widgets/item_tags_section.dart';
+import '../widgets/anime_progress_section.dart';
 import '../widgets/manga_progress_section.dart';
 import '../providers/tracker_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -70,10 +72,12 @@ class _MediaConfig {
     required this.description,
     required this.hasEpisodeTracker,
     required this.hasMangaProgress,
+    required this.hasAnimeProgress,
     this.externalUrl,
     this.backdropUrl,
     this.tvShow,
     this.manga,
+    this.anime,
   });
 
   final String? coverUrl;
@@ -88,10 +92,12 @@ class _MediaConfig {
   final String? description;
   final bool hasEpisodeTracker;
   final bool hasMangaProgress;
+  final bool hasAnimeProgress;
   final String? externalUrl;
   final String? backdropUrl;
   final TvShow? tvShow;
   final Manga? manga;
+  final Anime? anime;
 }
 
 /// Единый экран детального просмотра элемента коллекции.
@@ -597,6 +603,14 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
             currentVolume: item.currentSeason,
             accentColor: config.accentColor,
           ),
+        if (config.hasAnimeProgress && widget.collectionId != null)
+          AnimeProgressSection(
+            itemId: item.id,
+            collectionId: widget.collectionId,
+            anime: config.anime,
+            currentEpisode: item.currentEpisode,
+            accentColor: config.accentColor,
+          ),
       ],
       recommendationSections: <Widget>[
         if (showRecs)
@@ -645,6 +659,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       MediaType.tvShow => item.tvShow?.externalUrl,
       MediaType.visualNovel => item.visualNovel?.externalUrl,
       MediaType.manga => item.manga?.externalUrl,
+      MediaType.anime => item.anime?.externalUrl,
       MediaType.custom => item.customMedia?.externalUrl,
     };
 
@@ -665,13 +680,16 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
           (item.mediaType == MediaType.animation &&
               item.platformId == AnimationSource.tvShow),
       hasMangaProgress: item.mediaType == MediaType.manga,
+      hasAnimeProgress: item.mediaType == MediaType.anime,
       externalUrl: externalUrl,
       backdropUrl: item.game?.artworkUrl
           ?? item.movie?.backdropUrl
           ?? item.tvShow?.backdropUrl
-          ?? item.manga?.bannerUrl,
+          ?? item.manga?.bannerUrl
+          ?? item.anime?.bannerUrl,
       tvShow: item.tvShow,
       manga: item.manga,
+      anime: item.anime,
     );
   }
 
@@ -686,6 +704,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
           : l.animatedMovie,
       MediaType.visualNovel => l.mediaTypeVisualNovel,
       MediaType.manga => l.mediaTypeManga,
+      MediaType.anime => l.mediaTypeAnime,
       MediaType.custom => item.customMedia?.platformName ?? l.mediaTypeCustom,
     };
   }
@@ -759,6 +778,44 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         chips.add(MediaDetailChip(
           icon: Icons.person_outline,
           text: m.authorsString!,
+        ));
+      }
+    }
+    // Anime-специфичные чипы: format, episodes, duration, studios, season, source
+    if (item.mediaType == MediaType.anime && item.anime != null) {
+      final Anime a = item.anime!;
+      if (a.formatLabel != null) {
+        chips.add(MediaDetailChip(
+          icon: Icons.category_outlined,
+          text: a.formatLabel!,
+        ));
+      }
+      chips.add(MediaDetailChip(
+        icon: Icons.playlist_play,
+        text: a.episodesString,
+      ));
+      if (a.durationString != null) {
+        chips.add(MediaDetailChip(
+          icon: Icons.schedule_outlined,
+          text: a.durationString!,
+        ));
+      }
+      if (a.studiosString != null) {
+        chips.add(MediaDetailChip(
+          icon: Icons.business,
+          text: a.studiosString!,
+        ));
+      }
+      if (a.seasonLabel != null) {
+        chips.add(MediaDetailChip(
+          icon: Icons.date_range,
+          text: a.seasonLabel!,
+        ));
+      }
+      if (a.sourceLabel != null) {
+        chips.add(MediaDetailChip(
+          icon: Icons.source,
+          text: a.sourceLabel!,
         ));
       }
     }
@@ -884,6 +941,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       MediaType.animation => l.animationNotFound,
       MediaType.visualNovel => l.visualNovelNotFound,
       MediaType.manga => l.mangaNotFound,
+      MediaType.anime => l.mediaTypeAnime,
       MediaType.custom => l.unknownCustom,
       null => l.gameNotFound,
     };

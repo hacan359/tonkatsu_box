@@ -331,6 +331,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
       case CanvasItemType.animation:
       case CanvasItemType.visualNovel:
       case CanvasItemType.manga:
+      case CanvasItemType.anime:
       case CanvasItemType.custom:
         break; // Медиа-элементы не редактируются через контекстное меню
     }
@@ -834,6 +835,7 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
       case CanvasItemType.animation:
       case CanvasItemType.visualNovel:
       case CanvasItemType.manga:
+      case CanvasItemType.anime:
       case CanvasItemType.custom:
         child = _buildMediaCard(item);
       case CanvasItemType.text:
@@ -986,6 +988,7 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
       CanvasItemType.animation => CanvasRepository.defaultCardWidth,
       CanvasItemType.visualNovel => CanvasRepository.defaultCardWidth,
       CanvasItemType.manga => CanvasRepository.defaultCardWidth,
+      CanvasItemType.anime => CanvasRepository.defaultCardWidth,
       CanvasItemType.custom => CanvasRepository.defaultCardWidth,
       CanvasItemType.text => 200,
       CanvasItemType.image => 200,
@@ -1002,6 +1005,7 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
       CanvasItemType.animation => CanvasRepository.defaultCardHeight,
       CanvasItemType.visualNovel => CanvasRepository.defaultCardHeight,
       CanvasItemType.manga => CanvasRepository.defaultCardHeight,
+      CanvasItemType.anime => CanvasRepository.defaultCardHeight,
       CanvasItemType.custom => CanvasRepository.defaultCardHeight,
       CanvasItemType.text => 100,
       CanvasItemType.image => 200,

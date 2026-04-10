@@ -6,8 +6,8 @@ import 'package:xerabora/shared/models/media_type.dart';
 void main() {
   group('MediaType', () {
     group('значения enum', () {
-      test('должен содержать 7 значений', () {
-        expect(MediaType.values.length, 7);
+      test('должен содержать 8 значений', () {
+        expect(MediaType.values.length, 8);
       });
 
       test('должен содержать game', () {
@@ -32,6 +32,10 @@ void main() {
 
       test('должен содержать manga', () {
         expect(MediaType.values.contains(MediaType.manga), isTrue);
+      });
+
+      test('должен содержать anime', () {
+        expect(MediaType.values.contains(MediaType.anime), isTrue);
       });
     });
 
@@ -58,6 +62,10 @@ void main() {
 
       test('manga должен иметь значение "manga"', () {
         expect(MediaType.manga.value, 'manga');
+      });
+
+      test('anime должен иметь значение "anime"', () {
+        expect(MediaType.anime.value, 'anime');
       });
     });
 
@@ -115,6 +123,12 @@ void main() {
 
         expect(result, MediaType.manga);
       });
+
+      test('должен вернуть anime для "anime"', () {
+        final MediaType result = MediaType.fromString('anime');
+
+        expect(result, MediaType.anime);
+      });
     });
 
     group('displayLabel', () {
@@ -140,6 +154,10 @@ void main() {
 
       test('manga должен отображаться как "Manga"', () {
         expect(MediaType.manga.displayLabel, 'Manga');
+      });
+
+      test('anime должен отображаться как "Anime"', () {
+        expect(MediaType.anime.displayLabel, 'Anime');
       });
     });
   });
