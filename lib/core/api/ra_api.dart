@@ -209,6 +209,31 @@ class RaApi {
     }
   }
 
+  /// Загружает краткую информацию об игре и прогресс пользователя (без списка достижений).
+  ///
+  /// Возвращает Title, ConsoleName, NumAchievements, NumAwardedToUser и т.д.
+  /// Легковесный вызов — не включает массив Achievements.
+  Future<Map<String, dynamic>> getGameSummary(
+    String targetUser,
+    int raGameId,
+  ) async {
+    _ensureCredentials();
+    try {
+      final Response<dynamic> response = await _dio.get<dynamic>(
+        '$_baseUrl/API_GetGameInfoAndUserProgress.php',
+        queryParameters: <String, String>{
+          ..._authParams(),
+          'u': targetUser,
+          'g': raGameId.toString(),
+          'a': '0',
+        },
+      );
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      throw _handleError(e, 'getGameSummary');
+    }
+  }
+
   /// Загружает детали достижений для конкретной игры.
   ///
   /// Возвращает Map всех достижений (earned + locked) с датами разблокировки.

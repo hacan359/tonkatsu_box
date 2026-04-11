@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/api/ra_api.dart';
 import '../../../core/services/discord_rpc_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
@@ -216,7 +217,39 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   if (value) {
                     rpc.enable();
                   } else {
+                    // Выключаем и RA sync если был активен
+                    rpc.disableRaSync();
+                    ref
+                        .read(settingsNotifierProvider.notifier)
+                        .setDiscordRaSyncEnabled(enabled: false);
                     rpc.disable();
+                  }
+                },
+              ),
+            ),
+          if (kDiscordRpcAvailable &&
+              settings.discordRpcEnabled &&
+              ref.read(raApiProvider).hasCredentials)
+            SettingsTile(
+              title: l.settingsDiscordRaSync,
+              subtitle: l.settingsDiscordRaSyncSubtitle,
+              showChevron: false,
+              trailing: Switch(
+                value: settings.discordRaSyncEnabled,
+                onChanged: (bool value) {
+                  ref
+                      .read(settingsNotifierProvider.notifier)
+                      .setDiscordRaSyncEnabled(enabled: value);
+                  final DiscordRpcService rpc =
+                      ref.read(discordRpcServiceProvider);
+                  if (value) {
+                    final RaApi raApi = ref.read(raApiProvider);
+                    rpc.enableRaSync(
+                      raApi: raApi,
+                      raUsername: raApi.username!,
+                    );
+                  } else {
+                    rpc.disableRaSync();
                   }
                 },
               ),

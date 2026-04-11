@@ -4495,6 +4495,18 @@ abstract class S {
   /// **'Show currently viewed item in your Discord status'**
   String get settingsDiscordRpcSubtitle;
 
+  /// No description provided for @settingsDiscordRaSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync RetroAchievements'**
+  String get settingsDiscordRaSync;
+
+  /// No description provided for @settingsDiscordRaSyncSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Show your RetroAchievements activity in Discord instead'**
+  String get settingsDiscordRaSyncSubtitle;
+
   /// No description provided for @uncategorizedBanner.
   ///
   /// In en, this message translates to:

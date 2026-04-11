@@ -1104,6 +1104,8 @@
   "settingsShowBlurayOverlaySubtitle": "Show Blu-ray overlay on movie and TV show posters",
   "settingsDiscordRpc": "Discord Rich Presence",
   "settingsDiscordRpcSubtitle": "Show currently viewed item in your Discord status",
+  "settingsDiscordRaSync": "Sync RetroAchievements",
+  "settingsDiscordRaSyncSubtitle": "Show your RetroAchievements activity in Discord instead",
 
   "uncategorizedBanner": "Add to a collection to unlock Board and episode tracking",
   "uncategorizedBannerAction": "Add to Collection",

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/core/services/api_key_initializer.dart';
+import 'package:xerabora/core/api/ra_api.dart';
 import 'package:xerabora/core/services/discord_rpc_service.dart';
 
 import '../../../helpers/mocks.dart';
@@ -32,6 +33,7 @@ void main() {
           (Ref ref) => ProfilesData.defaultData(),
         ),
         discordRpcServiceProvider.overrideWithValue(MockDiscordRpcService()),
+        raApiProvider.overrideWithValue(MockRaApi()),
       ],
       child: MaterialApp(
         localizationsDelegates: S.localizationsDelegates,

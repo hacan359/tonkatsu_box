@@ -880,6 +880,8 @@
   "settingsShowBlurayOverlaySubtitle": "Оверлей Blu-ray на постерах фильмов и сериалов",
   "settingsDiscordRpc": "Discord Rich Presence",
   "settingsDiscordRpcSubtitle": "Показывать текущий элемент в статусе Discord",
+  "settingsDiscordRaSync": "Синхронизация RetroAchievements",
+  "settingsDiscordRaSyncSubtitle": "Показывать активность RetroAchievements в Discord",
 
   "uncategorizedBanner": "Добавьте в коллекцию, чтобы открыть Доску и отслеживание серий",
   "uncategorizedBannerAction": "Добавить в коллекцию",
