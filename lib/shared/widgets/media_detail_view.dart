@@ -1,5 +1,7 @@
 // Базовый виджет для экранов деталей медиа в коллекции.
 
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
@@ -232,6 +234,7 @@ class _MediaDetailViewState extends State<MediaDetailView> {
   _EditingField _editingField = _EditingField.none;
   late final TextEditingController _authorController;
   late final TextEditingController _userController;
+  Timer? _autosaveTimer;
 
   @override
   void initState() {
@@ -240,6 +243,8 @@ class _MediaDetailViewState extends State<MediaDetailView> {
         TextEditingController(text: widget.authorComment);
     _userController =
         TextEditingController(text: widget.userComment);
+    _authorController.addListener(_onAuthorChanged);
+    _userController.addListener(_onUserChanged);
   }
 
   @override
@@ -259,9 +264,39 @@ class _MediaDetailViewState extends State<MediaDetailView> {
 
   @override
   void dispose() {
+    _autosaveTimer?.cancel();
+    // Сохраняем при уходе если было редактирование
+    _saveIfEditing();
+    _authorController.removeListener(_onAuthorChanged);
+    _userController.removeListener(_onUserChanged);
     _authorController.dispose();
     _userController.dispose();
     super.dispose();
+  }
+
+  void _onAuthorChanged() {
+    if (_editingField != _EditingField.author) return;
+    _scheduleAutosave();
+  }
+
+  void _onUserChanged() {
+    if (_editingField != _EditingField.user) return;
+    _scheduleAutosave();
+  }
+
+  void _scheduleAutosave() {
+    _autosaveTimer?.cancel();
+    _autosaveTimer = Timer(const Duration(seconds: 1), _saveIfEditing);
+  }
+
+  void _saveIfEditing() {
+    if (_editingField == _EditingField.author) {
+      final String text = _authorController.text.trim();
+      widget.onAuthorCommentSave(text.isEmpty ? null : text);
+    } else if (_editingField == _EditingField.user) {
+      final String text = _userController.text.trim();
+      widget.onUserCommentSave(text.isEmpty ? null : text);
+    }
   }
 
   void _startEditing(_EditingField field) {
@@ -269,13 +304,8 @@ class _MediaDetailViewState extends State<MediaDetailView> {
   }
 
   void _finishEditing() {
-    if (_editingField == _EditingField.author) {
-      final String text = _authorController.text;
-      widget.onAuthorCommentSave(text.isEmpty ? null : text);
-    } else if (_editingField == _EditingField.user) {
-      final String text = _userController.text;
-      widget.onUserCommentSave(text.isEmpty ? null : text);
-    }
+    _autosaveTimer?.cancel();
+    _saveIfEditing();
     setState(() => _editingField = _EditingField.none);
   }
 
