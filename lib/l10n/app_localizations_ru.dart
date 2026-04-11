@@ -2452,6 +2452,20 @@ class SRu extends S {
       'Оверлей Blu-ray на постерах фильмов и сериалов';
 
   @override
+  String get settingsDiscordRpc => 'Discord Rich Presence';
+
+  @override
+  String get settingsDiscordRpcSubtitle =>
+      'Показывать текущий элемент в статусе Discord';
+
+  @override
+  String get settingsDiscordRaSync => 'Синхронизация RetroAchievements';
+
+  @override
+  String get settingsDiscordRaSyncSubtitle =>
+      'Показывать активность RetroAchievements в Discord';
+
+  @override
   String get uncategorizedBanner =>
       'Добавьте в коллекцию, чтобы открыть Доску и отслеживание серий';
 

@@ -5,6 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/core/services/api_key_initializer.dart';
+import 'package:xerabora/core/api/ra_api.dart';
+import 'package:xerabora/core/services/discord_rpc_service.dart';
+
+import '../../../helpers/mocks.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/features/settings/providers/profile_provider.dart';
 import 'package:xerabora/features/settings/screens/settings_screen.dart';
@@ -28,6 +32,8 @@ void main() {
         profilesDataProvider.overrideWith(
           (Ref ref) => ProfilesData.defaultData(),
         ),
+        discordRpcServiceProvider.overrideWithValue(MockDiscordRpcService()),
+        raApiProvider.overrideWithValue(MockRaApi()),
       ],
       child: MaterialApp(
         localizationsDelegates: S.localizationsDelegates,
@@ -239,10 +245,8 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pump();
 
-        await tester.drag(find.byType(ListView), const Offset(0, -3000));
-        await tester.pump();
-
-        expect(find.text('...'), findsOneWidget);
+        await scrollTo(tester, '...');
+        expect(find.text('...'), findsWidgets);
       });
     });
   });

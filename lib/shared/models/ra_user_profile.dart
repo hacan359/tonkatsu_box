@@ -10,6 +10,7 @@ class RaUserProfile {
     this.userPic,
     this.richPresenceMsg,
     this.totalTruePoints = 0,
+    this.lastGameId,
   });
 
   /// Создаёт [RaUserProfile] из JSON ответа API.
@@ -21,6 +22,7 @@ class RaUserProfile {
       userPic: json['UserPic'] as String?,
       richPresenceMsg: json['RichPresenceMsg'] as String?,
       totalTruePoints: json['TotalTruePoints'] as int? ?? 0,
+      lastGameId: json['LastGameID'] as int?,
     );
   }
 
@@ -41,6 +43,9 @@ class RaUserProfile {
 
   /// True Points (hardcore weighted).
   final int totalTruePoints;
+
+  /// ID последней запущенной игры на RetroAchievements.
+  final int? lastGameId;
 
   /// Полный URL аватарки.
   String? get userPicUrl =>

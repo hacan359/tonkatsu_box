@@ -59,8 +59,9 @@ Tonkatsu Box is a free, open-source app to organize your media collections. Sear
 | | |
 |---|---|
 | **Collections** | Organize by platform, genre, or any way you like. Grid, list, and table views |
-| **Search** | IGDB (games), TMDB (movies/TV), VNDB (visual novels), AniList (manga) |
-| **Progress Tracking** | Status, ratings 1-10, episode tracking for TV shows |
+| **Search** | IGDB (games), TMDB (movies/TV), AniList (anime & manga), VNDB (visual novels) |
+| **Progress Tracking** | Status, ratings 1-10, episode tracking for TV shows and anime |
+| **Discord Rich Presence** | Show what you're playing/watching/reading in Discord (desktop) |
 | **Visual Boards** | Drag-and-drop canvas with posters, notes, and connections |
 | **Tier Lists** | Rank items into S/A/B/C tiers and export as PNG |
 | **Import** | Steam library, Trakt.tv history, RetroAchievements progress |
@@ -112,6 +113,7 @@ Already tracking elsewhere? Bring your data:
 | Games | [IGDB](https://www.igdb.com/) | Built-in |
 | Movies & TV | [TMDB](https://www.themoviedb.org/) | Built-in |
 | Visual Novels | [VNDB](https://vndb.org/) | Not required |
+| Anime | [AniList](https://anilist.co/) | Not required |
 | Manga | [AniList](https://anilist.co/) | Not required |
 | Artwork | [SteamGridDB](https://www.steamgriddb.com/) | Built-in |
 | Achievements | [RetroAchievements](https://retroachievements.org/) | Required |
@@ -129,6 +131,7 @@ Already tracking elsewhere? Bring your data:
 | Import (Steam/Trakt/RA) | ✅ | ✅ | ✅ |
 | VGMaps browser | ✅ | — | — |
 | Gamepad | ✅ | ✅ | — |
+| Discord Rich Presence | ✅ | ✅ | — |
 
 ## Documentation
 

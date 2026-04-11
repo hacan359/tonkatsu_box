@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/services/discord_rpc_service.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
@@ -142,9 +143,27 @@ class ItemDetailScreen extends ConsumerStatefulWidget {
 class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
   bool _showCanvas = false;
   bool _isViewModeLocked = false;
+  DiscordRpcService? _discordRpc;
   String? _currentItemName;
 
   bool get _hasCanvas => kCanvasEnabled && widget.collectionId != null;
+
+  void _updateDiscordPresence(CollectionItem item) {
+    if (!kDiscordRpcAvailable) return;
+    final bool enabled = ref.read(settingsNotifierProvider).discordRpcEnabled;
+    if (!enabled) return;
+    _discordRpc ??= ref.read(discordRpcServiceProvider);
+    final TrackerGameData? raData = item.mediaType == MediaType.game
+        ? ref.read(trackerDetailProvider(item.externalId)).valueOrNull?.gameData
+        : null;
+    _discordRpc!.updatePresence(item, raData: raData);
+  }
+
+  @override
+  void dispose() {
+    _discordRpc?.clearPresence();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -405,6 +424,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
 
   Widget _buildContent(CollectionItem item) {
     _currentItemName = item.itemName;
+    _updateDiscordPresence(item);
     final _MediaConfig config = _getMediaConfig(item);
 
     return CallbackShortcuts(

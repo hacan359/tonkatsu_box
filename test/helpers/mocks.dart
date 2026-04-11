@@ -22,6 +22,7 @@ import 'package:xerabora/core/database/dao/movie_dao.dart';
 import 'package:xerabora/core/database/dao/tv_show_dao.dart';
 import 'package:xerabora/core/database/dao/custom_media_dao.dart';
 import 'package:xerabora/core/database/dao/anime_dao.dart';
+import 'package:xerabora/core/services/discord_rpc_service.dart';
 import 'package:xerabora/core/database/dao/manga_dao.dart';
 import 'package:xerabora/core/database/dao/visual_novel_dao.dart';
 import 'package:xerabora/core/database/dao/tag_dao.dart';
@@ -101,6 +102,8 @@ class MockVisualNovelDao extends Mock implements VisualNovelDao {}
 class MockMangaDao extends Mock implements MangaDao {}
 
 class MockAnimeDao extends Mock implements AnimeDao {}
+
+class MockDiscordRpcService extends Mock implements DiscordRpcService {}
 
 class MockCustomMediaDao extends Mock implements CustomMediaDao {}
 

@@ -4483,6 +4483,30 @@ abstract class S {
   /// **'Show Blu-ray overlay on movie and TV show posters'**
   String get settingsShowBlurayOverlaySubtitle;
 
+  /// No description provided for @settingsDiscordRpc.
+  ///
+  /// In en, this message translates to:
+  /// **'Discord Rich Presence'**
+  String get settingsDiscordRpc;
+
+  /// No description provided for @settingsDiscordRpcSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Show currently viewed item in your Discord status'**
+  String get settingsDiscordRpcSubtitle;
+
+  /// No description provided for @settingsDiscordRaSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync RetroAchievements'**
+  String get settingsDiscordRaSync;
+
+  /// No description provided for @settingsDiscordRaSyncSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Show your RetroAchievements activity in Discord instead'**
+  String get settingsDiscordRaSyncSubtitle;
+
   /// No description provided for @uncategorizedBanner.
   ///
   /// In en, this message translates to:

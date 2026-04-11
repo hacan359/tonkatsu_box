@@ -14,6 +14,10 @@ bool get kVgMapsEnabled => Platform.isWindows;
 /// Доступен ли Screenshot Capture.
 bool get kScreenshotEnabled => Platform.isWindows;
 
+/// Discord Rich Presence доступен на десктопе.
+bool get kDiscordRpcAvailable =>
+    Platform.isWindows || Platform.isLinux || Platform.isMacOS;
+
 /// Мобильная платформа (Android / iOS).
 bool get kIsMobile => Platform.isAndroid || Platform.isIOS;
 

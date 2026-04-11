@@ -2433,6 +2433,20 @@ class SEn extends S {
       'Show Blu-ray overlay on movie and TV show posters';
 
   @override
+  String get settingsDiscordRpc => 'Discord Rich Presence';
+
+  @override
+  String get settingsDiscordRpcSubtitle =>
+      'Show currently viewed item in your Discord status';
+
+  @override
+  String get settingsDiscordRaSync => 'Sync RetroAchievements';
+
+  @override
+  String get settingsDiscordRaSyncSubtitle =>
+      'Show your RetroAchievements activity in Discord instead';
+
+  @override
   String get uncategorizedBanner =>
       'Add to a collection to unlock Board and episode tracking';
 
