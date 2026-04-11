@@ -75,8 +75,8 @@ class _GyroscopeParallaxImageState extends State<GyroscopeParallaxImage>
   void _onGyroscope(GyroscopeEvent event) {
     // Гироскоп отдаёт угловую скорость (рад/с).
     // Интегрируем в смещение и кламплим.
-    _targetX = (_targetX + event.y * 3.0).clamp(-_kMaxOffset, _kMaxOffset);
-    _targetY = (_targetY - event.x * 3.0).clamp(-_kMaxOffset, _kMaxOffset);
+    _targetX = (_targetX + event.y * 1.5).clamp(-_kMaxOffset, _kMaxOffset);
+    _targetY = (_targetY - event.x * 1.5).clamp(-_kMaxOffset, _kMaxOffset);
 
     // Запускаем тикер если остановлен
     if (!_ticker.isAnimating) {
