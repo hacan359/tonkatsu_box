@@ -507,6 +507,123 @@ void main() {
       });
     });
 
+    group('Autosave', () {
+      testWidgets('should auto-save user notes after 1 second debounce',
+          (WidgetTester tester) async {
+        final List<String?> savedValues = <String?>[];
+        await tester.pumpWidget(buildTestWidget(
+          isEditable: true,
+          onUserCommentSave: (String? value) => savedValues.add(value),
+        ));
+        await tester.pumpAndSettle();
+
+        // Enter edit mode (My Notes = first edit icon)
+        await tester.tap(find.byIcon(Icons.edit).first);
+        await tester.pumpAndSettle();
+
+        // Type text
+        await tester.enterText(find.byType(TextField), 'Auto saved note');
+
+        // Not saved yet (debounce pending)
+        expect(savedValues, isEmpty);
+
+        // Wait for debounce timer (1 second)
+        await tester.pump(const Duration(seconds: 1));
+
+        expect(savedValues, <String?>['Auto saved note']);
+      });
+
+      testWidgets('should auto-save author comment after 1 second debounce',
+          (WidgetTester tester) async {
+        final List<String?> savedValues = <String?>[];
+        await tester.pumpWidget(buildTestWidget(
+          isEditable: true,
+          onAuthorCommentSave: (String? value) => savedValues.add(value),
+        ));
+        await tester.pumpAndSettle();
+
+        // Enter edit mode (Author = last edit icon)
+        await tester.tap(find.byIcon(Icons.edit).last);
+        await tester.pumpAndSettle();
+
+        await tester.enterText(find.byType(TextField), 'Auto review');
+        await tester.pump(const Duration(seconds: 1));
+
+        expect(savedValues, <String?>['Auto review']);
+      });
+
+      testWidgets('should debounce rapid typing into single save',
+          (WidgetTester tester) async {
+        final List<String?> savedValues = <String?>[];
+        await tester.pumpWidget(buildTestWidget(
+          isEditable: true,
+          onUserCommentSave: (String? value) => savedValues.add(value),
+        ));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byIcon(Icons.edit).first);
+        await tester.pumpAndSettle();
+
+        // Simulate rapid typing — each enterText resets the debounce
+        await tester.enterText(find.byType(TextField), 'H');
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester.enterText(find.byType(TextField), 'He');
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester.enterText(find.byType(TextField), 'Hello');
+
+        // Still within debounce window
+        expect(savedValues, isEmpty);
+
+        // Wait for final debounce
+        await tester.pump(const Duration(seconds: 1));
+
+        // Only one save with final value
+        expect(savedValues, <String?>['Hello']);
+      });
+
+      testWidgets('should save on check button even before debounce fires',
+          (WidgetTester tester) async {
+        final List<String?> savedValues = <String?>[];
+        await tester.pumpWidget(buildTestWidget(
+          isEditable: true,
+          onUserCommentSave: (String? value) => savedValues.add(value),
+        ));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byIcon(Icons.edit).first);
+        await tester.pumpAndSettle();
+
+        await tester.enterText(find.byType(TextField), 'Immediate');
+
+        // Press check before debounce — should save immediately
+        await tester.tap(find.byIcon(Icons.check));
+        await tester.pumpAndSettle();
+
+        expect(savedValues, <String?>['Immediate']);
+      });
+
+      testWidgets('should save with null when text is empty on autosave',
+          (WidgetTester tester) async {
+        final List<String?> savedValues = <String?>[];
+        await tester.pumpWidget(buildTestWidget(
+          isEditable: true,
+          userComment: 'Old note',
+          hasUserComment: true,
+          onUserCommentSave: (String? value) => savedValues.add(value),
+        ));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byIcon(Icons.edit).first);
+        await tester.pumpAndSettle();
+
+        // Clear the field
+        await tester.enterText(find.byType(TextField), '');
+        await tester.pump(const Duration(seconds: 1));
+
+        expect(savedValues, <String?>[null]);
+      });
+    });
+
     group('Activity Dates Row', () {
       testWidgets('должен отображать даты когда addedAt задан',
           (WidgetTester tester) async {
