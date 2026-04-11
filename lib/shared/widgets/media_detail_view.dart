@@ -4,6 +4,8 @@ import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+
+import 'gyroscope_parallax_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/services/image_cache_service.dart';
@@ -366,15 +368,12 @@ class _MediaDetailViewState extends State<MediaDetailView> {
     final Widget withBackdrop = widget.backdropUrl != null
         ? Stack(
             children: <Widget>[
-              // Backdrop — на весь фон
+              // Backdrop — на весь фон (с параллаксом на Android)
               Positioned.fill(
-                child: CachedNetworkImage(
+                child: GyroscopeParallaxImage(
                   imageUrl: widget.backdropUrl!,
                   fit: BoxFit.cover,
                   alignment: Alignment.center,
-                  errorWidget:
-                      (BuildContext context, String url, Object error) =>
-                          const SizedBox.shrink(),
                 ),
               ),
               // Вертикальный gradient для читаемости

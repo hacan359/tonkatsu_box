@@ -78,6 +78,9 @@ dependencies:
   logging: ^1.3.0
   dart_discord_presence: ^1.2.0
 
+  # Sensors (gyroscope parallax on mobile)
+  sensors_plus: ^6.1.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
