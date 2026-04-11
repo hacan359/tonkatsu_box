@@ -1,10 +1,10 @@
 // Универсальный bottom sheet с деталями элемента для всех типов медиа.
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../shared/widgets/copyable_text.dart';
+import '../../../shared/widgets/gyroscope_parallax_image.dart';
 
 import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
@@ -313,13 +313,10 @@ class ItemDetailsSheet extends StatelessWidget {
               // Backdrop — на весь фон
               if (backdropUrl != null) ...<Widget>[
                 Positioned.fill(
-                  child: CachedNetworkImage(
+                  child: GyroscopeParallaxImage(
                     imageUrl: backdropUrl!,
                     fit: BoxFit.cover,
                     alignment: Alignment.center,
-                    errorWidget: (BuildContext context, String url,
-                            Object error) =>
-                        const SizedBox.shrink(),
                   ),
                 ),
                 // Верх: лёгкое затемнение для читаемости
