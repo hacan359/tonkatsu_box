@@ -920,6 +920,7 @@
   "browseBackToBrowse": "Назад к обзору",
 
   "typeToFilterHint": "Фильтр...",
+  "appBarSearchHint": "Начните печатать для поиска",
 
   "insertLink": "Вставить ссылку",
   "linkText": "Текст",

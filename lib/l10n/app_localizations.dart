@@ -4711,6 +4711,12 @@ abstract class S {
   /// **'Filter...'**
   String get typeToFilterHint;
 
+  /// No description provided for @appBarSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Start typing to search'**
+  String get appBarSearchHint;
+
   /// No description provided for @insertLink.
   ///
   /// In en, this message translates to:

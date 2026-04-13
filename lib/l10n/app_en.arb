@@ -1144,6 +1144,7 @@
   "animeStatusCancelled": "Cancelled",
 
   "typeToFilterHint": "Filter...",
+  "appBarSearchHint": "Start typing to search",
 
   "insertLink": "Insert link",
   "linkText": "Text",

@@ -158,7 +158,7 @@ void main() {
       child: const MaterialApp(
         localizationsDelegates: S.localizationsDelegates,
         supportedLocales: S.supportedLocales,
-        home: AllItemsScreen(),
+        home: Scaffold(body: AllItemsScreen()),
       ),
     );
   }

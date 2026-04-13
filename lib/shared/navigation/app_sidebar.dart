@@ -3,13 +3,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../features/settings/providers/profile_provider.dart';
 import '../../features/wishlist/providers/wishlist_provider.dart';
-import '../../core/services/update_service.dart';
 import '../theme/app_colors.dart';
 import 'liquid_indicator.dart';
 import 'nav_destinations.dart';
 import 'nav_icon_button.dart';
+import 'nav_tab.dart';
 
 /// Ширина бокового меню.
 const double kAppSidebarWidth = 64;
@@ -21,36 +20,31 @@ const double _kItemHeight = 56;
 ///
 /// Содержит только иконки (без подписей и логотипа), располагает кнопки
 /// вертикально по центру и подсвечивает активный пункт анимированным
-/// [LiquidIndicator].
-///
-/// Логотип в меню отсутствует — он размещается в будущем топбаре.
+/// [LiquidIndicator]. Settings здесь нет — она в [AppTopBar].
 class AppSidebar extends ConsumerWidget {
   /// Создаёт [AppSidebar].
   const AppSidebar({
-    required this.selectedIndex,
+    required this.selectedTab,
     required this.onDestinationSelected,
     super.key,
   });
 
-  /// Индекс активного таба.
-  final int selectedIndex;
+  /// Активный таб.
+  final NavTab selectedTab;
 
   /// Колбэк при выборе таба.
-  final void Function(int index) onDestinationSelected;
+  final void Function(NavTab tab) onDestinationSelected;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final int wishlistCount = ref.watch(activeWishlistCountProvider);
-    final Color profileColor = ref.watch(currentProfileProvider).colorValue;
-    final bool hasUpdate =
-        ref.watch(updateCheckProvider).valueOrNull?.hasUpdate ?? false;
 
     final List<NavDestination> destinations = buildNavDestinations(
       context: context,
       wishlistCount: wishlistCount,
-      profileColor: profileColor,
-      hasUpdate: hasUpdate,
     );
+    final int selectedIndex =
+        destinations.indexWhere((NavDestination d) => d.tab == selectedTab);
 
     return SizedBox(
       width: kAppSidebarWidth,
@@ -79,16 +73,16 @@ class AppSidebar extends ConsumerWidget {
                       crossExtent: kAppSidebarWidth,
                     ),
                     Column(
-                      children: List<Widget>.generate(destinations.length,
-                          (int i) {
-                        return NavIconButton(
-                          destination: destinations[i],
-                          active: i == selectedIndex,
-                          width: kAppSidebarWidth,
-                          height: _kItemHeight,
-                          onTap: () => onDestinationSelected(i),
-                        );
-                      }),
+                      children: <Widget>[
+                        for (final NavDestination d in destinations)
+                          NavIconButton(
+                            destination: d,
+                            active: d.tab == selectedTab,
+                            width: kAppSidebarWidth,
+                            height: _kItemHeight,
+                            onTap: () => onDestinationSelected(d.tab),
+                          ),
+                      ],
                     ),
                   ],
                 ),

@@ -21,7 +21,9 @@ import '../keyboard/keyboard_shortcuts.dart';
 import '../keyboard/keyboard_shortcuts_dialog.dart';
 import 'app_bottom_bar.dart';
 import 'app_sidebar.dart';
+import 'app_top_bar.dart';
 import 'nav_tab.dart';
+import 'search_providers.dart';
 
 /// Количество основных табов.
 const int _tabCount = 6;
@@ -119,6 +121,7 @@ class _AppShellState extends ConsumerState<AppShell> {
           policy: ReadingOrderTraversalPolicy(),
           child: Focus(
             autofocus: true,
+            onKeyEvent: _handleTypeToSearch,
             child: GamepadListener(
               onTabSwitch: _onGamepadTabSwitch,
               onNavigate: _onGamepadNavigate,
@@ -138,26 +141,89 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   Widget _buildScaffold(BuildContext context) {
     final bool compact = isCompactScreen(context);
+    final NavTab activeTab = NavTab.values[_selectedIndex];
+    final PreferredSizeWidget topBar = PreferredSize(
+      preferredSize: Size.fromHeight(
+        kAppTopBarHeight + MediaQuery.paddingOf(context).top,
+      ),
+      child: AppTopBar(
+        activeTab: activeTab,
+        onSettingsTap: () => _onDestinationSelected(NavTab.settings.index),
+      ),
+    );
+
+    void onTabSelected(NavTab tab) => _onDestinationSelected(tab.index);
+
     if (compact) {
       return Scaffold(
+        appBar: topBar,
         body: _buildContent(),
         bottomNavigationBar: AppBottomBar(
-          selectedIndex: _selectedIndex,
-          onDestinationSelected: _onDestinationSelected,
+          selectedTab: activeTab,
+          onDestinationSelected: onTabSelected,
         ),
       );
     }
     return Scaffold(
+      appBar: topBar,
       body: Row(
         children: <Widget>[
           AppSidebar(
-            selectedIndex: _selectedIndex,
-            onDestinationSelected: _onDestinationSelected,
+            selectedTab: activeTab,
+            onDestinationSelected: onTabSelected,
           ),
           Expanded(child: _buildContent()),
         ],
       ),
     );
+  }
+
+  /// Перехватывает печатные символы с глобального Focus и перенаправляет
+  /// их в поле поиска [AppTopBar] (type-to-search).
+  ///
+  /// Срабатывает только на десктопе, только если текущий таб поддерживает
+  /// поиск и фокус не находится внутри другого [EditableText].
+  KeyEventResult _handleTypeToSearch(FocusNode node, KeyEvent event) {
+    if (kIsMobile) return KeyEventResult.ignored;
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
+      return KeyEventResult.ignored;
+    }
+
+    final SearchContext? ctx = searchContextFor(
+      NavTab.values[_selectedIndex],
+      context,
+    );
+    if (ctx == null) return KeyEventResult.ignored;
+
+    if (_isAnyEditableTextFocused()) return KeyEventResult.ignored;
+
+    final String? char = event.character;
+    if (char == null || char.isEmpty || char.codeUnitAt(0) < 32) {
+      return KeyEventResult.ignored;
+    }
+
+    final FocusNode searchFocus = ref.read(appTopBarFocusProvider);
+    searchFocus.requestFocus();
+
+    final String current = ref.read(ctx.queryProvider);
+    ref.read(ctx.queryProvider.notifier).state = current + char;
+    return KeyEventResult.handled;
+  }
+
+  /// Проверяет, находится ли фокус во внешнем [EditableText].
+  bool _isAnyEditableTextFocused() {
+    final FocusNode? focus = FocusManager.instance.primaryFocus;
+    final BuildContext? ctx = focus?.context;
+    if (ctx == null) return false;
+    bool editable = false;
+    ctx.visitAncestorElements((Element element) {
+      if (element.widget is EditableText) {
+        editable = true;
+        return false;
+      }
+      return true;
+    });
+    return editable;
   }
 
   Widget _buildContent() {

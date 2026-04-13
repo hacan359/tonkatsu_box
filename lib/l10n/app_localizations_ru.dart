@@ -2570,6 +2570,9 @@ class SRu extends S {
   String get typeToFilterHint => 'Фильтр...';
 
   @override
+  String get appBarSearchHint => 'Начните печатать для поиска';
+
+  @override
   String get insertLink => 'Вставить ссылку';
 
   @override

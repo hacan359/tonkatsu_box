@@ -14,12 +14,11 @@ import '../../../shared/models/collection_tag.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/platform.dart';
+import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/media_poster_card.dart';
-import '../../../shared/widgets/screen_app_bar.dart';
-import '../../../shared/widgets/type_to_filter_overlay.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../collections/screens/item_detail_screen.dart';
 import '../providers/all_items_provider.dart';
@@ -39,7 +38,6 @@ class AllItemsScreen extends ConsumerStatefulWidget {
 class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   MediaType? _filterType;
   int? _filterPlatformId;
-  String _typeToFilterQuery = '';
   /// Максимальная ширина карточки на десктопе.
   static const double _desktopMaxCardWidth = 150;
 
@@ -52,36 +50,28 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final Map<int, CollectionTag> tagsMap =
         ref.watch(allTagsMapProvider).valueOrNull ?? <int, CollectionTag>{};
     final ItemStatus? filterStatus = ref.watch(homeStatusFilterProvider);
+    final String searchQuery = ref.watch(homeSearchQueryProvider);
 
-    return Scaffold(
-      appBar: ScreenAppBar(title: S.of(context).navMain),
-      body: TypeToFilterOverlay(
-        onFilterChanged: (String query) {
-          setState(() => _typeToFilterQuery = query);
-        },
-        child: Column(
-          children: <Widget>[
-            _buildChipsRow(itemsAsync, filterStatus),
-            if (_filterType == MediaType.game) _buildPlatformChipsRow(),
-            Expanded(
-              child: itemsAsync.when(
-                data: (List<CollectionItem> items) {
-                  final List<CollectionItem> filtered =
-                      _applyFilter(items, filterStatus, tagsMap);
-                  if (filtered.isEmpty) {
-                    return _buildEmptyState(items.isEmpty);
-                  }
-                  return _buildGridView(filtered, collectionNames, tagsMap);
-                },
-                loading: () =>
-                    const Center(child: CircularProgressIndicator()),
-                error: (Object error, StackTrace stack) =>
-                    _buildErrorState(error),
-              ),
-            ),
-          ],
+    return Column(
+      children: <Widget>[
+        _buildChipsRow(itemsAsync, filterStatus),
+        if (_filterType == MediaType.game) _buildPlatformChipsRow(),
+        Expanded(
+          child: itemsAsync.when(
+            data: (List<CollectionItem> items) {
+              final List<CollectionItem> filtered =
+                  _applyFilter(items, filterStatus, tagsMap, searchQuery);
+              if (filtered.isEmpty) {
+                return _buildEmptyState(items.isEmpty);
+              }
+              return _buildGridView(filtered, collectionNames, tagsMap);
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (Object error, StackTrace stack) =>
+                _buildErrorState(error),
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -89,6 +79,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     List<CollectionItem> items,
     ItemStatus? filterStatus,
     Map<int, CollectionTag> tagsMap,
+    String searchQuery,
   ) {
     List<CollectionItem> result = items;
     if (_filterType != null) {
@@ -106,8 +97,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
           .where((CollectionItem item) => item.platformId == _filterPlatformId)
           .toList();
     }
-    if (_typeToFilterQuery.isNotEmpty) {
-      final String query = _typeToFilterQuery.toLowerCase();
+    if (searchQuery.isNotEmpty) {
+      final String query = searchQuery.toLowerCase();
       result = result
           .where(
             (CollectionItem item) =>

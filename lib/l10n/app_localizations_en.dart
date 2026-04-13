@@ -2550,6 +2550,9 @@ class SEn extends S {
   String get typeToFilterHint => 'Filter...';
 
   @override
+  String get appBarSearchHint => 'Start typing to search';
+
+  @override
   String get insertLink => 'Insert link';
 
   @override

@@ -3,18 +3,21 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import 'nav_tab.dart';
 
 /// Описание одного пункта навигации.
 class NavDestination {
   /// Создаёт [NavDestination].
   const NavDestination({
+    required this.tab,
     required this.icon,
     required this.selectedIcon,
     required this.label,
     this.badgeCount = 0,
-    this.iconColor,
-    this.pulsing = false,
   });
+
+  /// Таб, на который ведёт этот пункт.
+  final NavTab tab;
 
   /// Иконка в неактивном состоянии.
   final IconData icon;
@@ -27,13 +30,6 @@ class NavDestination {
 
   /// Счётчик для Badge (0 — без бейджа).
   final int badgeCount;
-
-  /// Кастомный цвет иконки в неактивном состоянии (например, цвет профиля
-  /// для Settings). Игнорируется в активном состоянии.
-  final Color? iconColor;
-
-  /// Показывать пульсирующий Badge (для индикации обновлений).
-  final bool pulsing;
 }
 
 /// Кнопка-иконка фиксированного размера.
@@ -69,9 +65,8 @@ class NavIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color iconColor = active
-        ? AppColors.textPrimary.withAlpha(230)
-        : (destination.iconColor ?? AppColors.textTertiary);
+    final Color iconColor =
+        active ? AppColors.textPrimary.withAlpha(230) : AppColors.textTertiary;
 
     Widget icon = Icon(
       active ? destination.selectedIcon : destination.icon,
@@ -84,8 +79,6 @@ class NavIconButton extends StatelessWidget {
         label: Text('${destination.badgeCount}'),
         child: icon,
       );
-    } else if (destination.pulsing) {
-      icon = NavPulsingBadge(child: icon);
     }
 
     return SizedBox(

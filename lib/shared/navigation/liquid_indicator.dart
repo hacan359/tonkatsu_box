@@ -15,7 +15,8 @@ import '../theme/app_colors.dart';
 /// - вытягивается по направлению движения и сжимается поперёк (squash/stretch);
 /// - в финале возвращается к круглой форме с лёгким elastic-отскоком.
 ///
-/// Цвет — [AppColors.brand] (приглушённый). Мягкое свечение через [BoxShadow].
+/// Если `selectedIndex < 0` — blob не рендерится (например, активный таб
+/// не входит в меню, как Settings).
 class LiquidIndicator extends StatefulWidget {
   /// Создаёт [LiquidIndicator].
   const LiquidIndicator({
@@ -27,19 +28,13 @@ class LiquidIndicator extends StatefulWidget {
     super.key,
   });
 
-  /// Индекс активного пункта (0..n-1).
+  /// Индекс активного пункта (0..n-1) или `-1` если нет активного.
   final int selectedIndex;
 
   /// Размер одной ячейки вдоль основной оси.
-  ///
-  /// - Для [Axis.vertical] — высота ячейки.
-  /// - Для [Axis.horizontal] — ширина ячейки.
   final double itemExtent;
 
-  /// Размер контейнера поперёк основной оси (для центрирования blob).
-  ///
-  /// - Для [Axis.vertical] — ширина бокового меню.
-  /// - Для [Axis.horizontal] — высота нижнего меню.
+  /// Размер контейнера поперёк основной оси.
   final double crossExtent;
 
   /// Направление, вдоль которого перемещается blob.
@@ -67,7 +62,6 @@ class _LiquidIndicatorState extends State<LiquidIndicator>
     );
     _fromOffset = _offsetFor(widget.selectedIndex);
     _toOffset = _fromOffset;
-    // Сразу в конечном состоянии (без анимации на старте).
     _controller.value = 1.0;
   }
 
@@ -98,17 +92,16 @@ class _LiquidIndicatorState extends State<LiquidIndicator>
 
   @override
   Widget build(BuildContext context) {
+    if (widget.selectedIndex < 0) return const SizedBox.shrink();
+
     return AnimatedBuilder(
       animation: _controller,
       builder: (BuildContext context, Widget? child) {
         final double t = _controller.value;
-
-        // Позиция: плавный ease in-out на всём протяжении.
         final double posT = Curves.easeInOutCubic.transform(t);
         final double mainOffset = _fromOffset + (_toOffset - _fromOffset) * posT;
         final double crossOffset = (widget.crossExtent - widget.size) / 2;
 
-        // Squash/stretch: 0..0.6 — нарастание, 0.6..1.0 — возврат.
         final double squashT;
         if (t < 0.6) {
           squashT = t / 0.6;
@@ -119,12 +112,10 @@ class _LiquidIndicatorState extends State<LiquidIndicator>
           1 - squashT.clamp(0.0, 1.0),
         );
 
-        // Амплитуда зависит от пройденного расстояния.
         final double distance = (_toOffset - _fromOffset).abs();
         final double amplitude =
             (distance / widget.itemExtent).clamp(0.0, 3.0) * 0.42;
 
-        // Вдоль основной оси — растяжение, поперёк — сжатие.
         final double scaleMain = 1 + amplitude * (1 - relaxed);
         final double scaleCross = 1 - amplitude * 0.5 * (1 - relaxed);
 

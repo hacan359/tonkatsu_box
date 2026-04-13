@@ -3,48 +3,44 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../features/settings/providers/profile_provider.dart';
 import '../../features/wishlist/providers/wishlist_provider.dart';
-import '../../core/services/update_service.dart';
 import '../theme/app_colors.dart';
 import 'liquid_indicator.dart';
 import 'nav_destinations.dart';
 import 'nav_icon_button.dart';
+import 'nav_tab.dart';
 
 /// Высота нижнего меню.
 const double kAppBottomBarHeight = 64;
 
 /// Нижнее меню приложения (горизонтальное).
 ///
-/// Используется на узких экранах вместо [AppSidebar]. Содержит те же 6
-/// пунктов навигации в том же порядке — [selectedIndex] совпадает.
+/// Используется на узких экранах вместо [AppSidebar]. Settings здесь
+/// нет — она в [AppTopBar].
 class AppBottomBar extends ConsumerWidget {
   /// Создаёт [AppBottomBar].
   const AppBottomBar({
-    required this.selectedIndex,
+    required this.selectedTab,
     required this.onDestinationSelected,
     super.key,
   });
 
-  /// Индекс активного таба.
-  final int selectedIndex;
+  /// Активный таб.
+  final NavTab selectedTab;
 
   /// Колбэк при выборе таба.
-  final void Function(int index) onDestinationSelected;
+  final void Function(NavTab tab) onDestinationSelected;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final int wishlistCount = ref.watch(activeWishlistCountProvider);
-    final Color profileColor = ref.watch(currentProfileProvider).colorValue;
-    final bool hasUpdate =
-        ref.watch(updateCheckProvider).valueOrNull?.hasUpdate ?? false;
 
     final List<NavDestination> destinations = buildNavDestinations(
       context: context,
       wishlistCount: wishlistCount,
-      profileColor: profileColor,
-      hasUpdate: hasUpdate,
     );
+    final int selectedIndex =
+        destinations.indexWhere((NavDestination d) => d.tab == selectedTab);
 
     return SizedBox(
       height: kAppBottomBarHeight + MediaQuery.paddingOf(context).bottom,
@@ -71,16 +67,16 @@ class AppBottomBar extends ConsumerWidget {
                       axis: Axis.horizontal,
                     ),
                     Row(
-                      children: List<Widget>.generate(destinations.length,
-                          (int i) {
-                        return NavIconButton(
-                          destination: destinations[i],
-                          active: i == selectedIndex,
-                          width: itemWidth,
-                          height: kAppBottomBarHeight,
-                          onTap: () => onDestinationSelected(i),
-                        );
-                      }),
+                      children: <Widget>[
+                        for (final NavDestination d in destinations)
+                          NavIconButton(
+                            destination: d,
+                            active: d.tab == selectedTab,
+                            width: itemWidth,
+                            height: kAppBottomBarHeight,
+                            onTap: () => onDestinationSelected(d.tab),
+                          ),
+                      ],
                     ),
                   ],
                 ),
