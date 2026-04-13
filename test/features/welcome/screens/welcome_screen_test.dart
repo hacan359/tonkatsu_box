@@ -390,7 +390,7 @@ void main() {
         // Tap "Go to Settings"
         await tester.tap(find.text('Go to Settings'));
         // Use pump() instead of pumpAndSettle() because navigation to
-        // NavigationShell starts shimmer animations that never settle
+        // AppShell starts shimmer animations that never settle
         await tester.pump();
         await tester.pump();
 
@@ -410,7 +410,7 @@ void main() {
 
         // Tap "Skip — explore on my own"
         await tester.tap(find.text('Skip — explore on my own'));
-        // Use pump() — NavigationShell has shimmer that blocks pumpAndSettle
+        // Use pump() — AppShell has shimmer that blocks pumpAndSettle
         await tester.pump();
         await tester.pump();
 

@@ -29,7 +29,7 @@ class ShortcutGroup {
   final List<ShortcutEntry> entries;
 }
 
-/// Глобальные клавиатурные сочетания (NavigationShell).
+/// Глобальные клавиатурные сочетания (AppShell).
 ///
 /// Возвращает маппинг [ShortcutActivator] → callback для использования
 /// в [CallbackShortcuts]. Только для десктопа.

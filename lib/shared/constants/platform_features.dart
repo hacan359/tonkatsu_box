@@ -35,3 +35,9 @@ bool isLandscapeMobile(BuildContext context) {
 bool isCompactScreen(BuildContext context) {
   return MediaQuery.sizeOf(context).width < 600;
 }
+
+/// Порог ширины, на котором включается «desktop»-раскладка для контента
+/// (крупнее колонки в гридах, плотнее таблицы и т.п.).
+///
+/// Не связан с боковым меню — оно теперь единое на всех ширинах.
+const double kDesktopContentBreakpoint = 800;

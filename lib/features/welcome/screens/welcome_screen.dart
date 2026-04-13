@@ -7,7 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../features/settings/providers/settings_provider.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/navigation/navigation_shell.dart';
+import '../../../shared/navigation/app_shell.dart';
+import '../../../shared/navigation/nav_tab.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../widgets/step_indicator.dart';
@@ -23,7 +24,7 @@ const String kWelcomeCompletedKey = 'welcome_completed';
 
 /// Welcome Wizard — 6-шаговый онбординг.
 ///
-/// При первом запуске показывается автоматически вместо [NavigationShell].
+/// При первом запуске показывается автоматически вместо [AppShell].
 /// Может быть открыт повторно из Settings (с [fromSettings] = true).
 class WelcomeScreen extends ConsumerStatefulWidget {
   /// Создаёт [WelcomeScreen].
@@ -277,7 +278,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
     if (goToSettings) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute<void>(
-          builder: (BuildContext context) => const NavigationShell(
+          builder: (BuildContext context) => const AppShell(
             initialTab: NavTab.settings,
           ),
         ),
@@ -285,7 +286,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
     } else {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute<void>(
-          builder: (BuildContext context) => const NavigationShell(),
+          builder: (BuildContext context) => const AppShell(),
         ),
       );
     }

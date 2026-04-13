@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/services/profile_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/profile.dart';
-import '../../../shared/navigation/navigation_shell.dart';
+import '../../../shared/navigation/app_shell.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -57,7 +57,7 @@ class _ProfilePickerScreenState
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
       MaterialPageRoute<void>(
-        builder: (BuildContext context) => const NavigationShell(),
+        builder: (BuildContext context) => const AppShell(),
       ),
     );
   }

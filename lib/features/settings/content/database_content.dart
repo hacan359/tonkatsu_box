@@ -9,7 +9,7 @@ import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
-import '../../../shared/navigation/navigation_shell.dart';
+import '../../../shared/navigation/app_shell.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../../tier_lists/providers/tier_lists_provider.dart';
@@ -211,7 +211,7 @@ class DatabaseContent extends ConsumerWidget {
         );
         Navigator.of(context, rootNavigator: true).pushReplacement(
           MaterialPageRoute<void>(
-            builder: (_) => const NavigationShell(),
+            builder: (_) => const AppShell(),
           ),
         );
       }

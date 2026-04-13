@@ -14,7 +14,6 @@ import '../../../shared/models/collection_tag.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/platform.dart';
-import '../../../shared/navigation/navigation_shell.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -421,7 +420,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   ) {
     final double screenWidth = MediaQuery.sizeOf(context).width;
     final bool isLandscape = isLandscapeMobile(context);
-    final bool isDesktop = screenWidth >= navigationBreakpoint && !kIsMobile;
+    final bool isDesktop = screenWidth >= kDesktopContentBreakpoint && !kIsMobile;
 
     final double gridPadding = isLandscape ? AppSpacing.sm : AppSpacing.screenPadding;
     final double crossSpacing = isLandscape ? AppSpacing.sm : AppSpacing.gridGap;
