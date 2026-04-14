@@ -10,12 +10,11 @@ import '../../../shared/constants/platform_features.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/wishlist_item.dart';
+import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/mini_markdown_text.dart';
-import '../../../shared/widgets/screen_app_bar.dart';
-import '../../../shared/widgets/type_to_filter_overlay.dart';
 import '../../search/screens/search_screen.dart';
 import '../providers/wishlist_provider.dart';
 import '../widgets/add_wishlist_dialog.dart';
@@ -44,48 +43,19 @@ class WishlistScreen extends ConsumerStatefulWidget {
 
 class _WishlistScreenState extends ConsumerState<WishlistScreen> {
   bool _showResolved = true;
-  String _typeToFilterQuery = '';
 
   @override
   Widget build(BuildContext context) {
-    final S l = S.of(context);
     final AsyncValue<List<WishlistItem>> itemsAsync =
         ref.watch(wishlistProvider);
+    final String searchQuery = ref.watch(wishlistSearchQueryProvider);
 
     return CallbackShortcuts(
       bindings: _buildScreenShortcuts(),
       child: Scaffold(
-      appBar: ScreenAppBar(
-        title: l.navWishlist,
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(
-              _showResolved
-                  ? Icons.visibility
-                  : Icons.visibility_off,
-            ),
-            color: AppColors.textSecondary,
-            tooltip: _showResolved ? l.wishlistHideResolved : l.wishlistShowResolved,
-            onPressed: () {
-              setState(() {
-                _showResolved = !_showResolved;
-              });
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete_sweep),
-            color: AppColors.textSecondary,
-            tooltip: l.wishlistClearResolved,
-            onPressed: () => _confirmClearResolved(context),
-          ),
-        ],
-      ),
-      body: TypeToFilterOverlay(
-        onFilterChanged: (String query) {
-          setState(() => _typeToFilterQuery = query);
-        },
-        child: itemsAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+        body: itemsAsync.when(
+          loading: () =>
+              const Center(child: CircularProgressIndicator()),
           error: (Object error, StackTrace stack) => Center(
             child: Text(S.of(context).errorPrefix(error.toString())),
           ),
@@ -96,8 +66,8 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
                     .where((WishlistItem item) => !item.isResolved)
                     .toList();
 
-            if (_typeToFilterQuery.isNotEmpty) {
-              final String query = _typeToFilterQuery.toLowerCase();
+            if (searchQuery.isNotEmpty) {
+              final String query = searchQuery.toLowerCase();
               filtered = filtered
                   .where((WishlistItem item) =>
                       item.text.toLowerCase().contains(query))
@@ -114,23 +84,26 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
               itemBuilder: (BuildContext context, int index) {
                 return _WishlistTile(
                   item: filtered[index],
-                  onTap: () => _searchForItem(context, filtered[index]),
+                  onTap: () =>
+                      _searchForItem(context, filtered[index]),
                   onResolve: () => _toggleResolved(filtered[index]),
-                  onEdit: () => _editItem(context, filtered[index]),
-                  onDelete: () => _deleteItem(context, filtered[index]),
+                  onEdit: () =>
+                      _editItem(context, filtered[index]),
+                  onDelete: () =>
+                      _deleteItem(context, filtered[index]),
                 );
               },
             );
           },
         ),
+        floatingActionButton: _WishlistFab(
+          showResolved: _showResolved,
+          onAdd: () => _addItem(context),
+          onToggleResolved: () =>
+              setState(() => _showResolved = !_showResolved),
+          onClearResolved: () => _confirmClearResolved(context),
+        ),
       ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'wishlist_add',
-        tooltip: kIsMobile ? null : '${S.of(context).wishlistAddTitle} (Ctrl+N)',
-        onPressed: () => _addItem(context),
-        child: const Icon(Icons.add),
-      ),
-    ),
     );
   }
 
@@ -294,6 +267,90 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
     if (confirmed == true && mounted) {
       await ref.read(wishlistProvider.notifier).clearResolved();
     }
+  }
+}
+
+/// FAB с popup-меню: добавить, показать/скрыть resolved, очистить resolved.
+class _WishlistFab extends StatelessWidget {
+  const _WishlistFab({
+    required this.showResolved,
+    required this.onAdd,
+    required this.onToggleResolved,
+    required this.onClearResolved,
+  });
+
+  final bool showResolved;
+  final VoidCallback onAdd;
+  final VoidCallback onToggleResolved;
+  final VoidCallback onClearResolved;
+
+  @override
+  Widget build(BuildContext context) {
+    final S l = S.of(context);
+
+    return PopupMenuButton<String>(
+      onSelected: (String value) {
+        switch (value) {
+          case 'add':
+            onAdd();
+          case 'toggle':
+            onToggleResolved();
+          case 'clear':
+            onClearResolved();
+        }
+      },
+      offset: const Offset(0, -180),
+      color: AppColors.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+      ),
+      itemBuilder: (BuildContext ctx) => <PopupMenuEntry<String>>[
+        PopupMenuItem<String>(
+          value: 'add',
+          child: ListTile(
+            leading: const Icon(Icons.add, color: AppColors.brand),
+            title: Text(l.wishlistAddTitle),
+            contentPadding: EdgeInsets.zero,
+            dense: true,
+          ),
+        ),
+        const PopupMenuDivider(height: 8),
+        PopupMenuItem<String>(
+          value: 'toggle',
+          child: ListTile(
+            leading: Icon(
+              showResolved ? Icons.visibility_off : Icons.visibility,
+              color: AppColors.textSecondary,
+            ),
+            title: Text(
+              showResolved
+                  ? l.wishlistHideResolved
+                  : l.wishlistShowResolved,
+            ),
+            contentPadding: EdgeInsets.zero,
+            dense: true,
+          ),
+        ),
+        PopupMenuItem<String>(
+          value: 'clear',
+          child: ListTile(
+            leading: const Icon(Icons.delete_sweep, color: AppColors.error),
+            title: Text(
+              l.wishlistClearResolved,
+              style: const TextStyle(color: AppColors.error),
+            ),
+            contentPadding: EdgeInsets.zero,
+            dense: true,
+          ),
+        ),
+      ],
+      child: const FloatingActionButton(
+        heroTag: 'wishlist_fab',
+        onPressed: null,
+        backgroundColor: AppColors.brand,
+        child: Icon(Icons.more_vert, color: AppColors.textPrimary),
+      ),
+    );
   }
 }
 

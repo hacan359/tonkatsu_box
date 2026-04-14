@@ -16,6 +16,14 @@ import 'nav_tab.dart';
 final StateProvider<String> homeSearchQueryProvider =
     StateProvider<String>((Ref ref) => '');
 
+/// Query поиска для Wishlist таба.
+final StateProvider<String> wishlistSearchQueryProvider =
+    StateProvider<String>((Ref ref) => '');
+
+/// Query поиска для Tier Lists таба.
+final StateProvider<String> tierListsSearchQueryProvider =
+    StateProvider<String>((Ref ref) => '');
+
 /// Общий [FocusNode] для TextField в [AppTopBar].
 ///
 /// Живёт на уровне приложения: используется [AppTopBar] для поля ввода
@@ -54,9 +62,17 @@ SearchContext? searchContextFor(NavTab tab, BuildContext context) {
         queryProvider: homeSearchQueryProvider,
         hint: loc.appBarSearchHint,
       );
-    case NavTab.collections:
-    case NavTab.tierLists:
     case NavTab.wishlist:
+      return SearchContext(
+        queryProvider: wishlistSearchQueryProvider,
+        hint: loc.appBarSearchHint,
+      );
+    case NavTab.tierLists:
+      return SearchContext(
+        queryProvider: tierListsSearchQueryProvider,
+        hint: loc.appBarSearchHint,
+      );
+    case NavTab.collections:
     case NavTab.search:
     case NavTab.settings:
       return null;

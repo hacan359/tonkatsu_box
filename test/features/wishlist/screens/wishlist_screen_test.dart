@@ -147,7 +147,7 @@ void main() {
         expect(find.byType(FloatingActionButton), findsOneWidget);
       });
 
-      testWidgets('должен открывать форму при нажатии на FAB',
+      testWidgets('должен открывать форму через FAB-меню',
           (WidgetTester tester) async {
         when(() => mockRepo.getAll())
             .thenAnswer((_) async => <WishlistItem>[]);
@@ -155,7 +155,10 @@ void main() {
         await tester.pumpWidget(buildScreen());
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byType(FloatingActionButton));
+        // Открываем FAB-меню → Add
+        await tester.tap(find.byIcon(Icons.more_vert));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Add').last);
         await tester.pumpAndSettle();
 
         // Открылась страница-форма с полем Title.
@@ -210,8 +213,10 @@ void main() {
         expect(find.text('Chrono Trigger'), findsOneWidget);
         expect(find.text('Resolved Game'), findsOneWidget);
 
-        // Нажимаем кнопку hide resolved
-        await tester.tap(find.byIcon(Icons.visibility));
+        // Открываем FAB-меню → Hide resolved
+        await tester.tap(find.byIcon(Icons.more_vert));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Hide resolved'));
         await tester.pumpAndSettle();
 
         // Resolved скрыт
@@ -229,7 +234,10 @@ void main() {
         await tester.pumpWidget(buildScreen());
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byIcon(Icons.delete_sweep));
+        // Открываем FAB-меню → Clear resolved
+        await tester.tap(find.byIcon(Icons.more_vert));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Clear resolved'));
         await tester.pumpAndSettle();
 
         expect(find.text('Clear resolved'), findsOneWidget);
