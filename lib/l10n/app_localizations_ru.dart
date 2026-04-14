@@ -2135,6 +2135,23 @@ class SRu extends S {
   String get allItemsFailedToLoad => 'Не удалось загрузить элементы';
 
   @override
+  String get allItemsFilterPlatformsAll => 'Все платформы';
+
+  @override
+  String allItemsFilterPlatformsSelected(int count) {
+    return '$count платформ';
+  }
+
+  @override
+  String get allItemsFilterPlatformsTitle => 'Фильтр по платформе';
+
+  @override
+  String get allItemsFilterPlatformsApply => 'Применить';
+
+  @override
+  String get allItemsFilterPlatformsClear => 'Сбросить';
+
+  @override
   String get debugIgdbMedia => 'IGDB Медиа';
 
   @override

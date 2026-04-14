@@ -753,6 +753,16 @@
   "allItemsNoMatch": "Нет элементов по фильтру",
   "allItemsAddViaCollections": "Перейдите в Коллекции → создайте коллекцию → добавьте\nэлементы через Поиск. Они появятся здесь автоматически.",
   "allItemsFailedToLoad": "Не удалось загрузить элементы",
+  "allItemsFilterPlatformsAll": "Все платформы",
+  "allItemsFilterPlatformsSelected": "{count} платформ",
+  "@allItemsFilterPlatformsSelected": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "allItemsFilterPlatformsTitle": "Фильтр по платформе",
+  "allItemsFilterPlatformsApply": "Применить",
+  "allItemsFilterPlatformsClear": "Сбросить",
 
   "debugIgdbMedia": "IGDB Медиа",
   "debugSteamGridDb": "SteamGridDB",

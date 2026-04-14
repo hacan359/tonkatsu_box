@@ -25,8 +25,9 @@ import '../providers/all_items_provider.dart';
 
 /// Экран всех элементов из всех коллекций.
 ///
-/// Показывает grid-вид всех элементов с чипсами фильтрации по типу медиа
-/// и сортировкой по рейтингу.
+/// Показывает grid-вид всех элементов. Фильтры: media type (segmented
+/// control на всю ширину), status (pill), platforms (pill с multi-select,
+/// появляется только при выборе Games).
 class AllItemsScreen extends ConsumerStatefulWidget {
   /// Создаёт [AllItemsScreen].
   const AllItemsScreen({super.key});
@@ -36,10 +37,14 @@ class AllItemsScreen extends ConsumerStatefulWidget {
 }
 
 class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
-  MediaType? _filterType;
-  int? _filterPlatformId;
+  final Set<MediaType> _selectedTypes = <MediaType>{};
+  final Set<int> _selectedPlatformIds = <int>{};
+
   /// Максимальная ширина карточки на десктопе.
   static const double _desktopMaxCardWidth = 150;
+
+  /// Ширина, ниже которой сегменты показывают иконки вместо текста.
+  static const double _compactBreakpoint = 700;
 
   @override
   Widget build(BuildContext context) {
@@ -54,8 +59,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
 
     return Column(
       children: <Widget>[
-        _buildChipsRow(itemsAsync, filterStatus),
-        if (_filterType == MediaType.game) _buildPlatformChipsRow(),
+        _buildMediaTypeBar(itemsAsync, filterStatus),
+        _buildPlatformsRow(),
         Expanded(
           child: itemsAsync.when(
             data: (List<CollectionItem> items) {
@@ -82,9 +87,9 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     String searchQuery,
   ) {
     List<CollectionItem> result = items;
-    if (_filterType != null) {
+    if (_selectedTypes.isNotEmpty) {
       result = result
-          .where((CollectionItem item) => item.mediaType == _filterType)
+          .where((CollectionItem item) => _selectedTypes.contains(item.mediaType))
           .toList();
     }
     if (filterStatus != null) {
@@ -92,9 +97,13 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
           .where((CollectionItem item) => item.status == filterStatus)
           .toList();
     }
-    if (_filterPlatformId != null) {
+    if (_selectedPlatformIds.isNotEmpty) {
       result = result
-          .where((CollectionItem item) => item.platformId == _filterPlatformId)
+          .where(
+            (CollectionItem item) =>
+                item.platformId != null &&
+                _selectedPlatformIds.contains(item.platformId),
+          )
           .toList();
     }
     if (searchQuery.isNotEmpty) {
@@ -112,51 +121,183 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     return result;
   }
 
-  Widget _buildChipsRow(
+  // ==================== Filter UI ====================
+
+  /// Chevron-бар: типы медиа (multi-select) + dropdown статуса (последний
+  /// сегмент).
+  ///
+  /// В compact-режиме (< [_compactBreakpoint]) показывает иконки вместо текста.
+  Widget _buildMediaTypeBar(
     AsyncValue<List<CollectionItem>> itemsAsync,
     ItemStatus? filterStatus,
   ) {
     final List<CollectionItem>? items = itemsAsync.valueOrNull;
     final Map<MediaType, int> counts = _countByMediaType(items);
-    final int total = items?.length ?? 0;
     final S l = S.of(context);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.xs,
+    final List<_MediaTypeEntry> entries = <_MediaTypeEntry>[
+      _MediaTypeEntry(
+        type: MediaType.game,
+        label: l.allItemsGames,
+        count: counts[MediaType.game] ?? 0,
       ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
+      _MediaTypeEntry(
+        type: MediaType.movie,
+        label: l.allItemsMovies,
+        count: counts[MediaType.movie] ?? 0,
+      ),
+      _MediaTypeEntry(
+        type: MediaType.tvShow,
+        label: l.allItemsTvShows,
+        count: counts[MediaType.tvShow] ?? 0,
+      ),
+      _MediaTypeEntry(
+        type: MediaType.animation,
+        label: l.allItemsAnimation,
+        count: counts[MediaType.animation] ?? 0,
+      ),
+      _MediaTypeEntry(
+        type: MediaType.visualNovel,
+        label: l.allItemsVisualNovels,
+        count: counts[MediaType.visualNovel] ?? 0,
+      ),
+      _MediaTypeEntry(
+        type: MediaType.manga,
+        label: l.allItemsManga,
+        count: counts[MediaType.manga] ?? 0,
+      ),
+      _MediaTypeEntry(
+        type: MediaType.anime,
+        label: l.mediaTypeAnime,
+        count: counts[MediaType.anime] ?? 0,
+      ),
+      _MediaTypeEntry(
+        type: MediaType.custom,
+        label: l.allItemsCustom,
+        count: counts[MediaType.custom] ?? 0,
+      ),
+    ];
+
+    final bool compact =
+        MediaQuery.sizeOf(context).width < _compactBreakpoint;
+
+    return ColoredBox(
+      color: AppColors.surface,
+      child: SizedBox(
+        height: 40,
         child: Row(
           children: <Widget>[
-            // Media type chips
-            _buildMediaChip(null, l.allItemsAll, total),
-            const SizedBox(width: AppSpacing.xs),
-            _buildMediaChip(MediaType.game, l.allItemsGames, counts[MediaType.game]),
-            const SizedBox(width: AppSpacing.xs),
-            _buildMediaChip(MediaType.movie, l.allItemsMovies, counts[MediaType.movie]),
-            const SizedBox(width: AppSpacing.xs),
-            _buildMediaChip(MediaType.tvShow, l.allItemsTvShows, counts[MediaType.tvShow]),
-            const SizedBox(width: AppSpacing.xs),
-            _buildMediaChip(MediaType.animation, l.allItemsAnimation, counts[MediaType.animation]),
-            const SizedBox(width: AppSpacing.xs),
-            _buildMediaChip(MediaType.visualNovel, l.allItemsVisualNovels, counts[MediaType.visualNovel]),
-            const SizedBox(width: AppSpacing.xs),
-            _buildMediaChip(MediaType.manga, l.allItemsManga, counts[MediaType.manga]),
-            const SizedBox(width: AppSpacing.xs),
-            _buildMediaChip(MediaType.anime, l.mediaTypeAnime, counts[MediaType.anime]),
-            _buildMediaChip(MediaType.custom, l.allItemsCustom, counts[MediaType.custom]),
-
-            const SizedBox(width: AppSpacing.md),
-
-            // Status filter dropdown chip
-            _buildStatusDropdownChip(l, filterStatus),
+            for (int i = 0; i < entries.length; i++)
+              Expanded(
+                child: _ChevronSegment(
+                  label: entries[i].displayLabel,
+                  icon: MediaTypeTheme.iconFor(entries[i].type),
+                  selected: _selectedTypes.contains(entries[i].type),
+                  accentColor: MediaTypeTheme.colorFor(entries[i].type),
+                  isFirst: i == 0,
+                  isLast: false,
+                  onTap: () => _toggleMediaType(entries[i].type),
+                  compact: compact,
+                ),
+              ),
+            Expanded(
+              child: _StatusDropdownSegment(
+                status: filterStatus,
+                compact: compact,
+                onChanged: (ItemStatus? s) =>
+                    ref.read(homeStatusFilterProvider.notifier).setFilter(s),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
+
+  /// Полоска ChoiceChip платформ — видна только при выбранном Games.
+  ///
+  /// Горизонтальный скролл. Стиль как в main, но с цветом семейства.
+  Widget _buildPlatformsRow() {
+    if (!_selectedTypes.contains(MediaType.game)) {
+      return const SizedBox.shrink();
+    }
+    final AsyncValue<List<Platform>> platformsAsync =
+        ref.watch(allItemsPlatformsProvider);
+    final List<Platform> platforms =
+        platformsAsync.valueOrNull ?? <Platform>[];
+    if (platforms.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.sm,
+        AppSpacing.xs,
+        AppSpacing.sm,
+        AppSpacing.sm,
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: <Widget>[
+            for (final Platform p in platforms) ...<Widget>[
+              _buildPlatformChip(p),
+              const SizedBox(width: AppSpacing.xs),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlatformChip(Platform platform) {
+    final bool selected = _selectedPlatformIds.contains(platform.id);
+    const Color accentColor = AppColors.brand;
+
+    return ChoiceChip(
+      label: Text(
+        platform.displayName,
+        style: AppTypography.caption.copyWith(
+          color: selected ? AppColors.background : AppColors.textTertiary,
+          fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+        ),
+      ),
+      selected: selected,
+      selectedColor: accentColor,
+      backgroundColor: AppColors.surface,
+      side: BorderSide(
+        color: selected ? Colors.transparent : accentColor.withAlpha(50),
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      visualDensity: VisualDensity.compact,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+      onSelected: (bool value) {
+        setState(() {
+          if (value) {
+            _selectedPlatformIds.add(platform.id);
+          } else {
+            _selectedPlatformIds.remove(platform.id);
+          }
+        });
+      },
+    );
+  }
+
+  void _toggleMediaType(MediaType type) {
+    setState(() {
+      if (_selectedTypes.contains(type)) {
+        _selectedTypes.remove(type);
+      } else {
+        _selectedTypes.add(type);
+      }
+      if (!_selectedTypes.contains(MediaType.game)) {
+        _selectedPlatformIds.clear();
+      }
+    });
+  }
+
+  // ==================== Helpers ====================
 
   /// Считает количество элементов по типу медиа.
   static Map<MediaType, int> _countByMediaType(List<CollectionItem>? items) {
@@ -168,241 +309,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     return counts;
   }
 
-  Widget _buildMediaChip(MediaType? type, String label, int? count) {
-    final bool selected = _filterType == type;
-    final Color? accentColor =
-        type != null ? MediaTypeTheme.colorFor(type) : null;
-    final String displayLabel =
-        count != null && count > 0 ? '$label ($count)' : label;
-
-    return ChoiceChip(
-      label: Text(
-        displayLabel,
-        style: AppTypography.bodySmall.copyWith(
-          color: selected
-              ? AppColors.background
-              : accentColor ?? AppColors.textSecondary,
-          fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-        ),
-      ),
-      selected: selected,
-      selectedColor: accentColor ?? AppColors.textPrimary,
-      backgroundColor: AppColors.surface,
-      side: BorderSide(
-        color: selected
-            ? Colors.transparent
-            : accentColor?.withAlpha(80) ?? AppColors.surfaceBorder,
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      visualDensity: VisualDensity.compact,
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      onSelected: (bool value) {
-        setState(() {
-          _filterType = value ? type : null;
-          _filterPlatformId = null;
-        });
-      },
-    );
-  }
-
-  Widget _buildStatusDropdownChip(S l, ItemStatus? filterStatus) {
-    final bool isActive = filterStatus != null;
-    final Color chipColor =
-        isActive ? filterStatus.color : AppColors.textSecondary;
-    final String label = isActive
-        ? _statusLabel(filterStatus, l)
-        : l.homeFilterAll;
-
-    return PopupMenuButton<String>(
-      onSelected: (String value) {
-        final ItemStatus? status =
-            value == 'all' ? null : ItemStatus.fromString(value);
-        ref.read(homeStatusFilterProvider.notifier).setFilter(status);
-      },
-      offset: const Offset(0, 36),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-      ),
-      color: AppColors.surface,
-      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-        // "All" option
-        PopupMenuItem<String>(
-          value: 'all',
-          height: 36,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Icon(
-                Icons.filter_list_off,
-                size: 16,
-                color: filterStatus == null
-                    ? AppColors.brand
-                    : AppColors.textTertiary,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                l.homeFilterAll,
-                style: AppTypography.body.copyWith(
-                  color: filterStatus == null
-                      ? AppColors.brand
-                      : AppColors.textPrimary,
-                  fontWeight: filterStatus == null
-                      ? FontWeight.w600
-                      : FontWeight.normal,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const PopupMenuDivider(height: 8),
-        // Status options
-        for (final ItemStatus status in _statusOrder)
-          PopupMenuItem<String>(
-            value: status.value,
-            height: 36,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Icon(
-                  status.materialIcon,
-                  size: 16,
-                  color: filterStatus == status
-                      ? status.color
-                      : AppColors.textTertiary,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  _statusLabel(status, l),
-                  style: AppTypography.body.copyWith(
-                    color: filterStatus == status
-                        ? status.color
-                        : AppColors.textPrimary,
-                    fontWeight: filterStatus == status
-                        ? FontWeight.w600
-                        : FontWeight.normal,
-                  ),
-                ),
-              ],
-            ),
-          ),
-      ],
-      child: Container(
-        height: 28,
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        decoration: BoxDecoration(
-          color: isActive ? chipColor.withAlpha(25) : AppColors.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isActive ? chipColor.withAlpha(80) : AppColors.surfaceBorder,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Icon(
-              isActive ? filterStatus.materialIcon : Icons.filter_list,
-              size: 14,
-              color: isActive ? chipColor : AppColors.textTertiary,
-            ),
-            const SizedBox(width: 4),
-            Text(
-              label,
-              style: AppTypography.bodySmall.copyWith(
-                color: isActive ? chipColor : AppColors.textSecondary,
-                fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
-              ),
-            ),
-            const SizedBox(width: 2),
-            Icon(
-              Icons.keyboard_arrow_down,
-              size: 14,
-              color: isActive ? chipColor : AppColors.textTertiary,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Порядок статусов в chips.
-  static const List<ItemStatus> _statusOrder = <ItemStatus>[
-    ItemStatus.inProgress,
-    ItemStatus.planned,
-    ItemStatus.notStarted,
-    ItemStatus.completed,
-    ItemStatus.dropped,
-  ];
-
-  /// Универсальная метка статуса (не привязана к MediaType).
-  static String _statusLabel(ItemStatus status, S l) {
-    return switch (status) {
-      ItemStatus.notStarted => l.statusNotStarted,
-      ItemStatus.inProgress => l.statusInProgress,
-      ItemStatus.completed => l.statusCompleted,
-      ItemStatus.dropped => l.statusDropped,
-      ItemStatus.planned => l.statusPlanned,
-    };
-  }
-
-  Widget _buildPlatformChipsRow() {
-    final AsyncValue<List<Platform>> platformsAsync =
-        ref.watch(allItemsPlatformsProvider);
-    final List<Platform> platforms =
-        platformsAsync.valueOrNull ?? <Platform>[];
-    if (platforms.isEmpty) return const SizedBox.shrink();
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: <Widget>[
-            _buildPlatformChip(null, S.of(context).collectionFilterAll),
-            for (final Platform platform in platforms) ...<Widget>[
-              const SizedBox(width: AppSpacing.xs),
-              _buildPlatformChip(platform.id, platform.displayName),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPlatformChip(int? platformId, String label) {
-    final bool selected = _filterPlatformId == platformId;
-    const Color accentColor = AppColors.brand;
-
-    return ChoiceChip(
-      label: Text(
-        label,
-        style: AppTypography.caption.copyWith(
-          color: selected ? AppColors.background : AppColors.textTertiary,
-          fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-        ),
-      ),
-      selected: selected,
-      selectedColor: accentColor,
-      backgroundColor: AppColors.surface,
-      side: BorderSide(
-        color: selected
-            ? Colors.transparent
-            : accentColor.withAlpha(50),
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      visualDensity: VisualDensity.compact,
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-      onSelected: (bool value) {
-        setState(() => _filterPlatformId = value ? platformId : null);
-      },
-    );
-  }
+  // ==================== Grid ====================
 
   Widget _buildGridView(
     List<CollectionItem> items,
@@ -442,7 +349,6 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
       );
     }
 
-    // Группируем элементы по коллекциям (сохраняя порядок появления)
     final List<_CollectionGroup> groups =
         _groupByCollection(items, collectionNames, S.of(context).collectionsUncategorized);
 
@@ -452,7 +358,6 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
       child: CustomScrollView(
         slivers: <Widget>[
           for (int i = 0; i < groups.length; i++) ...<Widget>[
-            // Разделитель с названием коллекции
             SliverToBoxAdapter(
               child: _buildCollectionDivider(
                 groups[i].name,
@@ -460,7 +365,6 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                 isFirst: i == 0,
               ),
             ),
-            // Сетка элементов
             SliverPadding(
               padding: EdgeInsets.symmetric(
                 horizontal: gridPadding,
@@ -506,13 +410,11 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                 ),
               ),
             ),
-            // Отступ после секции (кроме последней)
             if (i < groups.length - 1)
               const SliverToBoxAdapter(
                 child: SizedBox(height: AppSpacing.sm),
               ),
           ],
-          // Нижний отступ
           const SliverToBoxAdapter(
             child: SizedBox(height: AppSpacing.md),
           ),
@@ -521,7 +423,6 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     );
   }
 
-  /// Группирует элементы по коллекциям, сохраняя порядок появления.
   static List<_CollectionGroup> _groupByCollection(
     List<CollectionItem> items,
     Map<int, String> collectionNames,
@@ -543,7 +444,6 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     return order.map((int? id) => map[id]!).toList();
   }
 
-  /// Разделитель коллекции — линия во всю ширину с названием.
   Widget _buildCollectionDivider(
     String name,
     int count, {
@@ -644,7 +544,6 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     CollectionItem item,
     Map<int, String> collectionNames,
   ) {
-    // Определяем isEditable из коллекции
     final bool isEditable;
     if (item.isUncategorized) {
       isEditable = true;
@@ -669,8 +568,6 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
       ),
     );
   }
-
-  // ==================== Helpers ====================
 
   static int? _yearFor(CollectionItem item) {
     switch (item.mediaType) {
@@ -720,6 +617,292 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     }
   }
 }
+
+// ==================== Сегменты media type ====================
+
+class _MediaTypeEntry {
+  const _MediaTypeEntry({
+    required this.type,
+    required this.label,
+    required this.count,
+  });
+
+  final MediaType type;
+  final String label;
+  final int count;
+
+  String get displayLabel => count > 0 ? '$label ($count)' : label;
+}
+
+/// Универсальный chevron-сегмент для filter-баров.
+///
+/// V-вырез слева (кроме первого) и V-конец справа (кроме последнего).
+/// В режиме [compact] показывает [Tooltip] + иконку вместо текста.
+class _ChevronSegment extends StatelessWidget {
+  const _ChevronSegment({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.accentColor,
+    required this.isFirst,
+    required this.isLast,
+    required this.onTap,
+    this.compact = false,
+  });
+
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final Color accentColor;
+  final bool isFirst;
+  final bool isLast;
+  final VoidCallback onTap;
+  final bool compact;
+
+  static const double _chevronWidth = 6;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color bg = selected ? accentColor : AppColors.surface;
+    final Color contentColor =
+        selected ? AppColors.background : AppColors.textSecondary;
+
+    return ClipPath(
+      clipper: _ChevronClipper(
+        chevronWidth: _chevronWidth,
+        hasLeftNotch: !isFirst,
+        hasRightPoint: !isLast,
+      ),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOut,
+        color: bg,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            child: Padding(
+              padding: EdgeInsets.only(
+                left: isFirst ? 4 : _chevronWidth + 1,
+                right: isLast ? 4 : _chevronWidth + 1,
+              ),
+              child: Center(
+                child: compact
+                    ? Tooltip(
+                        message: label,
+                        child: Icon(icon, size: 18, color: contentColor),
+                      )
+                    : Text(
+                        label,
+                        textAlign: TextAlign.center,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        style: AppTypography.bodySmall.copyWith(
+                          color: contentColor,
+                          fontWeight:
+                              selected ? FontWeight.w600 : FontWeight.w500,
+                        ),
+                      ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// CustomClipper, вырезающий из прямоугольника форму стрелочки.
+class _ChevronClipper extends CustomClipper<Path> {
+  const _ChevronClipper({
+    required this.chevronWidth,
+    required this.hasLeftNotch,
+    required this.hasRightPoint,
+  });
+
+  final double chevronWidth;
+  final bool hasLeftNotch;
+  final bool hasRightPoint;
+
+  @override
+  Path getClip(Size size) {
+    final Path path = Path();
+    final double mid = size.height / 2;
+
+    // Левая грань: либо V-вырез внутрь, либо прямой край.
+    if (hasLeftNotch) {
+      path.moveTo(0, 0);
+      path.lineTo(chevronWidth, mid);
+      path.lineTo(0, size.height);
+    } else {
+      path.moveTo(0, 0);
+      path.lineTo(0, size.height);
+    }
+
+    // Правая грань: либо остриё вправо, либо прямой край.
+    if (hasRightPoint) {
+      path.lineTo(size.width - chevronWidth, size.height);
+      path.lineTo(size.width, mid);
+      path.lineTo(size.width - chevronWidth, 0);
+    } else {
+      path.lineTo(size.width, size.height);
+      path.lineTo(size.width, 0);
+    }
+
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(covariant _ChevronClipper old) {
+    return chevronWidth != old.chevronWidth ||
+        hasLeftNotch != old.hasLeftNotch ||
+        hasRightPoint != old.hasRightPoint;
+  }
+}
+
+// ==================== Status dropdown сегмент ====================
+
+/// Chevron-сегмент в виде dropdown для выбора статуса.
+///
+/// Визуально идентичен [_ChevronSegment] (всегда `isLast: true`), но при
+/// нажатии открывает [PopupMenuButton] со списком статусов. Каждый пункт
+/// подсвечивается цветом соответствующего статуса.
+class _StatusDropdownSegment extends StatelessWidget {
+  const _StatusDropdownSegment({
+    required this.status,
+    required this.compact,
+    required this.onChanged,
+  });
+
+  final ItemStatus? status;
+  final bool compact;
+  final ValueChanged<ItemStatus?> onChanged;
+
+  static const double _chevronWidth = 6;
+
+  static const List<ItemStatus> _order = <ItemStatus>[
+    ItemStatus.inProgress,
+    ItemStatus.planned,
+    ItemStatus.notStarted,
+    ItemStatus.completed,
+    ItemStatus.dropped,
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final S l = S.of(context);
+    final bool active = status != null;
+    final Color accentColor = active ? status!.color : AppColors.surface;
+    final Color contentColor =
+        active ? AppColors.background : AppColors.textSecondary;
+    final String label = active ? status!.genericLabel(l) : l.homeFilterAll;
+    final IconData icon = active ? status!.materialIcon : Icons.filter_list;
+
+    return PopupMenuButton<String>(
+      onSelected: (String v) {
+        onChanged(v == 'all' ? null : ItemStatus.fromString(v));
+      },
+      offset: const Offset(0, 40),
+      color: AppColors.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+      ),
+      itemBuilder: (BuildContext ctx) => <PopupMenuEntry<String>>[
+        _menuItem('all', Icons.filter_list_off, l.homeFilterAll,
+            status == null, null),
+        const PopupMenuDivider(height: 8),
+        for (final ItemStatus s in _order)
+          _menuItem(s.value, s.materialIcon, s.genericLabel(l),
+              status == s, s.color),
+      ],
+      child: ClipPath(
+        clipper: const _ChevronClipper(
+          chevronWidth: _chevronWidth,
+          hasLeftNotch: true,
+          hasRightPoint: false,
+        ),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOut,
+          color: accentColor,
+          child: Padding(
+            padding: const EdgeInsets.only(
+              left: _chevronWidth + 1,
+              right: 4,
+            ),
+            child: Center(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    if (compact)
+                      Tooltip(
+                        message: label,
+                        child: Icon(icon, size: 18, color: contentColor),
+                      )
+                    else
+                      Text(
+                        label,
+                        maxLines: 1,
+                        style: AppTypography.bodySmall.copyWith(
+                          color: contentColor,
+                          fontWeight:
+                              active ? FontWeight.w600 : FontWeight.w500,
+                        ),
+                      ),
+                    const SizedBox(width: 2),
+                    Icon(
+                      Icons.keyboard_arrow_down,
+                      size: 14,
+                      color: contentColor,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  static PopupMenuItem<String> _menuItem(
+    String value,
+    IconData icon,
+    String label,
+    bool selected,
+    Color? statusColor,
+  ) {
+    final Color itemColor = selected
+        ? (statusColor ?? AppColors.brand)
+        : AppColors.textPrimary;
+    final Color iconColor = selected
+        ? (statusColor ?? AppColors.brand)
+        : AppColors.textTertiary;
+
+    return PopupMenuItem<String>(
+      value: value,
+      height: 36,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Icon(icon, size: 16, color: iconColor),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: AppTypography.body.copyWith(
+              color: itemColor,
+              fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 
 /// Группа элементов одной коллекции для отображения секции.
 class _CollectionGroup {

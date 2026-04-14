@@ -141,7 +141,9 @@ class _AppTopBarState extends ConsumerState<AppTopBar> {
             width: 40,
             height: 40,
           ),
-          const SizedBox(width: 56),
+          SizedBox(
+            width: MediaQuery.sizeOf(context).width < 700 ? 12 : 56,
+          ),
           Expanded(
             child: Align(
               alignment: Alignment.centerLeft,
