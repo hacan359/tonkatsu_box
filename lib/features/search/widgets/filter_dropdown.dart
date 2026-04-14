@@ -237,7 +237,7 @@ class _FilterDropdownState extends ConsumerState<FilterDropdown> {
   Future<void> _showSearchableDialog(S l) async {
     final Object? result = await showDialog<Object>(
       context: context,
-      builder: (BuildContext context) => _SearchableFilterDialog(
+      builder: (BuildContext context) => SearchableFilterDialog(
         title: widget.filter.placeholder(l),
         options: _options,
         isLoading: _isLoadingOptions,
@@ -256,14 +256,16 @@ class _FilterDropdownState extends ConsumerState<FilterDropdown> {
 /// Поддерживает два режима:
 /// - single-select: тап по опции закрывает диалог с выбранным значением
 /// - multi-select: чекбоксы + кнопка подтверждения
-class _SearchableFilterDialog extends StatefulWidget {
-  const _SearchableFilterDialog({
+class SearchableFilterDialog extends StatefulWidget {
+  /// Создаёт [SearchableFilterDialog].
+  const SearchableFilterDialog({
     required this.title,
     required this.options,
     required this.isLoading,
     required this.currentValue,
     required this.allLabel,
     this.multiSelect = false,
+    super.key,
   });
 
   final String title;
@@ -274,11 +276,11 @@ class _SearchableFilterDialog extends StatefulWidget {
   final bool multiSelect;
 
   @override
-  State<_SearchableFilterDialog> createState() =>
-      _SearchableFilterDialogState();
+  State<SearchableFilterDialog> createState() =>
+      SearchableFilterDialogState();
 }
 
-class _SearchableFilterDialogState extends State<_SearchableFilterDialog> {
+class SearchableFilterDialogState extends State<SearchableFilterDialog> {
   final TextEditingController _controller = TextEditingController();
   String _query = '';
 

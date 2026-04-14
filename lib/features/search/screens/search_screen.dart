@@ -1,12 +1,14 @@
 // Экран поиска и просмотра контента.
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
-import '../../../shared/widgets/screen_app_bar.dart';
-import '../../../shared/constants/platform_features.dart';
+import '../../../shared/navigation/search_providers.dart';
+import '../../../shared/widgets/draggable_fab.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../core/api/tmdb_api.dart';
 import '../../../core/database/database_service.dart';
@@ -27,7 +29,6 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/collection_picker_dialog.dart';
-import '../../../shared/widgets/type_to_filter_overlay.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../collections/screens/item_detail_screen.dart';
 import '../providers/browse_provider.dart';
@@ -83,17 +84,14 @@ class SearchScreen extends ConsumerStatefulWidget {
 }
 
 class _SearchScreenState extends ConsumerState<SearchScreen> {
-  final TextEditingController _searchController = TextEditingController();
-  final FocusNode _searchFocus = FocusNode();
-  String _typeToFilterQuery = '';
   String? _lastSourceId;
+  Timer? _searchDebounce;
 
   Map<int, Platform> _platformMap = <int, Platform>{};
 
   @override
   void initState() {
     super.initState();
-    _searchController.addListener(_onSearchTextChanged);
     _loadPlatforms();
 
     // Предвыбор источника
@@ -103,18 +101,18 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     if (sourceToSet != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ref.read(browseProvider.notifier).setSource(sourceToSet);
-        // Если есть начальный запрос — запускаем поиск после смены источника
         if (widget.initialQuery != null &&
             widget.initialQuery!.isNotEmpty) {
-          _searchController.text = widget.initialQuery!;
+          ref.read(searchTabQueryProvider.notifier).state =
+              widget.initialQuery!;
           ref.read(browseProvider.notifier).search(widget.initialQuery!);
         }
       });
     } else if (widget.initialQuery != null &&
         widget.initialQuery!.isNotEmpty) {
-      // Начальный запрос без смены источника
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _searchController.text = widget.initialQuery!;
+        ref.read(searchTabQueryProvider.notifier).state =
+            widget.initialQuery!;
         ref.read(browseProvider.notifier).search(widget.initialQuery!);
       });
     }
@@ -134,36 +132,33 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   @override
   void dispose() {
-    _searchController.removeListener(_onSearchTextChanged);
-    _searchController.dispose();
-    _searchFocus.dispose();
+    _searchDebounce?.cancel();
     super.dispose();
-  }
-
-  void _onSearchTextChanged() {
-    // Перерисовка для обновления крестика очистки
-    setState(() {});
   }
 
   // ==================== Search ====================
 
-  /// Синхронизирует текст из контроллера в провайдер перед сменой фильтра.
+  /// Синхронизирует текст из провайдера в browse перед сменой фильтра.
   void _syncSearchText() {
-    final String text = _searchController.text.trim();
+    final String text = ref.read(searchTabQueryProvider).trim();
     if (text.length >= 2) {
       ref.read(browseProvider.notifier).setSearchQuery(text);
     }
   }
 
-  void _onSearchSubmit() {
-    final String query = _searchController.text;
+  /// Debounced поиск при изменении query в top bar.
+  void _onQueryChanged(String query) {
+    _searchDebounce?.cancel();
+    if (query.isEmpty) {
+      ref.read(browseProvider.notifier).clearSearch();
+      return;
+    }
     if (query.length < 2) return;
-    ref.read(browseProvider.notifier).search(query);
-  }
-
-  void _onClearSearch() {
-    _searchController.clear();
-    ref.read(browseProvider.notifier).clearSearch();
+    _searchDebounce = Timer(const Duration(milliseconds: 400), () {
+      if (mounted) {
+        ref.read(browseProvider.notifier).search(query);
+      }
+    });
   }
 
   // ==================== Image caching ====================
@@ -1367,12 +1362,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     final BrowseState browseState = ref.watch(browseProvider);
-    final bool isLandscape = isLandscapeMobile(context);
-
-    // Очистка поля при смене источника
+    // Очистка поиска при смене источника.
     if (_lastSourceId != null && _lastSourceId != browseState.sourceId) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _searchController.clear();
+        if (mounted) {
+          ref.read(searchTabQueryProvider.notifier).state = '';
+        }
       });
     }
     _lastSourceId = browseState.sourceId;
@@ -1384,110 +1379,34 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             browseState.sourceId == 'tv' ||
             browseState.sourceId == 'anime');
 
-    return Scaffold(
-      resizeToAvoidBottomInset: !isLandscape,
-      appBar: ScreenAppBar(
-        title: S.of(context).navSearch,
-        actions: <Widget>[
-          if (showDiscoverCustomize)
-            IconButton(
-              icon: const Icon(Icons.tune, size: 20),
-              tooltip: S.of(context).discoverCustomize,
-              onPressed: _showDiscoverCustomizeSheet,
-            ),
-        ],
-      ),
-      body: TypeToFilterOverlay(
-        onFilterChanged: (String query) {
-          setState(() => _typeToFilterQuery = query);
-        },
-        child: Column(
+    // Слушаем глобальный поиск — debounced API запрос.
+    ref.listen<String>(searchTabQueryProvider, (String? prev, String next) {
+      _onQueryChanged(next);
+    });
+
+    return Stack(
+      children: <Widget>[
+        Column(
           children: <Widget>[
-            // Фильтр-бар: всегда видим
             FilterBar(onBeforeFilterChange: _syncSearchText),
-            // Поле поиска: всегда видимо
-            _buildSearchField(),
             const SizedBox(height: AppSpacing.xs),
-            // Контент
             Expanded(
               child: _buildContent(browseState),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  // ==================== Search field ====================
-
-  Widget _buildSearchField() {
-    final S l = S.of(context);
-    final BrowseState browseState = ref.watch(browseProvider);
-    final bool hasText = _searchController.text.isNotEmpty;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.xs,
-      ),
-      child: SizedBox(
-        height: 36,
-        child: TextField(
-          controller: _searchController,
-          focusNode: _searchFocus,
-          style: AppTypography.body.copyWith(
-            color: AppColors.textPrimary,
+        if (showDiscoverCustomize)
+          DraggableFab(
+            icon: Icons.tune,
+            items: <DraggableFabItem>[
+              DraggableFabItem(
+                icon: Icons.tune,
+                label: S.of(context).discoverCustomize,
+                onTap: _showDiscoverCustomizeSheet,
+              ),
+            ],
           ),
-          decoration: InputDecoration(
-            hintText: browseState.source.searchHint(l),
-            hintStyle: AppTypography.body.copyWith(
-              color: AppColors.textTertiary,
-            ),
-            prefixIcon: const Icon(
-              Icons.search,
-              size: 18,
-              color: AppColors.textTertiary,
-            ),
-            suffixIcon: hasText
-                ? IconButton(
-                    icon: const Icon(
-                      Icons.close,
-                      size: 16,
-                      color: AppColors.textTertiary,
-                    ),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(
-                      minWidth: 28,
-                      minHeight: 28,
-                    ),
-                    onPressed: _onClearSearch,
-                  )
-                : null,
-            filled: true,
-            fillColor: AppColors.surfaceLight,
-            contentPadding: const EdgeInsets.symmetric(
-              vertical: AppSpacing.xs,
-            ),
-            border: OutlineInputBorder(
-              borderRadius:
-                  BorderRadius.circular(AppSpacing.radiusSm),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius:
-                  BorderRadius.circular(AppSpacing.radiusSm),
-              borderSide: BorderSide.none,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius:
-                  BorderRadius.circular(AppSpacing.radiusSm),
-              borderSide: BorderSide.none,
-            ),
-          ),
-          textInputAction: TextInputAction.search,
-          onSubmitted: (_) => _onSearchSubmit(),
-        ),
-      ),
+      ],
     );
   }
 
@@ -1515,7 +1434,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     return BrowseGrid(
       onItemTap: _onItemTap,
       onOpenInCollection: _openItemInCollection,
-      clientFilter: _typeToFilterQuery,
+      clientFilter: '',
       platformMap: _platformMap,
     );
   }

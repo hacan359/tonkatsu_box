@@ -28,6 +28,10 @@ final StateProvider<String> tierListsSearchQueryProvider =
 final StateProvider<String> collectionsSearchQueryProvider =
     StateProvider<String>((Ref ref) => '');
 
+/// Query поиска для Search таба (API поиск IGDB/TMDB).
+final StateProvider<String> searchTabQueryProvider =
+    StateProvider<String>((Ref ref) => '');
+
 /// Query поиска для Settings таба.
 final StateProvider<String> settingsSearchQueryProvider =
     StateProvider<String>((Ref ref) => '');
@@ -91,6 +95,9 @@ SearchContext? searchContextFor(NavTab tab, BuildContext context) {
         hint: loc.appBarSearchHint,
       );
     case NavTab.search:
-      return null;
+      return SearchContext(
+        queryProvider: searchTabQueryProvider,
+        hint: loc.appBarSearchHint,
+      );
   }
 }
