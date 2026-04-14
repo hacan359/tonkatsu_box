@@ -13,7 +13,8 @@ import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../data/repositories/collection_repository.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
-import '../../../shared/widgets/screen_app_bar.dart';
+import '../../../shared/widgets/draggable_fab.dart';
+import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
@@ -160,20 +161,14 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   @override
   Widget build(BuildContext context) {
     if (_collectionLoading) {
-      return const Scaffold(
-        appBar: ScreenAppBar(),
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (!_isUncategorized && _collection == null) {
-      return Scaffold(
-        appBar: const ScreenAppBar(),
-        body: Center(
-          child: Text(
-            S.of(context).collectionNotFound,
-            style: AppTypography.body.copyWith(color: AppColors.textSecondary),
-          ),
+      return Center(
+        child: Text(
+          S.of(context).collectionNotFound,
+          style: AppTypography.body.copyWith(color: AppColors.textSecondary),
         ),
       );
     }
@@ -186,43 +181,55 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     final S l = S.of(context);
     return CallbackShortcuts(
       bindings: _buildScreenShortcuts(l),
-      child: Scaffold(
-        appBar: ScreenAppBar(
-          title: _isUncategorized
-              ? l.collectionsUncategorized
-              : _collection!.name,
-          actions: _buildAppBarActions(l),
-        ),
-        body: _isCanvasMode
-            ? CollectionCanvasLayout(
-                collectionId: widget.collectionId,
-                isEditable: _effectiveIsEditable,
-                collectionName: _collection!.name,
-                onAddSteamGridDbImage: (SteamGridDbImage image) {
-                  CollectionActions.addSteamGridDbImage(
-                    context: context,
-                    ref: ref,
-                    collectionId: widget.collectionId,
-                    image: image,
-                  );
-                },
-                onAddVgMapsImage: (String url, int? width, int? height) {
-                  CollectionActions.addVgMapsImage(
-                    context: context,
-                    ref: ref,
-                    collectionId: widget.collectionId,
-                    url: url,
-                    width: width,
-                    height: height,
-                  );
-                },
-              )
-            : TypeToFilterOverlay(
-                onFilterChanged: (String query) {
-                  setState(() => _typeToFilterQuery = query);
-                },
-                child: _buildListLayout(itemsAsync, statsAsync),
+      child: Stack(
+        children: <Widget>[
+          Column(
+            children: <Widget>[
+              SubScreenTitleBar(
+                title: _isUncategorized
+                    ? l.collectionsUncategorized
+                    : _collection!.name,
               ),
+              Expanded(
+                child: _isCanvasMode
+                    ? CollectionCanvasLayout(
+                        collectionId: widget.collectionId,
+                        isEditable: _effectiveIsEditable,
+                        collectionName: _collection!.name,
+                        onAddSteamGridDbImage: (SteamGridDbImage image) {
+                          CollectionActions.addSteamGridDbImage(
+                            context: context,
+                            ref: ref,
+                            collectionId: widget.collectionId,
+                            image: image,
+                          );
+                        },
+                        onAddVgMapsImage:
+                            (String url, int? width, int? height) {
+                          CollectionActions.addVgMapsImage(
+                            context: context,
+                            ref: ref,
+                            collectionId: widget.collectionId,
+                            url: url,
+                            width: width,
+                            height: height,
+                          );
+                        },
+                      )
+                    : TypeToFilterOverlay(
+                        onFilterChanged: (String query) {
+                          setState(() => _typeToFilterQuery = query);
+                        },
+                        child: _buildListLayout(itemsAsync, statsAsync),
+                      ),
+              ),
+            ],
+          ),
+          DraggableFab(
+            primaryItems: _buildPrimaryFabItems(l),
+            items: _buildSecondaryFabItems(l),
+          ),
+        ],
       ),
     );
   }
@@ -262,55 +269,41 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     };
   }
 
-  List<Widget> _buildAppBarActions(S l) {
-    return <Widget>[
+  /// Основные действия — горизонтальный ряд иконок.
+  List<DraggableFabItem> _buildPrimaryFabItems(S l) {
+    return <DraggableFabItem>[
       if (_canEdit && !_isCanvasMode)
-        IconButton(
-          icon: const Icon(Icons.add),
-          color: AppColors.textSecondary,
-          tooltip: kIsMobile
-              ? l.collectionAddItems
-              : '${l.collectionAddItems} (Ctrl+N)',
-          onPressed: () => CollectionActions.addItems(
+        DraggableFabItem(
+          icon: Icons.add,
+          label: l.collectionAddItems,
+          onTap: () => CollectionActions.addItems(
             context: context,
             ref: ref,
             collectionId: widget.collectionId,
           ),
         ),
       if (!_isCanvasMode)
-        IconButton(
-          icon: Icon(
-            _isTableMode ? Icons.grid_view : Icons.table_chart_outlined,
-          ),
-          color: AppColors.textSecondary,
-          tooltip: _isTableMode
+        DraggableFabItem(
+          icon: _isTableMode ? Icons.grid_view : Icons.table_chart_outlined,
+          label: _isTableMode
               ? l.collectionListViewGrid
               : l.collectionListViewTable,
-          onPressed: _handleCycleViewMode,
+          onTap: _handleCycleViewMode,
         ),
       if (!_isCanvasMode && !_isUncategorized)
-        IconButton(
-          icon: const Icon(Icons.leaderboard),
-          color: AppColors.textSecondary,
-          tooltip: l.tierListTitle,
-          onPressed: _navigateToTierLists,
+        DraggableFabItem(
+          icon: Icons.leaderboard,
+          label: l.tierListTitle,
+          onTap: _navigateToTierLists,
         ),
       if (_canEdit && _isCanvasMode && kCanvasEnabled && !_isUncategorized)
-        IconButton(
-          icon: Icon(
-            _isViewModeLocked ? Icons.lock : Icons.lock_open,
-          ),
-          color: _isViewModeLocked
-              ? AppColors.warning
-              : AppColors.textSecondary,
-          tooltip: _isViewModeLocked
-              ? (kIsMobile
-                  ? l.collectionUnlockBoard
-                  : '${l.collectionUnlockBoard} (Ctrl+L)')
-              : (kIsMobile
-                  ? l.collectionLockBoard
-                  : '${l.collectionLockBoard} (Ctrl+L)'),
-          onPressed: () {
+        DraggableFabItem(
+          icon: _isViewModeLocked ? Icons.lock : Icons.lock_open,
+          label: _isViewModeLocked
+              ? l.collectionUnlockBoard
+              : l.collectionLockBoard,
+          iconColor: _isViewModeLocked ? AppColors.warning : null,
+          onTap: () {
             setState(() {
               _isViewModeLocked = !_isViewModeLocked;
             });
@@ -320,119 +313,77 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                       .notifier)
                   .closePanel();
               ref
-                  .read(
-                      vgMapsPanelProvider(widget.collectionId).notifier)
+                  .read(vgMapsPanelProvider(widget.collectionId).notifier)
                   .closePanel();
             }
           },
         ),
       if (kCanvasEnabled && !_isUncategorized)
-        IconButton(
-          icon: Icon(
-            _isCanvasMode ? Icons.list : Icons.dashboard,
-          ),
-          color: AppColors.textSecondary,
-          tooltip: kIsMobile
-              ? (_isCanvasMode ? l.collectionSwitchToList : l.collectionSwitchToBoard)
-              : (_isCanvasMode
-                  ? '${l.collectionSwitchToList} (Ctrl+B)'
-                  : '${l.collectionSwitchToBoard} (Ctrl+B)'),
-          onPressed: () {
-            setState(() {
-              _isCanvasMode = !_isCanvasMode;
-            });
-          },
+        DraggableFabItem(
+          icon: _isCanvasMode ? Icons.list : Icons.dashboard,
+          label: _isCanvasMode
+              ? l.collectionSwitchToList
+              : l.collectionSwitchToBoard,
+          onTap: () => setState(() => _isCanvasMode = !_isCanvasMode),
         ),
-      if (!_isUncategorized)
-        PopupMenuButton<String>(
-          iconColor: AppColors.textSecondary,
-          onSelected: _handleMenuAction,
-          itemBuilder: (BuildContext context) {
-            final S ml = S.of(context);
-            return <PopupMenuEntry<String>>[
-              if (_collection!.isEditable)
-                PopupMenuItem<String>(
-                  value: 'custom_item',
-                  child: ListTile(
-                    leading: const Icon(Icons.add_box_outlined,
-                        color: AppColors.brand),
-                    title: Text(ml.customItemCreate),
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                ),
-              if (_collection!.isEditable)
-                PopupMenuItem<String>(
-                  value: 'rename',
-                  child: ListTile(
-                    leading: const Icon(Icons.edit),
-                    title: Text(ml.rename),
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                ),
-              PopupMenuItem<String>(
-                value: 'tier_list',
-                child: ListTile(
-                  leading: const Icon(Icons.leaderboard),
-                  title: Text(ml.tierListCreateFromCollection),
-                  contentPadding: EdgeInsets.zero,
-                ),
-              ),
-              PopupMenuItem<String>(
-                value: 'manage_tags',
-                child: ListTile(
-                  leading: const Icon(Icons.label_outlined),
-                  title: Text(ml.tagManage),
-                  contentPadding: EdgeInsets.zero,
-                ),
-              ),
-              PopupMenuItem<String>(
-                value: 'copy_as_list',
-                child: ListTile(
-                  leading: const Icon(Icons.content_copy),
-                  title: Text(ml.copyAsList),
-                  contentPadding: EdgeInsets.zero,
-                ),
-              ),
-              PopupMenuItem<String>(
-                value: 'copy_as_text',
-                child: ListTile(
-                  leading: const Icon(Icons.text_snippet_outlined),
-                  title: Text(ml.copyAsText),
-                  contentPadding: EdgeInsets.zero,
-                ),
-              ),
-              PopupMenuItem<String>(
-                value: 'export',
-                child: ListTile(
-                  leading: const Icon(Icons.file_upload_outlined),
-                  title: Text(ml.collectionExport),
-                  contentPadding: EdgeInsets.zero,
-                ),
-              ),
-              if (_collection!.isEditable)
-                PopupMenuItem<String>(
-                  value: 'import',
-                  child: ListTile(
-                    leading: const Icon(Icons.file_download_outlined),
-                    title: Text(ml.collectionsImportCollection),
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                ),
-              const PopupMenuDivider(),
-              PopupMenuItem<String>(
-                value: 'delete',
-                child: ListTile(
-                  leading: const Icon(Icons.delete, color: AppColors.error),
-                  title: Text(
-                    ml.delete,
-                    style: const TextStyle(color: AppColors.error),
-                  ),
-                  contentPadding: EdgeInsets.zero,
-                ),
-              ),
-            ];
-          },
+    ];
+  }
+
+  /// Остальные действия — вертикальный список.
+  List<DraggableFabItem> _buildSecondaryFabItems(S l) {
+    if (_isUncategorized) return const <DraggableFabItem>[];
+    return <DraggableFabItem>[
+      if (_collection!.isEditable)
+        DraggableFabItem(
+          icon: Icons.add_box_outlined,
+          label: l.customItemCreate,
+          iconColor: AppColors.brand,
+          onTap: () => _handleMenuAction('custom_item'),
         ),
+      if (_collection!.isEditable)
+        DraggableFabItem(
+          icon: Icons.edit,
+          label: l.rename,
+          onTap: () => _handleMenuAction('rename'),
+        ),
+      DraggableFabItem(
+        icon: Icons.leaderboard,
+        label: l.tierListCreateFromCollection,
+        onTap: () => _handleMenuAction('tier_list'),
+      ),
+      DraggableFabItem(
+        icon: Icons.label_outlined,
+        label: l.tagManage,
+        onTap: () => _handleMenuAction('manage_tags'),
+      ),
+      DraggableFabItem(
+        icon: Icons.content_copy,
+        label: l.copyAsList,
+        onTap: () => _handleMenuAction('copy_as_list'),
+      ),
+      DraggableFabItem(
+        icon: Icons.text_snippet_outlined,
+        label: l.copyAsText,
+        onTap: () => _handleMenuAction('copy_as_text'),
+      ),
+      DraggableFabItem(
+        icon: Icons.file_upload_outlined,
+        label: l.collectionExport,
+        onTap: () => _handleMenuAction('export'),
+      ),
+      if (_collection!.isEditable)
+        DraggableFabItem(
+          icon: Icons.file_download_outlined,
+          label: l.collectionsImportCollection,
+          onTap: () => _handleMenuAction('import'),
+        ),
+      const DraggableFabDivider(),
+      DraggableFabItem(
+        icon: Icons.delete,
+        label: l.delete,
+        iconColor: AppColors.error,
+        onTap: () => _handleMenuAction('delete'),
+      ),
     ];
   }
 
@@ -475,7 +426,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                   filterTagIds: _filterTagIds,
                   filterStatus: _filterStatus,
                   tags: tags,
-                  searchController: _searchController,
                   searchQuery: _searchQuery,
                   groupByTags: _groupByTags,
                   onGroupToggled: () {

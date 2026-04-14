@@ -13,7 +13,8 @@ import 'package:path_provider/path_provider.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
-import '../../../shared/widgets/screen_app_bar.dart';
+import '../../../shared/widgets/draggable_fab.dart';
+import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../shared/theme/app_colors.dart';
@@ -59,79 +60,68 @@ class _TierListDetailScreenState
 
     return CallbackShortcuts(
       bindings: _buildScreenShortcuts(state),
-      child: Scaffold(
-        appBar: ScreenAppBar(
-          title: state.isLoading ? null : state.tierList.name,
-          actions: <Widget>[
-            if (!state.isLoading)
-              IconButton(
-                icon: const Icon(Icons.add),
-                color: AppColors.textSecondary,
-                tooltip: kIsMobile
-                    ? l.tierListAddTier
-                    : '${l.tierListAddTier} (Ctrl+Enter)',
-                onPressed: () => _addTier(context),
+      child: Stack(
+        children: <Widget>[
+          Column(
+            children: <Widget>[
+              SubScreenTitleBar(
+                title: state.isLoading ? '' : state.tierList.name,
               ),
-            if (!state.isLoading)
-              IconButton(
-                icon: const Icon(Icons.image_outlined),
-                color: AppColors.textSecondary,
-                tooltip: kIsMobile
-                    ? l.tierListExportImage
-                    : '${l.tierListExportImage} (Ctrl+E)',
-                onPressed: () => _exportAsImage(context, state),
-              ),
-            if (!state.isLoading)
-              PopupMenuButton<String>(
-                iconColor: AppColors.textSecondary,
-                onSelected: (String action) =>
-                    _handleMenuAction(action, state),
-                itemBuilder: (BuildContext context) =>
-                    <PopupMenuEntry<String>>[
-                  PopupMenuItem<String>(
-                    value: 'clear',
-                    child: ListTile(
-                      leading: const Icon(Icons.clear_all),
-                      title: Text(l.tierListClearAll),
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                  ),
-                ],
-              ),
-          ],
-        ),
-        body: state.isLoading
-            ? const ShimmerTierListDetail()
-            : TypeToFilterOverlay(
-                onFilterChanged: (String query) {
-                  setState(() => _filterQuery = query);
-                },
-                child: Stack(
-                  children: <Widget>[
-                    TierListView(
-                      tierListId: widget.tierListId,
-                      state: state,
-                      filterQuery: _filterQuery,
-                    ),
-                    // Off-screen export view — must be painted (not Offstage)
-                    // for RepaintBoundary.toImage() to work.
-                    Positioned(
-                      left: -10000,
-                      top: -10000,
-                      child: SizedBox(
-                        width: 800,
-                        child: TierListExportView(
-                          repaintKey: _exportKey,
-                          state: state,
-                          overlayResolver: ref
-                              .watch(settingsNotifierProvider)
-                              .resolveOverlayFor,
+              Expanded(
+                child: state.isLoading
+                    ? const ShimmerTierListDetail()
+                    : TypeToFilterOverlay(
+                        onFilterChanged: (String query) {
+                          setState(() => _filterQuery = query);
+                        },
+                        child: Stack(
+                          children: <Widget>[
+                            TierListView(
+                              tierListId: widget.tierListId,
+                              state: state,
+                              filterQuery: _filterQuery,
+                            ),
+                            Positioned(
+                              left: -10000,
+                              top: -10000,
+                              child: SizedBox(
+                                width: 800,
+                                child: TierListExportView(
+                                  repaintKey: _exportKey,
+                                  state: state,
+                                  overlayResolver: ref
+                                      .watch(settingsNotifierProvider)
+                                      .resolveOverlayFor,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                  ],
-                ),
               ),
+            ],
+          ),
+          if (!state.isLoading)
+            DraggableFab(items: <DraggableFabItem>[
+              DraggableFabItem(
+                icon: Icons.add,
+                label: l.tierListAddTier,
+                onTap: () => _addTier(context),
+              ),
+              DraggableFabItem(
+                icon: Icons.image_outlined,
+                label: l.tierListExportImage,
+                onTap: () => _exportAsImage(context, state),
+              ),
+              const DraggableFabDivider(),
+              DraggableFabItem(
+                icon: Icons.clear_all,
+                label: l.tierListClearAll,
+                iconColor: AppColors.error,
+                onTap: () => _handleMenuAction('clear', state),
+              ),
+            ]),
+        ],
       ),
     );
   }

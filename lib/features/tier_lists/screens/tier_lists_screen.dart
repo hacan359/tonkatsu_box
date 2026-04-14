@@ -12,6 +12,7 @@ import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/draggable_fab.dart';
 import '../providers/tier_lists_provider.dart';
 import '../widgets/create_tier_list_dialog.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
@@ -69,8 +70,9 @@ class _TierListsScreenState extends ConsumerState<TierListsScreen> {
                 if (_focusedTierList != null) _handleRename(context, _focusedTierList!);
               },
             },
-      child: Scaffold(
-        body: tierListsAsync.when(
+      child: Stack(
+        children: <Widget>[
+          tierListsAsync.when(
           loading: () => ListView(
             padding: const EdgeInsets.all(AppSpacing.md),
             children: const <Widget>[
@@ -146,12 +148,17 @@ class _TierListsScreenState extends ConsumerState<TierListsScreen> {
             );
           },
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => _showCreateDialog(context),
-          tooltip: kIsMobile ? null : '${l.tierListCreate} (Ctrl+N)',
-          backgroundColor: AppColors.brand,
-          child: const Icon(Icons.add, color: AppColors.textPrimary),
-        ),
+          DraggableFab(
+            icon: Icons.add,
+            items: <DraggableFabItem>[
+              DraggableFabItem(
+                icon: Icons.add,
+                label: l.tierListCreate,
+                onTap: () => _showCreateDialog(context),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
