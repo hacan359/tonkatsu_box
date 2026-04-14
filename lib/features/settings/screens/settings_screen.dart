@@ -12,7 +12,7 @@ import '../../../core/services/discord_rpc_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
-import '../../../shared/widgets/screen_app_bar.dart';
+import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../core/services/update_service.dart';
@@ -76,10 +76,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget build(BuildContext context) {
     final double width = MediaQuery.sizeOf(context).width;
     final bool isWide = width >= _desktopBreakpoint;
+    final String searchQuery = ref.watch(settingsSearchQueryProvider);
 
-    return Scaffold(
-      appBar: ScreenAppBar(title: S.of(context).navSettings),
-      body: Align(
+    List<Widget> sections = _buildSections();
+    if (searchQuery.isNotEmpty) {
+      sections = _filterSections(sections, searchQuery.toLowerCase());
+    }
+
+    return Material(
+      color: Colors.transparent,
+      child: Align(
         alignment: Alignment.topCenter,
         child: ConstrainedBox(
           constraints: BoxConstraints(
@@ -90,11 +96,40 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               horizontal: isWide ? AppSpacing.lg : AppSpacing.md,
               vertical: AppSpacing.sm,
             ),
-            children: _buildSections(),
+            children: sections,
           ),
         ),
       ),
     );
+  }
+
+  /// Фильтрует секции настроек по поисковому запросу.
+  ///
+  /// Оставляет только [SettingsGroup], у которых title или любой дочерний
+  /// [SettingsTile] содержит query.
+  static List<Widget> _filterSections(List<Widget> sections, String query) {
+    final List<Widget> result = <Widget>[];
+    for (final Widget section in sections) {
+      if (section is SettingsGroup) {
+        final bool titleMatch =
+            section.title?.toLowerCase().contains(query) ?? false;
+        if (titleMatch) {
+          result.add(section);
+          continue;
+        }
+        final bool childMatch = section.children.any((Widget child) {
+          if (child is SettingsTile) {
+            return child.title.toLowerCase().contains(query) ||
+                (child.subtitle?.toLowerCase().contains(query) ?? false);
+          }
+          return false;
+        });
+        if (childMatch) {
+          result.add(section);
+        }
+      }
+    }
+    return result;
   }
 
   // ==================== Sections ====================

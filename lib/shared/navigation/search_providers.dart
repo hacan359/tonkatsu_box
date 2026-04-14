@@ -24,6 +24,10 @@ final StateProvider<String> wishlistSearchQueryProvider =
 final StateProvider<String> tierListsSearchQueryProvider =
     StateProvider<String>((Ref ref) => '');
 
+/// Query поиска для Settings таба.
+final StateProvider<String> settingsSearchQueryProvider =
+    StateProvider<String>((Ref ref) => '');
+
 /// Общий [FocusNode] для TextField в [AppTopBar].
 ///
 /// Живёт на уровне приложения: используется [AppTopBar] для поля ввода
@@ -72,9 +76,13 @@ SearchContext? searchContextFor(NavTab tab, BuildContext context) {
         queryProvider: tierListsSearchQueryProvider,
         hint: loc.appBarSearchHint,
       );
+    case NavTab.settings:
+      return SearchContext(
+        queryProvider: settingsSearchQueryProvider,
+        hint: loc.appBarSearchHint,
+      );
     case NavTab.collections:
     case NavTab.search:
-    case NavTab.settings:
       return null;
   }
 }
