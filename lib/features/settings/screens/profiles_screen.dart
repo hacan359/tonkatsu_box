@@ -13,7 +13,6 @@ import '../../../shared/models/profile.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
-import '../../../shared/widgets/screen_app_bar.dart';
 import '../providers/profile_provider.dart';
 import '../widgets/create_profile_dialog.dart';
 import '../widgets/edit_profile_dialog.dart';
@@ -163,8 +162,8 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
     final ProfilesData data = ref.watch(profilesDataProvider);
 
     return Scaffold(
-      appBar: ScreenAppBar(
-        title: l.profiles,
+      appBar: AppBar(
+        title: Text(l.profiles),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.add),

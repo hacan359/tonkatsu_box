@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_spacing.dart';
-import '../../../shared/widgets/screen_app_bar.dart';
 import '../content/trakt_import_content.dart';
 
 /// Экран импорта из Trakt.tv ZIP-выгрузки.
@@ -21,7 +20,7 @@ class TraktImportScreen extends StatelessWidget {
     final bool isWide = width >= 800;
 
     return Scaffold(
-      appBar: ScreenAppBar(title: S.of(context).settingsTraktImport),
+      appBar: AppBar(title: Text(S.of(context).settingsTraktImport)),
       body: Align(
         alignment: Alignment.topCenter,
         child: ConstrainedBox(

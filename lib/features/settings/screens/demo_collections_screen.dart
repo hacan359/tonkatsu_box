@@ -10,7 +10,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/igdb_api.dart';
-import '../../../shared/widgets/screen_app_bar.dart';
 import '../../../core/api/tmdb_api.dart';
 import '../../../core/services/xcoll_file.dart';
 import '../../../shared/models/game.dart';
@@ -658,7 +657,7 @@ class _DemoCollectionsScreenState
     final bool compact = isCompactScreen(context);
 
     return Scaffold(
-      appBar: const ScreenAppBar(title: 'Demo Collections'),
+      appBar: AppBar(title: const Text('Demo Collections')),
         body: Padding(
           padding: EdgeInsets.all(compact ? AppSpacing.sm : AppSpacing.lg),
           child: Column(

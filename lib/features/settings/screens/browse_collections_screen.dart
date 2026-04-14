@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/widgets/screen_app_bar.dart';
 import '../content/browse_collections_content.dart';
 
 /// Экран каталога онлайн-коллекций.
@@ -16,8 +15,8 @@ class BrowseCollectionsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: ScreenAppBar(
-        title: S.of(context).settingsBrowseCollections,
+      appBar: AppBar(
+        title: Text(S.of(context).settingsBrowseCollections),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.refresh),
