@@ -19,7 +19,7 @@ import '../../settings/providers/settings_provider.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
-import '../../../shared/widgets/type_to_filter_overlay.dart';
+import '../../../shared/navigation/search_providers.dart';
 import '../providers/tier_list_detail_provider.dart';
 import '../widgets/tier_list_view.dart';
 import '../widgets/tier_list_export_view.dart';
@@ -50,7 +50,6 @@ class TierListDetailScreen extends ConsumerStatefulWidget {
 class _TierListDetailScreenState
     extends ConsumerState<TierListDetailScreen> {
   final GlobalKey _exportKey = GlobalKey();
-  String _filterQuery = '';
 
   @override
   Widget build(BuildContext context) {
@@ -70,33 +69,30 @@ class _TierListDetailScreenState
               Expanded(
                 child: state.isLoading
                     ? const ShimmerTierListDetail()
-                    : TypeToFilterOverlay(
-                        onFilterChanged: (String query) {
-                          setState(() => _filterQuery = query);
-                        },
-                        child: Stack(
-                          children: <Widget>[
-                            TierListView(
-                              tierListId: widget.tierListId,
-                              state: state,
-                              filterQuery: _filterQuery,
+                    : Stack(
+                        children: <Widget>[
+                          TierListView(
+                            tierListId: widget.tierListId,
+                            state: state,
+                            filterQuery: ref.watch(
+                              tierListsSearchQueryProvider,
                             ),
-                            Positioned(
-                              left: -10000,
-                              top: -10000,
-                              child: SizedBox(
-                                width: 800,
-                                child: TierListExportView(
-                                  repaintKey: _exportKey,
-                                  state: state,
-                                  overlayResolver: ref
-                                      .watch(settingsNotifierProvider)
-                                      .resolveOverlayFor,
-                                ),
+                          ),
+                          Positioned(
+                            left: -10000,
+                            top: -10000,
+                            child: SizedBox(
+                              width: 800,
+                              child: TierListExportView(
+                                repaintKey: _exportKey,
+                                state: state,
+                                overlayResolver: ref
+                                    .watch(settingsNotifierProvider)
+                                    .resolveOverlayFor,
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
               ),
             ],

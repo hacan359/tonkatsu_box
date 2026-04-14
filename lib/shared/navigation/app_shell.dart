@@ -202,11 +202,11 @@ class _AppShellState extends ConsumerState<AppShell> {
       return KeyEventResult.ignored;
     }
 
-    final FocusNode searchFocus = ref.read(appTopBarFocusProvider);
-    searchFocus.requestFocus();
-
     final String current = ref.read(ctx.queryProvider);
     ref.read(ctx.queryProvider.notifier).state = current + char;
+
+    final FocusNode searchFocus = ref.read(appTopBarFocusProvider);
+    searchFocus.requestFocus();
     return KeyEventResult.handled;
   }
 

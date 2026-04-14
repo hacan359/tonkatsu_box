@@ -100,7 +100,17 @@ class _AppTopBarState extends ConsumerState<AppTopBar> {
   }
 
   void _onFocusChanged() {
-    if (mounted) setState(() {});
+    if (!mounted) return;
+    setState(() {});
+    // При получении фокуса (type-to-search) ставим курсор в конец,
+    // чтобы следующая буква не затирала текст.
+    if (_watchedFocusNode?.hasFocus ?? false) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final int end = _controller.text.length;
+        _controller.selection = TextSelection.collapsed(offset: end);
+      });
+    }
   }
 
   @override

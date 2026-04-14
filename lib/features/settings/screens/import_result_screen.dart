@@ -9,6 +9,7 @@ import '../../../shared/models/universal_import_result.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../../collections/screens/collection_screen.dart';
 
 /// Экран результатов импорта.
@@ -28,68 +29,72 @@ class ImportResultScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final S l = S.of(context);
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l.importResultTitle)),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              _buildHeader(context, l),
-              const SizedBox(height: AppSpacing.lg),
-              if (result.totalImported > 0) ...<Widget>[
-                _ResultCard(
-                  title: l.importResultImported,
-                  icon: Icons.check_circle,
-                  iconColor: AppColors.statusCompleted,
-                  total: result.totalImported,
-                  breakdown: result.importedByType,
-                ),
-                const SizedBox(height: AppSpacing.md),
-              ],
-              if (result.hasWishlistItems) ...<Widget>[
-                _ResultCard(
-                  title: l.importResultWishlisted,
-                  icon: Icons.bookmark_add,
-                  iconColor: AppColors.brand,
-                  total: result.totalWishlisted,
-                  breakdown: result.wishlistedByType,
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-                  child: Text(
-                    l.importResultWishlistHint,
-                    style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.textTertiary,
+    return Column(
+      children: <Widget>[
+        SubScreenTitleBar(title: l.importResultTitle),
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                _buildHeader(context, l),
+                const SizedBox(height: AppSpacing.lg),
+                if (result.totalImported > 0) ...<Widget>[
+                  _ResultCard(
+                    title: l.importResultImported,
+                    icon: Icons.check_circle,
+                    iconColor: AppColors.statusCompleted,
+                    total: result.totalImported,
+                    breakdown: result.importedByType,
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                ],
+                if (result.hasWishlistItems) ...<Widget>[
+                  _ResultCard(
+                    title: l.importResultWishlisted,
+                    icon: Icons.bookmark_add,
+                    iconColor: AppColors.brand,
+                    total: result.totalWishlisted,
+                    breakdown: result.wishlistedByType,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                    child: Text(
+                      l.importResultWishlistHint,
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.textTertiary,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: AppSpacing.md),
+                  const SizedBox(height: AppSpacing.md),
+                ],
+                if (result.totalUpdated > 0) ...<Widget>[
+                  _ResultCard(
+                    title: l.importResultUpdated,
+                    icon: Icons.sync,
+                    iconColor: AppColors.statusInProgress,
+                    total: result.totalUpdated,
+                    breakdown: result.updatedByType,
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                ],
+                if (result.skipped > 0)
+                  _StatRow(
+                    icon: Icons.skip_next,
+                    color: AppColors.textTertiary,
+                    text: l.importResultSkipped(result.skipped),
+                  ),
+                const SizedBox(height: AppSpacing.xl),
+                _buildActions(context, l),
               ],
-              if (result.totalUpdated > 0) ...<Widget>[
-                _ResultCard(
-                  title: l.importResultUpdated,
-                  icon: Icons.sync,
-                  iconColor: AppColors.statusInProgress,
-                  total: result.totalUpdated,
-                  breakdown: result.updatedByType,
-                ),
-                const SizedBox(height: AppSpacing.md),
-              ],
-              if (result.skipped > 0)
-                _StatRow(
-                  icon: Icons.skip_next,
-                  color: AppColors.textTertiary,
-                  text: l.importResultSkipped(result.skipped),
-                ),
-              const SizedBox(height: AppSpacing.xl),
-              _buildActions(context, l),
-            ],
+            ),
           ),
         ),
-      );
+      ],
+    );
   }
 
   Widget _buildHeader(BuildContext context, S l) {

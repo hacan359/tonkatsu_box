@@ -13,6 +13,7 @@ import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../data/repositories/collection_repository.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/widgets/draggable_fab.dart';
 import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -24,7 +25,6 @@ import '../../../shared/models/media_type.dart';
 import '../../../shared/models/steamgriddb_image.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../../../shared/constants/platform_features.dart';
-import '../../../shared/widgets/type_to_filter_overlay.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../widgets/import_progress_dialog.dart';
 import '../helpers/collection_actions.dart';
@@ -87,10 +87,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   Set<int> _filterTagIds = <int>{};
   bool _groupByTags = false;
   ItemStatus? _filterStatus;
-  String _searchQuery = '';
-  String _typeToFilterQuery = '';
   CollectionItem? _focusedItem;
-  final TextEditingController _searchController = TextEditingController();
 
   /// Реальная возможность редактирования с учётом режима просмотра.
   bool get _effectiveIsEditable =>
@@ -109,15 +106,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   void initState() {
     super.initState();
     _loadCollection();
-    _searchController.addListener(() {
-      setState(() => _searchQuery = _searchController.text);
-    });
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
   }
 
   Future<void> _loadCollection() async {
@@ -178,6 +166,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     final AsyncValue<CollectionStats> statsAsync =
         ref.watch(collectionStatsProvider(widget.collectionId));
 
+    final String searchQuery = ref.watch(collectionsSearchQueryProvider);
     final S l = S.of(context);
     return CallbackShortcuts(
       bindings: _buildScreenShortcuts(l),
@@ -185,6 +174,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         children: <Widget>[
           Column(
             children: <Widget>[
+              if (!_isCanvasMode)
+                _buildFilterBar(itemsAsync, statsAsync, searchQuery),
               SubScreenTitleBar(
                 title: _isUncategorized
                     ? l.collectionsUncategorized
@@ -216,12 +207,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                           );
                         },
                       )
-                    : TypeToFilterOverlay(
-                        onFilterChanged: (String query) {
-                          setState(() => _typeToFilterQuery = query);
-                        },
-                        child: _buildListLayout(itemsAsync, statsAsync),
-                      ),
+                    : _buildListLayout(
+                        itemsAsync, statsAsync, searchQuery),
               ),
             ],
           ),
@@ -387,9 +374,83 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     ];
   }
 
+  Widget _buildFilterBar(
+    AsyncValue<List<CollectionItem>> itemsAsync,
+    AsyncValue<CollectionStats> statsAsync,
+    String searchQuery,
+  ) {
+    if ((statsAsync.valueOrNull?.total ?? 0) == 0) {
+      return const SizedBox.shrink();
+    }
+
+    final List<CollectionTag> tags = widget.collectionId != null
+        ? (ref.watch(collectionTagsProvider(widget.collectionId!))
+                .valueOrNull ??
+            <CollectionTag>[])
+        : <CollectionTag>[];
+
+    return CollectionFilterBar(
+      collectionId: widget.collectionId,
+      statsAsync: statsAsync,
+      itemsAsync: itemsAsync,
+      filterTypes: _filterTypes,
+      filterPlatformIds: _filterPlatformIds,
+      filterTagIds: _filterTagIds,
+      filterStatus: _filterStatus,
+      tags: tags,
+      searchQuery: searchQuery,
+      groupByTags: _groupByTags,
+      onGroupToggled: () {
+        setState(() {
+          _groupByTags = !_groupByTags;
+          _filterTagIds = <int>{};
+        });
+      },
+      onTypeToggled: (MediaType? type) {
+        setState(() {
+          if (type == null) {
+            _filterTypes = <MediaType>{};
+          } else if (_filterTypes.contains(type)) {
+            _filterTypes = Set<MediaType>.from(_filterTypes)..remove(type);
+          } else {
+            _filterTypes = Set<MediaType>.from(_filterTypes)..add(type);
+          }
+          _filterPlatformIds = <int>{};
+        });
+      },
+      onPlatformToggled: (int? id) {
+        setState(() {
+          if (id == null) {
+            _filterPlatformIds = <int>{};
+          } else if (_filterPlatformIds.contains(id)) {
+            _filterPlatformIds = Set<int>.from(_filterPlatformIds)
+              ..remove(id);
+          } else {
+            _filterPlatformIds = Set<int>.from(_filterPlatformIds)..add(id);
+          }
+        });
+      },
+      onTagToggled: (int? tagId) {
+        setState(() {
+          if (tagId == null) {
+            _filterTagIds = <int>{};
+          } else if (_filterTagIds.contains(tagId)) {
+            _filterTagIds = Set<int>.from(_filterTagIds)..remove(tagId);
+          } else {
+            _filterTagIds = Set<int>.from(_filterTagIds)..add(tagId);
+          }
+        });
+      },
+      onStatusChanged: (ItemStatus? status) {
+        setState(() => _filterStatus = status);
+      },
+    );
+  }
+
   Widget _buildListLayout(
     AsyncValue<List<CollectionItem>> itemsAsync,
     AsyncValue<CollectionStats> statsAsync,
+    String searchQuery,
   ) {
     final List<CollectionTag> tags = widget.collectionId != null
         ? (ref.watch(collectionTagsProvider(widget.collectionId!))
@@ -415,71 +476,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         Expanded(
           child: Column(
             children: <Widget>[
-              // Фильтры — только если есть элементы
-              if ((statsAsync.valueOrNull?.total ?? 0) > 0)
-                CollectionFilterBar(
-                  collectionId: widget.collectionId,
-                  statsAsync: statsAsync,
-                  itemsAsync: itemsAsync,
-                  filterTypes: _filterTypes,
-                  filterPlatformIds: _filterPlatformIds,
-                  filterTagIds: _filterTagIds,
-                  filterStatus: _filterStatus,
-                  tags: tags,
-                  searchQuery: _searchQuery,
-                  groupByTags: _groupByTags,
-                  onGroupToggled: () {
-                    setState(() {
-                      _groupByTags = !_groupByTags;
-                      _filterTagIds = <int>{};
-                    });
-                  },
-                  onTypeToggled: (MediaType? type) {
-                    setState(() {
-                      if (type == null) {
-                        _filterTypes = <MediaType>{};
-                      } else if (_filterTypes.contains(type)) {
-                        _filterTypes = Set<MediaType>.from(_filterTypes)
-                          ..remove(type);
-                      } else {
-                        _filterTypes = Set<MediaType>.from(_filterTypes)
-                          ..add(type);
-                      }
-                      _filterPlatformIds = <int>{};
-                    });
-                  },
-                  onPlatformToggled: (int? id) {
-                    setState(() {
-                      if (id == null) {
-                        _filterPlatformIds = <int>{};
-                      } else if (_filterPlatformIds.contains(id)) {
-                        _filterPlatformIds = Set<int>.from(_filterPlatformIds)
-                          ..remove(id);
-                      } else {
-                        _filterPlatformIds = Set<int>.from(_filterPlatformIds)
-                          ..add(id);
-                      }
-                    });
-                  },
-                  onTagToggled: (int? tagId) {
-                    setState(() {
-                      if (tagId == null) {
-                        _filterTagIds = <int>{};
-                      } else if (_filterTagIds.contains(tagId)) {
-                        _filterTagIds = Set<int>.from(_filterTagIds)
-                          ..remove(tagId);
-                      } else {
-                        _filterTagIds = Set<int>.from(_filterTagIds)
-                          ..add(tagId);
-                      }
-                    });
-                  },
-                  onStatusChanged: (ItemStatus? status) {
-                    setState(() => _filterStatus = status);
-                  },
-                ),
-
-              // Список элементов
               Expanded(
                 child: itemsAsync.when(
                   data: (List<CollectionItem> items) => CollectionItemsView(
@@ -580,9 +576,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           .toList();
     }
 
-    final String textQuery = _searchQuery.isNotEmpty
-        ? _searchQuery
-        : _typeToFilterQuery;
+    final String textQuery = ref.read(collectionsSearchQueryProvider);
 
     if (textQuery.isNotEmpty) {
       final String query = textQuery.toLowerCase();

@@ -13,9 +13,9 @@ import '../../../shared/models/collection_list_sort_mode.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/navigation/search_providers.dart';
+import '../../../shared/widgets/draggable_fab.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
-import '../../../shared/widgets/screen_app_bar.dart';
-import '../../../shared/widgets/type_to_filter_overlay.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../providers/canvas_provider.dart';
 import '../providers/collection_covers_provider.dart';
@@ -52,14 +52,12 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  String _typeToFilterQuery = '';
   Collection? _focusedCollection;
 
   @override
   Widget build(BuildContext context) {
     final AsyncValue<List<Collection>> collectionsAsync =
         ref.watch(collectionsProvider);
-    final bool isLandscape = isLandscapeMobile(context);
     final S l = S.of(context);
 
     final CollectionListSortMode sortMode =
@@ -67,73 +65,55 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final bool sortDesc = ref.watch(collectionListSortDescProvider);
     final bool isGridView = ref.watch(collectionListViewModeProvider);
 
+    final String searchQuery = ref.watch(collectionsSearchQueryProvider);
+
     return CallbackShortcuts(
       bindings: _buildScreenShortcuts(ref),
-      child: Scaffold(
-      appBar: ScreenAppBar(
-        title: l.navCollections,
-        actions: <Widget>[
-          _SortPopupButton(
-            sortMode: sortMode,
-            descending: sortDesc,
-            isLandscape: isLandscape,
-            onSortModeChanged: (CollectionListSortMode mode) =>
-                ref.read(collectionListSortProvider.notifier).setSortMode(mode),
-            onToggleDirection: () =>
-                ref.read(collectionListSortDescProvider.notifier).toggle(),
+      child: Stack(
+        children: <Widget>[
+          collectionsAsync.when(
+            data: (List<Collection> collections) =>
+                _buildCollectionsList(
+                  context, ref, collections,
+                  sortMode: sortMode,
+                  sortDesc: sortDesc,
+                  isGridView: isGridView,
+                  searchQuery: searchQuery,
+                ),
+            loading: () => _buildLoadingState(),
+            error: (Object error, StackTrace stack) =>
+                _buildErrorState(context, ref, error),
           ),
-          IconButton(
-            icon: Icon(
-              isGridView ? Icons.view_list : Icons.grid_view,
-              size: isLandscape ? 20 : null,
-            ),
-            color: AppColors.textSecondary,
-            tooltip: kIsMobile
-                ? (isGridView
+          DraggableFab(
+            primaryItems: <DraggableFabItem>[
+              DraggableFabItem(
+                icon: Icons.add,
+                label: l.collectionsNewCollection,
+                onTap: () => _createCollection(context, ref),
+              ),
+              DraggableFabItem(
+                icon: Icons.file_download_outlined,
+                label: l.collectionsImportCollection,
+                onTap: () => _importCollection(context, ref),
+              ),
+              DraggableFabItem(
+                icon: isGridView ? Icons.view_list : Icons.grid_view,
+                label: isGridView
                     ? l.collectionListViewList
-                    : l.collectionListViewGrid)
-                : (isGridView
-                    ? '${l.collectionListViewList} (Ctrl+Shift+V)'
-                    : '${l.collectionListViewGrid} (Ctrl+Shift+V)'),
-            onPressed: () =>
-                ref.read(collectionListViewModeProvider.notifier).toggle(),
-          ),
-          IconButton(
-            icon: Icon(Icons.add, size: isLandscape ? 20 : null),
-            color: AppColors.textSecondary,
-            tooltip: kIsMobile
-                ? l.collectionsNewCollection
-                : '${l.collectionsNewCollection} (Ctrl+N)',
-            onPressed: () => _createCollection(context, ref),
-          ),
-          IconButton(
-            icon: Icon(Icons.file_download_outlined, size: isLandscape ? 20 : null),
-            color: AppColors.textSecondary,
-            tooltip: kIsMobile
-                ? l.collectionsImportCollection
-                : '${l.collectionsImportCollection} (Ctrl+I)',
-            onPressed: () => _importCollection(context, ref),
+                    : l.collectionListViewGrid,
+                onTap: () =>
+                    ref.read(collectionListViewModeProvider.notifier).toggle(),
+              ),
+              DraggableFabItem(
+                icon: sortDesc ? Icons.arrow_upward : Icons.arrow_downward,
+                label: sortMode.localizedDisplayLabel(l),
+                onTap: () =>
+                    ref.read(collectionListSortDescProvider.notifier).toggle(),
+              ),
+            ],
           ),
         ],
       ),
-      body: TypeToFilterOverlay(
-        onFilterChanged: (String query) {
-          setState(() => _typeToFilterQuery = query);
-        },
-        child: collectionsAsync.when(
-          data: (List<Collection> collections) =>
-              _buildCollectionsList(
-                context, ref, collections,
-                sortMode: sortMode,
-                sortDesc: sortDesc,
-                isGridView: isGridView,
-              ),
-          loading: () => _buildLoadingState(),
-          error: (Object error, StackTrace stack) =>
-              _buildErrorState(context, ref, error),
-        ),
-      ),
-    ),
     );
   }
 
@@ -174,6 +154,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     required CollectionListSortMode sortMode,
     required bool sortDesc,
     required bool isGridView,
+    required String searchQuery,
   }) {
     final int uncategorizedCount =
         ref.watch(uncategorizedItemCountProvider).valueOrNull ?? 0;
@@ -182,10 +163,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       return _buildEmptyState(context);
     }
 
-    // Фильтрация коллекций по имени
+    // Фильтрация коллекций по имени (глобальный поиск).
     List<Collection> filteredCollections = collections;
-    if (_typeToFilterQuery.isNotEmpty) {
-      final String query = _typeToFilterQuery.toLowerCase();
+    if (searchQuery.isNotEmpty) {
+      final String query = searchQuery.toLowerCase();
       filteredCollections = collections
           .where((Collection c) => c.name.toLowerCase().contains(query))
           .toList();
@@ -226,7 +207,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     int uncategorizedCount,
   ) {
     final List<Widget> gridItems = <Widget>[
-      if (uncategorizedCount > 0 && _typeToFilterQuery.isEmpty)
+      if (uncategorizedCount > 0 && ref.read(collectionsSearchQueryProvider).isEmpty)
         UncategorizedCard(
           count: uncategorizedCount,
           onTap: () => _navigateToUncategorized(context),
@@ -269,7 +250,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     int uncategorizedCount,
   ) {
     final int offset =
-        (uncategorizedCount > 0 && _typeToFilterQuery.isEmpty) ? 1 : 0;
+        (uncategorizedCount > 0 && ref.read(collectionsSearchQueryProvider).isEmpty) ? 1 : 0;
 
     return RefreshIndicator(
       onRefresh: () => ref.read(collectionsProvider.notifier).refresh(),
@@ -675,75 +656,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 }
 
 /// Кнопка сортировки списка коллекций с popup menu.
-class _SortPopupButton extends StatelessWidget {
-  const _SortPopupButton({
-    required this.sortMode,
-    required this.descending,
-    required this.isLandscape,
-    required this.onSortModeChanged,
-    required this.onToggleDirection,
-  });
-
-  final CollectionListSortMode sortMode;
-  final bool descending;
-  final bool isLandscape;
-  final ValueChanged<CollectionListSortMode> onSortModeChanged;
-  final VoidCallback onToggleDirection;
-
-  bool get _isNonDefault =>
-      sortMode != CollectionListSortMode.createdDate || descending;
-
-  @override
-  Widget build(BuildContext context) {
-    final S l = S.of(context);
-
-    return PopupMenuButton<String>(
-      icon: Icon(
-        Icons.sort,
-        size: isLandscape ? 20 : null,
-        color: _isNonDefault ? AppColors.brand : AppColors.textSecondary,
-      ),
-      tooltip: sortMode.localizedDisplayLabel(l),
-      onSelected: (String value) {
-        if (value == 'toggle_direction') {
-          onToggleDirection();
-        } else {
-          onSortModeChanged(CollectionListSortMode.fromString(value));
-        }
-      },
-      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-        CheckedPopupMenuItem<String>(
-          value: CollectionListSortMode.createdDate.value,
-          checked: sortMode == CollectionListSortMode.createdDate,
-          child: Text(l.collectionListSortCreatedDate),
-        ),
-        CheckedPopupMenuItem<String>(
-          value: CollectionListSortMode.alphabetical.value,
-          checked: sortMode == CollectionListSortMode.alphabetical,
-          child: Text(l.collectionListSortAlphabetical),
-        ),
-        const PopupMenuDivider(),
-        PopupMenuItem<String>(
-          value: 'toggle_direction',
-          child: Row(
-            children: <Widget>[
-              Icon(
-                descending ? Icons.arrow_upward : Icons.arrow_downward,
-                size: 18,
-                color: AppColors.textSecondary,
-              ),
-              const SizedBox(width: 8),
-              Text(sortMode.localizedDescription(
-                l,
-                descending: !descending,
-              )),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
 
 /// Диалог выбора целевой коллекции для импорта.
 ///

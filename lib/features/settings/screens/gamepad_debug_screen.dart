@@ -16,6 +16,8 @@ import '../../../shared/gamepad/gamepad_provider.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/draggable_fab.dart';
+import '../../../shared/widgets/sub_screen_title_bar.dart';
 
 /// Максимальное количество событий в логе.
 const int _maxEvents = 100;
@@ -167,28 +169,13 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l.settingsGamepadDebug),
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.save_alt),
-            tooltip: l.debugExportLog,
-            onPressed: _exportLog,
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete_outline),
-            tooltip: l.debugClearLogs,
-            onPressed: () {
-              setState(() {
-                _rawEvents.clear();
-                _serviceEvents.clear();
-              });
-            },
-          ),
-        ],
-      ),
-      body: Padding(
+    return Stack(
+      children: <Widget>[
+        Column(
+          children: <Widget>[
+            SubScreenTitleBar(title: l.settingsGamepadDebug),
+            Expanded(
+              child: Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
         child: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
@@ -227,7 +214,29 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
             );
           },
         ),
-      ),
+            ),
+          ),
+          ],
+        ),
+        DraggableFab(items: <DraggableFabItem>[
+          DraggableFabItem(
+            icon: Icons.save_alt,
+            label: l.debugExportLog,
+            onTap: _exportLog,
+          ),
+          DraggableFabItem(
+            icon: Icons.delete_outline,
+            label: l.debugClearLogs,
+            iconColor: AppColors.error,
+            onTap: () {
+              setState(() {
+                _rawEvents.clear();
+                _serviceEvents.clear();
+              });
+            },
+          ),
+        ]),
+      ],
     );
   }
 
