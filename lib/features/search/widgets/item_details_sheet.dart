@@ -1,5 +1,7 @@
 // Универсальный bottom sheet с деталями элемента для всех типов медиа.
 
+import 'dart:ui' show ImageFilter;
+
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -310,16 +312,33 @@ class ItemDetailsSheet extends StatelessWidget {
             ),
             child: Stack(
               children: <Widget>[
-              // Backdrop — на весь фон
-              if (backdropUrl != null) ...<Widget>[
+              // Backdrop — на весь фон.
+              // Если backdrop отсутствует, fallback'ом используем постер
+              // с сильным blur (паттерн «амбиентный фон из обложки»).
+              if (backdropUrl != null || posterUrl != null) ...<Widget>[
                 Positioned.fill(
-                  child: GyroscopeParallaxImage(
-                    imageUrl: backdropUrl!,
-                    fit: BoxFit.cover,
-                    alignment: Alignment.center,
-                  ),
+                  child: backdropUrl != null
+                      ? GyroscopeParallaxImage(
+                          imageUrl: backdropUrl!,
+                          fit: BoxFit.fitWidth,
+                          alignment: Alignment.topCenter,
+                        )
+                      : ImageFiltered(
+                          imageFilter: ImageFilter.blur(
+                            sigmaX: 40,
+                            sigmaY: 40,
+                            tileMode: TileMode.decal,
+                          ),
+                          child: GyroscopeParallaxImage(
+                            imageUrl: posterUrl!,
+                            fit: BoxFit.cover,
+                            alignment: Alignment.center,
+                          ),
+                        ),
                 ),
-                // Верх: лёгкое затемнение для читаемости
+                // Верх: затемнение для читаемости. В fallback-режиме
+                // (постер вместо backdrop) делаем градиент плотнее, чтобы
+                // фон не конкурировал с контентом.
                 Positioned.fill(
                   child: Container(
                     decoration: BoxDecoration(
@@ -327,8 +346,12 @@ class ItemDetailsSheet extends StatelessWidget {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: <Color>[
-                          AppColors.background.withAlpha(120),
-                          AppColors.background.withAlpha(200),
+                          AppColors.background.withAlpha(
+                            backdropUrl != null ? 120 : 160,
+                          ),
+                          AppColors.background.withAlpha(
+                            backdropUrl != null ? 200 : 220,
+                          ),
                           AppColors.background,
                         ],
                         stops: const <double>[0.0, 0.35, 0.6],
@@ -388,21 +411,35 @@ class ItemDetailsSheet extends StatelessWidget {
     );
   }
 
+  /// Порог ширины, ниже которого header переключается на stacked layout
+  /// (постер сверху по центру, информация полной шириной снизу).
+  static const double _stackedLayoutBreakpoint = 500;
+
+  /// Множитель размера постера в stacked layout (постер играет роль hero).
+  static const double _stackedPosterScale = 1.3;
+
+  /// Ширина резерва под кнопку + справа от инфо-колонки (44px кнопка + gap).
+  static const double _addButtonReservedWidth = 48;
+
   /// Header: постер + информация + кнопка добавления.
+  ///
+  /// Контент (drag handle + poster/info) лежит в обычном Column,
+  /// а кнопка + — `Positioned` поверх (HTML-аналог: `position: absolute`),
+  /// поэтому не занимает собственной высоты и сохраняет позицию в правом
+  /// верхнем углу.
   Widget _buildHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.sm,
       ),
-      child: Column(
+      child: Stack(
         children: <Widget>[
-          // Drag handle + кнопка добавления
-          Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.md),
-            child: Stack(
-              alignment: Alignment.center,
-              children: <Widget>[
-                Container(
+          Column(
+            children: <Widget>[
+              // Drag handle (тонкая полоска).
+              Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                child: Container(
                   width: 32,
                   height: 4,
                   decoration: BoxDecoration(
@@ -410,160 +447,201 @@ class ItemDetailsSheet extends StatelessWidget {
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                if (onAddToCollection != null)
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: _AddButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        onAddToCollection!();
-                      },
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          // Poster + info row
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              if (posterUrl != null) ...<Widget>[
-                ClipRRect(
-                  borderRadius:
-                      BorderRadius.circular(AppSpacing.radiusSm),
-                  child: CachedImage(
-                    imageType: cacheImageType ?? ImageType.moviePoster,
-                    imageId: cacheImageId ?? posterUrl!,
-                    remoteUrl: posterUrl!,
-                    width: 100,
-                    height: coverHeight,
-                    fit: BoxFit.cover,
-                    placeholder: Container(
-                      width: 100,
-                      height: coverHeight,
-                      color: AppColors.surfaceLight,
-                      child: const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    ),
-                    errorWidget: Container(
-                      width: 100,
-                      height: coverHeight,
-                      color: AppColors.surfaceLight,
-                      child: Icon(icon,
-                          color: AppColors.textSecondary, size: 32),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.md),
-              ],
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    // Название + год (нажатие копирует название)
-                    CopyableText(
-                      text: title,
-                      iconSize: 16,
-                      child: Text.rich(
-                        TextSpan(children: <InlineSpan>[
-                          TextSpan(
-                            text: title,
-                            style: AppTypography.h2.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          if (year != null)
-                            TextSpan(
-                              text: '  $year',
-                              style: AppTypography.bodySmall.copyWith(
-                                color: AppColors.textTertiary,
-                              ),
-                            ),
-                        ]),
-                      ),
-                    ),
-                    // Подзаголовок (alt title)
-                    if (subtitle != null) ...<Widget>[
-                      const SizedBox(height: AppSpacing.xs),
-                      Text(
-                        subtitle!,
-                        style: AppTypography.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: AppSpacing.sm),
-                    // Source badge + rating + extra info
-                    Row(
+              ),
+              // Poster + info: row на широком, column на узком (<500px).
+              LayoutBuilder(
+                builder:
+                    (BuildContext context, BoxConstraints constraints) {
+                  final bool stacked =
+                      constraints.maxWidth < _stackedLayoutBreakpoint;
+                  if (stacked) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: <Widget>[
-                        SourceBadge(
-                          source: dataSource ?? DataSource.tmdb,
-                          onTap: externalUrl != null
-                              ? () => _launchUrl(externalUrl!)
-                              : null,
-                        ),
-                        if (rating != null) ...<Widget>[
-                          const SizedBox(width: AppSpacing.sm),
-                          const Icon(Icons.star,
-                              size: 14, color: AppColors.ratingStar),
-                          const SizedBox(width: 2),
-                          Text(rating!, style: AppTypography.bodySmall),
-                        ],
-                        if (extraInfo != null) ...<Widget>[
-                          const SizedBox(width: AppSpacing.sm),
-                          if (extraInfoIcon != null) ...<Widget>[
-                            Icon(extraInfoIcon,
-                                size: 14, color: AppColors.brand),
-                            const SizedBox(width: 2),
-                          ],
-                          Flexible(
-                            child: Text(
-                              extraInfo!,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppTypography.bodySmall.copyWith(
-                                color: extraInfoIcon == null
-                                    ? AppColors.textSecondary
-                                    : null,
-                              ),
-                            ),
+                        if (posterUrl != null) ...<Widget>[
+                          Center(
+                            child: _buildPoster(scale: _stackedPosterScale),
                           ),
+                          const SizedBox(height: AppSpacing.md),
                         ],
+                        _buildInfoColumn(),
                       ],
-                    ),
-                    // Info chips (авторы, платформы и т.д.)
-                    if (infoChips != null &&
-                        infoChips!.isNotEmpty) ...<Widget>[
-                      const SizedBox(height: AppSpacing.sm),
-                      ...infoChips!.map(
-                        ((IconData, String) chip) => _buildInfoChip(
-                          chip.$1,
-                          chip.$2,
+                    );
+                  }
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      if (posterUrl != null) ...<Widget>[
+                        _buildPoster(),
+                        const SizedBox(width: AppSpacing.md),
+                      ],
+                      Expanded(
+                        // Резервируем место справа под кнопку +: в row-mode
+                        // она лежит `Positioned(top:0, right:0)` и иначе
+                        // перекрыла бы первую строку заголовка.
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            right: onAddToCollection != null
+                                ? _addButtonReservedWidth
+                                : 0,
+                          ),
+                          child: _buildInfoColumn(),
                         ),
                       ),
                     ],
-                    // Жанры / теги
-                    if (genres != null &&
-                        genres!.isNotEmpty) ...<Widget>[
-                      const SizedBox(height: AppSpacing.sm),
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 4,
-                        children: (maxGenres != null
-                                ? genres!.take(maxGenres!)
-                                : genres!)
-                            .map(_buildGenreChip)
-                            .toList(),
-                      ),
-                    ],
-                  ],
-                ),
+                  );
+                },
               ),
             ],
           ),
+          // Кнопка + позиционируется поверх — высоту не занимает.
+          if (onAddToCollection != null)
+            Positioned(
+              top: 0,
+              right: 0,
+              child: _AddButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  onAddToCollection!();
+                },
+              ),
+            ),
         ],
       ),
+    );
+  }
+
+  /// Постер с placeholder/error fallback. [scale] масштабирует обе стороны.
+  Widget _buildPoster({double scale = 1.0}) {
+    final double width = 100 * scale;
+    final double height = coverHeight * scale;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+      child: CachedImage(
+        imageType: cacheImageType ?? ImageType.moviePoster,
+        imageId: cacheImageId ?? posterUrl!,
+        remoteUrl: posterUrl!,
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+        placeholder: Container(
+          width: width,
+          height: height,
+          color: AppColors.surfaceLight,
+          child: const Center(
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+        errorWidget: Container(
+          width: width,
+          height: height,
+          color: AppColors.surfaceLight,
+          child: Icon(icon, color: AppColors.textSecondary, size: 32),
+        ),
+      ),
+    );
+  }
+
+  /// Колонка с заголовком, alt-title, source/rating/extraInfo, чипами и жанрами.
+  Widget _buildInfoColumn() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        // Название + год (нажатие копирует название)
+        CopyableText(
+          text: title,
+          iconSize: 16,
+          child: Text.rich(
+            TextSpan(children: <InlineSpan>[
+              TextSpan(
+                text: title,
+                style: AppTypography.h2.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              if (year != null)
+                TextSpan(
+                  text: '  $year',
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.textTertiary,
+                  ),
+                ),
+            ]),
+          ),
+        ),
+        // Подзаголовок (alt title)
+        if (subtitle != null) ...<Widget>[
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            subtitle!,
+            style: AppTypography.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+        const SizedBox(height: AppSpacing.sm),
+        // Source badge + rating + extra info
+        Row(
+          children: <Widget>[
+            SourceBadge(
+              source: dataSource ?? DataSource.tmdb,
+              onTap: externalUrl != null
+                  ? () => _launchUrl(externalUrl!)
+                  : null,
+            ),
+            if (rating != null) ...<Widget>[
+              const SizedBox(width: AppSpacing.sm),
+              const Icon(Icons.star,
+                  size: 14, color: AppColors.ratingStar),
+              const SizedBox(width: 2),
+              Text(rating!, style: AppTypography.bodySmall),
+            ],
+            if (extraInfo != null) ...<Widget>[
+              const SizedBox(width: AppSpacing.sm),
+              if (extraInfoIcon != null) ...<Widget>[
+                Icon(extraInfoIcon,
+                    size: 14, color: AppColors.brand),
+                const SizedBox(width: 2),
+              ],
+              Flexible(
+                child: Text(
+                  extraInfo!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.bodySmall.copyWith(
+                    color: extraInfoIcon == null
+                        ? AppColors.textSecondary
+                        : null,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+        // Info chips (авторы, платформы и т.д.)
+        if (infoChips != null && infoChips!.isNotEmpty) ...<Widget>[
+          const SizedBox(height: AppSpacing.sm),
+          ...infoChips!.map(
+            ((IconData, String) chip) => _buildInfoChip(
+              chip.$1,
+              chip.$2,
+            ),
+          ),
+        ],
+        // Жанры / теги
+        if (genres != null && genres!.isNotEmpty) ...<Widget>[
+          const SizedBox(height: AppSpacing.sm),
+          Wrap(
+            spacing: 6,
+            runSpacing: 4,
+            children: (maxGenres != null
+                    ? genres!.take(maxGenres!)
+                    : genres!)
+                .map(_buildGenreChip)
+                .toList(),
+          ),
+        ],
+      ],
     );
   }
 
