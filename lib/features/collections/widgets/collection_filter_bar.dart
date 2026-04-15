@@ -15,11 +15,13 @@ import '../../../shared/models/collection_tag.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/platform.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/chevron_filter_bar.dart';
 import '../providers/collections_provider.dart';
+import 'collection_filter_sheet.dart';
 
 /// Панель фильтров и сортировки для CollectionScreen.
 ///
@@ -120,6 +122,10 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
     final List<_TypeEntry> entries = _typeEntries(l, stats);
     final bool compact =
         MediaQuery.sizeOf(context).width < _compactBreakpoint;
+    // На узких экранах TagSidebar скрыт — даём кнопку, открывающую sheet
+    // с тегами и сортировкой. На широких остаётся компактный sort-сегмент
+    // (теги доступны через TagSidebar справа).
+    final bool useTagSheetButton = isCompactScreen(context);
 
     return ColoredBox(
       color: AppColors.surface,
@@ -151,10 +157,39 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
                 onChanged: widget.onStatusChanged,
               ),
             ),
-            SizedBox(width: 40, child: _buildSortSegment(context)),
+            if (useTagSheetButton)
+              SizedBox(width: 44, child: _buildTagSheetButton(context))
+            else
+              SizedBox(width: 40, child: _buildSortSegment(context)),
           ],
         ),
       ),
+    );
+  }
+
+  // ===== Кнопка «Теги & Сортировка» (открывает sheet, узкие экраны) =====
+
+  Widget _buildTagSheetButton(BuildContext context) {
+    final bool active = widget.filterTagIds.isNotEmpty;
+    final int count = widget.filterTagIds.length;
+    return ChevronSegment(
+      label: count > 0 ? '$count' : '',
+      icon: Icons.tune,
+      selected: active,
+      accentColor: AppColors.brand,
+      isFirst: false,
+      isLast: true,
+      onTap: () => showCollectionFilterSheet(
+        context,
+        collectionId: widget.collectionId,
+        tags: widget.tags,
+        selectedTagIds: widget.filterTagIds,
+        groupByTags: widget.groupByTags,
+        onTagToggled: widget.onTagToggled,
+        onGroupToggled: widget.onGroupToggled,
+      ),
+      tintWhenInactive: true,
+      compact: true,
     );
   }
 

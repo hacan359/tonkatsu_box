@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/chevron_filter_bar.dart';
@@ -15,6 +16,7 @@ import '../models/search_source.dart';
 import '../providers/browse_provider.dart';
 import '../sources/search_sources.dart';
 import 'filter_dropdown.dart';
+import 'filter_sheet.dart';
 
 /// Фикс ширина первого (Source) шеврона — чтобы не «прыгал» остальной ряд
 /// при переключении источника с разной длиной label.
@@ -66,6 +68,20 @@ class FilterBar extends ConsumerWidget {
         !browseState.hasActiveQuery &&
         source.groupId == 'tmdb';
     final Color accent = _accentForGroup(source.groupId);
+
+    // На узких экранах: Source + кнопка «Фильтры (N)» + (опционально)
+    // Customize-иконка вместо chevron-ряда.
+    if (isCompactScreen(context)) {
+      return _CompactBar(
+        source: source,
+        accent: accent,
+        activeFilterCount: _countActive(browseState.filterValues),
+        onSourceChanged: (String id) =>
+            ref.read(browseProvider.notifier).setSource(id),
+        onOpenFilters: () => showFilterSheet(context),
+        onDiscoverCustomize: showCustomize ? onDiscoverCustomize : null,
+      );
+    }
 
     return ColoredBox(
       color: AppColors.surface,
@@ -148,6 +164,126 @@ class FilterBar extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+
+  /// Считает количество активных фильтров (не null, не пустой List).
+  static int _countActive(Map<String, Object?> values) {
+    int n = 0;
+    for (final Object? v in values.values) {
+      if (v == null) continue;
+      if (v is List<Object> && v.isEmpty) continue;
+      n++;
+    }
+    return n;
+  }
+}
+
+// =========================================================================
+// Compact bar (узкие экраны)
+// =========================================================================
+
+/// Узкий вариант FilterBar:
+/// `[Source ▾][🎚 Фильтры (N)][⚙ Customize?]`.
+///
+/// Source — chevron того же шейпа что на широких. «Фильтры» открывают
+/// [FilterSheet]. Customize — отдельная иконка для TMDB источников
+/// (Discover Customize не фильтр, поэтому в шит не пускаем).
+class _CompactBar extends StatelessWidget {
+  const _CompactBar({
+    required this.source,
+    required this.accent,
+    required this.activeFilterCount,
+    required this.onSourceChanged,
+    required this.onOpenFilters,
+    required this.onDiscoverCustomize,
+  });
+
+  final SearchSource source;
+  final Color accent;
+  final int activeFilterCount;
+  final ValueChanged<String> onSourceChanged;
+  final VoidCallback onOpenFilters;
+  final VoidCallback? onDiscoverCustomize;
+
+  @override
+  Widget build(BuildContext context) {
+    final S l = S.of(context);
+    final bool showCustomize = onDiscoverCustomize != null;
+    return ColoredBox(
+      color: AppColors.surface,
+      child: SizedBox(
+        height: 40,
+        child: Row(
+          children: <Widget>[
+            SizedBox(
+              width: _kSourceWidth,
+              child: _SourceDropdownChevron(
+                source: source,
+                accentColor: accent,
+                isLast: false,
+                onSourceChanged: onSourceChanged,
+              ),
+            ),
+            Expanded(
+              child: _FiltersChevronButton(
+                accent: accent,
+                count: activeFilterCount,
+                label: l.collectionFilterFilters,
+                isLast: !showCustomize,
+                onTap: onOpenFilters,
+              ),
+            ),
+            if (showCustomize)
+              SizedBox(
+                width: _kCustomizeWidth,
+                child: ChevronSegment(
+                  label: l.discoverCustomize,
+                  icon: Icons.tune,
+                  selected: false,
+                  accentColor: accent,
+                  isFirst: false,
+                  isLast: true,
+                  onTap: onDiscoverCustomize!,
+                  tintWhenInactive: true,
+                  compact: true,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Шеврон-кнопка «🎚 Фильтры (N)» — средний сегмент compact bar.
+class _FiltersChevronButton extends StatelessWidget {
+  const _FiltersChevronButton({
+    required this.accent,
+    required this.count,
+    required this.label,
+    required this.isLast,
+    required this.onTap,
+  });
+
+  final Color accent;
+  final int count;
+  final String label;
+  final bool isLast;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final bool active = count > 0;
+    return ChevronSegment(
+      label: count > 0 ? '$label ($count)' : label,
+      icon: Icons.tune,
+      selected: active,
+      accentColor: accent,
+      isFirst: false,
+      isLast: isLast,
+      onTap: onTap,
+      tintWhenInactive: true,
     );
   }
 }

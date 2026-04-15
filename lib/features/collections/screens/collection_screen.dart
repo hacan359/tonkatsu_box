@@ -511,8 +511,10 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           ),
         ),
 
-        // Боковая панель тегов
-        if (tags.isNotEmpty && !kIsMobile)
+        // Боковая панель тегов — только на широких экранах. На узких
+        // ту же функциональность открывает кнопка в CollectionFilterBar
+        // (открывает CollectionFilterSheet).
+        if (tags.isNotEmpty && !isCompactScreen(context))
           TagSidebar(
             tags: tags,
             selectedTagIds: _filterTagIds,

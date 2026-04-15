@@ -657,7 +657,7 @@ class _TagGlowWrapper extends StatefulWidget {
 }
 
 class _TagGlowWrapperState extends State<_TagGlowWrapper>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   AnimationController? _controller;
 
   @override
