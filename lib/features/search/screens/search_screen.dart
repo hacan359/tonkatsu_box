@@ -8,7 +8,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/navigation/search_providers.dart';
-import '../../../shared/widgets/draggable_fab.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../core/api/tmdb_api.dart';
 import '../../../core/database/database_service.dart';
@@ -84,7 +83,6 @@ class SearchScreen extends ConsumerStatefulWidget {
 }
 
 class _SearchScreenState extends ConsumerState<SearchScreen> {
-  String? _lastSourceId;
   Timer? _searchDebounce;
 
   Map<int, Platform> _platformMap = <int, Platform>{};
@@ -1362,50 +1360,22 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     final BrowseState browseState = ref.watch(browseProvider);
-    // Очистка поиска при смене источника.
-    if (_lastSourceId != null && _lastSourceId != browseState.sourceId) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          ref.read(searchTabQueryProvider.notifier).state = '';
-        }
-      });
-    }
-    _lastSourceId = browseState.sourceId;
-
-    // Discover Customize кнопка — только без запросов и фильтров
-    // когда источник поддерживает Discover (TMDB)
-    final bool showDiscoverCustomize = !browseState.hasActiveQuery &&
-        (browseState.sourceId == 'movies' ||
-            browseState.sourceId == 'tv' ||
-            browseState.sourceId == 'anime');
 
     // Слушаем глобальный поиск — debounced API запрос.
     ref.listen<String>(searchTabQueryProvider, (String? prev, String next) {
       _onQueryChanged(next);
     });
 
-    return Stack(
+    return Column(
       children: <Widget>[
-        Column(
-          children: <Widget>[
-            FilterBar(onBeforeFilterChange: _syncSearchText),
-            const SizedBox(height: AppSpacing.xs),
-            Expanded(
-              child: _buildContent(browseState),
-            ),
-          ],
+        FilterBar(
+          onBeforeFilterChange: _syncSearchText,
+          onDiscoverCustomize: _showDiscoverCustomizeSheet,
         ),
-        if (showDiscoverCustomize)
-          DraggableFab(
-            icon: Icons.tune,
-            items: <DraggableFabItem>[
-              DraggableFabItem(
-                icon: Icons.tune,
-                label: S.of(context).discoverCustomize,
-                onTap: _showDiscoverCustomizeSheet,
-              ),
-            ],
-          ),
+        const SizedBox(height: AppSpacing.xs),
+        Expanded(
+          child: _buildContent(browseState),
+        ),
       ],
     );
   }

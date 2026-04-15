@@ -1569,7 +1569,7 @@ class SRu extends S {
   String get searchHintVisualNovels => 'Поиск визуальных новелл...';
 
   @override
-  String get searchSourceVisualNovels => 'Визуальные новеллы';
+  String get searchSourceVisualNovels => 'В. Новеллы';
 
   @override
   String get searchSourceManga => 'Манга';

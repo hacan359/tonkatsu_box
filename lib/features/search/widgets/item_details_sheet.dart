@@ -517,12 +517,16 @@ class ItemDetailsSheet extends StatelessWidget {
                                 size: 14, color: AppColors.brand),
                             const SizedBox(width: 2),
                           ],
-                          Text(
-                            extraInfo!,
-                            style: AppTypography.bodySmall.copyWith(
-                              color: extraInfoIcon == null
-                                  ? AppColors.textSecondary
-                                  : null,
+                          Flexible(
+                            child: Text(
+                              extraInfo!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTypography.bodySmall.copyWith(
+                                color: extraInfoIcon == null
+                                    ? AppColors.textSecondary
+                                    : null,
+                              ),
                             ),
                           ),
                         ],

@@ -2920,7 +2920,7 @@ abstract class S {
   /// No description provided for @searchSourceVisualNovels.
   ///
   /// In en, this message translates to:
-  /// **'Visual Novels'**
+  /// **'V. Novels'**
   String get searchSourceVisualNovels;
 
   /// No description provided for @searchSourceManga.

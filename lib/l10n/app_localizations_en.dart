@@ -1557,7 +1557,7 @@ class SEn extends S {
   String get searchHintVisualNovels => 'Search visual novels...';
 
   @override
-  String get searchSourceVisualNovels => 'Visual Novels';
+  String get searchSourceVisualNovels => 'V. Novels';
 
   @override
   String get searchSourceManga => 'Manga';

@@ -13,8 +13,12 @@ import 'nav_tab.dart';
 /// Ширина бокового меню.
 const double kAppSidebarWidth = 64;
 
-/// Высота одной кнопки таба.
+/// Максимальная высота одной кнопки таба. На узких/низких экранах кнопки
+/// сжимаются пропорционально, не выходя за пределы доступной высоты.
 const double _kItemHeight = 56;
+
+/// Минимальная высота кнопки таба — ниже этого иконка становится трудночитаемой.
+const double _kItemHeightMin = 36;
 
 /// Боковое меню приложения (вертикальное).
 ///
@@ -62,31 +66,40 @@ class AppSidebar extends ConsumerWidget {
                 color: AppColors.surfaceBorder,
               ),
             ),
-            Center(
-              child: SizedBox(
-                height: _kItemHeight * destinations.length,
-                child: Stack(
-                  children: <Widget>[
-                    LiquidIndicator(
-                      selectedIndex: selectedIndex,
-                      itemExtent: _kItemHeight,
-                      crossExtent: kAppSidebarWidth,
-                    ),
-                    Column(
+            LayoutBuilder(
+              builder: (BuildContext ctx, BoxConstraints c) {
+                // Сжимаем высоту кнопок если экран ниже идеала, но не меньше
+                // минимума — иначе иконки сольются.
+                final double itemHeight = (c.maxHeight / destinations.length)
+                    .clamp(_kItemHeightMin, _kItemHeight);
+                final double totalHeight = itemHeight * destinations.length;
+                return Center(
+                  child: SizedBox(
+                    height: totalHeight,
+                    child: Stack(
                       children: <Widget>[
-                        for (final NavDestination d in destinations)
-                          NavIconButton(
-                            destination: d,
-                            active: d.tab == selectedTab,
-                            width: kAppSidebarWidth,
-                            height: _kItemHeight,
-                            onTap: () => onDestinationSelected(d.tab),
-                          ),
+                        LiquidIndicator(
+                          selectedIndex: selectedIndex,
+                          itemExtent: itemHeight,
+                          crossExtent: kAppSidebarWidth,
+                        ),
+                        Column(
+                          children: <Widget>[
+                            for (final NavDestination d in destinations)
+                              NavIconButton(
+                                destination: d,
+                                active: d.tab == selectedTab,
+                                width: kAppSidebarWidth,
+                                height: itemHeight,
+                                onTap: () => onDestinationSelected(d.tab),
+                              ),
+                          ],
+                        ),
                       ],
                     ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             ),
           ],
         ),

@@ -18,6 +18,7 @@ import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/chevron_filter_bar.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../collections/screens/item_detail_screen.dart';
@@ -189,7 +190,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
           children: <Widget>[
             for (int i = 0; i < entries.length; i++)
               Expanded(
-                child: _ChevronSegment(
+                child: ChevronSegment(
                   label: entries[i].displayLabel,
                   icon: MediaTypeTheme.iconFor(entries[i].type),
                   selected: _selectedTypes.contains(entries[i].type),
@@ -198,12 +199,14 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                   isLast: false,
                   onTap: () => _toggleMediaType(entries[i].type),
                   compact: compact,
+                  tintWhenInactive: true,
                 ),
               ),
             Expanded(
-              child: _StatusDropdownSegment(
+              child: StatusDropdownSegment(
                 status: filterStatus,
                 compact: compact,
+                subtitle: l.detailStatus,
                 onChanged: (ItemStatus? s) =>
                     ref.read(homeStatusFilterProvider.notifier).setFilter(s),
               ),
@@ -432,16 +435,23 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final List<int?> order = <int?>[];
     for (final CollectionItem item in items) {
       final int? colId = item.collectionId;
-      if (!map.containsKey(colId)) {
+      final _CollectionGroup? existing = map[colId];
+      if (existing == null) {
         final String name = colId != null
             ? (collectionNames[colId] ?? 'Unknown')
             : uncategorizedLabel;
-        map[colId] = _CollectionGroup(name: name, items: <CollectionItem>[]);
+        final _CollectionGroup group =
+            _CollectionGroup(name: name, items: <CollectionItem>[item]);
+        map[colId] = group;
         order.add(colId);
+      } else {
+        existing.items.add(item);
       }
-      map[colId]!.items.add(item);
     }
-    return order.map((int? id) => map[id]!).toList();
+    return <_CollectionGroup>[
+      for (final int? id in order)
+        if (map[id] case final _CollectionGroup g) g,
+    ];
   }
 
   Widget _buildCollectionDivider(
@@ -633,276 +643,6 @@ class _MediaTypeEntry {
 
   String get displayLabel => count > 0 ? '$label ($count)' : label;
 }
-
-/// Универсальный chevron-сегмент для filter-баров.
-///
-/// V-вырез слева (кроме первого) и V-конец справа (кроме последнего).
-/// В режиме [compact] показывает [Tooltip] + иконку вместо текста.
-class _ChevronSegment extends StatelessWidget {
-  const _ChevronSegment({
-    required this.label,
-    required this.icon,
-    required this.selected,
-    required this.accentColor,
-    required this.isFirst,
-    required this.isLast,
-    required this.onTap,
-    this.compact = false,
-  });
-
-  final String label;
-  final IconData icon;
-  final bool selected;
-  final Color accentColor;
-  final bool isFirst;
-  final bool isLast;
-  final VoidCallback onTap;
-  final bool compact;
-
-  static const double _chevronWidth = 6;
-
-  @override
-  Widget build(BuildContext context) {
-    final Color bg = selected ? accentColor : AppColors.surface;
-    final Color contentColor =
-        selected ? AppColors.background : AppColors.textSecondary;
-
-    return ClipPath(
-      clipper: _ChevronClipper(
-        chevronWidth: _chevronWidth,
-        hasLeftNotch: !isFirst,
-        hasRightPoint: !isLast,
-      ),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOut,
-        color: bg,
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onTap,
-            child: Padding(
-              padding: EdgeInsets.only(
-                left: isFirst ? 4 : _chevronWidth + 1,
-                right: isLast ? 4 : _chevronWidth + 1,
-              ),
-              child: Center(
-                child: compact
-                    ? Tooltip(
-                        message: label,
-                        child: Icon(icon, size: 18, color: contentColor),
-                      )
-                    : Text(
-                        label,
-                        textAlign: TextAlign.center,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                        style: AppTypography.bodySmall.copyWith(
-                          color: contentColor,
-                          fontWeight:
-                              selected ? FontWeight.w600 : FontWeight.w500,
-                        ),
-                      ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// CustomClipper, вырезающий из прямоугольника форму стрелочки.
-class _ChevronClipper extends CustomClipper<Path> {
-  const _ChevronClipper({
-    required this.chevronWidth,
-    required this.hasLeftNotch,
-    required this.hasRightPoint,
-  });
-
-  final double chevronWidth;
-  final bool hasLeftNotch;
-  final bool hasRightPoint;
-
-  @override
-  Path getClip(Size size) {
-    final Path path = Path();
-    final double mid = size.height / 2;
-
-    // Левая грань: либо V-вырез внутрь, либо прямой край.
-    if (hasLeftNotch) {
-      path.moveTo(0, 0);
-      path.lineTo(chevronWidth, mid);
-      path.lineTo(0, size.height);
-    } else {
-      path.moveTo(0, 0);
-      path.lineTo(0, size.height);
-    }
-
-    // Правая грань: либо остриё вправо, либо прямой край.
-    if (hasRightPoint) {
-      path.lineTo(size.width - chevronWidth, size.height);
-      path.lineTo(size.width, mid);
-      path.lineTo(size.width - chevronWidth, 0);
-    } else {
-      path.lineTo(size.width, size.height);
-      path.lineTo(size.width, 0);
-    }
-
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(covariant _ChevronClipper old) {
-    return chevronWidth != old.chevronWidth ||
-        hasLeftNotch != old.hasLeftNotch ||
-        hasRightPoint != old.hasRightPoint;
-  }
-}
-
-// ==================== Status dropdown сегмент ====================
-
-/// Chevron-сегмент в виде dropdown для выбора статуса.
-///
-/// Визуально идентичен [_ChevronSegment] (всегда `isLast: true`), но при
-/// нажатии открывает [PopupMenuButton] со списком статусов. Каждый пункт
-/// подсвечивается цветом соответствующего статуса.
-class _StatusDropdownSegment extends StatelessWidget {
-  const _StatusDropdownSegment({
-    required this.status,
-    required this.compact,
-    required this.onChanged,
-  });
-
-  final ItemStatus? status;
-  final bool compact;
-  final ValueChanged<ItemStatus?> onChanged;
-
-  static const double _chevronWidth = 6;
-
-  static const List<ItemStatus> _order = <ItemStatus>[
-    ItemStatus.inProgress,
-    ItemStatus.planned,
-    ItemStatus.notStarted,
-    ItemStatus.completed,
-    ItemStatus.dropped,
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final S l = S.of(context);
-    final bool active = status != null;
-    final Color accentColor = active ? status!.color : AppColors.surface;
-    final Color contentColor =
-        active ? AppColors.background : AppColors.textSecondary;
-    final String label = active ? status!.genericLabel(l) : l.homeFilterAll;
-    final IconData icon = active ? status!.materialIcon : Icons.filter_list;
-
-    return PopupMenuButton<String>(
-      onSelected: (String v) {
-        onChanged(v == 'all' ? null : ItemStatus.fromString(v));
-      },
-      offset: const Offset(0, 40),
-      color: AppColors.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-      ),
-      itemBuilder: (BuildContext ctx) => <PopupMenuEntry<String>>[
-        _menuItem('all', Icons.filter_list_off, l.homeFilterAll,
-            status == null, null),
-        const PopupMenuDivider(height: 8),
-        for (final ItemStatus s in _order)
-          _menuItem(s.value, s.materialIcon, s.genericLabel(l),
-              status == s, s.color),
-      ],
-      child: ClipPath(
-        clipper: const _ChevronClipper(
-          chevronWidth: _chevronWidth,
-          hasLeftNotch: true,
-          hasRightPoint: false,
-        ),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          curve: Curves.easeOut,
-          color: accentColor,
-          child: Padding(
-            padding: const EdgeInsets.only(
-              left: _chevronWidth + 1,
-              right: 4,
-            ),
-            child: Center(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    if (compact)
-                      Tooltip(
-                        message: label,
-                        child: Icon(icon, size: 18, color: contentColor),
-                      )
-                    else
-                      Text(
-                        label,
-                        maxLines: 1,
-                        style: AppTypography.bodySmall.copyWith(
-                          color: contentColor,
-                          fontWeight:
-                              active ? FontWeight.w600 : FontWeight.w500,
-                        ),
-                      ),
-                    const SizedBox(width: 2),
-                    Icon(
-                      Icons.keyboard_arrow_down,
-                      size: 14,
-                      color: contentColor,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  static PopupMenuItem<String> _menuItem(
-    String value,
-    IconData icon,
-    String label,
-    bool selected,
-    Color? statusColor,
-  ) {
-    final Color itemColor = selected
-        ? (statusColor ?? AppColors.brand)
-        : AppColors.textPrimary;
-    final Color iconColor = selected
-        ? (statusColor ?? AppColors.brand)
-        : AppColors.textTertiary;
-
-    return PopupMenuItem<String>(
-      value: value,
-      height: 36,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Icon(icon, size: 16, color: iconColor),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: AppTypography.body.copyWith(
-              color: itemColor,
-              fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 
 /// Группа элементов одной коллекции для отображения секции.
 class _CollectionGroup {

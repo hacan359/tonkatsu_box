@@ -9,13 +9,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
-import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/chevron_filter_bar.dart';
 import '../models/search_source.dart';
 import '../providers/browse_provider.dart';
 import '../sources/search_sources.dart';
 import 'filter_dropdown.dart';
+
+/// Фикс ширина первого (Source) шеврона — чтобы не «прыгал» остальной ряд
+/// при переключении источника с разной длиной label.
+const double _kSourceWidth = 130;
+
+/// Фикс ширина компактного Customize-шеврона (иконка с Tooltip).
+const double _kCustomizeWidth = 44;
 
 /// Цвет accent для группы источника.
 Color _accentForGroup(String groupId) {
@@ -30,14 +36,23 @@ Color _accentForGroup(String groupId) {
 
 /// Chevron filter bar для Browse mode.
 ///
-/// `[Source ▾][Filter1 ▾][Filter2 ▾][Sort ▾][×]`
-/// Всё в одну строку на всю ширину. Clear в конце.
+/// `[Source ▾][Filter1 ▾][Filter2 ▾][Sort ▾][Customize?][×?]`
+/// Всё в одну строку на всю ширину. Customize показывается для TMDB
+/// источников без активного запроса; Clear — при активных фильтрах.
 class FilterBar extends ConsumerWidget {
   /// Создаёт [FilterBar].
-  const FilterBar({this.onBeforeFilterChange, super.key});
+  const FilterBar({
+    this.onBeforeFilterChange,
+    this.onDiscoverCustomize,
+    super.key,
+  });
 
   /// Вызывается перед применением фильтра.
   final VoidCallback? onBeforeFilterChange;
+
+  /// Открыть «Discover Customize» (TMDB-источники без активного запроса).
+  /// Если `null` — сегмент не показывается.
+  final VoidCallback? onDiscoverCustomize;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -47,6 +62,9 @@ class FilterBar extends ConsumerWidget {
     final bool hasSort = source.sortOptions.isNotEmpty;
     final bool hasActiveFilters = browseState.filterValues.values
         .any((Object? v) => v != null);
+    final bool showCustomize = onDiscoverCustomize != null &&
+        !browseState.hasActiveQuery &&
+        source.groupId == 'tmdb';
     final Color accent = _accentForGroup(source.groupId);
 
     return ColoredBox(
@@ -55,12 +73,14 @@ class FilterBar extends ConsumerWidget {
         height: 40,
         child: Row(
           children: <Widget>[
-            // Source dropdown (первый, всегда selected).
-            Expanded(
+            // Source dropdown (первый, всегда selected, фикс ширина чтобы
+            // не прыгало при смене источника).
+            SizedBox(
+              width: _kSourceWidth,
               child: _SourceDropdownChevron(
                 source: source,
                 accentColor: accent,
-                isLast: filters.isEmpty && !hasSort,
+                isLast: filters.isEmpty && !hasSort && !showCustomize,
                 onSourceChanged: (String id) {
                   ref.read(browseProvider.notifier).setSource(id);
                 },
@@ -76,7 +96,9 @@ class FilterBar extends ConsumerWidget {
                   filter: filters[i],
                   value: browseState.filterValues[filters[i].key],
                   accentColor: accent,
-                  isLast: !hasSort && i == filters.length - 1,
+                  isLast: !hasSort &&
+                      !showCustomize &&
+                      i == filters.length - 1,
                   onChanged: (Object? value) {
                     onBeforeFilterChange?.call();
                     ref
@@ -94,10 +116,27 @@ class FilterBar extends ConsumerWidget {
                   enabled: !browseState.hasSearchQuery ||
                       source.supportsSortDuringSearch,
                   accentColor: accent,
-                  isLast: true,
+                  isLast: !showCustomize,
                   onChanged: (String sortBy) {
                     ref.read(browseProvider.notifier).setSort(sortBy);
                   },
+                ),
+              ),
+            // Discover Customize (TMDB, без активного запроса) —
+            // компактная иконка с Tooltip, не растягивается.
+            if (showCustomize)
+              SizedBox(
+                width: _kCustomizeWidth,
+                child: ChevronSegment(
+                  label: S.of(context).discoverCustomize,
+                  icon: Icons.tune,
+                  selected: false,
+                  accentColor: accent,
+                  isFirst: false,
+                  isLast: true,
+                  onTap: onDiscoverCustomize!,
+                  tintWhenInactive: true,
+                  compact: true,
                 ),
               ),
             // Clear.
@@ -163,7 +202,7 @@ class _SourceDropdownChevron extends StatelessWidget {
   Widget build(BuildContext context) {
     final S l = S.of(context);
 
-    return _DropdownChevronBase(
+    return DropdownChevronSegment<Object>(
       label: source.label(l),
       subtitle: source.groupName,
       icon: source.icon,
@@ -329,7 +368,7 @@ class _FilterDropdownChevronState
     final String? sub = _isActive ? widget.filter.placeholder(l) : null;
 
     if (widget.filter.searchable) {
-      return _ChevronShell(
+      return ChevronSegment(
         label: _getLabel(l),
         subtitle: sub,
         icon: Icons.filter_list,
@@ -341,7 +380,7 @@ class _FilterDropdownChevronState
       );
     }
 
-    return _DropdownChevronBase(
+    return DropdownChevronSegment<Object>(
       label: _getLabel(l),
       subtitle: sub,
       icon: Icons.filter_list,
@@ -461,7 +500,7 @@ class _SortDropdownChevron extends StatelessWidget {
     }
 
     if (!enabled) {
-      return _ChevronShell(
+      return ChevronSegment(
         label: currentLabel,
         subtitle: l.browseSort,
         icon: Icons.sort,
@@ -473,7 +512,7 @@ class _SortDropdownChevron extends StatelessWidget {
       );
     }
 
-    return _DropdownChevronBase(
+    return DropdownChevronSegment<Object>(
       label: currentLabel,
       subtitle: l.browseSort,
       icon: Icons.sort,
@@ -507,204 +546,4 @@ class _SortDropdownChevron extends StatelessWidget {
       },
     );
   }
-}
-
-// =========================================================================
-// Base chevron widgets
-// =========================================================================
-
-/// Chevron-сегмент (только визуал + onTap, без dropdown).
-class _ChevronShell extends StatelessWidget {
-  const _ChevronShell({
-    required this.label,
-    required this.icon,
-    required this.selected,
-    required this.accentColor,
-    required this.isFirst,
-    required this.isLast,
-    required this.onTap,
-    this.subtitle,
-  });
-
-  final String label;
-  final IconData icon;
-  final bool selected;
-  final Color accentColor;
-  final bool isFirst;
-  final bool isLast;
-  final VoidCallback onTap;
-  final String? subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    final Color bg = selected ? accentColor : AppColors.surface;
-    final Color fg =
-        selected ? AppColors.background : AppColors.textSecondary;
-
-    return ClipPath(
-      clipper: ChevronClipper(
-        chevronWidth: ChevronSegment.chevronWidth,
-        hasLeftNotch: !isFirst,
-        hasRightPoint: !isLast,
-      ),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        color: bg,
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onTap,
-            child: Padding(
-              padding: EdgeInsets.only(
-                left: isFirst ? 4 : ChevronSegment.chevronWidth + 1,
-                right: isLast ? 4 : ChevronSegment.chevronWidth + 1,
-              ),
-              child: Center(
-                child: _buildChevronContent(
-                  label: label,
-                  subtitle: subtitle,
-                  fg: fg,
-                  selected: selected,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Chevron-сегмент с PopupMenuButton внутри.
-class _DropdownChevronBase extends StatelessWidget {
-  const _DropdownChevronBase({
-    required this.label,
-    required this.icon,
-    required this.selected,
-    required this.accentColor,
-    required this.isFirst,
-    required this.isLast,
-    required this.menuBuilder,
-    required this.onSelected,
-    this.subtitle,
-  });
-
-  final String label;
-  final IconData icon;
-  final bool selected;
-  final Color accentColor;
-  final bool isFirst;
-  final bool isLast;
-  final List<PopupMenuEntry<Object>> Function(BuildContext) menuBuilder;
-  final ValueChanged<Object?> onSelected;
-  final String? subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    final Color bg = selected ? accentColor : AppColors.surface;
-    final Color fg =
-        selected ? AppColors.background : AppColors.textSecondary;
-
-    return ClipPath(
-      clipper: ChevronClipper(
-        chevronWidth: ChevronSegment.chevronWidth,
-        hasLeftNotch: !isFirst,
-        hasRightPoint: !isLast,
-      ),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        color: bg,
-        child: PopupMenuButton<Object>(
-          onSelected: onSelected,
-          offset: const Offset(0, 40),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          ),
-          color: AppColors.surface,
-          constraints: const BoxConstraints(maxHeight: 400),
-          itemBuilder: menuBuilder,
-          child: Padding(
-            padding: EdgeInsets.only(
-              left: isFirst ? 4 : ChevronSegment.chevronWidth + 1,
-              right: isLast ? 4 : ChevronSegment.chevronWidth + 1,
-            ),
-            child: Center(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Flexible(
-                    child: _buildChevronContent(
-                      label: label,
-                      subtitle: subtitle,
-                      fg: fg,
-                      selected: selected,
-                    ),
-                  ),
-                  Icon(Icons.arrow_drop_down, size: 14, color: fg),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// =========================================================================
-// Shared content builder
-// =========================================================================
-
-/// Контент шеврона: если [subtitle] задан — двухстрочный (заголовок + значение),
-/// иначе однострочный.
-Widget _buildChevronContent({
-  required String label,
-  required String? subtitle,
-  required Color fg,
-  required bool selected,
-}) {
-  if (subtitle == null) {
-    return Text(
-      label,
-      textAlign: TextAlign.center,
-      overflow: TextOverflow.ellipsis,
-      maxLines: 1,
-      style: AppTypography.bodySmall.copyWith(
-        color: fg,
-        fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-      ),
-    );
-  }
-
-  return Column(
-    mainAxisSize: MainAxisSize.min,
-    children: <Widget>[
-      Text(
-        subtitle,
-        textAlign: TextAlign.center,
-        overflow: TextOverflow.ellipsis,
-        maxLines: 1,
-        style: TextStyle(
-          fontSize: 9,
-          color: fg.withAlpha(selected ? 180 : 140),
-          fontWeight: FontWeight.w500,
-          height: 1,
-        ),
-      ),
-      const SizedBox(height: 1),
-      Text(
-        label,
-        textAlign: TextAlign.center,
-        overflow: TextOverflow.ellipsis,
-        maxLines: 1,
-        style: AppTypography.bodySmall.copyWith(
-          color: fg,
-          fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-          fontSize: 12,
-          height: 1.1,
-        ),
-      ),
-    ],
-  );
 }

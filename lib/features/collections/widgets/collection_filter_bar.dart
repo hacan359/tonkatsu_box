@@ -140,12 +140,14 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
                   isLast: false,
                   onTap: () => widget.onTypeToggled(entries[i].type),
                   compact: compact,
+                  tintWhenInactive: true,
                 ),
               ),
             Expanded(
               child: StatusDropdownSegment(
                 status: widget.filterStatus,
                 compact: compact,
+                subtitle: l.detailStatus,
                 onChanged: widget.onStatusChanged,
               ),
             ),
