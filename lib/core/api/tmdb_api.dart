@@ -39,6 +39,33 @@ class TmdbPagedResult<T> {
   bool get hasMore => page < totalPages;
 }
 
+/// Результат поиска TMDB по внешнему ID (`/find/{id}`).
+///
+/// Одна и та же точка возвращает результаты сразу для фильмов и сериалов,
+/// т.к. внешний ID (IMDB, TVDB) может принадлежать разным типам.
+class TmdbFindResult {
+  /// Создаёт [TmdbFindResult].
+  const TmdbFindResult({
+    this.movies = const <Movie>[],
+    this.tvShows = const <TvShow>[],
+  });
+
+  /// Найденные фильмы.
+  final List<Movie> movies;
+
+  /// Найденные сериалы.
+  final List<TvShow> tvShows;
+
+  /// Ничего не нашли.
+  bool get isEmpty => movies.isEmpty && tvShows.isEmpty;
+
+  /// Первый найденный фильм (или null).
+  Movie? get firstMovie => movies.isNotEmpty ? movies.first : null;
+
+  /// Первый найденный сериал (или null).
+  TvShow? get firstTvShow => tvShows.isNotEmpty ? tvShows.first : null;
+}
+
 /// Провайдер для TMDB API клиента.
 ///
 /// При создании устанавливает API ключ из [apiKeysProvider],
@@ -532,6 +559,77 @@ class TmdbApi {
         return null;
       }
       throw _handleDioException(e, 'Failed to fetch TV show');
+    }
+  }
+
+  /// Ищет фильм/сериал по IMDB ID.
+  ///
+  /// IMDB ID имеет формат `tt1234567` и принимается TMDB как есть.
+  /// Используется, например, для матчинга Kodi items: старые scraper'ы
+  /// проставляют IMDB вместо TMDB.
+  ///
+  /// Возвращает [TmdbFindResult] с найденными фильмами и сериалами.
+  /// 404 трактуется как "не найдено" — возвращается пустой результат.
+  Future<TmdbFindResult> findByImdbId(String imdbId) async {
+    return _findByExternalId(imdbId, 'imdb_id');
+  }
+
+  /// Ищет сериал по TheTVDB ID.
+  ///
+  /// Kodi для TV-шоу часто использует TVDB scraper. `tvdb_id` источник
+  /// в TMDB возвращает сериалы (и их эпизоды/сезоны, но мы берём только
+  /// tv_results).
+  ///
+  /// Возвращает [TmdbFindResult] (обычно с заполненным `tvShows`).
+  Future<TmdbFindResult> findByTvdbId(int tvdbId) async {
+    return _findByExternalId(tvdbId.toString(), 'tvdb_id');
+  }
+
+  Future<TmdbFindResult> _findByExternalId(
+    String externalId,
+    String source,
+  ) async {
+    _ensureApiKey();
+
+    try {
+      final Response<dynamic> response = await _dio.get<dynamic>(
+        '$_baseUrl/find/$externalId',
+        queryParameters: <String, dynamic>{
+          'api_key': _apiKey,
+          'language': language,
+          'external_source': source,
+        },
+      );
+
+      if (response.statusCode != 200 || response.data == null) {
+        throw TmdbApiException(
+          'Failed to find by external ID',
+          statusCode: response.statusCode,
+        );
+      }
+
+      final Map<String, dynamic> data =
+          response.data as Map<String, dynamic>;
+      final List<dynamic> movieItems =
+          (data['movie_results'] as List<dynamic>?) ?? <dynamic>[];
+      final List<dynamic> tvItems =
+          (data['tv_results'] as List<dynamic>?) ?? <dynamic>[];
+
+      return TmdbFindResult(
+        movies: movieItems
+            .map((dynamic item) =>
+                Movie.fromJson(item as Map<String, dynamic>))
+            .toList(),
+        tvShows: tvItems
+            .map((dynamic item) =>
+                TvShow.fromJson(item as Map<String, dynamic>))
+            .toList(),
+      );
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        return const TmdbFindResult();
+      }
+      throw _handleDioException(e, 'Failed to find by external ID');
     }
   }
 
