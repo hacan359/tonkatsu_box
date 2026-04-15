@@ -8,6 +8,7 @@ import 'package:xerabora/features/search/widgets/item_details_sheet.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/widgets/cached_image.dart';
+import 'package:xerabora/shared/widgets/gyroscope_parallax_image.dart';
 
 void main() {
   late SharedPreferences prefs;
@@ -28,6 +29,7 @@ void main() {
     List<String>? genres,
     String? extraInfo,
     String? posterUrl,
+    String? backdropUrl,
     VoidCallback? onAddToCollection,
   }) {
     return ProviderScope(
@@ -54,6 +56,7 @@ void main() {
                       genres: genres,
                       extraInfo: extraInfo,
                       posterUrl: posterUrl,
+                      backdropUrl: backdropUrl,
                       onAddToCollection: onAddToCollection,
                     ),
                   );
@@ -309,6 +312,66 @@ void main() {
       expect(find.text('2h 30m'), findsOneWidget);
       expect(find.text('An amazing story.'), findsOneWidget);
       expect(find.byType(CachedImage), findsOneWidget);
+    });
+
+    group('backdrop', () {
+      testWidgets('renders backdrop image when backdropUrl provided',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(
+          buildTestApp(
+            title: 'With Backdrop',
+            backdropUrl: 'https://example.com/backdrop.jpg',
+          ),
+        );
+        await openSheetWithPump(tester);
+
+        expect(find.byType(GyroscopeParallaxImage), findsOneWidget);
+      });
+
+      testWidgets(
+          'falls back to poster as backdrop when backdropUrl is null but '
+          'posterUrl provided', (WidgetTester tester) async {
+        await tester.pumpWidget(
+          buildTestApp(
+            title: 'Poster Fallback',
+            posterUrl: 'https://example.com/poster.jpg',
+          ),
+        );
+        await openSheetWithPump(tester);
+
+        // GyroscopeParallaxImage рендерится даже без backdropUrl —
+        // постер используется как fallback фон.
+        expect(find.byType(GyroscopeParallaxImage), findsOneWidget);
+      });
+
+      testWidgets('renders no backdrop when both URLs are null',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(
+          buildTestApp(title: 'No Images'),
+        );
+        await openSheet(tester);
+
+        expect(find.byType(GyroscopeParallaxImage), findsNothing);
+      });
+
+      testWidgets('prefers backdropUrl over posterUrl for backdrop',
+          (WidgetTester tester) async {
+        await tester.pumpWidget(
+          buildTestApp(
+            title: 'Both URLs',
+            posterUrl: 'https://example.com/poster.jpg',
+            backdropUrl: 'https://example.com/backdrop.jpg',
+          ),
+        );
+        await openSheetWithPump(tester);
+
+        // Ровно один GyroscopeParallaxImage — backdrop, не fallback.
+        final Finder backdrops = find.byType(GyroscopeParallaxImage);
+        expect(backdrops, findsOneWidget);
+        final GyroscopeParallaxImage widget =
+            tester.widget<GyroscopeParallaxImage>(backdrops);
+        expect(widget.imageUrl, 'https://example.com/backdrop.jpg');
+      });
     });
   });
 }
