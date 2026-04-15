@@ -102,6 +102,11 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
   /// Ширина, ниже которой сегменты показывают иконки вместо текста.
   static const double _compactBreakpoint = 700;
 
+  /// Кешированный список платформ — пересчитывается только при смене
+  /// identity списка элементов (валюа AsyncValue.value).
+  List<Platform>? _cachedPlatforms;
+  List<CollectionItem>? _cachedPlatformsSource;
+
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
@@ -348,6 +353,13 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
     final List<CollectionItem>? items = widget.itemsAsync.valueOrNull;
     if (items == null) return <Platform>[];
 
+    // Кеш действителен пока identity самого списка (references) не изменилось.
+    // Провайдер выдаёт новый List при любом изменении коллекции, так что
+    // identity-сравнение = корректная инвалидация.
+    if (identical(_cachedPlatformsSource, items) && _cachedPlatforms != null) {
+      return _cachedPlatforms!;
+    }
+
     final Map<int, Platform> map = <int, Platform>{};
     for (final CollectionItem item in items) {
       if (item.mediaType == MediaType.game &&
@@ -357,8 +369,12 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
         map[item.platformId!] = item.platform!;
       }
     }
-    return map.values.toList()
+    final List<Platform> result = map.values.toList()
       ..sort((Platform a, Platform b) => a.name.compareTo(b.name));
+
+    _cachedPlatformsSource = items;
+    _cachedPlatforms = result;
+    return result;
   }
 
   List<_TypeEntry> _typeEntries(S l, CollectionStats? stats) {
