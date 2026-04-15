@@ -14,19 +14,8 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../models/search_source.dart';
 import '../providers/browse_provider.dart';
+import '../utils/filter_ui.dart';
 import 'filter_dropdown.dart';
-
-/// Цвет accent для группы источника (дублирует ту же логику что и
-/// в filter_bar — если будет третий сайт использования, выносим в shared).
-Color _accentForGroup(String groupId) {
-  return switch (groupId) {
-    'tmdb' => AppColors.movieAccent,
-    'igdb' => AppColors.gameAccent,
-    'anilist' => AppColors.animeAccent,
-    'vndb' => AppColors.visualNovelAccent,
-    _ => AppColors.brand,
-  };
-}
 
 /// Открыть [FilterSheet] как modal bottom sheet.
 ///
@@ -70,7 +59,7 @@ class FilterSheet extends ConsumerWidget {
     final List<SearchFilter> filters = source.filters;
     final List<BrowseSortOption> sortOptions = source.sortOptions;
     final bool hasActiveFilters = browseState.hasFilters;
-    final Color accent = _accentForGroup(source.groupId);
+    final Color accent = filterAccentForGroup(source.groupId);
 
     return Material(
       color: AppColors.background,
@@ -398,8 +387,8 @@ class _FilterRowState extends ConsumerState<_FilterRow> {
       ),
     );
     if (result == null) return;
-    // SearchableFilterDialog возвращает sentinel '__filter_reset__' для All.
-    widget.onChanged(result == '__filter_reset__' ? null : result);
+    // SearchableFilterDialog возвращает sentinel kFilterResetSentinel для All.
+    widget.onChanged(result == kFilterResetSentinel ? null : result);
   }
 
   @override

@@ -15,6 +15,7 @@ import '../../../shared/widgets/chevron_filter_bar.dart';
 import '../models/search_source.dart';
 import '../providers/browse_provider.dart';
 import '../sources/search_sources.dart';
+import '../utils/filter_ui.dart';
 import 'filter_dropdown.dart';
 import 'filter_sheet.dart';
 
@@ -24,17 +25,6 @@ const double _kSourceWidth = 130;
 
 /// Фикс ширина компактного Customize-шеврона (иконка с Tooltip).
 const double _kCustomizeWidth = 44;
-
-/// Цвет accent для группы источника.
-Color _accentForGroup(String groupId) {
-  return switch (groupId) {
-    'tmdb' => AppColors.movieAccent,
-    'igdb' => AppColors.gameAccent,
-    'anilist' => AppColors.animeAccent,
-    'vndb' => AppColors.visualNovelAccent,
-    _ => AppColors.brand,
-  };
-}
 
 /// Chevron filter bar для Browse mode.
 ///
@@ -64,10 +54,13 @@ class FilterBar extends ConsumerWidget {
     final bool hasSort = source.sortOptions.isNotEmpty;
     final bool hasActiveFilters = browseState.filterValues.values
         .any((Object? v) => v != null);
+    // Discover Customize — это настройка самого фида (фильтры/сортировка),
+    // поэтому активные фильтры его НЕ скрывают. Скрываем только при
+    // текстовом запросе, когда фид превращается в результаты поиска.
     final bool showCustomize = onDiscoverCustomize != null &&
-        !browseState.hasActiveQuery &&
+        !browseState.hasSearchQuery &&
         source.groupId == 'tmdb';
-    final Color accent = _accentForGroup(source.groupId);
+    final Color accent = filterAccentForGroup(source.groupId);
 
     // На узких экранах: Source + кнопка «Фильтры (N)» + (опционально)
     // Customize-иконка вместо chevron-ряда.
@@ -390,7 +383,7 @@ class _SourceDropdownChevron extends StatelessWidget {
               s.label(l),
               style: AppTypography.body.copyWith(
                 color: isSelected
-                    ? _accentForGroup(s.groupId)
+                    ? filterAccentForGroup(s.groupId)
                     : AppColors.textPrimary,
                 fontWeight:
                     isSelected ? FontWeight.w600 : FontWeight.normal,
@@ -526,12 +519,10 @@ class _FilterDropdownChevronState
       isLast: widget.isLast,
       menuBuilder: (BuildContext ctx) => _buildFilterItems(l),
       onSelected: (Object? value) {
-        widget.onChanged(value == _kReset ? null : value);
+        widget.onChanged(value == kFilterResetSentinel ? null : value);
       },
     );
   }
-
-  static const String _kReset = '__reset__';
 
   List<PopupMenuEntry<Object>> _buildFilterItems(S l) {
     if (_options == null || _isLoading) {
@@ -551,7 +542,7 @@ class _FilterDropdownChevronState
 
     return <PopupMenuEntry<Object>>[
       PopupMenuItem<Object>(
-        value: _kReset,
+        value: kFilterResetSentinel,
         height: 36,
         child: Text(
           l.browseFilterAll,
@@ -598,7 +589,7 @@ class _FilterDropdownChevronState
       ),
     );
     if (result == null) return;
-    widget.onChanged(result == _kReset ? null : result);
+    widget.onChanged(result == kFilterResetSentinel ? null : result);
   }
 }
 
