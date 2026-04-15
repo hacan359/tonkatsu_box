@@ -9,6 +9,7 @@ import '../../../core/api/tmdb_api.dart';
 import '../../../core/database/database_service.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/item_status.dart';
+import '../../../shared/models/item_status_logic.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/tv_episode.dart';
 import '../../../shared/models/tv_show.dart';
@@ -315,7 +316,6 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
     }
     if (targetItem == null) return;
 
-    final ItemStatus currentStatus = targetItem.status;
     int totalInShow = _cachedTotalEpisodes ??
         targetItem.tvShow?.totalEpisodes ?? 0;
     int totalSeasons = _cachedTotalSeasons ??
@@ -347,43 +347,16 @@ class EpisodeTrackerNotifier extends FamilyNotifier<EpisodeTrackerState,
       totalInShow = state.totalEpisodeCount;
     }
 
-    // Все сняты → notStarted (если был inProgress или completed)
-    if (totalWatched == 0) {
-      if (currentStatus == ItemStatus.inProgress ||
-          currentStatus == ItemStatus.completed) {
-        await ref
-            .read(collectionItemsNotifierProvider(collId).notifier)
-            .updateStatus(
-                targetItem.id, ItemStatus.notStarted, targetItem.mediaType);
-      }
-      return;
-    }
-
-    // Все просмотрены → completed (только если totalInShow известен)
-    if (totalInShow > 0 && totalWatched >= totalInShow) {
-      if (currentStatus != ItemStatus.completed) {
-        await ref
-            .read(collectionItemsNotifierProvider(collId).notifier)
-            .updateStatus(
-                targetItem.id, ItemStatus.completed, targetItem.mediaType);
-      }
-      return;
-    }
-
-    // Есть просмотренные, но не все → inProgress
-    // (если был notStarted, planned или completed)
-    if (currentStatus == ItemStatus.notStarted ||
-        currentStatus == ItemStatus.planned) {
+    final ItemStatus? targetStatus = computeStatusFromProgress(
+      currentStatus: targetItem.status,
+      hasAnyProgress: totalWatched > 0,
+      isFullyCompleted: totalInShow > 0 && totalWatched >= totalInShow,
+    );
+    if (targetStatus != null) {
       await ref
           .read(collectionItemsNotifierProvider(collId).notifier)
           .updateStatus(
-              targetItem.id, ItemStatus.inProgress, targetItem.mediaType);
-    } else if (currentStatus == ItemStatus.completed &&
-        totalInShow > 0 && totalWatched < totalInShow) {
-      await ref
-          .read(collectionItemsNotifierProvider(collId).notifier)
-          .updateStatus(
-              targetItem.id, ItemStatus.inProgress, targetItem.mediaType);
+              targetItem.id, targetStatus, targetItem.mediaType);
     }
   }
 }

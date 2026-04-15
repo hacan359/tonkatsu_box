@@ -3,6 +3,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../shared/models/item_status.dart';
+import '../../shared/models/item_status_logic.dart';
 import '../../shared/models/media_type.dart';
 import '../database/database_service.dart';
 import '../../features/collections/providers/collections_provider.dart';
@@ -12,7 +13,9 @@ import '../../features/collections/providers/collections_provider.dart';
 /// Если [ref] передан — оптимистично обновляет UI без перезагрузки списка.
 /// Используется из RA import service (без ref) и tracker provider (с ref).
 ///
-/// Правило: не ставим `dropped` если текущий статус `notStarted`/`planned`.
+/// Правила слияния статуса вынесены в [mergeExternalStatus]: защита
+/// локального `dropped`, блокировка внешнего `dropped` для `notStarted`/
+/// `planned`, не-понижение статуса.
 Future<void> syncRaDataToCollectionItem({
   required DatabaseService db,
   required int itemId,
@@ -24,12 +27,19 @@ Future<void> syncRaDataToCollectionItem({
   DateTime? lastActivityAt,
   DateTime? completedAt,
 }) async {
-  // Не переводим notStarted/planned → dropped.
-  ItemStatus? effectiveStatus = status;
-  if (effectiveStatus == ItemStatus.dropped &&
-      (currentStatus == ItemStatus.notStarted ||
-          currentStatus == ItemStatus.planned)) {
-    effectiveStatus = null;
+  // Применяем правила слияния статуса с внешнего источника.
+  // RA — авторитетный источник прогресса, разрешаем понижение
+  // (completed → inProgress если юзер сбросил часть достижений).
+  ItemStatus? effectiveStatus;
+  if (status != null && currentStatus != null) {
+    effectiveStatus = mergeExternalStatus(
+      currentStatus: currentStatus,
+      externalStatus: status,
+      allowDowngrade: true,
+    );
+  } else if (status != null) {
+    // currentStatus неизвестен (первая запись) — принимаем как есть.
+    effectiveStatus = status;
   }
 
   if (effectiveStatus != null) {

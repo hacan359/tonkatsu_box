@@ -16,6 +16,7 @@ import '../../../shared/models/collection_list_sort_mode.dart';
 import '../../../shared/models/collection_sort_mode.dart';
 import '../../../shared/models/game.dart';
 import '../../../shared/models/item_status.dart';
+import '../../../shared/models/item_status_logic.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../data/repositories/game_repository.dart';
 import '../../home/providers/all_items_provider.dart';
@@ -733,6 +734,8 @@ class CollectionItemsNotifier
   ///
   /// Автоматически обновляет даты активности в локальном state:
   /// last_activity_at, started_at (при inProgress), completed_at (при completed).
+  /// Логика дат вынесена в [computeDatesForStatus] — та же функция используется
+  /// для внешнего sync (Kodi) с кастомным `now`.
   Future<void> updateStatus(int id, ItemStatus status, MediaType mediaType) async {
     await _repository.updateItemStatus(id, status, mediaType: mediaType);
 
@@ -742,38 +745,21 @@ class CollectionItemsNotifier
       final DateTime now = DateTime.now();
       state = AsyncData<List<CollectionItem>>(
         items.map((CollectionItem i) {
-          if (i.id == id) {
-            if (status == ItemStatus.notStarted) {
-              return i.copyWith(
-                status: status,
-                clearStartedAt: true,
-                clearCompletedAt: true,
-                lastActivityAt: now,
-              );
-            }
-            if (status == ItemStatus.inProgress) {
-              return i.copyWith(
-                status: status,
-                startedAt: i.startedAt ?? now,
-                clearCompletedAt: true,
-                lastActivityAt: now,
-              );
-            }
-            // completed и другие статусы
-            DateTime? newStartedAt = i.startedAt;
-            DateTime? newCompletedAt = i.completedAt;
-            if (status == ItemStatus.completed) {
-              newCompletedAt = now;
-              newStartedAt ??= now;
-            }
-            return i.copyWith(
-              status: status,
-              startedAt: newStartedAt,
-              completedAt: newCompletedAt,
-              lastActivityAt: now,
-            );
-          }
-          return i;
+          if (i.id != id) return i;
+          final StatusDatesUpdate update = computeDatesForStatus(
+            newStatus: status,
+            currentStartedAt: i.startedAt,
+            currentCompletedAt: i.completedAt,
+            now: now,
+          );
+          return i.copyWith(
+            status: update.status,
+            startedAt: update.startedAt,
+            completedAt: update.completedAt,
+            lastActivityAt: update.lastActivityAt,
+            clearStartedAt: update.clearStartedAt,
+            clearCompletedAt: update.clearCompletedAt,
+          );
         }).toList(),
       );
     }
@@ -813,17 +799,12 @@ class CollectionItemsNotifier
         final CollectionItem? target =
             items.where((CollectionItem i) => i.id == id).firstOrNull;
         if (target != null) {
-          final ItemStatus currentStatus = target.status;
           mediaType = target.mediaType;
-
-          if (completedAt != null && currentStatus != ItemStatus.completed) {
-            newStatus = ItemStatus.completed;
-          } else if (startedAt != null &&
-              completedAt == null &&
-              (currentStatus == ItemStatus.notStarted ||
-                  currentStatus == ItemStatus.planned)) {
-            newStatus = ItemStatus.inProgress;
-          }
+          newStatus = computeStatusForDates(
+            currentStatus: target.status,
+            newCompletedAt: completedAt,
+            newStartedAt: startedAt,
+          );
         }
       }
 
@@ -901,33 +882,18 @@ class CollectionItemsNotifier
   ) async {
     final CollectionItem? item =
         state.valueOrNull?.where((CollectionItem i) => i.id == id).firstOrNull;
-    if (item == null ||
-        item.mediaType != MediaType.manga ||
-        item.status == ItemStatus.dropped) {
-      return;
-    }
+    if (item == null || item.mediaType != MediaType.manga) return;
 
     final int newChapter = newChapterValue ?? item.currentEpisode;
     final int newVolume = newVolumeValue ?? item.currentSeason;
     final int? totalChapters = item.manga?.chapters;
 
-    ItemStatus? targetStatus;
-
-    if (newChapter == 0 && newVolume == 0) {
-      if (item.status == ItemStatus.inProgress ||
-          item.status == ItemStatus.completed) {
-        targetStatus = ItemStatus.notStarted;
-      }
-    } else if (totalChapters != null && newChapter >= totalChapters) {
-      if (item.status != ItemStatus.completed) {
-        targetStatus = ItemStatus.completed;
-      }
-    } else if (item.status == ItemStatus.notStarted ||
-        item.status == ItemStatus.planned) {
-      targetStatus = ItemStatus.inProgress;
-    } else if (item.status == ItemStatus.completed) {
-      targetStatus = ItemStatus.inProgress;
-    }
+    final ItemStatus? targetStatus = computeStatusFromProgress(
+      currentStatus: item.status,
+      hasAnyProgress: newChapter > 0 || newVolume > 0,
+      isFullyCompleted:
+          totalChapters != null && newChapter >= totalChapters,
+    );
 
     if (targetStatus != null) {
       await updateStatus(id, targetStatus, MediaType.manga);
@@ -941,32 +907,17 @@ class CollectionItemsNotifier
   ) async {
     final CollectionItem? item =
         state.valueOrNull?.where((CollectionItem i) => i.id == id).firstOrNull;
-    if (item == null ||
-        item.mediaType != MediaType.anime ||
-        item.status == ItemStatus.dropped) {
-      return;
-    }
+    if (item == null || item.mediaType != MediaType.anime) return;
 
     final int newEpisode = newEpisodeValue ?? item.currentEpisode;
     final int? totalEpisodes = item.anime?.episodes;
 
-    ItemStatus? targetStatus;
-
-    if (newEpisode == 0) {
-      if (item.status == ItemStatus.inProgress ||
-          item.status == ItemStatus.completed) {
-        targetStatus = ItemStatus.notStarted;
-      }
-    } else if (totalEpisodes != null && newEpisode >= totalEpisodes) {
-      if (item.status != ItemStatus.completed) {
-        targetStatus = ItemStatus.completed;
-      }
-    } else if (item.status == ItemStatus.notStarted ||
-        item.status == ItemStatus.planned) {
-      targetStatus = ItemStatus.inProgress;
-    } else if (item.status == ItemStatus.completed) {
-      targetStatus = ItemStatus.inProgress;
-    }
+    final ItemStatus? targetStatus = computeStatusFromProgress(
+      currentStatus: item.status,
+      hasAnyProgress: newEpisode > 0,
+      isFullyCompleted:
+          totalEpisodes != null && newEpisode >= totalEpisodes,
+    );
 
     if (targetStatus != null) {
       await updateStatus(id, targetStatus, MediaType.anime);
