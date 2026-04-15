@@ -12,13 +12,13 @@ import '../../../features/welcome/screens/welcome_screen.dart';
 import '../../../shared/models/profile.dart';
 import 'profile_picker_screen.dart';
 import '../../../shared/constants/platform_features.dart';
-import '../../../shared/navigation/navigation_shell.dart';
+import '../../../shared/navigation/app_shell.dart';
 import '../../../shared/theme/app_assets.dart';
 
 /// Анимированный splash screen.
 ///
 /// Показывает логотип с fade-in и scale анимацией (~1.5 сек),
-/// удерживает на экране 0.5 сек, затем плавно переходит к [NavigationShell].
+/// удерживает на экране 0.5 сек, затем плавно переходит к [AppShell].
 /// Общая длительность контроллера 2 сек: [0..0.75] — анимация, [0.75..1.0] — пауза.
 ///
 /// Параллельно с анимацией запускает инициализацию базы данных (pre-warming).
@@ -101,7 +101,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   /// анимация завершена И база данных открыта.
   ///
   /// При первом запуске (welcome_completed == false) → [WelcomeScreen].
-  /// При повторном запуске → [NavigationShell].
+  /// При повторном запуске → [AppShell].
   void _tryNavigate() {
     if (_animationDone && _dbDone && !_navigated && mounted) {
       _navigated = true;
@@ -167,7 +167,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           Animation<double> animation,
           Animation<double> secondaryAnimation,
         ) {
-          return const NavigationShell();
+          return const AppShell();
         },
         transitionsBuilder: (
           BuildContext context,

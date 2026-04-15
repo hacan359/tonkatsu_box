@@ -2,11 +2,11 @@ import 'package:xerabora/l10n/app_localizations.dart';
 // Тесты для SplashScreen.
 //
 // SplashScreen — ConsumerStatefulWidget с анимированным логотипом.
-// При запуске pre-warm'ит базу данных в фоне. Навигация на NavigationShell
+// При запуске pre-warm'ит базу данных в фоне. Навигация на AppShell
 // происходит только когда И анимация завершена, И DB открыта —
 // это предотвращает конкуренцию DB-init и route transition на main thread.
 //
-// Навигация на NavigationShell не тестируется — NavigationShell требует
+// Навигация на AppShell не тестируется — AppShell требует
 // множество провайдеров (database, settings, gamepad и др.), что выходит
 // за scope этого теста.
 

@@ -13,7 +13,8 @@ import '../../../shared/models/profile.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
-import '../../../shared/widgets/screen_app_bar.dart';
+import '../../../shared/widgets/draggable_fab.dart';
+import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../providers/profile_provider.dart';
 import '../widgets/create_profile_dialog.dart';
 import '../widgets/edit_profile_dialog.dart';
@@ -162,22 +163,16 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
     final S l = S.of(context);
     final ProfilesData data = ref.watch(profilesDataProvider);
 
-    return Scaffold(
-      appBar: ScreenAppBar(
-        title: l.profiles,
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.add),
-            color: AppColors.textSecondary,
-            tooltip: l.addProfile,
-            onPressed: _createProfile,
-          ),
-        ],
-      ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        itemCount: data.profiles.length,
-        itemBuilder: (BuildContext context, int index) {
+    return Stack(
+      children: <Widget>[
+        Column(
+          children: <Widget>[
+            SubScreenTitleBar(title: l.profiles),
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                itemCount: data.profiles.length,
+                itemBuilder: (BuildContext context, int index) {
           final Profile profile = data.profiles[index];
           final bool isCurrent =
               profile.id == data.currentProfileId;
@@ -241,8 +236,22 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
               onTap: isCurrent ? null : () => _switchProfile(profile),
             ),
           );
-        },
-      ),
+              },
+              ),
+            ),
+          ],
+        ),
+        DraggableFab(
+          icon: Icons.add,
+          items: <DraggableFabItem>[
+            DraggableFabItem(
+              icon: Icons.add,
+              label: l.addProfile,
+              onTap: _createProfile,
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

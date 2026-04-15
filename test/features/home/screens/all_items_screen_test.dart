@@ -158,45 +158,88 @@ void main() {
       child: const MaterialApp(
         localizationsDelegates: S.localizationsDelegates,
         supportedLocales: S.supportedLocales,
-        home: AllItemsScreen(),
+        home: Scaffold(body: AllItemsScreen()),
       ),
     );
   }
 
   group('AllItemsScreen', () {
-    testWidgets('показывает чипсы фильтрации по типу медиа',
+    testWidgets('показывает сегменты типов медиа',
         (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget());
 
-      expect(find.widgetWithText(ChoiceChip, 'All'), findsAtLeast(1));
-      expect(find.widgetWithText(ChoiceChip, 'Games'), findsOneWidget);
-      expect(find.widgetWithText(ChoiceChip, 'Movies'), findsOneWidget);
-      expect(find.widgetWithText(ChoiceChip, 'TV Shows'), findsOneWidget);
-      expect(find.widgetWithText(ChoiceChip, 'Animation'), findsOneWidget);
-      expect(find.widgetWithText(ChoiceChip, 'Visual Novels'), findsOneWidget);
+      // Бар multi-select — «All» сегмента нет (пустое состояние = все).
+      expect(find.text('Games'), findsOneWidget);
+      expect(find.text('Movies'), findsOneWidget);
+      expect(find.text('TV Shows'), findsOneWidget);
+      expect(find.text('Animation'), findsOneWidget);
+      expect(find.text('Visual Novels'), findsOneWidget);
     });
 
-    testWidgets('показывает счётчики на чипсах после загрузки',
+    testWidgets('показывает счётчики на сегментах после загрузки',
         (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
       // 5 элементов: 2 games, 1 movie, 1 tvShow, 1 visualNovel
-      expect(find.text('All (5)'), findsOneWidget);
       expect(find.text('Games (2)'), findsOneWidget);
       expect(find.text('Movies (1)'), findsOneWidget);
       expect(find.text('TV Shows (1)'), findsOneWidget);
-      // Animation = 0 → без счётчика
-      expect(find.widgetWithText(ChoiceChip, 'Animation'), findsOneWidget);
       expect(find.text('Visual Novels (1)'), findsOneWidget);
+      // Animation = 0 → без счётчика, просто label
+      expect(find.text('Animation'), findsOneWidget);
     });
 
-    testWidgets('показывает dropdown фильтра статуса',
+    testWidgets('показывает chevron-dropdown статуса с текстом "All"',
         (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget());
 
-      // Dropdown chip с текстом "All" для статуса
-      expect(find.byIcon(Icons.filter_list), findsOneWidget);
+      // Последний chevron-сегмент — dropdown статуса, по умолчанию "All"
+      expect(find.text('All'), findsOneWidget);
+      expect(find.byIcon(Icons.filter_list), findsNothing);
+    });
+
+    testWidgets('dropdown статуса открывает popup и фильтрует',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      // Тап по "All" открывает popup
+      await tester.tap(find.text('All'));
+      await tester.pumpAndSettle();
+
+      // Popup содержит опции статусов
+      expect(find.text('Completed'), findsOneWidget);
+      expect(find.text('In Progress'), findsOneWidget);
+
+      // Выбираем Completed — только 1 элемент (item 1, game)
+      await tester.tap(find.text('Completed'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('My Games (1)'), findsOneWidget);
+      expect(find.textContaining('Watch List'), findsNothing);
+    });
+
+    testWidgets('выбор "All" в dropdown сбрасывает фильтр статуса',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      // Фильтруем по Completed
+      await tester.tap(find.text('All'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Completed'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Watch List'), findsNothing);
+
+      // Сегмент теперь показывает "Completed" — тап открывает popup
+      await tester.tap(find.text('Completed').first);
+      await tester.pumpAndSettle();
+
+      // Выбираем All — сбрасываем фильтр
+      await tester.tap(find.text('All').last);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Watch List'), findsOneWidget);
     });
 
     testWidgets('показывает loading state при запуске',
@@ -280,40 +323,55 @@ void main() {
       expect(find.byType(CustomScrollView), findsOneWidget);
     });
 
-    testWidgets('повторное нажатие на All сбрасывает фильтр',
+    testWidgets('повторное нажатие на Games сбрасывает фильтр',
         (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      // Сначала фильтруем по Games
+      // Выбираем Games — отфильтрованы только игры
       await tester.tap(find.text('Games (2)'));
       await tester.pumpAndSettle();
+      expect(find.textContaining('Watch List'), findsNothing);
 
-      // Затем нажимаем All (5) — медиа-тип All с общим количеством
-      await tester.tap(find.text('All (5)'));
+      // Повторный тап по Games отменяет выбор — снова все коллекции
+      await tester.tap(find.text('Games (2)'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Watch List'), findsOneWidget);
+    });
+
+    testWidgets('можно выбрать несколько типов одновременно',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      expect(find.byType(CustomScrollView), findsOneWidget);
+      // Выбираем Games — Watch List пропадает
+      await tester.tap(find.text('Games (2)'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Watch List'), findsNothing);
+
+      // Добавляем TV Shows — Watch List появляется снова (tvShow лежит в ней)
+      await tester.tap(find.text('TV Shows (1)'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Watch List'), findsOneWidget);
+      expect(find.textContaining('My Games'), findsOneWidget);
     });
   });
 
   group('AllItemsScreen платформенный фильтр', () {
-    testWidgets('при выборе Games показывает чипсы платформ',
+    testWidgets('при выборе Games показывает мини-чипы платформ',
         (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      // Нажимаем Games (2 игры в testItems)
+      // Нажимаем Games — появляется полоска мини-чипов платформ.
       await tester.tap(find.text('Games (2)'));
       await tester.pumpAndSettle();
 
-      // Должны появиться чипсы платформ.
-      // All (для платформ) + SNES + GBA
-      expect(find.widgetWithText(ChoiceChip, 'SNES'), findsOneWidget);
-      expect(find.widgetWithText(ChoiceChip, 'GBA'), findsOneWidget);
+      expect(find.text('SNES'), findsOneWidget);
+      expect(find.text('GBA'), findsOneWidget);
     });
 
-    testWidgets('при выборе Movies не показывает чипсы платформ',
+    testWidgets('при выборе Movies не показывает чипы платформ',
         (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
@@ -321,52 +379,39 @@ void main() {
       await tester.tap(find.text('Movies (1)'));
       await tester.pumpAndSettle();
 
-      expect(find.widgetWithText(ChoiceChip, 'SNES'), findsNothing);
-      expect(find.widgetWithText(ChoiceChip, 'GBA'), findsNothing);
+      expect(find.text('SNES'), findsNothing);
+      expect(find.text('GBA'), findsNothing);
     });
 
-    testWidgets('нажатие на платформу фильтрует по платформе',
+    testWidgets('отмена выбора Games убирает чипы платформ',
         (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      // Фильтр по Games
+      await tester.tap(find.text('Games (2)'));
+      await tester.pumpAndSettle();
+      expect(find.text('SNES'), findsOneWidget);
+
+      // Повторный тап по Games отменяет выбор → чипы уходят.
+      await tester.tap(find.text('Games (2)'));
+      await tester.pumpAndSettle();
+      expect(find.text('SNES'), findsNothing);
+    });
+
+    testWidgets('тап по мини-чипу платформы фильтрует элементы',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      // Фильтруем по Games
       await tester.tap(find.text('Games (2)'));
       await tester.pumpAndSettle();
 
-      // Фильтр по SNES (тапаем именно чипс)
-      await tester.tap(find.widgetWithText(ChoiceChip, 'SNES'));
+      // Тап по SNES — фильтр по платформе
+      await tester.tap(find.text('SNES'));
       await tester.pumpAndSettle();
 
-      // Grid всё ещё отображается (с отфильтрованными элементами).
       expect(find.byType(CustomScrollView), findsOneWidget);
-    });
-
-    testWidgets('смена типа медиа сбрасывает фильтр платформы',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(buildTestWidget());
-      await tester.pumpAndSettle();
-
-      // Фильтр по Games + SNES
-      await tester.tap(find.text('Games (2)'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(ChoiceChip, 'SNES'));
-      await tester.pumpAndSettle();
-
-      // Переключаем на Movies
-      await tester.tap(find.text('Movies (1)'));
-      await tester.pumpAndSettle();
-
-      // Платформенные чипсы исчезли.
-      expect(find.widgetWithText(ChoiceChip, 'SNES'), findsNothing);
-
-      // Возвращаемся на Games — фильтр платформы сброшен.
-      await tester.tap(find.text('Games (2)'));
-      await tester.pumpAndSettle();
-
-      // Оба чипса видны, ни один не выбран (фильтр сброшен).
-      expect(find.widgetWithText(ChoiceChip, 'SNES'), findsOneWidget);
-      expect(find.widgetWithText(ChoiceChip, 'GBA'), findsOneWidget);
     });
   });
 

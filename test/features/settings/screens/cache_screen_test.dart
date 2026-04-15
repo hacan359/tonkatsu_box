@@ -25,7 +25,7 @@ void main() {
         child: const MaterialApp(
           localizationsDelegates: S.localizationsDelegates,
           supportedLocales: S.supportedLocales,
-          home: CacheScreen(),
+          home: Scaffold(body: CacheScreen()),
         ),
       );
     }

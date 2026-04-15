@@ -7,10 +7,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
-import '../../../shared/widgets/screen_app_bar.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/media_type.dart';
+import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../../collections/providers/collections_provider.dart';
 
 /// Debug-экран для проверки URL изображений.
@@ -54,46 +54,44 @@ class _ImageDebugScreenState extends ConsumerState<ImageDebugScreen> {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
 
-    return Scaffold(
-      appBar: const ScreenAppBar(title: 'Image Debug'),
-      body: Column(
-        children: <Widget>[
-          // Выбор коллекции
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: <Widget>[
-                Text('Collection: ', style: theme.textTheme.titleSmall),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: DropdownButton<int>(
-                    value: _selectedCollectionId,
-                    isExpanded: true,
-                    items: _collections
-                        .map((Collection c) => DropdownMenuItem<int>(
-                              value: c.id,
-                              child: Text(c.name),
-                            ))
-                        .toList(),
-                    onChanged: (int? id) {
-                      setState(() => _selectedCollectionId = id);
-                    },
-                  ),
+    return Column(
+      children: <Widget>[
+        const SubScreenTitleBar(title: 'Image Debug'),
+        // Выбор коллекции
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: <Widget>[
+              Text('Collection: ', style: theme.textTheme.titleSmall),
+              const SizedBox(width: 8),
+              Expanded(
+                child: DropdownButton<int>(
+                  value: _selectedCollectionId,
+                  isExpanded: true,
+                  items: _collections
+                      .map((Collection c) => DropdownMenuItem<int>(
+                            value: c.id,
+                            child: Text(c.name),
+                          ))
+                      .toList(),
+                  onChanged: (int? id) {
+                    setState(() => _selectedCollectionId = id);
+                  },
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
+        ),
 
-          const Divider(height: 1),
+        const Divider(height: 1),
 
-          // Список элементов
-          Expanded(
-            child: _selectedCollectionId != null
-                ? _buildItemsList(colorScheme)
-                : const Center(child: Text('No collections')),
-          ),
-        ],
-      ),
+        // Список элементов
+        Expanded(
+          child: _selectedCollectionId != null
+              ? _buildItemsList(colorScheme)
+              : const Center(child: Text('No collections')),
+        ),
+      ],
     );
   }
 

@@ -51,10 +51,11 @@ void main() {
         wishlistRepositoryProvider.overrideWithValue(mockRepo),
       ],
       child: MaterialApp(
-            localizationsDelegates: S.localizationsDelegates,
-            supportedLocales: S.supportedLocales,
+        localizationsDelegates: S.localizationsDelegates,
+        supportedLocales: S.supportedLocales,
+        locale: const Locale('en'),
         theme: ThemeData.dark(),
-        home: const WishlistScreen(),
+        home: const Scaffold(body: WishlistScreen()),
       ),
     );
   }
@@ -136,34 +137,6 @@ void main() {
       });
     });
 
-    group('FAB', () {
-      testWidgets('должен показывать FAB', (WidgetTester tester) async {
-        when(() => mockRepo.getAll())
-            .thenAnswer((_) async => <WishlistItem>[]);
-
-        await tester.pumpWidget(buildScreen());
-        await tester.pumpAndSettle();
-
-        expect(find.byType(FloatingActionButton), findsOneWidget);
-      });
-
-      testWidgets('должен открывать форму при нажатии на FAB',
-          (WidgetTester tester) async {
-        when(() => mockRepo.getAll())
-            .thenAnswer((_) async => <WishlistItem>[]);
-
-        await tester.pumpWidget(buildScreen());
-        await tester.pumpAndSettle();
-
-        await tester.tap(find.byType(FloatingActionButton));
-        await tester.pumpAndSettle();
-
-        // Открылась страница-форма с полем Title.
-        expect(find.widgetWithText(TextField, ''), findsWidgets);
-        expect(find.widgetWithText(TextButton, 'Add'), findsOneWidget);
-      });
-    });
-
     group('context menu', () {
       testWidgets('должен показывать context menu при long press',
           (WidgetTester tester) async {
@@ -194,46 +167,6 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('Unresolve'), findsOneWidget);
-      });
-    });
-
-    group('фильтр resolved', () {
-      testWidgets('должен скрывать resolved при toggle',
-          (WidgetTester tester) async {
-        when(() => mockRepo.getAll())
-            .thenAnswer((_) async => <WishlistItem>[item1, resolvedItem]);
-
-        await tester.pumpWidget(buildScreen());
-        await tester.pumpAndSettle();
-
-        // Оба элемента видны
-        expect(find.text('Chrono Trigger'), findsOneWidget);
-        expect(find.text('Resolved Game'), findsOneWidget);
-
-        // Нажимаем кнопку hide resolved
-        await tester.tap(find.byIcon(Icons.visibility));
-        await tester.pumpAndSettle();
-
-        // Resolved скрыт
-        expect(find.text('Chrono Trigger'), findsOneWidget);
-        expect(find.text('Resolved Game'), findsNothing);
-      });
-    });
-
-    group('clear resolved', () {
-      testWidgets('должен показывать confirmation dialog',
-          (WidgetTester tester) async {
-        when(() => mockRepo.getAll())
-            .thenAnswer((_) async => <WishlistItem>[resolvedItem]);
-
-        await tester.pumpWidget(buildScreen());
-        await tester.pumpAndSettle();
-
-        await tester.tap(find.byIcon(Icons.delete_sweep));
-        await tester.pumpAndSettle();
-
-        expect(find.text('Clear resolved'), findsOneWidget);
-        expect(find.text('Delete 1 resolved item?'), findsOneWidget);
       });
     });
   });

@@ -8,12 +8,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../models/search_source.dart';
-
-/// Sentinel-объект для сброса фильтра.
-///
-/// PopupMenuButton трактует null как закрытие меню (не вызывает onSelected),
-/// поэтому для "All" опции используется уникальный sentinel.
-const String _resetSentinel = '__filter_reset__';
+import '../utils/filter_ui.dart';
 
 /// Универсальный дропдаун для одного фильтра.
 ///
@@ -169,7 +164,7 @@ class _FilterDropdownState extends ConsumerState<FilterDropdown> {
     // Обычные фильтры — PopupMenuButton
     return PopupMenuButton<Object>(
       onSelected: (Object value) {
-        widget.onChanged(value == _resetSentinel ? null : value);
+        widget.onChanged(value == kFilterResetSentinel ? null : value);
       },
       offset: const Offset(0, 36),
       shape: RoundedRectangleBorder(
@@ -194,7 +189,7 @@ class _FilterDropdownState extends ConsumerState<FilterDropdown> {
         return <PopupMenuEntry<Object>>[
           // "All" option для сброса (sentinel вместо null)
           PopupMenuItem<Object>(
-            value: _resetSentinel,
+            value: kFilterResetSentinel,
             height: 36,
             child: Text(
               l.browseFilterAll,
@@ -237,7 +232,7 @@ class _FilterDropdownState extends ConsumerState<FilterDropdown> {
   Future<void> _showSearchableDialog(S l) async {
     final Object? result = await showDialog<Object>(
       context: context,
-      builder: (BuildContext context) => _SearchableFilterDialog(
+      builder: (BuildContext context) => SearchableFilterDialog(
         title: widget.filter.placeholder(l),
         options: _options,
         isLoading: _isLoadingOptions,
@@ -247,7 +242,7 @@ class _FilterDropdownState extends ConsumerState<FilterDropdown> {
       ),
     );
     if (result == null) return;
-    widget.onChanged(result == _resetSentinel ? null : result);
+    widget.onChanged(result == kFilterResetSentinel ? null : result);
   }
 }
 
@@ -256,14 +251,16 @@ class _FilterDropdownState extends ConsumerState<FilterDropdown> {
 /// Поддерживает два режима:
 /// - single-select: тап по опции закрывает диалог с выбранным значением
 /// - multi-select: чекбоксы + кнопка подтверждения
-class _SearchableFilterDialog extends StatefulWidget {
-  const _SearchableFilterDialog({
+class SearchableFilterDialog extends StatefulWidget {
+  /// Создаёт [SearchableFilterDialog].
+  const SearchableFilterDialog({
     required this.title,
     required this.options,
     required this.isLoading,
     required this.currentValue,
     required this.allLabel,
     this.multiSelect = false,
+    super.key,
   });
 
   final String title;
@@ -274,11 +271,11 @@ class _SearchableFilterDialog extends StatefulWidget {
   final bool multiSelect;
 
   @override
-  State<_SearchableFilterDialog> createState() =>
-      _SearchableFilterDialogState();
+  State<SearchableFilterDialog> createState() =>
+      SearchableFilterDialogState();
 }
 
-class _SearchableFilterDialogState extends State<_SearchableFilterDialog> {
+class SearchableFilterDialogState extends State<SearchableFilterDialog> {
   final TextEditingController _controller = TextEditingController();
   String _query = '';
 
@@ -430,7 +427,7 @@ class _SearchableFilterDialogState extends State<_SearchableFilterDialog> {
           ? <Widget>[
               TextButton(
                 onPressed: () =>
-                    Navigator.of(context).pop(_resetSentinel),
+                    Navigator.of(context).pop(kFilterResetSentinel),
                 child: Text(
                   l.browseFilterAll,
                   style: AppTypography.body.copyWith(
@@ -441,7 +438,7 @@ class _SearchableFilterDialogState extends State<_SearchableFilterDialog> {
               FilledButton(
                 onPressed: () {
                   if (_selected.isEmpty) {
-                    Navigator.of(context).pop(_resetSentinel);
+                    Navigator.of(context).pop(kFilterResetSentinel);
                   } else {
                     Navigator.of(context).pop(_selected.toList());
                   }
@@ -480,7 +477,7 @@ class _SearchableFilterDialogState extends State<_SearchableFilterDialog> {
           return _buildOptionTile(
             label: widget.allLabel,
             isSelected: widget.currentValue == null,
-            onTap: () => Navigator.of(context).pop(_resetSentinel),
+            onTap: () => Navigator.of(context).pop(kFilterResetSentinel),
           );
         }
 

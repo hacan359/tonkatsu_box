@@ -2920,7 +2920,7 @@ abstract class S {
   /// No description provided for @searchSourceVisualNovels.
   ///
   /// In en, this message translates to:
-  /// **'Visual Novels'**
+  /// **'V. Novels'**
   String get searchSourceVisualNovels;
 
   /// No description provided for @searchSourceManga.
@@ -3919,6 +3919,36 @@ abstract class S {
   /// **'Failed to load items'**
   String get allItemsFailedToLoad;
 
+  /// No description provided for @allItemsFilterPlatformsAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All Platforms'**
+  String get allItemsFilterPlatformsAll;
+
+  /// No description provided for @allItemsFilterPlatformsSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} platforms'**
+  String allItemsFilterPlatformsSelected(int count);
+
+  /// No description provided for @allItemsFilterPlatformsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter by platform'**
+  String get allItemsFilterPlatformsTitle;
+
+  /// No description provided for @allItemsFilterPlatformsApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get allItemsFilterPlatformsApply;
+
+  /// No description provided for @allItemsFilterPlatformsClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get allItemsFilterPlatformsClear;
+
   /// No description provided for @debugIgdbMedia.
   ///
   /// In en, this message translates to:
@@ -4710,6 +4740,12 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Filter...'**
   String get typeToFilterHint;
+
+  /// No description provided for @appBarSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Start typing to search'**
+  String get appBarSearchHint;
 
   /// No description provided for @insertLink.
   ///

@@ -6,9 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/api/steamgriddb_api.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
-import '../../../shared/widgets/screen_app_bar.dart';
 import '../../../shared/models/steamgriddb_game.dart';
 import '../../../shared/models/steamgriddb_image.dart';
+import '../../../shared/theme/app_colors.dart';
+import '../../../shared/widgets/sub_screen_title_bar.dart';
 
 /// Экран отладки SteamGridDB API.
 ///
@@ -128,29 +129,34 @@ class _SteamGridDbDebugScreenState
     final S l = S.of(context);
     return DefaultTabController(
       length: 5,
-      child: Scaffold(
-        appBar: ScreenAppBar(
-          title: l.debugSteamGridDb,
-          bottom: TabBar(
-            isScrollable: true,
-            tabs: <Widget>[
-              Tab(text: l.debugSearchTab),
-              Tab(text: l.debugGridsTab),
-              Tab(text: l.debugHeroesTab),
-              Tab(text: l.debugLogosTab),
-              Tab(text: l.debugIconsTab),
-            ],
+      child: Column(
+        children: <Widget>[
+          SubScreenTitleBar(title: l.debugSteamGridDb),
+          Material(
+            color: AppColors.surface,
+            child: TabBar(
+              isScrollable: true,
+              tabs: <Widget>[
+                Tab(text: l.debugSearchTab),
+                Tab(text: l.debugGridsTab),
+                Tab(text: l.debugHeroesTab),
+                Tab(text: l.debugLogosTab),
+                Tab(text: l.debugIconsTab),
+              ],
+            ),
           ),
-        ),
-        body: TabBarView(
-          children: <Widget>[
-            _buildSearchTab(),
-            _buildImageTab(1),
-            _buildImageTab(2),
-            _buildImageTab(3),
-            _buildImageTab(4),
-          ],
-        ),
+          Expanded(
+            child: TabBarView(
+              children: <Widget>[
+                _buildSearchTab(),
+                _buildImageTab(1),
+                _buildImageTab(2),
+                _buildImageTab(3),
+                _buildImageTab(4),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

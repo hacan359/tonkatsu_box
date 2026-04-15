@@ -30,7 +30,9 @@ void main() {
         child: MaterialApp(
           localizationsDelegates: S.localizationsDelegates,
           supportedLocales: S.supportedLocales,
-          home: CredentialsScreen(isInitialSetup: isInitialSetup),
+          home: Scaffold(
+            body: CredentialsScreen(isInitialSetup: isInitialSetup),
+          ),
         ),
       );
     }

@@ -566,7 +566,7 @@
   "searchHintAnime": "Поиск аниме...",
   "searchHintGames": "Поиск игр...",
   "searchHintVisualNovels": "Поиск визуальных новелл...",
-  "searchSourceVisualNovels": "Визуальные новеллы",
+  "searchSourceVisualNovels": "В. Новеллы",
   "searchSourceManga": "Манга",
   "searchSourceAnime": "Аниме",
   "searchHintManga": "Поиск манги...",
@@ -753,6 +753,16 @@
   "allItemsNoMatch": "Нет элементов по фильтру",
   "allItemsAddViaCollections": "Перейдите в Коллекции → создайте коллекцию → добавьте\nэлементы через Поиск. Они появятся здесь автоматически.",
   "allItemsFailedToLoad": "Не удалось загрузить элементы",
+  "allItemsFilterPlatformsAll": "Все платформы",
+  "allItemsFilterPlatformsSelected": "{count} платформ",
+  "@allItemsFilterPlatformsSelected": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "allItemsFilterPlatformsTitle": "Фильтр по платформе",
+  "allItemsFilterPlatformsApply": "Применить",
+  "allItemsFilterPlatformsClear": "Сбросить",
 
   "debugIgdbMedia": "IGDB Медиа",
   "debugSteamGridDb": "SteamGridDB",
@@ -920,6 +930,7 @@
   "browseBackToBrowse": "Назад к обзору",
 
   "typeToFilterHint": "Фильтр...",
+  "appBarSearchHint": "Начните печатать для поиска",
 
   "insertLink": "Вставить ссылку",
   "linkText": "Текст",

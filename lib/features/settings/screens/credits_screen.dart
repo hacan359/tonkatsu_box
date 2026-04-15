@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_spacing.dart';
-import '../../../shared/widgets/screen_app_bar.dart';
+import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../content/credits_content.dart';
 
 /// Экран Credits с атрибуцией API-провайдеров и лицензиями.
@@ -20,25 +20,29 @@ class CreditsScreen extends StatelessWidget {
     final double width = MediaQuery.sizeOf(context).width;
     final bool isWide = width >= 800;
 
-    return Scaffold(
-      appBar: ScreenAppBar(title: S.of(context).settingsCreditsLicenses),
-      body: Align(
-        alignment: Alignment.topCenter,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: isWide ? 600 : double.infinity,
-          ),
-          child: ListView(
-            padding: EdgeInsets.symmetric(
-              horizontal: isWide ? AppSpacing.lg : AppSpacing.md,
-              vertical: AppSpacing.sm,
+    return Column(
+      children: <Widget>[
+        SubScreenTitleBar(title: S.of(context).settingsCreditsLicenses),
+        Expanded(
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: isWide ? 600 : double.infinity,
+              ),
+              child: ListView(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isWide ? AppSpacing.lg : AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                ),
+                children: const <Widget>[
+                  CreditsContent(),
+                ],
+              ),
             ),
-            children: const <Widget>[
-              CreditsContent(),
-            ],
           ),
         ),
-      ),
+      ],
     );
   }
 }

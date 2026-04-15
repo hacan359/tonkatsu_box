@@ -1,4 +1,4 @@
-// Тесты для CollectionScreen (grid/list mode, canvas lock, view mode persistence).
+// Тесты для CollectionScreen (grid/list mode, фильтры, поиск, view mode persistence).
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,6 +19,8 @@ import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/movie.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
+import 'package:xerabora/shared/navigation/search_providers.dart';
+import 'package:xerabora/shared/widgets/chevron_filter_bar.dart';
 import 'package:xerabora/shared/widgets/media_poster_card.dart';
 
 import '../../../helpers/test_helpers.dart';
@@ -169,6 +171,8 @@ void main() {
   Widget createWidget({
     int collectionId = 1,
     SharedPreferences? overridePrefs,
+    String searchQuery = '',
+    CollectionStats stats = testStats,
   }) {
     return ProviderScope(
       overrides: <Override>[
@@ -176,12 +180,15 @@ void main() {
         imageCacheServiceProvider.overrideWithValue(mockCache),
         sharedPreferencesProvider.overrideWithValue(overridePrefs ?? prefs),
         collectionStatsProvider(collectionId)
-            .overrideWith((Ref ref) async => testStats),
+            .overrideWith((Ref ref) async => stats),
+        collectionsSearchQueryProvider.overrideWith((Ref ref) => searchQuery),
       ],
       child: MaterialApp(
         localizationsDelegates: S.localizationsDelegates,
         supportedLocales: S.supportedLocales,
-        home: CollectionScreen(collectionId: collectionId),
+        home: Scaffold(
+          body: CollectionScreen(collectionId: collectionId),
+        ),
       ),
     );
   }
@@ -208,94 +215,54 @@ void main() {
       expect(find.text('Breaking Bad'), findsOneWidget);
     });
 
-    group('grid/table toggle', () {
-      testWidgets('должен показывать кнопку переключения',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await pumpScreen(tester);
-
-        // По умолчанию grid mode — иконка table_chart_outlined для переключения
-        expect(find.byIcon(Icons.table_chart_outlined), findsOneWidget);
-      });
-
-      testWidgets('должен переключаться на table при нажатии',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await pumpScreen(tester);
-
-        // Нажимаем на toggle (grid → table)
-        await tester.tap(find.byIcon(Icons.table_chart_outlined));
-        await pumpScreen(tester);
-
-        // Теперь иконка grid_view (следующий = grid)
-        expect(find.byIcon(Icons.grid_view), findsOneWidget);
-      });
-
+    group('grid mode (по умолчанию)', () {
       testWidgets('grid mode должен показывать MediaPosterCard',
           (WidgetTester tester) async {
+        // По умолчанию grid mode (SharedPreferences пустые → default true)
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // По умолчанию grid mode
         expect(find.byType(MediaPosterCard), findsWidgets);
         expect(find.byType(GridView), findsOneWidget);
       });
 
       testWidgets('table mode не должен содержать MediaPosterCard',
           (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await pumpScreen(tester);
+        // Задаём table mode через SharedPreferences
+        final SharedPreferences tablePrefs =
+            await SharedPreferences.getInstance();
+        await tablePrefs.setBool(
+          '${SettingsKeys.collectionViewModePrefix}1',
+          false, // grid = false
+        );
+        await tablePrefs.setBool(
+          '${SettingsKeys.collectionTableModePrefix}1',
+          true, // table = true
+        );
 
-        // Переключаемся на table
-        await tester.tap(find.byIcon(Icons.table_chart_outlined));
+        await tester.pumpWidget(createWidget(overridePrefs: tablePrefs));
         await pumpScreen(tester);
 
         expect(find.byType(MediaPosterCard), findsNothing);
       });
-
-      testWidgets('должен переключаться обратно на grid из table',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await pumpScreen(tester);
-
-        // Grid → Table
-        await tester.tap(find.byIcon(Icons.table_chart_outlined));
-        await pumpScreen(tester);
-        expect(find.byType(GridView), findsNothing);
-
-        // Table → Grid
-        await tester.tap(find.byIcon(Icons.grid_view));
-        await pumpScreen(tester);
-        expect(find.byType(GridView), findsOneWidget);
-        expect(find.byIcon(Icons.table_chart_outlined), findsOneWidget);
-      });
     });
 
-    group('фильтр по типу (chips)', () {
-      /// Тапает на чип типа медиа по тексту.
-      Future<void> selectMediaChip(
+    group('фильтр по типу (chevron-сегменты)', () {
+      /// Тапает на chevron-сегмент типа медиа по тексту.
+      Future<void> selectMediaSegment(
         WidgetTester tester,
-        String chipText,
+        String segmentText,
       ) async {
-        await tester.tap(find.text(chipText).first);
+        await tester.tap(find.text(segmentText).first);
         await pumpScreen(tester);
       }
-
-      testWidgets('должен показывать type chips с All',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await pumpScreen(tester);
-
-        expect(find.byType(ChoiceChip), findsWidgets);
-        expect(find.text('All (5)'), findsOneWidget);
-      });
 
       testWidgets('Games фильтр должен показывать только игры',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        await selectMediaChip(tester, 'Games (1)');
+        await selectMediaSegment(tester, 'Games (1)');
 
         expect(find.text('Zelda'), findsOneWidget);
         expect(find.text('Inception'), findsNothing);
@@ -307,7 +274,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        await selectMediaChip(tester, 'Movies (1)');
+        await selectMediaSegment(tester, 'Movies (1)');
 
         expect(find.text('Zelda'), findsNothing);
         expect(find.text('Inception'), findsOneWidget);
@@ -319,24 +286,24 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        await selectMediaChip(tester, 'TV Shows (1)');
+        await selectMediaSegment(tester, 'TV Shows (1)');
 
         expect(find.text('Zelda'), findsNothing);
         expect(find.text('Inception'), findsNothing);
         expect(find.text('Breaking Bad'), findsOneWidget);
       });
 
-      testWidgets('All должен показывать все элементы',
+      testWidgets('повторный тап на Games снимает фильтр и показывает всё',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
         // Выбираем Games
-        await selectMediaChip(tester, 'Games (1)');
+        await selectMediaSegment(tester, 'Games (1)');
         expect(find.text('Inception'), findsNothing);
 
-        // Тап на All сбрасывает фильтр
-        await selectMediaChip(tester, 'All (5)');
+        // Повторный тап на Games снимает фильтр
+        await selectMediaSegment(tester, 'Games (1)');
 
         expect(find.text('Zelda'), findsOneWidget);
         expect(find.text('Inception'), findsOneWidget);
@@ -348,7 +315,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        await selectMediaChip(tester, 'Animation (2)');
+        await selectMediaSegment(tester, 'Animation (2)');
 
         expect(find.text('Zelda'), findsNothing);
         expect(find.text('Inception'), findsNothing);
@@ -361,7 +328,6 @@ void main() {
     group('animation items в grid mode', () {
       testWidgets('animation movie должен использовать moviePoster ImageType',
           (WidgetTester tester) async {
-        // Элементы: только animation movie
         final List<CollectionItem> animMovieItems = <CollectionItem>[
           CollectionItem(
             id: 4,
@@ -389,10 +355,8 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // По умолчанию grid mode — MediaPosterCard должен рендериться
         expect(find.byType(MediaPosterCard), findsOneWidget);
 
-        // Проверяем что getImageUri вызван с moviePoster
         verify(() => mockCache.getImageUri(
               type: ImageType.moviePoster,
               imageId: '401',
@@ -402,7 +366,6 @@ void main() {
 
       testWidgets('animation tvShow должен использовать tvShowPoster ImageType',
           (WidgetTester tester) async {
-        // Элементы: только animation tvShow
         final List<CollectionItem> animTvItems = <CollectionItem>[
           CollectionItem(
             id: 5,
@@ -430,10 +393,8 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // По умолчанию grid mode — MediaPosterCard должен рендериться
         expect(find.byType(MediaPosterCard), findsOneWidget);
 
-        // Проверяем что getImageUri вызван с tvShowPoster
         verify(() => mockCache.getImageUri(
               type: ImageType.tvShowPoster,
               imageId: '501',
@@ -442,7 +403,7 @@ void main() {
       });
     });
 
-    group('animation items в list mode (default)', () {
+    group('animation items в list mode', () {
       testWidgets(
           'animation movie в list mode должен использовать moviePoster ImageType',
           (WidgetTester tester) async {
@@ -473,8 +434,6 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // List mode — по умолчанию, не переключаемся на grid
-        // Проверяем что getImageUri вызван с moviePoster
         verify(() => mockCache.getImageUri(
               type: ImageType.moviePoster,
               imageId: '401',
@@ -512,8 +471,6 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // List mode — по умолчанию
-        // Проверяем что getImageUri вызван с tvShowPoster (не moviePoster!)
         verify(() => mockCache.getImageUri(
               type: ImageType.tvShowPoster,
               imageId: '501',
@@ -522,53 +479,28 @@ void main() {
       });
     });
 
-    group('поиск по имени', () {
-      testWidgets('должен показывать поле поиска',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await pumpScreen(tester);
-
-        expect(find.byType(TextField), findsOneWidget);
-      });
-
+    group('поиск по имени (через collectionsSearchQueryProvider)', () {
       testWidgets('должен фильтровать по имени',
           (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
+        await tester.pumpWidget(createWidget(searchQuery: 'Zelda'));
         await pumpScreen(tester);
 
-        await tester.enterText(find.byType(TextField), 'Zelda');
-        await pumpScreen(tester);
-
-        // Zelda: 2 вхождения (TextField + карточка)
-        expect(find.text('Zelda'), findsNWidgets(2));
-        // Остальные элементы отфильтрованы
+        expect(find.text('Zelda'), findsOneWidget);
         expect(find.text('Inception'), findsNothing);
         expect(find.text('Breaking Bad'), findsNothing);
       });
 
       testWidgets('поиск должен быть case-insensitive',
           (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await pumpScreen(tester);
-
-        await tester.enterText(find.byType(TextField), 'zelda');
+        await tester.pumpWidget(createWidget(searchQuery: 'zelda'));
         await pumpScreen(tester);
 
         expect(find.text('Zelda'), findsOneWidget);
       });
 
-      testWidgets('кнопка очистки должна сбрасывать поиск',
+      testWidgets('пустой поиск должен показывать все элементы',
           (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await pumpScreen(tester);
-
-        // Вводим текст
-        await tester.enterText(find.byType(TextField), 'Zelda');
-        await pumpScreen(tester);
-        expect(find.text('Inception'), findsNothing);
-
-        // Очищаем
-        await tester.tap(find.byIcon(Icons.close));
+        await tester.pumpWidget(createWidget(searchQuery: ''));
         await pumpScreen(tester);
 
         expect(find.text('Zelda'), findsOneWidget);
@@ -580,15 +512,11 @@ void main() {
     group('комбинированные фильтры', () {
       testWidgets('фильтр типа + поиск должны работать вместе',
           (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
+        await tester.pumpWidget(createWidget(searchQuery: 'Zel'));
         await pumpScreen(tester);
 
-        // Фильтр Games — тап на чип
+        // Фильтр Games — тап на chevron-сегмент
         await tester.tap(find.text('Games (1)').first);
-        await pumpScreen(tester);
-
-        // + поиск "Zel"
-        await tester.enterText(find.byType(TextField), 'Zel');
         await pumpScreen(tester);
 
         expect(find.text('Zelda'), findsOneWidget);
@@ -601,7 +529,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // Фильтр Movies — тап на чип
+        // Фильтр Movies — тап на chevron-сегмент
         await tester.tap(find.text('Movies (1)').first);
         await pumpScreen(tester);
 
@@ -650,21 +578,9 @@ void main() {
       });
     });
 
-    group('Add Items кнопка', () {
-      testWidgets('должен показывать кнопку Add Items в AppBar для editable',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await pumpScreen(tester);
-
-        expect(find.byTooltip('Add Items (Ctrl+N)'), findsOneWidget);
-        expect(find.byIcon(Icons.add), findsOneWidget);
-      });
-    });
-
     group('сохранение режима отображения (grid/table)', () {
       testWidgets('должен загрузить grid mode из SharedPreferences',
           (WidgetTester tester) async {
-        // Сохраняем grid mode = true для коллекции 1
         await prefs.setBool(
           '${SettingsKeys.collectionViewModePrefix}1',
           true,
@@ -673,9 +589,8 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // Grid mode загружен: иконка table_chart_outlined (переключение на table)
-        expect(find.byIcon(Icons.table_chart_outlined), findsOneWidget);
-        expect(find.byIcon(Icons.grid_view), findsNothing);
+        // Grid mode загружен: GridView отображается
+        expect(find.byType(GridView), findsOneWidget);
       });
 
       testWidgets('должен загрузить grid mode по умолчанию',
@@ -684,59 +599,11 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // Grid mode по умолчанию: иконка table_chart_outlined
-        expect(find.byIcon(Icons.table_chart_outlined), findsOneWidget);
-      });
-
-      testWidgets('должен сохранять table mode в SharedPreferences при toggle',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await pumpScreen(tester);
-
-        // Переключаемся на table
-        await tester.tap(find.byIcon(Icons.table_chart_outlined));
-        await pumpScreen(tester);
-
-        // Проверяем сохранение в SharedPreferences
-        final bool? savedGrid = prefs.getBool(
-          '${SettingsKeys.collectionViewModePrefix}1',
-        );
-        final bool? savedTable = prefs.getBool(
-          '${SettingsKeys.collectionTableModePrefix}1',
-        );
-        expect(savedGrid, isFalse);
-        expect(savedTable, isTrue);
-      });
-
-      testWidgets('должен сохранять grid mode при обратном toggle',
-          (WidgetTester tester) async {
-        // Начинаем с grid mode
-        await prefs.setBool(
-          '${SettingsKeys.collectionViewModePrefix}1',
-          true,
-        );
-
-        await tester.pumpWidget(createWidget());
-        await pumpScreen(tester);
-
-        // Grid → Table
-        await tester.tap(find.byIcon(Icons.table_chart_outlined));
-        await pumpScreen(tester);
-
-        // Table → Grid
-        await tester.tap(find.byIcon(Icons.grid_view));
-        await pumpScreen(tester);
-
-        // Проверяем сохранение в SharedPreferences
-        final bool? savedGrid = prefs.getBool(
-          '${SettingsKeys.collectionViewModePrefix}1',
-        );
-        expect(savedGrid, isTrue);
+        expect(find.byType(GridView), findsOneWidget);
       });
 
       testWidgets('разные коллекции сохраняют режим независимо',
           (WidgetTester tester) async {
-        // Коллекция 1 — grid
         await prefs.setBool(
           '${SettingsKeys.collectionViewModePrefix}1',
           true,
@@ -745,40 +612,12 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // Коллекция 1 в grid mode
-        expect(find.byIcon(Icons.table_chart_outlined), findsOneWidget);
+        expect(find.byType(GridView), findsOneWidget);
 
-        // Проверяем что для коллекции 2 ключ не установлен
         final bool? saved2 = prefs.getBool(
           '${SettingsKeys.collectionViewModePrefix}2',
         );
         expect(saved2, isNull);
-      });
-    });
-
-    group('export в PopupMenu', () {
-      testWidgets('должен показывать Export в трёхточечном меню',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await pumpScreen(tester);
-
-        // Открываем PopupMenu (последний PopupMenuButton<String> — в AppBar actions)
-        await tester.tap(find.byType(PopupMenuButton<String>).last);
-        await tester.pumpAndSettle();
-
-        expect(find.text('Export'), findsOneWidget);
-      });
-
-      testWidgets('должен показывать Rename в трёхточечном меню для editable',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await pumpScreen(tester);
-
-        // Открываем PopupMenu
-        await tester.tap(find.byType(PopupMenuButton<String>).last);
-        await tester.pumpAndSettle();
-
-        expect(find.text('Rename'), findsOneWidget);
       });
     });
 
@@ -796,162 +635,18 @@ void main() {
         animationCount: 0,
       );
 
-      testWidgets('должен скрывать FilterRow при 0 элементах',
+      testWidgets('должен скрывать FilterBar при 0 элементах',
           (WidgetTester tester) async {
         when(() => mockRepo.getItemsWithData(
               1,
               mediaType: any(named: 'mediaType'),
             )).thenAnswer((_) async => const <CollectionItem>[]);
 
-        await tester.pumpWidget(ProviderScope(
-          overrides: <Override>[
-            collectionRepositoryProvider.overrideWithValue(mockRepo),
-            imageCacheServiceProvider.overrideWithValue(mockCache),
-            sharedPreferencesProvider.overrideWithValue(prefs),
-            collectionStatsProvider(1)
-                .overrideWith((Ref ref) async => zeroStats),
-          ],
-          child: const MaterialApp(
-            localizationsDelegates: S.localizationsDelegates,
-            supportedLocales: S.supportedLocales,
-            home: CollectionScreen(collectionId: 1),
-          ),
-        ));
+        await tester.pumpWidget(createWidget(stats: zeroStats));
         await pumpScreen(tester);
 
-        // FilterRow скрыта — нет кнопки фильтра типа
-        expect(find.byTooltip('Filter by type'), findsNothing);
-        // Нет поля поиска
-        expect(find.byType(TextField), findsNothing);
-        // Нет кнопки сортировки
-        expect(find.byTooltip('Sort'), findsNothing);
-      });
-    });
-
-    group('sort dropdown', () {
-      testWidgets('должен показывать кнопку сортировки',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await pumpScreen(tester);
-
-        expect(find.byTooltip('Sort'), findsOneWidget);
-      });
-
-      testWidgets('должен содержать все режимы сортировки',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await pumpScreen(tester);
-
-        await tester.tap(find.byTooltip('Sort'));
-        await tester.pumpAndSettle();
-
-        expect(find.text('Manual'), findsOneWidget);
-        expect(find.text('Date Added'), findsOneWidget);
-        expect(find.text('Status'), findsOneWidget);
-        expect(find.text('Name'), findsOneWidget);
-      });
-
-      testWidgets('должен содержать пункт Ascending/Descending',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await pumpScreen(tester);
-
-        await tester.tap(find.byTooltip('Sort'));
-        await tester.pumpAndSettle();
-
-        // По умолчанию ascending
-        expect(find.text('Ascending'), findsOneWidget);
-      });
-
-      testWidgets('должен показывать shortLabel на кнопке',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await pumpScreen(tester);
-
-        // По умолчанию lastActivity → shortLabel "Activity"
-        expect(find.text('Activity'), findsOneWidget);
-      });
-
-      testWidgets('должен показывать иконку направления сортировки',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await pumpScreen(tester);
-
-        // По умолчанию ascending — стрелка вверх
-        expect(find.byIcon(Icons.arrow_upward), findsOneWidget);
-      });
-    });
-
-    group('замок канваса', () {
-      testWidgets('не должен показывать замок в List mode',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await pumpScreen(tester);
-
-        // В list mode замок не виден
-        expect(find.byTooltip('Lock board (Ctrl+L)'), findsNothing);
-        expect(find.byTooltip('Unlock board (Ctrl+L)'), findsNothing);
-      });
-
-      testWidgets('должен показывать замок при переключении на Canvas mode',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await pumpScreen(tester);
-
-        // Переключаемся на Canvas mode через IconButton
-        await tester.tap(find.byTooltip('Switch to Board (Ctrl+B)'));
-        await pumpScreen(tester);
-
-        // Замок виден (collection.isEditable = true для own)
-        expect(find.byTooltip('Lock board (Ctrl+L)'), findsOneWidget);
-        expect(find.byIcon(Icons.lock_open), findsOneWidget);
-      });
-
-      testWidgets('должен показывать замок для imported коллекции',
-          (WidgetTester tester) async {
-        final Collection importedCollection = Collection(
-          id: 1,
-          name: 'Imported Collection',
-          author: 'Other',
-          type: CollectionType.imported,
-          createdAt: testDate,
-        );
-        when(() => mockRepo.getById(1))
-            .thenAnswer((_) async => importedCollection);
-
-        await tester.pumpWidget(createWidget());
-        await pumpScreen(tester);
-
-        // Переключаемся на Canvas mode через IconButton
-        await tester.tap(find.byTooltip('Switch to Board (Ctrl+B)'));
-        await pumpScreen(tester);
-
-        // Замок виден (imported теперь editable)
-        expect(find.byTooltip('Lock board (Ctrl+L)'), findsOneWidget);
-      });
-
-      testWidgets('должен переключать состояние замка',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await pumpScreen(tester);
-
-        // Переключаемся на Canvas mode через IconButton
-        await tester.tap(find.byTooltip('Switch to Board (Ctrl+B)'));
-        await pumpScreen(tester);
-
-        // Нажимаем замок (lock_open → lock)
-        await tester.tap(find.byTooltip('Lock board (Ctrl+L)'));
-        await pumpScreen(tester);
-
-        expect(find.byIcon(Icons.lock), findsOneWidget);
-        expect(find.byTooltip('Unlock board (Ctrl+L)'), findsOneWidget);
-
-        // Нажимаем замок (lock → lock_open)
-        await tester.tap(find.byTooltip('Unlock board (Ctrl+L)'));
-        await pumpScreen(tester);
-
-        expect(find.byIcon(Icons.lock_open), findsOneWidget);
-        expect(find.byTooltip('Lock board (Ctrl+L)'), findsOneWidget);
+        // FilterBar скрыта — нет chevron-сегментов типов
+        expect(find.byType(ChevronSegment), findsNothing);
       });
     });
   });

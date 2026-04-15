@@ -703,7 +703,7 @@
   "searchHintAnime": "Search anime...",
   "searchHintGames": "Search games...",
   "searchHintVisualNovels": "Search visual novels...",
-  "searchSourceVisualNovels": "Visual Novels",
+  "searchSourceVisualNovels": "V. Novels",
   "searchSourceManga": "Manga",
   "searchSourceAnime": "Anime",
   "searchHintManga": "Search manga...",
@@ -957,6 +957,16 @@
   "allItemsNoMatch": "No items match filter",
   "allItemsAddViaCollections": "Go to Collections → create a collection → add items\nvia Search. They will appear here automatically.",
   "allItemsFailedToLoad": "Failed to load items",
+  "allItemsFilterPlatformsAll": "All Platforms",
+  "allItemsFilterPlatformsSelected": "{count} platforms",
+  "@allItemsFilterPlatformsSelected": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "allItemsFilterPlatformsTitle": "Filter by platform",
+  "allItemsFilterPlatformsApply": "Apply",
+  "allItemsFilterPlatformsClear": "Clear",
 
   "debugIgdbMedia": "IGDB Media",
   "debugSteamGridDb": "SteamGridDB",
@@ -1144,6 +1154,7 @@
   "animeStatusCancelled": "Cancelled",
 
   "typeToFilterHint": "Filter...",
+  "appBarSearchHint": "Start typing to search",
 
   "insertLink": "Insert link",
   "linkText": "Text",

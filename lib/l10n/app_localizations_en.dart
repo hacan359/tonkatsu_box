@@ -1557,7 +1557,7 @@ class SEn extends S {
   String get searchHintVisualNovels => 'Search visual novels...';
 
   @override
-  String get searchSourceVisualNovels => 'Visual Novels';
+  String get searchSourceVisualNovels => 'V. Novels';
 
   @override
   String get searchSourceManga => 'Manga';
@@ -2117,6 +2117,23 @@ class SEn extends S {
   String get allItemsFailedToLoad => 'Failed to load items';
 
   @override
+  String get allItemsFilterPlatformsAll => 'All Platforms';
+
+  @override
+  String allItemsFilterPlatformsSelected(int count) {
+    return '$count platforms';
+  }
+
+  @override
+  String get allItemsFilterPlatformsTitle => 'Filter by platform';
+
+  @override
+  String get allItemsFilterPlatformsApply => 'Apply';
+
+  @override
+  String get allItemsFilterPlatformsClear => 'Clear';
+
+  @override
   String get debugIgdbMedia => 'IGDB Media';
 
   @override
@@ -2548,6 +2565,9 @@ class SEn extends S {
 
   @override
   String get typeToFilterHint => 'Filter...';
+
+  @override
+  String get appBarSearchHint => 'Start typing to search';
 
   @override
   String get insertLink => 'Insert link';

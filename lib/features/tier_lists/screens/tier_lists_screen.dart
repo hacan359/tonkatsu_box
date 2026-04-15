@@ -8,12 +8,13 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../shared/models/tier_list.dart';
+import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/draggable_fab.dart';
 import '../providers/tier_lists_provider.dart';
 import '../widgets/create_tier_list_dialog.dart';
-import '../../../shared/widgets/screen_app_bar.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import 'tier_list_detail_screen.dart';
 
@@ -54,6 +55,8 @@ class _TierListsScreenState extends ConsumerState<TierListsScreen> {
         ? ref.watch(collectionTierListsProvider(collectionId))
         : ref.watch(tierListsProvider);
 
+    final String searchQuery = ref.watch(tierListsSearchQueryProvider);
+
     return CallbackShortcuts(
       bindings: kIsMobile
           ? const <ShortcutActivator, VoidCallback>{}
@@ -67,79 +70,96 @@ class _TierListsScreenState extends ConsumerState<TierListsScreen> {
                 if (_focusedTierList != null) _handleRename(context, _focusedTierList!);
               },
             },
-      child: Scaffold(
-      appBar: ScreenAppBar(title: l.navTierLists),
-      body: tierListsAsync.when(
-        loading: () => ListView(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          children: const <Widget>[
-            ShimmerTierListCard(),
-            SizedBox(height: AppSpacing.sm),
-            ShimmerTierListCard(),
-            SizedBox(height: AppSpacing.sm),
-            ShimmerTierListCard(),
-          ],
-        ),
-        error: (Object error, StackTrace stack) => Center(
-          child: Text(l.errorPrefix(error.toString())),
-        ),
-        data: (List<TierList> tierLists) {
-          if (tierLists.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Icon(
-                    Icons.leaderboard_outlined,
-                    size: 64,
-                    color: AppColors.textTertiary.withAlpha(120),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  Text(
-                    l.tierListEmpty,
-                    style: AppTypography.h2.copyWith(
-                      color: AppColors.textTertiary,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    l.tierListEmptyHint,
-                    textAlign: TextAlign.center,
-                    style: AppTypography.body.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
-          return ListView.separated(
+      child: Stack(
+        children: <Widget>[
+          tierListsAsync.when(
+          loading: () => ListView(
             padding: const EdgeInsets.all(AppSpacing.md),
-            itemCount: tierLists.length,
-            separatorBuilder: (BuildContext context, int index) =>
-                const SizedBox(height: AppSpacing.sm),
-            itemBuilder: (BuildContext context, int index) {
-              final TierList tierList = tierLists[index];
-              return _TierListCard(
-                tierList: tierList,
-                collectionId: collectionId,
-                onFocusChanged: (bool focused) {
-                  setState(() {
-                    _focusedTierList = focused ? tierList : null;
-                  });
-                },
+            children: const <Widget>[
+              ShimmerTierListCard(),
+              SizedBox(height: AppSpacing.sm),
+              ShimmerTierListCard(),
+              SizedBox(height: AppSpacing.sm),
+              ShimmerTierListCard(),
+            ],
+          ),
+          error: (Object error, StackTrace stack) => Center(
+            child: Text(l.errorPrefix(error.toString())),
+          ),
+          data: (List<TierList> tierLists) {
+            List<TierList> filtered = tierLists;
+            if (searchQuery.isNotEmpty) {
+              final String query = searchQuery.toLowerCase();
+              filtered = tierLists
+                  .where((TierList t) =>
+                      t.name.toLowerCase().contains(query))
+                  .toList();
+            }
+            if (filtered.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Icon(
+                      Icons.leaderboard_outlined,
+                      size: 64,
+                      color: AppColors.textTertiary.withAlpha(120),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    Text(
+                      tierLists.isEmpty
+                          ? l.tierListEmpty
+                          : l.allItemsNoMatch,
+                      style: AppTypography.h2.copyWith(
+                        color: AppColors.textTertiary,
+                      ),
+                    ),
+                    if (tierLists.isEmpty) ...<Widget>[
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        l.tierListEmptyHint,
+                        textAlign: TextAlign.center,
+                        style: AppTypography.body.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               );
-            },
-          );
-        },
+            }
+            return ListView.separated(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              itemCount: filtered.length,
+              separatorBuilder: (BuildContext context, int index) =>
+                  const SizedBox(height: AppSpacing.sm),
+              itemBuilder: (BuildContext context, int index) {
+                final TierList tierList = filtered[index];
+                return _TierListCard(
+                  tierList: tierList,
+                  collectionId: collectionId,
+                  onFocusChanged: (bool focused) {
+                    setState(() {
+                      _focusedTierList = focused ? tierList : null;
+                    });
+                  },
+                );
+              },
+            );
+          },
+        ),
+          DraggableFab(
+            icon: Icons.add,
+            items: <DraggableFabItem>[
+              DraggableFabItem(
+                icon: Icons.add,
+                label: l.tierListCreate,
+                onTap: () => _showCreateDialog(context),
+              ),
+            ],
+          ),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showCreateDialog(context),
-        tooltip: kIsMobile ? null : '${l.tierListCreate} (Ctrl+N)',
-        backgroundColor: AppColors.brand,
-        child: const Icon(Icons.add, color: AppColors.textPrimary),
-      ),
-    ),
     );
   }
 

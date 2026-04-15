@@ -133,11 +133,17 @@ class BrowseNotifier extends Notifier<BrowseState> {
     return BrowseState(sourceId: savedSourceId);
   }
 
-  /// Сменить источник — сбросить фильтры и контент.
+  /// Сменить источник — сбросить фильтры и контент. Текстовый запрос
+  /// сохраняется (фильтры у нового источника другие, а текст пользователь
+  /// уже ввёл — переключение источника не должно его терять).
   void setSource(String sourceId) {
     _generation++;
-    state = BrowseState(sourceId: sourceId);
+    final String preservedQuery = state.searchQuery;
+    state = BrowseState(sourceId: sourceId, searchQuery: preservedQuery);
     _prefs.setString(BrowseSettingsKeys.sourceId, sourceId);
+    if (state.hasSearchQuery) {
+      _fetch();
+    }
   }
 
   /// Монотонный счётчик для защиты от race condition.

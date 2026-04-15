@@ -10,7 +10,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/igdb_api.dart';
-import '../../../shared/widgets/screen_app_bar.dart';
 import '../../../core/api/tmdb_api.dart';
 import '../../../core/services/xcoll_file.dart';
 import '../../../shared/models/game.dart';
@@ -18,6 +17,7 @@ import '../../../shared/models/movie.dart';
 import '../../../shared/models/tv_show.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
+import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../providers/settings_provider.dart';
 
 /// IGDB platform IDs.
@@ -657,131 +657,133 @@ class _DemoCollectionsScreenState
   Widget build(BuildContext context) {
     final bool compact = isCompactScreen(context);
 
-    return Scaffold(
-      appBar: const ScreenAppBar(title: 'Demo Collections'),
-        body: Padding(
-          padding: EdgeInsets.all(compact ? AppSpacing.sm : AppSpacing.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              // Header.
-              Text(
-                'Demo Collections Generator',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                'Generates 10 .xcollx files (6 game + 4 media) '
-                'with embedded posters for tonkatsu-collections repo.',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              // Buttons.
-              Wrap(
-                spacing: AppSpacing.sm,
-                runSpacing: AppSpacing.xs,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: <Widget>[
-                  FilledButton.icon(
-                    onPressed: _isRunning ? null : _pickDirectoryAndGenerate,
-                    icon: const Icon(Icons.play_arrow),
-                    label: const Text('Generate All (10 collections)'),
-                  ),
-                  if (_isRunning) ...<Widget>[
-                    OutlinedButton.icon(
-                      onPressed: () {
-                        setState(() {
-                          _isCancelled = true;
-                        });
-                      },
-                      icon: const Icon(Icons.stop),
-                      label: const Text('Cancel'),
-                    ),
-                    const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  ],
-                ],
-              ),
-              if (_outputDir != null) ...<Widget>[
+    return Column(
+      children: <Widget>[
+        const SubScreenTitleBar(title: 'Demo Collections'),
+        Expanded(
+          child: Padding(
+            padding: EdgeInsets.all(compact ? AppSpacing.sm : AppSpacing.lg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                // Header.
+                Text(
+                  'Demo Collections Generator',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  'Output: $_outputDir',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textTertiary,
+                  'Generates 10 .xcollx files (6 game + 4 media) '
+                  'with embedded posters for tonkatsu-collections repo.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.textSecondary,
                       ),
                 ),
-              ],
-              const SizedBox(height: AppSpacing.md),
-              // Log area.
-              Expanded(
-                child: Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.surfaceBorder),
-                  ),
-                  child: _log.isEmpty
-                      ? Center(
-                          child: Text(
-                            'Press "Generate All" to start...',
-                            style:
-                                Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      color: AppColors.textTertiary,
-                                    ),
-                          ),
-                        )
-                      : ListView.builder(
-                          controller: _scrollController,
-                          padding: const EdgeInsets.all(AppSpacing.sm),
-                          itemCount: _log.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            final String line = _log[index];
-                            final bool isError =
-                                line.contains('ERROR');
-                            final bool isDone =
-                                line.contains('Done!');
-                            final bool isSaved =
-                                line.contains('Saved:');
-                            final bool isHeader =
-                                line.contains('---');
-
-                            Color textColor = AppColors.textSecondary;
-                            if (isError) {
-                              textColor = AppColors.error;
-                            } else if (isDone) {
-                              textColor = AppColors.success;
-                            } else if (isSaved) {
-                              textColor = AppColors.brand;
-                            } else if (isHeader) {
-                              textColor = AppColors.textPrimary;
-                            }
-
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 1,
-                              ),
-                              child: Text(
-                                line,
-                                style: TextStyle(
-                                  fontFamily: 'monospace',
-                                  fontSize: 12,
-                                  color: textColor,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
+                const SizedBox(height: AppSpacing.md),
+                // Buttons.
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.xs,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: <Widget>[
+                    FilledButton.icon(
+                      onPressed: _isRunning ? null : _pickDirectoryAndGenerate,
+                      icon: const Icon(Icons.play_arrow),
+                      label: const Text('Generate All (10 collections)'),
+                    ),
+                    if (_isRunning) ...<Widget>[
+                      OutlinedButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            _isCancelled = true;
+                          });
+                        },
+                        icon: const Icon(Icons.stop),
+                        label: const Text('Cancel'),
+                      ),
+                      const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    ],
+                  ],
                 ),
-              ),
-            ],
+                if (_outputDir != null) ...<Widget>[
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    'Output: $_outputDir',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textTertiary,
+                        ),
+                  ),
+                ],
+                const SizedBox(height: AppSpacing.md),
+                // Log area.
+                Expanded(
+                  child: Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.surfaceBorder),
+                    ),
+                    child: _log.isEmpty
+                        ? Center(
+                            child: Text(
+                              'Press "Generate All" to start...',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    color: AppColors.textTertiary,
+                                  ),
+                            ),
+                          )
+                        : ListView.builder(
+                            controller: _scrollController,
+                            padding: const EdgeInsets.all(AppSpacing.sm),
+                            itemCount: _log.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              final String line = _log[index];
+                              final bool isError = line.contains('ERROR');
+                              final bool isDone = line.contains('Done!');
+                              final bool isSaved = line.contains('Saved:');
+                              final bool isHeader = line.contains('---');
+
+                              Color textColor = AppColors.textSecondary;
+                              if (isError) {
+                                textColor = AppColors.error;
+                              } else if (isDone) {
+                                textColor = AppColors.success;
+                              } else if (isSaved) {
+                                textColor = AppColors.brand;
+                              } else if (isHeader) {
+                                textColor = AppColors.textPrimary;
+                              }
+
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 1,
+                                ),
+                                child: Text(
+                                  line,
+                                  style: TextStyle(
+                                    fontFamily: 'monospace',
+                                    fontSize: 12,
+                                    color: textColor,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-      );
+      ],
+    );
   }
 }
