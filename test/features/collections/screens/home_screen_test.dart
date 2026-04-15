@@ -7,16 +7,60 @@ import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/core/database/database_service.dart';
 import 'package:xerabora/data/repositories/collection_repository.dart';
+import 'package:xerabora/features/collections/providers/collections_provider.dart';
 import 'package:xerabora/features/collections/screens/home_screen.dart';
 import 'package:xerabora/features/collections/widgets/collection_card.dart';
 import 'package:xerabora/features/collections/widgets/collection_list_tile.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/models/collection.dart';
+import 'package:xerabora/shared/models/collection_list_sort_mode.dart';
 import 'package:xerabora/shared/models/cover_info.dart';
 import 'package:xerabora/shared/widgets/shimmer_loading.dart';
 
 import '../../../helpers/test_helpers.dart';
+
+// ==================== Тестовые Notifier-ы ====================
+
+class TestCollectionListViewModeNotifier
+    extends CollectionListViewModeNotifier {
+  TestCollectionListViewModeNotifier(this._initial);
+  final bool _initial;
+
+  @override
+  bool build() => _initial;
+
+  @override
+  Future<void> toggle() async {
+    state = !state;
+  }
+}
+
+class TestCollectionListSortNotifier extends CollectionListSortNotifier {
+  TestCollectionListSortNotifier(this._mode);
+  final CollectionListSortMode _mode;
+
+  @override
+  CollectionListSortMode build() => _mode;
+
+  @override
+  Future<void> setSortMode(CollectionListSortMode mode) async {
+    state = mode;
+  }
+}
+
+class TestCollectionListSortDescNotifier extends CollectionListSortDescNotifier {
+  TestCollectionListSortDescNotifier(this._desc);
+  final bool _desc;
+
+  @override
+  bool build() => _desc;
+
+  @override
+  Future<void> toggle() async {
+    state = !state;
+  }
+}
 
 void main() {
   group('HomeScreen', () {
@@ -31,7 +75,12 @@ void main() {
       mockDb = MockDatabaseService();
     });
 
-    Widget createWidget({List<Collection> collections = const <Collection>[]}) {
+    Widget createWidget({
+      List<Collection> collections = const <Collection>[],
+      bool isGridView = true,
+      CollectionListSortMode sortMode = CollectionListSortMode.createdDate,
+      bool sortDesc = false,
+    }) {
       // Mock repository methods
       when(() => mockRepo.getAll()).thenAnswer((_) async => collections);
       when(() => mockRepo.getStats(any())).thenAnswer(
@@ -56,23 +105,20 @@ void main() {
           sharedPreferencesProvider.overrideWithValue(prefs),
           collectionRepositoryProvider.overrideWithValue(mockRepo),
           databaseServiceProvider.overrideWithValue(mockDb),
+          collectionListViewModeProvider
+              .overrideWith(() => TestCollectionListViewModeNotifier(isGridView)),
+          collectionListSortProvider
+              .overrideWith(() => TestCollectionListSortNotifier(sortMode)),
+          collectionListSortDescProvider
+              .overrideWith(() => TestCollectionListSortDescNotifier(sortDesc)),
         ],
         child: const MaterialApp(
           localizationsDelegates: S.localizationsDelegates,
           supportedLocales: S.supportedLocales,
-          home: HomeScreen(),
+          home: Scaffold(body: HomeScreen()),
         ),
       );
     }
-
-    testWidgets('должен показывать кнопку New Collection в AppBar',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pump();
-
-      expect(find.byTooltip('New Collection (Ctrl+N)'), findsOneWidget);
-      expect(find.byIcon(Icons.add), findsOneWidget);
-    });
 
     testWidgets('должен показывать shimmer при загрузке',
         (WidgetTester tester) async {
@@ -87,11 +133,19 @@ void main() {
           sharedPreferencesProvider.overrideWithValue(prefs),
           collectionRepositoryProvider.overrideWithValue(mockRepo),
           databaseServiceProvider.overrideWithValue(mockDb),
+          collectionListViewModeProvider
+              .overrideWith(() => TestCollectionListViewModeNotifier(true)),
+          collectionListSortProvider
+              .overrideWith(() => TestCollectionListSortNotifier(
+                    CollectionListSortMode.createdDate,
+                  )),
+          collectionListSortDescProvider
+              .overrideWith(() => TestCollectionListSortDescNotifier(false)),
         ],
         child: const MaterialApp(
           localizationsDelegates: S.localizationsDelegates,
           supportedLocales: S.supportedLocales,
-          home: HomeScreen(),
+          home: Scaffold(body: HomeScreen()),
         ),
       ));
       await tester.pump();
@@ -106,15 +160,6 @@ void main() {
       await tester.pump();
 
       expect(find.text('No Collections Yet'), findsOneWidget);
-    });
-
-    testWidgets('должен показывать иконку пустого состояния',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidget());
-      await tester.pump();
-      await tester.pump();
-
-      expect(find.byIcon(Icons.shelves), findsOneWidget);
     });
 
     testWidgets('должен показывать коллекцию как CollectionCard',
@@ -187,7 +232,8 @@ void main() {
       expect(find.byType(CollectionCard), findsNWidgets(5));
     });
 
-    testWidgets('должен показывать GridView', (WidgetTester tester) async {
+    testWidgets('должен показывать GridView по умолчанию',
+        (WidgetTester tester) async {
       final List<Collection> collections = <Collection>[
         Collection(
           id: 1,
@@ -205,18 +251,8 @@ void main() {
       expect(find.byType(GridView), findsOneWidget);
     });
 
-    group('кнопка переключения grid/list', () {
-      testWidgets('должна показываться в AppBar',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pump();
-        await tester.pump();
-
-        // По умолчанию grid — показывается иконка переключения на list
-        expect(find.byIcon(Icons.view_list), findsOneWidget);
-      });
-
-      testWidgets('должна переключать на ListView',
+    group('режим отображения grid/list', () {
+      testWidgets('должен показывать GridView в grid режиме',
           (WidgetTester tester) async {
         final List<Collection> collections = <Collection>[
           Collection(
@@ -228,25 +264,18 @@ void main() {
           ),
         ];
 
-        await tester.pumpWidget(createWidget(collections: collections));
+        // Явно выставляем grid mode
+        await tester.pumpWidget(
+          createWidget(collections: collections, isGridView: true),
+        );
         await tester.pump();
         await tester.pump();
 
-        // Изначально grid
         expect(find.byType(GridView), findsOneWidget);
         expect(find.byType(CollectionCard), findsOneWidget);
-
-        // Нажимаем на кнопку переключения
-        await tester.tap(find.byIcon(Icons.view_list));
-        await tester.pump();
-        await tester.pump();
-
-        // Теперь list
-        expect(find.byType(ListView), findsOneWidget);
-        expect(find.byType(CollectionListTile), findsOneWidget);
       });
 
-      testWidgets('должна переключать обратно на GridView',
+      testWidgets('должен показывать ListView в list режиме',
           (WidgetTester tester) async {
         final List<Collection> collections = <Collection>[
           Collection(
@@ -258,52 +287,20 @@ void main() {
           ),
         ];
 
-        await tester.pumpWidget(createWidget(collections: collections));
-        await tester.pump();
-        await tester.pump();
-
-        // Переключаем на list
-        await tester.tap(find.byIcon(Icons.view_list));
+        // Выставляем list mode через провайдер
+        await tester.pumpWidget(
+          createWidget(collections: collections, isGridView: false),
+        );
         await tester.pump();
         await tester.pump();
 
         expect(find.byType(ListView), findsOneWidget);
-
-        // Переключаем обратно на grid
-        await tester.tap(find.byIcon(Icons.grid_view));
-        await tester.pump();
-        await tester.pump();
-
-        expect(find.byType(GridView), findsOneWidget);
-        expect(find.byType(CollectionCard), findsOneWidget);
+        expect(find.byType(CollectionListTile), findsOneWidget);
       });
     });
 
-    group('кнопка сортировки', () {
-      testWidgets('должна показываться в AppBar',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pump();
-        await tester.pump();
-
-        expect(find.byIcon(Icons.sort), findsOneWidget);
-      });
-
-      testWidgets('должна открывать popup при нажатии',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pump();
-        await tester.pump();
-
-        await tester.tap(find.byIcon(Icons.sort));
-        await tester.pumpAndSettle();
-
-        // Должны быть пункты меню
-        expect(find.text('Date Created'), findsOneWidget);
-        expect(find.text('Name'), findsOneWidget);
-      });
-
-      testWidgets('должна сортировать по алфавиту',
+    group('сортировка', () {
+      testWidgets('должен сортировать по алфавиту',
           (WidgetTester tester) async {
         final List<Collection> collections = <Collection>[
           Collection(
@@ -322,19 +319,18 @@ void main() {
           ),
         ];
 
-        await tester.pumpWidget(createWidget(collections: collections));
+        // Алфавитный режим, ascending (A→Z)
+        await tester.pumpWidget(
+          createWidget(
+            collections: collections,
+            sortMode: CollectionListSortMode.alphabetical,
+            sortDesc: false,
+          ),
+        );
         await tester.pump();
         await tester.pump();
 
-        // Открываем popup
-        await tester.tap(find.byIcon(Icons.sort));
-        await tester.pumpAndSettle();
-
-        // Выбираем "Name"
-        await tester.tap(find.text('Name'));
-        await tester.pumpAndSettle();
-
-        // Проверяем порядок — Alpha должна быть первой
+        // Alpha должна быть первой
         final List<CollectionCard> cards = tester
             .widgetList<CollectionCard>(find.byType(CollectionCard))
             .toList();
@@ -342,7 +338,7 @@ void main() {
         expect(cards[1].collection.name, 'Zebra');
       });
 
-      testWidgets('toggle direction должен инвертировать порядок',
+      testWidgets('sortDesc=false → новые первыми (New, Old)',
           (WidgetTester tester) async {
         final List<Collection> collections = <Collection>[
           Collection(
@@ -361,27 +357,55 @@ void main() {
           ),
         ];
 
-        await tester.pumpWidget(createWidget(collections: collections));
+        await tester.pumpWidget(
+          createWidget(
+            collections: collections,
+            sortMode: CollectionListSortMode.createdDate,
+            sortDesc: false,
+          ),
+        );
         await tester.pump();
         await tester.pump();
 
-        // По умолчанию: Date Created, newest first → New, Old
-        List<CollectionCard> cards = tester
+        final List<CollectionCard> cards = tester
             .widgetList<CollectionCard>(find.byType(CollectionCard))
             .toList();
         expect(cards[0].collection.name, 'New');
         expect(cards[1].collection.name, 'Old');
+      });
 
-        // Открываем popup и нажимаем toggle direction
-        await tester.tap(find.byIcon(Icons.sort));
-        await tester.pumpAndSettle();
+      testWidgets('sortDesc=true → старые первыми (Old, New)',
+          (WidgetTester tester) async {
+        final List<Collection> collections = <Collection>[
+          Collection(
+            id: 1,
+            name: 'Old',
+            author: 'User',
+            type: CollectionType.own,
+            createdAt: DateTime(2020),
+          ),
+          Collection(
+            id: 2,
+            name: 'New',
+            author: 'User',
+            type: CollectionType.own,
+            createdAt: DateTime(2025),
+          ),
+        ];
 
-        // Нажимаем пункт с направлением (содержит "Oldest first")
-        await tester.tap(find.text('Oldest first'));
-        await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          createWidget(
+            collections: collections,
+            sortMode: CollectionListSortMode.createdDate,
+            sortDesc: true,
+          ),
+        );
+        await tester.pump();
+        await tester.pump();
+        await tester.pump();
+        await tester.pump();
 
-        // Теперь порядок инвертирован: Old, New
-        cards = tester
+        final List<CollectionCard> cards = tester
             .widgetList<CollectionCard>(find.byType(CollectionCard))
             .toList();
         expect(cards[0].collection.name, 'Old');

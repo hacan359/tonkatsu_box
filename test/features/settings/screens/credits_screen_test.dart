@@ -10,7 +10,7 @@ void main() {
     return const MaterialApp(
       localizationsDelegates: S.localizationsDelegates,
       supportedLocales: S.supportedLocales,
-      home: CreditsScreen(),
+      home: Scaffold(body: CreditsScreen()),
     );
   }
 

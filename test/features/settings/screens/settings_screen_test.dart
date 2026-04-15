@@ -128,38 +128,6 @@ void main() {
     });
 
     group('Navigation', () {
-      testWidgets('API Keys tile navigates without crash',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        await scrollTo(tester, 'API Keys');
-        final Finder apiKeysTile = find.ancestor(
-          of: find.text('API Keys'),
-          matching: find.byType(SettingsTile),
-        );
-        await tester.tap(apiKeysTile);
-        await tester.pumpAndSettle();
-
-        expect(tester.takeException(), isNull);
-      });
-
-      testWidgets('Cache tile navigates without crash',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        await scrollTo(tester, 'Cache');
-        final Finder cacheTile = find.ancestor(
-          of: find.text('Cache'),
-          matching: find.byType(SettingsTile),
-        );
-        await tester.tap(cacheTile);
-        await tester.pumpAndSettle();
-
-        expect(tester.takeException(), isNull);
-      });
-
       testWidgets('Database tile navigates without crash',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());

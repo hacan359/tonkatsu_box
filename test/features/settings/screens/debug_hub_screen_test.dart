@@ -25,7 +25,7 @@ void main() {
         child: const MaterialApp(
           localizationsDelegates: S.localizationsDelegates,
           supportedLocales: S.supportedLocales,
-          home: DebugHubScreen(),
+          home: Scaffold(body: DebugHubScreen()),
         ),
       );
     }
