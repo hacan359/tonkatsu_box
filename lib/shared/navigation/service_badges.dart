@@ -14,6 +14,7 @@ import '../../features/collections/providers/collection_covers_provider.dart';
 import '../../features/collections/providers/collections_provider.dart';
 import '../../features/home/providers/all_items_provider.dart';
 import '../../features/settings/providers/kodi_settings_provider.dart';
+import '../../features/settings/providers/settings_provider.dart';
 import '../constants/platform_features.dart';
 import '../theme/app_assets.dart';
 import '../theme/app_colors.dart';
@@ -46,7 +47,7 @@ class ServiceBadges extends ConsumerWidget {
 
     final List<Widget> badges = <Widget>[];
 
-    if (status.kodiEnabled) {
+    if (status.kodiConfigured) {
       final bool isActive = status.kodiRunning;
       final String tooltip = status.kodiSyncing
           ? 'Kodi sync: syncing…'
@@ -99,6 +100,7 @@ class ServiceBadges extends ConsumerWidget {
     final KodiSyncService sync = ref.read(kodiSyncServiceProvider);
 
     if (isRunning) {
+      ref.read(kodiSettingsProvider.notifier).setEnabled(enabled: false);
       sync.stop();
       return;
     }
@@ -106,6 +108,7 @@ class ServiceBadges extends ConsumerWidget {
     final KodiSettingsState settings = ref.read(kodiSettingsProvider);
     if (settings.targetCollectionId == null) return;
 
+    ref.read(kodiSettingsProvider.notifier).setEnabled(enabled: true);
     sync.start(
       intervalSeconds: settings.syncIntervalSeconds,
       targetCollectionId: settings.targetCollectionId!,
@@ -137,9 +140,15 @@ class ServiceBadges extends ConsumerWidget {
     final DiscordRpcService rpc = ref.read(discordRpcServiceProvider);
 
     if (isConnected) {
+      ref
+          .read(settingsNotifierProvider.notifier)
+          .setDiscordRpcEnabled(enabled: false);
       rpc.disableRaSync();
       rpc.disable();
     } else {
+      ref
+          .read(settingsNotifierProvider.notifier)
+          .setDiscordRpcEnabled(enabled: true);
       rpc.enable();
     }
   }

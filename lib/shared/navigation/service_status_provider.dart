@@ -11,14 +11,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/services/discord_rpc_service.dart';
 import '../../core/services/kodi_sync_service.dart';
 import '../../features/settings/providers/kodi_settings_provider.dart';
-import '../../features/settings/providers/settings_provider.dart';
 import '../../shared/constants/platform_features.dart';
 
 /// Снимок состояния фоновых сервисов.
 class ServiceStatus {
   /// Создаёт [ServiceStatus].
   const ServiceStatus({
-    this.kodiEnabled = false,
+    this.kodiConfigured = false,
     this.kodiRunning = false,
     this.kodiSyncing = false,
     this.discordEnabled = false,
@@ -26,8 +25,8 @@ class ServiceStatus {
     this.discordRaSyncActive = false,
   });
 
-  /// Kodi sync включён в настройках (бейдж видим).
-  final bool kodiEnabled;
+  /// Kodi sync настроен (host + target collection) — бейдж видим.
+  final bool kodiConfigured;
 
   /// Kodi sync таймер тикает (бейдж цветной).
   final bool kodiRunning;
@@ -35,7 +34,7 @@ class ServiceStatus {
   /// Kodi sync цикл идёт прямо сейчас (пульсация).
   final bool kodiSyncing;
 
-  /// Discord RPC включён в настройках (бейдж видим).
+  /// Discord RPC доступен на платформе (бейдж всегда видим на десктопе).
   final bool discordEnabled;
 
   /// Discord RPC подключён к IPC (бейдж цветной).
@@ -45,7 +44,7 @@ class ServiceStatus {
   final bool discordRaSyncActive;
 
   /// Есть ли хотя бы один сервис, для которого нужен бейдж.
-  bool get hasActiveServices => kodiEnabled || discordEnabled;
+  bool get hasActiveServices => kodiConfigured || discordEnabled;
 }
 
 /// Провайдер состояния фоновых сервисов.
@@ -60,18 +59,14 @@ final AutoDisposeStreamProvider<ServiceStatus> serviceStatusProvider =
   final DiscordRpcService discord = ref.read(discordRpcServiceProvider);
 
   ServiceStatus snapshot() {
-    // Читаем настройки каждый poll — ref.read не создаёт подписку,
-    // так что стрим НЕ инвалидируется при изменении настроек.
     final KodiSettingsState kodiSettings = ref.read(kodiSettingsProvider);
-    final SettingsState settings = ref.read(settingsNotifierProvider);
 
     return ServiceStatus(
-      kodiEnabled: kodiSettings.enabled &&
-          kodiSettings.hasConnection &&
+      kodiConfigured: kodiSettings.hasConnection &&
           kodiSettings.targetCollectionId != null,
       kodiRunning: kodiSync.isRunning,
       kodiSyncing: kodiSync.isSyncing,
-      discordEnabled: kDiscordRpcAvailable && settings.discordRpcEnabled,
+      discordEnabled: kDiscordRpcAvailable,
       discordConnected: discord.isConnected,
       discordRaSyncActive: discord.isRaSyncActive,
     );
@@ -81,10 +76,8 @@ final AutoDisposeStreamProvider<ServiceStatus> serviceStatusProvider =
   final StreamController<ServiceStatus> controller =
       StreamController<ServiceStatus>();
 
-  // Первый снимок сразу.
   controller.add(snapshot());
 
-  // Polling каждые 2 секунды для обновления runtime-состояния.
   final Timer timer = Timer.periodic(
     const Duration(seconds: 2),
     (_) {
