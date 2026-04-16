@@ -204,7 +204,14 @@ class KodiSyncService {
           );
 
           if (existing != null) {
+            final bool ratingChanged = importRatings &&
+                movie.userRating != null &&
+                (existing.userRating == null || existing.userRating == 0);
             await _updateItem(existing, movie, importRatings);
+            if (ratingChanged) {
+              _kodiApi.addLog('sync', 'info',
+                  '${movie.title}: rating → ${movie.userRating}/10');
+            }
             updated++;
           } else {
             // New movie — add to collection.
@@ -240,9 +247,12 @@ class KodiSyncService {
               }
             }
 
+            _kodiApi.addLog('sync', 'info',
+                '${movie.title}: added as $status');
             added++;
           }
         } on Exception catch (e) {
+          _kodiApi.addLog('sync', 'error', '${movie.title}: $e');
           _log.fine('Sync error for ${movie.title}: $e');
           errors++;
         }
@@ -250,6 +260,9 @@ class KodiSyncService {
 
       final String timestamp = DateTime.now().toIso8601String();
 
+      _kodiApi.addLog('sync', 'info',
+          'Done: $updated upd, $added new, $errors err '
+          '(${movies.length} total)');
       _log.info('Sync complete: $updated updated, $added added, '
           '$errors errors');
 
@@ -331,7 +344,9 @@ class KodiSyncService {
       await _db.updateItemUserComment(existing.id, comment);
     }
 
-    if (importRatings && movie.userRating != null && existing.userRating == 0) {
+    if (importRatings &&
+        movie.userRating != null &&
+        (existing.userRating == null || existing.userRating == 0)) {
       await _db.updateItemUserRating(existing.id, movie.userRating);
     }
 
