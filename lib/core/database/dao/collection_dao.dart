@@ -283,9 +283,8 @@ class CollectionDao {
         <Object?>[collectionId, mediaType.value, externalId],
       );
     } else {
-      where.write(
-        'collection_id IS NULL AND media_type = ? AND external_id = ?',
-      );
+      // Поиск по всем коллекциям (без фильтра по collection_id).
+      where.write('media_type = ? AND external_id = ?');
       whereArgs.addAll(<Object?>[mediaType.value, externalId]);
     }
 
