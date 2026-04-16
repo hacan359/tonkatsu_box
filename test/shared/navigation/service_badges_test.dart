@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/core/services/discord_rpc_service.dart';
 import 'package:xerabora/core/services/kodi_sync_service.dart';
+import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/shared/navigation/service_badges.dart';
 import 'package:xerabora/shared/navigation/service_status_provider.dart';
 import 'package:xerabora/shared/theme/app_assets.dart';
@@ -40,10 +42,10 @@ void main() {
       expect(find.byType(SvgPicture), findsNothing);
     });
 
-    testWidgets('renders Kodi icon when kodiEnabled',
+    testWidgets('renders Kodi icon when kodiConfigured',
         (WidgetTester tester) async {
       await tester.pumpWidget(buildWidget(
-        status: const ServiceStatus(kodiEnabled: true, kodiRunning: true),
+        status: const ServiceStatus(kodiConfigured: true, kodiRunning: true),
       ));
       await tester.pumpAndSettle();
 
@@ -70,11 +72,11 @@ void main() {
       expect(discordIcon, findsOneWidget);
     });
 
-    testWidgets('renders both icons when both enabled',
+    testWidgets('renders both icons when both active',
         (WidgetTester tester) async {
       await tester.pumpWidget(buildWidget(
         status: const ServiceStatus(
-          kodiEnabled: true,
+          kodiConfigured: true,
           kodiRunning: true,
           discordEnabled: true,
           discordConnected: true,
@@ -85,15 +87,19 @@ void main() {
       expect(find.byType(SvgPicture), findsNWidgets(2));
     });
 
-    testWidgets('Kodi icon tap calls stop when running',
+    testWidgets('Kodi icon tap calls stop and persists disabled',
         (WidgetTester tester) async {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+      final SharedPreferences prefs =
+          await SharedPreferences.getInstance();
       final MockKodiSyncService mockSync = MockKodiSyncService();
       when(() => mockSync.isRunning).thenReturn(true);
 
       await tester.pumpWidget(buildWidget(
-        status: const ServiceStatus(kodiEnabled: true, kodiRunning: true),
+        status: const ServiceStatus(kodiConfigured: true, kodiRunning: true),
         extraOverrides: <Override>[
           kodiSyncServiceProvider.overrideWithValue(mockSync),
+          sharedPreferencesProvider.overrideWithValue(prefs),
         ],
       ));
       await tester.pumpAndSettle();
@@ -104,8 +110,11 @@ void main() {
       verify(() => mockSync.stop()).called(1);
     });
 
-    testWidgets('Discord icon tap calls disable when connected',
+    testWidgets('Discord icon tap calls disable and persists',
         (WidgetTester tester) async {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+      final SharedPreferences prefs =
+          await SharedPreferences.getInstance();
       final MockDiscordRpcService mockDiscord = MockDiscordRpcService();
       when(() => mockDiscord.disableRaSync()).thenAnswer((_) async {});
       when(() => mockDiscord.disable()).thenAnswer((_) async {});
@@ -115,6 +124,7 @@ void main() {
             discordEnabled: true, discordConnected: true),
         extraOverrides: <Override>[
           discordRpcServiceProvider.overrideWithValue(mockDiscord),
+          sharedPreferencesProvider.overrideWithValue(prefs),
         ],
       ));
       await tester.pumpAndSettle();
@@ -126,8 +136,11 @@ void main() {
       verify(() => mockDiscord.disable()).called(1);
     });
 
-    testWidgets('Discord icon tap calls enable when disconnected',
+    testWidgets('Discord icon tap calls enable and persists',
         (WidgetTester tester) async {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+      final SharedPreferences prefs =
+          await SharedPreferences.getInstance();
       final MockDiscordRpcService mockDiscord = MockDiscordRpcService();
       when(() => mockDiscord.enable()).thenAnswer((_) async {});
 
@@ -136,6 +149,7 @@ void main() {
             discordEnabled: true, discordConnected: false),
         extraOverrides: <Override>[
           discordRpcServiceProvider.overrideWithValue(mockDiscord),
+          sharedPreferencesProvider.overrideWithValue(prefs),
         ],
       ));
       await tester.pumpAndSettle();

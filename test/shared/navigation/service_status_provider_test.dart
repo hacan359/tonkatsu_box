@@ -6,7 +6,7 @@ void main() {
     test('default constructor has all fields false', () {
       const ServiceStatus status = ServiceStatus();
 
-      expect(status.kodiEnabled, isFalse);
+      expect(status.kodiConfigured, isFalse);
       expect(status.kodiRunning, isFalse);
       expect(status.kodiSyncing, isFalse);
       expect(status.discordEnabled, isFalse);
@@ -19,8 +19,8 @@ void main() {
       expect(status.hasActiveServices, isFalse);
     });
 
-    test('hasActiveServices returns true when kodiEnabled', () {
-      const ServiceStatus status = ServiceStatus(kodiEnabled: true);
+    test('hasActiveServices returns true when kodiConfigured', () {
+      const ServiceStatus status = ServiceStatus(kodiConfigured: true);
       expect(status.hasActiveServices, isTrue);
     });
 
@@ -31,7 +31,7 @@ void main() {
 
     test('hasActiveServices returns true when both enabled', () {
       const ServiceStatus status = ServiceStatus(
-        kodiEnabled: true,
+        kodiConfigured: true,
         discordEnabled: true,
       );
       expect(status.hasActiveServices, isTrue);
@@ -39,7 +39,7 @@ void main() {
 
     test('all fields can be set via constructor', () {
       const ServiceStatus status = ServiceStatus(
-        kodiEnabled: true,
+        kodiConfigured: true,
         kodiRunning: true,
         kodiSyncing: true,
         discordEnabled: true,
@@ -47,7 +47,7 @@ void main() {
         discordRaSyncActive: true,
       );
 
-      expect(status.kodiEnabled, isTrue);
+      expect(status.kodiConfigured, isTrue);
       expect(status.kodiRunning, isTrue);
       expect(status.kodiSyncing, isTrue);
       expect(status.discordEnabled, isTrue);
