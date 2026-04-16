@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/api/kodi_api.dart';
 import '../../../core/database/database_service.dart';
 import '../../../core/services/kodi_import_service.dart';
+import '../../../core/services/kodi_sync_service.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/kodi_application_info.dart';
@@ -60,6 +61,18 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
   final TextEditingController _paramsController = TextEditingController();
   String? _rawResponse;
   bool _isSendingRaw = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Auto-start sync if enabled.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final KodiSettingsState settings = ref.read(kodiSettingsProvider);
+      if (settings.enabled && settings.targetCollectionId != null) {
+        _startSync(settings);
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -237,6 +250,28 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
       setState(() => _isImporting = false);
       context.showSnack(e.toString(), type: SnackType.error);
     }
+  }
+
+  void _startSync(KodiSettingsState settings) {
+    if (settings.targetCollectionId == null) return;
+
+    ref.read(kodiSyncServiceProvider).start(
+          intervalSeconds: settings.syncIntervalSeconds,
+          targetCollectionId: settings.targetCollectionId!,
+          importRatings: settings.importRatings,
+          onSyncTimestamp: (String timestamp) {
+            ref
+                .read(kodiSettingsProvider.notifier)
+                .setLastSyncTimestamp(timestamp);
+          },
+          onResult: (KodiSyncResult result) {
+            if (result.hasChanges && mounted) {
+              // Invalidate UI providers when sync finds changes.
+              ref.invalidate(collectionsProvider);
+              ref.invalidate(allItemsNotifierProvider);
+            }
+          },
+        );
   }
 
   void _showIntervalPicker(KodiSettingsState settings) {
@@ -638,14 +673,23 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
       children: <Widget>[
         SettingsTile(
           title: 'Enable Kodi sync',
+          subtitle: settings.enabled
+              ? 'Active while Tonkatsu is running'
+              : null,
           showChevron: false,
           trailing: Switch(
             value: settings.enabled,
-            onChanged: settings.hasConnection
+            onChanged: settings.hasConnection &&
+                    settings.targetCollectionId != null
                 ? (bool value) {
                     ref
                         .read(kodiSettingsProvider.notifier)
                         .setEnabled(enabled: value);
+                    if (value) {
+                      _startSync(settings);
+                    } else {
+                      ref.read(kodiSyncServiceProvider).stop();
+                    }
                   }
                 : null,
           ),
@@ -694,7 +738,14 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
             ),
           ),
 
-        // — Last sync —
+        // — Sync status —
+        SettingsTile(
+          title: 'Sync status',
+          value: ref.read(kodiSyncServiceProvider).isRunning
+              ? 'Running'
+              : 'Stopped',
+          showChevron: false,
+        ),
         SettingsTile(
           title: 'Last sync',
           value: settings.lastSyncTimestamp ?? 'Never',

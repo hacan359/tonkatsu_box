@@ -5,14 +5,12 @@ import 'package:mocktail/mocktail.dart';
 import 'package:xerabora/core/api/kodi_api.dart';
 import 'package:xerabora/core/api/tmdb_api.dart';
 import 'package:xerabora/core/services/kodi_import_service.dart';
-import 'package:xerabora/shared/models/collection.dart';
-import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/kodi_movie.dart';
 import 'package:xerabora/shared/models/kodi_unique_ids.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/movie.dart';
-import 'package:xerabora/shared/models/tv_show.dart';
+import 'package:xerabora/shared/models/universal_import_result.dart';
 
 import '../../helpers/test_helpers.dart';
 
@@ -55,7 +53,8 @@ void main() {
         .thenAnswer((_) async {});
   });
 
-  KodiMovie _movie({
+  // ignore: no_leading_underscores_for_local_identifiers
+  KodiMovie createMovie({
     int movieId = 1,
     String title = 'Test Movie',
     int? tmdbId = 100,
@@ -121,7 +120,7 @@ void main() {
   group('KodiImportService', () {
     group('importLibrary', () {
       test('imports watched movie as completed', () async {
-        final KodiMovie movie = _movie(playcount: 2);
+        final KodiMovie movie = createMovie(playcount: 2);
         stubGetMovies(<KodiMovie>[movie]);
         stubTmdbGetMovie();
         stubNoExistingItem();
@@ -147,7 +146,7 @@ void main() {
       });
 
       test('imports unwatched movie as planned', () async {
-        final KodiMovie movie = _movie(
+        final KodiMovie movie = createMovie(
           playcount: 0,
           lastPlayed: null,
         );
@@ -174,7 +173,7 @@ void main() {
       });
 
       test('imports started but not finished movie as inProgress', () async {
-        final KodiMovie movie = _movie(playcount: 0);
+        final KodiMovie movie = createMovie(playcount: 0);
         stubGetMovies(<KodiMovie>[movie]);
         stubTmdbGetMovie();
         stubNoExistingItem();
@@ -196,7 +195,7 @@ void main() {
       });
 
       test('imports userRating when importRatings=true', () async {
-        final KodiMovie movie = _movie(userRating: 8);
+        final KodiMovie movie = createMovie(userRating: 8);
         stubGetMovies(<KodiMovie>[movie]);
         stubTmdbGetMovie();
         stubNoExistingItem();
@@ -213,7 +212,7 @@ void main() {
       });
 
       test('skips userRating when importRatings=false', () async {
-        final KodiMovie movie = _movie(userRating: 8);
+        final KodiMovie movie = createMovie(userRating: 8);
         stubGetMovies(<KodiMovie>[movie]);
         stubTmdbGetMovie();
         stubNoExistingItem();
@@ -230,7 +229,7 @@ void main() {
       });
 
       test('writes comment with metadata', () async {
-        final KodiMovie movie = _movie(
+        final KodiMovie movie = createMovie(
           playcount: 3,
           lastPlayed: DateTime(2026, 4, 15),
           dateAdded: DateTime(2023, 12, 29),
@@ -258,7 +257,7 @@ void main() {
       });
 
       test('counts unmatched when no tmdb id', () async {
-        final KodiMovie movie = _movie(tmdbId: null);
+        final KodiMovie movie = createMovie(tmdbId: null);
         stubGetMovies(<KodiMovie>[movie]);
 
         final KodiImportResult result = await service.importLibrary(
@@ -273,12 +272,11 @@ void main() {
       });
 
       test('resolves tmdb via imdb fallback', () async {
-        final KodiMovie movie = _movie(tmdbId: null, imdbId: 'tt1234567');
+        final KodiMovie movie = createMovie(tmdbId: null, imdbId: 'tt1234567');
         stubGetMovies(<KodiMovie>[movie]);
         when(() => mockTmdbApi.findByImdbId('tt1234567')).thenAnswer(
-          (_) async => TmdbFindResult(
-            movies: <Movie>[const Movie(tmdbId: 200, title: 'Found')],
-            tvShows: <TvShow>[],
+          (_) async => const TmdbFindResult(
+            movies: <Movie>[Movie(tmdbId: 200, title: 'Found')],
           ),
         );
         when(() => mockTmdbApi.getMovie(200))
@@ -303,7 +301,7 @@ void main() {
       });
 
       test('creates sub-collection from set', () async {
-        final KodiMovie movie = _movie(set: 'Harry Potter Collection');
+        final KodiMovie movie = createMovie(set: 'Harry Potter Collection');
         stubGetMovies(<KodiMovie>[movie]);
         stubTmdbGetMovie();
         stubNoExistingItem();
@@ -338,7 +336,7 @@ void main() {
       });
 
       test('reuses existing sub-collection from set', () async {
-        final KodiMovie movie = _movie(set: 'HP Collection');
+        final KodiMovie movie = createMovie(set: 'HP Collection');
         stubGetMovies(<KodiMovie>[movie]);
         stubTmdbGetMovie();
         stubNoExistingItem();
@@ -372,7 +370,7 @@ void main() {
       });
 
       test('updates existing item instead of duplicating', () async {
-        final KodiMovie movie = _movie(playcount: 2);
+        final KodiMovie movie = createMovie(playcount: 2);
         stubGetMovies(<KodiMovie>[movie]);
         stubTmdbGetMovie();
 
@@ -405,7 +403,7 @@ void main() {
       });
 
       test('creates collection lazily via callback', () async {
-        stubGetMovies(<KodiMovie>[_movie()]);
+        stubGetMovies(<KodiMovie>[createMovie()]);
         stubTmdbGetMovie();
         stubNoExistingItem();
         stubAddItem();
@@ -440,7 +438,7 @@ void main() {
       });
 
       test('reports progress through all stages', () async {
-        stubGetMovies(<KodiMovie>[_movie()]);
+        stubGetMovies(<KodiMovie>[createMovie()]);
         stubTmdbGetMovie();
         stubNoExistingItem();
         stubAddItem();
@@ -471,7 +469,7 @@ void main() {
           collectionsCreated: 1,
         );
 
-        final universal = result.toUniversal();
+        final UniversalImportResult universal = result.toUniversal();
         expect(universal.sourceName, 'Kodi');
         expect(universal.success, isTrue);
         expect(universal.totalImported, 5);
