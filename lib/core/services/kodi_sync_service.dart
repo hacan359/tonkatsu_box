@@ -210,11 +210,11 @@ class KodiSyncService {
           if (existing != null) {
             final bool ratingChanged = importRatings &&
                 movie.userRating != null &&
-                (existing.userRating == null || existing.userRating == 0);
+                existing.userRating != movie.userRating;
             await _updateItem(existing, movie, importRatings);
             if (ratingChanged) {
               _kodiApi.addLog('sync', 'info',
-                  '${movie.title}: rating → ${movie.userRating}/10');
+                  '${movie.title}: rating ${existing.userRating ?? 0} → ${movie.userRating}/10');
             }
             updated++;
           } else if (targetExists) {
@@ -348,9 +348,7 @@ class KodiSyncService {
       await _db.updateItemUserComment(existing.id, comment);
     }
 
-    if (importRatings &&
-        movie.userRating != null &&
-        (existing.userRating == null || existing.userRating == 0)) {
+    if (importRatings && movie.userRating != null) {
       await _db.updateItemUserRating(existing.id, movie.userRating);
     }
 

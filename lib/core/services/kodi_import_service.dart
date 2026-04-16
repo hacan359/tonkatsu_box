@@ -422,9 +422,7 @@ class KodiImportService {
     }
 
     // Обновляем рейтинг.
-    if (importRatings &&
-        movie.userRating != null &&
-        (existing.userRating == null || existing.userRating == 0)) {
+    if (importRatings && movie.userRating != null) {
       await _db.updateItemUserRating(existing.id, movie.userRating);
     }
 
