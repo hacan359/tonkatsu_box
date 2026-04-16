@@ -185,7 +185,11 @@ class KodiSyncService {
         return KodiSyncResult.empty;
       }
 
-      // 2. Process all movies — LAN is fast, no need to filter.
+      // 2. Verify target collection exists (may have been deleted).
+      final bool targetExists =
+          await _db.getCollectionById(targetCollectionId) != null;
+
+      // 3. Process all movies — LAN is fast, no need to filter.
       // Ratings, playcount, lastplayed can all change independently.
       int updated = 0;
       int added = 0;
@@ -196,9 +200,9 @@ class KodiSyncService {
           final int? tmdbId = await _resolveTmdbId(movie);
           if (tmdbId == null) continue;
 
-          // Check if already in collection.
+          // Check if already in ANY collection (movies may be in sub-collections).
           final CollectionItem? existing = await _db.findCollectionItem(
-            collectionId: targetCollectionId,
+            collectionId: null,
             mediaType: MediaType.movie,
             externalId: tmdbId,
           );
@@ -213,7 +217,7 @@ class KodiSyncService {
                   '${movie.title}: rating → ${movie.userRating}/10');
             }
             updated++;
-          } else {
+          } else if (targetExists) {
             // New movie — add to collection.
             final Movie? tmdbMovie = await _tmdbApi.getMovie(tmdbId);
             if (tmdbMovie != null) {
