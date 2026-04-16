@@ -477,6 +477,20 @@ class DatabaseService {
   Future<Collection?> getCollectionById(int id) =>
       collectionDao.getCollectionById(id);
 
+  /// Ищет ВСЕ элементы по mediaType + externalId во всех коллекциях.
+  Future<List<CollectionItem>> findAllCollectionItems({
+    required MediaType mediaType,
+    required int externalId,
+  }) =>
+      collectionDao.findAllCollectionItems(
+        mediaType: mediaType,
+        externalId: externalId,
+      );
+
+  /// Ищет коллекцию по точному имени.
+  Future<Collection?> findCollectionByName(String name) =>
+      collectionDao.findCollectionByName(name);
+
   /// Создаёт новую коллекцию и возвращает её с присвоенным ID.
   Future<Collection> createCollection({
     required String name,

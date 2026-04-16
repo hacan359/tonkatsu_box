@@ -11,7 +11,9 @@ import 'package:gamepads/gamepads.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:xerabora/core/api/igdb_api.dart';
+import 'package:xerabora/core/api/kodi_api.dart';
 import 'package:xerabora/core/api/steamgriddb_api.dart';
+import 'package:xerabora/core/services/kodi_sync_service.dart';
 import 'package:xerabora/core/api/tmdb_api.dart';
 import 'package:xerabora/core/api/anilist_api.dart';
 import 'package:xerabora/core/api/vndb_api.dart';
@@ -134,6 +136,10 @@ class MockAniListApi extends Mock implements AniListApi {}
 class MockSteamApi extends Mock implements SteamApi {}
 
 class MockRaApi extends Mock implements RaApi {}
+
+class MockKodiApi extends Mock implements KodiApi {}
+
+class MockKodiSyncService extends Mock implements KodiSyncService {}
 
 // ===== Services =====
 

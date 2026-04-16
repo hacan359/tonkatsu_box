@@ -12,6 +12,7 @@ import '../../data/repositories/wishlist_repository.dart';
 import '../../shared/models/collection.dart';
 import '../../shared/models/collection_item.dart';
 import '../../shared/models/item_status.dart';
+import '../../shared/models/item_status_logic.dart';
 import '../../shared/models/media_type.dart';
 import '../../shared/models/movie.dart';
 import '../../shared/models/wishlist_item.dart';
@@ -309,14 +310,6 @@ class TraktZipImportService {
   final CollectionRepository _repository;
   final DatabaseService _database;
   final WishlistRepository _wishlistRepository;
-
-  /// Приоритет статусов для конфликт-резолюции.
-  static const Map<ItemStatus, int> _statusPriority = <ItemStatus, int>{
-    ItemStatus.notStarted: 0,
-    ItemStatus.planned: 1,
-    ItemStatus.inProgress: 2,
-    ItemStatus.completed: 3,
-  };
 
   // ---------------------------------------------------------------------------
   // Публичные методы
@@ -1203,16 +1196,6 @@ class TraktZipImportService {
     return ItemStatus.inProgress;
   }
 
-  /// Проверяет, имеет ли новый статус более высокий приоритет.
-  static bool _isHigherStatus(ItemStatus newStatus, ItemStatus existing) {
-    // Не перезаписываем dropped — пользователь решил осознанно
-    if (existing == ItemStatus.dropped) return false;
-
-    final int newPriority = _statusPriority[newStatus] ?? 0;
-    final int existingPriority = _statusPriority[existing] ?? 0;
-    return newPriority > existingPriority;
-  }
-
   /// Импортирует или обновляет элемент с конфликт-резолюцией.
   Future<_ImportItemResult> _importOrUpdateItem({
     required int collectionId,
@@ -1256,11 +1239,15 @@ class TraktZipImportService {
     // Конфликт-резолюция
     bool updated = false;
 
-    // Статус: повышаем если Trakt "выше"
-    if (_isHigherStatus(status, existing.status)) {
+    // Статус: повышаем через общее правило (защита dropped + не понижаем).
+    final ItemStatus? mergedStatus = mergeExternalStatus(
+      currentStatus: existing.status,
+      externalStatus: status,
+    );
+    if (mergedStatus != null) {
       await _repository.updateItemStatus(
         existing.id,
-        status,
+        mergedStatus,
         mediaType: mediaType,
       );
       updated = true;

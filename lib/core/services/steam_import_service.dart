@@ -7,6 +7,7 @@ import '../../shared/models/collection_item.dart';
 import '../../shared/models/collection.dart';
 import '../../shared/models/game.dart';
 import '../../shared/models/item_status.dart';
+import '../../shared/models/item_status_logic.dart';
 import '../../shared/models/media_type.dart';
 import '../../shared/models/universal_import_result.dart';
 import '../../shared/models/wishlist_item.dart';
@@ -294,20 +295,28 @@ class SteamImportService {
 
   /// Обновляет существующий элемент коллекции данными из Steam.
   ///
-  /// Обновляет статус (только повышение: notStarted → inProgress),
-  /// playtime комментарий и дату последней игры.
+  /// Повышает статус через [mergeExternalStatus] (защищает от понижения
+  /// и локальный `dropped`), обновляет playtime-комментарий и дату последней
+  /// игры.
   Future<void> _updateExistingItem(
     CollectionItem existing,
     SteamOwnedGame steamGame,
   ) async {
-    // Повышаем статус только с notStarted → inProgress
-    if (steamGame.playtimeMinutes > 0 &&
-        existing.status == ItemStatus.notStarted) {
-      await _db.updateItemStatus(
-        existing.id,
-        ItemStatus.inProgress,
-        mediaType: MediaType.game,
+    // Повышаем статус через общее правило: Steam означает "в процессе",
+    // если есть playtime. mergeExternalStatus не понизит completed и не
+    // тронет dropped.
+    if (steamGame.playtimeMinutes > 0) {
+      final ItemStatus? newStatus = mergeExternalStatus(
+        currentStatus: existing.status,
+        externalStatus: ItemStatus.inProgress,
       );
+      if (newStatus != null) {
+        await _db.updateItemStatus(
+          existing.id,
+          newStatus,
+          mediaType: MediaType.game,
+        );
+      }
     }
 
     // Обновляем playtime комментарий

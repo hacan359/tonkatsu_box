@@ -16,6 +16,7 @@ import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../core/services/update_service.dart';
+import '../providers/kodi_settings_provider.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/inline_text_field.dart';
 import '../widgets/settings_group.dart';
@@ -34,6 +35,7 @@ import 'ra_import_screen.dart';
 import 'steam_import_screen.dart';
 import 'trakt_import_screen.dart';
 import 'debug_hub_screen.dart';
+import 'kodi_screen.dart';
 import 'gamepad_debug_screen.dart';
 import 'profiles_screen.dart';
 import '../../../shared/models/profile.dart';
@@ -303,6 +305,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             subtitle: l.settingsApiKeysSubtitle,
             value: _apiKeysValue(settings),
             onTap: () => _pushScreen(const CredentialsScreen()),
+          ),
+        ],
+      ),
+      const SizedBox(height: AppSpacing.md),
+
+      // INTEGRATIONS
+      SettingsGroup(
+        title: 'Integrations',
+        children: <Widget>[
+          SettingsTile(
+            title: 'Kodi',
+            subtitle: 'Watch sync from Kodi media player',
+            value: ref.watch(kodiSettingsProvider).enabled
+                ? 'On'
+                : '',
+            onTap: () => _pushScreen(const KodiScreen()),
           ),
         ],
       ),

@@ -90,6 +90,21 @@ class CollectionDao {
     return Collection.fromDb(rows.first);
   }
 
+  /// Ищет коллекцию по точному имени.
+  ///
+  /// Возвращает первую коллекцию с таким именем, или null.
+  Future<Collection?> findCollectionByName(String name) async {
+    final Database db = await _getDatabase();
+    final List<Map<String, dynamic>> rows = await db.query(
+      'collections',
+      where: 'name = ?',
+      whereArgs: <Object?>[name],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return Collection.fromDb(rows.first);
+  }
+
   /// Создаёт новую коллекцию и возвращает её с присвоенным ID.
   Future<Collection> createCollection({
     required String name,
@@ -268,9 +283,8 @@ class CollectionDao {
         <Object?>[collectionId, mediaType.value, externalId],
       );
     } else {
-      where.write(
-        'collection_id IS NULL AND media_type = ? AND external_id = ?',
-      );
+      // Поиск по всем коллекциям (без фильтра по collection_id).
+      where.write('media_type = ? AND external_id = ?');
       whereArgs.addAll(<Object?>[mediaType.value, externalId]);
     }
 
@@ -289,6 +303,20 @@ class CollectionDao {
 
     if (rows.isEmpty) return null;
     return CollectionItem.fromDb(rows.first);
+  }
+
+  /// Ищет ВСЕ элементы по mediaType + externalId во всех коллекциях.
+  Future<List<CollectionItem>> findAllCollectionItems({
+    required MediaType mediaType,
+    required int externalId,
+  }) async {
+    final Database db = await _getDatabase();
+    final List<Map<String, dynamic>> rows = await db.query(
+      'collection_items',
+      where: 'media_type = ? AND external_id = ?',
+      whereArgs: <Object?>[mediaType.value, externalId],
+    );
+    return rows.map(CollectionItem.fromDb).toList();
   }
 
   /// Добавляет элемент в коллекцию.
