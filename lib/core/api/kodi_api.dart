@@ -46,6 +46,38 @@ class KodiApiException implements Exception {
   String toString() => 'KodiApiException($statusCode): $message';
 }
 
+/// Запись в логе Kodi API запросов.
+class KodiLogEntry {
+  /// Создаёт [KodiLogEntry].
+  const KodiLogEntry({
+    required this.timestamp,
+    required this.method,
+    required this.level,
+    required this.message,
+  });
+
+  /// Время записи.
+  final DateTime timestamp;
+
+  /// JSON-RPC метод (или action).
+  final String method;
+
+  /// Уровень: info, warn, error.
+  final String level;
+
+  /// Краткое сообщение.
+  final String message;
+
+  /// Форматированная строка для отображения.
+  String get formatted {
+    final String time =
+        '${timestamp.hour.toString().padLeft(2, '0')}:'
+        '${timestamp.minute.toString().padLeft(2, '0')}:'
+        '${timestamp.second.toString().padLeft(2, '0')}';
+    return '[$time] [$level] $method — $message';
+  }
+}
+
 /// Клиент Kodi JSON-RPC API.
 ///
 /// Минимальный набор методов, нужных для passive watch-sync:
@@ -75,6 +107,12 @@ class KodiApi {
   String? _username;
   String? _password;
   int _nextId = 1;
+
+  /// Лог последних запросов (для debug-панели). Последние 50 записей.
+  final List<KodiLogEntry> requestLog = <KodiLogEntry>[];
+
+  /// Максимальное количество записей в логе.
+  static const int _maxLogEntries = 50;
 
   /// Задаёт параметры подключения.
   ///
@@ -267,16 +305,19 @@ class KodiApi {
         final Map<String, dynamic>? error =
             raw['error'] as Map<String, dynamic>?;
         final String msg = (error?['message'] as String?) ?? 'JSON-RPC error';
+        _addLog(method, 'error', msg);
         throw KodiApiException(
           msg,
           detail: 'Kodi error for $method: ${jsonEncode(error)}',
         );
       }
 
+      _addLog(method, 'info', 'OK');
       return raw;
     } on DioException catch (e) {
       final int? statusCode = e.response?.statusCode;
       final String message = _messageForDioException(e, statusCode);
+      _addLog(method, 'error', message);
       _log.warning('Kodi API error on $method: $message', e);
       throw KodiApiException(
         message,
@@ -289,6 +330,22 @@ class KodiApi {
       );
     }
   }
+
+  void _addLog(String method, String level, String message) {
+    requestLog.add(KodiLogEntry(
+      timestamp: DateTime.now(),
+      method: method,
+      level: level,
+      message: message,
+    ));
+    if (requestLog.length > _maxLogEntries) {
+      requestLog.removeAt(0);
+    }
+  }
+
+  /// Добавляет кастомную запись в лог (для import/sync service).
+  void addLog(String method, String level, String message) =>
+      _addLog(method, level, message);
 
   /// Закрывает HTTP клиент.
   void dispose() {

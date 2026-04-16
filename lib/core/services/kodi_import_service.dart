@@ -221,7 +221,8 @@ class KodiImportService {
 
         if (tmdbId == null) {
           unmatched++;
-          _log.fine('Unmatched: ${movie.title} (${movie.year})');
+          _kodiApi.addLog('import', 'warn',
+              'Unmatched: ${movie.title} (${movie.year})');
           continue;
         }
 
@@ -252,6 +253,9 @@ class KodiImportService {
 
         if (existing != null) {
           await _updateExistingItem(existing, movie, importRatings);
+          _kodiApi.addLog('import', 'info',
+              'Updated: ${movie.title} (rating=${movie.userRating}, '
+              'playcount=${movie.playcount})');
           updated++;
           continue;
         }
@@ -276,6 +280,8 @@ class KodiImportService {
 
           if (importRatings && movie.userRating != null) {
             await _db.updateItemUserRating(itemId, movie.userRating);
+            _kodiApi.addLog('import', 'info',
+                '  Rating set: ${movie.userRating}/10');
           }
 
           if (movie.lastPlayed != null) {
@@ -285,6 +291,10 @@ class KodiImportService {
             );
           }
         }
+
+        _kodiApi.addLog('import', 'info',
+            'Added: ${movie.title} → $status '
+            '(collection=$itemCollectionId)');
 
         imported++;
       } on Exception catch (e) {

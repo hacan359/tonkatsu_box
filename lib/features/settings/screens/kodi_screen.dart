@@ -188,6 +188,13 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
       final KodiImportService service =
           ref.read(kodiImportServiceProvider);
 
+      // Сохраняем target для existing collection тоже.
+      if (!_useNewCollection && _selectedCollectionId != null) {
+        await ref
+            .read(kodiSettingsProvider.notifier)
+            .setTargetCollectionId(_selectedCollectionId);
+      }
+
       final KodiImportResult result = await service.importLibrary(
         collectionId: _useNewCollection ? null : _selectedCollectionId,
         createCollection: _useNewCollection
@@ -703,6 +710,87 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
     );
   }
 
+  Widget _buildRequestLog() {
+    final List<KodiLogEntry> log = ref.read(kodiApiProvider).requestLog;
+
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              Text(
+                'Request Log (${log.length})',
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.textTertiary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              if (log.isNotEmpty)
+                IconButton(
+                  icon: const Icon(Icons.copy, size: 14),
+                  color: AppColors.textTertiary,
+                  visualDensity: VisualDensity.compact,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  tooltip: 'Copy log',
+                  onPressed: () {
+                    final String text =
+                        log.map((KodiLogEntry e) => e.formatted).join('\n');
+                    Clipboard.setData(ClipboardData(text: text));
+                    context.showSnack('Log copied');
+                  },
+                ),
+              if (log.isNotEmpty)
+                IconButton(
+                  icon: const Icon(Icons.delete_outline, size: 14),
+                  color: AppColors.textTertiary,
+                  visualDensity: VisualDensity.compact,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  tooltip: 'Clear log',
+                  onPressed: () {
+                    ref.read(kodiApiProvider).requestLog.clear();
+                    setState(() {});
+                  },
+                ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Container(
+            width: double.infinity,
+            constraints: const BoxConstraints(maxHeight: 200),
+            padding: const EdgeInsets.all(AppSpacing.sm),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+              border: Border.all(color: AppColors.surfaceBorder),
+            ),
+            child: log.isEmpty
+                ? Text(
+                    'No requests yet',
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.textTertiary,
+                    ),
+                  )
+                : SingleChildScrollView(
+                    reverse: true,
+                    child: SelectableText(
+                      log.map((KodiLogEntry e) => e.formatted).join('\n'),
+                      style: AppTypography.bodySmall.copyWith(
+                        fontFamily: 'monospace',
+                        fontSize: 11,
+                      ),
+                    ),
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // ==================== Debug ====================
 
   Widget _buildDebugSection(KodiSettingsState settings) {
@@ -767,6 +855,9 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
             }
           },
         ),
+
+        // — Request Log —
+        _buildRequestLog(),
 
         // — Raw JSON-RPC —
         Padding(
