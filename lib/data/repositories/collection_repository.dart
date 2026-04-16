@@ -278,6 +278,11 @@ class CollectionRepository {
     await _db.updateItemUserRating(id, rating);
   }
 
+  /// Обновляет потраченное время (в минутах) для элемента коллекции.
+  Future<void> updateItemTimeSpent(int id, int totalMinutes) async {
+    await _db.updateItemTimeSpent(id, totalMinutes);
+  }
+
   /// Обновляет даты активности элемента.
   Future<void> updateItemActivityDates(
     int id, {

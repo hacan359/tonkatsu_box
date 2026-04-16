@@ -2279,6 +2279,26 @@ class SRu extends S {
   }
 
   @override
+  String get timeSpentTitle => 'Потрачено времени';
+
+  @override
+  String timeSpentValue(int hours, int minutes) {
+    return '$hoursч $minutesм';
+  }
+
+  @override
+  String get timeSpentAdd => 'Добавить время';
+
+  @override
+  String get timeSpentEdit => 'Изменить время';
+
+  @override
+  String get timeSpentHours => 'Часы';
+
+  @override
+  String get timeSpentMinutes => 'Минуты';
+
+  @override
   String get durationLessThanDay => 'менее дня';
 
   @override

@@ -251,6 +251,7 @@ abstract final class DatabaseSchema {
         last_activity_at INTEGER,
         user_rating INTEGER,
         tag_id INTEGER,
+        time_spent_minutes INTEGER NOT NULL DEFAULT 0,
         FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE,
         FOREIGN KEY (tag_id) REFERENCES collection_tags(id) ON DELETE SET NULL
       )

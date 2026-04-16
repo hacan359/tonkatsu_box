@@ -36,6 +36,7 @@ class CollectionItem with Exportable {
     this.currentSeason = 0,
     this.currentEpisode = 0,
     this.sortOrder = 0,
+    this.timeSpentMinutes = 0,
     this.authorComment,
     this.userComment,
     this.userRating,
@@ -76,6 +77,7 @@ class CollectionItem with Exportable {
       currentSeason: (row['current_season'] as int?) ?? 0,
       currentEpisode: (row['current_episode'] as int?) ?? 0,
       sortOrder: (row['sort_order'] as int?) ?? 0,
+      timeSpentMinutes: (row['time_spent_minutes'] as int?) ?? 0,
       status: ItemStatus.fromString(row['status'] as String),
       authorComment: row['author_comment'] as String?,
       userComment: row['user_comment'] as String?,
@@ -124,6 +126,7 @@ class CollectionItem with Exportable {
       platformId: json['platform_id'] as int?,
       currentSeason: (json['current_season'] as int?) ?? 0,
       currentEpisode: (json['current_episode'] as int?) ?? 0,
+      timeSpentMinutes: (json['time_spent_minutes'] as int?) ?? 0,
       status: json['status'] != null
           ? ItemStatus.fromString(json['status'] as String)
           : ItemStatus.notStarted,
@@ -183,6 +186,9 @@ class CollectionItem with Exportable {
 
   /// Порядок сортировки (для ручной сортировки drag-and-drop).
   final int sortOrder;
+
+  /// Потраченное время в минутах (ручной ввод пользователем).
+  final int timeSpentMinutes;
 
   /// Статус прохождения/просмотра.
   final ItemStatus status;
@@ -550,7 +556,7 @@ class CollectionItem with Exportable {
         'added_at', 'sort_order',
         'started_at', 'completed_at', 'last_activity_at',
         'status', 'current_season', 'current_episode',
-        'tag_id',
+        'tag_id', 'time_spent_minutes',
       };
 
   @override
@@ -573,6 +579,7 @@ class CollectionItem with Exportable {
       'author_comment': authorComment,
       'user_comment': userComment,
       'user_rating': userRating,
+      'time_spent_minutes': timeSpentMinutes,
       'added_at': addedAt.millisecondsSinceEpoch ~/ 1000,
       'sort_order': sortOrder,
       'started_at': startedAt != null
@@ -605,6 +612,7 @@ class CollectionItem with Exportable {
       data['user_comment'] = userComment;
       data['current_season'] = currentSeason;
       data['current_episode'] = currentEpisode;
+      data['time_spent_minutes'] = timeSpentMinutes;
       data['added_at'] = addedAt.millisecondsSinceEpoch ~/ 1000;
       data['sort_order'] = sortOrder;
       data['started_at'] = startedAt != null
@@ -633,6 +641,7 @@ class CollectionItem with Exportable {
     int? currentSeason,
     int? currentEpisode,
     int? sortOrder,
+    int? timeSpentMinutes,
     ItemStatus? status,
     String? authorComment,
     bool clearAuthorComment = false,
@@ -666,6 +675,7 @@ class CollectionItem with Exportable {
       currentSeason: currentSeason ?? this.currentSeason,
       currentEpisode: currentEpisode ?? this.currentEpisode,
       sortOrder: sortOrder ?? this.sortOrder,
+      timeSpentMinutes: timeSpentMinutes ?? this.timeSpentMinutes,
       status: status ?? this.status,
       authorComment:
           clearAuthorComment ? null : (authorComment ?? this.authorComment),

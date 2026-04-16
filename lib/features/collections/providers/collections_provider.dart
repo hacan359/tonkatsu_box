@@ -985,6 +985,49 @@ class CollectionItemsNotifier
     }
     ref.invalidate(allItemsNotifierProvider);
   }
+
+  /// Добавляет время (в минутах) к потраченному на элемент.
+  Future<void> addTimeSpent(int id, int minutesToAdd) async {
+    final List<CollectionItem>? items = state.valueOrNull;
+    final CollectionItem? item =
+        items?.cast<CollectionItem?>().firstWhere(
+              (CollectionItem? i) => i?.id == id,
+              orElse: () => null,
+            );
+    final int current = item?.timeSpentMinutes ?? 0;
+    final int total = current + minutesToAdd;
+    await _repository.updateItemTimeSpent(id, total);
+
+    if (items != null) {
+      state = AsyncData<List<CollectionItem>>(
+        items.map((CollectionItem i) {
+          if (i.id == id) {
+            return i.copyWith(timeSpentMinutes: total);
+          }
+          return i;
+        }).toList(),
+      );
+    }
+    ref.invalidate(allItemsNotifierProvider);
+  }
+
+  /// Устанавливает потраченное время (в минутах) вручную.
+  Future<void> setTimeSpent(int id, int totalMinutes) async {
+    await _repository.updateItemTimeSpent(id, totalMinutes);
+
+    final List<CollectionItem>? items = state.valueOrNull;
+    if (items != null) {
+      state = AsyncData<List<CollectionItem>>(
+        items.map((CollectionItem i) {
+          if (i.id == id) {
+            return i.copyWith(timeSpentMinutes: totalMinutes);
+          }
+          return i;
+        }).toList(),
+      );
+    }
+    ref.invalidate(allItemsNotifierProvider);
+  }
 }
 
 // ==================== Collected IDs ====================

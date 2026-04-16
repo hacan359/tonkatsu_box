@@ -537,6 +537,17 @@ class CollectionDao {
     );
   }
 
+  /// Обновляет потраченное время (в минутах) для элемента коллекции.
+  Future<void> updateItemTimeSpent(int id, int totalMinutes) async {
+    final Database db = await _getDatabase();
+    await db.update(
+      'collection_items',
+      <String, dynamic>{'time_spent_minutes': totalMinutes},
+      where: 'id = ?',
+      whereArgs: <Object?>[id],
+    );
+  }
+
   /// Обновляет пользовательский рейтинг элемента (1-10 или null).
   Future<void> updateItemUserRating(int id, int? rating) async {
     final Database db = await _getDatabase();
