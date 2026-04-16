@@ -90,6 +90,21 @@ class CollectionDao {
     return Collection.fromDb(rows.first);
   }
 
+  /// Ищет коллекцию по точному имени.
+  ///
+  /// Возвращает первую коллекцию с таким именем, или null.
+  Future<Collection?> findCollectionByName(String name) async {
+    final Database db = await _getDatabase();
+    final List<Map<String, dynamic>> rows = await db.query(
+      'collections',
+      where: 'name = ?',
+      whereArgs: <Object?>[name],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return Collection.fromDb(rows.first);
+  }
+
   /// Создаёт новую коллекцию и возвращает её с присвоенным ID.
   Future<Collection> createCollection({
     required String name,

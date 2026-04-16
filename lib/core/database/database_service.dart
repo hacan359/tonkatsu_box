@@ -477,6 +477,10 @@ class DatabaseService {
   Future<Collection?> getCollectionById(int id) =>
       collectionDao.getCollectionById(id);
 
+  /// Ищет коллекцию по точному имени.
+  Future<Collection?> findCollectionByName(String name) =>
+      collectionDao.findCollectionByName(name);
+
   /// Создаёт новую коллекцию и возвращает её с присвоенным ID.
   Future<Collection> createCollection({
     required String name,

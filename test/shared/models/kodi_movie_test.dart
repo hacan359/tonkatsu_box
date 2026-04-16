@@ -97,5 +97,80 @@ void main() {
       });
       expect(movie.userRating, 9);
     });
+
+    test('set парсится из непустой строки', () {
+      final KodiMovie movie = KodiMovie.fromJson(<String, dynamic>{
+        'movieid': 1,
+        'title': 'Test',
+        'set': 'Harry Potter Collection',
+      });
+      expect(movie.set, 'Harry Potter Collection');
+    });
+
+    test('set пустая строка → null', () {
+      final KodiMovie movie = KodiMovie.fromJson(<String, dynamic>{
+        'movieid': 1,
+        'title': 'Test',
+        'set': '',
+      });
+      expect(movie.set, isNull);
+    });
+
+    test('set отсутствует → null', () {
+      final KodiMovie movie = KodiMovie.fromJson(<String, dynamic>{
+        'movieid': 1,
+        'title': 'Test',
+      });
+      expect(movie.set, isNull);
+    });
+
+    test('dateadded парсится', () {
+      final KodiMovie movie = KodiMovie.fromJson(<String, dynamic>{
+        'movieid': 1,
+        'title': 'Test',
+        'dateadded': '2023-12-29 12:28:46',
+      });
+      expect(movie.dateAdded, DateTime(2023, 12, 29, 12, 28, 46));
+    });
+
+    test('communityRating парсится из double', () {
+      final KodiMovie movie = KodiMovie.fromJson(<String, dynamic>{
+        'movieid': 1,
+        'title': 'Test',
+        'rating': 7.8,
+      });
+      expect(movie.communityRating, 7.8);
+    });
+
+    test('communityRating 0 → null', () {
+      final KodiMovie movie = KodiMovie.fromJson(<String, dynamic>{
+        'movieid': 1,
+        'title': 'Test',
+        'rating': 0.0,
+      });
+      expect(movie.communityRating, isNull);
+    });
+
+    test('полный ответ включает set/dateadded/rating', () {
+      final KodiMovie movie = KodiMovie.fromJson(<String, dynamic>{
+        'movieid': 42,
+        'title': 'Inception',
+        'year': 2010,
+        'playcount': 1,
+        'lastplayed': '2026-04-12 22:30:11',
+        'userrating': 9,
+        'set': 'Nolan Collection',
+        'dateadded': '2023-01-01 10:00:00',
+        'rating': 8.365,
+        'uniqueid': <String, dynamic>{
+          'imdb': 'tt1375666',
+          'tmdb': '27205',
+        },
+      });
+
+      expect(movie.set, 'Nolan Collection');
+      expect(movie.dateAdded, DateTime(2023, 1, 1, 10));
+      expect(movie.communityRating, 8.365);
+    });
   });
 }

@@ -47,6 +47,14 @@ abstract class KodiSettingsKeys {
   /// Timestamp последней успешной синхронизации (ISO 8601).
   static String lastSyncTimestamp(String profileId) =>
       'kodi_last_sync_timestamp_$profileId';
+
+  /// ID целевой коллекции для импорта.
+  static String targetCollectionId(String profileId) =>
+      'kodi_target_collection_id_$profileId';
+
+  /// Создавать подколлекции из Kodi movie sets.
+  static String createSubCollections(String profileId) =>
+      'kodi_create_sub_collections_$profileId';
 }
 
 /// Порт Kodi HTTP JSON-RPC по умолчанию.
@@ -68,6 +76,8 @@ class KodiSettingsState {
     this.importRatings = false,
     this.addUnmatchedToWishlist = true,
     this.lastSyncTimestamp,
+    this.targetCollectionId,
+    this.createSubCollections = true,
   });
 
   /// Мастер-выключатель sync.
@@ -97,6 +107,12 @@ class KodiSettingsState {
   /// Timestamp последней синхронизации (ISO 8601).
   final String? lastSyncTimestamp;
 
+  /// ID целевой коллекции для импорта (null = создать новую).
+  final int? targetCollectionId;
+
+  /// Создавать подколлекции из Kodi movie sets.
+  final bool createSubCollections;
+
   /// Есть ли заполненный host для подключения.
   bool get hasConnection => host.isNotEmpty;
 
@@ -112,6 +128,9 @@ class KodiSettingsState {
     bool? addUnmatchedToWishlist,
     String? lastSyncTimestamp,
     bool clearLastSync = false,
+    int? targetCollectionId,
+    bool clearTargetCollection = false,
+    bool? createSubCollections,
   }) {
     return KodiSettingsState(
       enabled: enabled ?? this.enabled,
@@ -125,6 +144,10 @@ class KodiSettingsState {
           addUnmatchedToWishlist ?? this.addUnmatchedToWishlist,
       lastSyncTimestamp:
           clearLastSync ? null : (lastSyncTimestamp ?? this.lastSyncTimestamp),
+      targetCollectionId: clearTargetCollection
+          ? null
+          : (targetCollectionId ?? this.targetCollectionId),
+      createSubCollections: createSubCollections ?? this.createSubCollections,
     );
   }
 }
@@ -187,6 +210,11 @@ class KodiSettingsNotifier extends Notifier<KodiSettingsState> {
             true;
     final String? lastSyncTimestamp =
         _prefs.getString(KodiSettingsKeys.lastSyncTimestamp(_profileId));
+    final int? targetCollectionId =
+        _prefs.getInt(KodiSettingsKeys.targetCollectionId(_profileId));
+    final bool createSubCollections =
+        _prefs.getBool(KodiSettingsKeys.createSubCollections(_profileId)) ??
+            true;
 
     return KodiSettingsState(
       enabled: enabled,
@@ -198,6 +226,8 @@ class KodiSettingsNotifier extends Notifier<KodiSettingsState> {
       importRatings: importRatings,
       addUnmatchedToWishlist: addUnmatchedToWishlist,
       lastSyncTimestamp: lastSyncTimestamp,
+      targetCollectionId: targetCollectionId,
+      createSubCollections: createSubCollections,
     );
   }
 
@@ -285,6 +315,29 @@ class KodiSettingsNotifier extends Notifier<KodiSettingsState> {
     state = state.copyWith(lastSyncTimestamp: timestamp);
   }
 
+  /// Устанавливает целевую коллекцию для импорта.
+  Future<void> setTargetCollectionId(int? collectionId) async {
+    if (collectionId != null) {
+      await _prefs.setInt(
+        KodiSettingsKeys.targetCollectionId(_profileId),
+        collectionId,
+      );
+      state = state.copyWith(targetCollectionId: collectionId);
+    } else {
+      await _prefs.remove(KodiSettingsKeys.targetCollectionId(_profileId));
+      state = state.copyWith(clearTargetCollection: true);
+    }
+  }
+
+  /// Включает/выключает создание подколлекций из Kodi sets.
+  Future<void> setCreateSubCollections({required bool enabled}) async {
+    await _prefs.setBool(
+      KodiSettingsKeys.createSubCollections(_profileId),
+      enabled,
+    );
+    state = state.copyWith(createSubCollections: enabled);
+  }
+
   /// Сбрасывает timestamp последней синхронизации.
   ///
   /// Следующая синхронизация заберёт все items с `playcount > 0`.
@@ -304,6 +357,8 @@ class KodiSettingsNotifier extends Notifier<KodiSettingsState> {
     await _prefs.remove(KodiSettingsKeys.importRatings(_profileId));
     await _prefs.remove(KodiSettingsKeys.addUnmatchedToWishlist(_profileId));
     await _prefs.remove(KodiSettingsKeys.lastSyncTimestamp(_profileId));
+    await _prefs.remove(KodiSettingsKeys.targetCollectionId(_profileId));
+    await _prefs.remove(KodiSettingsKeys.createSubCollections(_profileId));
 
     _kodiApi.clearConnection();
     state = const KodiSettingsState();

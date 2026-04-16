@@ -7,16 +7,25 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/kodi_api.dart';
+import '../../../core/database/database_service.dart';
+import '../../../core/services/kodi_import_service.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
+import '../../../shared/models/collection.dart';
 import '../../../shared/models/kodi_application_info.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/sub_screen_title_bar.dart';
+import '../../collections/providers/canvas_provider.dart';
+import '../../collections/providers/collection_covers_provider.dart';
+import '../../collections/providers/collections_provider.dart';
+import '../../home/providers/all_items_provider.dart';
 import '../providers/kodi_settings_provider.dart';
+import '../providers/settings_provider.dart';
 import '../widgets/inline_text_field.dart';
 import '../widgets/settings_group.dart';
 import '../widgets/settings_tile.dart';
+import 'import_result_screen.dart';
 
 /// Breakpoint для переключения ширины контента.
 const double _desktopBreakpoint = 800;
@@ -35,6 +44,14 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
   bool _isTesting = false;
   String? _connectionResult;
   bool _connectionOk = false;
+
+  // — Import —
+  bool _isImporting = false;
+  KodiImportProgress? _importProgress;
+
+  // — Collection selector —
+  bool _useNewCollection = true;
+  int? _selectedCollectionId;
 
   // — Raw JSON-RPC —
   final TextEditingController _methodController = TextEditingController(
@@ -144,6 +161,84 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
     }
   }
 
+  Future<void> _startImport() async {
+    final KodiSettingsState settings = ref.read(kodiSettingsProvider);
+    final String authorName =
+        ref.read(settingsNotifierProvider).authorName;
+
+    setState(() {
+      _isImporting = true;
+      _importProgress = null;
+    });
+
+    try {
+      final KodiImportService service =
+          ref.read(kodiImportServiceProvider);
+
+      final KodiImportResult result = await service.importLibrary(
+        collectionId: _useNewCollection ? null : _selectedCollectionId,
+        createCollection: _useNewCollection
+            ? () async {
+                final DatabaseService db = ref.read(databaseServiceProvider);
+                final Collection collection = await db.createCollection(
+                  name: 'Kodi Library',
+                  author: authorName,
+                );
+                // Сохраняем как target для будущих sync.
+                await ref
+                    .read(kodiSettingsProvider.notifier)
+                    .setTargetCollectionId(collection.id);
+                return collection.id;
+              }
+            : null,
+        createSubCollections: settings.createSubCollections,
+        importRatings: settings.importRatings,
+        onProgress: (KodiImportProgress progress) {
+          if (mounted) {
+            setState(() => _importProgress = progress);
+          }
+        },
+      );
+
+      if (!mounted) return;
+
+      // Invalidate providers.
+      final int collectionId = result.collectionId;
+      ref.invalidate(collectionsProvider);
+      ref.invalidate(collectionStatsProvider(collectionId));
+      ref.invalidate(collectionCoversProvider(collectionId));
+      ref.invalidate(collectionItemsNotifierProvider(collectionId));
+      ref.invalidate(canvasNotifierProvider(collectionId));
+      ref.invalidate(allItemsNotifierProvider);
+
+      // Save last sync timestamp.
+      await ref
+          .read(kodiSettingsProvider.notifier)
+          .setLastSyncTimestamp(DateTime.now().toIso8601String());
+
+      setState(() => _isImporting = false);
+
+      // Fetch collection for result screen.
+      final Collection? resultCollection = await ref
+          .read(databaseServiceProvider)
+          .getCollectionById(collectionId);
+
+      if (!mounted) return;
+
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (BuildContext context) => ImportResultScreen(
+            result: result.toUniversal(collection: resultCollection),
+          ),
+        ),
+      );
+    } on Exception catch (e) {
+      if (!mounted) return;
+      setState(() => _isImporting = false);
+      context.showSnack(e.toString(), type: SnackType.error);
+    }
+  }
+
   void _showIntervalPicker(KodiSettingsState settings) {
     const List<int> intervals = <int>[30, 60, 300, 900];
     showDialog<void>(
@@ -207,6 +302,10 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
                 children: <Widget>[
                   _buildConnectionSection(settings),
                   const SizedBox(height: AppSpacing.md),
+                  if (settings.hasConnection) ...<Widget>[
+                    _buildImportSection(settings),
+                    const SizedBox(height: AppSpacing.md),
+                  ],
                   _buildSyncSection(settings),
                   if (settings.hasConnection) ...<Widget>[
                     const SizedBox(height: AppSpacing.md),
@@ -313,6 +412,224 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
     );
   }
 
+  // ==================== Import ====================
+
+  Widget _buildImportSection(KodiSettingsState settings) {
+    final AsyncValue<List<Collection>> collectionsAsync =
+        ref.watch(collectionsProvider);
+
+    return SettingsGroup(
+      title: 'Import',
+      subtitle: 'Import Kodi movie library',
+      children: <Widget>[
+        // Collection selector.
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                'Target collection',
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              RadioGroup<bool>(
+                groupValue: _useNewCollection,
+                onChanged: (bool? value) {
+                  if (value == null || _isImporting) return;
+                  setState(() {
+                    _useNewCollection = value;
+                    if (value) _selectedCollectionId = null;
+                  });
+                },
+                child: const Row(
+                  children: <Widget>[
+                    Radio<bool>(value: true),
+                    Text('Create new'),
+                    SizedBox(width: AppSpacing.md),
+                    Radio<bool>(value: false),
+                    Text('Existing'),
+                  ],
+                ),
+              ),
+              if (!_useNewCollection)
+                Padding(
+                  padding: const EdgeInsets.only(top: AppSpacing.xs),
+                  child: collectionsAsync.when(
+                    data: (List<Collection> collections) {
+                      if (collections.isEmpty) {
+                        return Text(
+                          'No collections yet',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColors.textTertiary,
+                          ),
+                        );
+                      }
+                      return DropdownButtonFormField<int>(
+                        initialValue: _selectedCollectionId,
+                        hint: const Text('Select collection'),
+                        isExpanded: true,
+                        items: collections.map((Collection c) {
+                          return DropdownMenuItem<int>(
+                            value: c.id,
+                            child: Text(
+                              c.name,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: _isImporting
+                            ? null
+                            : (int? v) =>
+                                setState(() => _selectedCollectionId = v),
+                      );
+                    },
+                    loading: () => const Center(
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                    error: (Object e, StackTrace s) => Text(
+                      'Error loading collections',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.error,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+
+        // Toggles.
+        SettingsTile(
+          title: 'Create sub-collections from Kodi sets',
+          subtitle: 'E.g. "Harry Potter Collection (kodi)"',
+          showChevron: false,
+          trailing: Switch(
+            value: settings.createSubCollections,
+            onChanged: (bool value) {
+              ref
+                  .read(kodiSettingsProvider.notifier)
+                  .setCreateSubCollections(enabled: value);
+            },
+          ),
+        ),
+        SettingsTile(
+          title: 'Import ratings from Kodi',
+          subtitle: 'Copy Kodi userrating (1–10) when empty',
+          showChevron: false,
+          trailing: Switch(
+            value: settings.importRatings,
+            onChanged: (bool value) {
+              ref
+                  .read(kodiSettingsProvider.notifier)
+                  .setImportRatings(enabled: value);
+            },
+          ),
+        ),
+
+        // Import button + progress.
+        if (_isImporting && _importProgress != null)
+          _buildImportProgress()
+        else
+          Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: FilledButton.icon(
+              onPressed: _canImport ? _startImport : null,
+              icon: const Icon(Icons.download),
+              label: const Text('Import from Kodi'),
+            ),
+          ),
+      ],
+    );
+  }
+
+  bool get _canImport =>
+      ref.read(kodiSettingsProvider).hasConnection &&
+      (_useNewCollection || _selectedCollectionId != null) &&
+      !_isImporting;
+
+  Widget _buildImportProgress() {
+    final KodiImportProgress progress = _importProgress!;
+
+    final String stageText = switch (progress.stage) {
+      KodiImportStage.fetchingLibrary => 'Fetching Kodi library...',
+      KodiImportStage.matchingMovies => 'Matching movies...',
+      KodiImportStage.completed => 'Import complete',
+    };
+
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(stageText, style: AppTypography.bodySmall),
+          const SizedBox(height: AppSpacing.sm),
+          LinearProgressIndicator(
+            value: progress.total > 0 ? progress.progress : null,
+          ),
+          if (progress.total > 0) ...<Widget>[
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              '${progress.current} / ${progress.total}',
+              style: AppTypography.bodySmall,
+            ),
+          ],
+          if (progress.currentName != null) ...<Widget>[
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              progress.currentName!,
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColors.textTertiary,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+          const SizedBox(height: AppSpacing.sm),
+          _buildStatRow(
+            Icons.check_circle,
+            AppColors.statusCompleted,
+            'Imported: ${progress.importedCount}',
+          ),
+          _buildStatRow(
+            Icons.sync,
+            AppColors.statusInProgress,
+            'Updated: ${progress.updatedCount}',
+          ),
+          _buildStatRow(
+            Icons.help_outline,
+            AppColors.textTertiary,
+            'Unmatched: ${progress.unmatchedCount}',
+          ),
+          if (progress.collectionsCreated > 0)
+            _buildStatRow(
+              Icons.folder,
+              AppColors.brand,
+              'Collections: ${progress.collectionsCreated}',
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatRow(IconData icon, Color color, String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: <Widget>[
+          Icon(icon, size: 16, color: color),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(child: Text(text, style: AppTypography.body)),
+        ],
+      ),
+    );
+  }
+
   // ==================== Sync ====================
 
   Widget _buildSyncSection(KodiSettingsState settings) {
@@ -337,32 +654,6 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
           title: 'Sync interval',
           value: _formatInterval(settings.syncIntervalSeconds),
           onTap: () => _showIntervalPicker(settings),
-        ),
-        SettingsTile(
-          title: 'Import ratings from Kodi',
-          subtitle: 'Copy Kodi userrating (1–10) when empty',
-          showChevron: false,
-          trailing: Switch(
-            value: settings.importRatings,
-            onChanged: (bool value) {
-              ref
-                  .read(kodiSettingsProvider.notifier)
-                  .setImportRatings(enabled: value);
-            },
-          ),
-        ),
-        SettingsTile(
-          title: 'Add unmatched to Wishlist',
-          subtitle: 'Items not in collection → Wishlist',
-          showChevron: false,
-          trailing: Switch(
-            value: settings.addUnmatchedToWishlist,
-            onChanged: (bool value) {
-              ref
-                  .read(kodiSettingsProvider.notifier)
-                  .setAddUnmatchedToWishlist(enabled: value);
-            },
-          ),
         ),
       ],
     );

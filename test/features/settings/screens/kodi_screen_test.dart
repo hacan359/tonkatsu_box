@@ -259,22 +259,6 @@ void main() {
         expect(find.text('1 min'), findsOneWidget); // default
       });
 
-      testWidgets('shows Import ratings toggle',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(await createWidget());
-        await tester.pumpAndSettle();
-
-        expect(find.text('Import ratings from Kodi'), findsOneWidget);
-      });
-
-      testWidgets('shows Add unmatched to Wishlist toggle',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(await createWidget());
-        await tester.pumpAndSettle();
-
-        expect(find.text('Add unmatched to Wishlist'), findsOneWidget);
-      });
-
       testWidgets('Enable sync switch disabled when host is empty',
           (WidgetTester tester) async {
         await tester.pumpWidget(await createWidget());

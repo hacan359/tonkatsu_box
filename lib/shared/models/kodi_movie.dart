@@ -17,6 +17,9 @@ class KodiMovie {
     this.playcount = 0,
     this.lastPlayed,
     this.userRating,
+    this.set,
+    this.dateAdded,
+    this.communityRating,
   });
 
   /// Парсит элемент массива `movies` из ответа `VideoLibrary.GetMovies`.
@@ -25,6 +28,7 @@ class KodiMovie {
   /// `lastplayed` приходит в формате `"YYYY-MM-DD HH:MM:SS"` (local time);
   /// пустая строка трактуется как "никогда не воспроизводился".
   factory KodiMovie.fromJson(Map<String, dynamic> json) {
+    final String? setRaw = json['set'] as String?;
     return KodiMovie(
       movieId: json['movieid'] as int,
       title: (json['title'] as String?) ?? '',
@@ -35,6 +39,9 @@ class KodiMovie {
       uniqueIds: KodiUniqueIds.fromJson(
         json['uniqueid'] as Map<String, dynamic>?,
       ),
+      set: (setRaw != null && setRaw.isNotEmpty) ? setRaw : null,
+      dateAdded: parseKodiDateTime(json['dateadded'] as String?),
+      communityRating: _parseCommunityRating(json['rating']),
     );
   }
 
@@ -61,6 +68,16 @@ class KodiMovie {
   /// Внешние идентификаторы — для матчинга с TMDB.
   final KodiUniqueIds uniqueIds;
 
+  /// Movie set / collection (e.g. "Harry Potter Collection").
+  /// null если фильм не входит в набор.
+  final String? set;
+
+  /// Когда фильм был добавлен в библиотеку Kodi.
+  final DateTime? dateAdded;
+
+  /// Community рейтинг от scraper'а (TMDB/IMDB), 0.0–10.0.
+  final double? communityRating;
+
   /// Пользователь смотрел фильм.
   bool get isWatched => playcount > 0;
 
@@ -76,6 +93,12 @@ class KodiMovie {
   static int? _parseRating(Object? raw) {
     if (raw is int && raw > 0) return raw;
     if (raw is double && raw > 0) return raw.round();
+    return null;
+  }
+
+  static double? _parseCommunityRating(Object? raw) {
+    if (raw is double && raw > 0) return raw;
+    if (raw is int && raw > 0) return raw.toDouble();
     return null;
   }
 }
