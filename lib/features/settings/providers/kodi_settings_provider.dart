@@ -5,6 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/api/kodi_api.dart';
 import '../../../core/services/kodi_sync_service.dart';
+import '../../collections/providers/collections_provider.dart';
+import '../../home/providers/all_items_provider.dart';
 import 'profile_provider.dart';
 import 'settings_provider.dart';
 
@@ -199,6 +201,12 @@ class KodiSettingsNotifier extends Notifier<KodiSettingsState> {
           importRatings: loaded.importRatings,
           onSyncTimestamp: (String timestamp) {
             setLastSyncTimestamp(timestamp);
+          },
+          onResult: (KodiSyncResult result) {
+            if (result.hasChanges) {
+              ref.invalidate(collectionsProvider);
+              ref.invalidate(allItemsNotifierProvider);
+            }
           },
         );
       });
