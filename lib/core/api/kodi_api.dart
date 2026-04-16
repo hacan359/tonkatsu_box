@@ -57,8 +57,7 @@ class KodiApiException implements Exception {
 class KodiApi {
   /// Создаёт [KodiApi].
   ///
-  /// [timeout] используется для connect/receive (default 30s —
-  /// большие библиотеки у киноманов могут отвечать долго).
+  /// [timeout] используется для connect/receive (default 5s — LAN).
   KodiApi({Dio? dio, Duration? timeout})
       : _dio = dio ??
             Dio(BaseOptions(
@@ -67,7 +66,7 @@ class KodiApi {
             ));
 
   static final Logger _log = Logger('KodiApi');
-  static const Duration _defaultTimeout = Duration(seconds: 30);
+  static const Duration _defaultTimeout = Duration(seconds: 5);
 
   final Dio _dio;
 
