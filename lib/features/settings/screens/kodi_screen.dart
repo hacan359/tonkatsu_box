@@ -63,18 +63,6 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
   bool _isSendingRaw = false;
 
   @override
-  void initState() {
-    super.initState();
-    // Auto-start sync if enabled.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final KodiSettingsState settings = ref.read(kodiSettingsProvider);
-      if (settings.enabled && settings.targetCollectionId != null) {
-        _startSync(settings);
-      }
-    });
-  }
-
-  @override
   void dispose() {
     _methodController.dispose();
     _paramsController.dispose();

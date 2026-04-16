@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/api/kodi_api.dart';
+import '../../../core/services/kodi_sync_service.dart';
 import 'profile_provider.dart';
 import 'settings_provider.dart';
 
@@ -184,6 +185,23 @@ class KodiSettingsNotifier extends Notifier<KodiSettingsState> {
         username: loaded.username.isNotEmpty ? loaded.username : null,
         password: loaded.password.isNotEmpty ? loaded.password : null,
       );
+    }
+
+    // Автозапуск sync при старте если enabled + target collection задана.
+    if (loaded.enabled &&
+        loaded.hasConnection &&
+        loaded.targetCollectionId != null) {
+      Future<void>.microtask(() {
+        final KodiSyncService sync = ref.read(kodiSyncServiceProvider);
+        sync.start(
+          intervalSeconds: loaded.syncIntervalSeconds,
+          targetCollectionId: loaded.targetCollectionId!,
+          importRatings: loaded.importRatings,
+          onSyncTimestamp: (String timestamp) {
+            setLastSyncTimestamp(timestamp);
+          },
+        );
+      });
     }
 
     return loaded;
