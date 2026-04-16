@@ -305,6 +305,20 @@ class CollectionDao {
     return CollectionItem.fromDb(rows.first);
   }
 
+  /// Ищет ВСЕ элементы по mediaType + externalId во всех коллекциях.
+  Future<List<CollectionItem>> findAllCollectionItems({
+    required MediaType mediaType,
+    required int externalId,
+  }) async {
+    final Database db = await _getDatabase();
+    final List<Map<String, dynamic>> rows = await db.query(
+      'collection_items',
+      where: 'media_type = ? AND external_id = ?',
+      whereArgs: <Object?>[mediaType.value, externalId],
+    );
+    return rows.map(CollectionItem.fromDb).toList();
+  }
+
   /// Добавляет элемент в коллекцию.
   ///
   /// Если [collectionId] == null, элемент добавляется как uncategorized.

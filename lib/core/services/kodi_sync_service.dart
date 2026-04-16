@@ -200,21 +200,24 @@ class KodiSyncService {
           final int? tmdbId = await _resolveTmdbId(movie);
           if (tmdbId == null) continue;
 
-          // Check if already in ANY collection (movies may be in sub-collections).
-          final CollectionItem? existing = await _db.findCollectionItem(
-            collectionId: null,
+          // Check ALL collections (movies may be in sub-collections).
+          final List<CollectionItem> existingItems =
+              await _db.findAllCollectionItems(
             mediaType: MediaType.movie,
             externalId: tmdbId,
           );
 
-          if (existing != null) {
-            final bool ratingChanged = importRatings &&
-                movie.userRating != null &&
-                existing.userRating != movie.userRating;
-            await _updateItem(existing, movie, importRatings);
-            if (ratingChanged) {
-              _kodiApi.addLog('sync', 'info',
-                  '${movie.title}: rating ${existing.userRating ?? 0} → ${movie.userRating}/10');
+          if (existingItems.isNotEmpty) {
+            for (final CollectionItem existing in existingItems) {
+              final bool ratingChanged = importRatings &&
+                  movie.userRating != null &&
+                  existing.userRating != movie.userRating;
+              await _updateItem(existing, movie, importRatings);
+              if (ratingChanged) {
+                _kodiApi.addLog('sync', 'info',
+                    '${movie.title}: rating ${existing.userRating ?? 0} → ${movie.userRating}/10'
+                    ' (col=${existing.collectionId})');
+              }
             }
             updated++;
           } else if (targetExists) {
