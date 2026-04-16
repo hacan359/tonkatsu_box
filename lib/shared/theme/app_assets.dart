@@ -7,4 +7,10 @@ abstract final class AppAssets {
 
   /// Тайловый фон (паттерн для повторения).
   static const String backgroundTile = 'assets/images/background_tile.png';
+
+  /// Иконка Discord (SVG).
+  static const String iconDiscord = 'assets/images/icon_discord.svg';
+
+  /// Иконка Kodi (SVG).
+  static const String iconKodi = 'assets/images/icon_kodi.svg';
 }

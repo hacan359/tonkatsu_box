@@ -15,6 +15,7 @@ import '../theme/app_typography.dart';
 import 'nav_icon_button.dart';
 import 'nav_tab.dart';
 import 'search_providers.dart';
+import 'service_badges.dart';
 
 /// Высота шапки.
 const double kAppTopBarHeight = 56;
@@ -180,6 +181,8 @@ class _AppTopBarState extends ConsumerState<AppTopBar> {
             ),
           ),
           const SizedBox(width: AppSpacing.md),
+          const ServiceBadges(),
+          const SizedBox(width: AppSpacing.sm),
           _SettingsButton(
             active: settingsActive,
             pulsing: hasUpdate,
