@@ -6,7 +6,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/core/api/kodi_api.dart';
+import 'package:xerabora/core/services/kodi_sync_service.dart';
+import 'package:xerabora/features/collections/providers/collections_provider.dart';
 import 'package:xerabora/features/settings/providers/kodi_settings_provider.dart';
+import 'package:xerabora/shared/models/collection.dart';
 import 'package:xerabora/features/settings/providers/profile_provider.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/features/settings/screens/kodi_screen.dart';
@@ -16,6 +19,12 @@ import 'package:xerabora/shared/models/kodi_application_info.dart';
 import 'package:xerabora/shared/models/profile.dart';
 
 import '../../../helpers/test_helpers.dart';
+
+/// Test notifier for collectionsProvider — returns empty list.
+class _TestCollectionsNotifier extends CollectionsNotifier {
+  @override
+  Future<List<Collection>> build() async => <Collection>[];
+}
 
 /// Test notifier, returns pre-loaded state without reading SharedPreferences.
 class _TestKodiSettingsNotifier extends KodiSettingsNotifier {
@@ -29,6 +38,7 @@ class _TestKodiSettingsNotifier extends KodiSettingsNotifier {
 
 void main() {
   late MockKodiApi mockKodiApi;
+  late MockKodiSyncService mockSyncService;
   late SharedPreferences prefs;
 
   const String profileId = 'test-profile';
@@ -41,6 +51,14 @@ void main() {
 
   setUp(() {
     mockKodiApi = MockKodiApi();
+    mockSyncService = MockKodiSyncService();
+
+    // Stubs для Debug секции (ref.read(kodiSyncServiceProvider).isRunning).
+    when(() => mockSyncService.isRunning).thenReturn(false);
+    when(() => mockSyncService.isSyncing).thenReturn(false);
+    when(() => mockSyncService.lastResult).thenReturn(null);
+    when(() => mockSyncService.stop()).thenReturn(null);
+    when(() => mockKodiApi.requestLog).thenReturn(<KodiLogEntry>[]);
   });
 
   Future<Widget> createWidget({
@@ -67,12 +85,16 @@ void main() {
               true,
       lastSyncTimestamp:
           initialPrefs['kodi_last_sync_timestamp_$profileId'] as String?,
+      targetCollectionId:
+          initialPrefs['kodi_target_collection_id_$profileId'] as int?,
     );
 
     return ProviderScope(
       overrides: <Override>[
         sharedPreferencesProvider.overrideWithValue(prefs),
         kodiApiProvider.overrideWithValue(mockKodiApi),
+        kodiSyncServiceProvider.overrideWithValue(mockSyncService),
+        collectionsProvider.overrideWith(_TestCollectionsNotifier.new),
         currentProfileProvider.overrideWithValue(testProfile),
         kodiSettingsProvider.overrideWith(() => _TestKodiSettingsNotifier(
               preloadedState,
@@ -270,18 +292,34 @@ void main() {
         expect(enableSwitch.onChanged, isNull);
       });
 
-      testWidgets('Enable sync switch enabled when host is set',
+      testWidgets('Enable sync switch enabled when host + target set',
           (WidgetTester tester) async {
         await tester.pumpWidget(await createWidget(
           initialPrefs: <String, Object>{
             'kodi_host_$profileId': '10.0.0.1',
+            'kodi_target_collection_id_$profileId': 1,
           },
         ));
         await tester.pumpAndSettle();
 
-        final Finder switches = find.byType(Switch);
-        final Switch enableSwitch = tester.widget<Switch>(switches.first);
-        expect(enableSwitch.onChanged, isNotNull);
+        // Scroll to Sync section (Import section pushes it down).
+        await tester.scrollUntilVisible(
+          find.text('Enable Kodi sync'),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+
+        // Find Switch that is in the same SettingsTile as 'Enable Kodi sync'.
+        final Finder syncTile = find.ancestor(
+          of: find.text('Enable Kodi sync'),
+          matching: find.byType(SettingsTile),
+        );
+        expect(syncTile, findsOneWidget);
+        final SettingsTile tile = tester.widget<SettingsTile>(syncTile);
+        // trailing is the Switch widget — if onChanged is set, it's non-null.
+        expect(tile.trailing, isNotNull);
+        expect(tile.trailing, isA<Switch>());
+        expect((tile.trailing! as Switch).onChanged, isNotNull);
       });
     });
 
@@ -289,7 +327,7 @@ void main() {
       Future<void> scrollTo(WidgetTester tester, Finder target) async {
         await tester.scrollUntilVisible(
           target,
-          200,
+          300,
           scrollable: find.byType(Scrollable).first,
         );
       }

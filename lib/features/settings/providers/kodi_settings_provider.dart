@@ -5,6 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/api/kodi_api.dart';
 import '../../../core/services/kodi_sync_service.dart';
+import '../../collections/providers/canvas_provider.dart';
+import '../../collections/providers/collection_covers_provider.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../home/providers/all_items_provider.dart';
 import 'profile_provider.dart';
@@ -199,6 +201,7 @@ class KodiSettingsNotifier extends Notifier<KodiSettingsState> {
           intervalSeconds: loaded.syncIntervalSeconds,
           targetCollectionId: loaded.targetCollectionId!,
           importRatings: loaded.importRatings,
+          createSubCollections: loaded.createSubCollections,
           onSyncTimestamp: (String timestamp) {
             setLastSyncTimestamp(timestamp);
           },
@@ -206,7 +209,17 @@ class KodiSettingsNotifier extends Notifier<KodiSettingsState> {
             if (result.hasChanges) {
               ref.invalidate(collectionsProvider);
               ref.invalidate(allItemsNotifierProvider);
+              for (final int collId in result.affectedCollectionIds) {
+                ref.invalidate(collectionStatsProvider(collId));
+                ref.invalidate(collectionCoversProvider(collId));
+                ref.invalidate(collectionItemsNotifierProvider(collId));
+                ref.invalidate(canvasNotifierProvider(collId));
+              }
             }
+          },
+          onTargetNotFound: () {
+            setEnabled(enabled: false);
+            setTargetCollectionId(null);
           },
         );
       });

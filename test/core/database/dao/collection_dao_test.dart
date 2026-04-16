@@ -586,12 +586,11 @@ void main() {
         expect(result, isNotNull);
       });
 
-      test('handles null collectionId for uncategorized', () async {
+      test('handles null collectionId — searches all collections', () async {
         when(
           () => mockDb.query(
             'collection_items',
-            where:
-                'collection_id IS NULL AND media_type = ? AND external_id = ?',
+            where: 'media_type = ? AND external_id = ?',
             whereArgs: <Object?>['game', 100],
             limit: 1,
           ),

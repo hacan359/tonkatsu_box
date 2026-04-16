@@ -1,13 +1,17 @@
 // Фоновый сервис синхронизации с Kodi.
 //
-// Периодически опрашивает библиотеку Kodi, обновляет status/dates/comments
-// для существующих items и добавляет новые в target collection.
+// Периодически опрашивает библиотеку Kodi, актуализирует status/dates/
+// comments для существующих items и добавляет новые. ВСЕ фильмы всегда
+// попадают в основную коллекцию (targetCollectionId). Если включены
+// sub-collections — фильмы из Kodi sets дополнительно дублируются
+// в отдельные коллекции по имени set.
 
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
+import '../../shared/models/collection.dart';
 import '../../shared/models/collection_item.dart';
 import '../../shared/models/item_status.dart';
 import '../../shared/models/item_status_logic.dart';
@@ -26,6 +30,8 @@ class KodiSyncResult {
     this.updated = 0,
     this.added = 0,
     this.errors = 0,
+    this.collectionsCreated = 0,
+    this.affectedCollectionIds = const <int>{},
     this.timestamp,
   });
 
@@ -35,14 +41,20 @@ class KodiSyncResult {
   /// Сколько фильмов загружено из Kodi.
   final int fetched;
 
-  /// Сколько существующих items обновлено.
+  /// Сколько существующих items обновлено (хотя бы в одной коллекции).
   final int updated;
 
-  /// Сколько новых items добавлено.
+  /// Сколько новых items добавлено в основную коллекцию.
   final int added;
 
   /// Сколько ошибок.
   final int errors;
+
+  /// Сколько sub-collections создано из sets.
+  final int collectionsCreated;
+
+  /// Все ID коллекций, в которых были изменения (target + sub-collections).
+  final Set<int> affectedCollectionIds;
 
   /// Timestamp этого sync-цикла.
   final String? timestamp;
@@ -65,9 +77,9 @@ final Provider<KodiSyncService> kodiSyncServiceProvider =
 
 /// Фоновый сервис синхронизации с Kodi.
 ///
-/// Периодически опрашивает VideoLibrary.GetMovies, находит изменения
-/// с прошлого sync (по lastplayed > lastSyncTimestamp), обновляет
-/// status/dates/comments.
+/// Все фильмы всегда попадают в [targetCollectionId]. Если
+/// [createSubCollections] — фильмы из Kodi sets дополнительно
+/// добавляются в отдельные коллекции по имени set.
 class KodiSyncService {
   /// Создаёт [KodiSyncService].
   KodiSyncService({
@@ -98,22 +110,28 @@ class KodiSyncService {
   bool get isSyncing => _isSyncing;
 
   /// Запускает периодический sync.
+  ///
+  /// [onTargetNotFound] вызывается если целевая коллекция удалена —
+  /// sync автоматически останавливается.
   void start({
     required int intervalSeconds,
     required int targetCollectionId,
     required bool importRatings,
+    required bool createSubCollections,
     required void Function(String timestamp) onSyncTimestamp,
     void Function(KodiSyncResult result)? onResult,
+    void Function()? onTargetNotFound,
   }) {
     stop();
     _log.info('Starting Kodi sync (interval: ${intervalSeconds}s)');
 
-    // Первый sync сразу.
     _runSync(
       targetCollectionId: targetCollectionId,
       importRatings: importRatings,
+      createSubCollections: createSubCollections,
       onSyncTimestamp: onSyncTimestamp,
       onResult: onResult,
+      onTargetNotFound: onTargetNotFound,
     );
 
     _timer = Timer.periodic(
@@ -121,8 +139,10 @@ class KodiSyncService {
       (_) => _runSync(
         targetCollectionId: targetCollectionId,
         importRatings: importRatings,
+        createSubCollections: createSubCollections,
         onSyncTimestamp: onSyncTimestamp,
         onResult: onResult,
+        onTargetNotFound: onTargetNotFound,
       ),
     );
   }
@@ -137,28 +157,39 @@ class KodiSyncService {
   Future<KodiSyncResult> syncNow({
     required int targetCollectionId,
     required bool importRatings,
+    required bool createSubCollections,
   }) async {
     return _doSync(
       targetCollectionId: targetCollectionId,
       importRatings: importRatings,
+      createSubCollections: createSubCollections,
     );
   }
 
   Future<void> _runSync({
     required int targetCollectionId,
     required bool importRatings,
+    required bool createSubCollections,
     required void Function(String timestamp) onSyncTimestamp,
     void Function(KodiSyncResult result)? onResult,
+    void Function()? onTargetNotFound,
   }) async {
-    if (_isSyncing) return; // Skip if previous cycle still running.
+    if (_isSyncing) return;
 
     try {
       final KodiSyncResult result = await _doSync(
         targetCollectionId: targetCollectionId,
         importRatings: importRatings,
+        createSubCollections: createSubCollections,
       );
 
       _lastResult = result;
+
+      // Коллекция удалена — sync сам остановился в _doSync.
+      if (!isRunning && result == KodiSyncResult.empty) {
+        onTargetNotFound?.call();
+        return;
+      }
 
       if (result.timestamp != null) {
         onSyncTimestamp(result.timestamp!);
@@ -173,11 +204,11 @@ class KodiSyncService {
   Future<KodiSyncResult> _doSync({
     required int targetCollectionId,
     required bool importRatings,
+    required bool createSubCollections,
   }) async {
     _isSyncing = true;
 
     try {
-      // 1. Fetch all movies from Kodi.
       final List<KodiMovie> movies = await _fetchAllMovies();
 
       if (movies.isEmpty) {
@@ -185,51 +216,54 @@ class KodiSyncService {
         return KodiSyncResult.empty;
       }
 
-      // 2. Verify target collection exists (may have been deleted).
+      // Проверяем что основная коллекция ещё существует.
       final bool targetExists =
           await _db.getCollectionById(targetCollectionId) != null;
+      if (!targetExists) {
+        _kodiApi.addLog('sync', 'error',
+            'Target collection #$targetCollectionId deleted — sync stopped');
+        stop();
+        _isSyncing = false;
+        return KodiSyncResult.empty;
+      }
 
-      // 3. Process all movies — LAN is fast, no need to filter.
-      // Ratings, playcount, lastplayed can all change independently.
       int updated = 0;
       int added = 0;
       int errors = 0;
+      int collectionsCreated = 0;
+
+      // Все коллекции, куда были записи (для UI invalidate).
+      final Set<int> affectedIds = <int>{};
+
+      // Кэш set name → sub-collection ID.
+      final Map<String, int> setCollectionIds = <String, int>{};
 
       for (final KodiMovie movie in movies) {
         try {
           final int? tmdbId = await _resolveTmdbId(movie);
           if (tmdbId == null) continue;
 
-          // Check ALL collections (movies may be in sub-collections).
-          final List<CollectionItem> existingItems =
-              await _db.findAllCollectionItems(
+          final String comment = _buildComment(movie);
+          final ItemStatus status = _resolveStatus(movie);
+
+          // Проверяем существует ли элемент в основной коллекции.
+          final CollectionItem? existingInMain = await _db.findCollectionItem(
+            collectionId: targetCollectionId,
             mediaType: MediaType.movie,
             externalId: tmdbId,
           );
 
-          if (existingItems.isNotEmpty) {
-            for (final CollectionItem existing in existingItems) {
-              final bool ratingChanged = importRatings &&
-                  movie.userRating != null &&
-                  existing.userRating != movie.userRating;
-              await _updateItem(existing, movie, importRatings);
-              if (ratingChanged) {
-                _kodiApi.addLog('sync', 'info',
-                    '${movie.title}: rating ${existing.userRating ?? 0} → ${movie.userRating}/10'
-                    ' (col=${existing.collectionId})');
-              }
-            }
+          if (existingInMain != null) {
+            // ---- Уже есть — обновляем без TMDB запроса ----
+            await _updateItem(existingInMain, movie, comment, importRatings);
+            affectedIds.add(targetCollectionId);
             updated++;
-          } else if (targetExists) {
-            // New movie — add to collection.
+          } else {
+            // ---- Новый фильм — один раз тянем данные из TMDB ----
             final Movie? tmdbMovie = await _tmdbApi.getMovie(tmdbId);
             if (tmdbMovie != null) {
               await _db.upsertMovie(tmdbMovie);
             }
-
-            final ItemStatus status = movie.playcount > 0
-                ? ItemStatus.completed
-                : ItemStatus.inProgress;
 
             final int? itemId = await _db.addItemToCollection(
               collectionId: targetCollectionId,
@@ -237,9 +271,7 @@ class KodiSyncService {
               externalId: tmdbId,
               status: status,
             );
-
             if (itemId != null) {
-              final String comment = _buildComment(movie);
               if (comment.isNotEmpty) {
                 await _db.updateItemUserComment(itemId, comment);
               }
@@ -256,7 +288,28 @@ class KodiSyncService {
 
             _kodiApi.addLog('sync', 'info',
                 '${movie.title}: added as $status');
+            affectedIds.add(targetCollectionId);
             added++;
+          }
+
+          // ---- Sub-collection из set (опционально) ----
+          if (createSubCollections && movie.set != null) {
+            final _SubCollectionResult sub = await _getOrCreateSetCollection(
+              setName: movie.set!,
+              cache: setCollectionIds,
+            );
+            if (sub.created) collectionsCreated++;
+
+            // TMDB данные уже в кэше (из main ветки выше).
+            await _syncItemToCollection(
+              collectionId: sub.collectionId,
+              tmdbId: tmdbId,
+              movie: movie,
+              status: status,
+              comment: comment,
+              importRatings: importRatings,
+            );
+            affectedIds.add(sub.collectionId);
           }
         } on Exception catch (e) {
           _kodiApi.addLog('sync', 'error', '${movie.title}: $e');
@@ -268,10 +321,11 @@ class KodiSyncService {
       final String timestamp = DateTime.now().toIso8601String();
 
       _kodiApi.addLog('sync', 'info',
-          'Done: $updated upd, $added new, $errors err '
-          '(${movies.length} total)');
-      _log.info('Sync complete: $updated updated, $added added, '
-          '$errors errors');
+          'Done: $updated upd, $added new, $errors err'
+          '${collectionsCreated > 0 ? ', $collectionsCreated sets' : ''}'
+          ' (${movies.length} total)');
+      _log.info('Sync: $updated upd, $added new, $errors err, '
+          '$collectionsCreated sets');
 
       _isSyncing = false;
       return KodiSyncResult(
@@ -279,6 +333,8 @@ class KodiSyncService {
         updated: updated,
         added: added,
         errors: errors,
+        collectionsCreated: collectionsCreated,
+        affectedCollectionIds: affectedIds,
         timestamp: timestamp,
       );
     } on Exception {
@@ -288,7 +344,62 @@ class KodiSyncService {
   }
 
   // ---------------------------------------------------------------------------
-  // Helpers (shared logic with KodiImportService)
+  // Core: добавить/обновить один фильм в конкретной коллекции
+  // ---------------------------------------------------------------------------
+
+  /// Синхронизирует один фильм в одну коллекцию.
+  ///
+  /// Возвращает `true` если элемент был **создан** (новый),
+  /// `false` если уже существовал (обновлён).
+  Future<bool> _syncItemToCollection({
+    required int collectionId,
+    required int tmdbId,
+    required KodiMovie movie,
+    required ItemStatus status,
+    required String comment,
+    required bool importRatings,
+  }) async {
+    final CollectionItem? existing = await _db.findCollectionItem(
+      collectionId: collectionId,
+      mediaType: MediaType.movie,
+      externalId: tmdbId,
+    );
+
+    if (existing != null) {
+      await _updateItem(existing, movie, comment, importRatings);
+      return false;
+    }
+
+    // Новый элемент.
+    final int? itemId = await _db.addItemToCollection(
+      collectionId: collectionId,
+      mediaType: MediaType.movie,
+      externalId: tmdbId,
+      status: status,
+    );
+
+    if (itemId != null) {
+      if (comment.isNotEmpty) {
+        await _db.updateItemUserComment(itemId, comment);
+      }
+      if (importRatings && movie.userRating != null) {
+        await _db.updateItemUserRating(itemId, movie.userRating);
+      }
+      if (movie.lastPlayed != null) {
+        await _db.updateItemActivityDates(
+          itemId,
+          lastActivityAt: movie.lastPlayed,
+        );
+      }
+    }
+
+    _kodiApi.addLog('sync', 'info',
+        '${movie.title}: added as $status (col=$collectionId)');
+    return true;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Helpers
   // ---------------------------------------------------------------------------
 
   Future<List<KodiMovie>> _fetchAllMovies() async {
@@ -325,11 +436,19 @@ class KodiSyncService {
     return null;
   }
 
+  ItemStatus _resolveStatus(KodiMovie movie) {
+    if (movie.playcount > 0) return ItemStatus.completed;
+    if (movie.lastPlayed != null) return ItemStatus.inProgress;
+    return ItemStatus.planned;
+  }
+
   Future<void> _updateItem(
     CollectionItem existing,
     KodiMovie movie,
+    String comment,
     bool importRatings,
   ) async {
+    // Статус: повышаем через общее правило.
     final ItemStatus externalStatus = movie.playcount > 0
         ? ItemStatus.completed
         : ItemStatus.inProgress;
@@ -346,15 +465,19 @@ class KodiSyncService {
       );
     }
 
-    final String comment = _buildComment(movie);
-    if (comment.isNotEmpty) {
+    // Комментарий: обновляем только если изменился.
+    if (comment.isNotEmpty && comment != existing.userComment) {
       await _db.updateItemUserComment(existing.id, comment);
     }
 
-    if (importRatings && movie.userRating != null) {
+    // Рейтинг: обновляем только если изменился.
+    if (importRatings &&
+        movie.userRating != null &&
+        existing.userRating != movie.userRating) {
       await _db.updateItemUserRating(existing.id, movie.userRating);
     }
 
+    // Даты.
     if (movie.lastPlayed != null) {
       await _db.updateItemActivityDates(
         existing.id,
@@ -363,9 +486,13 @@ class KodiSyncService {
     }
   }
 
+  /// Комментарий из метаданных Kodi. Set name всегда включён.
   String _buildComment(KodiMovie movie) {
     final List<String> parts = <String>[];
 
+    if (movie.set != null) {
+      parts.add('Set: ${movie.set}');
+    }
     if (movie.playcount > 1) {
       parts.add('Watched ${movie.playcount} times');
     }
@@ -380,4 +507,42 @@ class KodiSyncService {
 
     return parts.join('\n');
   }
+
+  /// Получает или создаёт sub-collection для Kodi movie set.
+  Future<_SubCollectionResult> _getOrCreateSetCollection({
+    required String setName,
+    required Map<String, int> cache,
+  }) async {
+    final int? cached = cache[setName];
+    if (cached != null) {
+      return _SubCollectionResult(collectionId: cached, created: false);
+    }
+
+    final String collectionName = '$setName (kodi)';
+
+    final Collection? existing =
+        await _db.findCollectionByName(collectionName);
+    if (existing != null) {
+      cache[setName] = existing.id;
+      return _SubCollectionResult(collectionId: existing.id, created: false);
+    }
+
+    final Collection created = await _db.createCollection(
+      name: collectionName,
+      author: 'Kodi',
+    );
+    cache[setName] = created.id;
+    _log.info('Created sub-collection: $collectionName');
+    return _SubCollectionResult(collectionId: created.id, created: true);
+  }
+}
+
+class _SubCollectionResult {
+  const _SubCollectionResult({
+    required this.collectionId,
+    required this.created,
+  });
+
+  final int collectionId;
+  final bool created;
 }
