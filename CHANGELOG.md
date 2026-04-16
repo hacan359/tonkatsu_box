@@ -6,6 +6,8 @@
 
 ## [Unreleased]
 
+## [0.26.0] - 2026-04-16
+
 ### Added
 - **Time Spent tracking** — per-item time logging in collection. Timer icon with `Xh Ym` value in the item detail header row (next to source badge and media type). Tap to open hours+minutes input dialog — entered value replaces the total. Stored as `time_spent_minutes` column in `collection_items` (DB migration v34). Included in `.xcollx` export when "Include user data" is enabled. Header row changed from `Row` to `Wrap` to prevent overflow with many elements (`add_time_dialog.dart`, `media_detail_view.dart`, `item_detail_screen.dart`, `collection_item.dart`, `collection_dao.dart`, `collections_provider.dart`)
 - **Service status badges in top bar** — desktop-only SVG icons for Kodi sync and Discord RPC in the app header, between the search field and settings gear. Brand-colored (Kodi blue, Discord blurple) when connected/running, gray when stopped/disconnected. Kodi icon pulses during active sync cycle. Click to toggle: Kodi start/stop sync timer, Discord connect/disconnect IPC. Tooltip shows current status. Uses polling-based `serviceStatusProvider` (2s interval with `ref.read`) to avoid badge flicker from settings invalidation. `DiscordRpcService.isConnected` / `isEnabled` public getters. SVG assets: `icon_discord.svg`, `icon_kodi.svg` (`service_badges.dart`, `service_status_provider.dart`, `app_top_bar.dart`, `discord_rpc_service.dart`, `app_assets.dart`)
