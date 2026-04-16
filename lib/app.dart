@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'features/settings/providers/kodi_settings_provider.dart';
 import 'features/settings/providers/settings_provider.dart';
 import 'features/splash/screens/splash_screen.dart';
 import 'l10n/app_localizations.dart';
@@ -21,6 +22,9 @@ class TonkatsuBoxApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final String appLanguage =
         ref.watch(settingsNotifierProvider).appLanguage;
+
+    // Инициализация Kodi sync (провайдер ленивый — нужен read для запуска).
+    ref.read(kodiSettingsProvider);
 
     return Listener(
       onPointerHover: (_) {
