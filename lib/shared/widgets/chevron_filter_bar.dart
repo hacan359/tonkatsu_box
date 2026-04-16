@@ -479,7 +479,7 @@ class DropdownChevronSegment<T extends Object> extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
           ),
           color: AppColors.surface,
-          constraints: const BoxConstraints(maxHeight: 400),
+          constraints: const BoxConstraints(minWidth: 180, maxHeight: 400),
           itemBuilder: menuBuilder,
           child: Padding(
             padding: EdgeInsets.only(

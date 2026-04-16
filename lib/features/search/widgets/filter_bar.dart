@@ -21,7 +21,7 @@ import 'filter_sheet.dart';
 
 /// Фикс ширина первого (Source) шеврона — чтобы не «прыгал» остальной ряд
 /// при переключении источника с разной длиной label.
-const double _kSourceWidth = 130;
+const double _kSourceWidth = 160;
 
 /// Фикс ширина компактного Customize-шеврона (иконка с Tooltip).
 const double _kCustomizeWidth = 44;
