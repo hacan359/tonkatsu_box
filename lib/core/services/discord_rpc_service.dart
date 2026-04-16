@@ -49,6 +49,12 @@ class DiscordRpcService {
   /// RA sync активен — обычные updatePresence/clearPresence игнорируются.
   bool get isRaSyncActive => _raSyncActive;
 
+  /// Подключён ли сервис к Discord IPC.
+  bool get isConnected => _initialized;
+
+  /// Включён ли сервис пользователем.
+  bool get isEnabled => _enabled;
+
   /// Подключиться к Discord (вызывается при включении настройки).
   Future<void> enable() async {
     _enabled = true;
