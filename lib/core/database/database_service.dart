@@ -227,7 +227,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 33,
+        version: 34,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -667,6 +667,10 @@ class DatabaseService {
   /// Обновляет пользовательский рейтинг элемента (1-10 или null).
   Future<void> updateItemUserRating(int id, int? rating) =>
       collectionDao.updateItemUserRating(id, rating);
+
+  /// Обновляет потраченное время (в минутах) для элемента коллекции.
+  Future<void> updateItemTimeSpent(int id, int totalMinutes) =>
+      collectionDao.updateItemTimeSpent(id, totalMinutes);
 
   /// Обновляет collection_id элемента (перемещает в другую коллекцию).
   Future<bool> updateItemCollectionId(int id, int? collectionId) =>

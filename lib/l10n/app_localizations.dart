@@ -4165,6 +4165,42 @@ abstract class S {
   /// **'Completed in {duration}'**
   String activityDatesCompletionTime(String duration);
 
+  /// No description provided for @timeSpentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Time Spent'**
+  String get timeSpentTitle;
+
+  /// No description provided for @timeSpentValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}h {minutes}m'**
+  String timeSpentValue(int hours, int minutes);
+
+  /// No description provided for @timeSpentAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add time'**
+  String get timeSpentAdd;
+
+  /// No description provided for @timeSpentEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit time'**
+  String get timeSpentEdit;
+
+  /// No description provided for @timeSpentHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Hours'**
+  String get timeSpentHours;
+
+  /// No description provided for @timeSpentMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Minutes'**
+  String get timeSpentMinutes;
+
   /// No description provided for @durationLessThanDay.
   ///
   /// In en, this message translates to:

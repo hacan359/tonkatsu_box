@@ -173,14 +173,16 @@ void main() {
         expect(find.text('8.5/10'), findsOneWidget);
       });
 
-      testWidgets('не должен отображать Wrap когда список пуст',
+      testWidgets('не должен отображать info chip Wrap когда список пуст',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(
           infoChips: const <MediaDetailChip>[],
         ));
         await tester.pumpAndSettle();
 
-        expect(find.byType(Wrap), findsNothing);
+        // Один Wrap остаётся — хедер (SourceBadge + type).
+        // Info chips Wrap не рендерится при пустом списке.
+        expect(find.byType(Wrap), findsOneWidget);
       });
     });
 

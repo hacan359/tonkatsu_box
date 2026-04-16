@@ -42,6 +42,7 @@ import '../widgets/episode_tracker_section.dart';
 import '../widgets/item_tags_section.dart';
 import '../widgets/anime_progress_section.dart';
 import '../widgets/manga_progress_section.dart';
+import '../widgets/dialogs/add_time_dialog.dart';
 import '../providers/tracker_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -602,6 +603,10 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
           : null,
       raBadge: _buildRaBadge(item),
       trackerSection: _buildTrackerSection(item),
+      timeSpentMinutes: item.timeSpentMinutes,
+      onTimeSpentTap: widget.collectionId != null && widget.isEditable
+          ? () => _showTimeSpentDialog(item)
+          : null,
       extraSections: <Widget>[
         if (widget.collectionId == null)
           _buildUncategorizedBanner(item),
@@ -973,6 +978,21 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         collectionId: widget.collectionId,
         collectionItemId: widget.itemId,
       );
+
+  /// Возвращает RA секцию если для игры есть tracker data,
+  Future<void> _showTimeSpentDialog(CollectionItem item) async {
+    final int? collId = widget.collectionId;
+    if (collId == null) return;
+    final int? minutes = await AddTimeDialog.show(
+      context,
+      initialMinutes: item.timeSpentMinutes,
+      isEdit: item.timeSpentMinutes > 0,
+    );
+    if (minutes == null || !mounted) return;
+    await ref
+        .read(collectionItemsNotifierProvider(collId).notifier)
+        .setTimeSpent(item.id, minutes);
+  }
 
   /// Возвращает RA секцию если для игры есть tracker data,
   /// или кнопку привязки если RA credentials есть и платформа поддерживается.

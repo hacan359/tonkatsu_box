@@ -2260,6 +2260,26 @@ class SEn extends S {
   }
 
   @override
+  String get timeSpentTitle => 'Time Spent';
+
+  @override
+  String timeSpentValue(int hours, int minutes) {
+    return '${hours}h ${minutes}m';
+  }
+
+  @override
+  String get timeSpentAdd => 'Add time';
+
+  @override
+  String get timeSpentEdit => 'Edit time';
+
+  @override
+  String get timeSpentHours => 'Hours';
+
+  @override
+  String get timeSpentMinutes => 'Minutes';
+
+  @override
   String get durationLessThanDay => 'less than a day';
 
   @override

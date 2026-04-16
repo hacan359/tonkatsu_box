@@ -86,6 +86,8 @@ class MediaDetailView extends StatefulWidget {
     this.tagWidget,
     this.raBadge,
     this.trackerSection,
+    this.timeSpentMinutes = 0,
+    this.onTimeSpentTap,
     this.extraSections,
     this.recommendationSections,
     this.authorComment,
@@ -149,6 +151,12 @@ class MediaDetailView extends StatefulWidget {
 
   /// Секция трекера (RA Achievements и т.д.) — рендерится после тегов.
   final Widget? trackerSection;
+
+  /// Потраченное время в минутах (0 = не задано).
+  final int timeSpentMinutes;
+
+  /// Колбэк при тапе на Time Spent (открыть диалог ввода).
+  final VoidCallback? onTimeSpentTap;
 
   /// Дополнительные секции (например, Progress для сериалов).
   final List<Widget>? extraSections;
@@ -443,7 +451,10 @@ class _MediaDetailViewState extends State<MediaDetailView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Row(
+              Wrap(
+                spacing: 6,
+                runSpacing: 4,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: <Widget>[
                   SourceBadge(
                     source: widget.source,
@@ -452,32 +463,32 @@ class _MediaDetailViewState extends State<MediaDetailView> {
                         ? () => _launchExternalUrl(widget.externalUrl!)
                         : null,
                   ),
-                  const SizedBox(width: 6),
-                  Icon(
-                    widget.typeIcon,
-                    size: 16,
-                    color: widget.accentColor,
-                  ),
-                  const SizedBox(width: 6),
-                  Flexible(
-                    child: Text(
-                      widget.typeLabel,
-                      style: AppTypography.bodySmall.copyWith(
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Icon(
+                        widget.typeIcon,
+                        size: 16,
                         color: widget.accentColor,
-                        fontWeight: FontWeight.w600,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                      const SizedBox(width: 4),
+                      Text(
+                        widget.typeLabel,
+                        style: AppTypography.bodySmall.copyWith(
+                          color: widget.accentColor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ),
-                  if (widget.tagWidget != null) ...<Widget>[
-                    const SizedBox(width: 6),
-                    Flexible(child: widget.tagWidget!),
-                  ],
-                  if (widget.raBadge != null) ...<Widget>[
-                    const SizedBox(width: 6),
+                  if (widget.tagWidget != null)
+                    widget.tagWidget!,
+                  if (widget.raBadge != null)
                     widget.raBadge!,
-                  ],
+                  if (widget.onTimeSpentTap != null)
+                    _buildTimeSpentChip(),
                 ],
               ),
               if (widget.infoChips.isNotEmpty) ...<Widget>[
@@ -563,6 +574,40 @@ class _MediaDetailViewState extends State<MediaDetailView> {
         widget.placeholderIcon,
         size: 32,
         color: AppColors.textTertiary,
+      ),
+    );
+  }
+
+  Widget _buildTimeSpentChip() {
+    final int hours = widget.timeSpentMinutes ~/ 60;
+    final int minutes = widget.timeSpentMinutes % 60;
+    final S l = S.of(context);
+    final String display = widget.timeSpentMinutes > 0
+        ? l.timeSpentValue(hours, minutes)
+        : '—';
+
+    return GestureDetector(
+      onTap: widget.onTimeSpentTap,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Icon(
+            Icons.timer_outlined,
+            size: 12,
+            color: widget.timeSpentMinutes > 0
+                ? AppColors.textSecondary
+                : AppColors.textTertiary,
+          ),
+          const SizedBox(width: 3),
+          Text(
+            display,
+            style: AppTypography.caption.copyWith(
+              color: widget.timeSpentMinutes > 0
+                  ? AppColors.textSecondary
+                  : AppColors.textTertiary,
+            ),
+          ),
+        ],
       ),
     );
   }
