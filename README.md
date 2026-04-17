@@ -42,9 +42,9 @@ Tonkatsu Box is a free, open-source app to organize your media collections. Sear
 |---|---|
 | <img src="docs/screenshots/02-main-games-filtered.jpg" alt="All Items"> | <img src="docs/screenshots/04-collection-grid.jpg" alt="Collection Grid"> |
 
-| Visual Board | Item Details |
+| Search Sources | Item Details |
 |---|---|
-| <img src="docs/screenshots/05-collection-board.jpg" alt="Visual Board"> | <img src="docs/screenshots/06-item-details.jpg" alt="Item Details"> |
+| <img src="docs/screenshots/05-search-source.jpg" alt="Search Sources"> | <img src="docs/screenshots/06-item-details.jpg" alt="Item Details"> |
 
 | Game Search | Movie Search |
 |---|---|
