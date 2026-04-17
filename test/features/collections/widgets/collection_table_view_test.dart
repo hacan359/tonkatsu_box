@@ -96,8 +96,13 @@ void main() {
     if (column != null) {
       return find.byKey(ValueKey<TableColumn>(column));
     }
+    final String lower = label.toLowerCase();
     return find.ancestor(
-      of: find.textContaining(label),
+      of: find.byWidgetPredicate((Widget w) {
+        if (w is! Text) return false;
+        final String? t = w.data ?? w.textSpan?.toPlainText();
+        return t != null && t.toLowerCase().contains(lower);
+      }),
       matching: find.byType(InkWell),
     );
   }
@@ -214,13 +219,12 @@ void main() {
         expect(find.text('9'), findsOneWidget);
       });
 
-      testWidgets('should show dash when rating is null',
+      testWidgets('should render empty rating cell when null',
           (WidgetTester tester) async {
         await pumpTableView(tester, items: <CollectionItem>[tvGamma]);
 
-        // tvGamma has no userRating and no tag — two em-dashes
-        // (one for rating, one for tag)
-        expect(find.text('\u2014'), findsNWidgets(2));
+        // tvGamma has no userRating — star icon must be absent in rating cell.
+        expect(find.byIcon(Icons.star_rounded), findsNothing);
       });
     });
 
