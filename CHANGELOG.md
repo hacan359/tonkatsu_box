@@ -6,6 +6,11 @@
 
 ## [Unreleased]
 
+### Changed
+- **Table view drag-and-drop reorder** — `CollectionTableView` accepts an optional `onReorder` callback; when set, renders a `ReorderableListView` with a drag handle per row and disables column-click sort/filter (manual order takes priority). `CollectionItemsView` wires `onReorder` when `sortMode == manual && canEdit`, reusing the existing `reorderItem()` notifier/DAO pipeline (`collection_table_view.dart`, `collection_items_view.dart`)
+- **Table view visual polish** — zebra row striping (alpha 10) replaces the thin divider; thumbnails grow from 32×46 to 36×52 with increased row padding; header labels become UPPERCASE with 0.8 letter-spacing and softer `textTertiary` color; status chip gains a 6px colored dot before its label; empty rating/tag cells render blank instead of an em-dash; hover tint bumped from alpha 12 to 22 (`collection_table_view.dart`)
+- **Home status filter defaults to "All"** — previously the Home tab defaulted to showing only `inProgress` items, so new users had to discover the filter to see everything. Now defaults to `null` (All); user choice still persists per profile (`collections_provider.dart`)
+
 ## [0.26.0] - 2026-04-16
 
 ### Added
