@@ -36,6 +36,13 @@ Future<void> main() async {
         databaseFactory = databaseFactoryFfi;
       }
 
+      // SharedPreferences.setPrefix должен вызываться строго до первого
+      // getInstance() и ровно один раз за процесс, иначе StateError при
+      // рестарте через AppRestartScope.
+      if (!kReleaseMode) {
+        SharedPreferences.setPrefix('flutter_dev.');
+      }
+
       await _loadAppState();
 
       runApp(const AppRestartScope(child: TonkatsuBoxApp()));
@@ -48,9 +55,6 @@ Future<void> main() async {
 
 /// Загружает SharedPreferences, API keys и профильные данные.
 Future<void> _loadAppState() async {
-  if (!kReleaseMode) {
-    SharedPreferences.setPrefix('flutter_dev.');
-  }
   _prefs = await SharedPreferences.getInstance();
   _apiKeys = ApiKeys.fromPrefs(_prefs);
 

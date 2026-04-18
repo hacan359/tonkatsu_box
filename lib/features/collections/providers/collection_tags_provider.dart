@@ -14,13 +14,23 @@ final AsyncNotifierProviderFamily<CollectionTagsNotifier, List<CollectionTag>,
   CollectionTagsNotifier.new,
 );
 
+/// Сортирует теги по имени без учёта регистра.
+List<CollectionTag> _sortByName(Iterable<CollectionTag> tags) {
+  final List<CollectionTag> sorted = tags.toList();
+  sorted.sort(
+    (CollectionTag a, CollectionTag b) =>
+        a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+  );
+  return sorted;
+}
+
 /// Notifier для управления тегами коллекции.
 class CollectionTagsNotifier
     extends FamilyAsyncNotifier<List<CollectionTag>, int> {
   @override
   Future<List<CollectionTag>> build(int arg) async {
     final TagDao dao = ref.watch(tagDaoProvider);
-    return dao.getTagsByCollection(arg);
+    return _sortByName(await dao.getTagsByCollection(arg));
   }
 
   /// Создаёт новый тег.
@@ -28,7 +38,9 @@ class CollectionTagsNotifier
     final TagDao dao = ref.read(tagDaoProvider);
     final CollectionTag tag = await dao.createTag(arg, name, color: color);
     final List<CollectionTag> current = state.valueOrNull ?? <CollectionTag>[];
-    state = AsyncData<List<CollectionTag>>(<CollectionTag>[...current, tag]);
+    state = AsyncData<List<CollectionTag>>(
+      _sortByName(<CollectionTag>[...current, tag]),
+    );
     return tag;
   }
 
@@ -38,10 +50,12 @@ class CollectionTagsNotifier
     await dao.renameTag(tagId, name);
     final List<CollectionTag> current = state.valueOrNull ?? <CollectionTag>[];
     state = AsyncData<List<CollectionTag>>(
-      current.map((CollectionTag t) {
-        if (t.id == tagId) return t.copyWith(name: name);
-        return t;
-      }).toList(),
+      _sortByName(
+        current.map((CollectionTag t) {
+          if (t.id == tagId) return t.copyWith(name: name);
+          return t;
+        }),
+      ),
     );
   }
 
@@ -72,7 +86,7 @@ class CollectionTagsNotifier
   Future<void> refresh() async {
     final TagDao dao = ref.read(tagDaoProvider);
     state = AsyncData<List<CollectionTag>>(
-      await dao.getTagsByCollection(arg),
+      _sortByName(await dao.getTagsByCollection(arg)),
     );
   }
 }
