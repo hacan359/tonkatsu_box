@@ -50,6 +50,7 @@ class SearchScreen extends ConsumerStatefulWidget {
     this.initialTabIndex,
     this.initialSourceId,
     this.initialQuery,
+    this.isPushed = false,
     super.key,
   });
 
@@ -68,6 +69,13 @@ class SearchScreen extends ConsumerStatefulWidget {
   /// Начальный запрос поиска (предзаполняет поле и запускает поиск).
   final String? initialQuery;
 
+  /// Экран открыт через Navigator.push (не через таб).
+  ///
+  /// В этом режиме глобальный [AppTopBar] перекрыт (push на rootNavigator),
+  /// поэтому экран рисует собственный AppBar с полем поиска, привязанным
+  /// к [searchTabQueryProvider].
+  final bool isPushed;
+
   /// Группа хоткеев этого экрана для легенды F1.
   static const ShortcutGroup shortcutGroup = ShortcutGroup(
     title: 'Поиск',
@@ -84,6 +92,7 @@ class SearchScreen extends ConsumerStatefulWidget {
 
 class _SearchScreenState extends ConsumerState<SearchScreen> {
   Timer? _searchDebounce;
+  TextEditingController? _pushedSearchController;
 
   Map<int, Platform> _platformMap = <int, Platform>{};
 
@@ -91,6 +100,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   void initState() {
     super.initState();
     _loadPlatforms();
+
+    if (widget.isPushed) {
+      final String initial =
+          widget.initialQuery ?? ref.read(searchTabQueryProvider);
+      _pushedSearchController = TextEditingController(text: initial);
+    }
 
     // Предвыбор источника
     final String? sourceToSet = widget.initialSourceId ??
@@ -131,6 +146,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   @override
   void dispose() {
     _searchDebounce?.cancel();
+    _pushedSearchController?.dispose();
     super.dispose();
   }
 
@@ -1361,12 +1377,20 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   Widget build(BuildContext context) {
     final BrowseState browseState = ref.watch(browseProvider);
 
-    // Слушаем глобальный поиск — debounced API запрос.
+    // Слушаем глобальный поиск — debounced API запрос + синхронизация
+    // локального контроллера в pushed-режиме.
     ref.listen<String>(searchTabQueryProvider, (String? prev, String next) {
       _onQueryChanged(next);
+      final TextEditingController? c = _pushedSearchController;
+      if (c != null && c.text != next) {
+        c.value = TextEditingValue(
+          text: next,
+          selection: TextSelection.collapsed(offset: next.length),
+        );
+      }
     });
 
-    return Column(
+    final Widget body = Column(
       children: <Widget>[
         FilterBar(
           onBeforeFilterChange: _syncSearchText,
@@ -1377,6 +1401,30 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           child: _buildContent(browseState),
         ),
       ],
+    );
+
+    if (!widget.isPushed) {
+      return body;
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: TextField(
+          controller: _pushedSearchController,
+          autofocus: true,
+          decoration: InputDecoration(
+            hintText: S.of(context).appBarSearchHint,
+            border: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            filled: false,
+          ),
+          onChanged: (String value) {
+            ref.read(searchTabQueryProvider.notifier).state = value;
+          },
+        ),
+      ),
+      body: body,
     );
   }
 

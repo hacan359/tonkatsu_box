@@ -33,10 +33,11 @@ class CollectionActions {
     required WidgetRef ref,
     required int? collectionId,
   }) async {
-    await Navigator.of(context).push(
+    await Navigator.of(context, rootNavigator: true).push(
       MaterialPageRoute<void>(
         builder: (BuildContext context) => SearchScreen(
           collectionId: collectionId,
+          isPushed: true,
         ),
       ),
     );

@@ -248,11 +248,12 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
       null => null,
     };
 
-    Navigator.of(context).push(
+    Navigator.of(context, rootNavigator: true).push(
       MaterialPageRoute<void>(
         builder: (BuildContext context) => SearchScreen(
           initialQuery: item.text,
           initialSourceId: sourceId,
+          isPushed: true,
         ),
       ),
     );
