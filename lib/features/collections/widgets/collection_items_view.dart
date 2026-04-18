@@ -94,6 +94,11 @@ class CollectionItemsView extends ConsumerWidget {
       return _buildEmptyState(context);
     }
 
+    final CollectionSortMode sortMode =
+        ref.watch(collectionSortProvider(collectionId));
+    final bool isManualSort =
+        sortMode == CollectionSortMode.manual && canEdit;
+
     if (isTableMode) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
@@ -131,6 +136,14 @@ class CollectionItemsView extends ConsumerWidget {
                       .updateItemTag(itemId, tagId);
                 }
               : null,
+          onReorder: isManualSort
+              ? (int oldIndex, int newIndex) {
+                  ref
+                      .read(collectionItemsNotifierProvider(collectionId)
+                          .notifier)
+                      .reorderItem(oldIndex, newIndex);
+                }
+              : null,
         ),
       );
     }
@@ -138,11 +151,6 @@ class CollectionItemsView extends ConsumerWidget {
     if (isGridMode) {
       return _buildGridView(context, ref);
     }
-
-    final CollectionSortMode sortMode =
-        ref.watch(collectionSortProvider(collectionId));
-    final bool isManualSort =
-        sortMode == CollectionSortMode.manual && canEdit;
 
     if (isManualSort) {
       return _buildReorderableList(context, ref);

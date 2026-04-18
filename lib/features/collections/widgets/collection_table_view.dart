@@ -1,5 +1,7 @@
 // Табличный (Manifest) вид элементов коллекции.
 
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -45,6 +47,9 @@ enum TableColumn {
 /// Компактные строки с sticky-заголовком, сортировка по клику,
 /// цветовая маркировка статусов и hover-подсветка.
 /// Поддерживает inline-редактирование рейтинга, статуса и тега.
+/// Если передан [onReorder] — включается drag-and-drop режим:
+/// колоночная сортировка/фильтрация отключаются, в каждой строке
+/// появляется drag-handle для изменения порядка.
 class CollectionTableView extends StatefulWidget {
   /// Создаёт [CollectionTableView].
   const CollectionTableView({
@@ -55,6 +60,7 @@ class CollectionTableView extends StatefulWidget {
     this.onRatingChanged,
     this.onStatusChanged,
     this.onTagChanged,
+    this.onReorder,
     super.key,
   });
 
@@ -80,6 +86,11 @@ class CollectionTableView extends StatefulWidget {
 
   /// Callback изменения тега (itemId, newTagId).
   final void Function(int itemId, int? tagId)? onTagChanged;
+
+  /// Callback drag-and-drop переноса строки (oldIndex → newIndex).
+  ///
+  /// Если `null`, drag-and-drop отключён.
+  final void Function(int oldIndex, int newIndex)? onReorder;
 
   @override
   State<CollectionTableView> createState() => _CollectionTableViewState();
@@ -110,10 +121,10 @@ class _CollectionTableViewState extends State<CollectionTableView> {
   }
 
   /// Ширина миниатюры.
-  static const double _thumbWidth = 32.0;
+  static const double _thumbWidth = 36.0;
 
   /// Высота миниатюры.
-  static const double _thumbHeight = 46.0;
+  static const double _thumbHeight = 52.0;
 
   /// Радиус скругления миниатюры.
   static const double _thumbRadius = 4.0;
@@ -131,7 +142,11 @@ class _CollectionTableViewState extends State<CollectionTableView> {
   Widget build(BuildContext context) {
     final S l = S.of(context);
     _cachedTagMap = _buildTagMap();
-    final List<CollectionItem> sorted = _sortedItems();
+    final bool isReorderable = widget.onReorder != null;
+    // В режиме reorder сортировка/фильтры по колонкам отключены: элементы
+    // идут в том порядке, который прислал родитель (manual sort из БД).
+    final List<CollectionItem> sorted =
+        isReorderable ? widget.items : _sortedItems();
     final Map<int, CollectionTag> tagMap = _cachedTagMap;
 
     return Padding(
@@ -159,49 +174,23 @@ class _CollectionTableViewState extends State<CollectionTableView> {
                   child: Column(
                     children: <Widget>[
                       _TableHeader(
-                sortColumn: _sortColumn,
-                sortAscending: _sortAscending,
-                onSort: _toggleSort,
-                filterStatus: _filterStatus,
-                filterType: _filterType,
-                filterRating: _filterRating,
-                filterTagId: _filterTagId,
-                filterPlatform: _filterPlatform,
-                tagMap: tagMap,
-                l: l,
-              ),
-              Expanded(
-                child: ListView.separated(
-                  padding: EdgeInsets.zero,
-                  itemCount: sorted.length,
-                  separatorBuilder: (BuildContext context, int index) =>
-                      const Divider(
-                    height: 0.5,
-                    thickness: 0.5,
-                    color: AppColors.surfaceBorder,
-                  ),
-                  itemBuilder: (BuildContext context, int index) {
-                    final CollectionItem item = sorted[index];
-                    return _TableRow(
-                      key: ValueKey<int>(item.id),
-                      item: item,
-                      tag: item.tagId != null ? tagMap[item.tagId] : null,
-                      onTap: () => widget.onItemTap(item),
-                      onSecondaryTap: widget.onItemSecondaryTap != null
-                          ? (Offset pos) =>
-                              widget.onItemSecondaryTap!(item, pos)
-                          : null,
-                      onRatingChanged: widget.onRatingChanged,
-                      onStatusChanged: widget.onStatusChanged,
-                      onTagChanged: widget.onTagChanged,
-                      tags: widget.tags,
-                      thumbWidth: _thumbWidth,
-                      thumbHeight: _thumbHeight,
-                      thumbRadius: _thumbRadius,
-                    );
-                  },
-                ),
-              ),
+                        sortColumn: _sortColumn,
+                        sortAscending: _sortAscending,
+                        onSort: _toggleSort,
+                        filterStatus: _filterStatus,
+                        filterType: _filterType,
+                        filterRating: _filterRating,
+                        filterTagId: _filterTagId,
+                        filterPlatform: _filterPlatform,
+                        tagMap: tagMap,
+                        l: l,
+                        isReorderable: isReorderable,
+                      ),
+                      Expanded(
+                        child: isReorderable
+                            ? _buildReorderableBody(sorted, tagMap)
+                            : _buildSortableBody(sorted, tagMap),
+                      ),
                     ],
                   ),
                 ),
@@ -210,6 +199,89 @@ class _CollectionTableViewState extends State<CollectionTableView> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildSortableBody(
+    List<CollectionItem> sorted,
+    Map<int, CollectionTag> tagMap,
+  ) {
+    return ListView.builder(
+      padding: EdgeInsets.zero,
+      itemCount: sorted.length,
+      itemBuilder: (BuildContext context, int index) {
+        final CollectionItem item = sorted[index];
+        return _TableRow(
+          key: ValueKey<int>(item.id),
+          item: item,
+          rowIndex: index,
+          tag: item.tagId != null ? tagMap[item.tagId] : null,
+          onTap: () => widget.onItemTap(item),
+          onSecondaryTap: widget.onItemSecondaryTap != null
+              ? (Offset pos) => widget.onItemSecondaryTap!(item, pos)
+              : null,
+          onRatingChanged: widget.onRatingChanged,
+          onStatusChanged: widget.onStatusChanged,
+          onTagChanged: widget.onTagChanged,
+          tags: widget.tags,
+          thumbWidth: _thumbWidth,
+          thumbHeight: _thumbHeight,
+          thumbRadius: _thumbRadius,
+        );
+      },
+    );
+  }
+
+  Widget _buildReorderableBody(
+    List<CollectionItem> sorted,
+    Map<int, CollectionTag> tagMap,
+  ) {
+    return ReorderableListView.builder(
+      padding: EdgeInsets.zero,
+      buildDefaultDragHandles: false,
+      itemCount: sorted.length,
+      proxyDecorator:
+          (Widget child, int index, Animation<double> animation) {
+        return AnimatedBuilder(
+          animation: animation,
+          builder: (BuildContext context, Widget? c) {
+            final double elevation = lerpDouble(0, 6, animation.value) ?? 0;
+            return Material(
+              elevation: elevation,
+              color: Colors.transparent,
+              shadowColor: Colors.black26,
+              child: c,
+            );
+          },
+          child: child,
+        );
+      },
+      onReorder: (int oldIndex, int newIndex) {
+        // ReorderableListView даёт newIndex ПОСЛЕ удаления элемента.
+        if (newIndex > oldIndex) newIndex -= 1;
+        widget.onReorder!(oldIndex, newIndex);
+      },
+      itemBuilder: (BuildContext context, int index) {
+        final CollectionItem item = sorted[index];
+        return _TableRow(
+          key: ValueKey<int>(item.id),
+          item: item,
+          rowIndex: index,
+          tag: item.tagId != null ? tagMap[item.tagId] : null,
+          onTap: () => widget.onItemTap(item),
+          onSecondaryTap: widget.onItemSecondaryTap != null
+              ? (Offset pos) => widget.onItemSecondaryTap!(item, pos)
+              : null,
+          onRatingChanged: widget.onRatingChanged,
+          onStatusChanged: widget.onStatusChanged,
+          onTagChanged: widget.onTagChanged,
+          tags: widget.tags,
+          thumbWidth: _thumbWidth,
+          thumbHeight: _thumbHeight,
+          thumbRadius: _thumbRadius,
+          dragIndex: index,
+        );
+      },
     );
   }
 
@@ -353,6 +425,7 @@ class _TableHeader extends StatelessWidget {
     this.filterRating,
     this.filterTagId,
     this.filterPlatform,
+    this.isReorderable = false,
   });
 
   final TableColumn sortColumn;
@@ -365,6 +438,7 @@ class _TableHeader extends StatelessWidget {
   final int? filterTagId;
   final String? filterPlatform;
   final Map<int, CollectionTag> tagMap;
+  final bool isReorderable;
 
   @override
   Widget build(BuildContext context) {
@@ -377,12 +451,14 @@ class _TableHeader extends StatelessWidget {
       ),
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
-        vertical: AppSpacing.sm,
+        vertical: AppSpacing.sm + 2,
       ),
       child: Row(
         children: <Widget>[
+          // Место под drag-handle (совпадает по ширине с колонкой в строках).
+          if (isReorderable) const SizedBox(width: _dragHandleWidth),
           // Место под обложку
-          const SizedBox(width: 32 + AppSpacing.sm),
+          const SizedBox(width: 36 + AppSpacing.sm),
           // Name
           _col(l.collectionTableName, TableColumn.name, flex: 3),
           // Type
@@ -453,19 +529,22 @@ class _TableHeader extends StatelessWidget {
     bool alignEnd = false,
     bool isFiltered = false,
   }) {
-    final bool isActive = column == sortColumn;
-    final bool highlighted = isActive || isFiltered;
+    // В режиме reorder клики/сортировка по колонкам отключены,
+    // индикаторы активной колонки тоже скрыты — порядок задан вручную.
+    final bool isActive = !isReorderable && column == sortColumn;
+    final bool showFilterIcon = !isReorderable && isFiltered;
+    final bool highlighted = isActive || showFilterIcon;
     final Widget cell = InkWell(
       key: ValueKey<TableColumn>(column),
-      onTap: () => onSort(column),
+      onTap: isReorderable ? null : () => onSort(column),
       borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
         child: Text.rich(
           TextSpan(
-            text: label,
+            text: label.toUpperCase(),
             children: <InlineSpan>[
-              if (isActive && !isFiltered)
+              if (isActive && !showFilterIcon)
                 WidgetSpan(
                   alignment: PlaceholderAlignment.middle,
                   child: Padding(
@@ -479,7 +558,7 @@ class _TableHeader extends StatelessWidget {
                     ),
                   ),
                 ),
-              if (isFiltered)
+              if (showFilterIcon)
                 const WidgetSpan(
                   alignment: PlaceholderAlignment.middle,
                   child: Padding(
@@ -494,9 +573,12 @@ class _TableHeader extends StatelessWidget {
             ],
           ),
           style: AppTypography.caption.copyWith(
-            color: highlighted ? AppColors.brand : AppColors.textSecondary,
-            fontWeight: highlighted ? FontWeight.w600 : FontWeight.normal,
-            letterSpacing: 0.3,
+            color: highlighted
+                ? AppColors.brand
+                : AppColors.textTertiary,
+            fontWeight: highlighted ? FontWeight.w700 : FontWeight.w600,
+            letterSpacing: 0.8,
+            fontSize: 10.5,
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -509,6 +591,9 @@ class _TableHeader extends StatelessWidget {
     return Expanded(flex: flex, child: cell);
   }
 }
+
+/// Ширина колонки с drag-handle (используется и в хедере, и в строках).
+const double _dragHandleWidth = 28.0;
 
 // ---------------------------------------------------------------------------
 // Row
@@ -527,6 +612,8 @@ class _TableRow extends StatefulWidget {
     required this.thumbWidth,
     required this.thumbHeight,
     required this.thumbRadius,
+    this.dragIndex,
+    this.rowIndex,
     super.key,
   });
 
@@ -543,6 +630,12 @@ class _TableRow extends StatefulWidget {
   final double thumbHeight;
   final double thumbRadius;
 
+  /// Если задан — показывает drag-handle для [ReorderableListView].
+  final int? dragIndex;
+
+  /// Порядковый номер строки в видимом списке (для zebra-фона).
+  final int? rowIndex;
+
   @override
   State<_TableRow> createState() => _TableRowState();
 }
@@ -553,6 +646,11 @@ class _TableRowState extends State<_TableRow> {
   @override
   Widget build(BuildContext context) {
     final CollectionItem item = widget.item;
+    final bool isOdd = (widget.rowIndex ?? 0).isOdd;
+    final Color baseColor =
+        isOdd ? const Color(0x0AFFFFFF) : Colors.transparent;
+    final Color bgColor =
+        _hovered ? AppColors.brand.withAlpha(22) : baseColor;
 
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
@@ -566,15 +664,28 @@ class _TableRowState extends State<_TableRow> {
           onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 120),
-          color: _hovered
-              ? AppColors.brand.withAlpha(12)
-              : Colors.transparent,
+          color: bgColor,
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.md,
-            vertical: AppSpacing.xs + 2,
+            vertical: AppSpacing.sm,
           ),
           child: Row(
             children: <Widget>[
+              if (widget.dragIndex != null)
+                SizedBox(
+                  width: _dragHandleWidth,
+                  child: ReorderableDragStartListener(
+                    index: widget.dragIndex!,
+                    child: MouseRegion(
+                      cursor: SystemMouseCursors.grab,
+                      child: Icon(
+                        Icons.drag_indicator_rounded,
+                        size: 18,
+                        color: AppColors.textTertiary.withAlpha(180),
+                      ),
+                    ),
+                  ),
+                ),
               // Thumbnail
               _Thumbnail(
                 item: item,
@@ -779,15 +890,7 @@ class _RatingCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Widget content = rating == null
-        ? Align(
-            alignment: Alignment.centerRight,
-            child: Text(
-              '\u2014',
-              style: AppTypography.caption.copyWith(
-                color: AppColors.textTertiary,
-              ),
-            ),
-          )
+        ? const SizedBox.shrink()
         : Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.end,
@@ -946,22 +1049,38 @@ class _StatusChip extends StatelessWidget {
     final Widget chip = Align(
       alignment: Alignment.centerLeft,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        padding: const EdgeInsets.fromLTRB(6, 3, 8, 3),
         decoration: BoxDecoration(
           color: color.withAlpha(18),
           borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
           border: Border.all(color: color.withAlpha(60)),
         ),
-        child: Text(
-          status.localizedLabel(l, mediaType),
-          style: AppTypography.caption.copyWith(
-            color: color,
-            fontSize: 10,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.2,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Container(
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                status.localizedLabel(l, mediaType),
+                style: AppTypography.caption.copyWith(
+                  color: color,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.2,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -1044,15 +1163,7 @@ class _TagCell extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: _buildTagChip(tag!),
           )
-        : Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              '\u2014',
-              style: AppTypography.caption.copyWith(
-                color: AppColors.textTertiary,
-              ),
-            ),
-          );
+        : const SizedBox.shrink();
 
     if (onTagChanged == null || tags.isEmpty) return content;
 

@@ -319,7 +319,7 @@ const String _homeStatusFilterKey = 'home_status_filter';
 /// Провайдер фильтра статуса на главном экране.
 ///
 /// `null` означает "Все" (без фильтра).
-/// По умолчанию: [ItemStatus.inProgress].
+/// По умолчанию: `null` (без фильтра).
 final NotifierProvider<HomeStatusFilterNotifier, ItemStatus?>
     homeStatusFilterProvider =
     NotifierProvider<HomeStatusFilterNotifier, ItemStatus?>(
@@ -339,7 +339,7 @@ class HomeStatusFilterNotifier extends Notifier<ItemStatus?> {
   ItemStatus? build() {
     final SharedPreferences prefs = ref.watch(sharedPreferencesProvider);
     final String? value = prefs.getString(_prefsKey);
-    if (value == null) return ItemStatus.inProgress;
+    if (value == null) return null;
     if (value == 'all') return null;
     return ItemStatus.fromString(value);
   }
