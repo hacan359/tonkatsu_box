@@ -165,10 +165,15 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Fetch annotated tag object
+        run: |
+          VERSION="${{ github.ref_name }}"
+          git fetch origin "refs/tags/${VERSION}:refs/tags/${VERSION}" --force
+
       - name: Extract release notes from tag
         run: |
           VERSION="${{ github.ref_name }}"
-          git tag -l --format='%(contents)' "$VERSION" > release_notes.md
+          git for-each-ref "refs/tags/${VERSION}" --format='%(contents)' > release_notes.md
           if [ ! -s release_notes.md ]; then
             echo "Release ${VERSION}" > release_notes.md
           fi

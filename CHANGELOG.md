@@ -6,6 +6,8 @@
 
 ## [Unreleased]
 
+## [0.27.0] - 2026-04-18
+
 ### Changed
 - **Tags sorted alphabetically (case-insensitive)** — in Manage Tags dialog and in the item tag picker. Previously DAO ordering (`sort_order ASC, name ASC`) combined with `sort_order=0` for every tag fell back to SQLite binary `name ASC` sort, which mixed case and Cyrillic unexpectedly. Sorting is now applied in `CollectionTagsNotifier` on `build`/`create`/`rename`/`refresh` via lowercase `compareTo` (`collection_tags_provider.dart`)
 
