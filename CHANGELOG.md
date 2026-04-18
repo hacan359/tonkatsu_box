@@ -6,6 +6,9 @@
 
 ## [Unreleased]
 
+### Changed
+- **Tags sorted alphabetically (case-insensitive)** — in Manage Tags dialog and in the item tag picker. Previously DAO ordering (`sort_order ASC, name ASC`) combined with `sort_order=0` for every tag fell back to SQLite binary `name ASC` sort, which mixed case and Cyrillic unexpectedly. Sorting is now applied in `CollectionTagsNotifier` on `build`/`create`/`rename`/`refresh` via lowercase `compareTo` (`collection_tags_provider.dart`)
+
 ### Fixed
 - **Search field did not react to typing when opened from a collection or wishlist** — the global `AppTopBar` search field is bound to the active tab's query provider (`searchContextFor(activeTab)`), but `SearchScreen` always reads `searchTabQueryProvider`. When pushed from a collection's `+` button or a wishlist item, the active tab stayed `Collections`/`Wishlist`, so keystrokes went into the wrong provider and the screen saw nothing. `SearchScreen` now accepts an `isPushed` flag; callers (`CollectionActions.addItems`, `WishlistScreen`) push via `rootNavigator: true` and pass `isPushed: true`, which makes the screen render its own `Scaffold`/`AppBar` with a `TextField` wired directly to `searchTabQueryProvider`. Controller initializes from the current provider value so reopening the screen restores the last query (`search_screen.dart`, `collection_actions.dart`, `wishlist_screen.dart`)
 - **`SharedPreferences.setPrefix` threw `StateError` on in-process restart** — `setPrefix('flutter_dev.')` was called inside `_loadAppState()`, which runs again from `AppRestartScope._restart()` after the first `getInstance()`. The second call violated the library precondition and was swallowed by `runZonedGuarded` as a severe log. Moved to `main()` before the first `_loadAppState()` so it runs exactly once per process (`main.dart`)
