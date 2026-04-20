@@ -45,6 +45,13 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
   String _steamGridDbApiKey = '';
   String _tmdbApiKey = '';
 
+  // Результат последней валидации ключа (через sync-кнопку).
+  // null = ещё не проверяли, success = валиден, error = не валиден.
+  StatusType? _sgdbValidated;
+  StatusType? _tmdbValidated;
+  bool _sgdbValidating = false;
+  bool _tmdbValidating = false;
+
   @override
   void initState() {
     super.initState();
@@ -71,8 +78,6 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
           const SizedBox(height: AppSpacing.md),
         ],
         _buildIgdbSection(settings, compact),
-        const SizedBox(height: AppSpacing.md),
-        _buildConnectionSection(settings, compact),
         const SizedBox(height: AppSpacing.md),
         _buildSteamGridDbSection(settings, compact),
         const SizedBox(height: AppSpacing.md),
@@ -171,92 +176,23 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
                 onChanged: (String value) =>
                     setState(() => _clientSecret = value),
               ),
-              const SizedBox(height: AppSpacing.sm),
-              _buildStatusRow(
-                hasKey: settings.hasCredentials,
-                isBuiltIn: settings.isIgdbKeyBuiltIn,
-                hasDefault: ApiDefaults.hasIgdbKey,
-                compact: compact,
-                onReset: _resetIgdbCredentials,
-              ),
               if (settings.isIgdbKeyBuiltIn) _buildOwnKeyHint(),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ==================== Connection ====================
-
-  Widget _buildConnectionSection(SettingsState settings, bool compact) {
-    return SettingsGroup(
-      title: S.of(context).credentialsConnectionStatus,
-      children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              StatusDot(
-                label: _connectionLabel(settings.connectionStatus),
-                type: _connectionStatusType(settings.connectionStatus),
+              const SizedBox(height: AppSpacing.sm),
+              _buildCredentialStatus(
                 compact: compact,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              _buildInfoRow(
-                S.of(context).credentialsPlatformsAvailable,
-                settings.platformCount.toString(),
-                Icons.videogame_asset,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              FilledButton.icon(
-                onPressed: settings.isLoading ? null : _verifyConnection,
-                icon: settings.isLoading &&
-                        settings.connectionStatus == ConnectionStatus.checking
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Icon(Icons.verified_user),
-                label: Text(S.of(context).credentialsVerifyConnection),
+                statusType: _connectionStatusType(settings.connectionStatus),
+                statusLabel: _connectionLabel(settings.connectionStatus),
+                actionTooltip: S.of(context).credentialsVerifyConnection,
+                isLoading: settings.isLoading &&
+                    settings.connectionStatus == ConnectionStatus.checking,
+                onAction: settings.isLoading ? null : _verifyConnection,
+                onReset: (settings.hasCredentials &&
+                        !settings.isIgdbKeyBuiltIn &&
+                        ApiDefaults.hasIgdbKey)
+                    ? _resetIgdbCredentials
+                    : null,
               ),
             ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value, IconData icon) {
-    return Row(
-      children: <Widget>[
-        Icon(icon, size: 20, color: AppColors.textSecondary),
-        const SizedBox(width: AppSpacing.sm),
-        Flexible(
-          child: Text.rich(
-            TextSpan(
-              text: '$label: ',
-              style: AppTypography.body.copyWith(
-                color: AppColors.textSecondary,
-              ),
-              children: <TextSpan>[
-                TextSpan(
-                  text: value,
-                  style: AppTypography.body.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],
@@ -301,7 +237,10 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
                 obscureText: true,
                 compact: compact,
                 onChanged: (String value) {
-                  setState(() => _steamGridDbApiKey = value);
+                  setState(() {
+                    _steamGridDbApiKey = value;
+                    _sgdbValidated = null; // новый ключ — проверка сбрасывается
+                  });
                   if (value.trim().isNotEmpty) {
                     ref
                         .read(settingsNotifierProvider.notifier)
@@ -309,16 +248,31 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
                   }
                 },
               ),
-              const SizedBox(height: AppSpacing.sm),
-              _buildStatusRow(
-                hasKey: settings.hasSteamGridDbKey,
-                isBuiltIn: settings.isSteamGridDbKeyBuiltIn,
-                hasDefault: ApiDefaults.hasSteamGridDbKey,
-                compact: compact,
-                onValidate: _validateSteamGridDbKey,
-                onReset: _resetSteamGridDbKey,
-              ),
               if (settings.isSteamGridDbKeyBuiltIn) _buildOwnKeyHint(),
+              const SizedBox(height: AppSpacing.sm),
+              _buildCredentialStatus(
+                compact: compact,
+                statusType: _keyStatusType(
+                  hasKey: settings.hasSteamGridDbKey,
+                  isBuiltIn: settings.isSteamGridDbKeyBuiltIn,
+                  validated: _sgdbValidated,
+                ),
+                statusLabel: _keyStatusLabel(
+                  hasKey: settings.hasSteamGridDbKey,
+                  isBuiltIn: settings.isSteamGridDbKeyBuiltIn,
+                  validated: _sgdbValidated,
+                ),
+                actionTooltip: S.of(context).test,
+                isLoading: _sgdbValidating,
+                onAction: settings.hasSteamGridDbKey
+                    ? _validateSteamGridDbKey
+                    : null,
+                onReset: (settings.hasSteamGridDbKey &&
+                        !settings.isSteamGridDbKeyBuiltIn &&
+                        ApiDefaults.hasSteamGridDbKey)
+                    ? _resetSteamGridDbKey
+                    : null,
+              ),
             ],
           ),
         ),
@@ -364,7 +318,10 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
                 obscureText: true,
                 compact: compact,
                 onChanged: (String value) {
-                  setState(() => _tmdbApiKey = value);
+                  setState(() {
+                    _tmdbApiKey = value;
+                    _tmdbValidated = null; // новый ключ — проверка сбрасывается
+                  });
                   if (value.trim().isNotEmpty) {
                     ref
                         .read(settingsNotifierProvider.notifier)
@@ -372,16 +329,29 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
                   }
                 },
               ),
-              const SizedBox(height: AppSpacing.sm),
-              _buildStatusRow(
-                hasKey: settings.hasTmdbKey,
-                isBuiltIn: settings.isTmdbKeyBuiltIn,
-                hasDefault: ApiDefaults.hasTmdbKey,
-                compact: compact,
-                onValidate: _validateTmdbKey,
-                onReset: _resetTmdbKey,
-              ),
               if (settings.isTmdbKeyBuiltIn) _buildOwnKeyHint(),
+              const SizedBox(height: AppSpacing.sm),
+              _buildCredentialStatus(
+                compact: compact,
+                statusType: _keyStatusType(
+                  hasKey: settings.hasTmdbKey,
+                  isBuiltIn: settings.isTmdbKeyBuiltIn,
+                  validated: _tmdbValidated,
+                ),
+                statusLabel: _keyStatusLabel(
+                  hasKey: settings.hasTmdbKey,
+                  isBuiltIn: settings.isTmdbKeyBuiltIn,
+                  validated: _tmdbValidated,
+                ),
+                actionTooltip: S.of(context).test,
+                isLoading: _tmdbValidating,
+                onAction: settings.hasTmdbKey ? _validateTmdbKey : null,
+                onReset: (settings.hasTmdbKey &&
+                        !settings.isTmdbKeyBuiltIn &&
+                        ApiDefaults.hasTmdbKey)
+                    ? _resetTmdbKey
+                    : null,
+              ),
             ],
           ),
         ),
@@ -435,6 +405,36 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
 
   // ==================== Helpers ====================
 
+  /// Тип StatusDot для API-ключа.
+  ///
+  /// Приоритет: [validated] > hasKey > !hasKey.
+  StatusType _keyStatusType({
+    required bool hasKey,
+    required bool isBuiltIn,
+    StatusType? validated,
+  }) {
+    if (validated != null) return validated;
+    if (isBuiltIn) return StatusType.success;
+    return hasKey ? StatusType.success : StatusType.inactive;
+  }
+
+  String _keyStatusLabel({
+    required bool hasKey,
+    required bool isBuiltIn,
+    StatusType? validated,
+  }) {
+    if (validated == StatusType.success) {
+      return S.of(context).credentialsConnected;
+    }
+    if (validated == StatusType.error) {
+      return S.of(context).credentialsConnectionError;
+    }
+    if (isBuiltIn) return S.of(context).credentialsUsingBuiltInKey;
+    return hasKey
+        ? S.of(context).credentialsApiKeySaved
+        : S.of(context).credentialsNoApiKey;
+  }
+
   StatusType _connectionStatusType(ConnectionStatus status) =>
       switch (status) {
         ConnectionStatus.connected => StatusType.success,
@@ -487,81 +487,97 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
     }
   }
 
-  /// Строка статуса API ключа с кнопками Test/Reset.
-  Widget _buildStatusRow({
-    required bool hasKey,
+  /// Строка статуса API ключа: StatusDot слева + sync-иконка справа.
+  ///
+  /// Нажатие на sync-иконку вызывает [onAction] (проверка соединения).
+  /// Цвет StatusDot отражает результат: зелёный = OK, красный = ошибка.
+  /// Если задан [onReset] — между StatusDot и sync отображается маленькая
+  /// reset-иконка.
+  Widget _buildCredentialStatus({
     required bool compact,
-    bool isBuiltIn = false,
-    bool hasDefault = false,
-    Future<void> Function()? onValidate,
+    required StatusType statusType,
+    required String statusLabel,
+    required String actionTooltip,
+    required VoidCallback? onAction,
+    bool isLoading = false,
     VoidCallback? onReset,
   }) {
     return Row(
       children: <Widget>[
-        StatusDot(
-          label: isBuiltIn
-              ? S.of(context).credentialsUsingBuiltInKey
-              : hasKey
-                  ? S.of(context).credentialsApiKeySaved
-                  : S.of(context).credentialsNoApiKey,
-          type: hasKey ? StatusType.success : StatusType.inactive,
-          compact: compact,
+        Expanded(
+          child: StatusDot(
+            label: statusLabel,
+            type: statusType,
+            compact: compact,
+          ),
         ),
-        const Spacer(),
-        if (hasKey && !isBuiltIn && hasDefault && onReset != null) ...<Widget>[
-          IconButton.outlined(
+        if (onReset != null)
+          IconButton(
             onPressed: onReset,
-            icon: const Icon(Icons.restart_alt, size: 20),
+            icon: const Icon(Icons.restart_alt, size: 18),
             tooltip: S.of(context).reset,
+            visualDensity: VisualDensity.compact,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(
+              minWidth: 32,
+              minHeight: 32,
+            ),
           ),
-          const SizedBox(width: AppSpacing.xs),
-        ],
-        if (hasKey && onValidate != null)
-          IconButton.outlined(
-            onPressed: onValidate,
-            icon: const Icon(Icons.science_outlined, size: 20),
-            tooltip: S.of(context).test,
+        IconButton(
+          onPressed: onAction,
+          icon: isLoading
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.sync, size: 20),
+          tooltip: actionTooltip,
+          visualDensity: VisualDensity.compact,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(
+            minWidth: 32,
+            minHeight: 32,
           ),
+        ),
       ],
     );
   }
 
   Future<void> _validateSteamGridDbKey() async {
+    setState(() => _sgdbValidating = true);
     final SettingsNotifier notifier =
         ref.read(settingsNotifierProvider.notifier);
     final bool valid = await notifier.validateSteamGridDbKey();
-    if (mounted) {
-      if (valid) {
-        context.showSnack(
-          S.of(context).credentialsSteamGridDbKeyValid,
-          type: SnackType.success,
-        );
-      } else {
-        context.showSnack(
-          S.of(context).credentialsSteamGridDbKeyInvalid,
-          type: SnackType.error,
-        );
-      }
-    }
+    if (!mounted) return;
+    setState(() {
+      _sgdbValidating = false;
+      _sgdbValidated = valid ? StatusType.success : StatusType.error;
+    });
+    context.showSnack(
+      valid
+          ? S.of(context).credentialsSteamGridDbKeyValid
+          : S.of(context).credentialsSteamGridDbKeyInvalid,
+      type: valid ? SnackType.success : SnackType.error,
+    );
   }
 
   Future<void> _validateTmdbKey() async {
+    setState(() => _tmdbValidating = true);
     final SettingsNotifier notifier =
         ref.read(settingsNotifierProvider.notifier);
     final bool valid = await notifier.validateTmdbKey();
-    if (mounted) {
-      if (valid) {
-        context.showSnack(
-          S.of(context).credentialsTmdbKeyValid,
-          type: SnackType.success,
-        );
-      } else {
-        context.showSnack(
-          S.of(context).credentialsTmdbKeyInvalid,
-          type: SnackType.error,
-        );
-      }
-    }
+    if (!mounted) return;
+    setState(() {
+      _tmdbValidating = false;
+      _tmdbValidated = valid ? StatusType.success : StatusType.error;
+    });
+    context.showSnack(
+      valid
+          ? S.of(context).credentialsTmdbKeyValid
+          : S.of(context).credentialsTmdbKeyInvalid,
+      type: valid ? SnackType.success : SnackType.error,
+    );
   }
 
   void _resetIgdbCredentials() {
