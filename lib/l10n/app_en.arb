@@ -408,6 +408,8 @@
   "collectionExport": "Export",
   "collectionNoItemsYet": "No Items Yet",
   "collectionEmpty": "Empty Collection",
+  "collectionEmptyAddHint": "Add items to start building your collection.",
+  "collectionEmptyReadonly": "This collection is empty.",
   "collectionDeleteEmptyPrompt": "This collection is now empty. Delete it?",
   "collectionRemoveItemTitle": "Remove Item?",
   "collectionRemoveItemMessage": "Remove {name} from this collection?",

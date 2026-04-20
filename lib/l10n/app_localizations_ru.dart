@@ -944,6 +944,13 @@ class SRu extends S {
   String get collectionEmpty => 'Пустая коллекция';
 
   @override
+  String get collectionEmptyAddHint =>
+      'Добавьте тайтлы, чтобы начать собирать коллекцию.';
+
+  @override
+  String get collectionEmptyReadonly => 'В этой коллекции пока нет тайтлов.';
+
+  @override
   String get collectionDeleteEmptyPrompt =>
       'Коллекция теперь пуста. Удалить её?';
 

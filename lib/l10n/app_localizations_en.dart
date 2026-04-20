@@ -934,6 +934,13 @@ class SEn extends S {
   String get collectionEmpty => 'Empty Collection';
 
   @override
+  String get collectionEmptyAddHint =>
+      'Add items to start building your collection.';
+
+  @override
+  String get collectionEmptyReadonly => 'This collection is empty.';
+
+  @override
   String get collectionDeleteEmptyPrompt =>
       'This collection is now empty. Delete it?';
 

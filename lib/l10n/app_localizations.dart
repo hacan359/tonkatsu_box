@@ -1771,6 +1771,18 @@ abstract class S {
   /// **'Empty Collection'**
   String get collectionEmpty;
 
+  /// No description provided for @collectionEmptyAddHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add items to start building your collection.'**
+  String get collectionEmptyAddHint;
+
+  /// No description provided for @collectionEmptyReadonly.
+  ///
+  /// In en, this message translates to:
+  /// **'This collection is empty.'**
+  String get collectionEmptyReadonly;
+
   /// No description provided for @collectionDeleteEmptyPrompt.
   ///
   /// In en, this message translates to:

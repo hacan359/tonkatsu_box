@@ -351,6 +351,8 @@
   "collectionExport": "Экспорт",
   "collectionNoItemsYet": "Пока нет тайтлов",
   "collectionEmpty": "Пустая коллекция",
+  "collectionEmptyAddHint": "Добавьте тайтлы, чтобы начать собирать коллекцию.",
+  "collectionEmptyReadonly": "В этой коллекции пока нет тайтлов.",
   "collectionDeleteEmptyPrompt": "Коллекция теперь пуста. Удалить её?",
   "collectionRemoveItemTitle": "Убрать тайтл?",
   "collectionRemoveItemMessage": "Убрать {name} из этой коллекции?",

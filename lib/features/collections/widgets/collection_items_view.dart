@@ -662,8 +662,8 @@ class CollectionItemsView extends ConsumerWidget {
               canAdd
                   ? l.collectionAddItems
                   : (canEdit
-                      ? 'Add items to start building your collection.'
-                      : 'This collection is empty.'),
+                      ? l.collectionEmptyAddHint
+                      : l.collectionEmptyReadonly),
               textAlign: TextAlign.center,
               style: AppTypography.body.copyWith(
                 color: AppColors.textSecondary,
