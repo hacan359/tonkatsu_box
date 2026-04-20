@@ -115,7 +115,9 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                 item.itemName.toLowerCase().contains(query) ||
                 (item.tagId != null &&
                     (tagsMap[item.tagId]?.name.toLowerCase().contains(query) ??
-                        false)),
+                        false)) ||
+                (item.userComment?.toLowerCase().contains(query) ?? false) ||
+                (item.authorComment?.toLowerCase().contains(query) ?? false),
           )
           .toList();
     }

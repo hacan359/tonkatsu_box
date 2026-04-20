@@ -597,7 +597,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             (CollectionItem item) =>
                 item.itemName.toLowerCase().contains(query) ||
                 (item.tagId != null &&
-                    (tagNames[item.tagId]?.contains(query) ?? false)),
+                    (tagNames[item.tagId]?.contains(query) ?? false)) ||
+                (item.userComment?.toLowerCase().contains(query) ?? false) ||
+                (item.authorComment?.toLowerCase().contains(query) ?? false),
           )
           .toList();
     }
