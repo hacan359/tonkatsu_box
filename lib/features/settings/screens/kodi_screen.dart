@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/api/kodi_api.dart';
 import '../../../core/database/database_service.dart';
 import '../../../core/services/kodi_sync_service.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/kodi_application_info.dart';
@@ -74,7 +75,7 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
           setState(() {
             _isTesting = false;
             _connectionOk = false;
-            _connectionResult = 'Ping failed — unexpected response';
+            _connectionResult = S.of(context).kodiPingFailed;
           });
         }
         return;
@@ -85,8 +86,10 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
         setState(() {
           _isTesting = false;
           _connectionOk = true;
-          _connectionResult =
-              'Kodi ${info.versionString} "${info.name}"';
+          _connectionResult = S.of(context).kodiConnectedTo(
+            info.versionString,
+            info.name ?? '',
+          );
         });
       }
     } on KodiApiException catch (e) {
@@ -113,13 +116,13 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
           params = decoded;
         } else {
           setState(() {
-            _rawResponse = 'Error: params must be a JSON object';
+            _rawResponse = S.of(context).kodiParamsNotObject;
           });
           return;
         }
       } on FormatException catch (e) {
         setState(() {
-          _rawResponse = 'JSON parse error: ${e.message}';
+          _rawResponse = S.of(context).kodiJsonParseError(e.message);
         });
         return;
       }
@@ -144,8 +147,8 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
       if (mounted) {
         setState(() {
           _isSendingRaw = false;
-          _rawResponse = 'Error: ${e.message}'
-              '${e.detail != null ? '\n${e.detail}' : ''}';
+          _rawResponse = S.of(context).kodiRawError(e.message) +
+              (e.detail != null ? '\n${e.detail}' : '');
         });
       }
     }
@@ -181,7 +184,7 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
             ref.read(kodiSettingsProvider.notifier).setTargetCollectionId(null);
             if (mounted) {
               context.showSnack(
-                'Target collection deleted — sync stopped',
+                S.of(context).kodiTargetDeletedSnack,
                 type: SnackType.error,
               );
             }
@@ -194,7 +197,7 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
     showDialog<void>(
       context: context,
       builder: (BuildContext dialogContext) => SimpleDialog(
-        title: const Text('Sync interval'),
+        title: Text(S.of(context).kodiSyncInterval),
         children: <Widget>[
           for (final int seconds in intervals)
             SimpleDialogOption(
@@ -236,7 +239,7 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
 
     return Column(
       children: <Widget>[
-        const SubScreenTitleBar(title: 'Kodi'),
+        const SubScreenTitleBar(title: 'Kodi'), // proper noun
         Expanded(
           child: Align(
             alignment: Alignment.topCenter,
@@ -270,9 +273,10 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
   // ==================== Connection ====================
 
   Widget _buildConnectionSection(KodiSettingsState settings) {
+    final S l = S.of(context);
     return SettingsGroup(
-      title: 'Connection',
-      subtitle: 'Kodi HTTP JSON-RPC (Settings → Services → Control)',
+      title: l.kodiConnectionTitle,
+      subtitle: l.kodiConnectionSubtitle,
       children: <Widget>[
         Padding(
           padding: const EdgeInsets.symmetric(
@@ -280,7 +284,7 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
             vertical: AppSpacing.sm,
           ),
           child: InlineTextField(
-            label: 'Host',
+            label: l.kodiHost,
             value: settings.host,
             placeholder: '192.168.1.100',
             compact: true,
@@ -295,7 +299,7 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
             vertical: AppSpacing.sm,
           ),
           child: InlineTextField(
-            label: 'Port',
+            label: l.kodiPort,
             value: settings.port.toString(),
             placeholder: kodiDefaultPort.toString(),
             compact: true,
@@ -313,7 +317,7 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
             vertical: AppSpacing.sm,
           ),
           child: InlineTextField(
-            label: 'Username',
+            label: l.kodiUsername,
             value: settings.username,
             placeholder: 'kodi',
             compact: true,
@@ -328,9 +332,9 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
             vertical: AppSpacing.sm,
           ),
           child: InlineTextField(
-            label: 'Password',
+            label: l.kodiPassword,
             value: settings.password,
-            placeholder: 'Enter password',
+            placeholder: l.kodiPasswordHint,
             obscureText: true,
             compact: true,
             onChanged: (String value) {
@@ -339,10 +343,10 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
           ),
         ),
         SettingsTile(
-          title: 'Test connection',
+          title: l.kodiTestConnection,
           showChevron: false,
           value: _isTesting
-              ? 'Connecting...'
+              ? l.kodiConnecting
               : _connectionResult,
           titleColor:
               _connectionResult != null && _connectionOk
@@ -361,41 +365,43 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
   // ==================== Sync ====================
 
   Widget _buildSyncSection(KodiSettingsState settings) {
+    final S l = S.of(context);
     final AsyncValue<List<Collection>> collectionsAsync =
         ref.watch(collectionsProvider);
 
     // Название выбранной коллекции.
     final String targetLabel = collectionsAsync.when(
       data: (List<Collection> cols) {
-        if (settings.targetCollectionId == null) return 'Not selected';
+        if (settings.targetCollectionId == null) return l.kodiTargetNotSelected;
         final Collection? target = cols
             .where((Collection c) => c.id == settings.targetCollectionId)
             .firstOrNull;
-        return target?.name ?? 'Deleted (#${settings.targetCollectionId})';
+        return target?.name ??
+            l.kodiTargetDeletedLabel(settings.targetCollectionId!);
       },
       loading: () => '...',
-      error: (_, _) => 'Error',
+      error: (_, _) => l.kodiTargetError,
     );
 
     final bool canEnable =
         settings.hasConnection && settings.targetCollectionId != null;
 
     return SettingsGroup(
-      title: 'Sync',
+      title: l.kodiSyncTitle,
       children: <Widget>[
         // Выбор целевой коллекции (обязательно).
         SettingsTile(
-          title: 'Target collection',
-          subtitle: 'All Kodi movies sync here',
+          title: l.kodiTargetCollection,
+          subtitle: l.kodiTargetCollectionSubtitle,
           value: targetLabel,
           onTap: () => _showCollectionPicker(settings, collectionsAsync),
         ),
         SettingsTile(
-          title: 'Enable Kodi sync',
+          title: l.kodiEnableSync,
           subtitle: settings.enabled
-              ? 'Active while Tonkatsu is running'
+              ? l.kodiEnableSyncActiveSubtitle
               : !canEnable
-                  ? 'Select a target collection first'
+                  ? l.kodiEnableSyncDisabledSubtitle
                   : null,
           showChevron: false,
           trailing: Switch(
@@ -415,13 +421,13 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
           ),
         ),
         SettingsTile(
-          title: 'Sync interval',
+          title: l.kodiSyncInterval,
           value: _formatInterval(settings.syncIntervalSeconds),
           onTap: () => _showIntervalPicker(settings),
         ),
         SettingsTile(
-          title: 'Create sub-collections from Kodi sets',
-          subtitle: 'E.g. "Harry Potter Collection (kodi)"',
+          title: l.kodiCreateSubCollections,
+          subtitle: l.kodiCreateSubCollectionsSubtitle,
           showChevron: false,
           trailing: Switch(
             value: settings.createSubCollections,
@@ -433,8 +439,8 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
           ),
         ),
         SettingsTile(
-          title: 'Import ratings from Kodi',
-          subtitle: 'Copy Kodi userrating (1–10)',
+          title: l.kodiImportRatings,
+          subtitle: l.kodiImportRatingsSubtitle,
           showChevron: false,
           trailing: Switch(
             value: settings.importRatings,
@@ -459,16 +465,16 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
     final Object? result = await showDialog<Object>(
       context: context,
       builder: (BuildContext dialogContext) => SimpleDialog(
-        title: const Text('Target collection'),
+        title: Text(S.of(context).kodiTargetCollection),
         children: <Widget>[
           // Create new.
           SimpleDialogOption(
             onPressed: () => Navigator.pop(dialogContext, 'create_new'),
-            child: const Row(
+            child: Row(
               children: <Widget>[
-                Icon(Icons.add, size: 18, color: AppColors.brand),
-                SizedBox(width: AppSpacing.sm),
-                Text('Create new collection'),
+                const Icon(Icons.add, size: 18, color: AppColors.brand),
+                const SizedBox(width: AppSpacing.sm),
+                Text(S.of(context).kodiCollectionPickerCreateNew),
               ],
             ),
           ),
@@ -501,9 +507,10 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
     if (result == null || !mounted) return;
 
     if (result == 'create_new') {
+      final S l = S.of(context);
       final DatabaseService db = ref.read(databaseServiceProvider);
       final Collection created = await db.createCollection(
-        name: 'Kodi Library',
+        name: l.kodiCollectionLibraryName,
         author: 'Kodi',
       );
       ref.invalidate(collectionsProvider);
@@ -511,7 +518,10 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
           .read(kodiSettingsProvider.notifier)
           .setTargetCollectionId(created.id);
       if (mounted) {
-        context.showSnack('Created "Kodi Library"', type: SnackType.success);
+        context.showSnack(
+          l.kodiCollectionCreated(l.kodiCollectionLibraryName),
+          type: SnackType.success,
+        );
       }
     } else if (result is int) {
       await ref
@@ -521,6 +531,7 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
   }
 
   Widget _buildRequestLog() {
+    final S l = S.of(context);
     final List<KodiLogEntry> log = ref.read(kodiApiProvider).requestLog;
 
     return Padding(
@@ -531,7 +542,7 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
           Row(
             children: <Widget>[
               Text(
-                'Request Log (${log.length})',
+                l.kodiRequestLog(log.length),
                 style: AppTypography.bodySmall.copyWith(
                   color: AppColors.textTertiary,
                   fontWeight: FontWeight.w600,
@@ -545,12 +556,12 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
                   visualDensity: VisualDensity.compact,
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
-                  tooltip: 'Copy log',
+                  tooltip: l.kodiCopyLog,
                   onPressed: () {
                     final String text =
                         log.map((KodiLogEntry e) => e.formatted).join('\n');
                     Clipboard.setData(ClipboardData(text: text));
-                    context.showSnack('Log copied');
+                    context.showSnack(l.kodiLogCopied);
                   },
                 ),
               if (log.isNotEmpty)
@@ -560,7 +571,7 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
                   visualDensity: VisualDensity.compact,
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
-                  tooltip: 'Clear log',
+                  tooltip: l.kodiClearLog,
                   onPressed: () {
                     ref.read(kodiApiProvider).requestLog.clear();
                     setState(() {});
@@ -580,7 +591,7 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
             ),
             child: log.isEmpty
                 ? Text(
-                    'No requests yet',
+                    l.kodiNoRequests,
                     style: AppTypography.bodySmall.copyWith(
                       color: AppColors.textTertiary,
                     ),
@@ -604,8 +615,9 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
   // ==================== Debug ====================
 
   Widget _buildDebugSection(KodiSettingsState settings) {
+    final S l = S.of(context);
     return SettingsGroup(
-      title: 'Debug',
+      title: l.kodiDebugTitle,
       children: <Widget>[
         // — Connection status —
         if (_connectionResult != null)
@@ -638,20 +650,20 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
 
         // — Sync status —
         SettingsTile(
-          title: 'Sync status',
+          title: l.kodiSyncStatus,
           value: ref.read(kodiSyncServiceProvider).isRunning
-              ? 'Running'
-              : 'Stopped',
+              ? l.kodiSyncRunning
+              : l.kodiSyncStopped,
           showChevron: false,
         ),
         SettingsTile(
-          title: 'Last sync',
-          value: settings.lastSyncTimestamp ?? 'Never',
+          title: l.kodiLastSync,
+          value: settings.lastSyncTimestamp ?? l.kodiLastSyncNever,
           showChevron: false,
         ),
         SettingsTile(
-          title: 'Clear last sync timestamp',
-          subtitle: 'Next sync will fetch all watched items',
+          title: l.kodiClearLastSync,
+          subtitle: l.kodiClearLastSyncSubtitle,
           titleColor: AppColors.error,
           onTap: () async {
             await ref
@@ -659,7 +671,7 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
                 .clearLastSyncTimestamp();
             if (mounted) {
               context.showSnack(
-                'Last sync timestamp cleared',
+                l.kodiLastSyncCleared,
                 type: SnackType.success,
               );
             }
@@ -676,7 +688,7 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text(
-                'Raw JSON-RPC',
+                l.kodiRawJsonRpc,
                 style: AppTypography.bodySmall.copyWith(
                   color: AppColors.textTertiary,
                   fontWeight: FontWeight.w600,
@@ -685,10 +697,10 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
               const SizedBox(height: AppSpacing.sm),
               TextField(
                 controller: _methodController,
-                decoration: const InputDecoration(
-                  labelText: 'Method',
+                decoration: InputDecoration(
+                  labelText: l.kodiMethod,
                   hintText: 'VideoLibrary.GetMovies',
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                   isDense: true,
                 ),
                 style: AppTypography.bodySmall,
@@ -696,10 +708,10 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
               const SizedBox(height: AppSpacing.sm),
               TextField(
                 controller: _paramsController,
-                decoration: const InputDecoration(
-                  labelText: 'Params (JSON)',
+                decoration: InputDecoration(
+                  labelText: l.kodiParams,
                   hintText: '{"limits": {"start": 0, "end": 5}}',
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                   isDense: true,
                 ),
                 style: AppTypography.bodySmall,
@@ -721,7 +733,7 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
                           ),
                         )
                       : const Icon(Icons.send, size: 16),
-                  label: const Text('Send'),
+                  label: Text(l.kodiSend),
                 ),
               ),
               if (_rawResponse != null) ...<Widget>[
@@ -756,12 +768,12 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
                           visualDensity: VisualDensity.compact,
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
-                          tooltip: 'Copy to clipboard',
+                          tooltip: l.kodiCopyToClipboard,
                           onPressed: () {
                             Clipboard.setData(
                               ClipboardData(text: _rawResponse!),
                             );
-                            context.showSnack('Copied to clipboard');
+                            context.showSnack(l.kodiCopiedToClipboard);
                           },
                         ),
                       ),

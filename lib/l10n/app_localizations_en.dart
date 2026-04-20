@@ -3297,4 +3297,187 @@ class SEn extends S {
 
   @override
   String get profileDeleted => 'Profile deleted';
+
+  @override
+  String get settingsIntegrations => 'Integrations';
+
+  @override
+  String get settingsKodiSubtitle => 'Watch sync from Kodi media player';
+
+  @override
+  String get settingsOn => 'On';
+
+  @override
+  String get kodiConnectionTitle => 'Connection';
+
+  @override
+  String get kodiConnectionSubtitle =>
+      'Kodi HTTP JSON-RPC (Settings → Services → Control)';
+
+  @override
+  String get kodiHost => 'Host';
+
+  @override
+  String get kodiPort => 'Port';
+
+  @override
+  String get kodiUsername => 'Username';
+
+  @override
+  String get kodiPassword => 'Password';
+
+  @override
+  String get kodiPasswordHint => 'Enter password';
+
+  @override
+  String get kodiTestConnection => 'Test connection';
+
+  @override
+  String get kodiConnecting => 'Connecting…';
+
+  @override
+  String get kodiPingFailed => 'Ping failed — unexpected response';
+
+  @override
+  String kodiConnectedTo(String version, String name) {
+    return 'Kodi $version \"$name\"';
+  }
+
+  @override
+  String get kodiSyncTitle => 'Sync';
+
+  @override
+  String get kodiTargetCollection => 'Target collection';
+
+  @override
+  String get kodiTargetCollectionSubtitle => 'All Kodi movies sync here';
+
+  @override
+  String get kodiTargetNotSelected => 'Not selected';
+
+  @override
+  String kodiTargetDeletedLabel(int id) {
+    return 'Deleted (#$id)';
+  }
+
+  @override
+  String get kodiTargetError => 'Error';
+
+  @override
+  String get kodiEnableSync => 'Enable Kodi sync';
+
+  @override
+  String get kodiEnableSyncActiveSubtitle => 'Active while Tonkatsu is running';
+
+  @override
+  String get kodiEnableSyncDisabledSubtitle =>
+      'Select a target collection first';
+
+  @override
+  String get kodiSyncInterval => 'Sync interval';
+
+  @override
+  String get kodiCreateSubCollections =>
+      'Create sub-collections from Kodi sets';
+
+  @override
+  String get kodiCreateSubCollectionsSubtitle =>
+      'E.g. \"Harry Potter Collection (kodi)\"';
+
+  @override
+  String get kodiImportRatings => 'Import ratings from Kodi';
+
+  @override
+  String get kodiImportRatingsSubtitle => 'Copy Kodi userrating (1–10)';
+
+  @override
+  String get kodiCollectionPickerCreateNew => 'Create new collection';
+
+  @override
+  String get kodiCollectionLibraryName => 'Kodi Library';
+
+  @override
+  String kodiCollectionCreated(String name) {
+    return 'Created \"$name\"';
+  }
+
+  @override
+  String get kodiTargetDeletedSnack =>
+      'Target collection deleted — sync stopped';
+
+  @override
+  String get kodiDebugTitle => 'Debug';
+
+  @override
+  String get kodiSyncStatus => 'Sync status';
+
+  @override
+  String get kodiSyncRunning => 'Running';
+
+  @override
+  String get kodiSyncStopped => 'Stopped';
+
+  @override
+  String get kodiLastSync => 'Last sync';
+
+  @override
+  String get kodiLastSyncNever => 'Never';
+
+  @override
+  String get kodiClearLastSync => 'Clear last sync timestamp';
+
+  @override
+  String get kodiClearLastSyncSubtitle =>
+      'Next sync will fetch all watched items';
+
+  @override
+  String get kodiLastSyncCleared => 'Last sync timestamp cleared';
+
+  @override
+  String kodiRequestLog(int count) {
+    return 'Request Log ($count)';
+  }
+
+  @override
+  String get kodiCopyLog => 'Copy log';
+
+  @override
+  String get kodiLogCopied => 'Log copied';
+
+  @override
+  String get kodiClearLog => 'Clear log';
+
+  @override
+  String get kodiNoRequests => 'No requests yet';
+
+  @override
+  String get kodiRawJsonRpc => 'Raw JSON-RPC';
+
+  @override
+  String get kodiMethod => 'Method';
+
+  @override
+  String get kodiParams => 'Params (JSON)';
+
+  @override
+  String get kodiSend => 'Send';
+
+  @override
+  String get kodiCopyToClipboard => 'Copy to clipboard';
+
+  @override
+  String get kodiCopiedToClipboard => 'Copied to clipboard';
+
+  @override
+  String get kodiParamsNotObject => 'Error: params must be a JSON object';
+
+  @override
+  String kodiJsonParseError(String message) {
+    return 'JSON parse error: $message';
+  }
+
+  @override
+  String kodiRawError(String message) {
+    return 'Error: $message';
+  }
 }

@@ -1258,5 +1258,98 @@
   "switchingProfile": "Переключение профиля…",
   "appWillRestart": "Приложение перезапустится для применения изменений.",
   "profileCreated": "Профиль создан",
-  "profileDeleted": "Профиль удалён"
+  "profileDeleted": "Профиль удалён",
+
+  "settingsIntegrations": "Интеграции",
+  "settingsKodiSubtitle": "Синхронизация просмотров с Kodi",
+  "settingsOn": "Вкл.",
+
+  "kodiConnectionTitle": "Подключение",
+  "kodiConnectionSubtitle": "Kodi HTTP JSON-RPC (Настройки → Службы → Управление)",
+  "kodiHost": "Хост",
+  "kodiPort": "Порт",
+  "kodiUsername": "Имя пользователя",
+  "kodiPassword": "Пароль",
+  "kodiPasswordHint": "Введите пароль",
+  "kodiTestConnection": "Проверить подключение",
+  "kodiConnecting": "Подключение…",
+  "kodiPingFailed": "Ping не прошёл — неожиданный ответ",
+  "kodiConnectedTo": "Kodi {version} «{name}»",
+  "@kodiConnectedTo": {
+    "placeholders": {
+      "version": {"type": "String"},
+      "name": {"type": "String"}
+    }
+  },
+
+  "kodiSyncTitle": "Синхронизация",
+  "kodiTargetCollection": "Целевая коллекция",
+  "kodiTargetCollectionSubtitle": "Все фильмы из Kodi попадут сюда",
+  "kodiTargetNotSelected": "Не выбрана",
+  "kodiTargetDeletedLabel": "Удалена (#{id})",
+  "@kodiTargetDeletedLabel": {
+    "placeholders": {
+      "id": {"type": "int"}
+    }
+  },
+  "kodiTargetError": "Ошибка",
+  "kodiEnableSync": "Включить синхронизацию Kodi",
+  "kodiEnableSyncActiveSubtitle": "Работает, пока запущено приложение",
+  "kodiEnableSyncDisabledSubtitle": "Сначала выберите целевую коллекцию",
+  "kodiSyncInterval": "Интервал синхронизации",
+  "kodiCreateSubCollections": "Создавать подколлекции из наборов Kodi",
+  "kodiCreateSubCollectionsSubtitle": "Например, «Harry Potter Collection (kodi)»",
+  "kodiImportRatings": "Импортировать оценки из Kodi",
+  "kodiImportRatingsSubtitle": "Переносить userrating Kodi (1–10)",
+
+  "kodiCollectionPickerCreateNew": "Создать новую коллекцию",
+  "kodiCollectionLibraryName": "Библиотека Kodi",
+  "kodiCollectionCreated": "Создана «{name}»",
+  "@kodiCollectionCreated": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "kodiTargetDeletedSnack": "Целевая коллекция удалена — синхронизация остановлена",
+
+  "kodiDebugTitle": "Отладка",
+  "kodiSyncStatus": "Статус синхронизации",
+  "kodiSyncRunning": "Активна",
+  "kodiSyncStopped": "Остановлена",
+  "kodiLastSync": "Последняя синхронизация",
+  "kodiLastSyncNever": "Никогда",
+  "kodiClearLastSync": "Сбросить метку последней синхронизации",
+  "kodiClearLastSyncSubtitle": "При следующей синхронизации подтянутся все просмотренные",
+  "kodiLastSyncCleared": "Метка последней синхронизации сброшена",
+
+  "kodiRequestLog": "Лог запросов ({count})",
+  "@kodiRequestLog": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "kodiCopyLog": "Скопировать лог",
+  "kodiLogCopied": "Лог скопирован",
+  "kodiClearLog": "Очистить лог",
+  "kodiNoRequests": "Запросов пока нет",
+
+  "kodiRawJsonRpc": "Сырой JSON-RPC",
+  "kodiMethod": "Метод",
+  "kodiParams": "Параметры (JSON)",
+  "kodiSend": "Отправить",
+  "kodiCopyToClipboard": "Скопировать в буфер",
+  "kodiCopiedToClipboard": "Скопировано в буфер",
+  "kodiParamsNotObject": "Ошибка: параметры должны быть JSON-объектом",
+  "kodiJsonParseError": "Ошибка JSON: {message}",
+  "@kodiJsonParseError": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
+  "kodiRawError": "Ошибка: {message}",
+  "@kodiRawError": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  }
 }

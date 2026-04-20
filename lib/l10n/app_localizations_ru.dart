@@ -3339,4 +3339,189 @@ class SRu extends S {
 
   @override
   String get profileDeleted => 'Профиль удалён';
+
+  @override
+  String get settingsIntegrations => 'Интеграции';
+
+  @override
+  String get settingsKodiSubtitle => 'Синхронизация просмотров с Kodi';
+
+  @override
+  String get settingsOn => 'Вкл.';
+
+  @override
+  String get kodiConnectionTitle => 'Подключение';
+
+  @override
+  String get kodiConnectionSubtitle =>
+      'Kodi HTTP JSON-RPC (Настройки → Службы → Управление)';
+
+  @override
+  String get kodiHost => 'Хост';
+
+  @override
+  String get kodiPort => 'Порт';
+
+  @override
+  String get kodiUsername => 'Имя пользователя';
+
+  @override
+  String get kodiPassword => 'Пароль';
+
+  @override
+  String get kodiPasswordHint => 'Введите пароль';
+
+  @override
+  String get kodiTestConnection => 'Проверить подключение';
+
+  @override
+  String get kodiConnecting => 'Подключение…';
+
+  @override
+  String get kodiPingFailed => 'Ping не прошёл — неожиданный ответ';
+
+  @override
+  String kodiConnectedTo(String version, String name) {
+    return 'Kodi $version «$name»';
+  }
+
+  @override
+  String get kodiSyncTitle => 'Синхронизация';
+
+  @override
+  String get kodiTargetCollection => 'Целевая коллекция';
+
+  @override
+  String get kodiTargetCollectionSubtitle => 'Все фильмы из Kodi попадут сюда';
+
+  @override
+  String get kodiTargetNotSelected => 'Не выбрана';
+
+  @override
+  String kodiTargetDeletedLabel(int id) {
+    return 'Удалена (#$id)';
+  }
+
+  @override
+  String get kodiTargetError => 'Ошибка';
+
+  @override
+  String get kodiEnableSync => 'Включить синхронизацию Kodi';
+
+  @override
+  String get kodiEnableSyncActiveSubtitle =>
+      'Работает, пока запущено приложение';
+
+  @override
+  String get kodiEnableSyncDisabledSubtitle =>
+      'Сначала выберите целевую коллекцию';
+
+  @override
+  String get kodiSyncInterval => 'Интервал синхронизации';
+
+  @override
+  String get kodiCreateSubCollections =>
+      'Создавать подколлекции из наборов Kodi';
+
+  @override
+  String get kodiCreateSubCollectionsSubtitle =>
+      'Например, «Harry Potter Collection (kodi)»';
+
+  @override
+  String get kodiImportRatings => 'Импортировать оценки из Kodi';
+
+  @override
+  String get kodiImportRatingsSubtitle => 'Переносить userrating Kodi (1–10)';
+
+  @override
+  String get kodiCollectionPickerCreateNew => 'Создать новую коллекцию';
+
+  @override
+  String get kodiCollectionLibraryName => 'Библиотека Kodi';
+
+  @override
+  String kodiCollectionCreated(String name) {
+    return 'Создана «$name»';
+  }
+
+  @override
+  String get kodiTargetDeletedSnack =>
+      'Целевая коллекция удалена — синхронизация остановлена';
+
+  @override
+  String get kodiDebugTitle => 'Отладка';
+
+  @override
+  String get kodiSyncStatus => 'Статус синхронизации';
+
+  @override
+  String get kodiSyncRunning => 'Активна';
+
+  @override
+  String get kodiSyncStopped => 'Остановлена';
+
+  @override
+  String get kodiLastSync => 'Последняя синхронизация';
+
+  @override
+  String get kodiLastSyncNever => 'Никогда';
+
+  @override
+  String get kodiClearLastSync => 'Сбросить метку последней синхронизации';
+
+  @override
+  String get kodiClearLastSyncSubtitle =>
+      'При следующей синхронизации подтянутся все просмотренные';
+
+  @override
+  String get kodiLastSyncCleared => 'Метка последней синхронизации сброшена';
+
+  @override
+  String kodiRequestLog(int count) {
+    return 'Лог запросов ($count)';
+  }
+
+  @override
+  String get kodiCopyLog => 'Скопировать лог';
+
+  @override
+  String get kodiLogCopied => 'Лог скопирован';
+
+  @override
+  String get kodiClearLog => 'Очистить лог';
+
+  @override
+  String get kodiNoRequests => 'Запросов пока нет';
+
+  @override
+  String get kodiRawJsonRpc => 'Сырой JSON-RPC';
+
+  @override
+  String get kodiMethod => 'Метод';
+
+  @override
+  String get kodiParams => 'Параметры (JSON)';
+
+  @override
+  String get kodiSend => 'Отправить';
+
+  @override
+  String get kodiCopyToClipboard => 'Скопировать в буфер';
+
+  @override
+  String get kodiCopiedToClipboard => 'Скопировано в буфер';
+
+  @override
+  String get kodiParamsNotObject =>
+      'Ошибка: параметры должны быть JSON-объектом';
+
+  @override
+  String kodiJsonParseError(String message) {
+    return 'Ошибка JSON: $message';
+  }
+
+  @override
+  String kodiRawError(String message) {
+    return 'Ошибка: $message';
+  }
 }

@@ -14,6 +14,7 @@ import 'package:xerabora/features/settings/providers/profile_provider.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/features/settings/screens/kodi_screen.dart';
 import 'package:xerabora/features/settings/widgets/settings_group.dart';
+import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/features/settings/widgets/settings_tile.dart';
 import 'package:xerabora/shared/models/kodi_application_info.dart';
 import 'package:xerabora/shared/models/profile.dart';
@@ -101,8 +102,11 @@ void main() {
             )),
         ...extraOverrides,
       ],
-      child: const MaterialApp(
-        home: Scaffold(body: KodiScreen()),
+      child: MaterialApp(
+        localizationsDelegates: S.localizationsDelegates,
+        supportedLocales: S.supportedLocales,
+        locale: const Locale('en'),
+        home: const Scaffold(body: KodiScreen()),
       ),
     );
   }

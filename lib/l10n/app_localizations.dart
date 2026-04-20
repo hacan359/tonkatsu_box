@@ -6036,6 +6036,336 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Profile deleted'**
   String get profileDeleted;
+
+  /// No description provided for @settingsIntegrations.
+  ///
+  /// In en, this message translates to:
+  /// **'Integrations'**
+  String get settingsIntegrations;
+
+  /// No description provided for @settingsKodiSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch sync from Kodi media player'**
+  String get settingsKodiSubtitle;
+
+  /// No description provided for @settingsOn.
+  ///
+  /// In en, this message translates to:
+  /// **'On'**
+  String get settingsOn;
+
+  /// No description provided for @kodiConnectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection'**
+  String get kodiConnectionTitle;
+
+  /// No description provided for @kodiConnectionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Kodi HTTP JSON-RPC (Settings → Services → Control)'**
+  String get kodiConnectionSubtitle;
+
+  /// No description provided for @kodiHost.
+  ///
+  /// In en, this message translates to:
+  /// **'Host'**
+  String get kodiHost;
+
+  /// No description provided for @kodiPort.
+  ///
+  /// In en, this message translates to:
+  /// **'Port'**
+  String get kodiPort;
+
+  /// No description provided for @kodiUsername.
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
+  String get kodiUsername;
+
+  /// No description provided for @kodiPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get kodiPassword;
+
+  /// No description provided for @kodiPasswordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter password'**
+  String get kodiPasswordHint;
+
+  /// No description provided for @kodiTestConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Test connection'**
+  String get kodiTestConnection;
+
+  /// No description provided for @kodiConnecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting…'**
+  String get kodiConnecting;
+
+  /// No description provided for @kodiPingFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Ping failed — unexpected response'**
+  String get kodiPingFailed;
+
+  /// No description provided for @kodiConnectedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Kodi {version} \"{name}\"'**
+  String kodiConnectedTo(String version, String name);
+
+  /// No description provided for @kodiSyncTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync'**
+  String get kodiSyncTitle;
+
+  /// No description provided for @kodiTargetCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Target collection'**
+  String get kodiTargetCollection;
+
+  /// No description provided for @kodiTargetCollectionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'All Kodi movies sync here'**
+  String get kodiTargetCollectionSubtitle;
+
+  /// No description provided for @kodiTargetNotSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Not selected'**
+  String get kodiTargetNotSelected;
+
+  /// No description provided for @kodiTargetDeletedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted (#{id})'**
+  String kodiTargetDeletedLabel(int id);
+
+  /// No description provided for @kodiTargetError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get kodiTargetError;
+
+  /// No description provided for @kodiEnableSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Kodi sync'**
+  String get kodiEnableSync;
+
+  /// No description provided for @kodiEnableSyncActiveSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Active while Tonkatsu is running'**
+  String get kodiEnableSyncActiveSubtitle;
+
+  /// No description provided for @kodiEnableSyncDisabledSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a target collection first'**
+  String get kodiEnableSyncDisabledSubtitle;
+
+  /// No description provided for @kodiSyncInterval.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync interval'**
+  String get kodiSyncInterval;
+
+  /// No description provided for @kodiCreateSubCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'Create sub-collections from Kodi sets'**
+  String get kodiCreateSubCollections;
+
+  /// No description provided for @kodiCreateSubCollectionsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'E.g. \"Harry Potter Collection (kodi)\"'**
+  String get kodiCreateSubCollectionsSubtitle;
+
+  /// No description provided for @kodiImportRatings.
+  ///
+  /// In en, this message translates to:
+  /// **'Import ratings from Kodi'**
+  String get kodiImportRatings;
+
+  /// No description provided for @kodiImportRatingsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Kodi userrating (1–10)'**
+  String get kodiImportRatingsSubtitle;
+
+  /// No description provided for @kodiCollectionPickerCreateNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Create new collection'**
+  String get kodiCollectionPickerCreateNew;
+
+  /// No description provided for @kodiCollectionLibraryName.
+  ///
+  /// In en, this message translates to:
+  /// **'Kodi Library'**
+  String get kodiCollectionLibraryName;
+
+  /// No description provided for @kodiCollectionCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Created \"{name}\"'**
+  String kodiCollectionCreated(String name);
+
+  /// No description provided for @kodiTargetDeletedSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Target collection deleted — sync stopped'**
+  String get kodiTargetDeletedSnack;
+
+  /// No description provided for @kodiDebugTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Debug'**
+  String get kodiDebugTitle;
+
+  /// No description provided for @kodiSyncStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync status'**
+  String get kodiSyncStatus;
+
+  /// No description provided for @kodiSyncRunning.
+  ///
+  /// In en, this message translates to:
+  /// **'Running'**
+  String get kodiSyncRunning;
+
+  /// No description provided for @kodiSyncStopped.
+  ///
+  /// In en, this message translates to:
+  /// **'Stopped'**
+  String get kodiSyncStopped;
+
+  /// No description provided for @kodiLastSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Last sync'**
+  String get kodiLastSync;
+
+  /// No description provided for @kodiLastSyncNever.
+  ///
+  /// In en, this message translates to:
+  /// **'Never'**
+  String get kodiLastSyncNever;
+
+  /// No description provided for @kodiClearLastSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear last sync timestamp'**
+  String get kodiClearLastSync;
+
+  /// No description provided for @kodiClearLastSyncSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Next sync will fetch all watched items'**
+  String get kodiClearLastSyncSubtitle;
+
+  /// No description provided for @kodiLastSyncCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Last sync timestamp cleared'**
+  String get kodiLastSyncCleared;
+
+  /// No description provided for @kodiRequestLog.
+  ///
+  /// In en, this message translates to:
+  /// **'Request Log ({count})'**
+  String kodiRequestLog(int count);
+
+  /// No description provided for @kodiCopyLog.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy log'**
+  String get kodiCopyLog;
+
+  /// No description provided for @kodiLogCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Log copied'**
+  String get kodiLogCopied;
+
+  /// No description provided for @kodiClearLog.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear log'**
+  String get kodiClearLog;
+
+  /// No description provided for @kodiNoRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'No requests yet'**
+  String get kodiNoRequests;
+
+  /// No description provided for @kodiRawJsonRpc.
+  ///
+  /// In en, this message translates to:
+  /// **'Raw JSON-RPC'**
+  String get kodiRawJsonRpc;
+
+  /// No description provided for @kodiMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Method'**
+  String get kodiMethod;
+
+  /// No description provided for @kodiParams.
+  ///
+  /// In en, this message translates to:
+  /// **'Params (JSON)'**
+  String get kodiParams;
+
+  /// No description provided for @kodiSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get kodiSend;
+
+  /// No description provided for @kodiCopyToClipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy to clipboard'**
+  String get kodiCopyToClipboard;
+
+  /// No description provided for @kodiCopiedToClipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied to clipboard'**
+  String get kodiCopiedToClipboard;
+
+  /// No description provided for @kodiParamsNotObject.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: params must be a JSON object'**
+  String get kodiParamsNotObject;
+
+  /// No description provided for @kodiJsonParseError.
+  ///
+  /// In en, this message translates to:
+  /// **'JSON parse error: {message}'**
+  String kodiJsonParseError(String message);
+
+  /// No description provided for @kodiRawError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {message}'**
+  String kodiRawError(String message);
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {
