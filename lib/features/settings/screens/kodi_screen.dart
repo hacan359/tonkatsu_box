@@ -25,6 +25,7 @@ import '../providers/kodi_settings_provider.dart';
 import '../widgets/inline_text_field.dart';
 import '../widgets/settings_group.dart';
 import '../widgets/settings_tile.dart';
+import '../widgets/status_dot.dart';
 
 /// Breakpoint для переключения ширины контента.
 const double _desktopBreakpoint = 800;
@@ -51,6 +52,11 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
   final TextEditingController _paramsController = TextEditingController();
   String? _rawResponse;
   bool _isSendingRaw = false;
+
+  // — Target cleanup guard —
+  // Не даёт очередному rebuild'у планировать второй post-frame callback,
+  // пока первый не отработал.
+  bool _targetCleanupScheduled = false;
 
   @override
   void dispose() {
@@ -253,6 +259,9 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
                   vertical: AppSpacing.sm,
                 ),
                 children: <Widget>[
+                  // Сначала выбираем коллекцию — без неё остальное бесполезно.
+                  _buildTargetSection(settings),
+                  const SizedBox(height: AppSpacing.md),
                   _buildConnectionSection(settings),
                   const SizedBox(height: AppSpacing.md),
                   _buildSyncSection(settings),
@@ -342,21 +351,48 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
             },
           ),
         ),
-        SettingsTile(
-          title: l.kodiTestConnection,
-          showChevron: false,
-          value: _isTesting
-              ? l.kodiConnecting
-              : _connectionResult,
-          titleColor:
-              _connectionResult != null && _connectionOk
-                  ? AppColors.statusCompleted
-                  : _connectionResult != null
-                      ? AppColors.error
-                      : null,
-          onTap: settings.hasConnection && !_isTesting
-              ? _testConnection
-              : null,
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: StatusDot(
+                  label: _isTesting
+                      ? l.kodiConnecting
+                      : (_connectionResult ?? l.kodiTestConnection),
+                  type: _isTesting
+                      ? StatusType.warning
+                      : _connectionResult == null
+                          ? StatusType.inactive
+                          : _connectionOk
+                              ? StatusType.success
+                              : StatusType.error,
+                ),
+              ),
+              IconButton(
+                onPressed: settings.hasConnection && !_isTesting
+                    ? _testConnection
+                    : null,
+                icon: _isTesting
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.sync, size: 20),
+                tooltip: l.kodiTestConnection,
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(
+                  minWidth: 32,
+                  minHeight: 32,
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -364,38 +400,76 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
 
   // ==================== Sync ====================
 
+  /// Возвращает true, если коллекция привязана и существует.
+  bool _hasValidTarget(
+    KodiSettingsState settings,
+    AsyncValue<List<Collection>> collectionsAsync,
+  ) {
+    if (settings.targetCollectionId == null) return false;
+    final List<Collection>? cols = collectionsAsync.valueOrNull;
+    if (cols == null) return false;
+    return cols.any((Collection c) => c.id == settings.targetCollectionId);
+  }
+
+  Widget _buildTargetSection(KodiSettingsState settings) {
+    final S l = S.of(context);
+    final AsyncValue<List<Collection>> collectionsAsync =
+        ref.watch(collectionsProvider);
+
+    // Если коллекция была удалена — чистим запись в настройках.
+    collectionsAsync.whenData((List<Collection> cols) {
+      if (settings.targetCollectionId != null &&
+          !cols.any((Collection c) => c.id == settings.targetCollectionId) &&
+          !_targetCleanupScheduled) {
+        _targetCleanupScheduled = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) {
+            _targetCleanupScheduled = false;
+            return;
+          }
+          ref
+              .read(kodiSettingsProvider.notifier)
+              .setTargetCollectionId(null);
+          _targetCleanupScheduled = false;
+        });
+      }
+    });
+
+    final bool valid = _hasValidTarget(settings, collectionsAsync);
+    final String? label = valid
+        ? collectionsAsync.valueOrNull!
+            .firstWhere(
+              (Collection c) => c.id == settings.targetCollectionId,
+            )
+            .name
+        : null;
+
+    return SettingsGroup(
+      title: l.kodiTargetCollection,
+      subtitle: l.kodiTargetCollectionSubtitle,
+      children: <Widget>[
+        SettingsTile(
+          title: l.kodiTargetCollection,
+          value: label ?? '',
+          valueColor: valid ? null : AppColors.warning,
+          statusDotColor: valid ? null : AppColors.warning,
+          onTap: () => _showCollectionPicker(settings, collectionsAsync),
+        ),
+      ],
+    );
+  }
+
   Widget _buildSyncSection(KodiSettingsState settings) {
     final S l = S.of(context);
     final AsyncValue<List<Collection>> collectionsAsync =
         ref.watch(collectionsProvider);
 
-    // Название выбранной коллекции.
-    final String targetLabel = collectionsAsync.when(
-      data: (List<Collection> cols) {
-        if (settings.targetCollectionId == null) return l.kodiTargetNotSelected;
-        final Collection? target = cols
-            .where((Collection c) => c.id == settings.targetCollectionId)
-            .firstOrNull;
-        return target?.name ??
-            l.kodiTargetDeletedLabel(settings.targetCollectionId!);
-      },
-      loading: () => '...',
-      error: (_, _) => l.kodiTargetError,
-    );
-
-    final bool canEnable =
-        settings.hasConnection && settings.targetCollectionId != null;
+    final bool hasTarget = _hasValidTarget(settings, collectionsAsync);
+    final bool canEnable = settings.hasConnection && hasTarget;
 
     return SettingsGroup(
       title: l.kodiSyncTitle,
       children: <Widget>[
-        // Выбор целевой коллекции (обязательно).
-        SettingsTile(
-          title: l.kodiTargetCollection,
-          subtitle: l.kodiTargetCollectionSubtitle,
-          value: targetLabel,
-          onTap: () => _showCollectionPicker(settings, collectionsAsync),
-        ),
         SettingsTile(
           title: l.kodiEnableSync,
           subtitle: settings.enabled
@@ -423,32 +497,39 @@ class _KodiScreenState extends ConsumerState<KodiScreen> {
         SettingsTile(
           title: l.kodiSyncInterval,
           value: _formatInterval(settings.syncIntervalSeconds),
-          onTap: () => _showIntervalPicker(settings),
+          titleColor: hasTarget ? null : AppColors.textTertiary,
+          onTap: hasTarget ? () => _showIntervalPicker(settings) : null,
         ),
         SettingsTile(
           title: l.kodiCreateSubCollections,
           subtitle: l.kodiCreateSubCollectionsSubtitle,
+          titleColor: hasTarget ? null : AppColors.textTertiary,
           showChevron: false,
           trailing: Switch(
             value: settings.createSubCollections,
-            onChanged: (bool value) {
-              ref
-                  .read(kodiSettingsProvider.notifier)
-                  .setCreateSubCollections(enabled: value);
-            },
+            onChanged: hasTarget
+                ? (bool value) {
+                    ref
+                        .read(kodiSettingsProvider.notifier)
+                        .setCreateSubCollections(enabled: value);
+                  }
+                : null,
           ),
         ),
         SettingsTile(
           title: l.kodiImportRatings,
           subtitle: l.kodiImportRatingsSubtitle,
+          titleColor: hasTarget ? null : AppColors.textTertiary,
           showChevron: false,
           trailing: Switch(
             value: settings.importRatings,
-            onChanged: (bool value) {
-              ref
-                  .read(kodiSettingsProvider.notifier)
-                  .setImportRatings(enabled: value);
-            },
+            onChanged: hasTarget
+                ? (bool value) {
+                    ref
+                        .read(kodiSettingsProvider.notifier)
+                        .setImportRatings(enabled: value);
+                  }
+                : null,
           ),
         ),
       ],

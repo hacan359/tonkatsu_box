@@ -778,7 +778,6 @@
   "debugLogExported": "Лог сохранён в {path}",
   "debugLogEmpty": "Нет событий для экспорта",
   "settingsGamepadDebug": "Отладка геймпада",
-  "settingsGamepadDebugSubtitle": "Тест событий контроллера",
   "debugSearchGames": "Поиск игр",
   "debugEnterGameName": "Название игры",
   "debugEnterGameNameHint": "Введите название игры для поиска",

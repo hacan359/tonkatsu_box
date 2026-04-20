@@ -43,8 +43,8 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        // IGDB + Connection + SteamGridDB + TMDB = 4 groups minimum
-        expect(find.byType(SettingsGroup), findsAtLeastNWidgets(4));
+        // IGDB + SteamGridDB + TMDB = 3 groups (Connection слит с IGDB в v0.28).
+        expect(find.byType(SettingsGroup), findsAtLeastNWidgets(3));
       });
     });
 
@@ -183,20 +183,15 @@ void main() {
     });
 
     group('Actions section', () {
-      testWidgets('should show Verify Connection button',
+      testWidgets('tapping sync with empty fields shows snackbar',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        expect(find.text('Verify Connection'), findsOneWidget);
-      });
-
-      testWidgets('should show snackbar when fields are empty',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        await tester.tap(find.text('Verify Connection'));
+        // Найти IGDB sync-кнопку по tooltip "Verify Connection".
+        final Finder verifyBtn = find.byTooltip('Verify Connection');
+        expect(verifyBtn, findsOneWidget);
+        await tester.tap(verifyBtn);
         await tester.pumpAndSettle();
 
         expect(
@@ -215,15 +210,6 @@ void main() {
         expect(find.text('Not Connected'), findsOneWidget);
       });
 
-      testWidgets('should show Platforms available count',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        expect(find.textContaining('Platforms available'), findsOneWidget);
-        expect(find.textContaining(': 0'), findsOneWidget);
-      });
-
       testWidgets('should show StatusDot for connection',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
@@ -231,13 +217,6 @@ void main() {
 
         expect(find.byType(StatusDot), findsAtLeastNWidgets(1));
         expect(find.text('?'), findsAtLeastNWidgets(1));
-      });
-
-      testWidgets('should show platforms icon', (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        expect(find.byIcon(Icons.videogame_asset), findsOneWidget);
       });
     });
 
@@ -371,67 +350,10 @@ void main() {
       });
     });
 
-    group('Test button', () {
-      testWidgets('does not show Test button without API key',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        await _scrollDown(tester);
-        await tester.pumpAndSettle();
-
-        expect(find.byTooltip('Test'), findsNothing);
-      });
-
-      testWidgets('shows Test button when SteamGridDB key is saved',
-          (WidgetTester tester) async {
-        SharedPreferences.setMockInitialValues(<String, Object>{
-          'steamgriddb_api_key': 'saved_key',
-        });
-        prefs = await SharedPreferences.getInstance();
-
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        await _scrollDown(tester);
-        await tester.pumpAndSettle();
-
-        expect(find.byTooltip('Test'), findsAtLeastNWidgets(1));
-      });
-
-      testWidgets('shows Test button when TMDB key is saved',
-          (WidgetTester tester) async {
-        SharedPreferences.setMockInitialValues(<String, Object>{
-          'tmdb_api_key': 'saved_key',
-        });
-        prefs = await SharedPreferences.getInstance();
-
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        await _scrollDown(tester);
-        await tester.pumpAndSettle();
-
-        expect(find.byTooltip('Test'), findsAtLeastNWidgets(1));
-      });
-
-      testWidgets('shows 2 Test buttons when both keys are saved',
-          (WidgetTester tester) async {
-        SharedPreferences.setMockInitialValues(<String, Object>{
-          'steamgriddb_api_key': 'sgdb_key',
-          'tmdb_api_key': 'tmdb_key',
-        });
-        prefs = await SharedPreferences.getInstance();
-
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        await _scrollDown(tester);
-        await tester.pumpAndSettle();
-
-        expect(find.byTooltip('Test'), findsNWidgets(2));
-      });
-    });
+    // Tests для Test-кнопок удалены: после рефакторинга sync-кнопка всегда
+    // присутствует (но disabled если нет ключа). Проверка «всегда 2 Test
+    // tooltip» и enabled-состояние покрывается поведенческими тестами
+    // валидации ключей — не дублируем здесь чисто визуально.
 
     group('Error section', () {
       testWidgets('does not show Error section by default',

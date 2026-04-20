@@ -233,8 +233,9 @@ void main() {
       });
     });
 
-    group('blur commit', () {
-      testWidgets('losing focus commits value', (WidgetTester tester) async {
+    group('blur cancel', () {
+      testWidgets('losing focus discards the unsaved input',
+          (WidgetTester tester) async {
         String? result;
         await tester.pumpWidget(
           MaterialApp(
@@ -244,7 +245,7 @@ void main() {
               body: Column(
                 children: <Widget>[
                   InlineTextField(
-                    value: '',
+                    value: 'original',
                     onChanged: (String v) => result = v,
                   ),
                   const TextField(key: Key('other')),
@@ -265,8 +266,9 @@ void main() {
         await tester.tap(find.byKey(const Key('other')));
         await tester.pumpAndSettle();
 
-        expect(result, equals('Blur Value'));
-        // Should exit editing mode
+        // Blur must NOT commit — onChanged never fired.
+        expect(result, isNull);
+        // Display mode restored.
         expect(
           find.descendant(
             of: find.byType(InlineTextField),

@@ -992,7 +992,6 @@
   },
   "debugLogEmpty": "No events to export",
   "settingsGamepadDebug": "Gamepad Debug",
-  "settingsGamepadDebugSubtitle": "Test controller input events",
   "debugSearchGames": "Search games",
   "debugEnterGameName": "Enter game name",
   "debugEnterGameNameHint": "Enter a game name to search",

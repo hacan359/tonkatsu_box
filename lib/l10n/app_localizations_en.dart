@@ -2181,9 +2181,6 @@ class SEn extends S {
   String get settingsGamepadDebug => 'Gamepad Debug';
 
   @override
-  String get settingsGamepadDebugSubtitle => 'Test controller input events';
-
-  @override
   String get debugSearchGames => 'Search games';
 
   @override

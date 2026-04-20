@@ -2199,9 +2199,6 @@ class SRu extends S {
   String get settingsGamepadDebug => 'Отладка геймпада';
 
   @override
-  String get settingsGamepadDebugSubtitle => 'Тест событий контроллера';
-
-  @override
   String get debugSearchGames => 'Поиск игр';
 
   @override

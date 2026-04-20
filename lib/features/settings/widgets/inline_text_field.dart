@@ -1,14 +1,19 @@
-// Inline текстовое поле — тап для редактирования, blur/Enter для сохранения.
+// Inline текстовое поле — тап для редактирования, явная кнопка «Сохранить».
 
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 
 /// Текстовое поле с inline редактированием.
 ///
-/// Тап по полю включает режим ввода, blur или Enter сохраняет значение.
+/// Тап по полю включает режим ввода. Сохранение — **только** по явной
+/// кнопке (✓) или Enter. Потеря фокуса сбрасывает несохранённый ввод
+/// обратно к [value]. Автосохранения нет — в настройках всё должно быть
+/// явным.
+///
 /// Никаких AlertDialog — всё прямо на месте.
 ///
 /// **Важно для кастомных контейнеров с TextField:**
@@ -70,6 +75,7 @@ class _InlineTextFieldState extends State<InlineTextField> {
     _focusNode = FocusNode();
     _tapFocusNode = FocusNode();
     _focusNode.addListener(_onFocusChange);
+    _controller.addListener(_onTextChanged);
   }
 
   @override
@@ -80,9 +86,16 @@ class _InlineTextFieldState extends State<InlineTextField> {
     }
   }
 
+  void _onTextChanged() {
+    // Обновляем видимость кнопки Save при каждом изменении.
+    if (mounted) setState(() {});
+  }
+
   void _onFocusChange() {
     if (!_focusNode.hasFocus && _editing) {
-      _commit();
+      // Потеря фокуса без явного сохранения — сбрасываем типизацию
+      // к сохранённому значению. Сохранить можно только кнопкой/Enter.
+      _cancel();
     }
   }
 
@@ -102,9 +115,17 @@ class _InlineTextFieldState extends State<InlineTextField> {
     setState(() => _editing = false);
   }
 
+  void _cancel() {
+    _controller.text = widget.value;
+    setState(() => _editing = false);
+  }
+
+  bool get _dirty => _controller.text.trim() != widget.value;
+
   @override
   void dispose() {
     _focusNode.removeListener(_onFocusChange);
+    _controller.removeListener(_onTextChanged);
     _focusNode.dispose();
     _tapFocusNode.dispose();
     _controller.dispose();
@@ -147,7 +168,6 @@ class _InlineTextFieldState extends State<InlineTextField> {
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 150),
                 height: height,
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                 decoration: BoxDecoration(
                   color: AppColors.surfaceLight,
                   borderRadius: _borderRadius,
@@ -157,50 +177,96 @@ class _InlineTextFieldState extends State<InlineTextField> {
                         : AppColors.surfaceBorder,
                   ),
                 ),
+                clipBehavior: Clip.antiAlias,
                 child: Row(
                   children: <Widget>[
                     Expanded(
-                      child: _editing
-                          ? TextField(
-                              controller: _controller,
-                              focusNode: _focusNode,
-                              obscureText: widget.obscureText && _obscured,
-                              style: AppTypography.body,
-                              decoration: InputDecoration(
-                                hintText: widget.placeholder,
-                                hintStyle: AppTypography.body.copyWith(
-                                  color: AppColors.textTertiary,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                        ),
+                        child: _editing
+                            ? TextField(
+                                controller: _controller,
+                                focusNode: _focusNode,
+                                obscureText: widget.obscureText && _obscured,
+                                style: AppTypography.body,
+                                decoration: InputDecoration(
+                                  hintText: widget.placeholder,
+                                  hintStyle: AppTypography.body.copyWith(
+                                    color: AppColors.textTertiary,
+                                  ),
+                                  border: InputBorder.none,
+                                  focusedBorder: InputBorder.none,
+                                  enabledBorder: InputBorder.none,
+                                  filled: false,
+                                  isDense: true,
+                                  contentPadding: EdgeInsets.zero,
                                 ),
-                                border: InputBorder.none,
-                                focusedBorder: InputBorder.none,
-                                enabledBorder: InputBorder.none,
-                                filled: false,
-                                isDense: true,
-                                contentPadding: EdgeInsets.zero,
+                                onSubmitted: (_) => _commit(),
+                              )
+                            : Text(
+                                _displayValue,
+                                style: AppTypography.body.copyWith(
+                                  color: widget.value.isEmpty
+                                      ? AppColors.textTertiary
+                                      : AppColors.textPrimary,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              onSubmitted: (_) => _commit(),
-                            )
-                          : Text(
-                              _displayValue,
-                              style: AppTypography.body.copyWith(
-                                color: widget.value.isEmpty
-                                    ? AppColors.textTertiary
-                                    : AppColors.textPrimary,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                      ),
                     ),
                     if (widget.obscureText)
                       InkWell(
                         onTap: () => setState(() => _obscured = !_obscured),
-                        borderRadius: _borderRadius,
                         child: Padding(
-                          padding: const EdgeInsets.only(left: AppSpacing.xs),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                          ),
                           child: Icon(
                             _obscured ? Icons.visibility : Icons.visibility_off,
                             size: 18,
                             color: AppColors.textTertiary,
+                          ),
+                        ),
+                      ),
+                    if (_editing && _dirty)
+                      // Listener.onPointerDown срабатывает ДО любой
+                      // focus-механики — это важно, т.к. клик по кнопке
+                      // иначе сначала вызывает blur TextField → _cancel(),
+                      // и Save видит уже сброшенное значение.
+                      // На мобильном touch это не проблема, на PC мыши —
+                      // обязательно.
+                      Listener(
+                        behavior: HitTestBehavior.opaque,
+                        onPointerDown: (_) => _commit(),
+                        child: MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: Container(
+                            height: double.infinity,
+                            color: AppColors.brand,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.md,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                const Icon(
+                                  Icons.check,
+                                  size: 16,
+                                  color: Colors.white,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  S.of(context).save,
+                                  style: AppTypography.bodySmall.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),

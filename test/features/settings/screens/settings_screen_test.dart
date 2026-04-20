@@ -89,11 +89,15 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        final Finder langTile = find.ancestor(
-          of: find.text('App Language'),
-          matching: find.byType(SettingsTile),
+        // Appearance секция теперь ниже Data-секций — скроллим до него.
+        await tester.scrollUntilVisible(
+          find.text('App Language'),
+          200,
+          scrollable: find.byType(Scrollable).first,
         );
-        await tester.tap(langTile);
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('App Language'), warnIfMissed: false);
         await tester.pumpAndSettle();
 
         expect(find.byType(SimpleDialog), findsOneWidget);
@@ -104,11 +108,14 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        final Finder contentLangTile = find.ancestor(
-          of: find.text('Content Language'),
-          matching: find.byType(SettingsTile),
+        await tester.scrollUntilVisible(
+          find.text('Content Language'),
+          200,
+          scrollable: find.byType(Scrollable).first,
         );
-        await tester.tap(contentLangTile);
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Content Language'), warnIfMissed: false);
         await tester.pumpAndSettle();
 
         expect(find.byType(SimpleDialog), findsOneWidget);
@@ -161,51 +168,8 @@ void main() {
       });
     });
 
-    group('Error handling', () {
-      testWidgets('does not show error section by default',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        // Скроллим до конца
-        await tester.drag(find.byType(ListView), const Offset(0, -3000));
-        await tester.pumpAndSettle();
-
-        expect(find.text('ERROR'), findsNothing);
-      });
-
-      testWidgets('shows error section when errorMessage is set',
-          (WidgetTester tester) async {
-        const String errorMessage = 'Test error message';
-
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: <Override>[
-              sharedPreferencesProvider.overrideWithValue(prefs),
-              apiKeysProvider.overrideWithValue(const ApiKeys()),
-              settingsNotifierProvider.overrideWith(
-                () => _TestSettingsNotifier(errorMessage),
-              ),
-            ],
-            child: const MaterialApp(
-              localizationsDelegates: S.localizationsDelegates,
-              supportedLocales: S.supportedLocales,
-              home: MediaQuery(
-                data: MediaQueryData(size: Size(400, 2000)),
-                child: SettingsScreen(),
-              ),
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        await tester.drag(find.byType(ListView), const Offset(0, -3000));
-        await tester.pumpAndSettle();
-
-        expect(find.text('ERROR'), findsOneWidget);
-        expect(find.text(errorMessage), findsOneWidget);
-      });
-    });
+    // Error-секция удалена в v0.28 (ошибки логируются + показываются
+    // SnackBar'ом, отдельная группа не нужна).
 
     group('Version', () {
       testWidgets('shows version placeholder before PackageInfo loads',
@@ -220,15 +184,3 @@ void main() {
   });
 }
 
-/// Тестовый notifier с кастомным errorMessage.
-class _TestSettingsNotifier extends SettingsNotifier {
-  _TestSettingsNotifier(this._errorMessage);
-
-  final String _errorMessage;
-
-  @override
-  SettingsState build() {
-    ref.watch(sharedPreferencesProvider);
-    return SettingsState(errorMessage: _errorMessage);
-  }
-}

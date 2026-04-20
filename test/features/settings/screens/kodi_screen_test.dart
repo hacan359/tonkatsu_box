@@ -21,10 +21,15 @@ import 'package:xerabora/shared/models/profile.dart';
 
 import '../../../helpers/test_helpers.dart';
 
-/// Test notifier for collectionsProvider — returns empty list.
+/// Test notifier for collectionsProvider — returns empty list by default
+/// or a preset list (through the override factory).
 class _TestCollectionsNotifier extends CollectionsNotifier {
+  _TestCollectionsNotifier([this._preset = const <Collection>[]]);
+
+  final List<Collection> _preset;
+
   @override
-  Future<List<Collection>> build() async => <Collection>[];
+  Future<List<Collection>> build() async => _preset;
 }
 
 /// Test notifier, returns pre-loaded state without reading SharedPreferences.
@@ -186,11 +191,11 @@ void main() {
         expect(find.text('Password'), findsOneWidget);
       });
 
-      testWidgets('shows Test connection tile', (WidgetTester tester) async {
+      testWidgets('shows Test connection button', (WidgetTester tester) async {
         await tester.pumpWidget(await createWidget());
         await tester.pumpAndSettle();
 
-        expect(find.text('Test connection'), findsOneWidget);
+        expect(find.byTooltip('Test connection'), findsOneWidget);
       });
 
       testWidgets('Test connection disabled when host is empty',
@@ -198,12 +203,11 @@ void main() {
         await tester.pumpWidget(await createWidget());
         await tester.pumpAndSettle();
 
-        final Finder tile = find.ancestor(
-          of: find.text('Test connection'),
-          matching: find.byType(SettingsTile),
+        final Finder btnFinder = find.byWidgetPredicate(
+          (Widget w) => w is IconButton && w.tooltip == 'Test connection',
         );
-        final SettingsTile widget = tester.widget<SettingsTile>(tile);
-        expect(widget.onTap, isNull);
+        final IconButton btn = tester.widget<IconButton>(btnFinder);
+        expect(btn.onPressed, isNull);
       });
 
       testWidgets('Test connection enabled when host is set',
@@ -215,12 +219,11 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        final Finder tile = find.ancestor(
-          of: find.text('Test connection'),
-          matching: find.byType(SettingsTile),
+        final Finder btnFinder = find.byWidgetPredicate(
+          (Widget w) => w is IconButton && w.tooltip == 'Test connection',
         );
-        final SettingsTile widget = tester.widget<SettingsTile>(tile);
-        expect(widget.onTap, isNotNull);
+        final IconButton btn = tester.widget<IconButton>(btnFinder);
+        expect(btn.onPressed, isNotNull);
       });
 
       testWidgets('Test connection shows result on success',
@@ -241,7 +244,7 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Test connection'));
+        await tester.tap(find.byTooltip('Test connection'));
         await tester.pumpAndSettle();
 
         expect(find.textContaining('Kodi 21.0'), findsOneWidget);
@@ -260,7 +263,7 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Test connection'));
+        await tester.tap(find.byTooltip('Test connection'));
         await tester.pumpAndSettle();
 
         expect(find.text('Connection refused'), findsOneWidget);
@@ -298,11 +301,23 @@ void main() {
 
       testWidgets('Enable sync switch enabled when host + target set',
           (WidgetTester tester) async {
+        final Collection testCollection = Collection(
+          id: 1,
+          name: 'Test Movies',
+          author: 'Test',
+          type: CollectionType.own,
+          createdAt: DateTime(2026),
+        );
         await tester.pumpWidget(await createWidget(
           initialPrefs: <String, Object>{
             'kodi_host_$profileId': '10.0.0.1',
             'kodi_target_collection_id_$profileId': 1,
           },
+          extraOverrides: <Override>[
+            collectionsProvider.overrideWith(
+              () => _TestCollectionsNotifier(<Collection>[testCollection]),
+            ),
+          ],
         ));
         await tester.pumpAndSettle();
 
