@@ -81,7 +81,7 @@
   "keep": "Keep",
   "change": "Change",
 
-  "settingsProfile": "Profile",
+  "settingsProfile": "Collection author",
   "settingsProfileSubtitle": "Author name for your collections",
   "settingsAuthorName": "Author name",
   "settingsAuthorPlaceholder": "User",
@@ -1504,7 +1504,7 @@
   "textExportEmptyTemplate": "Template is empty",
   "filtersClear": "Clear",
 
-  "profiles": "Profiles",
+  "profiles": "App profiles",
   "currentProfile": "Current: {name}",
   "@currentProfile": {
     "placeholders": {

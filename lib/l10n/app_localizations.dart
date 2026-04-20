@@ -538,7 +538,7 @@ abstract class S {
   /// No description provided for @settingsProfile.
   ///
   /// In en, this message translates to:
-  /// **'Profile'**
+  /// **'Collection author'**
   String get settingsProfile;
 
   /// No description provided for @settingsProfileSubtitle.
@@ -5920,7 +5920,7 @@ abstract class S {
   /// No description provided for @profiles.
   ///
   /// In en, this message translates to:
-  /// **'Profiles'**
+  /// **'App profiles'**
   String get profiles;
 
   /// No description provided for @currentProfile.

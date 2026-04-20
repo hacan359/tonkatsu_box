@@ -228,7 +228,7 @@ class SEn extends S {
   String get change => 'Change';
 
   @override
-  String get settingsProfile => 'Profile';
+  String get settingsProfile => 'Collection author';
 
   @override
   String get settingsProfileSubtitle => 'Author name for your collections';
@@ -3232,7 +3232,7 @@ class SEn extends S {
   String get filtersClear => 'Clear';
 
   @override
-  String get profiles => 'Profiles';
+  String get profiles => 'App profiles';
 
   @override
   String currentProfile(String name) {
