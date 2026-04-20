@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/services/update_service.dart';
+import '../constants/platform_features.dart';
 import '../theme/app_assets.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
@@ -255,20 +256,29 @@ class _SearchField extends StatelessWidget {
   Widget build(BuildContext context) {
     final Color iconColor =
         enabled ? AppColors.textTertiary : AppColors.textTertiary.withAlpha(120);
+    final bool compact = isCompactScreen(context);
+    final double textSize = compact ? 12 : 13;
+    final double searchIconSize = compact ? 16 : 18;
+    final double clearIconSize = compact ? 14 : 16;
+    final double clearButtonSize = compact ? 24 : 28;
 
     return Row(
       children: <Widget>[
-        Icon(Icons.search, size: 18, color: iconColor),
+        Icon(Icons.search, size: searchIconSize, color: iconColor),
         const SizedBox(width: AppSpacing.sm),
         Expanded(
           child: TextField(
             controller: controller,
             focusNode: focusNode,
             enabled: enabled,
-            style: AppTypography.body.copyWith(color: AppColors.textPrimary),
+            style: AppTypography.body.copyWith(
+              fontSize: textSize,
+              color: AppColors.textPrimary,
+            ),
             decoration: InputDecoration(
               hintText: hint,
               hintStyle: AppTypography.body.copyWith(
+                fontSize: textSize,
                 color: AppColors.textTertiary,
               ),
               border: InputBorder.none,
@@ -277,8 +287,8 @@ class _SearchField extends StatelessWidget {
               disabledBorder: InputBorder.none,
               filled: false,
               isDense: true,
-              contentPadding: const EdgeInsets.symmetric(
-                vertical: AppSpacing.sm,
+              contentPadding: EdgeInsets.symmetric(
+                vertical: compact ? AppSpacing.xs : AppSpacing.sm,
               ),
             ),
             onChanged: onChanged,
@@ -286,15 +296,15 @@ class _SearchField extends StatelessWidget {
         ),
         if (enabled && controller.text.isNotEmpty)
           SizedBox(
-            width: 28,
-            height: 28,
+            width: clearButtonSize,
+            height: clearButtonSize,
             child: IconButton(
-              icon: const Icon(Icons.close, size: 16),
+              icon: Icon(Icons.close, size: clearIconSize),
               color: AppColors.textTertiary,
               padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(
-                minWidth: 28,
-                minHeight: 28,
+              constraints: BoxConstraints(
+                minWidth: clearButtonSize,
+                minHeight: clearButtonSize,
               ),
               onPressed: onClear,
             ),
