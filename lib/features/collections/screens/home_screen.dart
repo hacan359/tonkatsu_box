@@ -228,16 +228,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       policy: WidgetOrderTraversalPolicy(),
       child: RefreshIndicator(
         onRefresh: () => ref.read(collectionsProvider.notifier).refresh(),
-        child: GridView.builder(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: 273,
-            crossAxisSpacing: 8,
-            mainAxisSpacing: 8,
-            childAspectRatio: 1,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onSecondaryTapUp: (TapUpDetails details) =>
+              _showEmptyAreaContextMenu(context, ref, details.globalPosition),
+          child: GridView.builder(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 273,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+              childAspectRatio: 1,
+            ),
+            itemCount: gridItems.length,
+            itemBuilder: (BuildContext context, int index) => gridItems[index],
           ),
-          itemCount: gridItems.length,
-          itemBuilder: (BuildContext context, int index) => gridItems[index],
         ),
       ),
     );
@@ -254,25 +259,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return RefreshIndicator(
       onRefresh: () => ref.read(collectionsProvider.notifier).refresh(),
-      child: ListView.builder(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-        itemCount: collections.length + offset,
-        itemBuilder: (BuildContext context, int index) {
-          if (index == 0 && offset == 1) {
-            return UncategorizedListTile(
-              count: uncategorizedCount,
-              onTap: () => _navigateToUncategorized(context),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onSecondaryTapUp: (TapUpDetails details) =>
+            _showEmptyAreaContextMenu(context, ref, details.globalPosition),
+        child: ListView.builder(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+          itemCount: collections.length + offset,
+          itemBuilder: (BuildContext context, int index) {
+            if (index == 0 && offset == 1) {
+              return UncategorizedListTile(
+                count: uncategorizedCount,
+                onTap: () => _navigateToUncategorized(context),
+              );
+            }
+            final Collection c = collections[index - offset];
+            return CollectionListTile(
+              collection: c,
+              onTap: () => _navigateToCollection(context, c),
+              onLongPress: () => _showCollectionOptions(context, ref, c),
+              onSecondaryTap: (Offset pos) =>
+                  _showCollectionContextMenu(context, ref, c, pos),
             );
-          }
-          final Collection c = collections[index - offset];
-          return CollectionListTile(
-            collection: c,
-            onTap: () => _navigateToCollection(context, c),
-            onLongPress: () => _showCollectionOptions(context, ref, c),
-            onSecondaryTap: (Offset pos) =>
-                _showCollectionContextMenu(context, ref, c, pos),
-          );
-        },
+          },
+        ),
       ),
     );
   }
@@ -399,6 +409,65 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (context.mounted) {
         context.showSnack(S.of(context).collectionsFailedToCreate('$e'), type: SnackType.error);
       }
+    }
+  }
+
+  /// Контекстное меню ПКМ на пустом месте экрана — действия из FAB.
+  Future<void> _showEmptyAreaContextMenu(
+    BuildContext context,
+    WidgetRef ref,
+    Offset position,
+  ) async {
+    final S l = S.of(context);
+    final bool isGridView = ref.read(collectionListViewModeProvider);
+    final RenderBox overlay =
+        Overlay.of(context).context.findRenderObject()! as RenderBox;
+
+    final String? value = await showMenu<String>(
+      context: context,
+      position: RelativeRect.fromRect(
+        position & const Size(1, 1),
+        Offset.zero & overlay.size,
+      ),
+      items: <PopupMenuEntry<String>>[
+        PopupMenuItem<String>(
+          value: 'create',
+          child: ListTile(
+            leading: const Icon(Icons.add),
+            title: Text(l.collectionsNewCollection),
+            contentPadding: EdgeInsets.zero,
+          ),
+        ),
+        PopupMenuItem<String>(
+          value: 'import',
+          child: ListTile(
+            leading: const Icon(Icons.file_download_outlined),
+            title: Text(l.collectionsImportCollection),
+            contentPadding: EdgeInsets.zero,
+          ),
+        ),
+        const PopupMenuDivider(),
+        PopupMenuItem<String>(
+          value: 'toggle_view',
+          child: ListTile(
+            leading: Icon(isGridView ? Icons.view_list : Icons.grid_view),
+            title: Text(
+              isGridView ? l.collectionListViewList : l.collectionListViewGrid,
+            ),
+            contentPadding: EdgeInsets.zero,
+          ),
+        ),
+      ],
+    );
+
+    if (value == null || !context.mounted) return;
+    switch (value) {
+      case 'create':
+        await _createCollection(context, ref);
+      case 'import':
+        await _importCollection(context, ref);
+      case 'toggle_view':
+        ref.read(collectionListViewModeProvider.notifier).toggle();
     }
   }
 
