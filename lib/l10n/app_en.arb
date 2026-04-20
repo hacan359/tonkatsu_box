@@ -81,7 +81,7 @@
   "keep": "Keep",
   "change": "Change",
 
-  "settingsProfile": "Profile",
+  "settingsProfile": "Collection author",
   "settingsProfileSubtitle": "Author name for your collections",
   "settingsAuthorName": "Author name",
   "settingsAuthorPlaceholder": "User",
@@ -408,6 +408,8 @@
   "collectionExport": "Export",
   "collectionNoItemsYet": "No Items Yet",
   "collectionEmpty": "Empty Collection",
+  "collectionEmptyAddHint": "Add items to start building your collection.",
+  "collectionEmptyReadonly": "This collection is empty.",
   "collectionDeleteEmptyPrompt": "This collection is now empty. Delete it?",
   "collectionRemoveItemTitle": "Remove Item?",
   "collectionRemoveItemMessage": "Remove {name} from this collection?",
@@ -1504,7 +1506,7 @@
   "textExportEmptyTemplate": "Template is empty",
   "filtersClear": "Clear",
 
-  "profiles": "Profiles",
+  "profiles": "App profiles",
   "currentProfile": "Current: {name}",
   "@currentProfile": {
     "placeholders": {
@@ -1537,5 +1539,98 @@
   "switchingProfile": "Switching profile…",
   "appWillRestart": "The app will restart to apply changes.",
   "profileCreated": "Profile created",
-  "profileDeleted": "Profile deleted"
+  "profileDeleted": "Profile deleted",
+
+  "settingsIntegrations": "Integrations",
+  "settingsKodiSubtitle": "Watch sync from Kodi media player",
+  "settingsOn": "On",
+
+  "kodiConnectionTitle": "Connection",
+  "kodiConnectionSubtitle": "Kodi HTTP JSON-RPC (Settings → Services → Control)",
+  "kodiHost": "Host",
+  "kodiPort": "Port",
+  "kodiUsername": "Username",
+  "kodiPassword": "Password",
+  "kodiPasswordHint": "Enter password",
+  "kodiTestConnection": "Test connection",
+  "kodiConnecting": "Connecting…",
+  "kodiPingFailed": "Ping failed — unexpected response",
+  "kodiConnectedTo": "Kodi {version} \"{name}\"",
+  "@kodiConnectedTo": {
+    "placeholders": {
+      "version": {"type": "String"},
+      "name": {"type": "String"}
+    }
+  },
+
+  "kodiSyncTitle": "Sync",
+  "kodiTargetCollection": "Target collection",
+  "kodiTargetCollectionSubtitle": "All Kodi movies sync here",
+  "kodiTargetNotSelected": "Not selected",
+  "kodiTargetDeletedLabel": "Deleted (#{id})",
+  "@kodiTargetDeletedLabel": {
+    "placeholders": {
+      "id": {"type": "int"}
+    }
+  },
+  "kodiTargetError": "Error",
+  "kodiEnableSync": "Enable Kodi sync",
+  "kodiEnableSyncActiveSubtitle": "Active while Tonkatsu is running",
+  "kodiEnableSyncDisabledSubtitle": "Select a target collection first",
+  "kodiSyncInterval": "Sync interval",
+  "kodiCreateSubCollections": "Create sub-collections from Kodi sets",
+  "kodiCreateSubCollectionsSubtitle": "E.g. \"Harry Potter Collection (kodi)\"",
+  "kodiImportRatings": "Import ratings from Kodi",
+  "kodiImportRatingsSubtitle": "Copy Kodi userrating (1–10)",
+
+  "kodiCollectionPickerCreateNew": "Create new collection",
+  "kodiCollectionLibraryName": "Kodi Library",
+  "kodiCollectionCreated": "Created \"{name}\"",
+  "@kodiCollectionCreated": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "kodiTargetDeletedSnack": "Target collection deleted — sync stopped",
+
+  "kodiDebugTitle": "Debug",
+  "kodiSyncStatus": "Sync status",
+  "kodiSyncRunning": "Running",
+  "kodiSyncStopped": "Stopped",
+  "kodiLastSync": "Last sync",
+  "kodiLastSyncNever": "Never",
+  "kodiClearLastSync": "Clear last sync timestamp",
+  "kodiClearLastSyncSubtitle": "Next sync will fetch all watched items",
+  "kodiLastSyncCleared": "Last sync timestamp cleared",
+
+  "kodiRequestLog": "Request Log ({count})",
+  "@kodiRequestLog": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "kodiCopyLog": "Copy log",
+  "kodiLogCopied": "Log copied",
+  "kodiClearLog": "Clear log",
+  "kodiNoRequests": "No requests yet",
+
+  "kodiRawJsonRpc": "Raw JSON-RPC",
+  "kodiMethod": "Method",
+  "kodiParams": "Params (JSON)",
+  "kodiSend": "Send",
+  "kodiCopyToClipboard": "Copy to clipboard",
+  "kodiCopiedToClipboard": "Copied to clipboard",
+  "kodiParamsNotObject": "Error: params must be a JSON object",
+  "kodiJsonParseError": "JSON parse error: {message}",
+  "@kodiJsonParseError": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
+  "kodiRawError": "Error: {message}",
+  "@kodiRawError": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  }
 }

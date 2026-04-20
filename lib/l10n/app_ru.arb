@@ -5,7 +5,7 @@
 
   "navMain": "Главная",
   "navCollections": "Коллекции",
-  "navWishlist": "Список",
+  "navWishlist": "Желаемое",
   "navSearch": "Поиск",
   "navSettings": "Настройки",
 
@@ -81,7 +81,7 @@
   "keep": "Оставить",
   "change": "Изменить",
 
-  "settingsProfile": "Профиль",
+  "settingsProfile": "Автор коллекций",
   "settingsProfileSubtitle": "Имя автора для ваших коллекций",
   "settingsAuthorName": "Имя автора",
   "settingsAuthorPlaceholder": "Пользователь",
@@ -129,7 +129,7 @@
   "settingsBackupAllSubtitle": "Все коллекции, вишлист и настройки",
   "settingsRestoreBackup": "Восстановить из бэкапа",
   "settingsRestoreBackupSubtitle": "Импорт архива бэкапа",
-  "backupSuccess": "Бэкап сохранён: {collections} коллекций, {items} элементов",
+  "backupSuccess": "Бэкап сохранён: {collections} коллекций, {items} тайтлов",
   "@backupSuccess": {
     "placeholders": {
       "collections": {"type": "int"},
@@ -137,7 +137,7 @@
     }
   },
   "restoreConfirmTitle": "Восстановить бэкап?",
-  "restoreConfirmBody": "{collections} коллекций, {items} элементов, {wishlist} записей вишлиста",
+  "restoreConfirmBody": "{collections} коллекций, {items} тайтлов, {wishlist} записей вишлиста",
   "@restoreConfirmBody": {
     "placeholders": {
       "collections": {"type": "int"},
@@ -148,7 +148,7 @@
   "restoreConfirmHint": "Существующие коллекции не будут затронуты",
   "restoreSettings": "Восстановить настройки",
   "restoreWishlist": "Восстановить вишлист",
-  "restoreSuccess": "Восстановлено {collections} коллекций, {items} элементов",
+  "restoreSuccess": "Восстановлено {collections} коллекций, {items} тайтлов",
   "@restoreSuccess": {
     "placeholders": {
       "collections": {"type": "int"},
@@ -298,7 +298,7 @@
   "traktStartImport": "Начать импорт",
   "traktRequiresOwnTmdbKey": "Для импорта из Trakt необходим собственный TMDB API ключ. Добавьте его в Настройки → Учётные данные.",
   "traktInvalidExport": "Некорректный экспорт Trakt",
-  "traktImportedItems": "Импортировано элементов: {count}",
+  "traktImportedItems": "Импортировано тайтлов: {count}",
   "traktImporting": "Импорт из Trakt",
 
   "creditsTitle": "Благодарности",
@@ -320,7 +320,7 @@
   "collectionsFailedToLoad": "Не удалось загрузить коллекции",
   "collectionsCount": "Коллекции ({count})",
   "collectionsUncategorized": "Без категории",
-  "collectionsUncategorizedItems": "{count, plural, =1{1 элемент} few{{count} элемента} other{{count} элементов}}",
+  "collectionsUncategorizedItems": "{count, plural, =1{1 тайтл} few{{count} тайтла} other{{count} тайтлов}}",
   "@collectionsUncategorizedItems": {
     "placeholders": {
       "count": {"type": "int"}
@@ -331,7 +331,7 @@
   "collectionsDeleted": "Коллекция удалена",
   "collectionsFailedToDelete": "Ошибка удаления: {error}",
   "collectionsFailedToCreate": "Ошибка создания коллекции: {error}",
-  "collectionsImported": "Импортирована \"{name}\" — {count} элементов",
+  "collectionsImported": "Импортирована \"{name}\" — {count} тайтлов",
   "collectionsImporting": "Импорт коллекции",
 
   "importTargetTitle": "Импортировать в...",
@@ -343,27 +343,29 @@
   "importStartButton": "Импортировать",
 
   "collectionNotFound": "Коллекция не найдена",
-  "collectionAddItems": "Добавить элементы",
+  "collectionAddItems": "Добавить тайтлы",
   "collectionSwitchToList": "Переключить на список",
   "collectionSwitchToBoard": "Переключить на доску",
   "collectionUnlockBoard": "Разблокировать доску",
   "collectionLockBoard": "Заблокировать доску",
   "collectionExport": "Экспорт",
-  "collectionNoItemsYet": "Пока нет элементов",
+  "collectionNoItemsYet": "Пока нет тайтлов",
   "collectionEmpty": "Пустая коллекция",
+  "collectionEmptyAddHint": "Добавьте тайтлы, чтобы начать собирать коллекцию.",
+  "collectionEmptyReadonly": "В этой коллекции пока нет тайтлов.",
   "collectionDeleteEmptyPrompt": "Коллекция теперь пуста. Удалить её?",
-  "collectionRemoveItemTitle": "Убрать элемент?",
+  "collectionRemoveItemTitle": "Убрать тайтл?",
   "collectionRemoveItemMessage": "Убрать {name} из этой коллекции?",
   "collectionMoveToCollection": "Переместить в коллекцию",
   "collectionExportFormat": "Формат экспорта",
   "collectionChooseExportFormat": "Выберите формат экспорта:",
   "collectionExportLight": "Лёгкий (.xcoll)",
-  "collectionExportLightDesc": "Только элементы, файл меньше",
+  "collectionExportLightDesc": "Только тайтлы, файл меньше",
   "collectionExportFull": "Полный (.xcollx)",
   "collectionExportFullDesc": "С изображениями и доской — работает офлайн",
   "collectionExportIncludeUserData": "Включить личные данные",
   "collectionExportIncludeUserDataDesc": "Статус, даты, заметки, прогресс эпизодов",
-  "customItemCreate": "Создать свой элемент",
+  "customItemCreate": "Создать свой тайтл",
   "customItemTitle": "Название",
   "customItemTitleHint": "напр. Моя самодельная игра",
   "customItemAltTitle": "Альтернативное название",
@@ -379,7 +381,7 @@
   "customItemDescriptionHint": "Краткое описание или заметки",
   "customItemOptionalFields": "Дополнительные поля",
   "customItemCreateButton": "Создать",
-  "customItemEdit": "Редактировать элемент",
+  "customItemEdit": "Редактировать тайтл",
   "customItemAddCover": "Добавить обложку",
   "customItemCoverSource": "Источник обложки",
   "customItemCoverRatio": "Рекомендуемое соотношение: 2:3 (напр. 600×900)",
@@ -390,15 +392,15 @@
   "customItemUseCustom": "Использовать свой",
   "customItemExternalUrl": "Внешний URL",
   "customItemErrorEmptyTitle": "Название обязательно",
-  "customItemCreated": "Элемент создан",
-  "customItemUpdated": "Элемент обновлён",
+  "customItemCreated": "Тайтл создан",
+  "customItemUpdated": "Тайтл обновлён",
   "tagLabel": "Тег",
   "tagsLabel": "Теги",
   "tagCreate": "Новый тег",
   "tagCreateHint": "Название тега",
   "tagRename": "Переименовать тег",
   "tagDelete": "Удалить тег",
-  "tagDeleteConfirm": "Удалить тег «{name}»? Элементы останутся без тега.",
+  "tagDeleteConfirm": "Удалить тег «{name}»? Тайтлы останутся без тега.",
   "@tagDeleteConfirm": {
     "placeholders": {
       "name": { "type": "String" }
@@ -602,10 +604,10 @@
   "wishlistClearResolved": "Удалить выполненные",
   "wishlistEmpty": "Список желаний пуст",
   "wishlistEmptyHint": "Нажмите + чтобы добавить что-нибудь на потом",
-  "wishlistDeleteItem": "Удалить элемент",
+  "wishlistDeleteItem": "Удалить тайтл",
   "wishlistDeletePrompt": "Удалить \"{name}\" из списка желаний?",
   "wishlistClearResolvedTitle": "Удалить выполненные",
-  "wishlistClearResolvedMessage": "{count, plural, =1{Удалить 1 выполненный элемент?} few{Удалить {count} выполненных элемента?} other{Удалить {count} выполненных элементов?}}",
+  "wishlistClearResolvedMessage": "{count, plural, =1{Удалить 1 выполненный тайтл?} few{Удалить {count} выполненных тайтла?} other{Удалить {count} выполненных тайтлов?}}",
   "@wishlistClearResolvedMessage": {
     "placeholders": {
       "count": {"type": "int"}
@@ -678,9 +680,9 @@
 
   "welcomeHowTitle": "Как это работает",
   "welcomeHowAppStructure": "Структура приложения",
-  "welcomeHowMainDesc": "Все элементы из всех коллекций в одном месте. Фильтрация по типу, сортировка по оценке.",
+  "welcomeHowMainDesc": "Все тайтлы из всех коллекций в одном месте. Фильтрация по типу, сортировка по оценке.",
   "welcomeHowCollectionsDesc": "Ваши коллекции. Создавайте, организуйте, управляйте. Сетка или список.",
-  "welcomeHowTierListsDesc": "Ранжируйте и сравнивайте элементы из коллекций с помощью настраиваемых тир-листов.",
+  "welcomeHowTierListsDesc": "Ранжируйте и сравнивайте тайтлы из коллекций с помощью настраиваемых тир-листов.",
   "welcomeHowWishlistDesc": "Быстрый список того, что хотите посмотреть позже. API не нужен.",
   "welcomeHowSearchDesc": "Поиск игр, фильмов, сериалов, новелл и манги через API. Добавляйте в любую коллекцию.",
   "welcomeHowSettingsDesc": "Ключи API, кэш, экспорт/импорт БД, отладочные инструменты.",
@@ -732,7 +734,7 @@
   "unknownAnimation": "Неизвестная анимация",
   "unknownVisualNovel": "Неизвестная визуальная новелла",
   "unknownManga": "Неизвестная манга",
-  "unknownCustom": "Неизвестный элемент",
+  "unknownCustom": "Неизвестный тайтл",
   "unknownPlatform": "Неизвестная платформа",
   "defaultAuthor": "Пользователь",
 
@@ -749,10 +751,10 @@
   "allItemsRatingAsc": "Оценка ↑",
   "allItemsRatingDesc": "Оценка ↓",
   "allItemsRating": "Оценка",
-  "allItemsNoItems": "Пока нет элементов",
-  "allItemsNoMatch": "Нет элементов по фильтру",
-  "allItemsAddViaCollections": "Перейдите в Коллекции → создайте коллекцию → добавьте\nэлементы через Поиск. Они появятся здесь автоматически.",
-  "allItemsFailedToLoad": "Не удалось загрузить элементы",
+  "allItemsNoItems": "Пока нет тайтлов",
+  "allItemsNoMatch": "Нет тайтлов по фильтру",
+  "allItemsAddViaCollections": "Перейдите в Коллекции → создайте коллекцию → добавьте\nтайтлы через Поиск. Они появятся здесь автоматически.",
+  "allItemsFailedToLoad": "Не удалось загрузить тайтлы",
   "allItemsFilterPlatformsAll": "Все платформы",
   "allItemsFilterPlatformsSelected": "{count} платформ",
   "@allItemsFilterPlatformsSelected": {
@@ -791,7 +793,7 @@
   "debugLogosTab": "Логотипы",
   "debugIconsTab": "Иконки",
 
-  "collectionTileStats": "{count, plural, =1{1 элемент} few{{count} элемента} other{{count} элементов}} · {percent} завершено",
+  "collectionTileStats": "{count, plural, =1{1 тайтл} few{{count} тайтла} other{{count} тайтлов}} · {percent} завершено",
   "@collectionTileStats": {
     "placeholders": {
       "count": {"type": "int"},
@@ -829,7 +831,7 @@
 
   "canvasFailedToLoad": "Не удалось загрузить доску",
   "canvasBoardEmpty": "Доска пуста",
-  "canvasBoardEmptyHint": "Сначала добавьте элементы в коллекцию",
+  "canvasBoardEmptyHint": "Сначала добавьте тайтлы в коллекцию",
   "canvasCenterView": "Центрировать вид",
   "canvasResetPositions": "Сбросить позиции",
   "canvasVgmapsBrowser": "Браузер VGMaps",
@@ -896,7 +898,7 @@
   "settingsShowBlurayOverlay": "Обложки Blu-ray",
   "settingsShowBlurayOverlaySubtitle": "Оверлей Blu-ray на постерах фильмов и сериалов",
   "settingsDiscordRpc": "Discord Rich Presence",
-  "settingsDiscordRpcSubtitle": "Показывать текущий элемент в статусе Discord",
+  "settingsDiscordRpcSubtitle": "Показывать текущий тайтл в статусе Discord",
   "settingsDiscordRaSync": "Синхронизация RetroAchievements",
   "settingsDiscordRaSyncSubtitle": "Показывать активность RetroAchievements в Discord",
 
@@ -952,7 +954,7 @@
   "tierListCreate": "Новый тир-лист",
   "tierListCreateFromCollection": "Создать тир-лист",
   "tierListNameHint": "Название тир-листа",
-  "tierListScopeAll": "Все элементы",
+  "tierListScopeAll": "Все тайтлы",
   "tierListScopeCollection": "Из коллекции",
   "tierListFromCollection": "Из: {name}",
   "@tierListFromCollection": {
@@ -975,11 +977,11 @@
   "tierListDeleteTier": "Удалить тир",
   "tierListAddTier": "Добавить тир",
   "tierListClearAll": "Очистить всё",
-  "tierListClearConfirm": "Убрать все элементы из тиров? Они вернутся в «Без тира».",
+  "tierListClearConfirm": "Убрать все тайтлы из тиров? Они вернутся в «Без тира».",
   "tierListDeleteConfirm": "Удалить этот тир-лист?",
   "tierListEmpty": "Пока нет тир-листов",
-  "tierListEmptyHint": "Нажмите + чтобы создать тир-лист и ранжировать\nэлементы из ваших коллекций.",
-  "tierListAllRanked": "Все элементы распределены!",
+  "tierListEmptyHint": "Нажмите + чтобы создать тир-лист и ранжировать\nтайтлы из ваших коллекций.",
+  "tierListAllRanked": "Все тайтлы распределены!",
   "tierListNoCollections": "Нет доступных коллекций",
   "tierListErrorEmptyName": "Введите название тир-листа",
   "tierListErrorNoCollection": "Выберите коллекцию",
@@ -1098,16 +1100,16 @@
     }
   },
   "importResultOpenCollection": "Открыть коллекцию",
-  "importResultWishlistHint": "Элементы, не найденные в базе данных, сохранены в Список желаний.",
+  "importResultWishlistHint": "Тайтлы, не найденные в базе данных, сохранены в Список желаний.",
   "importResultSourceCollectionFile": "Файл коллекции",
 
   "settingsBrowseCollections": "Каталог коллекций",
   "settingsBrowseCollectionsSubtitle": "Скачать готовые коллекции",
-  "browseCollectionsSummary": "{count} коллекций, {items} элементов",
+  "browseCollectionsSummary": "{count} коллекций, {items} тайтлов",
   "browseCollectionsSearch": "Поиск коллекций...",
   "browseCollectionsAllPlatforms": "Все платформы",
   "browseCollectionsAllCategories": "Все категории",
-  "browseCollectionsItems": "{count} элементов",
+  "browseCollectionsItems": "{count} тайтлов",
   "browseCollectionsFormatLight": "Лёгкий (нужны API-ключи)",
   "browseCollectionsFormatFull": "Полный (офлайн)",
   "browseCollectionsDownloading": "Загрузка...",
@@ -1225,7 +1227,7 @@
 
   "copyAsList": "Копировать списком",
   "copyAsText": "Копировать как текст…",
-  "copiedToClipboard": "{count,plural, =1{Скопирован 1 элемент} few{Скопировано {count} элемента} other{Скопировано {count} элементов}}",
+  "copiedToClipboard": "{count,plural, =1{Скопирован 1 тайтл} few{Скопировано {count} тайтла} other{Скопировано {count} тайтлов}}",
   "textExportTemplate": "Шаблон",
   "textExportTokens": "Токены",
   "textExportPreview": "Предпросмотр",
@@ -1239,7 +1241,7 @@
   "textExportEmptyTemplate": "Шаблон пустой",
   "filtersClear": "Сбросить",
 
-  "profiles": "Профили",
+  "profiles": "Профили приложения",
   "currentProfile": "Текущий: {name}",
   "switchProfile": "Сменить профиль",
   "addProfile": "Добавить профиль",
@@ -1252,9 +1254,102 @@
   "profileColor": "Цвет",
   "whoIsPlayingToday": "Кто сегодня играет?",
   "dontAskAgain": "Не спрашивать снова",
-  "profileStats": "{collections,plural, =1{1 коллекция} few{{collections} коллекции} other{{collections} коллекций}}, {items,plural, =1{1 элемент} few{{items} элемента} other{{items} элементов}}",
+  "profileStats": "{collections,plural, =1{1 коллекция} few{{collections} коллекции} other{{collections} коллекций}}, {items,plural, =1{1 тайтл} few{{items} тайтла} other{{items} тайтлов}}",
   "switchingProfile": "Переключение профиля…",
   "appWillRestart": "Приложение перезапустится для применения изменений.",
   "profileCreated": "Профиль создан",
-  "profileDeleted": "Профиль удалён"
+  "profileDeleted": "Профиль удалён",
+
+  "settingsIntegrations": "Интеграции",
+  "settingsKodiSubtitle": "Синхронизация просмотров с Kodi",
+  "settingsOn": "Вкл.",
+
+  "kodiConnectionTitle": "Подключение",
+  "kodiConnectionSubtitle": "Kodi HTTP JSON-RPC (Настройки → Службы → Управление)",
+  "kodiHost": "Хост",
+  "kodiPort": "Порт",
+  "kodiUsername": "Имя пользователя",
+  "kodiPassword": "Пароль",
+  "kodiPasswordHint": "Введите пароль",
+  "kodiTestConnection": "Проверить подключение",
+  "kodiConnecting": "Подключение…",
+  "kodiPingFailed": "Ping не прошёл — неожиданный ответ",
+  "kodiConnectedTo": "Kodi {version} «{name}»",
+  "@kodiConnectedTo": {
+    "placeholders": {
+      "version": {"type": "String"},
+      "name": {"type": "String"}
+    }
+  },
+
+  "kodiSyncTitle": "Синхронизация",
+  "kodiTargetCollection": "Целевая коллекция",
+  "kodiTargetCollectionSubtitle": "Все фильмы из Kodi попадут сюда",
+  "kodiTargetNotSelected": "Не выбрана",
+  "kodiTargetDeletedLabel": "Удалена (#{id})",
+  "@kodiTargetDeletedLabel": {
+    "placeholders": {
+      "id": {"type": "int"}
+    }
+  },
+  "kodiTargetError": "Ошибка",
+  "kodiEnableSync": "Включить синхронизацию Kodi",
+  "kodiEnableSyncActiveSubtitle": "Работает, пока запущено приложение",
+  "kodiEnableSyncDisabledSubtitle": "Сначала выберите целевую коллекцию",
+  "kodiSyncInterval": "Интервал синхронизации",
+  "kodiCreateSubCollections": "Создавать подколлекции из наборов Kodi",
+  "kodiCreateSubCollectionsSubtitle": "Например, «Harry Potter Collection (kodi)»",
+  "kodiImportRatings": "Импортировать оценки из Kodi",
+  "kodiImportRatingsSubtitle": "Переносить userrating Kodi (1–10)",
+
+  "kodiCollectionPickerCreateNew": "Создать новую коллекцию",
+  "kodiCollectionLibraryName": "Библиотека Kodi",
+  "kodiCollectionCreated": "Создана «{name}»",
+  "@kodiCollectionCreated": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "kodiTargetDeletedSnack": "Целевая коллекция удалена — синхронизация остановлена",
+
+  "kodiDebugTitle": "Отладка",
+  "kodiSyncStatus": "Статус синхронизации",
+  "kodiSyncRunning": "Активна",
+  "kodiSyncStopped": "Остановлена",
+  "kodiLastSync": "Последняя синхронизация",
+  "kodiLastSyncNever": "Никогда",
+  "kodiClearLastSync": "Сбросить метку последней синхронизации",
+  "kodiClearLastSyncSubtitle": "При следующей синхронизации подтянутся все просмотренные",
+  "kodiLastSyncCleared": "Метка последней синхронизации сброшена",
+
+  "kodiRequestLog": "Лог запросов ({count})",
+  "@kodiRequestLog": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "kodiCopyLog": "Скопировать лог",
+  "kodiLogCopied": "Лог скопирован",
+  "kodiClearLog": "Очистить лог",
+  "kodiNoRequests": "Запросов пока нет",
+
+  "kodiRawJsonRpc": "Сырой JSON-RPC",
+  "kodiMethod": "Метод",
+  "kodiParams": "Параметры (JSON)",
+  "kodiSend": "Отправить",
+  "kodiCopyToClipboard": "Скопировать в буфер",
+  "kodiCopiedToClipboard": "Скопировано в буфер",
+  "kodiParamsNotObject": "Ошибка: параметры должны быть JSON-объектом",
+  "kodiJsonParseError": "Ошибка JSON: {message}",
+  "@kodiJsonParseError": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
+  "kodiRawError": "Ошибка: {message}",
+  "@kodiRawError": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  }
 }

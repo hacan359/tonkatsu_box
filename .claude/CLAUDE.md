@@ -100,8 +100,9 @@ final databaseServiceProvider = Provider<DatabaseService>((ref) => DatabaseServi
 - API ключи хранятся в SharedPreferences, читаются через `SettingsNotifier`
 
 ### База данных (`lib/core/database/`)
-- SQLite через sqflite_common_ffi, 18 таблиц, текущая версия БД: 24
+- SQLite через sqflite_common_ffi
 - Провайдер: `databaseServiceProvider`
+- Актуальное количество таблиц и номер миграции смотреть в `schema.dart` / `database_service.dart` (`version:` в `_initDatabase()`) — не доверять этому файлу
 
 #### Структура файлов БД:
 ```
@@ -111,7 +112,7 @@ lib/core/database/
 └── migrations/
     ├── migration.dart             # Абстрактный класс Migration (version, description, migrate)
     ├── migration_registry.dart    # MigrationRegistry.all / .pending(oldVersion)
-    ├── migration_v2.dart          # MigrationV2..MigrationV24 — по файлу на версию
+    ├── migration_v2.dart          # MigrationV2..MigrationVN — по файлу на версию
     └── ...
 ```
 

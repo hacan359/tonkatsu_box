@@ -6,6 +6,20 @@
 
 ## [Unreleased]
 
+### Added
+- **Right-click context menu on the Collections screen** — ПКМ on empty space (between or below cards) opens a popup with the primary FAB actions: Create new collection, Import collection, Toggle grid/list view. The card-level right-click menu (Open/Rename/Delete) is unchanged and keeps priority on cards via the gesture arena (`home_screen.dart`)
+- **Right-click context menu on All Items** — ПКМ on a poster opens Move to collection / Copy to collection / Remove, mirroring the menu inside a collection. Delegates to `CollectionActions` for identical dialogs, snackbars, and invalidation. Editability check extracted into `_isItemEditable` so it's shared with `_showItemDetails` (`all_items_screen.dart`)
+- **Search now matches user notes and author review** — the in-collection search bar and the All Items global search also compare against `CollectionItem.userComment` and `CollectionItem.authorComment`, in addition to `itemName` and tag names. Lets users find titles by what they wrote about them. Case-insensitive (`collection_screen.dart`, `all_items_screen.dart`)
+
+### Changed
+- **Tap anywhere on the review/notes block to edit** — both the author review and personal notes sections on the item detail screen now enter editing mode on a single tap, whether empty or populated. Markdown links inside the rendered text keep working because their `TapGestureRecognizer` wins the gesture arena over the ancestor `InkWell`. Author review stays non-interactive for read-only collections. Trade-off: drag-selection of rendered text is no longer available — users can copy from the TextField after entering edit mode (`media_detail_view.dart`)
+- **Vague UI terms renamed per user feedback**
+  - «Список» (Wishlist nav tab) → **«Желаемое»** in Russian
+  - «Профили» / «Профиль» in Settings — now **«Профили приложения»** / **«Автор коллекций»** (EN: «App profiles» / «Collection author»), resolving the ambiguity between multi-user profiles and the collection author name
+  - «элемент» → **«тайтл»** across 27 strings (including plural forms): FAB labels, stats, snackbars, tier lists, tags, imports, wishlist, all-items. "Element" retained on the canvas where it refers to board primitives (text/sticker/link), not collection items (`app_en.arb`, `app_ru.arb`)
+- **Kodi settings screen fully localized** — ~45 new localization keys cover Connection (Host/Port/Username/Password/Test connection), Sync (Target collection, Enable sync, Sync interval, Sub-collections, Import ratings), Debug (Sync status, Last sync, Clear timestamp, Request log, Raw JSON-RPC). The "Integrations" section header and "Kodi" subtitle on the main Settings screen are also localized. Proper nouns (the word "Kodi", JSON-RPC API examples like `VideoLibrary.GetMovies`) intentionally remain in English (`kodi_screen.dart`, `settings_screen.dart`, `app_en.arb`, `app_ru.arb`)
+- **Empty-collection hint localized** — the two fallback hints below the "No items yet" header (`collectionEmptyAddHint`, `collectionEmptyReadonly`) were still hardcoded English; now translated to Russian (`collection_items_view.dart`)
+
 ## [0.27.0] - 2026-04-18
 
 ### Changed

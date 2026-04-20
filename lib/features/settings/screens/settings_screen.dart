@@ -312,13 +312,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
       // INTEGRATIONS
       SettingsGroup(
-        title: 'Integrations',
+        title: l.settingsIntegrations,
         children: <Widget>[
           SettingsTile(
-            title: 'Kodi',
-            subtitle: 'Watch sync from Kodi media player',
+            title: 'Kodi', // proper noun
+            subtitle: l.settingsKodiSubtitle,
             value: ref.watch(kodiSettingsProvider).enabled
-                ? 'On'
+                ? l.settingsOn
                 : '',
             onTap: () => _pushScreen(const KodiScreen()),
           ),

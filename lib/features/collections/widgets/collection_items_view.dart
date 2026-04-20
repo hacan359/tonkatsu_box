@@ -654,9 +654,7 @@ class CollectionItemsView extends ConsumerWidget {
             Text(l.collectionNoItemsYet, style: AppTypography.h2),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              canEdit
-                  ? 'Add items to start building your collection.'
-                  : 'This collection is empty.',
+              canEdit ? l.collectionEmptyAddHint : l.collectionEmptyReadonly,
               textAlign: TextAlign.center,
               style: AppTypography.body.copyWith(
                 color: AppColors.textSecondary,

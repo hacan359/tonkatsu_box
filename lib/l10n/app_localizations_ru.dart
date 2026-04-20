@@ -18,7 +18,7 @@ class SRu extends S {
   String get navCollections => 'Коллекции';
 
   @override
-  String get navWishlist => 'Список';
+  String get navWishlist => 'Желаемое';
 
   @override
   String get navSearch => 'Поиск';
@@ -228,7 +228,7 @@ class SRu extends S {
   String get change => 'Изменить';
 
   @override
-  String get settingsProfile => 'Профиль';
+  String get settingsProfile => 'Автор коллекций';
 
   @override
   String get settingsProfileSubtitle => 'Имя автора для ваших коллекций';
@@ -364,7 +364,7 @@ class SRu extends S {
 
   @override
   String backupSuccess(int collections, int items) {
-    return 'Бэкап сохранён: $collections коллекций, $items элементов';
+    return 'Бэкап сохранён: $collections коллекций, $items тайтлов';
   }
 
   @override
@@ -372,7 +372,7 @@ class SRu extends S {
 
   @override
   String restoreConfirmBody(int collections, int items, int wishlist) {
-    return '$collections коллекций, $items элементов, $wishlist записей вишлиста';
+    return '$collections коллекций, $items тайтлов, $wishlist записей вишлиста';
   }
 
   @override
@@ -386,7 +386,7 @@ class SRu extends S {
 
   @override
   String restoreSuccess(int collections, int items) {
-    return 'Восстановлено $collections коллекций, $items элементов';
+    return 'Восстановлено $collections коллекций, $items тайтлов';
   }
 
   @override
@@ -786,7 +786,7 @@ class SRu extends S {
 
   @override
   String traktImportedItems(int count) {
-    return 'Импортировано элементов: $count';
+    return 'Импортировано тайтлов: $count';
   }
 
   @override
@@ -859,9 +859,9 @@ class SRu extends S {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count элементов',
-      few: '$count элемента',
-      one: '1 элемент',
+      other: '$count тайтлов',
+      few: '$count тайтла',
+      one: '1 тайтл',
     );
     return '$_temp0';
   }
@@ -889,7 +889,7 @@ class SRu extends S {
 
   @override
   String collectionsImported(String name, int count) {
-    return 'Импортирована \"$name\" — $count элементов';
+    return 'Импортирована \"$name\" — $count тайтлов';
   }
 
   @override
@@ -920,7 +920,7 @@ class SRu extends S {
   String get collectionNotFound => 'Коллекция не найдена';
 
   @override
-  String get collectionAddItems => 'Добавить элементы';
+  String get collectionAddItems => 'Добавить тайтлы';
 
   @override
   String get collectionSwitchToList => 'Переключить на список';
@@ -938,17 +938,24 @@ class SRu extends S {
   String get collectionExport => 'Экспорт';
 
   @override
-  String get collectionNoItemsYet => 'Пока нет элементов';
+  String get collectionNoItemsYet => 'Пока нет тайтлов';
 
   @override
   String get collectionEmpty => 'Пустая коллекция';
+
+  @override
+  String get collectionEmptyAddHint =>
+      'Добавьте тайтлы, чтобы начать собирать коллекцию.';
+
+  @override
+  String get collectionEmptyReadonly => 'В этой коллекции пока нет тайтлов.';
 
   @override
   String get collectionDeleteEmptyPrompt =>
       'Коллекция теперь пуста. Удалить её?';
 
   @override
-  String get collectionRemoveItemTitle => 'Убрать элемент?';
+  String get collectionRemoveItemTitle => 'Убрать тайтл?';
 
   @override
   String collectionRemoveItemMessage(String name) {
@@ -968,7 +975,7 @@ class SRu extends S {
   String get collectionExportLight => 'Лёгкий (.xcoll)';
 
   @override
-  String get collectionExportLightDesc => 'Только элементы, файл меньше';
+  String get collectionExportLightDesc => 'Только тайтлы, файл меньше';
 
   @override
   String get collectionExportFull => 'Полный (.xcollx)';
@@ -985,7 +992,7 @@ class SRu extends S {
       'Статус, даты, заметки, прогресс эпизодов';
 
   @override
-  String get customItemCreate => 'Создать свой элемент';
+  String get customItemCreate => 'Создать свой тайтл';
 
   @override
   String get customItemTitle => 'Название';
@@ -1033,7 +1040,7 @@ class SRu extends S {
   String get customItemCreateButton => 'Создать';
 
   @override
-  String get customItemEdit => 'Редактировать элемент';
+  String get customItemEdit => 'Редактировать тайтл';
 
   @override
   String get customItemAddCover => 'Добавить обложку';
@@ -1067,10 +1074,10 @@ class SRu extends S {
   String get customItemErrorEmptyTitle => 'Название обязательно';
 
   @override
-  String get customItemCreated => 'Элемент создан';
+  String get customItemCreated => 'Тайтл создан';
 
   @override
-  String get customItemUpdated => 'Элемент обновлён';
+  String get customItemUpdated => 'Тайтл обновлён';
 
   @override
   String get tagLabel => 'Тег';
@@ -1092,7 +1099,7 @@ class SRu extends S {
 
   @override
   String tagDeleteConfirm(String name) {
-    return 'Удалить тег «$name»? Элементы останутся без тега.';
+    return 'Удалить тег «$name»? Тайтлы останутся без тега.';
   }
 
   @override
@@ -1689,7 +1696,7 @@ class SRu extends S {
       'Нажмите + чтобы добавить что-нибудь на потом';
 
   @override
-  String get wishlistDeleteItem => 'Удалить элемент';
+  String get wishlistDeleteItem => 'Удалить тайтл';
 
   @override
   String wishlistDeletePrompt(String name) {
@@ -1704,9 +1711,9 @@ class SRu extends S {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Удалить $count выполненных элементов?',
-      few: 'Удалить $count выполненных элемента?',
-      one: 'Удалить 1 выполненный элемент?',
+      other: 'Удалить $count выполненных тайтлов?',
+      few: 'Удалить $count выполненных тайтла?',
+      one: 'Удалить 1 выполненный тайтл?',
     );
     return '$_temp0';
   }
@@ -1906,7 +1913,7 @@ class SRu extends S {
 
   @override
   String get welcomeHowMainDesc =>
-      'Все элементы из всех коллекций в одном месте. Фильтрация по типу, сортировка по оценке.';
+      'Все тайтлы из всех коллекций в одном месте. Фильтрация по типу, сортировка по оценке.';
 
   @override
   String get welcomeHowCollectionsDesc =>
@@ -1914,7 +1921,7 @@ class SRu extends S {
 
   @override
   String get welcomeHowTierListsDesc =>
-      'Ранжируйте и сравнивайте элементы из коллекций с помощью настраиваемых тир-листов.';
+      'Ранжируйте и сравнивайте тайтлы из коллекций с помощью настраиваемых тир-листов.';
 
   @override
   String get welcomeHowWishlistDesc =>
@@ -2075,7 +2082,7 @@ class SRu extends S {
   String get unknownManga => 'Неизвестная манга';
 
   @override
-  String get unknownCustom => 'Неизвестный элемент';
+  String get unknownCustom => 'Неизвестный тайтл';
 
   @override
   String get unknownPlatform => 'Неизвестная платформа';
@@ -2122,17 +2129,17 @@ class SRu extends S {
   String get allItemsRating => 'Оценка';
 
   @override
-  String get allItemsNoItems => 'Пока нет элементов';
+  String get allItemsNoItems => 'Пока нет тайтлов';
 
   @override
-  String get allItemsNoMatch => 'Нет элементов по фильтру';
+  String get allItemsNoMatch => 'Нет тайтлов по фильтру';
 
   @override
   String get allItemsAddViaCollections =>
-      'Перейдите в Коллекции → создайте коллекцию → добавьте\nэлементы через Поиск. Они появятся здесь автоматически.';
+      'Перейдите в Коллекции → создайте коллекцию → добавьте\nтайтлы через Поиск. Они появятся здесь автоматически.';
 
   @override
-  String get allItemsFailedToLoad => 'Не удалось загрузить элементы';
+  String get allItemsFailedToLoad => 'Не удалось загрузить тайтлы';
 
   @override
   String get allItemsFilterPlatformsAll => 'Все платформы';
@@ -2242,9 +2249,9 @@ class SRu extends S {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count элементов',
-      few: '$count элемента',
-      one: '1 элемент',
+      other: '$count тайтлов',
+      few: '$count тайтла',
+      one: '1 тайтл',
     );
     return '$_temp0 · $percent завершено';
   }
@@ -2331,7 +2338,7 @@ class SRu extends S {
   String get canvasBoardEmpty => 'Доска пуста';
 
   @override
-  String get canvasBoardEmptyHint => 'Сначала добавьте элементы в коллекцию';
+  String get canvasBoardEmptyHint => 'Сначала добавьте тайтлы в коллекцию';
 
   @override
   String get canvasCenterView => 'Центрировать вид';
@@ -2493,7 +2500,7 @@ class SRu extends S {
 
   @override
   String get settingsDiscordRpcSubtitle =>
-      'Показывать текущий элемент в статусе Discord';
+      'Показывать текущий тайтл в статусе Discord';
 
   @override
   String get settingsDiscordRaSync => 'Синхронизация RetroAchievements';
@@ -2646,7 +2653,7 @@ class SRu extends S {
   String get tierListNameHint => 'Название тир-листа';
 
   @override
-  String get tierListScopeAll => 'Все элементы';
+  String get tierListScopeAll => 'Все тайтлы';
 
   @override
   String get tierListScopeCollection => 'Из коллекции';
@@ -2690,7 +2697,7 @@ class SRu extends S {
 
   @override
   String get tierListClearConfirm =>
-      'Убрать все элементы из тиров? Они вернутся в «Без тира».';
+      'Убрать все тайтлы из тиров? Они вернутся в «Без тира».';
 
   @override
   String get tierListDeleteConfirm => 'Удалить этот тир-лист?';
@@ -2700,10 +2707,10 @@ class SRu extends S {
 
   @override
   String get tierListEmptyHint =>
-      'Нажмите + чтобы создать тир-лист и ранжировать\nэлементы из ваших коллекций.';
+      'Нажмите + чтобы создать тир-лист и ранжировать\nтайтлы из ваших коллекций.';
 
   @override
-  String get tierListAllRanked => 'Все элементы распределены!';
+  String get tierListAllRanked => 'Все тайтлы распределены!';
 
   @override
   String get tierListNoCollections => 'Нет доступных коллекций';
@@ -2932,7 +2939,7 @@ class SRu extends S {
 
   @override
   String get importResultWishlistHint =>
-      'Элементы, не найденные в базе данных, сохранены в Список желаний.';
+      'Тайтлы, не найденные в базе данных, сохранены в Список желаний.';
 
   @override
   String get importResultSourceCollectionFile => 'Файл коллекции';
@@ -2945,7 +2952,7 @@ class SRu extends S {
 
   @override
   String browseCollectionsSummary(int count, int items) {
-    return '$count коллекций, $items элементов';
+    return '$count коллекций, $items тайтлов';
   }
 
   @override
@@ -2959,7 +2966,7 @@ class SRu extends S {
 
   @override
   String browseCollectionsItems(int count) {
-    return '$count элементов';
+    return '$count тайтлов';
   }
 
   @override
@@ -3215,9 +3222,9 @@ class SRu extends S {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Скопировано $count элементов',
-      few: 'Скопировано $count элемента',
-      one: 'Скопирован 1 элемент',
+      other: 'Скопировано $count тайтлов',
+      few: 'Скопировано $count тайтла',
+      one: 'Скопирован 1 тайтл',
     );
     return '$_temp0';
   }
@@ -3259,7 +3266,7 @@ class SRu extends S {
   String get filtersClear => 'Сбросить';
 
   @override
-  String get profiles => 'Профили';
+  String get profiles => 'Профили приложения';
 
   @override
   String currentProfile(String name) {
@@ -3313,9 +3320,9 @@ class SRu extends S {
     String _temp1 = intl.Intl.pluralLogic(
       items,
       locale: localeName,
-      other: '$items элементов',
-      few: '$items элемента',
-      one: '1 элемент',
+      other: '$items тайтлов',
+      few: '$items тайтла',
+      one: '1 тайтл',
     );
     return '$_temp0, $_temp1';
   }
@@ -3332,4 +3339,189 @@ class SRu extends S {
 
   @override
   String get profileDeleted => 'Профиль удалён';
+
+  @override
+  String get settingsIntegrations => 'Интеграции';
+
+  @override
+  String get settingsKodiSubtitle => 'Синхронизация просмотров с Kodi';
+
+  @override
+  String get settingsOn => 'Вкл.';
+
+  @override
+  String get kodiConnectionTitle => 'Подключение';
+
+  @override
+  String get kodiConnectionSubtitle =>
+      'Kodi HTTP JSON-RPC (Настройки → Службы → Управление)';
+
+  @override
+  String get kodiHost => 'Хост';
+
+  @override
+  String get kodiPort => 'Порт';
+
+  @override
+  String get kodiUsername => 'Имя пользователя';
+
+  @override
+  String get kodiPassword => 'Пароль';
+
+  @override
+  String get kodiPasswordHint => 'Введите пароль';
+
+  @override
+  String get kodiTestConnection => 'Проверить подключение';
+
+  @override
+  String get kodiConnecting => 'Подключение…';
+
+  @override
+  String get kodiPingFailed => 'Ping не прошёл — неожиданный ответ';
+
+  @override
+  String kodiConnectedTo(String version, String name) {
+    return 'Kodi $version «$name»';
+  }
+
+  @override
+  String get kodiSyncTitle => 'Синхронизация';
+
+  @override
+  String get kodiTargetCollection => 'Целевая коллекция';
+
+  @override
+  String get kodiTargetCollectionSubtitle => 'Все фильмы из Kodi попадут сюда';
+
+  @override
+  String get kodiTargetNotSelected => 'Не выбрана';
+
+  @override
+  String kodiTargetDeletedLabel(int id) {
+    return 'Удалена (#$id)';
+  }
+
+  @override
+  String get kodiTargetError => 'Ошибка';
+
+  @override
+  String get kodiEnableSync => 'Включить синхронизацию Kodi';
+
+  @override
+  String get kodiEnableSyncActiveSubtitle =>
+      'Работает, пока запущено приложение';
+
+  @override
+  String get kodiEnableSyncDisabledSubtitle =>
+      'Сначала выберите целевую коллекцию';
+
+  @override
+  String get kodiSyncInterval => 'Интервал синхронизации';
+
+  @override
+  String get kodiCreateSubCollections =>
+      'Создавать подколлекции из наборов Kodi';
+
+  @override
+  String get kodiCreateSubCollectionsSubtitle =>
+      'Например, «Harry Potter Collection (kodi)»';
+
+  @override
+  String get kodiImportRatings => 'Импортировать оценки из Kodi';
+
+  @override
+  String get kodiImportRatingsSubtitle => 'Переносить userrating Kodi (1–10)';
+
+  @override
+  String get kodiCollectionPickerCreateNew => 'Создать новую коллекцию';
+
+  @override
+  String get kodiCollectionLibraryName => 'Библиотека Kodi';
+
+  @override
+  String kodiCollectionCreated(String name) {
+    return 'Создана «$name»';
+  }
+
+  @override
+  String get kodiTargetDeletedSnack =>
+      'Целевая коллекция удалена — синхронизация остановлена';
+
+  @override
+  String get kodiDebugTitle => 'Отладка';
+
+  @override
+  String get kodiSyncStatus => 'Статус синхронизации';
+
+  @override
+  String get kodiSyncRunning => 'Активна';
+
+  @override
+  String get kodiSyncStopped => 'Остановлена';
+
+  @override
+  String get kodiLastSync => 'Последняя синхронизация';
+
+  @override
+  String get kodiLastSyncNever => 'Никогда';
+
+  @override
+  String get kodiClearLastSync => 'Сбросить метку последней синхронизации';
+
+  @override
+  String get kodiClearLastSyncSubtitle =>
+      'При следующей синхронизации подтянутся все просмотренные';
+
+  @override
+  String get kodiLastSyncCleared => 'Метка последней синхронизации сброшена';
+
+  @override
+  String kodiRequestLog(int count) {
+    return 'Лог запросов ($count)';
+  }
+
+  @override
+  String get kodiCopyLog => 'Скопировать лог';
+
+  @override
+  String get kodiLogCopied => 'Лог скопирован';
+
+  @override
+  String get kodiClearLog => 'Очистить лог';
+
+  @override
+  String get kodiNoRequests => 'Запросов пока нет';
+
+  @override
+  String get kodiRawJsonRpc => 'Сырой JSON-RPC';
+
+  @override
+  String get kodiMethod => 'Метод';
+
+  @override
+  String get kodiParams => 'Параметры (JSON)';
+
+  @override
+  String get kodiSend => 'Отправить';
+
+  @override
+  String get kodiCopyToClipboard => 'Скопировать в буфер';
+
+  @override
+  String get kodiCopiedToClipboard => 'Скопировано в буфер';
+
+  @override
+  String get kodiParamsNotObject =>
+      'Ошибка: параметры должны быть JSON-объектом';
+
+  @override
+  String kodiJsonParseError(String message) {
+    return 'Ошибка JSON: $message';
+  }
+
+  @override
+  String kodiRawError(String message) {
+    return 'Ошибка: $message';
+  }
 }

@@ -507,6 +507,68 @@ void main() {
         expect(find.text('Inception'), findsOneWidget);
         expect(find.text('Breaking Bad'), findsOneWidget);
       });
+
+      testWidgets('должен находить по тексту в userComment (заметки)',
+          (WidgetTester tester) async {
+        final List<CollectionItem> itemsWithNotes = <CollectionItem>[
+          testItems[0].copyWith(
+            userComment: 'настоящий шедевр геймдева',
+          ), // Zelda
+          testItems[1], // Inception — без заметки
+          testItems[2], // Breaking Bad — без заметки
+        ];
+        when(() => mockRepo.getItemsWithData(
+              1,
+              mediaType: any(named: 'mediaType'),
+            )).thenAnswer((_) async => itemsWithNotes);
+
+        await tester.pumpWidget(createWidget(searchQuery: 'шедевр'));
+        await pumpScreen(tester);
+
+        expect(find.text('Zelda'), findsOneWidget);
+        expect(find.text('Inception'), findsNothing);
+        expect(find.text('Breaking Bad'), findsNothing);
+      });
+
+      testWidgets('должен находить по тексту в authorComment (рецензия)',
+          (WidgetTester tester) async {
+        final List<CollectionItem> itemsWithReviews = <CollectionItem>[
+          testItems[0], // Zelda — без рецензии
+          testItems[1].copyWith(
+            authorComment: 'переоценённый проходняк',
+          ), // Inception
+          testItems[2], // Breaking Bad — без рецензии
+        ];
+        when(() => mockRepo.getItemsWithData(
+              1,
+              mediaType: any(named: 'mediaType'),
+            )).thenAnswer((_) async => itemsWithReviews);
+
+        await tester.pumpWidget(createWidget(searchQuery: 'проходняк'));
+        await pumpScreen(tester);
+
+        expect(find.text('Inception'), findsOneWidget);
+        expect(find.text('Zelda'), findsNothing);
+        expect(find.text('Breaking Bad'), findsNothing);
+      });
+
+      testWidgets('поиск по заметкам должен быть case-insensitive',
+          (WidgetTester tester) async {
+        final List<CollectionItem> itemsWithNotes = <CollectionItem>[
+          testItems[0].copyWith(userComment: 'Настоящий ШЕДЕВР'),
+          testItems[1],
+        ];
+        when(() => mockRepo.getItemsWithData(
+              1,
+              mediaType: any(named: 'mediaType'),
+            )).thenAnswer((_) async => itemsWithNotes);
+
+        await tester.pumpWidget(createWidget(searchQuery: 'шедевр'));
+        await pumpScreen(tester);
+
+        expect(find.text('Zelda'), findsOneWidget);
+        expect(find.text('Inception'), findsNothing);
+      });
     });
 
     group('комбинированные фильтры', () {
