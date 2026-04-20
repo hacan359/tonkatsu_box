@@ -39,7 +39,6 @@ class CollectionItemsView extends ConsumerWidget {
     this.onItemMove,
     this.onItemClone,
     this.onItemRemove,
-    this.onAddItems,
     this.onItemFocusChanged,
     this.tags = const <CollectionTag>[],
     this.filterTagIds = const <int>{},
@@ -73,9 +72,6 @@ class CollectionItemsView extends ConsumerWidget {
 
   /// Callback удаления элемента.
   final ValueChanged<CollectionItem>? onItemRemove;
-
-  /// Callback запуска диалога добавления тайтлов (клик/ПКМ по пустой коллекции).
-  final VoidCallback? onAddItems;
 
   /// Callback при изменении фокуса на элементе (для клавиатурных действий).
   final void Function(CollectionItem item, bool hasFocus)? onItemFocusChanged;
@@ -643,15 +639,14 @@ class CollectionItemsView extends ConsumerWidget {
 
   Widget _buildEmptyState(BuildContext context) {
     final S l = S.of(context);
-    final bool canAdd = canEdit && onAddItems != null;
-    final Widget content = Center(
+    return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Icon(
-              canAdd ? Icons.add_box_outlined : Icons.shelves,
+              Icons.shelves,
               size: 64,
               color: AppColors.textTertiary.withAlpha(120),
             ),
@@ -659,11 +654,7 @@ class CollectionItemsView extends ConsumerWidget {
             Text(l.collectionNoItemsYet, style: AppTypography.h2),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              canAdd
-                  ? l.collectionAddItems
-                  : (canEdit
-                      ? l.collectionEmptyAddHint
-                      : l.collectionEmptyReadonly),
+              canEdit ? l.collectionEmptyAddHint : l.collectionEmptyReadonly,
               textAlign: TextAlign.center,
               style: AppTypography.body.copyWith(
                 color: AppColors.textSecondary,
@@ -671,17 +662,6 @@ class CollectionItemsView extends ConsumerWidget {
             ),
           ],
         ),
-      ),
-    );
-
-    if (!canAdd) return content;
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onAddItems,
-      onSecondaryTap: onAddItems,
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: content,
       ),
     );
   }

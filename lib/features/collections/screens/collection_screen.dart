@@ -497,13 +497,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                     onItemRemove: _canEdit
                         ? (CollectionItem item) => _handleRemoveItem(item)
                         : null,
-                    onAddItems: _canEdit
-                        ? () => CollectionActions.addItems(
-                              context: context,
-                              ref: ref,
-                              collectionId: widget.collectionId,
-                            )
-                        : null,
                     onItemFocusChanged: (CollectionItem item, bool hasFocus) {
                       setState(() => _focusedItem = hasFocus ? item : null);
                     },
