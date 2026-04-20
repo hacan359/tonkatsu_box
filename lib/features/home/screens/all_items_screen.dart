@@ -20,6 +20,7 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/chevron_filter_bar.dart';
 import '../../../shared/widgets/media_poster_card.dart';
+import '../../collections/helpers/collection_actions.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../collections/screens/item_detail_screen.dart';
 import '../providers/all_items_provider.dart';
@@ -409,6 +410,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                       tagColor: tag?.color,
                       onTap: () =>
                           _showItemDetails(item, collectionNames),
+                      onSecondaryTap: (Offset pos) =>
+                          _showItemContextMenu(pos, item),
                     );
                   },
                   childCount: groups[i].items.length,
@@ -552,23 +555,96 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     );
   }
 
+  bool _isItemEditable(CollectionItem item) {
+    if (item.isUncategorized) return true;
+    final List<Collection>? collections =
+        ref.read(collectionsProvider).valueOrNull;
+    final Collection? collection =
+        collections?.cast<Collection?>().firstWhere(
+      (Collection? c) => c?.id == item.collectionId,
+      orElse: () => null,
+    );
+    return collection?.isEditable ?? false;
+  }
+
+  Future<void> _showItemContextMenu(Offset position, CollectionItem item) async {
+    if (!_isItemEditable(item)) return;
+    final S l = S.of(context);
+    final RenderBox overlay =
+        Overlay.of(context).context.findRenderObject()! as RenderBox;
+
+    final String? value = await showMenu<String>(
+      context: context,
+      position: RelativeRect.fromRect(
+        position & const Size(1, 1),
+        Offset.zero & overlay.size,
+      ),
+      items: <PopupMenuEntry<String>>[
+        PopupMenuItem<String>(
+          value: 'move',
+          child: ListTile(
+            leading: const Icon(Icons.drive_file_move_outlined),
+            title: Text(l.collectionMoveToCollection),
+            contentPadding: EdgeInsets.zero,
+          ),
+        ),
+        PopupMenuItem<String>(
+          value: 'clone',
+          child: ListTile(
+            leading: const Icon(Icons.copy_outlined),
+            title: Text(l.collectionCopyToCollection),
+            contentPadding: EdgeInsets.zero,
+          ),
+        ),
+        const PopupMenuDivider(),
+        PopupMenuItem<String>(
+          value: 'remove',
+          child: ListTile(
+            leading: const Icon(
+              Icons.remove_circle_outline,
+              color: AppColors.error,
+            ),
+            title: Text(
+              l.remove,
+              style: const TextStyle(color: AppColors.error),
+            ),
+            contentPadding: EdgeInsets.zero,
+          ),
+        ),
+      ],
+    );
+
+    if (value == null || !mounted) return;
+    switch (value) {
+      case 'move':
+        await CollectionActions.moveItem(
+          context: context,
+          ref: ref,
+          collectionId: item.collectionId,
+          item: item,
+        );
+      case 'clone':
+        await CollectionActions.cloneItem(
+          context: context,
+          ref: ref,
+          collectionId: item.collectionId,
+          item: item,
+        );
+      case 'remove':
+        await CollectionActions.removeItem(
+          context: context,
+          ref: ref,
+          collectionId: item.collectionId,
+          item: item,
+        );
+    }
+  }
+
   void _showItemDetails(
     CollectionItem item,
     Map<int, String> collectionNames,
   ) {
-    final bool isEditable;
-    if (item.isUncategorized) {
-      isEditable = true;
-    } else {
-      final List<Collection>? collections =
-          ref.read(collectionsProvider).valueOrNull;
-      final Collection? collection =
-          collections?.cast<Collection?>().firstWhere(
-        (Collection? c) => c?.id == item.collectionId,
-        orElse: () => null,
-      );
-      isEditable = collection?.isEditable ?? false;
-    }
+    final bool isEditable = _isItemEditable(item);
 
     Navigator.of(context).push(
       MaterialPageRoute<void>(
