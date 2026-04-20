@@ -232,6 +232,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           behavior: HitTestBehavior.opaque,
           onSecondaryTapUp: (TapUpDetails details) =>
               _showEmptyAreaContextMenu(context, ref, details.globalPosition),
+          onLongPressStart: (LongPressStartDetails details) =>
+              _showEmptyAreaContextMenu(context, ref, details.globalPosition),
           child: GridView.builder(
             padding: const EdgeInsets.all(AppSpacing.md),
             gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
@@ -262,6 +264,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onSecondaryTapUp: (TapUpDetails details) =>
+            _showEmptyAreaContextMenu(context, ref, details.globalPosition),
+        onLongPressStart: (LongPressStartDetails details) =>
             _showEmptyAreaContextMenu(context, ref, details.globalPosition),
         child: ListView.builder(
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),

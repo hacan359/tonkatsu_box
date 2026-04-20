@@ -412,6 +412,8 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                           _showItemDetails(item, collectionNames),
                       onSecondaryTap: (Offset pos) =>
                           _showItemContextMenu(pos, item),
+                      onLongPress: () =>
+                          _showItemContextMenu(_centerOfContext(), item),
                     );
                   },
                   childCount: groups[i].items.length,
@@ -553,6 +555,11 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         ],
       ),
     );
+  }
+
+  Offset _centerOfContext() {
+    final Size size = MediaQuery.sizeOf(context);
+    return Offset(size.width / 2, size.height / 2);
   }
 
   bool _isItemEditable(CollectionItem item) {
