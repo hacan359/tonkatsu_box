@@ -915,7 +915,7 @@ class _MediaDetailViewState extends State<MediaDetailView> {
           controller: _authorController,
           hint: l.detailWriteReviewHint,
           hasContent: widget.hasAuthorComment,
-          onEmptyTap: widget.isEditable
+          onTap: widget.isEditable
               ? () => _startEditing(_EditingField.author)
               : null,
           displayWidget: widget.hasAuthorComment
@@ -991,7 +991,7 @@ class _MediaDetailViewState extends State<MediaDetailView> {
           controller: _userController,
           hint: l.detailWriteNotesHint,
           hasContent: widget.hasUserComment,
-          onEmptyTap: () => _startEditing(_EditingField.user),
+          onTap: () => _startEditing(_EditingField.user),
           displayWidget: widget.hasUserComment
               ? MiniMarkdownText(
                   text: widget.userComment!,
@@ -1011,8 +1011,10 @@ class _MediaDetailViewState extends State<MediaDetailView> {
 
   /// Общий контейнер для секции комментария: вид или inline-редактирование.
   ///
-  /// Если блок пустой и передан [onEmptyTap] — клик по контейнеру сразу
+  /// Если передан [onTap] — клик по контейнеру в режиме просмотра сразу
   /// переводит в режим редактирования (без нажатия кнопки «Редактировать»).
+  /// Клики по markdown-ссылкам внутри текста перехватываются span-recognizer'ами
+  /// и продолжают работать.
   Widget _buildCommentContainer({
     required Color accentColor,
     required bool isEditing,
@@ -1020,7 +1022,7 @@ class _MediaDetailViewState extends State<MediaDetailView> {
     required String hint,
     required bool hasContent,
     required Widget displayWidget,
-    VoidCallback? onEmptyTap,
+    VoidCallback? onTap,
   }) {
     final BorderRadius radius = BorderRadius.circular(AppSpacing.radiusSm);
     final BoxDecoration decoration = BoxDecoration(
@@ -1070,12 +1072,12 @@ class _MediaDetailViewState extends State<MediaDetailView> {
       child: displayWidget,
     );
 
-    if (!hasContent && onEmptyTap != null) {
+    if (onTap != null) {
       return Material(
         color: Colors.transparent,
         borderRadius: radius,
         child: InkWell(
-          onTap: onEmptyTap,
+          onTap: onTap,
           borderRadius: radius,
           child: content,
         ),

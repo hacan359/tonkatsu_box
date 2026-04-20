@@ -102,11 +102,11 @@ void main() {
             )),
         ...extraOverrides,
       ],
-      child: MaterialApp(
+      child: const MaterialApp(
         localizationsDelegates: S.localizationsDelegates,
         supportedLocales: S.supportedLocales,
-        locale: const Locale('en'),
-        home: const Scaffold(body: KodiScreen()),
+        locale: Locale('en'),
+        home: Scaffold(body: KodiScreen()),
       ),
     );
   }
