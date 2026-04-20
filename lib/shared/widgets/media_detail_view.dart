@@ -915,6 +915,9 @@ class _MediaDetailViewState extends State<MediaDetailView> {
           controller: _authorController,
           hint: l.detailWriteReviewHint,
           hasContent: widget.hasAuthorComment,
+          onEmptyTap: widget.isEditable
+              ? () => _startEditing(_EditingField.author)
+              : null,
           displayWidget: widget.hasAuthorComment
               ? MiniMarkdownText(
                   text: widget.authorComment!,
@@ -988,6 +991,7 @@ class _MediaDetailViewState extends State<MediaDetailView> {
           controller: _userController,
           hint: l.detailWriteNotesHint,
           hasContent: widget.hasUserComment,
+          onEmptyTap: () => _startEditing(_EditingField.user),
           displayWidget: widget.hasUserComment
               ? MiniMarkdownText(
                   text: widget.userComment!,
@@ -1006,6 +1010,9 @@ class _MediaDetailViewState extends State<MediaDetailView> {
   }
 
   /// Общий контейнер для секции комментария: вид или inline-редактирование.
+  ///
+  /// Если блок пустой и передан [onEmptyTap] — клик по контейнеру сразу
+  /// переводит в режим редактирования (без нажатия кнопки «Редактировать»).
   Widget _buildCommentContainer({
     required Color accentColor,
     required bool isEditing,
@@ -1013,43 +1020,68 @@ class _MediaDetailViewState extends State<MediaDetailView> {
     required String hint,
     required bool hasContent,
     required Widget displayWidget,
+    VoidCallback? onEmptyTap,
   }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.md - 4),
-      decoration: BoxDecoration(
-        color: accentColor.withAlpha(20),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        border: Border.all(
-          color: accentColor.withAlpha(isEditing ? 80 : 40),
-        ),
+    final BorderRadius radius = BorderRadius.circular(AppSpacing.radiusSm);
+    final BoxDecoration decoration = BoxDecoration(
+      color: accentColor.withAlpha(20),
+      borderRadius: radius,
+      border: Border.all(
+        color: accentColor.withAlpha(isEditing ? 80 : 40),
       ),
-      child: isEditing
-          ? Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                MarkdownToolbar(controller: controller),
-                const SizedBox(height: 4),
-                TextField(
-                  controller: controller,
-                  maxLines: 5,
-                  minLines: 2,
-                  autofocus: true,
-                  style: AppTypography.body.copyWith(height: 1.5),
-                  decoration: InputDecoration(
-                    hintText: hint,
-                    border: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    filled: false,
-                    isDense: true,
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                ),
-              ],
-            )
-          : displayWidget,
     );
+    const EdgeInsets padding = EdgeInsets.all(AppSpacing.md - 4);
+
+    if (isEditing) {
+      return Container(
+        width: double.infinity,
+        padding: padding,
+        decoration: decoration,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            MarkdownToolbar(controller: controller),
+            const SizedBox(height: 4),
+            TextField(
+              controller: controller,
+              maxLines: 5,
+              minLines: 2,
+              autofocus: true,
+              style: AppTypography.body.copyWith(height: 1.5),
+              decoration: InputDecoration(
+                hintText: hint,
+                border: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                filled: false,
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final Widget content = Container(
+      width: double.infinity,
+      padding: padding,
+      decoration: decoration,
+      child: displayWidget,
+    );
+
+    if (!hasContent && onEmptyTap != null) {
+      return Material(
+        color: Colors.transparent,
+        borderRadius: radius,
+        child: InkWell(
+          onTap: onEmptyTap,
+          borderRadius: radius,
+          child: content,
+        ),
+      );
+    }
+    return content;
   }
 
 }
