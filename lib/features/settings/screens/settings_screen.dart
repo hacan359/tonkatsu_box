@@ -36,13 +36,24 @@ import 'steam_import_screen.dart';
 import 'trakt_import_screen.dart';
 import 'debug_hub_screen.dart';
 import 'kodi_screen.dart';
-import 'gamepad_debug_screen.dart';
 import 'profiles_screen.dart';
 import '../../../shared/models/profile.dart';
 import '../providers/profile_provider.dart';
 
 /// Breakpoint для переключения ширины контента.
 const double _desktopBreakpoint = 800;
+
+// iOS-style цветовая палитра для capsule-иконок в настройках.
+const Color _kProfileColor = Color(0xFF4A90E2); // синий
+const Color _kBackupColor = Color(0xFF42A5F5); // голубой
+const Color _kImportColor = Color(0xFFFFA726); // оранжевый
+const Color _kStorageColor = Color(0xFF8E8E93); // серый
+const Color _kAppearanceColor = Color(0xFFA86ED4); // фиолетовый
+const Color _kApiKeysColor = Color(0xFFEF5350); // красный
+const Color _kIntegrationColor = Color(0xFF66BB6A); // зелёный
+const Color _kDiscordColor = Color(0xFF5865F2); // Discord blurple
+const Color _kAboutColor = Color(0xFF8E8E93); // серый
+const Color _kDebugColor = Color(0xFFAB47BC); // пурпурный
 
 /// Хаб настроек приложения.
 ///
@@ -139,67 +150,172 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   List<Widget> _buildSections() {
     final SettingsState settings = ref.watch(settingsNotifierProvider);
     final S l = S.of(context);
-
     final Profile currentProfile = ref.watch(currentProfileProvider);
 
+    const Widget gap = SizedBox(height: AppSpacing.md);
+
     return <Widget>[
-      // PROFILES
+      // ============ ПРОФИЛЬ ============
       SettingsGroup(
         title: l.profiles,
+        titleIcon: Icons.person_outline,
         children: <Widget>[
           SettingsTile(
+            leadingIcon: Icons.switch_account,
+            leadingColor: _kProfileColor,
             title: l.currentProfile(currentProfile.name),
             value: '',
             onTap: () => _pushScreen(const ProfilesScreen()),
           ),
-        ],
-      ),
-      const SizedBox(height: AppSpacing.md),
-
-      // PROFILE
-      SettingsGroup(
-        title: l.settingsProfile,
-        subtitle: l.settingsProfileSubtitle,
-        children: <Widget>[
           Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.md,
               vertical: AppSpacing.sm,
             ),
-            child: InlineTextField(
-              label: l.settingsAuthorName,
-              value: settings.authorName,
-              placeholder: l.settingsAuthorPlaceholder,
-              compact: true,
-              onChanged: (String value) {
-                ref
-                    .read(settingsNotifierProvider.notifier)
-                    .setDefaultAuthor(value);
-              },
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: _kProfileColor,
+                    borderRadius: BorderRadius.circular(7),
+                  ),
+                  child: const Icon(
+                    Icons.badge_outlined,
+                    size: 17,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: InlineTextField(
+                    label: l.settingsAuthorName,
+                    value: settings.authorName,
+                    placeholder: l.settingsAuthorPlaceholder,
+                    compact: true,
+                    onChanged: (String value) {
+                      ref
+                          .read(settingsNotifierProvider.notifier)
+                          .setDefaultAuthor(value);
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
         ],
       ),
-      const SizedBox(height: AppSpacing.md),
+      gap,
 
-      // APPEARANCE
+      // ============ ДАННЫЕ (поднято выше по фидбеку) ============
+      SettingsGroup(
+        title: l.settingsBackup,
+        subtitle: l.settingsBackupSubtitle,
+        titleIcon: Icons.cloud_outlined,
+        children: <Widget>[
+          SettingsTile(
+            leadingIcon: Icons.cloud_upload_outlined,
+            leadingColor: _kBackupColor,
+            title: l.settingsBackupAll,
+            subtitle: l.settingsBackupAllSubtitle,
+            onTap: () => _handleBackup(context, ref, l),
+          ),
+          SettingsTile(
+            leadingIcon: Icons.cloud_download_outlined,
+            leadingColor: _kBackupColor,
+            title: l.settingsRestoreBackup,
+            subtitle: l.settingsRestoreBackupSubtitle,
+            onTap: () => _handleRestore(context, ref, l),
+          ),
+        ],
+      ),
+      gap,
+      SettingsGroup(
+        title: l.settingsImport,
+        subtitle: l.settingsImportSubtitle,
+        titleIcon: Icons.download_outlined,
+        children: <Widget>[
+          SettingsTile(
+            leadingIcon: Icons.travel_explore,
+            leadingColor: _kImportColor,
+            title: l.settingsBrowseCollections,
+            subtitle: l.settingsBrowseCollectionsSubtitle,
+            onTap: () => _pushScreen(const BrowseCollectionsScreen()),
+          ),
+          SettingsTile(
+            leadingIcon: Icons.movie_filter_outlined,
+            leadingColor: _kImportColor,
+            title: l.settingsTraktImport,
+            subtitle: l.settingsTraktImportSubtitle,
+            onTap: () => _pushScreen(const TraktImportScreen()),
+          ),
+          SettingsTile(
+            leadingIcon: Icons.sports_esports_outlined,
+            leadingColor: _kImportColor,
+            title: l.settingsSteamImport,
+            subtitle: l.settingsSteamImportSubtitle,
+            onTap: () => _pushScreen(const SteamImportScreen()),
+          ),
+          SettingsTile(
+            leadingIcon: Icons.emoji_events_outlined,
+            leadingColor: _kImportColor,
+            title: l.settingsRaImport,
+            subtitle: l.settingsRaImportSubtitle,
+            onTap: () => _pushScreen(const RaImportScreen()),
+          ),
+        ],
+      ),
+      gap,
+      SettingsGroup(
+        title: l.settingsStorage,
+        subtitle: l.settingsStorageSubtitle,
+        titleIcon: Icons.storage_outlined,
+        children: <Widget>[
+          SettingsTile(
+            leadingIcon: Icons.image_outlined,
+            leadingColor: _kStorageColor,
+            title: l.settingsCache,
+            subtitle: l.settingsCacheSubtitle,
+            onTap: () => _pushScreen(const CacheScreen()),
+          ),
+          SettingsTile(
+            leadingIcon: Icons.dataset_outlined,
+            leadingColor: _kStorageColor,
+            title: l.settingsDatabase,
+            subtitle: l.settingsDatabaseSubtitle,
+            onTap: () => _pushScreen(const DatabaseScreen()),
+          ),
+        ],
+      ),
+      gap,
+
+      // ============ ОФОРМЛЕНИЕ ============
       SettingsGroup(
         title: l.settingsAppearance,
         subtitle: l.settingsAppearanceSubtitle,
+        titleIcon: Icons.palette_outlined,
         children: <Widget>[
           SettingsTile(
+            leadingIcon: Icons.language,
+            leadingColor: _kAppearanceColor,
             title: l.settingsAppLanguage,
             subtitle: l.settingsAppLanguageSubtitle,
             value: settings.appLanguage == 'ru' ? 'Русский' : 'English',
             onTap: () => _showLanguagePicker(settings),
           ),
           SettingsTile(
+            leadingIcon: Icons.translate,
+            leadingColor: _kAppearanceColor,
             title: l.settingsContentLanguage,
             subtitle: l.settingsContentLanguageSubtitle,
             value: settings.tmdbLanguage == 'ru-RU' ? 'Русский' : 'English',
             onTap: () => _showContentLanguagePicker(settings),
           ),
           SettingsTile(
+            leadingIcon: Icons.thumb_up_outlined,
+            leadingColor: _kAppearanceColor,
             title: l.settingsShowRecommendations,
             subtitle: l.settingsShowRecommendationsSubtitle,
             showChevron: false,
@@ -213,6 +329,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           ),
           SettingsTile(
+            leadingIcon: Icons.videogame_asset_outlined,
+            leadingColor: _kAppearanceColor,
             title: l.settingsShowPlatformOverlay,
             subtitle: l.settingsShowPlatformOverlaySubtitle,
             showChevron: false,
@@ -226,6 +344,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           ),
           SettingsTile(
+            leadingIcon: Icons.album_outlined,
+            leadingColor: _kAppearanceColor,
             title: l.settingsShowBlurayOverlay,
             subtitle: l.settingsShowBlurayOverlaySubtitle,
             showChevron: false,
@@ -238,8 +358,54 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               },
             ),
           ),
+        ],
+      ),
+      gap,
+
+      // ============ СЕРВИСЫ ============
+      SettingsGroup(
+        title: l.settingsDataSources,
+        subtitle: l.settingsDataSourcesSubtitle,
+        titleIcon: Icons.vpn_key_outlined,
+        children: <Widget>[
+          SettingsTile(
+            leadingIcon: Icons.key,
+            leadingColor: _kApiKeysColor,
+            title: l.settingsApiKeys,
+            subtitle: l.settingsApiKeysSubtitle,
+            value: _apiKeysValue(settings),
+            valueColor: _apiKeysAllSet(settings)
+                ? AppColors.success
+                : null,
+            onTap: () => _pushScreen(const CredentialsScreen()),
+          ),
+        ],
+      ),
+      gap,
+      SettingsGroup(
+        title: l.settingsIntegrations,
+        titleIcon: Icons.link,
+        children: <Widget>[
+          SettingsTile(
+            leadingIcon: Icons.cast,
+            leadingColor: _kIntegrationColor,
+            title: 'Kodi', // proper noun
+            subtitle: l.settingsKodiSubtitle,
+            statusDotColor: ref.watch(kodiSettingsProvider).enabled
+                ? AppColors.success
+                : null,
+            value: ref.watch(kodiSettingsProvider).enabled
+                ? l.settingsOn
+                : '',
+            valueColor: ref.watch(kodiSettingsProvider).enabled
+                ? AppColors.success
+                : null,
+            onTap: () => _pushScreen(const KodiScreen()),
+          ),
           if (kDiscordRpcAvailable)
             SettingsTile(
+              leadingIcon: Icons.chat_bubble_outline,
+              leadingColor: _kDiscordColor,
               title: l.settingsDiscordRpc,
               subtitle: l.settingsDiscordRpcSubtitle,
               showChevron: false,
@@ -254,7 +420,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   if (value) {
                     rpc.enable();
                   } else {
-                    // Выключаем и RA sync если был активен
                     rpc.disableRaSync();
                     ref
                         .read(settingsNotifierProvider.notifier)
@@ -268,6 +433,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               settings.discordRpcEnabled &&
               ref.read(raApiProvider).hasCredentials)
             SettingsTile(
+              leadingIcon: Icons.sync,
+              leadingColor: _kDiscordColor,
               title: l.settingsDiscordRaSync,
               subtitle: l.settingsDiscordRaSyncSubtitle,
               showChevron: false,
@@ -293,117 +460,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
         ],
       ),
-      const SizedBox(height: AppSpacing.md),
+      gap,
 
-      // DATA SOURCES
-      SettingsGroup(
-        title: l.settingsDataSources,
-        subtitle: l.settingsDataSourcesSubtitle,
-        children: <Widget>[
-          SettingsTile(
-            title: l.settingsApiKeys,
-            subtitle: l.settingsApiKeysSubtitle,
-            value: _apiKeysValue(settings),
-            onTap: () => _pushScreen(const CredentialsScreen()),
-          ),
-        ],
-      ),
-      const SizedBox(height: AppSpacing.md),
-
-      // INTEGRATIONS
-      SettingsGroup(
-        title: l.settingsIntegrations,
-        children: <Widget>[
-          SettingsTile(
-            title: 'Kodi', // proper noun
-            subtitle: l.settingsKodiSubtitle,
-            value: ref.watch(kodiSettingsProvider).enabled
-                ? l.settingsOn
-                : '',
-            onTap: () => _pushScreen(const KodiScreen()),
-          ),
-        ],
-      ),
-      const SizedBox(height: AppSpacing.md),
-
-      // STORAGE
-      SettingsGroup(
-        title: l.settingsStorage,
-        subtitle: l.settingsStorageSubtitle,
-        children: <Widget>[
-          SettingsTile(
-            title: l.settingsCache,
-            subtitle: l.settingsCacheSubtitle,
-            onTap: () => _pushScreen(const CacheScreen()),
-          ),
-          SettingsTile(
-            title: l.settingsDatabase,
-            subtitle: l.settingsDatabaseSubtitle,
-            onTap: () => _pushScreen(const DatabaseScreen()),
-          ),
-        ],
-      ),
-      const SizedBox(height: AppSpacing.md),
-
-      // BACKUP
-      SettingsGroup(
-        title: l.settingsBackup,
-        subtitle: l.settingsBackupSubtitle,
-        children: <Widget>[
-          SettingsTile(
-            title: l.settingsBackupAll,
-            subtitle: l.settingsBackupAllSubtitle,
-            onTap: () => _handleBackup(context, ref, l),
-          ),
-          SettingsTile(
-            title: l.settingsRestoreBackup,
-            subtitle: l.settingsRestoreBackupSubtitle,
-            onTap: () => _handleRestore(context, ref, l),
-          ),
-        ],
-      ),
-      const SizedBox(height: AppSpacing.md),
-
-      // IMPORT
-      SettingsGroup(
-        title: l.settingsImport,
-        subtitle: l.settingsImportSubtitle,
-        children: <Widget>[
-          SettingsTile(
-            title: l.settingsBrowseCollections,
-            subtitle: l.settingsBrowseCollectionsSubtitle,
-            onTap: () => _pushScreen(const BrowseCollectionsScreen()),
-          ),
-          SettingsTile(
-            title: l.settingsTraktImport,
-            subtitle: l.settingsTraktImportSubtitle,
-            onTap: () => _pushScreen(const TraktImportScreen()),
-          ),
-          SettingsTile(
-            title: l.settingsSteamImport,
-            subtitle: l.settingsSteamImportSubtitle,
-            onTap: () => _pushScreen(const SteamImportScreen()),
-          ),
-          SettingsTile(
-            title: l.settingsRaImport,
-            subtitle: l.settingsRaImportSubtitle,
-            onTap: () => _pushScreen(const RaImportScreen()),
-          ),
-        ],
-      ),
-      const SizedBox(height: AppSpacing.md),
-
-      // ABOUT
+      // ============ О ПРИЛОЖЕНИИ ============
       SettingsGroup(
         title: l.settingsAbout,
+        titleIcon: Icons.info_outline,
         children: <Widget>[
           SettingsTile(
+            leadingIcon: Icons.waving_hand_outlined,
+            leadingColor: _kAboutColor,
             title: l.settingsWelcomeGuide,
             onTap: () => _pushScreen(
               const WelcomeScreen(fromSettings: true),
             ),
           ),
           SettingsTile(
+            leadingIcon: Icons.article_outlined,
+            leadingColor: _kAboutColor,
             title: l.settingsCreditsLicenses,
             onTap: () => _pushScreen(const CreditsScreen()),
           ),
@@ -411,26 +485,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ],
       ),
 
-      // Gamepad Debug — доступен во всех окружениях
-      const SizedBox(height: AppSpacing.md),
-      SettingsGroup(
-        title: l.settingsGamepadDebug,
-        children: <Widget>[
-          SettingsTile(
-            title: l.settingsGamepadDebug,
-            value: l.settingsGamepadDebugSubtitle,
-            onTap: () => _pushScreen(const GamepadDebugScreen()),
-          ),
-        ],
-      ),
-
-      // DEBUG
       if (kDebugMode) ...<Widget>[
-        const SizedBox(height: AppSpacing.md),
+        gap,
         SettingsGroup(
           title: l.settingsDebug,
+          titleIcon: Icons.bug_report_outlined,
           children: <Widget>[
             SettingsTile(
+              leadingIcon: Icons.build_outlined,
+              leadingColor: _kDebugColor,
               title: l.settingsDebug,
               value: settings.hasSteamGridDbKey
                   ? l.settingsDebugSubtitle
@@ -441,24 +504,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
       ],
 
-      // ERROR
-      if (settings.errorMessage != null) ...<Widget>[
-        const SizedBox(height: AppSpacing.md),
-        SettingsGroup(
-          title: l.settingsError,
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              child: Text(
-                settings.errorMessage!,
-                style: const TextStyle(color: AppColors.error),
-              ),
-            ),
-          ],
-        ),
-      ],
-
-      const SizedBox(height: AppSpacing.md),
+      gap,
     ];
   }
 
@@ -479,6 +525,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (settings.hasTmdbKey) count++;
     return S.of(context).settingsApiKeysValue(count);
   }
+
+  bool _apiKeysAllSet(SettingsState settings) =>
+      settings.hasCredentials &&
+      settings.hasSteamGridDbKey &&
+      settings.hasTmdbKey;
 
   void _showLanguagePicker(SettingsState settings) {
     showDialog<void>(

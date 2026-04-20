@@ -4033,12 +4033,6 @@ abstract class S {
   /// **'Gamepad Debug'**
   String get settingsGamepadDebug;
 
-  /// No description provided for @settingsGamepadDebugSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Test controller input events'**
-  String get settingsGamepadDebugSubtitle;
-
   /// No description provided for @debugSearchGames.
   ///
   /// In en, this message translates to:

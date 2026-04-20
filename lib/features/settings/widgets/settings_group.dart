@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../../../shared/constants/platform_features.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -16,6 +17,8 @@ class SettingsGroup extends StatelessWidget {
     required this.children,
     this.title,
     this.subtitle,
+    this.titleIcon,
+    this.titleIconColor,
     super.key,
   });
 
@@ -25,11 +28,21 @@ class SettingsGroup extends StatelessWidget {
   /// Необязательный подзаголовок группы (обычный размер, приглушённый цвет).
   final String? subtitle;
 
+  /// Иконка перед заголовком. Если null — не отображается.
+  final IconData? titleIcon;
+
+  /// Цвет иконки заголовка. Если null — textTertiary.
+  final Color? titleIconColor;
+
   /// Дочерние виджеты (обычно [SettingsTile]).
   final List<Widget> children;
 
   @override
   Widget build(BuildContext context) {
+    final bool compact = isCompactScreen(context);
+    final double headerSize = compact ? 10.5 : 12;
+    final double subtitleSize = compact ? 10.5 : 12;
+    final double iconSize = compact ? 12 : 14;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -42,19 +55,35 @@ class SettingsGroup extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text(
-                  title!.toUpperCase(),
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.textTertiary,
-                    letterSpacing: 0.5,
-                    fontWeight: FontWeight.w600,
-                  ),
+                Row(
+                  children: <Widget>[
+                    if (titleIcon != null) ...<Widget>[
+                      Icon(
+                        titleIcon,
+                        size: iconSize,
+                        color: titleIconColor ?? AppColors.textTertiary,
+                      ),
+                      const SizedBox(width: 6),
+                    ],
+                    Flexible(
+                      child: Text(
+                        title!.toUpperCase(),
+                        style: AppTypography.bodySmall.copyWith(
+                          fontSize: headerSize,
+                          color: titleIconColor ?? AppColors.textTertiary,
+                          letterSpacing: 0.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 if (subtitle != null) ...<Widget>[
                   const SizedBox(height: 2),
                   Text(
                     subtitle!,
                     style: AppTypography.bodySmall.copyWith(
+                      fontSize: subtitleSize,
                       color: AppColors.textTertiary,
                       fontWeight: FontWeight.w400,
                     ),
