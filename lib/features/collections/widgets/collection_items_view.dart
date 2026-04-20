@@ -39,6 +39,7 @@ class CollectionItemsView extends ConsumerWidget {
     this.onItemMove,
     this.onItemClone,
     this.onItemRemove,
+    this.onAddItems,
     this.onItemFocusChanged,
     this.tags = const <CollectionTag>[],
     this.filterTagIds = const <int>{},
@@ -72,6 +73,9 @@ class CollectionItemsView extends ConsumerWidget {
 
   /// Callback удаления элемента.
   final ValueChanged<CollectionItem>? onItemRemove;
+
+  /// Callback запуска диалога добавления тайтлов (клик/ПКМ по пустой коллекции).
+  final VoidCallback? onAddItems;
 
   /// Callback при изменении фокуса на элементе (для клавиатурных действий).
   final void Function(CollectionItem item, bool hasFocus)? onItemFocusChanged;
@@ -639,14 +643,15 @@ class CollectionItemsView extends ConsumerWidget {
 
   Widget _buildEmptyState(BuildContext context) {
     final S l = S.of(context);
-    return Center(
+    final bool canAdd = canEdit && onAddItems != null;
+    final Widget content = Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Icon(
-              Icons.shelves,
+              canAdd ? Icons.add_box_outlined : Icons.shelves,
               size: 64,
               color: AppColors.textTertiary.withAlpha(120),
             ),
@@ -654,9 +659,11 @@ class CollectionItemsView extends ConsumerWidget {
             Text(l.collectionNoItemsYet, style: AppTypography.h2),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              canEdit
-                  ? 'Add items to start building your collection.'
-                  : 'This collection is empty.',
+              canAdd
+                  ? l.collectionAddItems
+                  : (canEdit
+                      ? 'Add items to start building your collection.'
+                      : 'This collection is empty.'),
               textAlign: TextAlign.center,
               style: AppTypography.body.copyWith(
                 color: AppColors.textSecondary,
@@ -664,6 +671,17 @@ class CollectionItemsView extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+
+    if (!canAdd) return content;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onAddItems,
+      onSecondaryTap: onAddItems,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: content,
       ),
     );
   }
