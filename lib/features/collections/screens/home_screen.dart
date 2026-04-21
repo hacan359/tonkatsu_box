@@ -24,6 +24,7 @@ import '../../settings/providers/settings_provider.dart';
 import '../widgets/collection_card.dart';
 import '../widgets/collection_list_tile.dart';
 import '../widgets/create_collection_dialog.dart';
+import '../widgets/edit_collection_dialog.dart';
 import '../widgets/import_progress_dialog.dart';
 import 'collection_screen.dart';
 
@@ -595,13 +596,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     WidgetRef ref,
     Collection collection,
   ) async {
-    final String? newName =
-        await RenameCollectionDialog.show(context, collection.name);
-
-    if (newName == null || newName == collection.name) return;
-
     try {
-      await ref.read(collectionsProvider.notifier).rename(collection.id, newName);
+      final bool changed =
+          await EditCollectionDialog.show(context, collection);
+      if (!changed) return;
 
       if (context.mounted) {
         context.showSnack(S.of(context).collectionsRenamed, type: SnackType.success);

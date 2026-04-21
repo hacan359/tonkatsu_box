@@ -81,7 +81,9 @@ abstract final class DatabaseSchema {
         created_at INTEGER NOT NULL,
         original_snapshot TEXT,
         forked_from_author TEXT,
-        forked_from_name TEXT
+        forked_from_name TEXT,
+        hero_image_path TEXT,
+        description TEXT
       )
     ''');
   }

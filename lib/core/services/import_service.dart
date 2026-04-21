@@ -35,6 +35,7 @@ import '../api/tmdb_api.dart';
 import '../api/vndb_api.dart';
 import '../database/dao/tracker_dao.dart';
 import '../database/database_service.dart';
+import 'collection_hero_service.dart';
 import 'image_cache_service.dart';
 import 'xcoll_file.dart';
 
@@ -51,6 +52,7 @@ final Provider<ImportService> importServiceProvider =
     canvasRepository: ref.watch(canvasRepositoryProvider),
     imageCacheService: ref.watch(imageCacheServiceProvider),
     trackerDao: ref.watch(trackerDaoProvider),
+    heroService: ref.watch(collectionHeroServiceProvider),
   );
 });
 
@@ -200,6 +202,7 @@ class ImportService {
     CanvasRepository? canvasRepository,
     ImageCacheService? imageCacheService,
     TrackerDao? trackerDao,
+    CollectionHeroService? heroService,
   })  : _repository = repository,
         _igdbApi = igdbApi,
         _tmdbApi = tmdbApi,
@@ -208,7 +211,8 @@ class ImportService {
         _database = database,
         _canvasRepository = canvasRepository,
         _imageCacheService = imageCacheService,
-        _trackerDao = trackerDao;
+        _trackerDao = trackerDao,
+        _heroService = heroService;
 
   final CollectionRepository _repository;
   final IgdbApi _igdbApi;
@@ -219,6 +223,7 @@ class ImportService {
   final CanvasRepository? _canvasRepository;
   final ImageCacheService? _imageCacheService;
   final TrackerDao? _trackerDao;
+  final CollectionHeroService? _heroService;
 
   static final Logger _log = Logger('ImportService');
 
@@ -368,6 +373,9 @@ class ImportService {
           author: xcoll.author,
           type: CollectionType.own,
         );
+
+        // Восстанавливаем персонализацию (описание + hero-обложка).
+        await _restoreCollectionPersonalization(collection, xcoll);
 
         onProgress?.call(const ImportProgress(
           stage: ImportStage.creatingCollection,
@@ -1473,5 +1481,57 @@ class ImportService {
         .map((Map<String, dynamic> d) => TrackerGameData.fromDb(d))
         .toList();
     await _trackerDao!.upsertGameDataBatch(items);
+  }
+
+  /// Применяет описание и hero-обложку из [xcoll] к только что созданной
+  /// коллекции.
+  ///
+  /// Hero ищется в `xcoll.images` по префиксу `collection_hero/`. Old id
+  /// игнорируется — берётся первый подходящий файл.
+  Future<void> _restoreCollectionPersonalization(
+    Collection collection,
+    XcollFile xcoll,
+  ) async {
+    String? heroFileName;
+    if (_heroService != null) {
+      final MapEntry<String, String>? heroEntry = xcoll.images.entries
+          .where((MapEntry<String, String> e) =>
+              e.key.startsWith('collection_hero/'))
+          .cast<MapEntry<String, String>?>()
+          .firstWhere(
+            (MapEntry<String, String>? _) => true,
+            orElse: () => null,
+          );
+      if (heroEntry != null) {
+        try {
+          final List<int> bytes = base64Decode(heroEntry.value);
+          final String ext = _heroExtensionFromKey(heroEntry.key);
+          heroFileName = await _heroService.saveBytes(
+            collectionId: collection.id,
+            bytes: bytes,
+            extension: ext,
+          );
+        } on FormatException catch (e) {
+          _log.warning('Failed to decode hero image: $e');
+        }
+      }
+    }
+
+    final bool hasDescription =
+        xcoll.description != null && xcoll.description!.isNotEmpty;
+
+    if (heroFileName != null || hasDescription) {
+      await _repository.updatePersonalization(
+        collection.id,
+        heroImagePath: heroFileName,
+        description: hasDescription ? xcoll.description : null,
+      );
+    }
+  }
+
+  static String _heroExtensionFromKey(String key) {
+    final int dot = key.lastIndexOf('.');
+    if (dot == -1) return 'png';
+    return key.substring(dot + 1).toLowerCase();
   }
 }

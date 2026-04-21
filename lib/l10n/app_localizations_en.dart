@@ -2474,6 +2474,42 @@ class SEn extends S {
       'Show Blu-ray overlay on movie and TV show posters';
 
   @override
+  String get settingsRichCollections => 'Rich collection view';
+
+  @override
+  String get settingsRichCollectionsSubtitle =>
+      'Personalize collections with a cover image and description';
+
+  @override
+  String get collectionEditHeroImage => 'Cover image';
+
+  @override
+  String get collectionEditHeroImageHint =>
+      'Place the main subject in the top-right — the left and bottom edges fade into the background';
+
+  @override
+  String get collectionEditHeroPick => 'Choose image';
+
+  @override
+  String get collectionEditHeroReplace => 'Replace image';
+
+  @override
+  String get collectionEditHeroRemove => 'Remove image';
+
+  @override
+  String get collectionEditDescription => 'Description';
+
+  @override
+  String get collectionEditDescriptionHint =>
+      'Short tagline shown over the cover';
+
+  @override
+  String get collectionEditMenu => 'Collection settings';
+
+  @override
+  String get collectionEditDialogTitle => 'Collection settings';
+
+  @override
   String get settingsDiscordRpc => 'Discord Rich Presence';
 
   @override

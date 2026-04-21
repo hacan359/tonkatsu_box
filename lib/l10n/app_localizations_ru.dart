@@ -2493,6 +2493,41 @@ class SRu extends S {
       'Оверлей Blu-ray на постерах фильмов и сериалов';
 
   @override
+  String get settingsRichCollections => 'Персонализация коллекций';
+
+  @override
+  String get settingsRichCollectionsSubtitle =>
+      'Обложка и описание вместо мозаики';
+
+  @override
+  String get collectionEditHeroImage => 'Обложка';
+
+  @override
+  String get collectionEditHeroImageHint =>
+      'Размести главный объект справа сверху — левый и нижний края растворятся в фоне';
+
+  @override
+  String get collectionEditHeroPick => 'Выбрать картинку';
+
+  @override
+  String get collectionEditHeroReplace => 'Заменить';
+
+  @override
+  String get collectionEditHeroRemove => 'Убрать';
+
+  @override
+  String get collectionEditDescription => 'Описание';
+
+  @override
+  String get collectionEditDescriptionHint => 'Короткий текст поверх обложки';
+
+  @override
+  String get collectionEditMenu => 'Настройки коллекции';
+
+  @override
+  String get collectionEditDialogTitle => 'Настройки коллекции';
+
+  @override
   String get settingsDiscordRpc => 'Discord Rich Presence';
 
   @override

@@ -227,7 +227,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 34,
+        version: 35,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -510,8 +510,22 @@ class DatabaseService {
       );
 
   /// Обновляет коллекцию.
-  Future<void> updateCollection(int id, {String? name}) =>
-      collectionDao.updateCollection(id, name: name);
+  Future<void> updateCollection(
+    int id, {
+    String? name,
+    String? heroImagePath,
+    String? description,
+    bool clearHeroImage = false,
+    bool clearDescription = false,
+  }) =>
+      collectionDao.updateCollection(
+        id,
+        name: name,
+        heroImagePath: heroImagePath,
+        description: description,
+        clearHeroImage: clearHeroImage,
+        clearDescription: clearDescription,
+      );
 
   /// Удаляет коллекцию и все связанные игры (каскадно).
   Future<void> deleteCollection(int id) => collectionDao.deleteCollection(id);

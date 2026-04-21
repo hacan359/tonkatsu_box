@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/services/collection_hero_service.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../data/repositories/collection_repository.dart';
 import '../../../l10n/app_localizations.dart';
@@ -14,6 +15,8 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/cached_image.dart';
 import '../providers/collection_covers_provider.dart';
 import '../providers/collections_provider.dart';
+import '../providers/rich_collections_provider.dart';
+import 'collection_hero_background.dart';
 
 /// Карточка коллекции в стиле "iOS папка".
 ///
@@ -99,6 +102,19 @@ class _CollectionCardState extends ConsumerState<CollectionCard>
     final AsyncValue<List<CoverInfo>> coversAsync =
         ref.watch(collectionCoversProvider(widget.collection.id));
 
+    final bool richEnabled = ref.watch(richCollectionsEnabledProvider);
+    final String? heroFile = widget.collection.heroImagePath;
+    String? heroAbsPath;
+    if (richEnabled && heroFile != null) {
+      try {
+        heroAbsPath =
+            ref.watch(collectionHeroServiceProvider).resolve(heroFile);
+      } on Object {
+        heroAbsPath = null;
+      }
+    }
+    final bool isRich = heroAbsPath != null;
+
     return AnimatedBuilder(
       animation: _hoverController,
       builder: (BuildContext context, Widget? animatedChild) {
@@ -143,7 +159,7 @@ class _CollectionCardState extends ConsumerState<CollectionCard>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              // Мозаика обложек + затемнение
+              // Мозаика обложек + затемнение (или hero-обложка в rich-режиме)
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
@@ -155,30 +171,69 @@ class _CollectionCardState extends ConsumerState<CollectionCard>
                   child: Stack(
                     fit: StackFit.expand,
                     children: <Widget>[
-                      Padding(
-                        padding:
-                            const EdgeInsets.all(CollectionCard._mosaicPadding),
-                        child: _CoverMosaic(
-                          covers: coversAsync,
-                          totalCount: statsAsync.valueOrNull?.total ?? 0,
+                      if (isRich)
+                        CollectionHeroBackground(
+                          imagePath: heroAbsPath,
+                          strength: HeroGradientStrength.soft,
+                          child: _RichCardOverlay(
+                            name: widget.collection.name,
+                            description: widget.collection.description,
+                          ),
+                        )
+                      else
+                        Padding(
+                          padding: const EdgeInsets.all(
+                              CollectionCard._mosaicPadding),
+                          child: _CoverMosaic(
+                            covers: coversAsync,
+                            totalCount: statsAsync.valueOrNull?.total ?? 0,
+                          ),
                         ),
-                      ),
-                      // Затемнение поверх мозаики
-                      AnimatedBuilder(
-                        animation: _dimAnimation,
-                        builder: (BuildContext context, Widget? child) {
-                          return Container(
-                            decoration: BoxDecoration(
-                              color: Colors.black.withAlpha(
-                                (_dimAnimation.value * 255).round(),
+                      // Затемнение поверх — только в обычном режиме
+                      // (в rich-режиме hover обыгрывается лёгким highlight).
+                      if (!isRich)
+                        AnimatedBuilder(
+                          animation: _dimAnimation,
+                          builder: (BuildContext context, Widget? child) {
+                            return Container(
+                              decoration: BoxDecoration(
+                                color: Colors.black.withAlpha(
+                                  (_dimAnimation.value * 255).round(),
+                                ),
+                                borderRadius: BorderRadius.circular(
+                                  CollectionCard.mosaicRadius,
+                                ),
                               ),
-                              borderRadius: BorderRadius.circular(
-                                CollectionCard.mosaicRadius,
+                            );
+                          },
+                        )
+                      else
+                        AnimatedBuilder(
+                          animation: _dimAnimation,
+                          builder: (BuildContext context, Widget? child) {
+                            // В rich-режиме при hover делаем лёгкое
+                            // осветление (противоположно затемнению), чтобы
+                            // подсветить выбор.
+                            final double t = 1.0 -
+                                (_dimAnimation.value /
+                                    CollectionCard._dimOpacity);
+                            return IgnorePointer(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: <Color>[
+                                      AppColors.brand
+                                          .withValues(alpha: 0.10 * t),
+                                      Colors.transparent,
+                                    ],
+                                  ),
+                                ),
                               ),
-                            ),
-                          );
-                        },
-                      ),
+                            );
+                          },
+                        ),
                     ],
                   ),
                 ),
@@ -186,14 +241,15 @@ class _CollectionCardState extends ConsumerState<CollectionCard>
 
               const SizedBox(height: 8),
 
-              // Название
-              Text(
-                widget.collection.name,
-                style: AppTypography.h3,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-              ),
+              // Название (в rich-режиме имя уже поверх картинки — не дублируем)
+              if (!isRich)
+                Text(
+                  widget.collection.name,
+                  style: AppTypography.h3,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
 
               // Статистика
               statsAsync.when(
@@ -393,6 +449,65 @@ class _CoverImage extends StatelessWidget {
       case MediaType.custom:
         return ImageType.customCover;
     }
+  }
+}
+
+// =============================================================================
+// Наложение для rich-карточки: название + описание в левом-нижнем углу
+// =============================================================================
+
+class _RichCardOverlay extends StatelessWidget {
+  const _RichCardOverlay({required this.name, this.description});
+
+  final String name;
+  final String? description;
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.bottomLeft,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              name,
+              style: AppTypography.h3.copyWith(
+                color: AppColors.textPrimary,
+                height: 1.1,
+                shadows: const <Shadow>[
+                  Shadow(
+                    color: Colors.black54,
+                    blurRadius: 6,
+                  ),
+                ],
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            if (description != null && description!.isNotEmpty) ...<Widget>[
+              const SizedBox(height: 4),
+              Text(
+                description!,
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                  shadows: const <Shadow>[
+                    Shadow(
+                      color: Colors.black87,
+                      blurRadius: 4,
+                    ),
+                  ],
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 }
 

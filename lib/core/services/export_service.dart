@@ -23,6 +23,7 @@ import '../../shared/models/tier_list.dart';
 import '../../shared/models/tier_list_entry.dart';
 import '../database/dao/tracker_dao.dart';
 import '../database/database_service.dart';
+import 'collection_hero_service.dart';
 import 'image_cache_service.dart';
 import 'xcoll_file.dart';
 
@@ -34,6 +35,7 @@ final Provider<ExportService> exportServiceProvider =
     imageCacheService: ref.watch(imageCacheServiceProvider),
     database: ref.watch(databaseServiceProvider),
     trackerDao: ref.watch(trackerDaoProvider),
+    heroService: ref.watch(collectionHeroServiceProvider),
   );
 });
 
@@ -89,10 +91,12 @@ class ExportService {
     ImageCacheService? imageCacheService,
     DatabaseService? database,
     TrackerDao? trackerDao,
+    CollectionHeroService? heroService,
   })  : _canvasRepository = canvasRepository,
         _imageCacheService = imageCacheService,
         _database = database,
-        _trackerDao = trackerDao;
+        _trackerDao = trackerDao,
+        _heroService = heroService;
 
   static final Logger _log = Logger('ExportService');
 
@@ -100,6 +104,7 @@ class ExportService {
   final ImageCacheService? _imageCacheService;
   final DatabaseService? _database;
   final TrackerDao? _trackerDao;
+  final CollectionHeroService? _heroService;
 
   // ==================== v2 Light (.xcoll) ====================
 
@@ -123,6 +128,7 @@ class ExportService {
       name: collection.name,
       author: collection.author,
       created: collection.createdAt,
+      description: collection.description,
       includesUserData: includeUserData,
       items: exportItems,
     );
@@ -170,6 +176,9 @@ class ExportService {
       images.addAll(canvasImages);
     }
 
+    // Collect hero image (if set)
+    await _collectHeroImage(collection, images);
+
     // Collect full media data for offline import (includes tv_seasons)
     final Map<String, dynamic> media = await _collectMediaData(items);
 
@@ -206,6 +215,7 @@ class ExportService {
       name: collection.name,
       author: collection.author,
       created: collection.createdAt,
+      description: collection.description,
       includesUserData: includeUserData,
       items: exportItems,
       canvas: canvas,
@@ -215,6 +225,33 @@ class ExportService {
       tags: tags,
       trackerData: trackerData,
     );
+  }
+
+  /// Вкладывает hero-картинку коллекции в секцию `images` под ключом
+  /// `collection_hero/{id}.{ext}` (base64).
+  Future<void> _collectHeroImage(
+    Collection collection,
+    Map<String, String> images,
+  ) async {
+    final String? fileName = collection.heroImagePath;
+    if (fileName == null || _heroService == null) return;
+    final String? absPath = _heroService.resolve(fileName);
+    if (absPath == null) return;
+    final File file = File(absPath);
+    if (!file.existsSync()) return;
+    try {
+      final List<int> bytes = await file.readAsBytes();
+      final String ext = _heroExtension(fileName);
+      images['collection_hero/${collection.id}.$ext'] = base64Encode(bytes);
+    } on FileSystemException catch (e) {
+      _log.warning('Failed to read hero image: ${e.message}', e);
+    }
+  }
+
+  static String _heroExtension(String fileName) {
+    final int dot = fileName.lastIndexOf('.');
+    if (dot == -1) return 'png';
+    return fileName.substring(dot + 1).toLowerCase();
   }
 
   /// Собирает canvas-данные коллекции (viewport, items, connections).

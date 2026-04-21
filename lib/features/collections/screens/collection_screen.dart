@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/services/collection_hero_service.dart';
 import '../../../core/services/import_service.dart';
 import '../../../core/services/xcoll_file.dart';
 import '../../../l10n/app_localizations.dart';
@@ -36,6 +37,8 @@ import '../providers/vgmaps_panel_provider.dart';
 import '../widgets/collection_canvas_layout.dart';
 import '../widgets/collection_filter_bar.dart';
 import '../widgets/collection_items_view.dart';
+import '../widgets/collection_rich_banner.dart';
+import '../providers/rich_collections_provider.dart';
 import '../widgets/tag_sidebar.dart';
 import '../widgets/tag_management_dialog.dart';
 import '../../../shared/models/tier_list.dart';
@@ -67,7 +70,6 @@ class CollectionScreen extends ConsumerStatefulWidget {
       ShortcutEntry(keys: 'Delete', description: 'Удалить элемент'),
       ShortcutEntry(keys: 'Ctrl+M', description: 'Переместить элемент'),
       ShortcutEntry(keys: 'Ctrl+Delete', description: 'Удалить коллекцию'),
-      ShortcutEntry(keys: 'F2', description: 'Переименовать коллекцию'),
     ],
   );
 
@@ -250,9 +252,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       if (!_isUncategorized)
         const SingleActivator(LogicalKeyboardKey.delete, control: true):
             _handleDelete,
-      if (!_isUncategorized && _collection != null && _collection!.isEditable)
-        const SingleActivator(LogicalKeyboardKey.f2):
-            _handleRename,
     };
   }
 
@@ -329,8 +328,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         ),
       if (_collection!.isEditable)
         DraggableFabItem(
-          icon: Icons.edit,
-          label: l.rename,
+          icon: Icons.tune,
+          label: l.collectionEditMenu,
           onTap: () => _handleMenuAction('rename'),
         ),
       DraggableFabItem(
@@ -471,11 +470,23 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       });
     }
 
+    final bool richEnabled = ref.watch(richCollectionsEnabledProvider);
+    final String? heroFile = _collection?.heroImagePath;
+    final String? heroAbsPath = (richEnabled && heroFile != null)
+        ? ref.watch(collectionHeroServiceProvider).resolve(heroFile)
+        : null;
+    final bool showHero = heroAbsPath != null && !_isUncategorized;
+
     return Row(
       children: <Widget>[
         Expanded(
           child: Column(
             children: <Widget>[
+              if (showHero)
+                CollectionRichBanner(
+                  collection: _collection!,
+                  heroAbsolutePath: heroAbsPath,
+                ),
               Expanded(
                 child: itemsAsync.when(
                   data: (List<CollectionItem> items) => CollectionItemsView(
@@ -699,15 +710,21 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
 
   Future<void> _handleRename() async {
     if (_collection == null) return;
-    final String? newName = await CollectionActions.renameCollection(
+    final bool changed = await CollectionActions.renameCollection(
       context: context,
       ref: ref,
       collection: _collection!,
     );
-    if (newName != null && mounted) {
-      setState(() {
-        _collection = _collection!.copyWith(name: newName);
-      });
+    if (changed && mounted) {
+      // Перечитаем коллекцию — могло измениться имя/обложка/описание.
+      final Collection? updated = await ref
+          .read(collectionRepositoryProvider)
+          .getById(widget.collectionId!);
+      if (updated != null && mounted) {
+        setState(() {
+          _collection = updated;
+        });
+      }
     }
   }
 

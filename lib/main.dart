@@ -11,6 +11,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'app.dart';
 import 'core/logging/app_logger.dart';
 import 'core/services/api_key_initializer.dart';
+import 'core/services/collection_hero_service.dart';
 import 'core/services/profile_service.dart';
 import 'features/settings/providers/profile_provider.dart';
 import 'features/settings/providers/settings_provider.dart';
@@ -20,6 +21,7 @@ import 'shared/models/profile.dart';
 late SharedPreferences _prefs;
 late ApiKeys _apiKeys;
 late ProfilesData _profilesData;
+late String _heroDir;
 
 /// Точка входа в приложение.
 Future<void> main() async {
@@ -61,6 +63,8 @@ Future<void> _loadAppState() async {
   final ProfileService profileService = ProfileService();
   await profileService.migrateIfNeeded();
   _profilesData = await profileService.loadProfiles();
+
+  _heroDir = await CollectionHeroService.resolveRoot();
 }
 
 /// Обёртка для перезапуска приложения на мобильных платформах.
@@ -102,6 +106,7 @@ class _AppRestartScopeState extends State<AppRestartScope> {
       overrides: <Override>[
         sharedPreferencesProvider.overrideWithValue(_prefs),
         apiKeysProvider.overrideWithValue(_apiKeys),
+        collectionsHeroDirProvider.overrideWithValue(_heroDir),
         profilesDataProvider.overrideWith(
           (Ref ref) => _profilesData,
         ),

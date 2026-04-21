@@ -143,13 +143,29 @@ class CollectionDao {
   }
 
   /// Обновляет коллекцию.
-  Future<void> updateCollection(int id, {String? name}) async {
-    if (name == null) return;
+  ///
+  /// Передавайте `clearHeroImage: true` или `clearDescription: true`,
+  /// чтобы сохранить `NULL` — обычный `null` значит «не трогать».
+  Future<void> updateCollection(
+    int id, {
+    String? name,
+    String? heroImagePath,
+    String? description,
+    bool clearHeroImage = false,
+    bool clearDescription = false,
+  }) async {
+    final Map<String, Object?> values = <String, Object?>{};
+    if (name != null) values['name'] = name;
+    if (heroImagePath != null) values['hero_image_path'] = heroImagePath;
+    if (clearHeroImage) values['hero_image_path'] = null;
+    if (description != null) values['description'] = description;
+    if (clearDescription) values['description'] = null;
+    if (values.isEmpty) return;
 
     final Database db = await _getDatabase();
     await db.update(
       'collections',
-      <String, dynamic>{'name': name},
+      values,
       where: 'id = ?',
       whereArgs: <Object?>[id],
     );

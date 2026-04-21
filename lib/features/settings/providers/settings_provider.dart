@@ -67,6 +67,9 @@ abstract class SettingsKeys {
 
   /// API ключ RetroAchievements.
   static const String raApiKey = 'ra_api_key';
+
+  /// Включить персонализированный вид коллекций (hero + description).
+  static const String richCollectionsEnabled = 'rich_collections_enabled';
 }
 
 /// Состояние настроек IGDB.
@@ -91,6 +94,7 @@ class SettingsState {
     this.showPlatformOverlay = true,
     this.discordRpcEnabled = false,
     this.discordRaSyncEnabled = false,
+    this.richCollectionsEnabled = false,
   });
 
   /// Client ID для IGDB API.
@@ -146,6 +150,9 @@ class SettingsState {
 
   /// Discord RA Sync — транслировать RA Rich Presence в Discord.
   final bool discordRaSyncEnabled;
+
+  /// Rich-вид коллекций: hero-картинка и описание вместо мозаики.
+  final bool richCollectionsEnabled;
 
   /// Возвращает overlay asset с учётом настроек.
   ///
@@ -237,6 +244,7 @@ class SettingsState {
     bool? showPlatformOverlay,
     bool? discordRpcEnabled,
     bool? discordRaSyncEnabled,
+    bool? richCollectionsEnabled,
   }) {
     return SettingsState(
       clientId: clientId ?? this.clientId,
@@ -257,6 +265,8 @@ class SettingsState {
       showPlatformOverlay: showPlatformOverlay ?? this.showPlatformOverlay,
       discordRpcEnabled: discordRpcEnabled ?? this.discordRpcEnabled,
       discordRaSyncEnabled: discordRaSyncEnabled ?? this.discordRaSyncEnabled,
+      richCollectionsEnabled:
+          richCollectionsEnabled ?? this.richCollectionsEnabled,
     );
   }
 }
@@ -371,6 +381,8 @@ class SettingsNotifier extends Notifier<SettingsState> {
         _prefs.getBool(SettingsKeys.discordRpcEnabled) ?? false;
     final bool discordRaSyncEnabled =
         _prefs.getBool(SettingsKeys.discordRaSyncEnabled) ?? false;
+    final bool richCollectionsEnabled =
+        _prefs.getBool(SettingsKeys.richCollectionsEnabled) ?? false;
 
     // Определяем начальный статус подключения:
     // - токен валиден → connected (не нужно ждать verify)
@@ -399,6 +411,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
       showPlatformOverlay: showPlatformOverlay,
       discordRpcEnabled: discordRpcEnabled,
       discordRaSyncEnabled: discordRaSyncEnabled,
+      richCollectionsEnabled: richCollectionsEnabled,
     );
 
     // API ключи уже установлены при создании провайдеров через apiKeysProvider.
@@ -622,6 +635,12 @@ class SettingsNotifier extends Notifier<SettingsState> {
     state = state.copyWith(discordRaSyncEnabled: enabled);
   }
 
+  /// Включает/выключает rich-вид коллекций.
+  Future<void> setRichCollectionsEnabled({required bool enabled}) async {
+    await _prefs.setBool(SettingsKeys.richCollectionsEnabled, enabled);
+    state = state.copyWith(richCollectionsEnabled: enabled);
+  }
+
   /// Сбрасывает TMDB API ключ на встроенный.
   ///
   /// Удаляет пользовательский ключ из SharedPreferences.
@@ -751,6 +770,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await _prefs.remove(SettingsKeys.showPlatformOverlay);
     await _prefs.remove(SettingsKeys.discordRpcEnabled);
     await _prefs.remove(SettingsKeys.discordRaSyncEnabled);
+    await _prefs.remove(SettingsKeys.richCollectionsEnabled);
     await _prefs.remove(SettingsKeys.raUsername);
     await _prefs.remove(SettingsKeys.raApiKey);
 
