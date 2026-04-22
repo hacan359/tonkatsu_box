@@ -2,58 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/models/canvas_connection.dart';
+import '../../../../shared/widgets/color_picker_dialog.dart';
 
 // Диалог редактирования свойств связи на канвасе.
-
-/// Доступные цвета для связей.
-const List<_ColorOption> _colorOptions = <_ColorOption>[
-  _ColorOption(labelKey: 'gray', hex: '#666666', color: Color(0xFF666666)),
-  _ColorOption(labelKey: 'red', hex: '#E53935', color: Color(0xFFE53935)),
-  _ColorOption(labelKey: 'orange', hex: '#FB8C00', color: Color(0xFFFB8C00)),
-  _ColorOption(labelKey: 'yellow', hex: '#FDD835', color: Color(0xFFFDD835)),
-  _ColorOption(labelKey: 'green', hex: '#43A047', color: Color(0xFF43A047)),
-  _ColorOption(labelKey: 'blue', hex: '#1E88E5', color: Color(0xFF1E88E5)),
-  _ColorOption(labelKey: 'purple', hex: '#8E24AA', color: Color(0xFF8E24AA)),
-  _ColorOption(labelKey: 'black', hex: '#212121', color: Color(0xFF212121)),
-  _ColorOption(labelKey: 'white', hex: '#FFFFFF', color: Color(0xFFFFFFFF)),
-];
-
-class _ColorOption {
-  const _ColorOption({
-    required this.labelKey,
-    required this.hex,
-    required this.color,
-  });
-  final String labelKey;
-  final String hex;
-  final Color color;
-
-  /// Возвращает локализованную метку цвета.
-  String localizedLabel(S l) {
-    switch (labelKey) {
-      case 'gray':
-        return l.connectionColorGray;
-      case 'red':
-        return l.connectionColorRed;
-      case 'orange':
-        return l.connectionColorOrange;
-      case 'yellow':
-        return l.connectionColorYellow;
-      case 'green':
-        return l.connectionColorGreen;
-      case 'blue':
-        return l.connectionColorBlue;
-      case 'purple':
-        return l.connectionColorPurple;
-      case 'black':
-        return l.connectionColorBlack;
-      case 'white':
-        return l.connectionColorWhite;
-      default:
-        return labelKey;
-    }
-  }
-}
 
 /// Диалог для редактирования label, цвета и стиля связи.
 ///
@@ -113,11 +64,16 @@ class _EditConnectionDialogState extends State<EditConnectionDialog> {
     );
     _selectedColor = widget.initialColor ?? '#666666';
     _selectedStyle = widget.initialStyle ?? ConnectionStyle.solid;
+  }
 
-    // Если цвет не совпадает ни с одним вариантом, берём по умолчанию
-    if (!_colorOptions.any((_ColorOption o) => o.hex == _selectedColor)) {
-      _selectedColor = '#666666';
-    }
+  Color get _selectedColorValue {
+    final String cleaned = _selectedColor.replaceFirst('#', '');
+    return Color(int.parse('FF$cleaned', radix: 16));
+  }
+
+  String _colorToHex(Color color) {
+    final int rgb = color.toARGB32() & 0xFFFFFF;
+    return '#${rgb.toRadixString(16).toUpperCase().padLeft(6, '0')}';
   }
 
   @override
@@ -161,23 +117,41 @@ class _EditConnectionDialogState extends State<EditConnectionDialog> {
             ),
             const SizedBox(height: 16),
             Text(
-              l.connectionColorLabel,
+              l.colorPickerTitle,
               style: Theme.of(context).textTheme.titleSmall,
             ),
             const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: _colorOptions
-                  .map((_ColorOption option) => _ColorButton(
-                        color: option.color,
-                        isSelected: option.hex == _selectedColor,
-                        tooltip: option.localizedLabel(l),
-                        onTap: () {
-                          setState(() => _selectedColor = option.hex);
-                        },
-                      ))
-                  .toList(),
+            InkWell(
+              onTap: () async {
+                final Color? picked = await ColorPickerDialog.show(
+                  context: context,
+                  currentColor: _selectedColorValue,
+                );
+                if (picked == null) return;
+                setState(() => _selectedColor = _colorToHex(picked));
+              },
+              borderRadius: BorderRadius.circular(16),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: _selectedColorValue,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white.withAlpha(40)),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    _selectedColor,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontFamily: 'monospace',
+                        ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 16),
             Text(
@@ -223,60 +197,5 @@ class _EditConnectionDialogState extends State<EditConnectionDialog> {
         ),
       ],
     );
-  }
-}
-
-/// Кнопка выбора цвета.
-class _ColorButton extends StatelessWidget {
-  const _ColorButton({
-    required this.color,
-    required this.isSelected,
-    required this.tooltip,
-    required this.onTap,
-  });
-
-  final Color color;
-  final bool isSelected;
-  final String tooltip;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-      message: tooltip,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: isSelected
-                  ? Theme.of(context).colorScheme.primary
-                  : color.computeLuminance() > 0.7
-                      ? Colors.grey.shade400
-                      : Colors.transparent,
-              width: isSelected ? 3 : 1,
-            ),
-          ),
-          child: isSelected
-              ? Icon(
-                  Icons.check,
-                  size: 16,
-                  color: _contrastColor(color),
-                )
-              : null,
-        ),
-      ),
-    );
-  }
-
-  /// Возвращает контрастный цвет (белый или чёрный) для читаемости.
-  static Color _contrastColor(Color color) {
-    final double luminance = color.computeLuminance();
-    return luminance > 0.5 ? Colors.black : Colors.white;
   }
 }

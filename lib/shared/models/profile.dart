@@ -45,6 +45,12 @@ class Profile {
     return Color(int.parse('FF$cleaned', radix: 16));
   }
 
+  /// Конвертирует [Color] в hex строку в формате '#RRGGBB'.
+  static String colorToHex(Color color) {
+    final int rgb = color.toARGB32() & 0xFFFFFF;
+    return '#${rgb.toRadixString(16).toUpperCase().padLeft(6, '0')}';
+  }
+
   /// Имя папки профиля.
   String get folderName => id;
 

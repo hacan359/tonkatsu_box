@@ -777,29 +777,17 @@ class CollectionItemsNotifier
     if (items != null) {
       final DateTime now = DateTime.now();
       state = AsyncData<List<CollectionItem>>(
-        items.map((CollectionItem i) {
-          if (i.id != id) return i;
-          final StatusDatesUpdate update = computeDatesForStatus(
-            newStatus: status,
-            currentStartedAt: i.startedAt,
-            currentCompletedAt: i.completedAt,
-            now: now,
-          );
-          return i.copyWith(
-            status: update.status,
-            startedAt: update.startedAt,
-            completedAt: update.completedAt,
-            lastActivityAt: update.lastActivityAt,
-            clearStartedAt: update.clearStartedAt,
-            clearCompletedAt: update.clearCompletedAt,
-          );
-        }).toList(),
+        items
+            .map((CollectionItem i) =>
+                i.id == id ? i.withStatus(status, now: now) : i)
+            .toList(),
       );
     }
 
     ref.invalidate(collectionStatsProvider(_collectionId));
-    ref.invalidate(collectionCoversProvider(_collectionId));
-    ref.invalidate(allItemsNotifierProvider);
+    ref
+        .read(allItemsNotifierProvider.notifier)
+        .updateStatusLocally(id, status);
   }
 
   /// Обновляет даты активности элемента вручную.

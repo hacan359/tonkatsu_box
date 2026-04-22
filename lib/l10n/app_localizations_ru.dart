@@ -1510,40 +1510,10 @@ class SRu extends S {
   String get linkLabelHint => 'Моя ссылка';
 
   @override
-  String get connectionColorGray => 'Серый';
-
-  @override
-  String get connectionColorRed => 'Красный';
-
-  @override
-  String get connectionColorOrange => 'Оранжевый';
-
-  @override
-  String get connectionColorYellow => 'Жёлтый';
-
-  @override
-  String get connectionColorGreen => 'Зелёный';
-
-  @override
-  String get connectionColorBlue => 'Синий';
-
-  @override
-  String get connectionColorPurple => 'Фиолетовый';
-
-  @override
-  String get connectionColorBlack => 'Чёрный';
-
-  @override
-  String get connectionColorWhite => 'Белый';
-
-  @override
   String get editConnectionTitle => 'Редактировать соединение';
 
   @override
   String get connectionLabelHint => 'напр. зависит от, связано с...';
-
-  @override
-  String get connectionColorLabel => 'Цвет';
 
   @override
   String get connectionStyleLabel => 'Стиль';
@@ -2882,6 +2852,9 @@ class SRu extends S {
       'Требуется подключение к IGDB. Настройте API ключи в Настройки → Подключения.';
 
   @override
+  String get steamImportRememberCredentials => 'Запомнить данные';
+
+  @override
   String get collectionListSortCreatedDate => 'Дата создания';
 
   @override
@@ -3333,9 +3306,6 @@ class SRu extends S {
 
   @override
   String get profileName => 'Имя';
-
-  @override
-  String get profileColor => 'Цвет';
 
   @override
   String get whoIsPlayingToday => 'Кто сегодня играет?';

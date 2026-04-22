@@ -1498,40 +1498,10 @@ class SEn extends S {
   String get linkLabelHint => 'My Link';
 
   @override
-  String get connectionColorGray => 'Gray';
-
-  @override
-  String get connectionColorRed => 'Red';
-
-  @override
-  String get connectionColorOrange => 'Orange';
-
-  @override
-  String get connectionColorYellow => 'Yellow';
-
-  @override
-  String get connectionColorGreen => 'Green';
-
-  @override
-  String get connectionColorBlue => 'Blue';
-
-  @override
-  String get connectionColorPurple => 'Purple';
-
-  @override
-  String get connectionColorBlack => 'Black';
-
-  @override
-  String get connectionColorWhite => 'White';
-
-  @override
   String get editConnectionTitle => 'Edit Connection';
 
   @override
   String get connectionLabelHint => 'e.g. depends on, related to...';
-
-  @override
-  String get connectionColorLabel => 'Color';
 
   @override
   String get connectionStyleLabel => 'Style';
@@ -2862,6 +2832,9 @@ class SEn extends S {
       'IGDB connection required. Set up API keys in Settings → Credentials first.';
 
   @override
+  String get steamImportRememberCredentials => 'Remember credentials';
+
+  @override
   String get collectionListSortCreatedDate => 'Date Created';
 
   @override
@@ -3307,9 +3280,6 @@ class SEn extends S {
 
   @override
   String get profileName => 'Name';
-
-  @override
-  String get profileColor => 'Color';
 
   @override
   String get whoIsPlayingToday => 'Who\'s playing today?';

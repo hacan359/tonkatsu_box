@@ -22,6 +22,7 @@ import '../../settings/providers/settings_provider.dart';
 import '../providers/collections_provider.dart';
 import 'collection_item_tile.dart';
 import 'collection_table_view.dart';
+import 'status_chip_row.dart';
 
 /// View для отображения элементов коллекции в grid/list/reorder режиме.
 ///
@@ -116,7 +117,7 @@ class CollectionItemsView extends ConsumerWidget {
           onItemTap: onItemTap,
           onItemSecondaryTap: canEdit
               ? (CollectionItem item, Offset pos) =>
-                  _showItemContextMenu(context, pos, item)
+                  _showItemContextMenu(context, ref, pos, item)
               : null,
           onRatingChanged: canEdit
               ? (int itemId, int? rating) {
@@ -258,7 +259,7 @@ class CollectionItemsView extends ConsumerWidget {
                   const EdgeInsets.symmetric(vertical: AppSpacing.sm),
               itemCount: listItems.length,
               itemBuilder: (BuildContext context, int index) {
-                return _buildListTile(context, listItems[index]);
+                return _buildListTile(context, ref, listItems[index]);
               },
             )
           : CustomScrollView(
@@ -270,7 +271,7 @@ class CollectionItemsView extends ConsumerWidget {
                   sliver: SliverList.builder(
                     itemCount: listItems.length,
                     itemBuilder: (BuildContext context, int index) {
-                      return _buildListTile(context, listItems[index]);
+                      return _buildListTile(context, ref, listItems[index]);
                     },
                   ),
                 ),
@@ -280,7 +281,11 @@ class CollectionItemsView extends ConsumerWidget {
     return refresh;
   }
 
-  Widget _buildListTile(BuildContext context, CollectionItem item) {
+  Widget _buildListTile(
+    BuildContext context,
+    WidgetRef ref,
+    CollectionItem item,
+  ) {
     return CollectionItemTile(
       key: ValueKey<int>(item.id),
       item: item,
@@ -289,11 +294,12 @@ class CollectionItemsView extends ConsumerWidget {
       onClone: canEdit ? () => onItemClone?.call(item) : null,
       onRemove: canEdit ? () => onItemRemove?.call(item) : null,
       onSecondaryTap: canEdit
-          ? (Offset pos) => _showItemContextMenu(context, pos, item)
+          ? (Offset pos) => _showItemContextMenu(context, ref, pos, item)
           : null,
       onLongPress: canEdit
           ? () => _showItemContextMenu(
                 context,
+                ref,
                 _centerOfContext(context),
                 item,
               )
@@ -366,6 +372,7 @@ class CollectionItemsView extends ConsumerWidget {
               itemBuilder: (BuildContext context, int index) {
                 return _buildGridCard(
                   context,
+                  ref,
                   sorted[index],
                   isLandscape,
                   tagById,
@@ -385,6 +392,7 @@ class CollectionItemsView extends ConsumerWidget {
                     itemBuilder: (BuildContext context, int index) {
                       return _buildGridCard(
                         context,
+                        ref,
                         sorted[index],
                         isLandscape,
                         tagById,
@@ -421,7 +429,7 @@ class CollectionItemsView extends ConsumerWidget {
               itemCount: items.length,
               itemBuilder: (BuildContext context, int index) {
                 return _buildGridCard(
-                    context, items[index], isLandscape, tagById, settings);
+                    context, ref, items[index], isLandscape, tagById, settings);
               },
             )
           : CustomScrollView(
@@ -433,7 +441,7 @@ class CollectionItemsView extends ConsumerWidget {
                     gridDelegate: gridDelegate,
                     itemCount: items.length,
                     itemBuilder: (BuildContext context, int index) {
-                      return _buildGridCard(context, items[index],
+                      return _buildGridCard(context, ref, items[index],
                           isLandscape, tagById, settings);
                     },
                   ),
@@ -445,6 +453,7 @@ class CollectionItemsView extends ConsumerWidget {
 
   Widget _buildGridCard(
     BuildContext context,
+    WidgetRef ref,
     CollectionItem item,
     bool isLandscape,
     Map<int, CollectionTag> tagById,
@@ -479,11 +488,12 @@ class CollectionItemsView extends ConsumerWidget {
           : null,
       onTap: () => onItemTap(item),
       onSecondaryTap: canEdit
-          ? (Offset pos) => _showItemContextMenu(context, pos, item)
+          ? (Offset pos) => _showItemContextMenu(context, ref, pos, item)
           : null,
       onLongPress: canEdit
           ? () => _showItemContextMenu(
                 context,
+                ref,
                 _centerOfContext(context),
                 item,
               )
@@ -537,6 +547,7 @@ class CollectionItemsView extends ConsumerWidget {
           onSecondaryTap: canEdit
               ? (Offset pos) => _showItemContextMenu(
                     context,
+                    ref,
                     pos,
                     item,
                   )
@@ -544,6 +555,7 @@ class CollectionItemsView extends ConsumerWidget {
           onLongPress: canEdit
               ? () => _showItemContextMenu(
                     context,
+                    ref,
                     _centerOfContext(context),
                     item,
                   )
@@ -651,6 +663,7 @@ class CollectionItemsView extends ConsumerWidget {
 
   void _showItemContextMenu(
     BuildContext context,
+    WidgetRef ref,
     Offset position,
     CollectionItem item,
   ) {
@@ -701,9 +714,20 @@ class CollectionItemsView extends ConsumerWidget {
               contentPadding: EdgeInsets.zero,
             ),
           ),
+        if (canEdit)
+          ...statusChipPopupMenuEntries(context: context, item: item),
       ],
     ).then((String? value) {
       if (value == null) return;
+      final ItemStatus? newStatus = tryDecodeStatusMenuValue(value);
+      if (newStatus != null) {
+        if (newStatus != item.status) {
+          ref
+              .read(collectionItemsNotifierProvider(collectionId).notifier)
+              .updateStatus(item.id, newStatus, item.mediaType);
+        }
+        return;
+      }
       switch (value) {
         case 'move':
           onItemMove?.call(item);

@@ -3,8 +3,44 @@
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
+
+const String _kStatusMenuPrefix = 'status:';
+
+/// Декодирует значение из `showMenu`, если это выбор статуса через
+/// [statusChipPopupMenuEntries]. Возвращает `null` для обычных пунктов меню.
+ItemStatus? tryDecodeStatusMenuValue(String value) {
+  if (!value.startsWith(_kStatusMenuPrefix)) return null;
+  return ItemStatus.fromString(value.substring(_kStatusMenuPrefix.length));
+}
+
+/// Строит набор `PopupMenuEntry` с разделителем и полосой статусов.
+///
+/// Тап по сегменту закрывает меню через `Navigator.pop` с закодированным
+/// значением — вызывающий код декодирует его через [tryDecodeStatusMenuValue].
+List<PopupMenuEntry<String>> statusChipPopupMenuEntries({
+  required BuildContext context,
+  required CollectionItem item,
+  double height = 40,
+}) {
+  return <PopupMenuEntry<String>>[
+    const PopupMenuDivider(),
+    PopupMenuItem<String>(
+      enabled: false,
+      padding: EdgeInsets.zero,
+      height: height,
+      child: StatusChipRow(
+        status: item.status,
+        mediaType: item.displayMediaType,
+        height: height,
+        onChanged: (ItemStatus newStatus) => Navigator.of(context)
+            .pop('$_kStatusMenuPrefix${newStatus.value}'),
+      ),
+    ),
+  ];
+}
 
 /// Полоса кнопок-сегментов для выбора статуса (стиль «пианино»).
 ///
@@ -17,6 +53,7 @@ class StatusChipRow extends StatelessWidget {
     required this.status,
     required this.mediaType,
     required this.onChanged,
+    this.height = 36,
     super.key,
   });
 
@@ -29,6 +66,9 @@ class StatusChipRow extends StatelessWidget {
   /// Callback при изменении статуса.
   final void Function(ItemStatus) onChanged;
 
+  /// Высота сегментов.
+  final double height;
+
   @override
   Widget build(BuildContext context) {
     const List<ItemStatus> statuses = ItemStatus.values;
@@ -40,6 +80,7 @@ class StatusChipRow extends StatelessWidget {
               status: s,
               mediaType: mediaType,
               isSelected: s == status,
+              height: height,
               onTap: () => onChanged(s),
             ),
           ),
@@ -53,12 +94,14 @@ class _StatusSegment extends StatelessWidget {
     required this.status,
     required this.mediaType,
     required this.isSelected,
+    required this.height,
     required this.onTap,
   });
 
   final ItemStatus status;
   final MediaType mediaType;
   final bool isSelected;
+  final double height;
   final VoidCallback onTap;
 
   @override
@@ -72,7 +115,7 @@ class _StatusSegment extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeInOut,
-          height: 36,
+          height: height,
           color: isSelected ? statusColor : statusColor.withAlpha(30),
           alignment: Alignment.center,
           child: Icon(

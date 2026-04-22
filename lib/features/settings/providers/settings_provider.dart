@@ -68,6 +68,15 @@ abstract class SettingsKeys {
   /// API ключ RetroAchievements.
   static const String raApiKey = 'ra_api_key';
 
+  /// Steam API Key (сохраняется только по галке в Steam Import).
+  static const String steamApiKey = 'steam_api_key';
+
+  /// Steam ID (сохраняется только по галке в Steam Import).
+  static const String steamId = 'steam_id';
+
+  /// Флаг «запомнить данные» в Steam Import.
+  static const String steamRememberCredentials = 'steam_remember_credentials';
+
   /// Включить персонализированный вид коллекций (hero + description).
   static const String richCollectionsEnabled = 'rich_collections_enabled';
 }

@@ -13,6 +13,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/navigation/search_providers.dart';
+import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../core/services/update_service.dart';
@@ -245,21 +246,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             onTap: () => _pushScreen(const BrowseCollectionsScreen()),
           ),
           SettingsTile(
-            leadingIcon: Icons.movie_filter_outlined,
+            leadingAssetPath: AppAssets.iconTrakt,
+            leadingAssetColored: true,
             leadingColor: _kImportColor,
             title: l.settingsTraktImport,
             subtitle: l.settingsTraktImportSubtitle,
             onTap: () => _pushScreen(const TraktImportScreen()),
           ),
           SettingsTile(
-            leadingIcon: Icons.sports_esports_outlined,
+            leadingAssetPath: AppAssets.iconSteam,
+            leadingAssetColored: true,
             leadingColor: _kImportColor,
             title: l.settingsSteamImport,
             subtitle: l.settingsSteamImportSubtitle,
             onTap: () => _pushScreen(const SteamImportScreen()),
           ),
           SettingsTile(
-            leadingIcon: Icons.emoji_events_outlined,
+            leadingAssetPath: AppAssets.iconRa,
+            leadingAssetColored: true,
             leadingColor: _kImportColor,
             title: l.settingsRaImport,
             subtitle: l.settingsRaImportSubtitle,
@@ -402,7 +406,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         titleIcon: Icons.link,
         children: <Widget>[
           SettingsTile(
-            leadingIcon: Icons.cast,
+            leadingAssetPath: AppAssets.iconKodi,
+            leadingAssetColored: true,
             leadingColor: _kIntegrationColor,
             title: 'Kodi', // proper noun
             subtitle: l.settingsKodiSubtitle,

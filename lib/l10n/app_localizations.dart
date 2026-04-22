@@ -2797,60 +2797,6 @@ abstract class S {
   /// **'My Link'**
   String get linkLabelHint;
 
-  /// No description provided for @connectionColorGray.
-  ///
-  /// In en, this message translates to:
-  /// **'Gray'**
-  String get connectionColorGray;
-
-  /// No description provided for @connectionColorRed.
-  ///
-  /// In en, this message translates to:
-  /// **'Red'**
-  String get connectionColorRed;
-
-  /// No description provided for @connectionColorOrange.
-  ///
-  /// In en, this message translates to:
-  /// **'Orange'**
-  String get connectionColorOrange;
-
-  /// No description provided for @connectionColorYellow.
-  ///
-  /// In en, this message translates to:
-  /// **'Yellow'**
-  String get connectionColorYellow;
-
-  /// No description provided for @connectionColorGreen.
-  ///
-  /// In en, this message translates to:
-  /// **'Green'**
-  String get connectionColorGreen;
-
-  /// No description provided for @connectionColorBlue.
-  ///
-  /// In en, this message translates to:
-  /// **'Blue'**
-  String get connectionColorBlue;
-
-  /// No description provided for @connectionColorPurple.
-  ///
-  /// In en, this message translates to:
-  /// **'Purple'**
-  String get connectionColorPurple;
-
-  /// No description provided for @connectionColorBlack.
-  ///
-  /// In en, this message translates to:
-  /// **'Black'**
-  String get connectionColorBlack;
-
-  /// No description provided for @connectionColorWhite.
-  ///
-  /// In en, this message translates to:
-  /// **'White'**
-  String get connectionColorWhite;
-
   /// No description provided for @editConnectionTitle.
   ///
   /// In en, this message translates to:
@@ -2862,12 +2808,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'e.g. depends on, related to...'**
   String get connectionLabelHint;
-
-  /// No description provided for @connectionColorLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Color'**
-  String get connectionColorLabel;
 
   /// No description provided for @connectionStyleLabel.
   ///
@@ -5257,6 +5197,12 @@ abstract class S {
   /// **'IGDB connection required. Set up API keys in Settings → Credentials first.'**
   String get steamImportIgdbRequired;
 
+  /// No description provided for @steamImportRememberCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Remember credentials'**
+  String get steamImportRememberCredentials;
+
   /// No description provided for @collectionListSortCreatedDate.
   ///
   /// In en, this message translates to:
@@ -6054,12 +6000,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Name'**
   String get profileName;
-
-  /// No description provided for @profileColor.
-  ///
-  /// In en, this message translates to:
-  /// **'Color'**
-  String get profileColor;
 
   /// No description provided for @whoIsPlayingToday.
   ///

@@ -8,6 +8,7 @@ import 'data_source.dart';
 import 'exportable.dart';
 import 'game.dart';
 import 'item_status.dart';
+import 'item_status_logic.dart';
 import 'media_type.dart';
 import 'movie.dart';
 import 'platform.dart';
@@ -694,6 +695,27 @@ class CollectionItem with Exportable {
       manga: manga ?? this.manga,
       customMedia: customMedia ?? this.customMedia,
       platform: platform ?? this.platform,
+    );
+  }
+
+  /// Возвращает копию с новым статусом и пересчитанными датами активности.
+  ///
+  /// Даты вычисляются через [computeDatesForStatus] — единая логика для всех
+  /// мест смены статуса (UI, импорты, внешний sync).
+  CollectionItem withStatus(ItemStatus newStatus, {DateTime? now}) {
+    final StatusDatesUpdate update = computeDatesForStatus(
+      newStatus: newStatus,
+      currentStartedAt: startedAt,
+      currentCompletedAt: completedAt,
+      now: now ?? DateTime.now(),
+    );
+    return copyWith(
+      status: update.status,
+      startedAt: update.startedAt,
+      completedAt: update.completedAt,
+      lastActivityAt: update.lastActivityAt,
+      clearStartedAt: update.clearStartedAt,
+      clearCompletedAt: update.clearCompletedAt,
     );
   }
 

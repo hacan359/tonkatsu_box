@@ -761,8 +761,8 @@ void main() {
           await gesture.up();
           await tester.pumpAndSettle();
 
-          // Контекстное меню должно появиться с тремя опциями.
-          expect(find.byType(PopupMenuItem<String>), findsNWidgets(3));
+          // Контекстное меню содержит move/clone/remove + статус-чип.
+          expect(find.byType(PopupMenuItem<String>), findsNWidgets(4));
 
           // Не вызвано пока не выбрали.
           expect(moveCalled, isFalse);
