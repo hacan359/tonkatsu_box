@@ -2852,6 +2852,9 @@ class SRu extends S {
       'Требуется подключение к IGDB. Настройте API ключи в Настройки → Подключения.';
 
   @override
+  String get steamImportRememberCredentials => 'Запомнить данные';
+
+  @override
   String get collectionListSortCreatedDate => 'Дата создания';
 
   @override

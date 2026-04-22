@@ -2832,6 +2832,9 @@ class SEn extends S {
       'IGDB connection required. Set up API keys in Settings → Credentials first.';
 
   @override
+  String get steamImportRememberCredentials => 'Remember credentials';
+
+  @override
   String get collectionListSortCreatedDate => 'Date Created';
 
   @override

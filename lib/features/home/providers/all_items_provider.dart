@@ -10,6 +10,7 @@ import '../../../shared/models/collection_tag.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/collection_sort_mode.dart';
+import '../../../shared/models/item_status.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/platform.dart';
 import '../../collections/providers/collections_provider.dart';
@@ -140,6 +141,22 @@ class AllItemsNotifier extends Notifier<AsyncValue<List<CollectionItem>>> {
     final CollectionSortMode sortMode = ref.read(allItemsSortProvider);
     final bool isDescending = ref.read(allItemsSortDescProvider);
     await _loadItems(sortMode, isDescending: isDescending);
+  }
+
+  /// Локально патчит статус элемента без перезапроса БД.
+  ///
+  /// Вызывается из `CollectionItemsNotifier.updateStatus`, чтобы не
+  /// инвалидировать весь провайдер (иначе список мерцает через AsyncLoading).
+  void updateStatusLocally(int id, ItemStatus status) {
+    final List<CollectionItem>? items = state.valueOrNull;
+    if (items == null) return;
+    final DateTime now = DateTime.now();
+    state = AsyncData<List<CollectionItem>>(
+      items
+          .map((CollectionItem i) =>
+              i.id == id ? i.withStatus(status, now: now) : i)
+          .toList(),
+    );
   }
 }
 

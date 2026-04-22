@@ -245,7 +245,7 @@ lib/
 | `lib/features/collections/widgets/collection_canvas_layout.dart` | **Canvas layout**. Board/Canvas режим коллекции, извлечён из collection_screen |
 | `lib/features/collections/helpers/collection_actions.dart` | **Действия с коллекцией**. Добавление, удаление, перемещение, экспорт элементов |
 | `lib/features/collections/widgets/create_collection_dialog.dart` | **Диалоги**. Создание, переименование, удаление коллекции |
-| `lib/features/collections/widgets/status_chip_row.dart` | **Полоса статус-сегментов (piano-style)**. `Row` из `Expanded` сегментов в один ряд на всю ширину. Каждый сегмент — `AnimatedContainer` с flat color fill, Material icon (из `status.materialIcon`), `Tooltip` с локализованной меткой. Выбранный: полный цвет + белая иконка, невыбранные: приглушённый фон + приглушённая иконка |
+| `lib/features/collections/widgets/status_chip_row.dart` | **Полоса статус-сегментов (piano-style)**. `Row` из `Expanded` сегментов в один ряд на всю ширину. Каждый сегмент — `AnimatedContainer` с flat color fill, Material icon (из `status.materialIcon`), `Tooltip` с локализованной меткой. Выбранный: полный цвет + белая иконка, невыбранные: приглушённый фон + приглушённая иконка. Параметр `height` позволяет встраивать в `PopupMenuItem` (совпадает с `PopupMenuItem.height`). Helpers `statusChipPopupMenuEntries()` + `tryDecodeStatusMenuValue()` инкапсулируют `PopupMenuDivider` + `status:<value>` encoding для контекстных меню |
 | `lib/features/collections/widgets/status_ribbon.dart` | **Диагональная ленточка статуса**. Display-only `Positioned` + `Transform.rotate(-45deg)` в верхнем левом углу list-карточек. Material icon (12px, белый), цвет фона = `status.color`. Не показывается для `notStarted` |
 | `lib/features/collections/widgets/canvas_view.dart` | **Canvas View**. InteractiveViewer с зумом 0.3-3.0x, панорамированием, drag-and-drop (абсолютное отслеживание позиции). Фоновая сетка (CustomPainter), автоцентрирование. Медиа-карточки рендерятся через `MediaPosterCard(variant: CardVariant.canvas)` |
 | `lib/features/collections/widgets/canvas_context_menu.dart` | **Контекстное меню канваса**. ПКМ на пустом месте: Add Text/Image/Link. ПКМ на элементе: Edit/Delete/Bring to Front/Send to Back/Connect. ПКМ на связи: Edit/Delete. Delete с диалогом подтверждения |
@@ -1189,7 +1189,7 @@ context.showSnack("Image added to board", type: SnackType.success)
 ### 6. Изменение статуса
 
 ```
-Тап на StatusChipRow (detail-экран)
+Тап на StatusChipRow (detail-экран или в ПКМ-меню элемента коллекции / All Items)
        |
 collectionItemsNotifierProvider.updateStatus()  [все типы медиа]
        |

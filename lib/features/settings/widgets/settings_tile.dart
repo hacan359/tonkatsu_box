@@ -1,6 +1,7 @@
 // Тонкая строка настроек — заголовок + значение + chevron.
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/theme/app_colors.dart';
@@ -23,10 +24,15 @@ class SettingsTile extends StatelessWidget {
     this.trailing,
     this.showChevron = true,
     this.leadingIcon,
+    this.leadingAssetPath,
+    this.leadingAssetColored = false,
     this.leadingColor,
     this.statusDotColor,
     super.key,
-  });
+  }) : assert(
+          leadingIcon == null || leadingAssetPath == null,
+          'leadingIcon и leadingAssetPath взаимоисключающие',
+        );
 
   /// Основной текст строки.
   final String title;
@@ -55,6 +61,14 @@ class SettingsTile extends StatelessWidget {
   /// Иконка в цветной капсуле слева (iOS-style). Если null — капсула скрыта.
   final IconData? leadingIcon;
 
+  /// SVG-ассет в цветной капсуле (альтернатива [leadingIcon]).
+  /// По умолчанию рендерится белым поверх [leadingColor].
+  final String? leadingAssetPath;
+
+  /// Если `true` — SVG рендерится в родных цветах на нейтральной подложке
+  /// (капсула не заливается [leadingColor]). Для брендовых логотипов.
+  final bool leadingAssetColored;
+
   /// Цвет фона капсулы с иконкой.
   final Color? leadingColor;
 
@@ -79,9 +93,11 @@ class SettingsTile extends StatelessWidget {
         ),
         child: Row(
           children: <Widget>[
-            if (leadingIcon != null) ...<Widget>[
+            if (leadingIcon != null || leadingAssetPath != null) ...<Widget>[
               _LeadingBubble(
-                icon: leadingIcon!,
+                icon: leadingIcon,
+                assetPath: leadingAssetPath,
+                assetColored: leadingAssetColored,
                 color: leadingColor ?? AppColors.textTertiary,
                 size: bubbleSize,
                 iconSize: bubbleIconSize,
@@ -167,26 +183,43 @@ class SettingsTile extends StatelessWidget {
 class _LeadingBubble extends StatelessWidget {
   const _LeadingBubble({
     required this.icon,
+    required this.assetPath,
+    required this.assetColored,
     required this.color,
     required this.size,
     required this.iconSize,
   });
 
-  final IconData icon;
+  final IconData? icon;
+  final String? assetPath;
+  final bool assetColored;
   final Color color;
   final double size;
   final double iconSize;
 
   @override
   Widget build(BuildContext context) {
+    final bool useColored = assetPath != null && assetColored;
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: color,
+        color: useColored ? AppColors.surfaceLight : color,
         borderRadius: BorderRadius.circular(size * 0.25),
       ),
-      child: Icon(icon, size: iconSize, color: Colors.white),
+      alignment: Alignment.center,
+      child: assetPath != null
+          ? SvgPicture.asset(
+              assetPath!,
+              // Brand-SVG-иконки из simpleicons имеют внутренние поля —
+              // рендерим чуть крупнее, чтобы визуально совпадали с Material.
+              width: iconSize * 1.25,
+              height: iconSize * 1.25,
+              colorFilter: assetColored
+                  ? null
+                  : const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+            )
+          : Icon(icon, size: iconSize, color: Colors.white),
     );
   }
 }

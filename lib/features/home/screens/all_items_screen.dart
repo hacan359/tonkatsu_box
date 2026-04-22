@@ -23,6 +23,7 @@ import '../../../shared/widgets/media_poster_card.dart';
 import '../../collections/helpers/collection_actions.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../collections/screens/item_detail_screen.dart';
+import '../../collections/widgets/status_chip_row.dart';
 import '../providers/all_items_provider.dart';
 
 /// Экран всех элементов из всех коллекций.
@@ -618,10 +619,20 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
             contentPadding: EdgeInsets.zero,
           ),
         ),
+        ...statusChipPopupMenuEntries(context: context, item: item),
       ],
     );
 
     if (value == null || !mounted) return;
+    final ItemStatus? newStatus = tryDecodeStatusMenuValue(value);
+    if (newStatus != null) {
+      if (newStatus != item.status) {
+        await ref
+            .read(collectionItemsNotifierProvider(item.collectionId).notifier)
+            .updateStatus(item.id, newStatus, item.mediaType);
+      }
+      return;
+    }
     switch (value) {
       case 'move':
         await CollectionActions.moveItem(

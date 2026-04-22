@@ -1284,6 +1284,7 @@
   "steamImportErrorLoadingCollections": "Error loading collections",
   "steamImportOpenCollection": "Open collection",
   "steamImportIgdbRequired": "IGDB connection required. Set up API keys in Settings → Credentials first.",
+  "steamImportRememberCredentials": "Remember credentials",
 
   "collectionListSortCreatedDate": "Date Created",
   "collectionListSortAlphabetical": "Name",

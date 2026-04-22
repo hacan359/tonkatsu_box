@@ -43,7 +43,6 @@ import '../widgets/tag_sidebar.dart';
 import '../widgets/tag_management_dialog.dart';
 import '../../../shared/models/tier_list.dart';
 import '../../tier_lists/screens/tier_list_detail_screen.dart';
-import '../../tier_lists/screens/tier_lists_screen.dart';
 import '../../tier_lists/providers/tier_lists_provider.dart';
 import 'item_detail_screen.dart';
 
@@ -275,12 +274,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
               ? l.collectionListViewGrid
               : l.collectionListViewTable,
           onTap: _handleCycleViewMode,
-        ),
-      if (!_isCanvasMode && !_isUncategorized)
-        DraggableFabItem(
-          icon: Icons.leaderboard,
-          label: l.tierListTitle,
-          onTap: _navigateToTierLists,
         ),
       if (_canEdit && _isCanvasMode && kCanvasEnabled && !_isUncategorized)
         DraggableFabItem(
@@ -726,13 +719,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         });
       }
     }
-  }
-
-  void _navigateToTierLists() {
-    Navigator.of(context).push(MaterialPageRoute<void>(
-      builder: (BuildContext context) =>
-          TierListsScreen(collectionId: widget.collectionId),
-    ));
   }
 
   Future<void> _handleCreateTierList() async {

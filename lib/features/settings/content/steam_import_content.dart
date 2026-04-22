@@ -1,7 +1,10 @@
 // Контент экрана импорта библиотеки Steam (без Scaffold/AppBar).
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/database/database_service.dart';
@@ -41,9 +44,25 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
   SteamImportProgress? _progress;
   SteamImportResult? _result;
 
+  bool _rememberCredentials = false;
+
   // Выбор коллекции
   bool _useNewCollection = true;
   int? _selectedCollectionId;
+
+  @override
+  void initState() {
+    super.initState();
+    final SharedPreferences prefs = ref.read(sharedPreferencesProvider);
+    final bool remember =
+        prefs.getBool(SettingsKeys.steamRememberCredentials) ?? false;
+    if (!remember) return;
+    final String? apiKey = prefs.getString(SettingsKeys.steamApiKey);
+    final String? steamId = prefs.getString(SettingsKeys.steamId);
+    if (apiKey != null) _apiKeyController.text = apiKey;
+    if (steamId != null) _steamIdController.text = steamId;
+    _rememberCredentials = true;
+  }
 
   @override
   void dispose() {
@@ -199,6 +218,24 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
                 ),
               ),
             ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+          child: CheckboxListTile(
+            value: _rememberCredentials,
+            onChanged: _isImporting
+                ? null
+                : (bool? value) {
+                    setState(() => _rememberCredentials = value ?? false);
+                  },
+            title: Text(
+              l.steamImportRememberCredentials,
+              style: AppTypography.bodySmall,
+            ),
+            controlAffinity: ListTileControlAffinity.leading,
+            dense: true,
+            contentPadding: EdgeInsets.zero,
           ),
         ),
         const SizedBox(height: AppSpacing.sm),
@@ -444,6 +481,17 @@ class _SteamImportContentState extends ConsumerState<SteamImportContent> {
       _progress = null;
       _result = null;
     });
+
+    final SharedPreferences prefs = ref.read(sharedPreferencesProvider);
+    if (_rememberCredentials) {
+      unawaited(prefs.setString(SettingsKeys.steamApiKey, apiKey));
+      unawaited(prefs.setString(SettingsKeys.steamId, steamId));
+      unawaited(prefs.setBool(SettingsKeys.steamRememberCredentials, true));
+    } else {
+      unawaited(prefs.remove(SettingsKeys.steamApiKey));
+      unawaited(prefs.remove(SettingsKeys.steamId));
+      unawaited(prefs.setBool(SettingsKeys.steamRememberCredentials, false));
+    }
 
     try {
       final SteamImportService service =

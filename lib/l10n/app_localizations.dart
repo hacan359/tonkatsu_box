@@ -5197,6 +5197,12 @@ abstract class S {
   /// **'IGDB connection required. Set up API keys in Settings → Credentials first.'**
   String get steamImportIgdbRequired;
 
+  /// No description provided for @steamImportRememberCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Remember credentials'**
+  String get steamImportRememberCredentials;
+
   /// No description provided for @collectionListSortCreatedDate.
   ///
   /// In en, this message translates to:

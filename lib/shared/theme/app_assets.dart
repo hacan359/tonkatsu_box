@@ -13,4 +13,13 @@ abstract final class AppAssets {
 
   /// Иконка Kodi (SVG).
   static const String iconKodi = 'assets/images/icon_kodi.svg';
+
+  /// Иконка Steam (SVG, simpleicons).
+  static const String iconSteam = 'assets/images/icon_steam.svg';
+
+  /// Иконка Trakt (SVG, simpleicons).
+  static const String iconTrakt = 'assets/images/icon_trakt.svg';
+
+  /// Иконка RetroAchievements (SVG, simpleicons).
+  static const String iconRa = 'assets/images/icon_ra.svg';
 }
