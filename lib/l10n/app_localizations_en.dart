@@ -2516,6 +2516,45 @@ class SEn extends S {
   String get browseFilterFormat => 'Format';
 
   @override
+  String get browseFilterMinRating => 'Min rating';
+
+  @override
+  String get browseFilterMinVotes => 'Min votes';
+
+  @override
+  String get browseFilterLanguage => 'Language';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get languageJapanese => 'Japanese';
+
+  @override
+  String get languageKorean => 'Korean';
+
+  @override
+  String get languageChinese => 'Chinese';
+
+  @override
+  String get languageFrench => 'French';
+
+  @override
+  String get languageSpanish => 'Spanish';
+
+  @override
+  String get languageGerman => 'German';
+
+  @override
+  String get languageRussian => 'Russian';
+
+  @override
+  String get languageItalian => 'Italian';
+
+  @override
+  String get languagePortuguese => 'Portuguese';
+
+  @override
   String get mangaFormatManga => 'Manga';
 
   @override
