@@ -658,4 +658,236 @@ void main() {
       );
     });
   });
+
+  // ===========================================================
+  // moveItem / cloneItem — перепривязка тега между коллекциями
+  // ===========================================================
+  group('CollectionItemsNotifier tag remap', () {
+    late MockTierListDao mockTierListDao;
+    late MockTagDao mockTagDao;
+
+    setUp(() {
+      mockTierListDao = MockTierListDao();
+      mockTagDao = MockTagDao();
+      when(() => mockTierListDao.getTierListIdsForItem(any()))
+          .thenAnswer((_) async => <int>[]);
+      when(() => mockTierListDao.removeItemFromCollectionTierLists(
+            any(),
+            any(),
+          )).thenAnswer((_) async {});
+      when(() => mockTierListDao.getTierListById(any()))
+          .thenAnswer((_) async => null);
+      when(() => mockTagDao.setItemTag(any(), any()))
+          .thenAnswer((_) async {});
+      when(() => mockTagDao.getTagById(any()))
+          .thenAnswer((_) async => null);
+    });
+
+    ProviderContainer createRemapContainer({
+      required List<CollectionItem> initialItems,
+      int? collectionId = testCollectionId,
+    }) {
+      when(() => mockRepository.getItemsWithData(collectionId))
+          .thenAnswer((_) async => initialItems);
+      when(() => mockRepository.moveItemToCollection(any(), any()))
+          .thenAnswer((_) async => true);
+      when(() => mockRepository.cloneItemToCollection(any(), any()))
+          .thenAnswer((_) async => 777);
+      final ProviderContainer container = ProviderContainer(
+        overrides: <Override>[
+          collectionRepositoryProvider.overrideWithValue(mockRepository),
+          sharedPreferencesProvider.overrideWithValue(sharedPrefs),
+          tierListDaoProvider.overrideWithValue(mockTierListDao),
+          tagDaoProvider.overrideWithValue(mockTagDao),
+        ],
+      );
+      addTearDown(container.dispose);
+      return container;
+    }
+
+    test('moveItem remaps tag by name into target collection', () async {
+      when(() => mockTagDao.getTagById(7))
+          .thenAnswer((_) async => createTestCollectionTag(
+                id: 7,
+                collectionId: testCollectionId,
+                name: 'РПГ',
+                color: 0xFF00FF00,
+              ));
+      when(() => mockTagDao.resolveOrCreateInCollection(
+            99,
+            'РПГ',
+            color: 0xFF00FF00,
+          )).thenAnswer((_) async => 42);
+
+      final ProviderContainer container = createRemapContainer(
+        initialItems: <CollectionItem>[_makeItem()],
+      );
+      await waitForLoad(container, testCollectionId);
+      when(() => mockRepository.getItemsWithData(testCollectionId))
+          .thenAnswer((_) async => <CollectionItem>[]);
+
+      final CollectionItemsNotifier notifier = container
+          .read(collectionItemsNotifierProvider(testCollectionId).notifier);
+      await notifier.moveItem(
+        1,
+        targetCollectionId: 99,
+        mediaType: MediaType.game,
+        sourceTagId: 7,
+      );
+
+      verify(() => mockTagDao.getTagById(7)).called(1);
+      verify(() => mockTagDao.resolveOrCreateInCollection(
+            99,
+            'РПГ',
+            color: 0xFF00FF00,
+          )).called(1);
+      verify(() => mockTagDao.setItemTag(1, 42)).called(1);
+      // Без null-затирания перед remap — одна запись, не две.
+      verifyNever(() => mockTagDao.setItemTag(1, null));
+    });
+
+    test('moveItem nulls tag when target is uncategorized', () async {
+      final ProviderContainer container = createRemapContainer(
+        initialItems: <CollectionItem>[_makeItem()],
+      );
+      await waitForLoad(container, testCollectionId);
+      when(() => mockRepository.getItemsWithData(testCollectionId))
+          .thenAnswer((_) async => <CollectionItem>[]);
+
+      final CollectionItemsNotifier notifier = container
+          .read(collectionItemsNotifierProvider(testCollectionId).notifier);
+      await notifier.moveItem(
+        1,
+        targetCollectionId: null,
+        mediaType: MediaType.game,
+        sourceTagId: 7,
+      );
+
+      verify(() => mockTagDao.setItemTag(1, null)).called(1);
+      verifyNever(() => mockTagDao.resolveOrCreateInCollection(
+            any(),
+            any(),
+            color: any(named: 'color'),
+          ));
+    });
+
+    test('moveItem does not touch tag when source item has none', () async {
+      final ProviderContainer container = createRemapContainer(
+        initialItems: <CollectionItem>[_makeItem()],
+      );
+      await waitForLoad(container, testCollectionId);
+      when(() => mockRepository.getItemsWithData(testCollectionId))
+          .thenAnswer((_) async => <CollectionItem>[]);
+
+      final CollectionItemsNotifier notifier = container
+          .read(collectionItemsNotifierProvider(testCollectionId).notifier);
+      await notifier.moveItem(
+        1,
+        targetCollectionId: 99,
+        mediaType: MediaType.game,
+      );
+
+      verifyNever(() => mockTagDao.getTagById(any()));
+      verifyNever(() => mockTagDao.setItemTag(any(), any()));
+    });
+
+    test('moveItem skips tag write when source tag was deleted', () async {
+      when(() => mockTagDao.getTagById(7)).thenAnswer((_) async => null);
+
+      final ProviderContainer container = createRemapContainer(
+        initialItems: <CollectionItem>[_makeItem()],
+      );
+      await waitForLoad(container, testCollectionId);
+      when(() => mockRepository.getItemsWithData(testCollectionId))
+          .thenAnswer((_) async => <CollectionItem>[]);
+
+      final CollectionItemsNotifier notifier = container
+          .read(collectionItemsNotifierProvider(testCollectionId).notifier);
+      await notifier.moveItem(
+        1,
+        targetCollectionId: 99,
+        mediaType: MediaType.game,
+        sourceTagId: 7,
+      );
+
+      // sourceTagId != null → пишем null, чтобы затереть невалидный stale-ref.
+      verify(() => mockTagDao.setItemTag(1, null)).called(1);
+      verifyNever(() => mockTagDao.resolveOrCreateInCollection(
+            any(),
+            any(),
+            color: any(named: 'color'),
+          ));
+    });
+
+    test('cloneItem remaps tag in target collection', () async {
+      when(() => mockTagDao.getTagById(7))
+          .thenAnswer((_) async => createTestCollectionTag(
+                id: 7,
+                collectionId: testCollectionId,
+                name: 'Action',
+                color: 0xFFFF0000,
+              ));
+      when(() => mockTagDao.resolveOrCreateInCollection(
+            99,
+            'Action',
+            color: 0xFFFF0000,
+          )).thenAnswer((_) async => 55);
+
+      final ProviderContainer container = createRemapContainer(
+        initialItems: <CollectionItem>[_makeItem()],
+      );
+      await waitForLoad(container, testCollectionId);
+
+      final CollectionItemsNotifier notifier = container
+          .read(collectionItemsNotifierProvider(testCollectionId).notifier);
+      final bool success = await notifier.cloneItem(
+        1,
+        targetCollectionId: 99,
+        mediaType: MediaType.game,
+        sourceTagId: 7,
+      );
+
+      expect(success, isTrue);
+      verify(() => mockTagDao.setItemTag(777, 55)).called(1);
+    });
+
+    test('cloneItem skips tag write when source item has none', () async {
+      final ProviderContainer container = createRemapContainer(
+        initialItems: <CollectionItem>[_makeItem()],
+      );
+      await waitForLoad(container, testCollectionId);
+
+      final CollectionItemsNotifier notifier = container
+          .read(collectionItemsNotifierProvider(testCollectionId).notifier);
+      await notifier.cloneItem(
+        1,
+        targetCollectionId: 99,
+        mediaType: MediaType.game,
+      );
+
+      verifyNever(() => mockTagDao.getTagById(any()));
+      verifyNever(() => mockTagDao.setItemTag(any(), any()));
+    });
+
+    test('cloneItem returns false when repo reports duplicate', () async {
+      final ProviderContainer container = createRemapContainer(
+        initialItems: <CollectionItem>[_makeItem()],
+      );
+      await waitForLoad(container, testCollectionId);
+      when(() => mockRepository.cloneItemToCollection(any(), any()))
+          .thenAnswer((_) async => null);
+
+      final CollectionItemsNotifier notifier = container
+          .read(collectionItemsNotifierProvider(testCollectionId).notifier);
+      final bool success = await notifier.cloneItem(
+        1,
+        targetCollectionId: 99,
+        mediaType: MediaType.game,
+        sourceTagId: 7,
+      );
+
+      expect(success, isFalse);
+      verifyNever(() => mockTagDao.getTagById(any()));
+    });
+  });
 }

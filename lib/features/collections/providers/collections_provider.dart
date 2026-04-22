@@ -12,6 +12,7 @@ import '../../../shared/models/collected_item_info.dart';
 import '../../../shared/models/custom_media.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
+import '../../../shared/models/collection_tag.dart';
 import '../../../shared/models/collection_list_sort_mode.dart';
 import '../../../shared/models/collection_sort_mode.dart';
 import '../../../shared/models/game.dart';
@@ -26,6 +27,7 @@ import '../../tier_lists/providers/tier_list_detail_provider.dart';
 import '../../settings/providers/profile_provider.dart';
 import '../../settings/providers/settings_provider.dart';
 import 'collection_covers_provider.dart';
+import 'collection_tags_provider.dart';
 import 'sort_utils.dart';
 
 /// Провайдер для списка коллекций.
@@ -648,6 +650,7 @@ class CollectionItemsNotifier
     int itemId, {
     required int targetCollectionId,
     required MediaType mediaType,
+    int? sourceTagId,
   }) async {
     final int? newId = await _repository.cloneItemToCollection(
       itemId,
@@ -655,14 +658,43 @@ class CollectionItemsNotifier
     );
     if (newId == null) return false;
 
+    final int? resolvedTagId = await _resolveTargetTagId(
+      sourceTagId: sourceTagId,
+      targetCollectionId: targetCollectionId,
+    );
+    if (resolvedTagId != null) {
+      await ref.read(tagDaoProvider).setItemTag(newId, resolvedTagId);
+    }
+    final bool tagAssigned = resolvedTagId != null;
+
     // Инвалидируем целевую коллекцию и статистики.
     ref.invalidate(collectionItemsNotifierProvider(targetCollectionId));
     ref.invalidate(collectionStatsProvider(targetCollectionId));
     ref.invalidate(collectionCoversProvider(targetCollectionId));
+    if (tagAssigned) {
+      ref.invalidate(collectionTagsProvider(targetCollectionId));
+    }
     _invalidateCollectedIds(mediaType);
     ref.invalidate(uncategorizedItemCountProvider);
     ref.invalidate(allItemsNotifierProvider);
     return true;
+  }
+
+  /// Находит или создаёт в целевой коллекции тег с именем источника
+  /// (без учёта регистра). Возвращает id тега или null, если привязка невозможна.
+  Future<int?> _resolveTargetTagId({
+    required int? sourceTagId,
+    required int? targetCollectionId,
+  }) async {
+    if (sourceTagId == null || targetCollectionId == null) return null;
+    final TagDao tagDao = ref.read(tagDaoProvider);
+    final CollectionTag? sourceTag = await tagDao.getTagById(sourceTagId);
+    if (sourceTag == null) return null;
+    return tagDao.resolveOrCreateInCollection(
+      targetCollectionId,
+      sourceTag.name,
+      color: sourceTag.color,
+    );
   }
 
   /// Перемещает элемент в другую коллекцию.
@@ -674,6 +706,7 @@ class CollectionItemsNotifier
     int itemId, {
     required int? targetCollectionId,
     required MediaType mediaType,
+    int? sourceTagId,
   }) async {
     // Удаляем элемент из тир-листов исходной коллекции до перемещения.
     final TierListDao tierDao = ref.read(tierListDaoProvider);
@@ -686,15 +719,24 @@ class CollectionItemsNotifier
       );
     }
 
-    // Обнуляем тег элемента (теги привязаны к коллекции).
-    final TagDao tagDao = ref.read(tagDaoProvider);
-    await tagDao.setItemTag(itemId, null);
+    // Резолвим целевой tag_id заранее (по имени, без учёта регистра).
+    final int? resolvedTagId = await _resolveTargetTagId(
+      sourceTagId: sourceTagId,
+      targetCollectionId: targetCollectionId,
+    );
 
     final bool success = await _repository.moveItemToCollection(
       itemId,
       targetCollectionId,
     );
     if (!success) return (success: false, sourceEmpty: false);
+
+    // Одним UPDATE либо перепривязываем к целевому тегу, либо обнуляем
+    // (старый tag_id указывает на тег исходной коллекции).
+    if (sourceTagId != null) {
+      await ref.read(tagDaoProvider).setItemTag(itemId, resolvedTagId);
+    }
+    final bool tagAssigned = resolvedTagId != null;
 
     // Обновляем текущую коллекцию (элемент исчез).
     await refresh();
@@ -709,6 +751,9 @@ class CollectionItemsNotifier
     ref.invalidate(collectionCoversProvider(targetCollectionId));
     ref.invalidate(collectionStatsProvider(_collectionId));
     ref.invalidate(collectionCoversProvider(_collectionId));
+    if (tagAssigned && targetCollectionId != null) {
+      ref.invalidate(collectionTagsProvider(targetCollectionId));
+    }
     ref.invalidate(uncategorizedItemCountProvider);
     _invalidateCollectedIds(mediaType);
     ref.invalidate(allItemsNotifierProvider);

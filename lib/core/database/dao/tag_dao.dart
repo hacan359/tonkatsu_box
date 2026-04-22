@@ -97,6 +97,38 @@ class TagDao {
     );
   }
 
+  /// Возвращает тег коллекции по имени без учёта регистра.
+  ///
+  /// Поиск выполняется в Dart через [String.toLowerCase], потому что SQLite
+  /// `LOWER()` по умолчанию приводит к нижнему регистру только ASCII,
+  /// а имена тегов могут быть на любом языке (в т.ч. кириллица).
+  Future<CollectionTag?> findTagByNameCaseInsensitive(
+    int collectionId,
+    String name,
+  ) async {
+    final String needle = name.toLowerCase();
+    final List<CollectionTag> tags = await getTagsByCollection(collectionId);
+    for (final CollectionTag tag in tags) {
+      if (tag.name.toLowerCase() == needle) return tag;
+    }
+    return null;
+  }
+
+  /// Ищет тег в коллекции по имени (без учёта регистра) и возвращает его id.
+  /// Если тега нет — создаёт новый с указанным цветом.
+  Future<int> resolveOrCreateInCollection(
+    int collectionId,
+    String name, {
+    int? color,
+  }) async {
+    final CollectionTag? existing =
+        await findTagByNameCaseInsensitive(collectionId, name);
+    if (existing != null) return existing.id;
+    final CollectionTag created =
+        await createTag(collectionId, name, color: color);
+    return created.id;
+  }
+
   /// Возвращает все теги из всех коллекций.
   Future<List<CollectionTag>> getAll() async {
     final Database db = await _getDatabase();
