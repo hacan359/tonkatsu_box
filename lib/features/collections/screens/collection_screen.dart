@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/services/collection_hero_service.dart';
 import '../../../core/services/import_service.dart';
 import '../../../core/services/xcoll_file.dart';
 import '../../../l10n/app_localizations.dart';
@@ -36,6 +37,8 @@ import '../providers/vgmaps_panel_provider.dart';
 import '../widgets/collection_canvas_layout.dart';
 import '../widgets/collection_filter_bar.dart';
 import '../widgets/collection_items_view.dart';
+import '../widgets/rich/rich_collection_body.dart';
+import '../providers/rich_collections_provider.dart';
 import '../widgets/tag_sidebar.dart';
 import '../widgets/tag_management_dialog.dart';
 import '../../../shared/models/tier_list.dart';
@@ -67,7 +70,6 @@ class CollectionScreen extends ConsumerStatefulWidget {
       ShortcutEntry(keys: 'Delete', description: 'Удалить элемент'),
       ShortcutEntry(keys: 'Ctrl+M', description: 'Переместить элемент'),
       ShortcutEntry(keys: 'Ctrl+Delete', description: 'Удалить коллекцию'),
-      ShortcutEntry(keys: 'F2', description: 'Переименовать коллекцию'),
     ],
   );
 
@@ -250,9 +252,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       if (!_isUncategorized)
         const SingleActivator(LogicalKeyboardKey.delete, control: true):
             _handleDelete,
-      if (!_isUncategorized && _collection != null && _collection!.isEditable)
-        const SingleActivator(LogicalKeyboardKey.f2):
-            _handleRename,
     };
   }
 
@@ -329,8 +328,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         ),
       if (_collection!.isEditable)
         DraggableFabItem(
-          icon: Icons.edit,
-          label: l.rename,
+          icon: Icons.tune,
+          label: l.collectionEditMenu,
           onTap: () => _handleMenuAction('rename'),
         ),
       DraggableFabItem(
@@ -471,74 +470,86 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       });
     }
 
+    final bool richEnabled = ref.watch(richCollectionsEnabledProvider);
+    final String? heroFile = _collection?.heroImagePath;
+    final String? heroAbsPath = (richEnabled && heroFile != null)
+        ? ref.watch(collectionHeroServiceProvider).resolve(heroFile)
+        : null;
+    // Rich-баннер применяется для любой коллекции (кроме uncategorized),
+    // если тогл включён — стабильный темплейт независимо от наличия hero.
+    final bool isRich = richEnabled && !_isUncategorized;
+
+    final Widget? heroHeader = isRich
+        ? RichHeroBanner(
+            collection: _collection!,
+            heroAbsolutePath: heroAbsPath,
+          )
+        : null;
+
+    final Widget itemsView = itemsAsync.when(
+      data: (List<CollectionItem> items) => CollectionItemsView(
+        collectionId: widget.collectionId,
+        items: _applyFilters(items, tags),
+        tags: tags,
+        filterTagIds: _filterTagIds,
+        groupByTags: _groupByTags,
+        isGridMode: _isGridMode,
+        isTableMode: _isTableMode,
+        canEdit: _canEdit,
+        header: heroHeader,
+        onItemTap: _showItemDetails,
+        onItemMove: _canEdit
+            ? (CollectionItem item) => _handleMoveItem(item)
+            : null,
+        onItemClone: _canEdit
+            ? (CollectionItem item) => _handleCloneItem(item)
+            : null,
+        onItemRemove: _canEdit
+            ? (CollectionItem item) => _handleRemoveItem(item)
+            : null,
+        onItemFocusChanged: (CollectionItem item, bool hasFocus) {
+          setState(() => _focusedItem = hasFocus ? item : null);
+        },
+      ),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (Object error, StackTrace stack) =>
+          _buildErrorState(context, error),
+    );
+
+    final Widget? tagSidebar =
+        (tags.isNotEmpty && !isCompactScreen(context))
+            ? TagSidebar(
+                tags: tags,
+                selectedTagIds: _filterTagIds,
+                groupByTags: _groupByTags,
+                onGroupToggled: () {
+                  setState(() {
+                    _groupByTags = !_groupByTags;
+                    _filterTagIds = <int>{};
+                  });
+                },
+                onTagToggled: (int? tagId) {
+                  setState(() {
+                    if (tagId == null) {
+                      _filterTagIds = <int>{};
+                    } else if (_filterTagIds.contains(tagId)) {
+                      _filterTagIds = Set<int>.from(_filterTagIds)
+                        ..remove(tagId);
+                    } else {
+                      _filterTagIds = Set<int>.from(_filterTagIds)
+                        ..add(tagId);
+                    }
+                  });
+                },
+              )
+            : null;
+
+    // Rich vs classic теперь различаются только наличием `heroHeader`
+    // внутри `CollectionItemsView` — layout одинаковый.
     return Row(
       children: <Widget>[
-        Expanded(
-          child: Column(
-            children: <Widget>[
-              Expanded(
-                child: itemsAsync.when(
-                  data: (List<CollectionItem> items) => CollectionItemsView(
-                    collectionId: widget.collectionId,
-                    items: _applyFilters(items, tags),
-                    tags: tags,
-                    filterTagIds: _filterTagIds,
-                    groupByTags: _groupByTags,
-                    isGridMode: _isGridMode,
-                    isTableMode: _isTableMode,
-                    canEdit: _canEdit,
-                    onItemTap: _showItemDetails,
-                    onItemMove: _canEdit
-                        ? (CollectionItem item) => _handleMoveItem(item)
-                        : null,
-                    onItemClone: _canEdit
-                        ? (CollectionItem item) => _handleCloneItem(item)
-                        : null,
-                    onItemRemove: _canEdit
-                        ? (CollectionItem item) => _handleRemoveItem(item)
-                        : null,
-                    onItemFocusChanged: (CollectionItem item, bool hasFocus) {
-                      setState(() => _focusedItem = hasFocus ? item : null);
-                    },
-                  ),
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (Object error, StackTrace stack) =>
-                      _buildErrorState(context, error),
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        // Боковая панель тегов — только на широких экранах. На узких
-        // ту же функциональность открывает кнопка в CollectionFilterBar
-        // (открывает CollectionFilterSheet).
-        if (tags.isNotEmpty && !isCompactScreen(context))
-          TagSidebar(
-            tags: tags,
-            selectedTagIds: _filterTagIds,
-            groupByTags: _groupByTags,
-            onGroupToggled: () {
-              setState(() {
-                _groupByTags = !_groupByTags;
-                _filterTagIds = <int>{};
-              });
-            },
-            onTagToggled: (int? tagId) {
-              setState(() {
-                if (tagId == null) {
-                  _filterTagIds = <int>{};
-                } else if (_filterTagIds.contains(tagId)) {
-                  _filterTagIds = Set<int>.from(_filterTagIds)
-                    ..remove(tagId);
-                } else {
-                  _filterTagIds = Set<int>.from(_filterTagIds)
-                    ..add(tagId);
-                }
-              });
-            },
-          ),
+        Expanded(child: itemsView),
+        ?tagSidebar,
       ],
     );
   }
@@ -699,15 +710,21 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
 
   Future<void> _handleRename() async {
     if (_collection == null) return;
-    final String? newName = await CollectionActions.renameCollection(
+    final bool changed = await CollectionActions.renameCollection(
       context: context,
       ref: ref,
       collection: _collection!,
     );
-    if (newName != null && mounted) {
-      setState(() {
-        _collection = _collection!.copyWith(name: newName);
-      });
+    if (changed && mounted) {
+      // Перечитаем коллекцию — могло измениться имя/обложка/описание.
+      final Collection? updated = await ref
+          .read(collectionRepositoryProvider)
+          .getById(widget.collectionId!);
+      if (updated != null && mounted) {
+        setState(() {
+          _collection = updated;
+        });
+      }
     }
   }
 

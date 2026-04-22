@@ -9,6 +9,7 @@ import '../../../shared/models/collection.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../providers/collections_provider.dart';
+import '../providers/rich_collections_provider.dart';
 
 /// Строка коллекции для list-вида (без картинок).
 class CollectionListTile extends ConsumerWidget {
@@ -37,6 +38,46 @@ class CollectionListTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final AsyncValue<CollectionStats> statsAsync =
         ref.watch(collectionStatsProvider(collection.id));
+    final bool richEnabled = ref.watch(richCollectionsEnabledProvider);
+    final bool showDescription = richEnabled &&
+        collection.description != null &&
+        collection.description!.isNotEmpty;
+
+    final Widget subtitle = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        statsAsync.when(
+          data: (CollectionStats s) => Text(
+            S.of(context).collectionTileStats(
+                  s.total,
+                  s.completionPercentFormatted,
+                ),
+            style: AppTypography.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+          loading: () => const SizedBox(height: 14),
+          error: (Object error, StackTrace stack) => Text(
+            S.of(context).collectionTileError,
+            style: AppTypography.caption.copyWith(color: AppColors.error),
+          ),
+        ),
+        if (showDescription)
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Text(
+              collection.description!,
+              style: AppTypography.caption.copyWith(
+                color: AppColors.textTertiary,
+                fontStyle: FontStyle.italic,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+      ],
+    );
 
     return GestureDetector(
       onSecondaryTapUp: onSecondaryTap != null
@@ -44,32 +85,18 @@ class CollectionListTile extends ConsumerWidget {
               onSecondaryTap!(details.globalPosition)
           : null,
       child: ListTile(
-      leading: const Icon(Icons.folder_rounded, color: AppColors.textSecondary),
-      title: Text(
-        collection.name,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: AppTypography.h3,
-      ),
-      subtitle: statsAsync.when(
-        data: (CollectionStats s) => Text(
-          S.of(context).collectionTileStats(
-                s.total,
-                s.completionPercentFormatted,
-              ),
-          style: AppTypography.bodySmall.copyWith(
-            color: AppColors.textSecondary,
-          ),
+        leading:
+            const Icon(Icons.folder_rounded, color: AppColors.textSecondary),
+        title: Text(
+          collection.name,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: AppTypography.h3,
         ),
-        loading: () => const SizedBox(height: 14),
-        error: (Object error, StackTrace stack) => Text(
-          S.of(context).collectionTileError,
-          style: AppTypography.caption.copyWith(color: AppColors.error),
-        ),
+        subtitle: subtitle,
+        onTap: onTap,
+        onLongPress: onLongPress,
       ),
-      onTap: onTap,
-      onLongPress: onLongPress,
-    ),
     );
   }
 }

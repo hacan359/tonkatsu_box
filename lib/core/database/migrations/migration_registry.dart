@@ -33,6 +33,7 @@ import 'migration_v31.dart';
 import 'migration_v32.dart';
 import 'migration_v33.dart';
 import 'migration_v34.dart';
+import 'migration_v35.dart';
 
 /// Реестр всех миграций базы данных.
 ///
@@ -74,6 +75,7 @@ abstract final class MigrationRegistry {
     MigrationV32(),
     MigrationV33(),
     MigrationV34(),
+    MigrationV35(),
   ];
 
   /// Возвращает миграции, ожидающие выполнения для данной версии.

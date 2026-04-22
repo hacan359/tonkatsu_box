@@ -435,7 +435,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
   }
 
   /// Максимальная ширина карточки на десктопе (как в collection_screen).
-  static const double _desktopMaxCardWidth = 150;
+  static const double _desktopMaxCardWidth = 170;
 
   /// Aspect ratio карточки (как в collection_screen).
   static const double _cardAspectRatio = 0.55;

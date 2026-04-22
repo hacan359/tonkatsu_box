@@ -18,6 +18,7 @@ import '../providers/canvas_provider.dart';
 import '../providers/collections_provider.dart';
 import '../widgets/copy_as_text_dialog.dart';
 import '../widgets/create_collection_dialog.dart';
+import '../widgets/edit_collection_dialog.dart';
 import '../../search/screens/search_screen.dart';
 
 /// Статические методы для действий на экране коллекции.
@@ -253,42 +254,21 @@ class CollectionActions {
     }
   }
 
-  /// Переименование коллекции.
+  /// Редактирование коллекции (имя, описание, обложка).
   ///
-  /// Возвращает новое имя или `null`, если отменено.
-  static Future<String?> renameCollection({
+  /// Возвращает `true`, если пользователь сохранил изменения.
+  static Future<bool> renameCollection({
     required BuildContext context,
     required WidgetRef ref,
     required Collection collection,
   }) async {
-    final String? newName =
-        await RenameCollectionDialog.show(context, collection.name);
-
-    if (newName == null || newName == collection.name || !context.mounted) {
-      return null;
-    }
-
-    try {
-      await ref
-          .read(collectionsProvider.notifier)
-          .rename(collection.id, newName);
-
-      if (context.mounted) {
-        context.showSnack(
-          S.of(context).collectionsRenamed,
-          type: SnackType.success,
-        );
-      }
-      return newName;
-    } on Exception catch (e) {
-      if (context.mounted) {
-        context.showSnack(
-          S.of(context).collectionsFailedToRename('$e'),
-          type: SnackType.error,
-        );
-      }
-      return null;
-    }
+    final bool changed = await EditCollectionDialog.show(context, collection);
+    if (!changed || !context.mounted) return false;
+    context.showSnack(
+      S.of(context).collectionsRenamed,
+      type: SnackType.success,
+    );
+    return true;
   }
 
   /// Удаление коллекции.

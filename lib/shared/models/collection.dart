@@ -39,6 +39,8 @@ class Collection with Exportable {
     this.originalSnapshot,
     this.forkedFromAuthor,
     this.forkedFromName,
+    this.heroImagePath,
+    this.description,
   });
 
   /// Создаёт [Collection] из записи базы данных.
@@ -54,6 +56,8 @@ class Collection with Exportable {
       originalSnapshot: row['original_snapshot'] as String?,
       forkedFromAuthor: row['forked_from_author'] as String?,
       forkedFromName: row['forked_from_name'] as String?,
+      heroImagePath: row['hero_image_path'] as String?,
+      description: row['description'] as String?,
     );
   }
 
@@ -69,6 +73,7 @@ class Collection with Exportable {
       author: json['author'] as String,
       type: type,
       createdAt: DateTime.parse(json['created'] as String),
+      description: json['description'] as String?,
     );
   }
 
@@ -96,6 +101,15 @@ class Collection with Exportable {
   /// Название оригинальной коллекции (для форков).
   final String? forkedFromName;
 
+  /// Относительный путь к hero-изображению в `<appDocs>/`.
+  ///
+  /// Например: `collections/hero_17.jpg`. Путь локальный — не экспортируется
+  /// в JSON; бинарник вкладывается в `.xcollx` отдельно.
+  final String? heroImagePath;
+
+  /// Краткое описание коллекции (tagline для rich hero).
+  final String? description;
+
   /// Возвращает true, если коллекция редактируемая.
   ///
   /// Все коллекции редактируемые (импортированные ведут себя как обычные).
@@ -110,6 +124,9 @@ class Collection with Exportable {
         'original_snapshot',
         'forked_from_author',
         'forked_from_name',
+        // Локальный путь картинки не экспортируется: сам бинарник
+        // вкладывается в секцию `images` .xcollx отдельно.
+        'hero_image_path',
       };
 
   @override
@@ -128,6 +145,8 @@ class Collection with Exportable {
       'original_snapshot': originalSnapshot,
       'forked_from_author': forkedFromAuthor,
       'forked_from_name': forkedFromName,
+      'hero_image_path': heroImagePath,
+      'description': description,
     };
   }
 
@@ -138,6 +157,7 @@ class Collection with Exportable {
       'name': name,
       'author': author,
       'created': createdAt.toIso8601String(),
+      'description': description,
     };
   }
 
@@ -151,6 +171,10 @@ class Collection with Exportable {
     String? originalSnapshot,
     String? forkedFromAuthor,
     String? forkedFromName,
+    String? heroImagePath,
+    String? description,
+    bool clearHeroImage = false,
+    bool clearDescription = false,
   }) {
     return Collection(
       id: id ?? this.id,
@@ -161,6 +185,9 @@ class Collection with Exportable {
       originalSnapshot: originalSnapshot ?? this.originalSnapshot,
       forkedFromAuthor: forkedFromAuthor ?? this.forkedFromAuthor,
       forkedFromName: forkedFromName ?? this.forkedFromName,
+      heroImagePath:
+          clearHeroImage ? null : (heroImagePath ?? this.heroImagePath),
+      description: clearDescription ? null : (description ?? this.description),
     );
   }
 

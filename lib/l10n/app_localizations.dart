@@ -1633,16 +1633,22 @@ abstract class S {
   /// **'{count, plural, =1{1 item} other{{count} items}}'**
   String collectionsUncategorizedItems(int count);
 
+  /// No description provided for @editCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit collection'**
+  String get editCollection;
+
   /// No description provided for @collectionsRenamed.
   ///
   /// In en, this message translates to:
-  /// **'Collection renamed'**
+  /// **'Collection updated'**
   String get collectionsRenamed;
 
   /// No description provided for @collectionsFailedToRename.
   ///
   /// In en, this message translates to:
-  /// **'Failed to rename: {error}'**
+  /// **'Failed to save: {error}'**
   String collectionsFailedToRename(String error);
 
   /// No description provided for @collectionsDeleted.
@@ -4554,6 +4560,72 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Show Blu-ray overlay on movie and TV show posters'**
   String get settingsShowBlurayOverlaySubtitle;
+
+  /// No description provided for @settingsRichCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'Rich collection view'**
+  String get settingsRichCollections;
+
+  /// No description provided for @settingsRichCollectionsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Personalize collections with a cover image and description'**
+  String get settingsRichCollectionsSubtitle;
+
+  /// No description provided for @collectionEditHeroImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover image'**
+  String get collectionEditHeroImage;
+
+  /// No description provided for @collectionEditHeroImageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended 2560×1080 (21:9). Main subject on the right — the left side is covered by the title, the bottom fades into the background'**
+  String get collectionEditHeroImageHint;
+
+  /// No description provided for @collectionEditHeroPick.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose image'**
+  String get collectionEditHeroPick;
+
+  /// No description provided for @collectionEditHeroReplace.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace image'**
+  String get collectionEditHeroReplace;
+
+  /// No description provided for @collectionEditHeroRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove image'**
+  String get collectionEditHeroRemove;
+
+  /// No description provided for @collectionEditDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get collectionEditDescription;
+
+  /// No description provided for @collectionEditDescriptionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Short tagline shown over the cover'**
+  String get collectionEditDescriptionHint;
+
+  /// No description provided for @collectionEditMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Collection settings'**
+  String get collectionEditMenu;
+
+  /// No description provided for @collectionEditDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Collection settings'**
+  String get collectionEditDialogTitle;
 
   /// No description provided for @settingsDiscordRpc.
   ///

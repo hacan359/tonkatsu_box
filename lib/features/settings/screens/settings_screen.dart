@@ -358,6 +358,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               },
             ),
           ),
+          SettingsTile(
+            leadingIcon: Icons.auto_awesome_outlined,
+            leadingColor: _kAppearanceColor,
+            title: l.settingsRichCollections,
+            subtitle: l.settingsRichCollectionsSubtitle,
+            showChevron: false,
+            trailing: Switch(
+              value: settings.richCollectionsEnabled,
+              onChanged: (bool value) {
+                ref
+                    .read(settingsNotifierProvider.notifier)
+                    .setRichCollectionsEnabled(enabled: value);
+              },
+            ),
+          ),
         ],
       ),
       gap,

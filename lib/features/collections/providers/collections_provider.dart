@@ -84,6 +84,39 @@ class CollectionsNotifier extends AsyncNotifier<List<Collection>> {
     );
   }
 
+  /// Обновляет персонализацию коллекции (имя/описание/обложка).
+  Future<void> updatePersonalization(
+    int id, {
+    String? name,
+    String? heroImagePath,
+    String? description,
+    bool clearHeroImage = false,
+    bool clearDescription = false,
+  }) async {
+    await _repository.updatePersonalization(
+      id,
+      name: name,
+      heroImagePath: heroImagePath,
+      description: description,
+      clearHeroImage: clearHeroImage,
+      clearDescription: clearDescription,
+    );
+
+    final List<Collection> current = state.valueOrNull ?? <Collection>[];
+    state = AsyncData<List<Collection>>(
+      current.map((Collection c) {
+        if (c.id != id) return c;
+        return c.copyWith(
+          name: name,
+          heroImagePath: heroImagePath,
+          description: description,
+          clearHeroImage: clearHeroImage,
+          clearDescription: clearDescription,
+        );
+      }).toList(),
+    );
+  }
+
   /// Удаляет коллекцию.
   Future<void> delete(int id) async {
     await _repository.delete(id);

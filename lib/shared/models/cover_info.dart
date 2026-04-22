@@ -1,5 +1,6 @@
 // Легковесная модель обложки для карточек коллекций.
 
+import '../../core/services/image_cache_service.dart';
 import 'media_type.dart';
 
 /// Информация об обложке элемента коллекции.
@@ -40,6 +41,34 @@ class CoverInfo {
 
   /// URL thumbnail-обложки.
   final String? thumbnailUrl;
+
+  /// Тип изображения для локального кэша (`ImageCacheService`).
+  ///
+  /// Для `MediaType.animation` различает movie/tvShow по
+  /// [platformId] == [AnimationSource.tvShow].
+  ImageType get imageType {
+    switch (mediaType) {
+      case MediaType.game:
+        return ImageType.gameCover;
+      case MediaType.movie:
+        return ImageType.moviePoster;
+      case MediaType.tvShow:
+        return ImageType.tvShowPoster;
+      case MediaType.animation:
+        if (platformId == AnimationSource.tvShow) {
+          return ImageType.tvShowPoster;
+        }
+        return ImageType.moviePoster;
+      case MediaType.visualNovel:
+        return ImageType.vnCover;
+      case MediaType.manga:
+        return ImageType.mangaCover;
+      case MediaType.anime:
+        return ImageType.animeCover;
+      case MediaType.custom:
+        return ImageType.customCover;
+    }
+  }
 
   /// Конвертирует полноразмерный URL в thumbnail.
   ///

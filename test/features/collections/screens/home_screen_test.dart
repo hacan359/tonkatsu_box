@@ -73,6 +73,7 @@ void main() {
       prefs = await SharedPreferences.getInstance();
       mockRepo = MockCollectionRepository();
       mockDb = MockDatabaseService();
+      when(() => mockDb.getPlatformCount()).thenAnswer((_) async => 0);
     });
 
     Widget createWidget({

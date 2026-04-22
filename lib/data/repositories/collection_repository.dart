@@ -141,6 +141,25 @@ class CollectionRepository {
     await _db.updateCollection(id, name: name);
   }
 
+  /// Обновляет persist-поля персонализации коллекции.
+  Future<void> updatePersonalization(
+    int id, {
+    String? name,
+    String? heroImagePath,
+    String? description,
+    bool clearHeroImage = false,
+    bool clearDescription = false,
+  }) async {
+    await _db.updateCollection(
+      id,
+      name: name,
+      heroImagePath: heroImagePath,
+      description: description,
+      clearHeroImage: clearHeroImage,
+      clearDescription: clearDescription,
+    );
+  }
+
   /// Удаляет коллекцию.
   Future<void> delete(int id) async {
     await _db.deleteCollection(id);

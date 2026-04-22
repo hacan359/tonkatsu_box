@@ -857,11 +857,14 @@ class SEn extends S {
   }
 
   @override
-  String get collectionsRenamed => 'Collection renamed';
+  String get editCollection => 'Edit collection';
+
+  @override
+  String get collectionsRenamed => 'Collection updated';
 
   @override
   String collectionsFailedToRename(String error) {
-    return 'Failed to rename: $error';
+    return 'Failed to save: $error';
   }
 
   @override
@@ -2472,6 +2475,42 @@ class SEn extends S {
   @override
   String get settingsShowBlurayOverlaySubtitle =>
       'Show Blu-ray overlay on movie and TV show posters';
+
+  @override
+  String get settingsRichCollections => 'Rich collection view';
+
+  @override
+  String get settingsRichCollectionsSubtitle =>
+      'Personalize collections with a cover image and description';
+
+  @override
+  String get collectionEditHeroImage => 'Cover image';
+
+  @override
+  String get collectionEditHeroImageHint =>
+      'Recommended 2560×1080 (21:9). Main subject on the right — the left side is covered by the title, the bottom fades into the background';
+
+  @override
+  String get collectionEditHeroPick => 'Choose image';
+
+  @override
+  String get collectionEditHeroReplace => 'Replace image';
+
+  @override
+  String get collectionEditHeroRemove => 'Remove image';
+
+  @override
+  String get collectionEditDescription => 'Description';
+
+  @override
+  String get collectionEditDescriptionHint =>
+      'Short tagline shown over the cover';
+
+  @override
+  String get collectionEditMenu => 'Collection settings';
+
+  @override
+  String get collectionEditDialogTitle => 'Collection settings';
 
   @override
   String get settingsDiscordRpc => 'Discord Rich Presence';

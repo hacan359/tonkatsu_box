@@ -867,11 +867,14 @@ class SRu extends S {
   }
 
   @override
-  String get collectionsRenamed => 'Коллекция переименована';
+  String get editCollection => 'Редактировать коллекцию';
+
+  @override
+  String get collectionsRenamed => 'Коллекция обновлена';
 
   @override
   String collectionsFailedToRename(String error) {
-    return 'Ошибка переименования: $error';
+    return 'Ошибка сохранения: $error';
   }
 
   @override
@@ -2491,6 +2494,41 @@ class SRu extends S {
   @override
   String get settingsShowBlurayOverlaySubtitle =>
       'Оверлей Blu-ray на постерах фильмов и сериалов';
+
+  @override
+  String get settingsRichCollections => 'Персонализация коллекций';
+
+  @override
+  String get settingsRichCollectionsSubtitle =>
+      'Обложка и описание вместо мозаики';
+
+  @override
+  String get collectionEditHeroImage => 'Обложка';
+
+  @override
+  String get collectionEditHeroImageHint =>
+      'Рекомендуется 2560×1080 (21:9). Главный объект справа — слева его закроет заголовок, снизу края растворятся в фоне';
+
+  @override
+  String get collectionEditHeroPick => 'Выбрать картинку';
+
+  @override
+  String get collectionEditHeroReplace => 'Заменить';
+
+  @override
+  String get collectionEditHeroRemove => 'Убрать';
+
+  @override
+  String get collectionEditDescription => 'Описание';
+
+  @override
+  String get collectionEditDescriptionHint => 'Короткий текст поверх обложки';
+
+  @override
+  String get collectionEditMenu => 'Настройки коллекции';
+
+  @override
+  String get collectionEditDialogTitle => 'Настройки коллекции';
 
   @override
   String get settingsDiscordRpc => 'Discord Rich Presence';
