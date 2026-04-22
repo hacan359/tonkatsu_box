@@ -262,8 +262,8 @@ Check mocks.dart before declaring a mock:
 
 ### 8. Verification
 
-  powershell.exe -Command "cd D:\CODE\xerabora; flutter test"
-  powershell.exe -Command "cd D:\CODE\xerabora; flutter test --coverage"
+  powershell.exe -Command "cd '$(wslpath -w "$PWD")'; flutter test"
+  powershell.exe -Command "cd '$(wslpath -w "$PWD")'; flutter test --coverage"
 
   # Check: no duplicate mocks outside helpers
   grep -r "class Mock" test/ --include="*_test.dart"

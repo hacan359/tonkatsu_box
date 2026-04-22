@@ -15,10 +15,12 @@
 ## Среда выполнения
 **ВАЖНО:** Flutter SDK установлен только на Windows, не в WSL!
 
+`$(wslpath -w "$PWD")` resolves the current WSL directory to its Windows path — не захардкоживать путь.
+
 ```bash
-powershell.exe -Command "cd D:\CODE\xerabora; flutter analyze --fatal-infos --fatal-warnings"
-powershell.exe -Command "cd D:\CODE\xerabora; flutter test"
-powershell.exe -Command "cd D:\CODE\xerabora; flutter run -d windows"
+powershell.exe -Command "cd '$(wslpath -w "$PWD")'; flutter analyze --fatal-infos --fatal-warnings"
+powershell.exe -Command "cd '$(wslpath -w "$PWD")'; flutter test"
+powershell.exe -Command "cd '$(wslpath -w "$PWD")'; flutter run -d windows"
 ```
 
 ## Архитектура и структура

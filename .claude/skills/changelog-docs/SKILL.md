@@ -86,8 +86,8 @@ Check each file in `docs/` against the current state of the code:
 ### 4. Verification
 
 ```bash
-powershell.exe -Command "cd D:\CODE\xerabora; flutter analyze --fatal-infos --fatal-warnings"
-powershell.exe -Command "cd D:\CODE\xerabora; flutter test"
+powershell.exe -Command "cd '$(wslpath -w "$PWD")'; flutter analyze --fatal-infos --fatal-warnings"
+powershell.exe -Command "cd '$(wslpath -w "$PWD")'; flutter test"
 ```
 
 ## Checklist Before Finishing
