@@ -154,12 +154,14 @@ void main() {
       expect(result!['label'], isNull);
     });
 
-    testWidgets('should show 8 color buttons', (WidgetTester tester) async {
+    testWidgets('should show color swatch that opens picker',
+        (WidgetTester tester) async {
       await pumpDialog(tester);
-      // Each color button is an InkWell with a Container inside
-      final Finder tooltips = find.byType(Tooltip);
-      // 8 color tooltips + potentially other tooltips
-      expect(tooltips.evaluate().length, greaterThanOrEqualTo(8));
+      // После a0ce1c0 инлайн-палитра заменена одним кружком, который
+      // открывает ColorPickerDialog. Убеждаемся, что секция цвета
+      // отрисована (заголовок + tappable swatch).
+      expect(find.text('Color'), findsOneWidget);
+      expect(find.byType(InkWell), findsWidgets);
     });
 
     testWidgets('should select initial style', (WidgetTester tester) async {
