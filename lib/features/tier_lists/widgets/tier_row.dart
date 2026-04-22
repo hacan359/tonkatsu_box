@@ -10,12 +10,59 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import 'tier_item_card.dart';
 
-/// Минимальная высота ряда тира.
-const double kTierRowMinHeight = kTierItemMinTotalHeight + AppSpacing.xs * 2 + 4;
+/// Ширина, ниже которой тир-ряд переходит в компактный режим (узкий экран).
+const double _kCompactBreakpoint = 500;
+
+/// Размеры элементов тир-ряда, зависящие от ширины экрана.
+class TierRowMetrics {
+  const TierRowMetrics({
+    required this.cardWidth,
+    required this.cardImageHeight,
+    required this.cardLabelMinHeight,
+    required this.tierLabelWidth,
+    required this.tierLabelFont,
+  });
+
+  /// Выбирает метрики по ширине экрана.
+  factory TierRowMetrics.of(BuildContext context) {
+    final double width = MediaQuery.sizeOf(context).width;
+    return width < _kCompactBreakpoint ? compact : standard;
+  }
+
+  /// Метрики для компактных экранов (телефон).
+  static const TierRowMetrics compact = TierRowMetrics(
+    cardWidth: 64,
+    cardImageHeight: 86,
+    cardLabelMinHeight: 24,
+    tierLabelWidth: 48,
+    tierLabelFont: 20,
+  );
+
+  /// Метрики по умолчанию (планшет / десктоп).
+  static const TierRowMetrics standard = TierRowMetrics(
+    cardWidth: kTierItemWidth,
+    cardImageHeight: kTierItemImageHeight,
+    cardLabelMinHeight: kTierItemMinLabelHeight,
+    tierLabelWidth: 70,
+    tierLabelFont: 24,
+  );
+
+  final double cardWidth;
+  final double cardImageHeight;
+  final double cardLabelMinHeight;
+  final double tierLabelWidth;
+  final double tierLabelFont;
+
+  /// Полная высота карточки (картинка + подпись).
+  double get cardTotalHeight => cardImageHeight + cardLabelMinHeight;
+
+  /// Минимальная высота ряда — чуть больше, чем карточка.
+  double get rowMinHeight => cardTotalHeight + AppSpacing.xs * 2 + 4;
+}
 
 /// Виджет одного ряда тира.
 ///
-/// Слева — цветная метка, справа — горизонтальный скролл с обложками.
+/// Слева — цветная метка, справа — Wrap с обложками.
 class TierRow extends StatelessWidget {
   /// Создаёт [TierRow].
   const TierRow({
@@ -52,17 +99,17 @@ class TierRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final TierRowMetrics m = TierRowMetrics.of(context);
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          // Метка тира
           GestureDetector(
             onTap: onDefinitionTap,
             onLongPress: onDefinitionTap,
             child: Container(
-              width: 70,
-              constraints: const BoxConstraints(minHeight: kTierRowMinHeight),
+              width: m.tierLabelWidth,
+              constraints: BoxConstraints(minHeight: m.rowMinHeight),
               decoration: BoxDecoration(
                 color: definition.color,
                 borderRadius: const BorderRadius.only(
@@ -76,13 +123,12 @@ class TierRow extends StatelessWidget {
                 style: AppTypography.h2.copyWith(
                   color: _textColorFor(definition.color),
                   fontWeight: FontWeight.bold,
+                  fontSize: m.tierLabelFont,
                 ),
                 textAlign: TextAlign.center,
               ),
             ),
           ),
-
-          // Область с элементами + drag target
           Expanded(
             child: DragTarget<int>(
               onAcceptWithDetails: (DragTargetDetails<int> details) =>
@@ -90,8 +136,7 @@ class TierRow extends StatelessWidget {
               builder: (BuildContext context, List<int?> candidateData,
                   List<dynamic> rejectedData) {
                 return Container(
-                  constraints:
-                      const BoxConstraints(minHeight: kTierRowMinHeight),
+                  constraints: BoxConstraints(minHeight: m.rowMinHeight),
                   decoration: BoxDecoration(
                     color: definition.color.withAlpha(20),
                     border: candidateData.isNotEmpty
@@ -105,37 +150,33 @@ class TierRow extends StatelessWidget {
                       bottomRight: Radius.circular(AppSpacing.radiusSm),
                     ),
                   ),
+                  padding: entries.isEmpty
+                      ? EdgeInsets.zero
+                      : const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.xs,
+                          vertical: AppSpacing.xs,
+                        ),
                   child: entries.isEmpty
                       ? const SizedBox.expand()
-                      : SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.xs,
-                            vertical: AppSpacing.xs,
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: entries.map((TierListEntry entry) {
-                              final CollectionItem? item =
-                                  itemsMap[entry.collectionItemId];
-                              if (item == null) {
-                                return const SizedBox.shrink();
-                              }
-                              return Padding(
-                                key: ValueKey<int>(
-                                    entry.collectionItemId),
-                                padding: const EdgeInsets.only(
-                                  right: AppSpacing.xs,
-                                ),
-                                child: TierItemCard(
-                                  item: item,
-                                  isDraggable: true,
-                                  platformOverlayAsset:
-                                      overlayResolver?.call(item),
-                                ),
-                              );
-                            }).toList(),
-                          ),
+                      : Wrap(
+                          spacing: AppSpacing.xs,
+                          runSpacing: AppSpacing.xs,
+                          children: entries.map((TierListEntry entry) {
+                            final CollectionItem? item =
+                                itemsMap[entry.collectionItemId];
+                            if (item == null) {
+                              return const SizedBox.shrink();
+                            }
+                            return TierItemCard(
+                              key: ValueKey<int>(entry.collectionItemId),
+                              item: item,
+                              isDraggable: true,
+                              width: m.cardWidth,
+                              height: m.cardImageHeight,
+                              platformOverlayAsset:
+                                  overlayResolver?.call(item),
+                            );
+                          }).toList(),
                         ),
                 );
               },
@@ -146,7 +187,6 @@ class TierRow extends StatelessWidget {
     );
   }
 
-  /// Определяет цвет текста (чёрный или белый) на основе яркости фона.
   Color _textColorFor(Color background) {
     final double luminance = background.computeLuminance();
     return luminance > 0.5 ? Colors.black : Colors.white;

@@ -7,6 +7,7 @@ import '../../../shared/models/profile.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/widgets/color_picker_dialog.dart';
 
 /// Результат редактирования профиля.
 sealed class EditProfileResult {
@@ -142,39 +143,40 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
             const SizedBox(height: AppSpacing.md),
 
             // Color
-            Text(l.profileColor, style: AppTypography.body),
+            Text(l.colorPickerTitle, style: AppTypography.body),
             const SizedBox(height: AppSpacing.sm),
-            Wrap(
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.sm,
-              children: ProfileColors.values.map((String hex) {
-                final Color color = Profile.hexToColor(hex);
-                final bool isSelected = hex == _selectedColor;
-                return GestureDetector(
-                  onTap: () => setState(() => _selectedColor = hex),
-                  child: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: color,
-                      shape: BoxShape.circle,
-                      border: isSelected
-                          ? Border.all(
-                              color: AppColors.textPrimary,
-                              width: 2.5,
-                            )
-                          : null,
-                    ),
-                    child: isSelected
-                        ? const Icon(
-                            Icons.check,
-                            size: 16,
-                            color: Colors.white,
-                          )
-                        : null,
-                  ),
+            InkWell(
+              onTap: () async {
+                final Color? picked = await ColorPickerDialog.show(
+                  context: context,
+                  currentColor: Profile.hexToColor(_selectedColor),
                 );
-              }).toList(),
+                if (picked == null) return;
+                setState(() => _selectedColor = Profile.colorToHex(picked));
+              },
+              borderRadius: BorderRadius.circular(24),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: Profile.hexToColor(_selectedColor),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white.withAlpha(40)),
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Text(
+                      l.colorPickerTitle,
+                      style: AppTypography.body.copyWith(color: AppColors.brand),
+                    ),
+                  ],
+                ),
+              ),
             ),
 
             // Delete button

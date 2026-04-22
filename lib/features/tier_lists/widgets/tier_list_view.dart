@@ -8,6 +8,7 @@ import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/tier_definition.dart';
 import '../../../shared/models/tier_list_entry.dart';
 import '../../../shared/theme/app_colors.dart';
+import '../../../shared/widgets/color_picker_dialog.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -199,11 +200,9 @@ class TierListView extends ConsumerWidget {
     WidgetRef ref,
     TierDefinition def,
   ) async {
-    final Color? picked = await showDialog<Color>(
+    final Color? picked = await ColorPickerDialog.show(
       context: context,
-      builder: (BuildContext ctx) => _ColorPickerDialog(
-        currentColor: def.color,
-      ),
+      currentColor: def.color,
     );
     if (picked != null) {
       await ref
@@ -227,6 +226,7 @@ class _UnrankedPool extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final SettingsState overlaySettings =
         ref.watch(settingsNotifierProvider);
+    final TierRowMetrics m = TierRowMetrics.of(context);
     return DragTarget<int>(
       onAcceptWithDetails: (DragTargetDetails<int> details) {
         ref
@@ -263,6 +263,8 @@ class _UnrankedPool extends ConsumerWidget {
                       key: ValueKey<int>(item.id),
                       item: item,
                       isDraggable: true,
+                      width: m.cardWidth,
+                      height: m.cardImageHeight,
                       platformOverlayAsset:
                           overlaySettings.resolveOverlayFor(item),
                     );
@@ -270,57 +272,6 @@ class _UnrankedPool extends ConsumerWidget {
                 ),
         );
       },
-    );
-  }
-}
-
-/// Диалог выбора цвета для тира.
-class _ColorPickerDialog extends StatelessWidget {
-  const _ColorPickerDialog({required this.currentColor});
-
-  final Color currentColor;
-
-  static const List<Color> _colors = <Color>[
-    Color(0xFFFF4444), // Red
-    Color(0xFFFF8C00), // Orange
-    Color(0xFFFFD700), // Yellow
-    Color(0xFF44BB44), // Green
-    Color(0xFF4488FF), // Blue
-    Color(0xFF8844FF), // Purple
-    Color(0xFFFF44BB), // Pink
-    Color(0xFF44DDDD), // Cyan
-    Color(0xFF888888), // Gray
-    Color(0xFFBB8844), // Brown
-    Color(0xFFFFFFFF), // White
-    Color(0xFF333333), // Dark
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(S.of(context).tierListChangeColor),
-      content: Wrap(
-        spacing: AppSpacing.sm,
-        runSpacing: AppSpacing.sm,
-        children: _colors.map((Color color) {
-          final bool isSelected = color.toARGB32() == currentColor.toARGB32();
-          return InkWell(
-            onTap: () => Navigator.of(context).pop(color),
-            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                border: isSelected
-                    ? Border.all(color: AppColors.textPrimary, width: 3)
-                    : null,
-              ),
-            ),
-          );
-        }).toList(),
-      ),
     );
   }
 }
