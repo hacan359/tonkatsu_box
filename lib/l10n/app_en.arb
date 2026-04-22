@@ -362,8 +362,9 @@
       "count": {"type": "int"}
     }
   },
-  "collectionsRenamed": "Collection renamed",
-  "collectionsFailedToRename": "Failed to rename: {error}",
+  "editCollection": "Edit collection",
+  "collectionsRenamed": "Collection updated",
+  "collectionsFailedToRename": "Failed to save: {error}",
   "@collectionsFailedToRename": {
     "placeholders": {
       "error": {"type": "String"}
@@ -1123,7 +1124,7 @@
   "settingsRichCollections": "Rich collection view",
   "settingsRichCollectionsSubtitle": "Personalize collections with a cover image and description",
   "collectionEditHeroImage": "Cover image",
-  "collectionEditHeroImageHint": "Place the main subject in the top-right — the left and bottom edges fade into the background",
+  "collectionEditHeroImageHint": "Recommended 2560×1080 (21:9). Main subject on the right — the left side is covered by the title, the bottom fades into the background",
   "collectionEditHeroPick": "Choose image",
   "collectionEditHeroReplace": "Replace image",
   "collectionEditHeroRemove": "Remove image",

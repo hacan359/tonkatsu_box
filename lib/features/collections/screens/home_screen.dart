@@ -507,7 +507,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             value: 'rename',
             child: ListTile(
               leading: const Icon(Icons.edit),
-              title: Text(l.rename),
+              title: Text(l.editCollection),
               contentPadding: EdgeInsets.zero,
             ),
           ),
@@ -564,7 +564,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               if (collection.isEditable)
                 ListTile(
                   leading: const Icon(Icons.edit),
-                  title: Text(l.rename),
+                  title: Text(l.editCollection),
                   onTap: () async {
                     Navigator.of(context).pop();
                     await _renameCollection(context, ref, collection);

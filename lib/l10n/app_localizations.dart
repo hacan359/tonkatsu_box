@@ -1633,16 +1633,22 @@ abstract class S {
   /// **'{count, plural, =1{1 item} other{{count} items}}'**
   String collectionsUncategorizedItems(int count);
 
+  /// No description provided for @editCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit collection'**
+  String get editCollection;
+
   /// No description provided for @collectionsRenamed.
   ///
   /// In en, this message translates to:
-  /// **'Collection renamed'**
+  /// **'Collection updated'**
   String get collectionsRenamed;
 
   /// No description provided for @collectionsFailedToRename.
   ///
   /// In en, this message translates to:
-  /// **'Failed to rename: {error}'**
+  /// **'Failed to save: {error}'**
   String collectionsFailedToRename(String error);
 
   /// No description provided for @collectionsDeleted.
@@ -4576,7 +4582,7 @@ abstract class S {
   /// No description provided for @collectionEditHeroImageHint.
   ///
   /// In en, this message translates to:
-  /// **'Place the main subject in the top-right — the left and bottom edges fade into the background'**
+  /// **'Recommended 2560×1080 (21:9). Main subject on the right — the left side is covered by the title, the bottom fades into the background'**
   String get collectionEditHeroImageHint;
 
   /// No description provided for @collectionEditHeroPick.

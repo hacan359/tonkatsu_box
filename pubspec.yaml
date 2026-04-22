@@ -109,6 +109,7 @@ flutter:
   assets:
     - assets/images/
     - assets/images/platform_overlays/
+    - assets/images/collection_hero_defaults/
     - assets/credits/
 
   # An image asset can refer to one or more resolution-specific "variants", see

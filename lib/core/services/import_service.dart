@@ -1494,14 +1494,13 @@ class ImportService {
   ) async {
     String? heroFileName;
     if (_heroService != null) {
-      final MapEntry<String, String>? heroEntry = xcoll.images.entries
-          .where((MapEntry<String, String> e) =>
-              e.key.startsWith('collection_hero/'))
-          .cast<MapEntry<String, String>?>()
-          .firstWhere(
-            (MapEntry<String, String>? _) => true,
-            orElse: () => null,
-          );
+      MapEntry<String, String>? heroEntry;
+      for (final MapEntry<String, String> entry in xcoll.images.entries) {
+        if (entry.key.startsWith('collection_hero/')) {
+          heroEntry = entry;
+          break;
+        }
+      }
       if (heroEntry != null) {
         try {
           final List<int> bytes = base64Decode(heroEntry.value);

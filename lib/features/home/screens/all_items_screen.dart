@@ -43,7 +43,7 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
   final Set<int> _selectedPlatformIds = <int>{};
 
   /// Максимальная ширина карточки на десктопе.
-  static const double _desktopMaxCardWidth = 150;
+  static const double _desktopMaxCardWidth = 170;
 
   /// Ширина, ниже которой сегменты показывают иконки вместо текста.
   static const double _compactBreakpoint = 700;

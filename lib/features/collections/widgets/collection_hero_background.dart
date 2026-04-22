@@ -25,6 +25,7 @@ class CollectionHeroBackground extends StatelessWidget {
     required this.imagePath,
     this.isMobile = false,
     this.strength = HeroGradientStrength.standard,
+    this.cacheWidth,
     this.child,
     super.key,
   });
@@ -39,6 +40,13 @@ class CollectionHeroBackground extends StatelessWidget {
   /// стандарт).
   final HeroGradientStrength strength;
 
+  /// Hint для ImageCache: декодировать картинку не в оригинальном разрешении,
+  /// а в указанной ширине. Если не задан — берётся [HeroGradientStrength.defaultCacheWidth].
+  ///
+  /// Важно для гридов коллекций: без этого hero 4K на 150×150 карточке
+  /// декодируется целиком и забивает ImageCache.
+  final int? cacheWidth;
+
   /// Контент поверх картинки (текст, кнопки). Без `Positioned` — родитель
   /// сам размещает через `Stack`, или можно передать `Align`.
   final Widget? child;
@@ -50,6 +58,9 @@ class CollectionHeroBackground extends StatelessWidget {
     final double bottomStop = isMobile ? 0.70 : 0.55;
     final double leftDark = strength.leftDarkOpacity;
     final double bottomDark = strength.bottomDarkOpacity;
+    final double dpr = MediaQuery.devicePixelRatioOf(context);
+    final int effectiveCacheWidth =
+        ((cacheWidth ?? strength.defaultCacheWidth) * dpr).round();
 
     return ClipRect(
       child: Stack(
@@ -61,6 +72,7 @@ class CollectionHeroBackground extends StatelessWidget {
             fit: BoxFit.cover,
             alignment: Alignment.topRight,
             filterQuality: FilterQuality.medium,
+            cacheWidth: effectiveCacheWidth,
             errorBuilder: (_, _, _) =>
                 const ColoredBox(color: AppColors.surface),
           ),
@@ -79,7 +91,6 @@ class CollectionHeroBackground extends StatelessWidget {
                 stops: <double>[0.0, leftStop * 0.5, leftStop],
               ),
             ),
-            child: const SizedBox.expand(),
           ),
 
           // 3) Затемнение снизу → прозрачное сверху (фон приложения внизу).
@@ -96,7 +107,6 @@ class CollectionHeroBackground extends StatelessWidget {
                 stops: <double>[0.0, bottomStop * 0.45, bottomStop],
               ),
             ),
-            child: const SizedBox.expand(),
           ),
 
           ?child,
@@ -109,14 +119,23 @@ class CollectionHeroBackground extends StatelessWidget {
 /// Сила градиентов hero.
 enum HeroGradientStrength {
   /// Для карточек грида (мягче, чтобы не забивать маленькое изображение).
-  soft(leftDarkOpacity: 0.75, bottomDarkOpacity: 0.90),
+  soft(
+    leftDarkOpacity: 0.75,
+    bottomDarkOpacity: 0.90,
+    defaultCacheWidth: 320,
+  ),
 
   /// Для полноразмерного баннера.
-  standard(leftDarkOpacity: 0.85, bottomDarkOpacity: 1.0);
+  standard(
+    leftDarkOpacity: 0.85,
+    bottomDarkOpacity: 1.0,
+    defaultCacheWidth: 1280,
+  );
 
   const HeroGradientStrength({
     required this.leftDarkOpacity,
     required this.bottomDarkOpacity,
+    required this.defaultCacheWidth,
   });
 
   /// Непрозрачность левой части.
@@ -124,4 +143,7 @@ enum HeroGradientStrength {
 
   /// Непрозрачность нижней части (в самом низу — полностью фон).
   final double bottomDarkOpacity;
+
+  /// Дефолтная ширина декодирования в logical pixels (умножается на DPR).
+  final int defaultCacheWidth;
 }

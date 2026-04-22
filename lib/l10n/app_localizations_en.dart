@@ -857,11 +857,14 @@ class SEn extends S {
   }
 
   @override
-  String get collectionsRenamed => 'Collection renamed';
+  String get editCollection => 'Edit collection';
+
+  @override
+  String get collectionsRenamed => 'Collection updated';
 
   @override
   String collectionsFailedToRename(String error) {
-    return 'Failed to rename: $error';
+    return 'Failed to save: $error';
   }
 
   @override
@@ -2485,7 +2488,7 @@ class SEn extends S {
 
   @override
   String get collectionEditHeroImageHint =>
-      'Place the main subject in the top-right — the left and bottom edges fade into the background';
+      'Recommended 2560×1080 (21:9). Main subject on the right — the left side is covered by the title, the bottom fades into the background';
 
   @override
   String get collectionEditHeroPick => 'Choose image';

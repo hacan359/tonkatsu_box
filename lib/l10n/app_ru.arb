@@ -326,8 +326,9 @@
       "count": {"type": "int"}
     }
   },
-  "collectionsRenamed": "Коллекция переименована",
-  "collectionsFailedToRename": "Ошибка переименования: {error}",
+  "editCollection": "Редактировать коллекцию",
+  "collectionsRenamed": "Коллекция обновлена",
+  "collectionsFailedToRename": "Ошибка сохранения: {error}",
   "collectionsDeleted": "Коллекция удалена",
   "collectionsFailedToDelete": "Ошибка удаления: {error}",
   "collectionsFailedToCreate": "Ошибка создания коллекции: {error}",
@@ -899,7 +900,7 @@
   "settingsRichCollections": "Персонализация коллекций",
   "settingsRichCollectionsSubtitle": "Обложка и описание вместо мозаики",
   "collectionEditHeroImage": "Обложка",
-  "collectionEditHeroImageHint": "Размести главный объект справа сверху — левый и нижний края растворятся в фоне",
+  "collectionEditHeroImageHint": "Рекомендуется 2560×1080 (21:9). Главный объект справа — слева его закроет заголовок, снизу края растворятся в фоне",
   "collectionEditHeroPick": "Выбрать картинку",
   "collectionEditHeroReplace": "Заменить",
   "collectionEditHeroRemove": "Убрать",

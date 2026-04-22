@@ -43,6 +43,7 @@ class CollectionItemsView extends ConsumerWidget {
     this.tags = const <CollectionTag>[],
     this.filterTagIds = const <int>{},
     this.groupByTags = false,
+    this.header,
     super.key,
   });
 
@@ -85,13 +86,20 @@ class CollectionItemsView extends ConsumerWidget {
   /// Включён ли режим группировки по тегам.
   final bool groupByTags;
 
+  /// Опциональный header, скроллится вместе со списком элементов.
+  ///
+  /// Используется для rich-коллекций: hero-баннер встраивается как первый
+  /// sliver и уезжает вверх вместе с сеткой. Для table/reorder режимов —
+  /// пинится сверху, т.к. эти виджеты не работают со slivers.
+  final Widget? header;
+
   /// Максимальная ширина карточки на десктопе.
-  static const double _desktopMaxCardWidth = 150;
+  static const double _desktopMaxCardWidth = 170;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (items.isEmpty) {
-      return _buildEmptyState(context);
+      return _withHeader(_buildEmptyState(context));
     }
 
     final CollectionSortMode sortMode =
@@ -100,7 +108,7 @@ class CollectionItemsView extends ConsumerWidget {
         sortMode == CollectionSortMode.manual && canEdit;
 
     if (isTableMode) {
-      return Padding(
+      return _withHeader(Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
         child: CollectionTableView(
           items: items,
@@ -145,7 +153,7 @@ class CollectionItemsView extends ConsumerWidget {
                 }
               : null,
         ),
-      );
+      ));
     }
 
     if (isGridMode) {
@@ -207,6 +215,18 @@ class CollectionItemsView extends ConsumerWidget {
   bool get _hasTagGroups =>
       tags.isNotEmpty && (groupByTags || filterTagIds.isNotEmpty);
 
+  /// Пинит [header] сверху [body] (используется для table/reorder/empty
+  /// режимов, где нельзя встроить header как sliver).
+  Widget _withHeader(Widget body) {
+    if (header == null) return body;
+    return Column(
+      children: <Widget>[
+        header!,
+        Expanded(child: body),
+      ],
+    );
+  }
+
   Widget _buildListView(BuildContext context, WidgetRef ref) {
     if (!_hasTagGroups) {
       return _buildFlatListView(context, ref, items);
@@ -228,18 +248,36 @@ class CollectionItemsView extends ConsumerWidget {
     WidgetRef ref,
     List<CollectionItem> listItems,
   ) {
-    return RefreshIndicator(
+    final Widget refresh = RefreshIndicator(
       onRefresh: () => ref
           .read(collectionItemsNotifierProvider(collectionId).notifier)
           .refresh(),
-      child: ListView.builder(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-        itemCount: listItems.length,
-        itemBuilder: (BuildContext context, int index) {
-          return _buildListTile(context, listItems[index]);
-        },
-      ),
+      child: header == null
+          ? ListView.builder(
+              padding:
+                  const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+              itemCount: listItems.length,
+              itemBuilder: (BuildContext context, int index) {
+                return _buildListTile(context, listItems[index]);
+              },
+            )
+          : CustomScrollView(
+              slivers: <Widget>[
+                SliverToBoxAdapter(child: header),
+                SliverPadding(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                  sliver: SliverList.builder(
+                    itemCount: listItems.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return _buildListTile(context, listItems[index]);
+                    },
+                  ),
+                ),
+              ],
+            ),
     );
+    return refresh;
   }
 
   Widget _buildListTile(BuildContext context, CollectionItem item) {
@@ -320,21 +358,44 @@ class CollectionItemsView extends ConsumerWidget {
       onRefresh: () => ref
           .read(collectionItemsNotifierProvider(collectionId).notifier)
           .refresh(),
-      child: GridView.builder(
-        padding: EdgeInsets.all(gridPadding),
-        gridDelegate: gridDelegate,
-        itemCount: sorted.length,
-        itemBuilder: (BuildContext context, int index) {
-          return _buildGridCard(
-            context,
-            sorted[index],
-            isLandscape,
-            tagById,
-            settings,
-            tagGlow: true,
-          );
-        },
-      ),
+      child: header == null
+          ? GridView.builder(
+              padding: EdgeInsets.all(gridPadding),
+              gridDelegate: gridDelegate,
+              itemCount: sorted.length,
+              itemBuilder: (BuildContext context, int index) {
+                return _buildGridCard(
+                  context,
+                  sorted[index],
+                  isLandscape,
+                  tagById,
+                  settings,
+                  tagGlow: true,
+                );
+              },
+            )
+          : CustomScrollView(
+              slivers: <Widget>[
+                SliverToBoxAdapter(child: header),
+                SliverPadding(
+                  padding: EdgeInsets.all(gridPadding),
+                  sliver: SliverGrid.builder(
+                    gridDelegate: gridDelegate,
+                    itemCount: sorted.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return _buildGridCard(
+                        context,
+                        sorted[index],
+                        isLandscape,
+                        tagById,
+                        settings,
+                        tagGlow: true,
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
     );
   }
 
@@ -353,15 +414,32 @@ class CollectionItemsView extends ConsumerWidget {
       onRefresh: () => ref
           .read(collectionItemsNotifierProvider(collectionId).notifier)
           .refresh(),
-      child: GridView.builder(
-        padding: EdgeInsets.all(gridPadding),
-        gridDelegate: gridDelegate,
-        itemCount: items.length,
-        itemBuilder: (BuildContext context, int index) {
-          return _buildGridCard(
-              context, items[index], isLandscape, tagById, settings);
-        },
-      ),
+      child: header == null
+          ? GridView.builder(
+              padding: EdgeInsets.all(gridPadding),
+              gridDelegate: gridDelegate,
+              itemCount: items.length,
+              itemBuilder: (BuildContext context, int index) {
+                return _buildGridCard(
+                    context, items[index], isLandscape, tagById, settings);
+              },
+            )
+          : CustomScrollView(
+              slivers: <Widget>[
+                SliverToBoxAdapter(child: header),
+                SliverPadding(
+                  padding: EdgeInsets.all(gridPadding),
+                  sliver: SliverGrid.builder(
+                    gridDelegate: gridDelegate,
+                    itemCount: items.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return _buildGridCard(context, items[index],
+                          isLandscape, tagById, settings);
+                    },
+                  ),
+                ),
+              ],
+            ),
     );
   }
 
@@ -417,7 +495,7 @@ class CollectionItemsView extends ConsumerWidget {
   }
 
   Widget _buildReorderableList(BuildContext context, WidgetRef ref) {
-    return ReorderableListView.builder(
+    return _withHeader(ReorderableListView.builder(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
       buildDefaultDragHandles: false,
       itemCount: items.length,
@@ -473,7 +551,7 @@ class CollectionItemsView extends ConsumerWidget {
           onTap: () => onItemTap(item),
         );
       },
-    );
+    ));
   }
 
 

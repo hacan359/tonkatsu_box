@@ -37,7 +37,7 @@ import '../providers/vgmaps_panel_provider.dart';
 import '../widgets/collection_canvas_layout.dart';
 import '../widgets/collection_filter_bar.dart';
 import '../widgets/collection_items_view.dart';
-import '../widgets/collection_rich_banner.dart';
+import '../widgets/rich/rich_collection_body.dart';
 import '../providers/rich_collections_provider.dart';
 import '../widgets/tag_sidebar.dart';
 import '../widgets/tag_management_dialog.dart';
@@ -475,81 +475,81 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     final String? heroAbsPath = (richEnabled && heroFile != null)
         ? ref.watch(collectionHeroServiceProvider).resolve(heroFile)
         : null;
-    final bool showHero = heroAbsPath != null && !_isUncategorized;
+    // Rich-баннер применяется для любой коллекции (кроме uncategorized),
+    // если тогл включён — стабильный темплейт независимо от наличия hero.
+    final bool isRich = richEnabled && !_isUncategorized;
 
+    final Widget? heroHeader = isRich
+        ? RichHeroBanner(
+            collection: _collection!,
+            heroAbsolutePath: heroAbsPath,
+          )
+        : null;
+
+    final Widget itemsView = itemsAsync.when(
+      data: (List<CollectionItem> items) => CollectionItemsView(
+        collectionId: widget.collectionId,
+        items: _applyFilters(items, tags),
+        tags: tags,
+        filterTagIds: _filterTagIds,
+        groupByTags: _groupByTags,
+        isGridMode: _isGridMode,
+        isTableMode: _isTableMode,
+        canEdit: _canEdit,
+        header: heroHeader,
+        onItemTap: _showItemDetails,
+        onItemMove: _canEdit
+            ? (CollectionItem item) => _handleMoveItem(item)
+            : null,
+        onItemClone: _canEdit
+            ? (CollectionItem item) => _handleCloneItem(item)
+            : null,
+        onItemRemove: _canEdit
+            ? (CollectionItem item) => _handleRemoveItem(item)
+            : null,
+        onItemFocusChanged: (CollectionItem item, bool hasFocus) {
+          setState(() => _focusedItem = hasFocus ? item : null);
+        },
+      ),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (Object error, StackTrace stack) =>
+          _buildErrorState(context, error),
+    );
+
+    final Widget? tagSidebar =
+        (tags.isNotEmpty && !isCompactScreen(context))
+            ? TagSidebar(
+                tags: tags,
+                selectedTagIds: _filterTagIds,
+                groupByTags: _groupByTags,
+                onGroupToggled: () {
+                  setState(() {
+                    _groupByTags = !_groupByTags;
+                    _filterTagIds = <int>{};
+                  });
+                },
+                onTagToggled: (int? tagId) {
+                  setState(() {
+                    if (tagId == null) {
+                      _filterTagIds = <int>{};
+                    } else if (_filterTagIds.contains(tagId)) {
+                      _filterTagIds = Set<int>.from(_filterTagIds)
+                        ..remove(tagId);
+                    } else {
+                      _filterTagIds = Set<int>.from(_filterTagIds)
+                        ..add(tagId);
+                    }
+                  });
+                },
+              )
+            : null;
+
+    // Rich vs classic теперь различаются только наличием `heroHeader`
+    // внутри `CollectionItemsView` — layout одинаковый.
     return Row(
       children: <Widget>[
-        Expanded(
-          child: Column(
-            children: <Widget>[
-              if (showHero)
-                CollectionRichBanner(
-                  collection: _collection!,
-                  heroAbsolutePath: heroAbsPath,
-                ),
-              Expanded(
-                child: itemsAsync.when(
-                  data: (List<CollectionItem> items) => CollectionItemsView(
-                    collectionId: widget.collectionId,
-                    items: _applyFilters(items, tags),
-                    tags: tags,
-                    filterTagIds: _filterTagIds,
-                    groupByTags: _groupByTags,
-                    isGridMode: _isGridMode,
-                    isTableMode: _isTableMode,
-                    canEdit: _canEdit,
-                    onItemTap: _showItemDetails,
-                    onItemMove: _canEdit
-                        ? (CollectionItem item) => _handleMoveItem(item)
-                        : null,
-                    onItemClone: _canEdit
-                        ? (CollectionItem item) => _handleCloneItem(item)
-                        : null,
-                    onItemRemove: _canEdit
-                        ? (CollectionItem item) => _handleRemoveItem(item)
-                        : null,
-                    onItemFocusChanged: (CollectionItem item, bool hasFocus) {
-                      setState(() => _focusedItem = hasFocus ? item : null);
-                    },
-                  ),
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (Object error, StackTrace stack) =>
-                      _buildErrorState(context, error),
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        // Боковая панель тегов — только на широких экранах. На узких
-        // ту же функциональность открывает кнопка в CollectionFilterBar
-        // (открывает CollectionFilterSheet).
-        if (tags.isNotEmpty && !isCompactScreen(context))
-          TagSidebar(
-            tags: tags,
-            selectedTagIds: _filterTagIds,
-            groupByTags: _groupByTags,
-            onGroupToggled: () {
-              setState(() {
-                _groupByTags = !_groupByTags;
-                _filterTagIds = <int>{};
-              });
-            },
-            onTagToggled: (int? tagId) {
-              setState(() {
-                if (tagId == null) {
-                  _filterTagIds = <int>{};
-                } else if (_filterTagIds.contains(tagId)) {
-                  _filterTagIds = Set<int>.from(_filterTagIds)
-                    ..remove(tagId);
-                } else {
-                  _filterTagIds = Set<int>.from(_filterTagIds)
-                    ..add(tagId);
-                }
-              });
-            },
-          ),
+        Expanded(child: itemsView),
+        ?tagSidebar,
       ],
     );
   }

@@ -197,6 +197,9 @@ Key format: `{ImageType.folder}/{imageId}`
 **Canvas images** — `imageId` is FNV-1a 32-bit hash of the image URL:
 - `canvas_images/a1b2c3d4` — image added to the canvas board
 
+**Collection hero image** — at most one entry, `imageId` is the original file extension:
+- `collection_hero/jpg` — hero banner for the collection (rich view cover)
+
 Values are base64-encoded PNG image data.
 
 ### Media Object

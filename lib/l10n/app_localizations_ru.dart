@@ -867,11 +867,14 @@ class SRu extends S {
   }
 
   @override
-  String get collectionsRenamed => 'Коллекция переименована';
+  String get editCollection => 'Редактировать коллекцию';
+
+  @override
+  String get collectionsRenamed => 'Коллекция обновлена';
 
   @override
   String collectionsFailedToRename(String error) {
-    return 'Ошибка переименования: $error';
+    return 'Ошибка сохранения: $error';
   }
 
   @override
@@ -2504,7 +2507,7 @@ class SRu extends S {
 
   @override
   String get collectionEditHeroImageHint =>
-      'Размести главный объект справа сверху — левый и нижний края растворятся в фоне';
+      'Рекомендуется 2560×1080 (21:9). Главный объект справа — слева его закроет заголовок, снизу края растворятся в фоне';
 
   @override
   String get collectionEditHeroPick => 'Выбрать картинку';
