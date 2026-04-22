@@ -28,13 +28,34 @@ Enumerate changed files once. If the diff is empty, stop with "nothing to finali
 
 ### Phase 1 — Simplify
 
-Review new/changed code for:
+Review new/changed code from three independent angles. **This phase is self-contained — do not delegate to a built-in `/simplify` skill, which may not exist in every Claude Code version.** Run the review yourself using these three lenses:
 
-- **Reuse**: existing utilities, DAO methods, shared helpers that could replace newly written code.
-- **Quality**: parameter sprawl, copy-paste with slight variation, nested conditionals 3+ levels, stringly-typed code where enums/consts exist, unnecessary wrapper widgets, unnecessary comments explaining WHAT (keep only WHY for non-obvious invariants).
-- **Efficiency**: redundant work, missed concurrency (independent awaits in sequence), N+1 DB/API calls, hot-path bloat, unbounded caches.
+1. **Reuse**
+   - Search the codebase for existing utilities, DAO methods, helpers, or constants that could replace newly written code. Common locations: `lib/shared/`, sibling files of the changed file, existing DAOs.
+   - Flag new functions that duplicate existing functionality.
+   - Flag inline logic that could use an existing helper (string manipulation, path handling, type guards, platform checks).
 
-Fix actionable issues. Skip false positives — don't argue with findings, just move on.
+2. **Quality**
+   - Redundant state, cached values that could be derived.
+   - Parameter sprawl (adding N-th param instead of restructuring).
+   - Copy-paste with slight variation → unify with shared abstraction.
+   - Leaky abstractions, stringly-typed code where enums/consts exist.
+   - Unnecessary wrapper widgets/Boxes that add no layout value.
+   - Nested conditionals 3+ levels (flatten with early returns, lookup tables, if/else-if cascade).
+   - Unnecessary comments explaining WHAT (delete; keep only WHY for hidden constraints, subtle invariants, workarounds).
+
+3. **Efficiency**
+   - Redundant computations, duplicate network/DB calls, N+1 patterns.
+   - Missed concurrency: independent `await`s in sequence → `Future.wait`.
+   - Hot-path bloat (startup, per-render, per-request).
+   - No-op store updates in polling loops / event handlers (add change-detection guard).
+   - TOCTOU anti-pattern (pre-checking existence then operating) → operate directly and handle the error.
+   - Unbounded data structures, missing cleanup, event listener leaks.
+   - Reading whole files when a slice is enough.
+
+**For large diffs** (≥5 changed files or ≥300 lines), dispatch the three angles as parallel `Agent` sub-tasks (`subagent_type: Explore`) in a single message — each agent gets the full diff and reports its findings in ≤300 words. Then aggregate and fix. On small diffs, review all three angles yourself inline.
+
+Fix actionable issues. Skip false positives — don't argue, just move on. Out-of-scope issues (pre-existing cruft in untouched files) get noted in the final report, not fixed here.
 
 ### Phase 2 — Double review
 
