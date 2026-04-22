@@ -66,19 +66,22 @@ Check each file in `docs/` against the current state of the code:
 
 | File | What to check |
 |------|--------------|
-| `ARCHITECTURE.md` | New modules, providers, models, API clients, screens |
-| `FEATURES.md` | New user-facing features |
-| `GETTING_STARTED.md` | New setup steps (new API keys, configuration) |
+| `ARCHITECTURE.md` | New architectural layers, patterns, or major modules. Do NOT list individual files/methods — keep it a high-level map |
 | `ROADMAP.md` | Mark completed items, add new plans |
 | `CONTRIBUTING.md` | Changes to development process |
-| `RCOLL_FORMAT.md` | Changes to export/import format |
+| `CODESTYLE.md` | New lint rules, typing conventions |
+| `COMMITS.md` | Changes to commit conventions |
+| `RCOLL_FORMAT.md` | Changes to export/import format (`.xcoll` / `.xcollx`) |
+| `GAMEPAD.md` | New focusable widgets, navigation rules |
+| `SNACKBAR.md` | Changes to `context.showSnack()` API or types |
 
 **Update rules:**
 - Only add what actually changed
 - Preserve existing style and formatting of the document
 - Don't rewrite the entire file — make targeted edits
-- Documentation in English (matching existing docs)
+- Documentation language: match the existing doc (most are Russian; `ROADMAP.md` is English — keep each file in its current language)
 - If a file is not affected by changes — don't touch it
+- Do NOT create new `.md` files unless the user explicitly asks (keep docs/ lean)
 
 ### 4. Verification
 
@@ -90,9 +93,6 @@ powershell.exe -Command "cd D:\CODE\xerabora; flutter test"
 ## Checklist Before Finishing
 
 - [ ] CHANGELOG.md is up to date
-- [ ] docs/ARCHITECTURE.md reflects new components
-- [ ] docs/FEATURES.md contains new features
-- [ ] docs/GETTING_STARTED.md is current (if new settings were added)
-- [ ] docs/ROADMAP.md is updated (if items were completed)
+- [ ] docs/ touched only if the change actually affects them (ARCHITECTURE, ROADMAP, RCOLL_FORMAT, GAMEPAD, SNACKBAR, CODESTYLE, CONTRIBUTING, COMMITS)
 - [ ] `flutter analyze --fatal-infos --fatal-warnings` passes
 - [ ] `flutter test` — all tests pass

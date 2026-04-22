@@ -1,9 +1,9 @@
 ---
 name: full-coverage-tests
-description: Creates unit tests with 100% code coverage using shared test helpers. Use after writing any code or when requested by user.
+description: Creates unit and widget tests using shared test helpers (test/helpers/). Targets behaviour coverage of new/changed code. Use after writing any code or when requested by user.
 ---
 
-# Creating Tests with 100% Coverage
+# Creating Tests for New Code
 
 ## IMPORTANT: Shared Test Helpers
 
@@ -272,14 +272,15 @@ Check mocks.dart before declaring a mock:
 ### 9. Completion Criteria
 
 - All tests pass (flutter test)
-- Line coverage >= 100%
-- Branch coverage >= 100%
+- Every public method/branch of the code you just wrote has at least one test covering it (happy path + each meaningful edge case)
 - No missed edge cases
 - No duplicate mock classes (all in test/helpers/mocks.dart)
 - No inline registerFallbackValue (use registerAllFallbacks())
 - No inline builders if equivalent exists in builders.dart
 - Widget tests use tester.pumpApp()
 - No visual assertions (colors, text labels, icons, spacing)
+
+Note: chasing literal 100% line/branch coverage is not the goal. Behaviour coverage is. A defensive null-guard that can never trigger in practice doesn't need its own test.
 
 ## Test Naming
 
