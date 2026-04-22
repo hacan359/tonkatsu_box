@@ -1399,5 +1399,62 @@ void main() {
         expect(result, isEmpty);
       });
     });
+
+    group('cloneItemToCollection', () {
+      test('nulls tag_id in clone (source tag belongs to source collection)',
+          () async {
+        when(
+          () => mockDb.query(
+            'collection_items',
+            where: 'id = ?',
+            whereArgs: <Object?>[1],
+            limit: 1,
+          ),
+        ).thenAnswer(
+          (_) async => <Map<String, dynamic>>[
+            <String, dynamic>{
+              ..._itemRow(),
+              'tag_id': 77,
+            },
+          ],
+        );
+        when(
+          () => mockDb.rawQuery(
+            'SELECT MAX(sort_order) AS max_sort FROM collection_items '
+            'WHERE collection_id = ?',
+            <Object?>[2],
+          ),
+        ).thenAnswer(
+          (_) async => <Map<String, dynamic>>[
+            <String, dynamic>{'max_sort': null},
+          ],
+        );
+        when(() => mockDb.insert('collection_items', any()))
+            .thenAnswer((_) async => 101);
+
+        final int? newId = await dao.cloneItemToCollection(1, 2);
+
+        expect(newId, 101);
+        final Map<String, dynamic> inserted = verify(
+          () => mockDb.insert('collection_items', captureAny()),
+        ).captured.single as Map<String, dynamic>;
+        expect(inserted['tag_id'], isNull);
+        expect(inserted['collection_id'], 2);
+        expect(inserted.containsKey('id'), isFalse);
+      });
+
+      test('returns null when source item does not exist', () async {
+        when(
+          () => mockDb.query(
+            'collection_items',
+            where: 'id = ?',
+            whereArgs: <Object?>[1],
+            limit: 1,
+          ),
+        ).thenAnswer((_) async => <Map<String, dynamic>>[]);
+
+        expect(await dao.cloneItemToCollection(1, 2), isNull);
+      });
+    });
   });
 }

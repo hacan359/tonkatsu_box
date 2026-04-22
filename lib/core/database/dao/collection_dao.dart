@@ -627,11 +627,14 @@ class CollectionDao {
     final int sortOrder = await getNextSortOrder(targetCollectionId);
 
     // Копируем все поля, переопределяя только целевые.
+    // tag_id обнуляем: теги привязаны к коллекции, а привязка на уровне
+    // целевой коллекции выставляется провайдером по имени тега.
     final Map<String, dynamic> clone = Map<String, dynamic>.of(rows.first)
       ..remove('id')
       ..['collection_id'] = targetCollectionId
       ..['added_at'] = now
-      ..['sort_order'] = sortOrder;
+      ..['sort_order'] = sortOrder
+      ..['tag_id'] = null;
 
     try {
       final int newId = await db.insert('collection_items', clone);
