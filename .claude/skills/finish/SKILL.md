@@ -81,12 +81,34 @@ Fix actionable issues. Skip false positives — don't argue, just move on. Out-o
 
 ### Phase 3 — Tests for new code
 
-- Shared helpers: `import '../../helpers/test_helpers.dart'`. Reuse mocks from `test/helpers/mocks.dart`, builders from `builders.dart`, fallbacks via `registerAllFallbacks()`.
-- If a mock/builder will be needed in ≥2 files, add it to helpers instead of declaring locally.
+**Goal: useful tests, not coverage theatre.** 100% line/branch coverage is *not* the target. Aim for tests that break only when real behaviour breaks — and that would catch a future regression you'd actually care about.
+
+Every test must pull its weight in one of three buckets:
+
+**1. UI doesn't silently break**
+   - Widget renders without exceptions (`expect(tester.takeException(), isNull)`).
+   - Critical flows work: tap handlers fire the right callback, navigation happens, conditional widgets show/hide on state change, lists render the right item count.
+   - **Do NOT test** colours, text labels, icons, font sizes, padding, border radius, widget types used purely for styling (e.g. `find.byType(Container)`). Design changes must not break tests. Localised string values — same rule: assert that *some* text appears, not that it equals a specific string.
+   - Data-driven text that flows from model → UI is fair game (`expect(find.text(collection.name), findsOneWidget)` is OK; `expect(find.text('Collections'), findsOneWidget)` for a static title is not).
+
+**2. Logic is verified reliably**
+   - For every public method / function: happy path + each meaningful branch (if/else, switch cases, early returns, error paths).
+   - Edge cases the change actually cares about: empty input, null, boundaries, concurrent-state races where relevant. Skip defensive null-guards that can't trigger in practice.
+   - Model serialisation round-trips (`fromJson`/`toJson`, `fromDb`/`toDb`) when the change touches models.
+   - `copyWith` semantics when a new field is added.
+
+**3. Method calls at the boundary are verified**
+   - When the change orchestrates multiple collaborators (DAO, repository, API client, provider), use `verify(() => mock.method(args)).called(N)` to pin down that the right method was called with the right args, the right number of times.
+   - Use `verifyNever` to assert negative-space guarantees (e.g. "no tag remap when sourceTagId is null").
+   - Use `captureAny()` to inspect complex payloads (e.g. "the cloned row has `tag_id: null`").
+
+**Infrastructure rules (non-negotiable):**
+- `import '../../helpers/test_helpers.dart'` — reuse mocks from `test/helpers/mocks.dart`, builders from `builders.dart`, fallbacks via `registerAllFallbacks()` in `setUpAll`.
+- Mock/builder will be used in ≥2 files → add it to helpers. Unique to one test → declare locally.
 - Widget tests use `tester.pumpApp()`, not a hand-rolled `ProviderScope` + `MaterialApp`.
-- Behaviour coverage of new/changed code: every public method and every meaningful branch (happy path + edge cases). Chasing literal 100% line/branch coverage is not the goal — defensive null-guards that can't trigger don't need dedicated tests.
-- No visual assertions (colours, text labels, icons, spacing, widget types for styling wrappers). Data-driven text that flows from model → UI is fine to assert.
-- Naming: `should [result] when [condition]`.
+- Naming: `should [expected result] when [condition]`.
+
+**Self-check before finishing a test:** *"If someone changed the design tomorrow (colours, labels, layout) — would this test fail?"* If yes, and the change wasn't a logic change, the test is overfitted. Remove or relax it.
 
 ### Phase 4 — Changelog + docs
 
