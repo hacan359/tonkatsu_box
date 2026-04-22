@@ -2534,6 +2534,45 @@ class SRu extends S {
   String get browseFilterFormat => 'Формат';
 
   @override
+  String get browseFilterMinRating => 'Мин. рейтинг';
+
+  @override
+  String get browseFilterMinVotes => 'Мин. голосов';
+
+  @override
+  String get browseFilterLanguage => 'Язык';
+
+  @override
+  String get languageEnglish => 'Английский';
+
+  @override
+  String get languageJapanese => 'Японский';
+
+  @override
+  String get languageKorean => 'Корейский';
+
+  @override
+  String get languageChinese => 'Китайский';
+
+  @override
+  String get languageFrench => 'Французский';
+
+  @override
+  String get languageSpanish => 'Испанский';
+
+  @override
+  String get languageGerman => 'Немецкий';
+
+  @override
+  String get languageRussian => 'Русский';
+
+  @override
+  String get languageItalian => 'Итальянский';
+
+  @override
+  String get languagePortuguese => 'Португальский';
+
+  @override
   String get mangaFormatManga => 'Манга';
 
   @override

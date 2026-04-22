@@ -7,7 +7,10 @@ import '../../../core/api/tmdb_api.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/movie.dart';
+import '../filters/min_rating_filter.dart';
+import '../filters/min_votes_filter.dart';
 import '../filters/tmdb_genre_filter.dart';
+import '../filters/tmdb_language_filter.dart';
 import '../filters/year_filter.dart';
 import '../models/search_source.dart';
 import '../providers/genre_provider.dart';
@@ -40,6 +43,9 @@ class TmdbMoviesSource extends SearchSource {
   List<SearchFilter> get filters => <SearchFilter>[
         TmdbGenreFilter(type: 'movie'),
         YearFilter(),
+        MinRatingFilter(),
+        MinVotesFilter(),
+        TmdbLanguageFilter(),
       ];
 
   @override
@@ -79,7 +85,12 @@ class TmdbMoviesSource extends SearchSource {
       releaseDateLte = '${yearValue.$2}-12-31';
     }
 
-    final int? genreId = filterValues['genre'] as int?;
+    final List<int>? genreIds = _readGenreIds(filterValues['genre']);
+    final double? minRating =
+        (filterValues['minRating'] as num?)?.toDouble();
+    final int? minVotes = filterValues['minVotes'] as int?;
+    final String? originalLanguage =
+        filterValues['originalLanguage'] as String?;
 
     if (query != null && query.isNotEmpty) {
       // Текстовый поиск: TMDB search + клиентская фильтрация по жанру
@@ -88,13 +99,18 @@ class TmdbMoviesSource extends SearchSource {
 
       List<Movie> movies = result.results;
 
-      // Клиентская фильтрация по жанру (TMDB search не поддерживает genre)
-      if (genreId != null) {
-        final String? genreName = genreMap[genreId.toString()];
-        if (genreName != null) {
+      // Клиентская фильтрация по жанрам (TMDB search не поддерживает genre).
+      // Multi-select → совпадение хотя бы по одному из выбранных жанров (OR).
+      if (genreIds != null && genreIds.isNotEmpty) {
+        final Set<String> genreNames = genreIds
+            .map((int id) => genreMap[id.toString()])
+            .whereType<String>()
+            .toSet();
+        if (genreNames.isNotEmpty) {
           movies = movies
               .where((Movie m) =>
-                  m.genres != null && m.genres!.contains(genreName))
+                  m.genres != null &&
+                  m.genres!.any(genreNames.contains))
               .toList();
         }
       }
@@ -111,15 +127,14 @@ class TmdbMoviesSource extends SearchSource {
     }
 
     // Browse mode: Discover с фильтрами
-    final int? voteCountGte =
-        sortBy == 'vote_average.desc' ? 200 : null;
-
     final List<Movie> movies = await tmdb.discoverMovies(
-      genreId: genreId,
+      genreIds: _genreIdsToParam(genreIds),
       year: year,
       releaseDateGte: releaseDateGte,
       releaseDateLte: releaseDateLte,
-      voteCountGte: voteCountGte,
+      voteCountGte: minVotes,
+      voteAverageGte: minRating,
+      originalLanguage: originalLanguage,
       sortBy: sortBy,
       page: page,
     );
@@ -139,4 +154,19 @@ class TmdbMoviesSource extends SearchSource {
     // Discover feed переиспользуется через существующий виджет
     return null;
   }
+}
+
+/// Нормализует значение фильтра `genre` в список ID (multi-select или single).
+List<int>? _readGenreIds(Object? value) {
+  return switch (value) {
+    final List<Object?> list => list.whereType<int>().toList(),
+    final int id => <int>[id],
+    _ => null,
+  };
+}
+
+/// Склеивает ID в строку для `with_genres`. null если список пуст.
+String? _genreIdsToParam(List<int>? ids) {
+  if (ids == null || ids.isEmpty) return null;
+  return ids.join(',');
 }

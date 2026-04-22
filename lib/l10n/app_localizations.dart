@@ -4627,6 +4627,84 @@ abstract class S {
   /// **'Format'**
   String get browseFilterFormat;
 
+  /// No description provided for @browseFilterMinRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Min rating'**
+  String get browseFilterMinRating;
+
+  /// No description provided for @browseFilterMinVotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Min votes'**
+  String get browseFilterMinVotes;
+
+  /// No description provided for @browseFilterLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get browseFilterLanguage;
+
+  /// No description provided for @languageEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get languageEnglish;
+
+  /// No description provided for @languageJapanese.
+  ///
+  /// In en, this message translates to:
+  /// **'Japanese'**
+  String get languageJapanese;
+
+  /// No description provided for @languageKorean.
+  ///
+  /// In en, this message translates to:
+  /// **'Korean'**
+  String get languageKorean;
+
+  /// No description provided for @languageChinese.
+  ///
+  /// In en, this message translates to:
+  /// **'Chinese'**
+  String get languageChinese;
+
+  /// No description provided for @languageFrench.
+  ///
+  /// In en, this message translates to:
+  /// **'French'**
+  String get languageFrench;
+
+  /// No description provided for @languageSpanish.
+  ///
+  /// In en, this message translates to:
+  /// **'Spanish'**
+  String get languageSpanish;
+
+  /// No description provided for @languageGerman.
+  ///
+  /// In en, this message translates to:
+  /// **'German'**
+  String get languageGerman;
+
+  /// No description provided for @languageRussian.
+  ///
+  /// In en, this message translates to:
+  /// **'Russian'**
+  String get languageRussian;
+
+  /// No description provided for @languageItalian.
+  ///
+  /// In en, this message translates to:
+  /// **'Italian'**
+  String get languageItalian;
+
+  /// No description provided for @languagePortuguese.
+  ///
+  /// In en, this message translates to:
+  /// **'Portuguese'**
+  String get languagePortuguese;
+
   /// No description provided for @mangaFormatManga.
   ///
   /// In en, this message translates to:

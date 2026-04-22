@@ -27,6 +27,12 @@ class TmdbGenreFilter extends SearchFilter {
   String get cacheKey => '${key}_$type';
 
   @override
+  bool get multiSelect => true;
+
+  @override
+  bool get searchable => true;
+
+  @override
   String placeholder(S l) => l.browseFilterGenre;
 
   @override
