@@ -40,6 +40,9 @@ class IgdbGenreFilter extends SearchFilter {
   bool get searchable => true;
 
   @override
+  bool get multiSelect => true;
+
+  @override
   String placeholder(S l) => l.browseFilterGenre;
 
   @override

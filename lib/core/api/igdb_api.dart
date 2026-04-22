@@ -293,8 +293,10 @@ class IgdbApi {
   /// Throws [IgdbApiException] при ошибке запроса.
   Future<List<Game>> searchGames({
     required String query,
-    int? genreId,
+    List<int>? genreIds,
     List<int>? platformIds,
+    List<int>? gameModeIds,
+    int? minRating,
     int? year,
     (int, int)? decade,
     int limit = 20,
@@ -314,13 +316,20 @@ class IgdbApi {
       // fields -> where -> search -> limit
       final StringBuffer body = StringBuffer(_gameFields);
 
-      // Добавляем where-клаузу с фильтрами, если есть
+      // Добавляем where-клаузу с фильтрами, если есть.
+      // IGDB: `field = (a,b)` означает ANY-of (OR match).
       final List<String> conditions = <String>[];
       if (platformIds != null && platformIds.isNotEmpty) {
         conditions.add('platforms = (${platformIds.join(",")})');
       }
-      if (genreId != null) {
-        conditions.add('genres = ($genreId)');
+      if (genreIds != null && genreIds.isNotEmpty) {
+        conditions.add('genres = (${genreIds.join(",")})');
+      }
+      if (gameModeIds != null && gameModeIds.isNotEmpty) {
+        conditions.add('game_modes = (${gameModeIds.join(",")})');
+      }
+      if (minRating != null) {
+        conditions.add('rating >= $minRating');
       }
       if (year != null) {
         final int start =
@@ -686,8 +695,10 @@ class IgdbApi {
   /// [minRatingCount] — минимальное количество оценок.
   /// Throws [IgdbApiException] при ошибке запроса.
   Future<List<Game>> browseGames({
-    int? genreId,
+    List<int>? genreIds,
     List<int>? platformIds,
+    List<int>? gameModeIds,
+    int? minRating,
     int? year,
     (int, int)? decade,
     String sortBy = 'rating desc',
@@ -701,11 +712,17 @@ class IgdbApi {
       final StringBuffer where =
           StringBuffer('where rating_count > $minRatingCount');
 
-      if (genreId != null) {
-        where.write(' & genres = ($genreId)');
+      if (genreIds != null && genreIds.isNotEmpty) {
+        where.write(' & genres = (${genreIds.join(",")})');
       }
       if (platformIds != null && platformIds.isNotEmpty) {
         where.write(' & platforms = (${platformIds.join(",")})');
+      }
+      if (gameModeIds != null && gameModeIds.isNotEmpty) {
+        where.write(' & game_modes = (${gameModeIds.join(",")})');
+      }
+      if (minRating != null) {
+        where.write(' & rating >= $minRating');
       }
       if (year != null) {
         final int start =

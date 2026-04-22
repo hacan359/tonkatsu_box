@@ -54,8 +54,10 @@ class AniListApi {
 
   /// GraphQL query для поиска/browse манги.
   static const String _searchQuery = r'''
-query ($page: Int, $perPage: Int, $search: String, $genre: String,
-       $format: MediaFormat, $sort: [MediaSort]) {
+query ($page: Int, $perPage: Int, $search: String, $genres: [String],
+       $format: MediaFormat, $status: MediaStatus,
+       $startDateGreater: FuzzyDateInt, $startDateLesser: FuzzyDateInt,
+       $sort: [MediaSort]) {
   Page(page: $page, perPage: $perPage) {
     pageInfo {
       total
@@ -63,8 +65,11 @@ query ($page: Int, $perPage: Int, $search: String, $genre: String,
       lastPage
       hasNextPage
     }
-    media(type: MANGA, search: $search, genre: $genre,
-          format: $format, sort: $sort) {
+    media(type: MANGA, search: $search, genre_in: $genres,
+          format: $format, status: $status,
+          startDate_greater: $startDateGreater,
+          startDate_lesser: $startDateLesser,
+          sort: $sort) {
       id
       title { romaji english native }
       coverImage { large medium }
@@ -152,8 +157,10 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
 
   /// GraphQL query для поиска/browse аниме.
   static const String _animeSearchQuery = r'''
-query ($page: Int, $perPage: Int, $search: String, $genre: String,
-       $status: MediaStatus, $sort: [MediaSort]) {
+query ($page: Int, $perPage: Int, $search: String, $genres: [String],
+       $status: MediaStatus, $format: MediaFormat,
+       $season: MediaSeason, $seasonYear: Int,
+       $sort: [MediaSort]) {
   Page(page: $page, perPage: $perPage) {
     pageInfo {
       total
@@ -161,8 +168,10 @@ query ($page: Int, $perPage: Int, $search: String, $genre: String,
       lastPage
       hasNextPage
     }
-    media(type: ANIME, search: $search, genre: $genre,
-          status: $status, sort: $sort) {
+    media(type: ANIME, search: $search, genre_in: $genres,
+          status: $status, format: $format,
+          season: $season, seasonYear: $seasonYear,
+          sort: $sort) {
       id
       title { romaji english native }
       coverImage { large medium }
@@ -263,16 +272,21 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
 
   /// Просматривает мангу с фильтрами.
   ///
-  /// [genre] — жанр (например "Action").
+  /// [genres] — жанры (OR match). Пустой или null = без фильтра.
   /// [format] — формат: MANGA, MANHWA, MANHUA, ONE_SHOT, NOVEL, LIGHT_NOVEL.
+  /// [status] — статус: FINISHED / RELEASING / NOT_YET_RELEASED / CANCELLED / HIATUS.
+  /// [startYear] — публикация началась в указанном году (FuzzyDate YYYYMMDD).
   /// [sort] — сортировка: SCORE_DESC, POPULARITY_DESC, START_DATE_DESC и др.
   ///
   /// Возвращает кортеж (список, есть ли ещё, кол-во страниц).
   /// Throws [AniListApiException] при ошибке.
   Future<(List<Manga>, bool hasMore, int totalPages)> browseManga({
     String? query,
-    String? genre,
+    List<String>? genres,
     String? format,
+    String? status,
+    int? startYear,
+    int? endYear,
     String sort = 'SCORE_DESC',
     int page = 1,
     int perPage = 20,
@@ -287,11 +301,21 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
       if (query != null && query.trim().isNotEmpty) {
         variables['search'] = query;
       }
-      if (genre != null) {
-        variables['genre'] = genre;
+      if (genres != null && genres.isNotEmpty) {
+        variables['genres'] = genres;
       }
       if (format != null) {
         variables['format'] = format;
+      }
+      if (status != null) {
+        variables['status'] = status;
+      }
+      // FuzzyDateInt: YYYYMMDD. Начало года = YYYY0101, конец = YYYY1231.
+      if (startYear != null) {
+        variables['startDateGreater'] = startYear * 10000 + 101;
+      }
+      if (endYear != null) {
+        variables['startDateLesser'] = endYear * 10000 + 1231;
       }
 
       final Response<dynamic> response = await _dio.post<dynamic>(
@@ -420,16 +444,22 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
 
   /// Просматривает аниме с фильтрами.
   ///
-  /// [genre] — жанр (например "Action").
+  /// [genres] — жанры (OR match). Пустой или null = без фильтра.
   /// [status] — статус: RELEASING, FINISHED, NOT_YET_RELEASED, CANCELLED.
+  /// [format] — формат: TV, MOVIE, OVA, ONA, SPECIAL, MUSIC, TV_SHORT.
+  /// [season] — сезон: WINTER / SPRING / SUMMER / FALL (нужен [seasonYear]).
+  /// [seasonYear] — год сезона. Самостоятельно — год выпуска аниме.
   /// [sort] — сортировка: SCORE_DESC, POPULARITY_DESC, TRENDING_DESC и др.
   ///
   /// Возвращает кортеж (список, есть ли ещё, кол-во страниц).
   /// Throws [AniListApiException] при ошибке.
   Future<(List<Anime>, bool hasMore, int totalPages)> browseAnime({
     String? query,
-    String? genre,
+    List<String>? genres,
     String? status,
+    String? format,
+    String? season,
+    int? seasonYear,
     String sort = 'POPULARITY_DESC',
     int page = 1,
     int perPage = 20,
@@ -444,11 +474,20 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
       if (query != null && query.trim().isNotEmpty) {
         variables['search'] = query;
       }
-      if (genre != null) {
-        variables['genre'] = genre;
+      if (genres != null && genres.isNotEmpty) {
+        variables['genres'] = genres;
       }
       if (status != null) {
         variables['status'] = status;
+      }
+      if (format != null) {
+        variables['format'] = format;
+      }
+      if (season != null) {
+        variables['season'] = season;
+      }
+      if (seasonYear != null) {
+        variables['seasonYear'] = seasonYear;
       }
 
       final Response<dynamic> response = await _dio.post<dynamic>(

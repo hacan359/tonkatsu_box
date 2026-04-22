@@ -37,13 +37,13 @@ void main() {
       expect(options.first.value, currentYear);
     });
 
-    test('options contains individual years from current to 2000', () async {
+    test('options contains individual years from current down to 1980',
+        () async {
       final List<FilterOption> options = await filter.options(ref, mockL);
 
       final int currentYear = DateTime.now().year;
-      final int expectedYearCount = currentYear - 2000 + 1;
+      final int expectedYearCount = currentYear - 1980 + 1;
 
-      // Первые N элементов — отдельные годы
       for (int i = 0; i < expectedYearCount; i++) {
         final int expectedYear = currentYear - i;
         expect(options[i].id, expectedYear.toString());
@@ -51,52 +51,53 @@ void main() {
       }
     });
 
-    test('options ends with decades 1990s, 1980s, 1970s', () async {
+    test('options ends with decades 1970s and 1960s', () async {
       final List<FilterOption> options = await filter.options(ref, mockL);
 
       final int len = options.length;
 
-      // Последние 3 — декады
-      expect(options[len - 3].id, '1990s');
-      expect(options[len - 3].label, '1990s');
-      expect(options[len - 3].value, (1990, 1999));
+      expect(options[len - 2].id, '1970s');
+      expect(options[len - 2].label, '1970s');
+      expect(options[len - 2].value, (1970, 1979));
 
-      expect(options[len - 2].id, '1980s');
-      expect(options[len - 2].label, '1980s');
-      expect(options[len - 2].value, (1980, 1989));
-
-      expect(options[len - 1].id, '1970s');
-      expect(options[len - 1].label, '1970s');
-      expect(options[len - 1].value, (1970, 1979));
+      expect(options[len - 1].id, '1960s');
+      expect(options[len - 1].label, '1960s');
+      expect(options[len - 1].value, (1960, 1969));
     });
 
     test('total options count is correct', () async {
       final List<FilterOption> options = await filter.options(ref, mockL);
 
       final int currentYear = DateTime.now().year;
-      final int yearCount = currentYear - 2000 + 1;
-      const int decadeCount = 3;
+      final int yearCount = currentYear - 1980 + 1;
+      const int decadeCount = 2;
 
       expect(options.length, yearCount + decadeCount);
     });
 
-    test('year 2000 is included in individual years', () async {
+    test('year 1980 is included in individual years (retro boundary)',
+        () async {
       final List<FilterOption> options = await filter.options(ref, mockL);
 
-      final Iterable<FilterOption> year2000 =
-          options.where((FilterOption o) => o.id == '2000');
-      expect(year2000, hasLength(1));
-      expect(year2000.first.value, 2000);
+      final Iterable<FilterOption> year1980 =
+          options.where((FilterOption o) => o.id == '1980');
+      expect(year1980, hasLength(1));
+      expect(year1980.first.value, 1980);
     });
 
     test('decade values are record tuples', () async {
       final List<FilterOption> options = await filter.options(ref, mockL);
 
-      final FilterOption decade90 =
-          options.firstWhere((FilterOption o) => o.id == '1990s');
-      final (int, int) value = decade90.value! as (int, int);
-      expect(value.$1, 1990);
-      expect(value.$2, 1999);
+      final FilterOption decade60 =
+          options.firstWhere((FilterOption o) => o.id == '1960s');
+      final (int, int) value = decade60.value! as (int, int);
+      expect(value.$1, 1960);
+      expect(value.$2, 1969);
+    });
+
+    test('is searchable — list is long enough to benefit from a search box',
+        () {
+      expect(filter.searchable, isTrue);
     });
   });
 }

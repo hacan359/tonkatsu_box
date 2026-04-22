@@ -4627,6 +4627,18 @@ abstract class S {
   /// **'Format'**
   String get browseFilterFormat;
 
+  /// No description provided for @browseFilterSeason.
+  ///
+  /// In en, this message translates to:
+  /// **'Season'**
+  String get browseFilterSeason;
+
+  /// No description provided for @browseFilterGameMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Game mode'**
+  String get browseFilterGameMode;
+
   /// No description provided for @browseFilterMinRating.
   ///
   /// In en, this message translates to:
@@ -4644,6 +4656,132 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Language'**
   String get browseFilterLanguage;
+
+  /// No description provided for @seasonWinter.
+  ///
+  /// In en, this message translates to:
+  /// **'Winter'**
+  String get seasonWinter;
+
+  /// No description provided for @seasonSpring.
+  ///
+  /// In en, this message translates to:
+  /// **'Spring'**
+  String get seasonSpring;
+
+  /// No description provided for @seasonSummer.
+  ///
+  /// In en, this message translates to:
+  /// **'Summer'**
+  String get seasonSummer;
+
+  /// No description provided for @seasonFall.
+  ///
+  /// In en, this message translates to:
+  /// **'Fall'**
+  String get seasonFall;
+
+  /// No description provided for @animeFormatTv.
+  ///
+  /// In en, this message translates to:
+  /// **'TV'**
+  String get animeFormatTv;
+
+  /// No description provided for @animeFormatMovie.
+  ///
+  /// In en, this message translates to:
+  /// **'Movie'**
+  String get animeFormatMovie;
+
+  /// No description provided for @animeFormatOva.
+  ///
+  /// In en, this message translates to:
+  /// **'OVA'**
+  String get animeFormatOva;
+
+  /// No description provided for @animeFormatOna.
+  ///
+  /// In en, this message translates to:
+  /// **'ONA'**
+  String get animeFormatOna;
+
+  /// No description provided for @animeFormatSpecial.
+  ///
+  /// In en, this message translates to:
+  /// **'Special'**
+  String get animeFormatSpecial;
+
+  /// No description provided for @animeFormatTvShort.
+  ///
+  /// In en, this message translates to:
+  /// **'TV Short'**
+  String get animeFormatTvShort;
+
+  /// No description provided for @mangaStatusPublishing.
+  ///
+  /// In en, this message translates to:
+  /// **'Publishing'**
+  String get mangaStatusPublishing;
+
+  /// No description provided for @mangaStatusFinished.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished'**
+  String get mangaStatusFinished;
+
+  /// No description provided for @mangaStatusNotYetPublished.
+  ///
+  /// In en, this message translates to:
+  /// **'Not yet published'**
+  String get mangaStatusNotYetPublished;
+
+  /// No description provided for @mangaStatusCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get mangaStatusCancelled;
+
+  /// No description provided for @mangaStatusHiatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Hiatus'**
+  String get mangaStatusHiatus;
+
+  /// No description provided for @gameModeSinglePlayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Single player'**
+  String get gameModeSinglePlayer;
+
+  /// No description provided for @gameModeMultiplayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Multiplayer'**
+  String get gameModeMultiplayer;
+
+  /// No description provided for @gameModeCoOperative.
+  ///
+  /// In en, this message translates to:
+  /// **'Co-operative'**
+  String get gameModeCoOperative;
+
+  /// No description provided for @gameModeSplitScreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Split screen'**
+  String get gameModeSplitScreen;
+
+  /// No description provided for @gameModeMmo.
+  ///
+  /// In en, this message translates to:
+  /// **'MMO'**
+  String get gameModeMmo;
+
+  /// No description provided for @gameModeBattleRoyale.
+  ///
+  /// In en, this message translates to:
+  /// **'Battle Royale'**
+  String get gameModeBattleRoyale;
 
   /// No description provided for @languageEnglish.
   ///
