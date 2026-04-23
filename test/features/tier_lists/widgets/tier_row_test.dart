@@ -1,6 +1,5 @@
 // Виджет-тесты для TierRow.
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/tier_lists/widgets/tier_item_card.dart';
 import 'package:xerabora/features/tier_lists/widgets/tier_row.dart';
