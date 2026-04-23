@@ -14,11 +14,8 @@ void main() {
       filter = MangaFormatFilter();
       mockL = MockS();
       when(() => mockL.mangaFormatManga).thenReturn('Manga');
-      when(() => mockL.mangaFormatManhwa).thenReturn('Manhwa');
-      when(() => mockL.mangaFormatManhua).thenReturn('Manhua');
       when(() => mockL.mangaFormatOneShot).thenReturn('One-shot');
       when(() => mockL.mangaFormatNovel).thenReturn('Novel');
-      when(() => mockL.mangaFormatLightNovel).thenReturn('Light Novel');
     });
 
     test('key is "format"', () {
@@ -37,11 +34,14 @@ void main() {
       expect(all.value, isNull);
     });
 
-    test('options returns 6 formats', () async {
+    test('options returns only valid AniList MediaFormat values', () async {
       final MockWidgetRef ref = MockWidgetRef();
       final List<FilterOption> options = await filter.options(ref, mockL);
 
-      expect(options, hasLength(6));
+      expect(
+        options.map((FilterOption o) => o.value).toList(),
+        <String>['MANGA', 'NOVEL', 'ONE_SHOT'],
+      );
     });
 
     test('first option is Manga', () async {
@@ -49,56 +49,10 @@ void main() {
       final List<FilterOption> options = await filter.options(ref, mockL);
 
       expect(options[0].id, 'manga');
-      expect(options[0].label, 'Manga');
       expect(options[0].value, 'MANGA');
     });
 
-    test('second option is Manhwa', () async {
-      final MockWidgetRef ref = MockWidgetRef();
-      final List<FilterOption> options = await filter.options(ref, mockL);
-
-      expect(options[1].id, 'manhwa');
-      expect(options[1].label, 'Manhwa');
-      expect(options[1].value, 'MANHWA');
-    });
-
-    test('third option is Manhua', () async {
-      final MockWidgetRef ref = MockWidgetRef();
-      final List<FilterOption> options = await filter.options(ref, mockL);
-
-      expect(options[2].id, 'manhua');
-      expect(options[2].label, 'Manhua');
-      expect(options[2].value, 'MANHUA');
-    });
-
-    test('fourth option is One-shot', () async {
-      final MockWidgetRef ref = MockWidgetRef();
-      final List<FilterOption> options = await filter.options(ref, mockL);
-
-      expect(options[3].id, 'one_shot');
-      expect(options[3].label, 'One-shot');
-      expect(options[3].value, 'ONE_SHOT');
-    });
-
-    test('fifth option is Novel', () async {
-      final MockWidgetRef ref = MockWidgetRef();
-      final List<FilterOption> options = await filter.options(ref, mockL);
-
-      expect(options[4].id, 'novel');
-      expect(options[4].label, 'Novel');
-      expect(options[4].value, 'NOVEL');
-    });
-
-    test('sixth option is Light Novel', () async {
-      final MockWidgetRef ref = MockWidgetRef();
-      final List<FilterOption> options = await filter.options(ref, mockL);
-
-      expect(options[5].id, 'light_novel');
-      expect(options[5].label, 'Light Novel');
-      expect(options[5].value, 'LIGHT_NOVEL');
-    });
-
-    test('options returns same length on multiple calls', () async {
+    test('options returns same values on multiple calls', () async {
       final MockWidgetRef ref = MockWidgetRef();
       final List<FilterOption> first = await filter.options(ref, mockL);
       final List<FilterOption> second = await filter.options(ref, mockL);

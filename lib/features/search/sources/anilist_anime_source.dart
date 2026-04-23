@@ -7,8 +7,10 @@ import '../../../core/api/anilist_api.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/anime.dart';
 import '../../../shared/models/media_type.dart';
+import '../filters/anilist_anime_format_filter.dart';
 import '../filters/anilist_anime_genre_filter.dart';
 import '../filters/anilist_anime_status_filter.dart';
+import '../filters/year_filter.dart';
 import '../models/search_source.dart';
 
 /// Размер страницы для запросов к AniList API.
@@ -41,6 +43,8 @@ class AniListAnimeSource extends SearchSource {
   List<SearchFilter> get filters => <SearchFilter>[
         AniListAnimeGenreFilter(),
         AniListAnimeStatusFilter(),
+        AniListAnimeFormatFilter(),
+        YearFilter(),
       ];
 
   @override
@@ -67,15 +71,34 @@ class AniListAnimeSource extends SearchSource {
   }) async {
     final AniListApi api = ref.read(aniListApiProvider);
 
-    final String? genre = filterValues['genre'] as String?;
+    final List<String>? genres = _readStringList(filterValues['genre']);
     final String? status = filterValues['status'] as String?;
+    final String? format = filterValues['format'] as String?;
+    // YearFilter → startDate-диапазон. Надёжно для всех аниме, в т.ч.
+    // старых/отменённых, у которых seasonYear не проставлен.
+    final Object? yearValue = filterValues['year'];
+    int? startYear;
+    int? endYear;
+    switch (yearValue) {
+      case final int y:
+        startYear = y;
+        endYear = y;
+      case final (int start, int end) tuple:
+        startYear = tuple.$1;
+        endYear = tuple.$2;
+      default:
+        break;
+    }
 
     try {
       final (List<Anime> animes, bool hasMore, int totalPages) =
           await api.browseAnime(
         query: query,
-        genre: genre,
+        genres: genres,
         status: status,
+        format: format,
+        startYear: startYear,
+        endYear: endYear,
         sort: sortBy,
         page: page,
         perPage: _aniListPageSize,
@@ -95,4 +118,13 @@ class AniListAnimeSource extends SearchSource {
 
   @override
   Widget? buildDiscoverFeed(BuildContext context, WidgetRef ref) => null;
+}
+
+/// Нормализует multi-select значение фильтра в список строк.
+List<String>? _readStringList(Object? value) {
+  return switch (value) {
+    final List<Object?> list => list.whereType<String>().toList(),
+    final String single => <String>[single],
+    _ => null,
+  };
 }

@@ -9,7 +9,10 @@ import '../../../shared/models/media_type.dart';
 import '../../../shared/models/movie.dart';
 import '../../../shared/models/tv_show.dart';
 import '../filters/anime_type_filter.dart';
+import '../filters/min_rating_filter.dart';
+import '../filters/min_votes_filter.dart';
 import '../filters/tmdb_genre_filter.dart';
+import '../filters/tmdb_language_filter.dart';
 import '../filters/year_filter.dart';
 import '../models/search_source.dart';
 import '../providers/genre_provider.dart';
@@ -43,6 +46,9 @@ class TmdbAnimeSource extends SearchSource {
         TmdbGenreFilter(type: 'tv'),
         YearFilter(),
         AnimeTypeFilter(),
+        MinRatingFilter(),
+        MinVotesFilter(),
+        TmdbLanguageFilter(),
       ];
 
   @override
@@ -78,7 +84,12 @@ class TmdbAnimeSource extends SearchSource {
       dateLte = '${yearValue.$2}-12-31';
     }
 
-    final int? extraGenreId = filterValues['genre'] as int?;
+    final List<int>? extraGenreIds = _readGenreIds(filterValues['genre']);
+    final double? minRating =
+        (filterValues['minRating'] as num?)?.toDouble();
+    final int? minVotes = filterValues['minVotes'] as int?;
+    final String? originalLanguage =
+        filterValues['originalLanguage'] as String?;
 
     if (query != null && query.isNotEmpty) {
       // Текстовый поиск + клиентская фильтрация по animation genre
@@ -87,25 +98,23 @@ class TmdbAnimeSource extends SearchSource {
         ref,
         query: query,
         animeType: animeType,
-        extraGenreId: extraGenreId,
+        extraGenreIds: extraGenreIds,
         year: year,
         page: page,
       );
     }
 
-    // Browse mode: Discover с фильтрами
-    final int? voteCountGte =
-        sortBy == 'vote_average.desc' ? 100 : null;
-
     if (animeType == 'movies') {
       return _browseMovies(
         tmdb,
         ref,
-        extraGenreId: extraGenreId,
+        extraGenreIds: extraGenreIds,
         year: year,
         releaseDateGte: dateGte,
         releaseDateLte: dateLte,
-        voteCountGte: voteCountGte,
+        voteCountGte: minVotes,
+        voteAverageGte: minRating,
+        originalLanguage: originalLanguage,
         sortBy: sortBy,
         page: page,
       );
@@ -115,11 +124,13 @@ class TmdbAnimeSource extends SearchSource {
       return _browseTvShows(
         tmdb,
         ref,
-        extraGenreId: extraGenreId,
+        extraGenreIds: extraGenreIds,
         year: year,
         firstAirDateGte: dateGte,
         firstAirDateLte: dateLte,
-        voteCountGte: voteCountGte,
+        voteCountGte: minVotes,
+        voteAverageGte: minRating,
+        originalLanguage: originalLanguage,
         sortBy: sortBy,
         page: page,
       );
@@ -131,22 +142,26 @@ class TmdbAnimeSource extends SearchSource {
       _browseTvShows(
         tmdb,
         ref,
-        extraGenreId: extraGenreId,
+        extraGenreIds: extraGenreIds,
         year: year,
         firstAirDateGte: dateGte,
         firstAirDateLte: dateLte,
-        voteCountGte: voteCountGte,
+        voteCountGte: minVotes,
+        voteAverageGte: minRating,
+        originalLanguage: originalLanguage,
         sortBy: sortBy,
         page: page,
       ),
       _browseMovies(
         tmdb,
         ref,
-        extraGenreId: extraGenreId,
+        extraGenreIds: extraGenreIds,
         year: year,
         releaseDateGte: dateGte,
         releaseDateLte: dateLte,
-        voteCountGte: voteCountGte,
+        voteCountGte: minVotes,
+        voteAverageGte: minRating,
+        originalLanguage: originalLanguage,
         sortBy: sortBy,
         page: page,
       ),
@@ -168,21 +183,20 @@ class TmdbAnimeSource extends SearchSource {
   Future<BrowseResult> _browseMovies(
     TmdbApi tmdb,
     Ref ref, {
-    int? extraGenreId,
+    List<int>? extraGenreIds,
     int? year,
     String? releaseDateGte,
     String? releaseDateLte,
     int? voteCountGte,
+    double? voteAverageGte,
+    String? originalLanguage,
     required String sortBy,
     required int page,
   }) async {
     final Map<String, String> genreMap =
         await ref.read(movieGenreMapProvider.future);
 
-    // Жанр Animation + дополнительный жанр
-    final String genreString = extraGenreId != null
-        ? '$tmdbAnimationGenreId,$extraGenreId'
-        : '$tmdbAnimationGenreId';
+    final String genreString = _genreIdsWithAnimation(extraGenreIds);
 
     final List<Movie> movies = await tmdb.discoverMovies(
       genreIds: genreString,
@@ -190,6 +204,8 @@ class TmdbAnimeSource extends SearchSource {
       releaseDateGte: releaseDateGte,
       releaseDateLte: releaseDateLte,
       voteCountGte: voteCountGte,
+      voteAverageGte: voteAverageGte,
+      originalLanguage: originalLanguage,
       sortBy: sortBy,
       page: page,
     );
@@ -207,20 +223,20 @@ class TmdbAnimeSource extends SearchSource {
   Future<BrowseResult> _browseTvShows(
     TmdbApi tmdb,
     Ref ref, {
-    int? extraGenreId,
+    List<int>? extraGenreIds,
     int? year,
     String? firstAirDateGte,
     String? firstAirDateLte,
     int? voteCountGte,
+    double? voteAverageGte,
+    String? originalLanguage,
     required String sortBy,
     required int page,
   }) async {
     final Map<String, String> genreMap =
         await ref.read(tvGenreMapProvider.future);
 
-    final String genreString = extraGenreId != null
-        ? '$tmdbAnimationGenreId,$extraGenreId'
-        : '$tmdbAnimationGenreId';
+    final String genreString = _genreIdsWithAnimation(extraGenreIds);
 
     final List<TvShow> shows = await tmdb.discoverTvShows(
       genreIds: genreString,
@@ -228,6 +244,8 @@ class TmdbAnimeSource extends SearchSource {
       firstAirDateGte: firstAirDateGte,
       firstAirDateLte: firstAirDateLte,
       voteCountGte: voteCountGte,
+      voteAverageGte: voteAverageGte,
+      originalLanguage: originalLanguage,
       sortBy: sortBy,
       page: page,
     );
@@ -247,7 +265,7 @@ class TmdbAnimeSource extends SearchSource {
     Ref ref, {
     required String query,
     String? animeType,
-    int? extraGenreId,
+    List<int>? extraGenreIds,
     int? year,
     required int page,
   }) async {
@@ -289,20 +307,26 @@ class TmdbAnimeSource extends SearchSource {
           .toList();
     }
 
-    // Клиентская фильтрация по дополнительному жанру
-    if (extraGenreId != null) {
-      final String? tvGenreName = tvGenreMap[extraGenreId.toString()];
-      final String? movieGenreName = movieGenreMap[extraGenreId.toString()];
-      if (tvGenreName != null) {
+    // Клиентская фильтрация по дополнительным жанрам (multi-select, OR).
+    if (extraGenreIds != null && extraGenreIds.isNotEmpty) {
+      final Set<String> tvNames = extraGenreIds
+          .map((int id) => tvGenreMap[id.toString()])
+          .whereType<String>()
+          .toSet();
+      final Set<String> movieNames = extraGenreIds
+          .map((int id) => movieGenreMap[id.toString()])
+          .whereType<String>()
+          .toSet();
+      if (tvNames.isNotEmpty) {
         animeTv = animeTv
             .where((TvShow s) =>
-                s.genres != null && s.genres!.contains(tvGenreName))
+                s.genres != null && s.genres!.any(tvNames.contains))
             .toList();
       }
-      if (movieGenreName != null) {
+      if (movieNames.isNotEmpty) {
         animeMovies = animeMovies
             .where((Movie m) =>
-                m.genres != null && m.genres!.contains(movieGenreName))
+                m.genres != null && m.genres!.any(movieNames.contains))
             .toList();
       }
     }
@@ -333,4 +357,22 @@ class TmdbAnimeSource extends SearchSource {
 
   @override
   Widget? buildDiscoverFeed(BuildContext context, WidgetRef ref) => null;
+}
+
+/// Нормализует значение фильтра `genre` в список ID (multi-select или single).
+List<int>? _readGenreIds(Object? value) {
+  return switch (value) {
+    final List<Object?> list => list.whereType<int>().toList(),
+    final int id => <int>[id],
+    _ => null,
+  };
+}
+
+/// Возвращает строку `with_genres` с принудительным Animation жанром впереди
+/// и доп. жанрами через запятую.
+String _genreIdsWithAnimation(List<int>? extraIds) {
+  if (extraIds == null || extraIds.isEmpty) {
+    return '$tmdbAnimationGenreId';
+  }
+  return <int>[tmdbAnimationGenreId, ...extraIds].join(',');
 }

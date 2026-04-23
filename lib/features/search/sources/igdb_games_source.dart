@@ -7,7 +7,9 @@ import '../../../core/api/igdb_api.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/game.dart';
 import '../../../shared/models/media_type.dart';
+import '../filters/igdb_game_mode_filter.dart';
 import '../filters/igdb_genre_filter.dart';
+import '../filters/igdb_min_rating_filter.dart';
 import '../filters/igdb_platform_filter.dart';
 import '../filters/year_filter.dart';
 import '../models/search_source.dart';
@@ -40,6 +42,8 @@ class IgdbGamesSource extends SearchSource {
         IgdbGenreFilter(),
         IgdbPlatformFilter(),
         YearFilter(),
+        IgdbMinRatingFilter(),
+        IgdbGameModeFilter(),
       ];
 
   @override
@@ -62,14 +66,12 @@ class IgdbGamesSource extends SearchSource {
   }) async {
     final IgdbApi igdb = ref.read(igdbApiProvider);
 
-    final int? genreId = filterValues['genre'] as int?;
-    final Object? platformValue = filterValues['platform'];
-    final List<int>? platformIds = switch (platformValue) {
-      final List<Object> list =>
-        list.cast<int>(),
-      final int id => <int>[id],
-      _ => null,
-    };
+    final List<int>? genreIds = _readIntList(filterValues['genre']);
+    final List<int>? platformIds = _readIntList(filterValues['platform']);
+    final List<int>? gameModeIds = _readIntList(filterValues['gameMode']);
+    // UI хранит 1–10 (как TMDB), IGDB API — 0–100, поэтому ×10.
+    final int? minRatingUi = filterValues['minRating'] as int?;
+    final int? minRating = minRatingUi == null ? null : minRatingUi * 10;
     final Object? yearValue = filterValues['year'];
 
     int? year;
@@ -81,14 +83,15 @@ class IgdbGamesSource extends SearchSource {
     }
 
     if (query != null && query.isNotEmpty) {
-      // Текстовый поиск + фильтры (IGDB поддерживает нативно)
       const int pageSize = 50;
       final int offset = (page - 1) * pageSize;
 
       final List<Game> games = await igdb.searchGames(
         query: query,
-        genreId: genreId,
+        genreIds: genreIds,
         platformIds: platformIds,
+        gameModeIds: gameModeIds,
+        minRating: minRating,
         year: year,
         decade: decade,
         limit: pageSize,
@@ -108,8 +111,10 @@ class IgdbGamesSource extends SearchSource {
     final int offset = (page - 1) * pageSize;
 
     final List<Game> games = await igdb.browseGames(
-      genreId: genreId,
+      genreIds: genreIds,
       platformIds: platformIds,
+      gameModeIds: gameModeIds,
+      minRating: minRating,
       year: year,
       decade: decade,
       sortBy: sortBy,
@@ -127,4 +132,13 @@ class IgdbGamesSource extends SearchSource {
 
   @override
   Widget? buildDiscoverFeed(BuildContext context, WidgetRef ref) => null;
+}
+
+/// Нормализует значение фильтра (multi-select или single) в [List] of int.
+List<int>? _readIntList(Object? value) {
+  return switch (value) {
+    final List<Object?> list => list.whereType<int>().toList(),
+    final int id => <int>[id],
+    _ => null,
+  };
 }

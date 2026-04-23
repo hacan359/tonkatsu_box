@@ -2516,6 +2516,114 @@ class SEn extends S {
   String get browseFilterFormat => 'Format';
 
   @override
+  String get browseFilterSeason => 'Season';
+
+  @override
+  String get browseFilterGameMode => 'Game mode';
+
+  @override
+  String get browseFilterMinRating => 'Min rating';
+
+  @override
+  String get browseFilterMinVotes => 'Min votes';
+
+  @override
+  String get browseFilterLanguage => 'Language';
+
+  @override
+  String get seasonWinter => 'Winter';
+
+  @override
+  String get seasonSpring => 'Spring';
+
+  @override
+  String get seasonSummer => 'Summer';
+
+  @override
+  String get seasonFall => 'Fall';
+
+  @override
+  String get animeFormatTv => 'TV';
+
+  @override
+  String get animeFormatMovie => 'Movie';
+
+  @override
+  String get animeFormatOva => 'OVA';
+
+  @override
+  String get animeFormatOna => 'ONA';
+
+  @override
+  String get animeFormatSpecial => 'Special';
+
+  @override
+  String get animeFormatTvShort => 'TV Short';
+
+  @override
+  String get mangaStatusPublishing => 'Publishing';
+
+  @override
+  String get mangaStatusFinished => 'Finished';
+
+  @override
+  String get mangaStatusNotYetPublished => 'Not yet published';
+
+  @override
+  String get mangaStatusCancelled => 'Cancelled';
+
+  @override
+  String get mangaStatusHiatus => 'Hiatus';
+
+  @override
+  String get gameModeSinglePlayer => 'Single player';
+
+  @override
+  String get gameModeMultiplayer => 'Multiplayer';
+
+  @override
+  String get gameModeCoOperative => 'Co-operative';
+
+  @override
+  String get gameModeSplitScreen => 'Split screen';
+
+  @override
+  String get gameModeMmo => 'MMO';
+
+  @override
+  String get gameModeBattleRoyale => 'Battle Royale';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get languageJapanese => 'Japanese';
+
+  @override
+  String get languageKorean => 'Korean';
+
+  @override
+  String get languageChinese => 'Chinese';
+
+  @override
+  String get languageFrench => 'French';
+
+  @override
+  String get languageSpanish => 'Spanish';
+
+  @override
+  String get languageGerman => 'German';
+
+  @override
+  String get languageRussian => 'Russian';
+
+  @override
+  String get languageItalian => 'Italian';
+
+  @override
+  String get languagePortuguese => 'Portuguese';
+
+  @override
   String get mangaFormatManga => 'Manga';
 
   @override

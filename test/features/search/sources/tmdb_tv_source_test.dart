@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:xerabora/features/search/filters/min_rating_filter.dart';
+import 'package:xerabora/features/search/filters/min_votes_filter.dart';
 import 'package:xerabora/features/search/filters/tmdb_genre_filter.dart';
+import 'package:xerabora/features/search/filters/tmdb_language_filter.dart';
 import 'package:xerabora/features/search/filters/year_filter.dart';
 import 'package:xerabora/features/search/models/search_source.dart';
 import 'package:xerabora/features/search/sources/tmdb_tv_source.dart';
@@ -28,18 +31,31 @@ void main() {
     });
 
     group('filters', () {
-      test('has 2 filters', () {
-        expect(source.filters, hasLength(2));
+      test('exposes genre (multi), year, min rating, min votes, language', () {
+        expect(source.filters, hasLength(5));
       });
 
-      test('first filter is TmdbGenreFilter with type tv', () {
+      test('first filter is TmdbGenreFilter with type tv (multi-select)', () {
         final SearchFilter first = source.filters[0];
         expect(first, isA<TmdbGenreFilter>());
         expect((first as TmdbGenreFilter).type, 'tv');
+        expect(first.multiSelect, isTrue);
       });
 
       test('second filter is YearFilter', () {
         expect(source.filters[1], isA<YearFilter>());
+      });
+
+      test('third filter is MinRatingFilter', () {
+        expect(source.filters[2], isA<MinRatingFilter>());
+      });
+
+      test('fourth filter is MinVotesFilter', () {
+        expect(source.filters[3], isA<MinVotesFilter>());
+      });
+
+      test('fifth filter is TmdbLanguageFilter', () {
+        expect(source.filters[4], isA<TmdbLanguageFilter>());
       });
     });
 

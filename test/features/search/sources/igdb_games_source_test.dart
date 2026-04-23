@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:xerabora/features/search/filters/igdb_game_mode_filter.dart';
 import 'package:xerabora/features/search/filters/igdb_genre_filter.dart';
+import 'package:xerabora/features/search/filters/igdb_min_rating_filter.dart';
 import 'package:xerabora/features/search/filters/igdb_platform_filter.dart';
 import 'package:xerabora/features/search/filters/year_filter.dart';
 import 'package:xerabora/features/search/models/search_source.dart';
@@ -29,12 +31,13 @@ void main() {
     });
 
     group('filters', () {
-      test('has 3 filters', () {
-        expect(source.filters, hasLength(3));
+      test('exposes genre (multi), platform, year, min rating, game mode', () {
+        expect(source.filters, hasLength(5));
       });
 
-      test('first filter is IgdbGenreFilter', () {
+      test('first filter is IgdbGenreFilter (multi-select)', () {
         expect(source.filters[0], isA<IgdbGenreFilter>());
+        expect(source.filters[0].multiSelect, isTrue);
       });
 
       test('second filter is IgdbPlatformFilter', () {
@@ -43,6 +46,15 @@ void main() {
 
       test('third filter is YearFilter', () {
         expect(source.filters[2], isA<YearFilter>());
+      });
+
+      test('fourth filter is IgdbMinRatingFilter', () {
+        expect(source.filters[3], isA<IgdbMinRatingFilter>());
+      });
+
+      test('fifth filter is IgdbGameModeFilter (multi-select)', () {
+        expect(source.filters[4], isA<IgdbGameModeFilter>());
+        expect(source.filters[4].multiSelect, isTrue);
       });
     });
 

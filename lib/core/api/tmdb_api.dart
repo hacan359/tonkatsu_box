@@ -850,6 +850,8 @@ class TmdbApi {
   /// [releaseDateGte] — дата начала диапазона (YYYY-MM-DD), для декад.
   /// [releaseDateLte] — дата конца диапазона (YYYY-MM-DD), для декад.
   /// [voteCountGte] — минимальное количество голосов.
+  /// [voteAverageGte] — минимальная средняя оценка (0–10).
+  /// [originalLanguage] — ISO 639-1 код (en / ja / ko / zh / ...).
   Future<List<Movie>> discoverMovies({
     int? genreId,
     String? genreIds,
@@ -857,6 +859,8 @@ class TmdbApi {
     String? releaseDateGte,
     String? releaseDateLte,
     int? voteCountGte,
+    double? voteAverageGte,
+    String? originalLanguage,
     String sortBy = 'popularity.desc',
     int page = 1,
   }) async {
@@ -882,6 +886,12 @@ class TmdbApi {
         params['primary_release_date.lte'] = releaseDateLte;
       }
       if (voteCountGte != null) params['vote_count.gte'] = voteCountGte;
+      if (voteAverageGte != null) {
+        params['vote_average.gte'] = voteAverageGte;
+      }
+      if (originalLanguage != null) {
+        params['with_original_language'] = originalLanguage;
+      }
 
       final Response<dynamic> response = await _dio.get<dynamic>(
         '$_baseUrl/discover/movie',
@@ -909,6 +919,8 @@ class TmdbApi {
   /// [firstAirDateGte] — дата начала диапазона (YYYY-MM-DD), для декад.
   /// [firstAirDateLte] — дата конца диапазона (YYYY-MM-DD), для декад.
   /// [voteCountGte] — минимальное количество голосов.
+  /// [voteAverageGte] — минимальная средняя оценка (0–10).
+  /// [originalLanguage] — ISO 639-1 код (en / ja / ko / zh / ...).
   /// [withoutGenreIds] — исключить жанры (например [16] для анимации).
   Future<List<TvShow>> discoverTvShows({
     int? genreId,
@@ -917,6 +929,8 @@ class TmdbApi {
     String? firstAirDateGte,
     String? firstAirDateLte,
     int? voteCountGte,
+    double? voteAverageGte,
+    String? originalLanguage,
     List<int>? withoutGenreIds,
     String sortBy = 'popularity.desc',
     int page = 1,
@@ -943,6 +957,12 @@ class TmdbApi {
         params['first_air_date.lte'] = firstAirDateLte;
       }
       if (voteCountGte != null) params['vote_count.gte'] = voteCountGte;
+      if (voteAverageGte != null) {
+        params['vote_average.gte'] = voteAverageGte;
+      }
+      if (originalLanguage != null) {
+        params['with_original_language'] = originalLanguage;
+      }
       if (withoutGenreIds != null && withoutGenreIds.isNotEmpty) {
         params['without_genres'] = withoutGenreIds.join(',');
       }

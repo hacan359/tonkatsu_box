@@ -7,7 +7,9 @@ import '../models/search_source.dart';
 
 /// Фильтр формата манги.
 ///
-/// Форматы соответствуют AniList MediaFormat enum для TYPE=MANGA.
+/// AniList `MediaFormat` для TYPE=MANGA содержит только: MANGA, NOVEL,
+/// ONE_SHOT. Manhwa/Manhua в AniList определяются через `countryOfOrigin`,
+/// а не через format — сюда их не включаем.
 class MangaFormatFilter extends SearchFilter {
   @override
   String get key => 'format';
@@ -31,29 +33,14 @@ class MangaFormatFilter extends SearchFilter {
         value: 'MANGA',
       ),
       FilterOption(
-        id: 'manhwa',
-        label: l.mangaFormatManhwa,
-        value: 'MANHWA',
-      ),
-      FilterOption(
-        id: 'manhua',
-        label: l.mangaFormatManhua,
-        value: 'MANHUA',
-      ),
-      FilterOption(
-        id: 'one_shot',
-        label: l.mangaFormatOneShot,
-        value: 'ONE_SHOT',
-      ),
-      FilterOption(
         id: 'novel',
         label: l.mangaFormatNovel,
         value: 'NOVEL',
       ),
       FilterOption(
-        id: 'light_novel',
-        label: l.mangaFormatLightNovel,
-        value: 'LIGHT_NOVEL',
+        id: 'one_shot',
+        label: l.mangaFormatOneShot,
+        value: 'ONE_SHOT',
       ),
     ];
   }

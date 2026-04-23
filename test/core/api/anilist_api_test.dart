@@ -196,12 +196,12 @@ void main() {
           );
         });
 
-        await api.browseManga(genre: 'Action');
+        await api.browseManga(genres: <String>['Action']);
 
         expect(capturedData, isNotNull);
         final Map<String, dynamic> variables =
             capturedData!['variables'] as Map<String, dynamic>;
-        expect(variables['genre'], 'Action');
+        expect(variables['genres'], <String>['Action']);
       });
 
       test('должен передать format в переменные', () async {
@@ -562,11 +562,14 @@ void main() {
           );
         });
 
-        await api.browseAnime(genre: 'Action', status: 'RELEASING');
+        await api.browseAnime(
+          genres: <String>['Action'],
+          status: 'RELEASING',
+        );
 
         final Map<String, dynamic> variables =
             capturedData!['variables'] as Map<String, dynamic>;
-        expect(variables['genre'], 'Action');
+        expect(variables['genres'], <String>['Action']);
         expect(variables['status'], 'RELEASING');
       });
 
