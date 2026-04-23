@@ -1,43 +1,190 @@
 # Changelog
 
-Все значимые изменения проекта документируются в этом файле.
+All notable changes to this project are documented in this file.
 
-Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.1.0/).
+Format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/html_node/Style-of-Change-Logs.html): a short topic line, an optional body describing the change, then a list of affected files with the names of classes / methods / variables in parentheses so each symbol is greppable.
 
 ## [Unreleased]
 
 ### Added
-- **Personalized collections — cover image, description, and rich hero banner** — opt-in "Rich collection view" toggle in Settings gives every collection a large hero section with a cover image on the right, the collection title and description on the left, and a soft fade into the grid below. Cover is chosen via a new Edit dialog (name + description + image picker, with live preview and "Remove image" action); files are stored in `<appSupport>/collections/hero_<id>_<ts>.<ext>` and referenced by filename in the new `hero_image_path` column (DB migration v35). Collections without a custom cover fall back deterministically to one of 3 bundled default banners (`id % 3`). On the home grid, cards switch between the classic 3+3 mosaic and a rich hero variant sharing a unified shell (focus/hover/border) and a common text overlay (name → description → stats). The hero banner on a collection's own screen is a sliver that scrolls with the grid rather than a pinned header. Hero binaries travel inside `.xcollx` as a separate section (not in JSON), preserving export-format compatibility. New: `CollectionHeroService`, `CollectionHeroBackground` (with `soft`/`standard` gradient presets and DPR-aware cache width), `RichHeroBanner`, `ClassicCollectionCard`, `RichCollectionCard`, `CollectionCardShell`, `CollectionCardOverlay`, `EditCollectionDialog`, `richCollectionsEnabledProvider`. 11 localization keys EN+RU
-- **Right-click context menu on the Collections screen** — ПКМ on empty space (between or below cards) opens a popup with the primary FAB actions: Create new collection, Import collection, Toggle grid/list view. The card-level right-click menu (Open/Rename/Delete) is unchanged and keeps priority on cards via the gesture arena (`home_screen.dart`)
-- **Right-click context menu on All Items** — ПКМ on a poster opens Move to collection / Copy to collection / Remove, mirroring the menu inside a collection. Delegates to `CollectionActions` for identical dialogs, snackbars, and invalidation. Editability check extracted into `_isItemEditable` so it's shared with `_showItemDetails` (`all_items_screen.dart`)
-- **Inline status switcher in item context menus** — both the collection's own right-click menu and the All Items right-click menu grow a bottom row showing all five statuses as a horizontal "piano" of colored segments (the same `StatusChipRow` used on the item detail screen). One tap updates the status without leaving the menu. Labels adapt to media type (Playing for games / Watching for movies & TV). Status change patches the `AllItemsNotifier` list locally via new `CollectionItem.withStatus()` + `updateStatusLocally()` so the All Items grid no longer flashes through `AsyncLoading` on every status tap. `StatusChipRow` exposes a `height` parameter; menu-entry + value decoding encapsulated in `statusChipPopupMenuEntries` / `tryDecodeStatusMenuValue` helpers reused by both call sites (`collection_items_view.dart`, `all_items_screen.dart`, `status_chip_row.dart`, `collection_item.dart`, `all_items_provider.dart`)
-- **"Remember credentials" checkbox on Steam Import** — opt-in toggle under the API key / Steam ID fields persists both values (plus the flag itself) in `SharedPreferences` and prefills them on reopen. Unchecking clears the saved pair so stale data isn't left behind. Prefs writes are fire-and-forget (`unawaited`) so they don't delay the import start (`steam_import_content.dart`, `settings_provider.dart`, `app_en.arb`, `app_ru.arb`)
-- **Search now matches user notes and author review** — the in-collection search bar and the All Items global search also compare against `CollectionItem.userComment` and `CollectionItem.authorComment`, in addition to `itemName` and tag names. Lets users find titles by what they wrote about them. Case-insensitive (`collection_screen.dart`, `all_items_screen.dart`)
-- **TMDB search filters expanded** — Movies / TV / Anime tabs gain four new/upgraded filters on top of the existing genre + year. **Multi-select genre**: pick several at once (e.g. Action + Thriller); results include titles matching any selected genre (OR). **Min rating** — Any / 6+ / 7+ / 8+ / 9+, sent as `vote_average.gte`. **Min votes** — Any / 100 / 500 / 1000 / 5000, sent as `vote_count.gte`; previously this was hardcoded to auto-apply only on the "Top rated" sort and not user-adjustable. Used together with Min rating, filters out garbage like "10/10 with one vote". **Original language** — dropdown of the 10 most common languages (en / ja / ko / zh / fr / es / de / ru / it / pt), sent as `with_original_language`. Useful for anime (ja), k-drama (ko), c-drama (zh). Client-side genre fallback on text search now supports multi-genre too. New filters: `MinRatingFilter`, `MinVotesFilter`, `TmdbLanguageFilter`. API client: `discoverMovies` / `discoverTvShows` accept new `voteAverageGte`, `originalLanguage` params. 13 localization keys EN+RU (`tmdb_api.dart`, `tmdb_genre_filter.dart`, `tmdb_movies_source.dart`, `tmdb_tv_source.dart`, `tmdb_anime_source.dart`)
-- **AniList search filters expanded** — Anime tab goes from 2 filters (genre, status) to 4: adds **multi-select genre** (`genre_in: [String]` in GraphQL), **anime format** (TV / Movie / OVA / ONA / Special / TV Short — `MediaFormat`), and **year** via `startDate_greater` / `startDate_lesser` FuzzyDate bounds — reliable across all anime, including older and cancelled titles where AniList's `seasonYear` is not set. Manga tab goes from 2 to 4: adds multi-select genre, **status** (Publishing / Finished / Not yet published / Cancelled / Hiatus — `MediaStatus`, with manga-specific labels), and **year range** via the same FuzzyDate bounds. `MangaFormatFilter` limited to AniList-valid values (MANGA / NOVEL / ONE_SHOT); MANHWA / MANHUA / LIGHT_NOVEL are not members of AniList's `MediaFormat` enum and were removed. AniList GraphQL queries updated from `$genre: String` to `$genres: [String]`, new vars `$format`, `$status`, `$startDateGreater`, `$startDateLesser`. New filters: `AniListAnimeFormatFilter`, `AniListMangaStatusFilter` (`anilist_api.dart`, `anilist_anime_genre_filter.dart`, `anilist_genre_filter.dart`, `anilist_anime_source.dart`, `anilist_manga_source.dart`)
-- **IGDB search filters expanded** — Games tab goes from 3 filters (genre, platform, year) to 5: **multi-select genre** (IGDB syntax `genres = (12,31)` for OR match; previously single `genres = (12)`), **min rating** (6+ / 7+ / 8+ / 9+ on the familiar 1–10 scale, converted ×10 before hitting IGDB's native 0–100 `rating >= N`), and **game mode** (Single player / Multiplayer / Co-operative / Split screen / MMO / Battle Royale; multi-select with canonical IGDB IDs 1-6; sent as `game_modes = (1,3)`). `searchGames` / `browseGames` accept `List<int>? genreIds / gameModeIds` and `int? minRating`. New filters: `IgdbMinRatingFilter`, `IgdbGameModeFilter` (`igdb_api.dart`, `igdb_genre_filter.dart`, `igdb_games_source.dart`)
-- **Year filter extended and more granular** — the shared `YearFilter` used by TMDB / AniList / IGDB now lists individual years from the current year down to **1980** (was: down to 2000), with decade buckets for 1970s and 1960s for truly retro (Atari era). Popover is now `searchable` since the list is long. Previously users had no way to pick e.g. 1995 directly — had to fall back to the «1990s» bucket. New localization keys EN+RU covering anime formats, manga statuses, and game modes (`year_filter.dart`)
+
+- **Personalized collections with cover image, description, and rich hero banner**
+
+  Opt-in "Rich collection view" toggle in Settings gives each collection a hero section with cover image, title, and description on the home grid and the collection screen. Cover is chosen via a new Edit dialog; files live in `<appSupport>/collections/` and travel inside `.xcollx` as a separate section (not in JSON), preserving export-format compatibility. Collections without a custom cover fall back deterministically to one of 3 bundled default banners (`id % 3`). 11 localization keys EN+RU.
+
+  * lib/core/database/migrations/migration_v35.dart: New. Adds `hero_image_path` column to `collections`.
+  * lib/core/services/collection_hero_service.dart (CollectionHeroService): New. Stores hero images as `hero_<id>_<ts>.<ext>` under `<appSupport>`.
+  * lib/features/collections/widgets/collection_hero_background.dart (CollectionHeroBackground), rich_hero_banner.dart (RichHeroBanner), classic_collection_card.dart, rich_collection_card.dart, collection_card_shell.dart, collection_card_overlay.dart: New. Shared shell (focus / hover / border) and text overlay across both card variants; `CollectionHeroBackground` exposes `soft` / `standard` gradient presets with DPR-aware cache width.
+  * lib/features/collections/widgets/edit_collection_dialog.dart (EditCollectionDialog): New. Name + description + image picker with live preview and "Remove image" action.
+  * lib/features/collections/providers/rich_collections_enabled_provider.dart (richCollectionsEnabledProvider): New.
+  * lib/features/collections/screens/collection_screen.dart: Hero banner is a sliver that scrolls with the grid rather than a pinned header.
+  * lib/core/services/export_service.dart, import_service.dart: Carry hero binary as a separate `.xcollx` section.
+
+- **Right-click context menu on the Collections screen**
+
+  Right-click on empty space (between or below cards) opens a popup with the primary FAB actions: Create new collection, Import collection, Toggle grid/list view. The card-level right-click menu (Open / Rename / Delete) keeps priority on cards via the gesture arena.
+
+  * lib/features/collections/screens/home_screen.dart: Add empty-space right-click handler.
+
+- **Right-click context menu on All Items**
+
+  Right-click on a poster opens Move to collection / Copy to collection / Remove, mirroring the menu inside a collection. The editability check is shared between the context menu and the item detail sheet.
+
+  * lib/features/collections/screens/all_items_screen.dart (_isItemEditable): Extract shared predicate; delegate menu actions to `CollectionActions` for identical dialogs, snackbars, and invalidation.
+
+- **Inline status switcher in item context menus**
+
+  Both the collection's right-click menu and the All Items right-click menu grow a bottom row showing all five statuses as a horizontal "piano" of coloured segments. One tap updates the status without leaving the menu. Labels adapt to media type (Playing for games / Watching for movies & TV). Status change patches the list locally so the All Items grid no longer flashes through `AsyncLoading` on every tap.
+
+  * lib/features/collections/widgets/status_chip_row.dart (StatusChipRow, statusChipPopupMenuEntries, tryDecodeStatusMenuValue): Expose `height` parameter; add helpers for menu-entry + value decoding reused by both call sites.
+  * lib/features/collections/widgets/collection_items_view.dart, lib/features/collections/screens/all_items_screen.dart: Wire the status row into both context menus.
+  * lib/shared/models/collection_item.dart (CollectionItem.withStatus): New.
+  * lib/features/collections/providers/all_items_provider.dart (AllItemsNotifier.updateStatusLocally): New. Local patch avoids a full reload.
+
+- **"Remember credentials" checkbox on Steam Import**
+
+  Opt-in toggle under the API key / Steam ID fields persists both values (plus the flag itself) in `SharedPreferences` and prefills them on reopen. Unchecking clears the saved pair so stale data isn't left behind. Prefs writes are `unawaited` so they don't delay the import start.
+
+  * lib/features/imports/widgets/steam_import_content.dart: Add remember-me toggle + prefill logic.
+  * lib/features/settings/providers/settings_provider.dart: Persistence keys.
+  * lib/l10n/app_en.arb, app_ru.arb: Toggle label + help text.
+
+- **Search now matches user notes and author review**
+
+  In-collection search bar and the All Items global search compare against `CollectionItem.userComment` and `CollectionItem.authorComment`, in addition to `itemName` and tag names. Case-insensitive.
+
+  * lib/features/collections/screens/collection_screen.dart, all_items_screen.dart: Extend search predicate.
+
+- **TMDB search filters expanded**
+
+  Movies / TV / Anime tabs gain four new / upgraded filters on top of the existing genre + year: multi-select genre (OR match), Min rating (Any / 6+ / 7+ / 8+ / 9+ on the 1–10 scale, sent as `vote_average.gte`), Min votes (Any / 100 / 500 / 1000 / 5000, sent as `vote_count.gte`; previously hardcoded to the "Top rated" sort and not user-adjustable), Original language (10 languages, sent as `with_original_language`). Paired with Min rating, Min votes filters out "10/10 with one vote" noise. 13 localization keys EN+RU.
+
+  * lib/core/api/tmdb_api.dart (TmdbApi.discoverMovies, TmdbApi.discoverTvShows): Accept new `voteAverageGte`, `voteCountGte`, `originalLanguage` params.
+  * lib/features/search/filters/tmdb_genre_filter.dart (TmdbGenreFilter): Enable multi-select.
+  * lib/features/search/filters/min_rating_filter.dart (MinRatingFilter), min_votes_filter.dart (MinVotesFilter), tmdb_language_filter.dart (TmdbLanguageFilter): New.
+  * lib/features/search/sources/tmdb_movies_source.dart, tmdb_tv_source.dart, tmdb_anime_source.dart: Wire new filters; client-side genre fallback on text search supports multi-genre.
+
+- **AniList search filters expanded**
+
+  Anime tab goes from 2 filters (genre, status) to 4: multi-select genre (`genre_in: [String]`), anime format (`MediaFormat`), and year via `startDate` bounds — reliable across all anime, including older and cancelled titles where `seasonYear` is null. Manga tab goes from 2 to 4: multi-select genre, status (`MediaStatus`, with manga-specific labels), and year range via the same bounds. `MangaFormatFilter` is limited to AniList-valid values; MANHWA / MANHUA / LIGHT_NOVEL are not members of AniList's `MediaFormat` enum and were removed.
+
+  * lib/core/api/anilist_api.dart (AniListApi.browseAnime, AniListApi.browseManga): Change `$genre: String` → `$genres: [String]`; add `$format`, `$status`, `$startDateGreater`, `$startDateLesser` GraphQL vars.
+  * lib/features/search/filters/anilist_anime_format_filter.dart (AniListAnimeFormatFilter), anilist_manga_status_filter.dart (AniListMangaStatusFilter): New.
+  * lib/features/search/filters/manga_format_filter.dart (MangaFormatFilter.options): Limit to MANGA, NOVEL, ONE_SHOT.
+  * lib/features/search/filters/anilist_anime_genre_filter.dart, anilist_genre_filter.dart: Enable multi-select.
+  * lib/features/search/sources/anilist_anime_source.dart, anilist_manga_source.dart: Wire new filters.
+
+- **IGDB search filters expanded**
+
+  Games tab goes from 3 filters (genre, platform, year) to 5: multi-select genre (IGDB syntax `genres = (12,31)` for OR match; previously single `genres = (12)`), Min rating (6+ / 7+ / 8+ / 9+ on the 1–10 scale, converted ×10 before hitting IGDB's native 0–100 `rating >= N`), Game mode (Single player / Multiplayer / Co-operative / Split screen / MMO / Battle Royale; canonical IGDB IDs 1-6; sent as `game_modes = (1,3)`).
+
+  * lib/core/api/igdb_api.dart (IgdbApi.searchGames, IgdbApi.browseGames): Accept `List<int>? genreIds / gameModeIds` and `int? minRating`.
+  * lib/features/search/filters/igdb_min_rating_filter.dart (IgdbMinRatingFilter), igdb_game_mode_filter.dart (IgdbGameModeFilter): New.
+  * lib/features/search/filters/igdb_genre_filter.dart (IgdbGenreFilter): Enable multi-select.
+  * lib/features/search/sources/igdb_games_source.dart: Wire new filters; convert Min rating UI value ×10 before the API call.
+
+- **Year filter extended and more granular**
+
+  Shared `YearFilter` used by TMDB / AniList / IGDB now lists individual years from the current year down to 1980 (was: down to 2000), with decade buckets for 1970s and 1960s for truly retro (Atari era). Popover is `searchable` since the list is long. Previously users had no way to pick e.g. 1995 directly — had to fall back to the "1990s" bucket. New localization keys EN+RU cover anime formats, manga statuses, and game modes.
+
+  * lib/features/search/filters/year_filter.dart (YearFilter.options, YearFilter.searchable): Extend range to 1980; enable searchable popover.
+  * lib/l10n/app_en.arb, app_ru.arb: Add labels for new filter values.
 
 ### Changed
-- **Tags are preserved when moving or copying an item between collections** — the right-click Move/Copy actions now remap the item's tag to the target collection by name (case-insensitive, Unicode-safe via Dart `toLowerCase`, so «РПГ» matches «рпг»). If a tag with the same name already exists in the target, the item is linked to it; otherwise a new tag is created with the source tag's color and the item is linked to that. Previously tags were silently dropped on move, and clone copied a stale `tag_id` referencing a tag belonging to a different collection. `CollectionDao.cloneItemToCollection` now nulls `tag_id` in the copied row; the notifier writes the resolved id exactly once (no redundant clear-then-set round-trip on move). Moves to uncategorized still clear the tag. New DAO helpers: `TagDao.findTagByNameCaseInsensitive`, `TagDao.resolveOrCreateInCollection`. `CollectionItemsNotifier.moveItem` / `cloneItem` take an optional `sourceTagId` (passed from `CollectionActions`). The target collection's `collectionTagsProvider` is invalidated when a new tag was created so `TagSidebar` / Manage Tags dialog reflect it immediately (`tag_dao.dart`, `collection_dao.dart`, `collections_provider.dart`, `collection_actions.dart`)
-- **Tap anywhere on the review/notes block to edit** — both the author review and personal notes sections on the item detail screen now enter editing mode on a single tap, whether empty or populated. Markdown links inside the rendered text keep working because their `TapGestureRecognizer` wins the gesture arena over the ancestor `InkWell`. Author review stays non-interactive for read-only collections. Trade-off: drag-selection of rendered text is no longer available — users can copy from the TextField after entering edit mode (`media_detail_view.dart`)
+
+- **Tags are preserved when moving or copying an item between collections**
+
+  Right-click Move / Copy remap the item's tag to the target collection by name (case-insensitive, Unicode-safe via Dart `toLowerCase`, so «РПГ» matches «рпг»). If a tag with the same name already exists, the item is linked to it; otherwise a new tag is created with the source tag's colour. Previously tags were silently dropped on move, and Clone copied a stale `tag_id` referencing a tag from a different collection. Moves to uncategorised still clear the tag.
+
+  * lib/data/daos/tag_dao.dart (TagDao.findTagByNameCaseInsensitive, TagDao.resolveOrCreateInCollection): New.
+  * lib/data/daos/collection_dao.dart (CollectionDao.cloneItemToCollection): Null `tag_id` in the copied row.
+  * lib/features/collections/providers/collections_provider.dart (CollectionItemsNotifier.moveItem, CollectionItemsNotifier.cloneItem): Accept optional `sourceTagId`; resolve and write the target tag once (no clear-then-set round-trip); invalidate `collectionTagsProvider` when a new tag was created.
+  * lib/features/collections/widgets/collection_actions.dart: Pass `sourceTagId` from the source item.
+
+- **Tap anywhere on the review / notes block to edit**
+
+  Author review and personal notes sections on the item detail screen enter editing mode on a single tap, whether empty or populated. Markdown links inside the rendered text keep working because their `TapGestureRecognizer` wins the gesture arena over the ancestor `InkWell`. Author review stays non-interactive for read-only collections. Trade-off: drag-selection of rendered text is no longer available — users copy from the TextField after entering edit mode.
+
+  * lib/shared/widgets/media_detail_view.dart: Wrap review / notes in `InkWell`; gate author review edit on `canEdit`.
+
 - **Vague UI terms renamed per user feedback**
-  - «Список» (Wishlist nav tab) → **«Желаемое»** in Russian
-  - «Профили» / «Профиль» in Settings — now **«Профили приложения»** / **«Автор коллекций»** (EN: «App profiles» / «Collection author»), resolving the ambiguity between multi-user profiles and the collection author name
-  - «элемент» → **«тайтл»** across 27 strings (including plural forms): FAB labels, stats, snackbars, tier lists, tags, imports, wishlist, all-items. "Element" retained on the canvas where it refers to board primitives (text/sticker/link), not collection items (`app_en.arb`, `app_ru.arb`)
-- **Kodi settings screen fully localized** — ~45 new localization keys cover Connection (Host/Port/Username/Password/Test connection), Sync (Target collection, Enable sync, Sync interval, Sub-collections, Import ratings), Debug (Sync status, Last sync, Clear timestamp, Request log, Raw JSON-RPC). The "Integrations" section header and "Kodi" subtitle on the main Settings screen are also localized. Proper nouns (the word "Kodi", JSON-RPC API examples like `VideoLibrary.GetMovies`) intentionally remain in English (`kodi_screen.dart`, `settings_screen.dart`, `app_en.arb`, `app_ru.arb`)
-- **Empty-collection hint localized** — the two fallback hints below the "No items yet" header (`collectionEmptyAddHint`, `collectionEmptyReadonly`) were still hardcoded English; now translated to Russian (`collection_items_view.dart`)
-- **Settings screen reorganized per user feedback** — section order is now Profile → Data (Backup/Restore/Import/Storage) → Appearance → Services → About. Data-critical flows (backup, import) are surfaced right after the profile block. The Gamepad Debug entry is removed from the main list (it remains available through the Debug Hub in `kDebugMode` builds). The Error group no longer renders as a separate section. Version is a tile inside About. Discord RPC and Discord RA sync move out of Appearance into Services — they're integrations, not a look-and-feel toggle (`settings_screen.dart`)
-- **Colored iOS-style leading bubbles on every settings tile** — each row gets a 28×28 rounded colored capsule with a white icon on the left; section headers show a matching small icon before the uppercase title. Status pips and value colors highlight active state: Kodi row shows a green pip + green "On" when enabled, API keys value turns green when all three are set. `SettingsTile` gains `leadingIcon`, `leadingColor`, `statusDotColor`, `valueColor` params; `SettingsGroup` gains `titleIcon`, `titleIconColor` (`settings_tile.dart`, `settings_group.dart`, `settings_screen.dart`)
-- **Compact sizing on narrow screens (<600px)** — across the settings screen and the global top-bar search field, font sizes, icon sizes, and vertical padding shrink to feel right on mobile. Uses the existing `isCompactScreen` helper. Desktop (≥600px) layout unchanged (`settings_tile.dart`, `settings_group.dart`, `app_top_bar.dart`)
-- **Explicit Save button in every settings input field** — *UX breaking.* `InlineTextField` used to auto-save on focus loss, which was implicit and inconsistent with the rest of the UI; SteamGridDB and TMDB key fields additionally wrote to prefs on every keystroke. Now every settings field (Author name; IGDB Client ID / Secret; SteamGridDB and TMDB API keys; Kodi Host/Port/Username/Password) shows an orange "✓ Save" pill flush to the right edge of the field while there are unsaved changes. Tapping outside cancels and reverts. Enter still commits. The Save pill listens to raw `onPointerDown` so clicks commit before the TextField blurs itself on desktop mouse input (`inline_text_field.dart`)
-- **Unified StatusDot + sync-icon row on all API key sections** — IGDB, SteamGridDB, and TMDB blocks end in the same row: a colored StatusDot (green ✓ connected / red ✕ error / grey ? unknown) on the left, a circular sync (↻) IconButton on the right to rerun validation. Reset button sits between them when a built-in default is available. The old separate "Connection Status" SettingsGroup with StatusDot + "Platforms available: N" row + full-width "Verify Connection" button is folded into the IGDB credentials card. SteamGridDB and TMDB now track their last-validation result locally so the dot reflects it (`credentials_content.dart`)
-- **Kodi settings: Target Collection elevated to the top** — it's the most consequential choice and the picker works offline; the section now precedes Connection. When the referenced collection has been deleted externally, `targetCollectionId` is cleared automatically on open (a guard flag prevents the post-frame callback from stacking across rebuilds). While no valid target is selected, Enable sync, Sync interval, Sub-collections, and Import ratings all render as disabled. The "Test connection" row is replaced by the same StatusDot + sync-icon pattern used on the API key sections (`kodi_screen.dart`)
+
+  «Список» (Wishlist nav tab) → «Желаемое» in Russian. «Профили» / «Профиль» in Settings → «Профили приложения» / «Автор коллекций» (EN: "App profiles" / "Collection author"), resolving the ambiguity between multi-user profiles and the collection author name. «элемент» → «тайтл» across 27 strings (including plural forms): FAB labels, stats, snackbars, tier lists, tags, imports, wishlist, all-items. "Element" is retained on the canvas where it refers to board primitives (text / sticker / link), not collection items.
+
+  * lib/l10n/app_en.arb, app_ru.arb: Rename keys / update values.
+
+- **Kodi settings screen fully localized**
+
+  ~45 new localization keys cover Connection (Host / Port / Username / Password / Test connection), Sync (Target collection, Enable sync, Sync interval, Sub-collections, Import ratings), Debug (Sync status, Last sync, Clear timestamp, Request log, Raw JSON-RPC). The "Integrations" section header and "Kodi" subtitle on the main Settings screen are also localized. Proper nouns (the word "Kodi", JSON-RPC API examples like `VideoLibrary.GetMovies`) remain in English.
+
+  * lib/features/settings/screens/kodi_screen.dart, settings_screen.dart: Route hardcoded strings through `S.of(context)`.
+  * lib/l10n/app_en.arb, app_ru.arb: Add keys.
+
+- **Empty-collection hint localized**
+
+  Two fallback hints below the "No items yet" header (`collectionEmptyAddHint`, `collectionEmptyReadonly`) were still hardcoded English; now translated to Russian.
+
+  * lib/features/collections/widgets/collection_items_view.dart: Replace hardcoded strings with `S.of(context)` lookups.
+
+- **Settings screen reorganized per user feedback**
+
+  Section order is now Profile → Data (Backup / Restore / Import / Storage) → Appearance → Services → About. Data-critical flows (backup, import) surface right after the profile block. The Gamepad Debug entry is removed from the main list (still reachable through the Debug Hub in `kDebugMode` builds). The Error group no longer renders as a separate section. Version is a tile inside About. Discord RPC and Discord RA sync move out of Appearance into Services — they're integrations, not look-and-feel toggles.
+
+  * lib/features/settings/screens/settings_screen.dart: Reorder sections; remove orphan entries.
+
+- **Colored iOS-style leading bubbles on every settings tile**
+
+  Each row gets a 28×28 rounded coloured capsule with a white icon on the left; section headers show a matching small icon before the uppercase title. Status pips and value colours highlight active state: the Kodi row shows a green pip + green "On" when enabled, the API keys value turns green when all three are set.
+
+  * lib/features/settings/widgets/settings_tile.dart (SettingsTile): Add `leadingIcon`, `leadingColor`, `statusDotColor`, `valueColor` params.
+  * lib/features/settings/widgets/settings_group.dart (SettingsGroup): Add `titleIcon`, `titleIconColor`.
+  * lib/features/settings/screens/settings_screen.dart: Populate icons / colours across tiles.
+
+- **Compact sizing on narrow screens (<600px)**
+
+  Across the Settings screen and the global top-bar search field, font sizes, icon sizes, and vertical padding shrink for mobile using the existing `isCompactScreen` helper. Desktop (≥600px) layout unchanged.
+
+  * lib/features/settings/widgets/settings_tile.dart, settings_group.dart, lib/shared/widgets/app_top_bar.dart: Branch sizing on `isCompactScreen`.
+
+- **Explicit Save button in every settings input field** (UX breaking)
+
+  `InlineTextField` used to auto-save on focus loss, which was implicit and inconsistent with the rest of the UI; SteamGridDB and TMDB key fields additionally wrote to prefs on every keystroke. Every settings field (Author name; IGDB Client ID / Secret; SteamGridDB and TMDB API keys; Kodi Host / Port / Username / Password) now shows an orange "✓ Save" pill flush to the right edge of the field while there are unsaved changes. Tapping outside cancels and reverts. Enter still commits. The Save pill listens to raw `onPointerDown` so clicks commit before the TextField blurs itself on desktop mouse input.
+
+  * lib/features/settings/widgets/inline_text_field.dart (InlineTextField): Remove auto-save-on-blur; add explicit Save pill.
+
+- **Unified StatusDot + sync-icon row on all API key sections**
+
+  IGDB, SteamGridDB, and TMDB blocks end in the same row: a coloured StatusDot (green ✓ connected / red ✕ error / grey ? unknown) on the left, a circular sync (↻) IconButton on the right to rerun validation. Reset button sits between them when a built-in default is available. The old separate "Connection Status" SettingsGroup with StatusDot + "Platforms available: N" row + full-width "Verify Connection" button is folded into the IGDB credentials card. SteamGridDB and TMDB now track their last-validation result locally.
+
+  * lib/features/settings/widgets/credentials_content.dart: Unify three API sections; track last-validation locally for SteamGridDB and TMDB.
+
+- **Kodi settings: Target Collection elevated to the top**
+
+  It's the most consequential choice and the picker works offline; the section now precedes Connection. When the referenced collection has been deleted externally, `targetCollectionId` is cleared automatically on open (a guard flag prevents the post-frame callback from stacking across rebuilds). While no valid target is selected, Enable sync, Sync interval, Sub-collections, and Import ratings all render as disabled. The "Test connection" row is replaced by the same StatusDot + sync-icon pattern used on the API key sections.
+
+  * lib/features/settings/screens/kodi_screen.dart: Reorder sections; add post-frame target-cleanup guard.
 
 ### Removed
-- **`Platforms available` row and the standalone Connection Status group in IGDB credentials** — the metric didn't justify its space; the connection status lives inside the IGDB credentials card now (`credentials_content.dart`)
-- **Standalone Gamepad Debug entry in the main Settings screen** — still reachable from the Debug Hub in `kDebugMode` builds; orphan localization key `settingsGamepadDebugSubtitle` deleted from both ARBs (`settings_screen.dart`, `app_en.arb`, `app_ru.arb`)
-- **"Tier list" entry in a collection's three-dot menu** — the duplicate shortcut that opened the global tier lists list for the current collection is gone; the "Create tier list from this collection" action remains (`collection_screen.dart`)
+
+- **`Platforms available` row and the standalone Connection Status group in IGDB credentials**
+
+  The metric didn't justify its space; the connection status lives inside the IGDB credentials card now.
+
+  * lib/features/settings/widgets/credentials_content.dart: Remove the group; fold StatusDot + sync-icon pattern into the IGDB credentials card.
+
+- **Standalone Gamepad Debug entry in the main Settings screen**
+
+  Still reachable from the Debug Hub in `kDebugMode` builds. Orphan localization key `settingsGamepadDebugSubtitle` deleted from both ARBs.
+
+  * lib/features/settings/screens/settings_screen.dart: Remove entry.
+  * lib/l10n/app_en.arb, app_ru.arb: Remove orphan key.
+
+- **"Tier list" entry in a collection's three-dot menu**
+
+  The duplicate shortcut that opened the global tier lists list for the current collection is gone; the "Create tier list from this collection" action remains.
+
+  * lib/features/collections/screens/collection_screen.dart: Remove menu entry.
 
 ## [0.27.0] - 2026-04-18
 
