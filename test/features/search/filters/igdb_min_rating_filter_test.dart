@@ -24,12 +24,12 @@ void main() {
       expect(filter.allOption.value, isNull);
     });
 
-    test('options use IGDB 0-100 scale (60/70/80/90)', () async {
+    test('options use UI 1-10 scale (6/7/8/9)', () async {
       final MockWidgetRef ref = MockWidgetRef();
       final List<FilterOption> opts = await filter.options(ref, mockL);
 
       expect(opts.map((FilterOption o) => o.value).toList(),
-          <int>[60, 70, 80, 90]);
+          <int>[6, 7, 8, 9]);
     });
   });
 }

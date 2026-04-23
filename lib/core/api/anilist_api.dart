@@ -159,7 +159,7 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
   static const String _animeSearchQuery = r'''
 query ($page: Int, $perPage: Int, $search: String, $genres: [String],
        $status: MediaStatus, $format: MediaFormat,
-       $season: MediaSeason, $seasonYear: Int,
+       $startDateGreater: FuzzyDateInt, $startDateLesser: FuzzyDateInt,
        $sort: [MediaSort]) {
   Page(page: $page, perPage: $perPage) {
     pageInfo {
@@ -170,7 +170,8 @@ query ($page: Int, $perPage: Int, $search: String, $genres: [String],
     }
     media(type: ANIME, search: $search, genre_in: $genres,
           status: $status, format: $format,
-          season: $season, seasonYear: $seasonYear,
+          startDate_greater: $startDateGreater,
+          startDate_lesser: $startDateLesser,
           sort: $sort) {
       id
       title { romaji english native }
@@ -447,8 +448,8 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
   /// [genres] — жанры (OR match). Пустой или null = без фильтра.
   /// [status] — статус: RELEASING, FINISHED, NOT_YET_RELEASED, CANCELLED.
   /// [format] — формат: TV, MOVIE, OVA, ONA, SPECIAL, MUSIC, TV_SHORT.
-  /// [season] — сезон: WINTER / SPRING / SUMMER / FALL (нужен [seasonYear]).
-  /// [seasonYear] — год сезона. Самостоятельно — год выпуска аниме.
+  /// [startYear] / [endYear] — диапазон года выпуска (startDate). Надёжный
+  ///   способ фильтровать «по году», работает для всех аниме.
   /// [sort] — сортировка: SCORE_DESC, POPULARITY_DESC, TRENDING_DESC и др.
   ///
   /// Возвращает кортеж (список, есть ли ещё, кол-во страниц).
@@ -458,8 +459,8 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
     List<String>? genres,
     String? status,
     String? format,
-    String? season,
-    int? seasonYear,
+    int? startYear,
+    int? endYear,
     String sort = 'POPULARITY_DESC',
     int page = 1,
     int perPage = 20,
@@ -483,11 +484,12 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
       if (format != null) {
         variables['format'] = format;
       }
-      if (season != null) {
-        variables['season'] = season;
+      // FuzzyDateInt: YYYYMMDD. Начало года = YYYY0101, конец = YYYY1231.
+      if (startYear != null) {
+        variables['startDateGreater'] = startYear * 10000 + 101;
       }
-      if (seasonYear != null) {
-        variables['seasonYear'] = seasonYear;
+      if (endYear != null) {
+        variables['startDateLesser'] = endYear * 10000 + 1231;
       }
 
       final Response<dynamic> response = await _dio.post<dynamic>(

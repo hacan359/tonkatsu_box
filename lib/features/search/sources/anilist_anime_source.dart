@@ -10,7 +10,6 @@ import '../../../shared/models/media_type.dart';
 import '../filters/anilist_anime_format_filter.dart';
 import '../filters/anilist_anime_genre_filter.dart';
 import '../filters/anilist_anime_status_filter.dart';
-import '../filters/anilist_season_filter.dart';
 import '../filters/year_filter.dart';
 import '../models/search_source.dart';
 
@@ -46,7 +45,6 @@ class AniListAnimeSource extends SearchSource {
         AniListAnimeStatusFilter(),
         AniListAnimeFormatFilter(),
         YearFilter(),
-        AniListSeasonFilter(),
       ];
 
   @override
@@ -76,16 +74,21 @@ class AniListAnimeSource extends SearchSource {
     final List<String>? genres = _readStringList(filterValues['genre']);
     final String? status = filterValues['status'] as String?;
     final String? format = filterValues['format'] as String?;
-    final String? season = filterValues['season'] as String?;
-    // YearFilter может вернуть int (конкретный год) или (int,int) (декада).
-    // AniList `seasonYear` принимает только одно значение; для декады берём
-    // нижнюю границу, т.к. AniList fuzzy-search по году более узкий.
+    // YearFilter → startDate-диапазон. Надёжно для всех аниме, в т.ч.
+    // старых/отменённых, у которых seasonYear не проставлен.
     final Object? yearValue = filterValues['year'];
-    final int? seasonYear = switch (yearValue) {
-      final int y => y,
-      final (int start, int _) tuple => tuple.$1,
-      _ => null,
-    };
+    int? startYear;
+    int? endYear;
+    switch (yearValue) {
+      case final int y:
+        startYear = y;
+        endYear = y;
+      case final (int start, int end) tuple:
+        startYear = tuple.$1;
+        endYear = tuple.$2;
+      default:
+        break;
+    }
 
     try {
       final (List<Anime> animes, bool hasMore, int totalPages) =
@@ -94,8 +97,8 @@ class AniListAnimeSource extends SearchSource {
         genres: genres,
         status: status,
         format: format,
-        season: season,
-        seasonYear: seasonYear,
+        startYear: startYear,
+        endYear: endYear,
         sort: sortBy,
         page: page,
         perPage: _aniListPageSize,

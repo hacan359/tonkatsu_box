@@ -69,7 +69,9 @@ class IgdbGamesSource extends SearchSource {
     final List<int>? genreIds = _readIntList(filterValues['genre']);
     final List<int>? platformIds = _readIntList(filterValues['platform']);
     final List<int>? gameModeIds = _readIntList(filterValues['gameMode']);
-    final int? minRating = filterValues['minRating'] as int?;
+    // UI хранит 1–10 (как TMDB), IGDB API — 0–100, поэтому ×10.
+    final int? minRatingUi = filterValues['minRating'] as int?;
+    final int? minRating = minRatingUi == null ? null : minRatingUi * 10;
     final Object? yearValue = filterValues['year'];
 
     int? year;

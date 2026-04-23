@@ -1,4 +1,4 @@
-// Фильтр минимального IGDB-рейтинга (0–100 scale).
+// Фильтр минимального IGDB-рейтинга (UI 1–10 scale).
 
 import 'package:flutter_riverpod/flutter_riverpod.dart' show WidgetRef;
 
@@ -7,8 +7,9 @@ import '../models/search_source.dart';
 
 /// Фильтр минимального IGDB-рейтинга.
 ///
-/// IGDB `rating` — среднее пользовательских оценок в шкале 0–100
-/// (не путать с TMDB 0–10). Попадает в where-клаузу как `rating >= N`.
+/// Пользователю показываем шкалу 1–10 (как TMDB и отображение в карточках).
+/// IGDB API оперирует шкалой 0–100, конвертация (×10) выполняется в
+/// `IgdbGamesSource` перед отправкой запроса.
 class IgdbMinRatingFilter extends SearchFilter {
   @override
   String get key => 'minRating';
@@ -26,10 +27,10 @@ class IgdbMinRatingFilter extends SearchFilter {
   @override
   Future<List<FilterOption>> options(WidgetRef ref, S l) async {
     return <FilterOption>[
-      const FilterOption(id: '60', label: '60+', value: 60),
-      const FilterOption(id: '70', label: '70+', value: 70),
-      const FilterOption(id: '80', label: '80+', value: 80),
-      const FilterOption(id: '90', label: '90+', value: 90),
+      const FilterOption(id: '6', label: '6+', value: 6),
+      const FilterOption(id: '7', label: '7+', value: 7),
+      const FilterOption(id: '8', label: '8+', value: 8),
+      const FilterOption(id: '9', label: '9+', value: 9),
     ];
   }
 }
