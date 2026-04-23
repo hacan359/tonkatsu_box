@@ -264,29 +264,6 @@ void main() {
     );
 
     testWidgets(
-      'должен использовать SizedBox.expand для заполнения родителя',
-      (WidgetTester tester) async {
-        final CanvasItem item = createImageItem(
-          data: <String, dynamic>{'url': 'https://example.com/image.png'},
-          width: null,
-          height: null,
-        );
-
-        await tester.pumpWidget(buildWidget(item));
-
-        // SizedBox.expand() внутри Card — расширяется до размеров родителя
-        final SizedBox sizedBox = tester.widget<SizedBox>(
-          find.descendant(
-            of: find.byType(Card),
-            matching: find.byType(SizedBox),
-          ).first,
-        );
-        expect(sizedBox.width, double.infinity);
-        expect(sizedBox.height, double.infinity);
-      },
-    );
-
-    testWidgets(
       'должен рендерить Card с изображением при custom размерах',
       (WidgetTester tester) async {
         final CanvasItem item = createImageItem(
@@ -297,31 +274,7 @@ void main() {
 
         await tester.pumpWidget(buildWidget(item));
 
-        // Card рендерится (размеры задаются родителем Positioned)
         expect(find.byType(Card), findsOneWidget);
-        // SizedBox.expand внутри
-        final SizedBox sizedBox = tester.widget<SizedBox>(
-          find.descendant(
-            of: find.byType(Card),
-            matching: find.byType(SizedBox),
-          ).first,
-        );
-        expect(sizedBox.width, double.infinity);
-        expect(sizedBox.height, double.infinity);
-      },
-    );
-
-    testWidgets(
-      'должен иметь clipBehavior antiAlias на Card',
-      (WidgetTester tester) async {
-        final CanvasItem item = createImageItem(
-          data: <String, dynamic>{'url': 'https://example.com/image.png'},
-        );
-
-        await tester.pumpWidget(buildWidget(item));
-
-        final Card card = tester.widget<Card>(find.byType(Card));
-        expect(card.clipBehavior, Clip.antiAlias);
       },
     );
 

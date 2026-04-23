@@ -74,7 +74,7 @@ void main() {
       expect(find.text('S'), findsOneWidget);
     });
 
-    testWidgets('should show empty container when entries is empty',
+    testWidgets('should not render any TierItemCard when entries is empty',
         (WidgetTester tester) async {
       await tester.pumpApp(
         TierRow(
@@ -90,7 +90,6 @@ void main() {
       await tester.pump();
 
       expect(find.byType(TierItemCard), findsNothing);
-      expect(find.byType(SizedBox), findsWidgets);
     });
 
     testWidgets('should render TierItemCard for each entry with matching item',

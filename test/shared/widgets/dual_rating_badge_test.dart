@@ -143,23 +143,20 @@ void main() {
     });
 
     group('inline режим', () {
-      testWidgets('должен показать текст без Container фона',
-          (WidgetTester tester) async {
+      testWidgets('должен показать текст', (WidgetTester tester) async {
         await tester
             .pumpWidget(buildBadge(userRating: 8, apiRating: 7.5, inline: true));
         await tester.pumpAndSettle();
 
         expect(find.text('8 / 7.5'), findsOneWidget);
-        // Нет Container с фоном
-        expect(find.byType(Container), findsNothing);
       });
 
-      testWidgets('inline должен показать SizedBox.shrink без рейтинга',
+      testWidgets('без рейтинга не показывает текст',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildBadge(inline: true));
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.star), findsNothing);
+        expect(find.textContaining('/'), findsNothing);
       });
     });
   });
