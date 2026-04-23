@@ -112,10 +112,39 @@ Every test must pull its weight in one of three buckets:
 
 ### Phase 4 — Changelog + docs
 
-**CHANGELOG.md** (`[Unreleased]` section, Keep a Changelog format):
-- English entries, past-tense verbs (Added / Changed / Fixed / Removed).
-- Mention specific files/classes/methods changed.
-- **Unreleased consolidation**: when enhancing or fixing something already in `[Unreleased]` that was never released, update the existing entry in place — don't add a separate Fixed/Changed bullet. Users should see the final state, not the development history.
+**CHANGELOG.md** — `[Unreleased]` section, Keep a Changelog version headers (`## [Unreleased]` / `## [X.Y.Z] - date`) with Added / Changed / Fixed / Removed sub-sections; inside each sub-section, entries follow [GNU Change Log style](https://www.gnu.org/prep/standards/html_node/Style-of-Change-Logs.html).
+
+Entry structure — three parts separated by blank lines:
+
+1. **Topic line** — one bolded sentence summarising the change (past-tense or imperative, like a commit subject).
+2. **Body** (optional, 1–3 sentences) — what the user sees and why. Plain prose, no file paths. Skip if the topic line is self-explanatory.
+3. **File list** — bulleted index of affected files in the form `* path/to/file.dart (ClassName.methodName, OtherSymbol): what changed`. Use full paths from the repo root and full symbol names (never abbreviate, never group with `{foo,bar}` syntax — every symbol must be greppable on its own). Several files with identical descriptions can be combined on one line separated by commas. A file with no specific symbol worth naming can be listed as `* path/to/file.dart: what changed`.
+
+Rules:
+- English entries. No Russian abbreviations or Cyrillic shorthand in English prose (write "right-click", not "ПКМ"; "left-click", not "ЛКМ"). Russian strings quoted as UI labels ("«Желаемое»") are fine — that's data, not prose.
+- Separate unrelated topics with a blank line (already enforced by Markdown list spacing).
+- **Unreleased consolidation**: when enhancing or fixing something already in `[Unreleased]` that was never released, update the existing entry in place — don't add a separate Fixed / Changed bullet. Users should see the final state, not the development history. This applies to the topic line, body, and the file list alike.
+- If a single topic spans many unrelated files (≈30+), it probably bundles several changes — split into multiple topic entries rather than letting one file list balloon.
+
+Example:
+
+```
+- **Expand AniList search filters for anime and manga**
+
+  Anime tab grows from 2 filters to 4; manga from 2 to 4. Multi-select
+  genre uses OR match. Year filter uses `startDate` bounds so it works
+  for older and cancelled titles where `seasonYear` is null.
+
+  * lib/core/api/anilist_api.dart (AniListApi.browseAnime, AniListApi.browseManga):
+    Change `$genre: String` → `$genres: [String]`; add `$format`, `$status`,
+    `$startDateGreater`, `$startDateLesser` GraphQL vars.
+  * lib/features/search/filters/anilist_anime_format_filter.dart
+    (AniListAnimeFormatFilter), anilist_manga_status_filter.dart
+    (AniListMangaStatusFilter): New.
+  * lib/features/search/filters/manga_format_filter.dart (MangaFormatFilter.options):
+    Limit to MANGA, NOVEL, ONE_SHOT — MANHWA / MANHUA / LIGHT_NOVEL were
+    rejected by AniList's `MediaFormat` enum.
+```
 
 **docs/** — update only if the change actually affects them:
 
