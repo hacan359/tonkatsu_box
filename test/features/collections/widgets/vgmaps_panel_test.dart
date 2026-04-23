@@ -275,56 +275,9 @@ void main() {
         expect(find.text('VGMaps'), findsOneWidget);
       });
 
-      testWidgets('should have close button', (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          panelState: const VgMapsPanelState(isOpen: true),
-        ));
-
-        expect(find.byIcon(Icons.close), findsOneWidget);
-      });
-
-      testWidgets('should have map icon', (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          panelState: const VgMapsPanelState(isOpen: true),
-        ));
-
-        expect(find.byIcon(Icons.map), findsAtLeast(1));
-      });
     });
 
     group('navigation toolbar', () {
-      testWidgets('should have back button', (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          panelState: const VgMapsPanelState(isOpen: true),
-        ));
-
-        expect(find.byIcon(Icons.arrow_back), findsOneWidget);
-      });
-
-      testWidgets('should have forward button', (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          panelState: const VgMapsPanelState(isOpen: true),
-        ));
-
-        expect(find.byIcon(Icons.arrow_forward), findsOneWidget);
-      });
-
-      testWidgets('should have home button', (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          panelState: const VgMapsPanelState(isOpen: true),
-        ));
-
-        expect(find.byIcon(Icons.home), findsOneWidget);
-      });
-
-      testWidgets('should have refresh button', (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          panelState: const VgMapsPanelState(isOpen: true),
-        ));
-
-        expect(find.byIcon(Icons.refresh), findsOneWidget);
-      });
-
       testWidgets('should have search text field', (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(
           panelState: const VgMapsPanelState(isOpen: true),
@@ -506,17 +459,6 @@ void main() {
         expect(find.textContaining('x'), findsNothing);
       });
 
-      testWidgets('should have dismiss button', (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          panelState: const VgMapsPanelState(
-            isOpen: true,
-            capturedImageUrl: 'https://example.com/map.png',
-          ),
-        ));
-
-        // close icon для dismiss (second one — first is panel close)
-        expect(find.byIcon(Icons.close), findsNWidgets(2));
-      });
     });
 
     group('webview placeholder', () {

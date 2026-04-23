@@ -100,21 +100,6 @@ void main() {
         expect(find.text('SteamGridDB'), findsOneWidget);
       });
 
-      testWidgets('should have close button', (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          panelState: const SteamGridDbPanelState(isOpen: true),
-        ));
-
-        expect(find.byIcon(Icons.close), findsOneWidget);
-      });
-
-      testWidgets('should have image_search icon', (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          panelState: const SteamGridDbPanelState(isOpen: true),
-        ));
-
-        expect(find.byIcon(Icons.image_search), findsAtLeast(1));
-      });
     });
 
     group('search bar', () {
@@ -132,14 +117,6 @@ void main() {
         ));
 
         expect(find.text('Search game...'), findsOneWidget);
-      });
-
-      testWidgets('should have search icon button', (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(
-          panelState: const SteamGridDbPanelState(isOpen: true),
-        ));
-
-        expect(find.byIcon(Icons.search), findsOneWidget);
       });
 
       testWidgets('should pre-fill with collection name', (WidgetTester tester) async {

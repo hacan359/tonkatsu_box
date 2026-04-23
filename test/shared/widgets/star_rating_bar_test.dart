@@ -1,9 +1,11 @@
-import 'package:xerabora/l10n/app_localizations.dart';
 // Виджет-тесты для StarRatingBar.
+// Фокус: количество заполненных / пустых звёзд отражает рейтинг,
+// тапы по звёздам вызывают onChanged с ожидаемым значением. Не проверяем
+// конкретные цвета / размеры — design decisions.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xerabora/shared/theme/app_colors.dart';
+import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/widgets/star_rating_bar.dart';
 
 void main() {
@@ -13,8 +15,8 @@ void main() {
     required ValueChanged<int?> onChanged,
   }) {
     return MaterialApp(
-            localizationsDelegates: S.localizationsDelegates,
-            supportedLocales: S.supportedLocales,
+      localizationsDelegates: S.localizationsDelegates,
+      supportedLocales: S.supportedLocales,
       home: Scaffold(
         body: StarRatingBar(
           rating: rating,
@@ -27,28 +29,26 @@ void main() {
 
   group('StarRatingBar', () {
     group('отображение', () {
-      testWidgets('должен отображать 10 звёзд', (WidgetTester tester) async {
+      testWidgets('без рейтинга показывает 10 пустых звёзд',
+          (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(onChanged: (_) {}));
         await tester.pumpAndSettle();
 
-        // 10 star_border icons (no rating set)
         expect(find.byIcon(Icons.star_border), findsNWidgets(10));
         expect(find.byIcon(Icons.star), findsNothing);
       });
 
-      testWidgets('должен заполнять звёзды до текущего рейтинга',
+      testWidgets('rating=7 даёт 7 filled + 3 empty',
           (WidgetTester tester) async {
         await tester.pumpWidget(
             buildTestWidget(rating: 7, onChanged: (_) {}));
         await tester.pumpAndSettle();
 
-        // 7 filled stars + 3 empty stars
         expect(find.byIcon(Icons.star), findsNWidgets(7));
         expect(find.byIcon(Icons.star_border), findsNWidgets(3));
       });
 
-      testWidgets('должен заполнять все 10 звёзд при рейтинге 10',
-          (WidgetTester tester) async {
+      testWidgets('rating=10 даёт все filled', (WidgetTester tester) async {
         await tester.pumpWidget(
             buildTestWidget(rating: 10, onChanged: (_) {}));
         await tester.pumpAndSettle();
@@ -57,7 +57,7 @@ void main() {
         expect(find.byIcon(Icons.star_border), findsNothing);
       });
 
-      testWidgets('должен заполнять 1 звезду при рейтинге 1',
+      testWidgets('rating=1 даёт 1 filled + 9 empty',
           (WidgetTester tester) async {
         await tester.pumpWidget(
             buildTestWidget(rating: 1, onChanged: (_) {}));
@@ -66,83 +66,23 @@ void main() {
         expect(find.byIcon(Icons.star), findsNWidgets(1));
         expect(find.byIcon(Icons.star_border), findsNWidgets(9));
       });
-
-      testWidgets('должен показывать все пустые звёзды при rating == null',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(onChanged: (_) {}));
-        await tester.pumpAndSettle();
-
-        expect(find.byIcon(Icons.star_border), findsNWidgets(10));
-      });
-    });
-
-    group('цвета', () {
-      testWidgets('заполненные звёзды должны быть AppColors.ratingStar',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(
-            buildTestWidget(rating: 3, onChanged: (_) {}));
-        await tester.pumpAndSettle();
-
-        final Iterable<Icon> filledIcons = tester
-            .widgetList<Icon>(find.byIcon(Icons.star));
-        for (final Icon icon in filledIcons) {
-          expect(icon.color, AppColors.ratingStar);
-        }
-      });
-
-      testWidgets('пустые звёзды должны быть AppColors.textTertiary',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(
-            buildTestWidget(rating: 3, onChanged: (_) {}));
-        await tester.pumpAndSettle();
-
-        final Iterable<Icon> emptyIcons = tester
-            .widgetList<Icon>(find.byIcon(Icons.star_border));
-        for (final Icon icon in emptyIcons) {
-          expect(icon.color, AppColors.textTertiary);
-        }
-      });
-    });
-
-    group('размер', () {
-      testWidgets('должен использовать размер по умолчанию 28',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(onChanged: (_) {}));
-        await tester.pumpAndSettle();
-
-        final Icon firstIcon =
-            tester.widget<Icon>(find.byIcon(Icons.star_border).first);
-        expect(firstIcon.size, 28.0);
-      });
-
-      testWidgets('должен использовать кастомный размер',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(
-            buildTestWidget(starSize: 20.0, onChanged: (_) {}));
-        await tester.pumpAndSettle();
-
-        final Icon firstIcon =
-            tester.widget<Icon>(find.byIcon(Icons.star_border).first);
-        expect(firstIcon.size, 20.0);
-      });
     });
 
     group('взаимодействие', () {
-      testWidgets('клик на звезду должен вызывать onChanged с индексом',
+      testWidgets('тап по 5-й звезде вызывает onChanged(5)',
           (WidgetTester tester) async {
         int? changedRating;
         await tester.pumpWidget(
             buildTestWidget(onChanged: (int? r) => changedRating = r));
         await tester.pumpAndSettle();
 
-        // Нажимаем на 5-ю звезду (star_border, index 4)
         await tester.tap(find.byIcon(Icons.star_border).at(4));
         await tester.pumpAndSettle();
 
         expect(changedRating, 5);
       });
 
-      testWidgets('клик на 1-ю звезду должен вызывать onChanged(1)',
+      testWidgets('тап по 1-й звезде вызывает onChanged(1)',
           (WidgetTester tester) async {
         int? changedRating;
         await tester.pumpWidget(
@@ -155,7 +95,7 @@ void main() {
         expect(changedRating, 1);
       });
 
-      testWidgets('клик на 10-ю звезду должен вызывать onChanged(10)',
+      testWidgets('тап по 10-й звезде вызывает onChanged(10)',
           (WidgetTester tester) async {
         int? changedRating;
         await tester.pumpWidget(
@@ -168,8 +108,7 @@ void main() {
         expect(changedRating, 10);
       });
 
-      testWidgets(
-          'повторный клик на текущий рейтинг должен сбрасывать (null)',
+      testWidgets('повторный тап по текущему рейтингу сбрасывает в null',
           (WidgetTester tester) async {
         int? changedRating = 5;
         await tester.pumpWidget(buildTestWidget(
@@ -178,15 +117,13 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Нажимаем на 5-ю заполненную звезду (сброс)
         await tester.tap(find.byIcon(Icons.star).at(4));
         await tester.pumpAndSettle();
 
         expect(changedRating, isNull);
       });
 
-      testWidgets(
-          'клик на звезду ниже текущего рейтинга должен менять рейтинг',
+      testWidgets('тап по звезде ниже текущего снижает рейтинг',
           (WidgetTester tester) async {
         int? changedRating;
         await tester.pumpWidget(buildTestWidget(
@@ -195,15 +132,13 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Нажимаем 3-ю звезду (снижаем рейтинг)
         await tester.tap(find.byIcon(Icons.star).at(2));
         await tester.pumpAndSettle();
 
         expect(changedRating, 3);
       });
 
-      testWidgets(
-          'клик на звезду выше текущего рейтинга должен повышать рейтинг',
+      testWidgets('тап по звезде выше текущего повышает рейтинг',
           (WidgetTester tester) async {
         int? changedRating;
         await tester.pumpWidget(buildTestWidget(
@@ -212,7 +147,6 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Нажимаем 8-ю звезду (пустую, повышаем рейтинг)
         await tester.tap(find.byIcon(Icons.star_border).at(4));
         await tester.pumpAndSettle();
 
@@ -221,19 +155,8 @@ void main() {
     });
 
     group('maxStars константа', () {
-      test('должен быть равен 10', () {
+      test('maxStars = 10', () {
         expect(StarRatingBar.maxStars, 10);
-      });
-    });
-
-    group('InkWell для геймпада', () {
-      testWidgets('каждая звезда должна быть обёрнута в InkWell',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(buildTestWidget(onChanged: (_) {}));
-        await tester.pumpAndSettle();
-
-        // 10 InkWell (по одному на каждую звезду)
-        expect(find.byType(InkWell), findsNWidgets(10));
       });
     });
   });

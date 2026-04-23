@@ -1,6 +1,5 @@
 // Виджет-тесты для TierRow.
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/tier_lists/widgets/tier_item_card.dart';
 import 'package:xerabora/features/tier_lists/widgets/tier_row.dart';
@@ -74,7 +73,7 @@ void main() {
       expect(find.text('S'), findsOneWidget);
     });
 
-    testWidgets('should show empty container when entries is empty',
+    testWidgets('should not render any TierItemCard when entries is empty',
         (WidgetTester tester) async {
       await tester.pumpApp(
         TierRow(
@@ -90,7 +89,6 @@ void main() {
       await tester.pump();
 
       expect(find.byType(TierItemCard), findsNothing);
-      expect(find.byType(SizedBox), findsWidgets);
     });
 
     testWidgets('should render TierItemCard for each entry with matching item',

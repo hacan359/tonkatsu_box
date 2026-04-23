@@ -236,25 +236,6 @@ void main() {
         expect(appBar.toolbarHeight, kScreenAppBarHeight);
       });
 
-      testWidgets('wraps AppBar in Container with gradient',
-          (WidgetTester tester) async {
-        await tester.pumpApp(
-          const Scaffold(appBar: ScreenAppBar(title: 'Gradient')),
-        );
-
-        final Container container = tester.widget<Container>(
-          find.ancestor(
-            of: find.byType(AppBar),
-            matching: find.byType(Container),
-          ).first,
-        );
-
-        final BoxDecoration decoration =
-            container.decoration! as BoxDecoration;
-        expect(decoration.gradient, isA<LinearGradient>());
-        expect(decoration.border, isNotNull);
-      });
-
       testWidgets('disables automaticallyImplyLeading',
           (WidgetTester tester) async {
         await tester.pumpApp(

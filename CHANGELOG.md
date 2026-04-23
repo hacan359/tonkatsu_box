@@ -93,6 +93,18 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Changed
 
+- **Prune visual-overfit asserts across the test suite**
+
+  The suite had ~1000 assertions that pinned tests to specific colours, icon constants, font sizes, paddings, and structural wrapper widgets (Container / SizedBox / Padding). Every one of those would have broken on a cosmetic redesign without a real behavioural change. Kept what verifies behaviour — data flowing to UI, callbacks firing, conditional show / hide on state change, prop pass-through, collaborator calls; dropped what only pinned visuals. ~190 tests removed or collapsed; 4617 tests still green.
+
+  * test/shared/theme/app_colors_test.dart, app_typography_test.dart, app_theme_test.dart: Delete. Every assertion compared a theme token to its own hard-coded value.
+  * test/shared/widgets/media_poster_card_test.dart, shimmer_loading_test.dart, star_rating_bar_test.dart, dual_rating_badge_test.dart, screen_app_bar_test.dart: Rewrite around behaviour. Drop icon sizes, elevation / clipBehavior / border width + colour, ColoredBox alpha overlays, hard-coded child-count structural probes.
+  * test/shared/extensions/snackbar_extension_test.dart: Keep type → matching icon contract, loading replaces icon with CircularProgressIndicator, action / duration / hideSnack semantics. Drop icon / message / border colour probes, fontSize 13, SnackBar elevation 4, behavior / dismissDirection.
+  * test/shared/models/item_status_test.dart: Keep enum contract, value / fromString + fallbacks, sortPriority ordering / uniqueness, and the "every status has a unique icon" invariant. Drop the specific `AppColors.X` / `Icons.X` mappings.
+  * test/features/welcome/widgets/welcome_step_intro_test.dart, welcome_step_how_it_works_test.dart, step_indicator_test.dart: Collapse to smoke tests + behavioural toggles (pending / active / done swaps number ↔ checkmark, onTap fires). Drop colour / size / static-label probes on content pages.
+  * test/features/collections/widgets/vgmaps_panel_test.dart, steamgriddb_panel_test.dart, canvas_image_item_test.dart, canvas_text_item_test.dart: Drop chrome-visibility asserts (close / arrow_back / arrow_forward / home / refresh / search / image_search / map) and layout probes (SizedBox.expand width / height, Card clipBehavior antiAlias, Padding 8, "text has no Container background"). Behavioural coverage retained: canGoBack / canGoForward disable state, error-state conditional icon, captured-image bar flow with Add-to-Board callback.
+  * test/features/search/widgets/discover_row_test.dart, test/features/tier_lists/widgets/tier_row_test.dart: Replace SizedBox / TierItemCard structural probes with positive absence checks.
+
 - **Tags are preserved when moving or copying an item between collections**
 
   Right-click Move / Copy remap the item's tag to the target collection by name (case-insensitive, Unicode-safe via Dart `toLowerCase`, so «РПГ» matches «рпг»). If a tag with the same name already exists, the item is linked to it; otherwise a new tag is created with the source tag's colour. Previously tags were silently dropped on move, and Clone copied a stale `tag_id` referencing a tag from a different collection. Moves to uncategorised still clear the tag.

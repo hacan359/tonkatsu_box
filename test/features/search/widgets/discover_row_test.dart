@@ -126,16 +126,14 @@ void main() {
       expect(find.byType(ListView), findsOneWidget);
     });
 
-    testWidgets('shows SizedBox.shrink for empty items',
+    testWidgets('renders nothing when items are empty',
         (WidgetTester tester) async {
       await tester.pumpWidget(
         buildWidget(title: 'Empty Row', items: const <DiscoverItem>[]),
       );
 
-      // Title should NOT render when items are empty.
       expect(find.text('Empty Row'), findsNothing);
-      // The DiscoverRow widget returns SizedBox.shrink.
-      expect(find.byType(SizedBox), findsWidgets);
+      expect(find.byType(ListView), findsNothing);
     });
 
     testWidgets('calls onTap callback with correct item',

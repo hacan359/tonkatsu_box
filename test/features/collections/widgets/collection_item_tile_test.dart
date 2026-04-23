@@ -1,4 +1,7 @@
 // Виджет-тесты для CollectionItemTile.
+// Фокус: данные из модели доходят до UI, коллбэки вызываются, опциональные
+// секции появляются/скрываются. Не проверяем конкретные иконки/цвета/отступы —
+// это design decisions, тесты не должны ломаться от их изменения.
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +18,6 @@ import 'package:xerabora/shared/models/platform.dart';
 import 'package:xerabora/shared/models/tv_show.dart';
 import 'package:xerabora/shared/widgets/dual_rating_badge.dart';
 
-/// Создаёт тестовый [CollectionItem] с разумными значениями по умолчанию.
 CollectionItem _makeItem({
   int id = 1,
   int? collectionId = 10,
@@ -49,7 +51,6 @@ CollectionItem _makeItem({
   );
 }
 
-/// Создаёт тестовый [Game] с значениями по умолчанию.
 Game _makeGame({
   int id = 100,
   String name = 'Test Game',
@@ -70,7 +71,6 @@ Game _makeGame({
   );
 }
 
-/// Создаёт тестовый [Movie] с значениями по умолчанию.
 Movie _makeMovie({
   int tmdbId = 200,
   String title = 'Test Movie',
@@ -91,7 +91,6 @@ Movie _makeMovie({
   );
 }
 
-/// Создаёт тестовый [TvShow] с значениями по умолчанию.
 TvShow _makeTvShow({
   int tmdbId = 300,
   String title = 'Test TV Show',
@@ -114,7 +113,6 @@ TvShow _makeTvShow({
   );
 }
 
-/// Создаёт тестовую [Platform] с значениями по умолчанию.
 Platform _makePlatform({
   int id = 1,
   String name = 'Super Nintendo',
@@ -127,7 +125,6 @@ Platform _makePlatform({
   );
 }
 
-/// Оборачивает виджет в MaterialApp с локализацией.
 Widget _buildTestApp(Widget child) {
   return MaterialApp(
     localizationsDelegates: S.localizationsDelegates,
@@ -139,24 +136,21 @@ Widget _buildTestApp(Widget child) {
 void main() {
   group('CollectionItemTile', () {
     group('название', () {
-      testWidgets('должен отобразить название игры',
+      testWidgets('показывает имя игры из данных',
           (WidgetTester tester) async {
         final CollectionItem item = _makeItem(
           game: _makeGame(name: 'Chrono Trigger'),
         );
 
         await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
+          CollectionItemTile(item: item, isEditable: false),
         ));
         await tester.pumpAndSettle();
 
         expect(find.text('Chrono Trigger'), findsOneWidget);
       });
 
-      testWidgets('должен отобразить название фильма',
+      testWidgets('показывает название фильма из данных',
           (WidgetTester tester) async {
         final CollectionItem item = _makeItem(
           mediaType: MediaType.movie,
@@ -164,25 +158,19 @@ void main() {
         );
 
         await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
+          CollectionItemTile(item: item, isEditable: false),
         ));
         await tester.pumpAndSettle();
 
         expect(find.text('Inception'), findsOneWidget);
       });
 
-      testWidgets('должен отобразить fallback название если game == null',
+      testWidgets('показывает fallback-текст когда игра не загружена',
           (WidgetTester tester) async {
         final CollectionItem item = _makeItem();
 
         await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
+          CollectionItemTile(item: item, isEditable: false),
         ));
         await tester.pumpAndSettle();
 
@@ -191,7 +179,7 @@ void main() {
     });
 
     group('подзаголовок', () {
-      testWidgets('должен отобразить название платформы для игры',
+      testWidgets('показывает аббревиатуру платформы для игры',
           (WidgetTester tester) async {
         final CollectionItem item = _makeItem(
           game: _makeGame(name: 'Final Fantasy VI'),
@@ -199,35 +187,28 @@ void main() {
         );
 
         await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
+          CollectionItemTile(item: item, isEditable: false),
         ));
         await tester.pumpAndSettle();
 
         expect(find.text('SNES'), findsOneWidget);
       });
 
-      testWidgets(
-          'должен отобразить Unknown Platform если platform == null для игры',
+      testWidgets('показывает fallback-текст когда платформа не задана',
           (WidgetTester tester) async {
         final CollectionItem item = _makeItem(
           game: _makeGame(name: 'Some Game'),
         );
 
         await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
+          CollectionItemTile(item: item, isEditable: false),
         ));
         await tester.pumpAndSettle();
 
         expect(find.text('Unknown Platform'), findsOneWidget);
       });
 
-      testWidgets('должен отобразить год и длительность для фильма',
+      testWidgets('форматирует год и runtime фильма (148 мин → 2h 28m)',
           (WidgetTester tester) async {
         final CollectionItem item = _makeItem(
           mediaType: MediaType.movie,
@@ -239,81 +220,59 @@ void main() {
         );
 
         await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
+          CollectionItemTile(item: item, isEditable: false),
         ));
         await tester.pumpAndSettle();
 
-        // 148 мин = 2h 28m
-        expect(find.text('2010 \u2022 2h 28m'), findsOneWidget);
+        expect(find.text('2010 • 2h 28m'), findsOneWidget);
       });
 
-      testWidgets('должен отобразить только год для фильма без runtime',
+      testWidgets('показывает только год если runtime не задан',
           (WidgetTester tester) async {
         final CollectionItem item = _makeItem(
           mediaType: MediaType.movie,
-          movie: _makeMovie(
-            title: 'Some Movie',
-            releaseYear: 2023,
-          ),
+          movie: _makeMovie(title: 'Some Movie', releaseYear: 2023),
         );
 
         await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
+          CollectionItemTile(item: item, isEditable: false),
         ));
         await tester.pumpAndSettle();
 
         expect(find.text('2023'), findsOneWidget);
       });
 
-      testWidgets('должен отобразить только часы если mins == 0',
+      testWidgets('форматирует runtime как "2h" когда минуты = 0',
           (WidgetTester tester) async {
         final CollectionItem item = _makeItem(
           mediaType: MediaType.movie,
-          movie: _makeMovie(
-            title: 'Short Movie',
-            runtime: 120,
-          ),
+          movie: _makeMovie(title: 'Short Movie', runtime: 120),
         );
 
         await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
+          CollectionItemTile(item: item, isEditable: false),
         ));
         await tester.pumpAndSettle();
 
         expect(find.text('2h'), findsOneWidget);
       });
 
-      testWidgets('должен отобразить только минуты если hours == 0',
+      testWidgets('форматирует runtime как "45m" когда часов < 1',
           (WidgetTester tester) async {
         final CollectionItem item = _makeItem(
           mediaType: MediaType.movie,
-          movie: _makeMovie(
-            title: 'Short Film',
-            runtime: 45,
-          ),
+          movie: _makeMovie(title: 'Short Film', runtime: 45),
         );
 
         await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
+          CollectionItemTile(item: item, isEditable: false),
         ));
         await tester.pumpAndSettle();
 
         expect(find.text('45m'), findsOneWidget);
       });
 
-      testWidgets('должен отобразить количество сезонов для сериала',
+      testWidgets('форматирует подзаголовок сериала с годом и сезонами',
           (WidgetTester tester) async {
         final CollectionItem item = _makeItem(
           mediaType: MediaType.tvShow,
@@ -325,59 +284,31 @@ void main() {
         );
 
         await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
+          CollectionItemTile(item: item, isEditable: false),
         ));
         await tester.pumpAndSettle();
 
-        expect(find.text('2008 \u2022 5 seasons'), findsOneWidget);
+        expect(find.text('2008 • 5 seasons'), findsOneWidget);
       });
 
-      testWidgets('должен отобразить "1 season" для единственного сезона',
+      testWidgets('использует единственное число "1 season" для одного сезона',
           (WidgetTester tester) async {
         final CollectionItem item = _makeItem(
           mediaType: MediaType.tvShow,
-          tvShow: _makeTvShow(
-            title: 'Mini Series',
-            totalSeasons: 1,
-          ),
+          tvShow: _makeTvShow(title: 'Mini Series', totalSeasons: 1),
         );
 
         await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
+          CollectionItemTile(item: item, isEditable: false),
         ));
         await tester.pumpAndSettle();
 
         expect(find.text('1 season'), findsOneWidget);
       });
-
-      testWidgets('должен отобразить жанры если нет других полей у фильма',
-          (WidgetTester tester) async {
-        final CollectionItem item = _makeItem(
-          mediaType: MediaType.movie,
-          movie: _makeMovie(title: 'No Year Movie'),
-        );
-
-        await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
-        ));
-        await tester.pumpAndSettle();
-
-        // genresString null => пустая строка; виджет всё равно рендерит Text
-        expect(find.byType(CollectionItemTile), findsOneWidget);
-      });
     });
 
     group('рейтинги', () {
-      testWidgets('должен показать DualRatingBadge при наличии userRating',
+      testWidgets('показывает DualRatingBadge при наличии userRating',
           (WidgetTester tester) async {
         final CollectionItem item = _makeItem(
           userRating: 8,
@@ -385,69 +316,57 @@ void main() {
         );
 
         await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
+          CollectionItemTile(item: item, isEditable: false),
         ));
         await tester.pumpAndSettle();
 
         expect(find.byType(DualRatingBadge), findsOneWidget);
       });
 
-      testWidgets('должен показать DualRatingBadge при наличии apiRating',
+      testWidgets('показывает DualRatingBadge при наличии apiRating',
           (WidgetTester tester) async {
-        // IGDB rating 75.0 => apiRating = 75/10 = 7.5
         final CollectionItem item = _makeItem(
           game: _makeGame(name: 'API Rated', rating: 75.0),
         );
 
         await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
+          CollectionItemTile(item: item, isEditable: false),
         ));
         await tester.pumpAndSettle();
 
         expect(find.byType(DualRatingBadge), findsOneWidget);
       });
 
-      testWidgets('не должен показать DualRatingBadge без рейтингов',
+      testWidgets('не показывает DualRatingBadge без рейтингов',
           (WidgetTester tester) async {
         final CollectionItem item = _makeItem(
           game: _makeGame(name: 'No Rating'),
         );
 
         await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
+          CollectionItemTile(item: item, isEditable: false),
         ));
         await tester.pumpAndSettle();
 
         expect(find.byType(DualRatingBadge), findsNothing);
       });
 
-      testWidgets('не должен показать DualRatingBadge при apiRating == 0',
+      testWidgets('не показывает DualRatingBadge при apiRating == 0',
           (WidgetTester tester) async {
         final CollectionItem item = _makeItem(
           game: _makeGame(name: 'Zero Rating', rating: 0.0),
         );
 
         await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
+          CollectionItemTile(item: item, isEditable: false),
         ));
         await tester.pumpAndSettle();
 
         expect(find.byType(DualRatingBadge), findsNothing);
       });
 
-      testWidgets('должен показать оба рейтинга одновременно',
+      testWidgets(
+          'передаёт userRating и apiRating в DualRatingBadge (85.0 → 8.5)',
           (WidgetTester tester) async {
         final CollectionItem item = _makeItem(
           userRating: 9,
@@ -455,10 +374,7 @@ void main() {
         );
 
         await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
+          CollectionItemTile(item: item, isEditable: false),
         ));
         await tester.pumpAndSettle();
 
@@ -466,13 +382,13 @@ void main() {
           find.byType(DualRatingBadge),
         );
         expect(badge.userRating, 9);
-        expect(badge.apiRating, 8.5); // 85.0 / 10
+        expect(badge.apiRating, 8.5);
         expect(badge.inline, isTrue);
       });
     });
 
-    group('авторский комментарий', () {
-      testWidgets('должен показать комментарий автора',
+    group('комментарии', () {
+      testWidgets('показывает текст авторского комментария',
           (WidgetTester tester) async {
         final CollectionItem item = _makeItem(
           authorComment: 'Шедевр 90-х!',
@@ -480,35 +396,14 @@ void main() {
         );
 
         await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
+          CollectionItemTile(item: item, isEditable: false),
         ));
         await tester.pumpAndSettle();
 
         expect(find.text('Шедевр 90-х!'), findsOneWidget);
-        expect(find.byIcon(Icons.format_quote), findsOneWidget);
       });
 
-      testWidgets('не должен показать quote иконку без авторского комментария',
-          (WidgetTester tester) async {
-        final CollectionItem item = _makeItem(
-          game: _makeGame(name: 'No Comment'),
-        );
-
-        await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
-        ));
-        await tester.pumpAndSettle();
-
-        expect(find.byIcon(Icons.format_quote), findsNothing);
-      });
-
-      testWidgets('не должен показать пустой авторский комментарий',
+      testWidgets('не показывает пустой авторский комментарий как текст',
           (WidgetTester tester) async {
         final CollectionItem item = _makeItem(
           authorComment: '',
@@ -516,19 +411,14 @@ void main() {
         );
 
         await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
+          CollectionItemTile(item: item, isEditable: false),
         ));
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.format_quote), findsNothing);
+        expect(find.text(''), findsNothing);
       });
-    });
 
-    group('пользовательский комментарий', () {
-      testWidgets('должен показать личный комментарий',
+      testWidgets('показывает текст пользовательского комментария',
           (WidgetTester tester) async {
         final CollectionItem item = _makeItem(
           userComment: 'Моя заметка',
@@ -536,226 +426,58 @@ void main() {
         );
 
         await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
+          CollectionItemTile(item: item, isEditable: false),
         ));
         await tester.pumpAndSettle();
 
         expect(find.text('Моя заметка'), findsOneWidget);
-        expect(find.byIcon(Icons.note_outlined), findsOneWidget);
-      });
-
-      testWidgets('не должен показать note иконку без пользовательского комментария',
-          (WidgetTester tester) async {
-        final CollectionItem item = _makeItem(
-          game: _makeGame(name: 'No Note'),
-        );
-
-        await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
-        ));
-        await tester.pumpAndSettle();
-
-        expect(find.byIcon(Icons.note_outlined), findsNothing);
-      });
-
-      testWidgets('не должен показать пустой пользовательский комментарий',
-          (WidgetTester tester) async {
-        final CollectionItem item = _makeItem(
-          userComment: '',
-          game: _makeGame(name: 'Empty Note'),
-        );
-
-        await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
-        ));
-        await tester.pumpAndSettle();
-
-        expect(find.byIcon(Icons.note_outlined), findsNothing);
       });
     });
 
-    group('drag handle', () {
-      testWidgets('должен показать drag handle при showDragHandle == true',
-          (WidgetTester tester) async {
-        final CollectionItem item = _makeItem(
-          game: _makeGame(name: 'Draggable Game'),
-        );
-
-        await tester.pumpWidget(_buildTestApp(
-          ReorderableListView(
-            onReorder: (int oldIndex, int newIndex) {},
-            children: <Widget>[
-              CollectionItemTile(
-                key: const ValueKey<int>(1),
-                item: item,
-                isEditable: true,
-                showDragHandle: true,
-                dragIndex: 0,
-              ),
-            ],
-          ),
-        ));
-        await tester.pumpAndSettle();
-
-        expect(find.byIcon(Icons.drag_handle), findsOneWidget);
-      });
-
-      testWidgets('не должен показать drag handle при showDragHandle == false',
-          (WidgetTester tester) async {
-        final CollectionItem item = _makeItem(
-          game: _makeGame(name: 'Static Game'),
-        );
-
-        await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: true,
-            showDragHandle: false,
-          ),
-        ));
-        await tester.pumpAndSettle();
-
-        expect(find.byIcon(Icons.drag_handle), findsNothing);
-      });
-
-      testWidgets('не должен показать drag handle по умолчанию',
-          (WidgetTester tester) async {
-        final CollectionItem item = _makeItem(
-          game: _makeGame(name: 'Default Game'),
-        );
-
-        await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: true,
-          ),
-        ));
-        await tester.pumpAndSettle();
-
-        expect(find.byIcon(Icons.drag_handle), findsNothing);
-      });
-    });
-
-    group('контекстное меню', () {
-      testWidgets('должен показать more_vert кнопку при наличии onMove',
+    group('контекстное меню (PopupMenuButton)', () {
+      testWidgets('показывается когда задан onMove',
           (WidgetTester tester) async {
         final CollectionItem item = _makeItem(
           game: _makeGame(name: 'Movable Game'),
         );
 
         await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: true,
-            onMove: () {},
-          ),
+          CollectionItemTile(item: item, isEditable: true, onMove: () {}),
         ));
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.more_vert), findsOneWidget);
+        expect(find.byType(PopupMenuButton<String>), findsOneWidget);
       });
 
-      testWidgets('должен показать more_vert кнопку при наличии onRemove',
+      testWidgets('показывается когда задан onRemove',
           (WidgetTester tester) async {
         final CollectionItem item = _makeItem(
           game: _makeGame(name: 'Removable Game'),
         );
 
         await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: true,
-            onRemove: () {},
-          ),
+          CollectionItemTile(item: item, isEditable: true, onRemove: () {}),
         ));
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.more_vert), findsOneWidget);
+        expect(find.byType(PopupMenuButton<String>), findsOneWidget);
       });
 
-      testWidgets('не должен показать more_vert без onMove и onRemove',
+      testWidgets('не показывается без onMove/onClone/onRemove',
           (WidgetTester tester) async {
         final CollectionItem item = _makeItem(
           game: _makeGame(name: 'No Actions Game'),
         );
 
         await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: true,
-          ),
+          CollectionItemTile(item: item, isEditable: true),
         ));
         await tester.pumpAndSettle();
 
-        expect(find.byIcon(Icons.more_vert), findsNothing);
+        expect(find.byType(PopupMenuButton<String>), findsNothing);
       });
 
-      testWidgets(
-          'должен показать пункты Move и Remove при раскрытии меню',
-          (WidgetTester tester) async {
-        final CollectionItem item = _makeItem(
-          game: _makeGame(name: 'Full Menu Game'),
-        );
-
-        await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: true,
-            onMove: () {},
-            onRemove: () {},
-          ),
-        ));
-        await tester.pumpAndSettle();
-
-        // Открываем PopupMenuButton
-        await tester.tap(find.byIcon(Icons.more_vert));
-        await tester.pumpAndSettle();
-
-        // Проверяем наличие иконок пунктов меню
-        expect(
-          find.byIcon(Icons.drive_file_move_outlined),
-          findsOneWidget,
-        );
-        expect(
-          find.byIcon(Icons.remove_circle_outline),
-          findsOneWidget,
-        );
-      });
-
-      testWidgets('должен показать пункт Clone в контекстном меню',
-          (WidgetTester tester) async {
-        final CollectionItem item = _makeItem(
-          game: _makeGame(name: 'Clone Test Game'),
-        );
-
-        await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: true,
-            onMove: () {},
-            onClone: () {},
-            onRemove: () {},
-          ),
-        ));
-        await tester.pumpAndSettle();
-
-        await tester.tap(find.byIcon(Icons.more_vert));
-        await tester.pumpAndSettle();
-
-        expect(find.byIcon(Icons.copy_outlined), findsOneWidget);
-        expect(find.text('Copy to collection'), findsOneWidget);
-      });
-
-      testWidgets('должен вызвать onClone при нажатии на Clone',
+      testWidgets('onClone вызывается при выборе пункта Clone',
           (WidgetTester tester) async {
         bool cloned = false;
         final CollectionItem item = _makeItem(
@@ -773,16 +495,20 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byIcon(Icons.more_vert));
+        await tester.tap(find.byType(PopupMenuButton<String>));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byIcon(Icons.copy_outlined));
+        // value 'clone' задан в collection_item_tile.dart — это контракт
+        // PopupMenuButton, не UI-деталь.
+        await tester.tap(find.byWidgetPredicate(
+          (Widget w) => w is PopupMenuItem<String> && w.value == 'clone',
+        ));
         await tester.pumpAndSettle();
 
         expect(cloned, isTrue);
       });
 
-      testWidgets('должен вызвать onMove при нажатии на Move',
+      testWidgets('onMove вызывается при выборе пункта Move',
           (WidgetTester tester) async {
         bool moved = false;
         final CollectionItem item = _makeItem(
@@ -799,18 +525,17 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Открываем меню
-        await tester.tap(find.byIcon(Icons.more_vert));
+        await tester.tap(find.byType(PopupMenuButton<String>));
         await tester.pumpAndSettle();
-
-        // Нажимаем на Move
-        await tester.tap(find.byIcon(Icons.drive_file_move_outlined));
+        await tester.tap(find.byWidgetPredicate(
+          (Widget w) => w is PopupMenuItem<String> && w.value == 'move',
+        ));
         await tester.pumpAndSettle();
 
         expect(moved, isTrue);
       });
 
-      testWidgets('должен вызвать onRemove при нажатии на Remove',
+      testWidgets('onRemove вызывается при выборе пункта Remove',
           (WidgetTester tester) async {
         bool removed = false;
         final CollectionItem item = _makeItem(
@@ -827,18 +552,17 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Открываем меню
-        await tester.tap(find.byIcon(Icons.more_vert));
+        await tester.tap(find.byType(PopupMenuButton<String>));
         await tester.pumpAndSettle();
-
-        // Нажимаем на Remove
-        await tester.tap(find.byIcon(Icons.remove_circle_outline));
+        await tester.tap(find.byWidgetPredicate(
+          (Widget w) => w is PopupMenuItem<String> && w.value == 'remove',
+        ));
         await tester.pumpAndSettle();
 
         expect(removed, isTrue);
       });
 
-      testWidgets('не должен показать Move если onMove == null',
+      testWidgets('пункт Move отсутствует когда onMove == null',
           (WidgetTester tester) async {
         final CollectionItem item = _makeItem(
           game: _makeGame(name: 'Remove Only Game'),
@@ -853,21 +577,24 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Открываем меню
-        await tester.tap(find.byIcon(Icons.more_vert));
+        await tester.tap(find.byType(PopupMenuButton<String>));
         await tester.pumpAndSettle();
 
         expect(
-          find.byIcon(Icons.drive_file_move_outlined),
+          find.byWidgetPredicate(
+            (Widget w) => w is PopupMenuItem<String> && w.value == 'move',
+          ),
           findsNothing,
         );
         expect(
-          find.byIcon(Icons.remove_circle_outline),
+          find.byWidgetPredicate(
+            (Widget w) => w is PopupMenuItem<String> && w.value == 'remove',
+          ),
           findsOneWidget,
         );
       });
 
-      testWidgets('не должен показать Remove если onRemove == null',
+      testWidgets('пункт Remove отсутствует когда onRemove == null',
           (WidgetTester tester) async {
         final CollectionItem item = _makeItem(
           game: _makeGame(name: 'Move Only Game'),
@@ -882,23 +609,26 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Открываем меню
-        await tester.tap(find.byIcon(Icons.more_vert));
+        await tester.tap(find.byType(PopupMenuButton<String>));
         await tester.pumpAndSettle();
 
         expect(
-          find.byIcon(Icons.drive_file_move_outlined),
+          find.byWidgetPredicate(
+            (Widget w) => w is PopupMenuItem<String> && w.value == 'move',
+          ),
           findsOneWidget,
         );
         expect(
-          find.byIcon(Icons.remove_circle_outline),
+          find.byWidgetPredicate(
+            (Widget w) => w is PopupMenuItem<String> && w.value == 'remove',
+          ),
           findsNothing,
         );
       });
     });
 
     group('onTap', () {
-      testWidgets('должен вызвать onTap при нажатии на tile',
+      testWidgets('вызывает onTap при клике по карточке',
           (WidgetTester tester) async {
         bool tapped = false;
         final CollectionItem item = _makeItem(
@@ -918,47 +648,39 @@ void main() {
         expect(tapped, isTrue);
       });
 
-      testWidgets('не должен падать без onTap', (WidgetTester tester) async {
+      testWidgets('не падает без onTap', (WidgetTester tester) async {
         final CollectionItem item = _makeItem(
           game: _makeGame(name: 'No Tap Game'),
         );
 
         await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
+          CollectionItemTile(item: item, isEditable: false),
         ));
         await tester.pumpAndSettle();
 
-        // Нажатие не должно вызывать ошибку
         await tester.tap(find.byType(InkWell));
         await tester.pumpAndSettle();
 
-        expect(find.byType(CollectionItemTile), findsOneWidget);
+        expect(tester.takeException(), isNull);
       });
     });
 
     group('статус', () {
-      testWidgets('должен содержать StatusRibbon',
-          (WidgetTester tester) async {
+      testWidgets('рендерит StatusRibbon', (WidgetTester tester) async {
         final CollectionItem item = _makeItem(
           status: ItemStatus.completed,
           game: _makeGame(name: 'Completed Game'),
         );
 
         await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
+          CollectionItemTile(item: item, isEditable: false),
         ));
         await tester.pumpAndSettle();
 
         expect(find.byType(StatusRibbon), findsOneWidget);
       });
 
-      testWidgets('должен передать правильный статус в StatusRibbon',
+      testWidgets('передаёт status и mediaType в StatusRibbon',
           (WidgetTester tester) async {
         final CollectionItem item = _makeItem(
           status: ItemStatus.inProgress,
@@ -966,10 +688,7 @@ void main() {
         );
 
         await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
+          CollectionItemTile(item: item, isEditable: false),
         ));
         await tester.pumpAndSettle();
 
@@ -980,7 +699,7 @@ void main() {
         expect(ribbon.mediaType, MediaType.game);
       });
 
-      testWidgets('должен передать правильный mediaType в StatusRibbon',
+      testWidgets('передаёт mediaType фильма в StatusRibbon',
           (WidgetTester tester) async {
         final CollectionItem item = _makeItem(
           mediaType: MediaType.movie,
@@ -989,10 +708,7 @@ void main() {
         );
 
         await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
+          CollectionItemTile(item: item, isEditable: false),
         ));
         await tester.pumpAndSettle();
 
@@ -1002,35 +718,10 @@ void main() {
         expect(ribbon.status, ItemStatus.completed);
         expect(ribbon.mediaType, MediaType.movie);
       });
-
-      testWidgets('StatusRibbon должен быть невидимым для notStarted',
-          (WidgetTester tester) async {
-        final CollectionItem item = _makeItem(
-          status: ItemStatus.notStarted,
-          game: _makeGame(name: 'Not Started Game'),
-        );
-
-        await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
-        ));
-        await tester.pumpAndSettle();
-
-        // StatusRibbon рендерится, но выводит SizedBox.shrink для notStarted
-        expect(find.byType(StatusRibbon), findsOneWidget);
-        // Positioned не должен рендериться внутри StatusRibbon
-        final StatusRibbon ribbon = tester.widget<StatusRibbon>(
-          find.byType(StatusRibbon),
-        );
-        expect(ribbon.status, ItemStatus.notStarted);
-      });
     });
 
     group('описание', () {
-      testWidgets('должен показать описание если оно не пустое',
-          (WidgetTester tester) async {
+      testWidgets('показывает summary игры', (WidgetTester tester) async {
         final CollectionItem item = _makeItem(
           game: _makeGame(
             name: 'Game With Summary',
@@ -1039,77 +730,16 @@ void main() {
         );
 
         await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
+          CollectionItemTile(item: item, isEditable: false),
         ));
         await tester.pumpAndSettle();
 
         expect(find.text('An epic RPG adventure.'), findsOneWidget);
       });
-
-      testWidgets('не должен показать описание если оно null',
-          (WidgetTester tester) async {
-        final CollectionItem item = _makeItem(
-          game: _makeGame(name: 'No Summary Game'),
-        );
-
-        await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
-        ));
-        await tester.pumpAndSettle();
-
-        // Только название и платформа должны быть текстами в колонке
-        expect(find.byType(CollectionItemTile), findsOneWidget);
-      });
-    });
-
-    group('обложка', () {
-      testWidgets('должен показать placeholder при отсутствии thumbnailUrl',
-          (WidgetTester tester) async {
-        final CollectionItem item = _makeItem(
-          game: _makeGame(name: 'No Cover Game'),
-        );
-
-        await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
-        ));
-        await tester.pumpAndSettle();
-
-        // placeholder icon для game = Icons.videogame_asset
-        expect(find.byIcon(Icons.videogame_asset), findsAtLeast(1));
-      });
-
-      testWidgets('должен показать placeholder icon для фильма',
-          (WidgetTester tester) async {
-        final CollectionItem item = _makeItem(
-          mediaType: MediaType.movie,
-          movie: _makeMovie(title: 'No Poster Movie'),
-        );
-
-        await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
-        ));
-        await tester.pumpAndSettle();
-
-        // placeholder icon для movie = Icons.movie_outlined
-        // Также MediaTypeTheme.iconFor(movie) = Icons.movie в фоне
-        expect(find.byIcon(Icons.movie_outlined), findsAtLeast(1));
-      });
     });
 
     group('комбинированные сценарии', () {
-      testWidgets('должен отобразить все элементы для полного item',
+      testWidgets('полный item: все данные доходят до UI',
           (WidgetTester tester) async {
         final CollectionItem item = _makeItem(
           status: ItemStatus.completed,
@@ -1134,52 +764,33 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Название
         expect(find.text('Perfect Game'), findsOneWidget);
-        // Платформа
         expect(find.text('PS1'), findsOneWidget);
-        // Рейтинг
-        expect(find.byType(DualRatingBadge), findsOneWidget);
-        // Описание
         expect(find.text('The best game ever made.'), findsOneWidget);
-        // Авторский комментарий
         expect(find.text('Must play!'), findsOneWidget);
-        expect(find.byIcon(Icons.format_quote), findsOneWidget);
-        // Пользовательский комментарий
         expect(find.text('My favourite'), findsOneWidget);
-        expect(find.byIcon(Icons.note_outlined), findsOneWidget);
-        // StatusRibbon
+        expect(find.byType(DualRatingBadge), findsOneWidget);
         expect(find.byType(StatusRibbon), findsOneWidget);
-        // Контекстное меню
-        expect(find.byIcon(Icons.more_vert), findsOneWidget);
+        expect(find.byType(PopupMenuButton<String>), findsOneWidget);
       });
 
-      testWidgets('должен отобразить минимальный item без опциональных полей',
+      testWidgets('минимальный item: нет рейтинга, меню, комментариев',
           (WidgetTester tester) async {
         final CollectionItem item = _makeItem(
           game: _makeGame(name: 'Minimal Game'),
         );
 
         await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
+          CollectionItemTile(item: item, isEditable: false),
         ));
         await tester.pumpAndSettle();
 
-        // Название
         expect(find.text('Minimal Game'), findsOneWidget);
-        // Нет рейтингов
         expect(find.byType(DualRatingBadge), findsNothing);
-        // Нет комментариев
-        expect(find.byIcon(Icons.format_quote), findsNothing);
-        expect(find.byIcon(Icons.note_outlined), findsNothing);
-        // Нет контекстного меню
-        expect(find.byIcon(Icons.more_vert), findsNothing);
+        expect(find.byType(PopupMenuButton<String>), findsNothing);
       });
 
-      testWidgets('должен корректно отобразить TV Show',
+      testWidgets('TV Show: data-driven текст и рейтинг',
           (WidgetTester tester) async {
         final CollectionItem item = _makeItem(
           mediaType: MediaType.tvShow,
@@ -1193,24 +804,18 @@ void main() {
         );
 
         await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
+          CollectionItemTile(item: item, isEditable: false),
         ));
         await tester.pumpAndSettle();
 
         expect(find.text('Breaking Bad'), findsOneWidget);
-        expect(find.text('2008 \u2022 5 seasons'), findsOneWidget);
+        expect(find.text('2008 • 5 seasons'), findsOneWidget);
         expect(find.byType(DualRatingBadge), findsOneWidget);
       });
     });
 
-    // ==================== Контекстное меню ПКМ ====================
-
-    group('onSecondaryTap', () {
-      testWidgets(
-          'должен вызвать onSecondaryTap при правом клике',
+    group('onSecondaryTap (ПКМ)', () {
+      testWidgets('вызывает onSecondaryTap при правом клике',
           (WidgetTester tester) async {
         Offset? receivedPosition;
         final CollectionItem item = _makeItem(
@@ -1226,7 +831,6 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Симулируем правый клик через вторичную кнопку мыши.
         final Offset center = tester.getCenter(find.byType(Card));
         final TestGesture gesture = await tester.createGesture(
           kind: PointerDeviceKind.mouse,
@@ -1240,23 +844,17 @@ void main() {
         expect(receivedPosition, isNotNull);
       });
 
-      testWidgets(
-          'не должен оборачивать в GestureDetector когда onSecondaryTap null',
+      testWidgets('ПКМ не ломает виджет когда onSecondaryTap == null',
           (WidgetTester tester) async {
         final CollectionItem item = _makeItem(
           game: _makeGame(name: 'No Context Menu'),
         );
 
         await tester.pumpWidget(_buildTestApp(
-          CollectionItemTile(
-            item: item,
-            isEditable: false,
-          ),
+          CollectionItemTile(item: item, isEditable: false),
         ));
         await tester.pumpAndSettle();
 
-        // GestureDetector оборачивает Card, но onSecondaryTapUp == null.
-        // Правый клик не должен ломать виджет.
         final Offset center = tester.getCenter(find.byType(Card));
         final TestGesture gesture = await tester.createGesture(
           kind: PointerDeviceKind.mouse,
@@ -1267,8 +865,7 @@ void main() {
         await gesture.up();
         await tester.pumpAndSettle();
 
-        // Виджет не сломался — карточка всё ещё на месте.
-        expect(find.byType(Card), findsOneWidget);
+        expect(tester.takeException(), isNull);
       });
     });
   });

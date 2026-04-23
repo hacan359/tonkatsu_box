@@ -119,52 +119,5 @@ void main() {
       },
     );
 
-    testWidgets(
-      'должен иметь padding 8',
-      (WidgetTester tester) async {
-        final CanvasItem item = createTextItem(
-          data: <String, dynamic>{'content': 'Padded'},
-        );
-
-        await tester.pumpWidget(buildWidget(item));
-
-        final Padding padding = tester.widget<Padding>(
-          find.ancestor(
-            of: find.text('Padded'),
-            matching: find.byType(Padding),
-          ).first,
-        );
-        expect(padding.padding, const EdgeInsets.all(8));
-      },
-    );
-
-    testWidgets(
-      'должен отображать текст без фона',
-      (WidgetTester tester) async {
-        final CanvasItem item = createTextItem(
-          data: <String, dynamic>{'content': 'No Background'},
-        );
-
-        await tester.pumpWidget(buildWidget(item));
-
-        // Виджет использует Padding, а не Container с декорацией
-        expect(
-          find.ancestor(
-            of: find.text('No Background'),
-            matching: find.byType(Padding),
-          ),
-          findsWidgets,
-        );
-        // Нет Container с BoxDecoration (фоном)
-        final Finder containerFinder = find.ancestor(
-          of: find.text('No Background'),
-          matching: find.byWidgetPredicate(
-            (Widget widget) =>
-                widget is Container && widget.decoration != null,
-          ),
-        );
-        expect(containerFinder, findsNothing);
-      },
-    );
   });
 }

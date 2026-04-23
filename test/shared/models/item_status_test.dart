@@ -1,18 +1,18 @@
-// Тесты для модели ItemStatus
+// Тесты для модели ItemStatus.
+// Фокус: enum-контракт, сериализация (value / fromString), приоритеты
+// сортировки, инвариант «все статусы визуально различимы» (уникальные
+// цвета и иконки). Конкретные значения цветов / иконок не проверяем —
+// это design decisions.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/shared/models/item_status.dart';
-import 'package:xerabora/shared/theme/app_colors.dart';
 
 void main() {
   group('ItemStatus', () {
     group('значения enum', () {
-      test('должен содержать 5 значений', () {
+      test('содержит 5 статусов', () {
         expect(ItemStatus.values.length, 5);
-      });
-
-      test('должен содержать все статусы', () {
         expect(ItemStatus.values, contains(ItemStatus.notStarted));
         expect(ItemStatus.values, contains(ItemStatus.inProgress));
         expect(ItemStatus.values, contains(ItemStatus.completed));
@@ -22,100 +22,39 @@ void main() {
     });
 
     group('value', () {
-      test('notStarted должен иметь значение "not_started"', () {
+      test('value совпадает с ключом в БД/API', () {
         expect(ItemStatus.notStarted.value, 'not_started');
-      });
-
-      test('inProgress должен иметь значение "in_progress"', () {
         expect(ItemStatus.inProgress.value, 'in_progress');
-      });
-
-      test('completed должен иметь значение "completed"', () {
         expect(ItemStatus.completed.value, 'completed');
-      });
-
-      test('dropped должен иметь значение "dropped"', () {
         expect(ItemStatus.dropped.value, 'dropped');
-      });
-
-      test('planned должен иметь значение "planned"', () {
         expect(ItemStatus.planned.value, 'planned');
       });
-
     });
 
     group('fromString', () {
-      test('должен вернуть notStarted для "not_started"', () {
-        final ItemStatus result = ItemStatus.fromString('not_started');
-
-        expect(result, ItemStatus.notStarted);
+      test('парсит все валидные значения', () {
+        expect(ItemStatus.fromString('not_started'), ItemStatus.notStarted);
+        expect(ItemStatus.fromString('in_progress'), ItemStatus.inProgress);
+        expect(ItemStatus.fromString('completed'), ItemStatus.completed);
+        expect(ItemStatus.fromString('dropped'), ItemStatus.dropped);
+        expect(ItemStatus.fromString('planned'), ItemStatus.planned);
       });
 
-      test('должен вернуть inProgress для "in_progress"', () {
-        final ItemStatus result = ItemStatus.fromString('in_progress');
-
-        expect(result, ItemStatus.inProgress);
+      test('fallback в notStarted для удалённого статуса on_hold', () {
+        expect(ItemStatus.fromString('on_hold'), ItemStatus.notStarted);
       });
 
-      test('должен вернуть completed для "completed"', () {
-        final ItemStatus result = ItemStatus.fromString('completed');
-
-        expect(result, ItemStatus.completed);
+      test('fallback в notStarted для неизвестного значения', () {
+        expect(ItemStatus.fromString('unknown_status'), ItemStatus.notStarted);
       });
 
-      test('должен вернуть dropped для "dropped"', () {
-        final ItemStatus result = ItemStatus.fromString('dropped');
-
-        expect(result, ItemStatus.dropped);
-      });
-
-      test('должен вернуть planned для "planned"', () {
-        final ItemStatus result = ItemStatus.fromString('planned');
-
-        expect(result, ItemStatus.planned);
-      });
-
-      test('должен вернуть notStarted для "on_hold" (удалённый статус)', () {
-        final ItemStatus result = ItemStatus.fromString('on_hold');
-
-        expect(result, ItemStatus.notStarted);
-      });
-
-      test('должен вернуть notStarted для неизвестного значения', () {
-        final ItemStatus result = ItemStatus.fromString('unknown_status');
-
-        expect(result, ItemStatus.notStarted);
-      });
-
-      test('должен вернуть notStarted для пустой строки', () {
-        final ItemStatus result = ItemStatus.fromString('');
-
-        expect(result, ItemStatus.notStarted);
+      test('fallback в notStarted для пустой строки', () {
+        expect(ItemStatus.fromString(''), ItemStatus.notStarted);
       });
     });
 
     group('color', () {
-      test('notStarted должен возвращать textSecondary', () {
-        expect(ItemStatus.notStarted.color, AppColors.textSecondary);
-      });
-
-      test('inProgress должен возвращать statusInProgress', () {
-        expect(ItemStatus.inProgress.color, AppColors.statusInProgress);
-      });
-
-      test('completed должен возвращать statusCompleted', () {
-        expect(ItemStatus.completed.color, AppColors.statusCompleted);
-      });
-
-      test('dropped должен возвращать statusDropped', () {
-        expect(ItemStatus.dropped.color, AppColors.statusDropped);
-      });
-
-      test('planned должен возвращать statusPlanned', () {
-        expect(ItemStatus.planned.color, AppColors.statusPlanned);
-      });
-
-      test('каждый статус должен возвращать ненулевой цвет', () {
+      test('каждый статус возвращает ненулевой цвет', () {
         for (final ItemStatus status in ItemStatus.values) {
           expect(status.color, isNotNull, reason: '${status.name} color');
         }
@@ -123,73 +62,18 @@ void main() {
     });
 
     group('materialIcon', () {
-      test('каждый статус должен иметь уникальную иконку', () {
+      test('все иконки уникальны (пользователь должен различать статусы)', () {
         final Set<IconData> icons = <IconData>{};
         for (final ItemStatus status in ItemStatus.values) {
           expect(icons.add(status.materialIcon), isTrue,
               reason: '${status.name} materialIcon should be unique');
         }
       });
-
-      test('notStarted → radio_button_unchecked', () {
-        expect(ItemStatus.notStarted.materialIcon, Icons.radio_button_unchecked);
-      });
-
-      test('inProgress → play_arrow_rounded', () {
-        expect(ItemStatus.inProgress.materialIcon, Icons.play_arrow_rounded);
-      });
-
-      test('completed → check_circle', () {
-        expect(ItemStatus.completed.materialIcon, Icons.check_circle);
-      });
-
-      test('dropped → pause_circle_filled', () {
-        expect(ItemStatus.dropped.materialIcon, Icons.pause_circle_filled);
-      });
-
-      test('planned → bookmark', () {
-        expect(ItemStatus.planned.materialIcon, Icons.bookmark);
-      });
     });
 
     group('statusSortPriority', () {
-      test('inProgress должен иметь приоритет 0', () {
-        expect(ItemStatus.inProgress.statusSortPriority, 0);
-      });
-
-      test('planned должен иметь приоритет 1', () {
-        expect(ItemStatus.planned.statusSortPriority, 1);
-      });
-
-      test('notStarted должен иметь приоритет 2', () {
-        expect(ItemStatus.notStarted.statusSortPriority, 2);
-      });
-
-      test('completed должен иметь приоритет 3', () {
-        expect(ItemStatus.completed.statusSortPriority, 3);
-      });
-
-      test('dropped должен иметь приоритет 4', () {
-        expect(ItemStatus.dropped.statusSortPriority, 4);
-      });
-
-      test('inProgress должен иметь наименьший приоритет (первый в списке)', () {
-        final int minPriority = ItemStatus.values
-            .map((ItemStatus s) => s.statusSortPriority)
-            .reduce((int a, int b) => a < b ? a : b);
-
-        expect(ItemStatus.inProgress.statusSortPriority, minPriority);
-      });
-
-      test('dropped должен иметь наибольший приоритет (последний в списке)', () {
-        final int maxPriority = ItemStatus.values
-            .map((ItemStatus s) => s.statusSortPriority)
-            .reduce((int a, int b) => a > b ? a : b);
-
-        expect(ItemStatus.dropped.statusSortPriority, maxPriority);
-      });
-
-      test('сортировка по приоритету должна давать правильный порядок', () {
+      test('порядок: inProgress → planned → notStarted → completed → dropped',
+          () {
         final List<ItemStatus> sorted = List<ItemStatus>.from(ItemStatus.values)
           ..sort(
             (ItemStatus a, ItemStatus b) =>
@@ -205,7 +89,7 @@ void main() {
         ]);
       });
 
-      test('все приоритеты должны быть уникальными', () {
+      test('все приоритеты уникальны', () {
         final List<int> allPriorities = ItemStatus.values
             .map((ItemStatus s) => s.statusSortPriority)
             .toList();
@@ -214,7 +98,7 @@ void main() {
         expect(uniquePriorities.length, allPriorities.length);
       });
 
-      test('все приоритеты должны быть неотрицательными', () {
+      test('все приоритеты неотрицательные', () {
         for (final ItemStatus status in ItemStatus.values) {
           expect(
             status.statusSortPriority >= 0,
@@ -224,6 +108,5 @@ void main() {
         }
       });
     });
-
   });
 }
