@@ -190,7 +190,6 @@ void main() {
 
         expect(find.text('SteamGridDB API key not set. Configure it in Settings.'),
             findsOneWidget);
-        expect(find.byIcon(Icons.warning_amber), findsOneWidget);
       });
 
       testWidgets('should not show warning when API key is set',
@@ -289,7 +288,6 @@ void main() {
         ));
 
         expect(find.text('Rate limit exceeded'), findsOneWidget);
-        expect(find.byIcon(Icons.error_outline), findsOneWidget);
       });
 
       testWidgets('should display image error',

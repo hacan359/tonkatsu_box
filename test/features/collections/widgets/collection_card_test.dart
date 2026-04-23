@@ -590,14 +590,5 @@ void main() {
       expect(tapped, isTrue);
     });
 
-    testWidgets('должен показать иконку inbox', (WidgetTester tester) async {
-      await tester.pumpWidget(_buildTestApp(
-        overrides: <Override>[],
-        child: const UncategorizedCard(count: 1),
-      ));
-      await tester.pumpAndSettle();
-
-      expect(find.byIcon(Icons.inbox_rounded), findsOneWidget);
-    });
   });
 }

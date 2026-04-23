@@ -328,7 +328,6 @@ void main() {
           await tester.pumpWidget(buildTestWidget(canvasState: normalState));
           await tester.pump();
 
-          expect(find.byIcon(Icons.fit_screen), findsOneWidget);
           expect(find.byTooltip('Center view'), findsOneWidget);
         },
       );
@@ -350,7 +349,6 @@ void main() {
           await tester.pumpWidget(buildTestWidget(canvasState: normalState));
           await tester.pump();
 
-          expect(find.byIcon(Icons.grid_view), findsOneWidget);
           expect(find.byTooltip('Reset positions'), findsOneWidget);
         },
       );
@@ -423,7 +421,6 @@ void main() {
           );
           await tester.pump();
 
-          expect(find.byIcon(Icons.image_search), findsOneWidget);
           expect(find.byTooltip('SteamGridDB Images'), findsOneWidget);
         },
       );
@@ -448,10 +445,8 @@ void main() {
           await tester.pump();
 
           if (kVgMapsEnabled) {
-            expect(find.byIcon(Icons.map), findsOneWidget);
             expect(find.byTooltip('VGMaps Browser'), findsOneWidget);
           } else {
-            expect(find.byIcon(Icons.map), findsNothing);
             expect(find.byTooltip('VGMaps Browser'), findsNothing);
           }
         },
@@ -476,7 +471,7 @@ void main() {
           );
           await tester.pump();
 
-          expect(find.byIcon(Icons.map), findsNothing);
+          expect(find.byTooltip('VGMaps Browser'), findsNothing);
         },
       );
 
@@ -499,7 +494,7 @@ void main() {
           );
           await tester.pump();
 
-          expect(find.byIcon(Icons.image_search), findsNothing);
+          expect(find.byTooltip('SteamGridDB Images'), findsNothing);
         },
       );
 

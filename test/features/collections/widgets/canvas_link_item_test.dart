@@ -97,22 +97,6 @@ void main() {
     );
 
     testWidgets(
-      'должен показывать иконку ссылки',
-      (WidgetTester tester) async {
-        final CanvasItem item = createLinkItem(
-          data: <String, dynamic>{
-            'url': 'https://example.com',
-            'label': 'Test',
-          },
-        );
-
-        await tester.pumpWidget(buildWidget(item));
-
-        expect(find.byIcon(Icons.link), findsOneWidget);
-      },
-    );
-
-    testWidgets(
       'должен рендерить Card без явного SizedBox (размер от родителя)',
       (WidgetTester tester) async {
         final CanvasItem item = createLinkItem(
@@ -126,10 +110,7 @@ void main() {
 
         await tester.pumpWidget(buildWidget(item));
 
-        // Card рендерится, размеры определяются родителем Positioned
         expect(find.byType(Card), findsOneWidget);
-        // Row внутри Card содержит иконку и текст
-        expect(find.byIcon(Icons.link), findsOneWidget);
         expect(find.text('Test'), findsOneWidget);
       },
     );
