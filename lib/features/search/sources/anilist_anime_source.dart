@@ -7,6 +7,7 @@ import '../../../core/api/anilist_api.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/anime.dart';
 import '../../../shared/models/media_type.dart';
+import '../../../shared/theme/app_assets.dart';
 import '../filters/anilist_anime_format_filter.dart';
 import '../filters/anilist_anime_genre_filter.dart';
 import '../filters/anilist_anime_status_filter.dart';
@@ -35,6 +36,9 @@ class AniListAnimeSource extends SearchSource {
 
   @override
   IconData get icon => Icons.play_circle_outline;
+
+  @override
+  String? get iconAsset => AppAssets.iconAnilistColor;
 
   @override
   bool get supportsBrowse => true;

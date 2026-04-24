@@ -7,6 +7,29 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Changed
+
+- **Unified brand-icon rendering across settings, welcome wizard, and search**
+
+  Settings API-keys screen now uses a wizard-style section header (logo + description, e.g. "Game search (IGDB)") instead of a text-only badge. Integration and Import tiles show the full-colour brand logo (GitHub, Trakt, Steam, RetroAchievements, Kodi, Discord) on a neutral plate, matching the welcome-wizard step. Search source dropdown and filter bar render the same brand PNGs in place of generic Material icons. Monochrome glyphs (simpleicons) stay for header badges that need `ColorFilter` tinting for active/inactive state.
+
+  * assets/images/icon_anilist_color.png, icon_discord_color.png, icon_github.png, icon_igdb_color.png, icon_kodi_color.png, icon_steam_color.png, icon_steamgriddb_color.png, icon_tmdb_color.png, icon_trakt_color.png, icon_vndb_color.png: New. Normalised 128×128 PNGs (dashboardicons + official brand kits), trimmed alpha, 10% uniform margin. IGDB mark whitened for visibility on dark plates.
+  * assets/images/ra_logo.png: Re-normalised to match.
+  * assets/images/icon_kodi.svg: Replaced the dashboardicons variant with a simpleicons mono SVG to drop the embedded `<style>` block that `flutter_svg` flags as "unhandled element".
+  * assets/images/icon_ra.svg, icon_steam.svg, icon_trakt.svg: Removed (no longer referenced).
+  * lib/shared/theme/app_assets.dart (AppAssets): Add `iconDiscordColor`, `iconKodiColor`, `iconSteamColor`, `iconTraktColor`, `iconRaColor`, `iconGithub`, `iconTmdbColor`, `iconIgdbColor`, `iconSteamGridDbColor`, `iconAnilistColor`, `iconVndbColor`; drop unused mono `iconSteam`, `iconTrakt`, `iconRa`.
+  * lib/shared/models/data_source.dart (DataSource.iconAsset): New field — brand PNG path per source.
+  * lib/shared/widgets/source_badge.dart (SourceBadge): Render brand logo left of the label when `source.iconAsset` is set.
+  * lib/features/settings/widgets/settings_tile.dart (_LeadingBubble): Route `.png` assets through `Image.asset`, `.svg` through `SvgPicture.asset`; bump asset scale multiplier to 1.8× for visual parity with Material icons.
+  * lib/features/settings/screens/settings_screen.dart: GitHub / Trakt / Steam / RA import tiles, Kodi integration tile, and Discord Rich Presence tile switch to colored PNGs. Author-name bubble now tracks compact-screen sizing like `SettingsTile`.
+  * lib/features/settings/content/credentials_content.dart (_CredentialsContentState._buildSourceHeader): New wizard-style header (`[logo] description (BrandName)`) replaces per-section `SourceBadge` row for IGDB / SteamGridDB / TMDB.
+  * lib/features/welcome/widgets/welcome_step_api_keys.dart (_ApiSection, _BuiltInKeySection): Accept optional `iconAsset`; render brand PNG with tooltip instead of a text tag chip.
+  * lib/features/search/models/search_source.dart (SearchSource.iconAsset): New virtual getter, defaults to `null`.
+  * lib/features/search/sources/igdb_games_source.dart, tmdb_movies_source.dart, tmdb_tv_source.dart, tmdb_anime_source.dart, anilist_anime_source.dart, anilist_manga_source.dart, vndb_source.dart: Override `iconAsset` with the corresponding brand PNG.
+  * lib/features/search/sources/search_sources.dart (SourceGroupEntry): Add `groupIconAsset` field; populate from the first source of each group.
+  * lib/features/search/widgets/source_dropdown.dart (SourceDropdown, _sourceGlyph): Render brand PNG (22 px for current source, 20 px for group headers) when asset is set.
+  * lib/features/search/widgets/filter_bar.dart: Render group brand PNG (20 px) in the filter-bar popup.
+
 ## [0.28.0] - 2026-04-23
 
 ### Added

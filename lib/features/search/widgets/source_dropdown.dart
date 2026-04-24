@@ -55,7 +55,12 @@ class SourceDropdown extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Icon(current.groupIcon, size: 16, color: AppColors.brand),
+            _sourceGlyph(
+              asset: current.iconAsset,
+              icon: current.groupIcon,
+              size: 22,
+              color: AppColors.brand,
+            ),
             const SizedBox(width: 6),
             Text(
               current.label(l),
@@ -93,9 +98,10 @@ class SourceDropdown extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Icon(
-              group.groupIcon,
-              size: 14,
+            _sourceGlyph(
+              asset: group.groupIconAsset,
+              icon: group.groupIcon,
+              size: 20,
               color: AppColors.textTertiary,
             ),
             const SizedBox(width: 6),
@@ -135,4 +141,22 @@ class SourceDropdown extends StatelessWidget {
 
     return items;
   }
+}
+
+/// Рендерит брендовый PNG если задан [asset], иначе Material-иконку.
+Widget _sourceGlyph({
+  required String? asset,
+  required IconData icon,
+  required double size,
+  required Color color,
+}) {
+  if (asset != null) {
+    return Image.asset(
+      asset,
+      width: size,
+      height: size,
+      filterQuality: FilterQuality.medium,
+    );
+  }
+  return Icon(icon, size: size, color: color);
 }

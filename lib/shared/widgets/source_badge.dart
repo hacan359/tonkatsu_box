@@ -48,6 +48,15 @@ class SourceBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
+          if (source.iconAsset != null) ...<Widget>[
+            Image.asset(
+              source.iconAsset!,
+              width: size.fontSize * 1.4,
+              height: size.fontSize * 1.4,
+              filterQuality: FilterQuality.medium,
+            ),
+            SizedBox(width: size.fontSize * 0.4),
+          ],
           Text(
             source.label,
             style: TextStyle(

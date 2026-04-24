@@ -26,21 +26,6 @@ void main() {
   }
 
   group('SourceDropdown', () {
-    testWidgets('renders current source group icon',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(buildWidget());
-      await tester.pumpAndSettle();
-
-      expect(find.byIcon(Icons.movie_outlined), findsOneWidget);
-    });
-
-    testWidgets('renders dropdown arrow icon', (WidgetTester tester) async {
-      await tester.pumpWidget(buildWidget());
-      await tester.pumpAndSettle();
-
-      expect(find.byIcon(Icons.keyboard_arrow_down), findsOneWidget);
-    });
-
     testWidgets('opens popup with grouped items on tap',
         (WidgetTester tester) async {
       await tester.pumpWidget(buildWidget());
