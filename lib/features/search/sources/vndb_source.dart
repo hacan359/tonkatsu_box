@@ -7,6 +7,7 @@ import '../../../core/api/vndb_api.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/visual_novel.dart';
+import '../../../shared/theme/app_assets.dart';
 import '../filters/vndb_tag_filter.dart';
 import '../models/search_source.dart';
 
@@ -32,6 +33,9 @@ class VndbSource extends SearchSource {
 
   @override
   IconData get icon => Icons.menu_book_outlined;
+
+  @override
+  String? get iconAsset => AppAssets.iconVndbColor;
 
   @override
   bool get supportsBrowse => true;

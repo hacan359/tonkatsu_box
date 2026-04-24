@@ -7,6 +7,7 @@ import '../../../core/api/anilist_api.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/manga.dart';
 import '../../../shared/models/media_type.dart';
+import '../../../shared/theme/app_assets.dart';
 import '../filters/anilist_genre_filter.dart';
 import '../filters/anilist_manga_status_filter.dart';
 import '../filters/manga_format_filter.dart';
@@ -35,6 +36,9 @@ class AniListMangaSource extends SearchSource {
 
   @override
   IconData get icon => Icons.auto_stories_outlined;
+
+  @override
+  String? get iconAsset => AppAssets.iconAnilistColor;
 
   @override
   bool get supportsBrowse => true;

@@ -359,7 +359,15 @@ class _SourceDropdownChevron extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Icon(group.groupIcon, size: 14, color: AppColors.textTertiary),
+            if (group.groupIconAsset != null)
+              Image.asset(
+                group.groupIconAsset!,
+                width: 20,
+                height: 20,
+                filterQuality: FilterQuality.medium,
+              )
+            else
+              Icon(group.groupIcon, size: 14, color: AppColors.textTertiary),
             const SizedBox(width: 6),
             Text(
               group.groupName,

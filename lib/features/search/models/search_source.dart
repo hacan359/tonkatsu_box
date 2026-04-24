@@ -170,6 +170,10 @@ abstract class SearchSource {
   /// Иконка для дропдауна.
   IconData get icon;
 
+  /// Путь к брендовому PNG-ассету (альтернатива [icon] и [groupIcon]).
+  /// Если задан — рендерится вместо Material-иконки.
+  String? get iconAsset => null;
+
   /// Список фильтров, которые поддерживает этот источник.
   /// Порядок = порядок отображения в фильтр-баре.
   List<SearchFilter> get filters;

@@ -8,9 +8,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
-import '../../../shared/widgets/source_badge.dart';
 import '../../../shared/constants/api_defaults.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/inline_text_field.dart';
@@ -131,21 +131,10 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
     return SettingsGroup(
       title: S.of(context).credentialsIgdbSection,
       children: <Widget>[
-        const Padding(
-          padding: EdgeInsets.only(
-            left: AppSpacing.md,
-            right: AppSpacing.md,
-            top: AppSpacing.sm,
-          ),
-          child: Row(
-            children: <Widget>[
-              Spacer(),
-              SourceBadge(
-                source: DataSource.igdb,
-                size: SourceBadgeSize.large,
-              ),
-            ],
-          ),
+        _buildSourceHeader(
+          iconAsset: AppAssets.iconIgdbColor,
+          description: S.of(context).welcomeApiIgdbDesc,
+          sourceName: 'IGDB',
         ),
         Padding(
           padding: const EdgeInsets.symmetric(
@@ -205,21 +194,10 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
     return SettingsGroup(
       title: S.of(context).credentialsSteamGridDbSection,
       children: <Widget>[
-        const Padding(
-          padding: EdgeInsets.only(
-            left: AppSpacing.md,
-            right: AppSpacing.md,
-            top: AppSpacing.sm,
-          ),
-          child: Row(
-            children: <Widget>[
-              Spacer(),
-              SourceBadge(
-                source: DataSource.steamGridDb,
-                size: SourceBadgeSize.large,
-              ),
-            ],
-          ),
+        _buildSourceHeader(
+          iconAsset: AppAssets.iconSteamGridDbColor,
+          description: S.of(context).welcomeApiSgdbDesc,
+          sourceName: 'SteamGridDB',
         ),
         Padding(
           padding: const EdgeInsets.symmetric(
@@ -286,21 +264,10 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
     return SettingsGroup(
       title: S.of(context).credentialsTmdbSection,
       children: <Widget>[
-        const Padding(
-          padding: EdgeInsets.only(
-            left: AppSpacing.md,
-            right: AppSpacing.md,
-            top: AppSpacing.sm,
-          ),
-          child: Row(
-            children: <Widget>[
-              Spacer(),
-              SourceBadge(
-                source: DataSource.tmdb,
-                size: SourceBadgeSize.large,
-              ),
-            ],
-          ),
+        _buildSourceHeader(
+          iconAsset: AppAssets.iconTmdbColor,
+          description: S.of(context).welcomeApiTmdbDesc,
+          sourceName: 'TMDB',
         ),
         Padding(
           padding: const EdgeInsets.symmetric(
@@ -360,6 +327,38 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
   }
 
   // ==================== Hints ====================
+
+  /// Хедер секции в стиле wizard: [лого 24x24] + "Описание (Название)".
+  Widget _buildSourceHeader({
+    required String iconAsset,
+    required String description,
+    required String sourceName,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(
+        left: AppSpacing.md,
+        right: AppSpacing.md,
+        top: AppSpacing.sm,
+      ),
+      child: Row(
+        children: <Widget>[
+          Image.asset(
+            iconAsset,
+            width: 24,
+            height: 24,
+            filterQuality: FilterQuality.medium,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              '$description ($sourceName)',
+              style: AppTypography.h3.copyWith(fontSize: 13),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildOwnKeyHint() {
     return Padding(

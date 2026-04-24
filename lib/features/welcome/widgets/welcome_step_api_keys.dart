@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/api_defaults.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
+import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
@@ -92,6 +93,7 @@ class WelcomeStepApiKeys extends StatelessWidget {
             _BuiltInKeySection(
               tag: l.welcomeApiIgdbTag,
               tagColor: AppColors.gameAccent,
+              iconAsset: AppAssets.iconIgdbColor,
               title: l.welcomeApiIgdbDesc,
               builtInLabel: l.welcomeApiBuiltInKey,
               ownKeyHint: l.welcomeApiOwnKeyHint,
@@ -100,6 +102,7 @@ class WelcomeStepApiKeys extends StatelessWidget {
             _ApiSection(
               tag: l.welcomeApiIgdbTag,
               tagColor: AppColors.gameAccent,
+              iconAsset: AppAssets.iconIgdbColor,
               title: l.welcomeApiIgdbDesc,
               badge: l.welcomeApiRequired,
               badgeColor: AppColors.brand,
@@ -121,6 +124,7 @@ class WelcomeStepApiKeys extends StatelessWidget {
           _ApiSection(
             tag: l.welcomeApiTmdbTag,
             tagColor: AppColors.brand,
+            iconAsset: AppAssets.iconTmdbColor,
             title: l.welcomeApiTmdbDesc,
             badge: ApiDefaults.hasTmdbKey
                 ? l.welcomeApiBuiltInKey
@@ -145,6 +149,7 @@ class WelcomeStepApiKeys extends StatelessWidget {
           _ApiSection(
             tag: l.welcomeApiSgdbTag,
             tagColor: _sgdbColor,
+            iconAsset: AppAssets.iconSteamGridDbColor,
             title: l.welcomeApiSgdbDesc,
             badge: ApiDefaults.hasSteamGridDbKey
                 ? l.welcomeApiBuiltInKey
@@ -199,10 +204,12 @@ class _ApiSection extends StatelessWidget {
     required this.linkSubtitle,
     required this.linkUrl,
     required this.linkColor,
+    this.iconAsset,
   });
 
   final String tag;
   final Color tagColor;
+  final String? iconAsset;
   final String title;
   final String badge;
   final Color badgeColor;
@@ -231,24 +238,35 @@ class _ApiSection extends StatelessWidget {
             runSpacing: 4,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: <Widget>[
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 7,
-                  vertical: 2,
-                ),
-                decoration: BoxDecoration(
-                  color: tagColor.withAlpha(30),
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                child: Text(
-                  tag,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    color: tagColor,
+              if (iconAsset != null)
+                Tooltip(
+                  message: tag,
+                  child: Image.asset(
+                    iconAsset!,
+                    width: 24,
+                    height: 24,
+                    filterQuality: FilterQuality.medium,
+                  ),
+                )
+              else
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: tagColor.withAlpha(30),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: Text(
+                    tag,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: tagColor,
+                    ),
                   ),
                 ),
-              ),
               Text(
                 title,
                 style: AppTypography.h3.copyWith(fontSize: 13),
@@ -328,10 +346,12 @@ class _BuiltInKeySection extends StatelessWidget {
     required this.title,
     required this.builtInLabel,
     required this.ownKeyHint,
+    this.iconAsset,
   });
 
   final String tag;
   final Color tagColor;
+  final String? iconAsset;
   final String title;
   final String builtInLabel;
   final String ownKeyHint;
@@ -354,24 +374,35 @@ class _BuiltInKeySection extends StatelessWidget {
             runSpacing: 4,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: <Widget>[
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 7,
-                  vertical: 2,
-                ),
-                decoration: BoxDecoration(
-                  color: tagColor.withAlpha(30),
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                child: Text(
-                  tag,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    color: tagColor,
+              if (iconAsset != null)
+                Tooltip(
+                  message: tag,
+                  child: Image.asset(
+                    iconAsset!,
+                    width: 24,
+                    height: 24,
+                    filterQuality: FilterQuality.medium,
+                  ),
+                )
+              else
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: tagColor.withAlpha(30),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: Text(
+                    tag,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: tagColor,
+                    ),
                   ),
                 ),
-              ),
               Text(
                 title,
                 style: AppTypography.h3.copyWith(fontSize: 13),

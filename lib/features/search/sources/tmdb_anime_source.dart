@@ -8,6 +8,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/movie.dart';
 import '../../../shared/models/tv_show.dart';
+import '../../../shared/theme/app_assets.dart';
 import '../filters/anime_type_filter.dart';
 import '../filters/min_rating_filter.dart';
 import '../filters/min_votes_filter.dart';
@@ -37,6 +38,9 @@ class TmdbAnimeSource extends SearchSource {
 
   @override
   IconData get icon => Icons.animation_outlined;
+
+  @override
+  String? get iconAsset => AppAssets.iconTmdbColor;
 
   @override
   bool get supportsBrowse => true;

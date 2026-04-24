@@ -44,6 +44,7 @@ typedef SourceGroupEntry = ({
   String groupId,
   String groupName,
   IconData groupIcon,
+  String? groupIconAsset,
   List<SearchSource> sources,
 });
 
@@ -61,6 +62,7 @@ final List<SourceGroupEntry> groupedSearchSources = () {
         groupId: source.groupId,
         groupName: source.groupName,
         groupIcon: source.groupIcon,
+        groupIconAsset: source.iconAsset,
         sources: <SearchSource>[source],
       ));
     } else {

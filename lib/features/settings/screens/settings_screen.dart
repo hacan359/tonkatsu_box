@@ -47,12 +47,10 @@ const double _desktopBreakpoint = 800;
 // iOS-style цветовая палитра для capsule-иконок в настройках.
 const Color _kProfileColor = Color(0xFF4A90E2); // синий
 const Color _kBackupColor = Color(0xFF42A5F5); // голубой
-const Color _kImportColor = Color(0xFFFFA726); // оранжевый
 const Color _kStorageColor = Color(0xFF8E8E93); // серый
 const Color _kAppearanceColor = Color(0xFFA86ED4); // фиолетовый
 const Color _kApiKeysColor = Color(0xFFEF5350); // красный
-const Color _kIntegrationColor = Color(0xFF66BB6A); // зелёный
-const Color _kDiscordColor = Color(0xFF5865F2); // Discord blurple
+const Color _kDiscordColor = Color(0xFF5865F2); // Discord blurple (used for RA-sync Icons.sync tile)
 const Color _kAboutColor = Color(0xFF8E8E93); // серый
 const Color _kDebugColor = Color(0xFFAB47BC); // пурпурный
 
@@ -168,44 +166,49 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             value: '',
             onTap: () => _pushScreen(const ProfilesScreen()),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.sm,
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Container(
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(
-                    color: _kProfileColor,
-                    borderRadius: BorderRadius.circular(7),
+          Builder(builder: (BuildContext ctx) {
+            final bool compact = isCompactScreen(ctx);
+            final double bubble = compact ? 24 : 28;
+            final double iconSize = compact ? 14 : 17;
+            return Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Container(
+                    width: bubble,
+                    height: bubble,
+                    decoration: BoxDecoration(
+                      color: _kProfileColor,
+                      borderRadius: BorderRadius.circular(bubble * 0.25),
+                    ),
+                    child: Icon(
+                      Icons.drive_file_rename_outline,
+                      size: iconSize,
+                      color: Colors.white,
+                    ),
                   ),
-                  child: const Icon(
-                    Icons.badge_outlined,
-                    size: 17,
-                    color: Colors.white,
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: InlineTextField(
+                      label: l.settingsAuthorName,
+                      value: settings.authorName,
+                      placeholder: l.settingsAuthorPlaceholder,
+                      compact: true,
+                      onChanged: (String value) {
+                        ref
+                            .read(settingsNotifierProvider.notifier)
+                            .setDefaultAuthor(value);
+                      },
+                    ),
                   ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: InlineTextField(
-                    label: l.settingsAuthorName,
-                    value: settings.authorName,
-                    placeholder: l.settingsAuthorPlaceholder,
-                    compact: true,
-                    onChanged: (String value) {
-                      ref
-                          .read(settingsNotifierProvider.notifier)
-                          .setDefaultAuthor(value);
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
+                ],
+              ),
+            );
+          }),
         ],
       ),
       gap,
@@ -239,32 +242,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         titleIcon: Icons.download_outlined,
         children: <Widget>[
           SettingsTile(
-            leadingIcon: Icons.travel_explore,
-            leadingColor: _kImportColor,
+            leadingAssetPath: AppAssets.iconGithub,
+            leadingAssetColored: true,
             title: l.settingsBrowseCollections,
             subtitle: l.settingsBrowseCollectionsSubtitle,
             onTap: () => _pushScreen(const BrowseCollectionsScreen()),
           ),
           SettingsTile(
-            leadingAssetPath: AppAssets.iconTrakt,
+            leadingAssetPath: AppAssets.iconTraktColor,
             leadingAssetColored: true,
-            leadingColor: _kImportColor,
             title: l.settingsTraktImport,
             subtitle: l.settingsTraktImportSubtitle,
             onTap: () => _pushScreen(const TraktImportScreen()),
           ),
           SettingsTile(
-            leadingAssetPath: AppAssets.iconSteam,
+            leadingAssetPath: AppAssets.iconSteamColor,
             leadingAssetColored: true,
-            leadingColor: _kImportColor,
             title: l.settingsSteamImport,
             subtitle: l.settingsSteamImportSubtitle,
             onTap: () => _pushScreen(const SteamImportScreen()),
           ),
           SettingsTile(
-            leadingAssetPath: AppAssets.iconRa,
+            leadingAssetPath: AppAssets.iconRaColor,
             leadingAssetColored: true,
-            leadingColor: _kImportColor,
             title: l.settingsRaImport,
             subtitle: l.settingsRaImportSubtitle,
             onTap: () => _pushScreen(const RaImportScreen()),
@@ -406,9 +406,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         titleIcon: Icons.link,
         children: <Widget>[
           SettingsTile(
-            leadingAssetPath: AppAssets.iconKodi,
+            leadingAssetPath: AppAssets.iconKodiColor,
             leadingAssetColored: true,
-            leadingColor: _kIntegrationColor,
             title: 'Kodi', // proper noun
             subtitle: l.settingsKodiSubtitle,
             statusDotColor: ref.watch(kodiSettingsProvider).enabled
@@ -424,8 +423,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           if (kDiscordRpcAvailable)
             SettingsTile(
-              leadingIcon: Icons.chat_bubble_outline,
-              leadingColor: _kDiscordColor,
+              leadingAssetPath: AppAssets.iconDiscordColor,
+              leadingAssetColored: true,
               title: l.settingsDiscordRpc,
               subtitle: l.settingsDiscordRpcSubtitle,
               showChevron: false,

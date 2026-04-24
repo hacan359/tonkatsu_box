@@ -10,7 +10,6 @@ import 'package:xerabora/features/settings/widgets/inline_text_field.dart';
 import 'package:xerabora/features/settings/widgets/settings_group.dart';
 import 'package:xerabora/features/settings/widgets/status_dot.dart';
 import 'package:xerabora/l10n/app_localizations.dart';
-import 'package:xerabora/shared/widgets/source_badge.dart';
 
 void main() {
   group('CredentialsScreen', () {
@@ -66,19 +65,6 @@ void main() {
         expect(find.text('Client Secret'), findsOneWidget);
       });
 
-      testWidgets('should show SourceBadge for IGDB',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        final List<SourceBadge> badges =
-            tester.widgetList<SourceBadge>(find.byType(SourceBadge)).toList();
-        expect(
-          badges.any((SourceBadge badge) => badge.source == DataSource.igdb),
-          isTrue,
-        );
-      });
-
       testWidgets('Client Secret should be obscured',
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
@@ -98,23 +84,6 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('API Key'), findsAtLeastNWidgets(1));
-      });
-
-      testWidgets('should show SourceBadge for SteamGridDB',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        await _scrollDown(tester);
-        await tester.pumpAndSettle();
-
-        final List<SourceBadge> badges =
-            tester.widgetList<SourceBadge>(find.byType(SourceBadge)).toList();
-        expect(
-          badges.any(
-              (SourceBadge badge) => badge.source == DataSource.steamGridDb),
-          isTrue,
-        );
       });
 
       testWidgets('should show StatusDot for SteamGridDB key',
@@ -151,22 +120,6 @@ void main() {
 
         // API Key label appears for SteamGridDB and TMDB
         expect(find.text('API Key'), findsAtLeastNWidgets(2));
-      });
-
-      testWidgets('should show SourceBadge for TMDB',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        await _scrollDown(tester);
-        await tester.pumpAndSettle();
-
-        final List<SourceBadge> badges =
-            tester.widgetList<SourceBadge>(find.byType(SourceBadge)).toList();
-        expect(
-          badges.any((SourceBadge badge) => badge.source == DataSource.tmdb),
-          isTrue,
-        );
       });
 
       testWidgets('should show StatusDot for TMDB key',
@@ -368,52 +321,6 @@ void main() {
       });
     });
 
-    group('SourceBadge widgets', () {
-      testWidgets('should show 3 SourceBadge widgets',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        await _scrollDown(tester);
-        await tester.pumpAndSettle();
-
-        expect(find.byType(SourceBadge), findsNWidgets(3));
-      });
-
-      testWidgets('all SourceBadge should be large size',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        await _scrollDown(tester);
-        await tester.pumpAndSettle();
-
-        final List<SourceBadge> badges =
-            tester.widgetList<SourceBadge>(find.byType(SourceBadge)).toList();
-
-        for (final SourceBadge badge in badges) {
-          expect(badge.size, equals(SourceBadgeSize.large));
-        }
-      });
-
-      testWidgets('should show correct sources',
-          (WidgetTester tester) async {
-        await tester.pumpWidget(createWidget());
-        await tester.pumpAndSettle();
-
-        await _scrollDown(tester);
-        await tester.pumpAndSettle();
-
-        final List<SourceBadge> badges =
-            tester.widgetList<SourceBadge>(find.byType(SourceBadge)).toList();
-        final List<DataSource> sources =
-            badges.map((SourceBadge badge) => badge.source).toList();
-
-        expect(sources, contains(DataSource.igdb));
-        expect(sources, contains(DataSource.steamGridDb));
-        expect(sources, contains(DataSource.tmdb));
-      });
-    });
   });
 }
 

@@ -209,16 +209,23 @@ class _LeadingBubble extends StatelessWidget {
       ),
       alignment: Alignment.center,
       child: assetPath != null
-          ? SvgPicture.asset(
-              assetPath!,
-              // Brand-SVG-иконки из simpleicons имеют внутренние поля —
-              // рендерим чуть крупнее, чтобы визуально совпадали с Material.
-              width: iconSize * 1.25,
-              height: iconSize * 1.25,
-              colorFilter: assetColored
-                  ? null
-                  : const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-            )
+          ? (assetPath!.toLowerCase().endsWith('.svg')
+                ? SvgPicture.asset(
+                    assetPath!,
+                    // Brand-SVG-иконки из simpleicons имеют внутренние поля —
+                    // рендерим чуть крупнее, чтобы визуально совпадали с Material.
+                    width: iconSize * 1.8,
+                    height: iconSize * 1.8,
+                    colorFilter: assetColored
+                        ? null
+                        : const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                  )
+                : Image.asset(
+                    assetPath!,
+                    width: iconSize * 1.8,
+                    height: iconSize * 1.8,
+                    filterQuality: FilterQuality.medium,
+                  ))
           : Icon(icon, size: iconSize, color: Colors.white),
     );
   }
