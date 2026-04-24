@@ -366,7 +366,6 @@ void main() {
         ));
 
         expect(find.text('WebView failed to load'), findsOneWidget);
-        expect(find.byIcon(Icons.error_outline), findsOneWidget);
       });
 
       testWidgets('should not show error when no error',
@@ -375,7 +374,7 @@ void main() {
           panelState: const VgMapsPanelState(isOpen: true),
         ));
 
-        expect(find.byIcon(Icons.error_outline), findsNothing);
+        expect(find.textContaining('failed'), findsNothing);
       });
     });
 

@@ -216,32 +216,6 @@ void main() {
     });
 
     group('editable behavior', () {
-      testWidgets('should show edit icons when editable', (WidgetTester tester) async {
-        await tester.pumpApp(
-          ActivityDatesSection(
-            addedAt: DateTime(2025, 1, 15),
-            isEditable: true,
-            onDateChanged: (String type, DateTime date) async {},
-          ),
-        );
-
-        // Edit icons for Started and Completed
-        expect(find.byIcon(Icons.edit_outlined), findsNWidgets(2));
-      });
-
-      testWidgets('should not show edit icons when not editable',
-          (WidgetTester tester) async {
-        await tester.pumpApp(
-          ActivityDatesSection(
-            addedAt: DateTime(2025, 1, 15),
-            isEditable: false,
-            onDateChanged: (String type, DateTime date) async {},
-          ),
-        );
-
-        expect(find.byIcon(Icons.edit_outlined), findsNothing);
-      });
-
       testWidgets('should wrap editable dates in InkWell', (WidgetTester tester) async {
         await tester.pumpApp(
           ActivityDatesSection(
@@ -251,28 +225,21 @@ void main() {
           ),
         );
 
-        // InkWell for Started and Completed
+        // Started and Completed dates are tappable when editable.
         expect(find.byType(InkWell), findsNWidgets(2));
       });
 
-      testWidgets('should call onDateChanged when date is tapped',
+      testWidgets('should not wrap dates in InkWell when not editable',
           (WidgetTester tester) async {
         await tester.pumpApp(
           ActivityDatesSection(
             addedAt: DateTime(2025, 1, 15),
-            isEditable: true,
+            isEditable: false,
             onDateChanged: (String type, DateTime date) async {},
           ),
-          wrapInScaffold: true,
         );
 
-        // Mock showDatePicker by directly testing the callback
-        // In real app, tapping would open date picker, but in test we verify the mechanism exists
-        expect(find.byType(InkWell), findsNWidgets(2));
-
-        // We can't easily test the date picker dialog in widget tests
-        // but we can verify that the onTap handlers exist and the widget is structured correctly
-        expect(find.byIcon(Icons.edit_outlined), findsNWidgets(2));
+        expect(find.byType(InkWell), findsNothing);
       });
     });
   });
