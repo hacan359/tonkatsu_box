@@ -670,6 +670,10 @@ class CollectionItemsView extends ConsumerWidget {
     final S l = S.of(context);
     final RenderBox overlay =
         Overlay.of(context).context.findRenderObject()! as RenderBox;
+    final CollectionSortMode sortMode =
+        ref.read(collectionSortProvider(collectionId));
+    final bool isManualSort =
+        sortMode == CollectionSortMode.manual && canEdit;
 
     showMenu<String>(
       context: context,
@@ -678,6 +682,25 @@ class CollectionItemsView extends ConsumerWidget {
         Offset.zero & overlay.size,
       ),
       items: <PopupMenuEntry<String>>[
+        if (isManualSort) ...<PopupMenuEntry<String>>[
+          PopupMenuItem<String>(
+            value: 'moveToTop',
+            child: ListTile(
+              leading: const Icon(Icons.vertical_align_top),
+              title: Text(l.moveToTop),
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
+          PopupMenuItem<String>(
+            value: 'moveToBottom',
+            child: ListTile(
+              leading: const Icon(Icons.vertical_align_bottom),
+              title: Text(l.moveToBottom),
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
+          const PopupMenuDivider(),
+        ],
         if (onItemMove != null)
           PopupMenuItem<String>(
             value: 'move',
@@ -729,6 +752,14 @@ class CollectionItemsView extends ConsumerWidget {
         return;
       }
       switch (value) {
+        case 'moveToTop':
+          ref
+              .read(collectionItemsNotifierProvider(collectionId).notifier)
+              .moveItemToTop(item.id);
+        case 'moveToBottom':
+          ref
+              .read(collectionItemsNotifierProvider(collectionId).notifier)
+              .moveItemToBottom(item.id);
         case 'move':
           onItemMove?.call(item);
         case 'clone':

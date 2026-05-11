@@ -204,6 +204,12 @@ class SRu extends S {
   String get remove => 'Убрать';
 
   @override
+  String get moveToTop => 'В начало списка';
+
+  @override
+  String get moveToBottom => 'В конец списка';
+
+  @override
   String get back => 'Назад';
 
   @override

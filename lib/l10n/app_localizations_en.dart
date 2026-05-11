@@ -204,6 +204,12 @@ class SEn extends S {
   String get remove => 'Remove';
 
   @override
+  String get moveToTop => 'Move to top';
+
+  @override
+  String get moveToBottom => 'Move to bottom';
+
+  @override
   String get back => 'Back';
 
   @override

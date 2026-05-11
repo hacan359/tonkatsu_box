@@ -560,6 +560,31 @@ class CollectionItemsNotifier
     await _db.reorderItems(_collectionId, orderedIds);
   }
 
+  /// Перемещает элемент с указанным [itemId] в начало списка.
+  ///
+  /// No-op если элемент уже первый или не найден. Работает только когда
+  /// активна ручная сортировка — иначе порядок всё равно пересчитается.
+  Future<void> moveItemToTop(int itemId) async {
+    final List<CollectionItem>? items = state.valueOrNull;
+    if (items == null) return;
+    final int idx =
+        items.indexWhere((CollectionItem i) => i.id == itemId);
+    if (idx <= 0) return;
+    await reorderItem(idx, 0);
+  }
+
+  /// Перемещает элемент с указанным [itemId] в конец списка.
+  ///
+  /// No-op если элемент уже последний или не найден.
+  Future<void> moveItemToBottom(int itemId) async {
+    final List<CollectionItem>? items = state.valueOrNull;
+    if (items == null) return;
+    final int idx =
+        items.indexWhere((CollectionItem i) => i.id == itemId);
+    if (idx < 0 || idx == items.length - 1) return;
+    await reorderItem(idx, items.length - 1);
+  }
+
   /// Добавляет элемент в коллекцию.
   ///
   /// Возвращает true при успехе, false если элемент уже в коллекции.

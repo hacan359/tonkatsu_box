@@ -72,6 +72,8 @@
   "search": "Search",
   "open": "Open",
   "remove": "Remove",
+  "moveToTop": "Move to top",
+  "moveToBottom": "Move to bottom",
   "back": "Back",
   "next": "Next",
   "skip": "Skip",

@@ -487,6 +487,18 @@ abstract class S {
   /// **'Remove'**
   String get remove;
 
+  /// No description provided for @moveToTop.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to top'**
+  String get moveToTop;
+
+  /// No description provided for @moveToBottom.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to bottom'**
+  String get moveToBottom;
+
   /// No description provided for @back.
   ///
   /// In en, this message translates to:

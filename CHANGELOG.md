@@ -9,6 +9,30 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **Move-to-top / move-to-bottom for collection items in manual sort**
+
+  When the collection is sorted manually (Custom order), the row context
+  menu (right-click on desktop, long-press on mobile) now includes two new
+  entries — «В начало списка» and «В конец списка» — that jump the item to
+  the first or last position in one click instead of dragging through the
+  whole list. The entries are hidden in other sort modes, where they would
+  have no visible effect.
+
+  * lib/features/collections/providers/collections_provider.dart
+    (CollectionItemsNotifier.moveItemToTop, CollectionItemsNotifier.moveItemToBottom):
+    New. Locate the item by id, no-op when already at the edge or missing,
+    delegate to `reorderItem` so the existing sort_order renumbering and
+    persistence path is reused.
+  * lib/features/collections/widgets/collection_items_view.dart
+    (CollectionItemsView._showItemContextMenu): Read `collectionSortProvider`
+    inside the menu builder; prepend two `PopupMenuItem` entries plus a
+    divider when `sortMode == manual && canEdit`; wire the new `moveToTop`
+    / `moveToBottom` switch cases to the notifier.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (moveToTop, moveToBottom): New.
+  * test/features/collections/providers/collections_provider_move_test.dart:
+    New. 8 cases covering move-to-top and move-to-bottom for first/middle/
+    last items, no-op at edges, and no-op for unknown id.
+
 - **Import anime and manga lists from MyAnimeList XML export**
 
   New Settings → Import → MyAnimeList screen accepts the official XML export (`myanimelist.net/panel.php?go=export`), batch-resolves MAL IDs to AniList via `idMal_in` (50 per request, ~75 s for a 5k-entry library), and writes results into a target collection. AniList becomes the canonical record; the MAL link is preserved as a markdown footer in `user_comment`. Status mapping: Watching/Reading → in-progress, Completed → completed, On-Hold and Plan to Watch/Read → planned, Dropped → dropped. When a `Completed` entry has missing watched-episode counts or dates, the importer back-fills them from the AniList totals and from `my_start_date` / `my_finish_date`. Re-import deduplicates on `(collection_id, media_type, external_id)` and merges instead of duplicating: status uses `mergeExternalStatus` (won't downgrade `completed`, won't touch `dropped`), progress is `max(local, mal)`, started/completed dates take the earliest start and latest finish, `user_comment` is rebuilt from the latest MAL data. Titles missing on AniList go to the wishlist with a note containing the MAL link, status, score, tags, and comments — re-import updates the existing wishlist row instead of duplicating it.
