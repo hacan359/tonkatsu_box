@@ -31,7 +31,10 @@ enum RaImportStage {
   /// Загрузка библиотеки из RA API.
   fetchingLibrary,
 
-  /// Поиск игр в IGDB и добавление в коллекцию.
+  /// Поиск игр в IGDB (только для игр без ручной привязки).
+  searchingGames,
+
+  /// Запись в коллекцию (добавление/обновление).
   matchingGames,
 
   /// Импорт завершён.
@@ -81,6 +84,7 @@ class RaImportResult {
     required this.added,
     required this.updated,
     required this.unmatched,
+    required this.wishlisted,
     required this.unmatchedTitles,
     required this.collectionId,
   });
@@ -94,8 +98,12 @@ class RaImportResult {
   /// Обновлена мета у существующих.
   final int updated;
 
-  /// Не найдено в IGDB.
+  /// Не найдено в IGDB и нет ручной привязки.
   final int unmatched;
+
+  /// Фактически добавлено новых записей в вишлист в этом синке.
+  /// Не включает уже существовавшие записи (они только обновляются).
+  final int wishlisted;
 
   /// Названия ненайденных игр.
   final List<String> unmatchedTitles;
@@ -119,8 +127,8 @@ extension RaImportResultToUniversal on RaImportResult {
       updatedByType: updated > 0
           ? <MediaType, int>{MediaType.game: updated}
           : <MediaType, int>{},
-      wishlistedByType: unmatched > 0
-          ? <MediaType, int>{MediaType.game: unmatched}
+      wishlistedByType: wishlisted > 0
+          ? <MediaType, int>{MediaType.game: wishlisted}
           : <MediaType, int>{},
     );
   }
@@ -151,7 +159,7 @@ class RaImportService {
     required RaApi raApi,
     required IgdbApi igdbApi,
     required DatabaseService database,
-    TrackerDao? trackerDao,
+    required TrackerDao trackerDao,
   })  : _raApi = raApi,
         _igdbApi = igdbApi,
         _db = database,
@@ -160,7 +168,7 @@ class RaImportService {
   final RaApi _raApi;
   final IgdbApi _igdbApi;
   final DatabaseService _db;
-  final TrackerDao? _trackerDao;
+  final TrackerDao _trackerDao;
   static final Logger _log = Logger('RaImportService');
 
   /// Импортирует игры из RA профиля в коллекцию.
@@ -202,33 +210,60 @@ class RaImportService {
     final int targetCollectionId =
         collectionId ?? await createCollection!();
 
-    // Batch-поиск в IGDB через multiquery (по 10 игр за запрос).
+    // Подтягиваем существующие ручные RA→IGDB привязки из tracker_game_data.
+    // Если игра уже привязана юзером (через showRaLinkDialog/linkRaGame),
+    // не идём в IGDB-поиск, а используем сохранённый IGDB id.
+    final List<TrackerGameData> manualLinks =
+        await _trackerDao.getAllGameData(TrackerType.ra);
+    final Map<int, int> raIdToIgdbId = <int, int>{};
+    for (final TrackerGameData d in manualLinks) {
+      final int? raId = int.tryParse(d.trackerGameId);
+      if (raId != null) raIdToIgdbId[raId] = d.gameId;
+    }
+
+    // IGDB-поиск нужен только для непривязанных игр.
+    final List<RaGameProgress> unlinkedGames = <RaGameProgress>[
+      for (final RaGameProgress g in games)
+        if (!raIdToIgdbId.containsKey(g.gameId)) g,
+    ];
+
+    // Этап 1: IGDB-поиск.
     onProgress(RaImportProgress(
-      stage: RaImportStage.matchingGames,
+      stage: RaImportStage.searchingGames,
       current: 0,
-      total: games.length,
+      total: unlinkedGames.length,
     ));
 
-    final Map<int, Game?> igdbMatches = await _batchFindGames(
-      games,
-      onBatchDone: (int processed) {
-        onProgress(RaImportProgress(
-          stage: RaImportStage.matchingGames,
-          current: processed,
-          total: games.length,
-        ));
-      },
-    );
+    final Map<int, Game?> matchesByIndex = unlinkedGames.isEmpty
+        ? <int, Game?>{}
+        : await _batchFindGames(
+            unlinkedGames,
+            onBatchDone: (int processed) {
+              onProgress(RaImportProgress(
+                stage: RaImportStage.searchingGames,
+                current: processed,
+                total: unlinkedGames.length,
+              ));
+            },
+          );
+
+    // Индексируем по RA gameId — стабильный ключ, без позиционных кёрсоров.
+    final Map<int, Game?> searchByRaId = <int, Game?>{
+      for (int i = 0; i < unlinkedGames.length; i++)
+        unlinkedGames[i].gameId: matchesByIndex[i],
+    };
 
     _log.info(
-      'IGDB matched ${igdbMatches.values.where((Game? g) => g != null).length}'
-      '/${games.length} RA games',
+      'IGDB matched ${searchByRaId.values.where((Game? g) => g != null).length}'
+      '/${unlinkedGames.length} unlinked RA games '
+      '(${raIdToIgdbId.length} already manually linked)',
     );
 
-    // Обработка каждой игры.
+    // Этап 2: запись в коллекцию.
     int added = 0;
     int updated = 0;
     int unmatched = 0;
+    int wishlisted = 0;
     final List<String> unmatchedTitles = <String>[];
 
     for (int i = 0; i < games.length; i++) {
@@ -244,13 +279,18 @@ class RaImportService {
         unmatchedCount: unmatched,
       ));
 
-      final Game? igdbGame = igdbMatches[i];
+      final Game? igdbGame = await _resolveIgdbGame(
+        raGame,
+        linkedIgdbId: raIdToIgdbId[raGame.gameId],
+        searchResult: searchByRaId[raGame.gameId],
+      );
 
       if (igdbGame == null) {
         unmatched++;
         unmatchedTitles.add('${raGame.title} (${raGame.consoleName})');
         if (addToWishlist) {
-          await _addToWishlistIfNotExists(raGame);
+          final bool wasAdded = await _addToWishlistIfNotExists(raGame);
+          if (wasAdded) wishlisted++;
         }
         continue;
       }
@@ -283,7 +323,7 @@ class RaImportService {
         added++;
       }
 
-      // Сохраняем tracker_game_data для RA секции в карточке.
+      // Сохраняем/обновляем tracker_game_data (счётчики ачивок, даты).
       await _saveTrackerGameData(igdbGame.id, raGame);
     }
 
@@ -298,7 +338,8 @@ class RaImportService {
 
     _log.info(
       'RA import done: $added added, $updated updated, '
-      '$unmatched unmatched out of ${games.length}',
+      '$unmatched unmatched ($wishlisted newly wishlisted) '
+      'out of ${games.length}',
     );
 
     return RaImportResult(
@@ -306,9 +347,39 @@ class RaImportService {
       added: added,
       updated: updated,
       unmatched: unmatched,
+      wishlisted: wishlisted,
       unmatchedTitles: unmatchedTitles,
       collectionId: targetCollectionId,
     );
+  }
+
+  /// Возвращает IGDB-игру для RA-записи: сначала по ручной привязке
+  /// (через локальный кэш игр), потом — fallback на результат IGDB-поиска.
+  ///
+  /// Если ручная привязка указывает на IGDB id, которого нет в локальном
+  /// кэше, делает дополнительный точечный поиск по названию (защита
+  /// от устаревшей записи в `tracker_game_data`).
+  Future<Game?> _resolveIgdbGame(
+    RaGameProgress raGame, {
+    required int? linkedIgdbId,
+    required Game? searchResult,
+  }) async {
+    if (linkedIgdbId != null) {
+      final Game? cached = await _db.getGameById(linkedIgdbId);
+      if (cached != null) return cached;
+      _log.warning(
+        'Manual link for RA gameId=${raGame.gameId} → IGDB id=$linkedIgdbId, '
+        'but game not found in local cache. Falling back to IGDB search.',
+      );
+      final RaToIgdbMapper mapper = RaToIgdbMapper(_igdbApi);
+      try {
+        return await mapper.findIgdbGame(raGame);
+      } on IgdbApiException catch (e) {
+        _log.warning('Fallback IGDB search failed: ${e.message}');
+        return null;
+      }
+    }
+    return searchResult;
   }
 
   /// Batch-поиск игр в IGDB через multiquery.
@@ -405,18 +476,22 @@ class RaImportService {
     return true;
   }
 
-  Future<void> _addToWishlistIfNotExists(RaGameProgress raGame) async {
+  /// Возвращает `true` если запись действительно создана,
+  /// `false` если игра уже была в вишлисте (не перезаписываем,
+  /// чтобы не затереть пользовательские правки).
+  Future<bool> _addToWishlistIfNotExists(RaGameProgress raGame) async {
     final String title = '${raGame.title} (${raGame.consoleName})';
     final WishlistItem? existing = await _db.findUnresolvedWishlistItem(title);
-    if (existing != null) return;
+    if (existing != null) return false;
 
     await _db.addWishlistItem(
       text: title,
       mediaTypeHint: MediaType.game,
-      note: 'From RetroAchievements \u2022 '
+      note: 'From RetroAchievements • '
           '${raGame.numAwarded}/${raGame.maxPossible} achievements'
-          '${raGame.highestAwardKind != null ? ' \u2022 ${raGame.highestAwardKind}' : ''}',
+          '${raGame.highestAwardKind != null ? ' • ${raGame.highestAwardKind}' : ''}',
     );
+    return true;
   }
 
   Future<void> _addToCollection({
@@ -452,7 +527,6 @@ class RaImportService {
     int igdbId,
     RaGameProgress raGame,
   ) async {
-    if (_trackerDao == null) return;
     final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     final int? awardTimestamp = raGame.highestAwardDate != null
         ? raGame.highestAwardDate!.millisecondsSinceEpoch ~/ 1000

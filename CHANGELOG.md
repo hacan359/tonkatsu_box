@@ -46,6 +46,17 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/features/search/widgets/source_dropdown.dart (SourceDropdown, _sourceGlyph): Render brand PNG (22 px for current source, 20 px for group headers) when asset is set.
   * lib/features/search/widgets/filter_bar.dart: Render group brand PNG (20 px) in the filter-bar popup.
 
+### Fixed
+
+- **RetroAchievements sync now respects manual RA↔IGDB links and reports wishlist count honestly**
+
+  Previously, when a game went to the wishlist because IGDB couldn't match it by name, manually adding the game and linking it to RA via the achievement card had no effect on subsequent syncs — the same game was offered to the wishlist again every run, because the importer only matched via `IgdbApi.multiSearchGamesByName` and never read the `tracker_game_data` table it was already writing to. Now the importer pre-fetches all RA→IGDB rows from `tracker_game_data` before searching IGDB and reuses the cached `Game` instead of doing a name-based lookup; broken links (cached `Game` missing) fall back to the existing IGDB search path. The result struct also separates `unmatched` (no IGDB match and no manual link) from `wishlisted` (rows actually inserted this run), so when `addToWishlist` is off or the wishlist row already existed, the result screen no longer claims new wishlist additions. Progress UI now splits the IGDB lookup phase (`searchingGames`) from the collection-write phase (`matchingGames`) instead of running both under the same stage.
+
+  * lib/core/services/ra_import_service.dart (RaImportService.importFromProfile, RaImportService._resolveIgdbGame, RaImportService._addToWishlistIfNotExists, RaImportStage, RaImportResult, RaImportResultToUniversal): Pre-fetch `tracker_game_data` for `TrackerType.ra`, build `raIdToIgdbId` map, split `games` into linked/unlinked, only batch-search the unlinked subset. New `_resolveIgdbGame` helper picks the cached `Game` for linked entries and falls back to a single IGDB search when the local cache misses. `_addToWishlistIfNotExists` now returns `bool` so the caller increments `wishlisted` only when a new row was actually inserted. `RaImportResult` gains a `wishlisted` field; `toUniversal()` reads `wishlistedByType` from `wishlisted` instead of `unmatched`. New `RaImportStage.searchingGames` covers IGDB lookup; `matchingGames` is reserved for the collection writes. `_trackerDao` is now required (was nullable) — needed for the link lookup to work outside tests.
+  * lib/features/settings/content/ra_import_content.dart (_RaImportContentState._buildProgressSection): Render the new `searchingGames` stage with `l.raImportSearchingIgdb`.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (raImportSearchingIgdb): New string for the IGDB-search progress stage.
+  * test/core/services/ra_import_service_test.dart: New cases — manual link skips IGDB and reuses cached game; broken manual link falls back to IGDB search; `wishlisted=0` when `addToWishlist=false`; `wishlisted=0` when the wishlist row already existed; `RaImportResult.wishlisted` constructor + `toUniversal` mapping. Existing progress test updated to assert `searchingGames` and `matchingGames` both fire.
+
 ## [0.28.0] - 2026-04-23
 
 ### Added

@@ -345,6 +345,8 @@ class _RaImportContentState extends ConsumerState<RaImportContent> {
     switch (progress.stage) {
       case RaImportStage.fetchingLibrary:
         stageText = l.raImportFetchingLibrary;
+      case RaImportStage.searchingGames:
+        stageText = l.raImportSearchingIgdb;
       case RaImportStage.matchingGames:
         stageText = l.raImportMatching(progress.currentName ?? '');
       case RaImportStage.completed:

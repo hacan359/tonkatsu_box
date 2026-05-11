@@ -10,6 +10,8 @@ import 'package:xerabora/shared/models/game.dart';
 import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/ra_game_progress.dart';
+import 'package:xerabora/shared/models/tracker_game_data.dart';
+import 'package:xerabora/shared/models/tracker_profile.dart';
 import 'package:xerabora/shared/models/universal_import_result.dart';
 import '../../helpers/test_helpers.dart';
 
@@ -56,9 +58,11 @@ void main() {
     progressCalls = <RaImportProgress>[];
     igdbGamesByTitle.clear();
 
-    // Default mock для TrackerDao.
+    // Default mocks для TrackerDao.
     when(() => mockTrackerDao.upsertGameData(any()))
         .thenAnswer((_) async {});
+    when(() => mockTrackerDao.getAllGameData(any()))
+        .thenAnswer((_) async => <TrackerGameData>[]);
 
     sut = RaImportService(
       raApi: mockRaApi,
@@ -174,6 +178,7 @@ void main() {
         added: 5,
         updated: 3,
         unmatched: 2,
+        wishlisted: 2,
         unmatchedTitles: <String>['Game A', 'Game B'],
         collectionId: 1,
       );
@@ -182,18 +187,20 @@ void main() {
       expect(result.added, equals(5));
       expect(result.updated, equals(3));
       expect(result.unmatched, equals(2));
+      expect(result.wishlisted, equals(2));
       expect(result.unmatchedTitles, hasLength(2));
       expect(result.collectionId, equals(1));
     });
   });
 
   group('RaImportResultToUniversal', () {
-    test('should convert to UniversalImportResult with added games', () {
+    test('should report wishlist count from wishlisted, not unmatched', () {
       const RaImportResult raResult = RaImportResult(
         totalGames: 10,
         added: 5,
         updated: 3,
         unmatched: 2,
+        wishlisted: 2,
         unmatchedTitles: <String>['A', 'B'],
         collectionId: 1,
       );
@@ -208,12 +215,33 @@ void main() {
       expect(result.wishlistedByType[MediaType.game], equals(2));
     });
 
+    test('should have empty wishlist map when wishlisted=0 even if unmatched>0',
+        () {
+      // addToWishlist=false: unmatched увеличился, но в вишлист ничего
+      // не добавлялось — UI не должен показывать «N в вишлисте».
+      const RaImportResult raResult = RaImportResult(
+        totalGames: 5,
+        added: 3,
+        updated: 0,
+        unmatched: 2,
+        wishlisted: 0,
+        unmatchedTitles: <String>['A', 'B'],
+        collectionId: 1,
+      );
+
+      final UniversalImportResult result = raResult.toUniversal();
+
+      expect(result.importedByType[MediaType.game], equals(3));
+      expect(result.wishlistedByType, isEmpty);
+    });
+
     test('should have empty maps when counts are zero', () {
       const RaImportResult raResult = RaImportResult(
         totalGames: 0,
         added: 0,
         updated: 0,
         unmatched: 0,
+        wishlisted: 0,
         unmatchedTitles: <String>[],
         collectionId: 1,
       );
@@ -231,6 +259,7 @@ void main() {
         added: 3,
         updated: 0,
         unmatched: 0,
+        wishlisted: 0,
         unmatchedTitles: <String>[],
         collectionId: 1,
       );
@@ -317,15 +346,24 @@ void main() {
           onProgress: onProgress,
         );
 
-        // fetchingLibrary, matchingGames (0/N), matchingGames (1/N), completed.
-        expect(progressCalls.length, greaterThanOrEqualTo(3));
+        // fetchingLibrary → searchingGames → matchingGames → completed.
+        expect(progressCalls.length, greaterThanOrEqualTo(4));
         expect(
           progressCalls.first.stage,
           equals(RaImportStage.fetchingLibrary),
         );
         expect(
-          progressCalls[1].stage,
-          equals(RaImportStage.matchingGames),
+          progressCalls.any(
+            (RaImportProgress p) => p.stage == RaImportStage.searchingGames,
+          ),
+          isTrue,
+          reason: 'searchingGames stage should be reported',
+        );
+        expect(
+          progressCalls.any(
+            (RaImportProgress p) => p.stage == RaImportStage.matchingGames,
+          ),
+          isTrue,
         );
         expect(
           progressCalls.last.stage,
@@ -456,7 +494,7 @@ void main() {
         when(() => mockDb.findUnresolvedWishlistItem('Unknown Game (NES)'))
             .thenAnswer((_) async => createTestWishlistItem());
 
-        await sut.importFromProfile(
+        final RaImportResult result = await sut.importFromProfile(
           raUsername: 'TestUser',
           collectionId: 1,
           addToWishlist: true,
@@ -468,6 +506,146 @@ void main() {
               mediaTypeHint: any(named: 'mediaTypeHint'),
               note: any(named: 'note'),
             ));
+        // Дубликат не создавался — счётчик wishlisted остаётся 0,
+        // а unmatched инкрементируется (игра всё равно не нашлась в IGDB).
+        expect(result.unmatched, equals(1));
+        expect(result.wishlisted, equals(0));
+      });
+
+      test('wishlisted counter equals 0 when addToWishlist disabled', () async {
+        final RaGameProgress raGame = createTestRaGameProgress(
+          title: 'Unknown Game',
+          consoleName: 'NES',
+          consoleId: 7,
+        );
+
+        setupRaApiMocks(games: <RaGameProgress>[raGame]);
+        setupIgdbSearchMock(
+          query: 'Unknown Game',
+          platformIds: <int>[18],
+          results: <Game>[],
+        );
+        setupDbMocks();
+
+        final RaImportResult result = await sut.importFromProfile(
+          raUsername: 'TestUser',
+          collectionId: 1,
+          addToWishlist: false,
+          onProgress: onProgress,
+        );
+
+        expect(result.unmatched, equals(1));
+        expect(result.wishlisted, equals(0));
+        // toUniversal не должен показывать вишлист.
+        final UniversalImportResult universal = result.toUniversal();
+        expect(universal.wishlistedByType, isEmpty);
+      });
+
+      test(
+          'manual RA→IGDB link skips IGDB search and reuses cached game',
+          () async {
+        // Юзер ранее руками привязал RA gameId=999 к IGDB id=500.
+        final RaGameProgress raGame = createTestRaGameProgress(
+          gameId: 999,
+          title: 'Obscure ROM Hack',
+          consoleName: 'SNES',
+          consoleId: 3,
+          numAwarded: 10,
+          maxPossible: 50,
+          highestAwardKind: null,
+        );
+        final Game cachedGame = createTestGame(id: 500, name: 'Obscure ROM Hack');
+
+        setupRaApiMocks(games: <RaGameProgress>[raGame]);
+        setupDbMocks();
+
+        when(() => mockTrackerDao.getAllGameData(TrackerType.ra))
+            .thenAnswer((_) async => <TrackerGameData>[
+                  TrackerGameData(
+                    id: 1,
+                    trackerType: TrackerType.ra,
+                    gameId: 500,
+                    trackerGameId: '999',
+                    trackerGameTitle: 'Obscure ROM Hack',
+                    achievementsTotal: 50,
+                    lastSyncedAt:
+                        DateTime.now().millisecondsSinceEpoch ~/ 1000,
+                  ),
+                ]);
+        when(() => mockDb.getGameById(500))
+            .thenAnswer((_) async => cachedGame);
+
+        final RaImportResult result = await sut.importFromProfile(
+          raUsername: 'TestUser',
+          collectionId: 1,
+          addToWishlist: true,
+          onProgress: onProgress,
+        );
+
+        expect(result.added, equals(1));
+        expect(result.unmatched, equals(0));
+        expect(result.wishlisted, equals(0));
+
+        // IGDB-поиск НЕ должен вызываться для этой игры.
+        verifyNever(() => mockIgdbApi.multiSearchGamesByName(any()));
+        verify(() => mockDb.getGameById(500)).called(1);
+        // Никаких wishlist-операций.
+        verifyNever(() => mockDb.addWishlistItem(
+              text: any(named: 'text'),
+              mediaTypeHint: any(named: 'mediaTypeHint'),
+              note: any(named: 'note'),
+            ));
+      });
+
+      test('manual link with broken cache falls back to IGDB search',
+          () async {
+        // tracker_game_data ссылается на IGDB id, которого нет в локальном
+        // кэше игр (например, кэш почистили). Должен сработать fallback
+        // к IGDB-поиску по названию.
+        final RaGameProgress raGame = createTestRaGameProgress(
+          gameId: 777,
+          title: 'Cached Game',
+          consoleName: 'SNES',
+          consoleId: 3,
+          highestAwardKind: 'mastered',
+          highestAwardDate: DateTime(2024, 1, 1),
+        );
+        final Game freshGame = createTestGame(id: 600, name: 'Cached Game');
+
+        setupRaApiMocks(games: <RaGameProgress>[raGame]);
+        setupDbMocks();
+
+        when(() => mockTrackerDao.getAllGameData(TrackerType.ra))
+            .thenAnswer((_) async => <TrackerGameData>[
+                  TrackerGameData(
+                    id: 1,
+                    trackerType: TrackerType.ra,
+                    gameId: 600,
+                    trackerGameId: '777',
+                    trackerGameTitle: 'Cached Game',
+                    achievementsTotal: 50,
+                    lastSyncedAt:
+                        DateTime.now().millisecondsSinceEpoch ~/ 1000,
+                  ),
+                ]);
+        // В кэше нет.
+        when(() => mockDb.getGameById(600)).thenAnswer((_) async => null);
+        // Но IGDB-поиск (через RaToIgdbMapper.findIgdbGame) должен сработать.
+        when(() => mockIgdbApi.searchGames(
+              query: 'Cached Game',
+              platformIds: any(named: 'platformIds'),
+            )).thenAnswer((_) async => <Game>[freshGame]);
+
+        final RaImportResult result = await sut.importFromProfile(
+          raUsername: 'TestUser',
+          collectionId: 1,
+          addToWishlist: false,
+          onProgress: onProgress,
+        );
+
+        expect(result.added, equals(1));
+        expect(result.unmatched, equals(0));
+        verify(() => mockDb.getGameById(600)).called(1);
       });
 
       test('should update existing item with higher status', () async {

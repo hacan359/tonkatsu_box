@@ -3169,6 +3169,9 @@ class SEn extends S {
   String get raImportFetchingLibrary => 'Fetching RA library...';
 
   @override
+  String get raImportSearchingIgdb => 'Searching games on IGDB...';
+
+  @override
   String raImportMatching(String title) {
     return 'Matching: $title';
   }

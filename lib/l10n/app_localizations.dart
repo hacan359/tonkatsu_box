@@ -5827,6 +5827,12 @@ abstract class S {
   /// **'Fetching RA library...'**
   String get raImportFetchingLibrary;
 
+  /// No description provided for @raImportSearchingIgdb.
+  ///
+  /// In en, this message translates to:
+  /// **'Searching games on IGDB...'**
+  String get raImportSearchingIgdb;
+
   /// No description provided for @raImportMatching.
   ///
   /// In en, this message translates to:
