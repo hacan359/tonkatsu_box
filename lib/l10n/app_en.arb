@@ -1431,6 +1431,7 @@
   "raImportSelectCollection": "Select collection",
   "raImportErrorLoadingCollections": "Error loading collections",
   "raImportFetchingLibrary": "Fetching RA library...",
+  "raImportSearchingIgdb": "Searching games on IGDB...",
   "raImportMatching": "Matching: {title}",
   "@raImportMatching": {
     "placeholders": {

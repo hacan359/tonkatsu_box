@@ -1181,7 +1181,8 @@
   "raImportSelectCollection": "Выберите коллекцию",
   "raImportErrorLoadingCollections": "Ошибка загрузки коллекций",
   "raImportFetchingLibrary": "Загрузка библиотеки RA...",
-  "raImportMatching": "Поиск: {title}",
+  "raImportSearchingIgdb": "Поиск игр на IGDB...",
+  "raImportMatching": "Сопоставление: {title}",
   "@raImportMatching": {
     "placeholders": {
       "title": {"type": "String"}

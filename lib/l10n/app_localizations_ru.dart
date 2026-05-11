@@ -3188,8 +3188,11 @@ class SRu extends S {
   String get raImportFetchingLibrary => 'Загрузка библиотеки RA...';
 
   @override
+  String get raImportSearchingIgdb => 'Поиск игр на IGDB...';
+
+  @override
   String raImportMatching(String title) {
-    return 'Поиск: $title';
+    return 'Сопоставление: $title';
   }
 
   @override
