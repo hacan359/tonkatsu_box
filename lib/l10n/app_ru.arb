@@ -74,6 +74,41 @@
   "remove": "Убрать",
   "moveToTop": "В начало списка",
   "moveToBottom": "В конец списка",
+  "bulkSelected": "{count, plural, =1{Выбран 1} few{Выбрано {count}} many{Выбрано {count}} other{Выбрано {count}}}",
+  "@bulkSelected": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "bulkClearSelection": "Снять выделение",
+  "bulkMove": "Переместить выделенные в коллекцию",
+  "bulkCopy": "Скопировать выделенные в коллекцию",
+  "bulkChangeStatus": "Изменить статус",
+  "bulkRemoveConfirm": "Удалить {count, plural, =1{1 элемент} few{{count} элемента} many{{count} элементов} other{{count} элементов}} из коллекции?",
+  "@bulkRemoveConfirm": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "bulkResult": "Выполнено: {done} • Пропущено: {skipped}",
+  "@bulkResult": {
+    "placeholders": {
+      "done": {"type": "int"},
+      "skipped": {"type": "int"}
+    }
+  },
+  "bulkRemoved": "Удалено: {count}",
+  "@bulkRemoved": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "bulkStatusUpdated": "Статус обновлён для {count, plural, =1{1 элемента} few{{count} элементов} many{{count} элементов} other{{count} элементов}}",
+  "@bulkStatusUpdated": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "back": "Назад",
   "next": "Далее",
   "skip": "Пропустить",

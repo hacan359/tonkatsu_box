@@ -9,6 +9,87 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **Bulk actions across collections and All Items**
+
+  Selection now works everywhere items are shown: the collection table
+  view gets a checkbox column (header has a tristate select-all for the
+  currently visible rows), the collection grid / list / manual-reorder
+  views and the All Items home grid get a Google-Photos-style checkmark
+  overlay in the top-left corner of each card (subtle on hover, brand-
+  filled when selected, with a brand-tinted border around the card).
+  While at least one item is selected, tapping any other card toggles
+  selection instead of opening the detail screen. On every screen,
+  selecting one or more items reveals the same bulk action bar with:
+  move to another collection, copy to another collection, change status
+  (status popup), and remove. Inside a single collection, when sort is
+  manual, the bar also shows move-to-top / move-to-bottom. All bulk
+  operations live in a single helper (`BulkOperations`) so they can be
+  invoked from any screen — they call the existing single-item
+  repository methods in a loop, accumulate affected collections / media
+  types / tier lists, and run the provider invalidation **once** at the
+  end. N items no longer trigger N redundant reloads. Status update
+  path uses `AllItemsNotifier`'s existing `updateStatusLocally` so the
+  home grid does not have to refetch; each affected collection notifier
+  is invalidated once.
+
+  * lib/features/collections/helpers/bulk_operations.dart (BulkOperations,
+    BulkOperations.removeItems, BulkOperations.moveItemsToCollection,
+    BulkOperations.cloneItemsToCollection, BulkOperations.updateItemsStatus,
+    BulkOperations._invalidateAfterMutation, BulkOperations._resolveTargetTagId):
+    New. Collection-agnostic helper — takes `List<CollectionItem>`
+    (each item carries its own `collectionId` and `mediaType`) and a
+    `WidgetRef`; correctly invalidates the union of affected source
+    collections plus the target.
+  * lib/features/collections/providers/collection_selection_provider.dart
+    (CollectionSelectionNotifier, collectionSelectionProvider): New.
+    Per-collection `Set<int>` of selected ids (toggle / selectAll /
+    clear / removeIds), family-keyed by `int?`.
+  * lib/features/collections/providers/all_items_selection_provider.dart
+    (AllItemsSelectionNotifier, allItemsSelectionProvider): New.
+    Global selection for the All Items home screen.
+  * lib/features/collections/providers/collections_provider.dart
+    (CollectionItemsNotifier.moveItemsToTop, CollectionItemsNotifier.moveItemsToBottom,
+    CollectionItemsNotifier._moveItemsToEdge): New methods that stay on
+    the notifier because they need single-collection `sort_order`
+    context. They preserve the relative order of the selected group.
+  * lib/features/collections/widgets/bulk_action_bar.dart (BulkActionBar):
+    New. Reads its `List<CollectionItem>` and an `onClearSelection`
+    callback from the parent — fully selection-provider-agnostic.
+    Move-to-top / move-to-bottom only render when a `collectionId`
+    is supplied and that collection is in manual sort.
+  * lib/features/collections/widgets/selectable_poster_card.dart
+    (SelectablePosterCard, _CheckCircle): New. Overlay wrapper that
+    adds the corner check-circle and brand border for grid views.
+  * lib/features/collections/widgets/collection_table_view.dart
+    (CollectionTableView, _TableHeader, _TableRow): Add `selectedIds`,
+    `onToggleSelect`, `onToggleSelectAll` parameters. New checkbox
+    column in the header (tristate select-all) and in each row.
+    Selected rows get a brand-tinted background.
+  * lib/features/collections/widgets/collection_items_view.dart
+    (CollectionItemsView.build, CollectionItemsView._buildListTile,
+    CollectionItemsView._buildPosterCard, CollectionItemsView._buildReorderableList):
+    Wire all four item views (table, grid, list, reorderable) to
+    `collectionSelectionProvider`. Grid / list / reorderable wrap each
+    poster or tile in `SelectablePosterCard`; when a selection is
+    active, tapping a card toggles selection instead of opening the
+    detail screen.
+  * lib/features/collections/screens/collection_screen.dart: Mount
+    `BulkActionBar` between the title bar and the item list whenever
+    the user can edit and the selection is non-empty (any view mode).
+    Passes the selected items list + `onClearSelection` callback.
+  * lib/features/home/screens/all_items_screen.dart
+    (_AllItemsScreenState.build, _AllItemsScreenState._buildGridView):
+    Wrap each `MediaPosterCard` in `SelectablePosterCard`; while a
+    selection is active, tapping a card toggles selection instead of
+    opening detail. Mount `BulkActionBar` above the grid when the
+    selection is non-empty.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (bulkSelected,
+    bulkClearSelection, bulkMove, bulkCopy, bulkChangeStatus,
+    bulkRemoveConfirm, bulkResult, bulkRemoved, bulkStatusUpdated): New.
+  * test/features/collections/providers/collection_selection_provider_test.dart:
+    New. 6 cases covering toggle, selectAll, clear, removeIds, and
+    family isolation between collections.
+
 - **Move-to-top / move-to-bottom for collection items in manual sort**
 
   When the collection is sorted manually (Custom order), the row context

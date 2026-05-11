@@ -31,7 +31,9 @@ import '../widgets/import_progress_dialog.dart';
 import '../helpers/collection_actions.dart';
 import '../providers/collection_covers_provider.dart';
 import '../providers/collection_tags_provider.dart';
+import '../providers/collection_selection_provider.dart';
 import '../providers/collections_provider.dart';
+import '../widgets/bulk_action_bar.dart';
 import '../providers/steamgriddb_panel_provider.dart';
 import '../providers/vgmaps_panel_provider.dart';
 import '../widgets/collection_canvas_layout.dart';
@@ -182,6 +184,31 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                     ? l.collectionsUncategorized
                     : _collection!.name,
               ),
+              if (_canEdit && !_isCanvasMode)
+                Consumer(builder: (BuildContext context, WidgetRef ref, _) {
+                  final Set<int> selection = ref.watch(
+                      collectionSelectionProvider(widget.collectionId));
+                  if (selection.isEmpty) return const SizedBox.shrink();
+                  final List<CollectionItem> all = ref
+                          .watch(collectionItemsNotifierProvider(
+                              widget.collectionId))
+                          .valueOrNull ??
+                      const <CollectionItem>[];
+                  final List<CollectionItem> selectedItems = <CollectionItem>[
+                    for (final CollectionItem i in all)
+                      if (selection.contains(i.id)) i,
+                  ];
+                  if (selectedItems.isEmpty) return const SizedBox.shrink();
+                  return BulkActionBar(
+                    items: selectedItems,
+                    collectionId: widget.collectionId,
+                    onClearSelection: () => ref
+                        .read(collectionSelectionProvider(
+                                widget.collectionId)
+                            .notifier)
+                        .clear(),
+                  );
+                }),
               Expanded(
                 child: _isCanvasMode
                     ? CollectionCanvasLayout(

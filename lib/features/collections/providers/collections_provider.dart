@@ -860,6 +860,71 @@ class CollectionItemsNotifier
         .updateStatusLocally(id, status);
   }
 
+  // ---------------------------------------------------------------------------
+  // Bulk-операции, требующие контекста одной коллекции (sort_order).
+  // Общие массовые операции (remove / move / clone / status) живут в
+  // `BulkOperations` (`helpers/bulk_operations.dart`) — collection-agnostic
+  // и переиспользуются на All Items.
+  // ---------------------------------------------------------------------------
+
+  /// Перемещает группу элементов в начало списка, сохраняя их
+  /// относительный порядок. No-op при пустом наборе или если все
+  /// элементы уже в начале. Имеет смысл только при `sortMode == manual`.
+  Future<void> moveItemsToTop(Iterable<int> ids) async {
+    await _moveItemsToEdge(ids, toTop: true);
+  }
+
+  /// Перемещает группу элементов в конец списка, сохраняя их
+  /// относительный порядок.
+  Future<void> moveItemsToBottom(Iterable<int> ids) async {
+    await _moveItemsToEdge(ids, toTop: false);
+  }
+
+  Future<void> _moveItemsToEdge(
+    Iterable<int> ids, {
+    required bool toTop,
+  }) async {
+    final Set<int> idSet = ids.toSet();
+    if (idSet.isEmpty) return;
+    final List<CollectionItem>? items = state.valueOrNull;
+    if (items == null || items.isEmpty) return;
+
+    final List<CollectionItem> selected = <CollectionItem>[];
+    final List<CollectionItem> rest = <CollectionItem>[];
+    for (final CollectionItem i in items) {
+      if (idSet.contains(i.id)) {
+        selected.add(i);
+      } else {
+        rest.add(i);
+      }
+    }
+    if (selected.isEmpty) return;
+
+    final List<CollectionItem> reordered = toTop
+        ? <CollectionItem>[...selected, ...rest]
+        : <CollectionItem>[...rest, ...selected];
+
+    // No-op если порядок не изменился.
+    bool changed = false;
+    for (int i = 0; i < items.length; i++) {
+      if (items[i].id != reordered[i].id) {
+        changed = true;
+        break;
+      }
+    }
+    if (!changed) return;
+
+    final List<CollectionItem> withSortOrder = <CollectionItem>[
+      for (int i = 0; i < reordered.length; i++)
+        reordered[i].copyWith(sortOrder: i),
+    ];
+    state = AsyncData<List<CollectionItem>>(withSortOrder);
+
+    final List<int> orderedIds =
+        withSortOrder.map((CollectionItem i) => i.id).toList();
+    await _db.reorderItems(_collectionId, orderedIds);
+  }
+
   /// Обновляет даты активности элемента вручную.
   ///
   /// Автоматически синхронизирует статус:

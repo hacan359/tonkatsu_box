@@ -61,6 +61,9 @@ class CollectionTableView extends StatefulWidget {
     this.onStatusChanged,
     this.onTagChanged,
     this.onReorder,
+    this.selectedIds,
+    this.onToggleSelect,
+    this.onToggleSelectAll,
     super.key,
   });
 
@@ -91,6 +94,16 @@ class CollectionTableView extends StatefulWidget {
   ///
   /// Если `null`, drag-and-drop отключён.
   final void Function(int oldIndex, int newIndex)? onReorder;
+
+  /// Множество id выделенных элементов. Если не `null` вместе с
+  /// [onToggleSelect], в каждой строке появляется чекбокс.
+  final Set<int>? selectedIds;
+
+  /// Callback тоггла выделения одного элемента.
+  final void Function(int itemId)? onToggleSelect;
+
+  /// Callback тоггла select-all (вызывается с новым желаемым состоянием).
+  final void Function(bool selectAll)? onToggleSelectAll;
 
   @override
   State<CollectionTableView> createState() => _CollectionTableViewState();
@@ -185,6 +198,8 @@ class _CollectionTableViewState extends State<CollectionTableView> {
                         tagMap: tagMap,
                         l: l,
                         isReorderable: isReorderable,
+                        selectionState: _selectionStateForVisible(sorted),
+                        onToggleSelectAll: widget.onToggleSelectAll,
                       ),
                       Expanded(
                         child: isReorderable
@@ -227,6 +242,11 @@ class _CollectionTableViewState extends State<CollectionTableView> {
           thumbWidth: _thumbWidth,
           thumbHeight: _thumbHeight,
           thumbRadius: _thumbRadius,
+          isSelected:
+              widget.selectedIds?.contains(item.id) ?? false,
+          onToggleSelect: widget.onToggleSelect != null
+              ? () => widget.onToggleSelect!(item.id)
+              : null,
         );
       },
     );
@@ -280,6 +300,11 @@ class _CollectionTableViewState extends State<CollectionTableView> {
           thumbHeight: _thumbHeight,
           thumbRadius: _thumbRadius,
           dragIndex: index,
+          isSelected:
+              widget.selectedIds?.contains(item.id) ?? false,
+          onToggleSelect: widget.onToggleSelect != null
+              ? () => widget.onToggleSelect!(item.id)
+              : null,
         );
       },
     );
@@ -399,6 +424,25 @@ class _CollectionTableViewState extends State<CollectionTableView> {
     if (item.tagId == null) return '';
     return _cachedTagMap[item.tagId]?.name ?? '';
   }
+
+  /// Состояние master-чекбокса для текущей видимой выборки.
+  ///
+  /// `null` если селекшн отключён (нет `selectedIds`),
+  /// `true` если все видимые выделены, `false` если ни одного,
+  /// `false` (tristate=true) если часть. Для master-чекбокса используем
+  /// trista через возврат `null` ↦ скрыть, иначе bool.
+  bool? _selectionStateForVisible(List<CollectionItem> visible) {
+    final Set<int>? selected = widget.selectedIds;
+    if (selected == null || widget.onToggleSelect == null) return null;
+    if (visible.isEmpty) return false;
+    int hit = 0;
+    for (final CollectionItem i in visible) {
+      if (selected.contains(i.id)) hit++;
+    }
+    if (hit == 0) return false;
+    if (hit == visible.length) return true;
+    return null; // partial → tristate indeterminate
+  }
 }
 
 /// Формирует метку платформы для строки таблицы.
@@ -426,6 +470,8 @@ class _TableHeader extends StatelessWidget {
     this.filterTagId,
     this.filterPlatform,
     this.isReorderable = false,
+    this.selectionState,
+    this.onToggleSelectAll,
   });
 
   final TableColumn sortColumn;
@@ -439,6 +485,12 @@ class _TableHeader extends StatelessWidget {
   final String? filterPlatform;
   final Map<int, CollectionTag> tagMap;
   final bool isReorderable;
+
+  /// `null` если селекшн выключен (колонка чекбоксов скрыта),
+  /// иначе значение master-чекбокса: true / false / null (tristate-partial).
+  final bool? selectionState;
+
+  final void Function(bool selectAll)? onToggleSelectAll;
 
   @override
   Widget build(BuildContext context) {
@@ -455,6 +507,19 @@ class _TableHeader extends StatelessWidget {
       ),
       child: Row(
         children: <Widget>[
+          // Чекбокс select-all (только когда передан selectionState).
+          if (onToggleSelectAll != null)
+            SizedBox(
+              width: _checkboxColumnWidth,
+              child: Checkbox(
+                value: selectionState,
+                tristate: true,
+                onChanged: (bool? value) {
+                  // Tristate: partial / false → выбрать всё; true → снять.
+                  onToggleSelectAll!(selectionState != true);
+                },
+              ),
+            ),
           // Место под drag-handle (совпадает по ширине с колонкой в строках).
           if (isReorderable) const SizedBox(width: _dragHandleWidth),
           // Место под обложку
@@ -595,6 +660,9 @@ class _TableHeader extends StatelessWidget {
 /// Ширина колонки с drag-handle (используется и в хедере, и в строках).
 const double _dragHandleWidth = 28.0;
 
+/// Ширина колонки с чекбоксом (header + строки).
+const double _checkboxColumnWidth = 40.0;
+
 // ---------------------------------------------------------------------------
 // Row
 // ---------------------------------------------------------------------------
@@ -614,6 +682,8 @@ class _TableRow extends StatefulWidget {
     required this.thumbRadius,
     this.dragIndex,
     this.rowIndex,
+    this.isSelected = false,
+    this.onToggleSelect,
     super.key,
   });
 
@@ -636,6 +706,12 @@ class _TableRow extends StatefulWidget {
   /// Порядковый номер строки в видимом списке (для zebra-фона).
   final int? rowIndex;
 
+  /// Выделена ли строка в режиме селекшна.
+  final bool isSelected;
+
+  /// Если задан — в строке появляется чекбокс; тап toggle'ит выделение.
+  final VoidCallback? onToggleSelect;
+
   @override
   State<_TableRow> createState() => _TableRowState();
 }
@@ -649,8 +725,9 @@ class _TableRowState extends State<_TableRow> {
     final bool isOdd = (widget.rowIndex ?? 0).isOdd;
     final Color baseColor =
         isOdd ? const Color(0x0AFFFFFF) : Colors.transparent;
-    final Color bgColor =
-        _hovered ? AppColors.brand.withAlpha(22) : baseColor;
+    final Color bgColor = widget.isSelected
+        ? AppColors.brand.withAlpha(40)
+        : (_hovered ? AppColors.brand.withAlpha(22) : baseColor);
 
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
@@ -671,6 +748,14 @@ class _TableRowState extends State<_TableRow> {
           ),
           child: Row(
             children: <Widget>[
+              if (widget.onToggleSelect != null)
+                SizedBox(
+                  width: _checkboxColumnWidth,
+                  child: Checkbox(
+                    value: widget.isSelected,
+                    onChanged: (_) => widget.onToggleSelect!(),
+                  ),
+                ),
               if (widget.dragIndex != null)
                 SizedBox(
                   width: _dragHandleWidth,
@@ -1286,3 +1371,5 @@ class _TagCell extends StatelessWidget {
     });
   }
 }
+
+

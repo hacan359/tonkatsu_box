@@ -499,6 +499,60 @@ abstract class S {
   /// **'Move to bottom'**
   String get moveToBottom;
 
+  /// No description provided for @bulkSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 selected} other{{count} selected}}'**
+  String bulkSelected(int count);
+
+  /// No description provided for @bulkClearSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear selection'**
+  String get bulkClearSelection;
+
+  /// No description provided for @bulkMove.
+  ///
+  /// In en, this message translates to:
+  /// **'Move selected to collection'**
+  String get bulkMove;
+
+  /// No description provided for @bulkCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy selected to collection'**
+  String get bulkCopy;
+
+  /// No description provided for @bulkChangeStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Change status'**
+  String get bulkChangeStatus;
+
+  /// No description provided for @bulkRemoveConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {count, plural, =1{1 item} other{{count} items}} from this collection?'**
+  String bulkRemoveConfirm(int count);
+
+  /// No description provided for @bulkResult.
+  ///
+  /// In en, this message translates to:
+  /// **'Done: {done} • Skipped: {skipped}'**
+  String bulkResult(int done, int skipped);
+
+  /// No description provided for @bulkRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Removed: {count}'**
+  String bulkRemoved(int count);
+
+  /// No description provided for @bulkStatusUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Status updated for {count, plural, =1{1 item} other{{count} items}}'**
+  String bulkStatusUpdated(int count);
+
   /// No description provided for @back.
   ///
   /// In en, this message translates to:

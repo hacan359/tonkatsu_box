@@ -19,9 +19,11 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../settings/providers/settings_provider.dart';
+import '../providers/collection_selection_provider.dart';
 import '../providers/collections_provider.dart';
 import 'collection_item_tile.dart';
 import 'collection_table_view.dart';
+import 'selectable_poster_card.dart';
 import 'status_chip_row.dart';
 
 /// View для отображения элементов коллекции в grid/list/reorder режиме.
@@ -109,6 +111,9 @@ class CollectionItemsView extends ConsumerWidget {
         sortMode == CollectionSortMode.manual && canEdit;
 
     if (isTableMode) {
+      final Set<int>? selectedIds = canEdit
+          ? ref.watch(collectionSelectionProvider(collectionId))
+          : null;
       return _withHeader(Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
         child: CollectionTableView(
@@ -118,6 +123,25 @@ class CollectionItemsView extends ConsumerWidget {
           onItemSecondaryTap: canEdit
               ? (CollectionItem item, Offset pos) =>
                   _showItemContextMenu(context, ref, pos, item)
+              : null,
+          selectedIds: selectedIds,
+          onToggleSelect: canEdit
+              ? (int itemId) => ref
+                  .read(collectionSelectionProvider(collectionId).notifier)
+                  .toggle(itemId)
+              : null,
+          onToggleSelectAll: canEdit
+              ? (bool selectAll) {
+                  final CollectionSelectionNotifier notifier = ref.read(
+                    collectionSelectionProvider(collectionId).notifier,
+                  );
+                  if (selectAll) {
+                    notifier.selectAll(
+                        items.map((CollectionItem i) => i.id));
+                  } else {
+                    notifier.clear();
+                  }
+                }
               : null,
           onRatingChanged: canEdit
               ? (int itemId, int? rating) {
@@ -286,7 +310,13 @@ class CollectionItemsView extends ConsumerWidget {
     WidgetRef ref,
     CollectionItem item,
   ) {
-    return CollectionItemTile(
+    final Set<int> selection = canEdit
+        ? ref.watch(collectionSelectionProvider(collectionId))
+        : const <int>{};
+    final bool selectionActive = selection.isNotEmpty;
+    final bool isSelected = selection.contains(item.id);
+
+    final Widget tile = CollectionItemTile(
       key: ValueKey<int>(item.id),
       item: item,
       isEditable: canEdit,
@@ -297,14 +327,24 @@ class CollectionItemsView extends ConsumerWidget {
           ? (Offset pos) => _showItemContextMenu(context, ref, pos, item)
           : null,
       onLongPress: canEdit
-          ? () => _showItemContextMenu(
-                context,
-                ref,
-                _centerOfContext(context),
-                item,
-              )
+          ? () => ref
+              .read(collectionSelectionProvider(collectionId).notifier)
+              .toggle(item.id)
           : null,
-      onTap: () => onItemTap(item),
+      onTap: selectionActive
+          ? () => ref
+              .read(collectionSelectionProvider(collectionId).notifier)
+              .toggle(item.id)
+          : () => onItemTap(item),
+    );
+    if (!canEdit) return tile;
+    return SelectablePosterCard(
+      isSelected: isSelected,
+      selectionActive: selectionActive,
+      onToggleSelect: () => ref
+          .read(collectionSelectionProvider(collectionId).notifier)
+          .toggle(item.id),
+      child: tile,
     );
   }
 
@@ -462,8 +502,13 @@ class CollectionItemsView extends ConsumerWidget {
   }) {
     final CollectionTag? tag =
         item.tagId != null ? tagById[item.tagId] : null;
+    final Set<int> selection = canEdit
+        ? ref.watch(collectionSelectionProvider(collectionId))
+        : const <int>{};
+    final bool selectionActive = selection.isNotEmpty;
+    final bool isSelected = selection.contains(item.id);
 
-    return MediaPosterCard(
+    final Widget card = MediaPosterCard(
       key: ValueKey<int>(item.id),
       variant: isLandscape || isCompactScreen(context)
           ? CardVariant.compact
@@ -486,21 +531,31 @@ class CollectionItemsView extends ConsumerWidget {
       onTagTap: canEdit && tags.isNotEmpty
           ? (Offset pos) => _showTagPopup(context, pos, item)
           : null,
-      onTap: () => onItemTap(item),
+      onTap: selectionActive
+          ? () => ref
+              .read(collectionSelectionProvider(collectionId).notifier)
+              .toggle(item.id)
+          : () => onItemTap(item),
       onSecondaryTap: canEdit
           ? (Offset pos) => _showItemContextMenu(context, ref, pos, item)
           : null,
       onLongPress: canEdit
-          ? () => _showItemContextMenu(
-                context,
-                ref,
-                _centerOfContext(context),
-                item,
-              )
+          ? () => ref
+              .read(collectionSelectionProvider(collectionId).notifier)
+              .toggle(item.id)
           : null,
       onFocusChanged: onItemFocusChanged != null
           ? (bool hasFocus) => onItemFocusChanged!(item, hasFocus)
           : null,
+    );
+    if (!canEdit) return card;
+    return SelectablePosterCard(
+      isSelected: isSelected,
+      selectionActive: selectionActive,
+      onToggleSelect: () => ref
+          .read(collectionSelectionProvider(collectionId).notifier)
+          .toggle(item.id),
+      child: card,
     );
   }
 
@@ -536,7 +591,13 @@ class CollectionItemsView extends ConsumerWidget {
       },
       itemBuilder: (BuildContext context, int index) {
         final CollectionItem item = items[index];
-        return CollectionItemTile(
+        final Set<int> selection = canEdit
+            ? ref.watch(collectionSelectionProvider(collectionId))
+            : const <int>{};
+        final bool selectionActive = selection.isNotEmpty;
+        final bool isSelected = selection.contains(item.id);
+
+        final Widget tile = CollectionItemTile(
           key: ValueKey<int>(item.id),
           item: item,
           isEditable: canEdit,
@@ -553,26 +614,34 @@ class CollectionItemsView extends ConsumerWidget {
                   )
               : null,
           onLongPress: canEdit
-              ? () => _showItemContextMenu(
-                    context,
-                    ref,
-                    _centerOfContext(context),
-                    item,
-                  )
+              ? () => ref
+                  .read(collectionSelectionProvider(collectionId).notifier)
+                  .toggle(item.id)
               : null,
-          onTap: () => onItemTap(item),
+          onTap: selectionActive
+              ? () => ref
+                  .read(collectionSelectionProvider(collectionId).notifier)
+                  .toggle(item.id)
+              : () => onItemTap(item),
+        );
+        if (!canEdit) {
+          return KeyedSubtree(key: ValueKey<int>(item.id), child: tile);
+        }
+        return KeyedSubtree(
+          key: ValueKey<int>(item.id),
+          child: SelectablePosterCard(
+            isSelected: isSelected,
+            selectionActive: selectionActive,
+            onToggleSelect: () => ref
+                .read(collectionSelectionProvider(collectionId).notifier)
+                .toggle(item.id),
+            child: tile,
+          ),
         );
       },
     ));
   }
 
-
-  /// Показывает контекстное меню ПКМ для элемента коллекции.
-  /// Центр экрана — fallback позиция для контекстного меню без курсора.
-  Offset _centerOfContext(BuildContext context) {
-    final Size size = MediaQuery.sizeOf(context);
-    return Offset(size.width / 2, size.height / 2);
-  }
 
   /// Sentinel value для "без тега" в popup (чтобы отличить от dismiss).
   static const int _noTagSentinel = -1;

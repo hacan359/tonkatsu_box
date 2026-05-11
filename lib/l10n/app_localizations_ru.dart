@@ -210,6 +210,67 @@ class SRu extends S {
   String get moveToBottom => 'В конец списка';
 
   @override
+  String bulkSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Выбрано $count',
+      many: 'Выбрано $count',
+      few: 'Выбрано $count',
+      one: 'Выбран 1',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bulkClearSelection => 'Снять выделение';
+
+  @override
+  String get bulkMove => 'Переместить выделенные в коллекцию';
+
+  @override
+  String get bulkCopy => 'Скопировать выделенные в коллекцию';
+
+  @override
+  String get bulkChangeStatus => 'Изменить статус';
+
+  @override
+  String bulkRemoveConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count элементов',
+      many: '$count элементов',
+      few: '$count элемента',
+      one: '1 элемент',
+    );
+    return 'Удалить $_temp0 из коллекции?';
+  }
+
+  @override
+  String bulkResult(int done, int skipped) {
+    return 'Выполнено: $done • Пропущено: $skipped';
+  }
+
+  @override
+  String bulkRemoved(int count) {
+    return 'Удалено: $count';
+  }
+
+  @override
+  String bulkStatusUpdated(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count элементов',
+      many: '$count элементов',
+      few: '$count элементов',
+      one: '1 элемента',
+    );
+    return 'Статус обновлён для $_temp0';
+  }
+
+  @override
   String get back => 'Назад';
 
   @override

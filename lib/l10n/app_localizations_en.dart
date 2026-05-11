@@ -210,6 +210,61 @@ class SEn extends S {
   String get moveToBottom => 'Move to bottom';
 
   @override
+  String bulkSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count selected',
+      one: '1 selected',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bulkClearSelection => 'Clear selection';
+
+  @override
+  String get bulkMove => 'Move selected to collection';
+
+  @override
+  String get bulkCopy => 'Copy selected to collection';
+
+  @override
+  String get bulkChangeStatus => 'Change status';
+
+  @override
+  String bulkRemoveConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+    );
+    return 'Remove $_temp0 from this collection?';
+  }
+
+  @override
+  String bulkResult(int done, int skipped) {
+    return 'Done: $done • Skipped: $skipped';
+  }
+
+  @override
+  String bulkRemoved(int count) {
+    return 'Removed: $count';
+  }
+
+  @override
+  String bulkStatusUpdated(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+    );
+    return 'Status updated for $_temp0';
+  }
+
+  @override
   String get back => 'Back';
 
   @override

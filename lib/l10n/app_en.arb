@@ -74,6 +74,41 @@
   "remove": "Remove",
   "moveToTop": "Move to top",
   "moveToBottom": "Move to bottom",
+  "bulkSelected": "{count, plural, =1{1 selected} other{{count} selected}}",
+  "@bulkSelected": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "bulkClearSelection": "Clear selection",
+  "bulkMove": "Move selected to collection",
+  "bulkCopy": "Copy selected to collection",
+  "bulkChangeStatus": "Change status",
+  "bulkRemoveConfirm": "Remove {count, plural, =1{1 item} other{{count} items}} from this collection?",
+  "@bulkRemoveConfirm": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "bulkResult": "Done: {done} • Skipped: {skipped}",
+  "@bulkResult": {
+    "placeholders": {
+      "done": {"type": "int"},
+      "skipped": {"type": "int"}
+    }
+  },
+  "bulkRemoved": "Removed: {count}",
+  "@bulkRemoved": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "bulkStatusUpdated": "Status updated for {count, plural, =1{1 item} other{{count} items}}",
+  "@bulkStatusUpdated": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "back": "Back",
   "next": "Next",
   "skip": "Skip",

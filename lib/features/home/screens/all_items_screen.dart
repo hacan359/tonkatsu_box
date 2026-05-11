@@ -21,8 +21,11 @@ import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/chevron_filter_bar.dart';
 import '../../../shared/widgets/media_poster_card.dart';
 import '../../collections/helpers/collection_actions.dart';
+import '../../collections/providers/all_items_selection_provider.dart';
 import '../../collections/providers/collections_provider.dart';
 import '../../collections/screens/item_detail_screen.dart';
+import '../../collections/widgets/bulk_action_bar.dart';
+import '../../collections/widgets/selectable_poster_card.dart';
 import '../../collections/widgets/status_chip_row.dart';
 import '../providers/all_items_provider.dart';
 
@@ -60,10 +63,27 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
     final ItemStatus? filterStatus = ref.watch(homeStatusFilterProvider);
     final String searchQuery = ref.watch(homeSearchQueryProvider);
 
+    final Set<int> selection = ref.watch(allItemsSelectionProvider);
+    final List<CollectionItem> allItems =
+        itemsAsync.valueOrNull ?? const <CollectionItem>[];
+    final List<CollectionItem> selectedItems = selection.isEmpty
+        ? const <CollectionItem>[]
+        : <CollectionItem>[
+            for (final CollectionItem i in allItems)
+              if (selection.contains(i.id)) i,
+          ];
+
     return Column(
       children: <Widget>[
         _buildMediaTypeBar(itemsAsync, filterStatus),
         _buildPlatformsRow(),
+        if (selectedItems.isNotEmpty)
+          BulkActionBar(
+            items: selectedItems,
+            onClearSelection: () => ref
+                .read(allItemsSelectionProvider.notifier)
+                .clear(),
+          ),
         Expanded(
           child: itemsAsync.when(
             data: (List<CollectionItem> items) {
@@ -384,7 +404,10 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                     final CollectionTag? tag = item.tagId != null
                         ? tagsMap[item.tagId]
                         : null;
-                    return MediaPosterCard(
+                    final Set<int> selection =
+                        ref.watch(allItemsSelectionProvider);
+                    final bool isSelected = selection.contains(item.id);
+                    final MediaPosterCard card = MediaPosterCard(
                       key: ValueKey<int>(item.id),
                       variant: isLandscape ||
                               isCompactScreen(context)
@@ -409,12 +432,25 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
                       status: item.status,
                       tagName: tag?.name,
                       tagColor: tag?.color,
-                      onTap: () =>
-                          _showItemDetails(item, collectionNames),
+                      onTap: selection.isEmpty
+                          ? () => _showItemDetails(item, collectionNames)
+                          : () => ref
+                              .read(allItemsSelectionProvider.notifier)
+                              .toggle(item.id),
                       onSecondaryTap: (Offset pos) =>
                           _showItemContextMenu(pos, item),
-                      onLongPress: () =>
-                          _showItemContextMenu(_centerOfContext(), item),
+                      onLongPress: () => ref
+                          .read(allItemsSelectionProvider.notifier)
+                          .toggle(item.id),
+                    );
+                    return SelectablePosterCard(
+                      key: ValueKey<int>(item.id),
+                      isSelected: isSelected,
+                      selectionActive: selection.isNotEmpty,
+                      onToggleSelect: () => ref
+                          .read(allItemsSelectionProvider.notifier)
+                          .toggle(item.id),
+                      child: card,
                     );
                   },
                   childCount: groups[i].items.length,
@@ -556,11 +592,6 @@ class _AllItemsScreenState extends ConsumerState<AllItemsScreen> {
         ],
       ),
     );
-  }
-
-  Offset _centerOfContext() {
-    final Size size = MediaQuery.sizeOf(context);
-    return Offset(size.width / 2, size.height / 2);
   }
 
   bool _isItemEditable(CollectionItem item) {
