@@ -1,5 +1,3 @@
-// Тесты для GamepadService — маппинг, нормализация, дедзона, debounce.
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gamepads/gamepads.dart';
 import 'package:xerabora/core/services/gamepad_mappings.dart';
@@ -7,7 +5,6 @@ import 'package:xerabora/core/services/gamepad_service.dart';
 
 import '../../helpers/test_helpers.dart';
 
-/// Хелпер для создания GamepadEvent.
 GamepadEvent _event({
   required String key,
   required double value,
@@ -46,7 +43,6 @@ void main() {
       final List<GamepadServiceEvent> events = <GamepadServiceEvent>[];
       service.events.listen(events.add);
 
-      // Полное отклонение вправо: 65535 → ~1.0
       source.emit(_event(key: 'dwXpos', value: 65535));
       await Future<void>.delayed(Duration.zero);
 
@@ -87,7 +83,6 @@ void main() {
       final List<GamepadServiceEvent> events = <GamepadServiceEvent>[];
       service.events.listen(events.add);
 
-      // Центр — нормализованное ~0.0, абс < 0.3 → фильтруется
       source.emit(_event(key: 'dwXpos', value: 32767));
       source.emit(_event(key: 'dwYpos', value: 32768));
       source.emit(_event(key: 'dwRpos', value: 32500));
@@ -101,8 +96,7 @@ void main() {
       final List<GamepadServiceEvent> events = <GamepadServiceEvent>[];
       service.events.listen(events.add);
 
-      // Deadzone порог: 0.3 * 32767.5 ≈ 9830 от центра
-      // Значение 22000 → нормализованное: (22000-32767.5)/32767.5 ≈ -0.33 → проходит
+      // Deadzone threshold is 0.3 * 32767.5; value 22000 normalizes to ~-0.33.
       source.emit(_event(key: 'dwXpos', value: 22000));
       await Future<void>.delayed(Duration.zero);
 
@@ -182,10 +176,10 @@ void main() {
       final List<GamepadServiceEvent> events = <GamepadServiceEvent>[];
       service.events.listen(events.add);
 
-      source.emit(_event(key: 'pov', value: 4500)); // up-right
-      source.emit(_event(key: 'pov', value: 13500)); // down-right
-      source.emit(_event(key: 'pov', value: 22500)); // down-left
-      source.emit(_event(key: 'pov', value: 31500)); // up-left
+      source.emit(_event(key: 'pov', value: 4500));
+      source.emit(_event(key: 'pov', value: 13500));
+      source.emit(_event(key: 'pov', value: 22500));
+      source.emit(_event(key: 'pov', value: 31500));
       await Future<void>.delayed(Duration.zero);
 
       expect(events, isEmpty);
@@ -195,28 +189,28 @@ void main() {
       final List<GamepadServiceEvent> events = <GamepadServiceEvent>[];
       service.events.listen(events.add);
 
-      source.emit(_event(key: 'pov', value: 0)); // up
+      source.emit(_event(key: 'pov', value: 0));
       await Future<void>.delayed(Duration.zero);
-      source.emit(_event(key: 'pov', value: 0)); // up (повтор)
+      source.emit(_event(key: 'pov', value: 0));
       await Future<void>.delayed(Duration.zero);
-      source.emit(_event(key: 'pov', value: 0)); // up (повтор)
+      source.emit(_event(key: 'pov', value: 0));
       await Future<void>.delayed(Duration.zero);
 
-      expect(events, hasLength(1)); // Только первое
+      expect(events, hasLength(1));
     });
 
     test('генерирует новое событие при смене направления', () async {
       final List<GamepadServiceEvent> events = <GamepadServiceEvent>[];
       service.events.listen(events.add);
 
-      source.emit(_event(key: 'pov', value: 0)); // up
-      await Future<void>.delayed(
-          const Duration(milliseconds: 200)); // > debounce
+      source.emit(_event(key: 'pov', value: 0));
+      // Wait beyond debounce window.
+      await Future<void>.delayed(const Duration(milliseconds: 200));
 
-      source.emit(_event(key: 'pov', value: 65535)); // released
+      source.emit(_event(key: 'pov', value: 65535));
       await Future<void>.delayed(Duration.zero);
 
-      source.emit(_event(key: 'pov', value: 9000)); // right
+      source.emit(_event(key: 'pov', value: 9000));
       await Future<void>.delayed(Duration.zero);
 
       expect(events, hasLength(2));
@@ -229,14 +223,14 @@ void main() {
       final List<GamepadServiceEvent> events = <GamepadServiceEvent>[];
       service.events.listen(events.add);
 
-      source.emit(_event(key: 'pov', value: 0)); // up
-      await Future<void>.delayed(
-          const Duration(milliseconds: 200)); // > debounce
+      source.emit(_event(key: 'pov', value: 0));
+      // Wait beyond debounce window.
+      await Future<void>.delayed(const Duration(milliseconds: 200));
 
-      source.emit(_event(key: 'pov', value: 65535)); // released
+      source.emit(_event(key: 'pov', value: 65535));
       await Future<void>.delayed(Duration.zero);
 
-      source.emit(_event(key: 'pov', value: 0)); // up снова
+      source.emit(_event(key: 'pov', value: 0));
       await Future<void>.delayed(Duration.zero);
 
       expect(events, hasLength(2));
@@ -250,7 +244,6 @@ void main() {
       final List<GamepadServiceEvent> events = <GamepadServiceEvent>[];
       service.events.listen(events.add);
 
-      // LT: значение ~0 → нормализованное ≈ -1.0
       source.emit(_event(key: 'dwZpos', value: 0));
       await Future<void>.delayed(Duration.zero);
 
@@ -264,7 +257,6 @@ void main() {
       final List<GamepadServiceEvent> events = <GamepadServiceEvent>[];
       service.events.listen(events.add);
 
-      // RT: значение ~65535 → нормализованное ≈ 1.0
       source.emit(_event(key: 'dwZpos', value: 65535));
       await Future<void>.delayed(Duration.zero);
 
@@ -276,10 +268,9 @@ void main() {
       final List<GamepadServiceEvent> events = <GamepadServiceEvent>[];
       service.events.listen(events.add);
 
-      // Центр: нормализованное ~0, абс < 0.5 → фильтруется
       source.emit(_event(key: 'dwZpos', value: 32767));
       source.emit(_event(key: 'dwZpos', value: 32768));
-      source.emit(_event(key: 'dwZpos', value: 30000)); // ~-0.08
+      source.emit(_event(key: 'dwZpos', value: 30000));
       await Future<void>.delayed(Duration.zero);
 
       expect(events, isEmpty);
@@ -289,14 +280,14 @@ void main() {
       final List<GamepadServiceEvent> events = <GamepadServiceEvent>[];
       service.events.listen(events.add);
 
-      source.emit(_event(key: 'dwZpos', value: 0)); // LT
+      source.emit(_event(key: 'dwZpos', value: 0));
       await Future<void>.delayed(Duration.zero);
-      source.emit(_event(key: 'dwZpos', value: 100)); // LT (удержание)
+      source.emit(_event(key: 'dwZpos', value: 100));
       await Future<void>.delayed(Duration.zero);
-      source.emit(_event(key: 'dwZpos', value: 500)); // LT (удержание)
+      source.emit(_event(key: 'dwZpos', value: 500));
       await Future<void>.delayed(Duration.zero);
 
-      expect(events, hasLength(1)); // Только первое
+      expect(events, hasLength(1));
     });
 
     test('edge detection — сброс через центр позволяет повторное нажатие',
@@ -304,13 +295,13 @@ void main() {
       final List<GamepadServiceEvent> events = <GamepadServiceEvent>[];
       service.events.listen(events.add);
 
-      source.emit(_event(key: 'dwZpos', value: 0)); // LT
+      source.emit(_event(key: 'dwZpos', value: 0));
       await Future<void>.delayed(Duration.zero);
 
-      source.emit(_event(key: 'dwZpos', value: 32767)); // Центр
+      source.emit(_event(key: 'dwZpos', value: 32767));
       await Future<void>.delayed(Duration.zero);
 
-      source.emit(_event(key: 'dwZpos', value: 0)); // LT снова
+      source.emit(_event(key: 'dwZpos', value: 0));
       await Future<void>.delayed(Duration.zero);
 
       expect(events, hasLength(2));
@@ -322,15 +313,15 @@ void main() {
       final List<GamepadServiceEvent> events = <GamepadServiceEvent>[];
       service.events.listen(events.add);
 
-      source.emit(_event(key: 'dwZpos', value: 0)); // LT
+      source.emit(_event(key: 'dwZpos', value: 0));
       await Future<void>.delayed(Duration.zero);
 
-      source.emit(_event(key: 'dwZpos', value: 65535)); // RT
+      source.emit(_event(key: 'dwZpos', value: 65535));
       await Future<void>.delayed(Duration.zero);
 
       expect(events, hasLength(2));
-      expect(events[0].value, lessThan(0)); // LT
-      expect(events[1].value, greaterThan(0)); // RT
+      expect(events[0].value, lessThan(0));
+      expect(events[1].value, greaterThan(0));
     });
   });
 
@@ -368,7 +359,6 @@ void main() {
           _event(key: 'button-0', value: 1.0, type: KeyType.button));
       await Future<void>.delayed(Duration.zero);
 
-      // Быстрый повтор (< 150ms)
       source.emit(
           _event(key: 'button-0', value: 1.0, type: KeyType.button));
       await Future<void>.delayed(Duration.zero);
@@ -384,7 +374,6 @@ void main() {
           _event(key: 'button-0', value: 1.0, type: KeyType.button));
       await Future<void>.delayed(Duration.zero);
 
-      // Ждём больше debounce (150ms)
       await Future<void>.delayed(const Duration(milliseconds: 200));
 
       source.emit(
@@ -432,13 +421,12 @@ void main() {
       final List<GamepadEvent> rawEvents = <GamepadEvent>[];
       service.rawEvents.listen(rawEvents.add);
 
-      source.emit(_event(key: 'dwXpos', value: 32767)); // В дедзоне
-      source.emit(_event(key: 'pov', value: 65535)); // Released
+      source.emit(_event(key: 'dwXpos', value: 32767));
+      source.emit(_event(key: 'pov', value: 65535));
       source.emit(
-          _event(key: 'button-0', value: 0.0, type: KeyType.button)); // Release
+          _event(key: 'button-0', value: 0.0, type: KeyType.button));
       await Future<void>.delayed(Duration.zero);
 
-      // Все 3 сырых события должны пройти
       expect(rawEvents, hasLength(3));
     });
   });
@@ -447,7 +435,6 @@ void main() {
     test('dispose закрывает стрим', () async {
       service.dispose();
 
-      // Стрим должен быть закрыт — новые события не приходят
       bool isDone = false;
       service.events.listen(
         (_) {},
@@ -462,13 +449,11 @@ void main() {
       final List<GamepadServiceEvent> events = <GamepadServiceEvent>[];
       final GamepadService freshService = GamepadService(source: source);
 
-      // Без start — события не приходят
       freshService.events.listen(events.add);
       source.emit(
           _event(key: 'button-0', value: 1.0, type: KeyType.button));
       await Future<void>.delayed(Duration.zero);
 
-      // start() активирует маппинг
       freshService.start();
       source.emit(
           _event(key: 'button-1', value: 1.0, type: KeyType.button));
@@ -500,7 +485,6 @@ void main() {
       ];
 
       for (final String axis in rawAxes) {
-        // Значение за пределами дедзоны
         source.emit(_event(key: axis, value: 60000));
         await Future<void>.delayed(Duration.zero);
       }

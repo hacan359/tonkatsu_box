@@ -12,7 +12,6 @@ import '../../../core/api/tmdb_api.dart';
 import '../../../core/database/database_service.dart';
 import '../../../core/services/config_service.dart';
 
-/// Ключи для SharedPreferences.
 abstract class SettingsKeys {
   static const String clientId = 'igdb_client_id';
   static const String clientSecret = 'igdb_client_secret';
@@ -20,70 +19,55 @@ abstract class SettingsKeys {
   static const String tokenExpires = 'igdb_token_expires';
   static const String lastSync = 'igdb_last_sync';
 
-  /// API ключ для SteamGridDB.
   static const String steamGridDbApiKey = 'steamgriddb_api_key';
 
-  /// API ключ для TMDB.
   static const String tmdbApiKey = 'tmdb_api_key';
 
-  /// Префикс для сохранения режима отображения коллекции (grid/list).
+  /// Prefix; suffixed per-collection id at call site.
   static const String collectionViewModePrefix = 'collection_view_mode_';
 
-  /// Префикс для сохранения табличного режима коллекции.
+  /// Prefix; suffixed per-collection id at call site.
   static const String collectionTableModePrefix = 'collection_table_mode_';
 
-  /// Имя автора по умолчанию для новых и форкнутых коллекций.
   static const String defaultAuthor = 'default_author';
 
-  /// Язык контента TMDB API (ru-RU или en-US).
+  /// TMDB content language (ru-RU or en-US).
   static const String tmdbLanguage = 'tmdb_language';
 
-  /// Язык контента TMDB по умолчанию.
   static const String tmdbLanguageDefault = 'ru-RU';
 
-  /// Язык интерфейса приложения (en / ru).
+  /// App UI language (en / ru).
   static const String appLanguage = 'app_language';
 
-  /// Язык интерфейса по умолчанию.
   static const String appLanguageDefault = 'en';
 
-  /// Показывать ли секцию рекомендаций на странице элемента.
   static const String showRecommendations = 'show_recommendations';
 
-  /// Показывать ли Blu-ray overlay на фильмах/сериалах/аниме.
   static const String showBlurayOverlay = 'show_bluray_overlay';
 
-  /// Показывать ли платформенный overlay на играх.
   static const String showPlatformOverlay = 'show_platform_overlay';
 
-  /// Discord Rich Presence вкл/выкл.
   static const String discordRpcEnabled = 'discord_rpc_enabled';
 
-  /// Discord RA Sync — транслировать RA Rich Presence в Discord.
+  /// Mirrors RA Rich Presence into Discord.
   static const String discordRaSyncEnabled = 'discord_ra_sync_enabled';
 
-  /// Имя пользователя RetroAchievements.
   static const String raUsername = 'ra_username';
 
-  /// API ключ RetroAchievements.
   static const String raApiKey = 'ra_api_key';
 
-  /// Steam API Key (сохраняется только по галке в Steam Import).
+  /// Persisted only if user opts in via Steam Import checkbox.
   static const String steamApiKey = 'steam_api_key';
 
-  /// Steam ID (сохраняется только по галке в Steam Import).
+  /// Persisted only if user opts in via Steam Import checkbox.
   static const String steamId = 'steam_id';
 
-  /// Флаг «запомнить данные» в Steam Import.
   static const String steamRememberCredentials = 'steam_remember_credentials';
 
-  /// Включить персонализированный вид коллекций (hero + description).
   static const String richCollectionsEnabled = 'rich_collections_enabled';
 }
 
-/// Состояние настроек IGDB.
 class SettingsState {
-  /// Создаёт [SettingsState].
   const SettingsState({
     this.clientId,
     this.clientSecret,
@@ -106,67 +90,47 @@ class SettingsState {
     this.richCollectionsEnabled = false,
   });
 
-  /// Client ID для IGDB API.
   final String? clientId;
 
-  /// Client Secret для IGDB API.
   final String? clientSecret;
 
-  /// OAuth access token.
   final String? accessToken;
 
-  /// Время истечения токена (Unix timestamp).
+  /// Unix timestamp (seconds).
   final int? tokenExpires;
 
-  /// Количество доступных платформ (предзаполнены миграцией).
+  /// Pre-seeded by migration.
   final int platformCount;
 
-  /// Статус подключения.
   final ConnectionStatus connectionStatus;
 
-  /// Сообщение об ошибке (если есть).
   final String? errorMessage;
 
-  /// Идёт ли процесс загрузки.
   final bool isLoading;
 
-  /// API ключ для SteamGridDB.
   final String? steamGridDbApiKey;
 
-  /// API ключ для TMDB.
   final String? tmdbApiKey;
 
-  /// Имя автора по умолчанию.
   final String? defaultAuthor;
 
-  /// Язык контента TMDB API.
   final String tmdbLanguage;
 
-  /// Язык интерфейса приложения (en / ru).
   final String appLanguage;
 
-  /// Показывать ли секцию рекомендаций.
   final bool showRecommendations;
 
-  /// Показывать ли Blu-ray overlay на фильмах/сериалах/аниме.
   final bool showBlurayOverlay;
 
-  /// Показывать ли платформенный overlay на играх.
   final bool showPlatformOverlay;
 
-  /// Discord Rich Presence включён.
   final bool discordRpcEnabled;
 
-  /// Discord RA Sync — транслировать RA Rich Presence в Discord.
   final bool discordRaSyncEnabled;
 
-  /// Rich-вид коллекций: hero-картинка и описание вместо мозаики.
+  /// Hero image + description instead of mosaic.
   final bool richCollectionsEnabled;
 
-  /// Возвращает overlay asset с учётом настроек.
-  ///
-  /// Для игр проверяет [showPlatformOverlay], для фильмов/сериалов/аниме —
-  /// [showBlurayOverlay]. Возвращает null если overlay отключён.
   String? resolveOverlay({
     String? platformOverlay,
     String? mediaTypeOverlay,
@@ -176,7 +140,6 @@ class SettingsState {
     return null;
   }
 
-  /// Возвращает overlay asset для элемента коллекции с учётом настроек.
   String? resolveOverlayFor(CollectionItem item) {
     return resolveOverlay(
       platformOverlay: item.platform?.overlayAsset,
@@ -184,55 +147,45 @@ class SettingsState {
     );
   }
 
-  /// Возвращает имя автора (или 'User' если не задано).
   String get authorName => (defaultAuthor != null && defaultAuthor!.isNotEmpty)
       ? defaultAuthor!
       : 'User';
 
-  /// Проверяет наличие API ключа TMDB.
   bool get hasTmdbKey => tmdbApiKey != null && tmdbApiKey!.isNotEmpty;
 
-  /// Проверяет наличие API ключа SteamGridDB.
   bool get hasSteamGridDbKey =>
       steamGridDbApiKey != null && steamGridDbApiKey!.isNotEmpty;
 
-  /// Проверяет, используется ли встроенный TMDB ключ (не пользовательский).
   bool get isTmdbKeyBuiltIn =>
       hasTmdbKey &&
       ApiDefaults.hasTmdbKey &&
       tmdbApiKey == ApiDefaults.tmdbApiKey;
 
-  /// Проверяет, используется ли встроенный SteamGridDB ключ.
   bool get isSteamGridDbKeyBuiltIn =>
       hasSteamGridDbKey &&
       ApiDefaults.hasSteamGridDbKey &&
       steamGridDbApiKey == ApiDefaults.steamGridDbApiKey;
 
-  /// Проверяет, используется ли встроенный IGDB ключ.
   bool get isIgdbKeyBuiltIn =>
       hasCredentials &&
       ApiDefaults.hasIgdbKey &&
       clientId == ApiDefaults.igdbClientId &&
       clientSecret == ApiDefaults.igdbClientSecret;
 
-  /// Проверяет наличие сохранённых учётных данных.
   bool get hasCredentials =>
       clientId != null &&
       clientId!.isNotEmpty &&
       clientSecret != null &&
       clientSecret!.isNotEmpty;
 
-  /// Проверяет, есть ли валидный токен.
   bool get hasValidToken {
     if (accessToken == null || tokenExpires == null) return false;
     final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     return tokenExpires! > now;
   }
 
-  /// Проверяет готовность API к использованию.
   bool get isApiReady => hasCredentials && hasValidToken;
 
-  /// Копирует с изменёнными полями.
   SettingsState copyWith({
     String? clientId,
     String? clientSecret,
@@ -280,38 +233,26 @@ class SettingsState {
   }
 }
 
-/// Статус подключения к IGDB API.
 enum ConnectionStatus {
-  /// Статус неизвестен.
   unknown,
-
-  /// Подключено успешно.
   connected,
-
-  /// Ошибка подключения.
   error,
-
-  /// Проверка подключения.
   checking,
 }
 
-/// Провайдер для SharedPreferences.
 final Provider<SharedPreferences> sharedPreferencesProvider =
     Provider<SharedPreferences>((Ref ref) {
   throw UnimplementedError('SharedPreferences must be overridden');
 });
 
-/// Провайдер для проверки наличия валидного API ключа.
 final Provider<bool> hasValidApiKeyProvider = Provider<bool>((Ref ref) {
   final SettingsState settings = ref.watch(settingsNotifierProvider);
   return settings.isApiReady;
 });
 
-/// Провайдер для настроек IGDB.
 final NotifierProvider<SettingsNotifier, SettingsState> settingsNotifierProvider =
     NotifierProvider<SettingsNotifier, SettingsState>(SettingsNotifier.new);
 
-/// Notifier для управления настройками IGDB.
 class SettingsNotifier extends Notifier<SettingsState> {
   late SharedPreferences _prefs;
   late IgdbApi _igdbApi;
@@ -327,7 +268,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     _tmdbApi = ref.watch(tmdbApiProvider);
     _dbService = ref.watch(databaseServiceProvider);
 
-    // При auto-refresh токена из IgdbApi — сохраняем в prefs и обновляем state.
+    // Persist auto-refreshed token from IgdbApi back into prefs + state.
     _igdbApi.onTokenRefreshed = (String accessToken, int expiresAt) {
       _prefs.setString(SettingsKeys.accessToken, accessToken);
       _prefs.setInt(SettingsKeys.tokenExpires, expiresAt);
@@ -393,10 +334,8 @@ class SettingsNotifier extends Notifier<SettingsState> {
     final bool richCollectionsEnabled =
         _prefs.getBool(SettingsKeys.richCollectionsEnabled) ?? false;
 
-    // Определяем начальный статус подключения:
-    // - токен валиден → connected (не нужно ждать verify)
-    // - есть credentials, но токен истёк → запустим авто-верификацию
-    // - нет credentials → unknown
+    // Valid token → connected immediately (skip verify);
+    // expired with credentials → trigger auto-verify below.
     final bool hasValidToken = accessToken != null &&
         tokenExpires != null &&
         tokenExpires > DateTime.now().millisecondsSinceEpoch ~/ 1000;
@@ -423,24 +362,19 @@ class SettingsNotifier extends Notifier<SettingsState> {
       richCollectionsEnabled: richCollectionsEnabled,
     );
 
-    // API ключи уже установлены при создании провайдеров через apiKeysProvider.
-    // Здесь устанавливаем только язык TMDB (не ключ, а параметр запросов).
+    // API keys already wired by apiKeysProvider; only the request-time language param is set here.
     _tmdbApi.setLanguage(tmdbLanguage);
 
-    // Загружаем количество платформ отложенно
     Future<void>.microtask(_loadPlatformCount);
 
-    // Авто-верификация: если есть credentials но нет токена — получаем его
     if (loadedState.hasCredentials && !loadedState.hasValidToken) {
       Future<void>.microtask(_autoVerifyConnection);
     }
 
-    // Автозапуск Discord RPC если включён
     if (kDiscordRpcAvailable && loadedState.discordRpcEnabled) {
       Future<void>.microtask(() {
         final DiscordRpcService rpc = ref.read(discordRpcServiceProvider);
         rpc.enable();
-        // Если RA sync включён — запускаем polling
         if (loadedState.discordRaSyncEnabled) {
           final RaApi raApi = ref.read(raApiProvider);
           final String? raUsername =
@@ -455,9 +389,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     return loadedState;
   }
 
-  /// Синхронизирует API клиенты с текущим state.
-  ///
-  /// Вызывается после importConfig, когда ключи могли измениться.
+  /// Called after importConfig since keys may have changed.
   void _syncApiClients() {
     if (state.hasValidToken &&
         state.clientId != null &&
@@ -477,7 +409,6 @@ class SettingsNotifier extends Notifier<SettingsState> {
     }
   }
 
-  /// Автоматически получает токен при наличии credentials.
   Future<void> _autoVerifyConnection() async {
     if (!state.hasCredentials) return;
     try {
@@ -498,7 +429,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
         connectionStatus: ConnectionStatus.connected,
       );
     } on IgdbApiException {
-      // Тихо проглатываем — пользователь увидит "Not connected"
+      // Swallow silently — user sees "Not connected".
     }
   }
 
@@ -509,7 +440,6 @@ class SettingsNotifier extends Notifier<SettingsState> {
     }
   }
 
-  /// Сохраняет учётные данные.
   Future<void> setCredentials({
     required String clientId,
     required String clientSecret,
@@ -524,7 +454,6 @@ class SettingsNotifier extends Notifier<SettingsState> {
     );
   }
 
-  /// Проверяет подключение и получает токен.
   Future<bool> verifyConnection() async {
     if (!state.hasCredentials) {
       state = state.copyWith(
@@ -573,7 +502,6 @@ class SettingsNotifier extends Notifier<SettingsState> {
     }
   }
 
-  /// Сохраняет API ключ SteamGridDB.
   Future<void> setSteamGridDbApiKey(String apiKey) async {
     if (apiKey.isNotEmpty) {
       await _prefs.setString(SettingsKeys.steamGridDbApiKey, apiKey);
@@ -586,7 +514,6 @@ class SettingsNotifier extends Notifier<SettingsState> {
     state = state.copyWith(steamGridDbApiKey: apiKey);
   }
 
-  /// Сохраняет API ключ TMDB.
   Future<void> setTmdbApiKey(String apiKey) async {
     if (apiKey.isNotEmpty) {
       await _prefs.setString(SettingsKeys.tmdbApiKey, apiKey);
@@ -599,61 +526,49 @@ class SettingsNotifier extends Notifier<SettingsState> {
     state = state.copyWith(tmdbApiKey: apiKey);
   }
 
-  /// Устанавливает язык контента TMDB API.
-  ///
-  /// Жанры предзаполнены для обоих языков (EN + RU) — очистка не нужна.
+  /// Genres are pre-seeded for both EN + RU — no cache clear needed on switch.
   Future<void> setTmdbLanguage(String language) async {
     await _prefs.setString(SettingsKeys.tmdbLanguage, language);
     _tmdbApi.setLanguage(language);
     state = state.copyWith(tmdbLanguage: language);
   }
 
-  /// Устанавливает язык интерфейса приложения.
   Future<void> setAppLanguage(String language) async {
     await _prefs.setString(SettingsKeys.appLanguage, language);
     state = state.copyWith(appLanguage: language);
   }
 
-  /// Включает/выключает секцию рекомендаций.
   Future<void> setShowRecommendations({required bool enabled}) async {
     await _prefs.setBool(SettingsKeys.showRecommendations, enabled);
     state = state.copyWith(showRecommendations: enabled);
   }
 
-  /// Включает/выключает Blu-ray overlay на фильмах/сериалах/аниме.
   Future<void> setShowBlurayOverlay({required bool enabled}) async {
     await _prefs.setBool(SettingsKeys.showBlurayOverlay, enabled);
     state = state.copyWith(showBlurayOverlay: enabled);
   }
 
-  /// Включает/выключает платформенный overlay на играх.
   Future<void> setShowPlatformOverlay({required bool enabled}) async {
     await _prefs.setBool(SettingsKeys.showPlatformOverlay, enabled);
     state = state.copyWith(showPlatformOverlay: enabled);
   }
 
-  /// Включает/выключает Discord Rich Presence.
   Future<void> setDiscordRpcEnabled({required bool enabled}) async {
     await _prefs.setBool(SettingsKeys.discordRpcEnabled, enabled);
     state = state.copyWith(discordRpcEnabled: enabled);
   }
 
-  /// Включает/выключает трансляцию RA Rich Presence в Discord.
   Future<void> setDiscordRaSyncEnabled({required bool enabled}) async {
     await _prefs.setBool(SettingsKeys.discordRaSyncEnabled, enabled);
     state = state.copyWith(discordRaSyncEnabled: enabled);
   }
 
-  /// Включает/выключает rich-вид коллекций.
   Future<void> setRichCollectionsEnabled({required bool enabled}) async {
     await _prefs.setBool(SettingsKeys.richCollectionsEnabled, enabled);
     state = state.copyWith(richCollectionsEnabled: enabled);
   }
 
-  /// Сбрасывает TMDB API ключ на встроенный.
-  ///
-  /// Удаляет пользовательский ключ из SharedPreferences.
-  /// Если есть встроенный ключ — использует его, иначе очищает.
+  /// Falls back to built-in key if available, otherwise clears.
   Future<void> resetTmdbApiKeyToDefault() async {
     await _prefs.remove(SettingsKeys.tmdbApiKey);
     if (ApiDefaults.hasTmdbKey) {
@@ -665,10 +580,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     }
   }
 
-  /// Сбрасывает IGDB credentials на встроенные.
-  ///
-  /// Удаляет пользовательские ключи из SharedPreferences.
-  /// Если есть встроенные ключи — использует их, иначе очищает.
+  /// Falls back to built-in credentials if available, otherwise clears.
   Future<void> resetIgdbCredentialsToDefault() async {
     await _prefs.remove(SettingsKeys.clientId);
     await _prefs.remove(SettingsKeys.clientSecret);
@@ -691,10 +603,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     }
   }
 
-  /// Сбрасывает SteamGridDB API ключ на встроенный.
-  ///
-  /// Удаляет пользовательский ключ из SharedPreferences.
-  /// Если есть встроенный ключ — использует его, иначе очищает.
+  /// Falls back to built-in key if available, otherwise clears.
   Future<void> resetSteamGridDbApiKeyToDefault() async {
     await _prefs.remove(SettingsKeys.steamGridDbApiKey);
     if (ApiDefaults.hasSteamGridDbKey) {
@@ -706,7 +615,6 @@ class SettingsNotifier extends Notifier<SettingsState> {
     }
   }
 
-  /// Сохраняет имя автора по умолчанию.
   Future<void> setDefaultAuthor(String author) async {
     final String trimmed = author.trim();
     if (trimmed.isNotEmpty) {
@@ -717,31 +625,22 @@ class SettingsNotifier extends Notifier<SettingsState> {
     state = state.copyWith(defaultAuthor: trimmed);
   }
 
-  /// Проверяет валидность TMDB API ключа.
-  ///
-  /// Возвращает `true` если ключ работает.
   Future<bool> validateTmdbKey() async {
     if (!state.hasTmdbKey) return false;
     return _tmdbApi.validateApiKey(state.tmdbApiKey!);
   }
 
-  /// Проверяет валидность SteamGridDB API ключа.
-  ///
-  /// Возвращает `true` если ключ работает.
   Future<bool> validateSteamGridDbKey() async {
     if (!state.hasSteamGridDbKey) return false;
     return _steamGridDbApi.validateApiKey(state.steamGridDbApiKey!);
   }
 
-  /// Экспортирует конфигурацию в файл.
   Future<ConfigResult> exportConfig() async {
     final ConfigService configService = ref.read(configServiceProvider);
     return configService.exportToFile();
   }
 
-  /// Импортирует конфигурацию из файла.
-  ///
-  /// После импорта перезагружает настройки и обновляет API клиенты.
+  /// Reloads settings and re-syncs API clients after import.
   Future<ConfigResult> importConfig() async {
     final ConfigService configService = ref.read(configServiceProvider);
     final ConfigResult result = await configService.importFromFile();
@@ -755,16 +654,12 @@ class SettingsNotifier extends Notifier<SettingsState> {
     return result;
   }
 
-  /// Очищает все данные из базы данных.
-  ///
-  /// Удаляет все коллекции, игры, фильмы, сериалы и данные канваса.
-  /// Настройки и API ключи сохраняются.
+  /// Wipes collections/games/movies/tv/canvas; preserves settings + API keys.
   Future<void> flushDatabase() async {
     await _dbService.clearAllData();
     state = state.copyWith(platformCount: 0);
   }
 
-  /// Очищает все настройки.
   Future<void> clearSettings() async {
     await _prefs.remove(SettingsKeys.clientId);
     await _prefs.remove(SettingsKeys.clientSecret);

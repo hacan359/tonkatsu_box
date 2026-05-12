@@ -1,5 +1,3 @@
-// Тесты moveItemToTop / moveItemToBottom в CollectionItemsNotifier.
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -25,7 +23,7 @@ void main() {
   setUpAll(registerAllFallbacks);
 
   setUp(() async {
-    // Активируем ручную сортировку — иначе applySortMode переставит items.
+    // Enable manual sort, otherwise applySortMode would reorder items.
     SharedPreferences.setMockInitialValues(<String, Object>{
       'collection_sort_$_collectionId': CollectionSortMode.manual.value,
     });

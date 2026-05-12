@@ -1,5 +1,3 @@
-// Тесты для CollectionActions — статические методы действий с коллекциями.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,11 +10,6 @@ import 'package:xerabora/shared/models/canvas_item.dart';
 import 'package:xerabora/shared/models/collection.dart';
 import 'package:xerabora/shared/models/steamgriddb_image.dart';
 
-// =============================================================================
-// Моки и тестовые notifiers
-// =============================================================================
-
-/// Тестовый notifier для канваса — записывает вызовы addImageItem.
 class _TestCanvasNotifier extends CanvasNotifier {
   _TestCanvasNotifier();
 
@@ -62,7 +55,6 @@ class _TestCanvasNotifier extends CanvasNotifier {
   }
 }
 
-/// Запись вызова addImageItem.
 class _AddImageCall {
   const _AddImageCall({
     required this.x,
@@ -79,7 +71,6 @@ class _AddImageCall {
   final double height;
 }
 
-/// Тестовый notifier для коллекций.
 class _TestCollectionsNotifier extends CollectionsNotifier {
   _TestCollectionsNotifier();
 
@@ -102,15 +93,9 @@ class _TestCollectionsNotifier extends CollectionsNotifier {
   }
 }
 
-// =============================================================================
-// Вспомогательные функции
-// =============================================================================
-
-/// Ключ для получения WidgetRef из Consumer виджета.
 WidgetRef? _capturedRef;
 BuildContext? _capturedContext;
 
-/// Строит тестовый виджет с ProviderScope и Consumer для захвата ref.
 Widget _buildTestApp({
   required List<Override> overrides,
 }) {
@@ -131,10 +116,6 @@ Widget _buildTestApp({
     ),
   );
 }
-
-// =============================================================================
-// Основные тесты
-// =============================================================================
 
 void main() {
   final DateTime testDate = DateTime(2024, 6, 15);
@@ -202,7 +183,6 @@ void main() {
           ));
           await tester.pumpAndSettle();
 
-          // Изображение 600x900 — ширина > 300, масштабируем до 300
           const SteamGridDbImage wideImage = SteamGridDbImage(
             id: 2,
             score: 5,
@@ -222,7 +202,6 @@ void main() {
 
           final _AddImageCall call = canvasNotifier.addImageCalls.first;
           expect(call.width, equals(300.0));
-          // Aspect ratio 600/900 = 2/3, height = 300 / (2/3) = 450
           expect(call.height, equals(450.0));
         },
       );
@@ -258,7 +237,6 @@ void main() {
 
           final _AddImageCall call = canvasNotifier.addImageCalls.first;
           expect(call.width, equals(200.0));
-          // Aspect ratio 200/300 = 2/3, height = 200 / (2/3) = 300
           expect(call.height, equals(300.0));
         },
       );
@@ -328,8 +306,6 @@ void main() {
           );
 
           final _AddImageCall call = canvasNotifier.addImageCalls.first;
-          // centerX = 2500 - 200/2 = 2400
-          // centerY = 2500 - 200/2 = 2400
           expect(
             call.x,
             equals(CanvasRepository.initialCenterX - 200.0 / 2),
@@ -464,7 +440,6 @@ void main() {
 
           final _AddImageCall call = canvasNotifier.addImageCalls.first;
           expect(call.width, equals(400.0));
-          // Aspect ratio 1600/800 = 2, height = 400/2 = 200
           expect(call.height, equals(200.0));
         },
       );
@@ -492,7 +467,6 @@ void main() {
 
           final _AddImageCall call = canvasNotifier.addImageCalls.first;
           expect(call.width, equals(300.0));
-          // Aspect ratio 300/150 = 2, height = 300/2 = 150
           expect(call.height, equals(150.0));
         },
       );
@@ -640,7 +614,6 @@ void main() {
           );
           await tester.pumpAndSettle();
 
-          // Вызываем renameCollection — диалог откроется
           final Future<bool> resultFuture =
               CollectionActions.renameCollection(
             context: _capturedContext!,
@@ -649,10 +622,8 @@ void main() {
           );
           await tester.pumpAndSettle();
 
-          // Диалог должен быть видим
           expect(find.byType(AlertDialog), findsOneWidget);
 
-          // Нажимаем Cancel
           final Finder cancelButton = find.widgetWithText(
             TextButton,
             'Cancel',
@@ -661,11 +632,9 @@ void main() {
           await tester.tap(cancelButton);
           await tester.pumpAndSettle();
 
-          // Результат должен быть null
           final bool result = await resultFuture;
           expect(result, isFalse);
 
-          // Rename не должен был вызваться
           expect(collectionsNotifier.renameCalled, isFalse);
         },
       );
@@ -706,11 +675,8 @@ void main() {
           );
           await tester.pumpAndSettle();
 
-          // Диалог должен содержать текущее имя
           expect(find.byType(AlertDialog), findsOneWidget);
 
-          // Не меняем текст, просто нажимаем Rename (текст уже = "Test Collection")
-          // Но нужно найти кнопку подтверждения
           final Finder renameButton = find.widgetWithText(
             FilledButton,
             'Rename',
@@ -719,11 +685,9 @@ void main() {
           await tester.tap(renameButton);
           await tester.pumpAndSettle();
 
-          // Имя не изменилось — возвращается null
           final bool result = await resultFuture;
           expect(result, isFalse);
 
-          // Rename не должен был вызваться
           expect(collectionsNotifier.renameCalled, isFalse);
         },
       );
@@ -764,13 +728,11 @@ void main() {
           );
           await tester.pumpAndSettle();
 
-          // Очищаем и вводим новое имя
           final Finder textField = find.byType(TextFormField);
           expect(textField, findsOneWidget);
           await tester.enterText(textField, 'New Name');
           await tester.pumpAndSettle();
 
-          // Нажимаем Rename
           final Finder renameButton = find.widgetWithText(
             FilledButton,
             'Rename',
@@ -822,10 +784,8 @@ void main() {
           );
           await tester.pumpAndSettle();
 
-          // Диалог подтверждения должен быть видим
           expect(find.byType(AlertDialog), findsOneWidget);
 
-          // Нажимаем Cancel
           final Finder cancelButton = find.widgetWithText(
             TextButton,
             'Cancel',
@@ -837,7 +797,6 @@ void main() {
           final bool result = await resultFuture;
           expect(result, isFalse);
 
-          // Delete не должен был вызваться
           expect(collectionsNotifier.deleteCalled, isFalse);
         },
       );
@@ -878,10 +837,8 @@ void main() {
           );
           await tester.pumpAndSettle();
 
-          // Диалог подтверждения должен быть видим
           expect(find.byType(AlertDialog), findsOneWidget);
 
-          // Нажимаем Delete
           final Finder deleteButton = find.widgetWithText(
             FilledButton,
             'Delete',
@@ -893,7 +850,6 @@ void main() {
           final bool result = await resultFuture;
           expect(result, isTrue);
 
-          // Delete должен был вызваться
           expect(collectionsNotifier.deleteCalled, isTrue);
         },
       );
@@ -933,7 +889,6 @@ void main() {
           );
           await tester.pumpAndSettle();
 
-          // Нажимаем Delete
           final Finder deleteButton = find.widgetWithText(
             FilledButton,
             'Delete',
@@ -941,7 +896,6 @@ void main() {
           await tester.tap(deleteButton);
           await tester.pumpAndSettle();
 
-          // SnackBar с сообщением об удалении
           expect(find.byType(SnackBar), findsOneWidget);
         },
       );
@@ -978,7 +932,7 @@ void main() {
           );
 
           final _AddImageCall call = canvasNotifier.addImageCalls.first;
-          // width=500>0, но height=0, условие (width>0 && height>0) = false
+          // width>0 but height=0 falls through to defaultSize.
           expect(call.width, equals(200.0));
           expect(call.height, equals(200.0));
         },
@@ -1014,9 +968,7 @@ void main() {
           );
 
           final _AddImageCall call = canvasNotifier.addImageCalls.first;
-          // 300 <= 300, используем оригинал
           expect(call.width, equals(300.0));
-          // Aspect ratio 300/450 = 2/3, height = 300 / (2/3) = 450
           expect(call.height, equals(450.0));
         },
       );
@@ -1045,7 +997,6 @@ void main() {
           );
 
           final _AddImageCall call = canvasNotifier.addImageCalls.first;
-          // 400 <= 400, используем оригинал
           expect(call.width, equals(400.0));
           expect(call.height, equals(200.0));
         },
@@ -1073,7 +1024,7 @@ void main() {
           );
 
           final _AddImageCall call = canvasNotifier.addImageCalls.first;
-          // width=null -> условие false -> default 400x400
+          // null width disables scaling and defaults to 400x400.
           expect(call.width, equals(400.0));
           expect(call.height, equals(400.0));
         },

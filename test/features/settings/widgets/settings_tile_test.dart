@@ -1,5 +1,3 @@
-// Тесты для SettingsTile — тонкая строка настроек.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/settings/widgets/settings_tile.dart';
@@ -46,7 +44,6 @@ void main() {
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
 
-        // Only title text is present
         final Finder texts = find.byType(Text);
         expect(texts, findsOneWidget);
       });
@@ -66,7 +63,6 @@ void main() {
         await tester.pumpWidget(createWidget());
 
         expect(find.text('Test Tile'), findsOneWidget);
-        // Only 1 text widget (the title)
         expect(find.byType(Text), findsOneWidget);
       });
 

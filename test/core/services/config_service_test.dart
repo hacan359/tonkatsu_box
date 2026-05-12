@@ -1,5 +1,3 @@
-// Тесты для ConfigService — экспорт и импорт конфигурации.
-
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -72,7 +70,6 @@ void main() {
         final Map<String, Object> config = sut.collectSettings();
 
         expect(config['tonkatsu_box_config_version'], equals(configFormatVersion));
-        // Только версия, никаких ключей
         expect(config.length, equals(1));
       });
 
@@ -116,7 +113,7 @@ void main() {
 
         final Map<String, Object> config = sut.collectSettings();
 
-        expect(config.length, equals(9)); // 8 ключей + версия
+        expect(config.length, equals(9));
       });
 
       test('не должен включать неустановленные ключи', () async {
@@ -190,9 +187,9 @@ void main() {
       });
 
       test('должен обрабатывать num как int для int ключей', () async {
-        // JSON decode может вернуть num вместо int
+        // JSON decode may return num rather than int.
         final int applied = await sut.applySettings(<String, Object?>{
-          SettingsKeys.tokenExpires: 1234567890.0, // double from JSON
+          SettingsKeys.tokenExpires: 1234567890.0,
         });
 
         expect(applied, equals(1));
@@ -232,11 +229,9 @@ void main() {
 
         final Map<String, Object> config = sut.collectSettings();
 
-        // Очищаем prefs
         await prefs.clear();
         expect(prefs.getString(SettingsKeys.clientId), isNull);
 
-        // Применяем обратно
         final int applied = await sut.applySettings(config);
         expect(applied, equals(4));
         expect(prefs.getString(SettingsKeys.clientId), equals('rt_id'));

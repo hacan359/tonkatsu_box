@@ -1,5 +1,3 @@
-// Виджет-тесты для CreateTierListDialog.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -65,7 +63,6 @@ void main() {
         overrides: buildOverrides(),
       );
 
-      // Radio buttons are shown for scope selection.
       expect(find.byType(Radio<bool>), findsWidgets);
     });
 
@@ -92,14 +89,12 @@ void main() {
         overrides: buildOverrides(),
       );
 
-      // Tap the Create button (FilledButton) without entering any text.
       final Finder createButton = find.byType(FilledButton);
       expect(createButton, findsOneWidget);
 
       await tester.tap(createButton);
       await tester.pumpAndSettle();
 
-      // createTierList should NOT have been called because name is empty.
       verifyNever(() => mockTierListDao.createTierList(
             any(),
             collectionId: any(named: 'collectionId'),

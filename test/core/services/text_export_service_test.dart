@@ -1,5 +1,3 @@
-// Unit-тесты для TextExportService.
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/core/services/text_export_service.dart';
 import 'package:xerabora/shared/models/collection_item.dart';

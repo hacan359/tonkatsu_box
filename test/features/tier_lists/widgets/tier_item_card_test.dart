@@ -1,5 +1,3 @@
-// Виджет-тесты для TierItemCard.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/tier_lists/widgets/tier_item_card.dart';
@@ -126,7 +124,6 @@ void main() {
 
     testWidgets('should show platform overlay for mapped platforms',
         (WidgetTester tester) async {
-      // SNES (id: 19) has an overlay asset → text badge hidden
       final CollectionItem gameWithOverlay = createTestCollectionItem(
         id: 10,
         externalId: 300,
@@ -149,14 +146,12 @@ void main() {
       await tester.pump();
 
       expect(find.text('Super Mario World'), findsOneWidget);
-      // Overlay replaces text badge for mapped platforms
       expect(find.text('SNES'), findsNothing);
       expect(find.byType(Image), findsOneWidget);
     });
 
     testWidgets('should show platform text badge for unmapped platforms',
         (WidgetTester tester) async {
-      // id: 9999 has no overlay → text badge shown
       final CollectionItem gameWithTextBadge = createTestCollectionItem(
         id: 10,
         externalId: 300,
@@ -195,7 +190,6 @@ void main() {
       await tester.pump();
 
       expect(find.text('Test Movie'), findsOneWidget);
-      // No platform text should appear for movies
       expect(find.text('SNES'), findsNothing);
       expect(find.text('Unknown Platform'), findsNothing);
     });

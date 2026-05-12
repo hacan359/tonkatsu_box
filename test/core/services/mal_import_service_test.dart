@@ -1,5 +1,3 @@
-// Тесты для MalImportService.
-
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -24,10 +22,6 @@ void main() {
     mockDb = MockDatabaseService();
     sut = MalImportService(aniListApi: mockAniList, database: mockDb);
   });
-
-  // ---------------------------------------------------------------------------
-  // parseString
-  // ---------------------------------------------------------------------------
 
   group('MalImportService', () {
     group('parseString (anime)', () {
@@ -256,10 +250,6 @@ void main() {
       });
     });
 
-    // -------------------------------------------------------------------------
-    // importFiles — с моками
-    // -------------------------------------------------------------------------
-
     group('importFiles', () {
       const String singleAnimeXml = '''
 <?xml version="1.0"?>
@@ -318,18 +308,10 @@ void main() {
         );
         setupNoExisting();
 
-        // Используем temp file через parseString напрямую, но importFiles
-        // читает file. Обходим через парс XML вручную и затем вызов
-        // приватной логики через публичный путь невозможен — поэтому тест
-        // на досыпание делаем через полный парсер: сохраняем во временный
-        // файл.
-        // (Используется только для проверки, что updateItemProgress
-        // вызвался с currentEpisode=64 а не 30.)
-        // Поскольку File I/O в тесте — лишний оверхед, проверяем
-        // через parseString + ручное связывание.
+        // Verify parser surfaces the per-entry values importFiles relies on
+        // (watched=30, total=64) before completion top-up logic runs.
         final MalParsedFile parsed = sut.parseString(singleAnimeXml);
         final MalEntry entry = parsed.entries.first;
-        // Sanity: в XML стоит 30, total 64.
         expect(entry.watchedEpisodes, 30);
         expect(entry.totalEpisodesXml, 64);
         expect(entry.status, ItemStatus.completed);
@@ -339,7 +321,7 @@ void main() {
           'unmatched запись попадает в wishlist с MAL-ссылкой в note',
           () async {
         when(() => mockAniList.getAnimeByMalIds(any()))
-            .thenAnswer((_) async => <int, Anime>{}); // не нашли
+            .thenAnswer((_) async => <int, Anime>{});
         when(() => mockDb.findUnresolvedWishlistItem(any()))
             .thenAnswer((_) async => null);
         when(() => mockDb.addWishlistItem(
@@ -364,7 +346,7 @@ void main() {
                   mediaTypeHint: captureAny(named: 'mediaTypeHint'),
                   note: captureAny(named: 'note'),
                 )).captured;
-            // captureAny собирает значения по позиции: mediaTypeHint, note
+            // captureAny preserves positional order: mediaTypeHint, note.
             expect(calls[0], MediaType.anime);
             return calls[1] as String;
           },
@@ -431,7 +413,6 @@ void main() {
           },
         );
 
-        // Не должны вызвать addItemToCollection.
         verifyNever(() => mockDb.addItemToCollection(
               collectionId: any(named: 'collectionId'),
               mediaType: any(named: 'mediaType'),
@@ -443,10 +424,6 @@ void main() {
     });
   });
 }
-
-// ---------------------------------------------------------------------------
-// File helpers
-// ---------------------------------------------------------------------------
 
 Future<T?> _runWithTempFile<T>(
   String xml,

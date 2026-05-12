@@ -17,11 +17,6 @@ import 'package:xerabora/shared/models/wishlist_item.dart';
 
 import '../../helpers/test_helpers.dart';
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-/// Создаёт ZIP-архив в памяти со структурой Trakt export.
 List<int> createTestZip({
   String username = 'testuser',
   String? watchedMoviesJson,
@@ -64,7 +59,6 @@ List<int> createTestZip({
   return ZipEncoder().encode(archive);
 }
 
-/// Создаёт JSON для одного watched movie.
 String watchedMovieJson({
   String title = 'Test Movie',
   int? tmdbId = 100,
@@ -84,7 +78,6 @@ String watchedMovieJson({
   return jsonEncode(<Map<String, dynamic>>[entry]);
 }
 
-/// Создаёт JSON для одного watched show с опциональными эпизодами.
 String watchedShowJson({
   String title = 'Test Show',
   int? tmdbId = 200,
@@ -105,7 +98,6 @@ String watchedShowJson({
   return jsonEncode(<Map<String, dynamic>>[entry]);
 }
 
-/// Создаёт JSON для ratings.
 String ratingsJson({
   required String type,
   String title = 'Rated Item',
@@ -124,7 +116,6 @@ String ratingsJson({
   return jsonEncode(<Map<String, dynamic>>[entry]);
 }
 
-/// Создаёт JSON для watchlist.
 String watchlistEntryJson({
   String type = 'movie',
   String title = 'Watchlist Item',
@@ -141,10 +132,6 @@ String watchlistEntryJson({
   };
   return jsonEncode(<Map<String, dynamic>>[entry]);
 }
-
-// ---------------------------------------------------------------------------
-// Tests
-// ---------------------------------------------------------------------------
 
 void main() {
   late MockTmdbApi mockTmdb;
@@ -182,14 +169,9 @@ void main() {
     }
   });
 
-  /// Записывает байты ZIP в тестовый файл.
   void writeZip(List<int> bytes) {
     File(zipPath).writeAsBytesSync(bytes);
   }
-
-  // =========================================================================
-  // TraktZipInfo
-  // =========================================================================
 
   group('TraktZipInfo', () {
     group('constructor', () {
@@ -263,10 +245,6 @@ void main() {
     });
   });
 
-  // =========================================================================
-  // TraktImportOptions
-  // =========================================================================
-
   group('TraktImportOptions', () {
     group('constructor', () {
       test('должен создать экземпляр с обязательными параметрами', () {
@@ -298,10 +276,6 @@ void main() {
       });
     });
   });
-
-  // =========================================================================
-  // TraktImportResult
-  // =========================================================================
 
   group('TraktImportResult', () {
     group('constructor', () {
@@ -394,10 +368,6 @@ void main() {
     });
   });
 
-  // =========================================================================
-  // validateZip
-  // =========================================================================
-
   group('TraktZipImportService', () {
     group('validateZip', () {
       test('должен вернуть valid для правильного ZIP со всеми файлами',
@@ -426,7 +396,6 @@ void main() {
 
       test('должен вернуть корректное количество для каждой категории',
           () async {
-        // 2 movies, 0 shows, 1 rating movie, 0 rating shows, 3 watchlist
         final String twoMovies = jsonEncode(<Map<String, dynamic>>[
           <String, dynamic>{
             'movie': <String, dynamic>{
@@ -497,7 +466,6 @@ void main() {
       test('должен вернуть invalid для пустого ZIP (без JSON файлов)',
           () async {
         final Archive archive = Archive();
-        // Добавляем не-JSON файл
         archive.addFile(ArchiveFile.string('testuser/readme.txt', 'hello'));
         final List<int> bytes = ZipEncoder().encode(archive);
         writeZip(bytes);
@@ -513,7 +481,6 @@ void main() {
 
         final TraktZipInfo info = await sut.validateZip(zipPath);
 
-        // archive package бросит ArchiveException
         expect(info.isValid, isFalse);
       });
 
@@ -525,8 +492,6 @@ void main() {
 
         final TraktZipInfo info = await sut.validateZip(zipPath);
 
-        // CSV файл найден, но не на глубине >= 2 с .json расширением
-        // Файл user/data.csv имеет parts.length >= 2 но не .json
         expect(info.isValid, isFalse);
       });
 
@@ -554,12 +519,7 @@ void main() {
       });
     });
 
-    // =======================================================================
-    // importFromZip
-    // =======================================================================
-
     group('importFromZip', () {
-      /// Настраивает стандартные моки для успешного импорта.
       void setupDefaultMocks({
         int collectionId = 1,
         String collectionName = 'Trakt: testuser',
@@ -674,7 +634,6 @@ void main() {
       test('должен вернуть failure для несуществующей коллекции', () async {
         when(() => mockRepo.getById(999)).thenAnswer((_) async => null);
 
-        // Нужен валидный ZIP
         when(() => mockTmdb.getMovie(any()))
             .thenAnswer((_) async => const Movie(tmdbId: 100, title: 'M'));
         when(() => mockDb.upsertMovie(any())).thenAnswer((_) async {});
@@ -897,7 +856,6 @@ void main() {
         when(() => mockTmdb.getMovie(300))
             .thenAnswer((_) async => testMovie);
 
-        // Фильм уже в коллекции, но без рейтинга
         final CollectionItem existingItem = createTestCollectionItem(
           id: 50,
           externalId: 300,
@@ -936,7 +894,6 @@ void main() {
         when(() => mockTmdb.getMovie(300))
             .thenAnswer((_) async => testMovie);
 
-        // Фильм уже в коллекции С рейтингом
         final CollectionItem existingItem = createTestCollectionItem(
           id: 50,
           externalId: 300,
@@ -965,7 +922,6 @@ void main() {
           ),
         );
 
-        // updateItemUserRating НЕ должен вызываться
         verifyNever(() => mockDb.updateItemUserRating(50, any()));
       });
 
@@ -975,7 +931,6 @@ void main() {
         when(() => mockTmdb.getMovie(300))
             .thenAnswer((_) async => testMovie);
 
-        // findItem вернёт null для rating-элемента
         when(() => mockRepo.findItem(
               collectionId: 1,
               mediaType: MediaType.movie,
@@ -1017,7 +972,6 @@ void main() {
         when(() => mockTmdb.getMovie(100))
             .thenAnswer((_) async => testMovie);
 
-        // Элемент уже planned
         final CollectionItem existingPlanned = createTestCollectionItem(
           id: 70,
           externalId: 100,
@@ -1054,7 +1008,6 @@ void main() {
         when(() => mockTmdb.getTvShow(200))
             .thenAnswer((_) async => testShow);
 
-        // Элемент уже completed
         final CollectionItem existingCompleted = createTestCollectionItem(
           id: 80,
           externalId: 200,
@@ -1085,7 +1038,6 @@ void main() {
           options: TraktImportOptions(zipPath: zipPath),
         );
 
-        // Статус НЕ должен быть обновлён
         verifyNever(() => mockRepo.updateItemStatus(
               80,
               any(),
@@ -1099,7 +1051,6 @@ void main() {
         when(() => mockTmdb.getMovie(100))
             .thenAnswer((_) async => testMovie);
 
-        // Элемент dropped
         final CollectionItem existingDropped = createTestCollectionItem(
           id: 90,
           externalId: 100,
@@ -1120,7 +1071,6 @@ void main() {
           options: TraktImportOptions(zipPath: zipPath),
         );
 
-        // dropped не должен быть обновлён
         verifyNever(() => mockRepo.updateItemStatus(
               90,
               any(),
@@ -1135,7 +1085,6 @@ void main() {
         when(() => mockTmdb.getMovie(100))
             .thenAnswer((_) async => testMovie);
 
-        // Элемент без completedAt
         final CollectionItem existingItem = createTestCollectionItem(
           id: 95,
           externalId: 100,
@@ -1199,7 +1148,6 @@ void main() {
           options: TraktImportOptions(zipPath: zipPath),
         );
 
-        // 3 эпизода S1 + 1 эпизод S2 = 4 вызова
         verify(() =>
                 mockDb.markEpisodeWatched(any(), 200, any(), any()))
             .called(4);
@@ -1240,7 +1188,6 @@ void main() {
 
       test('должен добавить в wishlist элементы без данных TMDB', () async {
         setupDefaultMocks();
-        // TMDB не содержит данные о фильме 400
         when(() => mockTmdb.getMovie(400)).thenAnswer((_) async => null);
 
         writeZip(createTestZip(
@@ -1300,7 +1247,6 @@ void main() {
         when(() => mockTmdb.getMovie(400))
             .thenAnswer((_) async => existingMovie);
 
-        // Элемент уже в коллекции
         final CollectionItem existing = createTestCollectionItem(
           id: 55,
           externalId: 400,
@@ -1330,7 +1276,6 @@ void main() {
 
         expect(result.success, isTrue);
         expect(result.wishlistItemsAdded, equals(0));
-        // addItem не должен быть вызван для watchlist (только для watched)
         verifyNever(() => mockRepo.addItem(
               collectionId: 1,
               mediaType: MediaType.movie,
@@ -1384,9 +1329,6 @@ void main() {
         );
 
         expect(result.success, isTrue);
-        // Watched movies не должны добавляться через addItem с completed
-        // Но ratings — через addItem (элемент не в коллекции, есть TMDB)
-        // Проверяем что addItem вызывается только для rating (не watched)
         verifyNever(() => mockRepo.addItem(
               collectionId: 1,
               mediaType: MediaType.movie,
@@ -1417,7 +1359,6 @@ void main() {
           ),
         );
 
-        // updateItemUserRating НЕ должен вызываться
         verifyNever(() => mockDb.updateItemUserRating(any(), any()));
       });
 
@@ -1448,7 +1389,6 @@ void main() {
       });
 
       test('должен вернуть failure для ошибки чтения файла', () async {
-        // Не записываем ZIP файл — путь не существует
         final TraktImportResult result = await sut.importFromZip(
           options: TraktImportOptions(
             zipPath: '${tempDir.path}/nonexistent.zip',
@@ -1478,7 +1418,6 @@ void main() {
         when(() => mockTmdb.getTvShow(200))
             .thenAnswer((_) async => const TvShow(tmdbId: 200, title: 'S'));
 
-        // Шоу без сезонов — resolveShowStatus возвращает completed
         writeZip(createTestZip(
           watchedShowsJson: watchedShowJson(
             tmdbId: 200,
@@ -1505,7 +1444,6 @@ void main() {
         when(() => mockTmdb.getTvShow(200))
             .thenAnswer((_) async => const TvShow(tmdbId: 200, title: 'S'));
 
-        // Шоу с сезонами без эпизодов — hasAnyEpisode = false → completed
         writeZip(createTestZip(
           watchedShowsJson: watchedShowJson(
             tmdbId: 200,
@@ -1534,7 +1472,6 @@ void main() {
       test('должен корректно обработать TMDB API exception при fetch',
           () async {
         setupDefaultMocks();
-        // TMDB бросает исключение — элемент пропускается
         when(() => mockTmdb.getMovie(100))
             .thenThrow(const TmdbApiException('Error', statusCode: 500));
 
@@ -1561,7 +1498,6 @@ void main() {
         when(() => mockTmdb.getTvShow(500))
             .thenAnswer((_) async => animShow);
 
-        // Элемент ещё не в коллекции
         when(() => mockRepo.findItem(
               collectionId: 1,
               mediaType: MediaType.animation,
@@ -1605,7 +1541,6 @@ void main() {
         when(() => mockTmdb.getMovie(600))
             .thenAnswer((_) async => animMovie);
 
-        // Элемент ещё не в коллекции
         when(() => mockRepo.findItem(
               collectionId: 1,
               mediaType: MediaType.animation,
@@ -1664,7 +1599,6 @@ void main() {
             .thenAnswer((_) async => ratedShow);
         when(() => mockTmdb.getMovie(400)).thenAnswer((_) async => wlMovie);
 
-        // addItem возвращает разные ID
         int nextItemId = 10;
         when(() => mockRepo.addItem(
               collectionId: any(named: 'collectionId'),
@@ -1708,7 +1642,6 @@ void main() {
         );
 
         expect(result.success, isTrue);
-        // 2 watched + 2 ratings (new) + 1 watchlist = 5 imported
         expect(result.itemsImported, greaterThanOrEqualTo(2));
         expect(result.collection, isNotNull);
       });
@@ -1771,7 +1704,6 @@ void main() {
           options: TraktImportOptions(zipPath: zipPath),
         );
 
-        // markEpisodeWatched не вызывается для show без tmdbId
         verifyNever(
             () => mockDb.markEpisodeWatched(any(), any(), any(), any()));
       });
@@ -1804,7 +1736,6 @@ void main() {
         when(() => mockTmdb.getMovie(300))
             .thenAnswer((_) async => testMovie);
 
-        // Элемент существует без рейтинга
         final CollectionItem existingItem = createTestCollectionItem(
           id: 50,
           externalId: 300,
@@ -1817,7 +1748,6 @@ void main() {
               externalId: 300,
             )).thenAnswer((_) async => existingItem);
 
-        // Рейтинг 0 — должен быть clamp(1, 10) = 1
         final String zeroRating = jsonEncode(<Map<String, dynamic>>[
           <String, dynamic>{
             'movie': <String, dynamic>{
@@ -1849,7 +1779,6 @@ void main() {
         when(() => mockTmdb.getMovie(100))
             .thenAnswer((_) async => testMovie);
 
-        // Элемент уже имеет completedAt
         final DateTime existingCompletedAt = DateTime(2022, 1, 1);
         final CollectionItem existingItem = createTestCollectionItem(
           id: 96,
@@ -1875,13 +1804,11 @@ void main() {
           options: TraktImportOptions(zipPath: zipPath),
         );
 
-        // Статус обновлён (planned -> completed), но completedAt НЕ обновлён
         verify(() => mockRepo.updateItemStatus(
               96,
               ItemStatus.completed,
               mediaType: MediaType.movie,
             )).called(1);
-        // updateItemActivityDates не вызывается — completedAt уже есть
         verifyNever(() => mockDb.updateItemActivityDates(
               96,
               completedAt: any(named: 'completedAt'),
@@ -1937,7 +1864,6 @@ void main() {
         when(() => mockTmdb.getMovie(100))
             .thenAnswer((_) async => testMovie);
 
-        // addItem возвращает null (дубликат, например)
         when(() => mockRepo.addItem(
               collectionId: any(named: 'collectionId'),
               mediaType: any(named: 'mediaType'),
@@ -1976,7 +1902,6 @@ void main() {
 
         expect(result.success, isTrue);
         expect(result.itemsImported, equals(1));
-        // updateItemActivityDates не вызывается (completedAt = null)
         verifyNever(() => mockDb.updateItemActivityDates(
               any(),
               completedAt: any(named: 'completedAt'),
@@ -1992,14 +1917,12 @@ void main() {
         when(() => mockTmdb.getMovie(300))
             .thenAnswer((_) async => testMovie);
 
-        // findItem возвращает null (не в коллекции)
         when(() => mockRepo.findItem(
               collectionId: 1,
               mediaType: MediaType.movie,
               externalId: 300,
             )).thenAnswer((_) async => null);
 
-        // addItem возвращает null (не удалось создать)
         when(() => mockRepo.addItem(
               collectionId: 1,
               mediaType: MediaType.movie,
@@ -2023,13 +1946,11 @@ void main() {
           ),
         );
 
-        // Рейтинг не применяется, т.к. addItem вернул null
         verifyNever(() => mockDb.updateItemUserRating(any(), any()));
       });
 
       test('ratings: нет данных TMDB — рейтинг не создаётся', () async {
         setupDefaultMocks();
-        // TMDB не имеет данных для фильма 300
         when(() => mockTmdb.getMovie(300)).thenAnswer((_) async => null);
 
         when(() => mockRepo.findItem(
@@ -2053,7 +1974,6 @@ void main() {
           ),
         );
 
-        // addItem не вызывается для ratings (нет данных TMDB)
         verifyNever(() => mockRepo.addItem(
               collectionId: 1,
               mediaType: MediaType.movie,
@@ -2076,7 +1996,6 @@ void main() {
               externalId: 400,
             )).thenAnswer((_) async => null);
 
-        // addItem возвращает null — не удалось добавить
         when(() => mockRepo.addItem(
               collectionId: 1,
               mediaType: MediaType.movie,
@@ -2102,7 +2021,6 @@ void main() {
         );
 
         expect(result.success, isTrue);
-        // Фоллбэк в wishlist
         expect(result.wishlistItemsAdded, equals(1));
         verify(() => mockWishlist.add(
               text: 'Fallback WL',
@@ -2146,7 +2064,6 @@ void main() {
         when(() => mockTmdb.getTvShow(200))
             .thenAnswer((_) async => const TvShow(tmdbId: 200, title: 'S'));
 
-        // show без сезонов = completed, так что completedAt будет установлен
         writeZip(createTestZip(
           watchedShowsJson: watchedShowJson(
             tmdbId: 200,
@@ -2167,7 +2084,6 @@ void main() {
               status: ItemStatus.completed,
             )).called(1);
 
-        // completedAt должен быть установлен для completed show
         verify(() => mockDb.updateItemActivityDates(
               10,
               completedAt: any(named: 'completedAt'),
@@ -2182,7 +2098,6 @@ void main() {
         when(() => mockTmdb.getTvShow(200))
             .thenAnswer((_) async => const TvShow(tmdbId: 200, title: 'S'));
 
-        // show с эпизодами = inProgress, completedAt = null
         writeZip(createTestZip(
           watchedShowsJson: watchedShowJson(
             tmdbId: 200,
@@ -2209,7 +2124,6 @@ void main() {
               status: ItemStatus.inProgress,
             )).called(1);
 
-        // completedAt НЕ устанавливается для inProgress
         verifyNever(() => mockDb.updateItemActivityDates(
               10,
               completedAt: any(named: 'completedAt'),

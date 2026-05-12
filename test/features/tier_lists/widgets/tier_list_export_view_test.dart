@@ -1,5 +1,3 @@
-// Виджет-тесты для TierListExportView.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/tier_lists/providers/tier_list_detail_provider.dart';
@@ -107,7 +105,6 @@ void main() {
       );
       await tester.pump();
 
-      // Each definition has a label text rendered in the export row.
       expect(find.text('S'), findsOneWidget);
       expect(find.text('A'), findsOneWidget);
     });

@@ -1,5 +1,4 @@
 import 'package:xerabora/l10n/app_localizations.dart';
-// Тесты для UpdateBanner — баннер уведомления об обновлении.
 
 import 'dart:async';
 
@@ -107,8 +106,8 @@ void main() {
     testWidgets('должен скрыть баннер при загрузке', (
       WidgetTester tester,
     ) async {
-      // Completer никогда не завершится — провайдер останется в loading state
-      // без pending timers (в отличие от Future.delayed).
+      // Completer that never completes keeps provider in loading state
+      // without pending timers (unlike Future.delayed).
       final Completer<UpdateInfo?> completer = Completer<UpdateInfo?>();
 
       await tester.pumpWidget(
@@ -147,7 +146,6 @@ void main() {
 
       expect(find.text('Update available: v0.10.0'), findsOneWidget);
 
-      // Нажимаем крестик
       await tester.tap(find.byIcon(Icons.close));
       await tester.pumpAndSettle();
 

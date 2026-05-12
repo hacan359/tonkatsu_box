@@ -15,6 +15,16 @@ Run this **once** at the end of a task. The pipeline merges the old simplify / d
 - Do NOT create new `.md` files unless the user explicitly asks.
 - Fix findings inline within the phase that surfaced them; don't park lists of "TODO later".
 
+## Comment style (enforced project-wide)
+
+- **English only.** No Russian / Cyrillic in `///`, `//`, or `/* */` blocks. UI strings stay in `.arb`; this rule is about code comments.
+- **Only WHY, never WHAT.** A comment exists to explain a hidden constraint, a subtle invariant, a workaround, a non-obvious algorithm choice, or a refactor note. Names and types already cover *what*.
+- **No comment > bad comment.** If you can't say something the code can't, delete the comment.
+- **One short line.** Avoid multi-paragraph dartdoc. If a public API truly needs prose, keep it ≤2 lines.
+- **No section dividers, no banners.** `// ===== Foo =====` and `// --- bar ---` are noise — drop them.
+- **No TODOs without a tracker reference.** A bare `// TODO: fix this` rots; tie it to an issue or remove it.
+- **Translate, don't preserve.** When touching a file with Russian comments, translate the salvageable ones to English and delete the rest as part of the same diff.
+
 ## Phases
 
 ### Phase 0 — Snapshot

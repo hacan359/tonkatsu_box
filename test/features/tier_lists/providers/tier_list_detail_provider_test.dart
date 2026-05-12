@@ -1,5 +1,3 @@
-// Тесты для TierListDetailState и TierListDetailNotifier.
-
 import 'dart:ui';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,9 +17,6 @@ void main() {
     registerAllFallbacks();
   });
 
-  // =========================================================================
-  // TierListDetailState
-  // =========================================================================
   group('TierListDetailState', () {
     group('loading()', () {
       test('should create state with isLoading true', () {
@@ -229,9 +224,6 @@ void main() {
     });
   });
 
-  // =========================================================================
-  // TierListDetailNotifier
-  // =========================================================================
   group('TierListDetailNotifier', () {
     late ProviderContainer container;
     late MockTierListDao mockTierListDao;
@@ -249,7 +241,6 @@ void main() {
       addTearDown(container.dispose);
     });
 
-    // Helper: stub successful load for a collection-scoped tier list.
     void stubLoadCollectionScoped({
       int tierListId = 1,
       TierList? tierList,
@@ -268,14 +259,12 @@ void main() {
           .thenAnswer((_) async => definitions);
       when(() => mockTierListDao.getTierListEntries(tierListId))
           .thenAnswer((_) async => entries);
-      // Stub saveTierDefinitions in case defaults are created
       when(() => mockTierListDao.saveTierDefinitions(
             tierListId,
             any(),
           )).thenAnswer((_) async {});
     }
 
-    // Helper: stub successful load for a global tier list.
     void stubLoadGlobal({
       int tierListId = 1,
       TierList? tierList,
@@ -298,13 +287,11 @@ void main() {
           )).thenAnswer((_) async {});
     }
 
-    /// Triggers build and waits for async _load() to complete.
     Future<TierListDetailState> listenAndWait(int tierListId) async {
       container.listen(
         tierListDetailProvider(tierListId),
         (Object? _, Object? _) {},
       );
-      // Allow microtasks (_load) to complete.
       await Future<void>.delayed(Duration.zero);
       return container.read(tierListDetailProvider(tierListId));
     }
@@ -422,7 +409,6 @@ void main() {
 
         await listenAndWait(1);
 
-        // Stub reload with updated data
         final List<CollectionItem> newItems = <CollectionItem>[
           createTestCollectionItem(id: 5),
         ];
@@ -539,7 +525,6 @@ void main() {
 
         final TierListDetailState state =
             container.read(tierListDetailProvider(1));
-        // Should have exactly one entry (old removed, new added)
         expect(state.entries, hasLength(1));
         expect(state.entries.first.tierKey, 'A');
       });
@@ -649,7 +634,6 @@ void main() {
 
         final TierListDetailNotifier notifier =
             container.read(tierListDetailProvider(1).notifier);
-        // Move item at index 0 to index 2
         await notifier.reorder('S', 0, 2);
 
         final TierListDetailState state =
@@ -658,7 +642,6 @@ void main() {
         expect(sTier[0].collectionItemId, 2);
         expect(sTier[1].collectionItemId, 3);
         expect(sTier[2].collectionItemId, 1);
-        // Verify sortOrder is updated
         expect(sTier[0].sortOrder, 0);
         expect(sTier[1].sortOrder, 1);
         expect(sTier[2].sortOrder, 2);
@@ -729,7 +712,6 @@ void main() {
 
         final TierListDetailNotifier notifier =
             container.read(tierListDetailProvider(1).notifier);
-        // Empty tier, oldIndex 0 >= length 0 → no-op
         await notifier.reorder('NONEXISTENT', 0, 1);
 
         verifyNever(() => mockTierListDao.reorderTierItems(any(), any(), any()));
@@ -877,7 +859,6 @@ void main() {
               .label,
           'Super',
         );
-        // A tier should be unchanged
         expect(
           state.definitions
               .firstWhere((TierDefinition d) => d.tierKey == 'A')
@@ -925,7 +906,6 @@ void main() {
 
         final TierListDetailState state =
             container.read(tierListDetailProvider(1));
-        // Nothing should change since 'X' doesn't match any definition
         expect(state.definitions, hasLength(2));
         expect(state.definitions[0].label, 'S');
         expect(state.definitions[1].label, 'A');
@@ -1016,13 +996,10 @@ void main() {
 
         final TierListDetailState state =
             container.read(tierListDetailProvider(1));
-        // S tier removed, only A remains
         expect(state.definitions, hasLength(1));
         expect(state.definitions.first.tierKey, 'A');
-        // S entries removed, only A entry remains
         expect(state.entries, hasLength(1));
         expect(state.entries.first.tierKey, 'A');
-        // Removed items should be in unranked
         expect(state.unrankedItems, hasLength(2));
       });
 

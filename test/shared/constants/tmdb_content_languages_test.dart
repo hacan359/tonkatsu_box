@@ -1,5 +1,3 @@
-// Тесты на константу kTmdbContentLanguages и маппинг UI→content.
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/shared/constants/tmdb_content_languages.dart';
 

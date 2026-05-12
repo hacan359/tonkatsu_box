@@ -129,7 +129,6 @@ void main() {
 
         await tester.pumpWidget(buildWidget(item));
 
-        // Card рендерится (размеры задаются родителем Positioned)
         expect(find.byType(Card), findsOneWidget);
         expect(find.text('Test'), findsOneWidget);
       },

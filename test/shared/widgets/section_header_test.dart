@@ -1,6 +1,4 @@
 import 'package:xerabora/l10n/app_localizations.dart';
-// Тесты для SectionHeader.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/shared/widgets/section_header.dart';

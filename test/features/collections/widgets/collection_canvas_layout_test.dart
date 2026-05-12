@@ -1,5 +1,3 @@
-// Тесты для CollectionCanvasLayout — layout канваса с боковыми панелями.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,11 +11,6 @@ import 'package:xerabora/features/settings/providers/settings_provider.dart';
 import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/models/steamgriddb_image.dart';
 
-// =============================================================================
-// Тестовые notifiers
-// =============================================================================
-
-/// Тестовый notifier для канваса — возвращает контролируемое состояние.
 class _TestCanvasNotifier extends CanvasNotifier {
   _TestCanvasNotifier(this._testState);
 
@@ -35,7 +28,6 @@ class _TestCanvasNotifier extends CanvasNotifier {
   Future<void> resetPositions(double viewportWidth) async {}
 }
 
-/// Тестовый notifier для SteamGridDB панели.
 class _TestSteamGridDbPanelNotifier extends SteamGridDbPanelNotifier {
   _TestSteamGridDbPanelNotifier(this._initialState);
 
@@ -47,7 +39,6 @@ class _TestSteamGridDbPanelNotifier extends SteamGridDbPanelNotifier {
   }
 }
 
-/// Тестовый notifier для VGMaps панели.
 class _TestVgMapsPanelNotifier extends VgMapsPanelNotifier {
   _TestVgMapsPanelNotifier(this._initialState);
 
@@ -59,7 +50,7 @@ class _TestVgMapsPanelNotifier extends VgMapsPanelNotifier {
   }
 }
 
-/// Фейковый SettingsNotifier для тестов (нужен SteamGridDbPanel).
+// SteamGridDbPanel requires SettingsNotifier in scope.
 class _FakeSettingsNotifier extends SettingsNotifier {
   @override
   SettingsState build() {
@@ -67,15 +58,10 @@ class _FakeSettingsNotifier extends SettingsNotifier {
   }
 }
 
-// =============================================================================
-// Основные тесты
-// =============================================================================
-
 void main() {
   const int testCollectionId = 42;
   const String testCollectionName = 'SNES Classics';
 
-  /// Собирает виджет для тестирования.
   Widget buildTestWidget({
     CanvasState canvasState = const CanvasState(
       isLoading: false,
@@ -154,7 +140,6 @@ void main() {
         (WidgetTester tester) async {
           await tester.pumpWidget(buildTestWidget());
 
-          // CanvasView должен быть внутри Expanded
           final Finder expandedFinder = find.ancestor(
             of: find.byType(CanvasView),
             matching: find.byType(Expanded),
@@ -168,7 +153,6 @@ void main() {
         (WidgetTester tester) async {
           await tester.pumpWidget(buildTestWidget());
 
-          // CollectionCanvasLayout содержит Row
           final Finder rowFinder = find.descendant(
             of: find.byType(CollectionCanvasLayout),
             matching: find.byType(Row),
@@ -186,7 +170,6 @@ void main() {
             steamGridDbState: const SteamGridDbPanelState(isOpen: false),
           ));
 
-          // SteamGridDbPanel не должен быть в дереве, когда панель закрыта
           expect(find.byType(SteamGridDbPanel), findsNothing);
         },
       );
@@ -198,14 +181,10 @@ void main() {
             steamGridDbState: const SteamGridDbPanelState(isOpen: false),
           ));
 
-          // Ищем AnimatedContainer с width=0
           final Finder animatedContainers =
               find.byType(AnimatedContainer);
-          // Должен быть хотя бы один AnimatedContainer
           expect(animatedContainers, findsAtLeast(1));
 
-          // Проверяем что все AnimatedContainer имеют width 0
-          // (когда обе панели закрыты)
           bool foundZeroWidth = false;
           for (final Element element in animatedContainers.evaluate()) {
             final AnimatedContainer container =
@@ -228,7 +207,6 @@ void main() {
             steamGridDbState: const SteamGridDbPanelState(isOpen: false),
           ));
 
-          // SteamGridDbPanel не показывается
           expect(find.byType(SteamGridDbPanel), findsNothing);
         },
       );
@@ -285,7 +263,6 @@ void main() {
           ));
           await tester.pumpAndSettle();
 
-          // Ищем AnimatedContainer с width=320
           final Finder animatedContainers =
               find.byType(AnimatedContainer);
           expect(animatedContainers, findsAtLeast(1));
@@ -376,11 +353,9 @@ void main() {
           );
           await tester.pumpAndSettle();
 
-          // Проверяем что SteamGridDbPanel получила callback
           final SteamGridDbPanel panel = tester.widget<SteamGridDbPanel>(
             find.byType(SteamGridDbPanel),
           );
-          // Симулируем вызов callback через виджет
           const SteamGridDbImage testImage = SteamGridDbImage(
             id: 1,
             score: 10,

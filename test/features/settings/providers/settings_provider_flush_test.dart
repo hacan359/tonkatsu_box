@@ -1,5 +1,3 @@
-// Тесты для SettingsNotifier — flushDatabase, exportConfig, importConfig.
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -58,7 +56,6 @@ void main() {
       when(() => mockDbService.clearAllData()).thenAnswer((_) async {});
 
       final ProviderContainer container = await createContainer();
-      // Читаем состояние чтобы инициализировать notifier
       container.read(settingsNotifierProvider);
 
       final SettingsNotifier notifier =
@@ -75,7 +72,7 @@ void main() {
       final ProviderContainer container = await createContainer();
       container.read(settingsNotifierProvider);
 
-      // Ждём загрузку platformCount
+      // Wait for async platformCount load.
       await Future<void>.delayed(Duration.zero);
 
       final SettingsNotifier notifier =
@@ -177,7 +174,6 @@ void main() {
     test('должен перезагрузить state после успешного импорта', () async {
       when(() => mockConfigService.importFromFile()).thenAnswer(
         (_) async {
-          // Имитируем что ConfigService записал в prefs
           await prefs.setString(SettingsKeys.tmdbApiKey, 'imported_tmdb');
           return const ConfigResult.success('/path');
         },

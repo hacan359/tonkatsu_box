@@ -1,5 +1,3 @@
-// Тесты для KodiApplicationInfo.
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/shared/models/kodi_application_info.dart';
 

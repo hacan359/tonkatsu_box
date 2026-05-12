@@ -617,7 +617,6 @@ void main() {
       });
 
       test('не требует установленного API ключа', () async {
-        // validateApiKey принимает ключ как параметр, не нужен setApiKey
         when(() => mockDio.get<dynamic>(
               any(),
               options: any(named: 'options'),

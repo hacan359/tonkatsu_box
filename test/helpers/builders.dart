@@ -1,8 +1,3 @@
-// Фабрики тестовых данных.
-//
-// Все параметры опциональны с разумными дефолтами. Это позволяет
-// в тестах указывать только релевантные поля.
-
 import 'dart:ui';
 
 import 'package:xerabora/data/repositories/collection_repository.dart';
@@ -28,12 +23,7 @@ import 'package:xerabora/shared/models/ra_game_progress.dart';
 import 'package:xerabora/shared/models/ra_user_profile.dart';
 import 'package:xerabora/shared/models/wishlist_item.dart';
 
-/// Стандартная тестовая дата для единообразия.
 final DateTime testDate = DateTime(2024, 1, 15, 12, 0, 0);
-
-// ---------------------------------------------------------------------------
-// Collection
-// ---------------------------------------------------------------------------
 
 Collection createTestCollection({
   int id = 1,
@@ -57,17 +47,12 @@ Collection createTestCollection({
   );
 }
 
-/// Генерирует [count] коллекций с последовательными id и именами.
 List<Collection> createTestCollections({int count = 3}) {
   return List<Collection>.generate(
     count,
     (int i) => createTestCollection(id: i + 1, name: 'Collection ${i + 1}'),
   );
 }
-
-// ---------------------------------------------------------------------------
-// CollectionStats
-// ---------------------------------------------------------------------------
 
 CollectionStats createTestStats({
   int total = 5,
@@ -98,10 +83,6 @@ CollectionStats createTestStats({
     mangaCount: mangaCount,
   );
 }
-
-// ---------------------------------------------------------------------------
-// CollectionItem
-// ---------------------------------------------------------------------------
 
 CollectionItem createTestCollectionItem({
   int id = 1,
@@ -155,10 +136,6 @@ CollectionItem createTestCollectionItem({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Game
-// ---------------------------------------------------------------------------
-
 Game createTestGame({
   int id = 100,
   String name = 'Test Game',
@@ -184,10 +161,6 @@ Game createTestGame({
     externalUrl: externalUrl,
   );
 }
-
-// ---------------------------------------------------------------------------
-// Movie
-// ---------------------------------------------------------------------------
 
 Movie createTestMovie({
   int tmdbId = 550,
@@ -216,10 +189,6 @@ Movie createTestMovie({
     externalUrl: externalUrl,
   );
 }
-
-// ---------------------------------------------------------------------------
-// TvShow
-// ---------------------------------------------------------------------------
 
 TvShow createTestTvShow({
   int tmdbId = 200,
@@ -252,10 +221,6 @@ TvShow createTestTvShow({
     externalUrl: externalUrl,
   );
 }
-
-// ---------------------------------------------------------------------------
-// VisualNovel
-// ---------------------------------------------------------------------------
 
 VisualNovel createTestVisualNovel({
   String id = 'v500',
@@ -291,10 +256,6 @@ VisualNovel createTestVisualNovel({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Manga
-// ---------------------------------------------------------------------------
-
 Manga createTestManga({
   int id = 500,
   String title = 'Test Manga',
@@ -319,10 +280,6 @@ Manga createTestManga({
   );
 }
 
-// ---------------------------------------------------------------------------
-// WishlistItem
-// ---------------------------------------------------------------------------
-
 WishlistItem createTestWishlistItem({
   int id = 1,
   String text = 'Chrono Trigger',
@@ -342,10 +299,6 @@ WishlistItem createTestWishlistItem({
     resolvedAt: resolvedAt,
   );
 }
-
-// ---------------------------------------------------------------------------
-// CanvasItem
-// ---------------------------------------------------------------------------
 
 CanvasItem createTestCanvasItem({
   int id = 1,
@@ -385,10 +338,6 @@ CanvasItem createTestCanvasItem({
   );
 }
 
-// ---------------------------------------------------------------------------
-// CanvasConnection
-// ---------------------------------------------------------------------------
-
 CanvasConnection createTestCanvasConnection({
   int id = 1,
   int collectionId = 1,
@@ -412,10 +361,6 @@ CanvasConnection createTestCanvasConnection({
     createdAt: createdAt ?? testDate,
   );
 }
-
-// ---------------------------------------------------------------------------
-// Tier List
-// ---------------------------------------------------------------------------
 
 TierList createTestTierList({
   int id = 1,
@@ -457,10 +402,6 @@ TierListEntry createTestTierListEntry({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Steam
-// ---------------------------------------------------------------------------
-
 SteamOwnedGame createTestSteamOwnedGame({
   int appId = 440,
   String name = 'Team Fortress 2',
@@ -474,10 +415,6 @@ SteamOwnedGame createTestSteamOwnedGame({
     lastPlayed: lastPlayed,
   );
 }
-
-// ---------------------------------------------------------------------------
-// RetroAchievements
-// ---------------------------------------------------------------------------
 
 RaGameProgress createTestRaGameProgress({
   int gameId = 1234,
@@ -525,10 +462,6 @@ RaUserProfile createTestRaUserProfile({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Profile
-// ---------------------------------------------------------------------------
-
 Profile createTestProfile({
   String id = 'test-profile',
   String name = 'Test Player',
@@ -567,10 +500,6 @@ ProfileStats createTestProfileStats({
     itemsCount: itemsCount,
   );
 }
-
-// ---------------------------------------------------------------------------
-// CollectionTag
-// ---------------------------------------------------------------------------
 
 CollectionTag createTestCollectionTag({
   int id = 1,

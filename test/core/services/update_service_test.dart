@@ -1,5 +1,3 @@
-// Тесты для UpdateService — проверка обновлений через GitHub Releases API.
-
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -128,7 +126,6 @@ void main() {
       });
 
       test('должен вернуть hasUpdate=false если версия актуальна', () async {
-        // Ответ где latest == current (currentVersionOverride = '0.9.0')
         when(() => mockDio.get<Map<String, dynamic>>(
               any(),
               options: any(named: 'options'),
@@ -195,7 +192,6 @@ void main() {
 
     group('throttle', () {
       test('должен вернуть кеш при повторном вызове в течение 24ч', () async {
-        // Первый вызов — реальный запрос
         when(() => mockDio.get<Map<String, dynamic>>(
               any(),
               options: any(named: 'options'),
@@ -207,12 +203,10 @@ void main() {
 
         await sut.checkForUpdate();
 
-        // Второй вызов — должен использовать кеш, без нового запроса
         final UpdateInfo? result = await sut.checkForUpdate();
 
         expect(result, isNotNull);
         expect(result!.latestVersion, equals(latestVersion));
-        // Dio.get должен быть вызван только 1 раз
         verify(() => mockDio.get<Map<String, dynamic>>(
               any(),
               options: any(named: 'options'),
@@ -220,7 +214,6 @@ void main() {
       });
 
       test('должен вернуть null если кеш пуст и throttle активен', () async {
-        // Записываем только timestamp без данных
         final SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setInt(
           'update_last_check',
@@ -237,7 +230,6 @@ void main() {
       });
 
       test('должен сделать запрос если прошло больше 24ч', () async {
-        // Записываем старый timestamp (>24ч назад)
         final SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setInt(
           'update_last_check',

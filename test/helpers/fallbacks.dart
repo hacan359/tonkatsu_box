@@ -1,8 +1,3 @@
-// Централизованная регистрация fallback-значений для mocktail.
-//
-// Вызывать один раз в setUpAll() каждого тестового файла, который
-// использует any() / captureAny() для типов, требующих fallback.
-
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
@@ -25,28 +20,20 @@ import 'package:mocktail/mocktail.dart';
 
 import 'mocks.dart';
 
-/// Регистрирует все fallback-значения, необходимые для mocktail.
-///
-/// Безопасно вызывать несколько раз — mocktail игнорирует повторные
-/// регистрации того же типа.
 void registerAllFallbacks() {
-  // Enums
   registerFallbackValue(MediaType.game);
   registerFallbackValue(ItemStatus.notStarted);
   registerFallbackValue(CollectionType.own);
   registerFallbackValue(ImageType.gameCover);
 
-  // Models
   registerFallbackValue(const Game(id: 0, name: 'fallback'));
   registerFallbackValue(const Movie(tmdbId: 0, title: 'fallback'));
   registerFallbackValue(const TvShow(tmdbId: 0, title: 'fallback'));
 
-  // Canvas
   registerFallbackValue(FakeCanvasItem());
   registerFallbackValue(FakeCanvasConnection());
   registerFallbackValue(const CanvasViewport(collectionId: 0));
 
-  // Collections
   registerFallbackValue(const <Game>[]);
   registerFallbackValue(const <Movie>[]);
   registerFallbackValue(const <TvShow>[]);
@@ -55,10 +42,8 @@ void registerAllFallbacks() {
   registerFallbackValue(const <Platform>[]);
   registerFallbackValue(const <int>[]);
 
-  // Tier lists
   registerFallbackValue(<TierDefinition>[]);
 
-  // RA
   registerFallbackValue(const RaGameProgress(
     gameId: 0,
     title: 'fallback',
@@ -70,7 +55,6 @@ void registerAllFallbacks() {
     hardcoreMode: false,
   ));
 
-  // Tracker
   registerFallbackValue(TrackerType.ra);
   registerFallbackValue(const TrackerGameData(
     id: 0,
@@ -80,7 +64,6 @@ void registerAllFallbacks() {
     lastSyncedAt: 0,
   ));
 
-  // Other
   registerFallbackValue(Uint8List(0));
   registerFallbackValue(DateTime(2024));
   registerFallbackValue(Options());

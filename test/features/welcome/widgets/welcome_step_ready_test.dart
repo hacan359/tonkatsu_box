@@ -1,5 +1,4 @@
 import 'package:xerabora/l10n/app_localizations.dart';
-// Тесты для WelcomeStepReady — шаг 4 Welcome Wizard.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -142,8 +141,6 @@ void main() {
       testWidgets('content is centered', (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
 
-        // WelcomeStepReady wraps content in Center
-        // (FilledButton/OutlinedButton also have internal Centers)
         final Finder centeredContent = find.descendant(
           of: find.byType(WelcomeStepReady),
           matching: find.byType(Center),

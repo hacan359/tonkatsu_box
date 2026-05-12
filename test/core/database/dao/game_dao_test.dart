@@ -20,7 +20,6 @@ void main() {
     dao = GameDao(() async => mockDb);
   });
 
-  /// Настраивает мок транзакции: вызывает callback с mockTxn.
   void stubTransaction() {
     mockDb.stubTransaction(mockTxn);
     when(() => mockTxn.batch()).thenReturn(mockBatch);
@@ -36,8 +35,6 @@ void main() {
   }
 
   group('GameDao', () {
-    // ==================== Platforms ====================
-
     group('getAllPlatforms', () {
       test('returns platforms ordered by name', () async {
         when(() => mockDb.query('platforms', orderBy: 'name ASC')).thenAnswer(
@@ -188,8 +185,6 @@ void main() {
         expect(result.length, 1);
       });
     });
-
-    // ==================== Games ====================
 
     group('getGameById', () {
       test('returns null when not found', () async {
@@ -407,8 +402,6 @@ void main() {
         verify(() => mockDb.delete('games')).called(1);
       });
     });
-
-    // ==================== IGDB Genres ====================
 
     group('getIgdbGenres', () {
       test('returns genres ordered by name', () async {

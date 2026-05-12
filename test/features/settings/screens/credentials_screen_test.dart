@@ -42,7 +42,6 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        // IGDB + SteamGridDB + TMDB = 3 groups (Connection слит с IGDB в v0.28).
         expect(find.byType(SettingsGroup), findsAtLeastNWidgets(3));
       });
     });
@@ -118,7 +117,6 @@ void main() {
         await _scrollDown(tester);
         await tester.pumpAndSettle();
 
-        // API Key label appears for SteamGridDB and TMDB
         expect(find.text('API Key'), findsAtLeastNWidgets(2));
       });
 
@@ -130,7 +128,6 @@ void main() {
         await _scrollDown(tester);
         await tester.pumpAndSettle();
 
-        // StatusDot: connection + steamgriddb + tmdb
         expect(find.byType(StatusDot), findsAtLeastNWidgets(2));
       });
     });
@@ -141,7 +138,6 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        // Найти IGDB sync-кнопку по tooltip "Verify Connection".
         final Finder verifyBtn = find.byTooltip('Verify Connection');
         expect(verifyBtn, findsOneWidget);
         await tester.tap(verifyBtn);
@@ -179,7 +175,6 @@ void main() {
         await tester.pumpWidget(createWidget(isInitialSetup: true));
         await tester.pumpAndSettle();
 
-        // SettingsGroup renders title in uppercase
         expect(
           find.text('WELCOME TO TONKATSU BOX!'),
           findsOneWidget,
@@ -303,11 +298,6 @@ void main() {
       });
     });
 
-    // Tests для Test-кнопок удалены: после рефакторинга sync-кнопка всегда
-    // присутствует (но disabled если нет ключа). Проверка «всегда 2 Test
-    // tooltip» и enabled-состояние покрывается поведенческими тестами
-    // валидации ключей — не дублируем здесь чисто визуально.
-
     group('Error section', () {
       testWidgets('does not show Error section by default',
           (WidgetTester tester) async {
@@ -324,7 +314,6 @@ void main() {
   });
 }
 
-/// Скроллит вниз основной Scrollable.
 Future<void> _scrollDown(WidgetTester tester) async {
   final Finder scrollable = find.byType(SingleChildScrollView);
   if (scrollable.evaluate().isNotEmpty) {

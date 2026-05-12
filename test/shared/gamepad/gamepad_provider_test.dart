@@ -1,10 +1,3 @@
-// Тесты для Riverpod провайдеров геймпада.
-//
-// Платформенная проверка: gamepadServiceProvider вызывает start() только
-// на десктопе (kIsMobile == false). В тестовой среде Platform — Linux/macOS/Windows,
-// поэтому kIsMobile == false и сервис стартует. На Android/iOS start() пропускается,
-// что снижает нагрузку при запуске приложения.
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/shared/gamepad/gamepad_action.dart';
@@ -34,11 +27,9 @@ void main() {
     });
 
     test('setMouseMode переключает на mouse', () {
-      // Сначала переключаем на gamepad
       container.read(inputModeProvider.notifier).setGamepadMode();
       expect(container.read(inputModeProvider), equals(InputMode.gamepad));
 
-      // Затем обратно на mouse
       container.read(inputModeProvider.notifier).setMouseMode();
       expect(container.read(inputModeProvider), equals(InputMode.mouse));
     });
@@ -54,7 +45,6 @@ void main() {
       container.read(inputModeProvider.notifier).setGamepadMode();
       container.read(inputModeProvider.notifier).setGamepadMode();
 
-      // Только одно уведомление (mouse → gamepad)
       expect(notifyCount, equals(1));
     });
 
@@ -65,7 +55,6 @@ void main() {
         (InputMode? previous, InputMode next) => notifyCount++,
       );
 
-      // mouse → mouse — нет уведомления
       container.read(inputModeProvider.notifier).setMouseMode();
 
       expect(notifyCount, equals(0));

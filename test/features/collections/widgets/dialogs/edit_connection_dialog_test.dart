@@ -111,7 +111,6 @@ void main() {
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
-      // Enter label
       await tester.enterText(find.byType(TextField), 'my label');
       await tester.tap(find.text('Save'));
       await tester.pumpAndSettle();
@@ -157,16 +156,14 @@ void main() {
     testWidgets('should show color swatch that opens picker',
         (WidgetTester tester) async {
       await pumpDialog(tester);
-      // После a0ce1c0 инлайн-палитра заменена одним кружком, который
-      // открывает ColorPickerDialog. Убеждаемся, что секция цвета
-      // отрисована (заголовок + tappable swatch).
+      // Inline palette was replaced with a single swatch that opens
+      // ColorPickerDialog (a0ce1c0).
       expect(find.text('Color'), findsOneWidget);
       expect(find.byType(InkWell), findsWidgets);
     });
 
     testWidgets('should select initial style', (WidgetTester tester) async {
       await pumpDialog(tester, initialStyle: ConnectionStyle.arrow);
-      // SegmentedButton should have Arrow selected
       final SegmentedButton<ConnectionStyle> segmented =
           tester.widget(find.byType(SegmentedButton<ConnectionStyle>));
       expect(segmented.selected, contains(ConnectionStyle.arrow));
@@ -197,7 +194,6 @@ void main() {
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
-      // Tap on Dashed segment
       await tester.tap(find.text('Dashed'));
       await tester.pumpAndSettle();
 

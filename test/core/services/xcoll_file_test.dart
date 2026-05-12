@@ -191,7 +191,7 @@ void main() {
       });
 
       test('должен выбросить FormatException при отсутствии версии (default 1)', () {
-        // Если version не указан, он по умолчанию 1, что < xcollFormatVersion
+        // Missing `version` defaults to 1, which is below xcollFormatVersion.
         final Map<String, dynamic> json = <String, dynamic>{};
 
         expect(
@@ -215,7 +215,6 @@ void main() {
         final XcollFile xcoll = XcollFile.fromJson(json);
         final DateTime after = DateTime.now();
 
-        // Дата должна быть между before и after
         expect(
           xcoll.created.isAfter(before.subtract(const Duration(seconds: 1))),
           isTrue,
@@ -282,7 +281,6 @@ void main() {
       });
 
       test('должен выбросить FormatException при некорректной структуре', () {
-        // JSON валидный, но структура неправильная (items должен быть списком)
         const String invalidStructure = '{"version": 2, "items": "not a list"}';
 
         expect(
@@ -384,9 +382,7 @@ void main() {
 
         final String jsonString = xcoll.toJsonString();
 
-        // Проверяем что содержит отступы (форматирование)
         expect(jsonString, contains('  '));
-        // Проверяем что можно обратно распарсить
         final Map<String, dynamic> parsed =
             jsonDecode(jsonString) as Map<String, dynamic>;
         expect(parsed['name'], equals('Formatted'));

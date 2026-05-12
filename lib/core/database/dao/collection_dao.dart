@@ -1,5 +1,3 @@
-// DAO для работы с коллекциями, элементами коллекций и обложками.
-
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../../shared/models/anime.dart';
@@ -24,9 +22,7 @@ import 'movie_dao.dart';
 import 'tv_show_dao.dart';
 import 'visual_novel_dao.dart';
 
-/// DAO для таблиц `collections` и `collection_items`.
 class CollectionDao {
-  /// Создаёт DAO с функцией получения базы данных и зависимыми DAO.
   const CollectionDao(
     this._getDatabase, {
     required GameDao gameDao,
@@ -53,9 +49,6 @@ class CollectionDao {
   final MangaDao _mangaDao;
   final CustomMediaDao _customMediaDao;
 
-  // ==================== Collections ====================
-
-  /// Возвращает все коллекции.
   Future<List<Collection>> getAllCollections() async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.query(
@@ -65,7 +58,6 @@ class CollectionDao {
     return rows.map(Collection.fromDb).toList();
   }
 
-  /// Возвращает коллекции по типу.
   Future<List<Collection>> getCollectionsByType(CollectionType type) async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.query(
@@ -77,7 +69,6 @@ class CollectionDao {
     return rows.map(Collection.fromDb).toList();
   }
 
-  /// Возвращает коллекцию по ID или null, если не найдена.
   Future<Collection?> getCollectionById(int id) async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.query(
@@ -90,9 +81,6 @@ class CollectionDao {
     return Collection.fromDb(rows.first);
   }
 
-  /// Ищет коллекцию по точному имени.
-  ///
-  /// Возвращает первую коллекцию с таким именем, или null.
   Future<Collection?> findCollectionByName(String name) async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.query(
@@ -105,7 +93,6 @@ class CollectionDao {
     return Collection.fromDb(rows.first);
   }
 
-  /// Создаёт новую коллекцию и возвращает её с присвоенным ID.
   Future<Collection> createCollection({
     required String name,
     required String author,
@@ -142,10 +129,8 @@ class CollectionDao {
     );
   }
 
-  /// Обновляет коллекцию.
-  ///
-  /// Передавайте `clearHeroImage: true` или `clearDescription: true`,
-  /// чтобы сохранить `NULL` — обычный `null` значит «не трогать».
+  /// Pass `clearHeroImage: true` / `clearDescription: true` to persist NULL —
+  /// a plain `null` means "leave untouched".
   Future<void> updateCollection(
     int id, {
     String? name,
@@ -171,7 +156,7 @@ class CollectionDao {
     );
   }
 
-  /// Удаляет коллекцию и все связанные игры (каскадно).
+  /// Cascades to collection_items via FK.
   Future<void> deleteCollection(int id) async {
     final Database db = await _getDatabase();
     await db.delete(
@@ -181,7 +166,6 @@ class CollectionDao {
     );
   }
 
-  /// Возвращает количество коллекций.
   Future<int> getCollectionCount() async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> result = await db.rawQuery(
@@ -190,11 +174,7 @@ class CollectionDao {
     return result.first['count'] as int;
   }
 
-  // ==================== Collection Items ====================
-
-  /// Возвращает все элементы в коллекции.
-  ///
-  /// Если [collectionId] == null, возвращает uncategorized элементы.
+  /// [collectionId] == null targets uncategorized items.
   Future<List<CollectionItem>> getCollectionItems(
     int? collectionId, {
     MediaType? mediaType,
@@ -221,9 +201,6 @@ class CollectionDao {
     return rows.map(CollectionItem.fromDb).toList();
   }
 
-  /// Возвращает элементы коллекции с подгруженными данными.
-  ///
-  /// Если [collectionId] == null, возвращает uncategorized элементы.
   Future<List<CollectionItem>> getCollectionItemsWithData(
     int? collectionId, {
     MediaType? mediaType,
@@ -236,7 +213,6 @@ class CollectionDao {
     return _loadJoinedData(items);
   }
 
-  /// Возвращает все элементы из всех коллекций.
   Future<List<CollectionItem>> getAllCollectionItems({
     MediaType? mediaType,
   }) async {
@@ -256,7 +232,6 @@ class CollectionDao {
     return rows.map(CollectionItem.fromDb).toList();
   }
 
-  /// Возвращает все элементы из всех коллекций с подгруженными данными.
   Future<List<CollectionItem>> getAllCollectionItemsWithData({
     MediaType? mediaType,
   }) async {
@@ -267,7 +242,6 @@ class CollectionDao {
     return _loadJoinedData(items);
   }
 
-  /// Возвращает элемент коллекции по ID.
   Future<CollectionItem?> getCollectionItemById(int id) async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.query(
@@ -280,9 +254,6 @@ class CollectionDao {
     return CollectionItem.fromDb(rows.first);
   }
 
-  /// Находит элемент коллекции по типу медиа и внешнему ID.
-  ///
-  /// Возвращает null если элемент не найден в указанной коллекции.
   Future<CollectionItem?> findCollectionItem({
     required int? collectionId,
     required MediaType mediaType,
@@ -299,12 +270,12 @@ class CollectionDao {
         <Object?>[collectionId, mediaType.value, externalId],
       );
     } else {
-      // Поиск по всем коллекциям (без фильтра по collection_id).
+      // Search across all collections (no collection_id filter).
       where.write('media_type = ? AND external_id = ?');
       whereArgs.addAll(<Object?>[mediaType.value, externalId]);
     }
 
-    // Для игр уточняем по платформе (unique index включает platform_id).
+    // For games, disambiguate by platform — unique index includes platform_id.
     if (platformId != null) {
       where.write(' AND platform_id = ?');
       whereArgs.add(platformId);
@@ -321,7 +292,6 @@ class CollectionDao {
     return CollectionItem.fromDb(rows.first);
   }
 
-  /// Ищет ВСЕ элементы по mediaType + externalId во всех коллекциях.
   Future<List<CollectionItem>> findAllCollectionItems({
     required MediaType mediaType,
     required int externalId,
@@ -335,10 +305,8 @@ class CollectionDao {
     return rows.map(CollectionItem.fromDb).toList();
   }
 
-  /// Добавляет элемент в коллекцию.
-  ///
-  /// Если [collectionId] == null, элемент добавляется как uncategorized.
-  /// Возвращает ID созданной записи или null при конфликте.
+  /// [collectionId] == null adds as uncategorized.
+  /// Returns null on UNIQUE constraint conflict.
   Future<int?> addItemToCollection({
     required int? collectionId,
     required MediaType mediaType,
@@ -374,9 +342,6 @@ class CollectionDao {
     }
   }
 
-  /// Возвращает следующий sort_order для коллекции.
-  ///
-  /// Если [collectionId] == null, возвращает sort_order для uncategorized.
   Future<int> getNextSortOrder(int? collectionId) async {
     final Database db = await _getDatabase();
     final String where = collectionId != null
@@ -392,9 +357,7 @@ class CollectionDao {
     return maxSort + 1;
   }
 
-  /// Пересортировывает элементы коллекции после drag-and-drop.
-  ///
-  /// Обновляет sort_order всех элементов в транзакции.
+  /// Rewrites sort_order for the given ids in a single transaction.
   Future<void> reorderItems(
     int? collectionId,
     List<int> orderedItemIds,
@@ -416,7 +379,6 @@ class CollectionDao {
     });
   }
 
-  /// Удаляет элемент из коллекции.
   Future<void> removeItemFromCollection(int id) async {
     final Database db = await _getDatabase();
     await db.delete(
@@ -426,12 +388,10 @@ class CollectionDao {
     );
   }
 
-  /// Обновляет статус элемента коллекции.
-  ///
-  /// Автоматически устанавливает даты активности:
-  /// - `last_activity_at` обновляется всегда
-  /// - `started_at` устанавливается при переходе в inProgress (если null)
-  /// - `completed_at` устанавливается при переходе в completed
+  /// Activity dates derived from status transition:
+  /// - `last_activity_at` bumped every call.
+  /// - `started_at` set on first transition to inProgress/completed.
+  /// - `completed_at` set on transition to completed.
   Future<void> updateItemStatus(
     int id,
     ItemStatus status, {
@@ -445,7 +405,6 @@ class CollectionDao {
       'last_activity_at': now,
     };
 
-    // Получаем текущий элемент для проверки дат
     final List<Map<String, dynamic>> rows = await db.query(
       'collection_items',
       columns: <String>['started_at'],
@@ -480,7 +439,6 @@ class CollectionDao {
     );
   }
 
-  /// Обновляет даты активности элемента коллекции вручную.
   Future<void> updateItemActivityDates(
     int id, {
     DateTime? startedAt,
@@ -508,7 +466,6 @@ class CollectionDao {
     );
   }
 
-  /// Обновляет прогресс просмотра сериала.
   Future<void> updateItemProgress(
     int id, {
     int? currentSeason,
@@ -531,7 +488,6 @@ class CollectionDao {
     );
   }
 
-  /// Обновляет комментарий автора элемента.
   Future<void> updateItemAuthorComment(int id, String? comment) async {
     final Database db = await _getDatabase();
     await db.update(
@@ -542,7 +498,6 @@ class CollectionDao {
     );
   }
 
-  /// Обновляет личный комментарий пользователя элемента.
   Future<void> updateItemUserComment(int id, String? comment) async {
     final Database db = await _getDatabase();
     await db.update(
@@ -553,7 +508,6 @@ class CollectionDao {
     );
   }
 
-  /// Обновляет потраченное время (в минутах) для элемента коллекции.
   Future<void> updateItemTimeSpent(int id, int totalMinutes) async {
     final Database db = await _getDatabase();
     await db.update(
@@ -564,7 +518,6 @@ class CollectionDao {
     );
   }
 
-  /// Обновляет пользовательский рейтинг элемента (1-10 или null).
   Future<void> updateItemUserRating(int id, int? rating) async {
     final Database db = await _getDatabase();
     await db.update(
@@ -575,12 +528,8 @@ class CollectionDao {
     );
   }
 
-  /// Обновляет collection_id элемента (перемещает в другую коллекцию).
-  ///
-  /// Передайте [collectionId] = null для перемещения в uncategorized.
-  /// Также обновляет sort_order для целевой коллекции.
-  /// Возвращает true при успехе, false если элемент уже есть в целевой
-  /// коллекции (UNIQUE constraint).
+  /// Moves item to another collection (null = uncategorized) and appends to its
+  /// sort order. Returns false on UNIQUE conflict (already present in target).
   Future<bool> updateItemCollectionId(int id, int? collectionId) async {
     final Database db = await _getDatabase();
     final int newSortOrder = await getNextSortOrder(collectionId);
@@ -603,12 +552,10 @@ class CollectionDao {
     }
   }
 
-  /// Клонирует элемент в другую коллекцию (полная копия).
-  ///
-  /// Копирует все поля исходного элемента, переопределяя только
-  /// `id`, `collection_id`, `added_at` и `sort_order`.
-  /// Устойчиво к добавлению новых колонок в таблицу.
-  /// Возвращает ID нового элемента или null при дубликате.
+  /// Full-row copy resilient to new columns: overrides only id, collection_id,
+  /// added_at, sort_order. tag_id is cleared because tags are bound per
+  /// collection — the provider rebinds by tag name in the target collection.
+  /// Returns null on UNIQUE conflict.
   Future<int?> cloneItemToCollection(
     int itemId,
     int targetCollectionId,
@@ -626,9 +573,6 @@ class CollectionDao {
     final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     final int sortOrder = await getNextSortOrder(targetCollectionId);
 
-    // Копируем все поля, переопределяя только целевые.
-    // tag_id обнуляем: теги привязаны к коллекции, а привязка на уровне
-    // целевой коллекции выставляется провайдером по имени тега.
     final Map<String, dynamic> clone = Map<String, dynamic>.of(rows.first)
       ..remove('id')
       ..['collection_id'] = targetCollectionId
@@ -647,11 +591,7 @@ class CollectionDao {
     }
   }
 
-  /// Возвращает уникальные platform_id из игр в коллекциях.
-  ///
-  /// Если [collectionId] указан, фильтрует по этой коллекции.
-  /// Если null — возвращает платформы из всех коллекций.
-  /// Исключает platform_id = NULL и platform_id = -1.
+  /// Excludes NULL and the sentinel -1 (unknown platform).
   Future<List<int>> getUniquePlatformIds({int? collectionId}) async {
     final Database db = await _getDatabase();
     final StringBuffer sql = StringBuffer('''
@@ -673,7 +613,6 @@ class CollectionDao {
         .toList();
   }
 
-  /// Возвращает общее количество элементов во всех коллекциях.
   Future<int> getTotalItemCount() async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> result =
@@ -681,9 +620,6 @@ class CollectionDao {
     return result.first['count'] as int;
   }
 
-  /// Возвращает количество элементов в коллекции.
-  ///
-  /// Если [collectionId] == null, считает uncategorized элементы.
   Future<int> getCollectionItemCount(
     int? collectionId, {
     MediaType? mediaType,
@@ -709,9 +645,6 @@ class CollectionDao {
     return result.first['count'] as int;
   }
 
-  /// Возвращает расширенную статистику по коллекции.
-  ///
-  /// Если [collectionId] == null, возвращает статистику uncategorized.
   Future<Map<String, int>> getCollectionItemStats(int? collectionId) async {
     final Database db = await _getDatabase();
     final String where = collectionId != null
@@ -748,7 +681,6 @@ class CollectionDao {
       final int count = row['count'] as int;
       stats['total'] = (stats['total'] ?? 0) + count;
 
-      // Подсчёт по типам медиа
       switch (type) {
         case 'game':
           stats['gameCount'] = (stats['gameCount'] ?? 0) + count;
@@ -769,7 +701,6 @@ class CollectionDao {
           stats['customCount'] = (stats['customCount'] ?? 0) + count;
       }
 
-      // Подсчёт по статусам
       switch (status) {
         case 'completed':
           stats['completed'] = (stats['completed'] ?? 0) + count;
@@ -787,9 +718,6 @@ class CollectionDao {
     return stats;
   }
 
-  /// Удаляет все элементы из коллекции.
-  ///
-  /// Если [collectionId] == null, удаляет uncategorized элементы.
   Future<void> clearCollectionItems(int? collectionId) async {
     final Database db = await _getDatabase();
     if (collectionId != null) {
@@ -806,12 +734,7 @@ class CollectionDao {
     }
   }
 
-  // ==================== Info ====================
-
-  /// Возвращает информацию о нахождении элементов заданного типа в коллекциях.
-  ///
-  /// Результат: `Map` external_id -> список записей в коллекциях.
-  /// Элементы без коллекции (uncategorized) также включаются.
+  /// Maps external_id -> list of collection placements (uncategorized included).
   Future<Map<int, List<CollectedItemInfo>>> getCollectedItemInfos(
     MediaType mediaType,
   ) async {
@@ -839,7 +762,6 @@ class CollectionDao {
     return result;
   }
 
-  /// Возвращает количество uncategorized элементов.
   Future<int> getUncategorizedItemCount() async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> result = await db.rawQuery(
@@ -849,14 +771,8 @@ class CollectionDao {
     return result.first['count'] as int;
   }
 
-  // ==================== Collection Covers ====================
-
-  /// Возвращает первые [limit] обложек элементов коллекции.
-  ///
-  /// Легковесный запрос: получает только URL обложек из кэш-таблиц,
-  /// без загрузки полных моделей. Приоритет: completed > in_progress > остальные.
-  ///
-  /// Если [collectionId] == null, возвращает обложки uncategorized элементов.
+  /// Lightweight cover fetch — only URLs from cache tables, no full models.
+  /// Ordering: completed > in_progress > others, then sort_order.
   Future<List<CoverInfo>> getCollectionCovers(
     int? collectionId, {
     int limit = 4,
@@ -922,13 +838,9 @@ class CollectionDao {
     return rows.map(CoverInfo.fromDb).toList();
   }
 
-  // ==================== Private ====================
-
-  /// Загружает связанные данные (Game, Movie, TvShow, Platform) для элементов.
   Future<List<CollectionItem>> _loadJoinedData(
     List<CollectionItem> items,
   ) async {
-    // Собираем ID по типам
     final List<int> gameIds = <int>[];
     final List<int> movieIds = <int>[];
     final List<int> tvShowIds = <int>[];
@@ -966,7 +878,7 @@ class CollectionDao {
       }
     }
 
-    // Загружаем данные параллельно — все запросы независимы
+    // Parallel — all queries are independent.
     final List<Object> results = await Future.wait(<Future<Object>>[
       gameIds.isNotEmpty
           ? _gameDao.getGamesByIds(gameIds)
@@ -1007,7 +919,7 @@ class CollectionDao {
       for (final Platform p in platforms) p.id: p,
     };
 
-    // Резолвим жанры из числовых ID в имена (если есть нерезолвленные)
+    // Resolve numeric genre IDs to names where unresolved.
     final List<Movie> resolvedMovies = await _resolveGenresIfNeeded(
       movies,
       'movie',
@@ -1021,7 +933,6 @@ class CollectionDao {
       (TvShow t, List<String> g) => t.copyWith(genres: g),
     );
 
-    // Создаём карты для быстрого поиска
     final Map<int, Game> gamesMap = <int, Game>{
       for (final Game g in games) g.id: g,
     };
@@ -1044,7 +955,6 @@ class CollectionDao {
       for (final CustomMedia c in customMediaList) c.id: c,
     };
 
-    // Собираем результат
     return items.map((CollectionItem item) {
       switch (item.mediaType) {
         case MediaType.game:
@@ -1075,16 +985,12 @@ class CollectionDao {
     }).toList();
   }
 
-  /// Проверяет, является ли строка числовым ID (нерезолвленный жанр).
   static bool _isNumericGenre(String genre) {
     return int.tryParse(genre) != null;
   }
 
-  /// Резолвит числовые genre_ids в имена для списка медиа-элементов.
-  ///
-  /// Проверяет жанры каждого элемента: если хотя бы один жанр — числовой ID,
-  /// загружает маппинг из кэша `tmdb_genres` и заменяет ID на имена.
-  /// Если кэш пуст или нет нерезолвленных жанров, возвращает исходный список.
+  /// Replaces numeric genre IDs with names via `tmdb_genres` cache.
+  /// Skips work if no item has numeric IDs or the cache is empty.
   Future<List<T>> _resolveGenresIfNeeded<T>(
     List<T> items,
     String genreType,
@@ -1093,14 +999,12 @@ class CollectionDao {
   ) async {
     if (items.isEmpty) return items;
 
-    // Проверяем, есть ли нерезолвленные жанры (числовые ID)
     final bool hasUnresolved = items.any((T item) {
       final List<String>? genres = getGenres(item);
       return genres != null && genres.any(_isNumericGenre);
     });
     if (!hasUnresolved) return items;
 
-    // Загружаем маппинг из кэша
     final Map<String, String> genreMap =
         await _movieDao.getTmdbGenreMap(genreType);
     if (genreMap.isEmpty) return items;
@@ -1116,10 +1020,7 @@ class CollectionDao {
     }).toList();
   }
 
-  /// Возвращает ID коллекций, содержащих элементы с указанным статусом.
-  ///
-  /// Результат включает `null` если есть "бесколлекционные" элементы
-  /// с этим статусом (Uncategorized).
+  /// Result includes `null` if uncategorized items match the status.
   Future<Set<int?>> getCollectionIdsWithStatus(ItemStatus status) async {
     final Database db = await _getDatabase();
     final List<Map<String, dynamic>> rows = await db.rawQuery(

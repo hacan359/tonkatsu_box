@@ -24,7 +24,7 @@ void main() {
   });
 
   group('CanvasConnection', () {
-    // Дата отличается от shared testDate — оставляем локально.
+    // Local date differs from the shared testDate helper.
     final DateTime testDate = DateTime(2024, 6, 15, 12, 0, 0);
     final int testTimestamp = testDate.millisecondsSinceEpoch ~/ 1000;
 
@@ -203,7 +203,6 @@ void main() {
           'created_at': null,
         };
         final CanvasConnection conn = CanvasConnection.fromExport(json);
-        // Should be close to now
         expect(
           conn.createdAt.difference(DateTime.now()).inSeconds.abs(),
           lessThan(2),

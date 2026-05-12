@@ -1,9 +1,4 @@
 import 'package:xerabora/l10n/app_localizations.dart';
-// Тесты для showCollectionPickerDialog.
-//
-// Диалог выбора коллекции: отображает список коллекций,
-// опцию "Without Collection", фильтр, маркировку дублей и кнопку Cancel.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,7 +8,6 @@ import 'package:xerabora/shared/models/collection.dart';
 import 'package:xerabora/shared/models/collection_list_sort_mode.dart';
 import 'package:xerabora/shared/widgets/collection_picker_dialog.dart';
 
-/// Тестовые коллекции.
 final DateTime _testDate = DateTime(2026, 1, 1);
 
 final Collection _collectionA = Collection(
@@ -48,10 +42,6 @@ final Collection _collectionImported = Collection(
   createdAt: _testDate,
 );
 
-/// Виджет-обёртка для вызова showCollectionPickerDialog из теста.
-///
-/// Наблюдает [collectionsProvider] при сборке (для его инициализации),
-/// а при нажатии кнопки показывает диалог.
 class _DialogTester extends ConsumerWidget {
   const _DialogTester({
     required this.onResult,
@@ -69,7 +59,6 @@ class _DialogTester extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Наблюдаем за провайдером, чтобы он инициализировался при pump.
     ref.watch(collectionsProvider);
 
     return ElevatedButton(
@@ -89,11 +78,8 @@ class _DialogTester extends ConsumerWidget {
   }
 }
 
-/// No-op callback для тестов, где результат диалога не проверяется.
 void _ignoreResult(CollectionChoice? _) {}
 
-/// Строит тестовый виджет с ProviderScope и переопределённым
-/// collectionsProvider.
 Widget _buildTestWidget({
   void Function(CollectionChoice?)? onResult,
   List<Collection> collections = const <Collection>[],
@@ -132,7 +118,6 @@ Widget _buildTestWidget({
   );
 }
 
-/// Фейковый notifier для collectionsProvider.
 class _FakeCollectionsNotifier extends CollectionsNotifier {
   _FakeCollectionsNotifier(this._collections);
 
@@ -144,18 +129,14 @@ class _FakeCollectionsNotifier extends CollectionsNotifier {
   }
 }
 
-/// Открывает тестовый виджет, ждёт инициализации провайдера
-/// и открывает диалог.
 Future<void> _openDialog(WidgetTester tester, Widget widget) async {
   await tester.pumpWidget(widget);
-  // Ждём завершения async build провайдера.
   await tester.pumpAndSettle();
 
   await tester.tap(find.text('Open'));
   await tester.pumpAndSettle();
 }
 
-/// Генерирует список коллекций заданной длины.
 List<Collection> _generateCollections(int count) {
   return List<Collection>.generate(count, (int i) {
     return Collection(
@@ -224,9 +205,7 @@ void main() {
         ),
       );
 
-      // Collection A (id=1) должна быть скрыта.
       expect(find.text('Collection A'), findsNothing);
-      // Collection B (id=2) должна быть видна.
       expect(find.text('Collection B'), findsOneWidget);
     });
 
@@ -244,9 +223,7 @@ void main() {
         ),
       );
 
-      // Own коллекция видна.
       expect(find.text('Collection A'), findsOneWidget);
-      // Imported теперь editable и видна.
       expect(find.text('Imported'), findsOneWidget);
     });
 
@@ -372,8 +349,6 @@ void main() {
       expect(find.text('Author A'), findsOneWidget);
     });
 
-    // ==================== Duplicate detection ====================
-
     group('маркировка дублей', () {
       testWidgets(
           'disabled коллекция показывает бейдж "✓ Added"',
@@ -409,11 +384,9 @@ void main() {
           ),
         );
 
-        // Пытаемся нажать на disabled коллекцию
         await tester.tap(find.text('Collection B'));
         await tester.pumpAndSettle();
 
-        // Диалог не должен закрыться
         expect(called, isFalse);
         expect(result, isNull);
       });
@@ -433,10 +406,8 @@ void main() {
           ),
         );
 
-        // Бейдж "✓ Added" должен отображаться
         expect(find.text('✓ Added'), findsOneWidget);
 
-        // Нажатие не должно закрыть диалог
         await tester.tap(find.text('Without Collection'));
         await tester.pumpAndSettle();
 
@@ -512,8 +483,6 @@ void main() {
         expect(find.text('Cancel'), findsOneWidget);
       });
     });
-
-    // ==================== Filter ====================
 
     group('фильтр', () {
       testWidgets(
@@ -593,18 +562,14 @@ void main() {
           ),
         );
 
-        // Enter filter text
         await tester.enterText(find.byType(TextField), 'game');
         await tester.pumpAndSettle();
 
-        // Only PS1 Games matches
         expect(find.text('PS1 Games'), findsOneWidget);
         expect(find.text('SNES Classics'), findsNothing);
         expect(find.text('Movies 2025'), findsNothing);
       });
     });
-
-    // ==================== Сортировка ====================
 
     group('сортировка', () {
       testWidgets(
@@ -642,7 +607,6 @@ void main() {
           ),
         );
 
-        // A→Z: Apple, Banana, Cherry
         final Offset posApple = tester.getCenter(find.text('Apple'));
         final Offset posBanana = tester.getCenter(find.text('Banana'));
         final Offset posCherry = tester.getCenter(find.text('Cherry'));
@@ -685,7 +649,6 @@ void main() {
           ),
         );
 
-        // Z→A: Cherry, Banana, Apple
         final Offset posCherry = tester.getCenter(find.text('Cherry'));
         final Offset posBanana = tester.getCenter(find.text('Banana'));
         final Offset posApple = tester.getCenter(find.text('Apple'));
@@ -728,7 +691,6 @@ void main() {
           ),
         );
 
-        // Ascending: Oldest, Middle, Newest
         final Offset posOldest = tester.getCenter(find.text('Oldest'));
         final Offset posMiddle = tester.getCenter(find.text('Middle'));
         final Offset posNewest = tester.getCenter(find.text('Newest'));
@@ -764,7 +726,6 @@ void main() {
           ),
         );
 
-        // Descending: Newest, Oldest
         final Offset posNewest = tester.getCenter(find.text('Newest'));
         final Offset posOldest = tester.getCenter(find.text('Oldest'));
         expect(posNewest.dy, lessThan(posOldest.dy));
@@ -798,16 +759,13 @@ void main() {
           ),
         );
 
-        // A→Z: Apple первый
         Offset posApple = tester.getCenter(find.text('Apple'));
         Offset posBanana = tester.getCenter(find.text('Banana'));
         expect(posApple.dy, lessThan(posBanana.dy));
 
-        // Нажимаем на кнопку сортировки — должно переключиться на Z→A
         await tester.tap(find.byIcon(Icons.arrow_upward));
         await tester.pumpAndSettle();
 
-        // Z→A: Banana первый
         posApple = tester.getCenter(find.text('Apple'));
         posBanana = tester.getCenter(find.text('Banana'));
         expect(posBanana.dy, lessThan(posApple.dy));
@@ -826,14 +784,12 @@ void main() {
           ),
         );
 
-        // Должна быть иконка стрелки и текст сортировки
         expect(find.byIcon(Icons.arrow_upward), findsOneWidget);
       });
     });
   });
 }
 
-/// Fake [CollectionListSortNotifier] для тестов.
 class _FakeListSortNotifier extends CollectionListSortNotifier {
   _FakeListSortNotifier(this._mode);
 
@@ -846,7 +802,6 @@ class _FakeListSortNotifier extends CollectionListSortNotifier {
   Future<void> setSortMode(CollectionListSortMode mode) async {}
 }
 
-/// Fake [CollectionListSortDescNotifier] для тестов.
 class _FakeListSortDescNotifier extends CollectionListSortDescNotifier {
   _FakeListSortDescNotifier(this._descending);
 

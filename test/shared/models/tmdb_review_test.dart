@@ -1,5 +1,3 @@
-// Тесты для модели TmdbReview.
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/shared/models/tmdb_review.dart';
 
@@ -225,7 +223,6 @@ void main() {
 
         final DateTime afterTest = DateTime.now();
 
-        // createdAt должен быть между beforeTest и afterTest
         expect(review.createdAt.isAfter(beforeTest) ||
             review.createdAt.isAtSameMomentAs(beforeTest), isTrue);
         expect(review.createdAt.isBefore(afterTest) ||

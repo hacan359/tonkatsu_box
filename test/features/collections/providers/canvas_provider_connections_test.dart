@@ -163,7 +163,6 @@ void main() {
       ];
     });
 
-    /// Создаёт контейнер Riverpod для тестирования CanvasNotifier.
     ProviderContainer createContainer({
       bool hasCanvasItems = true,
       List<CanvasItem>? items,
@@ -199,7 +198,6 @@ void main() {
       return container;
     }
 
-    /// Ждёт загрузку канваса.
     Future<void> waitForLoad(
       ProviderContainer container, {
       Duration timeout = const Duration(seconds: 2),
@@ -216,7 +214,6 @@ void main() {
     test('should load connections during canvas load', () async {
       final ProviderContainer container = createContainer();
 
-      // Тригерим загрузку
       container.read(canvasNotifierProvider(collectionId));
       await waitForLoad(container);
 
@@ -312,7 +309,6 @@ void main() {
       final CanvasState state =
           container.read(canvasNotifierProvider(collectionId));
       expect(state.connectingFromId, isNull);
-      // No new connection created
       expect(state.connections.length, 1);
 
       container.dispose();
@@ -417,9 +413,7 @@ void main() {
 
       final CanvasState state =
           container.read(canvasNotifierProvider(collectionId));
-      // Item 1 removed
       expect(state.items.any((CanvasItem i) => i.id == 1), isFalse);
-      // Connection involving item 1 also removed
       expect(state.connections, isEmpty);
 
       container.dispose();
@@ -448,7 +442,6 @@ void main() {
 
       final CanvasState state =
           container.read(canvasNotifierProvider(collectionId));
-      // Connection 10 (involving item 1) removed, connection 20 kept
       expect(state.connections.length, 1);
       expect(state.connections.first.id, 20);
 

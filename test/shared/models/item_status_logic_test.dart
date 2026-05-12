@@ -1,5 +1,3 @@
-// Тесты для чистых функций вычисления статусов и дат.
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/item_status_logic.dart';

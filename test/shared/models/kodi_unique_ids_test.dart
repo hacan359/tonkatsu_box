@@ -1,5 +1,3 @@
-// Тесты для KodiUniqueIds.
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/shared/models/kodi_unique_ids.dart';
 

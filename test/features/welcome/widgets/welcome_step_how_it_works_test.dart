@@ -1,7 +1,3 @@
-// Smoke-тесты для WelcomeStepHowItWorks — шаг 5 Welcome Wizard.
-// Статичная информационная страница без интерактива; проверяем только
-// что рендерится без исключений и имеет скролл для длинного контента.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/welcome/widgets/welcome_step_how_it_works.dart';

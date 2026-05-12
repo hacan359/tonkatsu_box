@@ -1,15 +1,9 @@
-// Widget-тесты для ScrollableRowWithArrows.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/shared/widgets/scrollable_row_with_arrows.dart';
 
 void main() {
   group('ScrollableRowWithArrows', () {
-    /// Создаёт тестовый виджет с заданной шириной экрана.
-    ///
-    /// [screenWidth] — ширина окна (>= 600 для десктопа, < 600 для мобильного).
-    /// [itemCount] — количество элементов в горизонтальном списке.
     Widget buildTestWidget({
       required ScrollController controller,
       double screenWidth = 800,
@@ -69,10 +63,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // 50 элементов по 120px = 6000px, экран 800px → есть переполнение.
-        // Правая стрелка должна быть видна.
         expect(find.byIcon(Icons.chevron_right), findsOneWidget);
-        // Левая стрелка не видна — мы в начале списка.
         expect(find.byIcon(Icons.chevron_left), findsNothing);
       },
     );
@@ -92,7 +83,6 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // На мобильных стрелки не показываются вне зависимости от переполнения.
         expect(find.byIcon(Icons.chevron_left), findsNothing);
         expect(find.byIcon(Icons.chevron_right), findsNothing);
       },
@@ -113,16 +103,12 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // Изначально левой стрелки нет.
         expect(find.byIcon(Icons.chevron_left), findsNothing);
 
-        // Прокручиваем вправо программно.
         controller.jumpTo(200);
         await tester.pumpAndSettle();
 
-        // Теперь левая стрелка должна появиться.
         expect(find.byIcon(Icons.chevron_left), findsOneWidget);
-        // Правая стрелка всё ещё видна (не достигли конца).
         expect(find.byIcon(Icons.chevron_right), findsOneWidget);
       },
     );
@@ -142,13 +128,10 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // Прокручиваем до конца.
         controller.jumpTo(controller.position.maxScrollExtent);
         await tester.pumpAndSettle();
 
-        // Правая стрелка должна исчезнуть.
         expect(find.byIcon(Icons.chevron_right), findsNothing);
-        // Левая стрелка должна быть видна.
         expect(find.byIcon(Icons.chevron_left), findsOneWidget);
       },
     );
@@ -168,14 +151,11 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // Начальная позиция — 0.
         expect(controller.offset, equals(0.0));
 
-        // Нажимаем на правую стрелку.
         await tester.tap(find.byIcon(Icons.chevron_right));
         await tester.pumpAndSettle();
 
-        // Позиция должна сдвинуться вправо (на 300px — значение из _scrollBy).
         expect(controller.offset, equals(300.0));
       },
     );
@@ -195,17 +175,14 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // Прокручиваем в середину.
         controller.jumpTo(600);
         await tester.pumpAndSettle();
 
         expect(find.byIcon(Icons.chevron_left), findsOneWidget);
 
-        // Нажимаем на левую стрелку.
         await tester.tap(find.byIcon(Icons.chevron_left));
         await tester.pumpAndSettle();
 
-        // Должно сместиться на 300 назад: 600 - 300 = 300.
         expect(controller.offset, equals(300.0));
       },
     );
@@ -220,7 +197,6 @@ void main() {
           buildTestWidget(
             controller: controller,
             screenWidth: 800,
-            // 3 элемента по 120px = 360px < 800px — без переполнения.
             itemCount: 3,
           ),
         );
@@ -241,7 +217,6 @@ void main() {
           buildTestWidget(
             controller: controller,
             screenWidth: 800,
-            // 10 элементов по 120px = 1200px, maxScrollExtent = 1200 - 800 = 400.
             itemCount: 10,
           ),
         );
@@ -249,11 +224,9 @@ void main() {
 
         final double maxExtent = controller.position.maxScrollExtent;
 
-        // Прокручиваем близко к концу (меньше 300 до конца).
         controller.jumpTo(maxExtent - 100);
         await tester.pumpAndSettle();
 
-        // Нажимаем правую стрелку — должно прокрутить до maxExtent, а не дальше.
         await tester.tap(find.byIcon(Icons.chevron_right));
         await tester.pumpAndSettle();
 
@@ -276,11 +249,9 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // Прокручиваем на 100px (меньше чем шаг 300).
         controller.jumpTo(100);
         await tester.pumpAndSettle();
 
-        // Нажимаем левую стрелку — должно остановиться на 0, а не уйти в минус.
         await tester.tap(find.byIcon(Icons.chevron_left));
         await tester.pumpAndSettle();
 
@@ -303,7 +274,6 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // Ровно 600px — десктопный режим, стрелки должны быть.
         expect(find.byIcon(Icons.chevron_right), findsOneWidget);
       },
     );
@@ -323,7 +293,6 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // 599px — мобильный режим, стрелки скрыты.
         expect(find.byIcon(Icons.chevron_left), findsNothing);
         expect(find.byIcon(Icons.chevron_right), findsNothing);
       },

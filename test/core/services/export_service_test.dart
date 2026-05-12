@@ -123,17 +123,14 @@ void main() {
 
         expect(xcoll.items.length, equals(3));
 
-        // Игра
         expect(xcoll.items[0]['media_type'], equals('game'));
         expect(xcoll.items[0]['external_id'], equals(100));
         expect(xcoll.items[0]['platform_id'], equals(18));
         expect(xcoll.items[0]['comment'], equals('Great game'));
 
-        // Фильм
         expect(xcoll.items[1]['media_type'], equals('movie'));
         expect(xcoll.items[1]['external_id'], equals(550));
 
-        // Сериал
         expect(xcoll.items[2]['media_type'], equals('tv_show'));
         expect(xcoll.items[2]['external_id'], equals(1399));
       });
@@ -151,9 +148,8 @@ void main() {
         final XcollFile xcoll =
             sut.createLightExport(collection, <CollectionItem>[item]);
 
-        // toExport() переименовывает author_comment → comment
+        // toExport() renames author_comment to comment and drops internal fields.
         expect(xcoll.items[0]['comment'], equals('Classic'));
-        // Internal поля НЕ включены
         expect(xcoll.items[0].containsKey('id'), isFalse);
         expect(xcoll.items[0].containsKey('collection_id'), isFalse);
         expect(xcoll.items[0].containsKey('user_comment'), isFalse);
@@ -297,7 +293,6 @@ void main() {
           createTestCollectionItem(id: 10, externalId: 100),
         ];
 
-        // Collection canvas — пустой
         when(() => mockCanvasRepo.getViewport(any()))
             .thenAnswer((_) async => null);
         when(() => mockCanvasRepo.getItems(any()))
@@ -305,7 +300,6 @@ void main() {
         when(() => mockCanvasRepo.getConnections(any()))
             .thenAnswer((_) async => <CanvasConnection>[]);
 
-        // Per-item canvas для item 10
         final CanvasItem perItemCanvasItem = CanvasItem(
           id: 50,
           collectionId: 1,
@@ -474,7 +468,6 @@ void main() {
         mockCanvasRepo = MockCanvasRepository();
         mockImageCache = MockImageCacheService();
 
-        // Дефолтные моки для canvas (пустой)
         when(() => mockCanvasRepo.getViewport(any()))
             .thenAnswer((_) async => null);
         when(() => mockCanvasRepo.getItems(any()))
@@ -491,7 +484,6 @@ void main() {
               '100',
             )).thenAnswer((_) async => testBytes);
 
-        // Мок для per-item canvas (items существуют)
         when(() => mockCanvasRepo.getGameCanvasItems(any()))
             .thenAnswer((_) async => <CanvasItem>[]);
 
@@ -554,7 +546,6 @@ void main() {
           createTestCollectionItem(id: 2, externalId: 100),
         ];
 
-        // Мокаем getGameCanvasItems для per-item canvas
         when(() => mockCanvasRepo.getGameCanvasItems(any()))
             .thenAnswer((_) async => <CanvasItem>[]);
 
@@ -562,7 +553,6 @@ void main() {
             await sutImages.createFullExport(collection, items, 1);
 
         expect(xcoll.images.length, equals(1));
-        // readImageBytes должен быть вызван только один раз
         verify(() => mockImageCache.readImageBytes(
               ImageType.gameCover,
               '100',
@@ -587,7 +577,6 @@ void main() {
               '300',
             )).thenAnswer((_) async => tvShowBytes);
 
-        // Мокаем per-item canvas
         when(() => mockCanvasRepo.getGameCanvasItems(any()))
             .thenAnswer((_) async => <CanvasItem>[]);
 
@@ -667,7 +656,7 @@ void main() {
             id: 1,
             mediaType: MediaType.animation,
             externalId: 500,
-            platformId: 1, // AnimationSource.tvShow
+            platformId: 1,
           ),
         ];
 
@@ -703,7 +692,7 @@ void main() {
             id: 1,
             mediaType: MediaType.animation,
             externalId: 600,
-            platformId: 0, // AnimationSource.movie
+            platformId: 0,
           ),
         ];
 
@@ -734,7 +723,7 @@ void main() {
         final Uint8List canvasBytes = Uint8List.fromList(<int>[10, 20, 30]);
         const String testUrl = 'https://example.com/image.png';
 
-        // FNV-1a hash of testUrl
+        // Reproduce ExportService's FNV-1a 32-bit hash of testUrl.
         int hash = 0x811c9dc5;
         for (int i = 0; i < testUrl.length; i++) {
           hash ^= testUrl.codeUnitAt(i);
@@ -759,7 +748,6 @@ void main() {
               ImageType.canvasImage,
               expectedImageId,
             )).thenAnswer((_) async => canvasBytes);
-        // Cover images — нет элементов
         when(() => mockImageCache.readImageBytes(
               ImageType.gameCover,
               any(),
@@ -809,11 +797,9 @@ void main() {
           createdAt: testDate,
         );
 
-        // Collection canvas — пустой
         when(() => mockCanvasRepo.getItems(1))
             .thenAnswer((_) async => <CanvasItem>[]);
 
-        // Per-item canvas с image
         when(() => mockCanvasRepo.getGameCanvasItems(10))
             .thenAnswer((_) async => <CanvasItem>[perItemImageCanvasItem]);
         when(() => mockCanvasRepo.getGameCanvasConnections(10))
@@ -874,7 +860,6 @@ void main() {
           1,
         );
 
-        // Никаких canvas_images ключей
         final bool hasCanvasImages = xcoll.images.keys
             .any((String k) => k.startsWith('canvas_images/'));
         expect(hasCanvasImages, isFalse);
@@ -962,13 +947,11 @@ void main() {
           1,
         );
 
-        // Только один ключ canvas_images
         final int canvasImageCount = xcoll.images.keys
             .where((String k) => k.startsWith('canvas_images/'))
             .length;
         expect(canvasImageCount, equals(1));
 
-        // readImageBytes вызван только 1 раз
         verify(() => mockImageCache.readImageBytes(
               ImageType.canvasImage,
               imageId,
@@ -1025,9 +1008,7 @@ void main() {
         final XcollFile xcoll =
             await sutImages.createFullExport(collection, items, 1);
 
-        // Обложка
         expect(xcoll.images.containsKey('game_covers/100'), isTrue);
-        // Canvas image
         expect(
           xcoll.images.containsKey('canvas_images/$canvasImageId'),
           isTrue,
@@ -1067,7 +1048,6 @@ void main() {
         expect(restored.name, equals('Round Trip'));
         expect(restored.items.length, equals(2));
 
-        // Восстановление через fromExport
         final CollectionItem restoredGame =
             CollectionItem.fromExport(restored.items[0]);
         expect(restoredGame.mediaType, equals(MediaType.game));
@@ -1084,8 +1064,6 @@ void main() {
       });
     });
 
-    // ==================== media в full export ====================
-
     group('media в full export', () {
       late MockCanvasRepository mockCanvasRepo;
       late MockImageCacheService mockImageCache;
@@ -1094,7 +1072,6 @@ void main() {
         mockCanvasRepo = MockCanvasRepository();
         mockImageCache = MockImageCacheService();
 
-        // Стандартные моки для canvas
         when(() => mockCanvasRepo.getViewport(any()))
             .thenAnswer((_) async => null);
         when(() => mockCanvasRepo.getItems(any()))
@@ -1104,7 +1081,6 @@ void main() {
         when(() => mockCanvasRepo.getGameCanvasItems(any()))
             .thenAnswer((_) async => <CanvasItem>[]);
 
-        // Стандартные моки для images
         when(() => mockImageCache.readImageBytes(any(), any()))
             .thenAnswer((_) async => null);
       });
@@ -1338,7 +1314,7 @@ void main() {
             id: 1,
             mediaType: MediaType.game,
             externalId: 42,
-            // game: null — нет joined данных
+            // Omit `game` to simulate missing joined data.
           ),
         ];
 
@@ -1638,7 +1614,6 @@ void main() {
         const TvShow testTvShow = TvShow(tmdbId: 1399, title: 'GoT');
 
         final Collection collection = createTestCollection();
-        // Два элемента с одинаковым tvShow ID
         final List<CollectionItem> items = <CollectionItem>[
           createTestCollectionItem(
             id: 1,
@@ -1659,7 +1634,6 @@ void main() {
         final XcollFile xcoll =
             await sutMedia.createFullExport(collection, items, 1);
 
-        // getTvSeasonsByShowId вызван только 1 раз (дедупликация)
         verify(() => mockDatabase.getTvSeasonsByShowId(1399)).called(1);
         final List<dynamic> seasons =
             xcoll.media['tv_seasons'] as List<dynamic>;
@@ -1828,7 +1802,6 @@ void main() {
         final XcollFile xcoll =
             await sut.createFullExport(collection, items, 1);
 
-        // getEpisodesByShowId вызван только 1 раз (дедупликация через Set)
         verify(() => mockDatabase.getEpisodesByShowId(1399)).called(1);
         expect(xcoll.media.containsKey('tv_episodes'), isTrue);
       });
@@ -1988,7 +1961,8 @@ void main() {
         const Game game2 = Game(
           id: 43,
           name: 'Game 2',
-          platformIds: <int>[48], // 48 уже есть в game1
+          // platformId 48 overlaps with game1 to exercise dedup.
+          platformIds: <int>[48],
         );
 
         final Collection collection = createTestCollection();
@@ -2011,7 +1985,6 @@ void main() {
             await sutMedia.createFullExport(collection, items, 1);
 
         expect(xcoll.media.containsKey('platforms'), isTrue);
-        // getPlatformsByIds вызван 1 раз с дедуплицированным списком
         verify(() => mockDatabase.getPlatformsByIds(any())).called(1);
       });
     });

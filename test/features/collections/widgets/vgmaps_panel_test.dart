@@ -7,7 +7,6 @@ import 'package:xerabora/features/collections/providers/vgmaps_panel_provider.da
 
 const int testCollectionId = 10;
 
-/// Тестовый notifier для VGMaps панели.
 class TestVgMapsPanelNotifier extends VgMapsPanelNotifier {
   TestVgMapsPanelNotifier(this._initialState);
 
@@ -49,11 +48,8 @@ Widget buildTestWidget({
   );
 }
 
-/// Тестируемая версия VGMaps панели без WebView.
-///
-/// Реальный VgMapsPanel использует webview_windows, который требует
-/// Windows-платформу и не работает в тестах. Этот виджет воспроизводит
-/// UI-структуру панели для тестирования.
+// Real VgMapsPanel uses webview_windows which can't run in widget tests;
+// this stub mirrors the panel UI structure for assertions.
 class _TestableVgMapsPanel extends ConsumerWidget {
   const _TestableVgMapsPanel({
     required this.collectionId,
@@ -77,7 +73,6 @@ class _TestableVgMapsPanel extends ConsumerWidget {
       color: colorScheme.surface,
       child: Column(
         children: <Widget>[
-          // Заголовок
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Row(
@@ -105,7 +100,6 @@ class _TestableVgMapsPanel extends ConsumerWidget {
           ),
           const Divider(height: 1),
 
-          // Тулбар навигации
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
             child: Row(
@@ -165,10 +159,8 @@ class _TestableVgMapsPanel extends ConsumerWidget {
           ),
           const Divider(height: 1),
 
-          // Индикатор загрузки
           if (state.isLoading) const LinearProgressIndicator(),
 
-          // Ошибка
           if (state.error != null)
             Container(
               padding: const EdgeInsets.all(8),
@@ -183,12 +175,10 @@ class _TestableVgMapsPanel extends ConsumerWidget {
               ),
             ),
 
-          // Заглушка WebView
           const Expanded(
             child: Center(child: Text('WebView placeholder')),
           ),
 
-          // Нижняя панель с захваченным изображением
           if (state.capturedImageUrl != null)
             Container(
               padding: const EdgeInsets.all(8),
@@ -454,7 +444,6 @@ void main() {
         ));
 
         expect(find.text('Image captured'), findsOneWidget);
-        // Не должно быть текста с размерами
         expect(find.textContaining('x'), findsNothing);
       });
 

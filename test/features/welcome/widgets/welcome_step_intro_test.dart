@@ -1,8 +1,3 @@
-// Smoke-тесты для WelcomeStepIntro — шаг 1 Welcome Wizard.
-// Статичная промо-страница без интерактива; проверяем только что
-// рендерится без исключений и имеет скролл для длинного контента.
-// Конкретные лейблы / иконки / цвета не проверяем — меняются с дизайном.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/welcome/widgets/welcome_step_intro.dart';

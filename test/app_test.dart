@@ -92,9 +92,7 @@ void main() {
         ),
       );
 
-      // Прокручиваем анимацию splash (2с контроллер)
       await tester.pump(const Duration(seconds: 2));
-      // Завершаем анимацию перехода (fade 500мс)
       await tester.pumpAndSettle();
 
       expect(find.byType(AppShell), findsOneWidget);
@@ -117,9 +115,7 @@ void main() {
         ),
       );
 
-      // Прокручиваем анимацию splash (2с контроллер)
       await tester.pump(const Duration(seconds: 2));
-      // Завершаем анимацию перехода (fade 500мс)
       await tester.pumpAndSettle();
 
       expect(find.byType(WelcomeScreen), findsOneWidget);
@@ -150,7 +146,6 @@ void main() {
     testWidgets(
         'AppShell на узком экране (<600px) рендерит AppBottomBar, а не AppSidebar',
         (WidgetTester tester) async {
-      // Симулируем phone portrait: 400×800 логических пикселей.
       tester.view.physicalSize = const Size(400, 800);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -184,7 +179,6 @@ void main() {
     testWidgets(
         'AppShell на широком экране (>=600px) рендерит AppSidebar, а не AppBottomBar',
         (WidgetTester tester) async {
-      // Симулируем desktop: 1200×800.
       tester.view.physicalSize = const Size(1200, 800);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);

@@ -1,10 +1,5 @@
 import 'package:xerabora/l10n/app_localizations.dart';
-// Тесты для GamepadListener — маппинг событий и поведение с TextField.
-//
-// Платформенная проверка: GamepadListener подписывается на events
-// только на десктопе (kIsMobile == false). В тестовой среде kIsMobile == false,
-// поэтому подписка создаётся и тесты работают как прежде.
-// На Android/iOS подписка пропускается — геймпад не используется.
+// GamepadListener subscribes only when kIsMobile is false; tests run as desktop.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -33,10 +28,8 @@ GamepadEvent _event({
   );
 }
 
-/// Эмит события и ожидание прохождения через цепочку стримов.
-///
-/// Стримы GamepadService используют async broadcast controllers,
-/// поэтому в тестах нужен runAsync для обработки microtasks.
+/// GamepadService streams are async broadcast — runAsync drains the microtasks
+/// across the source → service → listener hops.
 Future<void> emitAndProcess(
   WidgetTester tester,
   MockGamepadEventSource source,
@@ -44,7 +37,6 @@ Future<void> emitAndProcess(
 ) async {
   await tester.runAsync(() async {
     source.emit(event);
-    // Две async hop: source → service → listener
     await Future<void>.delayed(Duration.zero);
     await Future<void>.delayed(Duration.zero);
   });
@@ -202,7 +194,6 @@ void main() {
         child: const Text('test'),
       ));
 
-      // POV up = 0
       await emitAndProcess(
         tester,
         mockSource,
@@ -222,7 +213,6 @@ void main() {
         child: const Text('test'),
       ));
 
-      // POV down = 18000
       await emitAndProcess(
         tester,
         mockSource,
@@ -244,7 +234,6 @@ void main() {
         child: const Text('test'),
       ));
 
-      // Left Stick Y full down = 65535
       await emitAndProcess(
         tester,
         mockSource,
@@ -264,7 +253,6 @@ void main() {
         child: const Text('test'),
       ));
 
-      // Left Stick Y in center = 32767
       await emitAndProcess(
         tester,
         mockSource,
@@ -295,19 +283,16 @@ void main() {
         ),
       ));
 
-      // Фокусируемся на TextField
       textFieldFocus.requestFocus();
       await tester.pump();
       expect(textFieldFocus.hasFocus, isTrue);
 
-      // Нажимаем B
       await emitAndProcess(
         tester,
         mockSource,
         _event(key: 'button-1', value: 1.0, type: KeyType.button),
       );
 
-      // Фокус должен быть снят
       expect(textFieldFocus.hasFocus, isFalse);
 
       textFieldFocus.dispose();
@@ -372,7 +357,6 @@ void main() {
       textFieldFocus.requestFocus();
       await tester.pump();
 
-      // POV left = 27000
       await emitAndProcess(
         tester,
         mockSource,
@@ -411,12 +395,10 @@ void main() {
         ),
       ));
 
-      // Фокусируемся на первом TextField
       textField1Focus.requestFocus();
       await tester.pump();
       expect(textField1Focus.hasFocus, isTrue);
 
-      // D-pad Down = POV 18000
       await emitAndProcess(
         tester,
         mockSource,
@@ -424,7 +406,6 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Первый TextField должен потерять фокус
       expect(textField1Focus.hasFocus, isFalse);
 
       textField1Focus.dispose();
@@ -455,14 +436,14 @@ void main() {
       textFieldFocus.requestFocus();
       await tester.pump();
 
-      // LB не является navigation action → не блокируется
+      // LB is not a navigation action, so the text field does not block it.
       await emitAndProcess(
         tester,
         mockSource,
         _event(key: 'button-4', value: 1.0, type: KeyType.button),
       );
 
-      expect(receivedAction, GamepadAction.previousTab); // LB не navigation → не блокируется
+      expect(receivedAction, GamepadAction.previousTab);
 
       textFieldFocus.dispose();
     });
@@ -476,7 +457,6 @@ void main() {
         child: const Text('test'),
       ));
 
-      // Все типы событий без callbacks
       await emitAndProcess(
         tester,
         mockSource,
@@ -515,17 +495,14 @@ void main() {
         ),
       ));
 
-      // До события — mouse
       expect(capturedRef.read(inputModeProvider), InputMode.mouse);
 
-      // Отправляем gamepad-событие
       await emitAndProcess(
         tester,
         mockSource,
         _event(key: 'button-0', value: 1.0, type: KeyType.button),
       );
 
-      // После — gamepad
       expect(capturedRef.read(inputModeProvider), InputMode.gamepad);
     });
   });

@@ -1,5 +1,3 @@
-// Widget tests for ItemDetailsSheet.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -18,8 +16,6 @@ void main() {
     prefs = await SharedPreferences.getInstance();
   });
 
-  // Helper to build the test widget that opens ItemDetailsSheet
-  // as a modal bottom sheet.
   Widget buildTestApp({
     required String title,
     IconData icon = Icons.movie,
@@ -70,18 +66,14 @@ void main() {
     );
   }
 
-  // Opens the bottom sheet and lets animations settle.
   Future<void> openSheet(WidgetTester tester) async {
     await tester.tap(find.text('Open Sheet'));
     await tester.pumpAndSettle();
   }
 
-  // Opens the bottom sheet with multiple pump() calls instead of
-  // pumpAndSettle, to avoid timeout from infinite animations
-  // like CircularProgressIndicator inside CachedImage.
+  // Avoids pumpAndSettle timeout from CachedImage's CircularProgressIndicator.
   Future<void> openSheetWithPump(WidgetTester tester) async {
     await tester.tap(find.text('Open Sheet'));
-    // Pump several frames to let the sheet animate in.
     for (int i = 0; i < 10; i++) {
       await tester.pump(const Duration(milliseconds: 50));
     }
@@ -142,7 +134,6 @@ void main() {
       );
       await openSheet(tester);
 
-      // No genre chips rendered.
       expect(find.text('Action'), findsNothing);
     });
 
@@ -153,7 +144,6 @@ void main() {
       );
       await openSheet(tester);
 
-      // No genre chips rendered.
       expect(find.text('Action'), findsNothing);
     });
 
@@ -163,7 +153,6 @@ void main() {
       );
       await openSheet(tester);
 
-      // Year is rendered inline in Text.rich with title.
       expect(find.textContaining('2023'), findsOneWidget);
     });
 
@@ -220,7 +209,6 @@ void main() {
       );
       await openSheet(tester);
 
-      // Sheet is visible.
       expect(find.text('Tap Test'), findsOneWidget);
 
       await tester.tap(
@@ -229,7 +217,6 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(callbackCalled, isTrue);
-      // Sheet should be popped (title no longer visible in the sheet).
       expect(find.text('Tap Test'), findsNothing);
     });
 
@@ -255,7 +242,6 @@ void main() {
       );
       await openSheet(tester);
 
-      // Overview section should not render — check overview text is absent
       expect(
         find.text('A great movie about dreams within dreams.'),
         findsNothing,
@@ -299,9 +285,6 @@ void main() {
           onAddToCollection: () {},
         ),
       );
-      // Use openSheetWithPump because CachedImage has
-      // a CircularProgressIndicator placeholder that prevents
-      // pumpAndSettle from completing.
       await openSheetWithPump(tester);
 
       expect(find.textContaining('Full Movie'), findsOneWidget);
@@ -339,8 +322,7 @@ void main() {
         );
         await openSheetWithPump(tester);
 
-        // GyroscopeParallaxImage рендерится даже без backdropUrl —
-        // постер используется как fallback фон.
+        // Poster is used as fallback backdrop when backdropUrl is null.
         expect(find.byType(GyroscopeParallaxImage), findsOneWidget);
       });
 
@@ -365,7 +347,6 @@ void main() {
         );
         await openSheetWithPump(tester);
 
-        // Ровно один GyroscopeParallaxImage — backdrop, не fallback.
         final Finder backdrops = find.byType(GyroscopeParallaxImage);
         expect(backdrops, findsOneWidget);
         final GyroscopeParallaxImage widget =

@@ -22,7 +22,6 @@ void main() {
     prefs = await SharedPreferences.getInstance();
   });
 
-  /// Создаёт пустые override для провайдеров collected IDs.
   List<Override> emptyCollectedOverrides() {
     return <Override>[
       collectedMovieIdsProvider.overrideWith(
@@ -49,7 +48,6 @@ void main() {
     ];
   }
 
-  /// Создаёт override с конкретными ID в коллекции.
   List<Override> collectedOverrides({
     Map<int, List<CollectedItemInfo>> movies =
         const <int, List<CollectedItemInfo>>{},
@@ -124,7 +122,6 @@ void main() {
       );
       await tester.pump();
 
-      // Should show shimmer grid (GridView exists)
       expect(find.byType(GridView), findsOneWidget);
     });
 
@@ -270,7 +267,6 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Зелёная галочка check_circle для tmdbId=42
       expect(find.byIcon(Icons.check), findsOneWidget);
     });
 
@@ -440,7 +436,6 @@ void main() {
         );
         await tester.pump();
 
-        // Simulate loading completion with few items that won't fill viewport.
         notifier.completeLoading(
           const <Object>[
             Movie(tmdbId: 1, title: 'M1', releaseYear: 2024),
@@ -449,8 +444,8 @@ void main() {
           hasMore: true,
         );
 
-        await tester.pump(); // Rebuild + post-frame callback
-        await tester.pump(); // Ensure callback executed
+        await tester.pump();
+        await tester.pump();
 
         expect(loadMoreCalls, greaterThan(0));
       });
@@ -489,7 +484,6 @@ void main() {
         );
         await tester.pump();
 
-        // Complete with hasMore: false — should not trigger auto-load.
         notifier.completeLoading(
           const <Object>[
             Movie(tmdbId: 1, title: 'M1', releaseYear: 2024),
@@ -537,7 +531,6 @@ void main() {
         );
         await tester.pump();
 
-        // Set loading state with items — listener should skip (isLoadingMore).
         notifier.setLoadingMore(
           const <Object>[
             Movie(tmdbId: 1, title: 'M1', releaseYear: 2024),
@@ -584,7 +577,6 @@ void main() {
         );
         await tester.pump();
 
-        // Set state with items but isLoading still true — listener should skip.
         notifier.setStillLoading(
           const <Object>[
             Movie(tmdbId: 1, title: 'M1', releaseYear: 2024),
@@ -631,7 +623,6 @@ void main() {
         );
         await tester.pump();
 
-        // Complete with empty items — listener should skip.
         notifier.completeLoading(
           const <Object>[],
           hasMore: true,
@@ -782,7 +773,6 @@ void main() {
   });
 }
 
-/// Тестовый нотифайер с начальным состоянием.
 class _TestBrowseNotifier extends BrowseNotifier {
   _TestBrowseNotifier(this._initialState);
 
@@ -792,7 +782,6 @@ class _TestBrowseNotifier extends BrowseNotifier {
   BrowseState build() => _initialState;
 }
 
-/// Тестовый нотифайер для проверки viewport fill auto-load.
 class _ViewportFillTestNotifier extends BrowseNotifier {
   _ViewportFillTestNotifier({required this.onLoadMore});
 
@@ -802,7 +791,6 @@ class _ViewportFillTestNotifier extends BrowseNotifier {
   BrowseState build() =>
       const BrowseState(sourceId: 'movies', isLoading: true);
 
-  /// Имитирует завершение загрузки.
   void completeLoading(List<Object> items, {required bool hasMore}) {
     state = state.copyWith(
       items: items,
@@ -812,7 +800,6 @@ class _ViewportFillTestNotifier extends BrowseNotifier {
     );
   }
 
-  /// Имитирует состояние загрузки следующей страницы.
   void setLoadingMore(List<Object> items) {
     state = state.copyWith(
       items: items,
@@ -823,7 +810,6 @@ class _ViewportFillTestNotifier extends BrowseNotifier {
     );
   }
 
-  /// Имитирует состояние первичной загрузки с элементами.
   void setStillLoading(List<Object> items) {
     state = state.copyWith(
       items: items,

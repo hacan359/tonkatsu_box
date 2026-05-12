@@ -1,5 +1,3 @@
-// Тесты для TraktImportScreen (импорт из Trakt.tv ZIP).
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -152,7 +150,6 @@ void main() {
   });
 }
 
-/// Тестовый notifier для коллекций с предопределёнными данными.
 class _TestCollectionsNotifier extends CollectionsNotifier {
   _TestCollectionsNotifier(this._collections);
 
@@ -164,7 +161,6 @@ class _TestCollectionsNotifier extends CollectionsNotifier {
   }
 }
 
-/// Fake settings notifier с дефолтным состоянием (без TMDB ключа).
 class _FakeSettingsNotifier extends SettingsNotifier {
   @override
   SettingsState build() {

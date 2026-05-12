@@ -7,10 +7,7 @@ import '../services/api_key_initializer.dart';
 import '../../shared/models/game.dart';
 import '../../shared/models/platform.dart';
 
-/// Провайдер для IGDB API клиента.
-///
-/// При создании устанавливает credentials из [apiKeysProvider],
-/// загруженного в main() до runApp().
+// Credentials seeded from apiKeysProvider loaded in main() before runApp().
 final Provider<IgdbApi> igdbApiProvider = Provider<IgdbApi>((Ref ref) {
   final IgdbApi api = IgdbApi();
   final ApiKeys keys = ref.read(apiKeysProvider);
@@ -24,16 +21,13 @@ final Provider<IgdbApi> igdbApiProvider = Provider<IgdbApi>((Ref ref) {
   return api;
 });
 
-/// Результат аутентификации в Twitch OAuth.
 class TwitchAuthResult {
-  /// Создаёт экземпляр [TwitchAuthResult].
   const TwitchAuthResult({
     required this.accessToken,
     required this.expiresIn,
     required this.tokenType,
   });
 
-  /// Создаёт [TwitchAuthResult] из JSON.
   factory TwitchAuthResult.fromJson(Map<String, dynamic> json) {
     return TwitchAuthResult(
       accessToken: json['access_token'] as String,
@@ -42,51 +36,34 @@ class TwitchAuthResult {
     );
   }
 
-  /// OAuth access token.
   final String accessToken;
-
-  /// Время жизни токена в секундах.
   final int expiresIn;
-
-  /// Тип токена (обычно "bearer").
   final String tokenType;
 
-  /// Время истечения токена (Unix timestamp).
+  /// Unix timestamp when the token expires.
   int get expiresAt {
     return DateTime.now().millisecondsSinceEpoch ~/ 1000 + expiresIn;
   }
 }
 
-/// Исключение при ошибках IGDB API.
 class IgdbApiException implements Exception {
-  /// Создаёт [IgdbApiException].
   const IgdbApiException(this.message, {this.statusCode, this.detail});
 
-  /// Сообщение об ошибке.
   final String message;
-
-  /// HTTP код ответа (если есть).
   final int? statusCode;
-
-  /// Подробная отладочная информация (URL, метод, причина).
   final String? detail;
 
   @override
   String toString() => 'IgdbApiException: $message (status: $statusCode)';
 }
 
-/// Клиент для работы с IGDB API.
-///
-/// Использует Twitch OAuth для аутентификации.
-/// Документация: https://api-docs.igdb.com/
-/// Callback при обновлении токена IGDB.
+// Twitch OAuth + IGDB v4. Docs: https://api-docs.igdb.com/
 typedef IgdbTokenRefreshedCallback = void Function(
   String accessToken,
   int expiresAt,
 );
 
 class IgdbApi {
-  /// Создаёт экземпляр [IgdbApi].
   IgdbApi({Dio? dio})
       : _dio = dio ??
             Dio(BaseOptions(
@@ -106,14 +83,11 @@ class IgdbApi {
   String? _clientSecret;
   String? _accessToken;
 
-  /// Callback, вызываемый при автоматическом обновлении токена.
-  ///
-  /// Позволяет сохранить новый токен в SharedPreferences.
+  /// Invoked on auto-refresh so callers can persist the new token.
   IgdbTokenRefreshedCallback? onTokenRefreshed;
 
   bool _isRefreshing = false;
 
-  /// Устанавливает учётные данные для API.
   void setCredentials({
     required String clientId,
     required String accessToken,
@@ -124,16 +98,12 @@ class IgdbApi {
     _accessToken = accessToken;
   }
 
-  /// Очищает учётные данные.
   void clearCredentials() {
     _clientId = null;
     _clientSecret = null;
     _accessToken = null;
   }
 
-  /// Получает OAuth токен от Twitch.
-  ///
-  /// Throws [IgdbApiException] при ошибке аутентификации.
   Future<TwitchAuthResult> getAccessToken({
     required String clientId,
     required String clientSecret,
@@ -183,9 +153,6 @@ class IgdbApi {
     }
   }
 
-  /// Проверяет валидность учётных данных.
-  ///
-  /// Возвращает true, если учётные данные корректны.
   Future<bool> validateCredentials({
     required String clientId,
     required String clientSecret,
@@ -198,10 +165,6 @@ class IgdbApi {
     }
   }
 
-  /// Загружает список всех платформ из IGDB.
-  ///
-  /// Возвращает список платформ (обычно ~200 записей).
-  /// Throws [IgdbApiException] при ошибке запроса.
   Future<List<Platform>> fetchPlatforms() async {
     _ensureCredentials();
 
@@ -243,10 +206,6 @@ class IgdbApi {
     }
   }
 
-  /// Загружает платформы по конкретным ID из IGDB.
-  ///
-  /// В отличие от [fetchPlatforms], загружает только указанные платформы.
-  /// Throws [IgdbApiException] при ошибке запроса.
   Future<List<Platform>> fetchPlatformsByIds(List<int> ids) async {
     if (ids.isEmpty) return <Platform>[];
     _ensureCredentials();
@@ -276,21 +235,11 @@ class IgdbApi {
     }
   }
 
-  /// Поля игры для запросов к IGDB.
   static const String _gameFields = '''
     fields id, name, summary, rating, rating_count, first_release_date,
            cover.image_id, artworks.image_id, genres.name, platforms, url;
   ''';
 
-  /// Ищет игры по названию.
-  ///
-  /// [query] — строка поиска.
-  /// [platformIds] — опциональный фильтр по платформам (несколько).
-  /// [limit] — максимальное количество результатов (по умолчанию 20).
-  /// [offset] — смещение для пагинации (по умолчанию 0).
-  ///
-  /// Возвращает список найденных игр.
-  /// Throws [IgdbApiException] при ошибке запроса.
   Future<List<Game>> searchGames({
     required String query,
     List<int>? genreIds,
@@ -309,15 +258,12 @@ class IgdbApi {
     }
 
     try {
-      // Экранируем кавычки в запросе
       final String escapedQuery = query.replaceAll('"', '\\"');
 
-      // Формируем IGDB query в правильном порядке:
-      // fields -> where -> search -> limit
+      // IGDB query order: fields -> where -> search -> limit.
       final StringBuffer body = StringBuffer(_gameFields);
 
-      // Добавляем where-клаузу с фильтрами, если есть.
-      // IGDB: `field = (a,b)` означает ANY-of (OR match).
+      // IGDB: `field = (a,b)` is ANY-of (OR match).
       final List<String> conditions = <String>[];
       if (platformIds != null && platformIds.isNotEmpty) {
         conditions.add('platforms = (${platformIds.join(",")})');
@@ -378,17 +324,11 @@ class IgdbApi {
     }
   }
 
-  /// Максимальное количество подзапросов в одном multiquery.
+  /// IGDB multiquery cap: 10 sub-queries per request.
   static const int maxMultiQueryBatch = 10;
 
-  /// Максимальное количество результатов на подзапрос в multiquery.
   static const int _multiSearchLimit = 20;
 
-  /// Ищет несколько игр по названию в одном multiquery-запросе.
-  ///
-  /// Каждый элемент [queries] содержит название и опциональный platformId.
-  /// Возвращает маппинг: индекс запроса → список найденных игр.
-  /// Throws [IgdbApiException] при ошибке запроса.
   Future<Map<int, List<Game>>> multiSearchGamesByName(
     List<({String name, int? platformId})> queries,
   ) async {
@@ -454,16 +394,9 @@ class IgdbApi {
     }
   }
 
-  /// IGDB `external_game_source` для Steam.
+  /// IGDB `external_game_source` value for Steam.
   static const int _steamSource = 1;
 
-  /// Ищет игры в IGDB по Steam App ID через `external_games`.
-  ///
-  /// [steamAppIds] — список Steam appId (строки).
-  ///
-  /// Возвращает маппинг: Steam appId → [Game].
-  /// Игры, не найденные в IGDB, отсутствуют в результате.
-  /// Throws [IgdbApiException] при ошибке запроса.
   Future<Map<String, Game>> lookupSteamGames(
     List<String> steamAppIds,
   ) async {
@@ -471,7 +404,7 @@ class IgdbApi {
     _ensureCredentials();
 
     try {
-      // Шаг 1: Steam appId → IGDB game ID через external_games.
+      // Step 1: Steam appId -> IGDB game id via external_games.
       final Map<String, int> uidToGameId = <String, int>{};
 
       for (int offset = 0; offset < steamAppIds.length; offset += 500) {
@@ -509,16 +442,14 @@ class IgdbApi {
 
       if (uidToGameId.isEmpty) return <String, Game>{};
 
-      // Шаг 2: загрузить полные данные игр по IGDB ID (без дубликатов).
+      // Step 2: fetch full game data by IGDB id (deduped).
       final List<Game> games =
           await getGamesByIds(uidToGameId.values.toSet().toList());
 
-      // Индексируем по id для быстрого доступа.
       final Map<int, Game> gamesById = <int, Game>{
         for (final Game game in games) game.id: game,
       };
 
-      // Шаг 3: собрать результат Steam appId → Game.
       final Map<String, Game> result = <String, Game>{};
       for (final MapEntry<String, int> entry in uidToGameId.entries) {
         final Game? game = gamesById[entry.value];
@@ -533,10 +464,6 @@ class IgdbApi {
     }
   }
 
-  /// Получает игру по ID.
-  ///
-  /// Возвращает игру или null, если не найдена.
-  /// Throws [IgdbApiException] при ошибке запроса.
   Future<Game?> getGameById(int gameId) async {
     _ensureCredentials();
 
@@ -562,12 +489,6 @@ class IgdbApi {
     }
   }
 
-  /// Получает несколько игр по списку ID.
-  ///
-  /// [gameIds] — список ID игр для загрузки.
-  ///
-  /// Возвращает список найденных игр (может быть меньше запрошенного).
-  /// Throws [IgdbApiException] при ошибке запроса.
   Future<List<Game>> getGamesByIds(List<int> gameIds) async {
     _ensureCredentials();
 
@@ -576,7 +497,7 @@ class IgdbApi {
     }
 
     try {
-      // IGDB ограничивает запрос 500 записями
+      // IGDB caps a single request at 500 records.
       final List<Game> allGames = <Game>[];
 
       for (int i = 0; i < gameIds.length; i += 500) {
@@ -613,14 +534,6 @@ class IgdbApi {
     }
   }
 
-  /// Получает топ игр по платформе, отсортированных по рейтингу.
-  ///
-  /// [platformId] — ID платформы IGDB (например, 19 = SNES).
-  /// [minRatingCount] — минимальное количество оценок (по умолчанию 20).
-  /// [limit] — максимальное количество результатов (по умолчанию 50).
-  ///
-  /// Возвращает список игр, отсортированных по рейтингу (убывание).
-  /// Throws [IgdbApiException] при ошибке запроса.
   Future<List<Game>> getTopGamesByPlatform({
     required int platformId,
     int minRatingCount = 20,
@@ -659,10 +572,6 @@ class IgdbApi {
     }
   }
 
-  /// Загружает список жанров из IGDB.
-  ///
-  /// Возвращает список жанров (обычно ~20 записей).
-  /// Throws [IgdbApiException] при ошибке запроса.
   Future<List<Map<String, dynamic>>> fetchGenres() async {
     _ensureCredentials();
 
@@ -688,12 +597,6 @@ class IgdbApi {
     }
   }
 
-  /// Просматривает игры без текстового запроса (Browse mode).
-  ///
-  /// Фильтрует по жанру, платформе, году/декаде.
-  /// [sortBy] — строка сортировки IGDB (например 'rating desc').
-  /// [minRatingCount] — минимальное количество оценок.
-  /// Throws [IgdbApiException] при ошибке запроса.
   Future<List<Game>> browseGames({
     List<int>? genreIds,
     List<int>? platformIds,
@@ -771,7 +674,7 @@ class IgdbApi {
     }
   }
 
-  /// Обрабатывает DioException и возвращает IgdbApiException.
+  // Maps Dio errors to user-facing messages; 401 = bad/expired token, 429 = rate limit.
   IgdbApiException _handleDioException(DioException e, String defaultMessage) {
     final int? statusCode = e.response?.statusCode;
     String message = defaultMessage;
@@ -798,9 +701,7 @@ class IgdbApi {
     );
   }
 
-  /// POST запрос к IGDB API с автоматическим обновлением токена при 401.
-  ///
-  /// При получении 401 пытается обновить токен и повторить запрос один раз.
+  // On 401, refresh the Twitch token once and retry the request.
   Future<Response<dynamic>> _igdbPost(
     String endpoint, {
     required String data,
@@ -818,7 +719,6 @@ class IgdbApi {
       );
     } on DioException catch (e) {
       if (e.response?.statusCode == 401 && await _tryRefreshToken()) {
-        // Повторяем запрос с новым токеном.
         return _dio.post<dynamic>(
           '$_igdbBaseUrl$endpoint',
           options: Options(
@@ -834,9 +734,7 @@ class IgdbApi {
     }
   }
 
-  /// Пытается обновить токен при 401 ошибке.
-  ///
-  /// Возвращает `true` если токен обновлён и запрос можно повторить.
+  // Guarded by _isRefreshing to avoid concurrent refresh storms on parallel 401s.
   Future<bool> _tryRefreshToken() async {
     if (_isRefreshing) return false;
     if (_clientId == null || _clientSecret == null) return false;
@@ -866,7 +764,6 @@ class IgdbApi {
     }
   }
 
-  /// Закрывает HTTP клиент.
   void dispose() {
     _dio.close();
   }

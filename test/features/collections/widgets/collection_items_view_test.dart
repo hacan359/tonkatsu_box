@@ -1,5 +1,3 @@
-// Виджет-тесты для CollectionItemsView.
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,8 +13,6 @@ import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/widgets/media_poster_card.dart';
 import 'package:xerabora/features/settings/providers/settings_provider.dart';
-
-// -- Тестовые данные --
 
 CollectionItem _makeItem({
   int id = 1,
@@ -43,8 +39,6 @@ CollectionItem _makeItem({
   );
 }
 
-// -- Тестовый wrapper --
-
 Widget _buildTestApp({
   required Widget child,
   List<Override> overrides = const <Override>[],
@@ -59,7 +53,6 @@ Widget _buildTestApp({
   );
 }
 
-/// Формирует стандартные overrides для провайдеров, которые читает виджет.
 List<Override> _defaultOverrides({
   CollectionSortMode sortMode = CollectionSortMode.addedDate,
 }) {
@@ -78,8 +71,6 @@ List<Override> _defaultOverrides({
 
 void main() {
   group('CollectionItemsView', () {
-    // ==================== Пустое состояние ====================
-
     group('пустое состояние', () {
       testWidgets(
         'должен показать пустое состояние при пустом списке элементов',
@@ -95,9 +86,7 @@ void main() {
           ));
           await tester.pumpAndSettle();
 
-          // Иконка shelves в пустом состоянии
           expect(find.byIcon(Icons.shelves), findsOneWidget);
-          // Заголовок "No Items Yet"
           expect(find.text('No Items Yet'), findsOneWidget);
         },
       );
@@ -158,14 +147,11 @@ void main() {
           ));
           await tester.pumpAndSettle();
 
-          // Пустое состояние показывается вне зависимости от режима
           expect(find.byIcon(Icons.shelves), findsOneWidget);
           expect(find.text('No Items Yet'), findsOneWidget);
         },
       );
     });
-
-    // ==================== Grid-режим ====================
 
     group('grid-режим', () {
       testWidgets(
@@ -189,7 +175,6 @@ void main() {
           await tester.pumpAndSettle();
 
           expect(find.byType(GridView), findsOneWidget);
-          // Не должно быть ListView
           expect(find.byType(ListView), findsNothing);
         },
       );
@@ -246,8 +231,6 @@ void main() {
       );
     });
 
-    // ==================== List-режим ====================
-
     group('list-режим', () {
       testWidgets(
         'должен показать ListView когда isGridMode=false',
@@ -268,7 +251,6 @@ void main() {
           ));
           await tester.pumpAndSettle();
 
-          // ListView оборачивается в RefreshIndicator
           expect(find.byType(RefreshIndicator), findsOneWidget);
           expect(find.byType(ListView), findsOneWidget);
           expect(find.byType(GridView), findsNothing);
@@ -344,14 +326,11 @@ void main() {
           ));
           await tester.pumpAndSettle();
 
-          // В grid-режиме используются MediaPosterCard, а не CollectionItemTile
           expect(find.byType(CollectionItemTile), findsNothing);
           expect(find.byType(MediaPosterCard), findsOneWidget);
         },
       );
     });
-
-    // ==================== Reorderable list ====================
 
     group('reorderable list', () {
       testWidgets(
@@ -397,7 +376,6 @@ void main() {
           ));
           await tester.pumpAndSettle();
 
-          // drag_handle иконка внутри CollectionItemTile с showDragHandle=true
           expect(find.byIcon(Icons.drag_handle), findsOneWidget);
         },
       );
@@ -421,7 +399,6 @@ void main() {
           ));
           await tester.pumpAndSettle();
 
-          // canEdit=false -> не reorderable, а обычный ListView
           expect(find.byType(ReorderableListView), findsNothing);
           expect(find.byType(ListView), findsOneWidget);
         },
@@ -446,14 +423,11 @@ void main() {
           ));
           await tester.pumpAndSettle();
 
-          // Grid-режим приоритетнее manual sort
           expect(find.byType(ReorderableListView), findsNothing);
           expect(find.byType(GridView), findsOneWidget);
         },
       );
     });
-
-    // ==================== collectionId == null (uncategorized) ====================
 
     group('uncategorized (collectionId=null)', () {
       testWidgets(
@@ -503,8 +477,6 @@ void main() {
       );
     });
 
-    // ==================== Callbacks ====================
-
     group('callbacks', () {
       testWidgets(
         'должен передать правильный элемент в onItemTap в list-режиме',
@@ -527,7 +499,6 @@ void main() {
           ));
           await tester.pumpAndSettle();
 
-          // Нажимаем на первый элемент
           await tester.tap(find.byType(CollectionItemTile).first);
 
           expect(tappedItems.length, equals(1));
@@ -564,8 +535,6 @@ void main() {
       );
     });
 
-    // ==================== Режимы сортировки не-manual ====================
-
     group('режимы сортировки не-manual', () {
       testWidgets(
         'должен показать обычный ListView при сортировке по имени',
@@ -587,7 +556,6 @@ void main() {
           ));
           await tester.pumpAndSettle();
 
-          // Не-manual сортировки -> обычный ListView, не Reorderable
           expect(find.byType(ReorderableListView), findsNothing);
           expect(find.byType(ListView), findsOneWidget);
         },
@@ -645,8 +613,6 @@ void main() {
         },
       );
     });
-
-    // ==================== RefreshIndicator ====================
 
     group('RefreshIndicator', () {
       testWidgets(
@@ -714,14 +680,11 @@ void main() {
           ));
           await tester.pumpAndSettle();
 
-          // ReorderableListView не оборачивается в RefreshIndicator
           expect(find.byType(RefreshIndicator), findsNothing);
           expect(find.byType(ReorderableListView), findsOneWidget);
         },
       );
     });
-
-    // ==================== Контекстное меню ПКМ ====================
 
     group('контекстное меню ПКМ', () {
       testWidgets(
@@ -749,7 +712,6 @@ void main() {
           ));
           await tester.pumpAndSettle();
 
-          // Правый клик на карточке.
           final Offset center =
               tester.getCenter(find.byType(CollectionItemTile));
           final TestGesture gesture = await tester.createGesture(
@@ -761,10 +723,9 @@ void main() {
           await gesture.up();
           await tester.pumpAndSettle();
 
-          // Контекстное меню содержит move/clone/remove + статус-чип.
+          // Menu shows move/clone/remove + status chip.
           expect(find.byType(PopupMenuItem<String>), findsNWidgets(4));
 
-          // Не вызвано пока не выбрали.
           expect(moveCalled, isFalse);
           expect(cloneCalled, isFalse);
           expect(removeCalled, isFalse);
@@ -794,7 +755,6 @@ void main() {
           ));
           await tester.pumpAndSettle();
 
-          // Правый клик.
           final Offset center =
               tester.getCenter(find.byType(CollectionItemTile));
           final TestGesture gesture = await tester.createGesture(
@@ -806,7 +766,6 @@ void main() {
           await gesture.up();
           await tester.pumpAndSettle();
 
-          // Нажимаем на пункт "move".
           await tester.tap(find.byType(PopupMenuItem<String>).first);
           await tester.pumpAndSettle();
 
@@ -835,7 +794,6 @@ void main() {
           ));
           await tester.pumpAndSettle();
 
-          // Правый клик.
           final Offset center =
               tester.getCenter(find.byType(CollectionItemTile));
           final TestGesture gesture = await tester.createGesture(
@@ -847,13 +805,10 @@ void main() {
           await gesture.up();
           await tester.pumpAndSettle();
 
-          // Контекстное меню не должно появиться.
           expect(find.byType(PopupMenuItem<String>), findsNothing);
         },
       );
     });
-
-    // ==================== Приоритет isGridMode ====================
 
     group('приоритет isGridMode', () {
       testWidgets(
@@ -863,7 +818,6 @@ void main() {
             _makeItem(id: 1, gameName: 'Priority Test'),
           ];
 
-          // Даже при manual sort, grid-режим должен использоваться
           await tester.pumpWidget(_buildTestApp(
             overrides: _defaultOverrides(sortMode: CollectionSortMode.manual),
             child: CollectionItemsView(
@@ -885,11 +839,6 @@ void main() {
   });
 }
 
-// ==================== Fake notifiers для тестов ====================
-
-/// Fake [CollectionSortNotifier] для тестов.
-///
-/// Возвращает заданный [CollectionSortMode] без обращения к SharedPreferences.
 class _FakeSortNotifier extends CollectionSortNotifier {
   _FakeSortNotifier(this._mode);
 
@@ -902,9 +851,6 @@ class _FakeSortNotifier extends CollectionSortNotifier {
   Future<void> setSortMode(CollectionSortMode mode) async {}
 }
 
-/// Fake [CollectionItemsNotifier] для тестов.
-///
-/// Возвращает пустой AsyncData без обращения к БД.
 class _FakeItemsNotifier extends CollectionItemsNotifier {
   @override
   AsyncValue<List<CollectionItem>> build(int? arg) =>

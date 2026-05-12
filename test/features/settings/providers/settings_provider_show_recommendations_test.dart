@@ -1,5 +1,3 @@
-// Тесты для настройки showRecommendations в SettingsNotifier.
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -26,7 +24,6 @@ void main() {
     mockTmdbApi = MockTmdbApi();
     mockDbService = MockDatabaseService();
 
-    // По умолчанию getPlatformCount возвращает 0.
     when(() => mockDbService.getPlatformCount()).thenAnswer((_) async => 0);
   });
 
@@ -66,7 +63,6 @@ void main() {
         () async {
           final ProviderContainer container = await createContainer(
             initialPrefs: <String, Object>{
-              // Другие ключи, но не show_recommendations.
               'tmdb_api_key': 'some_key',
             },
           );
@@ -91,7 +87,6 @@ void main() {
         final SettingsNotifier notifier =
             container.read(settingsNotifierProvider.notifier);
 
-        // Начальное состояние — false (загружено из prefs).
         SettingsState state = container.read(settingsNotifierProvider);
         expect(state.showRecommendations, isFalse);
 
@@ -110,7 +105,6 @@ void main() {
         final SettingsNotifier notifier =
             container.read(settingsNotifierProvider.notifier);
 
-        // Начальное состояние — true (по умолчанию).
         SettingsState state = container.read(settingsNotifierProvider);
         expect(state.showRecommendations, isTrue);
 
@@ -170,17 +164,14 @@ void main() {
       test(
         'значение сохраняется и восстанавливается после пересоздания контейнера',
         () async {
-          // Первый контейнер — устанавливаем false.
           final ProviderContainer container1 = await createContainer();
 
           final SettingsNotifier notifier1 =
               container1.read(settingsNotifierProvider.notifier);
           await notifier1.setShowRecommendations(enabled: false);
 
-          // Проверяем, что значение записано в prefs.
           expect(prefs.getBool('show_recommendations'), isFalse);
 
-          // Второй контейнер с теми же prefs — значение должно загрузиться.
           final ProviderContainer container2 = ProviderContainer(
             overrides: <Override>[
               sharedPreferencesProvider.overrideWithValue(prefs),
@@ -212,7 +203,6 @@ void main() {
         final SettingsNotifier notifier =
             container.read(settingsNotifierProvider.notifier);
 
-        // Начальное состояние — false.
         SettingsState state = container.read(settingsNotifierProvider);
         expect(state.showRecommendations, isFalse);
 
@@ -220,9 +210,7 @@ void main() {
 
         state = container.read(settingsNotifierProvider);
 
-        // После очистки — дефолтное значение true.
         expect(state.showRecommendations, isTrue);
-        // Ключ удалён из prefs.
         expect(prefs.getBool('show_recommendations'), isNull);
       });
     });
@@ -234,7 +222,6 @@ void main() {
             original.copyWith(showRecommendations: false);
 
         expect(updated.showRecommendations, isFalse);
-        // Оригинал не изменился (immutability).
         expect(original.showRecommendations, isTrue);
       });
 

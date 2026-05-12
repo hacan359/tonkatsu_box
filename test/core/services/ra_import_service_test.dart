@@ -1,5 +1,3 @@
-// Тесты для RaImportService.
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:xerabora/core/api/ra_api.dart';
@@ -24,15 +22,13 @@ void main() {
   late MockDatabaseService mockDb;
   late MockTrackerDao mockTrackerDao;
 
-  /// Записанные вызовы onProgress.
   late List<RaImportProgress> progressCalls;
 
-  /// Маппинг название → Game для multiquery mock.
+  // Title -> Game registry consumed by the multiquery mock below.
   final Map<String, Game?> igdbGamesByTitle = <String, Game?>{};
 
   void onProgress(RaImportProgress p) => progressCalls.add(p);
 
-  /// Регистрирует Game-ответ для конкретного названия в multiquery mock.
   void setupIgdbSearchMock({
     required String query,
     List<int>? platformIds,
@@ -42,7 +38,6 @@ void main() {
     igdbGamesByTitle[query] = games.isNotEmpty ? games.first : null;
   }
 
-  /// Настраивает стандартные mocks для RA API.
   void setupRaApiMocks({
     List<RaGameProgress>? games,
   }) {
@@ -58,7 +53,6 @@ void main() {
     progressCalls = <RaImportProgress>[];
     igdbGamesByTitle.clear();
 
-    // Default mocks для TrackerDao.
     when(() => mockTrackerDao.upsertGameData(any()))
         .thenAnswer((_) async {});
     when(() => mockTrackerDao.getAllGameData(any()))
@@ -71,8 +65,7 @@ void main() {
       trackerDao: mockTrackerDao,
     );
 
-    // Multiquery mock — использует igdbGamesByTitle, заполняемый
-    // через setupIgdbSearchMock() в каждом тесте.
+    // Multiquery mock resolves queries via igdbGamesByTitle (populated per-test).
     when(() => mockIgdbApi.multiSearchGamesByName(any()))
         .thenAnswer((Invocation inv) async {
       final List<({String name, int? platformId})> queries =
@@ -87,7 +80,6 @@ void main() {
     });
   });
 
-  /// Настраивает DB mocks для добавления элементов.
   void setupDbMocks() {
     when(() => mockDb.findCollectionItem(
           collectionId: any(named: 'collectionId'),
@@ -217,8 +209,8 @@ void main() {
 
     test('should have empty wishlist map when wishlisted=0 even if unmatched>0',
         () {
-      // addToWishlist=false: unmatched увеличился, но в вишлист ничего
-      // не добавлялось — UI не должен показывать «N в вишлисте».
+      // addToWishlist=false: unmatched grew but nothing was wishlisted -
+      // UI must not show "N wishlisted".
       const RaImportResult raResult = RaImportResult(
         totalGames: 5,
         added: 3,
@@ -346,7 +338,6 @@ void main() {
           onProgress: onProgress,
         );
 
-        // fetchingLibrary → searchingGames → matchingGames → completed.
         expect(progressCalls.length, greaterThanOrEqualTo(4));
         expect(
           progressCalls.first.stage,
@@ -506,8 +497,6 @@ void main() {
               mediaTypeHint: any(named: 'mediaTypeHint'),
               note: any(named: 'note'),
             ));
-        // Дубликат не создавался — счётчик wishlisted остаётся 0,
-        // а unmatched инкрементируется (игра всё равно не нашлась в IGDB).
         expect(result.unmatched, equals(1));
         expect(result.wishlisted, equals(0));
       });
@@ -536,7 +525,6 @@ void main() {
 
         expect(result.unmatched, equals(1));
         expect(result.wishlisted, equals(0));
-        // toUniversal не должен показывать вишлист.
         final UniversalImportResult universal = result.toUniversal();
         expect(universal.wishlistedByType, isEmpty);
       });
@@ -544,7 +532,7 @@ void main() {
       test(
           'manual RA→IGDB link skips IGDB search and reuses cached game',
           () async {
-        // Юзер ранее руками привязал RA gameId=999 к IGDB id=500.
+        // Manual link: RA gameId=999 was previously bound to IGDB id=500.
         final RaGameProgress raGame = createTestRaGameProgress(
           gameId: 999,
           title: 'Obscure ROM Hack',
@@ -586,10 +574,8 @@ void main() {
         expect(result.unmatched, equals(0));
         expect(result.wishlisted, equals(0));
 
-        // IGDB-поиск НЕ должен вызываться для этой игры.
         verifyNever(() => mockIgdbApi.multiSearchGamesByName(any()));
         verify(() => mockDb.getGameById(500)).called(1);
-        // Никаких wishlist-операций.
         verifyNever(() => mockDb.addWishlistItem(
               text: any(named: 'text'),
               mediaTypeHint: any(named: 'mediaTypeHint'),
@@ -599,9 +585,8 @@ void main() {
 
       test('manual link with broken cache falls back to IGDB search',
           () async {
-        // tracker_game_data ссылается на IGDB id, которого нет в локальном
-        // кэше игр (например, кэш почистили). Должен сработать fallback
-        // к IGDB-поиску по названию.
+        // tracker_game_data references an IGDB id missing from the local game
+        // cache; the fallback name-based IGDB search should kick in.
         final RaGameProgress raGame = createTestRaGameProgress(
           gameId: 777,
           title: 'Cached Game',
@@ -628,9 +613,7 @@ void main() {
                         DateTime.now().millisecondsSinceEpoch ~/ 1000,
                   ),
                 ]);
-        // В кэше нет.
         when(() => mockDb.getGameById(600)).thenAnswer((_) async => null);
-        // Но IGDB-поиск (через RaToIgdbMapper.findIgdbGame) должен сработать.
         when(() => mockIgdbApi.searchGames(
               query: 'Cached Game',
               platformIds: any(named: 'platformIds'),
@@ -1018,7 +1001,7 @@ void main() {
           onProgress: onProgress,
         );
 
-        // authorComment больше не записывается — RA данные в tracker_game_data.
+        // authorComment is no longer written; RA data lives in tracker_game_data.
         verifyNever(() => mockDb.updateItemAuthorComment(any(), any()));
       });
 
@@ -1062,7 +1045,6 @@ void main() {
           onProgress: onProgress,
         );
 
-        // tracker_game_data сохраняется через TrackerDao.
         verify(() => mockTrackerDao.upsertGameData(any())).called(1);
       });
 

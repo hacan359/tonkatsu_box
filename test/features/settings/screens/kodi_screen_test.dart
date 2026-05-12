@@ -1,5 +1,3 @@
-// Widget тесты для KodiScreen — настройки, sync, debug.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -21,8 +19,6 @@ import 'package:xerabora/shared/models/profile.dart';
 
 import '../../../helpers/test_helpers.dart';
 
-/// Test notifier for collectionsProvider — returns empty list by default
-/// or a preset list (through the override factory).
 class _TestCollectionsNotifier extends CollectionsNotifier {
   _TestCollectionsNotifier([this._preset = const <Collection>[]]);
 
@@ -32,7 +28,6 @@ class _TestCollectionsNotifier extends CollectionsNotifier {
   Future<List<Collection>> build() async => _preset;
 }
 
-/// Test notifier, returns pre-loaded state without reading SharedPreferences.
 class _TestKodiSettingsNotifier extends KodiSettingsNotifier {
   _TestKodiSettingsNotifier(this._initialState);
 
@@ -59,7 +54,6 @@ void main() {
     mockKodiApi = MockKodiApi();
     mockSyncService = MockKodiSyncService();
 
-    // Stubs для Debug секции (ref.read(kodiSyncServiceProvider).isRunning).
     when(() => mockSyncService.isRunning).thenReturn(false);
     when(() => mockSyncService.isSyncing).thenReturn(false);
     when(() => mockSyncService.lastResult).thenReturn(null);
@@ -74,7 +68,7 @@ void main() {
     SharedPreferences.setMockInitialValues(initialPrefs);
     prefs = await SharedPreferences.getInstance();
 
-    // Override provider with pre-loaded state to avoid timing issues.
+    // Pre-loaded state avoids SharedPreferences read timing issues.
     final KodiSettingsState preloadedState = KodiSettingsState(
       enabled: initialPrefs['kodi_enabled_$profileId'] as bool? ?? false,
       host: initialPrefs['kodi_host_$profileId'] as String? ?? '',
@@ -142,7 +136,6 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Scroll to make Debug section visible
         await tester.scrollUntilVisible(
           find.text('DEBUG'),
           200,
@@ -157,7 +150,6 @@ void main() {
         await tester.pumpWidget(await createWidget());
         await tester.pumpAndSettle();
 
-        // Connection + Sync = 2 groups (no DEBUG header)
         expect(find.text('DEBUG'), findsNothing);
       });
     });
@@ -294,7 +286,6 @@ void main() {
         await tester.pumpAndSettle();
 
         final Finder switches = find.byType(Switch);
-        // First switch is "Enable Kodi sync"
         final Switch enableSwitch = tester.widget<Switch>(switches.first);
         expect(enableSwitch.onChanged, isNull);
       });
@@ -321,21 +312,18 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Scroll to Sync section (Import section pushes it down).
         await tester.scrollUntilVisible(
           find.text('Enable Kodi sync'),
           200,
           scrollable: find.byType(Scrollable).first,
         );
 
-        // Find Switch that is in the same SettingsTile as 'Enable Kodi sync'.
         final Finder syncTile = find.ancestor(
           of: find.text('Enable Kodi sync'),
           matching: find.byType(SettingsTile),
         );
         expect(syncTile, findsOneWidget);
         final SettingsTile tile = tester.widget<SettingsTile>(syncTile);
-        // trailing is the Switch widget — if onChanged is set, it's non-null.
         expect(tile.trailing, isNotNull);
         expect(tile.trailing, isA<Switch>());
         expect((tile.trailing! as Switch).onChanged, isNotNull);

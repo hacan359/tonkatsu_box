@@ -1625,6 +1625,18 @@ class SRu extends S {
   String get searchSourceAnime => 'Аниме';
 
   @override
+  String get searchSourceGames => 'Игры';
+
+  @override
+  String get searchSourceMovies => 'Фильмы';
+
+  @override
+  String get searchSourceTvShows => 'Сериалы';
+
+  @override
+  String get searchSourceAnimation => 'Анимация';
+
+  @override
   String get searchHintManga => 'Поиск манги...';
 
   @override

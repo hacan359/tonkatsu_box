@@ -1,5 +1,3 @@
-// Тесты для KodiSettingsNotifier — per-profile persistence + KodiApi sync.
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -245,7 +243,6 @@ void main() {
           },
         );
 
-        // Trigger lazy provider build.
         container.read(kodiSettingsProvider);
 
         verify(() => mockKodiApi.setConnection(
@@ -300,7 +297,6 @@ void main() {
           },
         );
 
-        // Reset mock call count from build()
         reset(mockKodiApi);
 
         await container.read(kodiSettingsProvider.notifier).setHost('  ');
@@ -532,7 +528,6 @@ void main() {
 
         verify(() => mockKodiApi.clearConnection()).called(1);
 
-        // Verify all prefs removed
         expect(prefs.getBool('kodi_enabled_$profileId'), isNull);
         expect(prefs.getString('kodi_host_$profileId'), isNull);
         expect(prefs.getInt('kodi_port_$profileId'), isNull);
@@ -570,7 +565,6 @@ void main() {
         });
         prefs = await SharedPreferences.getInstance();
 
-        // Container for test-profile
         final ProviderContainer container1 = ProviderContainer(
           overrides: <Override>[
             sharedPreferencesProvider.overrideWithValue(prefs),
@@ -580,7 +574,6 @@ void main() {
         );
         addTearDown(container1.dispose);
 
-        // Container for other-profile
         final ProviderContainer container2 = ProviderContainer(
           overrides: <Override>[
             sharedPreferencesProvider.overrideWithValue(prefs),

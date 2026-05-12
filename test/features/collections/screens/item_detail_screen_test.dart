@@ -1,5 +1,3 @@
-// Виджет-тесты для ItemDetailScreen (единый экран деталей).
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -86,8 +84,6 @@ void main() {
       ),
     );
   }
-
-  // ==================== Game ====================
 
   group('ItemDetailScreen — Game', () {
     CollectionItem createGameItem({
@@ -420,7 +416,6 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Переключаемся на Canvas
         await tester.tap(find.byTooltip('Board (Ctrl+B)'));
         await pumpFrames(tester);
 
@@ -445,7 +440,6 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Переключаемся на Canvas
         await tester.tap(find.byTooltip('Board (Ctrl+B)'));
         await pumpFrames(tester);
 
@@ -470,18 +464,15 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Переключаемся на Canvas
         await tester.tap(find.byTooltip('Board (Ctrl+B)'));
         await pumpFrames(tester);
 
-        // Блокируем
         await tester.tap(find.byTooltip('Lock board (Ctrl+L)'));
         await pumpFrames(tester);
 
         expect(find.byIcon(Icons.lock), findsOneWidget);
         expect(find.byTooltip('Unlock board (Ctrl+L)'), findsOneWidget);
 
-        // Разблокируем
         await tester.tap(find.byTooltip('Unlock board (Ctrl+L)'));
         await pumpFrames(tester);
 
@@ -512,8 +503,6 @@ void main() {
       });
     });
   });
-
-  // ==================== Movie ====================
 
   group('ItemDetailScreen — Movie', () {
     CollectionItem createMovieItem({
@@ -570,7 +559,6 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // For empty items list, we get the default not found message
       expect(find.textContaining('not found'), findsOneWidget);
     });
 
@@ -789,8 +777,6 @@ void main() {
     });
   });
 
-  // ==================== TvShow ====================
-
   group('ItemDetailScreen — TvShow', () {
     CollectionItem createTvShowItem({
       int id = 1,
@@ -875,7 +861,6 @@ void main() {
 
     testWidgets('должен показывать TV Show not found',
         (WidgetTester tester) async {
-      // Create a tvShow item that won't be found
       final CollectionItem item = createTvShowItem(id: 2);
 
       await tester.pumpWidget(createTestWidget(
@@ -1002,8 +987,6 @@ void main() {
       expect(find.byType(MediaDetailView), findsOneWidget);
     });
   });
-
-  // ==================== Animation ====================
 
   group('ItemDetailScreen — Animation', () {
     CollectionItem createAnimeItem({
@@ -1296,8 +1279,6 @@ void main() {
     });
   });
 
-  // ==================== Visual Novel ====================
-
   group('ItemDetailScreen — Visual Novel', () {
     CollectionItem createVnItem({
       int id = 1,
@@ -1411,7 +1392,6 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // Recommendations и Reviews не должны отображаться для VN
       expect(find.text('Recommendations'), findsNothing);
       expect(find.text('Reviews'), findsNothing);
     });
@@ -1518,8 +1498,6 @@ void main() {
       });
     });
   });
-
-  // ==================== Uncategorized Banner ====================
 
   group('ItemDetailScreen — Uncategorized Banner', () {
     CollectionItem createGameItem({
@@ -1660,7 +1638,6 @@ void main() {
 
       await expandExtraSections(tester);
 
-      // Текст в _buildSeasonsInfo: "5 seasons • 62 ep"
       expect(find.text('5 seasons \u2022 62 ep'), findsOneWidget);
     });
 
@@ -1682,8 +1659,6 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // Не должно быть Row с video_library_outlined в extraSections
-      // (video_library_outlined может быть в info chips, но не в extraSections)
       expect(find.text('5 seasons \u2022 62 ep'), findsNothing);
     });
 
@@ -1710,7 +1685,6 @@ void main() {
 
       await expandExtraSections(tester);
 
-      // "3 seasons" в extraSections (без разделителя и ep)
       expect(find.text('3 seasons'), findsWidgets);
     });
 
@@ -1762,7 +1736,6 @@ void main() {
 
       await expandExtraSections(tester);
 
-      // SizedBox.shrink — нет текста сезонов
       expect(find.text('0 seasons'), findsNothing);
       expect(find.text('0 ep'), findsNothing);
     });
@@ -1797,14 +1770,12 @@ void main() {
 
       await expandExtraSections(tester);
 
-      // Баннер
       expect(
         find.text(
           'Add to a collection to unlock Board and episode tracking',
         ),
         findsOneWidget,
       );
-      // Текст сезонов
       expect(find.text('4 seasons \u2022 87 ep'), findsOneWidget);
     });
 
@@ -1830,7 +1801,6 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // Баннер есть (uncategorized)
       await expandExtraSections(tester);
       expect(
         find.text(
@@ -1838,7 +1808,6 @@ void main() {
         ),
         findsOneWidget,
       );
-      // Текст сезонов НЕ показывается (movie source — нет episode tracker)
       expect(find.text('4 seasons \u2022 87 ep'), findsNothing);
     });
 
@@ -1869,7 +1838,6 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // В коллекции показывается EpisodeTrackerSection, не текст сезонов
       expect(find.text('5 seasons \u2022 62 ep'), findsNothing);
     });
   });

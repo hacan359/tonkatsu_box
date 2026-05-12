@@ -10,8 +10,7 @@ import 'package:xerabora/shared/constants/platform_features.dart';
 import 'package:xerabora/shared/models/canvas_item.dart';
 import 'package:xerabora/shared/models/game.dart';
 
-// Тестовый notifier, который возвращает контролируемое состояние
-// без реальных async-операций (БД, репозиторий).
+// Test notifier with controllable state; no real DB/repo async work.
 class TestCanvasNotifier extends CanvasNotifier {
   TestCanvasNotifier(this._testState);
 
@@ -23,14 +22,10 @@ class TestCanvasNotifier extends CanvasNotifier {
   }
 
   @override
-  Future<void> refresh() async {
-    // Не делаем ничего в тестах
-  }
+  Future<void> refresh() async {}
 
   @override
-  Future<void> resetPositions(double viewportWidth) async {
-    // Не делаем ничего в тестах
-  }
+  Future<void> resetPositions(double viewportWidth) async {}
 }
 
 void main() {
@@ -106,7 +101,6 @@ void main() {
           await tester.pumpWidget(buildTestWidget(canvasState: loadingState));
 
           expect(find.byType(CircularProgressIndicator), findsOneWidget);
-          // Не должно быть InteractiveViewer в состоянии загрузки
           expect(find.byType(InteractiveViewer), findsNothing);
         },
       );
@@ -372,7 +366,7 @@ void main() {
           );
           await tester.pump();
 
-          // FAB: SteamGridDB + Center view + Reset positions (+ VGMaps на Windows)
+          // FAB: SteamGridDB + Center view + Reset positions (+ VGMaps on Windows).
           final int expectedFabs = kVgMapsEnabled ? 4 : 3;
           expect(find.byType(FloatingActionButton), findsNWidgets(expectedFabs));
         },
@@ -397,7 +391,6 @@ void main() {
           );
           await tester.pump();
 
-          // 2 FAB: Center view + Reset positions (без SteamGridDB)
           expect(find.byType(FloatingActionButton), findsNWidgets(2));
         },
       );
@@ -545,7 +538,6 @@ void main() {
           await tester.pumpWidget(buildTestWidget(canvasState: normalState));
           await tester.pump();
 
-          // CanvasGameCard отображает Card с названием игры
           expect(find.text('Mario'), findsOneWidget);
         },
       );
@@ -568,9 +560,7 @@ void main() {
           await tester.pumpWidget(buildTestWidget(canvasState: normalState));
           await tester.pump();
 
-          // InteractiveViewer должен быть, но без CanvasGameCard
           expect(find.byType(InteractiveViewer), findsOneWidget);
-          // Нет ни одного Card (CanvasGameCard содержит Card)
           expect(find.byType(Card), findsNothing);
         },
       );
@@ -594,7 +584,6 @@ void main() {
           await tester.pump();
 
           expect(find.byType(InteractiveViewer), findsOneWidget);
-          // CanvasImageItem содержит Card
           expect(find.byType(Card), findsOneWidget);
         },
       );
@@ -618,7 +607,6 @@ void main() {
           await tester.pump();
 
           expect(find.byType(InteractiveViewer), findsOneWidget);
-          // CanvasLinkItem содержит Card
           expect(find.byType(Card), findsOneWidget);
         },
       );
@@ -657,7 +645,6 @@ void main() {
           await tester.pump();
 
           expect(find.text('Zelda'), findsOneWidget);
-          // 2 Card: один от CanvasGameCard, один от CanvasImageItem
           expect(find.byType(Card), findsNWidgets(2));
         },
       );
@@ -697,7 +684,6 @@ void main() {
           await tester.pumpWidget(buildTestWidget(canvasState: normalState));
           await tester.pump();
 
-          // Все три игры должны отображаться
           expect(find.text('Game Z5'), findsOneWidget);
           expect(find.text('Game Z1'), findsOneWidget);
           expect(find.text('Game Z10'), findsOneWidget);
@@ -759,7 +745,7 @@ void main() {
       testWidgets(
         'должен показывать загрузку а не ошибку когда isLoading=true и error!=null',
         (WidgetTester tester) async {
-          // isLoading проверяется первым в build()
+          // isLoading is checked before error in build().
           const CanvasState state = CanvasState(
             isLoading: true,
             error: 'Some error',
@@ -775,7 +761,7 @@ void main() {
       testWidgets(
         'должен показывать ошибку а не пустой канвас когда error!=null и items пуст',
         (WidgetTester tester) async {
-          // error проверяется вторым, до items.isEmpty
+          // error is checked before items.isEmpty.
           const CanvasState state = CanvasState(
             isLoading: false,
             error: 'Connection error',
@@ -833,7 +819,6 @@ void main() {
           );
           await tester.pump();
 
-          // Resize handle содержит иконку drag_handle
           expect(find.byIcon(Icons.drag_handle), findsOneWidget);
         },
       );
@@ -857,7 +842,6 @@ void main() {
           );
           await tester.pump();
 
-          // Resize handle НЕ рендерится
           expect(find.byIcon(Icons.drag_handle), findsNothing);
         },
       );
@@ -879,7 +863,6 @@ void main() {
           await tester.pumpWidget(buildTestWidget(canvasState: normalState));
           await tester.pump();
 
-          // SizedBox.expand имеет width=infinity, height=infinity
           final Finder expandedBoxes = find.byWidgetPredicate(
             (Widget widget) =>
                 widget is SizedBox &&
@@ -937,7 +920,6 @@ void main() {
   });
 }
 
-/// Тестовый notifier для SteamGridDB панели (не делает ничего).
 class _TestSteamGridDbPanelNotifier extends SteamGridDbPanelNotifier {
   @override
   SteamGridDbPanelState build(int? arg) {
@@ -945,7 +927,6 @@ class _TestSteamGridDbPanelNotifier extends SteamGridDbPanelNotifier {
   }
 }
 
-/// Тестовый notifier для VGMaps панели (не делает ничего).
 class _TestVgMapsPanelNotifier extends VgMapsPanelNotifier {
   @override
   VgMapsPanelState build(int? arg) {

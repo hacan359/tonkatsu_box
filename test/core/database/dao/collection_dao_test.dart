@@ -15,7 +15,6 @@ import 'package:xerabora/shared/models/visual_novel.dart';
 
 import '../../../helpers/mocks.dart';
 
-/// Минимальная строка collection_items для [CollectionItem.fromDb].
 Map<String, dynamic> _itemRow({
   int id = 1,
   int? collectionId = 1,
@@ -80,8 +79,6 @@ void main() {
   });
 
   group('CollectionDao', () {
-    // ==================== Collections ====================
-
     group('getAllCollections', () {
       test('returns collections ordered by created_at DESC', () async {
         when(() => mockDb.query('collections', orderBy: 'created_at DESC'))
@@ -273,8 +270,6 @@ void main() {
         expect(await dao.getCollectionCount(), 3);
       });
     });
-
-    // ==================== Collection Items ====================
 
     group('getCollectionItems', () {
       test('queries by collection_id', () async {
@@ -608,7 +603,6 @@ void main() {
 
     group('addItemToCollection', () {
       test('inserts item and returns id', () async {
-        // getNextSortOrder
         when(
           () => mockDb.rawQuery(
             'SELECT MAX(sort_order) AS max_sort FROM collection_items '
@@ -1136,7 +1130,6 @@ void main() {
 
     group('updateItemCollectionId', () {
       test('moves item and returns true', () async {
-        // getNextSortOrder
         when(
           () => mockDb.rawQuery(
             'SELECT MAX(sort_order) AS max_sort FROM collection_items '
@@ -1314,8 +1307,6 @@ void main() {
       });
     });
 
-    // ==================== Info ====================
-
     group('getCollectedItemInfos', () {
       test('returns grouped infos by external_id', () async {
         when(() => mockDb.rawQuery(any(), any())).thenAnswer(
@@ -1366,8 +1357,6 @@ void main() {
         expect(await dao.getUncategorizedItemCount(), 4);
       });
     });
-
-    // ==================== Collection Covers ====================
 
     group('getCollectionCovers', () {
       test('returns covers for collection', () async {

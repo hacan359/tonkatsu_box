@@ -1,5 +1,3 @@
-// Виджет-тесты для TierRow.
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/tier_lists/widgets/tier_item_card.dart';
 import 'package:xerabora/features/tier_lists/widgets/tier_row.dart';
@@ -170,7 +168,6 @@ void main() {
       );
       await tester.pump();
 
-      // Only 1 TierItemCard for item1; item 999 is missing from map.
       expect(find.byType(TierItemCard), findsOneWidget);
     });
   });

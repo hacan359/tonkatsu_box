@@ -39,7 +39,6 @@ void main() {
       final Map<ShortcutActivator, VoidCallback> shortcuts =
           buildTestShortcuts();
 
-      // 6 табов + Ctrl+Tab + Ctrl+Shift+Tab + Escape + Alt+Left + Ctrl+F + F5 + F1
       expect(shortcuts.length, 13);
     });
 

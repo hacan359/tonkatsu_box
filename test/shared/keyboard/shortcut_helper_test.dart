@@ -19,7 +19,6 @@ void main() {
 
       await tester.pumpWidget(MaterialApp(home: Scaffold(body: result)));
 
-      // Виджет должен содержать CallbackShortcuts
       expect(find.byType(CallbackShortcuts), findsOneWidget);
       expect(find.byType(Focus), findsWidgets);
       expect(find.text('test'), findsOneWidget);

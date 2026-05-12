@@ -1,5 +1,3 @@
-// Тесты для StatusRibbon.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/collections/widgets/status_ribbon.dart';
@@ -40,7 +38,6 @@ void main() {
           status: ItemStatus.notStarted,
         ));
 
-        // SizedBox.shrink вместо Positioned
         expect(find.byType(Positioned), findsNothing);
       });
 

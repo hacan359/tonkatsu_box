@@ -1,5 +1,3 @@
-// Тесты для SteamImportService.
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:xerabora/core/api/steam_api.dart';
@@ -32,7 +30,6 @@ void main() {
     );
   });
 
-  /// Подготавливает стандартные mock-ответы для успешного импорта.
   void setupStandardMocks({
     List<SteamOwnedGame>? library,
     int collectionId = 1,
@@ -266,7 +263,6 @@ void main() {
           onProgress: (_) {},
         );
 
-        // Only "Real Game" passes filter
         expect(result.total, 1);
         expect(result.imported, 1);
       });
@@ -282,7 +278,6 @@ void main() {
           ],
         );
 
-        // Override findCollectionItem to return existing item
         final CollectionItem collectionItem = createTestCollectionItem(
           status: ItemStatus.notStarted,
         );
@@ -301,7 +296,6 @@ void main() {
 
         expect(result.updated, 1);
         expect(result.imported, 0);
-        // Should update status, comment, and dates
         verify(() => mockDb.updateItemStatus(
               collectionItem.id,
               ItemStatus.inProgress,
@@ -395,7 +389,6 @@ void main() {
           ],
         );
 
-        // Override lookup to return empty (no match for this appId).
         when(() => mockIgdbApi.lookupSteamGames(any()))
             .thenAnswer((_) async => <String, Game>{});
 
@@ -500,7 +493,6 @@ void main() {
         when(() => mockIgdbApi.lookupSteamGames(any()))
             .thenAnswer((_) async => <String, Game>{});
 
-        // Existing wishlist item
         when(() => mockDb.findUnresolvedWishlistItem('Unknown Game'))
             .thenAnswer((_) async => createTestWishlistItem(
                   text: 'Unknown Game',

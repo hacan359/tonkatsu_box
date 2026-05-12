@@ -180,8 +180,6 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Один Wrap остаётся — хедер (SourceBadge + type).
-        // Info chips Wrap не рендерится при пустом списке.
         expect(find.byType(Wrap), findsOneWidget);
       });
     });
@@ -202,7 +200,6 @@ void main() {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
-        // Нет текста описания, только стандартные секции
         expect(find.text("Author's Review"), findsOneWidget);
         expect(find.text('My Notes'), findsOneWidget);
       });
@@ -212,7 +209,6 @@ void main() {
         await tester.pumpWidget(buildTestWidget(description: ''));
         await tester.pumpAndSettle();
 
-        // Пустое описание не рендерится
         expect(find.text(''), findsNothing);
       });
     });
@@ -233,7 +229,6 @@ void main() {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
-        // Нет statusWidget — нет секции статуса
         expect(find.text('Playing'), findsNothing);
       });
     });
@@ -249,9 +244,7 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Extra sections are inside collapsed "Activity & Progress" ExpansionTile
         expect(find.text('Activity & Progress'), findsOneWidget);
-        // Раскрываем ExpansionTile
         await tester.tap(find.text('Activity & Progress'));
         await tester.pumpAndSettle();
 
@@ -323,7 +316,6 @@ void main() {
         await tester.pumpWidget(buildTestWidget(isEditable: true));
         await tester.pumpAndSettle();
 
-        // 2 кнопки Edit (IconButton): author comment + user notes
         expect(find.byIcon(Icons.edit), findsNWidgets(2));
       });
 
@@ -332,7 +324,6 @@ void main() {
         await tester.pumpWidget(buildTestWidget(isEditable: false));
         await tester.pumpAndSettle();
 
-        // Только 1 кнопка Edit (IconButton): user notes
         expect(find.byIcon(Icons.edit), findsOneWidget);
       });
     });
@@ -374,29 +365,24 @@ void main() {
         await tester.pumpWidget(buildTestWidget(isEditable: false));
         await tester.pumpAndSettle();
 
-        // Кнопка Edit (IconButton) для заметок всегда видна
         expect(find.byIcon(Icons.edit), findsOneWidget);
       });
     });
 
     group('Inline Editing', () {
-      // Порядок секций: My Notes (first edit icon) → Author's Review (last)
+      // Order: My Notes (first edit icon) -> Author's Review (last).
 
       testWidgets('должен показать TextField при нажатии Edit заметок',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(isEditable: true));
         await tester.pumpAndSettle();
 
-        // Нет TextField до нажатия
         expect(find.byType(TextField), findsNothing);
 
-        // My Notes → first edit icon
         await tester.tap(find.byIcon(Icons.edit).first);
         await tester.pumpAndSettle();
 
-        // TextField появился inline
         expect(find.byType(TextField), findsOneWidget);
-        // Карандаш стал галочкой
         expect(find.byIcon(Icons.check), findsOneWidget);
       });
 
@@ -405,7 +391,6 @@ void main() {
         await tester.pumpWidget(buildTestWidget(isEditable: true));
         await tester.pumpAndSettle();
 
-        // Author's Review → last edit icon
         await tester.tap(find.byIcon(Icons.edit).last);
         await tester.pumpAndSettle();
 
@@ -422,17 +407,14 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Author's Review → last edit icon
         await tester.tap(find.byIcon(Icons.edit).last);
         await tester.pumpAndSettle();
 
         await tester.enterText(find.byType(TextField), 'New comment');
-        // Нажимаем галочку (check)
         await tester.tap(find.byIcon(Icons.check));
         await tester.pumpAndSettle();
 
         expect(savedValue, 'New comment');
-        // TextField убран
         expect(find.byType(TextField), findsNothing);
       });
 
@@ -445,11 +427,9 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Author's Review → last edit icon
         await tester.tap(find.byIcon(Icons.edit).last);
         await tester.pumpAndSettle();
 
-        // Поле уже пустое, нажимаем галочку
         await tester.tap(find.byIcon(Icons.check));
         await tester.pumpAndSettle();
 
@@ -478,7 +458,6 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Author's Review → last edit icon
         await tester.tap(find.byIcon(Icons.edit).last);
         await tester.pumpAndSettle();
 
@@ -496,12 +475,10 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // My Notes → first edit icon
         await tester.tap(find.byIcon(Icons.edit).first);
         await tester.pumpAndSettle();
 
         await tester.enterText(find.byType(TextField), 'My note');
-        // Нажимаем галочку
         await tester.tap(find.byIcon(Icons.check));
         await tester.pumpAndSettle();
 
@@ -519,17 +496,13 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Enter edit mode (My Notes = first edit icon)
         await tester.tap(find.byIcon(Icons.edit).first);
         await tester.pumpAndSettle();
 
-        // Type text
         await tester.enterText(find.byType(TextField), 'Auto saved note');
 
-        // Not saved yet (debounce pending)
         expect(savedValues, isEmpty);
 
-        // Wait for debounce timer (1 second)
         await tester.pump(const Duration(seconds: 1));
 
         expect(savedValues, <String?>['Auto saved note']);
@@ -544,7 +517,6 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Enter edit mode (Author = last edit icon)
         await tester.tap(find.byIcon(Icons.edit).last);
         await tester.pumpAndSettle();
 
@@ -566,20 +538,16 @@ void main() {
         await tester.tap(find.byIcon(Icons.edit).first);
         await tester.pumpAndSettle();
 
-        // Simulate rapid typing — each enterText resets the debounce
         await tester.enterText(find.byType(TextField), 'H');
         await tester.pump(const Duration(milliseconds: 300));
         await tester.enterText(find.byType(TextField), 'He');
         await tester.pump(const Duration(milliseconds: 300));
         await tester.enterText(find.byType(TextField), 'Hello');
 
-        // Still within debounce window
         expect(savedValues, isEmpty);
 
-        // Wait for final debounce
         await tester.pump(const Duration(seconds: 1));
 
-        // Only one save with final value
         expect(savedValues, <String?>['Hello']);
       });
 
@@ -597,7 +565,6 @@ void main() {
 
         await tester.enterText(find.byType(TextField), 'Immediate');
 
-        // Press check before debounce — should save immediately
         await tester.tap(find.byIcon(Icons.check));
         await tester.pumpAndSettle();
 
@@ -618,7 +585,6 @@ void main() {
         await tester.tap(find.byIcon(Icons.edit).first);
         await tester.pumpAndSettle();
 
-        // Clear the field
         await tester.enterText(find.byType(TextField), '');
         await tester.pump(const Duration(seconds: 1));
 
@@ -687,7 +653,6 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // 2 edit icons: Started + Completed
         expect(find.byIcon(Icons.edit_outlined), findsNWidgets(2));
       });
 
@@ -709,7 +674,6 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // 2 InkWell: Started + Completed
         final Finder inkWells = find.byType(InkWell);
         expect(inkWells, findsAtLeast(2));
       });
@@ -784,7 +748,6 @@ void main() {
         expect(find.text('Jun 1, 2025'), findsOneWidget);
         expect(find.text('Started: '), findsOneWidget);
         expect(find.text('Jun 5, 2025'), findsOneWidget);
-        // Extra sections inside collapsed ExpansionTile
         expect(find.text('Activity & Progress'), findsOneWidget);
         await tester.tap(find.text('Activity & Progress'));
         await tester.pumpAndSettle();
@@ -793,3 +756,4 @@ void main() {
     });
   });
 }
+

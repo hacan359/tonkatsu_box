@@ -1,5 +1,3 @@
-// Тесты для AllItemsScreen — экран всех элементов (Home tab).
-
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -168,7 +166,6 @@ void main() {
         (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget());
 
-      // Бар multi-select — «All» сегмента нет (пустое состояние = все).
       expect(find.text('Games'), findsOneWidget);
       expect(find.text('Movies'), findsOneWidget);
       expect(find.text('TV Shows'), findsOneWidget);
@@ -181,12 +178,10 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      // 5 элементов: 2 games, 1 movie, 1 tvShow, 1 visualNovel
       expect(find.text('Games (2)'), findsOneWidget);
       expect(find.text('Movies (1)'), findsOneWidget);
       expect(find.text('TV Shows (1)'), findsOneWidget);
       expect(find.text('Visual Novels (1)'), findsOneWidget);
-      // Animation = 0 → без счётчика, просто label
       expect(find.text('Animation'), findsOneWidget);
     });
 
@@ -194,7 +189,6 @@ void main() {
         (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget());
 
-      // Последний chevron-сегмент — dropdown статуса, по умолчанию "All"
       expect(find.text('All'), findsOneWidget);
       expect(find.byIcon(Icons.filter_list), findsNothing);
     });
@@ -204,15 +198,12 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      // Тап по "All" открывает popup
       await tester.tap(find.text('All'));
       await tester.pumpAndSettle();
 
-      // Popup содержит опции статусов
       expect(find.text('Completed'), findsOneWidget);
       expect(find.text('In Progress'), findsOneWidget);
 
-      // Выбираем Completed — только 1 элемент (item 1, game)
       await tester.tap(find.text('Completed'));
       await tester.pumpAndSettle();
 
@@ -225,18 +216,15 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      // Фильтруем по Completed
       await tester.tap(find.text('All'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Completed'));
       await tester.pumpAndSettle();
       expect(find.textContaining('Watch List'), findsNothing);
 
-      // Сегмент теперь показывает "Completed" — тап открывает popup
       await tester.tap(find.text('Completed').first);
       await tester.pumpAndSettle();
 
-      // Выбираем All — сбрасываем фильтр
       await tester.tap(find.text('All').last);
       await tester.pumpAndSettle();
       expect(find.textContaining('Watch List'), findsOneWidget);
@@ -255,7 +243,7 @@ void main() {
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
-      // Завершаем Future чтобы не оставлять pending timer
+      // Complete the future to avoid leaving a pending timer.
       completer.complete(testItems);
       await tester.pumpAndSettle();
     });
@@ -277,7 +265,6 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      // Элементы должны отображаться (CustomScrollView со slivers)
       expect(find.byType(CustomScrollView), findsOneWidget);
     });
 
@@ -286,9 +273,6 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      // Разделители с названиями коллекций и количеством
-      // My Games: 3 элемента (id 1,2,4 — collectionId = 10)
-      // Watch List: 2 элемента (id 3,5 — collectionId = 20)
       expect(find.text('My Games (3)'), findsOneWidget);
       expect(find.text('Watch List (2)'), findsOneWidget);
     });
@@ -298,11 +282,9 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      // Фильтруем по Games — только коллекция My Games (2 игры)
       await tester.tap(find.text('Games (2)'));
       await tester.pumpAndSettle();
 
-      // My Games с 2 играми, Watch List пуст (нет игр) — не показывается
       expect(find.text('My Games (2)'), findsOneWidget);
       expect(find.textContaining('Watch List'), findsNothing);
     });
@@ -314,12 +296,9 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      // Нажимаем на чипс Games (2 игры в testItems)
       await tester.tap(find.text('Games (2)'));
       await tester.pumpAndSettle();
 
-      // Чипс Games выбран — фильтрация применяется на уровне UI
-      // Проверяем что CustomScrollView всё ещё есть (с меньшим количеством элементов)
       expect(find.byType(CustomScrollView), findsOneWidget);
     });
 
@@ -328,12 +307,10 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      // Выбираем Games — отфильтрованы только игры
       await tester.tap(find.text('Games (2)'));
       await tester.pumpAndSettle();
       expect(find.textContaining('Watch List'), findsNothing);
 
-      // Повторный тап по Games отменяет выбор — снова все коллекции
       await tester.tap(find.text('Games (2)'));
       await tester.pumpAndSettle();
       expect(find.textContaining('Watch List'), findsOneWidget);
@@ -344,12 +321,10 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      // Выбираем Games — Watch List пропадает
       await tester.tap(find.text('Games (2)'));
       await tester.pumpAndSettle();
       expect(find.textContaining('Watch List'), findsNothing);
 
-      // Добавляем TV Shows — Watch List появляется снова (tvShow лежит в ней)
       await tester.tap(find.text('TV Shows (1)'));
       await tester.pumpAndSettle();
       expect(find.textContaining('Watch List'), findsOneWidget);
@@ -363,7 +338,6 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      // Нажимаем Games — появляется полоска мини-чипов платформ.
       await tester.tap(find.text('Games (2)'));
       await tester.pumpAndSettle();
 
@@ -392,7 +366,6 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('SNES'), findsOneWidget);
 
-      // Повторный тап по Games отменяет выбор → чипы уходят.
       await tester.tap(find.text('Games (2)'));
       await tester.pumpAndSettle();
       expect(find.text('SNES'), findsNothing);
@@ -403,11 +376,9 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      // Фильтруем по Games
       await tester.tap(find.text('Games (2)'));
       await tester.pumpAndSettle();
 
-      // Тап по SNES — фильтр по платформе
       await tester.tap(find.text('SNES'));
       await tester.pumpAndSettle();
 
@@ -421,7 +392,7 @@ void main() {
       await tester.pumpWidget(buildTestWidget());
       await tester.pumpAndSettle();
 
-      // VN чипс может быть за пределами экрана — прокручиваем
+      // VN chip may be off-screen; scroll it into view.
       final Finder vnChip = find.text('Visual Novels (1)');
       await tester.ensureVisible(vnChip);
       await tester.pumpAndSettle();
@@ -430,9 +401,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(CustomScrollView), findsOneWidget);
-      // Watch List видна (VN в collectionId 20)
       expect(find.textContaining('Watch List'), findsOneWidget);
-      // My Games не видна (нет VN в collectionId 10)
       expect(find.textContaining('My Games'), findsNothing);
     });
 

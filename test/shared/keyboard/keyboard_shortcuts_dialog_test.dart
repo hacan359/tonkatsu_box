@@ -66,10 +66,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Ctrl и N отображаются как отдельные бейджи
       expect(find.text('Ctrl'), findsWidgets);
       expect(find.text('N'), findsOneWidget);
-      // Разделитель +
       expect(find.text('+'), findsWidgets);
     });
 
@@ -86,12 +84,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Открываем диалог
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
       expect(find.text('Клавиатурные сочетания'), findsOneWidget);
 
-      // Закрываем
       await tester.tap(find.text('Закрыть'));
       await tester.pumpAndSettle();
       expect(find.text('Клавиатурные сочетания'), findsNothing);

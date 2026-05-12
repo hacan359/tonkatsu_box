@@ -1,5 +1,3 @@
-// Тесты для модели CollectionItem
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/game.dart';
@@ -11,7 +9,6 @@ import 'package:xerabora/shared/models/tv_show.dart';
 
 void main() {
   group('CollectionItem', () {
-    // Общие тестовые данные
     final DateTime testAddedAt = DateTime(2024, 1, 15, 12, 0, 0);
     final int testAddedAtUnix = testAddedAt.millisecondsSinceEpoch ~/ 1000;
 
@@ -491,13 +488,11 @@ void main() {
         final Map<String, dynamic> json =
             item.toExport(includeUserData: true);
 
-        // Базовые поля
         expect(json['media_type'], 'tv_show');
         expect(json['external_id'], 1399);
         expect(json['comment'], 'Отличный сериал');
         expect(json['user_rating'], 9);
 
-        // User data поля
         expect(json['status'], 'in_progress');
         expect(json['user_comment'], 'Мои заметки');
         expect(json['current_season'], 3);
@@ -595,7 +590,7 @@ void main() {
         expect(restored.currentSeason, original.currentSeason);
         expect(restored.currentEpisode, original.currentEpisode);
         expect(restored.sortOrder, original.sortOrder);
-        // Даты сравниваем с точностью до секунды (unix timestamp)
+        // Compare dates at second precision (unix timestamp).
         expect(
           restored.addedAt.millisecondsSinceEpoch ~/ 1000,
           original.addedAt.millisecondsSinceEpoch ~/ 1000,

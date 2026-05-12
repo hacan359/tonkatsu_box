@@ -1,6 +1,4 @@
 import 'package:xerabora/l10n/app_localizations.dart';
-// Тесты для WelcomeScreen — 6-шаговый онбординг wizard.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -102,7 +100,6 @@ void main() {
 
         expect(find.text('Back'), findsOneWidget);
 
-        // Back button should be disabled (TextButton with null onPressed)
         final TextButton backButton = tester.widget<TextButton>(
           find.widgetWithText(TextButton, 'Back'),
         );
@@ -113,7 +110,6 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pump();
 
-        // 6 AnimatedContainer dot indicators
         expect(find.byType(AnimatedContainer), findsNWidgets(6));
       });
     });
@@ -124,7 +120,6 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pump();
 
-        // Tap Next
         await tester.tap(find.text('Next'));
         await tester.pumpAndSettle();
 
@@ -165,11 +160,9 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pump();
 
-        // Go to step 2
         await tester.tap(find.text('Next'));
         await tester.pumpAndSettle();
 
-        // Go back to step 1
         await tester.tap(find.widgetWithText(TextButton, 'Back'));
         await tester.pumpAndSettle();
 
@@ -181,11 +174,9 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pump();
 
-        // Next to step 2 (Name)
         await tester.tap(find.text('Next'));
         await tester.pumpAndSettle();
 
-        // Next to step 3 (Language)
         await tester.tap(find.text('Next'));
         await tester.pumpAndSettle();
 
@@ -197,7 +188,6 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pump();
 
-        // Navigate through 5 steps
         for (int i = 0; i < 5; i++) {
           await tester.tap(find.text('Next'));
           await tester.pumpAndSettle();
@@ -268,16 +258,12 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pump();
 
-        // Dots are wrapped in GestureDetector > AnimatedContainer
-        // Find all AnimatedContainers used as dots
         final Finder dots = find.byType(AnimatedContainer);
         expect(dots, findsNWidgets(6));
 
-        // Tap the 3rd dot (index 2) — Language step
         await tester.tap(dots.at(2));
         await tester.pumpAndSettle();
 
-        // Should show step 3 (Language)
         expect(find.byType(WelcomeStepLanguage), findsOneWidget);
       });
     });
@@ -288,7 +274,6 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pump();
 
-        // Find StepIndicator for "Name" and tap it
         final Finder nameIndicator = find.widgetWithText(
           StepIndicator,
           'Name',
@@ -314,7 +299,7 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pump();
 
-        // Fling left on PageView (fling works better than drag with nested scrollables)
+        // Fling works better than drag with nested scrollables.
         await tester.fling(
           find.byType(PageView),
           const Offset(-300, 0),
@@ -331,7 +316,6 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pump();
 
-        // Fling right — should stay on step 1
         await tester.fling(
           find.byType(PageView),
           const Offset(300, 0),
@@ -366,10 +350,7 @@ void main() {
         );
         await tester.pump();
 
-        // On narrow screens, only the active label should show
-        // Active step is "Welcome" (step 0)
         expect(find.text('Welcome'), findsOneWidget);
-        // Other labels should be hidden on compact
         expect(find.text('API Keys'), findsNothing);
         expect(find.text('Ready!'), findsNothing);
       });
@@ -381,16 +362,13 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pump();
 
-        // Navigate to last step
         for (int i = 0; i < 5; i++) {
           await tester.tap(find.text('Next'));
           await tester.pumpAndSettle();
         }
 
-        // Tap "Go to Settings"
         await tester.tap(find.text('Go to Settings'));
-        // Use pump() instead of pumpAndSettle() because navigation to
-        // AppShell starts shimmer animations that never settle
+        // AppShell shimmer never settles, so pumpAndSettle would hang.
         await tester.pump();
         await tester.pump();
 
@@ -402,15 +380,13 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pump();
 
-        // Navigate to last step
         for (int i = 0; i < 5; i++) {
           await tester.tap(find.text('Next'));
           await tester.pumpAndSettle();
         }
 
-        // Tap "Skip — explore on my own"
         await tester.tap(find.text('Skip — explore on my own'));
-        // Use pump() — AppShell has shimmer that blocks pumpAndSettle
+        // AppShell shimmer blocks pumpAndSettle.
         await tester.pump();
         await tester.pump();
 
@@ -421,7 +397,6 @@ void main() {
     group('fromSettings mode', () {
       testWidgets('pops on finish when fromSettings is true',
           (WidgetTester tester) async {
-        // Wrap in a navigator with another screen to verify pop
         await tester.pumpWidget(
           ProviderScope(
             overrides: <Override>[
@@ -449,24 +424,19 @@ void main() {
           ),
         );
 
-        // Navigate to Welcome
         await tester.tap(find.text('Open Welcome'));
         await tester.pumpAndSettle();
 
-        // Verify we're on WelcomeScreen
         expect(find.byType(WelcomeScreen), findsOneWidget);
 
-        // Go to last step
         for (int i = 0; i < 5; i++) {
           await tester.tap(find.text('Next'));
           await tester.pumpAndSettle();
         }
 
-        // Tap "Skip — explore on my own"
         await tester.tap(find.text('Skip — explore on my own'));
         await tester.pumpAndSettle();
 
-        // Should pop back to original screen
         expect(find.text('Open Welcome'), findsOneWidget);
         expect(find.byType(WelcomeScreen), findsNothing);
       });
@@ -503,7 +473,6 @@ void main() {
         await tester.tap(find.text('Open Welcome'));
         await tester.pumpAndSettle();
 
-        // Navigate to last step and finish
         for (int i = 0; i < 5; i++) {
           await tester.tap(find.text('Next'));
           await tester.pumpAndSettle();

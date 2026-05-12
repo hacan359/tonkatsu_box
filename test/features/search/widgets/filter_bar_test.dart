@@ -39,7 +39,6 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Виджет отрисовывается без ошибок при наличии callback
       expect(find.byType(FilterBar), findsOneWidget);
       expect(callCount, 0);
     });

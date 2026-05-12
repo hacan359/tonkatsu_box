@@ -18,7 +18,6 @@ void main() {
       });
 
       test('should be true on Windows test runner', () {
-        // Тесты запускаются на Windows — kVgMapsEnabled == true
         if (Platform.isWindows) {
           expect(kVgMapsEnabled, isTrue);
         }
@@ -37,7 +36,6 @@ void main() {
       });
 
       test('should be false on desktop test runner', () {
-        // Тесты запускаются на desktop — kIsMobile == false
         if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
           expect(kIsMobile, isFalse);
         }
@@ -61,7 +59,6 @@ void main() {
           ),
         );
 
-        // На desktop всегда false (kIsMobile == false)
         expect(result, isFalse);
       });
 
@@ -71,7 +68,7 @@ void main() {
         await tester.pumpWidget(
           MediaQuery(
             data: const MediaQueryData(
-              size: Size(1280, 720), // landscape aspect ratio
+              size: Size(1280, 720),
             ),
             child: Builder(
               builder: (BuildContext context) {
@@ -82,7 +79,6 @@ void main() {
           ),
         );
 
-        // На desktop всегда false независимо от ориентации
         expect(result, isFalse);
       });
     });

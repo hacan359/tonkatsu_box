@@ -71,7 +71,6 @@ void main() {
         await tester.tap(find.widgetWithText(TextButton, 'Add'));
         await tester.pumpAndSettle();
 
-        // Экран не закрылся, показывается ошибка.
         expect(find.byType(TextField), findsWidgets);
         expect(find.text('At least 2 characters'), findsOneWidget);
       });
@@ -94,12 +93,10 @@ void main() {
           (WidgetTester tester) async {
         await pumpForm(tester);
 
-        // Вызываем ошибку.
         await tester.tap(find.widgetWithText(TextButton, 'Add'));
         await tester.pumpAndSettle();
         expect(find.text('At least 2 characters'), findsOneWidget);
 
-        // Начинаем вводить — ошибка исчезает.
         await tester.enterText(
           find.widgetWithText(TextField, '').first,
           'Te',
@@ -180,7 +177,6 @@ void main() {
         await tester.tap(find.widgetWithText(TextButton, 'Add'));
         await tester.pumpAndSettle();
 
-        // Форма закрылась — вернулись на предыдущий экран.
         expect(find.widgetWithText(TextButton, 'Add'), findsNothing);
         expect(find.text('Open'), findsOneWidget);
       });
@@ -189,19 +185,16 @@ void main() {
           (WidgetTester tester) async {
         await pumpForm(tester);
 
-        // Заполняем Title.
         await tester.enterText(
           find.widgetWithText(TextField, '').first,
           'Chrono Trigger',
         );
-        // Заполняем Note.
         final Finder noteField = find.widgetWithText(TextField, '').last;
         await tester.enterText(noteField, 'SNES RPG');
 
         await tester.tap(find.widgetWithText(TextButton, 'Add'));
         await tester.pumpAndSettle();
 
-        // Форма закрылась.
         expect(find.text('Open'), findsOneWidget);
       });
 
@@ -209,14 +202,12 @@ void main() {
           (WidgetTester tester) async {
         await pumpForm(tester);
 
-        // Вводим текст без предварительной ошибки — не должно падать.
         await tester.enterText(
           find.widgetWithText(TextField, '').first,
           'Test',
         );
         await tester.pumpAndSettle();
 
-        // Ошибки не было и нет.
         expect(find.text('At least 2 characters'), findsNothing);
       });
 

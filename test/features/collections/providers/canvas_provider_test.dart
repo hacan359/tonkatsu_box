@@ -119,7 +119,6 @@ void main() {
 
         final CanvasState copy = original.copyWith(isLoading: false);
 
-        // error defaults to null in copyWith when not explicitly passed
         expect(copy.error, isNull);
       });
 
@@ -170,7 +169,6 @@ void main() {
     final DateTime testDate = DateTime(2024, 6, 15);
     const int collectionId = 1;
 
-    // Вспомогательные данные для тестов
     late List<CanvasItem> testItems;
     late List<CollectionItem> testCollectionItems;
 
@@ -178,7 +176,7 @@ void main() {
       mockRepository = MockCanvasRepository();
       mockCollectionRepo = MockCollectionRepository();
 
-      // По умолчанию — пустой список при fallback загрузке из repository
+      // Default fallback: empty list when loading from collection repository.
       when(() => mockCollectionRepo.getItemsWithData(any()))
           .thenAnswer((_) async => <CollectionItem>[]);
 
@@ -255,7 +253,6 @@ void main() {
       ];
     });
 
-    // Вспомогательный метод для создания ProviderContainer
     ProviderContainer createContainer({
       AsyncValue<List<CollectionItem>>? itemsState,
     }) {
@@ -272,7 +269,6 @@ void main() {
       );
     }
 
-    // Вспомогательный метод: настроить репо для загрузки существующих элементов
     void setupExistingCanvas({
       List<CanvasItem>? items,
       CanvasViewport? viewport,
@@ -296,7 +292,6 @@ void main() {
           .thenAnswer((_) async => const <CanvasConnection>[]);
     }
 
-    // Вспомогательный метод: настроить репо для инициализации нового канваса
     void setupNewCanvas({List<CollectionItem>? items}) {
       final List<CollectionItem> effectiveItems = items ?? testCollectionItems;
       when(() => mockRepository.hasCanvasItems(collectionId))
@@ -340,12 +335,10 @@ void main() {
           final ProviderContainer container = createContainer();
           addTearDown(container.dispose);
 
-          // Читаем state для запуска build()
           final CanvasState initialState =
               container.read(canvasNotifierProvider(collectionId));
           expect(initialState.isLoading, true);
 
-          // Ждём загрузки (Future.microtask)
           await Future<void>.delayed(Duration.zero);
 
           final CanvasState loadedState =
@@ -485,7 +478,6 @@ void main() {
       test(
         'должен удалить сиротские элементы канваса когда игры удалены из коллекции',
         () async {
-          // В канвасе 3 элемента, но в коллекции только 2 игры (externalId 100 и 200)
           final List<CollectionItem> twoItems = <CollectionItem>[
             testCollectionItems[0],
             testCollectionItems[1],
@@ -500,7 +492,6 @@ void main() {
           container.read(canvasNotifierProvider(collectionId));
           await Future<void>.delayed(Duration.zero);
 
-          // Элемент с itemRefId=300 (id=3) должен быть удалён через batch
           final VerificationResult verification =
               verify(() => mockRepository.deleteItemsBatch(captureAny()));
           verification.called(1);
@@ -513,7 +504,6 @@ void main() {
       test(
         'должен добавить недостающие элементы канваса когда игры добавлены в коллекцию',
         () async {
-          // В канвасе 2 элемента, но в коллекции 3 игры (добавлена externalId=400)
           final List<CanvasItem> twoCanvasItems = <CanvasItem>[
             testItems[0],
             testItems[1],
@@ -567,8 +557,8 @@ void main() {
           final List<CanvasItem> createdItems =
               verification.captured.first as List<CanvasItem>;
           expect(createdItems.length, 1);
-          // Элементы канваса коллекции НЕ должны иметь collectionItemId
-          // (getCanvasItems фильтрует по collection_item_id IS NULL)
+          // Collection-canvas items must not have collectionItemId — getCanvasItems
+          // filters by collection_item_id IS NULL.
           expect(createdItems[0].collectionItemId, isNull);
           expect(createdItems[0].itemRefId, 400);
           expect(createdItems[0].itemType, CanvasItemType.game);
@@ -578,8 +568,6 @@ void main() {
       test(
         'должен удалить сиротский элемент без collectionItemId по (type, refId)',
         () async {
-          // Canvas item с collectionItemId=null (как создаёт initializeCanvas)
-          // но externalId=999 больше нет в коллекции
           final List<CanvasItem> canvasItemsNoCollId = <CanvasItem>[
             CanvasItem(
               id: 1,
@@ -597,7 +585,7 @@ void main() {
               id: 2,
               collectionId: collectionId,
               itemType: CanvasItemType.game,
-              itemRefId: 999, // Нет в коллекции
+              itemRefId: 999,
               x: 250.0,
               y: 100.0,
               width: 160,
@@ -607,7 +595,7 @@ void main() {
             ),
           ];
           final List<CollectionItem> oneItem = <CollectionItem>[
-            testCollectionItems[0], // externalId=100
+            testCollectionItems[0],
           ];
 
           when(() => mockRepository.hasCanvasItems(collectionId))
@@ -633,7 +621,6 @@ void main() {
           container.read(canvasNotifierProvider(collectionId));
           await Future<void>.delayed(Duration.zero);
 
-          // Элемент с id=2 (itemRefId=999, game) должен быть удалён
           final VerificationResult verification =
               verify(() => mockRepository.deleteItemsBatch(captureAny()));
           verification.called(1);
@@ -646,9 +633,8 @@ void main() {
       test(
         'должен не удалять текстовые/image/link элементы при sync',
         () async {
-          // Canvas содержит текстовый элемент — он не связан с коллекцией
           final List<CanvasItem> canvasWithText = <CanvasItem>[
-            testItems[0], // game, refId=100
+            testItems[0],
             CanvasItem(
               id: 10,
               collectionId: collectionId,
@@ -685,8 +671,6 @@ void main() {
           container.read(canvasNotifierProvider(collectionId));
           await Future<void>.delayed(Duration.zero);
 
-          // Текстовый элемент НЕ должен быть удалён (deleteItemsBatch не вызван
-          // т.к. нет orphans, или вызван с пустым списком без id=10)
           verifyNever(() => mockRepository.deleteItemsBatch(any()));
         },
       );
@@ -708,8 +692,7 @@ void main() {
               .thenAnswer((_) async {});
           when(() => mockRepository.createItemsBatch(any()))
               .thenAnswer((_) async => <CanvasItem>[]);
-          // Fallback: при AsyncLoading загружаем из collection repository
-          // Возвращаем полный список, чтобы sync не удалял сиротские items
+          // Fallback path under AsyncLoading: return full list so sync keeps all items.
           when(() => mockCollectionRepo.getItemsWithData(collectionId))
               .thenAnswer((_) async => testCollectionItems);
 
@@ -722,10 +705,8 @@ void main() {
           container.read(canvasNotifierProvider(collectionId));
           await Future<void>.delayed(Duration.zero);
 
-          // sync загружает items через fallback из collection repository
           verify(() => mockCollectionRepo.getItemsWithData(collectionId))
               .called(1);
-          // getItemsWithData на canvas repository вызывается для загрузки canvas items
           verify(() => mockRepository.getItemsWithData(collectionId)).called(1);
           verifyNever(() => mockRepository.deleteItemsBatch(any()));
         },
@@ -806,13 +787,11 @@ void main() {
           container.read(canvasNotifierProvider(collectionId));
           await Future<void>.delayed(Duration.zero);
 
-          // Первая загрузка завершена
           expect(
             container.read(canvasNotifierProvider(collectionId)).isLoading,
             false,
           );
 
-          // Настраиваем обновлённые данные
           final List<CanvasItem> updatedItems = <CanvasItem>[testItems[0]];
           when(() => mockRepository.getItemsWithData(collectionId))
               .thenAnswer((_) async => updatedItems);
@@ -840,7 +819,7 @@ void main() {
           container.read(canvasNotifierProvider(collectionId));
           await Future<void>.delayed(Duration.zero);
 
-          // Делаем загрузку медленной чтобы проверить isLoading
+          // Slow the load to capture the intermediate isLoading state.
           final Completer<List<CanvasItem>> completer =
               Completer<List<CanvasItem>>();
           when(() => mockRepository.hasCanvasItems(collectionId))
@@ -854,12 +833,10 @@ void main() {
           // ignore: unawaited_futures
           final Future<void> refreshFuture = notifier.refresh();
 
-          // Не завершаем completer, проверяем промежуточное состояние
-          // (refresh устанавливает isLoading=true синхронно, но hasCanvasItems
-          // тоже async, поэтому подождём microtask)
+          // refresh() sets isLoading=true synchronously, but hasCanvasItems is async —
+          // wait one microtask before resolving.
           await Future<void>.delayed(Duration.zero);
 
-          // Завершаем загрузку
           completer.complete(testItems);
           await refreshFuture;
 
@@ -872,7 +849,6 @@ void main() {
       test(
         'должен очистить предыдущую ошибку когда refresh вызван',
         () async {
-          // Первая загрузка с ошибкой
           when(() => mockRepository.hasCanvasItems(collectionId))
               .thenThrow(Exception('First error'));
 
@@ -887,7 +863,6 @@ void main() {
             isNotNull,
           );
 
-          // Настраиваем успешную загрузку
           setupExistingCanvas();
 
           final CanvasNotifier notifier = container
@@ -951,7 +926,6 @@ void main() {
               .read(canvasNotifierProvider(collectionId).notifier);
           notifier.moveItem(1, 100.0, 200.0);
 
-          // Сразу после вызова — БД ещё не вызвана (debounce 300ms)
           verifyNever(
             () => mockRepository.updateItemPosition(
               any(),
@@ -960,7 +934,6 @@ void main() {
             ),
           );
 
-          // Ждём debounce
           await Future<void>.delayed(const Duration(milliseconds: 350));
 
           verify(
@@ -994,17 +967,14 @@ void main() {
           final CanvasNotifier notifier = container
               .read(canvasNotifierProvider(collectionId).notifier);
 
-          // Быстрые последовательные перемещения
           notifier.moveItem(1, 100.0, 200.0);
           await Future<void>.delayed(const Duration(milliseconds: 100));
           notifier.moveItem(1, 150.0, 250.0);
           await Future<void>.delayed(const Duration(milliseconds: 100));
           notifier.moveItem(1, 200.0, 300.0);
 
-          // Ждём debounce после последнего вызова
           await Future<void>.delayed(const Duration(milliseconds: 350));
 
-          // Только последнее значение должно быть сохранено
           verify(
             () => mockRepository.updateItemPosition(
               1,
@@ -1012,7 +982,6 @@ void main() {
               y: 300.0,
             ),
           ).called(1);
-          // Промежуточные значения НЕ должны быть сохранены
           verifyNever(
             () => mockRepository.updateItemPosition(
               1,
@@ -1099,10 +1068,8 @@ void main() {
               .read(canvasNotifierProvider(collectionId).notifier);
           notifier.updateViewport(2.0, -100.0, -200.0);
 
-          // Сразу после вызова — не сохранено (debounce 500ms)
           verifyNever(() => mockRepository.saveViewport(any()));
 
-          // Ждём debounce
           await Future<void>.delayed(const Duration(milliseconds: 550));
 
           verify(() => mockRepository.saveViewport(any())).called(1);
@@ -1130,10 +1097,8 @@ void main() {
           await Future<void>.delayed(const Duration(milliseconds: 200));
           notifier.updateViewport(2.0, -100.0, -200.0);
 
-          // Ждём debounce после последнего вызова
           await Future<void>.delayed(const Duration(milliseconds: 550));
 
-          // Только один вызов
           verify(() => mockRepository.saveViewport(any())).called(1);
         },
       );
@@ -1160,7 +1125,6 @@ void main() {
           container.read(canvasNotifierProvider(collectionId));
           await Future<void>.delayed(Duration.zero);
 
-          // Проверяем что viewport сохранён
           expect(
             container.read(canvasNotifierProvider(collectionId)).viewport.scale,
             2.0,
@@ -1177,7 +1141,7 @@ void main() {
           expect(state.viewport.offsetY, 0.0);
           expect(state.viewport.collectionId, collectionId);
 
-          // Должен сохранить в БД без debounce
+          // resetViewport saves immediately without debounce.
           verify(() => mockRepository.saveViewport(any())).called(1);
         },
       );
@@ -1230,12 +1194,10 @@ void main() {
           final CanvasState state =
               container.read(canvasNotifierProvider(collectionId));
 
-          // Все элементы должны иметь zIndex == 0 после сброса
           for (final CanvasItem item in state.items) {
             expect(item.zIndex, 0);
           }
 
-          // Должен вызвать updateItemPosition для каждого элемента
           verify(
             () => mockRepository.updateItemPosition(
               any(),
@@ -1267,13 +1229,12 @@ void main() {
           final CanvasNotifier notifier = container
               .read(canvasNotifierProvider(collectionId).notifier);
 
-          // Узкий viewport — все элементы в одну колонку
+          // Narrow viewport forces a single column, so all x values must match.
           await notifier.resetPositions(160.0);
 
           final CanvasState state =
               container.read(canvasNotifierProvider(collectionId));
 
-          // При одной колонке все x-координаты должны быть одинаковыми
           final Set<double> uniqueX =
               state.items.map((CanvasItem item) => item.x).toSet();
           expect(uniqueX.length, 1);
@@ -1382,7 +1343,6 @@ void main() {
 
           final CanvasState state =
               container.read(canvasNotifierProvider(collectionId));
-          // id==999 не найден — все 3 остались
           expect(state.items.length, 3);
         },
       );
@@ -1413,7 +1373,6 @@ void main() {
             (CanvasItem item) => item.id == 1,
           );
 
-          // Максимальный zIndex был 2, значит новый = 3
           expect(frontItem.zIndex, 3);
 
           verify(() => mockRepository.updateItemZIndex(1, 3)).called(1);
@@ -1496,7 +1455,6 @@ void main() {
             (CanvasItem item) => item.id == 3,
           );
 
-          // Минимальный zIndex был 0, значит новый = -1
           expect(backItem.zIndex, -1);
 
           verify(() => mockRepository.updateItemZIndex(3, -1)).called(1);
@@ -1572,9 +1530,7 @@ void main() {
           final CanvasNotifier notifier = container
               .read(canvasNotifierProvider(collectionId).notifier);
 
-          // item1(z=0) -> front -> z=3
           await notifier.bringToFront(1);
-          // item2(z=1) -> back -> z=-1
           await notifier.sendToBack(2);
 
           final CanvasState state =
@@ -1590,8 +1546,7 @@ void main() {
           );
 
           expect(item1.zIndex, 3);
-          // Минимальный z-index после первого bringToFront: min(3,1,2) = 1
-          // sendToBack(2) -> 1 - 1 = 0
+          // After bringToFront, min z is min(3,1,2)=1, so sendToBack(2) sets z=0.
           expect(item2.zIndex, 0);
           expect(item3.zIndex, 2);
         },
@@ -1645,7 +1600,7 @@ void main() {
       test(
         'должен установить zIndex в maxZ+1 когда есть существующие элементы',
         () async {
-          setupExistingCanvas(); // 3 items с zIndex 0, 1, 2
+          setupExistingCanvas();
           late CanvasItem capturedItem;
           when(() => mockRepository.createItem(any()))
               .thenAnswer((Invocation invocation) async {
@@ -1664,7 +1619,6 @@ void main() {
               .read(canvasNotifierProvider(collectionId).notifier);
           await notifier.addTextItem(0.0, 0.0, 'Test', 14.0);
 
-          // maxZ = 2, поэтому zIndex нового элемента = 3
           expect(capturedItem.zIndex, 3);
         },
       );
@@ -1919,7 +1873,6 @@ void main() {
           container.read(canvasNotifierProvider(collectionId));
           await Future<void>.delayed(Duration.zero);
 
-          // Запоминаем исходное состояние элементов 2 и 3
           final CanvasState stateBefore =
               container.read(canvasNotifierProvider(collectionId));
           final CanvasItem item2Before = stateBefore.items.firstWhere(
@@ -2038,7 +1991,6 @@ void main() {
           container.read(canvasNotifierProvider(collectionId));
           await Future<void>.delayed(Duration.zero);
 
-          // Запоминаем исходное состояние элементов 2 и 3
           final CanvasState stateBefore =
               container.read(canvasNotifierProvider(collectionId));
           final CanvasItem item2Before = stateBefore.items.firstWhere(
@@ -2099,7 +2051,6 @@ void main() {
           final CanvasNotifier notifier = container
               .read(canvasNotifierProvider(collectionId).notifier);
 
-          // Добавляем
           await notifier.addItem(newItem);
           expect(
             container
@@ -2109,7 +2060,6 @@ void main() {
             4,
           );
 
-          // Удаляем
           await notifier.deleteItem(50);
           expect(
             container
@@ -2126,8 +2076,7 @@ void main() {
       test(
         'должен расположить один элемент по центру канваса',
         () async {
-          // Используем одну игру в коллекции, чтобы _syncCanvasWithGames
-          // не пыталась добавить недостающие элементы
+          // Single matching game keeps _syncCanvasWithGames from adding missing items.
           final List<CanvasItem> singleItem = <CanvasItem>[testItems[0]];
           final List<CollectionItem> singleCollectionItem = <CollectionItem>[
             testCollectionItems[0],
@@ -2157,9 +2106,6 @@ void main() {
               container.read(canvasNotifierProvider(collectionId));
           expect(state.items.length, 1);
 
-          // Один элемент — 1 колонка, gridWidth = cardW = 160
-          // startX = 2500 - 160/2 = 2420
-          // startY = 2500 - 220/2 = 2390
           expect(state.items[0].x, 2500.0 - 160.0 / 2);
           expect(state.items[0].y, 2500.0 - 220.0 / 2);
         },
@@ -2280,7 +2226,6 @@ void main() {
               .read(gameCanvasNotifierProvider(familyArg).notifier);
           notifier.updateViewport(2.0, -100.0, -200.0);
 
-          // Ждём debounce 500ms
           await Future<void>.delayed(const Duration(milliseconds: 550));
 
           final CanvasViewport captured = verify(
@@ -2346,7 +2291,6 @@ void main() {
               .read(gameCanvasNotifierProvider(familyArg).notifier);
           notifier.moveItem(1, 100.0, 200.0);
 
-          // Сразу — не сохранено
           verifyNever(
             () => mockRepository.updateItemPosition(
               any(),
@@ -2355,7 +2299,6 @@ void main() {
             ),
           );
 
-          // Ждём debounce
           await Future<void>.delayed(const Duration(milliseconds: 350));
 
           verify(
@@ -2436,14 +2379,12 @@ void main() {
           final GameCanvasNotifier notifier = container
               .read(gameCanvasNotifierProvider(familyArg).notifier);
 
-          // Запускаем debounce-таймеры
+          // Arm both debounce timers, then dispose must cancel them.
           notifier.moveItem(1, 100.0, 200.0);
           notifier.updateViewport(2.0, -50.0, -50.0);
 
-          // Dispose отменяет таймеры
           container.dispose();
 
-          // Ждём после dispose — таймеры должны были быть отменены
           await Future<void>.delayed(const Duration(milliseconds: 600));
 
           verifyNever(

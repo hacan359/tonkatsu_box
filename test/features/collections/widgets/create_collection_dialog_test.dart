@@ -35,7 +35,6 @@ void main() {
       ));
 
       expect(find.text('Collection Name'), findsOneWidget);
-      // Только одно поле ввода (без автора)
       expect(find.byType(TextFormField), findsOneWidget);
     });
 

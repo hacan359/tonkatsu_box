@@ -1,5 +1,3 @@
-// Тесты для GamepadMapping — платформенные маппинги осей и кнопок.
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/core/services/gamepad_mappings.dart';
 

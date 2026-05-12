@@ -355,7 +355,6 @@ void main() {
         when(() => mockApi.fetchPlatformsByIds(any()))
             .thenThrow(Exception('Network error'));
 
-        // Не должен выбрасывать исключение
         await repository.ensurePlatformsCached(games);
 
         verify(() => mockApi.fetchPlatformsByIds(any())).called(1);

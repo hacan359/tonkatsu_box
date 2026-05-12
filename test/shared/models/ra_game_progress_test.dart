@@ -1,5 +1,3 @@
-// Тесты для RaGameProgress.
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/ra_game_progress.dart';

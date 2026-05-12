@@ -236,8 +236,6 @@ void main() {
       });
     });
 
-    // ==================== v2 Light Import (.xcoll) ====================
-
     group('importFromXcoll (v2 light)', () {
       late ImportService sutV2;
 
@@ -538,7 +536,6 @@ void main() {
 
         final ImportResult result = await sutV2.importFromXcoll(xcoll);
 
-        // Импорт не падает, просто пропускает недоступный фильм
         expect(result.success, isTrue);
         expect(result.itemsImported, equals(2));
       });
@@ -612,7 +609,6 @@ void main() {
       });
 
       test('должен импортировать v2 без TMDB API (tmdbApi = null)', () async {
-        // Сервис без tmdbApi — фильмы/сериалы не фетчатся, но элементы добавляются
         final ImportService sutNoTmdb = ImportService(
           repository: mockRepo,
           igdbApi: mockApi,
@@ -658,7 +654,6 @@ void main() {
 
         expect(result.success, isTrue);
         expect(result.itemsImported, equals(1));
-        // TMDB не вызывается
         verifyNever(() => mockTmdb.getMovie(any()));
       });
 
@@ -807,8 +802,6 @@ void main() {
       });
     });
 
-    // ==================== v2 Full Import (.xcollx) ====================
-
     group('importFromXcoll (v2 full с canvas)', () {
       late ImportService sutFull;
 
@@ -863,7 +856,7 @@ void main() {
       });
 
       test('должен импортировать canvas items с ID-ремаппингом', () async {
-        // created_at — Unix timestamp в секундах (int)
+        // created_at is a Unix timestamp in seconds (int).
         final int canvasTs = DateTime(2024, 3, 1).millisecondsSinceEpoch ~/ 1000;
 
         final XcollFile xcoll = XcollFile(
@@ -908,7 +901,6 @@ void main() {
               type: any(named: 'type'),
             )).thenAnswer((_) async => createdCollection);
 
-        // Мокаем createItem — возвращаем с новыми ID
         int nextId = 100;
         when(() => mockCanvas.createItem(any())).thenAnswer((Invocation inv) async {
           final CanvasItem inputItem =
@@ -975,14 +967,13 @@ void main() {
               type: any(named: 'type'),
             )).thenAnswer((_) async => createdCollection);
 
-        // createItem: export ID 10 → new ID 101, export ID 20 → new ID 102
         final Map<int, int> exportToNewId = <int, int>{};
         int nextItemId = 100;
         when(() => mockCanvas.createItem(any())).thenAnswer((Invocation inv) async {
           final CanvasItem inputItem =
               inv.positionalArguments[0] as CanvasItem;
           nextItemId++;
-          // Через x мы определяем исходный export ID
+          // Disambiguate export IDs by x coord (set up uniquely in items above).
           if (inputItem.x == 100.0) {
             exportToNewId[10] = nextItemId;
           } else {
@@ -1003,14 +994,14 @@ void main() {
         expect(result.success, isTrue);
         verify(() => mockCanvas.createItem(any())).called(2);
 
-        // Проверяем что connection был создан с ремаппленными ID
         final CanvasConnection captured = verify(
           () => mockCanvas.createConnection(captureAny()),
         ).captured.first as CanvasConnection;
 
         expect(captured.fromItemId, equals(exportToNewId[10]));
         expect(captured.toItemId, equals(exportToNewId[20]));
-        expect(captured.id, equals(0)); // ID сброшен для автоинкремента
+        // Reset id so DB autoincrement assigns a fresh one.
+        expect(captured.id, equals(0));
       });
 
       test('должен пропускать connections с неремаппленными ID', () async {
@@ -1034,7 +1025,7 @@ void main() {
               },
             ],
             connections: <Map<String, dynamic>>[
-              // Connection ссылается на несуществующий ID 999
+              // to_item_id 999 has no matching item; connection should be skipped.
               <String, dynamic>{
                 'id': 1,
                 'from_item_id': 10,
@@ -1068,7 +1059,6 @@ void main() {
         final ImportResult result = await sutFull.importFromXcoll(xcoll);
 
         expect(result.success, isTrue);
-        // Connection пропущен, т.к. to_item_id 999 не ремаплится
         verifyNever(() => mockCanvas.createConnection(any()));
       });
 
@@ -1106,7 +1096,6 @@ void main() {
       });
 
       test('должен не импортировать canvas в light mode', () async {
-        // light format → isFull = false → canvas не импортируется
         final XcollFile xcoll = XcollFile(
           version: 2,
           format: ExportFormat.light,
@@ -1205,8 +1194,6 @@ void main() {
         expect(stages, contains(ImportStage.completed));
       });
 
-      // ==================== Per-item canvas ====================
-
       test('должен импортировать per-item canvas viewport', () async {
         final XcollFile xcoll = XcollFile(
           version: 2,
@@ -1257,7 +1244,7 @@ void main() {
               externalId: any(named: 'externalId'),
               platformId: any(named: 'platformId'),
               authorComment: any(named: 'authorComment'),
-            )).thenAnswer((_) async => 50); // collectionItemId = 50
+            )).thenAnswer((_) async => 50);
         when(() => mockCanvas.saveGameCanvasViewport(any(), any()))
             .thenAnswer((_) async {});
 
@@ -1266,12 +1253,11 @@ void main() {
         expect(result.success, isTrue);
         expect(result.itemsImported, equals(1));
 
-        // Проверяем что saveGameCanvasViewport был вызван
         final List<dynamic> captured = verify(
           () => mockCanvas.saveGameCanvasViewport(captureAny(), captureAny()),
         ).captured;
 
-        expect(captured[0], equals(50)); // collectionItemId
+        expect(captured[0], equals(50));
         final CanvasViewport savedViewport = captured[1] as CanvasViewport;
         expect(savedViewport.scale, equals(0.5));
         expect(savedViewport.offsetX, equals(-200.0));
@@ -1360,7 +1346,6 @@ void main() {
 
         expect(result.success, isTrue);
 
-        // Проверяем createItem вызван 2 раза с collectionItemId = 51
         final List<dynamic> captured = verify(
           () => mockCanvas.createItem(captureAny()),
         ).captured;
@@ -1370,7 +1355,7 @@ void main() {
         final CanvasItem second = captured[1] as CanvasItem;
 
         expect(first.collectionItemId, equals(51));
-        expect(first.id, equals(0)); // Сброшен для автоинкремента
+        expect(first.id, equals(0));
         expect(first.itemType, equals(CanvasItemType.image));
         expect(first.collectionId, equals(41));
         expect(first.data, isNotNull);
@@ -1453,7 +1438,6 @@ void main() {
               authorComment: any(named: 'authorComment'),
             )).thenAnswer((_) async => 52);
 
-        // createItem: export ID 10 → new ID 301, export ID 20 → new ID 302
         int nextId = 300;
         when(() => mockCanvas.createItem(any())).thenAnswer((Invocation inv) async {
           final CanvasItem inputItem =
@@ -1474,21 +1458,19 @@ void main() {
         expect(result.success, isTrue);
         verify(() => mockCanvas.createItem(any())).called(2);
 
-        // Проверяем connection создан с ремаппленными ID и collectionItemId
         final CanvasConnection captured = verify(
           () => mockCanvas.createConnection(captureAny()),
         ).captured.first as CanvasConnection;
 
-        expect(captured.fromItemId, equals(301)); // remapped from 10
-        expect(captured.toItemId, equals(302)); // remapped from 20
+        expect(captured.fromItemId, equals(301));
+        expect(captured.toItemId, equals(302));
         expect(captured.collectionItemId, equals(52));
         expect(captured.collectionId, equals(42));
-        expect(captured.id, equals(0)); // Сброшен для автоинкремента
+        expect(captured.id, equals(0));
       });
 
       test('должен пропускать per-item canvas при null _canvasRepository',
           () async {
-        // Сервис без canvasRepository
         final ImportService sutNoCanvas = ImportService(
           repository: mockRepo,
           igdbApi: mockApi,
@@ -1551,7 +1533,6 @@ void main() {
 
         expect(result.success, isTrue);
         expect(result.itemsImported, equals(1));
-        // Canvas методы не должны вызываться
         verifyNever(() => mockCanvas.saveGameCanvasViewport(any(), any()));
         verifyNever(() => mockCanvas.createItem(any()));
         verifyNever(() => mockCanvas.createConnection(any()));
@@ -1631,7 +1612,6 @@ void main() {
 
         expect(result.success, isTrue);
 
-        // Проверяем что изображение с base64 данными сохранено
         final CanvasItem captured = verify(
           () => mockCanvas.createItem(captureAny()),
         ).captured.first as CanvasItem;
@@ -1649,8 +1629,6 @@ void main() {
       });
     });
 
-    // ==================== v2 Full Import Images ====================
-
     group('importFromXcoll (v2 full с images)', () {
       late MockImageCacheService mockImageCache;
       late ImportService sutImages;
@@ -1667,7 +1645,6 @@ void main() {
         );
       });
 
-      /// Хелпер: создаёт XcollFile full с images и одним game item.
       XcollFile createFullXcollWithImages(Map<String, String> images) {
         return XcollFile(
           version: 2,
@@ -1686,7 +1663,6 @@ void main() {
         );
       }
 
-      /// Настраивает общие моки для успешного импорта v2.
       void setupDefaultMocks() {
         final Collection createdCollection = Collection(
           id: 50,
@@ -1817,7 +1793,6 @@ void main() {
           <String, String>{'game_covers/100': '!!!not-valid-base64!!!'},
         );
 
-        // Не должен упасть
         final ImportResult result = await sutImages.importFromXcoll(xcoll);
 
         expect(result.success, isTrue);
@@ -1831,7 +1806,6 @@ void main() {
         setupDefaultMocks();
         final String base64Data = base64Encode(<int>[1, 2, 3]);
 
-        // sut без imageCacheService
         final ImportService sutNoCache = ImportService(
           repository: mockRepo,
           igdbApi: mockApi,
@@ -1859,7 +1833,6 @@ void main() {
         when(() => mockImageCache.saveImageBytes(any(), any(), any()))
             .thenAnswer((_) async => true);
 
-        // Light формат с images — images не должны восстанавливаться
         final XcollFile xcoll = XcollFile(
           version: 2,
           format: ExportFormat.light,
@@ -1908,8 +1881,6 @@ void main() {
         expect(stages, contains(ImportStage.importingImages));
       });
     });
-
-    // ==================== v2 full с embedded media ====================
 
     group('importFromXcoll (v2 full с embedded media)', () {
       late ImportService sutMedia;
@@ -1989,7 +1960,6 @@ void main() {
         final ImportResult result = await sutMedia.importFromXcoll(xcoll);
 
         expect(result.success, isTrue);
-        // Должен вызвать upsertGames, а НЕ igdb API
         verify(() => mockDb.upsertGames(any())).called(1);
         verifyNever(() => mockApi.getGamesByIds(any()));
       });
@@ -2113,7 +2083,6 @@ void main() {
           items: const <Map<String, dynamic>>[
             <String, dynamic>{'media_type': 'game', 'external_id': 42},
           ],
-          // media пуст — должен загрузить из API
         );
 
         final ImportResult result = await sutMedia.importFromXcoll(xcoll);
@@ -2153,7 +2122,6 @@ void main() {
         );
 
         expect(stages, contains(ImportStage.restoringMedia));
-        // Не должно быть этапов API-загрузки
         expect(stages, isNot(contains(ImportStage.fetchingGames)));
         expect(stages, isNot(contains(ImportStage.fetchingMovies)));
         expect(stages, isNot(contains(ImportStage.fetchingTvShows)));
@@ -2175,7 +2143,6 @@ void main() {
             'games': <Map<String, dynamic>>[
               <String, dynamic>{'id': 1, 'name': 'G'},
             ],
-            // movies и tv_shows отсутствуют
           },
         );
 
@@ -2257,7 +2224,6 @@ void main() {
                 'title': 'GoT',
               },
             ],
-            // tv_seasons отсутствует
           },
         );
 

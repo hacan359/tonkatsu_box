@@ -44,7 +44,6 @@ void main() {
       final ProviderContainer container = createContainer();
       addTearDown(container.dispose);
 
-      // Ожидаем загрузки
       final AsyncValue<List<CoverInfo>> result =
           await container.read(collectionCoversProvider(42).future).then(
                 (List<CoverInfo> data) => AsyncData<List<CoverInfo>>(data),

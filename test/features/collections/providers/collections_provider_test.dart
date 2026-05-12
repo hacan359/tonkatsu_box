@@ -1,6 +1,3 @@
-// Тесты провайдера CollectionItemsNotifier — синхронизация статуса при ручном
-// изменении дат активности.
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -15,7 +12,6 @@ import 'package:xerabora/shared/models/media_type.dart';
 
 import '../../../helpers/test_helpers.dart';
 
-// Тестовые данные
 const int testCollectionId = 1;
 
 CollectionItem _makeItem({
@@ -50,7 +46,6 @@ void main() {
     sharedPrefs = await SharedPreferences.getInstance();
     mockRepository = MockCollectionRepository();
 
-    // Дефолтные моки
     when(() => mockRepository.updateItemActivityDates(
           any(),
           startedAt: any(named: 'startedAt'),
@@ -65,7 +60,6 @@ void main() {
         )).thenAnswer((_) async {});
   });
 
-  /// Создаёт контейнер с замоканным репозиторием и заранее загруженными items.
   ProviderContainer createContainer({
     required List<CollectionItem> initialItems,
     int? collectionId = testCollectionId,
@@ -83,11 +77,8 @@ void main() {
     return container;
   }
 
-  /// Ожидает, пока notifier загрузит данные.
   Future<void> waitForLoad(ProviderContainer container, int? collectionId) async {
-    // Инициализируем провайдер (вызывает build → _loadItems)
     container.read(collectionItemsNotifierProvider(collectionId));
-    // Ждём завершения асинхронной загрузки
     await Future<void>.delayed(Duration.zero);
     await Future<void>.delayed(Duration.zero);
   }
@@ -232,7 +223,6 @@ void main() {
         expect(items, isNotNull);
         expect(items!.first.completedAt, completeDate);
         expect(items.first.status, ItemStatus.completed);
-        // startedAt не должен измениться
         expect(items.first.startedAt, DateTime(2024, 1, 1));
       });
 
@@ -321,14 +311,13 @@ void main() {
         expect(items, isNotNull);
         expect(items!.first.startedAt, startDate);
         expect(items.first.completedAt, completeDate);
-        // completedAt имеет приоритет → статус completed
+        // completedAt takes priority over startedAt.
         expect(items.first.status, ItemStatus.completed);
       });
     });
 
     group('edge cases', () {
       test('should do nothing when items state is null', () async {
-        // Не загружаем данные — state будет AsyncLoading
         when(() => mockRepository.getItemsWithData(testCollectionId))
             .thenAnswer((_) async => <CollectionItem>[]);
         final ProviderContainer container = ProviderContainer(
@@ -342,15 +331,13 @@ void main() {
         final CollectionItemsNotifier notifier =
             container.read(collectionItemsNotifierProvider(testCollectionId).notifier);
 
-        // Вызываем пока данные ещё не загружены (state == AsyncLoading)
-        // Не должен кидать исключение
+        // Call while state is still AsyncLoading — must not throw.
         await notifier.updateActivityDates(
           999,
           startedAt: DateTime(2024, 3, 15),
           lastActivityAt: DateTime.now(),
         );
 
-        // Просто проверяем что не упало
         expect(true, isTrue);
       });
 
@@ -382,7 +369,6 @@ void main() {
             container.read(collectionItemsNotifierProvider(testCollectionId)).valueOrNull;
         expect(items, isNotNull);
         expect(items!.length, 2);
-        // item2 не должен измениться
         expect(items[1].status, ItemStatus.notStarted);
         expect(items[1].startedAt, isNull);
       });
@@ -438,7 +424,6 @@ void main() {
           lastActivityAt: DateTime.now(),
         );
 
-        // Должен вызвать updateItemStatus для сохранения нового статуса в БД
         verify(() => mockRepository.updateItemStatus(
               1,
               ItemStatus.inProgress,
@@ -448,15 +433,11 @@ void main() {
     });
   });
 
-  // ===========================================================
-  // removeItem — запрос тир-листов элемента до удаления
-  // ===========================================================
   group('CollectionItemsNotifier.removeItem', () {
     late MockTierListDao mockTierListDao;
 
     setUp(() {
       mockTierListDao = MockTierListDao();
-      // Стаб для rebuild при invalidate tierListDetailProvider
       when(() => mockTierListDao.getTierListById(any()))
           .thenAnswer((_) async => null);
     });
@@ -522,9 +503,6 @@ void main() {
     });
   });
 
-  // ===========================================================
-  // moveItem — очистка entries из тир-листов исходной коллекции
-  // ===========================================================
   group('CollectionItemsNotifier.moveItem', () {
     late MockTierListDao mockTierListDao;
     late MockTagDao mockTagDao;
@@ -532,7 +510,6 @@ void main() {
     setUp(() {
       mockTierListDao = MockTierListDao();
       mockTagDao = MockTagDao();
-      // Стаб для rebuild при invalidate tierListDetailProvider
       when(() => mockTierListDao.getTierListById(any()))
           .thenAnswer((_) async => null);
       when(() => mockTagDao.setItemTag(any(), any()))
@@ -659,9 +636,6 @@ void main() {
     });
   });
 
-  // ===========================================================
-  // moveItem / cloneItem — перепривязка тега между коллекциями
-  // ===========================================================
   group('CollectionItemsNotifier tag remap', () {
     late MockTierListDao mockTierListDao;
     late MockTagDao mockTagDao;
@@ -742,7 +716,7 @@ void main() {
             color: 0xFF00FF00,
           )).called(1);
       verify(() => mockTagDao.setItemTag(1, 42)).called(1);
-      // Без null-затирания перед remap — одна запись, не две.
+      // No null wipe before remap — one write, not two.
       verifyNever(() => mockTagDao.setItemTag(1, null));
     });
 
@@ -810,7 +784,7 @@ void main() {
         sourceTagId: 7,
       );
 
-      // sourceTagId != null → пишем null, чтобы затереть невалидный stale-ref.
+      // sourceTagId non-null + tag deleted → write null to clear stale ref.
       verify(() => mockTagDao.setItemTag(1, null)).called(1);
       verifyNever(() => mockTagDao.resolveOrCreateInCollection(
             any(),

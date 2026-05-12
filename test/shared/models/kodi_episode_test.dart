@@ -1,5 +1,3 @@
-// Тесты для KodiEpisode.fromJson.
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/shared/models/kodi_episode.dart';
 

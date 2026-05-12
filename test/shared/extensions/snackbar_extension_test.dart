@@ -1,9 +1,3 @@
-// Тесты для unified SnackBar extension.
-// Фокус: текст сообщения доходит до UI, type выбирает соответствующую
-// иконку, loading заменяет иконку на CircularProgressIndicator, action /
-// duration / hideSnack работают. Не проверяем конкретные цвета / размеры
-// иконок / шрифта / border — design decisions.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/l10n/app_localizations.dart';
@@ -61,7 +55,6 @@ void main() {
         'Show',
         () {},
       ));
-      // Rebuild with actual showSnack call
       late BuildContext ctx;
       await tester.pumpWidget(MaterialApp(
         localizationsDelegates: S.localizationsDelegates,

@@ -1,15 +1,6 @@
-// Интеграционные тесты для DatabaseService.
-//
-// Используют in-memory SQLite через sqflite_common_ffi для проверки
-// реальной SQL-логики (UNIQUE constraints, sort_order и т.д.).
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
-/// Создаёт in-memory базу данных с минимальной схемой для тестов.
-///
-/// Включает таблицы collections и collection_items с partial unique indexes,
-/// аналогичные production-схеме из DatabaseService.
 Future<Database> _createTestDatabase() async {
   sqfliteFfiInit();
   final DatabaseFactory factory = databaseFactoryFfi;
@@ -56,7 +47,6 @@ Future<Database> _createTestDatabase() async {
           )
         ''');
 
-        // Partial unique indexes v18 — включают platform_id.
         await db.execute('''
           CREATE UNIQUE INDEX idx_ci_coll
           ON collection_items(
@@ -81,7 +71,6 @@ Future<Database> _createTestDatabase() async {
   return db;
 }
 
-/// Вставляет тестовую коллекцию и возвращает её ID.
 Future<int> _insertCollection(Database db, String name) async {
   final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
   return db.insert('collections', <String, dynamic>{
@@ -92,7 +81,6 @@ Future<int> _insertCollection(Database db, String name) async {
   });
 }
 
-/// Вставляет элемент коллекции и возвращает его ID.
 Future<int> _insertItem(
   Database db, {
   required int? collectionId,
@@ -112,9 +100,6 @@ Future<int> _insertItem(
   });
 }
 
-/// Возвращает следующий sort_order для коллекции.
-///
-/// Логика зеркалит DatabaseService.getNextSortOrder().
 Future<int> _getNextSortOrder(Database db, int? collectionId) async {
   final String where = collectionId != null
       ? 'WHERE collection_id = ?'
@@ -129,9 +114,6 @@ Future<int> _getNextSortOrder(Database db, int? collectionId) async {
   return maxSort + 1;
 }
 
-/// Обновляет collection_id элемента (перемещение).
-///
-/// Логика зеркалит DatabaseService.updateItemCollectionId().
 Future<bool> _updateItemCollectionId(
   Database db,
   int id,
@@ -157,7 +139,6 @@ Future<bool> _updateItemCollectionId(
   }
 }
 
-/// Читает элемент по ID.
 Future<Map<String, dynamic>?> _getItem(Database db, int id) async {
   final List<Map<String, dynamic>> rows = await db.query(
     'collection_items',
@@ -237,7 +218,6 @@ void main() {
 
       test('должен обновлять sort_order для целевой коллекции', () async {
         final int coll = await _insertCollection(db, 'Collection');
-        // Создаём существующий элемент в целевой коллекции (sort_order = 0).
         await _insertItem(
           db,
           collectionId: coll,
@@ -245,7 +225,6 @@ void main() {
           sortOrder: 0,
         );
 
-        // Создаём элемент в uncategorized и перемещаем.
         final int movingItemId = await _insertItem(
           db,
           collectionId: null,
@@ -260,7 +239,7 @@ void main() {
 
         final Map<String, dynamic>? item = await _getItem(db, movingItemId);
         expect(item, isNotNull);
-        // sort_order должен быть 1 (MAX(0) + 1).
+        // MAX(0) + 1.
         expect(item!['sort_order'], 1);
       });
 
@@ -269,7 +248,6 @@ void main() {
           '(элемент уже есть в целевой коллекции)', () async {
         final int coll = await _insertCollection(db, 'Collection');
 
-        // Создаём элемент в коллекции: game, external_id=600.
         await _insertItem(
           db,
           collectionId: coll,
@@ -277,7 +255,6 @@ void main() {
           mediaType: 'game',
         );
 
-        // Создаём такой же элемент в uncategorized и пытаемся переместить.
         final int duplicateId = await _insertItem(
           db,
           collectionId: null,
@@ -296,7 +273,6 @@ void main() {
           'при перемещении в uncategorized', () async {
         final int coll = await _insertCollection(db, 'Collection');
 
-        // Создаём uncategorized элемент: game, external_id=700.
         await _insertItem(
           db,
           collectionId: null,
@@ -304,7 +280,6 @@ void main() {
           mediaType: 'game',
         );
 
-        // Создаём такой же в коллекции и пытаемся переместить в uncategorized.
         final int duplicateId = await _insertItem(
           db,
           collectionId: coll,
@@ -323,7 +298,6 @@ void main() {
         final int collA = await _insertCollection(db, 'Collection A');
         final int collB = await _insertCollection(db, 'Collection B');
 
-        // Создаём элемент в коллекции B: game, external_id=800.
         await _insertItem(
           db,
           collectionId: collB,
@@ -331,7 +305,6 @@ void main() {
           mediaType: 'game',
         );
 
-        // Создаём такой же в коллекции A — НЕ дубликат, разные коллекции.
         final int itemId = await _insertItem(
           db,
           collectionId: collA,
@@ -339,14 +312,11 @@ void main() {
           mediaType: 'game',
         );
 
-        // Перемещаем из A в B (другой external_id) — должно работать.
         final bool result = await _updateItemCollectionId(db, itemId, collB);
 
         expect(result, isTrue);
       });
     });
-
-    // ==================== Multi-platform UNIQUE ====================
 
     group('multi-platform UNIQUE index (v18)', () {
       test(
@@ -354,14 +324,12 @@ void main() {
           () async {
         final int coll = await _insertCollection(db, 'Games');
 
-        // Castlevania на SNES (platformId=19)
         final int item1 = await _insertItem(
           db,
           collectionId: coll,
           externalId: 1000,
           platformId: 19,
         );
-        // Castlevania на GBA (platformId=24)
         final int item2 = await _insertItem(
           db,
           collectionId: coll,
@@ -371,7 +339,6 @@ void main() {
 
         expect(item1, isNot(item2));
 
-        // Оба элемента существуют.
         final Map<String, dynamic>? row1 = await _getItem(db, item1);
         final Map<String, dynamic>? row2 = await _getItem(db, item2);
         expect(row1, isNotNull);
@@ -392,7 +359,6 @@ void main() {
           platformId: 19,
         );
 
-        // Повторная вставка с тем же external_id + platform_id → ошибка.
         expect(
           () => _insertItem(
             db,
@@ -409,14 +375,12 @@ void main() {
           () async {
         final int coll = await _insertCollection(db, 'Games');
 
-        // Элемент без платформы (фильм, например).
         final int item1 = await _insertItem(
           db,
           collectionId: coll,
           externalId: 3000,
           mediaType: 'movie',
         );
-        // Тот же external_id, но как game с платформой.
         final int item2 = await _insertItem(
           db,
           collectionId: coll,
@@ -440,7 +404,6 @@ void main() {
           mediaType: 'movie',
         );
 
-        // Повторная вставка: тот же movie, null platform → ошибка.
         expect(
           () => _insertItem(
             db,
@@ -498,7 +461,6 @@ void main() {
         final int collA = await _insertCollection(db, 'Collection A');
         final int collB = await _insertCollection(db, 'Collection B');
 
-        // Игра SNES в коллекции A.
         final int itemId = await _insertItem(
           db,
           collectionId: collA,
@@ -506,7 +468,6 @@ void main() {
           platformId: 19,
         );
 
-        // Перемещаем в B.
         final bool result = await _updateItemCollectionId(db, itemId, collB);
         expect(result, isTrue);
 
@@ -515,8 +476,6 @@ void main() {
         expect(item['platform_id'], 19);
       });
     });
-
-    // ==================== getUniquePlatformIds ====================
 
     group('getUniquePlatformIds', () {
       test('должен возвращать уникальные platform_id из игр', () async {
@@ -537,7 +496,7 @@ void main() {
           db,
           collectionId: coll,
           externalId: 300,
-          platformId: 19, // дубль платформы
+          platformId: 19,
         );
 
         final List<Map<String, dynamic>> rows = await db.rawQuery('''
@@ -556,14 +515,12 @@ void main() {
 
       test('должен игнорировать элементы с NULL platform_id', () async {
         final int coll = await _insertCollection(db, 'Mixed');
-        // Фильм без платформы.
         await _insertItem(
           db,
           collectionId: coll,
           externalId: 400,
           mediaType: 'movie',
         );
-        // Игра с платформой.
         await _insertItem(
           db,
           collectionId: coll,
@@ -856,7 +813,6 @@ void main() {
     });
 
     test('сортирует: активные первыми, по дате создания DESC', () async {
-      // Создаём с задержкой для разных created_at
       await insertWishlistItem('Old Active');
       await insertWishlistItem('Resolved', isResolved: 1);
       await insertWishlistItem('New Active');
@@ -866,7 +822,6 @@ void main() {
       );
 
       expect(rows.length, 3);
-      // Активные первые (is_resolved=0), resolved в конце
       expect(rows[0]['is_resolved'], 0);
       expect(rows[1]['is_resolved'], 0);
       expect(rows[2]['is_resolved'], 1);
@@ -884,7 +839,6 @@ void main() {
       await db.close();
     });
 
-    /// Вставляет item с заданными started_at / completed_at.
     Future<int> insertItemWithDates({
       String status = 'not_started',
       int? startedAt,
@@ -903,7 +857,6 @@ void main() {
       });
     }
 
-    /// Зеркалит DatabaseService.updateItemStatus().
     Future<void> updateItemStatus(int id, String status) async {
       final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 

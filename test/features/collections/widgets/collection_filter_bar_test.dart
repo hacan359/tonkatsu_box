@@ -1,5 +1,3 @@
-// Виджет-тесты для CollectionFilterBar.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,9 +13,6 @@ import 'package:xerabora/shared/models/collection_tag.dart';
 import 'package:xerabora/shared/models/platform.dart' as p;
 import 'package:xerabora/shared/widgets/chevron_filter_bar.dart';
 
-// ==================== Тестовые Notifier-ы ====================
-
-/// Тестовый notifier для режима сортировки.
 class TestCollectionSortNotifier extends CollectionSortNotifier {
   TestCollectionSortNotifier(this._initialMode);
 
@@ -34,7 +29,6 @@ class TestCollectionSortNotifier extends CollectionSortNotifier {
   }
 }
 
-/// Тестовый notifier для направления сортировки.
 class TestCollectionSortDescNotifier extends CollectionSortDescNotifier {
   TestCollectionSortDescNotifier(this._initialValue);
 
@@ -55,8 +49,6 @@ class TestCollectionSortDescNotifier extends CollectionSortDescNotifier {
     state = descending;
   }
 }
-
-// ==================== Тестовые данные ====================
 
 const int _testCollectionId = 42;
 
@@ -138,8 +130,6 @@ final List<CollectionItem> _movieItems = <CollectionItem>[
     addedAt: DateTime(2024),
   ),
 ];
-
-// ==================== Вспомогательные функции ====================
 
 Widget _buildTestApp({
   required Widget child,
@@ -230,7 +220,6 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // Chevron-бар показывает сегменты для каждого типа медиа
         expect(find.byType(ChevronSegment), findsWidgets);
       });
     });
@@ -253,7 +242,6 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // Тапаем на сегмент Games (ChevronSegment с текстом, содержащим Games)
         final Finder gamesSegment = find.textContaining('Games');
         expect(gamesSegment, findsWidgets);
         await tester.tap(gamesSegment.first);
@@ -271,7 +259,6 @@ void main() {
             _buildTestApp(
               overrides: _defaultOverrides(),
               child: _buildFilterBar(
-                // Фильтр Games активен — платформы видны
                 filterTypes: <MediaType>{MediaType.game},
                 itemsAsync: AsyncData<List<CollectionItem>>(
                   _gameItemsWithPlatforms,
@@ -281,7 +268,6 @@ void main() {
           );
           await tester.pumpAndSettle();
 
-          // Платформы отображаются в виде ChoiceChip когда Games выбран
           expect(find.text('PS1'), findsOneWidget);
           expect(find.text('SNES'), findsOneWidget);
         },
@@ -303,7 +289,6 @@ void main() {
           );
           await tester.pumpAndSettle();
 
-          // 2 элемента с SNES, 1 с PS1 — но SNES только 1 раз
           expect(find.text('SNES'), findsOneWidget);
         },
       );
@@ -335,7 +320,6 @@ void main() {
           );
           await tester.pumpAndSettle();
 
-          // Нет платформенных чипов — Invalid платформа отфильтрована
           expect(find.byType(ChoiceChip), findsNothing);
         },
       );
@@ -352,7 +336,6 @@ void main() {
               status: ItemStatus.notStarted,
               addedAt: DateTime(2024),
               platformId: 19,
-              // platform == null
             ),
           ];
 
@@ -378,14 +361,12 @@ void main() {
             _buildTestApp(
               overrides: _defaultOverrides(),
               child: _buildFilterBar(
-                // Фильтр Games НЕ активен — платформы не показываются
                 itemsAsync: AsyncData<List<CollectionItem>>(_movieItems),
               ),
             ),
           );
           await tester.pumpAndSettle();
 
-          // Нет платформенных чипов для фильмов
           expect(find.byType(ChoiceChip), findsNothing);
         },
       );
@@ -443,7 +424,6 @@ void main() {
             _buildTestApp(
               overrides: _defaultOverrides(),
               child: _buildFilterBar(
-                // filterTypes пустой — Games не выбран
                 itemsAsync: AsyncData<List<CollectionItem>>(
                   _gameItemsWithPlatforms,
                 ),
@@ -507,7 +487,6 @@ void main() {
           await tester.pumpAndSettle();
 
           expect(find.byType(CollectionFilterBar), findsOneWidget);
-          // Chevron-бар должен рендериться
           expect(find.byType(ChevronSegment), findsWidgets);
         },
       );

@@ -59,7 +59,7 @@ void main() {
   });
 
   group('CanvasItem', () {
-    // Дата отличается от shared testDate — оставляем локально.
+    // Local date differs from the shared testDate helper.
     final DateTime testDate = DateTime(2024, 6, 15, 12, 0, 0);
     final int testTimestamp = testDate.millisecondsSinceEpoch ~/ 1000;
 

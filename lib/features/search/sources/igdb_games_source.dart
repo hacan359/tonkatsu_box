@@ -30,7 +30,7 @@ class IgdbGamesSource extends SearchSource {
   IconData get groupIcon => Icons.videogame_asset_outlined;
 
   @override
-  String label(S l) => l.mediaTypeGame;
+  String label(S l) => l.searchSourceGames;
 
   @override
   IconData get icon => Icons.videogame_asset_outlined;

@@ -42,7 +42,6 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('Add Link'), findsOneWidget);
-        // FilledButton disabled (no valid URL)
         expect(find.text('Add'), findsOneWidget);
       },
     );
@@ -73,7 +72,6 @@ void main() {
         await tester.tap(find.text('Open'));
         await tester.pumpAndSettle();
 
-        // URL может быть в TextField и hint — проверяем через контроллер
         final TextField urlField = tester.widget<TextField>(
           find.byType(TextField).first,
         );
@@ -93,14 +91,12 @@ void main() {
         await tester.tap(find.text('Open'));
         await tester.pumpAndSettle();
 
-        // Вводим URL
         await tester.enterText(
           find.byType(TextField).first,
           'https://example.com',
         );
         await tester.pumpAndSettle();
 
-        // Вводим label
         await tester.enterText(
           find.byType(TextField).last,
           'Example',
@@ -165,14 +161,12 @@ void main() {
         await tester.tap(find.text('Open'));
         await tester.pumpAndSettle();
 
-        // Вводим невалидный URL
         await tester.enterText(
           find.byType(TextField).first,
           'not-a-url',
         );
         await tester.pumpAndSettle();
 
-        // Кнопка Add disabled
         final FilledButton addButton = tester.widget<FilledButton>(
           find.byType(FilledButton),
         );

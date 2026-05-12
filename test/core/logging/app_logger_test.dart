@@ -1,5 +1,3 @@
-// Тесты для AppLogger.
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logging/logging.dart';
@@ -17,7 +15,6 @@ void main() {
       test('должен зарегистрировать listener на записи лога', () {
         AppLogger.init();
 
-        // Проверяем что listener работает — запись лога не вызывает ошибок
         Logger('test').info('test message');
       });
     });
@@ -46,7 +43,7 @@ void main() {
         AppLogger.init();
         AppLogger.setupErrorHandlers();
 
-        // Подавляем presentError чтобы тестовый фреймворк не ловил исключение
+        // Suppress presentError so the test framework doesn't catch the exception.
         FlutterError.presentError = (FlutterErrorDetails details) {};
 
         final List<LogRecord> records = <LogRecord>[];

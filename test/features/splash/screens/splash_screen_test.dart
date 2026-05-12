@@ -1,15 +1,7 @@
-import 'package:xerabora/l10n/app_localizations.dart';
-// Тесты для SplashScreen.
-//
-// SplashScreen — ConsumerStatefulWidget с анимированным логотипом.
-// При запуске pre-warm'ит базу данных в фоне. Навигация на AppShell
-// происходит только когда И анимация завершена, И DB открыта —
-// это предотвращает конкуренцию DB-init и route transition на main thread.
-//
-// Навигация на AppShell не тестируется — AppShell требует
-// множество провайдеров (database, settings, gamepad и др.), что выходит
-// за scope этого теста.
+// Navigation to AppShell is not tested — AppShell requires many providers
+// (database, settings, gamepad, etc.) outside this test's scope.
 
+import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -26,7 +18,6 @@ void main() {
   setUp(() {
     mockDb = MockDatabaseService();
 
-    // Pre-warm вызывает .database getter — возвращаем готовый Future.
     when(() => mockDb.database).thenAnswer((_) async => MockDatabase());
   });
 
@@ -54,7 +45,6 @@ void main() {
         (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget());
 
-      // ScaleTransition оборачивает Image — это наша анимация
       expect(
         find.descendant(
           of: find.byType(ScaleTransition),
@@ -70,7 +60,7 @@ void main() {
 
       final Scaffold scaffold =
           tester.widget<Scaffold>(find.byType(Scaffold).first);
-      // Scaffold прозрачный — фон задаётся через MaterialApp.builder
+      // Background is set via MaterialApp.builder, so Scaffold is transparent.
       expect(scaffold.backgroundColor, isNull);
     });
   });
@@ -89,7 +79,6 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      // database getter вызывается ровно 1 раз
       verify(() => mockDb.database).called(1);
     });
 
@@ -97,8 +86,6 @@ void main() {
         (WidgetTester tester) async {
       await tester.pumpWidget(buildTestWidget());
 
-      // DB уже "готова" (mock возвращает сразу), но анимация не завершена
-      // Проверяем что SplashScreen всё ещё отображается
       await tester.pump();
       expect(find.byType(SplashScreen), findsOneWidget);
     });

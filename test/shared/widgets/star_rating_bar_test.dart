@@ -1,8 +1,3 @@
-// Виджет-тесты для StarRatingBar.
-// Фокус: количество заполненных / пустых звёзд отражает рейтинг,
-// тапы по звёздам вызывают onChanged с ожидаемым значением. Не проверяем
-// конкретные цвета / размеры — design decisions.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/l10n/app_localizations.dart';

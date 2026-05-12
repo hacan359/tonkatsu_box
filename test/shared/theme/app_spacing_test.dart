@@ -1,5 +1,3 @@
-// Тесты для AppSpacing.
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/shared/theme/app_spacing.dart';
 

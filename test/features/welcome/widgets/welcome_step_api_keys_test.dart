@@ -1,5 +1,3 @@
-// Тесты для WelcomeStepApiKeys — шаг 4 Welcome Wizard.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/welcome/widgets/welcome_step_api_keys.dart';

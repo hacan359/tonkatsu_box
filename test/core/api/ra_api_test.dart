@@ -1,5 +1,3 @@
-// Тесты для RaApi.
-
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -380,7 +378,7 @@ void main() {
         final List<RaGameProgress> games =
             await sut.getCompletedGames('TestUser');
 
-        // Total is 0, offset (1) >= 0 => break after first page.
+        // Null Total coerces to 0; offset >= Total breaks pagination after first page.
         expect(games, hasLength(1));
       });
     });
@@ -523,7 +521,6 @@ void main() {
         final Map<int, DateTime> result =
             await sut.getUserAwardDates('TestUser');
 
-        // Keeps the later date (July).
         expect(result[1234]!.month, equals(7));
       });
 

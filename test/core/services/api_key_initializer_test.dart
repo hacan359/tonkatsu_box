@@ -1,5 +1,3 @@
-// Тесты для ApiKeys — ранняя загрузка API ключей из SharedPreferences.
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xerabora/core/services/api_key_initializer.dart';
@@ -30,7 +28,7 @@ void main() {
 
           final ApiKeys keys = ApiKeys.fromPrefs(prefs);
 
-          // В тестах ApiDefaults.hasTmdbKey == false
+          // ApiDefaults.hasTmdbKey is false in tests.
           expect(keys.tmdbApiKey, isNull);
         });
 

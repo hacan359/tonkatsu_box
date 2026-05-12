@@ -1,5 +1,3 @@
-// Тесты для CreditsScreen (атрибуция API-провайдеров и лицензии).
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/settings/screens/credits_screen.dart';
@@ -26,7 +24,6 @@ void main() {
       await tester.tap(find.text('View Open Source Licenses'));
       await tester.pumpAndSettle();
 
-      // showLicensePage opens a page route — no exception thrown
       expect(tester.takeException(), isNull);
     });
   });

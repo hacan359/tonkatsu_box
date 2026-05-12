@@ -20,8 +20,6 @@ import 'package:xerabora/shared/widgets/shimmer_loading.dart';
 
 import '../../../helpers/test_helpers.dart';
 
-// ==================== Тестовые Notifier-ы ====================
-
 class TestCollectionListViewModeNotifier
     extends CollectionListViewModeNotifier {
   TestCollectionListViewModeNotifier(this._initial);
@@ -82,7 +80,6 @@ void main() {
       CollectionListSortMode sortMode = CollectionListSortMode.createdDate,
       bool sortDesc = false,
     }) {
-      // Mock repository methods
       when(() => mockRepo.getAll()).thenAnswer((_) async => collections);
       when(() => mockRepo.getStats(any())).thenAnswer(
         (_) async => const CollectionStats(
@@ -97,7 +94,6 @@ void main() {
       when(() => mockRepo.getUncategorizedCount())
           .thenAnswer((_) async => 0);
 
-      // Mock covers
       when(() => mockDb.getCollectionCovers(any(), limit: any(named: 'limit')))
           .thenAnswer((_) async => <CoverInfo>[]);
 
@@ -123,7 +119,7 @@ void main() {
 
     testWidgets('должен показывать shimmer при загрузке',
         (WidgetTester tester) async {
-      // Completer никогда не завершается — имитируем бесконечную загрузку
+      // Completer never completes: simulate indefinite loading.
       final Completer<List<Collection>> completer =
           Completer<List<Collection>>();
       when(() => mockRepo.getAll())
@@ -207,7 +203,6 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      // Все коллекции как CollectionCard в гриде
       expect(find.byType(CollectionCard), findsNWidgets(2));
       expect(find.text('Imported Collection'), findsOneWidget);
     });
@@ -229,7 +224,6 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      // Все 5 коллекций в едином гриде (нет разделения Hero/Tile)
       expect(find.byType(CollectionCard), findsNWidgets(5));
     });
 
@@ -265,7 +259,6 @@ void main() {
           ),
         ];
 
-        // Явно выставляем grid mode
         await tester.pumpWidget(
           createWidget(collections: collections, isGridView: true),
         );
@@ -288,7 +281,6 @@ void main() {
           ),
         ];
 
-        // Выставляем list mode через провайдер
         await tester.pumpWidget(
           createWidget(collections: collections, isGridView: false),
         );
@@ -320,7 +312,6 @@ void main() {
           ),
         ];
 
-        // Алфавитный режим, ascending (A→Z)
         await tester.pumpWidget(
           createWidget(
             collections: collections,
@@ -331,7 +322,6 @@ void main() {
         await tester.pump();
         await tester.pump();
 
-        // Alpha должна быть первой
         final List<CollectionCard> cards = tester
             .widgetList<CollectionCard>(find.byType(CollectionCard))
             .toList();

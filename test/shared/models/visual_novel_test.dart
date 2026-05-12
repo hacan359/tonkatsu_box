@@ -1,5 +1,3 @@
-// Тесты для модели VisualNovel и VndbTag
-
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';

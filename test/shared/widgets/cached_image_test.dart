@@ -53,7 +53,6 @@ void main() {
     group('cache disabled (remote URL)', () {
       testWidgets('должен показывать Image.network при выключенном кэше',
           (WidgetTester tester) async {
-        // Arrange
         when(() => mockCacheService.getImageUri(
               type: any(named: 'type'),
               imageId: any(named: 'imageId'),
@@ -64,7 +63,6 @@ void main() {
               isMissing: false,
             ));
 
-        // Act
         await tester.pumpWidget(buildTestWidget(
           child: const CachedImage(
             imageType: ImageType.gameCover,
@@ -76,7 +74,6 @@ void main() {
         ));
         await tester.pump();
 
-        // Assert — Image.network создаёт виджет типа Image
         expect(find.byType(Image), findsOneWidget);
       });
     });
@@ -85,7 +82,6 @@ void main() {
       testWidgets(
           'должен показывать Image.network и запускать auto-download',
           (WidgetTester tester) async {
-        // Arrange
         when(() => mockCacheService.getImageUri(
               type: any(named: 'type'),
               imageId: any(named: 'imageId'),
@@ -101,7 +97,6 @@ void main() {
               remoteUrl: any(named: 'remoteUrl'),
             )).thenAnswer((_) async => true);
 
-        // Act
         await tester.pumpWidget(buildTestWidget(
           child: const CachedImage(
             imageType: ImageType.gameCover,
@@ -114,7 +109,6 @@ void main() {
         await tester.pump();
         await tester.pump();
 
-        // Assert — Image.network shown, download triggered
         expect(find.byType(Image), findsOneWidget);
         verify(() => mockCacheService.downloadImage(
               type: ImageType.gameCover,
@@ -125,7 +119,6 @@ void main() {
 
       testWidgets('не должен скачивать при autoDownload = false',
           (WidgetTester tester) async {
-        // Arrange
         when(() => mockCacheService.getImageUri(
               type: any(named: 'type'),
               imageId: any(named: 'imageId'),
@@ -136,7 +129,6 @@ void main() {
               isMissing: true,
             ));
 
-        // Act
         await tester.pumpWidget(buildTestWidget(
           child: const CachedImage(
             imageType: ImageType.gameCover,
@@ -150,7 +142,6 @@ void main() {
         await tester.pump();
         await tester.pump();
 
-        // Assert — no download triggered
         verifyNever(() => mockCacheService.downloadImage(
               type: any(named: 'type'),
               imageId: any(named: 'imageId'),
@@ -160,7 +151,6 @@ void main() {
 
       testWidgets('не должен вызывать overflow при размере 32x32',
           (WidgetTester tester) async {
-        // Arrange
         when(() => mockCacheService.getImageUri(
               type: any(named: 'type'),
               imageId: any(named: 'imageId'),
@@ -176,7 +166,6 @@ void main() {
               remoteUrl: any(named: 'remoteUrl'),
             )).thenAnswer((_) async => true);
 
-        // Act
         await tester.pumpWidget(buildTestWidget(
           constrainedWidth: 32,
           constrainedHeight: 32,
@@ -191,7 +180,6 @@ void main() {
         await tester.pump();
         await tester.pump();
 
-        // Assert
         expect(tester.takeException(), isNull);
       });
     });
@@ -261,7 +249,7 @@ void main() {
     group('placeholder', () {
       testWidgets('должен показывать CircularProgressIndicator при загрузке',
           (WidgetTester tester) async {
-        // Arrange - Future никогда не завершается (Completer без complete)
+        // Future never completes — keeps widget in loading state.
         final Completer<ImageResult> completer = Completer<ImageResult>();
         when(() => mockCacheService.getImageUri(
               type: any(named: 'type'),
@@ -269,7 +257,6 @@ void main() {
               remoteUrl: any(named: 'remoteUrl'),
             )).thenAnswer((_) => completer.future);
 
-        // Act
         await tester.pumpWidget(buildTestWidget(
           child: const CachedImage(
             imageType: ImageType.gameCover,
@@ -279,15 +266,12 @@ void main() {
             height: 32,
           ),
         ));
-        // Не вызываем pumpAndSettle - оставляем в состоянии загрузки
 
-        // Assert
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
       });
 
       testWidgets('должен показывать кастомный placeholder',
           (WidgetTester tester) async {
-        // Arrange
         final Completer<ImageResult> completer = Completer<ImageResult>();
         when(() => mockCacheService.getImageUri(
               type: any(named: 'type'),
@@ -295,7 +279,6 @@ void main() {
               remoteUrl: any(named: 'remoteUrl'),
             )).thenAnswer((_) => completer.future);
 
-        // Act
         await tester.pumpWidget(buildTestWidget(
           child: const CachedImage(
             imageType: ImageType.gameCover,
@@ -307,14 +290,12 @@ void main() {
           ),
         ));
 
-        // Assert
         expect(find.byIcon(Icons.hourglass_empty), findsOneWidget);
         expect(find.byType(CircularProgressIndicator), findsNothing);
       });
 
       testWidgets('не должен вызывать overflow при размере 32x32',
           (WidgetTester tester) async {
-        // Arrange
         final Completer<ImageResult> completer = Completer<ImageResult>();
         when(() => mockCacheService.getImageUri(
               type: any(named: 'type'),
@@ -322,7 +303,6 @@ void main() {
               remoteUrl: any(named: 'remoteUrl'),
             )).thenAnswer((_) => completer.future);
 
-        // Act
         await tester.pumpWidget(buildTestWidget(
           constrainedWidth: 32,
           constrainedHeight: 32,
@@ -335,7 +315,6 @@ void main() {
           ),
         ));
 
-        // Assert
         expect(tester.takeException(), isNull);
       });
     });
@@ -343,14 +322,12 @@ void main() {
     group('error state', () {
       testWidgets('должен показывать broken_image при ошибке Future',
           (WidgetTester tester) async {
-        // Arrange - возвращаем ошибку через Future.error
         when(() => mockCacheService.getImageUri(
               type: any(named: 'type'),
               imageId: any(named: 'imageId'),
               remoteUrl: any(named: 'remoteUrl'),
             )).thenAnswer((_) async => throw Exception('Test error'));
 
-        // Act
         await tester.pumpWidget(buildTestWidget(
           child: const CachedImage(
             imageType: ImageType.gameCover,
@@ -362,20 +339,17 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Assert
         expect(find.byIcon(Icons.broken_image), findsOneWidget);
       });
 
       testWidgets('должен показывать кастомный errorWidget',
           (WidgetTester tester) async {
-        // Arrange
         when(() => mockCacheService.getImageUri(
               type: any(named: 'type'),
               imageId: any(named: 'imageId'),
               remoteUrl: any(named: 'remoteUrl'),
             )).thenAnswer((_) async => throw Exception('Test error'));
 
-        // Act
         await tester.pumpWidget(buildTestWidget(
           child: const CachedImage(
             imageType: ImageType.gameCover,
@@ -388,21 +362,18 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Assert
         expect(find.byIcon(Icons.error_outline), findsOneWidget);
         expect(find.byIcon(Icons.broken_image), findsNothing);
       });
 
       testWidgets('не должен вызывать overflow при размере 32x32',
           (WidgetTester tester) async {
-        // Arrange
         when(() => mockCacheService.getImageUri(
               type: any(named: 'type'),
               imageId: any(named: 'imageId'),
               remoteUrl: any(named: 'remoteUrl'),
             )).thenAnswer((_) async => throw Exception('Test error'));
 
-        // Act
         await tester.pumpWidget(buildTestWidget(
           constrainedWidth: 32,
           constrainedHeight: 32,
@@ -416,21 +387,17 @@ void main() {
         ));
         await tester.pumpAndSettle();
 
-        // Assert
         expect(tester.takeException(), isNull);
       });
     });
 
     group('corrupt local file fallback', () {
-      // Image.file errorBuilder не срабатывает в тестовом окружении Flutter,
-      // т.к. painting pipeline не декодирует изображения реально.
-      // Тестируем структурно: при isLocal=true виджет использует Image.file.
-      // Полный flow (errorBuilder → _deleteAndRedownload → Image.network)
-      // проверяется вручную.
+      // Image.file errorBuilder does not fire in widget tests (painting
+      // pipeline doesn't really decode); only the Image.file branch is
+      // verified structurally — full corrupt-file flow is checked manually.
 
       testWidgets('должен fallback на network при несуществующем файле',
           (WidgetTester tester) async {
-        // Arrange — isLocal=true, но файл не существует (удалён clearCache)
         when(() => mockCacheService.getImageUri(
               type: any(named: 'type'),
               imageId: any(named: 'imageId'),
@@ -448,7 +415,6 @@ void main() {
               remoteUrl: any(named: 'remoteUrl'),
             )).thenAnswer((_) async => true);
 
-        // Act
         await tester.pumpWidget(buildTestWidget(
           child: const CachedImage(
             imageType: ImageType.gameCover,
@@ -461,14 +427,12 @@ void main() {
         await tester.pump();
         await tester.pump();
 
-        // Assert — Image показан (network fallback), не crash
         expect(find.byType(Image), findsOneWidget);
         expect(tester.takeException(), isNull);
       });
 
       testWidgets('должен fallback на network при пустом файле (0 bytes)',
           (WidgetTester tester) async {
-        // Arrange — создаём пустой файл
         final Directory tempDir =
             Directory.systemTemp.createTempSync('cached_image_empty_');
         final File emptyFile = File('${tempDir.path}/empty.png');
@@ -491,7 +455,6 @@ void main() {
               remoteUrl: any(named: 'remoteUrl'),
             )).thenAnswer((_) async => true);
 
-        // Act
         await tester.pumpWidget(buildTestWidget(
           child: const CachedImage(
             imageType: ImageType.gameCover,
@@ -504,11 +467,9 @@ void main() {
         await tester.pump();
         await tester.pump();
 
-        // Assert — Image показан (network fallback), не crash
         expect(find.byType(Image), findsOneWidget);
         expect(tester.takeException(), isNull);
 
-        // Cleanup
         try {
           tempDir.deleteSync(recursive: true);
         } on FileSystemException {
@@ -518,11 +479,10 @@ void main() {
 
       testWidgets('должен использовать Image (file) при isLocal=true',
           (WidgetTester tester) async {
-        // Arrange — создаём реальный валидный 1x1 PNG
         final Directory tempDir =
             Directory.systemTemp.createTempSync('cached_image_test_');
         final File validFile = File('${tempDir.path}/valid.png');
-        // Минимальный валидный 1x1 RGBA PNG (67 bytes)
+        // Minimal valid 1x1 RGBA PNG (67 bytes).
         validFile.writeAsBytesSync(Uint8List.fromList(<int>[
           0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
           0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52, // IHDR
@@ -545,7 +505,6 @@ void main() {
               isMissing: false,
             ));
 
-        // Act
         await tester.pumpWidget(buildTestWidget(
           child: const CachedImage(
             imageType: ImageType.moviePoster,
@@ -557,29 +516,24 @@ void main() {
         ));
         await tester.pump();
 
-        // Assert — Image виджет (file-based)
         expect(find.byType(Image), findsOneWidget);
 
-        // Cleanup
         try {
           tempDir.deleteSync(recursive: true);
         } on FileSystemException {
-          // Windows file lock — пропускаем
+          // Windows file lock
         }
       });
     });
 
     group('deleteImage', () {
       test('должен вызывать deleteImage на сервисе', () async {
-        // Arrange
         when(() => mockCacheService.deleteImage(any(), any()))
             .thenAnswer((_) async {});
 
-        // Act
         await mockCacheService.deleteImage(
             ImageType.moviePoster, '69735');
 
-        // Assert
         verify(() => mockCacheService.deleteImage(
               ImageType.moviePoster,
               '69735',
@@ -590,7 +544,6 @@ void main() {
     group('memCache parameters', () {
       testWidgets('должен передавать memCacheWidth и memCacheHeight',
           (WidgetTester tester) async {
-        // Arrange
         when(() => mockCacheService.getImageUri(
               type: any(named: 'type'),
               imageId: any(named: 'imageId'),
@@ -601,7 +554,6 @@ void main() {
               isMissing: false,
             ));
 
-        // Act
         await tester.pumpWidget(buildTestWidget(
           child: const CachedImage(
             imageType: ImageType.gameCover,
@@ -615,9 +567,6 @@ void main() {
         ));
         await tester.pump();
 
-        // Assert — Image.network создаёт Image виджет;
-        // cacheWidth/cacheHeight оборачиваются в ResizeImage внутри Image,
-        // проверяем что Image создан с правильными размерами
         final Image networkImage = tester.widget<Image>(
           find.byType(Image),
         );

@@ -234,8 +234,8 @@ void main() {
         final SteamGridDbPanelNotifier notifier =
             container.read(steamGridDbPanelProvider(testCollectionId).notifier);
 
-        notifier.togglePanel(); // open
-        notifier.togglePanel(); // close
+        notifier.togglePanel();
+        notifier.togglePanel();
 
         final SteamGridDbPanelState state =
             container.read(steamGridDbPanelProvider(testCollectionId));
@@ -326,11 +326,9 @@ void main() {
         final SteamGridDbPanelNotifier notifier =
             container.read(steamGridDbPanelProvider(testCollectionId).notifier);
 
-        // Сначала выбираем игру
         await notifier.searchGames('Chrono');
         await notifier.selectGame(testGame);
 
-        // Новый поиск должен сбросить выбор
         await notifier.searchGames('Metroid');
 
         final SteamGridDbPanelState state =
@@ -480,11 +478,10 @@ void main() {
         final SteamGridDbPanelNotifier notifier =
             container.read(steamGridDbPanelProvider(testCollectionId).notifier);
 
-        await notifier.selectGame(testGame); // Loads grids
-        await notifier.selectImageType(SteamGridDbImageType.heroes); // Loads heroes
-        await notifier.selectImageType(SteamGridDbImageType.grids); // Should use cache
+        await notifier.selectGame(testGame);
+        await notifier.selectImageType(SteamGridDbImageType.heroes);
+        await notifier.selectImageType(SteamGridDbImageType.grids);
 
-        // getGrids вызван только 1 раз (при selectGame), а не 2
         verify(() => mockApi.getGrids(123)).called(1);
       });
 
@@ -537,8 +534,7 @@ void main() {
         final SteamGridDbPanelNotifier notifier =
             container.read(steamGridDbPanelProvider(testCollectionId).notifier);
 
-        // selectImageType без selectGame — _loadImages должен вернуть early
-        // Нет выбранной игры, вызываем selectImageType напрямую
+        // No game selected: _loadImages should bail out early.
         await notifier.selectImageType(SteamGridDbImageType.heroes);
 
         final SteamGridDbPanelState state =
@@ -576,7 +572,6 @@ void main() {
   });
 }
 
-/// Фейковый SettingsNotifier для тестов.
 class _FakeSettingsNotifier extends SettingsNotifier {
   _FakeSettingsNotifier(this._initialState);
 

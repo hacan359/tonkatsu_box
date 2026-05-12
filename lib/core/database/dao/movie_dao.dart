@@ -90,7 +90,14 @@ class MovieDao {
 
     return <String, String>{
       for (final Map<String, dynamic> row in rows)
-        (row['id'] as int).toString(): row['name'] as String,
+        (row['id'] as int).toString(): _capitalize(row['name'] as String),
     };
+  }
+
+  static String _capitalize(String value) {
+    if (value.isEmpty) {
+      return value;
+    }
+    return value[0].toUpperCase() + value.substring(1);
   }
 }

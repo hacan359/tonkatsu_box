@@ -195,6 +195,29 @@ void main() {
         expect(result, isEmpty);
       });
 
+      test('capitalizes first letter of lowercase genre names', () async {
+        when(
+          () => mockDb.query(
+            'tmdb_genres',
+            where: 'type = ? AND lang = ?',
+            whereArgs: <Object?>['movie', 'ru'],
+          ),
+        ).thenAnswer(
+          (_) async => <Map<String, dynamic>>[
+            <String, dynamic>{'id': 28, 'name': 'боевик'},
+            <String, dynamic>{'id': 878, 'name': 'научная фантастика'},
+          ],
+        );
+
+        final Map<String, String> result =
+            await dao.getTmdbGenreMap('movie', lang: 'ru');
+
+        expect(result, <String, String>{
+          '28': 'Боевик',
+          '878': 'Научная фантастика',
+        });
+      });
+
       test('returns empty map when no genres cached', () async {
         when(
           () => mockDb.query(

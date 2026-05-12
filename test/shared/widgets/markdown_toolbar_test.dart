@@ -1,5 +1,3 @@
-// Тесты для MarkdownToolbar.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/l10n/app_localizations.dart';
@@ -80,7 +78,6 @@ void main() {
 
       test('не должен ничего делать при невалидном selection', () {
         controller.text = 'hello';
-        // Selection по умолчанию невалидна.
         controller.selection = const TextSelection.collapsed(offset: -1);
 
         MarkdownToolbar.wrapSelection(controller, '**');
@@ -95,14 +92,12 @@ void main() {
         await tester.pumpWidget(buildToolbar());
         await tester.pumpAndSettle();
 
-        // Фокусируем TextField чтобы controller имел валидный selection.
         await tester.tap(find.byType(TextField));
         await tester.pumpAndSettle();
 
         await tester.tap(find.byIcon(Icons.link));
         await tester.pumpAndSettle();
 
-        // Диалог с полями Text и URL.
         expect(find.text('Insert link'), findsOneWidget);
         expect(find.text('URL'), findsOneWidget);
       });
@@ -118,7 +113,6 @@ void main() {
         await tester.tap(find.byIcon(Icons.link));
         await tester.pumpAndSettle();
 
-        // Находим поля внутри AlertDialog.
         final Finder dialogFields = find.descendant(
           of: find.byType(AlertDialog),
           matching: find.byType(TextField),
@@ -162,7 +156,6 @@ void main() {
         await tester.tap(find.byIcon(Icons.link));
         await tester.pumpAndSettle();
 
-        // Вводим только текст, без URL.
         final Finder dialogFields = find.descendant(
           of: find.byType(AlertDialog),
           matching: find.byType(TextField),

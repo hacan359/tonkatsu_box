@@ -360,7 +360,6 @@ void main() {
           await tester.tap(find.text('Open Menu'));
           await tester.pumpAndSettle();
 
-          // Закрываем тапом вне меню
           await tester.tapAt(const Offset(10, 10));
           await tester.pumpAndSettle();
 
@@ -471,7 +470,6 @@ void main() {
             expect(find.text('Edit'), findsOneWidget,
                 reason: 'Edit should be shown for $type');
 
-            // Close menu
             await tester.tapAt(const Offset(10, 10));
             await tester.pumpAndSettle();
           }
@@ -580,7 +578,6 @@ void main() {
           await tester.tap(find.text('Delete'));
           await tester.pumpAndSettle();
 
-          // Подтверждаем удаление (FilledButton 'Delete' в диалоге)
           await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
           await tester.pumpAndSettle();
 
@@ -618,7 +615,6 @@ void main() {
           await tester.tap(find.text('Delete'));
           await tester.pumpAndSettle();
 
-          // Отменяем удаление
           await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
           await tester.pumpAndSettle();
 

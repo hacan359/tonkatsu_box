@@ -1,8 +1,3 @@
-// Виджет-тесты для CollectionItemTile.
-// Фокус: данные из модели доходят до UI, коллбэки вызываются, опциональные
-// секции появляются/скрываются. Не проверяем конкретные иконки/цвета/отступы —
-// это design decisions, тесты не должны ломаться от их изменения.
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -498,8 +493,7 @@ void main() {
         await tester.tap(find.byType(PopupMenuButton<String>));
         await tester.pumpAndSettle();
 
-        // value 'clone' задан в collection_item_tile.dart — это контракт
-        // PopupMenuButton, не UI-деталь.
+        // 'clone' is the contract value defined in collection_item_tile.dart.
         await tester.tap(find.byWidgetPredicate(
           (Widget w) => w is PopupMenuItem<String> && w.value == 'clone',
         ));

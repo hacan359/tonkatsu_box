@@ -1,5 +1,3 @@
-// Тесты для KodiApi — JSON-RPC клиент.
-
 import 'dart:convert';
 
 import 'package:dio/dio.dart';

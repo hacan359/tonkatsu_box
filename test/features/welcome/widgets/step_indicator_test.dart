@@ -1,8 +1,3 @@
-// Тесты для StepIndicator — индикатор шага Welcome Wizard.
-// Фокус: pending / active / done переключают номер ↔ галочку, showLabel
-// показывает/скрывает лейбл, onTap вызывается. Не проверяем конкретные
-// цвета, размеры круга / шрифта — design decisions.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/welcome/widgets/step_indicator.dart';

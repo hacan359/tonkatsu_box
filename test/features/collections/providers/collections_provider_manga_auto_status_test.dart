@@ -1,5 +1,3 @@
-// Тесты автоматического обновления статуса манги при изменении прогресса чтения.
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -293,7 +291,6 @@ void main() {
 
       await notifier.updateProgress(1, currentEpisode: 6);
 
-      // Status remains inProgress — no updateStatus call needed
       expect(currentItem(container).status, ItemStatus.inProgress);
       verifyNever(() => mockRepository.updateItemStatus(
             any(),
@@ -329,7 +326,6 @@ void main() {
       );
       final CollectionItemsNotifier notifier = await loadNotifier(container);
 
-      // Simulates _markCompleted: sets chapters/volumes to total
       await notifier.updateProgress(
         1,
         currentEpisode: 50,

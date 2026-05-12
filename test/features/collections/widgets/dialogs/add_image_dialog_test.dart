@@ -52,8 +52,8 @@ void main() {
           initialUrl: 'https://example.com/image.png',
         ));
         await tester.tap(find.text('Open'));
-        // CachedNetworkImage показывает CircularProgressIndicator,
-        // который не даёт pumpAndSettle завершиться — используем pump.
+        // CachedNetworkImage spins a CircularProgressIndicator forever,
+        // so pumpAndSettle hangs — use pump() instead.
         await tester.pump();
         await tester.pump();
 
@@ -157,7 +157,6 @@ void main() {
           find.byType(TextField),
           'https://example.com/image.png',
         );
-        // CachedNetworkImage превью вызывает бесконечную анимацию
         await tester.pump();
         await tester.pump();
 
@@ -179,7 +178,6 @@ void main() {
           find.byType(TextField),
           'http://example.com/image.png',
         );
-        // CachedNetworkImage превью вызывает бесконечную анимацию
         await tester.pump();
         await tester.pump();
 
@@ -259,12 +257,10 @@ void main() {
         await tester.tap(find.text('Open'));
         await tester.pumpAndSettle();
 
-        // Переключаемся на режим файла
         await tester.tap(find.text('From File'));
         await tester.pumpAndSettle();
 
         expect(find.text('Choose File'), findsOneWidget);
-        // TextField не должен быть виден в режиме файла
         expect(find.byType(TextField), findsNothing);
       },
     );

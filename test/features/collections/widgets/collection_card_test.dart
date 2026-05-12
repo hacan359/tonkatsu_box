@@ -1,5 +1,3 @@
-// Виджет-тесты для CollectionCard и UncategorizedCard.
-
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -13,8 +11,6 @@ import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/models/collection.dart';
 import 'package:xerabora/shared/models/cover_info.dart';
 import 'package:xerabora/shared/models/media_type.dart';
-
-// Тестовые данные
 
 Collection _makeCollection({
   int id = 1,
@@ -140,7 +136,6 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // Статистика отображается текстом под квадратом мозаики
       expect(find.textContaining('10'), findsOneWidget);
     });
 
@@ -204,7 +199,6 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // Fallback иконка папки (rounded)
       expect(find.byIcon(Icons.folder_rounded), findsOneWidget);
     });
 
@@ -223,7 +217,7 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // total=10, 6 ячеек, remaining=10-6=4 → "+4" в последней ячейке
+      // total=10, 6 cells, remaining 4 shown as "+4".
       expect(find.text('+4'), findsOneWidget);
     });
 
@@ -251,7 +245,6 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // 6 или меньше — нет "+N"
       expect(find.textContaining('+'), findsNothing);
     });
 
@@ -270,7 +263,6 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // Нет progress bar для пустой коллекции
       expect(find.byType(LinearProgressIndicator), findsNothing);
     });
 
@@ -289,7 +281,6 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // Виджет должен отрендериться корректно
       expect(find.byType(CollectionCard), findsOneWidget);
     });
 
@@ -308,13 +299,11 @@ void main() {
         ],
         child: CollectionCard(collection: collection),
       ));
-      // Один pump — loading состояние
       await tester.pump();
 
-      // Виджет должен быть на экране (loading отображается как SizedBox.expand)
       expect(find.byType(CollectionCard), findsOneWidget);
 
-      // Завершаем completer, чтобы не оставлять pending timer
+      // Complete the future to avoid leaving a pending timer.
       completer.complete(<CoverInfo>[]);
       await tester.pumpAndSettle();
     });
@@ -334,7 +323,6 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // При ошибке показывается иконка папки
       expect(find.byIcon(Icons.folder_rounded), findsOneWidget);
     });
 
@@ -355,10 +343,8 @@ void main() {
       ));
       await tester.pump();
 
-      // Loading показывает SizedBox(height: 14)
       expect(find.byType(CollectionCard), findsOneWidget);
 
-      // Завершаем completer
       statsCompleter.complete(_emptyStats);
       await tester.pumpAndSettle();
     });
@@ -378,7 +364,6 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // Ошибка — показывается текст ошибки
       expect(find.textContaining('Error'), findsOneWidget);
     });
 
@@ -397,7 +382,6 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // Виджет рендерится, все 6 обложек + счётчик (total=10, remaining=4)
       expect(find.byType(CollectionCard), findsOneWidget);
       expect(find.text('+4'), findsOneWidget);
     });
@@ -428,7 +412,6 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // 2 обложки + пустые ячейки, без +N (total <= 6)
       expect(find.byType(CollectionCard), findsOneWidget);
       expect(find.textContaining('+'), findsNothing);
     });
@@ -458,7 +441,6 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // Обложка с null url рендерится как пустой SizedBox.expand
       expect(find.byType(CollectionCard), findsOneWidget);
     });
 
@@ -505,7 +487,6 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // Все типы обложек должны рендериться без ошибок
       expect(find.byType(CollectionCard), findsOneWidget);
     });
 
@@ -527,7 +508,6 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // InkWell внутри CollectionCard с onTap
       final Finder inkWells = find.descendant(
         of: find.byType(CollectionCard),
         matching: find.byType(InkWell),

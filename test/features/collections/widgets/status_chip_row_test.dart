@@ -1,5 +1,4 @@
 import 'package:xerabora/l10n/app_localizations.dart';
-// Тесты для StatusChipRow.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -1,5 +1,3 @@
-// Тесты для RaToIgdbMapper.
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:xerabora/core/services/ra_to_igdb_mapper.dart';

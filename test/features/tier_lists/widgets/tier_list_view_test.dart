@@ -1,5 +1,3 @@
-// Виджет-тесты для TierListView.
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/tier_lists/providers/tier_list_detail_provider.dart';
 import 'package:xerabora/features/tier_lists/widgets/tier_item_card.dart';
@@ -84,10 +82,7 @@ void main() {
       );
       await tester.pump();
 
-      // item2 and item3 are unranked (item1 is in S tier)
-      // Unranked pool shows TierItemCard widgets
-      // TierRow also shows TierItemCard, so count all and verify
-      // S tier has 1 card, unranked has 2 cards = 3 total
+      // S tier has 1 card, 2 unranked cards = 3 total.
       expect(find.byType(TierItemCard), findsNWidgets(3));
     });
 
@@ -104,9 +99,7 @@ void main() {
         );
         await tester.pump();
 
-        // S tier: 1 card (Elden Ring, not filtered — tier items are not filtered)
-        // Unranked: only Dark Souls matches "Dark"
-        // Total: 1 (tier) + 1 (unranked) = 2
+        // Tier items are not filtered; only "Dark Souls" matches in unranked.
         expect(find.byType(TierItemCard), findsNWidgets(2));
       });
 
@@ -122,8 +115,6 @@ void main() {
         );
         await tester.pump();
 
-        // Unranked: only Bloodborne matches "blood" (case-insensitive)
-        // Total: 1 (tier) + 1 (unranked) = 2
         expect(find.byType(TierItemCard), findsNWidgets(2));
       });
 
@@ -139,7 +130,6 @@ void main() {
         );
         await tester.pump();
 
-        // S tier: 1 card, Unranked: 0
         expect(find.byType(TierItemCard), findsOneWidget);
       });
 
@@ -155,7 +145,6 @@ void main() {
         );
         await tester.pump();
 
-        // S tier: 1, Unranked: 2 = 3
         expect(find.byType(TierItemCard), findsNWidgets(3));
       });
     });
@@ -180,8 +169,6 @@ void main() {
       );
       await tester.pump();
 
-      // No unranked items — empty state text should appear
-      // TierRow has 2 cards, no unranked cards
       expect(find.byType(TierItemCard), findsNWidgets(2));
     });
   });

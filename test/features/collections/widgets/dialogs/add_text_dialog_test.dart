@@ -95,7 +95,7 @@ void main() {
 
         expect(result, isNotNull);
         expect(result!['content'], 'New Text');
-        expect(result!['fontSize'], 16.0); // default Medium
+        expect(result!['fontSize'], 16.0);
       },
     );
 
@@ -128,11 +128,9 @@ void main() {
         await tester.tap(find.text('Open'));
         await tester.pumpAndSettle();
 
-        // Поле пустое, нажимаем Add
         await tester.tap(find.text('Add'));
         await tester.pumpAndSettle();
 
-        // Диалог всё ещё открыт (submit не сработал)
         expect(find.text('Add Text'), findsOneWidget);
         expect(result, isNull);
       },
@@ -179,7 +177,7 @@ void main() {
         await tester.pumpWidget(buildTestApp(
           onResult: (Map<String, dynamic>? r) => result = r,
           initialContent: 'Test',
-          initialFontSize: 99.0, // Нестандартный размер
+          initialFontSize: 99.0,
         ));
         await tester.tap(find.text('Open'));
         await tester.pumpAndSettle();
@@ -187,7 +185,7 @@ void main() {
         await tester.tap(find.text('Save'));
         await tester.pumpAndSettle();
 
-        expect(result!['fontSize'], 16.0); // Сброшен на default
+        expect(result!['fontSize'], 16.0);
       },
     );
 
@@ -199,7 +197,7 @@ void main() {
         await tester.pumpWidget(buildTestApp(
           onResult: (Map<String, dynamic>? r) => result = r,
           initialContent: 'Test',
-          initialFontSize: 32.0, // Title
+          initialFontSize: 32.0,
         ));
         await tester.tap(find.text('Open'));
         await tester.pumpAndSettle();

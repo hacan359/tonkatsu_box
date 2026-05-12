@@ -1,5 +1,3 @@
-// Тесты для Discover провайдера — настройки секций, сериализация, SharedPreferences.
-
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -173,7 +171,6 @@ void main() {
               (DiscoverSectionId s) => s != DiscoverSectionId.trending,
             )
             .toSet();
-        // Нет пересечений
         expect(
           allNonTrending.intersection(nonTrending),
           isEmpty,
@@ -181,7 +178,6 @@ void main() {
         allNonTrending.addAll(nonTrending);
       }
 
-      // Все не-trending секции покрыты
       final Set<DiscoverSectionId> allNonTrendingExpected =
           DiscoverSectionId.values
               .where(
@@ -371,7 +367,6 @@ void main() {
           hideOwned: true,
         );
 
-        // 5 = все дефолтные (без trending)
         expect(original.enabledSections.length, equals(5));
         expect(original.hideOwned, isFalse);
       });
@@ -736,7 +731,6 @@ void main() {
         final DiscoverSettingsNotifier notifier =
             container.read(discoverSettingsProvider.notifier);
 
-        // Первый toggle — удаляем topRatedMovies (есть по умолчанию)
         await notifier.toggleSection(DiscoverSectionId.topRatedMovies);
         DiscoverSettings state = container.read(discoverSettingsProvider);
         expect(
@@ -744,7 +738,6 @@ void main() {
           isFalse,
         );
 
-        // Второй toggle — возвращаем topRatedMovies
         await notifier.toggleSection(DiscoverSectionId.topRatedMovies);
         state = container.read(discoverSettingsProvider);
         expect(
@@ -864,7 +857,6 @@ void main() {
         final DiscoverSettingsNotifier notifier =
             container.read(discoverSettingsProvider.notifier);
 
-        // Проверяем что сначала настройки кастомные
         DiscoverSettings state = container.read(discoverSettingsProvider);
         expect(state.enabledSections.length, equals(1));
         expect(state.hideOwned, isTrue);
@@ -912,16 +904,13 @@ void main() {
 
         await notifier.resetToDefault();
 
-        // Проверяем prefs — секции сохранены
         final String? storedJson =
             prefs.getString(DiscoverSettingsKeys.sections);
         expect(storedJson, isNotNull);
         final List<dynamic> storedKeys =
             jsonDecode(storedJson!) as List<dynamic>;
-        // 5 = все дефолтные (без trending)
         expect(storedKeys.length, equals(5));
 
-        // Проверяем prefs — hideOwned сохранён как false
         final bool? storedHideOwned =
             prefs.getBool(DiscoverSettingsKeys.hideOwned);
         expect(storedHideOwned, isFalse);
@@ -969,7 +958,6 @@ void main() {
         final DiscoverSettings state =
             container.read(discoverSettingsProvider);
 
-        // topRatedMovies удалён из дефолтных 5
         expect(state.enabledSections.length, equals(4));
         expect(
           state.enabledSections.contains(DiscoverSectionId.topRatedMovies),
@@ -987,19 +975,15 @@ void main() {
         final DiscoverSettingsNotifier notifier =
             container.read(discoverSettingsProvider.notifier);
 
-        // Удаляем topRatedMovies
         await notifier.toggleSection(DiscoverSectionId.topRatedMovies);
-        // Включаем hideOwned
         await notifier.setHideOwned(value: true);
 
-        // Проверяем, что оба поля сохранены
         final String? sectionsJson =
             prefs.getString(DiscoverSettingsKeys.sections);
         expect(sectionsJson, isNotNull);
         final List<dynamic> keys =
             jsonDecode(sectionsJson!) as List<dynamic>;
         expect(keys, isNot(contains(DiscoverSectionId.topRatedMovies.key)));
-        // 5 дефолтных - 1 удалённая = 4
         expect(keys.length, equals(4));
 
         final bool? hideOwned =
@@ -1009,7 +993,6 @@ void main() {
 
       test('сохранённые данные корректно загружаются в новом контейнере',
           () async {
-        // Создаём первый контейнер и настраиваем
         final ProviderContainer container1 = await createContainer();
 
         final DiscoverSettingsNotifier notifier1 =
@@ -1019,13 +1002,11 @@ void main() {
         await notifier1.toggleSection(DiscoverSectionId.upcoming);
         await notifier1.setHideOwned(value: true);
 
-        // Читаем raw данные из SharedPreferences
         final String? sectionsJson =
             prefs.getString(DiscoverSettingsKeys.sections);
         final bool? hideOwned =
             prefs.getBool(DiscoverSettingsKeys.hideOwned);
 
-        // Создаём второй контейнер с теми же данными в prefs
         final Map<String, Object> restoredPrefs = <String, Object>{};
         if (sectionsJson != null) {
           restoredPrefs[DiscoverSettingsKeys.sections] = sectionsJson;

@@ -1607,6 +1607,18 @@ class SEn extends S {
   String get searchSourceAnime => 'Anime';
 
   @override
+  String get searchSourceGames => 'Games';
+
+  @override
+  String get searchSourceMovies => 'Movies';
+
+  @override
+  String get searchSourceTvShows => 'TV Shows';
+
+  @override
+  String get searchSourceAnimation => 'Animation';
+
+  @override
   String get searchHintManga => 'Search manga...';
 
   @override

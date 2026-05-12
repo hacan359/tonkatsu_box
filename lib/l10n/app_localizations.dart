@@ -2959,6 +2959,30 @@ abstract class S {
   /// **'Anime'**
   String get searchSourceAnime;
 
+  /// No description provided for @searchSourceGames.
+  ///
+  /// In en, this message translates to:
+  /// **'Games'**
+  String get searchSourceGames;
+
+  /// No description provided for @searchSourceMovies.
+  ///
+  /// In en, this message translates to:
+  /// **'Movies'**
+  String get searchSourceMovies;
+
+  /// No description provided for @searchSourceTvShows.
+  ///
+  /// In en, this message translates to:
+  /// **'TV Shows'**
+  String get searchSourceTvShows;
+
+  /// No description provided for @searchSourceAnimation.
+  ///
+  /// In en, this message translates to:
+  /// **'Animation'**
+  String get searchSourceAnimation;
+
   /// No description provided for @searchHintManga.
   ///
   /// In en, this message translates to:

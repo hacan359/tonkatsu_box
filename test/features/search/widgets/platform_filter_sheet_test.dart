@@ -5,7 +5,6 @@ import 'package:xerabora/l10n/app_localizations.dart';
 import 'package:xerabora/shared/models/platform.dart';
 
 void main() {
-  // Тестовые данные
   const List<Platform> testPlatforms = <Platform>[
     Platform(id: 1, name: 'PlayStation 5', abbreviation: 'PS5'),
     Platform(id: 2, name: 'Xbox Series X', abbreviation: 'XSX'),
@@ -85,7 +84,6 @@ void main() {
         await tester.enterText(find.byType(TextField), 'play');
         await tester.pumpAndSettle();
 
-        // 2 из 5 платформ содержат "play"
         expect(find.byType(ListTile), findsNWidgets(2));
       });
 
@@ -211,7 +209,6 @@ void main() {
             .widgetList<Checkbox>(find.byType(Checkbox))
             .toList();
 
-        // PS5 (id:1) — выбран, Xbox (id:2) — нет, Switch (id:3) — выбран
         expect(checkboxes[0].value, isTrue);
         expect(checkboxes[1].value, isFalse);
         expect(checkboxes[2].value, isTrue);
@@ -251,7 +248,6 @@ void main() {
         ));
         await openSheet(tester);
 
-        // Выбираем первую и третью платформу
         await tester.tap(find.byType(ListTile).at(0));
         await tester.pumpAndSettle();
 
@@ -275,7 +271,6 @@ void main() {
         ));
         await openSheet(tester);
 
-        // Нажимаем Show All (FilledButton когда ничего не выбрано)
         await tester.tap(find.byType(FilledButton));
         await tester.pumpAndSettle();
 
@@ -310,7 +305,6 @@ void main() {
         await tester.pumpWidget(buildTestWidget());
         await openSheet(tester);
 
-        // Выбираем первые 2
         await tester.tap(find.byType(ListTile).at(0));
         await tester.pumpAndSettle();
         await tester.tap(find.byType(ListTile).at(1));
@@ -322,15 +316,12 @@ void main() {
             .length;
         expect(selectedBefore, 2);
 
-        // Фильтруем
         await tester.enterText(find.byType(TextField), 'play');
         await tester.pumpAndSettle();
 
-        // Очищаем фильтр
         await tester.tap(find.byIcon(Icons.clear));
         await tester.pumpAndSettle();
 
-        // Выбор сохранился
         final int selectedAfter = tester
             .widgetList<Checkbox>(find.byType(Checkbox))
             .where((Checkbox c) => c.value == true)

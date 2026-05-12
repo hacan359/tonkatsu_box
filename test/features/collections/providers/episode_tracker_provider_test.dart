@@ -1,5 +1,3 @@
-// Тесты провайдера EpisodeTrackerNotifier.
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -15,14 +13,11 @@ import 'package:xerabora/shared/models/tv_show.dart';
 
 import '../../../helpers/test_helpers.dart';
 
-/// Mock CollectionItemsNotifier, который хранит заданный список items
-/// и записывает вызовы updateStatus для проверки.
 class TrackingCollectionItemsNotifier extends CollectionItemsNotifier {
   TrackingCollectionItemsNotifier(this._items);
 
   final List<CollectionItem> _items;
 
-  /// Записанные вызовы updateStatus: (id, status, mediaType).
   final List<(int, ItemStatus, MediaType)> updateStatusCalls =
       <(int, ItemStatus, MediaType)>[];
 
@@ -35,7 +30,7 @@ class TrackingCollectionItemsNotifier extends CollectionItemsNotifier {
   Future<void> updateStatus(
       int id, ItemStatus status, MediaType mediaType) async {
     updateStatusCalls.add((id, status, mediaType));
-    // Зеркалим реальную логику CollectionItemsNotifier.updateStatus
+    // Mirrors real CollectionItemsNotifier.updateStatus logic.
     final List<CollectionItem>? current = state.valueOrNull;
     if (current != null) {
       final DateTime now = DateTime.now();
@@ -75,7 +70,6 @@ class TrackingCollectionItemsNotifier extends CollectionItemsNotifier {
   }
 }
 
-// Тестовые данные
 const int testCollectionId = 1;
 const int testShowId = 100;
 
@@ -146,7 +140,6 @@ void main() {
   setUp(() {
     mockDb = MockDatabaseService();
     mockTmdbApi = MockTmdbApi();
-    // Дефолтный мок getTvShow — возвращает null (не нашёл на TMDB)
     when(() => mockTmdbApi.getTvShow(any()))
         .thenAnswer((_) async => null);
   });
@@ -340,7 +333,6 @@ void main() {
         final ProviderContainer container = createContainer();
         container.read(episodeTrackerNotifierProvider(testArg));
 
-        // Ждём выполнения microtask
         await Future<void>.delayed(Duration.zero);
 
         final EpisodeTrackerState state =
@@ -359,7 +351,6 @@ void main() {
         final ProviderContainer container = createContainer();
         container.read(episodeTrackerNotifierProvider(testArg));
 
-        // Ждём выполнения microtask
         await Future<void>.delayed(Duration.zero);
 
         final EpisodeTrackerState state =
@@ -386,7 +377,6 @@ void main() {
         final EpisodeTrackerNotifier notifier =
             container.read(episodeTrackerNotifierProvider(testArg).notifier);
 
-        // Ждём выполнения microtask
         await Future<void>.delayed(Duration.zero);
 
         await notifier.loadSeason(1);
@@ -421,7 +411,6 @@ void main() {
         final EpisodeTrackerNotifier notifier =
             container.read(episodeTrackerNotifierProvider(testArg).notifier);
 
-        // Ждём выполнения microtask
         await Future<void>.delayed(Duration.zero);
 
         await notifier.loadSeason(1);
@@ -456,7 +445,6 @@ void main() {
         final EpisodeTrackerNotifier notifier =
             container.read(episodeTrackerNotifierProvider(testArg).notifier);
 
-        // Ждём выполнения microtask
         await Future<void>.delayed(Duration.zero);
 
         await notifier.loadSeason(1);
@@ -476,7 +464,6 @@ void main() {
         final EpisodeTrackerNotifier notifier =
             container.read(episodeTrackerNotifierProvider(testArg).notifier);
 
-        // Ждём выполнения microtask
         await Future<void>.delayed(Duration.zero);
 
         await notifier.loadSeason(1);
@@ -500,7 +487,6 @@ void main() {
         final EpisodeTrackerNotifier notifier =
             container.read(episodeTrackerNotifierProvider(testArg).notifier);
 
-        // Ждём выполнения microtask
         await Future<void>.delayed(Duration.zero);
 
         await notifier.loadSeason(1);
@@ -525,13 +511,11 @@ void main() {
         final EpisodeTrackerNotifier notifier =
             container.read(episodeTrackerNotifierProvider(testArg).notifier);
 
-        // Ждём выполнения microtask
         await Future<void>.delayed(Duration.zero);
 
         await notifier.loadSeason(1);
         await notifier.loadSeason(1);
 
-        // Должен вызваться только один раз
         verify(() => mockDb.getEpisodesByShowAndSeason(testShowId, 1))
             .called(1);
       });
@@ -541,7 +525,7 @@ void main() {
             .thenAnswer((_) async => <(int, int), DateTime?>{});
         when(() => mockDb.getEpisodesByShowAndSeason(testShowId, 1))
             .thenAnswer((_) async {
-          // Имитируем долгую загрузку
+          // Simulate slow load to exercise the in-flight guard.
           await Future<void>.delayed(const Duration(milliseconds: 100));
           return <TvEpisode>[testEpisode1];
         });
@@ -550,16 +534,13 @@ void main() {
         final EpisodeTrackerNotifier notifier =
             container.read(episodeTrackerNotifierProvider(testArg).notifier);
 
-        // Ждём выполнения microtask
         await Future<void>.delayed(Duration.zero);
 
-        // Запускаем две загрузки параллельно
         final Future<void> load1 = notifier.loadSeason(1);
         final Future<void> load2 = notifier.loadSeason(1);
 
         await Future.wait(<Future<void>>[load1, load2]);
 
-        // Должен вызваться только один раз
         verify(() => mockDb.getEpisodesByShowAndSeason(testShowId, 1))
             .called(1);
       });
@@ -577,12 +558,10 @@ void main() {
         final EpisodeTrackerNotifier notifier =
             container.read(episodeTrackerNotifierProvider(testArg).notifier);
 
-        // Ждём выполнения microtask
         await Future<void>.delayed(Duration.zero);
 
         final Future<void> loadFuture = notifier.loadSeason(1);
 
-        // Проверяем состояние во время загрузки
         await Future<void>.delayed(const Duration(milliseconds: 10));
         EpisodeTrackerState state =
             container.read(episodeTrackerNotifierProvider(testArg));
@@ -590,7 +569,6 @@ void main() {
 
         await loadFuture;
 
-        // Проверяем состояние после загрузки
         state = container.read(episodeTrackerNotifierProvider(testArg));
         expect(state.loadingSeasons[1], false);
       });
@@ -608,7 +586,6 @@ void main() {
         final EpisodeTrackerNotifier notifier =
             container.read(episodeTrackerNotifierProvider(testArg).notifier);
 
-        // Ждём выполнения microtask
         await Future<void>.delayed(Duration.zero);
 
         await notifier.toggleEpisode(1, 1);
@@ -634,7 +611,6 @@ void main() {
         final EpisodeTrackerNotifier notifier =
             container.read(episodeTrackerNotifierProvider(testArg).notifier);
 
-        // Ждём выполнения microtask
         await Future<void>.delayed(Duration.zero);
 
         await notifier.toggleEpisode(1, 1);
@@ -662,7 +638,6 @@ void main() {
         final EpisodeTrackerNotifier notifier =
             container.read(episodeTrackerNotifierProvider(testArg).notifier);
 
-        // Ждём выполнения microtask
         await Future<void>.delayed(Duration.zero);
 
         await notifier.toggleEpisode(1, 1);
@@ -700,13 +675,11 @@ void main() {
 
         await Future<void>.delayed(Duration.zero);
 
-        // Сначала загружаем из кеша
         await notifier.loadSeason(1);
         EpisodeTrackerState state =
             container.read(episodeTrackerNotifierProvider(testArg));
         expect(state.episodesBySeason[1]?.length, 1);
 
-        // Обновляем из API
         await notifier.refreshSeason(1);
         state = container.read(episodeTrackerNotifierProvider(testArg));
         expect(state.episodesBySeason[1]?.length, 3);
@@ -797,7 +770,6 @@ void main() {
         final EpisodeTrackerNotifier notifier =
             container.read(episodeTrackerNotifierProvider(testArg).notifier);
 
-        // Ждём выполнения microtask
         await Future<void>.delayed(Duration.zero);
 
         await notifier.loadSeason(1);
@@ -840,7 +812,6 @@ void main() {
         final EpisodeTrackerNotifier notifier =
             container.read(episodeTrackerNotifierProvider(testArg).notifier);
 
-        // Ждём выполнения microtask
         await Future<void>.delayed(Duration.zero);
 
         await notifier.loadSeason(1);
@@ -879,7 +850,6 @@ void main() {
         final EpisodeTrackerNotifier notifier =
             container.read(episodeTrackerNotifierProvider(testArg).notifier);
 
-        // Ждём выполнения microtask
         await Future<void>.delayed(Duration.zero);
 
         await notifier.loadSeason(1);
@@ -907,7 +877,6 @@ void main() {
         final EpisodeTrackerNotifier notifier =
             container.read(episodeTrackerNotifierProvider(testArg).notifier);
 
-        // Ждём выполнения microtask
         await Future<void>.delayed(Duration.zero);
 
         await notifier.toggleSeason(1);
@@ -930,7 +899,6 @@ void main() {
         final EpisodeTrackerNotifier notifier =
             container.read(episodeTrackerNotifierProvider(testArg).notifier);
 
-        // Ждём выполнения microtask
         await Future<void>.delayed(Duration.zero);
 
         await notifier.loadSeason(1);
@@ -946,7 +914,6 @@ void main() {
     group('_updateAutoStatus (через toggleEpisode)', () {
       late TrackingCollectionItemsNotifier lastTracking;
 
-      /// Создаёт контейнер с TrackingCollectionItemsNotifier.
       ProviderContainer createTrackingContainer(
           List<CollectionItem> items) {
         final ProviderContainer container = ProviderContainer(
@@ -1039,7 +1006,6 @@ void main() {
           () async {
         final CollectionItem item =
             createTvItem(totalEpisodes: 2, status: ItemStatus.notStarted);
-        // Уже просмотрен 1 эпизод (s1e1)
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{
                   (1, 1): DateTime(2024),
@@ -1054,11 +1020,9 @@ void main() {
             container.read(episodeTrackerNotifierProvider(testArg).notifier);
 
         await Future<void>.delayed(Duration.zero);
-        // Отмечаем второй — теперь 2/2
         await notifier.toggleEpisode(1, 2);
         await Future<void>.delayed(Duration.zero);
 
-        // Сразу completed (все эпизоды просмотрены)
         expect(lastTracking.updateStatusCalls, hasLength(1));
         expect(lastTracking.updateStatusCalls[0].$2, ItemStatus.completed);
       });
@@ -1082,7 +1046,6 @@ void main() {
         await notifier.toggleEpisode(1, 1);
         await Future<void>.delayed(Duration.zero);
 
-        // Только inProgress (notStarted → inProgress), без completed
         expect(lastTracking.updateStatusCalls, hasLength(1));
         expect(lastTracking.updateStatusCalls.first.$2, ItemStatus.inProgress);
       });
@@ -1090,8 +1053,6 @@ void main() {
       test(
           'должен делать auto-complete через fallback если totalEpisodes == 0 но все сезоны загружены',
           () async {
-        // totalEpisodes=0 (TMDB не вернул), но totalSeasons=1,
-        // и сезон 1 загружен (3 эпизода)
         final CollectionItem item = createTvItem(
           totalEpisodes: 0,
           totalSeasons: 1,
@@ -1116,12 +1077,10 @@ void main() {
 
         await Future<void>.delayed(Duration.zero);
 
-        // Загружаем сезон и помечаем все эпизоды
         await notifier.loadSeason(1);
         await notifier.toggleSeason(1);
         await Future<void>.delayed(Duration.zero);
 
-        // Сразу completed через fallback (3 загруженных == 3 просмотренных)
         expect(lastTracking.updateStatusCalls, hasLength(1));
         expect(lastTracking.updateStatusCalls[0].$2, ItemStatus.completed);
 
@@ -1138,7 +1097,6 @@ void main() {
           () async {
         final CollectionItem item =
             createTvItem(status: ItemStatus.inProgress);
-        // 1 эпизод просмотрен
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{
                   (1, 1): DateTime(2024),
@@ -1153,7 +1111,6 @@ void main() {
             container.read(episodeTrackerNotifierProvider(testArg).notifier);
 
         await Future<void>.delayed(Duration.zero);
-        // Снимаем единственный просмотренный
         await notifier.toggleEpisode(1, 1);
         await Future<void>.delayed(Duration.zero);
 
@@ -1165,7 +1122,6 @@ void main() {
           () async {
         final CollectionItem item =
             createTvItem(totalEpisodes: 3, status: ItemStatus.completed);
-        // 3 эпизода просмотрено
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{
                   (1, 1): DateTime(2024),
@@ -1182,7 +1138,6 @@ void main() {
             container.read(episodeTrackerNotifierProvider(testArg).notifier);
 
         await Future<void>.delayed(Duration.zero);
-        // Снимаем один из трёх
         await notifier.toggleEpisode(1, 3);
         await Future<void>.delayed(Duration.zero);
 
@@ -1216,7 +1171,6 @@ void main() {
       test('не должен менять статус dropped при отметке эпизода', () async {
         final CollectionItem item =
             createTvItem(status: ItemStatus.dropped);
-        // 1 эпизод уже просмотрен
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{
                   (1, 1): DateTime(2024),
@@ -1234,7 +1188,6 @@ void main() {
         await notifier.toggleEpisode(1, 2);
         await Future<void>.delayed(Duration.zero);
 
-        // Dropped не должен автоматически меняться
         expect(lastTracking.updateStatusCalls, isEmpty);
       });
 
@@ -1248,27 +1201,22 @@ void main() {
         );
         final ProviderContainer container =
             createTrackingContainer(<CollectionItem>[]);
-        // Инициализируем провайдер с null collectionId
         container.read(episodeTrackerNotifierProvider(uncatArg));
 
         await Future<void>.delayed(Duration.zero);
 
-        // toggleEpisode не вызывается (collectionId == null → return в build)
-        // Нотификатор возвращает пустое состояние
         expect(lastTracking.updateStatusCalls, isEmpty);
       });
 
       test(
           'должен заполнять completedAt при пометке всех эпизодов всех сезонов через toggleSeason',
           () async {
-        // Сезон 1: 3 эпизода, сезон 2: 2 эпизода = 5 итого
         final CollectionItem item =
             createTvItem(totalEpisodes: 5, status: ItemStatus.notStarted);
 
         when(() => mockDb.getWatchedEpisodes(testCollectionId, testShowId))
             .thenAnswer((_) async => <(int, int), DateTime?>{});
 
-        // Загрузка сезонов из кеша БД
         when(() => mockDb.getEpisodesByShowAndSeason(testShowId, 1))
             .thenAnswer((_) async =>
                 <TvEpisode>[testEpisode1, testEpisode2, testEpisode3]);
@@ -1276,7 +1224,6 @@ void main() {
             .thenAnswer(
                 (_) async => <TvEpisode>[testEpisode2s1, testEpisode2s2]);
 
-        // Моки для markSeasonWatched
         when(() => mockDb.markSeasonWatched(
               testCollectionId,
               testShowId,
@@ -1297,27 +1244,21 @@ void main() {
 
         await Future<void>.delayed(Duration.zero);
 
-        // Загружаем оба сезона
         await notifier.loadSeason(1);
         await notifier.loadSeason(2);
 
-        // Отмечаем все эпизоды сезона 1
         await notifier.toggleSeason(1);
         await Future<void>.delayed(Duration.zero);
 
-        // После сезона 1: 3/5 — должен стать inProgress
         expect(lastTracking.updateStatusCalls, hasLength(1));
         expect(lastTracking.updateStatusCalls[0].$2, ItemStatus.inProgress);
 
-        // Отмечаем все эпизоды сезона 2
         await notifier.toggleSeason(2);
         await Future<void>.delayed(Duration.zero);
 
-        // После сезона 2: 5/5 — должен стать completed
         expect(lastTracking.updateStatusCalls, hasLength(2));
         expect(lastTracking.updateStatusCalls[1].$2, ItemStatus.completed);
 
-        // Проверяем, что completedAt заполнен в state
         final List<CollectionItem>? items = container
             .read(collectionItemsNotifierProvider(testCollectionId))
             .valueOrNull;
@@ -1334,7 +1275,6 @@ void main() {
       test(
           'должен заполнять completedAt при пометке единственного сезона через toggleSeason',
           () async {
-        // 1 сезон, 3 эпизода
         final CollectionItem item =
             createTvItem(totalEpisodes: 3, status: ItemStatus.notStarted);
 
@@ -1361,11 +1301,9 @@ void main() {
         await notifier.toggleSeason(1);
         await Future<void>.delayed(Duration.zero);
 
-        // Сразу completed (3/3 — все просмотрены)
         expect(lastTracking.updateStatusCalls, hasLength(1));
         expect(lastTracking.updateStatusCalls[0].$2, ItemStatus.completed);
 
-        // completedAt и startedAt заполнены
         final List<CollectionItem>? items = container
             .read(collectionItemsNotifierProvider(testCollectionId))
             .valueOrNull;
@@ -1386,17 +1324,13 @@ void main() {
                 mockDb.markEpisodeWatched(testCollectionId, testShowId, 1, 1))
             .thenAnswer((_) async {});
 
-        // Создаём контейнер с обычным mock (возвращает пустой список)
         final ProviderContainer container = createContainer();
         final EpisodeTrackerNotifier notifier =
             container.read(episodeTrackerNotifierProvider(testArg).notifier);
 
         await Future<void>.delayed(Duration.zero);
-        // toggleEpisode — item не будет найден (пустой список)
         await notifier.toggleEpisode(1, 1);
         await Future<void>.delayed(Duration.zero);
-
-        // Не упал — просто ничего не сделал
       });
     });
   });

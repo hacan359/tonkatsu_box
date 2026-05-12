@@ -1,5 +1,3 @@
-// Тесты для провайдеров жанров TMDB (genre_provider.dart).
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -28,7 +26,6 @@ void main() {
     mockDb = MockDatabaseService();
   });
 
-  /// Создаёт [ProviderContainer] с мок-зависимостями.
   ProviderContainer createContainer({
     String tmdbLanguage = 'ru-RU',
   }) {

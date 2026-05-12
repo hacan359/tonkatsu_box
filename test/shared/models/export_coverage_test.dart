@@ -1,4 +1,4 @@
-// Умный тест-сторож: автоматически обнаруживает забытые поля в экспорте.
+// Guard test: auto-detects fields missing from export contract.
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/shared/models/canvas_connection.dart';
@@ -11,8 +11,6 @@ import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 
 void main() {
-  // -- Тестовые данные с заполненными полями --
-
   final DateTime testDate = DateTime(2025, 1, 15, 12, 0);
 
   final CollectionItem testCollectionItem = CollectionItem(
@@ -74,15 +72,6 @@ void main() {
     offsetY: -200.0,
   );
 
-  /// Проверяет Exportable контракт для модели.
-  ///
-  /// 6 тестов:
-  /// 1. Полнота покрытия — каждое поле toDb() в export или internal
-  /// 2. internal и export не пересекаются
-  /// 3. mapping ссылается на реальные toDb() ключи
-  /// 4. Round-trip — toExport → fromExport → toExport
-  /// 5. Forward compat — неизвестные поля игнорируются
-  /// 6. Backward compat — defaults для отсутствующих полей
   void testExportableContract({
     required String modelName,
     required Exportable instance,
@@ -159,13 +148,11 @@ void main() {
         exportWithExtras['future_field_123'] = 'some value';
         exportWithExtras['another_new_field'] = 42;
 
-        // Не должен кидать исключение.
         final Exportable restored = fromExport(exportWithExtras);
         expect(restored.toExport(), isNotEmpty);
       });
 
       test('fromExport() использует defaults для отсутствующих полей', () {
-        // Не должен кидать исключение на минимальном JSON.
         final Exportable restored = fromExport(minimalExportJson);
         expect(restored.toExport(), isNotEmpty);
       });

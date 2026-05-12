@@ -22,13 +22,7 @@ import 'dialogs/edit_connection_dialog.dart';
 import '../providers/steamgriddb_panel_provider.dart';
 import '../providers/vgmaps_panel_provider.dart';
 
-// Виджет канваса для визуального размещения элементов коллекции.
-//
-// Поддерживает зум (0.3x–3.0x), панорамирование и перетаскивание элементов.
-// Канвас расширяется автоматически под контент. Элементы размещаются
-// по центру канваса, чтобы можно было перемещать их во все стороны.
 class CanvasView extends ConsumerStatefulWidget {
-  /// Создаёт [CanvasView].
   const CanvasView({
     required this.collectionId,
     required this.isEditable,
@@ -36,16 +30,12 @@ class CanvasView extends ConsumerStatefulWidget {
     super.key,
   });
 
-  /// ID коллекции.
   final int? collectionId;
 
-  /// Можно ли редактировать (перемещать элементы).
   final bool isEditable;
 
-  /// ID элемента коллекции для per-game canvas.
-  ///
-  /// Если задан, используется [gameCanvasNotifierProvider] вместо
-  /// [canvasNotifierProvider]. Game canvas независим от коллекционного.
+  /// When set, uses [gameCanvasNotifierProvider] (independent per-item canvas)
+  /// instead of [canvasNotifierProvider].
   final int? collectionItemId;
 
   @override
@@ -58,16 +48,13 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
 
   final FocusNode _focusNode = FocusNode();
 
-  /// Является ли это per-game canvas.
   bool get _isGameCanvas => widget.collectionItemId != null;
 
-  /// Аргумент для [gameCanvasNotifierProvider].
   ({int? collectionId, int collectionItemId}) get _gameCanvasArg => (
         collectionId: widget.collectionId,
         collectionItemId: widget.collectionItemId!,
       );
 
-  /// Смотрит за состоянием нужного canvas.
   CanvasState _watchCanvasState() {
     if (_isGameCanvas) {
       return ref.watch(gameCanvasNotifierProvider(_gameCanvasArg));
@@ -75,7 +62,6 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
     return ref.watch(canvasNotifierProvider(widget.collectionId));
   }
 
-  /// Читает нотификатор нужного canvas.
   BaseCanvasController _readNotifier() {
     if (_isGameCanvas) {
       return ref.read(
@@ -87,32 +73,21 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
     );
   }
 
-  /// Минимальный зум.
   static const double _minScale = 0.1;
-
-  /// Максимальный зум.
   static const double _maxScale = 3.0;
-
-  /// Минимальный размер канваса.
   static const double _minCanvasSize = 5000.0;
-
-  /// Буфер за последним элементом.
   static const double _canvasBuffer = 1000.0;
 
-  /// Флаг: начальное центрирование вида уже выполнено.
   bool _hasScrolledToItems = false;
 
-  /// Флаг: элемент перетаскивается (блокирует пан InteractiveViewer).
+  /// Blocks InteractiveViewer pan while an item is being dragged.
   bool _isItemDragging = false;
 
-  /// Текущие drag-смещения элементов для обновления связей в реальном времени.
-  ///
-  /// Используем ValueNotifier вместо setState, чтобы при перетаскивании
-  /// перестраивался только ConnectionPainter, а не все элементы канваса.
+  /// ValueNotifier (not setState) so only ConnectionPainter rebuilds during
+  /// drag, not every canvas item.
   final ValueNotifier<Map<int, Offset>> _dragOffsetsNotifier =
       ValueNotifier<Map<int, Offset>>(const <int, Offset>{});
 
-  /// Позиция мыши на канвасе (для временной линии связи).
   Offset? _mouseCanvasPosition;
 
   void _onItemDragStateChanged({required bool isDragging}) {
@@ -131,7 +106,6 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
     };
   }
 
-  /// Обработчик клавиши Escape для отмены создания связи.
   KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
     if (event is KeyDownEvent &&
         event.logicalKey == LogicalKeyboardKey.escape) {
@@ -153,14 +127,11 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
     super.dispose();
   }
 
-  /// Отступ вокруг контента при zoom-to-fit (в пикселях viewport).
+  /// Viewport padding around content for zoom-to-fit.
   static const double _fitPadding = 32;
 
-  /// Центрирует вид на элементах канваса с автоподгонкой масштаба.
-  ///
-  /// На мобильных устройствах контент масштабируется так, чтобы все элементы
-  /// помещались в viewport с отступами. На десктопе масштаб не уменьшается
-  /// ниже 1.0, чтобы не делать элементы мельче чем нужно.
+  /// Desktop keeps min scale at 1.0 (don't shrink below natural size);
+  /// mobile fits everything in viewport and zooms out further for overview.
   void _centerViewOnItems(
     double viewportWidth,
     double viewportHeight,
@@ -189,7 +160,6 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
     final double contentCenterX = (minX + maxX) / 2;
     final double contentCenterY = (minY + maxY) / 2;
 
-    // Вычисляем масштаб, чтобы контент поместился в viewport с отступами.
     final double availableWidth = viewportWidth - _fitPadding * 2;
     final double availableHeight = viewportHeight - _fitPadding * 2;
     double scale = 1.0;
@@ -199,10 +169,8 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
       scale = scaleX < scaleY ? scaleX : scaleY;
     }
 
-    // На десктопе не уменьшаем ниже 1.0, на мобильных — ограничиваем
-    // минимальным масштабом InteractiveViewer.
     final bool isMobile = kIsMobile;
-    // На мобильных отдаляем камеру в 5 раз, чтобы видеть все элементы.
+    // Mobile: zoom out 5x further so all items are visible at once.
     if (isMobile) scale /= 5;
     final double minFitScale = isMobile ? _minScale : 1.0;
     scale = scale.clamp(minFitScale, _maxScale);
@@ -217,12 +185,11 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
       );
   }
 
-  /// Обрабатывает ПКМ на пустом месте канваса.
   void _onCanvasSecondaryTap(
     Offset globalPosition,
     Offset localPosition,
   ) {
-    // localPosition уже в координатах канваса (внутри InteractiveViewer)
+    // localPosition is already in canvas coords (inside InteractiveViewer).
     final double canvasX = localPosition.dx;
     final double canvasY = localPosition.dy;
 
@@ -257,7 +224,6 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
     );
   }
 
-  /// Обрабатывает ПКМ на элементе канваса.
   void _onItemSecondaryTap(
     Offset globalPosition,
     CanvasItem item,
@@ -279,7 +245,6 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
     );
   }
 
-  /// Добавляет текстовый блок на канвас.
   Future<void> _handleAddText(double x, double y) async {
     final Map<String, dynamic>? result = await AddTextDialog.show(context);
     if (result == null) return;
@@ -293,7 +258,6 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
     );
   }
 
-  /// Добавляет изображение на канвас.
   Future<void> _handleAddImage(double x, double y) async {
     final Map<String, dynamic>? result = await AddImageDialog.show(context);
     if (result == null) return;
@@ -302,7 +266,6 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
     _readNotifier().addImageItem(x, y, result);
   }
 
-  /// Добавляет ссылку на канвас.
   Future<void> _handleAddLink(double x, double y) async {
     final Map<String, dynamic>? result = await AddLinkDialog.show(context);
     if (result == null) return;
@@ -316,7 +279,6 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
     );
   }
 
-  /// Редактирует элемент через соответствующий диалог.
   Future<void> _handleEditItem(CanvasItem item) async {
     switch (item.itemType) {
       case CanvasItemType.text:
@@ -333,11 +295,10 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
       case CanvasItemType.manga:
       case CanvasItemType.anime:
       case CanvasItemType.custom:
-        break; // Медиа-элементы не редактируются через контекстное меню
+        break;
     }
   }
 
-  /// Редактирует текстовый блок.
   Future<void> _editTextItem(CanvasItem item) async {
     final Map<String, dynamic>? result = await AddTextDialog.show(
       context,
@@ -350,7 +311,6 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
     _readNotifier().updateItemData(item.id, result);
   }
 
-  /// Редактирует изображение.
   Future<void> _editImageItem(CanvasItem item) async {
     final Map<String, dynamic>? result = await AddImageDialog.show(
       context,
@@ -362,7 +322,6 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
     _readNotifier().updateItemData(item.id, result);
   }
 
-  /// Редактирует ссылку.
   Future<void> _editLinkItem(CanvasItem item) async {
     final Map<String, dynamic>? result = await AddLinkDialog.show(
       context,
@@ -375,13 +334,11 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
     _readNotifier().updateItemData(item.id, result);
   }
 
-  /// Обрабатывает ПКМ на пустом месте с проверкой hit-test на связи.
   void _onCanvasSecondaryTapWithConnections(
     Offset globalPosition,
     Offset localPosition,
     CanvasState canvasState,
   ) {
-    // Сначала проверяем, не попали ли мы по связи
     final CanvasConnectionPainter painter = CanvasConnectionPainter(
       connections: canvasState.connections,
       items: canvasState.items,
@@ -393,11 +350,9 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
       return;
     }
 
-    // Иначе показываем стандартное меню канваса
     _onCanvasSecondaryTap(globalPosition, localPosition);
   }
 
-  /// Показывает контекстное меню связи.
   void _showConnectionContextMenu(
     Offset globalPosition,
     int connectionId,
@@ -413,7 +368,6 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
     );
   }
 
-  /// Открывает диалог редактирования связи.
   Future<void> _handleEditConnection(
     int connectionId,
     CanvasState canvasState,
@@ -442,7 +396,6 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
         );
   }
 
-  /// Обрабатывает клик в режиме создания связи.
   void _handleConnectionModeClick(CanvasItem item) {
     _readNotifier().completeConnection(item.id);
     setState(() => _mouseCanvasPosition = null);
@@ -513,7 +466,6 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
         ),
       );
 
-      // Позволяем добавлять элементы через ПКМ или long press на пустом board
       if (widget.isEditable) {
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
@@ -541,7 +493,6 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
           ..sort(
               (CanvasItem a, CanvasItem b) => a.zIndex.compareTo(b.zIndex));
 
-    // Размер канваса: подстраивается под контент
     double canvasWidth = _minCanvasSize;
     double canvasHeight = _minCanvasSize;
     for (final CanvasItem item in canvasState.items) {
@@ -568,7 +519,6 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
         final double viewportWidth = constraints.maxWidth;
         final double viewportHeight = constraints.maxHeight;
 
-        // При первой загрузке центрируем вид на элементах
         if (!_hasScrolledToItems && canvasState.isInitialized) {
           _hasScrolledToItems = true;
           SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -585,7 +535,6 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
           onKeyEvent: _handleKeyEvent,
           child: Stack(
             children: <Widget>[
-              // Канвас с зумом и панорамированием
               InteractiveViewer(
                 transformationController: _transformationController,
                 constrained: false,
@@ -635,10 +584,9 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
                           children: <Widget>[
                             for (final CanvasItem item in sortedItems)
                               _buildCanvasItem(item, isConnecting),
-                            // Связи рисуются поверх элементов.
-                            // IgnorePointer позволяет кликать сквозь связи.
-                            // ValueListenableBuilder изолирует перерисовку
-                            // связей от остальных элементов канваса.
+                            // IgnorePointer: clicks pass through connections.
+                            // ValueListenableBuilder isolates connection
+                            // repaints from canvas item rebuilds.
                             if (canvasState.connections.isNotEmpty ||
                                 isConnecting)
                               Positioned.fill(
@@ -682,21 +630,19 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
                   ),
                 ),
               ),
-            // Кнопки управления (поверх канваса, фиксированы)
             Positioned(
               right: 16,
               bottom: 16,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  // VGMaps Browser (Windows only — requires webview_windows)
+                  // VGMaps Browser: Windows only (requires webview_windows).
                   if (widget.isEditable && kVgMapsEnabled)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 8),
                       child: FloatingActionButton.small(
                         heroTag: 'canvas_vgmaps',
                         onPressed: () {
-                          // Закрываем SteamGridDB панель при открытии VGMaps
                           ref
                               .read(steamGridDbPanelProvider(
                                       widget.collectionId)
@@ -712,14 +658,12 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
                         child: const Icon(Icons.map),
                       ),
                     ),
-                  // Поиск изображений SteamGridDB
                   if (widget.isEditable)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 8),
                       child: FloatingActionButton.small(
                         heroTag: 'canvas_steamgriddb',
                         onPressed: () {
-                          // Закрываем VGMaps панель при открытии SteamGridDB
                           ref
                               .read(vgMapsPanelProvider(
                                       widget.collectionId)
@@ -735,7 +679,6 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
                         child: const Icon(Icons.image_search),
                       ),
                     ),
-                  // Центрировать вид на элементах
                   FloatingActionButton.small(
                     heroTag: 'canvas_reset_view',
                     onPressed: () {
@@ -749,12 +692,10 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
                     child: const Icon(Icons.fit_screen),
                   ),
                   const SizedBox(height: 8),
-                  // Сброс позиций всех элементов в сетку
                   FloatingActionButton.small(
                     heroTag: 'canvas_reset_positions',
                     onPressed: () {
                       _readNotifier().resetPositions(viewportWidth);
-                      // Центрируем вид после сброса
                       SchedulerBinding.instance.addPostFrameCallback((_) {
                         final List<CanvasItem> items =
                             _watchCanvasState().items;
@@ -771,7 +712,6 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
                 ],
               ),
             ),
-            // Индикатор режима создания связи
             if (isConnecting)
               Positioned(
                 left: 0,
@@ -863,7 +803,6 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
     );
   }
 
-  /// Создаёт [MediaPosterCard] для медиа-элемента канваса.
   Widget _buildMediaCard(CanvasItem item) {
     final String fallback = switch (item.itemType) {
       CanvasItemType.game => S.of(context).unknownGame,
@@ -887,15 +826,10 @@ class _CanvasViewState extends ConsumerState<CanvasView> {
   }
 }
 
-/// Обёртка для перетаскиваемых элементов канваса.
-///
-/// Позиция и размер обновляются через [setState] напрямую в [Positioned],
-/// обеспечивая визуальную обратную связь в реальном времени при drag и resize.
-///
-/// Используется абсолютное отслеживание позиции (globalPosition)
-/// вместо накопления инкрементальных дельт. При старте drag
-/// InteractiveViewer отключает пан через callback, чтобы избежать
-/// двойного смещения.
+/// Tracks drag by absolute globalPosition (not incremental deltas) and uses
+/// [Positioned] + setState — `Transform.translate` inside InteractiveViewer
+/// would double-scale. InteractiveViewer pan is disabled during drag via
+/// callback to avoid double movement.
 class _DraggableCanvasItem extends ConsumerStatefulWidget {
   const _DraggableCanvasItem({
     required this.item,
@@ -917,16 +851,13 @@ class _DraggableCanvasItem extends ConsumerStatefulWidget {
   final int? collectionItemId;
   final TransformationController transformationController;
 
-  /// Callback для уведомления родителя о начале/конце drag.
   final void Function({required bool isDragging}) onDragStateChanged;
 
-  /// Callback для обновления drag-смещения (для связей).
   final void Function(int itemId, Offset delta) onDragUpdate;
 
-  /// Callback для ПКМ или long press на элементе (контекстное меню).
   final void Function(Offset globalPosition, CanvasItem item)? onSecondaryTap;
 
-  /// Callback для клика (используется в режиме создания связи).
+  /// Used in connection-creation mode (replaces drag).
   final VoidCallback? onTap;
 
   final Widget child;
@@ -954,29 +885,21 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
   Offset _dragDelta = Offset.zero;
   bool _isDragging = false;
 
-  /// Глобальная позиция указателя при старте перетаскивания.
   Offset _panStartGlobal = Offset.zero;
 
-  /// Флаг: элемент ресайзится.
   bool _isResizing = false;
 
-  /// Стартовые размеры при ресайзе.
   double _resizeStartWidth = 0;
   double _resizeStartHeight = 0;
 
-  /// Текущие дельты ресайза.
   Offset _resizeDelta = Offset.zero;
 
-  /// Минимальный размер элемента.
   static const double _minItemSize = 50;
-
-  /// Максимальный размер элемента.
   static const double _maxItemSize = 5000;
 
-  /// Мобильная платформа (тач вместо мыши, слабее GPU).
   static final bool _isMobile = kIsMobile;
 
-  /// Размер resize handle (больше на мобильных для удобства тач-ввода).
+  /// Larger handle on mobile for touch hit-area.
   static final double _handleSize = _isMobile ? 24 : 14;
 
   double get _itemWidth {
@@ -1013,8 +936,6 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
     };
   }
 
-  // ==================== Drag ====================
-
   void _onPanStart(DragStartDetails details) {
     if (!widget.isEditable) return;
     _panStartGlobal = details.globalPosition;
@@ -1028,9 +949,9 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
   void _onPanUpdate(DragUpdateDetails details) {
     if (!_isDragging) return;
 
-    // entry(0,0) — реальный масштаб X-оси. getMaxScaleOnAxis() возвращает
-    // max(scaleX, scaleY, scaleZ), а scaleZ всегда 1.0, поэтому при zoom < 1
-    // он вернёт 1.0 вместо реального масштаба.
+    // entry(0,0) is real X scale. getMaxScaleOnAxis() returns
+    // max(scaleX,scaleY,scaleZ), and scaleZ is always 1.0, so at zoom<1 it
+    // wrongly returns 1.0.
     final double scale =
         widget.transformationController.value.entry(0, 0);
     final Offset totalGlobalDelta =
@@ -1059,8 +980,6 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
     });
     widget.onDragStateChanged(isDragging: false);
   }
-
-  // ==================== Resize ====================
 
   void _onResizeStart(DragStartDetails details) {
     _panStartGlobal = details.globalPosition;
@@ -1114,13 +1033,11 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
     final Color shadowColor = colorScheme.shadow.withAlpha(80);
 
-    // Позиция обновляется в реальном времени при перетаскивании.
     final double left =
         widget.item.x + (_isDragging ? _dragDelta.dx : 0);
     final double top =
         widget.item.y + (_isDragging ? _dragDelta.dy : 0);
 
-    // Размер обновляется в реальном времени при ресайзе.
     final double currentWidth = _isResizing
         ? (_resizeStartWidth + _resizeDelta.dx)
             .clamp(_minItemSize, _maxItemSize)
@@ -1143,7 +1060,7 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
                 : SystemMouseCursors.grab,
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
-          // В режиме создания связи — onTap вместо drag.
+          // Connection-creation mode: onTap replaces drag.
           onTap: widget.onTap,
           onPanStart: widget.onTap == null ? _onPanStart : null,
           onPanUpdate: widget.onTap == null ? _onPanUpdate : null,
@@ -1168,8 +1085,7 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
             child: Stack(
               clipBehavior: Clip.none,
               children: <Widget>[
-                // На мобильных: без boxShadow blur (дорого для GPU).
-                // На десктопе: анимированная тень при drag.
+                // Mobile skips boxShadow blur — GPU-expensive on weaker chips.
                 if (_isMobile)
                   SizedBox.expand(child: widget.child)
                 else
@@ -1188,7 +1104,6 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
                     ),
                     child: SizedBox.expand(child: widget.child),
                   ),
-                  // Resize handle (правый нижний угол)
                   if (widget.isEditable)
                     Positioned(
                       right: 0,
@@ -1231,7 +1146,6 @@ class _DraggableCanvasItemState extends ConsumerState<_DraggableCanvasItem> {
   }
 }
 
-/// Рисует фоновую сетку на канвасе.
 class _CanvasGridPainter extends CustomPainter {
   _CanvasGridPainter({required this.color});
 

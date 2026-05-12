@@ -124,7 +124,6 @@ void main() {
         await tester.pumpWidget(buildScreen());
         await tester.pumpAndSettle();
 
-        // Находим Opacity виджет для resolved элемента
         final Finder resolvedTileFinder = find.ancestor(
           of: find.text('Resolved Game'),
           matching: find.byType(Opacity),

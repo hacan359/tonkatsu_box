@@ -1,8 +1,3 @@
-// Виджет-тесты для MediaPosterCard.
-// Фокус: данные из пропов доходят до UI, коллбэки вызываются, показ/скрытие
-// секций в разных вариантах. Не проверяем размеры/цвета/конкретные иконки —
-// design decisions, тесты не должны ломаться от их изменения.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/core/services/image_cache_service.dart';

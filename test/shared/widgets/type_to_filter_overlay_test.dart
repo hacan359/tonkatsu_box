@@ -1,5 +1,3 @@
-// Тесты для TypeToFilterOverlay.
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -27,7 +25,6 @@ void main() {
     );
   }
 
-  /// Отправляет нажатие клавиши с символом.
   Future<void> sendChar(WidgetTester tester, String char) async {
     await simulateKeyDownEvent(
       _logicalKeyFor(char),
@@ -37,7 +34,6 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  /// Нажимает Escape.
   Future<void> sendEscape(WidgetTester tester) async {
     await simulateKeyDownEvent(LogicalKeyboardKey.escape);
     await simulateKeyUpEvent(LogicalKeyboardKey.escape);
@@ -102,14 +98,11 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // Показываем overlay
       await sendChar(tester, 'a');
       expect(find.text('Esc'), findsOneWidget);
 
-      // Нажимаем Escape
       await sendEscape(tester);
 
-      // Overlay скрыт
       expect(find.text('Esc'), findsNothing);
       expect(calls.last, equals(''));
     });
@@ -124,15 +117,12 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // Вводим 'a' — overlay появляется
       await sendChar(tester, 'a');
       expect(calls, contains('a'));
 
-      // Escape закрывает и сбрасывает
       await sendEscape(tester);
       expect(calls.last, equals(''));
 
-      // Снова вводим символ — overlay появляется заново
       calls.clear();
       await sendChar(tester, 'b');
       expect(calls, contains('b'));
@@ -164,14 +154,11 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // Показываем overlay
       await sendChar(tester, 'a');
 
-      // Нажимаем кнопку закрыть
       await tester.tap(find.byIcon(Icons.close));
       await tester.pumpAndSettle();
 
-      // Overlay скрыт
       expect(find.text('Esc'), findsNothing);
       expect(calls.last, equals(''));
     });
@@ -187,15 +174,12 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // Показываем overlay
       await sendChar(tester, 'a');
       expect(find.text('Esc'), findsOneWidget);
 
-      // Программный сброс
       key.currentState!.clear();
       await tester.pumpAndSettle();
 
-      // Overlay скрыт
       expect(find.text('Esc'), findsNothing);
       expect(calls.last, equals(''));
     });
@@ -236,14 +220,11 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      // Явно фокусируем внешний TextField тапом
       await tester.tap(find.byType(TextField));
       await tester.pumpAndSettle();
 
-      // Нажимаем символ — overlay НЕ появляется
       await sendChar(tester, 'a');
 
-      // onFilterChanged НЕ содержит непустых вызовов
       final bool overlayTriggered = calls.any((String c) => c.isNotEmpty);
       expect(overlayTriggered, isFalse);
     });
@@ -261,14 +242,11 @@ void main() {
       await sendChar(tester, 'a');
       await sendChar(tester, 'b');
 
-      // Последний вызов содержит 'ab' (набрано в TextField)
-      // или через onChanged TextField
       expect(calls, isNotEmpty);
     });
   });
 }
 
-/// Маппинг символа в LogicalKeyboardKey.
 LogicalKeyboardKey _logicalKeyFor(String char) {
   switch (char.toLowerCase()) {
     case 'a':

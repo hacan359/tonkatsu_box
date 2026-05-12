@@ -1,5 +1,3 @@
-// Тесты провайдеров All Items (Home tab).
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -20,7 +18,7 @@ import 'package:xerabora/shared/models/platform.dart' as model;
 
 import '../../../helpers/test_helpers.dart';
 
-/// Вспомогательная функция: прокачать event queue для async fire-and-forget.
+// Drain the event queue for async fire-and-forget work.
 Future<void> _pump([int times = 5]) async {
   for (int i = 0; i < times; i++) {
     await Future<void>.delayed(Duration.zero);
@@ -85,8 +83,6 @@ void main() {
     addTearDown(container.dispose);
     return container;
   }
-
-  // ==================== AllItemsSortNotifier ====================
 
   group('AllItemsSortNotifier', () {
     test('по умолчанию возвращает addedDate', () {
@@ -174,8 +170,6 @@ void main() {
     });
   });
 
-  // ==================== AllItemsSortDescNotifier ====================
-
   group('AllItemsSortDescNotifier', () {
     test('по умолчанию возвращает false', () {
       final ProviderContainer container = createContainer();
@@ -221,8 +215,6 @@ void main() {
       expect(prefs.getBool('all_items_sort_desc'), true);
     });
   });
-
-  // ==================== AllItemsNotifier ====================
 
   group('AllItemsNotifier', () {
     test('начинает с AsyncLoading', () {
@@ -288,15 +280,13 @@ void main() {
           .thenAnswer((_) async => items);
 
       final ProviderContainer container = createContainer();
-      // listen() создаёт подписку — провайдер перестраивается при
-      // изменении allItemsSortProvider (после _loadFromPrefs).
+      // listen() subscribes so the provider rebuilds after _loadFromPrefs.
       container.listen(allItemsNotifierProvider, (_, _) {});
       await _pump(10);
 
       final List<CollectionItem>? sorted =
           container.read(allItemsNotifierProvider).valueOrNull;
       expect(sorted, isNotNull);
-      // addedDate: новейшие первыми
       expect(sorted!.first.id, 2);
     });
 
@@ -340,13 +330,11 @@ void main() {
       container.read(allItemsNotifierProvider);
       await _pump();
 
-      // Первая загрузка
       expect(
         container.read(allItemsNotifierProvider).valueOrNull?.first.id,
         1,
       );
 
-      // Refresh
       await container.read(allItemsNotifierProvider.notifier).refresh();
 
       expect(
@@ -367,19 +355,16 @@ void main() {
       container.listen(allItemsNotifierProvider, (_, _) {});
       await _pump();
 
-      // По умолчанию addedDate: id=2 первый (новейший)
       expect(
         container.read(allItemsNotifierProvider).valueOrNull?.first.id,
         2,
       );
 
-      // Переключаем на name
       await container
           .read(allItemsSortProvider.notifier)
           .setSortMode(CollectionSortMode.name);
       await _pump();
 
-      // По имени A-Z: Ape (id=2) первый
       expect(
         container
             .read(allItemsNotifierProvider)
@@ -400,20 +385,17 @@ void main() {
 
       final ProviderContainer container = createContainer();
 
-      // Включаем сортировку по имени
       await container
           .read(allItemsSortProvider.notifier)
           .setSortMode(CollectionSortMode.name);
       container.listen(allItemsNotifierProvider, (_, _) {});
       await _pump();
 
-      // A-Z: Ape первый
       expect(
         container.read(allItemsNotifierProvider).valueOrNull?.first.id,
         1,
       );
 
-      // Toggle desc → Z-A
       await container.read(allItemsSortDescProvider.notifier).toggle();
       await _pump();
 
@@ -423,8 +405,6 @@ void main() {
       );
     });
   });
-
-  // ==================== collectionNamesProvider ====================
 
   group('collectionNamesProvider', () {
     test('строит карту id→name из списка коллекций', () async {
@@ -473,7 +453,7 @@ void main() {
     test('возвращает пустую карту при AsyncLoading', () {
       final ProviderContainer container = createContainer();
 
-      // Без pump — collectionsProvider в состоянии loading
+      // Skip pump so collectionsProvider stays in loading state.
       final Map<int, String> names =
           container.read(collectionNamesProvider);
       expect(names, isEmpty);
@@ -492,8 +472,6 @@ void main() {
       expect(names, isEmpty);
     });
   });
-
-  // ==================== allItemsPlatformsProvider ====================
 
   group('allItemsPlatformsProvider', () {
     test('возвращает пустой список когда нет элементов', () async {
@@ -515,7 +493,7 @@ void main() {
       final List<CollectionItem> items = <CollectionItem>[
         _makeItem(id: 1, platformId: 19),
         _makeItem(id: 2, platformId: 24),
-        _makeItem(id: 3, platformId: 19), // дубль платформы
+        _makeItem(id: 3, platformId: 19),
       ];
       when(() => mockRepo.getAllItemsWithData())
           .thenAnswer((_) async => items);
@@ -535,7 +513,6 @@ void main() {
           container.read(allItemsPlatformsProvider).valueOrNull;
       expect(platforms, isNotNull);
       expect(platforms!.length, 2);
-      // Отсортированы по имени.
       expect(platforms[0].name, 'Game Boy Advance');
       expect(platforms[1].name, 'Super Nintendo');
     });
@@ -543,7 +520,7 @@ void main() {
     test('игнорирует элементы без платформы', () async {
       final List<CollectionItem> items = <CollectionItem>[
         _makeItem(id: 1, platformId: 19),
-        _makeItem(id: 2), // без платформы
+        _makeItem(id: 2),
         CollectionItem(
           id: 3,
           collectionId: 1,
@@ -600,7 +577,6 @@ void main() {
 
       final AsyncValue<List<model.Platform>> platforms =
           container.read(allItemsPlatformsProvider);
-      // При loading allItemsNotifier — valueOrNull будет null.
       expect(platforms.valueOrNull ?? <model.Platform>[], isEmpty);
     });
   });

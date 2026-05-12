@@ -1,8 +1,3 @@
-// Единое хранилище mock-классов для всех тестов.
-//
-// Каждый mock объявляется ровно один раз. Тестовые файлы импортируют
-// `test_helpers.dart`, который реэкспортирует этот файл.
-
 import 'dart:async';
 
 import 'package:dio/dio.dart';
@@ -53,21 +48,15 @@ import 'package:xerabora/shared/models/canvas_viewport.dart';
 import 'package:xerabora/shared/models/collection_item.dart';
 import 'package:xerabora/shared/models/game.dart';
 
-// ===== Core =====
-
 class MockDio extends Mock implements Dio {}
 
 class MockDatabase extends Mock implements Database {}
 
-/// [MockDatabase] с прямым override [transaction] для тестов.
-///
-/// mocktail не может корректно стабить generic-метод `Database.transaction<T>()`
-/// через `when(() => mockDb.transaction<void>(any()))`. Этот подкласс
-/// решает проблему прямым override метода.
+/// mocktail cannot stub generic `Database.transaction<T>()` via `when(...)`;
+/// override the method directly instead.
 class TransactionMockDatabase extends MockDatabase {
   Transaction? _stubTxn;
 
-  /// Задаёт mock [Transaction] для передачи в callback транзакции.
   // ignore: use_setters_to_change_properties
   void stubTransaction(Transaction txn) => _stubTxn = txn;
 
@@ -90,8 +79,6 @@ class MockBatch extends Mock implements Batch {}
 class MockDatabaseService extends Mock implements DatabaseService {}
 
 class MockConfigService extends Mock implements ConfigService {}
-
-// ===== DAO =====
 
 class MockGameDao extends Mock implements GameDao {}
 
@@ -121,8 +108,6 @@ class MockTrackerDao extends Mock implements TrackerDao {}
 
 class MockTagDao extends Mock implements TagDao {}
 
-// ===== API =====
-
 class MockIgdbApi extends Mock implements IgdbApi {}
 
 class MockTmdbApi extends Mock implements TmdbApi {}
@@ -141,8 +126,6 @@ class MockKodiApi extends Mock implements KodiApi {}
 
 class MockKodiSyncService extends Mock implements KodiSyncService {}
 
-// ===== Services =====
-
 class MockSteamImportService extends Mock implements SteamImportService {}
 
 class MockImageCacheService extends Mock implements ImageCacheService {}
@@ -154,8 +137,6 @@ class MockRaToIgdbMapper extends Mock implements RaToIgdbMapper {}
 
 class MockProfileService extends Mock implements ProfileService {}
 
-// ===== Repositories =====
-
 class MockCollectionRepository extends Mock implements CollectionRepository {}
 
 class MockCanvasRepository extends Mock implements CanvasRepository {}
@@ -164,12 +145,6 @@ class MockGameRepository extends Mock implements GameRepository {}
 
 class MockWishlistRepository extends Mock implements WishlistRepository {}
 
-// ===== Providers / Notifiers =====
-
-/// Мок [CollectionItemsNotifier] с настраиваемым начальным состоянием.
-///
-/// Если [initialState] не передан, возвращает пустой список.
-/// Метод [emitState] позволяет менять state в ходе теста.
 class MockCollectionItemsNotifier extends CollectionItemsNotifier {
   MockCollectionItemsNotifier([this._initialState]);
 
@@ -188,13 +163,8 @@ class MockCollectionItemsNotifier extends CollectionItemsNotifier {
 
 class MockWidgetRef extends Mock implements WidgetRef {}
 
-// ===== Localization =====
-
 class MockS extends Mock implements S {}
 
-// ===== Gamepad =====
-
-/// Мок-источник событий геймпада с ручным контроллером.
 class MockGamepadEventSource implements GamepadEventSource {
   final StreamController<GamepadEvent> controller =
       StreamController<GamepadEvent>.broadcast();
@@ -207,9 +177,6 @@ class MockGamepadEventSource implements GamepadEventSource {
   void dispose() => controller.close();
 }
 
-// ===== Fakes =====
-
-/// Фейк [DatabaseException] c поддержкой isUniqueConstraintError.
 class FakeDatabaseException extends Fake implements DatabaseException {
   @override
   bool isUniqueConstraintError([String? field]) => true;

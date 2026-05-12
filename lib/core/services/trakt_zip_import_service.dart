@@ -1,5 +1,3 @@
-// Сервис импорта данных из оффлайн-выгрузки Trakt.tv (ZIP).
-
 import 'dart:convert';
 import 'dart:io';
 
@@ -22,13 +20,7 @@ import '../api/tmdb_api.dart';
 import '../database/database_service.dart';
 import 'import_service.dart';
 
-// ---------------------------------------------------------------------------
-// Публичные модели
-// ---------------------------------------------------------------------------
-
-/// Информация о содержимом Trakt ZIP-архива.
 class TraktZipInfo {
-  /// Создаёт экземпляр [TraktZipInfo].
   const TraktZipInfo({
     required this.isValid,
     this.username = '',
@@ -40,7 +32,6 @@ class TraktZipInfo {
     this.error,
   });
 
-  /// Невалидный результат с ошибкой.
   const TraktZipInfo.invalid(String message)
       : isValid = false,
         username = '',
@@ -51,31 +42,15 @@ class TraktZipInfo {
         watchlistCount = 0,
         error = message;
 
-  /// ZIP прошёл валидацию.
   final bool isValid;
-
-  /// Имя пользователя Trakt (из корневой папки).
   final String username;
-
-  /// Количество просмотренных фильмов.
   final int watchedMovieCount;
-
-  /// Количество просмотренных сериалов.
   final int watchedShowCount;
-
-  /// Количество оценённых фильмов.
   final int ratedMovieCount;
-
-  /// Количество оценённых сериалов.
   final int ratedShowCount;
-
-  /// Количество элементов в вишлисте.
   final int watchlistCount;
-
-  /// Ошибка валидации (если есть).
   final String? error;
 
-  /// Общее количество элементов.
   int get totalItems =>
       watchedMovieCount +
       watchedShowCount +
@@ -84,9 +59,7 @@ class TraktZipInfo {
       watchlistCount;
 }
 
-/// Параметры импорта, выбранные пользователем.
 class TraktImportOptions {
-  /// Создаёт экземпляр [TraktImportOptions].
   const TraktImportOptions({
     required this.zipPath,
     this.collectionId,
@@ -95,25 +68,17 @@ class TraktImportOptions {
     this.importWatchlist = true,
   });
 
-  /// Путь к ZIP-файлу.
   final String zipPath;
 
-  /// ID целевой коллекции (null = создать новую).
+  /// null = create new collection.
   final int? collectionId;
 
-  /// Импортировать просмотренные фильмы и сериалы.
   final bool importWatched;
-
-  /// Импортировать рейтинги.
   final bool importRatings;
-
-  /// Импортировать вишлист.
   final bool importWatchlist;
 }
 
-/// Результат импорта Trakt.
 class TraktImportResult {
-  /// Создаёт экземпляр [TraktImportResult].
   const TraktImportResult({
     required this.success,
     this.collection,
@@ -128,7 +93,6 @@ class TraktImportResult {
     this.error,
   });
 
-  /// Успешный результат.
   const TraktImportResult.success({
     required Collection this.collection,
     required this.itemsImported,
@@ -142,7 +106,6 @@ class TraktImportResult {
   })  : success = true,
         error = null;
 
-  /// Неудачный результат.
   const TraktImportResult.failure(String message)
       : success = false,
         collection = null,
@@ -156,43 +119,27 @@ class TraktImportResult {
         errors = const <String>[],
         error = message;
 
-  /// Импорт завершился успешно.
   final bool success;
-
-  /// Коллекция, в которую был выполнен импорт.
   final Collection? collection;
-
-  /// Количество добавленных элементов.
   final int itemsImported;
 
-  /// Количество пропущенных элементов (нет TMDB ID / ошибка TMDB).
+  /// Skipped due to missing TMDB ID or TMDB fetch error.
   final int itemsSkipped;
 
-  /// Количество обновлённых элементов (конфликт-резолюция).
+  /// Updated via conflict-resolution.
   final int itemsUpdated;
 
-  /// Количество элементов, добавленных в вишлист.
   final int wishlistItemsAdded;
-
-  /// Количество импортированных элементов по типу медиа.
   final Map<MediaType, int> importedByType;
-
-  /// Количество добавленных в вишлист по типу медиа.
   final Map<MediaType, int> wishlistedByType;
-
-  /// Количество обновлённых элементов по типу медиа.
   final Map<MediaType, int> updatedByType;
 
-  /// Ошибки по отдельным элементам.
+  /// Per-item errors (non-fatal).
   final List<String> errors;
 
-  /// Фатальная ошибка (если импорт не удался).
+  /// Fatal error if import failed.
   final String? error;
 }
-
-// ---------------------------------------------------------------------------
-// Приватные модели (парсинг Trakt JSON)
-// ---------------------------------------------------------------------------
 
 class _TraktMovie {
   const _TraktMovie({
@@ -268,11 +215,6 @@ class _TraktWatchlistEntry {
   final String type; // 'movie' | 'show'
 }
 
-// ---------------------------------------------------------------------------
-// Провайдер
-// ---------------------------------------------------------------------------
-
-/// Провайдер сервиса импорта Trakt.
 final Provider<TraktZipImportService> traktZipImportServiceProvider =
     Provider<TraktZipImportService>((Ref ref) {
   return TraktZipImportService(
@@ -283,16 +225,7 @@ final Provider<TraktZipImportService> traktZipImportServiceProvider =
   );
 });
 
-// ---------------------------------------------------------------------------
-// Сервис
-// ---------------------------------------------------------------------------
-
-/// Сервис для импорта данных из оффлайн-выгрузки Trakt.tv.
-///
-/// Читает ZIP-архив, парсит JSON файлы, загружает медиа из TMDB API,
-/// добавляет элементы в коллекцию с конфликт-резолюцией.
 class TraktZipImportService {
-  /// Создаёт экземпляр [TraktZipImportService].
   TraktZipImportService({
     required TmdbApi tmdbApi,
     required CollectionRepository repository,
@@ -311,13 +244,6 @@ class TraktZipImportService {
   final DatabaseService _database;
   final WishlistRepository _wishlistRepository;
 
-  // ---------------------------------------------------------------------------
-  // Публичные методы
-  // ---------------------------------------------------------------------------
-
-  /// Валидирует ZIP-архив.
-  ///
-  /// Проверяет структуру, находит username, считает элементы.
   Future<TraktZipInfo> validateZip(String zipPath) async {
     try {
       final ({Map<String, String> files, String username}) archive =
@@ -401,13 +327,11 @@ class TraktZipImportService {
     }
   }
 
-  /// Импортирует данные из Trakt ZIP-архива.
   Future<TraktImportResult> importFromZip({
     required TraktImportOptions options,
     ImportProgressCallback? onProgress,
   }) async {
     try {
-      // 1. Чтение ZIP
       onProgress?.call(const ImportProgress(
         stage: ImportStage.reading,
         current: 0,
@@ -424,7 +348,6 @@ class TraktZipImportService {
       final Map<String, String> files = archive.files;
       final String username = archive.username;
 
-      // 2. Парсинг JSON
       final List<_TraktMovie> watchedMovies = options.importWatched
           ? _parseWatchedMovies(_getFile(
               files, 'watched/watched-movies.json', 'watched-movies.json'))
@@ -455,7 +378,7 @@ class TraktZipImportService {
                   files, 'lists/watchlist.json', 'lists-watchlist.json'))
               : <_TraktWatchlistEntry>[];
 
-      // Собираем уникальные TMDB ID
+      // Dedup TMDB IDs across all sections to fetch each from TMDB once.
       final Set<int> movieTmdbIds = <int>{};
       final Set<int> showTmdbIds = <int>{};
 
@@ -481,7 +404,6 @@ class TraktZipImportService {
         }
       }
 
-      // 3. Загрузка из TMDB + определение анимации
       final Map<int, Movie> fetchedMovies = <int, Movie>{};
       final Map<int, TvShow> fetchedShows = <int, TvShow>{};
       final Map<int, bool> movieIsAnimation = <int, bool>{};
@@ -507,7 +429,7 @@ class TraktZipImportService {
             movieIsAnimation[tmdbId] = _isAnimationByGenres(movie.genres);
           }
         } on Exception {
-          // Не удалось загрузить — пропускаем
+          // Partial failure: skip this item, continue with the rest.
         }
         fetchProgress++;
       }
@@ -528,12 +450,11 @@ class TraktZipImportService {
             showIsAnimation[tmdbId] = _isAnimationByGenres(tvShow.genres);
           }
         } on Exception {
-          // Не удалось загрузить — пропускаем
+          // Partial failure: skip this item, continue with the rest.
         }
         fetchProgress++;
       }
 
-      // 4. Создать или использовать коллекцию
       onProgress?.call(const ImportProgress(
         stage: ImportStage.creatingCollection,
         current: 0,
@@ -560,12 +481,10 @@ class TraktZipImportService {
         collectionId = collection.id;
       }
 
-      // 5. Импорт элементов
       int itemsImported = 0;
       int itemsSkipped = 0;
       int itemsUpdated = 0;
 
-      // Per-type tracking
       final Map<MediaType, int> importedByType = <MediaType, int>{};
       final Map<MediaType, int> wishlistedByType = <MediaType, int>{};
       final Map<MediaType, int> updatedByType = <MediaType, int>{};
@@ -573,7 +492,6 @@ class TraktZipImportService {
       final int totalItems = watchedMovies.length + watchedShows.length;
       int itemProgress = 0;
 
-      // 5a. Watched movies
       for (final _TraktMovie traktMovie in watchedMovies) {
         onProgress?.call(ImportProgress(
           stage: ImportStage.addingItems,
@@ -640,7 +558,6 @@ class TraktZipImportService {
         itemProgress++;
       }
 
-      // 5b. Watched shows
       for (final _TraktShow traktShow in watchedShows) {
         onProgress?.call(ImportProgress(
           stage: ImportStage.addingItems,
@@ -711,7 +628,6 @@ class TraktZipImportService {
         itemProgress++;
       }
 
-      // 6. Импорт эпизодов
       if (options.importWatched && watchedShows.isNotEmpty) {
         int episodeProgress = 0;
         int totalEpisodes = 0;
@@ -745,7 +661,6 @@ class TraktZipImportService {
         }
       }
 
-      // 7. Применение рейтингов
       if (options.importRatings) {
         final List<_TraktRating> allRatings = <_TraktRating>[
           ...movieRatings,
@@ -772,7 +687,6 @@ class TraktZipImportService {
             tmdbId: rating.tmdbId!,
           );
 
-          // Ищем существующий элемент
           final CollectionItem? existing = await _repository.findItem(
             collectionId: collectionId,
             mediaType: resolved.mediaType,
@@ -780,7 +694,7 @@ class TraktZipImportService {
           );
 
           if (existing != null) {
-            // Обновляем рейтинг только если локальный не установлен
+            // Only set rating if local one is unset — never overwrite user input.
             if (existing.userRating == null) {
               await _database.updateItemUserRating(
                 existing.id,
@@ -791,8 +705,7 @@ class TraktZipImportService {
                   (updatedByType[resolved.mediaType] ?? 0) + 1;
             }
           } else {
-            // Элемент не существует — нужно ли добавлять?
-            // Если данные TMDB есть — добавляем с рейтингом
+            // No existing item: only add if TMDB data was fetched.
             final bool hasData = rating.type == 'movie'
                 ? fetchedMovies.containsKey(rating.tmdbId)
                 : fetchedShows.containsKey(rating.tmdbId);
@@ -818,7 +731,6 @@ class TraktZipImportService {
         }
       }
 
-      // 8. Импорт вишлиста
       int wishlistItemsAdded = 0;
 
       if (options.importWatchlist && watchlistEntries.isNotEmpty) {
@@ -841,7 +753,6 @@ class TraktZipImportService {
               tmdbId: entry.tmdbId!,
             );
 
-            // Проверяем, нет ли уже в коллекции
             final CollectionItem? existing = await _repository.findItem(
               collectionId: collectionId,
               mediaType: resolved.mediaType,
@@ -869,12 +780,11 @@ class TraktZipImportService {
                 }
               }
             } else {
-              // Элемент уже есть — пропускаем
               continue;
             }
           }
 
-          // Фоллбэк: добавляем в Wishlist как текст (с дедупликацией)
+          // Fallback: add to text Wishlist with title-based dedup.
           final MediaType hint = entry.type == 'movie'
               ? MediaType.movie
               : MediaType.tvShow;
@@ -891,7 +801,6 @@ class TraktZipImportService {
         }
       }
 
-      // 9. Готово
       onProgress?.call(const ImportProgress(
         stage: ImportStage.completed,
         current: 1,
@@ -918,25 +827,20 @@ class TraktZipImportService {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // Приватные методы
-  // ---------------------------------------------------------------------------
-
-  /// Читает ZIP-архив: извлекает JSON файлы и username за один проход.
+  /// Reads JSON files and username in a single pass.
   ({Map<String, String> files, String username}) _readArchive(String zipPath) {
     final List<int> bytes = File(zipPath).readAsBytesSync();
     final Archive archive = ZipDecoder().decodeBytes(bytes);
     final Map<String, String> files = <String, String>{};
     String username = 'Unknown';
 
-    // Автодетект формата за один проход: новый формат имеет JSON в корне
-    // (глубина 1), старый — в подпапке username/ (глубина >= 2).
+    // Format autodetect: new format has JSON at root (depth 1); old format
+    // nests them under username/ (depth >= 2). Decide from the first JSON.
     bool? isFlat;
     for (final ArchiveFile file in archive) {
       if (!file.isFile || !file.name.endsWith('.json')) continue;
       final List<String> parts = file.name.split('/');
 
-      // Определяем формат по первому JSON файлу
       isFlat ??= parts.length == 1;
 
       final String content = utf8.decode(file.content as List<int>);
@@ -956,26 +860,25 @@ class TraktZipImportService {
       }
     }
 
-    // Новый формат: username из user-profile.json
+    // New format: username comes from user-profile.json instead of folder name.
     if ((isFlat ?? false) && files.containsKey('user-profile.json')) {
       try {
         final Map<String, dynamic> profile =
             jsonDecode(files['user-profile.json']!) as Map<String, dynamic>;
         username = (profile['username'] as String?) ?? username;
       } on FormatException {
-        // Невалидный JSON — оставляем Unknown
+        // Invalid JSON — keep 'Unknown'.
       }
     }
 
     return (files: files, username: username);
   }
 
-  /// Возвращает содержимое файла, пробуя старый и новый ключи.
+  /// Tries both old (nested) and new (flat) key layouts.
   String? _getFile(Map<String, String> files, String oldKey, String newKey) {
     return files[oldKey] ?? files[newKey];
   }
 
-  /// Парсит watched-movies.json.
   List<_TraktMovie> _parseWatchedMovies(String? json) {
     if (json == null || json.isEmpty) return <_TraktMovie>[];
 
@@ -1009,7 +912,6 @@ class TraktZipImportService {
     return result;
   }
 
-  /// Парсит watched-shows.json.
   List<_TraktShow> _parseWatchedShows(String? json) {
     if (json == null || json.isEmpty) return <_TraktShow>[];
 
@@ -1081,7 +983,6 @@ class TraktZipImportService {
     return result;
   }
 
-  /// Парсит ratings-movies.json или ratings-shows.json.
   List<_TraktRating> _parseRatings(String? json, String type) {
     if (json == null || json.isEmpty) return <_TraktRating>[];
 
@@ -1112,7 +1013,6 @@ class TraktZipImportService {
     return result;
   }
 
-  /// Парсит watchlist.json.
   List<_TraktWatchlistEntry> _parseWatchlist(String? json) {
     if (json == null || json.isEmpty) return <_TraktWatchlistEntry>[];
 
@@ -1142,7 +1042,6 @@ class TraktZipImportService {
     return result;
   }
 
-  /// Определяет, является ли элемент анимацией по жанрам.
   static bool _isAnimationByGenres(List<String>? genres) {
     if (genres == null || genres.isEmpty) return false;
     return genres.any(
@@ -1150,7 +1049,6 @@ class TraktZipImportService {
     );
   }
 
-  /// Определяет MediaType и platformId для фильма/сериала с учётом анимации.
   static ({MediaType mediaType, int? platformId}) _resolveMediaType({
     required bool isMovie,
     required Map<int, bool> movieIsAnimation,
@@ -1173,10 +1071,9 @@ class TraktZipImportService {
     );
   }
 
-  /// Определяет статус сериала по просмотренным эпизодам.
   ItemStatus _resolveShowStatus(_TraktShow show) {
     if (show.seasons.isEmpty) {
-      // Нет данных по эпизодам, но есть plays — считаем completed
+      // No episode data but show appears in watched list → treat as completed.
       return ItemStatus.completed;
     }
 
@@ -1190,13 +1087,11 @@ class TraktZipImportService {
 
     if (!hasAnyEpisode) return ItemStatus.completed;
 
-    // Если есть хотя бы один эпизод — считаем inProgress
-    // (точное определение completed требует знания общего числа эпизодов
-    // шоу, которое мы не можем надёжно получить из Trakt export)
+    // Some episodes watched → inProgress. Cannot detect "completed" reliably
+    // since Trakt export doesn't include total episode count for the show.
     return ItemStatus.inProgress;
   }
 
-  /// Импортирует или обновляет элемент с конфликт-резолюцией.
   Future<_ImportItemResult> _importOrUpdateItem({
     required int collectionId,
     required MediaType mediaType,
@@ -1205,7 +1100,6 @@ class TraktZipImportService {
     required ItemStatus status,
     DateTime? completedAt,
   }) async {
-    // Проверяем, существует ли элемент
     final CollectionItem? existing = await _repository.findItem(
       collectionId: collectionId,
       mediaType: mediaType,
@@ -1213,7 +1107,6 @@ class TraktZipImportService {
     );
 
     if (existing == null) {
-      // Новый элемент
       final int? itemId = await _repository.addItem(
         collectionId: collectionId,
         mediaType: mediaType,
@@ -1224,7 +1117,6 @@ class TraktZipImportService {
 
       if (itemId == null) return _ImportItemResult.skipped;
 
-      // Устанавливаем даты
       if (completedAt != null) {
         await _database.updateItemActivityDates(
           itemId,
@@ -1236,10 +1128,9 @@ class TraktZipImportService {
       return _ImportItemResult.added;
     }
 
-    // Конфликт-резолюция
     bool updated = false;
 
-    // Статус: повышаем через общее правило (защита dropped + не понижаем).
+    // Status merge protects `dropped` and never downgrades existing status.
     final ItemStatus? mergedStatus = mergeExternalStatus(
       currentStatus: existing.status,
       externalStatus: status,
@@ -1253,7 +1144,7 @@ class TraktZipImportService {
       updated = true;
     }
 
-    // completedAt: устанавливаем если локальный null
+    // Set completedAt only if local is null — never overwrite existing dates.
     if (completedAt != null && existing.completedAt == null) {
       await _database.updateItemActivityDates(
         existing.id,
@@ -1266,16 +1157,9 @@ class TraktZipImportService {
   }
 }
 
-/// Результат импорта отдельного элемента.
 enum _ImportItemResult { added, updated, skipped }
 
-// ---------------------------------------------------------------------------
-// Extension: toUniversal()
-// ---------------------------------------------------------------------------
-
-/// Конвертация [TraktImportResult] в [UniversalImportResult].
 extension TraktImportResultToUniversal on TraktImportResult {
-  /// Преобразует в универсальный результат.
   UniversalImportResult toUniversal() {
     if (!success) {
       return UniversalImportResult.failure(

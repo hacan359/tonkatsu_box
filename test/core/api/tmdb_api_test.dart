@@ -1,5 +1,3 @@
-// Тесты для TMDB API клиента.
-
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -21,7 +19,7 @@ void main() {
   setUp(() {
     mockDio = MockDio();
     sut = TmdbApi(dio: mockDio);
-    // Предустанавливаем пустой кэш жанров, чтобы не было лишних запросов к API.
+    // Pre-seed empty genre cache to avoid incidental API calls.
     sut.setGenreCacheForTesting(
       movieGenres: <int, String>{},
       tvGenres: <int, String>{},
@@ -31,8 +29,6 @@ void main() {
   tearDown(() {
     sut.dispose();
   });
-
-  // ===== Вспомогательные данные =====
 
   Map<String, dynamic> createMovieJson({
     int id = 550,
@@ -142,8 +138,6 @@ void main() {
     };
   }
 
-  // ===== TmdbApiException =====
-
   group('TmdbApiException', () {
     test('должен создать с сообщением', () {
       const TmdbApiException exception = TmdbApiException('Test error');
@@ -184,8 +178,6 @@ void main() {
     });
   });
 
-  // ===== TmdbGenre =====
-
   group('TmdbGenre', () {
     test('fromJson должен создать жанр из JSON', () {
       final Map<String, dynamic> json = <String, dynamic>{
@@ -212,17 +204,11 @@ void main() {
     });
   });
 
-  // ===== TmdbApi =====
-
   group('TmdbApi', () {
-    // ----- setApiKey / clearApiKey -----
-
     group('setApiKey', () {
       test('должен установить API ключ', () {
         sut.setApiKey(testApiKey);
 
-        // Проверяем что после установки ключа можно вызвать метод
-        // без исключения о недостающем ключе
         when(() => mockDio.get<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -256,8 +242,6 @@ void main() {
         );
       });
     });
-
-    // ----- _ensureApiKey -----
 
     group('_ensureApiKey', () {
       test('должен выбросить исключение если ключ не установлен', () {
@@ -371,8 +355,6 @@ void main() {
       });
     });
 
-    // ----- validateApiKey -----
-
     group('validateApiKey', () {
       test('должен вернуть true при валидном ключе', () async {
         when(() => mockDio.get<dynamic>(
@@ -420,8 +402,6 @@ void main() {
         expect(result, isFalse);
       });
     });
-
-    // ----- searchMovies -----
 
     group('searchMovies', () {
       setUp(() {
@@ -640,8 +620,6 @@ void main() {
       });
     });
 
-    // ----- getMovie -----
-
     group('getMovie', () {
       setUp(() {
         sut.setApiKey(testApiKey);
@@ -746,8 +724,6 @@ void main() {
       });
     });
 
-    // ----- getPopularMovies -----
-
     group('getPopularMovies', () {
       setUp(() {
         sut.setApiKey(testApiKey);
@@ -837,8 +813,6 @@ void main() {
         );
       });
     });
-
-    // ----- searchTvShows -----
 
     group('searchTvShows', () {
       setUp(() {
@@ -978,8 +952,6 @@ void main() {
       });
     });
 
-    // ----- getTvShow -----
-
     group('getTvShow', () {
       setUp(() {
         sut.setApiKey(testApiKey);
@@ -1061,8 +1033,6 @@ void main() {
         );
       });
     });
-
-    // ----- getTvSeasons -----
 
     group('getTvSeasons', () {
       setUp(() {
@@ -1174,8 +1144,6 @@ void main() {
         );
       });
     });
-
-    // ----- getSeasonEpisodes -----
 
     group('getSeasonEpisodes', () {
       setUp(() {
@@ -1309,8 +1277,6 @@ void main() {
       });
     });
 
-    // ----- getPopularTvShows -----
-
     group('getPopularTvShows', () {
       setUp(() {
         sut.setApiKey(testApiKey);
@@ -1399,8 +1365,6 @@ void main() {
       });
     });
 
-    // ----- multiSearch -----
-
     group('multiSearch', () {
       setUp(() {
         sut.setApiKey(testApiKey);
@@ -1454,13 +1418,11 @@ void main() {
 
         expect(result, hasLength(2));
 
-        // Первый результат - фильм
         expect(result[0].mediaType, equals(TmdbMediaType.movie));
         expect(result[0].movie, isNotNull);
         expect(result[0].movie!.tmdbId, equals(550));
         expect(result[0].tvShow, isNull);
 
-        // Второй результат - сериал
         expect(result[1].mediaType, equals(TmdbMediaType.tv));
         expect(result[1].tvShow, isNotNull);
         expect(result[1].tvShow!.tmdbId, equals(1396));
@@ -1557,8 +1519,6 @@ void main() {
       });
     });
 
-    // ----- getMovieGenres -----
-
     group('getMovieGenres', () {
       setUp(() {
         sut.setApiKey(testApiKey);
@@ -1646,8 +1606,6 @@ void main() {
         );
       });
     });
-
-    // ----- getTvGenres -----
 
     group('getTvGenres', () {
       setUp(() {
@@ -1737,8 +1695,6 @@ void main() {
       });
     });
 
-    // ----- _handleDioException -----
-
     group('_handleDioException через публичные методы', () {
       setUp(() {
         sut.setApiKey(testApiKey);
@@ -1756,7 +1712,7 @@ void main() {
           requestOptions: RequestOptions(),
         ));
 
-        // searchMovies не ловит 404 как getMovie, поэтому должен выбросить
+        // searchMovies does not swallow 404 like getMovie; rethrows as exception.
         expect(
           () => sut.searchMovies('test'),
           throwsA(isA<TmdbApiException>().having(
@@ -1866,8 +1822,6 @@ void main() {
       });
     });
 
-    // ----- dispose -----
-
     group('dispose', () {
       test('должен закрыть Dio клиент', () {
         when(() => mockDio.close()).thenReturn(null);
@@ -1877,8 +1831,6 @@ void main() {
         verify(() => mockDio.close()).called(1);
       });
     });
-
-    // ----- getMovieRecommendations -----
 
     group('getMovieRecommendations', () {
       setUp(() {
@@ -2028,8 +1980,6 @@ void main() {
       });
     });
 
-    // ----- getSimilarMovies -----
-
     group('getSimilarMovies', () {
       setUp(() {
         sut.setApiKey(testApiKey);
@@ -2152,8 +2102,6 @@ void main() {
         );
       });
     });
-
-    // ----- getTvRecommendations -----
 
     group('getTvRecommendations', () {
       setUp(() {
@@ -2303,8 +2251,6 @@ void main() {
       });
     });
 
-    // ----- getSimilarTvShows -----
-
     group('getSimilarTvShows', () {
       setUp(() {
         sut.setApiKey(testApiKey);
@@ -2427,8 +2373,6 @@ void main() {
         );
       });
     });
-
-    // ----- getTrendingMovies -----
 
     group('getTrendingMovies', () {
       setUp(() {
@@ -2602,8 +2546,6 @@ void main() {
       });
     });
 
-    // ----- getTrendingTvShows -----
-
     group('getTrendingTvShows', () {
       setUp(() {
         sut.setApiKey(testApiKey);
@@ -2751,8 +2693,6 @@ void main() {
       });
     });
 
-    // ----- getTopRatedMovies -----
-
     group('getTopRatedMovies', () {
       setUp(() {
         sut.setApiKey(testApiKey);
@@ -2876,8 +2816,6 @@ void main() {
       });
     });
 
-    // ----- getUpcomingMovies -----
-
     group('getUpcomingMovies', () {
       setUp(() {
         sut.setApiKey(testApiKey);
@@ -2996,8 +2934,6 @@ void main() {
       });
     });
 
-    // ----- getNowPlayingMovies -----
-
     group('getNowPlayingMovies', () {
       setUp(() {
         sut.setApiKey(testApiKey);
@@ -3115,8 +3051,6 @@ void main() {
         );
       });
     });
-
-    // ----- getTopRatedTvShows -----
 
     group('getTopRatedTvShows', () {
       setUp(() {
@@ -3241,8 +3175,6 @@ void main() {
       });
     });
 
-    // ----- getOnTheAirTvShows -----
-
     group('getOnTheAirTvShows', () {
       setUp(() {
         sut.setApiKey(testApiKey);
@@ -3360,8 +3292,6 @@ void main() {
         );
       });
     });
-
-    // ----- discoverMovies -----
 
     group('discoverMovies', () {
       setUp(() {
@@ -3686,8 +3616,6 @@ void main() {
       });
     });
 
-    // ----- discoverTvShows -----
-
     group('discoverTvShows', () {
       setUp(() {
         sut.setApiKey(testApiKey);
@@ -4011,8 +3939,6 @@ void main() {
       });
     });
 
-    // ----- getMovieReviews -----
-
     group('getMovieReviews', () {
       setUp(() {
         sut.setApiKey(testApiKey);
@@ -4191,8 +4117,6 @@ void main() {
       });
     });
 
-    // ----- getTvReviews -----
-
     group('getTvReviews', () {
       setUp(() {
         sut.setApiKey(testApiKey);
@@ -4367,8 +4291,6 @@ void main() {
       });
     });
 
-    // ----- setLanguage -----
-
     group('setLanguage', () {
       test('должен изменить язык', () {
         expect(sut.language, equals('ru-RU'));
@@ -4408,8 +4330,6 @@ void main() {
         expect(captured['language'], equals('en-US'));
       });
     });
-
-    // ----- Конструктор -----
 
     group('конструктор', () {
       test('должен принимать кастомный language', () {

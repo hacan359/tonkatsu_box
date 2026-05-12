@@ -86,7 +86,6 @@ void main() {
 
         await tester.pumpWidget(buildWidget(item));
 
-        // Пустой Text виджет существует
         expect(find.byType(Text), findsOneWidget);
       },
     );

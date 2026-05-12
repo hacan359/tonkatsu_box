@@ -1,8 +1,5 @@
-// Тесты для модели ItemStatus.
-// Фокус: enum-контракт, сериализация (value / fromString), приоритеты
-// сортировки, инвариант «все статусы визуально различимы» (уникальные
-// цвета и иконки). Конкретные значения цветов / иконок не проверяем —
-// это design decisions.
+// Asserts enum invariants: statuses have unique colors and icons.
+// Concrete color/icon values are not checked (design decisions).
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -1,5 +1,3 @@
-// Тесты для MiniMarkdownText.
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -22,7 +20,6 @@ void main() {
     );
   }
 
-  /// Извлекает [TextSpan] из виджета [Text.rich] найденного в дереве.
   TextSpan findRootTextSpan(WidgetTester tester) {
     final RichText richText = tester.widget<RichText>(
       find.byType(RichText).first,
@@ -30,7 +27,6 @@ void main() {
     return richText.text as TextSpan;
   }
 
-  /// Находит [TextSpan] по тексту в дереве span-ов.
   TextSpan? findSpanByText(TextSpan root, String text) {
     if (root.text == text) return root;
     if (root.children == null) return null;
@@ -208,21 +204,17 @@ void main() {
 
         final TextSpan root = findRootTextSpan(tester);
 
-        // Обычный текст
         expect(findSpanByText(root, 'This is '), isNotNull);
         expect(findSpanByText(root, ' and '), isNotNull);
 
-        // Bold
         final TextSpan? boldSpan = findSpanByText(root, 'bold');
         expect(boldSpan, isNotNull);
         expect(boldSpan!.style?.fontWeight, FontWeight.w700);
 
-        // Italic
         final TextSpan? italicSpan = findSpanByText(root, 'italic');
         expect(italicSpan, isNotNull);
         expect(italicSpan!.style?.fontStyle, FontStyle.italic);
 
-        // Link
         final TextSpan? linkSpan = findSpanByText(root, 'link');
         expect(linkSpan, isNotNull);
         expect(linkSpan!.style?.color, AppColors.brand);

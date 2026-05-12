@@ -1,5 +1,3 @@
-// Unit-тесты для CollectionTableView.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/collections/widgets/collection_table_view.dart';
@@ -12,8 +10,6 @@ import '../../../helpers/test_helpers.dart';
 
 void main() {
   setUpAll(registerAllFallbacks);
-
-  // -- Общие тестовые данные --
 
   final CollectionItem gameAlpha = createTestCollectionItem(
     id: 1,
@@ -59,8 +55,6 @@ void main() {
   List<CollectionItem> threeItems() =>
       <CollectionItem>[gameAlpha, movieBeta, tvGamma];
 
-  // -- Хелпер для pump --
-
   Future<void> pumpTableView(
     WidgetTester tester, {
     required List<CollectionItem> items,
@@ -77,12 +71,8 @@ void main() {
     );
   }
 
-  /// Находит InkWell заголовка таблицы по тексту колонки.
-  ///
-  /// Для стабильного поиска при фильтрации (текст заголовка меняется)
-  /// используем Key-based fallback.
+  // Header text changes after filtering, so we resolve via TableColumn Key.
   Finder headerFinder(String label) {
-    // Имя колонки → TableColumn для Key-based поиска
     const Map<String, TableColumn> columnMap = <String, TableColumn>{
       'Name': TableColumn.name,
       'Type': TableColumn.type,
@@ -107,10 +97,6 @@ void main() {
     );
   }
 
-  // =========================================================================
-  // TableColumn enum
-  // =========================================================================
-
   group('TableColumn', () {
     test('should have 8 values', () {
       expect(TableColumn.values.length, 8);
@@ -133,15 +119,7 @@ void main() {
     });
   });
 
-  // =========================================================================
-  // CollectionTableView
-  // =========================================================================
-
   group('CollectionTableView', () {
-    // -----------------------------------------------------------------------
-    // Rendering
-    // -----------------------------------------------------------------------
-
     group('rendering', () {
       testWidgets('should render all item names', (WidgetTester tester) async {
         await pumpTableView(tester, items: threeItems());
@@ -207,10 +185,6 @@ void main() {
       });
     });
 
-    // -----------------------------------------------------------------------
-    // Rating display
-    // -----------------------------------------------------------------------
-
     group('rating display', () {
       testWidgets('should show rating value when present',
           (WidgetTester tester) async {
@@ -227,10 +201,6 @@ void main() {
         expect(find.byIcon(Icons.star_rounded), findsNothing);
       });
     });
-
-    // -----------------------------------------------------------------------
-    // Tap callback
-    // -----------------------------------------------------------------------
 
     group('onItemTap', () {
       testWidgets('should fire callback with correct item when row tapped',
@@ -251,12 +221,7 @@ void main() {
       });
     });
 
-    // -----------------------------------------------------------------------
-    // Sorting
-    // -----------------------------------------------------------------------
-
     group('sorting', () {
-      /// Извлекает имена элементов в порядке отображения.
       List<String> itemNamesInOrder(WidgetTester tester) {
         final Iterable<Text> textWidgets = tester
             .widgetList<Text>(find.byType(Text))

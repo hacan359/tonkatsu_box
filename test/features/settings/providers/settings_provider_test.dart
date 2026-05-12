@@ -1,5 +1,3 @@
-// Тесты для SettingsNotifier — управление настройками IGDB, SteamGridDB, TMDB.
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -27,10 +25,9 @@ void main() {
     mockTmdbApi = MockTmdbApi();
     mockDbService = MockDatabaseService();
 
-    // По умолчанию getPlatformCount возвращает 0
     when(() => mockDbService.getPlatformCount()).thenAnswer((_) async => 0);
 
-    // По умолчанию getAccessToken бросает ошибку (нет реального API)
+    // No real API in tests; force the OAuth call to fail.
     when(() => mockIgdbApi.getAccessToken(
           clientId: any(named: 'clientId'),
           clientSecret: any(named: 'clientSecret'),
@@ -64,7 +61,7 @@ void main() {
     });
 
     test('isIgdbKeyBuiltIn false когда credentials есть но built-in нет', () {
-      // В тестах ApiDefaults.hasIgdbKey == false
+      // ApiDefaults.hasIgdbKey is false in tests.
       const SettingsState state = SettingsState(
         clientId: 'user_cid',
         clientSecret: 'user_csecret',
@@ -127,8 +124,7 @@ void main() {
             container.read(settingsNotifierProvider);
 
         expect(state.tmdbApiKey, equals('saved_tmdb_key'));
-        // API ключ устанавливается в провайдере через apiKeysProvider,
-        // а не в _loadFromPrefs — поэтому setApiKey не вызывается.
+        // API key is set via apiKeysProvider, not _loadFromPrefs.
         verifyNever(() => mockTmdbApi.setApiKey(any()));
       });
 
@@ -152,8 +148,7 @@ void main() {
         final SettingsState state =
             container.read(settingsNotifierProvider);
 
-        // Пустая строка в prefs == нет пользовательского ключа →
-        // fallback на built-in (в тестах built-in отсутствует) → null
+        // Empty string in prefs falls back to built-in (absent in tests).
         expect(state.tmdbApiKey, isNull);
         verifyNever(() => mockTmdbApi.setApiKey(any()));
       });
@@ -169,7 +164,6 @@ void main() {
             container.read(settingsNotifierProvider);
 
         expect(state.steamGridDbApiKey, equals('saved_sgdb_key'));
-        // API ключ устанавливается в провайдере через apiKeysProvider
         verifyNever(() => mockSteamGridDbApi.setApiKey(any()));
       });
 
@@ -199,8 +193,6 @@ void main() {
         expect(state.steamGridDbApiKey, equals('sgdb_key'));
         expect(state.tmdbApiKey, equals('tmdb_key'));
 
-        // API ключи устанавливаются через apiKeysProvider в провайдерах,
-        // а не через _loadFromPrefs
         verifyNever(() => mockIgdbApi.setCredentials(
               clientId: any(named: 'clientId'),
               accessToken: any(named: 'accessToken'),
@@ -360,7 +352,6 @@ void main() {
         final SettingsNotifier notifier =
             container.read(settingsNotifierProvider.notifier);
 
-        // Проверяем, что данные загружены
         SettingsState state = container.read(settingsNotifierProvider);
         expect(state.tmdbApiKey, equals('tmdb_key'));
         expect(state.steamGridDbApiKey, equals('sgdb_key'));
@@ -379,7 +370,6 @@ void main() {
         expect(state.platformCount, equals(0));
         expect(state.connectionStatus, equals(ConnectionStatus.unknown));
 
-        // Проверяем, что prefs очищены
         expect(prefs.getString('igdb_client_id'), isNull);
         expect(prefs.getString('igdb_client_secret'), isNull);
         expect(prefs.getString('igdb_access_token'), isNull);
@@ -388,7 +378,6 @@ void main() {
         expect(prefs.getString('steamgriddb_api_key'), isNull);
         expect(prefs.getString('tmdb_api_key'), isNull);
 
-        // Проверяем, что API клиенты очищены
         verify(() => mockIgdbApi.clearCredentials()).called(1);
         verify(() => mockSteamGridDbApi.clearApiKey()).called(1);
         verify(() => mockTmdbApi.clearApiKey()).called(1);
@@ -410,7 +399,6 @@ void main() {
         final SettingsState state =
             container.read(settingsNotifierProvider);
 
-        // Должен быть эквивалентен SettingsState() по умолчанию
         expect(state.isLoading, isFalse);
         expect(state.errorMessage, isNull);
         expect(state.hasTmdbKey, isFalse);
@@ -562,9 +550,8 @@ void main() {
     });
 
     group('built-in API key fallback', () {
-      // ПРИМЕЧАНИЕ: В тестах String.fromEnvironment всегда возвращает '',
-      // поэтому ApiDefaults.hasTmdbKey == false.
-      // Тесты проверяют fallback-цепочку: user → built-in → null.
+      // In tests String.fromEnvironment returns '' so ApiDefaults.hasTmdbKey
+      // is false; the fallback chain is user → built-in → null.
 
       test('при отсутствии user key и built-in key — tmdbApiKey == null',
           () async {
@@ -603,8 +590,6 @@ void main() {
         final SettingsState state =
             container.read(settingsNotifierProvider);
 
-        // В тестах ApiDefaults.hasTmdbKey == false, поэтому isTmdbKeyBuiltIn
-        // всегда false
         expect(state.isTmdbKeyBuiltIn, isFalse);
       });
 
@@ -647,7 +632,6 @@ void main() {
         final SettingsState state =
             container.read(settingsNotifierProvider);
 
-        // В тестах ApiDefaults.hasIgdbKey == false
         expect(state.isIgdbKeyBuiltIn, isFalse);
         expect(state.hasCredentials, isTrue);
         expect(state.clientId, equals('user_cid'));
@@ -661,7 +645,6 @@ void main() {
         final SettingsState state =
             container.read(settingsNotifierProvider);
 
-        // В тестах ApiDefaults.hasIgdbKey == false, нет user key → null
         expect(state.clientId, isNull);
         expect(state.clientSecret, isNull);
         expect(state.hasCredentials, isFalse);
@@ -721,7 +704,6 @@ void main() {
 
         await notifier.resetIgdbCredentialsToDefault();
 
-        // В тестах ApiDefaults.hasIgdbKey == false
         verify(() => mockIgdbApi.clearCredentials()).called(1);
 
         final SettingsState state =
@@ -761,7 +743,6 @@ void main() {
 
         await notifier.resetTmdbApiKeyToDefault();
 
-        // В тестах ApiDefaults.hasTmdbKey == false
         verify(() => mockTmdbApi.clearApiKey()).called(1);
 
         final SettingsState state =

@@ -1,7 +1,3 @@
-// Smoke-тесты для ShimmerLoading виджетов.
-// Shimmer — чисто визуальный компонент, поэтому проверяем только что
-// виджет рендерится без исключений и анимация не крашит таймер.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/l10n/app_localizations.dart';

@@ -1,4 +1,4 @@
-// Сервис импорта аниме/манги из XML-выгрузки MyAnimeList.
+// Imports anime/manga from MyAnimeList XML export.
 
 import 'dart:io';
 
@@ -18,31 +18,27 @@ import '../../shared/models/wishlist_item.dart';
 import '../api/anilist_api.dart';
 import '../database/database_service.dart';
 
-// ---------------------------------------------------------------------------
-// Публичные модели
-// ---------------------------------------------------------------------------
-
-/// Этап импорта MyAnimeList выгрузки.
+/// Stage of MyAnimeList import.
 enum MalImportStage {
-  /// Парс XML-файлов.
+  /// Parsing XML files.
   readingFiles,
 
-  /// Резолвинг MAL → AniList ID для аниме.
+  /// Resolving MAL → AniList IDs for anime.
   resolvingAnime,
 
-  /// Резолвинг MAL → AniList ID для манги.
+  /// Resolving MAL → AniList IDs for manga.
   resolvingManga,
 
-  /// Запись элементов в коллекцию.
+  /// Writing entries into the collection.
   matchingEntries,
 
-  /// Импорт завершён.
+  /// Import finished.
   completed,
 }
 
-/// Прогресс импорта MyAnimeList выгрузки.
+/// Progress of MyAnimeList import.
 class MalImportProgress {
-  /// Создаёт [MalImportProgress].
+  /// Creates a [MalImportProgress].
   const MalImportProgress({
     required this.stage,
     required this.current,
@@ -53,34 +49,34 @@ class MalImportProgress {
     this.updatedCount = 0,
   });
 
-  /// Текущий этап.
+  /// Current stage.
   final MalImportStage stage;
 
-  /// Текущий прогресс.
+  /// Current progress.
   final int current;
 
-  /// Общее количество.
+  /// Total count.
   final int total;
 
-  /// Название текущего обрабатываемого тайтла.
+  /// Title currently being processed.
   final String? currentName;
 
-  /// Количество импортированных тайтлов.
+  /// Number of imported titles.
   final int importedCount;
 
-  /// Количество добавленных в вишлист (не найдены на AniList).
+  /// Number of titles added to wishlist (not found on AniList).
   final int wishlistedCount;
 
-  /// Количество обновлённых (повторный импорт).
+  /// Number of updated titles (re-import).
   final int updatedCount;
 
-  /// Прогресс в долях (0.0 – 1.0).
+  /// Progress as fraction (0.0 – 1.0).
   double get progress => total > 0 ? current / total : 0;
 }
 
-/// Результат импорта MyAnimeList выгрузки.
+/// Result of MyAnimeList import.
 class MalImportResult {
-  /// Создаёт [MalImportResult].
+  /// Creates a [MalImportResult].
   const MalImportResult({
     required this.imported,
     required this.wishlisted,
@@ -95,71 +91,71 @@ class MalImportResult {
     required this.mangaUpdated,
   });
 
-  /// Всего импортировано.
+  /// Total imported.
   final int imported;
 
-  /// Всего в вишлисте.
+  /// Total wishlisted.
   final int wishlisted;
 
-  /// Всего обновлено.
+  /// Total updated.
   final int updated;
 
-  /// Общее количество записей в файлах (после фильтрации).
+  /// Total entries in files (after filtering).
   final int total;
 
-  /// ID коллекции импорта.
+  /// Import collection ID.
   final int collectionId;
 
-  /// Аниме импортировано.
+  /// Anime imported.
   final int animeImported;
 
-  /// Манга импортирована.
+  /// Manga imported.
   final int mangaImported;
 
-  /// Аниме в вишлисте.
+  /// Anime wishlisted.
   final int animeWishlisted;
 
-  /// Манга в вишлисте.
+  /// Manga wishlisted.
   final int mangaWishlisted;
 
-  /// Аниме обновлено.
+  /// Anime updated.
   final int animeUpdated;
 
-  /// Манга обновлена.
+  /// Manga updated.
   final int mangaUpdated;
 }
 
-/// Тип распарсенного XML-файла.
+/// Type of parsed XML file.
 enum MalFileKind {
-  /// Список аниме.
+  /// Anime list.
   anime,
 
-  /// Список манги.
+  /// Manga list.
   manga,
 }
 
-/// Результат парсинга одного XML-файла.
+/// Result of parsing a single XML file.
 class MalParsedFile {
-  /// Создаёт [MalParsedFile].
+  /// Creates a [MalParsedFile].
   const MalParsedFile({
     required this.kind,
     required this.entries,
     required this.userName,
   });
 
-  /// Тип содержимого.
+  /// Content type.
   final MalFileKind kind;
 
-  /// Распарсенные записи.
+  /// Parsed entries.
   final List<MalEntry> entries;
 
-  /// Имя пользователя MAL.
+  /// MAL user name.
   final String userName;
 }
 
-/// Запись из MAL-выгрузки.
+/// Entry from MAL export.
 class MalEntry {
-  /// Создаёт [MalEntry].
+  /// Creates a [MalEntry].
   const MalEntry({
     required this.malId,
     required this.title,
@@ -182,57 +178,53 @@ class MalEntry {
   /// MAL ID (`series_animedb_id` / `manga_mangadb_id`).
   final int malId;
 
-  /// Название тайтла.
+  /// Title name.
   final String title;
 
-  /// Тип записи.
+  /// Entry kind.
   final MalFileKind kind;
 
-  /// Маппированный статус.
+  /// Mapped status.
   final ItemStatus status;
 
-  /// Пользовательская оценка (1-10) или null.
+  /// User score (1-10) or null.
   final int? score;
 
-  /// Просмотренных эпизодов (только для аниме).
+  /// Watched episodes (anime only).
   final int watchedEpisodes;
 
-  /// Прочитанных глав (только для манги).
+  /// Read chapters (manga only).
   final int readChapters;
 
-  /// Прочитанных томов (только для манги).
+  /// Read volumes (manga only).
   final int readVolumes;
 
-  /// Всего эпизодов в XML (для досыпания при Completed, если AniList не знает).
+  /// Total episodes from XML (used to top up on Completed when AniList lacks the count).
   final int? totalEpisodesXml;
 
-  /// Всего глав в XML.
+  /// Total chapters from XML.
   final int? totalChaptersXml;
 
-  /// Всего томов в XML.
+  /// Total volumes from XML.
   final int? totalVolumesXml;
 
-  /// Дата начала просмотра/чтения.
+  /// Start date of watching/reading.
   final DateTime? startDate;
 
-  /// Дата завершения просмотра/чтения.
+  /// Finish date of watching/reading.
   final DateTime? finishDate;
 
-  /// Пользовательские теги (raw строка с запятыми).
+  /// User tags (raw comma-separated string).
   final String? tags;
 
-  /// Количество пересмотров/перечитываний.
+  /// Number of rewatches/rereads.
   final int timesWatched;
 
-  /// Пользовательский комментарий.
+  /// User comment.
   final String? comments;
 }
 
-// ---------------------------------------------------------------------------
-// Провайдер
-// ---------------------------------------------------------------------------
-
-/// Провайдер для [MalImportService].
+/// Provider for [MalImportService].
 final Provider<MalImportService> malImportServiceProvider =
     Provider<MalImportService>((Ref ref) {
   return MalImportService(
@@ -241,13 +233,9 @@ final Provider<MalImportService> malImportServiceProvider =
   );
 });
 
-// ---------------------------------------------------------------------------
-// Сервис
-// ---------------------------------------------------------------------------
-
-/// Сервис импорта MyAnimeList выгрузки.
+/// MyAnimeList import service.
 class MalImportService {
-  /// Создаёт [MalImportService].
+  /// Creates a [MalImportService].
   MalImportService({
     required AniListApi aniListApi,
     required DatabaseService database,
@@ -259,15 +247,15 @@ class MalImportService {
   final AniListApi _aniList;
   final DatabaseService _db;
 
-  /// Парсит XML-файл MAL-выгрузки.
+  /// Parses a MAL export XML file.
   ///
-  /// Throws [FormatException] при невалидном XML.
+  /// Throws [FormatException] on invalid XML.
   Future<MalParsedFile> parseFile(File file) async {
     final String content = await file.readAsString();
     return parseString(content);
   }
 
-  /// Парсит XML-строку MAL-выгрузки.
+  /// Parses a MAL export XML string.
   MalParsedFile parseString(String content) {
     final XmlDocument doc;
     try {
@@ -294,7 +282,7 @@ class MalImportService {
     } else if (exportType == '2') {
       kind = MalFileKind.manga;
     } else {
-      // Fallback: смотрим первый child.
+      // Fallback when user_export_type is missing: infer kind from first child.
       final XmlElement? firstAnime = root.getElement('anime');
       final XmlElement? firstManga = root.getElement('manga');
       if (firstAnime != null) {
@@ -408,10 +396,10 @@ class MalImportService {
     );
   }
 
-  /// Импортирует MAL-выгрузки в коллекцию.
+  /// Imports MAL exports into a collection.
   ///
-  /// Хотя бы один из [animeFile] / [mangaFile] должен быть указан.
-  /// Должен быть указан либо [collectionId], либо [createCollection].
+  /// At least one of [animeFile] / [mangaFile] must be provided.
+  /// Either [collectionId] or [createCollection] must be provided.
   Future<MalImportResult> importFiles({
     File? animeFile,
     File? mangaFile,
@@ -428,7 +416,6 @@ class MalImportService {
       );
     }
 
-    // 1. Парс XML.
     onProgress(const MalImportProgress(
       stage: MalImportStage.readingFiles,
       current: 0,
@@ -462,10 +449,9 @@ class MalImportService {
       throw const FormatException('No entries found in MAL export');
     }
 
-    // 2. Создание коллекции (после успешного парсинга).
+    // Create the collection only after parsing succeeds to avoid empty leftovers.
     final int targetCollectionId = collectionId ?? await createCollection!();
 
-    // 3. Resolve AniList по MAL ID — аниме.
     final Map<int, Anime> animeByMal = <int, Anime>{};
     if (animeEntries.isNotEmpty) {
       onProgress(MalImportProgress(
@@ -487,7 +473,6 @@ class MalImportService {
       ));
     }
 
-    // 4. Resolve AniList по MAL ID — манга.
     final Map<int, Manga> mangaByMal = <int, Manga>{};
     if (mangaEntries.isNotEmpty) {
       onProgress(MalImportProgress(
@@ -509,7 +494,6 @@ class MalImportService {
       ));
     }
 
-    // 5. Кэшируем найденные на AniList.
     if (animeByMal.isNotEmpty) {
       await _db.upsertAnimes(animeByMal.values.toList());
     }
@@ -517,7 +501,6 @@ class MalImportService {
       await _db.upsertMangas(mangaByMal.values.toList());
     }
 
-    // 6. Запись в коллекцию.
     int imported = 0;
     int wishlisted = 0;
     int updated = 0;
@@ -565,6 +548,7 @@ class MalImportService {
           ? MediaType.anime
           : MediaType.manga;
 
+      // Dedup on re-import: update existing item instead of duplicating.
       final CollectionItem? existing = await _db.findCollectionItem(
         collectionId: targetCollectionId,
         mediaType: mediaType,
@@ -640,10 +624,6 @@ class MalImportService {
     );
   }
 
-  // -------------------------------------------------------------------------
-  // Запись данных в коллекцию
-  // -------------------------------------------------------------------------
-
   Future<void> _writeMalDataToItem(
     int itemId,
     MalEntry entry, {
@@ -695,7 +675,6 @@ class MalImportService {
     Anime? aniListAnime,
     Manga? aniListManga,
   }) async {
-    // 1. Статус через mergeExternalStatus.
     final ItemStatus? newStatus = mergeExternalStatus(
       currentStatus: existing.status,
       externalStatus: entry.status,
@@ -708,7 +687,7 @@ class MalImportService {
       );
     }
 
-    // 2. Прогресс — max(local, mal).
+    // Progress: take max(local, MAL) so we never regress user's watch state.
     final _ResolvedProgress malProgress = _resolveProgress(
       entry,
       aniListAnime: aniListAnime,
@@ -730,12 +709,12 @@ class MalImportService {
       );
     }
 
-    // 3. Рейтинг — MAL приоритетнее (если задан).
+    // MAL rating wins when set (treated as fresher source on re-import).
     if (entry.score != null && entry.score != existing.userRating) {
       await _db.updateItemUserRating(existing.id, entry.score);
     }
 
-    // 4. Даты — раннее started, позднее completed.
+    // Dates: keep earliest start and latest completion across sources.
     final _ResolvedDates malDates = _resolveDates(entry);
     DateTime? newStarted = existing.startedAt;
     DateTime? newCompleted = existing.completedAt;
@@ -761,7 +740,6 @@ class MalImportService {
       );
     }
 
-    // 5. user_comment — пересобираем из свежих MAL-данных.
     final String comment = _buildUserComment(entry);
     if (comment.isNotEmpty) {
       await _db.updateItemUserComment(existing.id, comment);
@@ -791,10 +769,6 @@ class MalImportService {
     );
   }
 
-  // -------------------------------------------------------------------------
-  // Helpers
-  // -------------------------------------------------------------------------
-
   _ResolvedProgress _resolveProgress(
     MalEntry entry, {
     Anime? aniListAnime,
@@ -806,6 +780,7 @@ class MalImportService {
     if (entry.kind == MalFileKind.anime) {
       currentEpisode = entry.watchedEpisodes;
       if (entry.status == ItemStatus.completed) {
+        // Completed should reflect full length; fall back to XML total when AniList has none.
         final int total = aniListAnime?.episodes ?? entry.totalEpisodesXml ?? 0;
         if (total > currentEpisode) currentEpisode = total;
       }
@@ -941,10 +916,6 @@ class MalImportService {
     }
   }
 
-  // -------------------------------------------------------------------------
-  // XML helpers
-  // -------------------------------------------------------------------------
-
   static int? _parseInt(String? raw) {
     if (raw == null) return null;
     final String trimmed = raw.trim();
@@ -955,10 +926,11 @@ class MalImportService {
   static DateTime? _parseDate(String? raw) {
     if (raw == null) return null;
     final String trimmed = raw.trim();
+    // MAL uses '0000-00-00' as a sentinel for "no date".
     if (trimmed.isEmpty || trimmed == '0000-00-00') return null;
     try {
       final DateTime parsed = DateTime.parse(trimmed);
-      // MAL даты — без зоны, считаем UTC.
+      // MAL dates have no timezone; treat as UTC to avoid local-shift drift.
       return DateTime.utc(parsed.year, parsed.month, parsed.day);
     } on FormatException {
       return null;
@@ -975,6 +947,7 @@ class MalImportService {
         return ItemStatus.completed;
       case 'on-hold':
       case 'on hold':
+        // MAL "on hold" has no direct equivalent; map to planned as closest intent.
         return ItemStatus.planned;
       case 'dropped':
         return ItemStatus.dropped;
@@ -1010,13 +983,9 @@ class _ResolvedDates {
   final DateTime? lastActivityAt;
 }
 
-// ---------------------------------------------------------------------------
-// Extension: toUniversal()
-// ---------------------------------------------------------------------------
-
-/// Конвертация [MalImportResult] в [UniversalImportResult].
+/// Converts [MalImportResult] to [UniversalImportResult].
 extension MalImportResultToUniversal on MalImportResult {
-  /// Преобразует в универсальный результат.
+  /// Maps to the universal result.
   UniversalImportResult toUniversal({Collection? collection}) {
     final Map<MediaType, int> importedByType = <MediaType, int>{};
     final Map<MediaType, int> wishlistedByType = <MediaType, int>{};

@@ -1,5 +1,3 @@
-// API клиент для TMDB (TheMovieDB).
-
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,9 +11,7 @@ import '../../shared/models/tv_episode.dart';
 import '../../shared/models/tv_season.dart';
 import '../../shared/models/tv_show.dart';
 
-/// Результат пагинированного поиска TMDB.
 class TmdbPagedResult<T> {
-  /// Создаёт [TmdbPagedResult].
   const TmdbPagedResult({
     required this.results,
     required this.page,
@@ -23,53 +19,31 @@ class TmdbPagedResult<T> {
     required this.totalResults,
   });
 
-  /// Список результатов текущей страницы.
   final List<T> results;
-
-  /// Номер текущей страницы.
   final int page;
-
-  /// Общее количество страниц.
   final int totalPages;
-
-  /// Общее количество результатов.
   final int totalResults;
 
-  /// Есть ли ещё страницы.
   bool get hasMore => page < totalPages;
 }
 
-/// Результат поиска TMDB по внешнему ID (`/find/{id}`).
-///
-/// Одна и та же точка возвращает результаты сразу для фильмов и сериалов,
-/// т.к. внешний ID (IMDB, TVDB) может принадлежать разным типам.
+/// `/find/{id}` returns both movies and TV shows because an external ID
+/// (IMDB / TVDB) may belong to either type.
 class TmdbFindResult {
-  /// Создаёт [TmdbFindResult].
   const TmdbFindResult({
     this.movies = const <Movie>[],
     this.tvShows = const <TvShow>[],
   });
 
-  /// Найденные фильмы.
   final List<Movie> movies;
-
-  /// Найденные сериалы.
   final List<TvShow> tvShows;
 
-  /// Ничего не нашли.
   bool get isEmpty => movies.isEmpty && tvShows.isEmpty;
 
-  /// Первый найденный фильм (или null).
   Movie? get firstMovie => movies.isNotEmpty ? movies.first : null;
-
-  /// Первый найденный сериал (или null).
   TvShow? get firstTvShow => tvShows.isNotEmpty ? tvShows.first : null;
 }
 
-/// Провайдер для TMDB API клиента.
-///
-/// При создании устанавливает API ключ из [apiKeysProvider],
-/// загруженного в main() до runApp().
 final Provider<TmdbApi> tmdbApiProvider = Provider<TmdbApi>((Ref ref) {
   final TmdbApi api = TmdbApi();
   final ApiKeys keys = ref.read(apiKeysProvider);
@@ -79,30 +53,20 @@ final Provider<TmdbApi> tmdbApiProvider = Provider<TmdbApi>((Ref ref) {
   return api;
 });
 
-/// Исключение при ошибках TMDB API.
 class TmdbApiException implements Exception {
-  /// Создаёт [TmdbApiException].
   const TmdbApiException(this.message, {this.statusCode, this.detail});
 
-  /// Сообщение об ошибке.
   final String message;
-
-  /// HTTP код ответа (если есть).
   final int? statusCode;
-
-  /// Подробная отладочная информация (URL, метод, причина).
   final String? detail;
 
   @override
   String toString() => 'TmdbApiException: $message (status: $statusCode)';
 }
 
-/// Жанр из TMDB.
 class TmdbGenre {
-  /// Создаёт [TmdbGenre].
   const TmdbGenre({required this.id, required this.name});
 
-  /// Создаёт [TmdbGenre] из JSON.
   factory TmdbGenre.fromJson(Map<String, dynamic> json) {
     return TmdbGenre(
       id: json['id'] as int,
@@ -110,47 +74,25 @@ class TmdbGenre {
     );
   }
 
-  /// ID жанра.
   final int id;
-
-  /// Название жанра.
   final String name;
 }
 
-/// Тип результата мультипоиска.
-enum TmdbMediaType {
-  /// Фильм.
-  movie,
+enum TmdbMediaType { movie, tv }
 
-  /// Сериал.
-  tv,
-}
-
-/// Результат мультипоиска: фильм или сериал.
 class MultiSearchResult {
-  /// Создаёт [MultiSearchResult].
   const MultiSearchResult({
     required this.mediaType,
     this.movie,
     this.tvShow,
   });
 
-  /// Тип медиа.
   final TmdbMediaType mediaType;
-
-  /// Фильм (если mediaType == movie).
   final Movie? movie;
-
-  /// Сериал (если mediaType == tv).
   final TvShow? tvShow;
 }
 
-/// Клиент для работы с TMDB API v3.
-///
-/// Использует API Key (v3 auth) для аутентификации.
-/// Документация: https://developers.themoviedb.org/3
 class TmdbApi {
-  /// Создаёт экземпляр [TmdbApi].
   TmdbApi({Dio? dio, String language = 'ru-RU'})
       : _dio = dio ??
             Dio(BaseOptions(
@@ -165,18 +107,14 @@ class TmdbApi {
   static const String _baseUrl = 'https://api.themoviedb.org/3';
 
   final Dio _dio;
-
-  /// Язык для локализации ответов TMDB API.
   String _language;
 
-  /// Текущий язык для локализации ответов.
   String get language => _language;
 
-  /// Устанавливает язык для локализации ответов.
-  ///
-  /// Сбрасывает кэш жанров, т.к. названия зависят от языка.
   void setLanguage(String language) {
     if (_language != language) {
+      // Genre names are language-dependent — drop the cache so the next
+      // request refetches them in the new language.
       _movieGenreMap = null;
       _tvGenreMap = null;
     }
@@ -185,25 +123,19 @@ class TmdbApi {
 
   String? _apiKey;
 
-  /// Кэш жанров фильмов: id → name.
   Map<int, String>? _movieGenreMap;
-
-  /// Кэш жанров сериалов: id → name.
   Map<int, String>? _tvGenreMap;
 
-  /// Устанавливает API ключ для аутентификации.
   void setApiKey(String apiKey) {
     _apiKey = apiKey;
   }
 
-  /// Очищает API ключ и кэш жанров.
   void clearApiKey() {
     _apiKey = null;
     _movieGenreMap = null;
     _tvGenreMap = null;
   }
 
-  /// Предустанавливает кэш маппинга жанров (только для тестов).
   @visibleForTesting
   void setGenreCacheForTesting({
     Map<int, String>? movieGenres,
@@ -213,9 +145,6 @@ class TmdbApi {
     _tvGenreMap = tvGenres;
   }
 
-  /// Проверяет валидность API ключа.
-  ///
-  /// Возвращает true, если ключ корректен.
   Future<bool> validateApiKey(String apiKey) async {
     try {
       final Response<dynamic> response = await _dio.get<dynamic>(
@@ -230,16 +159,6 @@ class TmdbApi {
     }
   }
 
-  // ===== Фильмы =====
-
-  /// Ищет фильмы по названию.
-  ///
-  /// [query] — строка поиска.
-  /// [page] — номер страницы (по умолчанию 1).
-  /// [year] — фильтр по году релиза (опционально).
-  ///
-  /// Возвращает список найденных фильмов.
-  /// Throws [TmdbApiException] при ошибке запроса.
   Future<List<Movie>> searchMovies(
     String query, {
     int page = 1,
@@ -279,13 +198,6 @@ class TmdbApi {
     }
   }
 
-  /// Ищет фильмы по названию с информацией о пагинации.
-  ///
-  /// [query] — строка поиска.
-  /// [page] — номер страницы (по умолчанию 1).
-  ///
-  /// Возвращает [TmdbPagedResult] с фильмами и метаданными пагинации.
-  /// Throws [TmdbApiException] при ошибке запроса.
   Future<TmdbPagedResult<Movie>> searchMoviesPaged(
     String query, {
     int page = 1,
@@ -348,10 +260,6 @@ class TmdbApi {
     }
   }
 
-  /// Получает фильм по ID.
-  ///
-  /// Возвращает фильм или null, если не найден.
-  /// Throws [TmdbApiException] при ошибке запроса.
   Future<Movie?> getMovie(int tmdbId) async {
     _ensureApiKey();
 
@@ -380,12 +288,6 @@ class TmdbApi {
     }
   }
 
-  /// Получает популярные фильмы.
-  ///
-  /// [page] — номер страницы (по умолчанию 1).
-  ///
-  /// Возвращает список популярных фильмов.
-  /// Throws [TmdbApiException] при ошибке запроса.
   Future<List<Movie>> getPopularMovies({int page = 1}) async {
     _ensureApiKey();
 
@@ -412,16 +314,6 @@ class TmdbApi {
     }
   }
 
-  // ===== Сериалы =====
-
-  /// Ищет сериалы по названию.
-  ///
-  /// [query] — строка поиска.
-  /// [page] — номер страницы (по умолчанию 1).
-  /// [firstAirDateYear] — фильтр по году первого показа (опционально).
-  ///
-  /// Возвращает список найденных сериалов.
-  /// Throws [TmdbApiException] при ошибке запроса.
   Future<List<TvShow>> searchTvShows(
     String query, {
     int page = 1,
@@ -461,13 +353,6 @@ class TmdbApi {
     }
   }
 
-  /// Ищет сериалы по названию с информацией о пагинации.
-  ///
-  /// [query] — строка поиска.
-  /// [page] — номер страницы (по умолчанию 1).
-  ///
-  /// Возвращает [TmdbPagedResult] с сериалами и метаданными пагинации.
-  /// Throws [TmdbApiException] при ошибке запроса.
   Future<TmdbPagedResult<TvShow>> searchTvShowsPaged(
     String query, {
     int page = 1,
@@ -530,10 +415,6 @@ class TmdbApi {
     }
   }
 
-  /// Получает сериал по ID.
-  ///
-  /// Возвращает сериал или null, если не найден.
-  /// Throws [TmdbApiException] при ошибке запроса.
   Future<TvShow?> getTvShow(int tmdbId) async {
     _ensureApiKey();
 
@@ -562,25 +443,14 @@ class TmdbApi {
     }
   }
 
-  /// Ищет фильм/сериал по IMDB ID.
-  ///
-  /// IMDB ID имеет формат `tt1234567` и принимается TMDB как есть.
-  /// Используется, например, для матчинга Kodi items: старые scraper'ы
-  /// проставляют IMDB вместо TMDB.
-  ///
-  /// Возвращает [TmdbFindResult] с найденными фильмами и сериалами.
-  /// 404 трактуется как "не найдено" — возвращается пустой результат.
+  /// Used for matching Kodi items: older scrapers store IMDB IDs instead of
+  /// TMDB. 404 is treated as "not found" and returns an empty result.
   Future<TmdbFindResult> findByImdbId(String imdbId) async {
     return _findByExternalId(imdbId, 'imdb_id');
   }
 
-  /// Ищет сериал по TheTVDB ID.
-  ///
-  /// Kodi для TV-шоу часто использует TVDB scraper. `tvdb_id` источник
-  /// в TMDB возвращает сериалы (и их эпизоды/сезоны, но мы берём только
-  /// tv_results).
-  ///
-  /// Возвращает [TmdbFindResult] (обычно с заполненным `tvShows`).
+  /// Kodi often uses the TVDB scraper for TV shows. The `tvdb_id` source on
+  /// TMDB also returns episodes / seasons, but we only consume `tv_results`.
   Future<TmdbFindResult> findByTvdbId(int tvdbId) async {
     return _findByExternalId(tvdbId.toString(), 'tvdb_id');
   }
@@ -633,10 +503,6 @@ class TmdbApi {
     }
   }
 
-  /// Получает сезоны сериала.
-  ///
-  /// Извлекает сезоны из деталей сериала.
-  /// Throws [TmdbApiException] при ошибке запроса.
   Future<List<TvSeason>> getTvSeasons(int tmdbId) async {
     _ensureApiKey();
 
@@ -671,13 +537,6 @@ class TmdbApi {
     }
   }
 
-  /// Получает эпизоды конкретного сезона сериала.
-  ///
-  /// [tmdbShowId] — ID сериала в TMDB.
-  /// [seasonNumber] — номер сезона.
-  ///
-  /// Возвращает список эпизодов сезона.
-  /// Throws [TmdbApiException] при ошибке запроса.
   Future<List<TvEpisode>> getSeasonEpisodes(
     int tmdbShowId,
     int seasonNumber,
@@ -717,12 +576,6 @@ class TmdbApi {
     }
   }
 
-  /// Получает популярные сериалы.
-  ///
-  /// [page] — номер страницы (по умолчанию 1).
-  ///
-  /// Возвращает список популярных сериалов.
-  /// Throws [TmdbApiException] при ошибке запроса.
   Future<List<TvShow>> getPopularTvShows({int page = 1}) async {
     _ensureApiKey();
 
@@ -749,46 +602,22 @@ class TmdbApi {
     }
   }
 
-  // ===== Рекомендации и похожие =====
-
-  /// Рекомендации к фильму.
-  ///
-  /// [tmdbId] — ID фильма.
-  /// [page] — номер страницы (по умолчанию 1).
   Future<List<Movie>> getMovieRecommendations(int tmdbId, {int page = 1}) async {
     return _fetchMovieList('$_baseUrl/movie/$tmdbId/recommendations', page: page);
   }
 
-  /// Похожие фильмы.
-  ///
-  /// [tmdbId] — ID фильма.
-  /// [page] — номер страницы (по умолчанию 1).
   Future<List<Movie>> getSimilarMovies(int tmdbId, {int page = 1}) async {
     return _fetchMovieList('$_baseUrl/movie/$tmdbId/similar', page: page);
   }
 
-  /// Рекомендации к сериалу.
-  ///
-  /// [tmdbId] — ID сериала.
-  /// [page] — номер страницы (по умолчанию 1).
   Future<List<TvShow>> getTvRecommendations(int tmdbId, {int page = 1}) async {
     return _fetchTvShowList('$_baseUrl/tv/$tmdbId/recommendations', page: page);
   }
 
-  /// Похожие сериалы.
-  ///
-  /// [tmdbId] — ID сериала.
-  /// [page] — номер страницы (по умолчанию 1).
   Future<List<TvShow>> getSimilarTvShows(int tmdbId, {int page = 1}) async {
     return _fetchTvShowList('$_baseUrl/tv/$tmdbId/similar', page: page);
   }
 
-  // ===== Trending =====
-
-  /// Трендовые фильмы.
-  ///
-  /// [timeWindow] — временное окно ('day' или 'week').
-  /// [page] — номер страницы (по умолчанию 1).
   Future<List<Movie>> getTrendingMovies({
     String timeWindow = 'week',
     int page = 1,
@@ -799,10 +628,6 @@ class TmdbApi {
     );
   }
 
-  /// Трендовые сериалы.
-  ///
-  /// [timeWindow] — временное окно ('day' или 'week').
-  /// [page] — номер страницы (по умолчанию 1).
   Future<List<TvShow>> getTrendingTvShows({
     String timeWindow = 'week',
     int page = 1,
@@ -813,45 +638,26 @@ class TmdbApi {
     );
   }
 
-  // ===== Curated Lists =====
-
-  /// Лучшие фильмы всех времён.
   Future<List<Movie>> getTopRatedMovies({int page = 1}) async {
     return _fetchMovieList('$_baseUrl/movie/top_rated', page: page);
   }
 
-  /// Скоро в кино.
   Future<List<Movie>> getUpcomingMovies({int page = 1}) async {
     return _fetchMovieList('$_baseUrl/movie/upcoming', page: page);
   }
 
-  /// Сейчас в кинотеатрах.
   Future<List<Movie>> getNowPlayingMovies({int page = 1}) async {
     return _fetchMovieList('$_baseUrl/movie/now_playing', page: page);
   }
 
-  /// Лучшие сериалы всех времён.
   Future<List<TvShow>> getTopRatedTvShows({int page = 1}) async {
     return _fetchTvShowList('$_baseUrl/tv/top_rated', page: page);
   }
 
-  /// Сериалы, выходящие сейчас.
   Future<List<TvShow>> getOnTheAirTvShows({int page = 1}) async {
     return _fetchTvShowList('$_baseUrl/tv/on_the_air', page: page);
   }
 
-  // ===== Discover =====
-
-  /// Discover фильмов с фильтрами.
-  ///
-  /// [genreId] — ID жанра (один жанр).
-  /// [genreIds] — строка жанров через запятую (например '16,28').
-  /// [year] — конкретный год выпуска.
-  /// [releaseDateGte] — дата начала диапазона (YYYY-MM-DD), для декад.
-  /// [releaseDateLte] — дата конца диапазона (YYYY-MM-DD), для декад.
-  /// [voteCountGte] — минимальное количество голосов.
-  /// [voteAverageGte] — минимальная средняя оценка (0–10).
-  /// [originalLanguage] — ISO 639-1 код (en / ja / ko / zh / ...).
   Future<List<Movie>> discoverMovies({
     int? genreId,
     String? genreIds,
@@ -911,17 +717,6 @@ class TmdbApi {
     }
   }
 
-  /// Discover сериалов с фильтрами.
-  ///
-  /// [genreId] — ID жанра (один жанр).
-  /// [genreIds] — строка жанров через запятую (например '16,10765').
-  /// [year] — конкретный год первого эфира.
-  /// [firstAirDateGte] — дата начала диапазона (YYYY-MM-DD), для декад.
-  /// [firstAirDateLte] — дата конца диапазона (YYYY-MM-DD), для декад.
-  /// [voteCountGte] — минимальное количество голосов.
-  /// [voteAverageGte] — минимальная средняя оценка (0–10).
-  /// [originalLanguage] — ISO 639-1 код (en / ja / ko / zh / ...).
-  /// [withoutGenreIds] — исключить жанры (например [16] для анимации).
   Future<List<TvShow>> discoverTvShows({
     int? genreId,
     String? genreIds,
@@ -985,31 +780,16 @@ class TmdbApi {
     }
   }
 
-  // ===== Reviews =====
-
-  /// Отзывы к фильму.
-  ///
-  /// Всегда запрашивает на en-US (отзывов на других языках мало).
+  /// Always queried in en-US — non-English reviews are sparse on TMDB.
   Future<List<TmdbReview>> getMovieReviews(int tmdbId, {int page = 1}) async {
     return _fetchReviews('$_baseUrl/movie/$tmdbId/reviews', page: page);
   }
 
-  /// Отзывы к сериалу.
-  ///
-  /// Всегда запрашивает на en-US (отзывов на других языках мало).
+  /// Always queried in en-US — non-English reviews are sparse on TMDB.
   Future<List<TmdbReview>> getTvReviews(int tmdbId, {int page = 1}) async {
     return _fetchReviews('$_baseUrl/tv/$tmdbId/reviews', page: page);
   }
 
-  // ===== Общее =====
-
-  /// Мультипоиск (фильмы + сериалы).
-  ///
-  /// [query] — строка поиска.
-  /// [page] — номер страницы (по умолчанию 1).
-  ///
-  /// Возвращает список результатов (фильмы и сериалы).
-  /// Throws [TmdbApiException] при ошибке запроса.
   Future<List<MultiSearchResult>> multiSearch(
     String query, {
     int page = 1,
@@ -1046,7 +826,7 @@ class TmdbApi {
           .map((dynamic item) => item as Map<String, dynamic>)
           .toList();
 
-      // Резолвим жанры отдельно для фильмов и сериалов
+      // Movies and TV shows have separate genre catalogs on TMDB.
       final List<Map<String, dynamic>> movieItems = items
           .where((Map<String, dynamic> j) => j['media_type'] == 'movie')
           .toList();
@@ -1079,7 +859,7 @@ class TmdbApi {
             tvShow: TvShow.fromJson(json),
           ));
         }
-        // Пропускаем 'person' и другие типы
+        // Drop 'person' and any other unsupported media_type.
       }
 
       return searchResults;
@@ -1088,9 +868,6 @@ class TmdbApi {
     }
   }
 
-  /// Возвращает список жанров фильмов.
-  ///
-  /// Throws [TmdbApiException] при ошибке запроса.
   Future<List<TmdbGenre>> getMovieGenres() async {
     _ensureApiKey();
 
@@ -1123,9 +900,6 @@ class TmdbApi {
     }
   }
 
-  /// Возвращает список жанров сериалов.
-  ///
-  /// Throws [TmdbApiException] при ошибке запроса.
   Future<List<TmdbGenre>> getTvGenres() async {
     _ensureApiKey();
 
@@ -1158,7 +932,6 @@ class TmdbApi {
     }
   }
 
-  /// Обрабатывает DioException и возвращает TmdbApiException.
   TmdbApiException _handleDioException(
     DioException e,
     String defaultMessage,
@@ -1190,9 +963,6 @@ class TmdbApi {
     );
   }
 
-  // ===== Приватные хелперы =====
-
-  /// Загружает и кэширует маппинг жанров фильмов.
   Future<Map<int, String>> _ensureMovieGenreMap() async {
     if (_movieGenreMap != null) return _movieGenreMap!;
     try {
@@ -1207,7 +977,6 @@ class TmdbApi {
     return _movieGenreMap!;
   }
 
-  /// Загружает и кэширует маппинг жанров сериалов.
   Future<Map<int, String>> _ensureTvGenreMap() async {
     if (_tvGenreMap != null) return _tvGenreMap!;
     try {
@@ -1222,7 +991,8 @@ class TmdbApi {
     return _tvGenreMap!;
   }
 
-  /// Резолвит `genre_ids` в `genres` (объекты с `name`) в JSON элементах.
+  /// Expands `genre_ids` into `genres` objects on each item so downstream
+  /// `Model.fromJson` sees the same shape as the detail endpoint.
   void _resolveGenreIds(
     List<Map<String, dynamic>> items,
     Map<int, String> genreMap,
@@ -1240,7 +1010,6 @@ class TmdbApi {
     }
   }
 
-  /// Загружает список фильмов из paged endpoint.
   Future<List<Movie>> _fetchMovieList(String url, {int page = 1}) async {
     _ensureApiKey();
 
@@ -1265,7 +1034,6 @@ class TmdbApi {
     }
   }
 
-  /// Загружает список сериалов из paged endpoint.
   Future<List<TvShow>> _fetchTvShowList(String url, {int page = 1}) async {
     _ensureApiKey();
 
@@ -1290,7 +1058,6 @@ class TmdbApi {
     }
   }
 
-  /// Загружает отзывы из paged endpoint.
   Future<List<TmdbReview>> _fetchReviews(String url, {int page = 1}) async {
     _ensureApiKey();
 
@@ -1314,7 +1081,6 @@ class TmdbApi {
     }
   }
 
-  /// Парсит стандартный paged response TMDB в список объектов.
   List<T> _parseResultsList<T>(
     Response<dynamic> response,
     T Function(Map<String, dynamic>) fromJson,
@@ -1325,7 +1091,6 @@ class TmdbApi {
     return items.map(fromJson).toList();
   }
 
-  /// Извлекает массив `results` из ответа TMDB API.
   List<Map<String, dynamic>> _extractResults(
     Response<dynamic> response,
     String errorMessage,
@@ -1352,7 +1117,6 @@ class TmdbApi {
     }
   }
 
-  /// Закрывает HTTP клиент.
   void dispose() {
     _dio.close();
   }

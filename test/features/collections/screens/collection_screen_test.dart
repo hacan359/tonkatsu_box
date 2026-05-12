@@ -1,5 +1,3 @@
-// Тесты для CollectionScreen (grid/list mode, фильтры, поиск, view mode persistence).
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -160,7 +158,6 @@ void main() {
         ));
   });
 
-  /// Прокачивает виджет достаточно фреймов для загрузки данных.
   Future<void> pumpScreen(WidgetTester tester) async {
     await tester.pump();
     await tester.pump();
@@ -199,9 +196,7 @@ void main() {
       await tester.pumpWidget(createWidget());
       await pumpScreen(tester);
 
-      // Header удалён — нет текста со статистикой
       expect(find.textContaining('5 items'), findsNothing);
-      // Нет прогресс-бара
       expect(find.byType(LinearProgressIndicator), findsNothing);
     });
 
@@ -218,7 +213,6 @@ void main() {
     group('grid mode (по умолчанию)', () {
       testWidgets('grid mode должен показывать MediaPosterCard',
           (WidgetTester tester) async {
-        // По умолчанию grid mode (SharedPreferences пустые → default true)
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
@@ -228,16 +222,15 @@ void main() {
 
       testWidgets('table mode не должен содержать MediaPosterCard',
           (WidgetTester tester) async {
-        // Задаём table mode через SharedPreferences
         final SharedPreferences tablePrefs =
             await SharedPreferences.getInstance();
         await tablePrefs.setBool(
           '${SettingsKeys.collectionViewModePrefix}1',
-          false, // grid = false
+          false,
         );
         await tablePrefs.setBool(
           '${SettingsKeys.collectionTableModePrefix}1',
-          true, // table = true
+          true,
         );
 
         await tester.pumpWidget(createWidget(overridePrefs: tablePrefs));
@@ -248,7 +241,6 @@ void main() {
     });
 
     group('фильтр по типу (chevron-сегменты)', () {
-      /// Тапает на chevron-сегмент типа медиа по тексту.
       Future<void> selectMediaSegment(
         WidgetTester tester,
         String segmentText,
@@ -298,11 +290,9 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // Выбираем Games
         await selectMediaSegment(tester, 'Games (1)');
         expect(find.text('Inception'), findsNothing);
 
-        // Повторный тап на Games снимает фильтр
         await selectMediaSegment(tester, 'Games (1)');
 
         expect(find.text('Zelda'), findsOneWidget);
@@ -513,9 +503,9 @@ void main() {
         final List<CollectionItem> itemsWithNotes = <CollectionItem>[
           testItems[0].copyWith(
             userComment: 'настоящий шедевр геймдева',
-          ), // Zelda
-          testItems[1], // Inception — без заметки
-          testItems[2], // Breaking Bad — без заметки
+          ),
+          testItems[1],
+          testItems[2],
         ];
         when(() => mockRepo.getItemsWithData(
               1,
@@ -533,11 +523,11 @@ void main() {
       testWidgets('должен находить по тексту в authorComment (рецензия)',
           (WidgetTester tester) async {
         final List<CollectionItem> itemsWithReviews = <CollectionItem>[
-          testItems[0], // Zelda — без рецензии
+          testItems[0],
           testItems[1].copyWith(
             authorComment: 'переоценённый проходняк',
-          ), // Inception
-          testItems[2], // Breaking Bad — без рецензии
+          ),
+          testItems[2],
         ];
         when(() => mockRepo.getItemsWithData(
               1,
@@ -577,7 +567,6 @@ void main() {
         await tester.pumpWidget(createWidget(searchQuery: 'Zel'));
         await pumpScreen(tester);
 
-        // Фильтр Games — тап на chevron-сегмент
         await tester.tap(find.text('Games (1)').first);
         await pumpScreen(tester);
 
@@ -591,11 +580,9 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // Фильтр Movies — тап на chevron-сегмент
         await tester.tap(find.text('Movies (1)').first);
         await pumpScreen(tester);
 
-        // Должен быть 1 MediaPosterCard (Inception)
         expect(find.byType(MediaPosterCard), findsOneWidget);
       });
     });
@@ -651,13 +638,11 @@ void main() {
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
-        // Grid mode загружен: GridView отображается
         expect(find.byType(GridView), findsOneWidget);
       });
 
       testWidgets('должен загрузить grid mode по умолчанию',
           (WidgetTester tester) async {
-        // SharedPreferences пусты — default true (grid mode)
         await tester.pumpWidget(createWidget());
         await pumpScreen(tester);
 
@@ -707,7 +692,6 @@ void main() {
         await tester.pumpWidget(createWidget(stats: zeroStats));
         await pumpScreen(tester);
 
-        // FilterBar скрыта — нет chevron-сегментов типов
         expect(find.byType(ChevronSegment), findsNothing);
       });
     });

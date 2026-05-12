@@ -1,5 +1,3 @@
-// Тесты для WelcomeStepLanguage — шаг 3 Welcome Wizard.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -69,9 +67,6 @@ void main() {
       await tester.pumpWidget(createWidget());
       await tester.pump();
 
-      // "English" встречается в радио UI-языка и в dropdown языка контента;
-      // "Русский" — только в радио (текущая локаль контента — ru-RU дефолт,
-      // её dropdown показывает в свёрнутом виде).
       expect(find.text('English'), findsWidgets);
       expect(find.text('Русский'), findsWidgets);
     });
@@ -81,7 +76,6 @@ void main() {
       await tester.pumpWidget(createWidget());
       await tester.pump();
 
-      // Default appLanguage = 'en' → English-радио с check_circle.
       expect(find.byIcon(Icons.check_circle), findsOneWidget);
       expect(find.byIcon(Icons.radio_button_unchecked), findsOneWidget);
     });
@@ -101,8 +95,6 @@ void main() {
       await tester.tap(find.byType(DropdownButton<String>));
       await tester.pumpAndSettle();
 
-      // В открытом меню каждый пункт рендерится дополнительно — выбираем
-      // English (в дефолте tmdbLanguage = ru-RU).
       await tester.tap(find.text('English').last);
       await tester.pumpAndSettle();
 
@@ -113,7 +105,7 @@ void main() {
       await tester.pumpWidget(createWidget());
       await tester.pump();
 
-      // first() — радио UI-языка стоит выше dropdown языка контента в дереве.
+      // first() — UI radio sits above the content dropdown in the tree.
       await tester.tap(find.text('Русский').first);
       await tester.pump();
 
@@ -122,7 +114,6 @@ void main() {
 
     testWidgets('tapping English selects it back',
         (WidgetTester tester) async {
-      // Start with Russian
       await prefs.setString(SettingsKeys.appLanguage, 'ru');
 
       await tester.pumpWidget(createWidget());
@@ -136,7 +127,6 @@ void main() {
 
     testWidgets('selecting English UI sets tmdbLanguage to en-US',
         (WidgetTester tester) async {
-      // Дефолт tmdbLanguage = ru-RU; нажимаем English UI → ожидаем en-US.
       await tester.pumpWidget(createWidget());
       await tester.pump();
 
@@ -149,7 +139,6 @@ void main() {
 
     testWidgets('selecting Russian UI sets tmdbLanguage to ru-RU',
         (WidgetTester tester) async {
-      // Стартуем с en/en-US, чтобы было что переключать.
       await prefs.setString(SettingsKeys.tmdbLanguage, 'en-US');
 
       await tester.pumpWidget(createWidget());
@@ -167,7 +156,7 @@ void main() {
       await tester.pumpWidget(createWidget());
       await tester.pump();
 
-      // Юзер явно выбрал English как язык контента (дефолт был ru-RU).
+      // User explicitly picks English as content language (default was ru-RU).
       await tester.tap(find.byType(DropdownButton<String>));
       await tester.pumpAndSettle();
       await tester.tap(find.text('English').last);
@@ -175,7 +164,7 @@ void main() {
 
       expect(prefs.getString(SettingsKeys.tmdbLanguage), 'en-US');
 
-      // Теперь меняем UI на Русский — язык контента трогать НЕ должны.
+      // Switching UI to Russian must not touch content language.
       await tester.tap(find.text('Русский').first);
       await tester.pump();
 
@@ -190,8 +179,6 @@ void main() {
       await tester.pumpWidget(createWidget());
       await tester.pump();
 
-      // Russian is selected — should have check_circle
-      // English is not selected — should have radio_button_unchecked
       expect(find.byIcon(Icons.check_circle), findsOneWidget);
       expect(find.byIcon(Icons.radio_button_unchecked), findsOneWidget);
     });

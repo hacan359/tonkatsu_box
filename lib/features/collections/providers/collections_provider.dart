@@ -30,14 +30,12 @@ import 'collection_covers_provider.dart';
 import 'collection_tags_provider.dart';
 import 'sort_utils.dart';
 
-/// Провайдер для списка коллекций.
 final AsyncNotifierProvider<CollectionsNotifier, List<Collection>>
     collectionsProvider =
     AsyncNotifierProvider<CollectionsNotifier, List<Collection>>(
   CollectionsNotifier.new,
 );
 
-/// Notifier для управления коллекциями.
 class CollectionsNotifier extends AsyncNotifier<List<Collection>> {
   late CollectionRepository _repository;
 
@@ -47,13 +45,11 @@ class CollectionsNotifier extends AsyncNotifier<List<Collection>> {
     return _repository.getAll();
   }
 
-  /// Обновляет список коллекций.
   Future<void> refresh() async {
     state = const AsyncLoading<List<Collection>>();
     state = await AsyncValue.guard(() => _repository.getAll());
   }
 
-  /// Создаёт новую коллекцию.
   Future<Collection> create({
     required String name,
     required String author,
@@ -63,18 +59,15 @@ class CollectionsNotifier extends AsyncNotifier<List<Collection>> {
       author: author,
     );
 
-    // Обновляем список
     final List<Collection> current = state.valueOrNull ?? <Collection>[];
     state = AsyncData<List<Collection>>(<Collection>[collection, ...current]);
 
     return collection;
   }
 
-  /// Переименовывает коллекцию.
   Future<void> rename(int id, String newName) async {
     await _repository.updateName(id, newName);
 
-    // Обновляем список
     final List<Collection> current = state.valueOrNull ?? <Collection>[];
     state = AsyncData<List<Collection>>(
       current.map((Collection c) {
@@ -86,7 +79,6 @@ class CollectionsNotifier extends AsyncNotifier<List<Collection>> {
     );
   }
 
-  /// Обновляет персонализацию коллекции (имя/описание/обложка).
   Future<void> updatePersonalization(
     int id, {
     String? name,
@@ -119,17 +111,14 @@ class CollectionsNotifier extends AsyncNotifier<List<Collection>> {
     );
   }
 
-  /// Удаляет коллекцию.
   Future<void> delete(int id) async {
     await _repository.delete(id);
 
-    // Обновляем список
     final List<Collection> current = state.valueOrNull ?? <Collection>[];
     state = AsyncData<List<Collection>>(
       current.where((Collection c) => c.id != id).toList(),
     );
 
-    // Инвалидируем связанные провайдеры
     ref.invalidate(collectionStatsProvider(id));
     ref.invalidate(collectionCoversProvider(id));
     ref.invalidate(allItemsNotifierProvider);
@@ -137,9 +126,7 @@ class CollectionsNotifier extends AsyncNotifier<List<Collection>> {
 
 }
 
-/// Провайдер для статистики коллекции.
-///
-/// Если ключ == null, возвращает статистику uncategorized элементов.
+/// `collectionId == null` selects uncategorized items.
 final FutureProviderFamily<CollectionStats, int?> collectionStatsProvider =
     FutureProvider.family<CollectionStats, int?>(
   (Ref ref, int? collectionId) async {
@@ -149,26 +136,19 @@ final FutureProviderFamily<CollectionStats, int?> collectionStatsProvider =
   },
 );
 
-// ==================== Collection Sort ====================
-
-/// Ключ SharedPreferences для режима сортировки коллекции.
 String _sortModeKey(int? collectionId) =>
     'collection_sort_mode_${collectionId ?? "uncategorized"}';
 
-/// Ключ SharedPreferences для направления сортировки.
 String _sortDescKey(int? collectionId) =>
     'collection_sort_desc_${collectionId ?? "uncategorized"}';
 
-/// Провайдер режима сортировки для конкретной коллекции.
-///
-/// Если ключ == null, используется для uncategorized элементов.
+/// `collectionId == null` selects uncategorized items.
 final NotifierProviderFamily<CollectionSortNotifier, CollectionSortMode, int?>
     collectionSortProvider =
     NotifierProvider.family<CollectionSortNotifier, CollectionSortMode, int?>(
   CollectionSortNotifier.new,
 );
 
-/// Notifier для режима сортировки коллекции.
 class CollectionSortNotifier extends FamilyNotifier<CollectionSortMode, int?> {
   @override
   CollectionSortMode build(int? arg) {
@@ -184,10 +164,7 @@ class CollectionSortNotifier extends FamilyNotifier<CollectionSortMode, int?> {
     }
   }
 
-  /// Устанавливает режим сортировки и сохраняет в SharedPreferences.
-  ///
-  /// Пересортировка происходит автоматически: `CollectionItemsNotifier`
-  /// подписан на этот провайдер через `ref.watch`.
+  // Re-sort happens automatically: CollectionItemsNotifier watches this provider.
   Future<void> setSortMode(CollectionSortMode mode) async {
     state = mode;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -195,16 +172,13 @@ class CollectionSortNotifier extends FamilyNotifier<CollectionSortMode, int?> {
   }
 }
 
-/// Провайдер направления сортировки (descending) для конкретной коллекции.
-///
-/// Если ключ == null, используется для uncategorized элементов.
+/// `collectionId == null` selects uncategorized items.
 final NotifierProviderFamily<CollectionSortDescNotifier, bool, int?>
     collectionSortDescProvider =
     NotifierProvider.family<CollectionSortDescNotifier, bool, int?>(
   CollectionSortDescNotifier.new,
 );
 
-/// Notifier для направления сортировки (ascending/descending).
 class CollectionSortDescNotifier extends FamilyNotifier<bool, int?> {
   @override
   bool build(int? arg) {
@@ -220,14 +194,12 @@ class CollectionSortDescNotifier extends FamilyNotifier<bool, int?> {
     }
   }
 
-  /// Переключает направление сортировки.
   Future<void> toggle() async {
     state = !state;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_sortDescKey(arg), state);
   }
 
-  /// Устанавливает направление сортировки.
   Future<void> setDescending({required bool descending}) async {
     state = descending;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -235,25 +207,16 @@ class CollectionSortDescNotifier extends FamilyNotifier<bool, int?> {
   }
 }
 
-// ==================== Collection List Sort & View ====================
-
-/// Ключ SharedPreferences для режима сортировки списка коллекций.
 const String _collectionListSortModeKey = 'collection_list_sort_mode';
-
-/// Ключ SharedPreferences для направления сортировки списка коллекций.
 const String _collectionListSortDescKey = 'collection_list_sort_desc';
-
-/// Ключ SharedPreferences для режима отображения (grid/list).
 const String _collectionListGridViewKey = 'collection_list_grid_view';
 
-/// Провайдер режима сортировки списка коллекций.
 final NotifierProvider<CollectionListSortNotifier, CollectionListSortMode>
     collectionListSortProvider =
     NotifierProvider<CollectionListSortNotifier, CollectionListSortMode>(
   CollectionListSortNotifier.new,
 );
 
-/// Notifier для режима сортировки списка коллекций.
 class CollectionListSortNotifier extends Notifier<CollectionListSortMode> {
   @override
   CollectionListSortMode build() {
@@ -269,7 +232,6 @@ class CollectionListSortNotifier extends Notifier<CollectionListSortMode> {
     }
   }
 
-  /// Устанавливает режим сортировки и сохраняет в SharedPreferences.
   Future<void> setSortMode(CollectionListSortMode mode) async {
     state = mode;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -277,14 +239,12 @@ class CollectionListSortNotifier extends Notifier<CollectionListSortMode> {
   }
 }
 
-/// Провайдер направления сортировки списка коллекций.
 final NotifierProvider<CollectionListSortDescNotifier, bool>
     collectionListSortDescProvider =
     NotifierProvider<CollectionListSortDescNotifier, bool>(
   CollectionListSortDescNotifier.new,
 );
 
-/// Notifier для направления сортировки списка коллекций.
 class CollectionListSortDescNotifier extends Notifier<bool> {
   @override
   bool build() {
@@ -300,14 +260,12 @@ class CollectionListSortDescNotifier extends Notifier<bool> {
     }
   }
 
-  /// Переключает направление сортировки.
   Future<void> toggle() async {
     state = !state;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_collectionListSortDescKey, state);
   }
 
-  /// Устанавливает направление сортировки.
   Future<void> setDescending({required bool descending}) async {
     state = descending;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -315,14 +273,13 @@ class CollectionListSortDescNotifier extends Notifier<bool> {
   }
 }
 
-/// Провайдер режима отображения списка коллекций (grid/list).
+/// true = grid, false = list.
 final NotifierProvider<CollectionListViewModeNotifier, bool>
     collectionListViewModeProvider =
     NotifierProvider<CollectionListViewModeNotifier, bool>(
   CollectionListViewModeNotifier.new,
 );
 
-/// Notifier для режима отображения (true = grid, false = list).
 class CollectionListViewModeNotifier extends Notifier<bool> {
   @override
   bool build() {
@@ -338,7 +295,6 @@ class CollectionListViewModeNotifier extends Notifier<bool> {
     }
   }
 
-  /// Переключает режим отображения.
   Future<void> toggle() async {
     state = !state;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -346,24 +302,16 @@ class CollectionListViewModeNotifier extends Notifier<bool> {
   }
 }
 
-// ==================== Home Status Filter ====================
-
-/// Ключ SharedPreferences для фильтра статуса на главной.
 const String _homeStatusFilterKey = 'home_status_filter';
 
-/// Провайдер фильтра статуса на главном экране.
-///
-/// `null` означает "Все" (без фильтра).
-/// По умолчанию: `null` (без фильтра).
+/// `null` means "All" (no filter); default `null`.
 final NotifierProvider<HomeStatusFilterNotifier, ItemStatus?>
     homeStatusFilterProvider =
     NotifierProvider<HomeStatusFilterNotifier, ItemStatus?>(
   HomeStatusFilterNotifier.new,
 );
 
-/// Notifier для фильтра статуса на главном экране.
-///
-/// Сохраняет выбор per-profile: ключ `home_status_filter_{profileId}`.
+/// Per-profile persistence: key `home_status_filter_{profileId}`.
 class HomeStatusFilterNotifier extends Notifier<ItemStatus?> {
   String get _prefsKey {
     final String profileId = ref.read(currentProfileProvider).id;
@@ -379,7 +327,6 @@ class HomeStatusFilterNotifier extends Notifier<ItemStatus?> {
     return ItemStatus.fromString(value);
   }
 
-  /// Устанавливает фильтр статуса и сохраняет в SharedPreferences.
   void setFilter(ItemStatus? status) {
     state = status;
     ref.read(sharedPreferencesProvider).setString(
@@ -389,26 +336,20 @@ class HomeStatusFilterNotifier extends Notifier<ItemStatus?> {
   }
 }
 
-/// ID коллекций, содержащих элементы с указанным статусом.
-///
-/// Пересчитывается при изменении фильтра или обновлении коллекций.
+/// Collection IDs containing items with the selected status.
 final FutureProvider<Set<int?>> filteredCollectionIdsProvider =
     FutureProvider<Set<int?>>((Ref ref) async {
   final ItemStatus? status = ref.watch(homeStatusFilterProvider);
   if (status == null) return const <int?>{};
 
-  // Зависимость от collectionsProvider гарантирует пересчёт при изменении данных
+  // Watch collectionsProvider to recompute when underlying data changes.
   ref.watch(collectionsProvider);
 
   final CollectionDao dao = ref.read(collectionDaoProvider);
   return dao.getCollectionIdsWithStatus(status);
 });
 
-// ==================== Collection Items ====================
-
-/// Провайдер для управления элементами в конкретной коллекции.
-///
-/// Если ключ == null, управляет uncategorized элементами.
+/// `collectionId == null` manages uncategorized items.
 final NotifierProviderFamily<CollectionItemsNotifier,
         AsyncValue<List<CollectionItem>>, int?>
     collectionItemsNotifierProvider = NotifierProvider.family<
@@ -416,7 +357,6 @@ final NotifierProviderFamily<CollectionItemsNotifier,
   CollectionItemsNotifier.new,
 );
 
-/// Notifier для управления элементами коллекции (универсальный).
 class CollectionItemsNotifier
     extends FamilyNotifier<AsyncValue<List<CollectionItem>>, int?> {
   late CollectionRepository _repository;
@@ -433,7 +373,6 @@ class CollectionItemsNotifier
     _db = ref.watch(databaseServiceProvider);
     _gameRepository = ref.watch(gameRepositoryProvider);
 
-    // Подписываемся на режим и направление сортировки
     _sortMode = ref.watch(collectionSortProvider(_collectionId));
     _isDescending = ref.watch(collectionSortDescProvider(_collectionId));
 
@@ -451,7 +390,7 @@ class CollectionItemsNotifier
       List<CollectionItem> items =
           await _repository.getItemsWithData(_collectionId);
 
-      // Дозагрузка платформ: если есть game-элементы с platformId, но без platform
+      // Lazy-load platforms for game items that have platformId but no platform object.
       final bool hasMissingPlatforms = items.any(
         (CollectionItem item) =>
             item.mediaType == MediaType.game &&
@@ -469,7 +408,6 @@ class CollectionItemsNotifier
         if (gamesWithPlatforms.isNotEmpty) {
           await _gameRepository
               .ensurePlatformsCached(gamesWithPlatforms);
-          // Перезагружаем items с подгруженными платформами
           items = await _repository.getItemsWithData(_collectionId);
         }
       }
@@ -478,7 +416,6 @@ class CollectionItemsNotifier
     });
   }
 
-  /// Применяет режим сортировки к списку элементов.
   List<CollectionItem> _applySortMode(
     List<CollectionItem> items,
     CollectionSortMode sortMode, {
@@ -487,8 +424,7 @@ class CollectionItemsNotifier
     return applySortMode(items, sortMode, isDescending: isDescending);
   }
 
-  /// Обновляет тег элемента без полной перезагрузки списка.
-  /// Оптимистично обновляет даты активности и статус элемента в state.
+  /// Optimistic in-state update; avoids full reload.
   void updateItemDates(
     int itemId, {
     DateTime? startedAt,
@@ -528,42 +464,33 @@ class CollectionItemsNotifier
     );
   }
 
-  /// Обновляет список элементов.
   Future<void> refresh() async {
     await _loadItems(_sortMode, isDescending: _isDescending);
     ref.invalidate(collectionStatsProvider(_collectionId));
     ref.invalidate(collectionCoversProvider(_collectionId));
   }
 
-  /// Перемещает элемент с позиции [oldIndex] на [newIndex].
-  ///
-  /// Оптимистичное обновление UI + batch update sort_order в БД.
+  /// Optimistic UI update + batch sort_order persistence.
   Future<void> reorderItem(int oldIndex, int newIndex) async {
     final List<CollectionItem>? items = state.valueOrNull;
     if (items == null) return;
 
-    // Оптимистичное обновление: переставляем в списке
     final List<CollectionItem> reordered = List<CollectionItem>.of(items);
     final CollectionItem moved = reordered.removeAt(oldIndex);
     reordered.insert(newIndex, moved);
 
-    // Обновляем sortOrder
     final List<CollectionItem> updated = <CollectionItem>[];
     for (int i = 0; i < reordered.length; i++) {
       updated.add(reordered[i].copyWith(sortOrder: i));
     }
     state = AsyncData<List<CollectionItem>>(updated);
 
-    // Сохраняем в БД
     final List<int> orderedIds =
         updated.map((CollectionItem item) => item.id).toList();
     await _db.reorderItems(_collectionId, orderedIds);
   }
 
-  /// Перемещает элемент с указанным [itemId] в начало списка.
-  ///
-  /// No-op если элемент уже первый или не найден. Работает только когда
-  /// активна ручная сортировка — иначе порядок всё равно пересчитается.
+  /// Only meaningful with manual sort; other modes will re-sort anyway.
   Future<void> moveItemToTop(int itemId) async {
     final List<CollectionItem>? items = state.valueOrNull;
     if (items == null) return;
@@ -573,9 +500,6 @@ class CollectionItemsNotifier
     await reorderItem(idx, 0);
   }
 
-  /// Перемещает элемент с указанным [itemId] в конец списка.
-  ///
-  /// No-op если элемент уже последний или не найден.
   Future<void> moveItemToBottom(int itemId) async {
     final List<CollectionItem>? items = state.valueOrNull;
     if (items == null) return;
@@ -585,9 +509,7 @@ class CollectionItemsNotifier
     await reorderItem(idx, items.length - 1);
   }
 
-  /// Добавляет элемент в коллекцию.
-  ///
-  /// Возвращает true при успехе, false если элемент уже в коллекции.
+  /// Returns false if the item is already in the collection.
   Future<bool> addItem({
     required MediaType mediaType,
     required int externalId,
@@ -611,11 +533,7 @@ class CollectionItemsNotifier
     return true;
   }
 
-  /// Создаёт кастомный элемент и добавляет его в коллекцию.
-  ///
-  /// Создаёт запись в `custom_items`, затем добавляет `CollectionItem`
-  /// с `mediaType = custom` и `externalId = customItem.id`.
-  /// При [localCoverPath] != null — копирует файл в кэш изображений.
+  /// When [localCoverPath] != null, copies the file into image cache.
   Future<bool> addCustomItem(
     CustomMedia customMedia, {
     String? localCoverPath,
@@ -633,8 +551,8 @@ class CollectionItemsNotifier
             customId.toString(),
             bytes,
           );
-          // Маркер в cover_url — CachedImage получит непустой imageUrl
-          // и найдёт файл в кэше, не обращаясь к сети.
+          // Marker in cover_url: CachedImage sees non-empty imageUrl and
+          // resolves from cache without hitting the network.
           if (saved) {
             await _db.customMediaDao.update(
               customMedia.copyWith(id: customId, coverUrl: CustomMedia.localCoverMarker),
@@ -668,9 +586,7 @@ class CollectionItemsNotifier
     }
   }
 
-  /// Клонирует элемент в другую коллекцию (полная копия).
-  ///
-  /// Возвращает true при успехе, false если элемент уже в целевой коллекции.
+  /// Returns false if the item is already in the target collection.
   Future<bool> cloneItem(
     int itemId, {
     required int targetCollectionId,
@@ -692,7 +608,6 @@ class CollectionItemsNotifier
     }
     final bool tagAssigned = resolvedTagId != null;
 
-    // Инвалидируем целевую коллекцию и статистики.
     ref.invalidate(collectionItemsNotifierProvider(targetCollectionId));
     ref.invalidate(collectionStatsProvider(targetCollectionId));
     ref.invalidate(collectionCoversProvider(targetCollectionId));
@@ -705,8 +620,8 @@ class CollectionItemsNotifier
     return true;
   }
 
-  /// Находит или создаёт в целевой коллекции тег с именем источника
-  /// (без учёта регистра). Возвращает id тега или null, если привязка невозможна.
+  /// Finds or creates a tag in the target collection by case-insensitive name.
+  /// Returns null if linking is not possible.
   Future<int?> _resolveTargetTagId({
     required int? sourceTagId,
     required int? targetCollectionId,
@@ -722,18 +637,14 @@ class CollectionItemsNotifier
     );
   }
 
-  /// Перемещает элемент в другую коллекцию.
-  ///
-  /// Возвращает `({success: true, sourceEmpty: ...})` при успехе,
-  /// `({success: false, sourceEmpty: false})` если элемент уже есть
-  /// в целевой коллекции (дубликат).
+  /// Returns `(success: false, sourceEmpty: false)` if target already has the item.
   Future<({bool success, bool sourceEmpty})> moveItem(
     int itemId, {
     required int? targetCollectionId,
     required MediaType mediaType,
     int? sourceTagId,
   }) async {
-    // Удаляем элемент из тир-листов исходной коллекции до перемещения.
+    // Remove from tier-lists of source collection before the move.
     final TierListDao tierDao = ref.read(tierListDaoProvider);
     final List<int> affectedTierListIds =
         await tierDao.getTierListIdsForItem(itemId);
@@ -744,7 +655,7 @@ class CollectionItemsNotifier
       );
     }
 
-    // Резолвим целевой tag_id заранее (по имени, без учёта регистра).
+    // Resolve target tag_id up front (case-insensitive name match).
     final int? resolvedTagId = await _resolveTargetTagId(
       sourceTagId: sourceTagId,
       targetCollectionId: targetCollectionId,
@@ -756,21 +667,18 @@ class CollectionItemsNotifier
     );
     if (!success) return (success: false, sourceEmpty: false);
 
-    // Одним UPDATE либо перепривязываем к целевому тегу, либо обнуляем
-    // (старый tag_id указывает на тег исходной коллекции).
+    // Single UPDATE: rebind to target tag or null out (old tag_id refers
+    // to a tag belonging to the source collection).
     if (sourceTagId != null) {
       await ref.read(tagDaoProvider).setItemTag(itemId, resolvedTagId);
     }
     final bool tagAssigned = resolvedTagId != null;
 
-    // Обновляем текущую коллекцию (элемент исчез).
     await refresh();
 
-    // Проверяем, пуста ли исходная коллекция после переноса.
     final bool sourceEmpty = _collectionId != null &&
         (state.valueOrNull?.isEmpty ?? false);
 
-    // Инвалидируем целевую коллекцию и статистики.
     ref.invalidate(collectionItemsNotifierProvider(targetCollectionId));
     ref.invalidate(collectionStatsProvider(targetCollectionId));
     ref.invalidate(collectionCoversProvider(targetCollectionId));
@@ -783,7 +691,6 @@ class CollectionItemsNotifier
     _invalidateCollectedIds(mediaType);
     ref.invalidate(allItemsNotifierProvider);
 
-    // Инвалидируем тир-листы, содержавшие перемещённый элемент.
     for (final int tierListId in affectedTierListIds) {
       ref.invalidate(tierListDetailProvider(tierListId));
     }
@@ -791,9 +698,8 @@ class CollectionItemsNotifier
     return (success: true, sourceEmpty: sourceEmpty);
   }
 
-  /// Удаляет элемент из коллекции.
   Future<void> removeItem(int id, {MediaType? mediaType}) async {
-    // Запоминаем тир-листы до удаления (CASCADE удалит entries из БД).
+    // Capture tier-lists before delete: CASCADE wipes entries from DB.
     final TierListDao tierDao = ref.read(tierListDaoProvider);
     final List<int> affectedTierListIds =
         await tierDao.getTierListIdsForItem(id);
@@ -806,7 +712,6 @@ class CollectionItemsNotifier
     ref.invalidate(uncategorizedItemCountProvider);
     ref.invalidate(allItemsNotifierProvider);
 
-    // Инвалидируем тир-листы, содержавшие удалённый элемент.
     for (final int tierListId in affectedTierListIds) {
       ref.invalidate(tierListDetailProvider(tierListId));
     }
@@ -829,20 +734,15 @@ class CollectionItemsNotifier
       case MediaType.anime:
         ref.invalidate(collectedAnimeIdsProvider);
       case MediaType.custom:
-        break; // Кастомные элементы не имеют collected IDs провайдера
+        break; // Custom items have no collected-IDs provider.
     }
   }
 
-  /// Обновляет статус элемента.
-  ///
-  /// Автоматически обновляет даты активности в локальном state:
-  /// last_activity_at, started_at (при inProgress), completed_at (при completed).
-  /// Логика дат вынесена в [computeDatesForStatus] — та же функция используется
-  /// для внешнего sync (Kodi) с кастомным `now`.
+  /// Date logic lives in [computeDatesForStatus] — shared with external sync
+  /// (e.g. Kodi) that passes a custom `now`.
   Future<void> updateStatus(int id, ItemStatus status, MediaType mediaType) async {
     await _repository.updateItemStatus(id, status, mediaType: mediaType);
 
-    // Локальное обновление с датами
     final List<CollectionItem>? items = state.valueOrNull;
     if (items != null) {
       final DateTime now = DateTime.now();
@@ -860,22 +760,15 @@ class CollectionItemsNotifier
         .updateStatusLocally(id, status);
   }
 
-  // ---------------------------------------------------------------------------
-  // Bulk-операции, требующие контекста одной коллекции (sort_order).
-  // Общие массовые операции (remove / move / clone / status) живут в
-  // `BulkOperations` (`helpers/bulk_operations.dart`) — collection-agnostic
-  // и переиспользуются на All Items.
-  // ---------------------------------------------------------------------------
+  // Bulk ops needing single-collection context (sort_order). Collection-agnostic
+  // bulk ops (remove/move/clone/status) live in `BulkOperations`
+  // (`helpers/bulk_operations.dart`) and are reused on All Items.
 
-  /// Перемещает группу элементов в начало списка, сохраняя их
-  /// относительный порядок. No-op при пустом наборе или если все
-  /// элементы уже в начале. Имеет смысл только при `sortMode == manual`.
+  /// Preserves relative order. Only meaningful with `sortMode == manual`.
   Future<void> moveItemsToTop(Iterable<int> ids) async {
     await _moveItemsToEdge(ids, toTop: true);
   }
 
-  /// Перемещает группу элементов в конец списка, сохраняя их
-  /// относительный порядок.
   Future<void> moveItemsToBottom(Iterable<int> ids) async {
     await _moveItemsToEdge(ids, toTop: false);
   }
@@ -904,7 +797,6 @@ class CollectionItemsNotifier
         ? <CollectionItem>[...selected, ...rest]
         : <CollectionItem>[...rest, ...selected];
 
-    // No-op если порядок не изменился.
     bool changed = false;
     for (int i = 0; i < items.length; i++) {
       if (items[i].id != reordered[i].id) {
@@ -925,12 +817,10 @@ class CollectionItemsNotifier
     await _db.reorderItems(_collectionId, orderedIds);
   }
 
-  /// Обновляет даты активности элемента вручную.
-  ///
-  /// Автоматически синхронизирует статус:
-  /// - Установка [completedAt] → статус `completed` (с любого статуса).
-  /// - Установка [startedAt] → статус `inProgress` (если был `notStarted`
-  ///   или `planned`; `dropped`, `completed` и `inProgress` не меняются).
+  /// Auto-syncs status:
+  /// - setting [completedAt] forces `completed` from any state;
+  /// - setting [startedAt] promotes `notStarted`/`planned` to `inProgress`
+  ///   (others unchanged).
   Future<void> updateActivityDates(
     int id, {
     DateTime? startedAt,
@@ -944,10 +834,8 @@ class CollectionItemsNotifier
       lastActivityAt: lastActivityAt,
     );
 
-    // Локальное обновление
     final List<CollectionItem>? items = state.valueOrNull;
     if (items != null) {
-      // Определяем новый статус на основе устанавливаемых дат.
       ItemStatus? newStatus;
       MediaType? mediaType;
 
@@ -964,7 +852,6 @@ class CollectionItemsNotifier
         }
       }
 
-      // Сохраняем новый статус в БД.
       if (newStatus != null && mediaType != null) {
         await _repository.updateItemStatus(id, newStatus, mediaType: mediaType);
       }
@@ -991,13 +878,9 @@ class CollectionItemsNotifier
     }
   }
 
-  /// Обновляет прогресс просмотра сериала или чтения манги.
-  ///
-  /// Для манги автоматически обновляет статус:
-  /// - `notStarted`/`planned` → `inProgress` при начале чтения.
-  /// - → `completed` при достижении последней главы.
-  /// - → `notStarted` при сбросе прогресса до нуля.
-  /// - `dropped` никогда не перезаписывается.
+  /// For manga, auto-syncs status: notStarted/planned -> inProgress on first
+  /// chapter; -> completed at final chapter; -> notStarted when reset to 0;
+  /// `dropped` is never overwritten.
   Future<void> updateProgress(
     int id, {
     int? currentSeason,
@@ -1009,7 +892,6 @@ class CollectionItemsNotifier
       currentEpisode: currentEpisode,
     );
 
-    // Локальное обновление
     final List<CollectionItem>? items = state.valueOrNull;
     if (items != null) {
       state = AsyncData<List<CollectionItem>>(
@@ -1024,13 +906,11 @@ class CollectionItemsNotifier
         }).toList(),
       );
 
-      // Авто-статус для манги и аниме
       await _autoUpdateMangaStatus(id, currentEpisode, currentSeason);
       await _autoUpdateAnimeStatus(id, currentEpisode);
     }
   }
 
-  /// Автоматически обновляет статус манги на основе прогресса чтения.
   Future<void> _autoUpdateMangaStatus(
     int id,
     int? newChapterValue,
@@ -1056,7 +936,6 @@ class CollectionItemsNotifier
     }
   }
 
-  /// Автоматически обновляет статус аниме на основе прогресса просмотра.
   Future<void> _autoUpdateAnimeStatus(
     int id,
     int? newEpisodeValue,
@@ -1080,7 +959,6 @@ class CollectionItemsNotifier
     }
   }
 
-  /// Обновляет комментарий автора.
   Future<void> updateAuthorComment(int id, String? comment) async {
     await _repository.updateItemAuthorComment(id, comment);
 
@@ -1099,7 +977,6 @@ class CollectionItemsNotifier
     }
   }
 
-  /// Обновляет личный комментарий.
   Future<void> updateUserComment(int id, String? comment) async {
     await _repository.updateItemUserComment(id, comment);
 
@@ -1118,7 +995,7 @@ class CollectionItemsNotifier
     }
   }
 
-  /// Обновляет пользовательский рейтинг (1-10 или null для сброса).
+  /// [rating] is 1-10, or null to clear.
   Future<void> updateUserRating(int id, int? rating) async {
     assert(
       rating == null || (rating >= 1 && rating <= 10),
@@ -1142,7 +1019,6 @@ class CollectionItemsNotifier
     ref.invalidate(allItemsNotifierProvider);
   }
 
-  /// Добавляет время (в минутах) к потраченному на элемент.
   Future<void> addTimeSpent(int id, int minutesToAdd) async {
     final List<CollectionItem>? items = state.valueOrNull;
     final CollectionItem? item =
@@ -1167,7 +1043,6 @@ class CollectionItemsNotifier
     ref.invalidate(allItemsNotifierProvider);
   }
 
-  /// Устанавливает потраченное время (в минутах) вручную.
   Future<void> setTimeSpent(int id, int totalMinutes) async {
     await _repository.updateItemTimeSpent(id, totalMinutes);
 
@@ -1186,11 +1061,7 @@ class CollectionItemsNotifier
   }
 }
 
-// ==================== Collected IDs ====================
-
-/// Провайдер для информации о нахождении игр в коллекциях.
-///
-/// Возвращает `Map` igdb_id -> список записей в коллекциях.
+/// igdb_id -> collection entries.
 final FutureProvider<Map<int, List<CollectedItemInfo>>>
     collectedGameIdsProvider =
     FutureProvider<Map<int, List<CollectedItemInfo>>>((Ref ref) async {
@@ -1198,9 +1069,7 @@ final FutureProvider<Map<int, List<CollectedItemInfo>>>
   return db.getCollectedItemInfos(MediaType.game);
 });
 
-/// Провайдер для информации о нахождении фильмов в коллекциях.
-///
-/// Возвращает `Map` tmdb_id -> список записей в коллекциях.
+/// tmdb_id -> collection entries.
 final FutureProvider<Map<int, List<CollectedItemInfo>>>
     collectedMovieIdsProvider =
     FutureProvider<Map<int, List<CollectedItemInfo>>>((Ref ref) async {
@@ -1208,9 +1077,7 @@ final FutureProvider<Map<int, List<CollectedItemInfo>>>
   return db.getCollectedItemInfos(MediaType.movie);
 });
 
-/// Провайдер для информации о нахождении сериалов в коллекциях.
-///
-/// Возвращает `Map` tmdb_id -> список записей в коллекциях.
+/// tmdb_id -> collection entries.
 final FutureProvider<Map<int, List<CollectedItemInfo>>>
     collectedTvShowIdsProvider =
     FutureProvider<Map<int, List<CollectedItemInfo>>>((Ref ref) async {
@@ -1218,9 +1085,7 @@ final FutureProvider<Map<int, List<CollectedItemInfo>>>
   return db.getCollectedItemInfos(MediaType.tvShow);
 });
 
-/// Провайдер для информации о нахождении анимации в коллекциях.
-///
-/// Возвращает `Map` tmdb_id -> список записей в коллекциях.
+/// tmdb_id -> collection entries.
 final FutureProvider<Map<int, List<CollectedItemInfo>>>
     collectedAnimationIdsProvider =
     FutureProvider<Map<int, List<CollectedItemInfo>>>((Ref ref) async {
@@ -1228,9 +1093,7 @@ final FutureProvider<Map<int, List<CollectedItemInfo>>>
   return db.getCollectedItemInfos(MediaType.animation);
 });
 
-/// Провайдер для информации о нахождении визуальных новелл в коллекциях.
-///
-/// Возвращает `Map` numeric_id -> список записей в коллекциях.
+/// numeric_id -> collection entries.
 final FutureProvider<Map<int, List<CollectedItemInfo>>>
     collectedVisualNovelIdsProvider =
     FutureProvider<Map<int, List<CollectedItemInfo>>>((Ref ref) async {
@@ -1238,9 +1101,7 @@ final FutureProvider<Map<int, List<CollectedItemInfo>>>
   return db.getCollectedItemInfos(MediaType.visualNovel);
 });
 
-/// Провайдер для информации о нахождении манги в коллекциях.
-///
-/// Возвращает `Map` numeric_id -> список записей в коллекциях.
+/// numeric_id -> collection entries.
 final FutureProvider<Map<int, List<CollectedItemInfo>>>
     collectedMangaIdsProvider =
     FutureProvider<Map<int, List<CollectedItemInfo>>>((Ref ref) async {
@@ -1248,9 +1109,7 @@ final FutureProvider<Map<int, List<CollectedItemInfo>>>
   return db.getCollectedItemInfos(MediaType.manga);
 });
 
-/// Провайдер для информации о нахождении аниме в коллекциях.
-///
-/// Возвращает `Map` anilist_id -> список записей в коллекциях.
+/// anilist_id -> collection entries.
 final FutureProvider<Map<int, List<CollectedItemInfo>>>
     collectedAnimeIdsProvider =
     FutureProvider<Map<int, List<CollectedItemInfo>>>((Ref ref) async {
@@ -1258,7 +1117,6 @@ final FutureProvider<Map<int, List<CollectedItemInfo>>>
   return db.getCollectedItemInfos(MediaType.anime);
 });
 
-/// Провайдер для количества uncategorized элементов.
 final FutureProvider<int> uncategorizedItemCountProvider =
     FutureProvider<int>((Ref ref) async {
   final CollectionRepository repository =
@@ -1266,7 +1124,6 @@ final FutureProvider<int> uncategorizedItemCountProvider =
   return repository.getUncategorizedCount();
 });
 
-/// Провайдер для собственных коллекций.
 final Provider<List<Collection>> ownCollectionsProvider =
     Provider<List<Collection>>((Ref ref) {
   final AsyncValue<List<Collection>> allCollections =

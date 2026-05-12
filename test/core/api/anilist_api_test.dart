@@ -1,5 +1,3 @@
-// Тесты для клиента AniList API
-
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -466,8 +464,6 @@ void main() {
         expect(results, isEmpty);
       });
     });
-
-    // === Anime methods ===
 
     Map<String, dynamic> animeJson({
       int id = 1,

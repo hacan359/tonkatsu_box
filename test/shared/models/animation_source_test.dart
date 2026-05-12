@@ -1,5 +1,3 @@
-// Тесты для модели AnimationSource
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 

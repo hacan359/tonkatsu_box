@@ -91,10 +91,6 @@ void main() {
           clientId: testClientId,
           accessToken: testAccessToken,
         );
-
-        // Проверяем что после установки credentials можно вызвать fetchPlatforms
-        // без исключения о недостающих credentials
-        // (тест на исключение ниже)
       });
     });
 
@@ -763,7 +759,6 @@ void main() {
     });
 
     group('_igdbPost auto-refresh', () {
-      /// Настраивает SUT с clientSecret для авто-обновления токена.
       void setupWithSecret() {
         sut.setCredentials(
           clientId: testClientId,
@@ -778,7 +773,6 @@ void main() {
 
         int igdbCallCount = 0;
 
-        // IGDB POST (uses options + data).
         when(() => mockDio.post<dynamic>(
               any(),
               options: any(named: 'options'),
@@ -794,7 +788,6 @@ void main() {
               requestOptions: RequestOptions(),
             );
           }
-          // Retry call succeeds.
           return Response<dynamic>(
             data: <Map<String, dynamic>>[],
             statusCode: 200,
@@ -802,7 +795,6 @@ void main() {
           );
         });
 
-        // Twitch auth POST (uses queryParameters).
         when(() => mockDio.post<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -820,9 +812,8 @@ void main() {
             await sut.searchGames(query: 'test');
 
         expect(result, isEmpty);
-        // 2 IGDB calls: original 401 + retry.
+        // 2 IGDB calls: initial 401 + retry; 1 Twitch refresh call.
         expect(igdbCallCount, equals(2));
-        // 1 Twitch auth call.
         verify(() => mockDio.post<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -830,7 +821,6 @@ void main() {
       });
 
       test('should rethrow 401 when no clientSecret for refresh', () async {
-        // Без clientSecret.
         sut.setCredentials(
           clientId: testClientId,
           accessToken: testAccessToken,
@@ -857,7 +847,6 @@ void main() {
       test('should rethrow 401 when token refresh fails', () async {
         setupWithSecret();
 
-        // Все POST вызовы возвращают 401.
         when(() => mockDio.post<dynamic>(
               any(),
               options: any(named: 'options'),
@@ -870,7 +859,6 @@ void main() {
           requestOptions: RequestOptions(),
         ));
 
-        // getAccessToken also throws (uses queryParameters).
         when(() => mockDio.post<dynamic>(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -961,7 +949,6 @@ void main() {
           throwsA(isA<IgdbApiException>()),
         );
 
-        // Только 1 вызов post (без retry/refresh).
         verify(() => mockDio.post<dynamic>(
               any(),
               options: any(named: 'options'),

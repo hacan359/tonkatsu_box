@@ -1,5 +1,3 @@
-// Тесты для SettingsGroup — плоская группа настроек.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/settings/widgets/settings_group.dart';
@@ -45,7 +43,6 @@ void main() {
           (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
 
-        // No uppercase text — title is null
         expect(find.text('PROFILE'), findsNothing);
       });
 
@@ -63,7 +60,6 @@ void main() {
         ));
 
         expect(find.text('Only child'), findsOneWidget);
-        // No dividers for single child
         expect(find.byType(Divider), findsNothing);
       });
     });
@@ -85,7 +81,6 @@ void main() {
         await tester.pumpWidget(createWidget(title: 'profile'));
 
         expect(find.text('PROFILE'), findsOneWidget);
-        // Only the title text inside the header Column
         expect(find.text('Author name for collections'), findsNothing);
       });
 
@@ -110,7 +105,6 @@ void main() {
           ],
         ));
 
-        // 2 dividers for 3 children
         expect(find.byType(Divider), findsNWidgets(2));
       });
     });

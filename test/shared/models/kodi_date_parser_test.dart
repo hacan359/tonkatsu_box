@@ -1,5 +1,3 @@
-// Тесты для parseKodiDateTime.
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/shared/models/kodi_date_parser.dart';
 

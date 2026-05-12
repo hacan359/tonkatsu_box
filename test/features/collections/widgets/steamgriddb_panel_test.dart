@@ -43,7 +43,6 @@ const SettingsState settingsWithKey = SettingsState(
 
 const SettingsState settingsWithoutKey = SettingsState();
 
-/// Тестовый notifier для SteamGridDB панели.
 class TestSteamGridDbPanelNotifier extends SteamGridDbPanelNotifier {
   TestSteamGridDbPanelNotifier(this._initialState);
 
@@ -175,7 +174,7 @@ void main() {
 
         final TextField textField =
             tester.widget<TextField>(find.byType(TextField));
-        // Не должен перезаписывать — уже есть результаты
+        // Must not overwrite when search results already exist.
         expect(textField.controller?.text, isNot('SNES Classics'));
       });
     });
@@ -416,7 +415,6 @@ void main() {
           onAddImage: (SteamGridDbImage image) => addedImage = image,
         ));
 
-        // Нажимаем на карточку изображения (InkWell внутри Card)
         await tester.tap(find.byType(InkWell).last);
         await tester.pump();
 
@@ -439,7 +437,6 @@ void main() {
   });
 }
 
-/// Фейковый SettingsNotifier для тестов.
 class _FakeSettingsNotifier extends SettingsNotifier {
   _FakeSettingsNotifier(this._initialState);
 

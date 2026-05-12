@@ -6,7 +6,7 @@ import '../../helpers/test_helpers.dart';
 
 void main() {
   group('WishlistItem', () {
-    // Дата отличается от shared testDate — оставляем локально.
+    // Local date differs from the shared testDate helper.
     final DateTime testDate = DateTime(2024, 6, 15, 12, 0, 0);
     final int testTimestamp = testDate.millisecondsSinceEpoch ~/ 1000;
     final DateTime resolvedDate = DateTime(2024, 6, 20, 18, 0, 0);

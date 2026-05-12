@@ -1,5 +1,3 @@
-// Тесты для клиента VNDB API
-
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -178,7 +176,6 @@ void main() {
         expect(capturedData, isNotNull);
         final dynamic filters = capturedData!['filters'];
         expect(filters, isA<List<dynamic>>());
-        // Should be ['and', ['tag', '=', 'g7'], ['votecount', '>=', 10]]
         final List<dynamic> filterList = filters as List<dynamic>;
         expect(filterList.first, 'and');
       });

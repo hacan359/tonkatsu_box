@@ -131,12 +131,10 @@ void main() {
         final List<WishlistItem>? items =
             container.read(wishlistProvider).valueOrNull;
         expect(items, isNotNull);
-        // item1 resolved → в конце списка
         final WishlistItem resolved =
             items!.firstWhere((WishlistItem i) => i.id == 1);
         expect(resolved.isResolved, true);
         expect(resolved.resolvedAt, isNotNull);
-        // resolved должен быть после unresolvedexpect(items.last.id, 1);
       });
     });
 
@@ -267,7 +265,7 @@ void main() {
       );
 
       final ProviderContainer container = createContainer();
-      // Не ждём pump — данные ещё загружаются
+      // No pump — data still loading.
       final int count = container.read(activeWishlistCountProvider);
       expect(count, 0);
     });

@@ -7,6 +7,36 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Changed
+
+- **Localization polish: capitalized Russian TMDB genres, plural search tabs, English-only code comments**
+
+  TMDB seeds Russian genre names in lowercase (`боевик`, `комедия`); they
+  now render with a capital letter wherever the genre map is consumed
+  (filters, item details, resolved item rows). Search source tabs were
+  using singular labels (`Фильм`, `Игра`, `Сериал`, `Анимация`) shared
+  with detail screens — they now use dedicated plural keys
+  (`Фильмы`, `Игры`, `Сериалы`, `Анимация`), with English equivalents
+  (`Movies`, `Games`, `TV Shows`, `Animation`) staying the same shape.
+  In parallel, code comments across the largest lib files and every
+  test file with Cyrillic comments were translated to English (or
+  removed where they only restated the symbol name); the `finish` skill
+  now codifies the rule so future diffs stay clean.
+
+  * lib/core/database/dao/movie_dao.dart (MovieDao.getTmdbGenreMap,
+    MovieDao._capitalize): Capitalize first letter on read so downstream
+    consumers (filter chips, ID→name resolution in `CollectionDao`) all
+    see Title Case.
+  * lib/l10n/app_ru.arb, lib/l10n/app_en.arb (searchSourceGames,
+    searchSourceMovies, searchSourceTvShows, searchSourceAnimation): New
+    plural labels for search source tabs.
+  * lib/features/search/sources/igdb_games_source.dart,
+    tmdb_movies_source.dart, tmdb_tv_source.dart, tmdb_anime_source.dart
+    (label): Switched from singular `mediaType*` to plural
+    `searchSource*` keys.
+  * .claude/skills/finish/SKILL.md: New "Comment style" section
+    enforcing English-only, WHY-only, ≤1-line comments project-wide.
+
 ### Added
 
 - **Bulk actions across collections and All Items**

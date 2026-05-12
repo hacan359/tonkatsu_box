@@ -1,5 +1,3 @@
-// Тесты утилиты сортировки applySortMode.
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xerabora/features/collections/providers/sort_utils.dart';
 import 'package:xerabora/shared/models/collection_item.dart';
@@ -8,7 +6,6 @@ import 'package:xerabora/shared/models/game.dart';
 import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 
-// Вспомогательная функция для создания тестовых CollectionItem.
 CollectionItem _makeItem({
   required int id,
   required String name,
@@ -33,9 +30,6 @@ CollectionItem _makeItem({
 
 void main() {
   group('applySortMode', () {
-    // ---------------------------------------------------------------
-    // Manual sort
-    // ---------------------------------------------------------------
     group('CollectionSortMode.manual', () {
       test('сортирует по sortOrder по возрастанию', () {
         final List<CollectionItem> items = <CollectionItem>[
@@ -65,7 +59,6 @@ void main() {
           isDescending: true,
         );
 
-        // Тот же порядок, что и без isDescending
         expect(result.map((CollectionItem i) => i.id).toList(), <int>[2, 3, 1]);
       });
 
@@ -80,14 +73,10 @@ void main() {
           CollectionSortMode.manual,
         );
 
-        // При одинаковых sortOrder порядок стабильный
         expect(result.length, 2);
       });
     });
 
-    // ---------------------------------------------------------------
-    // AddedDate sort
-    // ---------------------------------------------------------------
     group('CollectionSortMode.addedDate', () {
       test('по умолчанию новейшие первыми (descending по дате)', () {
         final List<CollectionItem> items = <CollectionItem>[
@@ -142,9 +131,6 @@ void main() {
       });
     });
 
-    // ---------------------------------------------------------------
-    // Name sort
-    // ---------------------------------------------------------------
     group('CollectionSortMode.name', () {
       test('по умолчанию A-Z (алфавитный порядок)', () {
         final List<CollectionItem> items = <CollectionItem>[
@@ -202,9 +188,6 @@ void main() {
       });
     });
 
-    // ---------------------------------------------------------------
-    // Status sort
-    // ---------------------------------------------------------------
     group('CollectionSortMode.status', () {
       test('сортирует по statusSortPriority (активные первыми)', () {
         final List<CollectionItem> items = <CollectionItem>[
@@ -220,9 +203,6 @@ void main() {
           CollectionSortMode.status,
         );
 
-        // Ожидаемый порядок по statusSortPriority:
-        // inProgress(0), planned(1), notStarted(2),
-        // completed(3), dropped(4)
         expect(
           result.map((CollectionItem i) => i.id).toList(),
           <int>[2, 3, 4, 1, 5],
@@ -272,7 +252,6 @@ void main() {
           isDescending: true,
         );
 
-        // Инвертированный: dropped(5), completed(4), inProgress(0)
         expect(
           result.map((CollectionItem i) => i.id).toList(),
           <int>[3, 1, 2],
@@ -297,9 +276,7 @@ void main() {
       });
     });
 
-    // ---------------------------------------------------------------
-    // Rating sort (приоритет: userRating → apiRating → null в конец)
-    // ---------------------------------------------------------------
+    // Priority: userRating -> apiRating -> nulls last.
     group('CollectionSortMode.rating', () {
       test('по умолчанию высший рейтинг первым', () {
         final List<CollectionItem> items = <CollectionItem>[
@@ -320,7 +297,7 @@ void main() {
       });
 
       test('fallback на apiRating когда userRating отсутствует', () {
-        // Game.rating делится на 10 в _resolvedMedia → apiRating=80/10=8.0
+        // Game.rating is divided by 10 in _resolvedMedia (80 -> 8.0).
         final List<CollectionItem> items = <CollectionItem>[
           _makeItem(id: 1, name: 'User 5', userRating: 5),
           _makeItem(id: 2, name: 'API 8', apiRating: 80.0),
@@ -332,7 +309,6 @@ void main() {
           CollectionSortMode.rating,
         );
 
-        // userRating 9, apiRating 8.0, userRating 5
         expect(
           result.map((CollectionItem i) => i.id).toList(),
           <int>[3, 2, 1],
@@ -341,10 +317,8 @@ void main() {
 
       test('userRating приоритетнее apiRating при наличии обоих', () {
         final List<CollectionItem> items = <CollectionItem>[
-          // userRating=3 используется вместо apiRating=95/10=9.5
           _makeItem(id: 1, name: 'Low user, high api',
               userRating: 3, apiRating: 95.0),
-          // Только apiRating=70/10=7.0
           _makeItem(id: 2, name: 'Only api', apiRating: 70.0),
         ];
 
@@ -353,7 +327,6 @@ void main() {
           CollectionSortMode.rating,
         );
 
-        // apiRating 7.0 > userRating 3.0
         expect(
           result.map((CollectionItem i) => i.id).toList(),
           <int>[2, 1],
@@ -364,7 +337,6 @@ void main() {
         final List<CollectionItem> items = <CollectionItem>[
           _makeItem(id: 1, name: 'No Rating'),
           _makeItem(id: 2, name: 'Has User', userRating: 5),
-          // apiRating=60/10=6.0
           _makeItem(id: 3, name: 'Has API', apiRating: 60.0),
           _makeItem(id: 4, name: 'Also No Rating'),
         ];
@@ -374,9 +346,8 @@ void main() {
           CollectionSortMode.rating,
         );
 
-        // С рейтингом первые (6.0, 5.0), без обоих — в конце
-        expect(result[0].id, 3); // apiRating 6.0
-        expect(result[1].id, 2); // userRating 5
+        expect(result[0].id, 3);
+        expect(result[1].id, 2);
         expect(result[2].userRating, isNull);
         expect(result[2].apiRating, isNull);
         expect(result[3].userRating, isNull);
@@ -396,7 +367,6 @@ void main() {
           isDescending: true,
         );
 
-        // Инвертированный список: null первым, потом low, потом high
         expect(
           result.map((CollectionItem i) => i.id).toList(),
           <int>[3, 1, 2],
@@ -405,7 +375,7 @@ void main() {
 
       test('isDescending=true с apiRating fallback', () {
         final List<CollectionItem> items = <CollectionItem>[
-          _makeItem(id: 1, name: 'API 2', apiRating: 20.0), // 20/10=2.0
+          _makeItem(id: 1, name: 'API 2', apiRating: 20.0),
           _makeItem(id: 2, name: 'User 8', userRating: 8),
           _makeItem(id: 3, name: 'None'),
         ];
@@ -416,7 +386,6 @@ void main() {
           isDescending: true,
         );
 
-        // Инвертированный: none, api 2.0, user 8
         expect(
           result.map((CollectionItem i) => i.id).toList(),
           <int>[3, 1, 2],
@@ -456,7 +425,7 @@ void main() {
         final List<CollectionItem> items = <CollectionItem>[
           _makeItem(id: 1, name: 'A'),
           _makeItem(id: 2, name: 'B', userRating: 1),
-          _makeItem(id: 3, name: 'C', apiRating: 50.0), // 50/10=5.0
+          _makeItem(id: 3, name: 'C', apiRating: 50.0),
           _makeItem(id: 4, name: 'D', userRating: 10),
         ];
 
@@ -465,7 +434,6 @@ void main() {
           CollectionSortMode.rating,
         );
 
-        // 10, 5.0, 1, null
         expect(result[0].id, 4);
         expect(result[1].id, 3);
         expect(result[2].id, 2);
@@ -473,9 +441,6 @@ void main() {
       });
     });
 
-    // ---------------------------------------------------------------
-    // External Rating sort
-    // ---------------------------------------------------------------
     group('CollectionSortMode.externalRating', () {
       test('по умолчанию высший внешний рейтинг первым', () {
         final List<CollectionItem> items = <CollectionItem>[
@@ -566,9 +531,6 @@ void main() {
       });
     });
 
-    // ---------------------------------------------------------------
-    // Пустой список
-    // ---------------------------------------------------------------
     group('пустой список', () {
       test('manual возвращает пустой список', () {
         final List<CollectionItem> result = applySortMode(
@@ -625,9 +587,6 @@ void main() {
       });
     });
 
-    // ---------------------------------------------------------------
-    // Дополнительные edge cases
-    // ---------------------------------------------------------------
     group('edge cases', () {
       test('один элемент возвращается как есть для всех режимов', () {
         final List<CollectionItem> items = <CollectionItem>[
@@ -665,7 +624,6 @@ void main() {
           _makeItem(id: 2, name: 'Ape Escape'),
         ];
 
-        // Вызов без isDescending — должен быть A-Z
         final List<CollectionItem> result = applySortMode(
           items,
           CollectionSortMode.name,

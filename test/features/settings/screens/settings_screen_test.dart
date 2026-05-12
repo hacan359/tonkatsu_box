@@ -1,5 +1,3 @@
-// Тесты для SettingsScreen — логика, навигация, состояние.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -46,7 +44,6 @@ void main() {
     );
   }
 
-  /// Скроллит ListView до элемента с текстом [text] и возвращает Finder.
   Future<Finder> scrollTo(WidgetTester tester, String text) async {
     final Finder finder = find.text(text);
     await tester.scrollUntilVisible(finder, 200,
@@ -89,7 +86,6 @@ void main() {
         await tester.pumpWidget(createWidget());
         await tester.pumpAndSettle();
 
-        // Appearance секция теперь ниже Data-секций — скроллим до него.
         await tester.scrollUntilVisible(
           find.text('App Language'),
           200,
@@ -167,9 +163,6 @@ void main() {
         expect(tester.takeException(), isNull);
       });
     });
-
-    // Error-секция удалена в v0.28 (ошибки логируются + показываются
-    // SnackBar'ом, отдельная группа не нужна).
 
     group('Version', () {
       testWidgets('shows version placeholder before PackageInfo loads',
