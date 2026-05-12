@@ -3840,4 +3840,143 @@ class SRu extends S {
     );
     return 'Выбрано: $kind ($_temp0)';
   }
+
+  @override
+  String get settingsAniListImport => 'AniList';
+
+  @override
+  String get settingsAniListImportSubtitle =>
+      'Импорт списков аниме и манги по публичному имени';
+
+  @override
+  String get aniListImportTitle => 'Импорт из AniList';
+
+  @override
+  String get aniListImportSubtitle =>
+      'Тянет публичные списки с anilist.co — авторизация не нужна';
+
+  @override
+  String get aniListImportUsername => 'Имя пользователя AniList';
+
+  @override
+  String get aniListImportUsernameHint => 'например, yourname';
+
+  @override
+  String get aniListImportInclude => 'Что импортировать';
+
+  @override
+  String get aniListImportIncludeAnime => 'Список аниме';
+
+  @override
+  String get aniListImportIncludeManga => 'Список манги';
+
+  @override
+  String get aniListImportMode => 'Режим';
+
+  @override
+  String get aniListImportModeNewOnly => 'Только новые';
+
+  @override
+  String get aniListImportModeNewOnlySubtitle =>
+      'Пропустить элементы, уже добавленные в коллекцию';
+
+  @override
+  String get aniListImportModeOverwrite => 'Перезаписать существующие';
+
+  @override
+  String get aniListImportModeOverwriteSubtitle =>
+      'Обновить прогресс, статус и даты из AniList';
+
+  @override
+  String get aniListImportTargetCollection => 'Целевая коллекция';
+
+  @override
+  String get aniListImportCreateNew => 'Создать новую коллекцию';
+
+  @override
+  String get aniListImportUseExisting => 'Добавить в существующую';
+
+  @override
+  String get aniListImportSelectCollection => 'Выберите коллекцию';
+
+  @override
+  String get aniListImportNoCollections => 'Нет коллекций';
+
+  @override
+  String get aniListImportErrorLoadingCollections =>
+      'Ошибка загрузки коллекций';
+
+  @override
+  String get aniListImportNewCollectionName => 'Название коллекции';
+
+  @override
+  String aniListImportNewCollectionDefault(String username) {
+    return 'AniList Import — $username';
+  }
+
+  @override
+  String get aniListImportButton => 'Запустить импорт';
+
+  @override
+  String get aniListImportFetchingAnime => 'Получаем список аниме...';
+
+  @override
+  String get aniListImportFetchingManga => 'Получаем список манги...';
+
+  @override
+  String get aniListImportMatching => 'Импортируем записи';
+
+  @override
+  String get aniListImportComplete => 'Импорт завершён!';
+
+  @override
+  String aniListImportLookingUp(String title) {
+    return 'Обработка: $title';
+  }
+
+  @override
+  String aniListImportImported(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count импортировано',
+      few: '$count импортировано',
+      one: '1 импортирован',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aniListImportUpdated(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count обновлено',
+      few: '$count обновлено',
+      one: '1 обновлён',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String aniListImportFailed(String error) {
+    return 'Ошибка импорта: $error';
+  }
+
+  @override
+  String aniListImportUserNotFound(String username) {
+    return 'Пользователь AniList «$username» не найден';
+  }
+
+  @override
+  String aniListImportPrivateProfile(String username) {
+    return 'Профиль AniList «$username» приватный';
+  }
+
+  @override
+  String get aniListImportEmptyUsername => 'Введите имя пользователя AniList';
+
+  @override
+  String get aniListImportSelectAtLeastOne =>
+      'Выберите хотя бы один тип: аниме или манга';
 }

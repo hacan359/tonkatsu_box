@@ -1,9 +1,11 @@
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:xerabora/shared/models/anime.dart';
 import 'package:xerabora/shared/models/canvas_viewport.dart';
 import 'package:xerabora/shared/models/collection.dart';
 import 'package:xerabora/shared/models/game.dart';
+import 'package:xerabora/shared/models/manga.dart';
 import 'package:xerabora/shared/models/item_status.dart';
 import 'package:xerabora/shared/models/media_type.dart';
 import 'package:xerabora/shared/models/movie.dart';
@@ -40,6 +42,8 @@ void registerAllFallbacks() {
   registerFallbackValue(const <TvSeason>[]);
   registerFallbackValue(const <TvEpisode>[]);
   registerFallbackValue(const <Platform>[]);
+  registerFallbackValue(const <Anime>[]);
+  registerFallbackValue(const <Manga>[]);
   registerFallbackValue(const <int>[]);
 
   registerFallbackValue(<TierDefinition>[]);

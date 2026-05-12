@@ -96,7 +96,7 @@ class Manga {
       titleEnglish: titleMap?['english'] as String?,
       titleNative: titleMap?['native'] as String?,
       description: description,
-      coverUrl: coverMap?['large'] as String?,
+      coverUrl: (coverMap?['extraLarge'] ?? coverMap?['large']) as String?,
       coverUrlMedium: coverMap?['medium'] as String?,
       averageScore: json['averageScore'] as int?,
       meanScore: json['meanScore'] as int?,

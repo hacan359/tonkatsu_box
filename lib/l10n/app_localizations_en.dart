@@ -3790,4 +3790,128 @@ class SEn extends S {
     );
     return 'Picked: $kind ($_temp0)';
   }
+
+  @override
+  String get settingsAniListImport => 'AniList';
+
+  @override
+  String get settingsAniListImportSubtitle =>
+      'Import anime/manga lists by public username';
+
+  @override
+  String get aniListImportTitle => 'AniList Import';
+
+  @override
+  String get aniListImportSubtitle =>
+      'Fetches public lists from anilist.co — no login required';
+
+  @override
+  String get aniListImportUsername => 'AniList username';
+
+  @override
+  String get aniListImportUsernameHint => 'e.g. yourname';
+
+  @override
+  String get aniListImportInclude => 'What to import';
+
+  @override
+  String get aniListImportIncludeAnime => 'Anime list';
+
+  @override
+  String get aniListImportIncludeManga => 'Manga list';
+
+  @override
+  String get aniListImportMode => 'Mode';
+
+  @override
+  String get aniListImportModeNewOnly => 'Add new only';
+
+  @override
+  String get aniListImportModeNewOnlySubtitle =>
+      'Skip items already in the collection';
+
+  @override
+  String get aniListImportModeOverwrite => 'Overwrite existing';
+
+  @override
+  String get aniListImportModeOverwriteSubtitle =>
+      'Update progress, status and dates from AniList';
+
+  @override
+  String get aniListImportTargetCollection => 'Target collection';
+
+  @override
+  String get aniListImportCreateNew => 'Create new collection';
+
+  @override
+  String get aniListImportUseExisting => 'Use existing collection';
+
+  @override
+  String get aniListImportSelectCollection => 'Select collection';
+
+  @override
+  String get aniListImportNoCollections => 'No collections available';
+
+  @override
+  String get aniListImportErrorLoadingCollections =>
+      'Error loading collections';
+
+  @override
+  String get aniListImportNewCollectionName => 'Collection name';
+
+  @override
+  String aniListImportNewCollectionDefault(String username) {
+    return 'AniList Import — $username';
+  }
+
+  @override
+  String get aniListImportButton => 'Start Import';
+
+  @override
+  String get aniListImportFetchingAnime => 'Fetching anime list...';
+
+  @override
+  String get aniListImportFetchingManga => 'Fetching manga list...';
+
+  @override
+  String get aniListImportMatching => 'Importing entries';
+
+  @override
+  String get aniListImportComplete => 'Import complete!';
+
+  @override
+  String aniListImportLookingUp(String title) {
+    return 'Processing: $title';
+  }
+
+  @override
+  String aniListImportImported(int count) {
+    return '$count imported';
+  }
+
+  @override
+  String aniListImportUpdated(int count) {
+    return '$count updated';
+  }
+
+  @override
+  String aniListImportFailed(String error) {
+    return 'Import failed: $error';
+  }
+
+  @override
+  String aniListImportUserNotFound(String username) {
+    return 'AniList user \"$username\" was not found';
+  }
+
+  @override
+  String aniListImportPrivateProfile(String username) {
+    return 'AniList profile \"$username\" is private';
+  }
+
+  @override
+  String get aniListImportEmptyUsername => 'Enter your AniList username';
+
+  @override
+  String get aniListImportSelectAtLeastOne => 'Select anime or manga to import';
 }

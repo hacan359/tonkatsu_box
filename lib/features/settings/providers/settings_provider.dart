@@ -64,6 +64,9 @@ abstract class SettingsKeys {
 
   static const String steamRememberCredentials = 'steam_remember_credentials';
 
+  /// Last AniList username used in import dialog. Persisted on successful import.
+  static const String aniListUsername = 'anilist_username';
+
   static const String richCollectionsEnabled = 'rich_collections_enabled';
 }
 

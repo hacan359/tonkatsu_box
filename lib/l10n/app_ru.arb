@@ -1502,5 +1502,76 @@
       "kind": {"type": "String"},
       "count": {"type": "int"}
     }
-  }
+  },
+
+  "settingsAniListImport": "AniList",
+  "settingsAniListImportSubtitle": "Импорт списков аниме и манги по публичному имени",
+  "aniListImportTitle": "Импорт из AniList",
+  "aniListImportSubtitle": "Тянет публичные списки с anilist.co — авторизация не нужна",
+  "aniListImportUsername": "Имя пользователя AniList",
+  "aniListImportUsernameHint": "например, yourname",
+  "aniListImportInclude": "Что импортировать",
+  "aniListImportIncludeAnime": "Список аниме",
+  "aniListImportIncludeManga": "Список манги",
+  "aniListImportMode": "Режим",
+  "aniListImportModeNewOnly": "Только новые",
+  "aniListImportModeNewOnlySubtitle": "Пропустить элементы, уже добавленные в коллекцию",
+  "aniListImportModeOverwrite": "Перезаписать существующие",
+  "aniListImportModeOverwriteSubtitle": "Обновить прогресс, статус и даты из AniList",
+  "aniListImportTargetCollection": "Целевая коллекция",
+  "aniListImportCreateNew": "Создать новую коллекцию",
+  "aniListImportUseExisting": "Добавить в существующую",
+  "aniListImportSelectCollection": "Выберите коллекцию",
+  "aniListImportNoCollections": "Нет коллекций",
+  "aniListImportErrorLoadingCollections": "Ошибка загрузки коллекций",
+  "aniListImportNewCollectionName": "Название коллекции",
+  "aniListImportNewCollectionDefault": "AniList Import — {username}",
+  "@aniListImportNewCollectionDefault": {
+    "placeholders": {
+      "username": {"type": "String"}
+    }
+  },
+  "aniListImportButton": "Запустить импорт",
+  "aniListImportFetchingAnime": "Получаем список аниме...",
+  "aniListImportFetchingManga": "Получаем список манги...",
+  "aniListImportMatching": "Импортируем записи",
+  "aniListImportComplete": "Импорт завершён!",
+  "aniListImportLookingUp": "Обработка: {title}",
+  "@aniListImportLookingUp": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "aniListImportImported": "{count, plural, =1{1 импортирован} few{{count} импортировано} other{{count} импортировано}}",
+  "@aniListImportImported": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "aniListImportUpdated": "{count, plural, =1{1 обновлён} few{{count} обновлено} other{{count} обновлено}}",
+  "@aniListImportUpdated": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "aniListImportFailed": "Ошибка импорта: {error}",
+  "@aniListImportFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "aniListImportUserNotFound": "Пользователь AniList «{username}» не найден",
+  "@aniListImportUserNotFound": {
+    "placeholders": {
+      "username": {"type": "String"}
+    }
+  },
+  "aniListImportPrivateProfile": "Профиль AniList «{username}» приватный",
+  "@aniListImportPrivateProfile": {
+    "placeholders": {
+      "username": {"type": "String"}
+    }
+  },
+  "aniListImportEmptyUsername": "Введите имя пользователя AniList",
+  "aniListImportSelectAtLeastOne": "Выберите хотя бы один тип: аниме или манга"
 }

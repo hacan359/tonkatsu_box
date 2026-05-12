@@ -7,6 +7,7 @@ import 'package:logging/logging.dart';
 import 'api_error_detail.dart';
 import '../../shared/models/anime.dart';
 import '../../shared/models/manga.dart';
+import '../../shared/models/media_type.dart';
 
 /// Провайдер для AniList API клиента.
 final Provider<AniListApi> aniListApiProvider =
@@ -31,6 +32,82 @@ class AniListApiException implements Exception {
   @override
   String toString() =>
       'AniListApiException: $message (status: $statusCode)';
+}
+
+/// AniList user does not exist or has no public lists.
+class AniListUserNotFoundException extends AniListApiException {
+  /// Creates an [AniListUserNotFoundException].
+  const AniListUserNotFoundException(String username)
+      : super('AniList user "$username" not found', statusCode: 404);
+}
+
+/// AniList profile is private — public list endpoints will not return data.
+class AniListPrivateProfileException extends AniListApiException {
+  /// Creates an [AniListPrivateProfileException].
+  const AniListPrivateProfileException(String username)
+      : super(
+          'AniList user "$username" has a private profile',
+          statusCode: 403,
+        );
+}
+
+/// Entry from a user's anime or manga list on AniList.
+class AniListListEntry {
+  /// Creates an [AniListListEntry].
+  const AniListListEntry({
+    required this.mediaId,
+    required this.mediaType,
+    required this.rawStatus,
+    required this.progress,
+    required this.progressVolumes,
+    required this.repeat,
+    this.scoreRaw100,
+    this.notes,
+    this.startedAt,
+    this.completedAt,
+    this.updatedAt,
+    this.anime,
+    this.manga,
+  });
+
+  /// AniList media ID.
+  final int mediaId;
+
+  /// Either [MediaType.anime] or [MediaType.manga].
+  final MediaType mediaType;
+
+  /// Raw AniList status: CURRENT / PLANNING / COMPLETED / DROPPED / PAUSED / REPEATING.
+  final String rawStatus;
+
+  /// Episodes watched (anime) or chapters read (manga).
+  final int progress;
+
+  /// Volumes read. Always 0 for anime.
+  final int progressVolumes;
+
+  /// Rewatch / reread count.
+  final int repeat;
+
+  /// Score on the 0..100 scale, or null if unset.
+  final int? scoreRaw100;
+
+  /// User notes attached to the entry.
+  final String? notes;
+
+  /// Start date (year/month/day from AniList fuzzy date).
+  final DateTime? startedAt;
+
+  /// Completion date.
+  final DateTime? completedAt;
+
+  /// Last time the entry was updated on AniList.
+  final DateTime? updatedAt;
+
+  /// Populated when [mediaType] is [MediaType.anime].
+  final Anime? anime;
+
+  /// Populated when [mediaType] is [MediaType.manga].
+  final Manga? manga;
 }
 
 /// Клиент для работы с AniList GraphQL API.
@@ -72,7 +149,7 @@ query ($page: Int, $perPage: Int, $search: String, $genres: [String],
           sort: $sort) {
       id
       title { romaji english native }
-      coverImage { large medium }
+      coverImage { extraLarge large medium }
       bannerImage
       description(asHtml: false)
       genres
@@ -102,7 +179,7 @@ query ($id: Int) {
   Media(id: $id, type: MANGA) {
     id
     title { romaji english native }
-    coverImage { large medium }
+    coverImage { extraLarge large medium }
     description(asHtml: false)
     genres
     averageScore
@@ -131,7 +208,7 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
     media(type: MANGA, id_in: $ids) {
       id
       title { romaji english native }
-      coverImage { large medium }
+      coverImage { extraLarge large medium }
       bannerImage
       description(asHtml: false)
       genres
@@ -175,7 +252,7 @@ query ($page: Int, $perPage: Int, $search: String, $genres: [String],
           sort: $sort) {
       id
       title { romaji english native }
-      coverImage { large medium }
+      coverImage { extraLarge large medium }
       bannerImage
       description(asHtml: false)
       genres
@@ -203,7 +280,7 @@ query ($id: Int) {
   Media(id: $id, type: ANIME) {
     id
     title { romaji english native }
-    coverImage { large medium }
+    coverImage { extraLarge large medium }
     bannerImage
     description(asHtml: false)
     genres
@@ -232,7 +309,7 @@ query ($page: Int, $perPage: Int, $malIds: [Int]) {
       id
       idMal
       title { romaji english native }
-      coverImage { large medium }
+      coverImage { extraLarge large medium }
       bannerImage
       description(asHtml: false)
       genres
@@ -262,7 +339,7 @@ query ($page: Int, $perPage: Int, $malIds: [Int]) {
       id
       idMal
       title { romaji english native }
-      coverImage { large medium }
+      coverImage { extraLarge large medium }
       bannerImage
       description(asHtml: false)
       genres
@@ -293,7 +370,7 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
     media(type: ANIME, id_in: $ids) {
       id
       title { romaji english native }
-      coverImage { large medium }
+      coverImage { extraLarge large medium }
       bannerImage
       description(asHtml: false)
       genres
@@ -813,6 +890,281 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
       return map;
     } on DioException catch (e) {
       throw _handleDioException(e, 'Failed to fetch manga by MAL IDs');
+    }
+  }
+
+  /// MediaListCollection returns every list (Watching, Completed, etc.) for a
+  /// user in a single response — there is no pagination at this level.
+  static const String _userAnimeListQuery = r'''
+query ($userName: String) {
+  MediaListCollection(userName: $userName, type: ANIME) {
+    lists {
+      isCustomList
+      entries {
+        status
+        score(format: POINT_100)
+        progress
+        progressVolumes
+        repeat
+        notes
+        startedAt { year month day }
+        completedAt { year month day }
+        updatedAt
+        media {
+          id
+          isAdult
+          title { romaji english native }
+          coverImage { extraLarge large medium }
+          bannerImage
+          description(asHtml: false)
+          genres
+          averageScore
+          meanScore
+          popularity
+          status
+          season
+          seasonYear
+          startDate { year month day }
+          episodes
+          duration
+          format
+          source
+          studios(isMain: true) { nodes { name } }
+          nextAiringEpisode { airingAt episode }
+        }
+      }
+    }
+  }
+}
+''';
+
+  static const String _userMangaListQuery = r'''
+query ($userName: String) {
+  MediaListCollection(userName: $userName, type: MANGA) {
+    lists {
+      isCustomList
+      entries {
+        status
+        score(format: POINT_100)
+        progress
+        progressVolumes
+        repeat
+        notes
+        startedAt { year month day }
+        completedAt { year month day }
+        updatedAt
+        media {
+          id
+          isAdult
+          title { romaji english native }
+          coverImage { extraLarge large medium }
+          bannerImage
+          description(asHtml: false)
+          genres
+          averageScore
+          meanScore
+          popularity
+          status
+          startDate { year month day }
+          chapters
+          volumes
+          format
+          countryOfOrigin
+          staff(sort: RELEVANCE, perPage: 5) {
+            edges {
+              node { name { full } }
+              role
+            }
+          }
+        }
+      }
+    }
+  }
+}
+''';
+
+  /// Fetches the public anime or manga list of an AniList user.
+  ///
+  /// Custom lists are skipped because their entries are duplicates of the
+  /// canonical-list entries with identical status/progress/score. `isAdult`
+  /// media is filtered out.
+  ///
+  /// Throws [AniListUserNotFoundException] when the user does not exist,
+  /// [AniListPrivateProfileException] when the profile is private,
+  /// [AniListApiException] otherwise. Only [MediaType.anime] and
+  /// [MediaType.manga] are accepted; other types raise [ArgumentError].
+  Future<List<AniListListEntry>> fetchUserMediaList({
+    required String userName,
+    required MediaType type,
+  }) async {
+    if (type != MediaType.anime && type != MediaType.manga) {
+      throw ArgumentError.value(type, 'type', 'Only anime/manga supported');
+    }
+
+    final String trimmed = userName.trim();
+    if (trimmed.isEmpty) {
+      throw ArgumentError.value(userName, 'userName', 'must not be empty');
+    }
+
+    final String query = type == MediaType.anime
+        ? _userAnimeListQuery
+        : _userMangaListQuery;
+
+    try {
+      final Response<dynamic> response = await _dio.post<dynamic>(
+        _baseUrl,
+        data: <String, dynamic>{
+          'query': query,
+          'variables': <String, dynamic>{'userName': trimmed},
+        },
+      );
+
+      if (response.statusCode == 404) {
+        throw AniListUserNotFoundException(trimmed);
+      }
+      if (response.statusCode != 200 || response.data == null) {
+        throw AniListApiException(
+          'Failed to fetch user media list',
+          statusCode: response.statusCode,
+        );
+      }
+
+      final Map<String, dynamic> data =
+          response.data as Map<String, dynamic>;
+
+      // AniList returns GraphQL errors with HTTP 200; check the body before data.
+      final List<dynamic>? errors = data['errors'] as List<dynamic>?;
+      if (errors != null && errors.isNotEmpty) {
+        final Map<String, dynamic> firstError =
+            errors.first as Map<String, dynamic>;
+        final String message =
+            (firstError['message'] as String? ?? '').toLowerCase();
+        if (message.contains('not found') || message.contains('does not exist')) {
+          throw AniListUserNotFoundException(trimmed);
+        }
+        if (message.contains('private')) {
+          throw AniListPrivateProfileException(trimmed);
+        }
+        _log.warning('AniList GraphQL error: ${firstError['message']}');
+        throw AniListApiException(
+          firstError['message'] as String? ?? 'GraphQL error',
+        );
+      }
+
+      final Map<String, dynamic>? dataField =
+          data['data'] as Map<String, dynamic>?;
+      final Map<String, dynamic>? collection =
+          dataField?['MediaListCollection'] as Map<String, dynamic>?;
+      if (collection == null) {
+        return <AniListListEntry>[];
+      }
+
+      final List<dynamic> lists =
+          collection['lists'] as List<dynamic>? ?? <dynamic>[];
+
+      final Map<int, AniListListEntry> dedup = <int, AniListListEntry>{};
+
+      for (final dynamic listRaw in lists) {
+        final Map<String, dynamic> list = listRaw as Map<String, dynamic>;
+        // Кастомные списки дублируют записи из основных — пропускаем.
+        if (list['isCustomList'] as bool? ?? false) continue;
+
+        final List<dynamic> entries =
+            list['entries'] as List<dynamic>? ?? <dynamic>[];
+        for (final dynamic entryRaw in entries) {
+          final AniListListEntry? entry = _parseListEntry(
+            entryRaw as Map<String, dynamic>,
+            type,
+          );
+          if (entry != null) {
+            dedup[entry.mediaId] = entry;
+          }
+        }
+      }
+
+      return dedup.values.toList();
+    } on DioException catch (e) {
+      // AniList returns HTTP 404 when the username does not exist.
+      if (e.response?.statusCode == 404) {
+        throw AniListUserNotFoundException(trimmed);
+      }
+      throw _handleDioException(e, 'Failed to fetch user media list');
+    }
+  }
+
+  AniListListEntry? _parseListEntry(
+    Map<String, dynamic> json,
+    MediaType type,
+  ) {
+    final Map<String, dynamic>? media =
+        json['media'] as Map<String, dynamic>?;
+    if (media == null) return null;
+
+    // Hentai / adult content is excluded from imports.
+    if (media['isAdult'] as bool? ?? false) return null;
+
+    final int? mediaId = media['id'] as int?;
+    if (mediaId == null) return null;
+
+    final String status = (json['status'] as String? ?? '').trim();
+
+    final int scoreRaw = (json['score'] as num?)?.toInt() ?? 0;
+    final int? scoreRaw100 = scoreRaw > 0 ? scoreRaw : null;
+
+    final int progress = (json['progress'] as num?)?.toInt() ?? 0;
+    final int progressVolumes =
+        (json['progressVolumes'] as num?)?.toInt() ?? 0;
+    final int repeat = (json['repeat'] as num?)?.toInt() ?? 0;
+
+    final String? notesRaw = (json['notes'] as String?)?.trim();
+    final String? notes =
+        (notesRaw == null || notesRaw.isEmpty) ? null : notesRaw;
+
+    final DateTime? startedAt =
+        _parseFuzzyDate(json['startedAt'] as Map<String, dynamic>?);
+    final DateTime? completedAt =
+        _parseFuzzyDate(json['completedAt'] as Map<String, dynamic>?);
+
+    final int? updatedAtUnix = (json['updatedAt'] as num?)?.toInt();
+    final DateTime? updatedAt = (updatedAtUnix != null && updatedAtUnix > 0)
+        ? DateTime.fromMillisecondsSinceEpoch(
+            updatedAtUnix * 1000,
+            isUtc: true,
+          )
+        : null;
+
+    final Anime? anime =
+        type == MediaType.anime ? Anime.fromJson(media) : null;
+    final Manga? manga =
+        type == MediaType.manga ? Manga.fromJson(media) : null;
+
+    return AniListListEntry(
+      mediaId: mediaId,
+      mediaType: type,
+      rawStatus: status,
+      progress: progress,
+      progressVolumes: progressVolumes,
+      repeat: repeat,
+      scoreRaw100: scoreRaw100,
+      notes: notes,
+      startedAt: startedAt,
+      completedAt: completedAt,
+      updatedAt: updatedAt,
+      anime: anime,
+      manga: manga,
+    );
+  }
+
+  static DateTime? _parseFuzzyDate(Map<String, dynamic>? raw) {
+    if (raw == null) return null;
+    final int? year = raw['year'] as int?;
+    if (year == null) return null;
+    final int month = raw['month'] as int? ?? 1;
+    final int day = raw['day'] as int? ?? 1;
+    try {
+      return DateTime.utc(year, month, day);
+    } on ArgumentError {
+      return null;
     }
   }
 

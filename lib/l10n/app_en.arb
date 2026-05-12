@@ -1783,5 +1783,76 @@
       "kind": {"type": "String"},
       "count": {"type": "int"}
     }
-  }
+  },
+
+  "settingsAniListImport": "AniList",
+  "settingsAniListImportSubtitle": "Import anime/manga lists by public username",
+  "aniListImportTitle": "AniList Import",
+  "aniListImportSubtitle": "Fetches public lists from anilist.co — no login required",
+  "aniListImportUsername": "AniList username",
+  "aniListImportUsernameHint": "e.g. yourname",
+  "aniListImportInclude": "What to import",
+  "aniListImportIncludeAnime": "Anime list",
+  "aniListImportIncludeManga": "Manga list",
+  "aniListImportMode": "Mode",
+  "aniListImportModeNewOnly": "Add new only",
+  "aniListImportModeNewOnlySubtitle": "Skip items already in the collection",
+  "aniListImportModeOverwrite": "Overwrite existing",
+  "aniListImportModeOverwriteSubtitle": "Update progress, status and dates from AniList",
+  "aniListImportTargetCollection": "Target collection",
+  "aniListImportCreateNew": "Create new collection",
+  "aniListImportUseExisting": "Use existing collection",
+  "aniListImportSelectCollection": "Select collection",
+  "aniListImportNoCollections": "No collections available",
+  "aniListImportErrorLoadingCollections": "Error loading collections",
+  "aniListImportNewCollectionName": "Collection name",
+  "aniListImportNewCollectionDefault": "AniList Import — {username}",
+  "@aniListImportNewCollectionDefault": {
+    "placeholders": {
+      "username": {"type": "String"}
+    }
+  },
+  "aniListImportButton": "Start Import",
+  "aniListImportFetchingAnime": "Fetching anime list...",
+  "aniListImportFetchingManga": "Fetching manga list...",
+  "aniListImportMatching": "Importing entries",
+  "aniListImportComplete": "Import complete!",
+  "aniListImportLookingUp": "Processing: {title}",
+  "@aniListImportLookingUp": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "aniListImportImported": "{count} imported",
+  "@aniListImportImported": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "aniListImportUpdated": "{count} updated",
+  "@aniListImportUpdated": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "aniListImportFailed": "Import failed: {error}",
+  "@aniListImportFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "aniListImportUserNotFound": "AniList user \"{username}\" was not found",
+  "@aniListImportUserNotFound": {
+    "placeholders": {
+      "username": {"type": "String"}
+    }
+  },
+  "aniListImportPrivateProfile": "AniList profile \"{username}\" is private",
+  "@aniListImportPrivateProfile": {
+    "placeholders": {
+      "username": {"type": "String"}
+    }
+  },
+  "aniListImportEmptyUsername": "Enter your AniList username",
+  "aniListImportSelectAtLeastOne": "Select anime or manga to import"
 }
