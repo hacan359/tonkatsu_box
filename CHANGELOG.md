@@ -128,6 +128,45 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * pubspec.yaml: Add direct `xml: ^6.5.0` dependency.
   * test/core/services/mal_import_service_test.dart: 18 tests covering XML parsing (anime/manga, status mapping, validation, kind fallback), `Completed` back-fill, unmatched-to-wishlist with MAL markdown link, and re-import dedup that updates instead of inserting.
 
+- **Content language picker in welcome wizard with UI-language autosync**
+
+  The wizard language step now lets the user pick the TMDB content
+  language (used for movie / TV descriptions) directly, instead of
+  silently keeping the previous `ru-RU` default while the UI is set
+  to English. Tapping a UI-language option also auto-applies the
+  matching content language (English → `en-US`, Russian → `ru-RU`)
+  until the user picks a content language by hand — after that the
+  manual choice sticks and toggling the UI language stops touching
+  it. The same picker now drives the Settings → Content language
+  dialog, so adding a new locale flows through both surfaces from a
+  single source.
+
+  * lib/shared/constants/tmdb_content_languages.dart (TmdbContentLanguage,
+    kTmdbContentLanguages, defaultContentLanguageForUi): New. Single
+    extensible list of supported TMDB locales plus the UI → content
+    fallback map; new pairs (UI locale + matching `xx-YY` translation)
+    are added here in one place.
+  * lib/features/welcome/widgets/welcome_step_language.dart
+    (WelcomeStepLanguage, _WelcomeStepLanguageState._onUiLanguageSelected,
+    _WelcomeStepLanguageState._onContentLanguageSelected,
+    _ContentLanguageDropdown): Convert to `ConsumerStatefulWidget`;
+    add a styled dropdown bound to `tmdbLanguage`; track a
+    `_contentLangTouched` flag so UI-language taps only seed the
+    content language while the user hasn't customized it.
+  * lib/features/settings/screens/settings_screen.dart
+    (_SettingsScreenState._contentLanguageLabel,
+    _SettingsScreenState._showContentLanguagePicker): Drop the two
+    hardcoded `en-US` / `ru-RU` branches; iterate `kTmdbContentLanguages`
+    for both the tile value and the picker dialog.
+  * test/shared/constants/tmdb_content_languages_test.dart: New. Verifies
+    list non-emptiness, code uniqueness, IETF BCP 47 code format, and
+    `defaultContentLanguageForUi` mapping (including unknown-code
+    fallback to `en-US`).
+  * test/features/welcome/widgets/welcome_step_language_test.dart: Add
+    tests for dropdown presence, content-language save, UI → content
+    autosync for both `en` and `ru`, and that a manual dropdown pick
+    disables the autosync on subsequent UI-language taps.
+
 ### Changed
 
 - **Unified brand-icon rendering across settings, welcome wizard, and search**

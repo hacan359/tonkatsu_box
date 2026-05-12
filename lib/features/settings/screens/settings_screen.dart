@@ -11,6 +11,7 @@ import '../../../core/api/ra_api.dart';
 import '../../../core/services/discord_rpc_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
+import '../../../shared/constants/tmdb_content_languages.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/theme/app_assets.dart';
@@ -322,7 +323,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             leadingColor: _kAppearanceColor,
             title: l.settingsContentLanguage,
             subtitle: l.settingsContentLanguageSubtitle,
-            value: settings.tmdbLanguage == 'ru-RU' ? 'Русский' : 'English',
+            value: _contentLanguageLabel(settings.tmdbLanguage),
             onTap: () => _showContentLanguagePicker(settings),
           ),
           SettingsTile(
@@ -605,48 +606,38 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  String _contentLanguageLabel(String code) {
+    for (final TmdbContentLanguage lang in kTmdbContentLanguages) {
+      if (lang.code == code) return lang.nativeName;
+    }
+    return code;
+  }
+
   void _showContentLanguagePicker(SettingsState settings) {
     showDialog<void>(
       context: context,
       builder: (BuildContext dialogContext) => SimpleDialog(
         title: Text(S.of(context).settingsContentLanguage),
         children: <Widget>[
-          SimpleDialogOption(
-            onPressed: () {
-              ref
-                  .read(settingsNotifierProvider.notifier)
-                  .setTmdbLanguage('en-US');
-              Navigator.pop(dialogContext);
-            },
-            child: Row(
-              children: <Widget>[
-                if (settings.tmdbLanguage == 'en-US')
-                  const Icon(Icons.check, size: 18, color: AppColors.brand)
-                else
-                  const SizedBox(width: 18),
-                const SizedBox(width: AppSpacing.sm),
-                const Text('English'),
-              ],
+          for (final TmdbContentLanguage lang in kTmdbContentLanguages)
+            SimpleDialogOption(
+              onPressed: () {
+                ref
+                    .read(settingsNotifierProvider.notifier)
+                    .setTmdbLanguage(lang.code);
+                Navigator.pop(dialogContext);
+              },
+              child: Row(
+                children: <Widget>[
+                  if (settings.tmdbLanguage == lang.code)
+                    const Icon(Icons.check, size: 18, color: AppColors.brand)
+                  else
+                    const SizedBox(width: 18),
+                  const SizedBox(width: AppSpacing.sm),
+                  Text(lang.nativeName),
+                ],
+              ),
             ),
-          ),
-          SimpleDialogOption(
-            onPressed: () {
-              ref
-                  .read(settingsNotifierProvider.notifier)
-                  .setTmdbLanguage('ru-RU');
-              Navigator.pop(dialogContext);
-            },
-            child: Row(
-              children: <Widget>[
-                if (settings.tmdbLanguage == 'ru-RU')
-                  const Icon(Icons.check, size: 18, color: AppColors.brand)
-                else
-                  const SizedBox(width: 18),
-                const SizedBox(width: AppSpacing.sm),
-                const Text('Русский'),
-              ],
-            ),
-          ),
         ],
       ),
     );

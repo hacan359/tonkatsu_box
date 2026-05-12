@@ -1,21 +1,46 @@
-// Шаг 3 Welcome Wizard — выбор языка интерфейса.
+// Шаг 3 Welcome Wizard — выбор языка интерфейса и языка контента.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../features/settings/providers/settings_provider.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/constants/tmdb_content_languages.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 
-/// Шаг 3: Language — выбор языка интерфейса.
-class WelcomeStepLanguage extends ConsumerWidget {
+/// Шаг 3: Language — выбор языка интерфейса и языка контента.
+class WelcomeStepLanguage extends ConsumerStatefulWidget {
   /// Создаёт [WelcomeStepLanguage].
   const WelcomeStepLanguage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<WelcomeStepLanguage> createState() =>
+      _WelcomeStepLanguageState();
+}
+
+class _WelcomeStepLanguageState extends ConsumerState<WelcomeStepLanguage> {
+  /// Пользователь явно выбрал язык контента руками — отключаем автосинк
+  /// с UI-языком, чтобы не перезатереть осознанный выбор.
+  bool _contentLangTouched = false;
+
+  void _onUiLanguageSelected(String uiCode) {
+    final SettingsNotifier notifier =
+        ref.read(settingsNotifierProvider.notifier);
+    notifier.setAppLanguage(uiCode);
+    if (!_contentLangTouched) {
+      notifier.setTmdbLanguage(defaultContentLanguageForUi(uiCode));
+    }
+  }
+
+  void _onContentLanguageSelected(String code) {
+    setState(() => _contentLangTouched = true);
+    ref.read(settingsNotifierProvider.notifier).setTmdbLanguage(code);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final SettingsState settings = ref.watch(settingsNotifierProvider);
     final S l = S.of(context);
 
@@ -63,9 +88,7 @@ class WelcomeStepLanguage extends ConsumerWidget {
                   child: _LanguageOption(
                     label: 'English',
                     isSelected: settings.appLanguage == 'en',
-                    onTap: () => ref
-                        .read(settingsNotifierProvider.notifier)
-                        .setAppLanguage('en'),
+                    onTap: () => _onUiLanguageSelected('en'),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.sm),
@@ -74,9 +97,17 @@ class WelcomeStepLanguage extends ConsumerWidget {
                   child: _LanguageOption(
                     label: 'Русский',
                     isSelected: settings.appLanguage == 'ru',
-                    onTap: () => ref
-                        .read(settingsNotifierProvider.notifier)
-                        .setAppLanguage('ru'),
+                    onTap: () => _onUiLanguageSelected('ru'),
+                  ),
+                ),
+                SizedBox(height: isSmallScreen ? AppSpacing.md : AppSpacing.lg),
+                SizedBox(
+                  width: 280,
+                  child: _ContentLanguageDropdown(
+                    value: settings.tmdbLanguage,
+                    label: l.settingsContentLanguage,
+                    subtitle: l.settingsContentLanguageSubtitle,
+                    onChanged: _onContentLanguageSelected,
                   ),
                 ),
                 const SizedBox(height: AppSpacing.md),
@@ -92,6 +123,78 @@ class WelcomeStepLanguage extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _ContentLanguageDropdown extends StatelessWidget {
+  const _ContentLanguageDropdown({
+    required this.value,
+    required this.label,
+    required this.subtitle,
+    required this.onChanged,
+  });
+
+  final String value;
+  final String label;
+  final String subtitle;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final bool hasValue = kTmdbContentLanguages
+        .any((TmdbContentLanguage lang) => lang.code == value);
+    final String effectiveValue =
+        hasValue ? value : kTmdbContentLanguages.first.code;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          label,
+          style: AppTypography.body.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          subtitle,
+          style: AppTypography.bodySmall.copyWith(
+            color: AppColors.textTertiary,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            border: Border.all(color: AppColors.surfaceBorder),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              isExpanded: true,
+              value: effectiveValue,
+              icon: const Icon(Icons.arrow_drop_down,
+                  color: AppColors.textTertiary),
+              dropdownColor: AppColors.surface,
+              style: AppTypography.body.copyWith(
+                color: AppColors.textPrimary,
+              ),
+              items: <DropdownMenuItem<String>>[
+                for (final TmdbContentLanguage lang in kTmdbContentLanguages)
+                  DropdownMenuItem<String>(
+                    value: lang.code,
+                    child: Text(lang.nativeName),
+                  ),
+              ],
+              onChanged: (String? code) {
+                if (code != null) onChanged(code);
+              },
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

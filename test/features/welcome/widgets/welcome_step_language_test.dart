@@ -69,25 +69,52 @@ void main() {
       await tester.pumpWidget(createWidget());
       await tester.pump();
 
-      expect(find.text('English'), findsOneWidget);
-      expect(find.text('Русский'), findsOneWidget);
+      // "English" встречается в радио UI-языка и в dropdown языка контента;
+      // "Русский" — только в радио (текущая локаль контента — ru-RU дефолт,
+      // её dropdown показывает в свёрнутом виде).
+      expect(find.text('English'), findsWidgets);
+      expect(find.text('Русский'), findsWidgets);
     });
 
-    testWidgets('English is selected by default',
+    testWidgets('English is selected by default in UI radio',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pump();
 
-      // Default language is 'en', so English should have check_circle
+      // Default appLanguage = 'en' → English-радио с check_circle.
       expect(find.byIcon(Icons.check_circle), findsOneWidget);
       expect(find.byIcon(Icons.radio_button_unchecked), findsOneWidget);
+    });
+
+    testWidgets('shows content language dropdown', (WidgetTester tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pump();
+
+      expect(find.byType(DropdownButton<String>), findsOneWidget);
+    });
+
+    testWidgets('changing content language saves tmdbLanguage',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pump();
+
+      await tester.tap(find.byType(DropdownButton<String>));
+      await tester.pumpAndSettle();
+
+      // В открытом меню каждый пункт рендерится дополнительно — выбираем
+      // English (в дефолте tmdbLanguage = ru-RU).
+      await tester.tap(find.text('English').last);
+      await tester.pumpAndSettle();
+
+      expect(prefs.getString(SettingsKeys.tmdbLanguage), 'en-US');
     });
 
     testWidgets('tapping Russian selects it', (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
       await tester.pump();
 
-      await tester.tap(find.text('Русский'));
+      // first() — радио UI-языка стоит выше dropdown языка контента в дереве.
+      await tester.tap(find.text('Русский').first);
       await tester.pump();
 
       expect(prefs.getString(SettingsKeys.appLanguage), 'ru');
@@ -101,10 +128,59 @@ void main() {
       await tester.pumpWidget(createWidget());
       await tester.pump();
 
-      await tester.tap(find.text('English'));
+      await tester.tap(find.text('English').first);
       await tester.pump();
 
       expect(prefs.getString(SettingsKeys.appLanguage), 'en');
+    });
+
+    testWidgets('selecting English UI sets tmdbLanguage to en-US',
+        (WidgetTester tester) async {
+      // Дефолт tmdbLanguage = ru-RU; нажимаем English UI → ожидаем en-US.
+      await tester.pumpWidget(createWidget());
+      await tester.pump();
+
+      await tester.tap(find.text('English').first);
+      await tester.pump();
+
+      expect(prefs.getString(SettingsKeys.appLanguage), 'en');
+      expect(prefs.getString(SettingsKeys.tmdbLanguage), 'en-US');
+    });
+
+    testWidgets('selecting Russian UI sets tmdbLanguage to ru-RU',
+        (WidgetTester tester) async {
+      // Стартуем с en/en-US, чтобы было что переключать.
+      await prefs.setString(SettingsKeys.tmdbLanguage, 'en-US');
+
+      await tester.pumpWidget(createWidget());
+      await tester.pump();
+
+      await tester.tap(find.text('Русский').first);
+      await tester.pump();
+
+      expect(prefs.getString(SettingsKeys.appLanguage), 'ru');
+      expect(prefs.getString(SettingsKeys.tmdbLanguage), 'ru-RU');
+    });
+
+    testWidgets('manual content language pick disables UI→content sync',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pump();
+
+      // Юзер явно выбрал English как язык контента (дефолт был ru-RU).
+      await tester.tap(find.byType(DropdownButton<String>));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('English').last);
+      await tester.pumpAndSettle();
+
+      expect(prefs.getString(SettingsKeys.tmdbLanguage), 'en-US');
+
+      // Теперь меняем UI на Русский — язык контента трогать НЕ должны.
+      await tester.tap(find.text('Русский').first);
+      await tester.pump();
+
+      expect(prefs.getString(SettingsKeys.appLanguage), 'ru');
+      expect(prefs.getString(SettingsKeys.tmdbLanguage), 'en-US');
     });
 
     testWidgets('selected option has check_circle icon',
