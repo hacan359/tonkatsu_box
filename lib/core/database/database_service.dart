@@ -35,6 +35,7 @@ import 'dao/tag_dao.dart';
 import 'dao/tv_show_dao.dart';
 import 'dao/manga_dao.dart';
 import 'dao/visual_novel_dao.dart';
+import 'dao/mood_grid_dao.dart';
 import 'dao/tier_list_dao.dart';
 import 'dao/tracker_dao.dart';
 import 'dao/wishlist_dao.dart';
@@ -92,6 +93,11 @@ final Provider<TierListDao> tierListDaoProvider =
   return ref.watch(databaseServiceProvider).tierListDao;
 });
 
+final Provider<MoodGridDao> moodGridDaoProvider =
+    Provider<MoodGridDao>((Ref ref) {
+  return ref.watch(databaseServiceProvider).moodGridDao;
+});
+
 final Provider<WishlistDao> wishlistDaoProvider =
     Provider<WishlistDao>((Ref ref) {
   return ref.watch(databaseServiceProvider).wishlistDao;
@@ -146,6 +152,8 @@ class DatabaseService {
 
   late final TierListDao tierListDao = TierListDao(() => database);
 
+  late final MoodGridDao moodGridDao = MoodGridDao(() => database);
+
   late final TrackerDao trackerDao = TrackerDao(() => database);
 
   late final TagDao tagDao = TagDao(() => database);
@@ -191,7 +199,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 35,
+        version: 36,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -772,6 +780,8 @@ class DatabaseService {
   Future<void> clearAllData() async {
     final Database db = await database;
     await db.transaction((Transaction txn) async {
+      await txn.delete('mood_grid_cells');
+      await txn.delete('mood_grids');
       await txn.delete('tier_list_entries');
       await txn.delete('tier_definitions');
       await txn.delete('tier_lists');
