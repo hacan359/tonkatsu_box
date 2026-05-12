@@ -6864,6 +6864,216 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Picked: {kind} ({count, plural, =1{1 entry} other{{count} entries}})'**
   String malImportFilePicked(String kind, int count);
+
+  /// No description provided for @settingsAniListImport.
+  ///
+  /// In en, this message translates to:
+  /// **'AniList'**
+  String get settingsAniListImport;
+
+  /// No description provided for @settingsAniListImportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Import anime/manga lists by public username'**
+  String get settingsAniListImportSubtitle;
+
+  /// No description provided for @aniListImportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AniList Import'**
+  String get aniListImportTitle;
+
+  /// No description provided for @aniListImportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetches public lists from anilist.co — no login required'**
+  String get aniListImportSubtitle;
+
+  /// No description provided for @aniListImportUsername.
+  ///
+  /// In en, this message translates to:
+  /// **'AniList username'**
+  String get aniListImportUsername;
+
+  /// No description provided for @aniListImportUsernameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. yourname'**
+  String get aniListImportUsernameHint;
+
+  /// No description provided for @aniListImportInclude.
+  ///
+  /// In en, this message translates to:
+  /// **'What to import'**
+  String get aniListImportInclude;
+
+  /// No description provided for @aniListImportIncludeAnime.
+  ///
+  /// In en, this message translates to:
+  /// **'Anime list'**
+  String get aniListImportIncludeAnime;
+
+  /// No description provided for @aniListImportIncludeManga.
+  ///
+  /// In en, this message translates to:
+  /// **'Manga list'**
+  String get aniListImportIncludeManga;
+
+  /// No description provided for @aniListImportMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Mode'**
+  String get aniListImportMode;
+
+  /// No description provided for @aniListImportModeNewOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Add new only'**
+  String get aniListImportModeNewOnly;
+
+  /// No description provided for @aniListImportModeNewOnlySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip items already in the collection'**
+  String get aniListImportModeNewOnlySubtitle;
+
+  /// No description provided for @aniListImportModeOverwrite.
+  ///
+  /// In en, this message translates to:
+  /// **'Overwrite existing'**
+  String get aniListImportModeOverwrite;
+
+  /// No description provided for @aniListImportModeOverwriteSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update progress, status and dates from AniList'**
+  String get aniListImportModeOverwriteSubtitle;
+
+  /// No description provided for @aniListImportTargetCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Target collection'**
+  String get aniListImportTargetCollection;
+
+  /// No description provided for @aniListImportCreateNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Create new collection'**
+  String get aniListImportCreateNew;
+
+  /// No description provided for @aniListImportUseExisting.
+  ///
+  /// In en, this message translates to:
+  /// **'Use existing collection'**
+  String get aniListImportUseExisting;
+
+  /// No description provided for @aniListImportSelectCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Select collection'**
+  String get aniListImportSelectCollection;
+
+  /// No description provided for @aniListImportNoCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'No collections available'**
+  String get aniListImportNoCollections;
+
+  /// No description provided for @aniListImportErrorLoadingCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading collections'**
+  String get aniListImportErrorLoadingCollections;
+
+  /// No description provided for @aniListImportNewCollectionName.
+  ///
+  /// In en, this message translates to:
+  /// **'Collection name'**
+  String get aniListImportNewCollectionName;
+
+  /// No description provided for @aniListImportNewCollectionDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'AniList Import — {username}'**
+  String aniListImportNewCollectionDefault(String username);
+
+  /// No description provided for @aniListImportButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Import'**
+  String get aniListImportButton;
+
+  /// No description provided for @aniListImportFetchingAnime.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching anime list...'**
+  String get aniListImportFetchingAnime;
+
+  /// No description provided for @aniListImportFetchingManga.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching manga list...'**
+  String get aniListImportFetchingManga;
+
+  /// No description provided for @aniListImportMatching.
+  ///
+  /// In en, this message translates to:
+  /// **'Importing entries'**
+  String get aniListImportMatching;
+
+  /// No description provided for @aniListImportComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Import complete!'**
+  String get aniListImportComplete;
+
+  /// No description provided for @aniListImportLookingUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing: {title}'**
+  String aniListImportLookingUp(String title);
+
+  /// No description provided for @aniListImportImported.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} imported'**
+  String aniListImportImported(int count);
+
+  /// No description provided for @aniListImportUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} updated'**
+  String aniListImportUpdated(int count);
+
+  /// No description provided for @aniListImportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Import failed: {error}'**
+  String aniListImportFailed(String error);
+
+  /// No description provided for @aniListImportUserNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'AniList user \"{username}\" was not found'**
+  String aniListImportUserNotFound(String username);
+
+  /// No description provided for @aniListImportPrivateProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'AniList profile \"{username}\" is private'**
+  String aniListImportPrivateProfile(String username);
+
+  /// No description provided for @aniListImportEmptyUsername.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your AniList username'**
+  String get aniListImportEmptyUsername;
+
+  /// No description provided for @aniListImportSelectAtLeastOne.
+  ///
+  /// In en, this message translates to:
+  /// **'Select anime or manga to import'**
+  String get aniListImportSelectAtLeastOne;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

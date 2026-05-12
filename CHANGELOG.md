@@ -7,7 +7,72 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Added
+
+- **Import anime and manga lists from a public AniList username**
+
+  New entry in Settings → Import alongside MyAnimeList / Steam / RA / Trakt.
+  No OAuth required — `MediaListCollection` GraphQL endpoint returns every
+  list (Watching / Completed / Planning / etc.) for any public profile in
+  one call. The form takes a username, lets you toggle anime / manga,
+  pick `Add new only` vs `Overwrite existing`, and target a new or
+  existing collection. The username is remembered across sessions.
+  AniList statuses map onto xerabora's five `ItemStatus` values:
+  CURRENT / REPEATING → inProgress, COMPLETED → completed, PLANNING →
+  planned, DROPPED / PAUSED → dropped. POINT_100 scores are normalised
+  to the local 1..10 scale; 0 is treated as "unrated". On `COMPLETED`
+  entries, episode / chapter / volume counters top up to the AniList
+  totals (mirrors MAL importer semantics). `isAdult` media and AniList
+  custom lists are filtered out to avoid duplicates.
+
+  * lib/core/api/anilist_api.dart (AniListApi.fetchUserMediaList,
+    AniListListEntry, AniListUserNotFoundException,
+    AniListPrivateProfileException, AniListApi._parseListEntry,
+    AniListApi._parseFuzzyDate): New `MediaListCollection` GraphQL
+    queries (anime + manga) and DTO; HTTP 404 and GraphQL
+    "not found" / "private" errors map to typed exceptions.
+  * lib/core/services/anilist_import_service.dart
+    (AniListImportService, AniListImportProgress, AniListImportResult,
+    AniListImportStage, ImportMode, aniListImportServiceProvider): New
+    service. Deduplicates against existing items by
+    (collectionId, mediaType, externalId); upserts the nested `Anime`
+    and `Manga` graphs in parallel before writing entries.
+  * lib/features/settings/screens/anilist_import_screen.dart,
+    lib/features/settings/content/anilist_import_content.dart
+    (AniListImportScreen, AniListImportContent): New screen and form.
+  * lib/features/settings/screens/settings_screen.dart: Adds AniList
+    tile to the Import group.
+  * lib/features/settings/providers/settings_provider.dart
+    (SettingsKeys.aniListUsername): Persists the last-used AniList
+    username after a successful import.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb: AniList import UI strings
+    (settingsAniListImport, aniListImportTitle,
+    aniListImportUsername, aniListImportInclude, aniListImportMode,
+    aniListImportImported, aniListImportUpdated,
+    aniListImportUserNotFound, aniListImportPrivateProfile, etc.).
+
 ### Changed
+
+- **Higher-quality AniList covers in collections and search**
+
+  AniList exposes three cover sizes (`extraLarge` ≈ 460×650,
+  `large` ≈ 230×325, `medium` ≈ 100×146). The app was requesting only
+  `large` / `medium` in GraphQL queries and, worse, the per-anime / manga
+  `thumbUrl` used in collection grids and detail screens preferred
+  `medium`, producing visibly blurry posters compared to the AniList
+  website. All 10 GraphQL `coverImage` selections now include
+  `extraLarge`, the models pick it with a `large` fallback, and the
+  collection-item resolver prefers `coverUrl` over `coverUrlMedium`.
+  Existing cached models keep their old URLs until the next upsert.
+
+  * lib/core/api/anilist_api.dart: Adds `extraLarge` to every
+    `coverImage` GraphQL selection (search, browse, by-id, by-MAL-id,
+    user-list queries).
+  * lib/shared/models/anime.dart (Anime.fromJson),
+    lib/shared/models/manga.dart (Manga.fromJson): Prefer `extraLarge`
+    with `large` fallback.
+  * lib/shared/models/collection_item.dart (_resolvedMedia anime/manga
+    cases): `thumbUrl` falls through `coverUrl ?? coverUrlMedium`.
 
 - **Localization polish: capitalized Russian TMDB genres, plural search tabs, English-only code comments**
 

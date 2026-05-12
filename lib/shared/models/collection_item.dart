@@ -387,7 +387,7 @@ class CollectionItem with Exportable {
         return (
           name: manga?.title,
           coverUrl: manga?.coverUrl,
-          thumbUrl: manga?.coverUrlMedium ?? manga?.coverUrl,
+          thumbUrl: manga?.coverUrl ?? manga?.coverUrlMedium,
           description: manga?.description,
           rating: manga?.rating10,
           formattedRating: manga?.formattedRating,
@@ -406,7 +406,7 @@ class CollectionItem with Exportable {
         return (
           name: anime?.title,
           coverUrl: anime?.coverUrl,
-          thumbUrl: anime?.coverUrlMedium ?? anime?.coverUrl,
+          thumbUrl: anime?.coverUrl ?? anime?.coverUrlMedium,
           description: anime?.description,
           rating: anime?.rating10,
           formattedRating: anime?.formattedRating,
