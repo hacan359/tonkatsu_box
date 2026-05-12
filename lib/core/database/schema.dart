@@ -33,6 +33,8 @@ abstract final class DatabaseSchema {
     await createTrackerGameDataTable(db);
     await createTrackerAchievementsTable(db);
     await createAnimeCacheTable(db);
+    await createMoodGridsTable(db);
+    await createMoodGridCellsTable(db);
   }
 
   /// Таблица платформ (IGDB).
@@ -636,6 +638,44 @@ abstract final class DatabaseSchema {
     await db.execute('''
       CREATE INDEX IF NOT EXISTS idx_tracker_achievements_game
       ON tracker_achievements(tracker_type, tracker_game_id)
+    ''');
+  }
+
+  /// Таблица mood grids (визуальные сетки айтемов с лейблами).
+  static Future<void> createMoodGridsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE mood_grids (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        rows INTEGER NOT NULL DEFAULT 1,
+        cols INTEGER NOT NULL DEFAULT 5,
+        created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+        updated_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
+      )
+    ''');
+  }
+
+  /// Таблица ячеек mood grid.
+  ///
+  /// Без UNIQUE на (grid_id, media_type, external_id) — один айтем можно
+  /// положить в несколько ячеек. Без FK на collection_items — ячейка не
+  /// зависит от наличия айтема в коллекциях.
+  static Future<void> createMoodGridCellsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE mood_grid_cells (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        grid_id INTEGER NOT NULL,
+        position INTEGER NOT NULL,
+        label TEXT,
+        media_type TEXT,
+        external_id INTEGER,
+        platform_id INTEGER,
+        FOREIGN KEY (grid_id) REFERENCES mood_grids(id) ON DELETE CASCADE
+      )
+    ''');
+    await db.execute('''
+      CREATE UNIQUE INDEX idx_mood_grid_cell_pos
+      ON mood_grid_cells(grid_id, position)
     ''');
   }
 

@@ -15,9 +15,12 @@ import '../../data/repositories/wishlist_repository.dart';
 import '../../shared/models/collection.dart';
 import '../../shared/models/collection_item.dart';
 import '../../shared/models/media_type.dart';
+import '../../shared/models/mood_grid.dart';
+import '../../shared/models/mood_grid_cell.dart';
 import '../../shared/models/wishlist_item.dart';
 import '../../shared/models/tracker_game_data.dart';
 import '../../shared/models/tracker_profile.dart';
+import '../database/dao/mood_grid_dao.dart';
 import '../database/dao/tracker_dao.dart';
 import '../database/database_service.dart';
 import 'config_service.dart';
@@ -26,7 +29,7 @@ import 'import_service.dart';
 import 'xcoll_file.dart';
 
 /// Версия формата бэкапа.
-const int backupFormatVersion = 1;
+const int backupFormatVersion = 2;
 
 /// Провайдер для сервиса бэкапа.
 final Provider<BackupService> backupServiceProvider =
@@ -38,6 +41,7 @@ final Provider<BackupService> backupServiceProvider =
     collectionRepo: ref.watch(collectionRepositoryProvider),
     wishlistRepo: ref.watch(wishlistRepositoryProvider),
     trackerDao: ref.watch(trackerDaoProvider),
+    moodGridDao: ref.watch(moodGridDaoProvider),
   );
 });
 
@@ -255,12 +259,14 @@ class BackupService {
     required CollectionRepository collectionRepo,
     required WishlistRepository wishlistRepo,
     TrackerDao? trackerDao,
+    MoodGridDao? moodGridDao,
   })  : _exportService = exportService,
         _importService = importService,
         _configService = configService,
         _collectionRepo = collectionRepo,
         _wishlistRepo = wishlistRepo,
-        _trackerDao = trackerDao;
+        _trackerDao = trackerDao,
+        _moodGridDao = moodGridDao;
 
   static final Logger _log = Logger('BackupService');
 
@@ -269,6 +275,7 @@ class BackupService {
   final ConfigService _configService;
   final CollectionRepository _collectionRepo;
   final TrackerDao? _trackerDao;
+  final MoodGridDao? _moodGridDao;
   final WishlistRepository _wishlistRepo;
 
   // ==================== Backup ====================
@@ -366,7 +373,33 @@ class BackupService {
         }
       }
 
-      // 5. Настройки
+      // 5. Mood grids — visual award grids, not bound to any collection.
+      if (_moodGridDao != null) {
+        final List<MoodGrid> grids = await _moodGridDao.getAllMoodGrids();
+        if (grids.isNotEmpty) {
+          final List<Map<String, dynamic>> moodGridsExport =
+              <Map<String, dynamic>>[];
+          for (final MoodGrid grid in grids) {
+            final List<MoodGridCell> cells =
+                await _moodGridDao.getCells(grid.id);
+            final Map<String, dynamic> entry = grid.toExport();
+            entry['cells'] = cells
+                .map((MoodGridCell c) => c.toExport())
+                .toList();
+            moodGridsExport.add(entry);
+          }
+          final String moodGridsStr = const JsonEncoder.withIndent('  ')
+              .convert(moodGridsExport);
+          final List<int> moodGridsBytes = utf8.encode(moodGridsStr);
+          archive.addFile(ArchiveFile(
+            'mood_grids.json',
+            moodGridsBytes.length,
+            moodGridsBytes,
+          ));
+        }
+      }
+
+      // 6. Настройки
       final Map<String, Object> config = _configService.collectSettings();
       final String configStr =
           const JsonEncoder.withIndent('  ').convert(config);
@@ -488,6 +521,7 @@ class BackupService {
       String? wishlistContent;
       String? configContent;
       String? trackerContent;
+      String? moodGridsContent;
 
       for (final ArchiveFile file in archive) {
         if (!file.isFile) continue;
@@ -502,6 +536,8 @@ class BackupService {
           configContent = content;
         } else if (file.name == 'tracker_data.json') {
           trackerContent = content;
+        } else if (file.name == 'mood_grids.json') {
+          moodGridsContent = content;
         }
       }
 
@@ -565,6 +601,15 @@ class BackupService {
           await _restoreTrackerData(trackerContent);
         } catch (e) {
           _log.warning('Failed to restore tracker data', e);
+        }
+      }
+
+      // Mood grids — created fresh; ids in the backup file are not preserved.
+      if (moodGridsContent != null && _moodGridDao != null) {
+        try {
+          await _restoreMoodGrids(moodGridsContent);
+        } catch (e) {
+          _log.warning('Failed to restore mood grids', e);
         }
       }
 
@@ -658,6 +703,46 @@ class BackupService {
             TrackerGameData.fromDb(d as Map<String, dynamic>))
         .toList();
     await _trackerDao!.upsertGameDataBatch(items);
+  }
+
+  /// Restores mood grids from a JSON payload. New ids are auto-generated;
+  /// cell positions, labels and item references are preserved verbatim.
+  Future<void> _restoreMoodGrids(String jsonContent) async {
+    final List<dynamic> list = jsonDecode(jsonContent) as List<dynamic>;
+    for (final dynamic raw in list) {
+      final Map<String, dynamic> entry = raw as Map<String, dynamic>;
+      final MoodGrid base = MoodGrid.fromExport(entry);
+      final MoodGrid created = await _moodGridDao!.createMoodGrid(
+        name: base.name,
+        rows: base.rows,
+        cols: base.cols,
+      );
+      final List<MoodGridCell> existingCells =
+          await _moodGridDao.getCells(created.id);
+      final Map<int, MoodGridCell> byPosition = <int, MoodGridCell>{
+        for (final MoodGridCell c in existingCells) c.position: c,
+      };
+
+      final List<dynamic> cellsJson =
+          (entry['cells'] as List<dynamic>?) ?? <dynamic>[];
+      for (final dynamic cellRaw in cellsJson) {
+        final MoodGridCell cellData =
+            MoodGridCell.fromExport(cellRaw as Map<String, dynamic>);
+        final MoodGridCell? target = byPosition[cellData.position];
+        if (target == null) continue;
+        if (cellData.label != null) {
+          await _moodGridDao.setCellLabel(target.id, cellData.label);
+        }
+        if (cellData.mediaType != null && cellData.externalId != null) {
+          await _moodGridDao.setCellItem(
+            cellId: target.id,
+            mediaType: cellData.mediaType!,
+            externalId: cellData.externalId!,
+            platformId: cellData.platformId,
+          );
+        }
+      }
+    }
   }
 
   /// Генерирует суффикс даты для имени файла.

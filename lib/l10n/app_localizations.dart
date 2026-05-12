@@ -7074,6 +7074,222 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Select anime or manga to import'**
   String get aniListImportSelectAtLeastOne;
+
+  /// No description provided for @moodGridCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Mood Grid'**
+  String get moodGridCreate;
+
+  /// No description provided for @moodGridCreateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New Mood Grid'**
+  String get moodGridCreateTitle;
+
+  /// No description provided for @moodGridName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get moodGridName;
+
+  /// No description provided for @moodGridPresetLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Template'**
+  String get moodGridPresetLabel;
+
+  /// No description provided for @moodGridPresetAboutMe.
+  ///
+  /// In en, this message translates to:
+  /// **'About Me: Tonkatsu Box'**
+  String get moodGridPresetAboutMe;
+
+  /// No description provided for @moodGridPresetAboutMeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'1×5 — favorite game, movie, TV show, anime, manga'**
+  String get moodGridPresetAboutMeSubtitle;
+
+  /// No description provided for @moodGridPresetBlank.
+  ///
+  /// In en, this message translates to:
+  /// **'Blank'**
+  String get moodGridPresetBlank;
+
+  /// No description provided for @moodGridPresetBlankSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Empty grid with the size you choose'**
+  String get moodGridPresetBlankSubtitle;
+
+  /// No description provided for @moodGridRows.
+  ///
+  /// In en, this message translates to:
+  /// **'Rows'**
+  String get moodGridRows;
+
+  /// No description provided for @moodGridCols.
+  ///
+  /// In en, this message translates to:
+  /// **'Columns'**
+  String get moodGridCols;
+
+  /// No description provided for @moodGridBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood Grid'**
+  String get moodGridBadge;
+
+  /// No description provided for @moodGridEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get moodGridEdit;
+
+  /// No description provided for @moodGridDoneEditing.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get moodGridDoneEditing;
+
+  /// No description provided for @moodGridRename.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get moodGridRename;
+
+  /// No description provided for @moodGridDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get moodGridDelete;
+
+  /// No description provided for @moodGridDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this grid?'**
+  String get moodGridDeleteTitle;
+
+  /// No description provided for @moodGridDeleteMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The grid will be removed. This cannot be undone.'**
+  String get moodGridDeleteMessage;
+
+  /// No description provided for @moodGridExportImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Export as image'**
+  String get moodGridExportImage;
+
+  /// No description provided for @moodGridImageSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Image saved'**
+  String get moodGridImageSaved;
+
+  /// No description provided for @moodGridAddRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Add row'**
+  String get moodGridAddRow;
+
+  /// No description provided for @moodGridRemoveRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove row'**
+  String get moodGridRemoveRow;
+
+  /// No description provided for @moodGridAddCol.
+  ///
+  /// In en, this message translates to:
+  /// **'Add column'**
+  String get moodGridAddCol;
+
+  /// No description provided for @moodGridRemoveCol.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove column'**
+  String get moodGridRemoveCol;
+
+  /// No description provided for @moodGridShrinkTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shrink grid?'**
+  String get moodGridShrinkTitle;
+
+  /// No description provided for @moodGridShrinkMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Cells outside the new bounds will be deleted.'**
+  String get moodGridShrinkMessage;
+
+  /// No description provided for @moodGridShrinkConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Shrink'**
+  String get moodGridShrinkConfirm;
+
+  /// No description provided for @moodGridEditLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit label'**
+  String get moodGridEditLabel;
+
+  /// No description provided for @moodGridLabelHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Category name'**
+  String get moodGridLabelHint;
+
+  /// No description provided for @moodGridPickItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick item'**
+  String get moodGridPickItem;
+
+  /// No description provided for @moodGridReplaceItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace item'**
+  String get moodGridReplaceItem;
+
+  /// No description provided for @moodGridClearItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear item'**
+  String get moodGridClearItem;
+
+  /// No description provided for @moodGridPickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick item'**
+  String get moodGridPickerTitle;
+
+  /// No description provided for @moodGridPickerCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Collection'**
+  String get moodGridPickerCollection;
+
+  /// No description provided for @moodGridPickerAllCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'All collections'**
+  String get moodGridPickerAllCollections;
+
+  /// No description provided for @moodGridPickerSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by name'**
+  String get moodGridPickerSearchHint;
+
+  /// No description provided for @moodGridPickerEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to pick'**
+  String get moodGridPickerEmpty;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

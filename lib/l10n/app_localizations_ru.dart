@@ -3979,4 +3979,115 @@ class SRu extends S {
   @override
   String get aniListImportSelectAtLeastOne =>
       'Выберите хотя бы один тип: аниме или манга';
+
+  @override
+  String get moodGridCreate => 'Создать mood-сетку';
+
+  @override
+  String get moodGridCreateTitle => 'Новая mood-сетка';
+
+  @override
+  String get moodGridName => 'Название';
+
+  @override
+  String get moodGridPresetLabel => 'Шаблон';
+
+  @override
+  String get moodGridPresetAboutMe => 'About Me: Tonkatsu Box';
+
+  @override
+  String get moodGridPresetAboutMeSubtitle =>
+      '1×5 — любимая игра, фильм, сериал, аниме, манга';
+
+  @override
+  String get moodGridPresetBlank => 'Пустая';
+
+  @override
+  String get moodGridPresetBlankSubtitle => 'Пустая сетка нужного размера';
+
+  @override
+  String get moodGridRows => 'Строк';
+
+  @override
+  String get moodGridCols => 'Колонок';
+
+  @override
+  String get moodGridBadge => 'Mood-сетка';
+
+  @override
+  String get moodGridEdit => 'Редактировать';
+
+  @override
+  String get moodGridDoneEditing => 'Готово';
+
+  @override
+  String get moodGridRename => 'Переименовать';
+
+  @override
+  String get moodGridDelete => 'Удалить';
+
+  @override
+  String get moodGridDeleteTitle => 'Удалить сетку?';
+
+  @override
+  String get moodGridDeleteMessage =>
+      'Сетка будет удалена. Действие нельзя отменить.';
+
+  @override
+  String get moodGridExportImage => 'Экспорт как изображение';
+
+  @override
+  String get moodGridImageSaved => 'Изображение сохранено';
+
+  @override
+  String get moodGridAddRow => 'Добавить строку';
+
+  @override
+  String get moodGridRemoveRow => 'Убрать строку';
+
+  @override
+  String get moodGridAddCol => 'Добавить колонку';
+
+  @override
+  String get moodGridRemoveCol => 'Убрать колонку';
+
+  @override
+  String get moodGridShrinkTitle => 'Уменьшить сетку?';
+
+  @override
+  String get moodGridShrinkMessage =>
+      'Ячейки за пределами новых размеров будут удалены.';
+
+  @override
+  String get moodGridShrinkConfirm => 'Уменьшить';
+
+  @override
+  String get moodGridEditLabel => 'Изменить подпись';
+
+  @override
+  String get moodGridLabelHint => 'Название категории';
+
+  @override
+  String get moodGridPickItem => 'Выбрать элемент';
+
+  @override
+  String get moodGridReplaceItem => 'Заменить элемент';
+
+  @override
+  String get moodGridClearItem => 'Убрать элемент';
+
+  @override
+  String get moodGridPickerTitle => 'Выбор элемента';
+
+  @override
+  String get moodGridPickerCollection => 'Коллекция';
+
+  @override
+  String get moodGridPickerAllCollections => 'Все коллекции';
+
+  @override
+  String get moodGridPickerSearchHint => 'Поиск по названию';
+
+  @override
+  String get moodGridPickerEmpty => 'Нет элементов';
 }

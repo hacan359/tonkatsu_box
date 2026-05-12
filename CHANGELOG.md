@@ -9,6 +9,76 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **Mood Grid — visual N×M boards of items inside the Tier Lists section**
+
+  A second board type alongside the existing ranked tier list. A grid is
+  an editable N×M matrix of cells; each cell has an optional category
+  label and one optional media item picked from any of the user's
+  collections. The same item can appear in multiple cells. A grid is
+  not bound to any collection and is not included in `.xcoll` /
+  `.xcollx` exports — only in full app backups. The default preset is
+  «About Me: Tonkatsu Box» (1×5 — Favorite Game / Movie / TV Show /
+  Anime / Manga); a Blank option lets the user pick rows × cols.
+  Tap a cell to open the item picker; right-click or long-press to
+  edit the label, replace the item, or clear it. A compact stepper
+  toolbar above the grid resizes rows and columns on the fly.
+  Export-as-PNG renders the grid off-screen with a watermark
+  matching the tier-list export style and saves via the system
+  picker on every platform (SAF on Android, native dialog on
+  desktop). Backups now include all mood grids and their cells.
+
+  * lib/shared/models/mood_grid.dart (MoodGrid),
+    lib/shared/models/mood_grid_cell.dart (MoodGridCell): New models
+    with fromDb / toDb / fromExport / toExport / copyWith. Cells store
+    `(mediaType, externalId, platformId)` directly with no FK on
+    `collection_items` so the grid survives item deletion.
+  * lib/core/database/schema.dart (DatabaseSchema.createMoodGridsTable,
+    DatabaseSchema.createMoodGridCellsTable): New tables.
+  * lib/core/database/migrations/migration_v36.dart (MigrationV36),
+    lib/core/database/migrations/migration_registry.dart: Bump schema
+    to v36.
+  * lib/core/database/dao/mood_grid_dao.dart (MoodGridDao,
+    MoodGridCellSpec): CRUD plus `resizeMoodGrid` that remaps cell
+    positions to preserve (row, col) coordinates across grid resizes.
+  * lib/core/database/database_service.dart (DatabaseService.moodGridDao,
+    moodGridDaoProvider, DatabaseService.clearAllData): Wires the DAO
+    and adds `mood_grid_cells` + `mood_grids` to the cascade clear.
+  * lib/features/tier_lists/providers/mood_grids_provider.dart
+    (MoodGridsNotifier, moodGridsProvider, MoodGridPreset,
+    aboutMeTonkatsuBoxCells, kDefaultMoodGridTitle),
+    lib/features/tier_lists/providers/mood_grid_detail_provider.dart
+    (MoodGridDetailNotifier, MoodGridDetailState,
+    moodGridDetailProvider): List + per-grid detail providers with
+    optimistic state mutation.
+  * lib/features/tier_lists/screens/mood_grid_detail_screen.dart
+    (MoodGridDetailScreen): Detail screen with stepper resize bar,
+    tap-to-pick cells, right-click / long-press context menu, PNG
+    export, rename and delete.
+  * lib/features/tier_lists/widgets/mood_grid_view.dart (MoodGridView),
+    mood_grid_cell_widget.dart (MoodGridCellWidget),
+    mood_grid_cell_media.dart (MoodGridCellMedia,
+    resolveMoodGridCellMedia), mood_grid_export_view.dart
+    (MoodGridExportView), mood_grid_item_picker.dart
+    (showMoodGridItemPicker, MoodGridItemPickerResult),
+    create_mood_grid_dialog.dart (CreateMoodGridDialog): Grid
+    rendering, off-screen export with watermark, modal item picker
+    over all collections with optional collection filter, and the
+    create dialog with preset + size selector.
+  * lib/features/tier_lists/screens/tier_lists_screen.dart
+    (_BoardEntry, _mergeAndSort, _MoodGridCard, _showCreateMoodGridDialog):
+    Lists ranked tier lists and mood grids side by side sorted by
+    creation date with type badges; FAB exposes both create flows.
+  * lib/core/services/backup_service.dart (BackupService, _restoreMoodGrids,
+    backupFormatVersion): Backup archive now includes `mood_grids.json`
+    with cells. Bumped `backupFormatVersion` to 2; restore is
+    backward-compatible with v1 archives (mood-grids section is
+    optional and skipped when absent).
+  * lib/features/settings/content/database_content.dart: Invalidate
+    `moodGridsProvider` after Reset Database.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb: Mood Grid UI strings
+    (moodGridCreate, moodGridPresetAboutMe, moodGridBadge,
+    moodGridAddRow, moodGridShrinkTitle, moodGridPickItem, etc.).
+
 - **Import anime and manga lists from a public AniList username**
 
   New entry in Settings → Import alongside MyAnimeList / Steam / RA / Trakt.

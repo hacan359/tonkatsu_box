@@ -3914,4 +3914,116 @@ class SEn extends S {
 
   @override
   String get aniListImportSelectAtLeastOne => 'Select anime or manga to import';
+
+  @override
+  String get moodGridCreate => 'Create Mood Grid';
+
+  @override
+  String get moodGridCreateTitle => 'New Mood Grid';
+
+  @override
+  String get moodGridName => 'Name';
+
+  @override
+  String get moodGridPresetLabel => 'Template';
+
+  @override
+  String get moodGridPresetAboutMe => 'About Me: Tonkatsu Box';
+
+  @override
+  String get moodGridPresetAboutMeSubtitle =>
+      '1×5 — favorite game, movie, TV show, anime, manga';
+
+  @override
+  String get moodGridPresetBlank => 'Blank';
+
+  @override
+  String get moodGridPresetBlankSubtitle =>
+      'Empty grid with the size you choose';
+
+  @override
+  String get moodGridRows => 'Rows';
+
+  @override
+  String get moodGridCols => 'Columns';
+
+  @override
+  String get moodGridBadge => 'Mood Grid';
+
+  @override
+  String get moodGridEdit => 'Edit';
+
+  @override
+  String get moodGridDoneEditing => 'Done';
+
+  @override
+  String get moodGridRename => 'Rename';
+
+  @override
+  String get moodGridDelete => 'Delete';
+
+  @override
+  String get moodGridDeleteTitle => 'Delete this grid?';
+
+  @override
+  String get moodGridDeleteMessage =>
+      'The grid will be removed. This cannot be undone.';
+
+  @override
+  String get moodGridExportImage => 'Export as image';
+
+  @override
+  String get moodGridImageSaved => 'Image saved';
+
+  @override
+  String get moodGridAddRow => 'Add row';
+
+  @override
+  String get moodGridRemoveRow => 'Remove row';
+
+  @override
+  String get moodGridAddCol => 'Add column';
+
+  @override
+  String get moodGridRemoveCol => 'Remove column';
+
+  @override
+  String get moodGridShrinkTitle => 'Shrink grid?';
+
+  @override
+  String get moodGridShrinkMessage =>
+      'Cells outside the new bounds will be deleted.';
+
+  @override
+  String get moodGridShrinkConfirm => 'Shrink';
+
+  @override
+  String get moodGridEditLabel => 'Edit label';
+
+  @override
+  String get moodGridLabelHint => 'Category name';
+
+  @override
+  String get moodGridPickItem => 'Pick item';
+
+  @override
+  String get moodGridReplaceItem => 'Replace item';
+
+  @override
+  String get moodGridClearItem => 'Clear item';
+
+  @override
+  String get moodGridPickerTitle => 'Pick item';
+
+  @override
+  String get moodGridPickerCollection => 'Collection';
+
+  @override
+  String get moodGridPickerAllCollections => 'All collections';
+
+  @override
+  String get moodGridPickerSearchHint => 'Search by name';
+
+  @override
+  String get moodGridPickerEmpty => 'Nothing to pick';
 }

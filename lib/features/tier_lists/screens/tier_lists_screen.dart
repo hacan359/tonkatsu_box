@@ -7,15 +7,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
+import '../../../shared/models/mood_grid.dart';
 import '../../../shared/models/tier_list.dart';
 import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/draggable_fab.dart';
+import '../providers/mood_grids_provider.dart';
 import '../providers/tier_lists_provider.dart';
+import '../widgets/create_mood_grid_dialog.dart';
 import '../widgets/create_tier_list_dialog.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
+import 'mood_grid_detail_screen.dart';
 import 'tier_list_detail_screen.dart';
 
 /// Экран списка тир-листов.
@@ -55,6 +59,10 @@ class _TierListsScreenState extends ConsumerState<TierListsScreen> {
         ? ref.watch(collectionTierListsProvider(collectionId))
         : ref.watch(tierListsProvider);
 
+    // Mood grids are not tied to collections — only show in the global tab.
+    final AsyncValue<List<MoodGrid>>? moodGridsAsync =
+        collectionId == null ? ref.watch(moodGridsProvider) : null;
+
     final String searchQuery = ref.watch(tierListsSearchQueryProvider);
 
     return CallbackShortcuts(
@@ -87,15 +95,14 @@ class _TierListsScreenState extends ConsumerState<TierListsScreen> {
             child: Text(l.errorPrefix(error.toString())),
           ),
           data: (List<TierList> tierLists) {
-            List<TierList> filtered = tierLists;
-            if (searchQuery.isNotEmpty) {
-              final String query = searchQuery.toLowerCase();
-              filtered = tierLists
-                  .where((TierList t) =>
-                      t.name.toLowerCase().contains(query))
-                  .toList();
-            }
-            if (filtered.isEmpty) {
+            final List<MoodGrid> grids =
+                moodGridsAsync?.valueOrNull ?? <MoodGrid>[];
+            final List<_BoardEntry> merged = _mergeAndSort(
+              tierLists,
+              grids,
+              searchQuery,
+            );
+            if (merged.isEmpty) {
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -107,14 +114,14 @@ class _TierListsScreenState extends ConsumerState<TierListsScreen> {
                     ),
                     const SizedBox(height: AppSpacing.md),
                     Text(
-                      tierLists.isEmpty
+                      (tierLists.isEmpty && grids.isEmpty)
                           ? l.tierListEmpty
                           : l.allItemsNoMatch,
                       style: AppTypography.h2.copyWith(
                         color: AppColors.textTertiary,
                       ),
                     ),
-                    if (tierLists.isEmpty) ...<Widget>[
+                    if (tierLists.isEmpty && grids.isEmpty) ...<Widget>[
                       const SizedBox(height: AppSpacing.sm),
                       Text(
                         l.tierListEmptyHint,
@@ -130,20 +137,24 @@ class _TierListsScreenState extends ConsumerState<TierListsScreen> {
             }
             return ListView.separated(
               padding: const EdgeInsets.all(AppSpacing.md),
-              itemCount: filtered.length,
+              itemCount: merged.length,
               separatorBuilder: (BuildContext context, int index) =>
                   const SizedBox(height: AppSpacing.sm),
               itemBuilder: (BuildContext context, int index) {
-                final TierList tierList = filtered[index];
-                return _TierListCard(
-                  tierList: tierList,
-                  collectionId: collectionId,
-                  onFocusChanged: (bool focused) {
-                    setState(() {
-                      _focusedTierList = focused ? tierList : null;
-                    });
-                  },
-                );
+                final _BoardEntry entry = merged[index];
+                final TierList? tl = entry.tierList;
+                if (tl != null) {
+                  return _TierListCard(
+                    tierList: tl,
+                    collectionId: collectionId,
+                    onFocusChanged: (bool focused) {
+                      setState(() {
+                        _focusedTierList = focused ? tl : null;
+                      });
+                    },
+                  );
+                }
+                return _MoodGridCard(grid: entry.moodGrid!);
               },
             );
           },
@@ -152,10 +163,16 @@ class _TierListsScreenState extends ConsumerState<TierListsScreen> {
             icon: Icons.add,
             items: <DraggableFabItem>[
               DraggableFabItem(
-                icon: Icons.add,
+                icon: Icons.leaderboard,
                 label: l.tierListCreate,
                 onTap: () => _showCreateDialog(context),
               ),
+              if (collectionId == null)
+                DraggableFabItem(
+                  icon: Icons.grid_view,
+                  label: l.moodGridCreate,
+                  onTap: () => _showCreateMoodGridDialog(context),
+                ),
             ],
           ),
         ],
@@ -174,6 +191,19 @@ class _TierListsScreenState extends ConsumerState<TierListsScreen> {
       Navigator.of(context).push(MaterialPageRoute<void>(
         builder: (BuildContext context) =>
             TierListDetailScreen(tierListId: result.id),
+      ));
+    }
+  }
+
+  Future<void> _showCreateMoodGridDialog(BuildContext context) async {
+    final MoodGrid? grid = await showDialog<MoodGrid>(
+      context: context,
+      builder: (BuildContext context) => const CreateMoodGridDialog(),
+    );
+    if (grid != null && context.mounted) {
+      Navigator.of(context).push(MaterialPageRoute<void>(
+        builder: (BuildContext context) =>
+            MoodGridDetailScreen(gridId: grid.id),
       ));
     }
   }
@@ -480,6 +510,233 @@ class _TierListCard extends ConsumerWidget {
       } else {
         await ref.read(tierListsProvider.notifier).delete(tierList.id);
       }
+    }
+  }
+}
+
+/// Wraps either a [TierList] or [MoodGrid] for unified rendering.
+class _BoardEntry {
+  const _BoardEntry.tier(TierList this.tierList) : moodGrid = null;
+  const _BoardEntry.grid(MoodGrid this.moodGrid) : tierList = null;
+
+  final TierList? tierList;
+  final MoodGrid? moodGrid;
+
+  DateTime get createdAt =>
+      tierList?.createdAt ?? moodGrid!.createdAt;
+
+  String get name => tierList?.name ?? moodGrid!.name;
+}
+
+List<_BoardEntry> _mergeAndSort(
+  List<TierList> tierLists,
+  List<MoodGrid> grids,
+  String searchQuery,
+) {
+  final List<_BoardEntry> entries = <_BoardEntry>[
+    ...tierLists.map(_BoardEntry.tier),
+    ...grids.map(_BoardEntry.grid),
+  ];
+  entries.sort(
+    (_BoardEntry a, _BoardEntry b) => b.createdAt.compareTo(a.createdAt),
+  );
+
+  if (searchQuery.isEmpty) return entries;
+  final String query = searchQuery.toLowerCase();
+  return entries
+      .where((_BoardEntry e) => e.name.toLowerCase().contains(query))
+      .toList();
+}
+
+class _MoodGridCard extends ConsumerWidget {
+  const _MoodGridCard({required this.grid});
+
+  final MoodGrid grid;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final S l = S.of(context);
+    return Card(
+      color: AppColors.surfaceLight,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
+          builder: (BuildContext context) =>
+              MoodGridDetailScreen(gridId: grid.id),
+        )),
+        onLongPress: () => _showMoodGridSheet(context, ref),
+        onSecondaryTapUp: kIsMobile
+            ? null
+            : (TapUpDetails d) =>
+                _showMoodGridPopupMenu(context, ref, d.globalPosition),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Row(
+            children: <Widget>[
+              const Icon(
+                Icons.grid_view,
+                color: AppColors.brand,
+                size: 32,
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      grid.name,
+                      style: AppTypography.h3,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${grid.rows} × ${grid.cols} · ${l.moodGridBadge}',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right, color: AppColors.textTertiary),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showMoodGridSheet(BuildContext context, WidgetRef ref) {
+    final S l = S.of(context);
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.surface,
+      builder: (BuildContext ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            ListTile(
+              leading: const Icon(Icons.edit),
+              title: Text(l.rename),
+              onTap: () {
+                Navigator.pop(ctx);
+                _renameGrid(context, ref);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete, color: AppColors.error),
+              title: Text(
+                l.delete,
+                style: const TextStyle(color: AppColors.error),
+              ),
+              onTap: () {
+                Navigator.pop(ctx);
+                _deleteGrid(context, ref);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showMoodGridPopupMenu(
+    BuildContext context,
+    WidgetRef ref,
+    Offset pos,
+  ) {
+    final S l = S.of(context);
+    showMenu<String>(
+      context: context,
+      position: RelativeRect.fromLTRB(pos.dx, pos.dy, pos.dx, pos.dy),
+      items: <PopupMenuEntry<String>>[
+        PopupMenuItem<String>(
+          value: 'rename',
+          child: ListTile(
+            leading: const Icon(Icons.edit),
+            title: Text(l.rename),
+            contentPadding: EdgeInsets.zero,
+          ),
+        ),
+        PopupMenuItem<String>(
+          value: 'delete',
+          child: ListTile(
+            leading: const Icon(Icons.delete, color: AppColors.error),
+            title: Text(
+              l.delete,
+              style: const TextStyle(color: AppColors.error),
+            ),
+            contentPadding: EdgeInsets.zero,
+          ),
+        ),
+      ],
+    ).then((String? action) {
+      if (!context.mounted || action == null) return;
+      if (action == 'rename') {
+        _renameGrid(context, ref);
+      } else if (action == 'delete') {
+        _deleteGrid(context, ref);
+      }
+    });
+  }
+
+  Future<void> _renameGrid(BuildContext context, WidgetRef ref) async {
+    final S l = S.of(context);
+    final TextEditingController controller =
+        TextEditingController(text: grid.name);
+    final String? newName = await showDialog<String>(
+      context: context,
+      builder: (BuildContext ctx) => AlertDialog(
+        title: Text(l.rename),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          onSubmitted: (String v) => Navigator.of(ctx).pop(v.trim()),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(l.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(controller.text.trim()),
+            child: Text(l.save),
+          ),
+        ],
+      ),
+    );
+    if (newName != null && newName.isNotEmpty) {
+      await ref
+          .read(moodGridsProvider.notifier)
+          .rename(grid.id, newName);
+    }
+  }
+
+  Future<void> _deleteGrid(BuildContext context, WidgetRef ref) async {
+    final S l = S.of(context);
+    final bool? ok = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext ctx) => AlertDialog(
+        title: Text(l.delete),
+        content: Text(l.moodGridDeleteMessage),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(
+              l.delete,
+              style: const TextStyle(color: AppColors.error),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (ok == true) {
+      await ref.read(moodGridsProvider.notifier).delete(grid.id);
     }
   }
 }
