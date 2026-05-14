@@ -1,15 +1,12 @@
-// RetroAchievements API клиент.
-
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
-import 'api_error_detail.dart';
 import '../../shared/models/ra_game_progress.dart';
 import '../../shared/models/ra_user_profile.dart';
 import '../services/api_key_initializer.dart';
+import 'api_error_detail.dart';
 
-/// Провайдер для RA API клиента.
 final Provider<RaApi> raApiProvider = Provider<RaApi>((Ref ref) {
   final RaApi api = RaApi();
   final ApiKeys keys = ref.read(apiKeysProvider);
@@ -19,30 +16,20 @@ final Provider<RaApi> raApiProvider = Provider<RaApi>((Ref ref) {
   return api;
 });
 
-/// Ошибка RetroAchievements API.
 class RaApiException implements Exception {
-  /// Создаёт [RaApiException].
   const RaApiException(this.message, {this.statusCode, this.detail});
 
-  /// Сообщение об ошибке.
   final String message;
-
-  /// HTTP код ответа (если есть).
   final int? statusCode;
-
-  /// Подробная отладочная информация (URL, метод, причина).
   final String? detail;
 
   @override
   String toString() => 'RaApiException($statusCode): $message';
 }
 
-/// Клиент для RetroAchievements API.
-///
-/// Публичный API, аутентификация через username + Web API key
-/// в query-параметрах каждого запроса.
+/// RetroAchievements API client. Auth is `(username, web API key)` passed as
+/// `z` + `y` query params on every request.
 class RaApi {
-  /// Создаёт [RaApi].
   RaApi({Dio? dio})
       : _dio = dio ??
             Dio(BaseOptions(
@@ -58,25 +45,19 @@ class RaApi {
   String? _username;
   String? _apiKey;
 
-  /// Текущий username (null если не задан).
   String? get username => _username;
 
-  /// Устанавливает credentials.
   void setCredentials({required String username, required String apiKey}) {
     _username = username;
     _apiKey = apiKey;
   }
 
-  /// Есть ли credentials.
   bool get hasCredentials =>
       _username != null &&
       _username!.isNotEmpty &&
       _apiKey != null &&
       _apiKey!.isNotEmpty;
 
-  /// Проверяет credentials, загружая профиль.
-  ///
-  /// Возвращает `true` если credentials валидны.
   Future<bool> validateCredentials(
     String username,
     String apiKey,
@@ -99,7 +80,6 @@ class RaApi {
     }
   }
 
-  /// Загружает профиль пользователя.
   Future<RaUserProfile> getUserProfile(String targetUser) async {
     _ensureCredentials();
     try {
@@ -116,10 +96,8 @@ class RaApi {
     }
   }
 
-  /// Загружает список всех играных игр с прогрессом.
-  ///
-  /// Использует `API_GetUserCompletionProgress` с пагинацией (500 за запрос).
-  /// Возвращает полный список без дублей.
+  /// Pages through `API_GetUserCompletionProgress` (500 entries per page)
+  /// with a 1s gap between pages — RA's documented rate limit is 1 req/s.
   Future<List<RaGameProgress>> getCompletedGames(String targetUser) async {
     _ensureCredentials();
     final List<RaGameProgress> allGames = <RaGameProgress>[];
@@ -150,7 +128,6 @@ class RaApi {
         offset += results.length;
         if (offset >= total || results.isEmpty) break;
 
-        // Rate limit: 1 запрос/сек.
         await Future<void>.delayed(const Duration(seconds: 1));
       }
     } on DioException catch (e) {
@@ -160,9 +137,9 @@ class RaApi {
     return allGames;
   }
 
-  /// Загружает награды пользователя (beaten/mastered даты).
-  ///
-  /// Возвращает Map (GameID → AwardedAt) для быстрого lookup.
+  /// Returns `gameId → most-recent awarded-at`. Skips site awards (only
+  /// beaten/mastered counted). On failure returns an empty map — awards are
+  /// nice-to-have, not a blocker.
   Future<Map<int, DateTime>> getUserAwardDates(String targetUser) async {
     _ensureCredentials();
     try {
@@ -182,7 +159,6 @@ class RaApi {
       for (final dynamic award in awards) {
         final Map<String, dynamic> a = award as Map<String, dynamic>;
         final String? awardType = a['AwardType'] as String?;
-        // Только game awards (beaten/mastered), не site awards.
         if (awardType == null ||
             (!awardType.contains('Beaten') &&
                 !awardType.contains('Mastery'))) {
@@ -193,7 +169,6 @@ class RaApi {
         if (gameId != null && awardedAt != null) {
           final DateTime? date = DateTime.tryParse(awardedAt);
           if (date != null) {
-            // Если игра уже есть — оставляем более позднюю дату.
             final DateTime? existing = result[gameId];
             if (existing == null || date.isAfter(existing)) {
               result[gameId] = date;
@@ -204,15 +179,12 @@ class RaApi {
       return result;
     } on DioException catch (e) {
       _log.warning('getUserAwardDates failed: $e');
-      // Не критично — возвращаем пустой map.
       return <int, DateTime>{};
     }
   }
 
-  /// Загружает краткую информацию об игре и прогресс пользователя (без списка достижений).
-  ///
-  /// Возвращает Title, ConsoleName, NumAchievements, NumAwardedToUser и т.д.
-  /// Легковесный вызов — не включает массив Achievements.
+  /// Lightweight summary call (`a=0`): metadata + counters, no Achievements
+  /// array. Use when opening the game card before user expands the list.
   Future<Map<String, dynamic>> getGameSummary(
     String targetUser,
     int raGameId,
@@ -234,10 +206,8 @@ class RaApi {
     }
   }
 
-  /// Загружает детали достижений для конкретной игры.
-  ///
-  /// Возвращает Map всех достижений (earned + locked) с датами разблокировки.
-  /// Используется для lazy-загрузки при открытии карточки игры.
+  /// Full call (`a=1`): same shape as the summary plus the full Achievements
+  /// map with unlock timestamps. Lazy-fetched when the user expands the card.
   Future<Map<String, dynamic>> getGameInfoAndUserProgress(
     String targetUser,
     int raGameId,
@@ -259,10 +229,6 @@ class RaApi {
     }
   }
 
-  /// Загружает список всех игр для консоли.
-  ///
-  /// Возвращает список с ID, Title, NumAchievements, ImageIcon.
-  /// Кэшируется на стороне вызывающего.
   Future<List<RaGameListEntry>> getGameList(int consoleId) async {
     _ensureCredentials();
     try {
@@ -311,9 +277,7 @@ class RaApi {
   }
 }
 
-/// Запись из списка игр консоли RA.
 class RaGameListEntry {
-  /// Создаёт [RaGameListEntry].
   const RaGameListEntry({
     required this.id,
     required this.title,
@@ -324,7 +288,6 @@ class RaGameListEntry {
     this.points,
   });
 
-  /// Создаёт из JSON ответа API.
   factory RaGameListEntry.fromJson(Map<String, dynamic> json) {
     return RaGameListEntry(
       id: json['ID'] as int,
@@ -337,28 +300,14 @@ class RaGameListEntry {
     );
   }
 
-  /// RA Game ID.
   final int id;
-
-  /// Название игры.
   final String title;
-
-  /// RA Console ID.
   final int consoleId;
-
-  /// Название консоли.
   final String? consoleName;
-
-  /// Путь к иконке (относительный).
   final String? imageIcon;
-
-  /// Количество достижений.
   final int numAchievements;
-
-  /// Очки.
   final int? points;
 
-  /// Полный URL иконки.
   String? get imageUrl => imageIcon != null
       ? 'https://media.retroachievements.org$imageIcon'
       : null;

@@ -1,54 +1,40 @@
-// Kodi JSON-RPC API клиент.
-//
-// Общается с Kodi по HTTP (`http://{host}:{port}/jsonrpc`) с Basic Auth.
-// Используется для passive watch-sync: периодически читаем библиотеку
-// Kodi и обновляем локальные коллекции. См. dev/backlog/integrations/kodi.md.
-//
-// Документация: https://kodi.wiki/view/JSON-RPC_API
-
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
-import 'api_error_detail.dart';
 import '../../shared/models/kodi_application_info.dart';
 import '../../shared/models/kodi_episode.dart';
 import '../../shared/models/kodi_movie.dart';
 import '../../shared/models/kodi_tv_show.dart';
+import 'api_error_detail.dart';
 
-/// Провайдер клиента Kodi JSON-RPC.
-///
-/// Инстанс долго-живущий; `KodiSettingsNotifier` вызывает
-/// [KodiApi.setConnection] при загрузке/изменении настроек.
+/// Kodi JSON-RPC client. Talks HTTP to `http://{host}:{port}/jsonrpc` with
+/// optional Basic Auth. Used for passive watch-sync: the local library is
+/// polled and our collections updated to match.
+/// Docs: https://kodi.wiki/view/JSON-RPC_API
+
+/// Long-lived singleton. `KodiSettingsNotifier` calls [KodiApi.setConnection]
+/// when settings load or change.
 final Provider<KodiApi> kodiApiProvider = Provider<KodiApi>((Ref ref) {
   final KodiApi api = KodiApi();
   ref.onDispose(api.dispose);
   return api;
 });
 
-/// Ошибка Kodi JSON-RPC клиента.
 class KodiApiException implements Exception {
-  /// Создаёт [KodiApiException].
   const KodiApiException(this.message, {this.statusCode, this.detail});
 
-  /// Человеко-читаемое сообщение для отображения пользователю.
   final String message;
-
-  /// HTTP статус, если доступен.
   final int? statusCode;
-
-  /// Подробная отладочная информация (URL, метод, причина).
   final String? detail;
 
   @override
   String toString() => 'KodiApiException($statusCode): $message';
 }
 
-/// Запись в логе Kodi API запросов.
 class KodiLogEntry {
-  /// Создаёт [KodiLogEntry].
   const KodiLogEntry({
     required this.timestamp,
     required this.method,
@@ -56,19 +42,11 @@ class KodiLogEntry {
     required this.message,
   });
 
-  /// Время записи.
   final DateTime timestamp;
-
-  /// JSON-RPC метод (или action).
   final String method;
-
-  /// Уровень: info, warn, error.
   final String level;
-
-  /// Краткое сообщение.
   final String message;
 
-  /// Форматированная строка для отображения.
   String get formatted {
     final String time =
         '${timestamp.hour.toString().padLeft(2, '0')}:'
@@ -78,18 +56,12 @@ class KodiLogEntry {
   }
 }
 
-/// Клиент Kodi JSON-RPC API.
-///
-/// Минимальный набор методов, нужных для passive watch-sync:
-/// [ping], [getApplicationProperties], [getMovies], [getTvShows],
-/// [getEpisodes] + [rawCall] для debug-панели.
-///
-/// Реконфигурируется через [setConnection]/[clearConnection] —
-/// один инстанс на всё время жизни приложения.
+/// Minimal Kodi JSON-RPC client: ping, app properties, movie/show/episode
+/// fetch + a [rawCall] escape hatch used by the Debug panel. Reconfigured at
+/// runtime via [setConnection] / [clearConnection] — one instance lives for
+/// the lifetime of the app.
 class KodiApi {
-  /// Создаёт [KodiApi].
-  ///
-  /// [timeout] используется для connect/receive (default 5s — LAN).
+  /// [timeout] applies to both connect and receive — tuned for LAN.
   KodiApi({Dio? dio, Duration? timeout})
       : _dio = dio ??
             Dio(BaseOptions(
@@ -108,17 +80,14 @@ class KodiApi {
   String? _password;
   int _nextId = 1;
 
-  /// Лог последних запросов (для debug-панели). Последние 50 записей.
+  /// Ring-buffer of the last [_maxLogEntries] requests, surfaced in the
+  /// Debug panel.
   final List<KodiLogEntry> requestLog = <KodiLogEntry>[];
 
-  /// Максимальное количество записей в логе.
   static const int _maxLogEntries = 50;
 
-  /// Задаёт параметры подключения.
-  ///
-  /// [host] очищается от пробелов. [username]/[password] опциональны —
-  /// без них запросы идут без `Authorization` (если Kodi разрешает анонимный
-  /// доступ).
+  /// Credentials are optional — Kodi can be configured to accept anonymous
+  /// JSON-RPC, in which case omit them and we skip `Authorization`.
   void setConnection({
     required String host,
     required int port,
@@ -131,7 +100,6 @@ class KodiApi {
     _password = password;
   }
 
-  /// Очищает параметры подключения.
   void clearConnection() {
     _host = null;
     _port = null;
@@ -139,7 +107,6 @@ class KodiApi {
     _password = null;
   }
 
-  /// Все параметры подключения заданы.
   bool get isConfigured =>
       _host != null &&
       _host!.isNotEmpty &&
@@ -147,19 +114,13 @@ class KodiApi {
       _port! > 0 &&
       _port! <= 65535;
 
-  /// Текущий base URL (или null если [isConfigured] == false).
   String? get baseUrl => isConfigured ? 'http://$_host:$_port/jsonrpc' : null;
 
-  /// Пингует Kodi — возвращает true если JSON-RPC отвечает `"pong"`.
-  ///
-  /// Throws [KodiApiException] при HTTP/auth ошибках.
   Future<bool> ping() async {
     final Map<String, dynamic> response = await rawCall('JSONRPC.Ping', null);
     return response['result'] == 'pong';
   }
 
-  /// Получает информацию о запущенном экземпляре Kodi
-  /// (`Application.GetProperties` — `version`, `name`).
   Future<KodiApplicationInfo> getApplicationProperties() async {
     final Map<String, dynamic> response = await rawCall(
       'Application.GetProperties',
@@ -172,11 +133,8 @@ class KodiApi {
     return KodiApplicationInfo.fromJson(result);
   }
 
-  /// Получает фильмы из Kodi VideoLibrary.
-  ///
-  /// Пагинация через [start]/[end] (inclusive:exclusive); по умолчанию
-  /// 200 элементов — безопасный батч. Если библиотека больше — caller
-  /// вызывает метод итеративно.
+  /// Pagination is [start]/[end] (inclusive/exclusive). 200 is a safe batch;
+  /// callers loop when the library is larger.
   Future<List<KodiMovie>> getMovies({int start = 0, int end = 200}) async {
     final Map<String, dynamic> response = await rawCall(
       'VideoLibrary.GetMovies',
@@ -198,7 +156,6 @@ class KodiApi {
     return _parseList(response, 'movies', KodiMovie.fromJson);
   }
 
-  /// Получает сериалы из Kodi VideoLibrary.
   Future<List<KodiTvShow>> getTvShows({int start = 0, int end = 200}) async {
     final Map<String, dynamic> response = await rawCall(
       'VideoLibrary.GetTVShows',
@@ -217,11 +174,8 @@ class KodiApi {
     return _parseList(response, 'tvshows', KodiTvShow.fromJson);
   }
 
-  /// Получает эпизоды сериалов.
-  ///
-  /// [tvShowId] — опциональный фильтр (Kodi internal `tvshowid`). Если
-  /// null — возвращает эпизоды всех шоу (может быть очень много, батчи
-  /// обязательны).
+  /// [tvShowId] is Kodi's internal `tvshowid`. When `null`, episodes from
+  /// every show are returned — that can be huge, callers must page.
   Future<List<KodiEpisode>> getEpisodes({
     int? tvShowId,
     int start = 0,
@@ -246,13 +200,9 @@ class KodiApi {
     return _parseList(response, 'episodes', KodiEpisode.fromJson);
   }
 
-  /// Выполняет произвольный JSON-RPC метод.
-  ///
-  /// Возвращает весь ответ (`{jsonrpc, id, result | error}`); caller
-  /// самостоятельно извлекает `result`. При ошибке JSON-RPC выбрасывает
-  /// [KodiApiException] — поле `error.message` идёт в [message].
-  ///
-  /// Используется напрямую из Debug Panel для ручной отладки.
+  /// Returns the whole `{jsonrpc, id, result | error}` envelope. JSON-RPC
+  /// `error` is translated into a [KodiApiException] so the Debug panel can
+  /// show it; otherwise callers extract `result` themselves.
   Future<Map<String, dynamic>> rawCall(
     String method,
     Map<String, dynamic>? params,
@@ -296,6 +246,8 @@ class KodiApi {
 
       final Object? raw = response.data;
       if (raw is! Map<String, dynamic>) {
+        // Most common cause: Kodi served the web UI HTML page because remote
+        // control over HTTP is disabled in its settings.
         throw const KodiApiException(
           'Kodi returned non-JSON response — check "Allow remote control via HTTP"',
         );
@@ -343,11 +295,11 @@ class KodiApi {
     }
   }
 
-  /// Добавляет кастомную запись в лог (для import/sync service).
+  /// Lets the import/sync service attach its own progress lines to the same
+  /// ring-buffer that the Debug panel reads.
   void addLog(String method, String level, String message) =>
       _addLog(method, level, message);
 
-  /// Закрывает HTTP клиент.
   void dispose() {
     _dio.close();
   }
