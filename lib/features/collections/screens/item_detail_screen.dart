@@ -155,7 +155,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     if (!enabled) return;
     _discordRpc ??= ref.read(discordRpcServiceProvider);
     final TrackerGameData? raData = item.mediaType == MediaType.game
-        ? ref.read(trackerDetailProvider(item.externalId)).valueOrNull?.gameData
+        ? ref.read(trackerDetailProvider((gameId: item.externalId, platformId: item.platformId))).valueOrNull?.gameData
         : null;
     _discordRpc!.updatePresence(item, raData: raData);
   }
@@ -1004,7 +1004,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     if (item.mediaType != MediaType.game) return null;
 
     final TrackerGameData? raData = ref
-        .watch(trackerDetailProvider(item.externalId))
+        .watch(trackerDetailProvider((gameId: item.externalId, platformId: item.platformId)))
         .valueOrNull
         ?.gameData;
 
@@ -1044,12 +1044,17 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
   Widget? _buildTrackerSection(CollectionItem item) {
     if (item.mediaType != MediaType.game) return null;
     final bool hasData = ref.watch(
-      trackerDetailProvider(item.externalId).select(
+      trackerDetailProvider((gameId: item.externalId, platformId: item.platformId)).select(
         (AsyncValue<TrackerDetailState> v) =>
             v.valueOrNull?.hasRaData ?? false,
       ),
     );
-    if (hasData) return RaAchievementsSection(gameId: item.externalId);
+    if (hasData) {
+      return RaAchievementsSection(
+        gameId: item.externalId,
+        platformId: item.platformId,
+      );
+    }
     return null;
   }
 
@@ -1378,7 +1383,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     if (result == null || !mounted) return;
 
     await ref
-        .read(trackerDetailProvider(item.externalId).notifier)
+        .read(trackerDetailProvider((gameId: item.externalId, platformId: item.platformId)).notifier)
         .linkRaGame(
           raGameId: result.raGameId,
           raTitle: result.title,

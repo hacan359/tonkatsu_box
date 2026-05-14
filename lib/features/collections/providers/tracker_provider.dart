@@ -1,5 +1,3 @@
-// Провайдеры для tracker данных в карточке игры.
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
@@ -15,58 +13,61 @@ import '../../../shared/models/tracker_achievement.dart';
 import '../../../shared/models/tracker_game_data.dart';
 import '../../../shared/models/tracker_profile.dart';
 
-/// Состояние tracker данных для карточки игры.
+/// Composite key for the tracker provider family — IGDB game id plus the
+/// optional platform that scopes the row. A `null` platformId points at the
+/// legacy platform-agnostic record so old data keeps rendering.
+typedef TrackerKey = ({int gameId, int? platformId});
+
 class TrackerDetailState {
-  /// Создаёт [TrackerDetailState].
   const TrackerDetailState({
     this.gameData,
     this.achievements,
     this.isLoadingAchievements = false,
   });
 
-  /// Summary прогресса (из tracker_game_data).
   final TrackerGameData? gameData;
-
-  /// Список достижений (lazy loaded).
   final List<TrackerAchievement>? achievements;
-
-  /// Загружаются ли достижения.
   final bool isLoadingAchievements;
 
-  /// Есть ли RA данные для этой игры.
   bool get hasRaData => gameData != null;
 }
 
-/// Провайдер tracker данных для конкретной игры (по IGDB ID).
-///
-/// AsyncNotifier — `build()` загружает данные, Riverpod управляет
-/// loading/data/error. Виджет использует `asyncValue.when()`.
+/// Tracker data for one (IGDB game, platform) pair.
 final AsyncNotifierProviderFamily<TrackerDetailNotifier, TrackerDetailState,
-        int>
+        TrackerKey>
     trackerDetailProvider = AsyncNotifierProvider.family<
-        TrackerDetailNotifier, TrackerDetailState, int>(
+        TrackerDetailNotifier, TrackerDetailState, TrackerKey>(
   TrackerDetailNotifier.new,
 );
 
-/// Notifier для tracker данных одной игры.
 class TrackerDetailNotifier
-    extends FamilyAsyncNotifier<TrackerDetailState, int> {
+    extends FamilyAsyncNotifier<TrackerDetailState, TrackerKey> {
   static final Logger _log = Logger('TrackerDetailNotifier');
 
   late TrackerDao _trackerDao;
   late TrackerSyncService _syncService;
   late DatabaseService _db;
   late int _gameId;
+  int? _platformId;
 
   @override
-  Future<TrackerDetailState> build(int arg) async {
-    _gameId = arg;
+  Future<TrackerDetailState> build(TrackerKey arg) async {
+    _gameId = arg.gameId;
+    _platformId = arg.platformId;
     _trackerDao = ref.watch(trackerDaoProvider);
     _syncService = ref.watch(trackerSyncServiceProvider);
     _db = ref.watch(databaseServiceProvider);
 
-    final TrackerGameData? data =
-        await _trackerDao.getGameData(TrackerType.ra, _gameId);
+    TrackerGameData? data = await _trackerDao.getGameData(
+      TrackerType.ra,
+      _gameId,
+      platformId: _platformId,
+    );
+    // Fallback to the legacy platform-agnostic row when no per-platform row
+    // exists yet — keeps pre-v37 collections rendering without re-sync.
+    if (data == null && _platformId != null) {
+      data = await _trackerDao.getGameData(TrackerType.ra, _gameId);
+    }
 
     return TrackerDetailState(gameData: data);
   }
@@ -141,11 +142,11 @@ class TrackerDetailNotifier
   }) async {
     final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
-    // Создаём запись tracker_game_data.
     final TrackerGameData data = TrackerGameData(
       id: 0,
       trackerType: TrackerType.ra,
       gameId: _gameId,
+      platformId: _platformId,
       trackerGameId: raGameId.toString(),
       trackerGameTitle: raTitle,
       achievementsTotal: achievementsTotal,
@@ -160,9 +161,14 @@ class TrackerDetailNotifier
     await refreshAchievements();
   }
 
-  /// Отвязывает игру от RA: удаляет tracker_game_data и achievements.
+  /// Drops the per-platform RA link and its achievements. Other platform
+  /// installs of the same IGDB game keep their data.
   Future<void> unlinkRaGame() async {
-    await _trackerDao.deleteGameData(TrackerType.ra, _gameId);
+    await _trackerDao.deleteGameData(
+      TrackerType.ra,
+      _gameId,
+      platformId: _platformId,
+    );
     state = const AsyncData<TrackerDetailState>(TrackerDetailState());
   }
 
@@ -232,7 +238,9 @@ class TrackerDetailNotifier
     }
   }
 
-  /// Синхронизирует даты и статус из RA во все collection_items этой игры.
+  /// Propagates RA dates/status into every CollectionItem that points at
+  /// this `(IGDB game, platform)` pair. Other platform installs of the same
+  /// IGDB game are intentionally left alone.
   Future<void> _syncToCollectionItems({
     String? awardKind,
     int? awardDate,
@@ -241,8 +249,13 @@ class TrackerDetailNotifier
     int earned = 0,
   }) async {
     try {
-      final List<({int id, int? collectionId})> items =
-          await _db.getItemIdsByExternalId(_gameId, 'game');
+      final List<({int id, int? collectionId, int? platformId})> items =
+          await _db.getItemIdsByExternalId(
+        _gameId,
+        'game',
+        platformId: _platformId,
+        filterByPlatform: true,
+      );
       if (items.isEmpty) return;
 
       final DateTime? startedAt = firstPlayedAt != null
@@ -262,7 +275,8 @@ class TrackerDetailNotifier
         lastPlayedAt: lastActivity,
       );
 
-      for (final ({int id, int? collectionId}) item in items) {
+      for (final ({int id, int? collectionId, int? platformId}) item
+          in items) {
         // Текущий статус для проверки правила dropped.
         final CollectionItem? current = ref
             .read(collectionItemsNotifierProvider(item.collectionId))

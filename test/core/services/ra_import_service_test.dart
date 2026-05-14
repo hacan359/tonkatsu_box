@@ -85,6 +85,7 @@ void main() {
           collectionId: any(named: 'collectionId'),
           mediaType: any(named: 'mediaType'),
           externalId: any(named: 'externalId'),
+          platformId: any(named: 'platformId'),
         )).thenAnswer((_) async => null);
 
     when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
@@ -666,6 +667,7 @@ void main() {
               collectionId: 1,
               mediaType: MediaType.game,
               externalId: 100,
+              platformId: any(named: 'platformId'),
             )).thenAnswer((_) async => existing);
 
         final RaImportResult result = await sut.importFromProfile(
@@ -716,6 +718,7 @@ void main() {
               collectionId: 1,
               mediaType: MediaType.game,
               externalId: 100,
+              platformId: any(named: 'platformId'),
             )).thenAnswer((_) async => existing);
 
         await sut.importFromProfile(
@@ -765,6 +768,7 @@ void main() {
               collectionId: 1,
               mediaType: MediaType.game,
               externalId: 100,
+              platformId: any(named: 'platformId'),
             )).thenAnswer((_) async => existing);
 
         await sut.importFromProfile(
@@ -821,6 +825,7 @@ void main() {
               collectionId: 1,
               mediaType: MediaType.game,
               externalId: 100,
+              platformId: any(named: 'platformId'),
             )).thenAnswer((_) async => existing);
 
         await sut.importFromProfile(
@@ -992,6 +997,7 @@ void main() {
               collectionId: 1,
               mediaType: MediaType.game,
               externalId: 100,
+              platformId: any(named: 'platformId'),
             )).thenAnswer((_) async => existing);
 
         await sut.importFromProfile(
@@ -1036,6 +1042,7 @@ void main() {
               collectionId: 1,
               mediaType: MediaType.game,
               externalId: 100,
+              platformId: any(named: 'platformId'),
             )).thenAnswer((_) async => existing);
 
         await sut.importFromProfile(
@@ -1079,6 +1086,7 @@ void main() {
               collectionId: 1,
               mediaType: MediaType.game,
               externalId: 100,
+              platformId: any(named: 'platformId'),
             )).thenAnswer((_) async => existing);
 
         final RaImportResult result = await sut.importFromProfile(

@@ -11,6 +11,7 @@ import '../../shared/models/tracker_profile.dart';
 import '../api/ra_api.dart';
 import '../database/dao/tracker_dao.dart';
 import '../database/database_service.dart';
+import 'ra_to_igdb_mapper.dart';
 
 /// Провайдер для [TrackerSyncService].
 final Provider<TrackerSyncService> trackerSyncServiceProvider =
@@ -194,6 +195,8 @@ class TrackerSyncService {
       final List<RaGameProgress> realGames =
           raGames.where((RaGameProgress g) => g.isRealGame).toList();
 
+      // Two RA games for the same IGDB title (PS2 + GameCube) have distinct
+      // RA ids, so keying by RA id keeps each platform's row separate.
       final Map<String, TrackerGameData> existingByRaId =
           <String, TrackerGameData>{
         for (final TrackerGameData d in existingData)
@@ -250,10 +253,17 @@ class TrackerSyncService {
           continue;
         }
 
+        // Scope the row by the IGDB platform that matches RA's console so
+        // PS2 progress and GameCube progress can coexist for the same IGDB
+        // game.
+        final int? platformId =
+            RaToIgdbMapper.primaryIgdbPlatformId(raGame.consoleId);
+
         final TrackerGameData data = TrackerGameData(
           id: existing?.id ?? 0,
           trackerType: TrackerType.ra,
           gameId: igdbId,
+          platformId: platformId,
           trackerGameId: raGameId,
           trackerGameTitle: raGame.title,
           achievementsEarned: raGame.numAwarded,
