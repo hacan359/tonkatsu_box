@@ -291,7 +291,6 @@ D-pad и кнопка A обрабатываются глобально в `Navi
    ```
    **Важно:** `Actions` ВЫШЕ `Focus` (Actions.invoke ищет вверх по дереву)
 3. **Новый экран со скроллом/табами** — добавить `GamepadListener` с нужными callbacks (`onScroll`, `onSubTabSwitch`)
-4. **Визуальная рамка фокуса** — `GamepadFocusIndicator(child: ...)` (2px рамка в gamepad-режиме)
 
 Подробная документация: `docs/GAMEPAD.md`
 

@@ -161,7 +161,6 @@ Example:
 | File | When to touch |
 |------|---------------|
 | `ARCHITECTURE.md` | New layer, major module, or shift in patterns. Keep it a high-level map — do NOT add per-file tables or SQL schema dumps |
-| `ROADMAP.md` | Tick off completed items, add new plans |
 | `CONTRIBUTING.md` | Changes to development process |
 | `CODESTYLE.md` | New lint rules, typing conventions |
 | `COMMITS.md` | Changes to commit conventions |
@@ -169,7 +168,7 @@ Example:
 | `GAMEPAD.md` | New focusable widgets, navigation rules |
 | `SNACKBAR.md` | Changes to `context.showSnack()` API or types |
 
-Language per file: most are Russian; ROADMAP.md is English. Keep each in its current language. Preserve formatting — make targeted edits, don't rewrite.
+Language per file: most are Russian. Keep each in its current language. Preserve formatting — make targeted edits, don't rewrite.
 
 ### Phase 5 — Gate (single run)
 

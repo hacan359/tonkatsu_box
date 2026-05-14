@@ -1,20 +1,21 @@
 # Tonkatsu Box Coding Standards
 
-Mandatory rules for all code in the Tonkatsu Box project. This document is the single source of truth.
+Mandatory rules for all code in the Tonkatsu Box project. `analysis_options.yaml` is the source of truth — this document explains intent and highlights load-bearing rules; for the full list, read the file.
 
 ---
 
 ## Analyzer
 
-Maximum strictness. Code must produce zero warnings/infos:
+Maximum strictness. `flutter analyze --fatal-infos --fatal-warnings` must come back clean. Highlights:
 
-- strict-casts: true
-- strict-inference: true
-- strict-raw-types: true
-- always_specify_types: true
-- avoid_print: true (print is forbidden, use _log)
-- require_trailing_commas: true
-- prefer_single_quotes: true
+- **Language**: `strict-casts`, `strict-inference`, `strict-raw-types` — no implicit dynamic, no raw generics.
+- **Promoted to errors**: `dead_code`, `unused_import`, `unused_local_variable`, `dangling_library_doc_comments`, `sort_constructors_first`, `prefer_const_declarations`, plus a battery of `unnecessary_*` / `unrelated_type_equality_checks` so locally `flutter analyze` fails on the same things CI does.
+- **Typing**: `always_declare_return_types`, `always_specify_types`, `avoid_dynamic_calls`, `type_annotate_public_apis`.
+- **Immutability**: `prefer_final_fields/locals/in_for_each`, `prefer_const_constructors`, `prefer_const_literals_to_create_immutables`.
+- **Style**: `avoid_print` (use `Logger`), `require_trailing_commas`, `prefer_single_quotes`, `sort_child_properties_last`, `use_super_parameters`, `use_build_context_synchronously`.
+- **Widgets**: `use_key_in_widget_constructors`, `avoid_unnecessary_containers`, `sized_box_for_whitespace`, `no_logic_in_create_state`.
+
+If you add or relax a rule, update this paragraph in the same commit.
 
 ---
 
@@ -91,10 +92,16 @@ Available DAOs:
 - GameDao: games, platforms, IGDB genres
 - MovieDao: movies, TMDB genres
 - TvShowDao: TV shows, seasons, episodes, watched episodes
-- CollectionDao: collections, collection items
-- CanvasDao: canvas items, connections, viewports
-- WishlistDao: wishlist items
+- AnimeDao, MangaDao: AniList caches
 - VisualNovelDao: visual novels, VNDB tags
+- CustomMediaDao: user-authored custom items
+- CollectionDao: collections, collection items
+- TagDao: collection tags
+- WishlistDao: wishlist items
+- CanvasDao: canvas items, connections, viewports
+- TierListDao: tier lists, tier definitions, entries
+- MoodGridDao: mood grids and grid cells
+- TrackerDao: tracker profiles, per-game progress, achievements
 
 When adding new database methods: add to the appropriate DAO, then add a one-line delegate in DatabaseService.
 
@@ -179,7 +186,7 @@ All tests use shared helpers from test/helpers/. One import covers everything:
 
 Contents:
 - mocks.dart: all mock/fake classes (single source of truth)
-- builders.dart: test data factories (createTestCollection, createTestCollections, createTestStats, createTestCollectionItem, createTestGame, createTestMovie, createTestTvShow, createTestVisualNovel, createTestWishlistItem, createTestCanvasItem, createTestCanvasConnection)
+- builders.dart: test data factories. Media: createTestGame, createTestMovie, createTestTvShow, createTestManga, createTestVisualNovel. Collections: createTestCollection, createTestCollectionItem, createTestCollectionTag, createTestStats, createTestWishlistItem, createTestCanvasItem, createTestCanvasConnection. Tier lists: createTestTierList, createTestTierDefinition, createTestTierListEntry. Trackers: createTestRaUserProfile, createTestRaGameProgress, createTestSteamOwnedGame, createTestProfile, createTestProfileStats, createTestProfilesData. Add new builders here when a mock/fixture would be reused in ≥2 files
 - fallbacks.dart: registerAllFallbacks() for mocktail
 - pump_app.dart: tester.pumpApp(widget, overrides: [...]) for widget tests
 - test_helpers.dart: barrel export of all above

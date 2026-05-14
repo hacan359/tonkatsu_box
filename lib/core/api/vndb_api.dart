@@ -1,41 +1,28 @@
-// Клиент для работы с VNDB API.
-
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
-import 'api_error_detail.dart';
 import '../../shared/models/visual_novel.dart';
+import 'api_error_detail.dart';
 
-/// Провайдер для VNDB API клиента.
 final Provider<VndbApi> vndbApiProvider = Provider<VndbApi>((Ref ref) {
   return VndbApi();
 });
 
-/// Исключение при ошибках VNDB API.
 class VndbApiException implements Exception {
-  /// Создаёт [VndbApiException].
   const VndbApiException(this.message, {this.statusCode, this.detail});
 
-  /// Сообщение об ошибке.
   final String message;
-
-  /// HTTP код ответа (если есть).
   final int? statusCode;
-
-  /// Подробная отладочная информация (URL, метод, причина).
   final String? detail;
 
   @override
   String toString() => 'VndbApiException: $message (status: $statusCode)';
 }
 
-/// Клиент для работы с VNDB API.
-///
-/// Использует публичный API без авторизации.
-/// Документация: https://api.vndb.org/kana
+/// VNDB Kana API client. No auth required.
+/// Docs: https://api.vndb.org/kana
 class VndbApi {
-  /// Создаёт экземпляр [VndbApi].
   VndbApi({Dio? dio})
       : _dio = dio ??
             Dio(BaseOptions(
@@ -49,7 +36,6 @@ class VndbApi {
   static const Duration _timeout = Duration(seconds: 5);
   static const String _baseUrl = 'https://api.vndb.org/kana';
 
-  /// Стандартные поля для запросов VN.
   static const String _vnFields =
       'title, alttitle, description, image.url, rating, votecount, '
       'released, length_minutes, length, tags.name, tags.rating, '
@@ -57,10 +43,6 @@ class VndbApi {
 
   final Dio _dio;
 
-  /// Ищет визуальные новеллы по названию.
-  ///
-  /// Возвращает кортеж (список новелл, есть ли ещё результаты).
-  /// Throws [VndbApiException] при ошибке запроса.
   Future<(List<VisualNovel>, bool hasMore)> searchVn({
     required String query,
     int page = 1,
@@ -88,14 +70,9 @@ class VndbApi {
     }
   }
 
-  /// Просматривает визуальные новеллы по фильтрам (без текстового поиска).
-  ///
-  /// [tagId] — ID тега VNDB (например "g7" для Sci-fi).
-  /// [sort] — поле сортировки: 'rating', 'released', 'votecount'.
-  /// [reverse] — обратный порядок (по умолчанию true = убывание).
-  ///
-  /// Возвращает кортеж (список новелл, есть ли ещё, количество страниц).
-  /// Throws [VndbApiException] при ошибке запроса.
+  /// Browse with structured filters and no free-text query (or a mixed
+  /// query+filter call). When no query is supplied, we add `votecount >= 10`
+  /// to keep junk entries out of the default browse view.
   Future<(List<VisualNovel>, bool hasMore, int totalPages)> browseVn({
     String? query,
     String? tagId,
@@ -105,7 +82,6 @@ class VndbApi {
     int results = 20,
   }) async {
     try {
-      // Собираем фильтры
       final List<dynamic> filters = <dynamic>[];
 
       if (query != null && query.trim().isNotEmpty) {
@@ -116,12 +92,10 @@ class VndbApi {
         filters.add(<dynamic>['tag', '=', tagId]);
       }
 
-      // Минимум голосов для качественных результатов (только без поиска)
       if (query == null || query.trim().isEmpty) {
         filters.add(<dynamic>['votecount', '>=', 10]);
       }
 
-      // Формируем итоговый фильтр
       final dynamic finalFilter = filters.length == 1
           ? filters.first
           : <dynamic>['and', ...filters];
@@ -167,11 +141,6 @@ class VndbApi {
     }
   }
 
-  /// Получает визуальную новеллу по ID.
-  ///
-  /// [id] — ID в формате "v2".
-  /// Возвращает новеллу или null, если не найдена.
-  /// Throws [VndbApiException] при ошибке запроса.
   Future<VisualNovel?> getVnById(String id) async {
     try {
       final Response<dynamic> response = await _dio.post<dynamic>(
@@ -202,15 +171,12 @@ class VndbApi {
     }
   }
 
-  /// Получает несколько визуальных новелл по списку ID.
-  ///
-  /// [ids] — список ID в формате "v2", "v17", и т.д.
-  /// Throws [VndbApiException] при ошибке запроса.
   Future<List<VisualNovel>> getVnByIds(List<String> ids) async {
     if (ids.isEmpty) return <VisualNovel>[];
 
     try {
-      // VNDB поддерживает ["or", ...ids] для множественного поиска
+      // VNDB supports an `["or", ...ids]` shape for bulk lookups, which lets
+      // us issue one request instead of one-per-id.
       final List<dynamic> idFilters = <dynamic>[
         'or',
         ...ids.map((String id) => <dynamic>['id', '=', id]),
@@ -246,11 +212,8 @@ class VndbApi {
     }
   }
 
-  /// Загружает теги (жанры) из VNDB.
-  ///
-  /// Загружает только теги категории "cont" (Content) — это жанры.
-  /// Сортирует по количеству VN (vn_count desc).
-  /// Throws [VndbApiException] при ошибке запроса.
+  /// Fetches the top 100 content tags (VNDB category `cont`) sorted by usage
+  /// count — these are what we surface as "genres" in the UI.
   Future<List<VndbTag>> fetchTags() async {
     try {
       final Response<dynamic> response = await _dio.post<dynamic>(
@@ -285,7 +248,6 @@ class VndbApi {
     }
   }
 
-  /// Парсит ответ VNDB API с VN.
   (List<VisualNovel>, bool hasMore) _parseVnResponse(
     Response<dynamic> response,
   ) {
@@ -310,7 +272,6 @@ class VndbApi {
     return (novels, hasMore);
   }
 
-  /// Обрабатывает DioException и возвращает VndbApiException.
   VndbApiException _handleDioException(
     DioException e,
     String defaultMessage,
@@ -338,7 +299,6 @@ class VndbApi {
     );
   }
 
-  /// Закрывает HTTP клиент.
   void dispose() {
     _dio.close();
   }

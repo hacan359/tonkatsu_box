@@ -1,9 +1,7 @@
-// Миграция v34: добавление поля time_spent_minutes в collection_items.
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'migration.dart';
 
-/// Миграция v34: хранение потраченного времени (в минутах) на элемент коллекции.
 class MigrationV34 extends Migration {
   @override
   int get version => 34;

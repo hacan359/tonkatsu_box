@@ -1,18 +1,12 @@
-// API клиент для SteamGridDB.
-
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
-import 'api_error_detail.dart';
-import '../services/api_key_initializer.dart';
 import '../../shared/models/steamgriddb_game.dart';
 import '../../shared/models/steamgriddb_image.dart';
+import '../services/api_key_initializer.dart';
+import 'api_error_detail.dart';
 
-/// Провайдер для SteamGridDB API клиента.
-///
-/// При создании устанавливает API ключ из [apiKeysProvider],
-/// загруженного в main() до runApp().
 final Provider<SteamGridDbApi> steamGridDbApiProvider =
     Provider<SteamGridDbApi>((Ref ref) {
   final SteamGridDbApi api = SteamGridDbApi();
@@ -23,18 +17,11 @@ final Provider<SteamGridDbApi> steamGridDbApiProvider =
   return api;
 });
 
-/// Исключение при ошибках SteamGridDB API.
 class SteamGridDbApiException implements Exception {
-  /// Создаёт [SteamGridDbApiException].
   const SteamGridDbApiException(this.message, {this.statusCode, this.detail});
 
-  /// Сообщение об ошибке.
   final String message;
-
-  /// HTTP код ответа (если есть).
   final int? statusCode;
-
-  /// Подробная отладочная информация (URL, метод, причина).
   final String? detail;
 
   @override
@@ -42,12 +29,9 @@ class SteamGridDbApiException implements Exception {
       'SteamGridDbApiException: $message (status: $statusCode)';
 }
 
-/// Клиент для работы с SteamGridDB API v2.
-///
-/// Использует Bearer token для аутентификации.
-/// Документация: https://www.steamgriddb.com/api/v2
+/// SteamGridDB API v2 client. Uses a Bearer token.
+/// Docs: https://www.steamgriddb.com/api/v2
 class SteamGridDbApi {
-  /// Создаёт экземпляр [SteamGridDbApi].
   SteamGridDbApi({Dio? dio})
       : _dio = dio ??
             Dio(BaseOptions(
@@ -65,19 +49,14 @@ class SteamGridDbApi {
 
   String? _apiKey;
 
-  /// Устанавливает API ключ для аутентификации.
   void setApiKey(String apiKey) {
     _apiKey = apiKey;
   }
 
-  /// Очищает API ключ.
   void clearApiKey() {
     _apiKey = null;
   }
 
-  /// Проверяет валидность API ключа.
-  ///
-  /// Выполняет тестовый запрос к API. Возвращает `true` если ключ валиден.
   Future<bool> validateApiKey(String apiKey) async {
     try {
       final Response<dynamic> response = await _dio.get<dynamic>(
@@ -94,12 +73,6 @@ class SteamGridDbApi {
     }
   }
 
-  /// Ищет игры по названию.
-  ///
-  /// [term] — строка поиска.
-  ///
-  /// Возвращает список найденных игр.
-  /// Throws [SteamGridDbApiException] при ошибке запроса.
   Future<List<SteamGridDbGame>> searchGames(String term) async {
     _ensureApiKey();
 
@@ -134,35 +107,22 @@ class SteamGridDbApi {
     }
   }
 
-  /// Получает grid-изображения (box art) для игры.
-  ///
-  /// [gameId] — ID игры в SteamGridDB.
   Future<List<SteamGridDbImage>> getGrids(int gameId) async {
     return _fetchImages('grids/game', gameId);
   }
 
-  /// Получает hero-изображения (баннеры) для игры.
-  ///
-  /// [gameId] — ID игры в SteamGridDB.
   Future<List<SteamGridDbImage>> getHeroes(int gameId) async {
     return _fetchImages('heroes/game', gameId);
   }
 
-  /// Получает logo-изображения для игры.
-  ///
-  /// [gameId] — ID игры в SteamGridDB.
   Future<List<SteamGridDbImage>> getLogos(int gameId) async {
     return _fetchImages('logos/game', gameId);
   }
 
-  /// Получает icon-изображения для игры.
-  ///
-  /// [gameId] — ID игры в SteamGridDB.
   Future<List<SteamGridDbImage>> getIcons(int gameId) async {
     return _fetchImages('icons/game', gameId);
   }
 
-  /// Общий метод загрузки изображений.
   Future<List<SteamGridDbImage>> _fetchImages(
     String endpoint,
     int gameId,
@@ -195,7 +155,6 @@ class SteamGridDbApi {
     }
   }
 
-  /// Создаёт Options с заголовком авторизации.
   Options _authOptions() {
     return Options(
       headers: <String, dynamic>{
@@ -204,7 +163,6 @@ class SteamGridDbApi {
     );
   }
 
-  /// Обрабатывает DioException и возвращает SteamGridDbApiException.
   SteamGridDbApiException _handleDioException(
     DioException e,
     String defaultMessage,
@@ -242,7 +200,6 @@ class SteamGridDbApi {
     }
   }
 
-  /// Закрывает HTTP клиент.
   void dispose() {
     _dio.close();
   }

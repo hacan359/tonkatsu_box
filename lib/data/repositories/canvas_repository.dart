@@ -3,19 +3,18 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/database/database_service.dart';
+import '../../shared/models/anime.dart';
 import '../../shared/models/canvas_connection.dart';
 import '../../shared/models/canvas_item.dart';
 import '../../shared/models/canvas_viewport.dart';
 import '../../shared/models/collection_item.dart';
 import '../../shared/models/custom_media.dart';
 import '../../shared/models/game.dart';
+import '../../shared/models/manga.dart';
 import '../../shared/models/movie.dart';
 import '../../shared/models/tv_show.dart';
-import '../../shared/models/anime.dart';
-import '../../shared/models/manga.dart';
 import '../../shared/models/visual_novel.dart';
 
-/// Провайдер для репозитория канваса.
 final Provider<CanvasRepository> canvasRepositoryProvider =
     Provider<CanvasRepository>((Ref ref) {
   return CanvasRepository(
@@ -23,55 +22,34 @@ final Provider<CanvasRepository> canvasRepositoryProvider =
   );
 });
 
-/// Репозиторий для работы с элементами канваса.
-///
-/// Управляет CRUD операциями для canvas_items и canvas_viewport.
 class CanvasRepository {
-  /// Создаёт экземпляр [CanvasRepository].
   CanvasRepository({required DatabaseService db}) : _db = db;
 
   final DatabaseService _db;
 
-  /// Ширина карточки по умолчанию.
   static const double defaultCardWidth = 160;
-
-  /// Высота карточки по умолчанию.
   static const double defaultCardHeight = 220;
-
-  /// Отступ между карточками в сетке.
   static const double gridGap = 24;
-
-  /// Количество колонок при авторазмещении.
   static const int gridColumns = 5;
-
-  /// X координата центра канваса для размещения элементов.
   static const double initialCenterX = 2500.0;
-
-  /// Y координата центра канваса для размещения элементов.
   static const double initialCenterY = 2500.0;
 
-  // ==================== Canvas Items ====================
-
-  /// Возвращает все элементы канваса для коллекции.
   Future<List<CanvasItem>> getItems(int collectionId) async {
     final List<Map<String, dynamic>> rows =
         await _db.getCanvasItems(collectionId);
     return rows.map(CanvasItem.fromDb).toList();
   }
 
-  /// Возвращает элементы канваса с подгруженными данными медиа.
   Future<List<CanvasItem>> getItemsWithData(int collectionId) async {
     final List<CanvasItem> items = await getItems(collectionId);
     return _enrichItemsWithMediaData(items);
   }
 
-  /// Создаёт элемент канваса и возвращает его с присвоенным ID.
   Future<CanvasItem> createItem(CanvasItem item) async {
     final int id = await _db.insertCanvasItem(item.toDb());
     return item.copyWith(id: id);
   }
 
-  /// Создаёт несколько элементов канваса в одной транзакции.
   Future<List<CanvasItem>> createItemsBatch(List<CanvasItem> items) async {
     if (items.isEmpty) return <CanvasItem>[];
 
@@ -84,19 +62,16 @@ class CanvasRepository {
     ];
   }
 
-  /// Удаляет несколько элементов канваса по ID в одной транзакции.
   Future<void> deleteItemsBatch(List<int> ids) async {
     await _db.deleteCanvasItemsBatch(ids);
   }
 
-  /// Обновляет элемент канваса.
   Future<void> updateItem(CanvasItem item) async {
     final Map<String, dynamic> dbData = item.toDb();
     dbData.remove('id');
     await _db.updateCanvasItem(item.id, dbData);
   }
 
-  /// Обновляет позицию элемента на канвасе.
   Future<void> updateItemPosition(
     int id, {
     required double x,
@@ -105,7 +80,6 @@ class CanvasRepository {
     await _db.updateCanvasItem(id, <String, dynamic>{'x': x, 'y': y});
   }
 
-  /// Обновляет размеры элемента.
   Future<void> updateItemSize(
     int id, {
     double? width,
@@ -119,29 +93,24 @@ class CanvasRepository {
     }
   }
 
-  /// Обновляет дополнительные данные элемента (JSON).
   Future<void> updateItemData(int id, Map<String, dynamic>? data) async {
     await _db.updateCanvasItem(id, <String, dynamic>{
       'data': data != null ? json.encode(data) : null,
     });
   }
 
-  /// Обновляет z-index элемента.
   Future<void> updateItemZIndex(int id, int zIndex) async {
     await _db.updateCanvasItem(id, <String, dynamic>{'z_index': zIndex});
   }
 
-  /// Удаляет элемент канваса.
   Future<void> deleteItem(int id) async {
     await _db.deleteCanvasItem(id);
   }
 
-  /// Удаляет элемент канваса, связанный с игрой (по igdbId).
   Future<void> deleteGameItem(int collectionId, int igdbId) async {
     await _db.deleteCanvasItemByRef(collectionId, 'game', igdbId);
   }
 
-  /// Удаляет элемент канваса по типу и ID связанного объекта.
   Future<void> deleteMediaItem(
     int collectionId,
     CanvasItemType itemType,
@@ -150,7 +119,6 @@ class CanvasRepository {
     await _db.deleteCanvasItemByRef(collectionId, itemType.value, refId);
   }
 
-  /// Удаляет элемент канваса по ID элемента коллекции.
   Future<void> deleteByCollectionItemId(
     int collectionId,
     int collectionItemId,
@@ -161,15 +129,11 @@ class CanvasRepository {
     );
   }
 
-  /// Проверяет, есть ли элементы канваса для коллекции.
   Future<bool> hasCanvasItems(int collectionId) async {
     final int count = await _db.getCanvasItemCount(collectionId);
     return count > 0;
   }
 
-  // ==================== Canvas Viewport ====================
-
-  /// Возвращает состояние viewport для коллекции.
   Future<CanvasViewport?> getViewport(int collectionId) async {
     final Map<String, dynamic>? row =
         await _db.getCanvasViewport(collectionId);
@@ -177,7 +141,6 @@ class CanvasRepository {
     return CanvasViewport.fromDb(row);
   }
 
-  /// Сохраняет состояние viewport.
   Future<void> saveViewport(CanvasViewport viewport) async {
     await _db.upsertCanvasViewport(
       collectionId: viewport.collectionId,
@@ -187,13 +150,15 @@ class CanvasRepository {
     );
   }
 
-  /// Загружает медиа-данные (game/movie/tvShow) для canvas items.
+  /// Hydrates `CanvasItem.game/movie/tvShow/...` from cache tables in one
+  /// parallel batch. Animation items resolve to whichever of `movies_cache`
+  /// or `tv_shows_cache` actually holds the referenced TMDB id — TMDB stores
+  /// animated films and TV anime in different tables.
   Future<List<CanvasItem>> _enrichItemsWithMediaData(
     List<CanvasItem> items,
   ) async {
     if (items.isEmpty) return items;
 
-    // Собираем ID по типам медиа
     final List<int> gameIds = items
         .where((CanvasItem item) =>
             item.itemType == CanvasItemType.game && item.itemRefId != null)
@@ -246,7 +211,6 @@ class CanvasRepository {
         .map((CanvasItem item) => item.itemRefId!)
         .toList();
 
-    // Если нет медиа-элементов, возвращаем как есть
     if (gameIds.isEmpty &&
         movieTmdbIds.isEmpty &&
         tvShowTmdbIds.isEmpty &&
@@ -257,7 +221,6 @@ class CanvasRepository {
       return items;
     }
 
-    // Загружаем данные параллельно
     final List<Object> results = await Future.wait(<Future<Object>>[
       gameIds.isNotEmpty
           ? _db.getGamesByIds(gameIds)
@@ -315,7 +278,7 @@ class CanvasRepository {
         case CanvasItemType.tvShow:
           return item.copyWith(tvShow: tvShowsMap[item.itemRefId]);
         case CanvasItemType.animation:
-          // Animation может быть movie или tvShow — пробуем оба
+          // Animation can resolve to either a movie or a TV show.
           final Movie? movie = moviesMap[item.itemRefId];
           if (movie != null) {
             return item.copyWith(movie: movie);
@@ -337,22 +300,17 @@ class CanvasRepository {
     }).toList();
   }
 
-  // ==================== Canvas Connections ====================
-
-  /// Возвращает все связи канваса для коллекции.
   Future<List<CanvasConnection>> getConnections(int collectionId) async {
     final List<Map<String, dynamic>> rows =
         await _db.getCanvasConnections(collectionId);
     return rows.map(CanvasConnection.fromDb).toList();
   }
 
-  /// Создаёт связь и возвращает её с присвоенным ID.
   Future<CanvasConnection> createConnection(CanvasConnection conn) async {
     final int id = await _db.insertCanvasConnection(conn.toDb());
     return conn.copyWith(id: id);
   }
 
-  /// Обновляет свойства связи (label, color, style).
   Future<void> updateConnection(CanvasConnection conn) async {
     final Map<String, dynamic> data = <String, dynamic>{
       'label': conn.label,
@@ -362,21 +320,16 @@ class CanvasRepository {
     await _db.updateCanvasConnection(conn.id, data);
   }
 
-  /// Удаляет связь.
   Future<void> deleteConnection(int id) async {
     await _db.deleteCanvasConnection(id);
   }
 
-  // ==================== Game Canvas ====================
-
-  /// Возвращает элементы game canvas для элемента коллекции.
   Future<List<CanvasItem>> getGameCanvasItems(int collectionItemId) async {
     final List<Map<String, dynamic>> rows =
         await _db.getGameCanvasItems(collectionItemId);
     return rows.map(CanvasItem.fromDb).toList();
   }
 
-  /// Возвращает элементы game canvas с подгруженными данными медиа.
   Future<List<CanvasItem>> getGameCanvasItemsWithData(
     int collectionItemId,
   ) async {
@@ -385,16 +338,15 @@ class CanvasRepository {
     return _enrichItemsWithMediaData(items);
   }
 
-  /// Проверяет, есть ли элементы game canvas.
   Future<bool> hasGameCanvasItems(int collectionItemId) async {
     final int count = await _db.getGameCanvasItemCount(collectionItemId);
     return count > 0;
   }
 
-  /// Возвращает viewport game canvas.
-  ///
-  /// Возвращает [CanvasViewport] с `collectionId` равным `collectionItemId`
-  /// для совместимости с [CanvasState].
+  /// Returns a [CanvasViewport] whose `collectionId` is the
+  /// `collectionItemId` — `CanvasState` was designed for collection-scoped
+  /// viewports, so per-item viewports reuse the same shape with the item id
+  /// substituted in.
   Future<CanvasViewport?> getGameCanvasViewport(
     int collectionItemId,
   ) async {
@@ -409,7 +361,6 @@ class CanvasRepository {
     );
   }
 
-  /// Сохраняет viewport game canvas.
   Future<void> saveGameCanvasViewport(
     int collectionItemId,
     CanvasViewport viewport,
@@ -422,7 +373,6 @@ class CanvasRepository {
     );
   }
 
-  /// Возвращает связи game canvas.
   Future<List<CanvasConnection>> getGameCanvasConnections(
     int collectionItemId,
   ) async {
@@ -431,12 +381,10 @@ class CanvasRepository {
     return rows.map(CanvasConnection.fromDb).toList();
   }
 
-  // ==================== Initialization ====================
-
-  /// Инициализирует канвас для коллекции, размещая элементы сеткой по центру.
-  ///
-  /// Вызывается при первом открытии Canvas View.
-  /// Сетка центрируется вокруг [initialCenterX], [initialCenterY].
+  /// Lays the canvas out as a centred grid on first open. The grid is sized
+  /// to fit [gridColumns] across, centred around
+  /// ([initialCenterX], [initialCenterY]) so the user lands on something
+  /// instead of an empty void.
   Future<List<CanvasItem>> initializeCanvas(
     int collectionId,
     List<CollectionItem> items,
@@ -448,7 +396,6 @@ class CanvasRepository {
       return <CanvasItem>[];
     }
 
-    // Рассчитываем размеры сетки для центрирования
     final int cols =
         items.length < gridColumns ? items.length : gridColumns;
     final int rowCount = (items.length + cols - 1) ~/ cols;
@@ -495,7 +442,6 @@ class CanvasRepository {
         ),
     ];
 
-    // Создаём viewport по умолчанию
     await saveViewport(CanvasViewport(collectionId: collectionId));
 
     return createdItems;

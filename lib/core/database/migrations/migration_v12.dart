@@ -1,10 +1,7 @@
-// Миграция v12: добавление дат активности в collection_items.
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'migration.dart';
 
-/// Миграция v12 — добавление колонок started_at, completed_at,
-/// last_activity_at в collection_items.
 class MigrationV12 extends Migration {
   @override
   int get version => 12;
@@ -23,7 +20,7 @@ class MigrationV12 extends Migration {
     await db.execute(
       'ALTER TABLE collection_items ADD COLUMN last_activity_at INTEGER',
     );
-    // Инициализируем last_activity_at из added_at для существующих записей
+    // Seed last_activity_at from added_at so existing rows aren't NULL.
     await db.execute(
       'UPDATE collection_items SET last_activity_at = added_at',
     );

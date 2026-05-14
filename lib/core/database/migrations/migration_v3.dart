@@ -1,11 +1,10 @@
-// Миграция v3: создание таблиц collections и collection_games.
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../schema.dart';
 import 'migration.dart';
 
-/// Миграция v3 — создание таблицы collections и legacy-таблицы
-/// collection_games (нужна для миграции v8).
+/// Creates `collections` and the legacy `collection_games` table that
+/// MigrationV8 later folds into `collection_items`.
 class MigrationV3 extends Migration {
   @override
   int get version => 3;
@@ -17,7 +16,6 @@ class MigrationV3 extends Migration {
   Future<void> migrate(Database db) async {
     await DatabaseSchema.createCollectionsTable(db);
 
-    // Legacy-таблица collection_games (нужна для миграции v8)
     await db.execute('''
       CREATE TABLE collection_games (
         id INTEGER PRIMARY KEY AUTOINCREMENT,

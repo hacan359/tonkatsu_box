@@ -1,32 +1,22 @@
-// Клиент для работы с AniList GraphQL API.
-
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
-import 'api_error_detail.dart';
 import '../../shared/models/anime.dart';
 import '../../shared/models/manga.dart';
 import '../../shared/models/media_type.dart';
+import 'api_error_detail.dart';
 
-/// Провайдер для AniList API клиента.
 final Provider<AniListApi> aniListApiProvider =
     Provider<AniListApi>((Ref ref) {
   return AniListApi();
 });
 
-/// Исключение при ошибках AniList API.
 class AniListApiException implements Exception {
-  /// Создаёт [AniListApiException].
   const AniListApiException(this.message, {this.statusCode, this.detail});
 
-  /// Сообщение об ошибке.
   final String message;
-
-  /// HTTP код ответа (если есть).
   final int? statusCode;
-
-  /// Подробная отладочная информация (URL, метод, причина).
   final String? detail;
 
   @override
@@ -110,13 +100,9 @@ class AniListListEntry {
   final Manga? manga;
 }
 
-/// Клиент для работы с AniList GraphQL API.
-///
-/// Использует публичный GraphQL endpoint без авторизации.
-/// Лимит: 90 запросов/мин.
-/// Документация: https://anilist.gitbook.io/anilist-apiv2-docs
+/// AniList GraphQL client. Public endpoint, no auth, ~90 req/min limit.
+/// Docs: https://anilist.gitbook.io/anilist-apiv2-docs
 class AniListApi {
-  /// Создаёт экземпляр [AniListApi].
   AniListApi({Dio? dio})
       : _dio = dio ??
             Dio(BaseOptions(
@@ -129,7 +115,6 @@ class AniListApi {
   static const Duration _timeout = Duration(seconds: 5);
   static const String _baseUrl = 'https://graphql.anilist.co';
 
-  /// GraphQL query для поиска/browse манги.
   static const String _searchQuery = r'''
 query ($page: Int, $perPage: Int, $search: String, $genres: [String],
        $format: MediaFormat, $status: MediaStatus,
@@ -173,7 +158,6 @@ query ($page: Int, $perPage: Int, $search: String, $genres: [String],
 }
 ''';
 
-  /// GraphQL query для получения манги по ID.
   static const String _getByIdQuery = r'''
 query ($id: Int) {
   Media(id: $id, type: MANGA) {
@@ -201,7 +185,6 @@ query ($id: Int) {
 }
 ''';
 
-  /// GraphQL query для получения нескольких манг по ID.
   static const String _getByIdsQuery = r'''
 query ($page: Int, $perPage: Int, $ids: [Int]) {
   Page(page: $page, perPage: $perPage) {
@@ -232,7 +215,6 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
 }
 ''';
 
-  /// GraphQL query для поиска/browse аниме.
   static const String _animeSearchQuery = r'''
 query ($page: Int, $perPage: Int, $search: String, $genres: [String],
        $status: MediaStatus, $format: MediaFormat,
@@ -274,7 +256,6 @@ query ($page: Int, $perPage: Int, $search: String, $genres: [String],
 }
 ''';
 
-  /// GraphQL query для получения аниме по ID.
   static const String _animeGetByIdQuery = r'''
 query ($id: Int) {
   Media(id: $id, type: ANIME) {
@@ -301,7 +282,6 @@ query ($id: Int) {
 }
 ''';
 
-  /// GraphQL query для получения аниме по списку MAL ID.
   static const String _animeGetByMalIdsQuery = r'''
 query ($page: Int, $perPage: Int, $malIds: [Int]) {
   Page(page: $page, perPage: $perPage) {
@@ -331,7 +311,6 @@ query ($page: Int, $perPage: Int, $malIds: [Int]) {
 }
 ''';
 
-  /// GraphQL query для получения манги по списку MAL ID.
   static const String _mangaGetByMalIdsQuery = r'''
 query ($page: Int, $perPage: Int, $malIds: [Int]) {
   Page(page: $page, perPage: $perPage) {
@@ -363,7 +342,6 @@ query ($page: Int, $perPage: Int, $malIds: [Int]) {
 }
 ''';
 
-  /// GraphQL query для получения нескольких аниме по ID.
   static const String _animeGetByIdsQuery = r'''
 query ($page: Int, $perPage: Int, $ids: [Int]) {
   Page(page: $page, perPage: $perPage) {
@@ -393,11 +371,6 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
 ''';
 
   final Dio _dio;
-
-  /// Ищет мангу по названию.
-  ///
-  /// Возвращает кортеж (список, есть ли ещё, кол-во страниц).
-  /// Throws [AniListApiException] при ошибке.
   Future<(List<Manga>, bool hasMore, int totalPages)> searchManga({
     required String query,
     int page = 1,
@@ -410,16 +383,6 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
     return browseManga(query: query, page: page, perPage: perPage);
   }
 
-  /// Просматривает мангу с фильтрами.
-  ///
-  /// [genres] — жанры (OR match). Пустой или null = без фильтра.
-  /// [format] — формат: MANGA, MANHWA, MANHUA, ONE_SHOT, NOVEL, LIGHT_NOVEL.
-  /// [status] — статус: FINISHED / RELEASING / NOT_YET_RELEASED / CANCELLED / HIATUS.
-  /// [startYear] — публикация началась в указанном году (FuzzyDate YYYYMMDD).
-  /// [sort] — сортировка: SCORE_DESC, POPULARITY_DESC, START_DATE_DESC и др.
-  ///
-  /// Возвращает кортеж (список, есть ли ещё, кол-во страниц).
-  /// Throws [AniListApiException] при ошибке.
   Future<(List<Manga>, bool hasMore, int totalPages)> browseManga({
     String? query,
     List<String>? genres,
@@ -450,7 +413,7 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
       if (status != null) {
         variables['status'] = status;
       }
-      // FuzzyDateInt: YYYYMMDD. Начало года = YYYY0101, конец = YYYY1231.
+      // FuzzyDateInt: YYYYMMDD. Year start = YYYY0101, end = YYYY1231.
       if (startYear != null) {
         variables['startDateGreater'] = startYear * 10000 + 101;
       }
@@ -472,10 +435,6 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
     }
   }
 
-  /// Получает мангу по AniList ID.
-  ///
-  /// Возвращает мангу или null, если не найдена.
-  /// Throws [AniListApiException] при ошибке.
   Future<Manga?> getMangaById(int id) async {
     try {
       final Response<dynamic> response = await _dio.post<dynamic>(
@@ -512,10 +471,6 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
     }
   }
 
-  /// Получает несколько манг по списку ID.
-  ///
-  /// Throws [AniListApiException] при ошибке.
-  /// Максимум элементов на страницу AniList API.
   static const int _maxPerPage = 50;
 
   Future<List<Manga>> getMangaByIds(List<int> ids) async {
@@ -523,7 +478,7 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
 
     final List<Manga> allMangas = <Manga>[];
 
-    // AniList API ограничивает perPage до 50, батчим запросы
+    // AniList caps perPage at 50, so we batch larger lookups.
     for (int i = 0; i < ids.length; i += _maxPerPage) {
       final List<int> batch = ids.sublist(
         i,
@@ -582,17 +537,6 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
     }
   }
 
-  /// Просматривает аниме с фильтрами.
-  ///
-  /// [genres] — жанры (OR match). Пустой или null = без фильтра.
-  /// [status] — статус: RELEASING, FINISHED, NOT_YET_RELEASED, CANCELLED.
-  /// [format] — формат: TV, MOVIE, OVA, ONA, SPECIAL, MUSIC, TV_SHORT.
-  /// [startYear] / [endYear] — диапазон года выпуска (startDate). Надёжный
-  ///   способ фильтровать «по году», работает для всех аниме.
-  /// [sort] — сортировка: SCORE_DESC, POPULARITY_DESC, TRENDING_DESC и др.
-  ///
-  /// Возвращает кортеж (список, есть ли ещё, кол-во страниц).
-  /// Throws [AniListApiException] при ошибке.
   Future<(List<Anime>, bool hasMore, int totalPages)> browseAnime({
     String? query,
     List<String>? genres,
@@ -623,7 +567,7 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
       if (format != null) {
         variables['format'] = format;
       }
-      // FuzzyDateInt: YYYYMMDD. Начало года = YYYY0101, конец = YYYY1231.
+      // FuzzyDateInt: YYYYMMDD. Year start = YYYY0101, end = YYYY1231.
       if (startYear != null) {
         variables['startDateGreater'] = startYear * 10000 + 101;
       }
@@ -645,10 +589,6 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
     }
   }
 
-  /// Получает аниме по AniList ID.
-  ///
-  /// Возвращает аниме или null, если не найдено.
-  /// Throws [AniListApiException] при ошибке.
   Future<Anime?> getAnimeById(int id) async {
     try {
       final Response<dynamic> response = await _dio.post<dynamic>(
@@ -685,9 +625,6 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
     }
   }
 
-  /// Получает несколько аниме по списку ID.
-  ///
-  /// Throws [AniListApiException] при ошибке.
   Future<List<Anime>> getAnimeByIds(List<int> ids) async {
     if (ids.isEmpty) return <Anime>[];
 
@@ -751,10 +688,8 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
     }
   }
 
-  /// Получает аниме по списку MAL ID.
-  ///
-  /// Возвращает карту `malId → Anime`. ID, не найденные на AniList,
-  /// в карте отсутствуют. Throws [AniListApiException] при ошибке.
+  /// Returns `malId → Anime`. MAL ids that don't match anything on AniList
+  /// are simply absent from the map.
   Future<Map<int, Anime>> getAnimeByMalIds(List<int> malIds) async {
     if (malIds.isEmpty) return <int, Anime>{};
 
@@ -772,10 +707,8 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
     return result;
   }
 
-  /// Получает мангу по списку MAL ID.
-  ///
-  /// Возвращает карту `malId → Manga`. ID, не найденные на AniList,
-  /// в карте отсутствуют. Throws [AniListApiException] при ошибке.
+  /// Returns `malId → Manga`. MAL ids that don't match anything on AniList
+  /// are simply absent from the map.
   Future<Map<int, Manga>> getMangaByMalIds(List<int> malIds) async {
     if (malIds.isEmpty) return <int, Manga>{};
 
@@ -984,11 +917,9 @@ query ($userName: String) {
 ''';
 
   /// Fetches the public anime or manga list of an AniList user.
-  ///
   /// Custom lists are skipped because their entries are duplicates of the
   /// canonical-list entries with identical status/progress/score. `isAdult`
   /// media is filtered out.
-  ///
   /// Throws [AniListUserNotFoundException] when the user does not exist,
   /// [AniListPrivateProfileException] when the profile is private,
   /// [AniListApiException] otherwise. Only [MediaType.anime] and
@@ -1066,7 +997,7 @@ query ($userName: String) {
 
       for (final dynamic listRaw in lists) {
         final Map<String, dynamic> list = listRaw as Map<String, dynamic>;
-        // Кастомные списки дублируют записи из основных — пропускаем.
+        // Custom lists duplicate entries from the canonical ones — skip.
         if (list['isCustomList'] as bool? ?? false) continue;
 
         final List<dynamic> entries =
@@ -1168,7 +1099,6 @@ query ($userName: String) {
     }
   }
 
-  /// Парсит Page response из AniList GraphQL (аниме).
   (List<Anime>, bool hasMore, int totalPages) _parseAnimePageResponse(
     Response<dynamic> response,
   ) {
@@ -1208,7 +1138,6 @@ query ($userName: String) {
     return (animes, hasMore, lastPage);
   }
 
-  /// Парсит Page response из AniList GraphQL.
   (List<Manga>, bool hasMore, int totalPages) _parsePageResponse(
     Response<dynamic> response,
   ) {
@@ -1248,7 +1177,6 @@ query ($userName: String) {
     return (mangas, hasMore, lastPage);
   }
 
-  /// Проверяет GraphQL errors в ответе и логирует их.
   void _checkErrors(Map<String, dynamic> data) {
     final List<dynamic>? errors = data['errors'] as List<dynamic>?;
     if (errors != null && errors.isNotEmpty) {
@@ -1260,7 +1188,6 @@ query ($userName: String) {
     }
   }
 
-  /// Обрабатывает DioException и возвращает AniListApiException.
   AniListApiException _handleDioException(
     DioException e,
     String defaultMessage,
@@ -1288,7 +1215,6 @@ query ($userName: String) {
     );
   }
 
-  /// Закрывает HTTP клиент.
   void dispose() {
     _dio.close();
   }

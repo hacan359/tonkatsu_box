@@ -1,37 +1,27 @@
-// Steam Web API клиент для импорта библиотеки.
-
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 
 import 'api_error_detail.dart';
 
-/// Провайдер для Steam API клиента.
 final Provider<SteamApi> steamApiProvider = Provider<SteamApi>((Ref ref) {
   return SteamApi();
 });
 
-/// Ошибка Steam API.
 class SteamApiException implements Exception {
-  /// Создаёт [SteamApiException].
   const SteamApiException(this.message, {this.statusCode, this.detail});
 
-  /// Сообщение об ошибке.
   final String message;
-
-  /// HTTP код ответа (если есть).
   final int? statusCode;
-
-  /// Подробная отладочная информация (URL, метод, причина).
   final String? detail;
 
   @override
   String toString() => 'SteamApiException($statusCode): $message';
 }
 
-/// Игра из библиотеки Steam (DTO, не кэшируется).
+/// Library entry returned by `GetOwnedGames`. Not persisted — Steam is
+/// queried fresh on every import.
 class SteamOwnedGame {
-  /// Создаёт [SteamOwnedGame].
   const SteamOwnedGame({
     required this.appId,
     required this.name,
@@ -39,7 +29,6 @@ class SteamOwnedGame {
     this.lastPlayed,
   });
 
-  /// Создаёт [SteamOwnedGame] из JSON ответа Steam API.
   factory SteamOwnedGame.fromJson(Map<String, dynamic> json) {
     final int rtimeLastPlayed = (json['rtime_last_played'] as int?) ?? 0;
     return SteamOwnedGame(
@@ -52,22 +41,15 @@ class SteamOwnedGame {
     );
   }
 
-  /// Steam App ID.
   final int appId;
-
-  /// Название игры.
   final String name;
-
-  /// Время в игре в минутах.
   final int playtimeMinutes;
-
-  /// Дата последнего запуска.
   final DateTime? lastPlayed;
 
-  /// Время в игре в часах.
   double get playtimeHours => playtimeMinutes / 60.0;
 
-  /// Пропустить ли эту запись (DLC, саундтреки и т.п.).
+  /// Filters out non-game library entries (DLCs, soundtracks, demos, beta /
+  /// playtest builds, dedicated servers) so they don't pollute the import.
   bool get shouldSkip {
     final String lower = name.toLowerCase();
     return lower.contains('soundtrack') ||
@@ -80,11 +62,7 @@ class SteamOwnedGame {
   }
 }
 
-/// Клиент Steam Web API.
-///
-/// Минимальный клиент — только получение библиотеки пользователя.
 class SteamApi {
-  /// Создаёт [SteamApi].
   SteamApi({Dio? dio})
       : _dio = dio ??
             Dio(BaseOptions(
@@ -98,10 +76,9 @@ class SteamApi {
 
   final Dio _dio;
 
-  /// Получить библиотеку пользователя.
-  ///
-  /// Требует публичный профиль Steam.
-  /// Throws [SteamApiException] при ошибке запроса.
+  /// Fetches the user's library. Requires a public Steam profile — a private
+  /// profile surfaces as HTTP 500 from Steam, which we translate into a more
+  /// specific error message.
   Future<List<SteamOwnedGame>> getOwnedGames({
     required String apiKey,
     required String steamId,

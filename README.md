@@ -137,7 +137,6 @@ Already tracking elsewhere? Bring your data:
 
 - [**Wiki**](https://github.com/hacan359/tonkatsu_box/wiki) — user guides & FAQ
 - [**Changelog**](CHANGELOG.md) — version history
-- [**Roadmap**](docs/ROADMAP.md) — planned features
 
 ## Building from Source
 

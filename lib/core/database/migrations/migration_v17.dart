@@ -1,10 +1,10 @@
-// Миграция v17: пересоздание collection_items с nullable collection_id.
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'migration.dart';
 
-/// Миграция v17 — пересоздание таблицы collection_items с nullable
-/// collection_id (SQLite не поддерживает ALTER COLUMN).
+/// SQLite has no `ALTER COLUMN`, so dropping the `NOT NULL` constraint on
+/// `collection_id` requires a full table rebuild (copy → drop → rename) plus
+/// rebuilding the unique indexes.
 class MigrationV17 extends Migration {
   @override
   int get version => 17;
@@ -47,7 +47,9 @@ class MigrationV17 extends Migration {
       'ALTER TABLE collection_items_new RENAME TO collection_items',
     );
 
-    // Partial unique indexes (with platform_id for multi-platform games)
+    // Split unique constraints: items in a collection vs. uncategorised items
+    // (collection_id IS NULL). COALESCE(platform_id, -1) buckets NULL so
+    // multi-platform installs of the same external_id keep distinct rows.
     await db.execute('''
       CREATE UNIQUE INDEX idx_ci_coll
       ON collection_items(

@@ -1,10 +1,7 @@
-// Миграция v11: добавление sort_order в collection_items.
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'migration.dart';
 
-/// Миграция v11 — добавление колонки sort_order для ручной сортировки
-/// элементов коллекции.
 class MigrationV11 extends Migration {
   @override
   int get version => 11;
@@ -18,7 +15,7 @@ class MigrationV11 extends Migration {
       'ALTER TABLE collection_items '
       'ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0',
     );
-    // Присвоить начальные значения по текущему порядку added_at DESC
+    // Seed sort_order to match existing visual order (newest first by added_at).
     await db.execute('''
       UPDATE collection_items SET sort_order = (
         SELECT COUNT(*) FROM collection_items AS ci2

@@ -1,15 +1,11 @@
-// Миграция v24: предзаполнение жанров, тегов и платформ как статических данных.
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../schema.dart';
 import 'migration.dart';
 
-/// Миграция v24 — seed жанров, тегов и платформ как статических справочников.
-///
-/// 1. Пересоздаёт tmdb_genres с колонкой lang (EN + RU)
-/// 2. Заполняет IGDB жанры
-/// 3. Заполняет VNDB теги
-/// 4. Пересоздаёт platforms без logo_image_id, заполняет данными
+/// Seeds genres / tags / platforms as static lookup data. Recreates
+/// `tmdb_genres` with the new `lang` column (EN+RU) and `platforms` without
+/// `logo_image_id` so seeded rows match the post-v24 schema.
 class MigrationV24 extends Migration {
   @override
   int get version => 24;
@@ -19,48 +15,33 @@ class MigrationV24 extends Migration {
 
   @override
   Future<void> migrate(Database db) async {
-    // 1. Пересоздать tmdb_genres с lang
     await db.execute('DROP TABLE IF EXISTS tmdb_genres');
     await DatabaseSchema.createTmdbGenresTable(db);
 
-    // 2. Seed TMDB genres (EN + RU, movie + tv)
     await _seedTmdbGenres(db);
-
-    // 3. Seed IGDB genres
     await _seedIgdbGenres(db);
-
-    // 4. Seed VNDB tags
     await _seedVndbTags(db);
-
-    // 5. Пересоздать platforms без logo_image_id, seed данными
     await _seedPlatforms(db);
   }
 
   Future<void> _seedTmdbGenres(Database db) async {
     final Batch batch = db.batch();
 
-    // Movie genres EN
     for (final ({int id, String name}) g in _tmdbMovieGenresEn) {
       batch.insert('tmdb_genres', <String, Object?>{
         'id': g.id, 'type': 'movie', 'lang': 'en', 'name': g.name,
       });
     }
-
-    // Movie genres RU
     for (final ({int id, String name}) g in _tmdbMovieGenresRu) {
       batch.insert('tmdb_genres', <String, Object?>{
         'id': g.id, 'type': 'movie', 'lang': 'ru', 'name': g.name,
       });
     }
-
-    // TV genres EN
     for (final ({int id, String name}) g in _tmdbTvGenresEn) {
       batch.insert('tmdb_genres', <String, Object?>{
         'id': g.id, 'type': 'tv', 'lang': 'en', 'name': g.name,
       });
     }
-
-    // TV genres RU
     for (final ({int id, String name}) g in _tmdbTvGenresRu) {
       batch.insert('tmdb_genres', <String, Object?>{
         'id': g.id, 'type': 'tv', 'lang': 'ru', 'name': g.name,
@@ -89,11 +70,11 @@ class MigrationV24 extends Migration {
   }
 
   Future<void> _seedPlatforms(Database db) async {
-    // Пересоздаём таблицу без logo_image_id и synced_at
+    // Rebuild the table so the seed lands in the post-v24 shape (no
+    // logo_image_id, no synced_at).
     await db.execute('DROP TABLE IF EXISTS platforms');
     await DatabaseSchema.createPlatformsTable(db);
 
-    // Seed данными
     final Batch batch = db.batch();
     for (final ({int id, String name, String? abbreviation}) p in _platforms) {
       batch.insert('platforms', <String, Object?>{
@@ -103,8 +84,6 @@ class MigrationV24 extends Migration {
     await batch.commit(noResult: true);
   }
 }
-
-// ==================== TMDB Movie Genres EN ====================
 
 const List<({int id, String name})> _tmdbMovieGenresEn = <({int id, String name})>[
   (id: 28, name: 'Action'),
@@ -128,7 +107,6 @@ const List<({int id, String name})> _tmdbMovieGenresEn = <({int id, String name}
   (id: 37, name: 'Western'),
 ];
 
-// ==================== TMDB Movie Genres RU ====================
 
 const List<({int id, String name})> _tmdbMovieGenresRu = <({int id, String name})>[
   (id: 28, name: 'боевик'),
@@ -152,7 +130,6 @@ const List<({int id, String name})> _tmdbMovieGenresRu = <({int id, String name}
   (id: 37, name: 'вестерн'),
 ];
 
-// ==================== TMDB TV Genres EN ====================
 
 const List<({int id, String name})> _tmdbTvGenresEn = <({int id, String name})>[
   (id: 10759, name: 'Action & Adventure'),
@@ -173,7 +150,6 @@ const List<({int id, String name})> _tmdbTvGenresEn = <({int id, String name})>[
   (id: 37, name: 'Western'),
 ];
 
-// ==================== TMDB TV Genres RU ====================
 
 const List<({int id, String name})> _tmdbTvGenresRu = <({int id, String name})>[
   (id: 10759, name: 'Боевик и Приключения'),
@@ -194,7 +170,6 @@ const List<({int id, String name})> _tmdbTvGenresRu = <({int id, String name})>[
   (id: 37, name: 'вестерн'),
 ];
 
-// ==================== IGDB Genres ====================
 
 const List<({int id, String name})> _igdbGenres = <({int id, String name})>[
   (id: 31, name: 'Adventure'),
@@ -222,7 +197,6 @@ const List<({int id, String name})> _igdbGenres = <({int id, String name})>[
   (id: 34, name: 'Visual Novel'),
 ];
 
-// ==================== VNDB Tags ====================
 
 const List<({String id, String name})> _vndbTags = <({String id, String name})>[
   (id: 'g133', name: 'Male Protagonist'),
@@ -327,7 +301,6 @@ const List<({String id, String name})> _vndbTags = <({String id, String name})>[
   (id: 'g658', name: 'Artist Heroine'),
 ];
 
-// ==================== IGDB Platforms ====================
 
 const List<({int id, String name, String? abbreviation})> _platforms =
     <({int id, String name, String? abbreviation})>[

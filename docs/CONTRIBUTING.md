@@ -43,7 +43,6 @@ Flutter 3.38+ / Dart 3.10+ · Riverpod · SQLite · Dio · Material Design 3
 | [Architecture](ARCHITECTURE.md) | Project structure, models, database |
 | [Export Format](RCOLL_FORMAT.md) | `.xcoll` / `.xcollx` file format spec |
 | [Gamepad Support](GAMEPAD.md) | Xbox controller / D-pad navigation |
-| [Roadmap](ROADMAP.md) | Development progress and future plans |
 | [Changelog](../CHANGELOG.md) | Version history |
 
 ---

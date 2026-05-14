@@ -6,7 +6,6 @@ import '../../shared/models/collection_item.dart';
 import '../../shared/models/item_status.dart';
 import '../../shared/models/media_type.dart';
 
-/// Провайдер для репозитория коллекций.
 final Provider<CollectionRepository> collectionRepositoryProvider =
     Provider<CollectionRepository>((Ref ref) {
   return CollectionRepository(
@@ -14,9 +13,7 @@ final Provider<CollectionRepository> collectionRepositoryProvider =
   );
 });
 
-/// Статистика коллекции.
 class CollectionStats {
-  /// Создаёт экземпляр [CollectionStats].
   const CollectionStats({
     required this.total,
     required this.completed,
@@ -34,59 +31,29 @@ class CollectionStats {
     this.customCount = 0,
   });
 
-  /// Общее количество элементов.
   final int total;
-
-  /// Количество завершённых.
   final int completed;
-
-  /// Количество в процессе.
   final int inProgress;
-
-  /// Количество не начатых.
   final int notStarted;
-
-  /// Количество брошенных.
   final int dropped;
-
-  /// Количество запланированных.
   final int planned;
-
-  /// Количество игр.
   final int gameCount;
-
-  /// Количество фильмов.
   final int movieCount;
-
-  /// Количество сериалов.
   final int tvShowCount;
-
-  /// Количество анимации.
   final int animationCount;
-
-  /// Количество визуальных новелл.
   final int visualNovelCount;
-
-  /// Количество манги.
   final int mangaCount;
-
-  /// Количество аниме.
   final int animeCount;
-
-  /// Количество кастомных элементов.
   final int customCount;
 
-  /// Возвращает процент завершения (0-100).
   double get completionPercent {
     if (total == 0) return 0;
     return (completed / total) * 100;
   }
 
-  /// Возвращает отформатированный процент.
   String get completionPercentFormatted =>
       '${completionPercent.toStringAsFixed(0)}%';
 
-  /// Пустая статистика.
   static const CollectionStats empty = CollectionStats(
     total: 0,
     completed: 0,
@@ -97,33 +64,26 @@ class CollectionStats {
   );
 }
 
-/// Репозиторий для работы с коллекциями.
-///
-/// Управляет CRUD операциями для коллекций и элементов в них.
+/// Thin orchestrator over [DatabaseService] for collections and their items.
+/// A `null` collectionId everywhere means "uncategorized" — the catch-all
+/// bucket for items that aren't in any user collection.
 class CollectionRepository {
-  /// Создаёт экземпляр [CollectionRepository].
   CollectionRepository({required DatabaseService db}) : _db = db;
 
   final DatabaseService _db;
 
-  // ==================== Collections ====================
-
-  /// Возвращает все коллекции.
   Future<List<Collection>> getAll() async {
     return _db.getAllCollections();
   }
 
-  /// Возвращает коллекции по типу.
   Future<List<Collection>> getByType(CollectionType type) async {
     return _db.getCollectionsByType(type);
   }
 
-  /// Возвращает коллекцию по ID.
   Future<Collection?> getById(int id) async {
     return _db.getCollectionById(id);
   }
 
-  /// Создаёт новую коллекцию.
   Future<Collection> create({
     required String name,
     required String author,
@@ -136,12 +96,10 @@ class CollectionRepository {
     );
   }
 
-  /// Обновляет название коллекции.
   Future<void> updateName(int id, String name) async {
     await _db.updateCollection(id, name: name);
   }
 
-  /// Обновляет persist-поля персонализации коллекции.
   Future<void> updatePersonalization(
     int id, {
     String? name,
@@ -160,21 +118,14 @@ class CollectionRepository {
     );
   }
 
-  /// Удаляет коллекцию.
   Future<void> delete(int id) async {
     await _db.deleteCollection(id);
   }
 
-  /// Возвращает количество коллекций.
   Future<int> getCount() async {
     return _db.getCollectionCount();
   }
 
-  // ==================== Collection Items ====================
-
-  /// Возвращает все элементы коллекции.
-  ///
-  /// Если [collectionId] == null, возвращает uncategorized элементы.
   Future<List<CollectionItem>> getItems(
     int? collectionId, {
     MediaType? mediaType,
@@ -182,9 +133,6 @@ class CollectionRepository {
     return _db.getCollectionItems(collectionId, mediaType: mediaType);
   }
 
-  /// Возвращает элементы коллекции с подгруженными данными.
-  ///
-  /// Если [collectionId] == null, возвращает uncategorized элементы.
   Future<List<CollectionItem>> getItemsWithData(
     int? collectionId, {
     MediaType? mediaType,
@@ -192,16 +140,12 @@ class CollectionRepository {
     return _db.getCollectionItemsWithData(collectionId, mediaType: mediaType);
   }
 
-  /// Возвращает все элементы из всех коллекций с подгруженными данными.
   Future<List<CollectionItem>> getAllItemsWithData({
     MediaType? mediaType,
   }) async {
     return _db.getAllCollectionItemsWithData(mediaType: mediaType);
   }
 
-  /// Находит элемент коллекции по типу медиа и внешнему ID.
-  ///
-  /// Возвращает null если элемент не найден.
   Future<CollectionItem?> findItem({
     required int? collectionId,
     required MediaType mediaType,
@@ -216,9 +160,6 @@ class CollectionRepository {
     );
   }
 
-  /// Добавляет элемент в коллекцию.
-  ///
-  /// Если [collectionId] == null, добавляет как uncategorized.
   Future<int?> addItem({
     required int? collectionId,
     required MediaType mediaType,
@@ -237,17 +178,16 @@ class CollectionRepository {
     );
   }
 
-  /// Перемещает элемент в другую коллекцию.
-  ///
-  /// Возвращает true при успехе, false если элемент уже есть в целевой
-  /// коллекции (дубликат).
+  /// Returns `true` on success, `false` if the target collection already
+  /// holds an item with the same `(mediaType, externalId, platformId)` —
+  /// callers should fall back to [cloneItemToCollection] or surface a
+  /// duplicate warning.
   Future<bool> moveItemToCollection(int itemId, int? targetCollectionId) async {
     return _db.updateItemCollectionId(itemId, targetCollectionId);
   }
 
-  /// Клонирует элемент в другую коллекцию (полная копия).
-  ///
-  /// Возвращает ID нового элемента или null при дубликате.
+  /// Deep-copies an item into another collection. Returns the new id, or
+  /// `null` if the target already holds the same logical item.
   Future<int?> cloneItemToCollection(
     int itemId,
     int targetCollectionId,
@@ -255,12 +195,10 @@ class CollectionRepository {
     return _db.cloneItemToCollection(itemId, targetCollectionId);
   }
 
-  /// Удаляет элемент из коллекции.
   Future<void> removeItem(int id) async {
     await _db.removeItemFromCollection(id);
   }
 
-  /// Обновляет статус элемента.
   Future<void> updateItemStatus(
     int id,
     ItemStatus status, {
@@ -269,7 +207,6 @@ class CollectionRepository {
     await _db.updateItemStatus(id, status, mediaType: mediaType);
   }
 
-  /// Обновляет прогресс просмотра сериала.
   Future<void> updateItemProgress(
     int id, {
     int? currentSeason,
@@ -282,27 +219,22 @@ class CollectionRepository {
     );
   }
 
-  /// Обновляет комментарий автора элемента.
   Future<void> updateItemAuthorComment(int id, String? comment) async {
     await _db.updateItemAuthorComment(id, comment);
   }
 
-  /// Обновляет личный комментарий пользователя элемента.
   Future<void> updateItemUserComment(int id, String? comment) async {
     await _db.updateItemUserComment(id, comment);
   }
 
-  /// Обновляет пользовательский рейтинг элемента (1-10 или null).
   Future<void> updateItemUserRating(int id, int? rating) async {
     await _db.updateItemUserRating(id, rating);
   }
 
-  /// Обновляет потраченное время (в минутах) для элемента коллекции.
   Future<void> updateItemTimeSpent(int id, int totalMinutes) async {
     await _db.updateItemTimeSpent(id, totalMinutes);
   }
 
-  /// Обновляет даты активности элемента.
   Future<void> updateItemActivityDates(
     int id, {
     DateTime? startedAt,
@@ -317,11 +249,6 @@ class CollectionRepository {
     );
   }
 
-  // ==================== Stats ====================
-
-  /// Возвращает статистику коллекции.
-  ///
-  /// Если [collectionId] == null, возвращает статистику uncategorized.
   Future<CollectionStats> getStats(int? collectionId) async {
     final Map<String, int> raw =
         await _db.getCollectionItemStats(collectionId);
@@ -343,9 +270,7 @@ class CollectionRepository {
     );
   }
 
-  /// Возвращает количество uncategorized элементов.
   Future<int> getUncategorizedCount() async {
     return _db.getUncategorizedItemCount();
   }
-
 }

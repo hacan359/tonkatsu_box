@@ -5,7 +5,6 @@ import '../../core/database/database_service.dart';
 import '../../shared/models/game.dart';
 import '../../shared/models/platform.dart';
 
-/// Провайдер для репозитория игр.
 final Provider<GameRepository> gameRepositoryProvider =
     Provider<GameRepository>((Ref ref) {
   return GameRepository(
@@ -14,11 +13,10 @@ final Provider<GameRepository> gameRepositoryProvider =
   );
 });
 
-/// Репозиторий для работы с играми.
-///
-/// Объединяет IGDB API и локальный кеш для оптимизации запросов.
+/// Coordinates IGDB API calls with the local cache so callers don't have to
+/// branch on cache state. Cache entries older than [cacheMaxAge] seconds are
+/// treated as stale and refetched.
 class GameRepository {
-  /// Создаёт экземпляр [GameRepository].
   GameRepository({
     required IgdbApi api,
     required DatabaseService db,
@@ -28,25 +26,14 @@ class GameRepository {
   final IgdbApi _api;
   final DatabaseService _db;
 
-  /// Максимальный возраст кеша в секундах (7 дней).
   static const int cacheMaxAge = 86400 * 7;
 
-  /// Ищет игры по названию.
-  ///
-  /// Сначала запрашивает IGDB, затем кеширует результаты.
-  /// [query] — строка поиска.
-  /// [platformIds] — опциональный фильтр по платформам (несколько).
-  /// [limit] — максимальное количество результатов.
-  /// [offset] — смещение для пагинации (по умолчанию 0).
-  ///
-  /// Возвращает список найденных игр.
   Future<List<Game>> searchGames({
     required String query,
     List<int>? platformIds,
     int limit = 50,
     int offset = 0,
   }) async {
-    // Поиск через IGDB API
     final List<Game> games = await _api.searchGames(
       query: query,
       platformIds: platformIds,
@@ -54,25 +41,15 @@ class GameRepository {
       offset: offset,
     );
 
-    // Кешируем результаты
     if (games.isNotEmpty) {
       await _db.upsertGames(games);
-      // Автозагрузка платформ для найденных игр
       await ensurePlatformsCached(games);
     }
 
     return games;
   }
 
-  /// Получает игру по ID.
-  ///
-  /// Сначала проверяет локальный кеш, затем запрашивает IGDB при необходимости.
-  /// [gameId] — ID игры в IGDB.
-  /// [forceRefresh] — принудительное обновление из API.
-  ///
-  /// Возвращает игру или null, если не найдена.
   Future<Game?> getGameById(int gameId, {bool forceRefresh = false}) async {
-    // Проверяем кеш, если не требуется принудительное обновление
     if (!forceRefresh) {
       final Game? cached = await _db.getGameById(gameId);
       if (cached != null && _isCacheValid(cached.cachedAt)) {
@@ -80,10 +57,8 @@ class GameRepository {
       }
     }
 
-    // Запрашиваем из API
     final Game? game = await _api.getGameById(gameId);
 
-    // Кешируем результат
     if (game != null) {
       await _db.upsertGame(game);
     }
@@ -91,15 +66,6 @@ class GameRepository {
     return game;
   }
 
-  /// Получает несколько игр по списку ID.
-  ///
-  /// Оптимизирует запросы: кешированные игры берёт из БД,
-  /// остальные запрашивает из IGDB.
-  ///
-  /// [gameIds] — список ID игр.
-  /// [forceRefresh] — принудительное обновление всех игр из API.
-  ///
-  /// Возвращает список найденных игр.
   Future<List<Game>> getGamesByIds(
     List<int> gameIds, {
     bool forceRefresh = false,
@@ -110,7 +76,6 @@ class GameRepository {
     final List<int> idsToFetch = <int>[];
 
     if (!forceRefresh) {
-      // Проверяем кеш
       final List<Game> cached = await _db.getGamesByIds(gameIds);
       final Map<int, Game> cachedMap = <int, Game>{
         for (final Game g in cached) g.id: g,
@@ -128,11 +93,9 @@ class GameRepository {
       idsToFetch.addAll(gameIds);
     }
 
-    // Запрашиваем недостающие из API
     if (idsToFetch.isNotEmpty) {
       final List<Game> fetched = await _api.getGamesByIds(idsToFetch);
 
-      // Кешируем
       if (fetched.isNotEmpty) {
         await _db.upsertGames(fetched);
       }
@@ -143,23 +106,17 @@ class GameRepository {
     return result;
   }
 
-  /// Ищет игры в локальном кеше.
-  ///
-  /// Используется для оффлайн-поиска или быстрого автодополнения.
   Future<List<Game>> searchInCache(String query, {int limit = 20}) async {
     return _db.searchGamesInCache(query, limit: limit);
   }
 
-
-  /// Возвращает количество игр в кеше.
   Future<int> getCacheSize() async {
     return _db.getGameCount();
   }
 
-  /// Проверяет, что платформы для указанных игр закешированы в БД.
-  ///
-  /// Собирает уникальные platformIds, проверяет, какие уже есть в кэше,
-  /// и загружает недостающие из IGDB API.
+  /// Backfills the `platforms` table for every platform id mentioned by
+  /// [games]. Missing rows are fetched from IGDB; failures are swallowed
+  /// because the next request will pick them up.
   Future<void> ensurePlatformsCached(List<Game> games) async {
     final Set<int> allPlatformIds = <int>{};
     for (final Game game in games) {
@@ -169,7 +126,6 @@ class GameRepository {
     }
     if (allPlatformIds.isEmpty) return;
 
-    // Проверяем, какие уже есть в кэше
     final List<Platform> cached =
         await _db.getPlatformsByIds(allPlatformIds.toList());
     final Set<int> cachedIds = <int>{
@@ -180,7 +136,6 @@ class GameRepository {
         allPlatformIds.where((int id) => !cachedIds.contains(id)).toList();
     if (missingIds.isEmpty) return;
 
-    // Загружаем недостающие из IGDB
     try {
       final List<Platform> fetched =
           await _api.fetchPlatformsByIds(missingIds);
@@ -188,11 +143,10 @@ class GameRepository {
         await _db.upsertPlatforms(fetched);
       }
     } on Exception {
-      // Не критично — платформы подгрузятся при следующем запросе
+      // Best-effort: next call will retry.
     }
   }
 
-  /// Проверяет валидность кеша.
   bool _isCacheValid(int? cachedAt) {
     if (cachedAt == null) return false;
     final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
