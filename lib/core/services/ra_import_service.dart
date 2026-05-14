@@ -295,11 +295,17 @@ class RaImportService {
         continue;
       }
 
-      // Проверить дубликат ТОЛЬКО В ЦЕЛЕВОЙ КОЛЛЕКЦИИ.
+      // Match the existing item by (collection, IGDB game, platform). The
+      // RA game id is platform-specific on RA's side, so the same IGDB
+      // title on a different platform must land in its own collection row
+      // instead of overwriting the existing one.
+      final int? raPlatformId =
+          RaToIgdbMapper.primaryIgdbPlatformId(raGame.consoleId);
       final CollectionItem? existing = await _db.findCollectionItem(
         collectionId: targetCollectionId,
         mediaType: MediaType.game,
         externalId: igdbGame.id,
+        platformId: raPlatformId,
       );
 
       final DateTime? completedAt = raGame.highestAwardDate;
@@ -522,7 +528,9 @@ class RaImportService {
     }
   }
 
-  /// Сохраняет/обновляет tracker_game_data для RA игры.
+  /// Saves the per-platform tracker_game_data row for an RA game. The IGDB
+  /// platform id is derived from RA's console id so PS2 and GameCube
+  /// installs of the same IGDB title don't overwrite each other.
   Future<void> _saveTrackerGameData(
     int igdbId,
     RaGameProgress raGame,
@@ -534,11 +542,14 @@ class RaImportService {
     final int? lastPlayedTimestamp = raGame.lastPlayedAt != null
         ? raGame.lastPlayedAt!.millisecondsSinceEpoch ~/ 1000
         : null;
+    final int? platformId =
+        RaToIgdbMapper.primaryIgdbPlatformId(raGame.consoleId);
 
     await _trackerDao.upsertGameData(TrackerGameData(
       id: 0,
       trackerType: TrackerType.ra,
       gameId: igdbId,
+      platformId: platformId,
       trackerGameId: raGame.gameId.toString(),
       trackerGameTitle: raGame.title,
       achievementsEarned: raGame.numAwarded,

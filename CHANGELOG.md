@@ -366,6 +366,92 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (raImportSearchingIgdb): New string for the IGDB-search progress stage.
   * test/core/services/ra_import_service_test.dart: New cases — manual link skips IGDB and reuses cached game; broken manual link falls back to IGDB search; `wishlisted=0` when `addToWishlist=false`; `wishlisted=0` when the wishlist row already existed; `RaImportResult.wishlisted` constructor + `toUniversal` mapping. Existing progress test updated to assert `searchingGames` and `matchingGames` both fire.
 
+### Fixed
+
+- **Tracker progress is now scoped per platform, not per IGDB game**
+
+  External tracker data (RetroAchievements progress, achievements, award
+  state, last-played timestamps) was keyed by IGDB game id alone, so a
+  single multi-platform game in the collection could only ever hold one
+  set of stats — syncing a second platform install silently overwrote
+  the first one and its history was lost. Each platform install now
+  owns its own tracker row: the unique index gains
+  `COALESCE(platform_id, -1)`, the model carries `platformId`, and the
+  UI scopes its lookups by the current `CollectionItem.platformId`.
+  Refreshing one install's status / dates no longer touches sibling
+  installs of the same IGDB game. On migration the legacy
+  `platform_id = NULL` rows are backfilled from the user's
+  `collection_items` when exactly one platform install of that game
+  exists; ambiguous rows are dropped so stale data can't leak across
+  platforms. Backups and `.xcoll` / `.xcollx` exports/imports round-trip
+  the new column automatically; archives produced by older versions are
+  tolerated (the fallback lookup still picks up NULL rows restored from
+  legacy backups).
+
+  * lib/core/database/schema.dart (DatabaseSchema.createTrackerGameDataTable):
+    Add `platform_id INTEGER` column; replace the
+    `idx_tracker_game_data_unique` index with one that includes
+    `COALESCE(platform_id, -1)` so distinct platforms keep distinct rows.
+  * lib/core/database/migrations/migration_v37.dart (MigrationV37),
+    lib/core/database/migrations/migration_registry.dart: New v37
+    migration that adds the column and rebuilds the unique index in place.
+  * lib/core/database/migrations/migration_v38.dart (MigrationV38):
+    Backfills `platform_id` on legacy tracker rows by joining each NULL
+    row against `collection_items`: unambiguous matches (exactly one
+    platform in the user's collection for that IGDB game) get filled in,
+    everything else is dropped together with its orphaned achievements
+    so the legacy fallback can't leak data across platform installs.
+  * lib/core/database/database_service.dart: Bump schema version to 38.
+    `getItemIdsByExternalId` gains `platformId` + `filterByPlatform` and
+    returns `platform_id` alongside id/collectionId so the sync code can
+    address one platform install at a time.
+  * lib/shared/models/tracker_game_data.dart (TrackerGameData,
+    TrackerGameData.fromDb, TrackerGameData.toDb, TrackerGameData.copyWith):
+    New `platformId` field threaded through fromDb / toDb / copyWith.
+    `copyWith` adds a `clearPlatformId` sentinel for explicit null-set.
+    All dartdocs translated to English.
+  * lib/core/database/dao/tracker_dao.dart (TrackerDao.getGameData,
+    TrackerDao.getGameDataForAnyPlatform, TrackerDao.deleteGameData):
+    `getGameData` accepts optional `platformId`. New
+    `getGameDataForAnyPlatform` returns every platform variant for a
+    given IGDB game. `deleteGameData` accepts `platformId` /
+    `allPlatforms` so per-platform unlink is possible; achievements for
+    a `tracker_game_id` are dropped only when no other tracker row still
+    references them.
+  * lib/features/collections/providers/tracker_provider.dart (TrackerKey,
+    TrackerDetailNotifier): Provider family key switched from `int` to a
+    `({int gameId, int? platformId})` record. The notifier reads the
+    per-platform row first and falls back to the legacy
+    platform-agnostic row when none exists. `unlinkRaGame` deletes only
+    the current platform's row; `_syncToCollectionItems` filters
+    `CollectionItem`s by `platformId` so PS2 progress doesn't bleed into
+    a GameCube row.
+  * lib/features/collections/widgets/ra_achievements_section.dart
+    (RaAchievementsSection): New `platformId` widget property; every
+    `trackerDetailProvider(...)` call now uses the composite key.
+  * lib/features/collections/screens/item_detail_screen.dart: Pass
+    `(gameId: item.externalId, platformId: item.platformId)` everywhere
+    the tracker provider is read or watched, and forward `platformId`
+    to `RaAchievementsSection`.
+  * lib/core/services/tracker_sync_service.dart
+    (TrackerSyncService.fullSyncRa, ra_to_igdb_mapper import): Bulk RA
+    sync derives the IGDB platform id from `raGame.consoleId` via
+    `RaToIgdbMapper.primaryIgdbPlatformId` and writes it onto the
+    upserted `TrackerGameData`.
+  * lib/core/services/ra_import_service.dart
+    (RaImportService.importFromProfile,
+    RaImportService._saveTrackerGameData): Same platform derivation
+    applied to the import flow; the in-collection duplicate check now
+    passes the derived `platformId` to `findCollectionItem` so a second
+    platform install of the same IGDB title creates a fresh row instead
+    of overwriting the first one.
+  * test/shared/models/tracker_game_data_test.dart (TrackerGameData),
+    test/core/database/dao/tracker_dao_test.dart (TrackerDao): New —
+    14 tests covering fromDb/toDb round-trip (with platformId, NULL,
+    missing key), copyWith semantics, per-platform upsert isolation,
+    NULL bucket behaviour, and the new delete variants including the
+    achievements-cleanup branch.
+
 ## [0.28.0] - 2026-04-23
 
 ### Added

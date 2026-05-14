@@ -1,21 +1,18 @@
-// Модель прогресса per-game от внешнего трекера.
-
 import 'dart:convert';
 
 import 'tracker_profile.dart';
 
-/// Прогресс по игре от внешнего трекера (RA, Steam).
-///
-/// Привязан к `games.id` (IGDB), а не к `collection_items.id`.
-/// Одна запись на трекер на игру.
+/// Per-game tracker progress (RA, Steam). Linked to `games.id` (IGDB id),
+/// optionally scoped by [platformId] so the same IGDB game can hold separate
+/// progress for each platform installation (PS2, GameCube, …).
 class TrackerGameData {
-  /// Создаёт [TrackerGameData].
   const TrackerGameData({
     required this.id,
     required this.trackerType,
     required this.gameId,
     required this.trackerGameId,
     required this.lastSyncedAt,
+    this.platformId,
     this.trackerGameTitle,
     this.achievementsEarned,
     this.achievementsTotal,
@@ -39,6 +36,7 @@ class TrackerGameData {
       id: row['id'] as int,
       trackerType: TrackerType.fromString(row['tracker_type'] as String),
       gameId: row['game_id'] as int,
+      platformId: row['platform_id'] as int?,
       trackerGameId: row['tracker_game_id'] as String,
       trackerGameTitle: row['tracker_game_title'] as String?,
       achievementsEarned: row['achievements_earned'] as int?,
@@ -54,49 +52,46 @@ class TrackerGameData {
     );
   }
 
-  /// Уникальный ID.
   final int id;
-
-  /// Тип трекера.
   final TrackerType trackerType;
 
-  /// IGDB ID игры (`games.id`).
+  /// IGDB id (`games.id`).
   final int gameId;
 
-  /// ID игры в трекере (RA GameID / Steam AppID).
+  /// Optional platform scope — same IGDB game on PS2 vs GameCube can hold
+  /// separate progress. `null` means "applies to the game regardless of
+  /// platform" (legacy rows, trackers that don't differentiate).
+  final int? platformId;
+
+  /// Provider-side game id (RA GameID / Steam AppID). Different per platform
+  /// on RetroAchievements; same across platforms on Steam.
   final String trackerGameId;
 
-  /// Название в трекере (может отличаться от IGDB).
+  /// Provider-side title, can drift from IGDB.
   final String? trackerGameTitle;
 
-  /// Полученные достижения.
   final int? achievementsEarned;
-
-  /// Всего достижений.
   final int? achievementsTotal;
 
-  /// Hardcore достижения (RA).
+  /// RA-only — hardcore mode counts achievements without save-state cheats.
   final int? achievementsEarnedHardcore;
 
-  /// Тип награды ('mastered-hardcore', 'beaten-softcore', null).
+  /// 'mastered-hardcore', 'beaten-softcore', or null. RA awards.
   final String? awardKind;
 
-  /// Timestamp получения award.
   final int? awardDate;
 
-  /// Время игры в минутах (Steam).
+  /// Steam-only.
   final int? playtimeMinutes;
 
-  /// Timestamp последней активности.
   final int? lastPlayedAt;
 
-  /// JSON для доп. данных.
+  /// Provider-specific opaque blob (e.g. RA recent achievements list).
   final Map<String, dynamic>? trackerData;
 
-  /// Timestamp последнего sync.
   final int lastSyncedAt;
 
-  /// Процент прохождения (0.0–1.0).
+  /// 0.0–1.0; 0.0 when [achievementsTotal] is null / zero.
   double get completionRate {
     if (achievementsTotal == null ||
         achievementsTotal == 0 ||
@@ -106,7 +101,7 @@ class TrackerGameData {
     return achievementsEarned! / achievementsTotal!;
   }
 
-  /// Процент hardcore прохождения (0.0–1.0, RA only).
+  /// 0.0–1.0 for RA hardcore mode.
   double get hardcoreCompletionRate {
     if (achievementsTotal == null ||
         achievementsTotal == 0 ||
@@ -116,31 +111,26 @@ class TrackerGameData {
     return achievementsEarnedHardcore! / achievementsTotal!;
   }
 
-  /// Есть ли award (beaten/mastered).
   bool get hasAward => awardKind != null;
 
-  /// Mastered (все ачивки).
   bool get isMastered =>
       awardKind != null && awardKind!.contains('mastered');
 
-  /// Beaten.
   bool get isBeaten =>
       awardKind != null && awardKind!.contains('beaten');
 
-  /// Hardcore mode.
   bool get isHardcore =>
       awardKind != null && awardKind!.contains('hardcore');
 
-  /// URL страницы игры на RA.
   String get raGameUrl =>
       'https://retroachievements.org/game/$trackerGameId';
 
-  /// Преобразует в Map для БД.
   Map<String, dynamic> toDb() {
     return <String, dynamic>{
       if (id != 0) 'id': id,
       'tracker_type': trackerType.value,
       'game_id': gameId,
+      'platform_id': platformId,
       'tracker_game_id': trackerGameId,
       'tracker_game_title': trackerGameTitle,
       'achievements_earned': achievementsEarned,
@@ -155,11 +145,12 @@ class TrackerGameData {
     };
   }
 
-  /// Создаёт копию с изменёнными полями.
   TrackerGameData copyWith({
     int? id,
     TrackerType? trackerType,
     int? gameId,
+    int? platformId,
+    bool clearPlatformId = false,
     String? trackerGameId,
     String? trackerGameTitle,
     int? achievementsEarned,
@@ -176,6 +167,8 @@ class TrackerGameData {
       id: id ?? this.id,
       trackerType: trackerType ?? this.trackerType,
       gameId: gameId ?? this.gameId,
+      platformId:
+          clearPlatformId ? null : (platformId ?? this.platformId),
       trackerGameId: trackerGameId ?? this.trackerGameId,
       trackerGameTitle: trackerGameTitle ?? this.trackerGameTitle,
       achievementsEarned: achievementsEarned ?? this.achievementsEarned,

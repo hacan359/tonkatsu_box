@@ -38,14 +38,18 @@ enum _AchievementFilter {
 /// Показывается только если для игры есть tracker_game_data.
 /// Достижения подгружаются lazy при появлении секции.
 class RaAchievementsSection extends ConsumerStatefulWidget {
-  /// Создаёт [RaAchievementsSection].
   const RaAchievementsSection({
     required this.gameId,
+    this.platformId,
     super.key,
   });
 
-  /// IGDB ID игры.
+  /// IGDB game id.
   final int gameId;
+
+  /// Optional platform scope — same IGDB game on different platforms holds
+  /// distinct RA progress. `null` falls back to the legacy shared record.
+  final int? platformId;
 
   @override
   ConsumerState<RaAchievementsSection> createState() =>
@@ -63,7 +67,7 @@ class _RaAchievementsSectionState
     setState(() => _isRefreshing = true);
     try {
       await ref
-          .read(trackerDetailProvider(widget.gameId).notifier)
+          .read(trackerDetailProvider((gameId: widget.gameId, platformId: widget.platformId)).notifier)
           .refreshAchievements();
     } finally {
       if (mounted) setState(() => _isRefreshing = false);
@@ -73,7 +77,7 @@ class _RaAchievementsSectionState
   @override
   Widget build(BuildContext context) {
     final AsyncValue<TrackerDetailState> asyncState =
-        ref.watch(trackerDetailProvider(widget.gameId));
+        ref.watch(trackerDetailProvider((gameId: widget.gameId, platformId: widget.platformId)));
 
     return asyncState.when(
       loading: () => const Padding(
@@ -93,7 +97,7 @@ class _RaAchievementsSectionState
         // Lazy load достижений после того как game data загружена.
         if (state.achievements == null && !state.isLoadingAchievements) {
           Future<void>.microtask(() {
-            ref.read(trackerDetailProvider(widget.gameId).notifier)
+            ref.read(trackerDetailProvider((gameId: widget.gameId, platformId: widget.platformId)).notifier)
                 .loadAchievements();
           });
         }
@@ -789,7 +793,7 @@ class _RaAchievementsSectionState
     if (confirmed != true || !context.mounted) return;
 
     await ref
-        .read(trackerDetailProvider(widget.gameId).notifier)
+        .read(trackerDetailProvider((gameId: widget.gameId, platformId: widget.platformId)).notifier)
         .unlinkRaGame();
   }
 

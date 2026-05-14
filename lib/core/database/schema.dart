@@ -590,6 +590,7 @@ abstract final class DatabaseSchema {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         tracker_type TEXT NOT NULL,
         game_id INTEGER NOT NULL,
+        platform_id INTEGER,
         tracker_game_id TEXT NOT NULL,
         tracker_game_title TEXT,
         achievements_earned INTEGER,
@@ -605,7 +606,7 @@ abstract final class DatabaseSchema {
     ''');
     await db.execute('''
       CREATE UNIQUE INDEX IF NOT EXISTS idx_tracker_game_data_unique
-      ON tracker_game_data(tracker_type, game_id)
+      ON tracker_game_data(tracker_type, game_id, COALESCE(platform_id, -1))
     ''');
     await db.execute('''
       CREATE INDEX IF NOT EXISTS idx_tracker_game_data_game

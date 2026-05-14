@@ -199,7 +199,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 36,
+        version: 38,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -527,21 +527,38 @@ class DatabaseService {
         lastActivityAt: lastActivityAt,
       );
 
-  Future<List<({int id, int? collectionId})>> getItemIdsByExternalId(
+  Future<List<({int id, int? collectionId, int? platformId})>>
+      getItemIdsByExternalId(
     int externalId,
-    String mediaType,
-  ) async {
+    String mediaType, {
+    int? platformId,
+    bool filterByPlatform = false,
+  }) async {
     final Database db = await database;
+    final List<String> conditions = <String>[
+      'external_id = ?',
+      'media_type = ?',
+    ];
+    final List<Object?> args = <Object?>[externalId, mediaType];
+    if (filterByPlatform) {
+      if (platformId == null) {
+        conditions.add('platform_id IS NULL');
+      } else {
+        conditions.add('platform_id = ?');
+        args.add(platformId);
+      }
+    }
     final List<Map<String, dynamic>> rows = await db.query(
       'collection_items',
-      columns: <String>['id', 'collection_id'],
-      where: 'external_id = ? AND media_type = ?',
-      whereArgs: <Object?>[externalId, mediaType],
+      columns: <String>['id', 'collection_id', 'platform_id'],
+      where: conditions.join(' AND '),
+      whereArgs: args,
     );
     return rows
         .map((Map<String, dynamic> r) => (
               id: r['id'] as int,
               collectionId: r['collection_id'] as int?,
+              platformId: r['platform_id'] as int?,
             ))
         .toList();
   }
