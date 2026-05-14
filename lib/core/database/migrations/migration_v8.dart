@@ -1,11 +1,10 @@
-// Миграция v8: создание collection_items и перенос данных из collection_games.
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../schema.dart';
 import 'migration.dart';
 
-/// Миграция v8 — создание таблицы collection_items и перенос данных
-/// из legacy-таблицы collection_games.
+/// Creates `collection_items` and folds the legacy `collection_games` table
+/// (games-only) into it under `media_type = 'game'`.
 class MigrationV8 extends Migration {
   @override
   int get version => 8;

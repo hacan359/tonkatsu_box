@@ -1,9 +1,7 @@
-// Миграция v35: добавление полей hero_image_path и description в collections.
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'migration.dart';
 
-/// Миграция v35: rich collection view — hero-изображение и описание.
 class MigrationV35 extends Migration {
   @override
   int get version => 35;

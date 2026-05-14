@@ -1,10 +1,9 @@
-// Миграция v20: переименование статуса on_hold → not_started.
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'migration.dart';
 
-/// Миграция v20 — переименование статуса 'on_hold' в 'not_started'
-/// (on_hold удалён из ItemStatus).
+/// `on_hold` was removed from `ItemStatus`; collapse its rows into
+/// `not_started` so the loaded enum doesn't blow up on stale data.
 class MigrationV20 extends Migration {
   @override
   int get version => 20;

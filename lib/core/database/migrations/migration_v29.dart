@@ -1,10 +1,8 @@
-// Миграция v29: таблица collection_tags и колонка tag_id в collection_items.
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../schema.dart';
 import 'migration.dart';
 
-/// Миграция v29 — теги коллекций (подкатегории/секции).
 class MigrationV29 extends Migration {
   @override
   int get version => 29;

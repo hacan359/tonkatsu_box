@@ -1,10 +1,10 @@
-// Миграция v16: repair — повторное добавление user_rating.
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'migration.dart';
 
-/// Миграция v16 — repair: повторная попытка добавить user_rating
-/// (v15 могла не включить колонку при createCollectionItemsTable).
+/// Repair pass for v15: on some installs `createCollectionItemsTable` ran
+/// without the new column, so the ALTER from v15 didn't fire. Retry it and
+/// swallow the "duplicate column" error.
 class MigrationV16 extends Migration {
   @override
   int get version => 16;
@@ -19,7 +19,7 @@ class MigrationV16 extends Migration {
         'ALTER TABLE collection_items ADD COLUMN user_rating INTEGER',
       );
     } on DatabaseException catch (_) {
-      // Колонка уже существует — ничего делать не нужно.
+      // Column already present — repair was a no-op.
     }
   }
 }

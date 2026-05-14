@@ -1,4 +1,3 @@
-// Реестр всех миграций БД.
 import 'migration.dart';
 import 'migration_v2.dart';
 import 'migration_v3.dart';
@@ -38,12 +37,7 @@ import 'migration_v36.dart';
 import 'migration_v37.dart';
 import 'migration_v38.dart';
 
-/// Реестр всех миграций базы данных.
-///
-/// Содержит полный список миграций в порядке версий
-/// и метод для получения ожидающих выполнения миграций.
 abstract final class MigrationRegistry {
-  /// Все миграции в порядке версий.
   static final List<Migration> all = <Migration>[
     MigrationV2(),
     MigrationV3(),
@@ -84,7 +78,6 @@ abstract final class MigrationRegistry {
     MigrationV38(),
   ];
 
-  /// Возвращает миграции, ожидающие выполнения для данной версии.
   static List<Migration> pending(int oldVersion) {
     return all
         .where((Migration m) => m.version > oldVersion)

@@ -1,10 +1,7 @@
-// Миграция v18: обновление UNIQUE индексов с учётом platform_id.
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'migration.dart';
 
-/// Миграция v18 — обновление UNIQUE индексов на collection_items,
-/// включая platform_id через COALESCE.
 class MigrationV18 extends Migration {
   @override
   int get version => 18;

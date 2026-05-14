@@ -1,10 +1,9 @@
-// Миграция v22: создание таблицы igdb_genres.
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'migration.dart';
 
-/// Миграция v22 — создание таблицы igdb_genres (inline SQL,
-/// т.к. в оригинале не вызывался _createIgdbGenresTable).
+/// SQL is inlined: the original migration never routed through schema.dart,
+/// so historical installs run this exact statement — don't refactor.
 class MigrationV22 extends Migration {
   @override
   int get version => 22;

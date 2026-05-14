@@ -1,10 +1,8 @@
-// Миграция v33: создание таблицы anime_cache.
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../schema.dart';
 import 'migration.dart';
 
-/// Миграция v33: добавляет таблицу кэша аниме из AniList.
 class MigrationV33 extends Migration {
   @override
   int get version => 33;
