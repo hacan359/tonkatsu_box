@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/platform_features.dart';
@@ -45,6 +46,8 @@ class CollectionItemsView extends ConsumerWidget {
     this.header,
     super.key,
   });
+
+  static final Logger _log = Logger('CollectionItemsView');
 
   final int? collectionId;
   final List<CollectionItem> items;
@@ -708,10 +711,12 @@ class CollectionItemsView extends ConsumerWidget {
       container
           .read(collectionItemsNotifierProvider(collectionId).notifier)
           .updateItemTag(item.id, tagId);
-    }).catchError((Object error) {
+    }).catchError((Object error, StackTrace stack) {
+      _log.warning('Failed to set tag on item ${item.id}', error, stack);
       if (context.mounted) {
+        final S l = S.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$error')),
+          SnackBar(content: Text(l.tagUpdateFailed)),
         );
       }
     });

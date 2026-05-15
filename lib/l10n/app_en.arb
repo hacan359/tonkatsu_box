@@ -512,6 +512,9 @@
   "tagCreated": "Tag created",
   "tagRenamed": "Tag renamed",
   "tagDeleted": "Tag deleted",
+  "tagUpdateFailed": "Failed to update tag",
+  "tierListExportFailed": "Failed to export image",
+  "browseCollectionsDownloadFailedGeneric": "Failed to download collection",
   "tagFilterAll": "All tags",
   "tagSidebarAll": "All",
   "tagSidebarGroup": "Group",
@@ -1435,12 +1438,6 @@
   "browseCollectionsFormatFull": "Full (offline)",
   "browseCollectionsDownloading": "Downloading...",
   "browseCollectionsImporting": "Importing...",
-  "browseCollectionsDownloadError": "Download failed: {error}",
-  "@browseCollectionsDownloadError": {
-    "placeholders": {
-      "error": {"type": "String"}
-    }
-  },
   "browseCollectionsImportSuccess": "Collection imported: {name}",
   "@browseCollectionsImportSuccess": {
     "placeholders": {

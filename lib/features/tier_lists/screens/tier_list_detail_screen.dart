@@ -9,6 +9,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gal/gal.dart';
+import 'package:logging/logging.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../../l10n/app_localizations.dart';
@@ -49,6 +50,8 @@ class TierListDetailScreen extends ConsumerStatefulWidget {
 
 class _TierListDetailScreenState
     extends ConsumerState<TierListDetailScreen> {
+  static final Logger _log = Logger('TierListDetailScreen');
+
   final GlobalKey _exportKey = GlobalKey();
 
   @override
@@ -261,10 +264,11 @@ class _TierListDetailScreenState
           );
         }
       }
-    } on Exception catch (e) {
+    } on Exception catch (e, stack) {
+      _log.warning('Failed to export tier list image', e, stack);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l.errorPrefix(e.toString()))),
+          SnackBar(content: Text(l.tierListExportFailed)),
         );
       }
     }

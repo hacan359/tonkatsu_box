@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logging/logging.dart';
 
 import '../../../core/services/collection_browser_service.dart';
 import '../../../core/services/import_service.dart';
@@ -37,6 +38,8 @@ class BrowseCollectionsContent extends ConsumerStatefulWidget {
 
 class _BrowseCollectionsContentState
     extends ConsumerState<BrowseCollectionsContent> {
+  static final Logger _log = Logger('BrowseCollectionsContent');
+
   final Set<String> _downloadingIds = <String>{};
   final TextEditingController _searchController = TextEditingController();
 
@@ -354,19 +357,21 @@ class _BrowseCollectionsContentState
           ),
         );
       } else if (result.error != null) {
+        _log.warning(
+          'Collection import returned error: ${result.error}',
+        );
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              l.browseCollectionsDownloadError(result.error!),
-            ),
+            content: Text(l.browseCollectionsDownloadFailedGeneric),
           ),
         );
       }
-    } on Exception catch (e) {
+    } on Exception catch (e, stack) {
+      _log.warning('Failed to download collection', e, stack);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(l.browseCollectionsDownloadError(e.toString())),
+          content: Text(l.browseCollectionsDownloadFailedGeneric),
         ),
       );
     } finally {
