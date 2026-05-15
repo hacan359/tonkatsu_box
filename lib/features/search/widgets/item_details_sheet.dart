@@ -1,5 +1,3 @@
-// Универсальный bottom sheet с деталями элемента для всех типов медиа.
-
 import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
@@ -20,15 +18,13 @@ import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../shared/constants/screenscraper_systemes.dart';
 import '../../../shared/widgets/cached_image.dart';
 import '../../../shared/widgets/source_badge.dart';
+import '../../collections/widgets/screenscraper_gallery_section.dart';
 
-/// Универсальный bottom sheet с деталями элемента.
-///
-/// Заменяет GameDetailsSheet, MediaDetailsSheet, MangaDetailsSheet,
-/// VnDetailsSheet одним модульным виджетом.
+/// Unified bottom sheet for game / movie / TV / manga / anime / VN details.
 class ItemDetailsSheet extends StatelessWidget {
-  /// Создаёт [ItemDetailsSheet].
   const ItemDetailsSheet({
     required this.title,
     required this.icon,
@@ -49,10 +45,11 @@ class ItemDetailsSheet extends StatelessWidget {
     this.dataSource,
     this.backdropUrl,
     this.coverHeight = 150,
+    this.screenScraperGameName,
+    this.screenScraperPlatformId,
     super.key,
   });
 
-  /// Создаёт sheet для фильма.
   factory ItemDetailsSheet.movie(
     Movie movie, {
     VoidCallback? onAddToCollection,
@@ -78,7 +75,6 @@ class ItemDetailsSheet extends StatelessWidget {
     );
   }
 
-  /// Создаёт sheet для сериала.
   factory ItemDetailsSheet.tvShow(
     TvShow tvShow, {
     VoidCallback? onAddToCollection,
@@ -104,11 +100,17 @@ class ItemDetailsSheet extends StatelessWidget {
     );
   }
 
-  /// Создаёт sheet для игры.
   factory ItemDetailsSheet.game(
     Game game, {
     required VoidCallback onAddToCollection,
   }) {
+    int? ssPlatformId;
+    for (final int pid in game.platformIds ?? const <int>[]) {
+      if (ScreenScraperSystemes.isSupported(pid)) {
+        ssPlatformId = pid;
+        break;
+      }
+    }
     return ItemDetailsSheet(
       title: game.name,
       icon: Icons.videogame_asset,
@@ -124,10 +126,11 @@ class ItemDetailsSheet extends StatelessWidget {
       backdropUrl: game.artworkUrl,
       coverHeight: 133,
       onAddToCollection: onAddToCollection,
+      screenScraperGameName: ssPlatformId != null ? game.name : null,
+      screenScraperPlatformId: ssPlatformId,
     );
   }
 
-  /// Создаёт sheet для манги.
   factory ItemDetailsSheet.manga(
     Manga manga, {
     required VoidCallback onAddToCollection,
@@ -160,7 +163,6 @@ class ItemDetailsSheet extends StatelessWidget {
     );
   }
 
-  /// Создаёт sheet для аниме.
   factory ItemDetailsSheet.anime(
     Anime anime, {
     required VoidCallback onAddToCollection,
@@ -193,7 +195,6 @@ class ItemDetailsSheet extends StatelessWidget {
     );
   }
 
-  /// Создаёт sheet для визуальной новеллы.
   factory ItemDetailsSheet.visualNovel(
     VisualNovel vn, {
     required VoidCallback onAddToCollection,
@@ -225,65 +226,36 @@ class ItemDetailsSheet extends StatelessWidget {
     );
   }
 
-  /// Максимальное количество чипов по умолчанию (для манги и VN).
   static const int _defaultMaxChips = 8;
 
-  /// Название.
   final String title;
-
-  /// Иконка типа медиа (используется для fallback обложки).
   final IconData icon;
-
-  /// Callback добавления в коллекцию (если null — кнопка не показывается).
   final VoidCallback? onAddToCollection;
-
-  /// Описание / summary.
   final String? overview;
-
-  /// Год выпуска.
   final int? year;
-
-  /// Рейтинг (форматированный).
   final String? rating;
-
-  /// Список жанров / тегов.
   final List<String>? genres;
-
-  /// Максимум отображаемых жанров (null = все).
   final int? maxGenres;
-
-  /// Дополнительная информация (длительность, статус, формат).
   final String? extraInfo;
-
-  /// Иконка для extraInfo (если null — текст без иконки).
   final IconData? extraInfoIcon;
-
-  /// Альтернативное название (english title, alt title).
   final String? subtitle;
-
-  /// Информационные чипы (иконка + текст): авторы, платформы и т.д.
   final List<(IconData, String)>? infoChips;
-
-  /// URL постера / обложки.
   final String? posterUrl;
-
-  /// Тип изображения для кэша.
   final ImageType? cacheImageType;
-
-  /// ID изображения для кэша.
   final String? cacheImageId;
 
-  /// URL внешней страницы.
   final String? externalUrl;
-
-  /// Источник данных (по умолчанию TMDB).
   final DataSource? dataSource;
 
-  /// URL фонового изображения (backdrop / artwork / banner).
   final String? backdropUrl;
 
-  /// Высота обложки (ширина всегда 100).
+  /// Width is always 100; controls the poster cover height.
   final double coverHeight;
+
+  /// When non-null, render a ScreenScraper screenshots gallery using this
+  /// game name + IGDB platform id.
+  final String? screenScraperGameName;
+  final int? screenScraperPlatformId;
 
   @override
   Widget build(BuildContext context) {
@@ -312,9 +284,7 @@ class ItemDetailsSheet extends StatelessWidget {
             ),
             child: Stack(
               children: <Widget>[
-              // Backdrop — на весь фон.
-              // Если backdrop отсутствует, fallback'ом используем постер
-              // с сильным blur (паттерн «амбиентный фон из обложки»).
+              // Falls back to the poster with a heavy blur when backdrop is missing.
               if (backdropUrl != null || posterUrl != null) ...<Widget>[
                 Positioned.fill(
                   child: backdropUrl != null
@@ -336,9 +306,7 @@ class ItemDetailsSheet extends StatelessWidget {
                           ),
                         ),
                 ),
-                // Верх: затемнение для читаемости. В fallback-режиме
-                // (постер вместо backdrop) делаем градиент плотнее, чтобы
-                // фон не конкурировал с контентом.
+                // Denser gradient when the backdrop is a blurred poster fallback.
                 Positioned.fill(
                   child: Container(
                     decoration: BoxDecoration(
@@ -360,7 +328,6 @@ class ItemDetailsSheet extends StatelessWidget {
                   ),
                 ),
               ],
-              // Контент — единая лёгкая подложка
               SingleChildScrollView(
                 controller: scrollController,
                 padding: const EdgeInsets.all(AppSpacing.md),
@@ -399,6 +366,13 @@ class ItemDetailsSheet extends StatelessWidget {
                             ],
                           ),
                         ),
+                      if (screenScraperGameName != null &&
+                          screenScraperPlatformId != null)
+                        ScreenScraperGallerySection(
+                          gameName: screenScraperGameName!,
+                          igdbPlatformId: screenScraperPlatformId,
+                          mode: ScreenScraperGalleryMode.screenshotsOnly,
+                        ),
                     ],
                   ),
                 ),
@@ -411,22 +385,16 @@ class ItemDetailsSheet extends StatelessWidget {
     );
   }
 
-  /// Порог ширины, ниже которого header переключается на stacked layout
-  /// (постер сверху по центру, информация полной шириной снизу).
+  /// Below this width the header switches to a stacked layout
+  /// (poster on top, info below at full width).
   static const double _stackedLayoutBreakpoint = 500;
 
-  /// Множитель размера постера в stacked layout (постер играет роль hero).
+  /// Poster size multiplier in stacked layout, where it acts as the hero.
   static const double _stackedPosterScale = 1.3;
 
-  /// Ширина резерва под кнопку + справа от инфо-колонки (44px кнопка + gap).
+  /// Space reserved for the floating "+" button (44px button + gap).
   static const double _addButtonReservedWidth = 48;
 
-  /// Header: постер + информация + кнопка добавления.
-  ///
-  /// Контент (drag handle + poster/info) лежит в обычном Column,
-  /// а кнопка + — `Positioned` поверх (HTML-аналог: `position: absolute`),
-  /// поэтому не занимает собственной высоты и сохраняет позицию в правом
-  /// верхнем углу.
   Widget _buildHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -436,7 +404,6 @@ class ItemDetailsSheet extends StatelessWidget {
         children: <Widget>[
           Column(
             children: <Widget>[
-              // Drag handle (тонкая полоска).
               Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                 child: Container(
@@ -448,7 +415,6 @@ class ItemDetailsSheet extends StatelessWidget {
                   ),
                 ),
               ),
-              // Poster + info: row на широком, column на узком (<500px).
               LayoutBuilder(
                 builder:
                     (BuildContext context, BoxConstraints constraints) {
@@ -476,9 +442,8 @@ class ItemDetailsSheet extends StatelessWidget {
                         const SizedBox(width: AppSpacing.md),
                       ],
                       Expanded(
-                        // Резервируем место справа под кнопку +: в row-mode
-                        // она лежит `Positioned(top:0, right:0)` и иначе
-                        // перекрыла бы первую строку заголовка.
+                        // Reserve space on the right so the `Positioned`
+                        // add-button doesn't overlap the title.
                         child: Padding(
                           padding: EdgeInsets.only(
                             right: onAddToCollection != null
@@ -494,7 +459,6 @@ class ItemDetailsSheet extends StatelessWidget {
               ),
             ],
           ),
-          // Кнопка + позиционируется поверх — высоту не занимает.
           if (onAddToCollection != null)
             Positioned(
               top: 0,
@@ -511,7 +475,6 @@ class ItemDetailsSheet extends StatelessWidget {
     );
   }
 
-  /// Постер с placeholder/error fallback. [scale] масштабирует обе стороны.
   Widget _buildPoster({double scale = 1.0}) {
     final double width = 100 * scale;
     final double height = coverHeight * scale;
@@ -542,12 +505,10 @@ class ItemDetailsSheet extends StatelessWidget {
     );
   }
 
-  /// Колонка с заголовком, alt-title, source/rating/extraInfo, чипами и жанрами.
   Widget _buildInfoColumn() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        // Название + год (нажатие копирует название)
         CopyableText(
           text: title,
           iconSize: 16,
@@ -569,7 +530,6 @@ class ItemDetailsSheet extends StatelessWidget {
             ]),
           ),
         ),
-        // Подзаголовок (alt title)
         if (subtitle != null) ...<Widget>[
           const SizedBox(height: AppSpacing.xs),
           Text(
@@ -618,7 +578,7 @@ class ItemDetailsSheet extends StatelessWidget {
             ],
           ],
         ),
-        // Info chips (авторы, платформы и т.д.)
+        // Info chips (authors, platforms, etc.)
         if (infoChips != null && infoChips!.isNotEmpty) ...<Widget>[
           const SizedBox(height: AppSpacing.sm),
           ...infoChips!.map(
@@ -628,7 +588,6 @@ class ItemDetailsSheet extends StatelessWidget {
             ),
           ),
         ],
-        // Жанры / теги
         if (genres != null && genres!.isNotEmpty) ...<Widget>[
           const SizedBox(height: AppSpacing.sm),
           Wrap(
@@ -688,7 +647,6 @@ class ItemDetailsSheet extends StatelessWidget {
   }
 }
 
-/// Круглая парящая кнопка добавления в коллекцию.
 class _AddButton extends StatefulWidget {
   const _AddButton({required this.onPressed});
 

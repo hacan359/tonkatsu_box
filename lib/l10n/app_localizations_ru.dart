@@ -4098,4 +4098,83 @@ class SRu extends S {
 
   @override
   String get moodGridPickerEmpty => 'Нет элементов';
+
+  @override
+  String get screenScraperSection => 'ScreenScraper API';
+
+  @override
+  String get screenScraperSourceDesc =>
+      'Метаданные игр + медиа (обложки, скриншоты, арт)';
+
+  @override
+  String get screenScraperUserCredsHint =>
+      'Пользовательские креды (ssid / sspassword). Квота персональная.';
+
+  @override
+  String get screenScraperSsidLabel => 'ssid';
+
+  @override
+  String get screenScraperSsidPlaceholder => 'Ваш логин ScreenScraper';
+
+  @override
+  String get screenScraperSspasswordLabel => 'sspassword';
+
+  @override
+  String get screenScraperSspasswordPlaceholder => 'Ваш пароль ScreenScraper';
+
+  @override
+  String get screenScraperCheckQuota => 'Проверить квоту';
+
+  @override
+  String get screenScraperRequestsToday => 'Запросов сегодня';
+
+  @override
+  String get screenScraperPerMinLimit => 'Лимит в минуту';
+
+  @override
+  String get screenScraperParallelThreads => 'Параллельные потоки';
+
+  @override
+  String get screenScraperAccountLevel => 'Уровень аккаунта';
+
+  @override
+  String get screenScraperGalleryTitle => 'Медиа ScreenScraper';
+
+  @override
+  String get screenScraperScreenshotsTitle => 'Скриншоты';
+
+  @override
+  String get screenScraperLoading => 'Загружаем медиа ScreenScraper…';
+
+  @override
+  String screenScraperError(String message) {
+    return 'Ошибка ScreenScraper: $message';
+  }
+
+  @override
+  String get screenScraperMediaBox => 'Обложка';
+
+  @override
+  String get screenScraperMediaBoxBack => 'Обложка (зад)';
+
+  @override
+  String get screenScraperMediaBox3D => 'Обложка 3D';
+
+  @override
+  String get screenScraperMediaWheel => 'Логотип';
+
+  @override
+  String get screenScraperMediaMarquee => 'Маркиза';
+
+  @override
+  String get screenScraperMediaTitle => 'Заставка';
+
+  @override
+  String get screenScraperMediaScreenshot => 'Скриншот';
+
+  @override
+  String get screenScraperMediaFanart => 'Фан-арт';
+
+  @override
+  String get screenScraperMediaMix => 'Микс';
 }

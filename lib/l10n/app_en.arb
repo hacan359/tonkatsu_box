@@ -1893,5 +1893,35 @@
   "moodGridPickerCollection": "Collection",
   "moodGridPickerAllCollections": "All collections",
   "moodGridPickerSearchHint": "Search by name",
-  "moodGridPickerEmpty": "Nothing to pick"
+  "moodGridPickerEmpty": "Nothing to pick",
+  "screenScraperSection": "ScreenScraper API",
+  "screenScraperSourceDesc": "Game metadata + media (covers, screenshots, art)",
+  "screenScraperUserCredsHint": "User credentials (ssid / sspassword). Quota is per user.",
+  "screenScraperSsidLabel": "ssid",
+  "screenScraperSsidPlaceholder": "Your ScreenScraper login",
+  "screenScraperSspasswordLabel": "sspassword",
+  "screenScraperSspasswordPlaceholder": "Your ScreenScraper password",
+  "screenScraperCheckQuota": "Check quota",
+  "screenScraperRequestsToday": "Requests today",
+  "screenScraperPerMinLimit": "Per minute limit",
+  "screenScraperParallelThreads": "Parallel threads",
+  "screenScraperAccountLevel": "Account level",
+  "screenScraperGalleryTitle": "ScreenScraper media",
+  "screenScraperScreenshotsTitle": "Screenshots",
+  "screenScraperLoading": "Loading ScreenScraper media…",
+  "screenScraperError": "ScreenScraper error: {message}",
+  "@screenScraperError": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
+  "screenScraperMediaBox": "Box",
+  "screenScraperMediaBoxBack": "Box (back)",
+  "screenScraperMediaBox3D": "Box 3D",
+  "screenScraperMediaWheel": "Wheel",
+  "screenScraperMediaMarquee": "Marquee",
+  "screenScraperMediaTitle": "Title",
+  "screenScraperMediaScreenshot": "Screenshot",
+  "screenScraperMediaFanart": "Fanart",
+  "screenScraperMediaMix": "Mix"
 }

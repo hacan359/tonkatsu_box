@@ -1612,5 +1612,35 @@
   "moodGridPickerCollection": "Коллекция",
   "moodGridPickerAllCollections": "Все коллекции",
   "moodGridPickerSearchHint": "Поиск по названию",
-  "moodGridPickerEmpty": "Нет элементов"
+  "moodGridPickerEmpty": "Нет элементов",
+  "screenScraperSection": "ScreenScraper API",
+  "screenScraperSourceDesc": "Метаданные игр + медиа (обложки, скриншоты, арт)",
+  "screenScraperUserCredsHint": "Пользовательские креды (ssid / sspassword). Квота персональная.",
+  "screenScraperSsidLabel": "ssid",
+  "screenScraperSsidPlaceholder": "Ваш логин ScreenScraper",
+  "screenScraperSspasswordLabel": "sspassword",
+  "screenScraperSspasswordPlaceholder": "Ваш пароль ScreenScraper",
+  "screenScraperCheckQuota": "Проверить квоту",
+  "screenScraperRequestsToday": "Запросов сегодня",
+  "screenScraperPerMinLimit": "Лимит в минуту",
+  "screenScraperParallelThreads": "Параллельные потоки",
+  "screenScraperAccountLevel": "Уровень аккаунта",
+  "screenScraperGalleryTitle": "Медиа ScreenScraper",
+  "screenScraperScreenshotsTitle": "Скриншоты",
+  "screenScraperLoading": "Загружаем медиа ScreenScraper…",
+  "screenScraperError": "Ошибка ScreenScraper: {message}",
+  "@screenScraperError": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
+  "screenScraperMediaBox": "Обложка",
+  "screenScraperMediaBoxBack": "Обложка (зад)",
+  "screenScraperMediaBox3D": "Обложка 3D",
+  "screenScraperMediaWheel": "Логотип",
+  "screenScraperMediaMarquee": "Маркиза",
+  "screenScraperMediaTitle": "Заставка",
+  "screenScraperMediaScreenshot": "Скриншот",
+  "screenScraperMediaFanart": "Фан-арт",
+  "screenScraperMediaMix": "Микс"
 }

@@ -48,6 +48,8 @@ jobs:
           --dart-define=STEAMGRIDDB_API_KEY=${{ secrets.STEAMGRIDDB_API_KEY }}
           --dart-define=IGDB_CLIENT_ID=${{ secrets.IGDB_CLIENT_ID }}
           --dart-define=IGDB_CLIENT_SECRET=${{ secrets.IGDB_CLIENT_SECRET }}
+          --dart-define=SCREENSCRAPER_DEV_ID=${{ secrets.SCREENSCRAPER_DEV_ID }}
+          --dart-define=SCREENSCRAPER_DEV_PASSWORD=${{ secrets.SCREENSCRAPER_DEV_PASSWORD }}
 
       - name: Archive Windows build
         run: |
@@ -99,6 +101,8 @@ jobs:
           --dart-define=STEAMGRIDDB_API_KEY=${{ secrets.STEAMGRIDDB_API_KEY }}
           --dart-define=IGDB_CLIENT_ID=${{ secrets.IGDB_CLIENT_ID }}
           --dart-define=IGDB_CLIENT_SECRET=${{ secrets.IGDB_CLIENT_SECRET }}
+          --dart-define=SCREENSCRAPER_DEV_ID=${{ secrets.SCREENSCRAPER_DEV_ID }}
+          --dart-define=SCREENSCRAPER_DEV_PASSWORD=${{ secrets.SCREENSCRAPER_DEV_PASSWORD }}
 
       - name: Rename APK
         run: |
@@ -140,6 +144,8 @@ jobs:
           --dart-define=STEAMGRIDDB_API_KEY=${{ secrets.STEAMGRIDDB_API_KEY }}
           --dart-define=IGDB_CLIENT_ID=${{ secrets.IGDB_CLIENT_ID }}
           --dart-define=IGDB_CLIENT_SECRET=${{ secrets.IGDB_CLIENT_SECRET }}
+          --dart-define=SCREENSCRAPER_DEV_ID=${{ secrets.SCREENSCRAPER_DEV_ID }}
+          --dart-define=SCREENSCRAPER_DEV_PASSWORD=${{ secrets.SCREENSCRAPER_DEV_PASSWORD }}
 
       - name: Archive Linux build
         run: |
