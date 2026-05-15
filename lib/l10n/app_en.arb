@@ -513,6 +513,16 @@
   "tagRenamed": "Tag renamed",
   "tagDeleted": "Tag deleted",
   "tagUpdateFailed": "Failed to update tag",
+  "renameItem": "Rename",
+  "renameDialogHint": "Display name",
+  "renameOriginalLabel": "Original: {name}",
+  "@renameOriginalLabel": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "renameResetToOriginal": "Reset to original",
+  "renameSaved": "Renamed",
   "tierListExportFailed": "Failed to export image",
   "browseCollectionsDownloadFailedGeneric": "Failed to download collection",
   "tagFilterAll": "All tags",

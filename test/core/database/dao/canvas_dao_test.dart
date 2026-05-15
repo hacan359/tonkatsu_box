@@ -24,11 +24,9 @@ void main() {
     group('getCanvasItems', () {
       test('returns items for collection excluding per-item', () async {
         when(
-          () => mockDb.query(
-            'canvas_items',
-            where: 'collection_id = ? AND collection_item_id IS NULL',
-            whereArgs: <Object?>[1],
-            orderBy: 'z_index ASC',
+          () => mockDb.rawQuery(
+            any(that: contains('collection_item_id IS NULL')),
+            <Object?>[1],
           ),
         ).thenAnswer(
           (_) async => <Map<String, dynamic>>[
@@ -41,6 +39,30 @@ void main() {
 
         expect(result.length, 1);
         expect(result.first['id'], 10);
+      });
+
+      test('joins collection_items.override_name in the query', () async {
+        when(
+          () => mockDb.rawQuery(any(), <Object?>[1]),
+        ).thenAnswer(
+          (_) async => <Map<String, dynamic>>[
+            <String, dynamic>{
+              'id': 10,
+              'collection_id': 1,
+              'override_name': 'FF7R',
+            },
+          ],
+        );
+
+        final List<Map<String, dynamic>> result =
+            await dao.getCanvasItems(1);
+
+        final String capturedSql = verify(
+          () => mockDb.rawQuery(captureAny(), <Object?>[1]),
+        ).captured.single as String;
+        expect(capturedSql, contains('override_name'));
+        expect(capturedSql, contains('collection_items'));
+        expect(result.first['override_name'], 'FF7R');
       });
     });
 
@@ -457,17 +479,37 @@ void main() {
     group('getGameCanvasItems', () {
       test('returns items by collection_item_id', () async {
         when(
-          () => mockDb.query(
-            'canvas_items',
-            where: 'collection_item_id = ?',
-            whereArgs: <Object?>[50],
-          ),
+          () => mockDb.rawQuery(any(), <Object?>[50]),
         ).thenAnswer((_) async => <Map<String, dynamic>>[]);
 
         final List<Map<String, dynamic>> result =
             await dao.getGameCanvasItems(50);
 
         expect(result, isEmpty);
+      });
+
+      test('joins collection_items.override_name in the query', () async {
+        when(
+          () => mockDb.rawQuery(any(), <Object?>[50]),
+        ).thenAnswer(
+          (_) async => <Map<String, dynamic>>[
+            <String, dynamic>{
+              'id': 1,
+              'collection_item_id': 50,
+              'override_name': 'FF7R',
+            },
+          ],
+        );
+
+        final List<Map<String, dynamic>> result =
+            await dao.getGameCanvasItems(50);
+
+        final String capturedSql = verify(
+          () => mockDb.rawQuery(captureAny(), <Object?>[50]),
+        ).captured.single as String;
+        expect(capturedSql, contains('override_name'));
+        expect(capturedSql, contains('collection_items'));
+        expect(result.first['override_name'], 'FF7R');
       });
     });
 

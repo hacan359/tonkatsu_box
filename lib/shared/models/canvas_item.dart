@@ -121,6 +121,7 @@ class CanvasItem with Exportable {
     this.anime,
     this.manga,
     this.customMedia,
+    this.overrideName,
   });
 
   /// Создаёт [CanvasItem] из записи базы данных.
@@ -147,6 +148,7 @@ class CanvasItem with Exportable {
       createdAt: DateTime.fromMillisecondsSinceEpoch(
         (row['created_at'] as int) * 1000,
       ),
+      overrideName: row['override_name'] as String?,
     );
   }
 
@@ -232,10 +234,15 @@ class CanvasItem with Exportable {
   /// Данные кастомного элемента (joined, не сохраняются в БД).
   final CustomMedia? customMedia;
 
+  /// Joined `collection_items.override_name` for the matching media entry in
+  /// the same collection — transient, never written back to `canvas_items`.
+  final String? overrideName;
+
   // -- Unified media accessors (для медиа-типов) --
 
   /// Название медиа-элемента (game/movie/tvShow/visualNovel).
   String? get mediaTitle {
+    if (overrideName != null) return overrideName;
     return switch (itemType) {
       CanvasItemType.game => game?.name,
       CanvasItemType.movie => movie?.title,
@@ -407,6 +414,8 @@ class CanvasItem with Exportable {
     Anime? anime,
     Manga? manga,
     CustomMedia? customMedia,
+    String? overrideName,
+    bool clearOverrideName = false,
   }) {
     return CanvasItem(
       id: id ?? this.id,
@@ -428,6 +437,8 @@ class CanvasItem with Exportable {
       anime: anime ?? this.anime,
       manga: manga ?? this.manga,
       customMedia: customMedia ?? this.customMedia,
+      overrideName:
+          clearOverrideName ? null : (overrideName ?? this.overrideName),
     );
   }
 

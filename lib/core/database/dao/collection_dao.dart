@@ -528,6 +528,21 @@ class CollectionDao {
     );
   }
 
+  /// Sets a user-defined display name for the item. Empty / whitespace-only
+  /// input clears the override (NULL) so the UI falls back to the cached
+  /// API title.
+  Future<void> setItemOverrideName(int id, String? name) async {
+    final Database db = await _getDatabase();
+    final String? normalized =
+        (name == null || name.trim().isEmpty) ? null : name.trim();
+    await db.update(
+      'collection_items',
+      <String, dynamic>{'override_name': normalized},
+      where: 'id = ?',
+      whereArgs: <Object?>[id],
+    );
+  }
+
   /// Moves item to another collection (null = uncategorized) and appends to its
   /// sort order. Returns false on UNIQUE conflict (already present in target).
   Future<bool> updateItemCollectionId(int id, int? collectionId) async {

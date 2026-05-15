@@ -1445,5 +1445,95 @@ void main() {
         expect(await dao.cloneItemToCollection(1, 2), isNull);
       });
     });
+
+    group('setItemOverrideName', () {
+      test('writes the trimmed override on a non-empty input', () async {
+        when(
+          () => mockDb.update(
+            'collection_items',
+            any(),
+            where: 'id = ?',
+            whereArgs: <Object?>[1],
+          ),
+        ).thenAnswer((_) async => 1);
+
+        await dao.setItemOverrideName(1, '  FF7R  ');
+
+        verify(
+          () => mockDb.update(
+            'collection_items',
+            <String, dynamic>{'override_name': 'FF7R'},
+            where: 'id = ?',
+            whereArgs: <Object?>[1],
+          ),
+        ).called(1);
+      });
+
+      test('clears the override on an empty input', () async {
+        when(
+          () => mockDb.update(
+            'collection_items',
+            any(),
+            where: 'id = ?',
+            whereArgs: <Object?>[1],
+          ),
+        ).thenAnswer((_) async => 1);
+
+        await dao.setItemOverrideName(1, '');
+
+        verify(
+          () => mockDb.update(
+            'collection_items',
+            <String, dynamic>{'override_name': null},
+            where: 'id = ?',
+            whereArgs: <Object?>[1],
+          ),
+        ).called(1);
+      });
+
+      test('clears the override on a whitespace-only input', () async {
+        when(
+          () => mockDb.update(
+            'collection_items',
+            any(),
+            where: 'id = ?',
+            whereArgs: <Object?>[1],
+          ),
+        ).thenAnswer((_) async => 1);
+
+        await dao.setItemOverrideName(1, '   ');
+
+        verify(
+          () => mockDb.update(
+            'collection_items',
+            <String, dynamic>{'override_name': null},
+            where: 'id = ?',
+            whereArgs: <Object?>[1],
+          ),
+        ).called(1);
+      });
+
+      test('clears the override on null input', () async {
+        when(
+          () => mockDb.update(
+            'collection_items',
+            any(),
+            where: 'id = ?',
+            whereArgs: <Object?>[1],
+          ),
+        ).thenAnswer((_) async => 1);
+
+        await dao.setItemOverrideName(1, null);
+
+        verify(
+          () => mockDb.update(
+            'collection_items',
+            <String, dynamic>{'override_name': null},
+            where: 'id = ?',
+            whereArgs: <Object?>[1],
+          ),
+        ).called(1);
+      });
+    });
   });
 }

@@ -199,7 +199,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 38,
+        version: 39,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -583,6 +583,10 @@ class DatabaseService {
   /// Rating range: 1-10 or null.
   Future<void> updateItemUserRating(int id, int? rating) =>
       collectionDao.updateItemUserRating(id, rating);
+
+  /// Empty / whitespace-only `name` clears the override (NULL).
+  Future<void> setItemOverrideName(int id, String? name) =>
+      collectionDao.setItemOverrideName(id, name);
 
   /// `totalMinutes` is stored in minutes.
   Future<void> updateItemTimeSpent(int id, int totalMinutes) =>

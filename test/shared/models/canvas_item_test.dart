@@ -730,5 +730,85 @@ void main() {
         expect(copy.x, 100);
       });
     });
+
+    group('overrideName', () {
+      test('mediaTitle returns override when set', () {
+        final CanvasItem item = CanvasItem(
+          id: 1,
+          collectionId: 10,
+          itemType: CanvasItemType.game,
+          itemRefId: 100,
+          x: 0,
+          y: 0,
+          createdAt: testDate,
+          game: createTestGame(name: 'Final Fantasy VII Remake'),
+          overrideName: 'FF7R',
+        );
+        expect(item.mediaTitle, 'FF7R');
+      });
+
+      test('mediaTitle falls back to cached name when override is null', () {
+        final CanvasItem item = CanvasItem(
+          id: 1,
+          collectionId: 10,
+          itemType: CanvasItemType.game,
+          itemRefId: 100,
+          x: 0,
+          y: 0,
+          createdAt: testDate,
+          game: createTestGame(name: 'Final Fantasy VII Remake'),
+        );
+        expect(item.mediaTitle, 'Final Fantasy VII Remake');
+      });
+
+      test('fromDb reads override_name from joined column', () {
+        final CanvasItem item = CanvasItem.fromDb(<String, dynamic>{
+          'id': 1,
+          'collection_id': 10,
+          'item_type': 'game',
+          'item_ref_id': 100,
+          'x': 0,
+          'y': 0,
+          'created_at': testDate.millisecondsSinceEpoch ~/ 1000,
+          'override_name': 'FF7R',
+        });
+        expect(item.overrideName, 'FF7R');
+      });
+
+      test('copyWith preserves overrideName when enrichment runs', () {
+        final CanvasItem original = CanvasItem(
+          id: 1,
+          collectionId: 10,
+          itemType: CanvasItemType.game,
+          itemRefId: 100,
+          x: 0,
+          y: 0,
+          createdAt: testDate,
+          overrideName: 'FF7R',
+        );
+        final CanvasItem enriched = original.copyWith(
+          game: createTestGame(name: 'Final Fantasy VII Remake'),
+        );
+        expect(enriched.overrideName, 'FF7R');
+        expect(enriched.mediaTitle, 'FF7R');
+      });
+
+      test('copyWith with clearOverrideName drops the override', () {
+        final CanvasItem original = CanvasItem(
+          id: 1,
+          collectionId: 10,
+          itemType: CanvasItemType.game,
+          itemRefId: 100,
+          x: 0,
+          y: 0,
+          createdAt: testDate,
+          overrideName: 'FF7R',
+          game: createTestGame(name: 'Final Fantasy VII Remake'),
+        );
+        final CanvasItem cleared = original.copyWith(clearOverrideName: true);
+        expect(cleared.overrideName, isNull);
+        expect(cleared.mediaTitle, 'Final Fantasy VII Remake');
+      });
+    });
   });
 }

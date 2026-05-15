@@ -995,6 +995,28 @@ class CollectionItemsNotifier
     }
   }
 
+  /// Empty / whitespace-only `name` clears the override.
+  Future<void> setOverrideName(int id, String? name) async {
+    final String? normalized =
+        (name == null || name.trim().isEmpty) ? null : name.trim();
+    await _repository.setItemOverrideName(id, normalized);
+
+    final List<CollectionItem>? items = state.valueOrNull;
+    if (items != null) {
+      state = AsyncData<List<CollectionItem>>(
+        items.map((CollectionItem i) {
+          if (i.id == id) {
+            return normalized == null
+                ? i.copyWith(clearOverrideName: true)
+                : i.copyWith(overrideName: normalized);
+          }
+          return i;
+        }).toList(),
+      );
+    }
+    ref.invalidate(allItemsNotifierProvider);
+  }
+
   /// [rating] is 1-10, or null to clear.
   Future<void> updateUserRating(int id, int? rating) async {
     assert(

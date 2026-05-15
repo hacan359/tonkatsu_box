@@ -2395,5 +2395,164 @@ void main() {
         expect(item.completionTime, isNull);
       });
     });
+
+    group('overrideName', () {
+      const Game ff7 = Game(
+        id: 100,
+        name: 'Final Fantasy VII Remake Intergrade',
+      );
+
+      test('itemName returns override when set', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+          game: ff7,
+          overrideName: 'FF7R',
+        );
+        expect(item.itemName, 'FF7R');
+        expect(item.cachedName, 'Final Fantasy VII Remake Intergrade');
+      });
+
+      test('itemName falls back to cached name when override is null', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+          game: ff7,
+        );
+        expect(item.itemName, 'Final Fantasy VII Remake Intergrade');
+      });
+
+      test('copyWith sets a new override and clears via clearOverrideName',
+          () {
+        final CollectionItem base = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+          game: ff7,
+        );
+        final CollectionItem renamed = base.copyWith(overrideName: 'FF7R');
+        expect(renamed.overrideName, 'FF7R');
+        final CollectionItem cleared = renamed.copyWith(
+          clearOverrideName: true,
+        );
+        expect(cleared.overrideName, isNull);
+      });
+
+      test('copyWith without override args preserves the existing override',
+          () {
+        final CollectionItem base = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+          game: ff7,
+          overrideName: 'FF7R',
+        );
+        final CollectionItem copy = base.copyWith(userRating: 9);
+        expect(copy.overrideName, 'FF7R');
+      });
+
+      test('toDb writes override_name (including null)', () {
+        final CollectionItem withOverride = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+          game: ff7,
+          overrideName: 'FF7R',
+        );
+        expect(withOverride.toDb()['override_name'], 'FF7R');
+        final CollectionItem withoutOverride = withOverride.copyWith(
+          clearOverrideName: true,
+        );
+        expect(withoutOverride.toDb()['override_name'], isNull);
+      });
+
+      test('fromDb reads override_name', () {
+        final CollectionItem fromDb = CollectionItem.fromDb(
+          <String, dynamic>{
+            'id': 1,
+            'collection_id': 1,
+            'media_type': 'game',
+            'external_id': 100,
+            'status': 'not_started',
+            'added_at': testAddedAt.millisecondsSinceEpoch ~/ 1000,
+            'override_name': 'FF7R',
+          },
+        );
+        expect(fromDb.overrideName, 'FF7R');
+      });
+
+      test('toExport emits override_name only with includeUserData', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+          game: ff7,
+          overrideName: 'FF7R',
+        );
+        final Map<String, dynamic> bare = item.toExport();
+        expect(bare.containsKey('override_name'), isFalse);
+        final Map<String, dynamic> full =
+            item.toExport(includeUserData: true);
+        expect(full['override_name'], 'FF7R');
+      });
+
+      test('toExport omits override_name when null even with user data', () {
+        final CollectionItem item = CollectionItem(
+          id: 1,
+          collectionId: 1,
+          mediaType: MediaType.game,
+          externalId: 100,
+          status: ItemStatus.notStarted,
+          addedAt: testAddedAt,
+          game: ff7,
+        );
+        final Map<String, dynamic> full =
+            item.toExport(includeUserData: true);
+        expect(full.containsKey('override_name'), isFalse);
+      });
+
+      test('fromExport reads override_name when present', () {
+        final CollectionItem item = CollectionItem.fromExport(
+          <String, dynamic>{
+            'media_type': 'game',
+            'external_id': 100,
+            'status': 'not_started',
+            'override_name': 'FF7R',
+          },
+        );
+        expect(item.overrideName, 'FF7R');
+      });
+
+      test('fromExport defaults override_name to null when absent', () {
+        final CollectionItem item = CollectionItem.fromExport(
+          <String, dynamic>{
+            'media_type': 'game',
+            'external_id': 100,
+            'status': 'not_started',
+          },
+        );
+        expect(item.overrideName, isNull);
+      });
+    });
   });
 }

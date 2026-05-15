@@ -9,6 +9,109 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **Rename any collection item without touching the API cache**
+
+  Right-click an item in the grid / list (or use the overflow menu on its
+  detail screen) and pick "Rename" to give it a custom display name —
+  "Final Fantasy VII Remake Intergrade" can become "FF7R" in your
+  Favorites while keeping the original title in Wishlist or another
+  collection. The original cached title is shown as a subtitle inside the
+  dialog so you can see what you're overriding, and a "Reset to original"
+  button clears the override. The custom name is per-collection-item:
+  shared cache rows (games, movies_cache, tv_shows_cache, …) keep the
+  canonical API title so future IGDB / TMDB / AniList / RA resyncs don't
+  overwrite the user's choice and external matchers (RA-import name
+  fallback, ScreenScraper lookup) keep using the cached name. Canvas
+  boards inherit the override too — the title under each card on the
+  board follows the rename. Custom items already have a full Edit dialog,
+  so the Rename action is hidden for them. Mood grids show the original
+  cached name (cells reference media by external id only, no
+  collection-item linkage to inherit from).
+
+  * lib/core/database/schema.dart (DatabaseSchema.createCollectionItemsTable):
+    Add `override_name TEXT` column on fresh installs.
+  * lib/core/database/migrations/migration_v39.dart (MigrationV39),
+    lib/core/database/migrations/migration_registry.dart: New v39 migration
+    that adds the `override_name` column on upgrade.
+  * lib/core/database/database_service.dart (DatabaseService.setItemOverrideName):
+    Bump schema version to 39; facade for the new DAO method.
+  * lib/core/database/dao/collection_dao.dart (CollectionDao.setItemOverrideName):
+    Trims input and treats empty / whitespace-only as NULL so callers
+    can use the same method for both rename and reset.
+  * lib/data/repositories/collection_repository.dart
+    (CollectionRepository.setItemOverrideName): Repository pass-through.
+  * lib/shared/models/collection_item.dart (CollectionItem.overrideName,
+    CollectionItem.cachedName, CollectionItem.itemName, CollectionItem.copyWith,
+    CollectionItem.toDb, CollectionItem.fromDb, CollectionItem.toExport,
+    CollectionItem.fromExport, CollectionItem.internalDbFields):
+    New `overrideName` field threaded through fromDb / toDb / copyWith
+    (with a `clearOverrideName` sentinel) and through the export round-trip.
+    `itemName` returns `overrideName ?? cachedName ?? typed-fallback`; the
+    new public `cachedName` getter exposes the original media title so the
+    rename UI can show the user what they're overriding. `toExport` emits
+    `override_name` only when `includeUserData` is true and the override
+    is non-null.
+  * lib/features/collections/providers/collections_provider.dart
+    (CollectionItemsNotifier.setOverrideName): Trims and updates state in
+    place via copyWith, invalidates `allItemsNotifierProvider` so the
+    All Items screen reflects the rename.
+  * lib/features/collections/providers/canvas_provider.dart
+    (CanvasNotifier._syncOverrideNames): Listens to
+    `collectionItemsNotifierProvider` and patches `overrideName` on live
+    canvas items by `(itemType, itemRefId)` so the collection board's card
+    title updates immediately after a rename without a full reload — same
+    matching key as the SQL join in `canvas_dao.getCanvasItems`.
+  * lib/features/collections/providers/game_canvas_provider.dart
+    (GameCanvasNotifier._syncOverrideName): Per-item canvas has no
+    structural sync loop, so an analogous listener patches `overrideName`
+    on items whose `collectionItemId` matches the current canvas key.
+  * lib/features/collections/widgets/rename_item_dialog.dart
+    (RenameItemDialog): New dialog with a pre-filled TextField, a subtitle
+    showing the original cached name, and Save / Reset to original / Cancel
+    buttons. Returns the trimmed text on Save, an empty string on Reset,
+    null on Cancel. Content is wrapped in `SingleChildScrollView` and the
+    subtitle uses `maxLines: 2 + ellipsis` so the dialog doesn't overflow
+    on narrow screens or with long original titles.
+  * lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._renameItem, AppBar overflow menu):
+    New menu entry "Rename" hidden for `MediaType.custom`. The
+    ScreenScraperGallerySection now receives `item.cachedName` instead of
+    `item.itemName` so the SS lookup keeps using the API title after a
+    rename. No SnackBar on success — the new title in the AppBar is
+    confirmation enough.
+  * lib/features/collections/widgets/collection_items_view.dart
+    (CollectionItemsView._renameItem, _showItemContextMenu): Adds a
+    "Rename" entry to the right-click / long-press menu in the grid / list
+    view, hidden for `MediaType.custom`.
+  * lib/shared/models/canvas_item.dart (CanvasItem.overrideName,
+    CanvasItem.mediaTitle, CanvasItem.copyWith, CanvasItem.fromDb):
+    New transient `overrideName` field — loaded from a SQL join (never
+    written back to `canvas_items`) and consulted first by `mediaTitle`.
+    `copyWith` preserves it across media enrichment and accepts a
+    `clearOverrideName` sentinel so live listeners can drop the override
+    when a user resets the rename.
+  * lib/core/database/dao/canvas_dao.dart (CanvasDao.getCanvasItems):
+    Swap `db.query` for a `rawQuery` that pulls `override_name` from the
+    matching `collection_items` row via a correlated subquery
+    `(collection_id, media_type, external_id)` so canvas titles inherit
+    the rename. Multi-platform games in the same collection share an
+    override; the subquery picks any matching row with `LIMIT 1`.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (renameItem, renameDialogHint,
+    renameOriginalLabel, renameResetToOriginal, renameSaved): New
+    localisation keys for the dialog and the menu entries.
+  * test/shared/models/collection_item_test.dart,
+    test/shared/models/canvas_item_test.dart,
+    test/core/database/dao/collection_dao_test.dart,
+    test/core/database/dao/canvas_dao_test.dart,
+    test/features/collections/providers/collections_provider_test.dart,
+    test/features/collections/widgets/rename_item_dialog_test.dart,
+    test/features/collections/widgets/collection_items_view_test.dart:
+    Round-trip, copyWith semantics, DAO trim / empty / whitespace / null
+    branches, notifier state mutation, dialog Save / Reset / Cancel
+    behaviour, canvas SQL subquery shape, and updated context-menu count /
+    ordering after the new entry. `test/helpers/builders.dart`
+    (createTestCollectionItem) gains an `overrideName` parameter.
+
 - **ScreenScraper media gallery on game cards**
 
   Game cards in the collection and the bottom sheet in search show a

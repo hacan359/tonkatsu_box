@@ -50,6 +50,7 @@ import '../../../shared/models/tracker_game_data.dart';
 import '../widgets/ra_achievements_section.dart';
 import '../widgets/ra_link_dialog.dart';
 import '../widgets/recommendations_section.dart';
+import '../widgets/rename_item_dialog.dart';
 import '../widgets/screenscraper_gallery_section.dart';
 import '../widgets/reviews_section.dart';
 import '../widgets/status_chip_row.dart';
@@ -186,6 +187,25 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
   }
 
   // ==================== Navigation / Actions ====================
+
+  Future<void> _renameItem(CollectionItem item) async {
+    final String original = item.cachedName ?? item.itemName;
+    final String? result = await RenameItemDialog.show(
+      context,
+      currentOverride: item.overrideName,
+      originalName: original,
+    );
+    if (result == null || !mounted) return;
+    // Empty string from the dialog = "reset to original".
+    final String? newName = result.isEmpty ? null : result;
+    if (newName == item.overrideName) return;
+
+    await ref
+        .read(
+          collectionItemsNotifierProvider(widget.collectionId).notifier,
+        )
+        .setOverrideName(item.id, newName);
+  }
 
   Future<void> _moveToCollection(CollectionItem item) async {
     final S l = S.of(context);
@@ -487,6 +507,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                 ),
                 onSelected: (String value) {
                   switch (value) {
+                    case 'rename':
+                      _renameItem(item);
                     case 'move':
                       _moveToCollection(item);
                     case 'clone':
@@ -497,6 +519,16 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                 },
                 itemBuilder: (BuildContext context) =>
                     <PopupMenuEntry<String>>[
+                  if (item.mediaType != MediaType.custom)
+                    PopupMenuItem<String>(
+                      value: 'rename',
+                      child: ListTile(
+                        leading:
+                            const Icon(Icons.drive_file_rename_outline),
+                        title: Text(S.of(context).renameItem),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
                   PopupMenuItem<String>(
                     value: 'move',
                     child: ListTile(

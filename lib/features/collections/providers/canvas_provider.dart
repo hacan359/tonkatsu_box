@@ -79,6 +79,13 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int?>
       collectionItemsNotifierProvider(_collectionId),
       (AsyncValue<List<CollectionItem>>? previous,
           AsyncValue<List<CollectionItem>> next) {
+        final List<CollectionItem>? items = next.valueOrNull;
+        if (items != null) {
+          // Patch override_name into existing canvas items eagerly: this
+          // covers the rename-while-loading window where the structural
+          // _syncAndReload below skips because state.isLoading is true.
+          _syncOverrideNames(items);
+        }
         if (state.isInitialized && !state.isLoading && next.hasValue) {
           _syncAndReload();
         }
@@ -305,6 +312,41 @@ class CanvasNotifier extends FamilyNotifier<CanvasState, int?>
         ),
     ];
     await _repository.createItemsBatch(newItems);
+  }
+
+  /// Collection-canvas items carry `collection_item_id = NULL`, so we match
+  /// them to `collection_items` by `(itemType, itemRefId)` — same join key
+  /// as `canvas_dao.getCanvasItems`. Multi-platform games produce several
+  /// rows for one `(type, externalId)`; we take the first override, again
+  /// mirroring the SQL `LIMIT 1`.
+  void _syncOverrideNames(List<CollectionItem> collectionItems) {
+    if (state.items.isEmpty) return;
+    final Map<(String, int), String?> overridesByRef =
+        <(String, int), String?>{};
+    for (final CollectionItem ci in collectionItems) {
+      final (String, int) key = (
+        CanvasItemType.fromMediaType(ci.mediaType).value,
+        ci.externalId,
+      );
+      overridesByRef.putIfAbsent(key, () => ci.overrideName);
+    }
+
+    bool changed = false;
+    final List<CanvasItem> updated = state.items.map((CanvasItem item) {
+      if (item.itemRefId == null || !item.itemType.isMediaItem) return item;
+      final (String, int) key = (item.itemType.value, item.itemRefId!);
+      if (!overridesByRef.containsKey(key)) return item;
+      final String? fresh = overridesByRef[key];
+      if (item.overrideName == fresh) return item;
+      changed = true;
+      return fresh == null
+          ? item.copyWith(clearOverrideName: true)
+          : item.copyWith(overrideName: fresh);
+    }).toList();
+
+    if (changed) {
+      state = state.copyWith(items: updated);
+    }
   }
 
   /// Удаляет медиа-элемент с канваса по ID элемента коллекции.

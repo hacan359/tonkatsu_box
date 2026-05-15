@@ -2185,6 +2185,36 @@ abstract class S {
   /// **'Failed to update tag'**
   String get tagUpdateFailed;
 
+  /// No description provided for @renameItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get renameItem;
+
+  /// No description provided for @renameDialogHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Display name'**
+  String get renameDialogHint;
+
+  /// No description provided for @renameOriginalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Original: {name}'**
+  String renameOriginalLabel(String name);
+
+  /// No description provided for @renameResetToOriginal.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset to original'**
+  String get renameResetToOriginal;
+
+  /// No description provided for @renameSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Renamed'**
+  String get renameSaved;
+
   /// No description provided for @tierListExportFailed.
   ///
   /// In en, this message translates to:

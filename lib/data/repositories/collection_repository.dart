@@ -231,6 +231,10 @@ class CollectionRepository {
     await _db.updateItemUserRating(id, rating);
   }
 
+  Future<void> setItemOverrideName(int id, String? name) async {
+    await _db.setItemOverrideName(id, name);
+  }
+
   Future<void> updateItemTimeSpent(int id, int totalMinutes) async {
     await _db.updateItemTimeSpent(id, totalMinutes);
   }

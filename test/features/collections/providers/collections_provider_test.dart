@@ -864,4 +864,69 @@ void main() {
       verifyNever(() => mockTagDao.getTagById(any()));
     });
   });
+
+  group('CollectionItemsNotifier.setOverrideName', () {
+    test('writes trimmed override and updates state in place', () async {
+      final CollectionItem item = _makeItem(id: 42);
+      final ProviderContainer container =
+          createContainer(initialItems: <CollectionItem>[item]);
+      await waitForLoad(container, testCollectionId);
+      when(() => mockRepository.setItemOverrideName(any(), any()))
+          .thenAnswer((_) async {});
+
+      final CollectionItemsNotifier notifier = container
+          .read(collectionItemsNotifierProvider(testCollectionId).notifier);
+      await notifier.setOverrideName(42, '  FF7R  ');
+
+      verify(() => mockRepository.setItemOverrideName(42, 'FF7R'))
+          .called(1);
+
+      final List<CollectionItem> after = container
+          .read(collectionItemsNotifierProvider(testCollectionId))
+          .requireValue;
+      expect(after.single.overrideName, 'FF7R');
+    });
+
+    test('empty input clears the override on the row in state', () async {
+      final CollectionItem item =
+          _makeItem(id: 42).copyWith(overrideName: 'FF7R');
+      final ProviderContainer container =
+          createContainer(initialItems: <CollectionItem>[item]);
+      await waitForLoad(container, testCollectionId);
+      when(() => mockRepository.setItemOverrideName(any(), any()))
+          .thenAnswer((_) async {});
+
+      final CollectionItemsNotifier notifier = container
+          .read(collectionItemsNotifierProvider(testCollectionId).notifier);
+      await notifier.setOverrideName(42, '   ');
+
+      verify(() => mockRepository.setItemOverrideName(42, null)).called(1);
+
+      final List<CollectionItem> after = container
+          .read(collectionItemsNotifierProvider(testCollectionId))
+          .requireValue;
+      expect(after.single.overrideName, isNull);
+    });
+
+    test('null input clears the override', () async {
+      final CollectionItem item =
+          _makeItem(id: 42).copyWith(overrideName: 'FF7R');
+      final ProviderContainer container =
+          createContainer(initialItems: <CollectionItem>[item]);
+      await waitForLoad(container, testCollectionId);
+      when(() => mockRepository.setItemOverrideName(any(), any()))
+          .thenAnswer((_) async {});
+
+      final CollectionItemsNotifier notifier = container
+          .read(collectionItemsNotifierProvider(testCollectionId).notifier);
+      await notifier.setOverrideName(42, null);
+
+      verify(() => mockRepository.setItemOverrideName(42, null)).called(1);
+
+      final List<CollectionItem> after = container
+          .read(collectionItemsNotifierProvider(testCollectionId))
+          .requireValue;
+      expect(after.single.overrideName, isNull);
+    });
+  });
 }

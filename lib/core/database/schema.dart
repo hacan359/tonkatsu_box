@@ -256,6 +256,7 @@ abstract final class DatabaseSchema {
         user_rating INTEGER,
         tag_id INTEGER,
         time_spent_minutes INTEGER NOT NULL DEFAULT 0,
+        override_name TEXT,
         FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE,
         FOREIGN KEY (tag_id) REFERENCES collection_tags(id) ON DELETE SET NULL
       )

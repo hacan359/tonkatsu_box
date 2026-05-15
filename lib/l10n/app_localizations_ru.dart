@@ -1194,6 +1194,23 @@ class SRu extends S {
   String get tagUpdateFailed => 'Не удалось обновить тег';
 
   @override
+  String get renameItem => 'Переименовать';
+
+  @override
+  String get renameDialogHint => 'Отображаемое название';
+
+  @override
+  String renameOriginalLabel(String name) {
+    return 'Оригинал: $name';
+  }
+
+  @override
+  String get renameResetToOriginal => 'Сбросить до оригинала';
+
+  @override
+  String get renameSaved => 'Переименовано';
+
+  @override
   String get tierListExportFailed => 'Не удалось экспортировать изображение';
 
   @override

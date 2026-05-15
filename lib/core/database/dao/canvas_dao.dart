@@ -13,13 +13,28 @@ class CanvasDao {
   // ==================== Canvas Items ====================
 
   /// Возвращает все элементы канваса для коллекции.
+  ///
+  /// Joined `override_name` is the rename set on the matching `collection_items`
+  /// row in the same collection (matched by media type + external id). For
+  /// multi-platform games in the collection any of the per-platform rows
+  /// works — the rename is per-collection, not per-platform.
   Future<List<Map<String, dynamic>>> getCanvasItems(int collectionId) async {
     final Database db = await _getDatabase();
-    return db.query(
-      'canvas_items',
-      where: 'collection_id = ? AND collection_item_id IS NULL',
-      whereArgs: <Object?>[collectionId],
-      orderBy: 'z_index ASC',
+    return db.rawQuery(
+      '''
+      SELECT ci.*, (
+        SELECT col.override_name
+        FROM collection_items col
+        WHERE col.collection_id = ci.collection_id
+          AND col.media_type = ci.item_type
+          AND col.external_id = ci.item_ref_id
+        LIMIT 1
+      ) AS override_name
+      FROM canvas_items ci
+      WHERE ci.collection_id = ? AND ci.collection_item_id IS NULL
+      ORDER BY ci.z_index ASC
+      ''',
+      <Object?>[collectionId],
     );
   }
 
@@ -228,14 +243,29 @@ class CanvasDao {
   // ==================== Game Canvas ====================
 
   /// Возвращает элементы game canvas по ID элемента коллекции.
+  ///
+  /// Joined `override_name` mirrors `getCanvasItems`: the rename is looked
+  /// up on any `collection_items` row in the same collection that points
+  /// at the same media — so titles on the per-item board inherit the
+  /// per-collection rename.
   Future<List<Map<String, dynamic>>> getGameCanvasItems(
     int collectionItemId,
   ) async {
     final Database db = await _getDatabase();
-    return db.query(
-      'canvas_items',
-      where: 'collection_item_id = ?',
-      whereArgs: <Object?>[collectionItemId],
+    return db.rawQuery(
+      '''
+      SELECT ci.*, (
+        SELECT col.override_name
+        FROM collection_items col
+        WHERE col.collection_id = ci.collection_id
+          AND col.media_type = ci.item_type
+          AND col.external_id = ci.item_ref_id
+        LIMIT 1
+      ) AS override_name
+      FROM canvas_items ci
+      WHERE ci.collection_item_id = ?
+      ''',
+      <Object?>[collectionItemId],
     );
   }
 

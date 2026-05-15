@@ -1177,6 +1177,23 @@ class SEn extends S {
   String get tagUpdateFailed => 'Failed to update tag';
 
   @override
+  String get renameItem => 'Rename';
+
+  @override
+  String get renameDialogHint => 'Display name';
+
+  @override
+  String renameOriginalLabel(String name) {
+    return 'Original: $name';
+  }
+
+  @override
+  String get renameResetToOriginal => 'Reset to original';
+
+  @override
+  String get renameSaved => 'Renamed';
+
+  @override
   String get tierListExportFailed => 'Failed to export image';
 
   @override

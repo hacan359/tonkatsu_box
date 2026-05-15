@@ -67,10 +67,48 @@ class GameCanvasNotifier
 
     ref.onDispose(cancelTimers);
 
+    // Per-item canvas has no structural sync loop; without this listener
+    // a rename in collection_items would not propagate to the live state.
+    ref.listen<AsyncValue<List<CollectionItem>>>(
+      collectionItemsNotifierProvider(_collectionId),
+      (AsyncValue<List<CollectionItem>>? previous,
+          AsyncValue<List<CollectionItem>> next) {
+        final List<CollectionItem>? items = next.valueOrNull;
+        if (items == null) return;
+        CollectionItem? match;
+        for (final CollectionItem ci in items) {
+          if (ci.id == _collectionItemId) {
+            match = ci;
+            break;
+          }
+        }
+        if (match == null) return;
+        _syncOverrideName(match.overrideName);
+      },
+    );
+
     // Загружаем canvas после инициализации state
     Future<void>.microtask(_loadCanvas);
 
     return const CanvasState();
+  }
+
+  /// In-memory patch only — `override_name` lives on `collection_items` and
+  /// is rejoined on the next canvas reload, so no DB write here.
+  void _syncOverrideName(String? overrideName) {
+    if (!state.isInitialized) return;
+    bool changed = false;
+    final List<CanvasItem> updated = state.items.map((CanvasItem item) {
+      if (item.collectionItemId != _collectionItemId) return item;
+      if (item.overrideName == overrideName) return item;
+      changed = true;
+      return overrideName == null
+          ? item.copyWith(clearOverrideName: true)
+          : item.copyWith(overrideName: overrideName);
+    }).toList();
+    if (changed) {
+      state = state.copyWith(items: updated);
+    }
   }
 
   Future<void> _loadCanvas() async {

@@ -2533,6 +2533,95 @@ void main() {
         verify(() => mockDb.updateItemUserRating(42, 9)).called(1);
       });
 
+      test('should restore override_name when present in the export',
+          () async {
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.light,
+          name: 'Import',
+          author: 'Author',
+          created: testDate,
+          includesUserData: true,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'game',
+              'external_id': 100,
+              'override_name': 'FF7R',
+            },
+          ],
+        );
+
+        final Collection existing = createTestCollection(id: 5);
+
+        when(() => mockApi.getGamesByIds(any()))
+            .thenAnswer((_) async => const <Game>[Game(id: 100, name: 'G')]);
+        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockRepo.getById(5))
+            .thenAnswer((_) async => existing);
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => 42);
+        when(() => mockDb.setItemOverrideName(any(), any()))
+            .thenAnswer((_) async {});
+
+        final ImportResult result = await sutV2.importFromXcoll(
+          xcoll,
+          collectionId: 5,
+        );
+
+        expect(result.success, isTrue);
+        verify(() => mockDb.setItemOverrideName(42, 'FF7R')).called(1);
+      });
+
+      test('should skip override_name restore when absent', () async {
+        final XcollFile xcoll = XcollFile(
+          version: 2,
+          format: ExportFormat.light,
+          name: 'Import',
+          author: 'Author',
+          created: testDate,
+          includesUserData: true,
+          items: const <Map<String, dynamic>>[
+            <String, dynamic>{
+              'media_type': 'game',
+              'external_id': 100,
+              'user_rating': 9,
+            },
+          ],
+        );
+
+        final Collection existing = createTestCollection(id: 5);
+
+        when(() => mockApi.getGamesByIds(any()))
+            .thenAnswer((_) async => const <Game>[Game(id: 100, name: 'G')]);
+        when(() => mockDb.upsertGame(any())).thenAnswer((_) async {});
+        when(() => mockRepo.getById(5))
+            .thenAnswer((_) async => existing);
+        when(() => mockRepo.addItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              authorComment: any(named: 'authorComment'),
+              status: any(named: 'status'),
+            )).thenAnswer((_) async => 42);
+        when(() => mockDb.updateItemUserRating(any(), any()))
+            .thenAnswer((_) async {});
+
+        final ImportResult result = await sutV2.importFromXcoll(
+          xcoll,
+          collectionId: 5,
+        );
+
+        expect(result.success, isTrue);
+        verifyNever(() => mockDb.setItemOverrideName(any(), any()));
+      });
+
       test('should skip canvas for existing collection', () async {
         final XcollFile xcoll = XcollFile(
           version: 2,
