@@ -7,6 +7,102 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Added
+
+- **ScreenScraper media gallery on game cards**
+
+  Game cards in the collection and the bottom sheet in search show a
+  horizontal carousel of ScreenScraper assets — box art, wheel, marquee,
+  title screen, gameplay screenshots, fanart, composite mixes. Tap any
+  thumbnail to open a fullscreen viewer with pinch-zoom, swipe between
+  images, on-screen prev/next arrows, ← / → / Esc keyboard shortcuts and
+  tap-on-backdrop to close. The search bottom sheet shows screenshots
+  only (smaller, decision-time context); the in-collection card shows the
+  full set. Mouse drag and wheel scroll are wired for Windows so the
+  carousel responds the same way it does on touch and trackpad.
+
+  Lookups are lazy: the API is called only when the user opens a card,
+  and only for IGDB platforms that ScreenScraper covers (NES, SNES, Mega
+  Drive, PS1/PS2, PSP, GameCube, N64, Dreamcast, Saturn, Atari, Neo Geo,
+  arcade and the other retro lines — modern platforms fall through and
+  the section is hidden). Responses are cached on disk for 30 days
+  including negative "not found" results, so repeat opens are
+  instantaneous and the rate-limited quota is preserved.
+
+  A new section in Settings → Credentials carries the user's
+  `ssid` / `sspassword`. "Check quota" calls `ssuserInfos.php` and
+  displays current requests-today, daily / per-minute limits, parallel
+  threads and account level. Application-level `devid` / `devpassword`
+  are injected at build time via
+  `--dart-define=SCREENSCRAPER_DEV_ID` and
+  `--dart-define=SCREENSCRAPER_DEV_PASSWORD`. There is no fallback: if
+  either the developer or user credentials are missing, the gallery is
+  hidden and "Check quota" is disabled.
+
+  * lib/core/api/screenscraper_api.dart (ScreenScraperApi,
+    ScreenScraperApiException, SsMedia, SsGame, SsUserQuota,
+    screenScraperApiProvider): New API client over Dio with
+    `searchGame`, `getUserInfo` and `setUserCredentials`. Both API
+    methods throw `ScreenScraperApiException('Missing ScreenScraper
+    credentials')` when either developer or user credentials are absent.
+  * lib/core/services/screenscraper_cache_service.dart
+    (ScreenScraperCacheService, screenScraperCacheServiceProvider): New
+    disk cache under `<documents>/ss_cache/<key>.json` with a 30-day TTL
+    and negative caching for misses.
+  * lib/shared/constants/screenscraper_systemes.dart
+    (ScreenScraperSystemes.forIgdbPlatform, ScreenScraperSystemes.isSupported):
+    New mapping from IGDB platform id to ScreenScraper `systemeid` for
+    the retro platforms SS actually covers.
+  * lib/features/collections/providers/screenscraper_provider.dart
+    (SsLookup, screenScraperGameProvider, ScreenScraperGameNotifier):
+    New `AsyncNotifierProvider.family` keyed by game name + IGDB
+    platform id. Returns null cheaply when developer creds, user creds
+    or platform mapping are missing, and when the disk cache holds a
+    negative marker.
+  * lib/features/collections/widgets/screenscraper_gallery_section.dart
+    (ScreenScraperGallerySection, ScreenScraperGalleryMode, _Thumbnail,
+    _HorizontalScroll, _DesktopDragScrollBehavior, _FullscreenViewer,
+    _NavArrow): New widget consuming the provider; renders loading,
+    error, empty and data states.
+  * lib/shared/widgets/media_detail_view.dart (MediaDetailView):
+    New `mediaGallery` slot rendered between the comments layout and
+    the activity-and-progress expansion so the gallery is always
+    visible rather than hidden inside the collapsed extras section.
+  * lib/features/collections/screens/item_detail_screen.dart: Pass the
+    gallery widget through `mediaGallery` with the item's name and
+    platform id.
+  * lib/features/search/widgets/item_details_sheet.dart (ItemDetailsSheet,
+    ItemDetailsSheet.game): Add `screenScraperGameName` and
+    `screenScraperPlatformId` fields; the `.game(...)` factory picks
+    the first SS-supported platform from the IGDB game and renders the
+    screenshots-only mode below the description.
+  * lib/features/settings/content/credentials_content.dart
+    (_CredentialsContentState._buildScreenScraperSection,
+    _CredentialsContentState._buildScreenScraperQuotaInfo,
+    _CredentialsContentState._fetchScreenScraperQuota,
+    _CredentialsContentState._saveScreenScraperCreds): New Credentials
+    section with `ssid` and `sspassword` fields and a "Check quota"
+    button that surfaces `SsUserQuota` from the API.
+  * lib/features/settings/providers/settings_provider.dart
+    (SettingsKeys.screenScraperSsid, SettingsKeys.screenScraperSspassword,
+    SettingsState.screenScraperSsid, SettingsState.screenScraperSspassword,
+    SettingsState.hasScreenScraperCreds,
+    SettingsNotifier.setScreenScraperCredentials,
+    SettingsNotifier._loadFromPrefs, SettingsNotifier.clearSettings):
+    Persist the user credentials, push them into the API client on
+    load and on every change, and wipe them with the rest on clear.
+  * lib/shared/constants/api_defaults.dart (ApiDefaults.screenScraperDevId,
+    ApiDefaults.screenScraperDevPassword, ApiDefaults.screenScraperSoftname,
+    ApiDefaults.hasScreenScraperDevCreds): New `--dart-define`-driven
+    constants for the shared developer credentials; `softname` is set to
+    `tonkatsuBox`.
+  * lib/shared/theme/app_assets.dart (AppAssets.iconScreenScraperColor),
+    assets/images/icon_scrapper_color.png: New ScreenScraper logo used
+    by the Settings section header.
+  * .github/workflows/release.yml: Pass `SCREENSCRAPER_DEV_ID` and
+    `SCREENSCRAPER_DEV_PASSWORD` secrets through `--dart-define` to all
+    three Windows / Android APK / Android AAB build steps.
+
 ### Changed
 
 - **Collection table view refactored into floating row cards**

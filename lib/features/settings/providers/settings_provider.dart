@@ -7,6 +7,7 @@ import '../../../shared/models/collection_item.dart';
 import '../../../core/services/discord_rpc_service.dart';
 import '../../../core/api/igdb_api.dart';
 import '../../../core/api/ra_api.dart';
+import '../../../core/api/screenscraper_api.dart';
 import '../../../core/api/steamgriddb_api.dart';
 import '../../../core/api/tmdb_api.dart';
 import '../../../core/database/database_service.dart';
@@ -22,6 +23,10 @@ abstract class SettingsKeys {
   static const String steamGridDbApiKey = 'steamgriddb_api_key';
 
   static const String tmdbApiKey = 'tmdb_api_key';
+
+  static const String screenScraperSsid = 'screenscraper_ssid';
+
+  static const String screenScraperSspassword = 'screenscraper_sspassword';
 
   /// Prefix; suffixed per-collection id at call site.
   static const String collectionViewModePrefix = 'collection_view_mode_';
@@ -85,6 +90,8 @@ class SettingsState {
     this.isLoading = false,
     this.steamGridDbApiKey,
     this.tmdbApiKey,
+    this.screenScraperSsid,
+    this.screenScraperSspassword,
     this.defaultAuthor,
     this.tmdbLanguage = SettingsKeys.tmdbLanguageDefault,
     this.appLanguage = SettingsKeys.appLanguageDefault,
@@ -118,6 +125,16 @@ class SettingsState {
   final String? steamGridDbApiKey;
 
   final String? tmdbApiKey;
+
+  final String? screenScraperSsid;
+
+  final String? screenScraperSspassword;
+
+  bool get hasScreenScraperCreds =>
+      screenScraperSsid != null &&
+      screenScraperSsid!.isNotEmpty &&
+      screenScraperSspassword != null &&
+      screenScraperSspassword!.isNotEmpty;
 
   final String? defaultAuthor;
 
@@ -208,6 +225,8 @@ class SettingsState {
     bool clearError = false,
     String? steamGridDbApiKey,
     String? tmdbApiKey,
+    String? screenScraperSsid,
+    String? screenScraperSspassword,
     String? defaultAuthor,
     String? tmdbLanguage,
     String? appLanguage,
@@ -230,6 +249,9 @@ class SettingsState {
       isLoading: isLoading ?? this.isLoading,
       steamGridDbApiKey: steamGridDbApiKey ?? this.steamGridDbApiKey,
       tmdbApiKey: tmdbApiKey ?? this.tmdbApiKey,
+      screenScraperSsid: screenScraperSsid ?? this.screenScraperSsid,
+      screenScraperSspassword:
+          screenScraperSspassword ?? this.screenScraperSspassword,
       defaultAuthor: defaultAuthor ?? this.defaultAuthor,
       tmdbLanguage: tmdbLanguage ?? this.tmdbLanguage,
       appLanguage: appLanguage ?? this.appLanguage,
@@ -271,6 +293,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
   late IgdbApi _igdbApi;
   late SteamGridDbApi _steamGridDbApi;
   late TmdbApi _tmdbApi;
+  late ScreenScraperApi _screenScraperApi;
   late DatabaseService _dbService;
 
   @override
@@ -279,6 +302,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     _igdbApi = ref.watch(igdbApiProvider);
     _steamGridDbApi = ref.watch(steamGridDbApiProvider);
     _tmdbApi = ref.watch(tmdbApiProvider);
+    _screenScraperApi = ref.watch(screenScraperApiProvider);
     _dbService = ref.watch(databaseServiceProvider);
 
     // Persist auto-refreshed token from IgdbApi back into prefs + state.
@@ -326,6 +350,10 @@ class SettingsNotifier extends Notifier<SettingsState> {
         (userTmdbKey != null && userTmdbKey.isNotEmpty)
             ? userTmdbKey
             : (ApiDefaults.hasTmdbKey ? ApiDefaults.tmdbApiKey : null);
+    final String? screenScraperSsid =
+        _prefs.getString(SettingsKeys.screenScraperSsid);
+    final String? screenScraperSspassword =
+        _prefs.getString(SettingsKeys.screenScraperSspassword);
     final String? defaultAuthor =
         _prefs.getString(SettingsKeys.defaultAuthor);
     final String tmdbLanguage =
@@ -366,6 +394,8 @@ class SettingsNotifier extends Notifier<SettingsState> {
       connectionStatus: initialStatus,
       steamGridDbApiKey: steamGridDbApiKey,
       tmdbApiKey: tmdbApiKey,
+      screenScraperSsid: screenScraperSsid,
+      screenScraperSspassword: screenScraperSspassword,
       defaultAuthor: defaultAuthor,
       tmdbLanguage: tmdbLanguage,
       appLanguage: appLanguage,
@@ -380,6 +410,10 @@ class SettingsNotifier extends Notifier<SettingsState> {
 
     // API keys already wired by apiKeysProvider; only the request-time language param is set here.
     _tmdbApi.setLanguage(tmdbLanguage);
+    _screenScraperApi.setUserCredentials(
+      ssid: screenScraperSsid ?? '',
+      sspassword: screenScraperSspassword ?? '',
+    );
 
     Future<void>.microtask(_loadPlatformCount);
 
@@ -528,6 +562,27 @@ class SettingsNotifier extends Notifier<SettingsState> {
     }
 
     state = state.copyWith(steamGridDbApiKey: apiKey);
+  }
+
+  Future<void> setScreenScraperCredentials({
+    required String ssid,
+    required String sspassword,
+  }) async {
+    if (ssid.isNotEmpty) {
+      await _prefs.setString(SettingsKeys.screenScraperSsid, ssid);
+    } else {
+      await _prefs.remove(SettingsKeys.screenScraperSsid);
+    }
+    if (sspassword.isNotEmpty) {
+      await _prefs.setString(SettingsKeys.screenScraperSspassword, sspassword);
+    } else {
+      await _prefs.remove(SettingsKeys.screenScraperSspassword);
+    }
+    _screenScraperApi.setUserCredentials(ssid: ssid, sspassword: sspassword);
+    state = state.copyWith(
+      screenScraperSsid: ssid,
+      screenScraperSspassword: sspassword,
+    );
   }
 
   Future<void> setTmdbApiKey(String apiKey) async {
@@ -689,6 +744,8 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await _prefs.remove(SettingsKeys.lastSync);
     await _prefs.remove(SettingsKeys.steamGridDbApiKey);
     await _prefs.remove(SettingsKeys.tmdbApiKey);
+    await _prefs.remove(SettingsKeys.screenScraperSsid);
+    await _prefs.remove(SettingsKeys.screenScraperSspassword);
     await _prefs.remove(SettingsKeys.defaultAuthor);
     await _prefs.remove(SettingsKeys.showRecommendations);
     await _prefs.remove(SettingsKeys.showBlurayOverlay);

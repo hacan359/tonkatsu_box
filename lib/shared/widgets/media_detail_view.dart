@@ -1,5 +1,3 @@
-// Базовый виджет для экранов деталей медиа в коллекции.
-
 import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -20,16 +18,12 @@ import 'source_badge.dart';
 import 'star_rating_bar.dart';
 import '../utils/duration_formatter.dart';
 
-/// Колбэк для изменения даты активности.
-///
-/// [type] — тип даты ('started' или 'completed'),
-/// [date] — выбранная дата.
+/// `type` is either 'started' or 'completed'.
 typedef OnActivityDateChanged = Future<void> Function(
   String type,
   DateTime date,
 );
 
-/// Форматирует [DateTime] в короткую строку (например, "Jan 15").
 String _formatActivityDate(DateTime date) {
   const List<String> months = <String>[
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -38,9 +32,7 @@ String _formatActivityDate(DateTime date) {
   return '${months[date.month - 1]} ${date.day}, ${date.year}';
 }
 
-/// Чип с иконкой и текстом для отображения метаинформации.
 class MediaDetailChip {
-  /// Создаёт [MediaDetailChip].
   const MediaDetailChip({
     required this.icon,
     required this.text,
@@ -48,26 +40,15 @@ class MediaDetailChip {
     this.onTap,
   });
 
-  /// Иконка чипа.
   final IconData icon;
-
-  /// Текст чипа.
   final String text;
-
-  /// Callback при тапе (null = не кликабельный).
   final VoidCallback? onTap;
-
-  /// Цвет иконки (по умолчанию [AppColors.textSecondary]).
   final Color? iconColor;
 }
 
-/// Базовый виджет экрана деталей медиа в коллекции.
-///
-/// Отображает единый layout для игр, фильмов и сериалов:
-/// постер + информация, статус, комментарии, заметки.
-/// Специфичные секции передаются через [extraSections].
+/// Shared layout for game / movie / TV detail screens. Type-specific blocks
+/// are injected via [extraSections].
 class MediaDetailView extends StatefulWidget {
-  /// Создаёт [MediaDetailView].
   const MediaDetailView({
     required this.title,
     required this.placeholderIcon,
@@ -89,6 +70,7 @@ class MediaDetailView extends StatefulWidget {
     this.timeSpentMinutes = 0,
     this.onTimeSpentTap,
     this.extraSections,
+    this.mediaGallery,
     this.recommendationSections,
     this.authorComment,
     this.userComment,
@@ -110,132 +92,75 @@ class MediaDetailView extends StatefulWidget {
     super.key,
   });
 
-  /// Название для AppBar.
   final String title;
-
-  /// URL обложки/постера.
   final String? coverUrl;
-
-  /// URL внешней страницы (IGDB/TMDB).
   final String? externalUrl;
-
-  /// URL фонового изображения (TMDB backdrop).
   final String? backdropUrl;
-
-  /// Иконка-заглушка при отсутствии обложки.
   final IconData placeholderIcon;
-
-  /// Источник данных (IGDB, TMDB).
   final DataSource source;
-
-  /// Иконка типа контента.
   final IconData typeIcon;
-
-  /// Текст типа контента (платформа, "Movie", "TV Show").
   final String typeLabel;
-
-  /// Чипы с метаинформацией (год, рейтинг, жанры и т.д.).
   final List<MediaDetailChip> infoChips;
-
-  /// Описание/обзор контента.
   final String? description;
-
-  /// Виджет выбора статуса.
   final Widget? statusWidget;
-
-  /// Виджет выбора тега (секции) коллекции.
   final Widget? tagWidget;
-
-  /// RA badge виджет (лого + %).
   final Widget? raBadge;
 
-  /// Секция трекера (RA Achievements и т.д.) — рендерится после тегов.
+  /// Tracker section (RA achievements etc.) rendered after the tag row.
   final Widget? trackerSection;
 
-  /// Потраченное время в минутах (0 = не задано).
+  /// 0 means not set.
   final int timeSpentMinutes;
-
-  /// Колбэк при тапе на Time Spent (открыть диалог ввода).
   final VoidCallback? onTimeSpentTap;
 
-  /// Дополнительные секции (например, Progress для сериалов).
+  /// Extra type-specific sections (e.g. Progress for TV shows).
   final List<Widget>? extraSections;
 
-  /// Секции рекомендаций и отзывов (рендерятся после ExpansionTile, всегда видимы).
+  /// Always-visible gallery rendered between author comment and extra sections.
+  final Widget? mediaGallery;
+
+  /// Recommendation / review sections rendered after the ExpansionTile, always visible.
   final List<Widget>? recommendationSections;
 
-  /// Рецензия автора коллекции (видна другим пользователям при экспорте).
+  /// Author's review — visible to other users on export.
   final String? authorComment;
 
-  /// Личные заметки пользователя.
+  /// Private user notes.
   final String? userComment;
 
-  /// Пользовательский рейтинг (1-10).
+  /// 1..10.
   final int? userRating;
-
-  /// Колбэк при изменении пользовательского рейтинга.
   final ValueChanged<int?>? onUserRatingChanged;
-
-  /// Дата добавления элемента (readonly).
   final DateTime? addedAt;
-
-  /// Дата начала.
   final DateTime? startedAt;
-
-  /// Дата завершения.
   final DateTime? completedAt;
-
-  /// Дата последней активности (readonly).
   final DateTime? lastActivityAt;
 
-  /// Время прохождения (startedAt → completedAt).
+  /// Completion time (startedAt → completedAt).
   final Duration? completionTime;
-
-  /// Колбэк при изменении даты активности (Started/Completed).
   final OnActivityDateChanged? onActivityDateChanged;
-
-  /// Есть ли рецензия автора.
   final bool hasAuthorComment;
-
-  /// Есть ли личные заметки.
   final bool hasUserComment;
-
-  /// Можно ли редактировать рецензию автора.
   final bool isEditable;
 
-  /// Встраиваемый режим (без Scaffold и AppBar).
-  ///
-  /// Если true, виджет возвращает только контент без обёртки в Scaffold.
-  /// Используется когда MediaDetailView встроен в другой экран (например,
-  /// в ItemDetailScreen).
+  /// When true, render only the content without a wrapping Scaffold.
   final bool embedded;
 
-  /// Тип изображения для локального кэширования.
-  ///
-  /// Если задан вместе с [cacheImageId], используется [CachedImage]
-  /// вместо [CachedNetworkImage] для поддержки оффлайн-режима.
+  /// When set together with [cacheImageId], uses [CachedImage] instead of
+  /// [CachedNetworkImage] for offline support.
   final ImageType? cacheImageType;
-
-  /// ID изображения для локального кэширования.
   final String? cacheImageId;
-
-  /// Акцентный цвет (зависит от типа медиа).
   final Color accentColor;
 
-  /// Путь к ассету оверлея платформы (PNG 600×900).
+  /// Platform-overlay asset path (PNG 600×900).
   final String? platformOverlayAsset;
-
-  /// Колбэк сохранения комментария автора.
   final ValueChanged<String?> onAuthorCommentSave;
-
-  /// Колбэк сохранения личных заметок.
   final ValueChanged<String?> onUserCommentSave;
 
   @override
   State<MediaDetailView> createState() => _MediaDetailViewState();
 }
 
-/// Какое поле сейчас редактируется inline.
 enum _EditingField { none, author, user }
 
 class _MediaDetailViewState extends State<MediaDetailView> {
@@ -258,8 +183,7 @@ class _MediaDetailViewState extends State<MediaDetailView> {
   @override
   void didUpdateWidget(MediaDetailView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Синхронизируем контроллеры, если текст изменился извне
-    // (но только когда поле не в режиме редактирования).
+    // Sync controllers with external changes, but never while editing.
     if (oldWidget.authorComment != widget.authorComment &&
         _editingField != _EditingField.author) {
       _authorController.text = widget.authorComment ?? '';
@@ -273,7 +197,6 @@ class _MediaDetailViewState extends State<MediaDetailView> {
   @override
   void dispose() {
     _autosaveTimer?.cancel();
-    // Сохраняем при уходе если было редактирование
     _saveIfEditing();
     _authorController.removeListener(_onAuthorChanged);
     _userController.removeListener(_onUserChanged);
@@ -353,6 +276,10 @@ class _MediaDetailViewState extends State<MediaDetailView> {
                 notesSection: _buildUserNotesSection(context),
                 authorSection: _buildAuthorCommentSection(context),
               ),
+              if (widget.mediaGallery != null) ...<Widget>[
+                const SizedBox(height: AppSpacing.md),
+                widget.mediaGallery!,
+              ],
               if (widget.extraSections != null &&
                   widget.extraSections!.isNotEmpty) ...<Widget>[
                 const SizedBox(height: AppSpacing.md),
@@ -371,12 +298,9 @@ class _MediaDetailViewState extends State<MediaDetailView> {
       ],
     );
 
-    // Backdrop — верхние 50% экрана, диагональный fade из нижнего левого
-    // в правый верхний. Основной фон (AppColors.background) остаётся под ним.
     final Widget withBackdrop = widget.backdropUrl != null
         ? Stack(
             children: <Widget>[
-              // Backdrop — на весь фон (с параллаксом на Android)
               Positioned.fill(
                 child: GyroscopeParallaxImage(
                   imageUrl: widget.backdropUrl!,
@@ -384,7 +308,6 @@ class _MediaDetailViewState extends State<MediaDetailView> {
                   alignment: Alignment.center,
                 ),
               ),
-              // Вертикальный gradient для читаемости
               Positioned.fill(
                 child: Container(
                   decoration: BoxDecoration(
@@ -401,7 +324,6 @@ class _MediaDetailViewState extends State<MediaDetailView> {
                   ),
                 ),
               ),
-              // Контент поверх всего
               content,
             ],
           )
@@ -424,7 +346,6 @@ class _MediaDetailViewState extends State<MediaDetailView> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        // Обложка/постер (увеличена до 100×150)
         ClipRRect(
           borderRadius: BorderRadius.circular(
             widget.platformOverlayAsset != null ? 0 : AppSpacing.radiusSm,
@@ -446,7 +367,6 @@ class _MediaDetailViewState extends State<MediaDetailView> {
           ),
         ),
         const SizedBox(width: AppSpacing.md),
-        // Информация
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1009,12 +929,8 @@ class _MediaDetailViewState extends State<MediaDetailView> {
     );
   }
 
-  /// Общий контейнер для секции комментария: вид или inline-редактирование.
-  ///
-  /// Если передан [onTap] — клик по контейнеру в режиме просмотра сразу
-  /// переводит в режим редактирования (без нажатия кнопки «Редактировать»).
-  /// Клики по markdown-ссылкам внутри текста перехватываются span-recognizer'ами
-  /// и продолжают работать.
+  /// When [onTap] is set, tapping the view-mode container enters editing
+  /// directly. Markdown link taps still work via span recognizers.
   Widget _buildCommentContainer({
     required Color accentColor,
     required bool isEditing,
@@ -1095,15 +1011,12 @@ Future<void> _launchExternalUrl(String url) async {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   } on Exception {
-    // Ссылка не критична для работы приложения.
+    // External link is best-effort; failure is non-critical.
   }
 }
 
-/// Layout виджет: tracker секция + notes + author comment.
-///
-/// Если [trackerSection] не null — на широких экранах (>=600px)
-/// показывает tracker слева и комментарии справа (50/50).
-/// Если [trackerSection] null — обычный вертикальный layout.
+/// Splits tracker + notes + author comment into a two-column layout (50/50)
+/// on screens ≥600px when [trackerSection] is set, stacks otherwise.
 class _TrackerCommentsLayout extends StatelessWidget {
   const _TrackerCommentsLayout({
     required this.trackerSection,
@@ -1148,7 +1061,7 @@ class _TrackerCommentsLayout extends StatelessWidget {
             ),
           );
         }
-        // Мобила / узкое окно — стэк.
+        // Narrow window — stack vertically.
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[

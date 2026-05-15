@@ -7314,6 +7314,156 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Nothing to pick'**
   String get moodGridPickerEmpty;
+
+  /// No description provided for @screenScraperSection.
+  ///
+  /// In en, this message translates to:
+  /// **'ScreenScraper API'**
+  String get screenScraperSection;
+
+  /// No description provided for @screenScraperSourceDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Game metadata + media (covers, screenshots, art)'**
+  String get screenScraperSourceDesc;
+
+  /// No description provided for @screenScraperUserCredsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'User credentials (ssid / sspassword). Quota is per user.'**
+  String get screenScraperUserCredsHint;
+
+  /// No description provided for @screenScraperSsidLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'ssid'**
+  String get screenScraperSsidLabel;
+
+  /// No description provided for @screenScraperSsidPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Your ScreenScraper login'**
+  String get screenScraperSsidPlaceholder;
+
+  /// No description provided for @screenScraperSspasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'sspassword'**
+  String get screenScraperSspasswordLabel;
+
+  /// No description provided for @screenScraperSspasswordPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Your ScreenScraper password'**
+  String get screenScraperSspasswordPlaceholder;
+
+  /// No description provided for @screenScraperCheckQuota.
+  ///
+  /// In en, this message translates to:
+  /// **'Check quota'**
+  String get screenScraperCheckQuota;
+
+  /// No description provided for @screenScraperRequestsToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Requests today'**
+  String get screenScraperRequestsToday;
+
+  /// No description provided for @screenScraperPerMinLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Per minute limit'**
+  String get screenScraperPerMinLimit;
+
+  /// No description provided for @screenScraperParallelThreads.
+  ///
+  /// In en, this message translates to:
+  /// **'Parallel threads'**
+  String get screenScraperParallelThreads;
+
+  /// No description provided for @screenScraperAccountLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Account level'**
+  String get screenScraperAccountLevel;
+
+  /// No description provided for @screenScraperGalleryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'ScreenScraper media'**
+  String get screenScraperGalleryTitle;
+
+  /// No description provided for @screenScraperScreenshotsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Screenshots'**
+  String get screenScraperScreenshotsTitle;
+
+  /// No description provided for @screenScraperLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading ScreenScraper media…'**
+  String get screenScraperLoading;
+
+  /// No description provided for @screenScraperError.
+  ///
+  /// In en, this message translates to:
+  /// **'ScreenScraper error: {message}'**
+  String screenScraperError(String message);
+
+  /// No description provided for @screenScraperMediaBox.
+  ///
+  /// In en, this message translates to:
+  /// **'Box'**
+  String get screenScraperMediaBox;
+
+  /// No description provided for @screenScraperMediaBoxBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Box (back)'**
+  String get screenScraperMediaBoxBack;
+
+  /// No description provided for @screenScraperMediaBox3D.
+  ///
+  /// In en, this message translates to:
+  /// **'Box 3D'**
+  String get screenScraperMediaBox3D;
+
+  /// No description provided for @screenScraperMediaWheel.
+  ///
+  /// In en, this message translates to:
+  /// **'Wheel'**
+  String get screenScraperMediaWheel;
+
+  /// No description provided for @screenScraperMediaMarquee.
+  ///
+  /// In en, this message translates to:
+  /// **'Marquee'**
+  String get screenScraperMediaMarquee;
+
+  /// No description provided for @screenScraperMediaTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get screenScraperMediaTitle;
+
+  /// No description provided for @screenScraperMediaScreenshot.
+  ///
+  /// In en, this message translates to:
+  /// **'Screenshot'**
+  String get screenScraperMediaScreenshot;
+
+  /// No description provided for @screenScraperMediaFanart.
+  ///
+  /// In en, this message translates to:
+  /// **'Fanart'**
+  String get screenScraperMediaFanart;
+
+  /// No description provided for @screenScraperMediaMix.
+  ///
+  /// In en, this message translates to:
+  /// **'Mix'**
+  String get screenScraperMediaMix;
 }
 
 class _SDelegate extends LocalizationsDelegate<S> {

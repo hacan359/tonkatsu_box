@@ -1,5 +1,4 @@
 import '../../../shared/constants/platform_features.dart';
-// Контент экрана настройки API ключей (без Scaffold/AppBar).
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,27 +10,24 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_assets.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import '../../../core/api/screenscraper_api.dart';
 import '../../../shared/constants/api_defaults.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/inline_text_field.dart';
 import '../widgets/settings_group.dart';
 import '../widgets/status_dot.dart';
 
-/// URL для получения API ключей IGDB.
 const String _twitchConsoleUrl = 'https://dev.twitch.tv/console/apps';
 
-/// Контент экрана настройки API ключей.
-///
-/// Содержит секции IGDB, SteamGridDB и TMDB с полями ввода ключей,
-/// проверкой подключения и синхронизацией платформ.
+/// Settings screen content for API credentials (IGDB, SteamGridDB, TMDB,
+/// ScreenScraper). Hosted inside a parent Scaffold.
 class CredentialsContent extends ConsumerStatefulWidget {
-  /// Создаёт [CredentialsContent].
   const CredentialsContent({
     super.key,
     this.isInitialSetup = false,
   });
 
-  /// Флаг начальной настройки (показывает Welcome секцию).
+  /// Renders the Welcome section when shown as the first-run flow.
   final bool isInitialSetup;
 
   @override
@@ -44,9 +40,12 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
   String _clientSecret = '';
   String _steamGridDbApiKey = '';
   String _tmdbApiKey = '';
+  String _ssSsid = '';
+  String _ssSspassword = '';
+  bool _ssQuotaLoading = false;
+  String? _ssQuotaError;
+  SsUserQuota? _ssQuota;
 
-  // Результат последней валидации ключа (через sync-кнопку).
-  // null = ещё не проверяли, success = валиден, error = не валиден.
   StatusType? _sgdbValidated;
   StatusType? _tmdbValidated;
   bool _sgdbValidating = false;
@@ -63,6 +62,8 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
         settings.isSteamGridDbKeyBuiltIn ? '' : (settings.steamGridDbApiKey ?? '');
     _tmdbApiKey =
         settings.isTmdbKeyBuiltIn ? '' : (settings.tmdbApiKey ?? '');
+    _ssSsid = settings.screenScraperSsid ?? '';
+    _ssSspassword = settings.screenScraperSspassword ?? '';
   }
 
   @override
@@ -82,6 +83,8 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
         _buildSteamGridDbSection(settings, compact),
         const SizedBox(height: AppSpacing.md),
         _buildTmdbSection(settings, compact),
+        const SizedBox(height: AppSpacing.md),
+        _buildScreenScraperSection(settings, compact),
         if (settings.errorMessage != null) ...<Widget>[
           const SizedBox(height: AppSpacing.md),
           _buildErrorSection(settings.errorMessage!),
@@ -217,7 +220,7 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
                 onChanged: (String value) {
                   setState(() {
                     _steamGridDbApiKey = value;
-                    _sgdbValidated = null; // новый ключ — проверка сбрасывается
+                    _sgdbValidated = null;
                   });
                   if (value.trim().isNotEmpty) {
                     ref
@@ -287,7 +290,7 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
                 onChanged: (String value) {
                   setState(() {
                     _tmdbApiKey = value;
-                    _tmdbValidated = null; // новый ключ — проверка сбрасывается
+                    _tmdbValidated = null;
                   });
                   if (value.trim().isNotEmpty) {
                     ref
@@ -328,7 +331,6 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
 
   // ==================== Hints ====================
 
-  /// Хедер секции в стиле wizard: [лого 24x24] + "Описание (Название)".
   Widget _buildSourceHeader({
     required String iconAsset,
     required String description,
@@ -385,8 +387,6 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
     );
   }
 
-  // ==================== Error ====================
-
   Widget _buildErrorSection(String errorMessage) {
     return SettingsGroup(
       title: S.of(context).settingsError,
@@ -402,11 +402,6 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
     );
   }
 
-  // ==================== Helpers ====================
-
-  /// Тип StatusDot для API-ключа.
-  ///
-  /// Приоритет: [validated] > hasKey > !hasKey.
   StatusType _keyStatusType({
     required bool hasKey,
     required bool isBuiltIn,
@@ -449,11 +444,8 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
         ConnectionStatus.unknown => S.of(context).credentialsNotConnected,
       };
 
-  // ==================== Actions ====================
-
   Future<void> _verifyConnection() async {
     final SettingsState settings = ref.read(settingsNotifierProvider);
-    // Используем введённые ключи, или текущие из state (built-in)
     final String clientId = _clientId.trim().isNotEmpty
         ? _clientId.trim()
         : (settings.clientId ?? '');
@@ -486,12 +478,6 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
     }
   }
 
-  /// Строка статуса API ключа: StatusDot слева + sync-иконка справа.
-  ///
-  /// Нажатие на sync-иконку вызывает [onAction] (проверка соединения).
-  /// Цвет StatusDot отражает результат: зелёный = OK, красный = ошибка.
-  /// Если задан [onReset] — между StatusDot и sync отображается маленькая
-  /// reset-иконка.
   Widget _buildCredentialStatus({
     required bool compact,
     required StatusType statusType,
@@ -611,5 +597,169 @@ class _CredentialsContentState extends ConsumerState<CredentialsContent> {
       S.of(context).credentialsResetToBuiltIn,
       type: SnackType.success,
     );
+  }
+
+  // ==================== ScreenScraper ====================
+
+  Widget _buildScreenScraperSection(SettingsState settings, bool compact) {
+    final S l = S.of(context);
+    return SettingsGroup(
+      title: l.screenScraperSection,
+      children: <Widget>[
+        _buildSourceHeader(
+          iconAsset: AppAssets.iconScreenScraperColor,
+          description: l.screenScraperSourceDesc,
+          sourceName: 'ScreenScraper',
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                l.screenScraperUserCredsHint,
+                style: AppTypography.bodySmall
+                    .copyWith(color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              InlineTextField(
+                label: l.screenScraperSsidLabel,
+                value: _ssSsid,
+                placeholder: l.screenScraperSsidPlaceholder,
+                compact: compact,
+                onChanged: (String value) {
+                  setState(() => _ssSsid = value);
+                  _saveScreenScraperCreds();
+                },
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              InlineTextField(
+                label: l.screenScraperSspasswordLabel,
+                value: _ssSspassword,
+                placeholder: l.screenScraperSspasswordPlaceholder,
+                obscureText: true,
+                compact: compact,
+                onChanged: (String value) {
+                  setState(() => _ssSspassword = value);
+                  _saveScreenScraperCreds();
+                },
+              ),
+              const SizedBox(height: AppSpacing.md),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: FilledButton.tonalIcon(
+                  onPressed: (settings.hasScreenScraperCreds &&
+                          ApiDefaults.hasScreenScraperDevCreds &&
+                          !_ssQuotaLoading)
+                      ? _fetchScreenScraperQuota
+                      : null,
+                  icon: _ssQuotaLoading
+                      ? const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.cloud_outlined, size: 16),
+                  label: Text(l.screenScraperCheckQuota),
+                ),
+              ),
+              if (_ssQuotaError != null) ...<Widget>[
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  _ssQuotaError!,
+                  style: AppTypography.caption
+                      .copyWith(color: Colors.redAccent),
+                ),
+              ],
+              if (_ssQuota != null) ...<Widget>[
+                const SizedBox(height: AppSpacing.sm),
+                _buildScreenScraperQuotaInfo(_ssQuota!),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildScreenScraperQuotaInfo(SsUserQuota q) {
+    final S l = S.of(context);
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppSpacing.xs),
+        border: Border.all(color: AppColors.surfaceBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          _ssQuotaRow(
+              l.screenScraperRequestsToday, '${q.requestsToday} / ${q.maxPerDay}'),
+          _ssQuotaRow(l.screenScraperPerMinLimit, q.maxPerMinute.toString()),
+          _ssQuotaRow(l.screenScraperParallelThreads, q.maxThreads.toString()),
+          _ssQuotaRow(l.screenScraperAccountLevel, q.level.toString()),
+        ],
+      ),
+    );
+  }
+
+  Widget _ssQuotaRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: Text(
+              label,
+              style: AppTypography.caption
+                  .copyWith(color: AppColors.textSecondary),
+            ),
+          ),
+          Text(
+            value,
+            style: AppTypography.caption
+                .copyWith(color: AppColors.textPrimary),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _saveScreenScraperCreds() async {
+    await ref.read(settingsNotifierProvider.notifier).setScreenScraperCredentials(
+          ssid: _ssSsid.trim(),
+          sspassword: _ssSspassword.trim(),
+        );
+  }
+
+  Future<void> _fetchScreenScraperQuota() async {
+    setState(() {
+      _ssQuotaLoading = true;
+      _ssQuotaError = null;
+      _ssQuota = null;
+    });
+    try {
+      final ScreenScraperApi api = ref.read(screenScraperApiProvider);
+      api.setUserCredentials(
+        ssid: _ssSsid.trim(),
+        sspassword: _ssSspassword.trim(),
+      );
+      final SsUserQuota q = await api.getUserInfo();
+      if (!mounted) return;
+      setState(() {
+        _ssQuota = q;
+        _ssQuotaLoading = false;
+      });
+    } on Object catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _ssQuotaError = e.toString();
+        _ssQuotaLoading = false;
+      });
+    }
   }
 }

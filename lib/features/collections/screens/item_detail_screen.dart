@@ -1,5 +1,3 @@
-// Единый экран детального просмотра элемента коллекции.
-
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -52,6 +50,7 @@ import '../../../shared/models/tracker_game_data.dart';
 import '../widgets/ra_achievements_section.dart';
 import '../widgets/ra_link_dialog.dart';
 import '../widgets/recommendations_section.dart';
+import '../widgets/screenscraper_gallery_section.dart';
 import '../widgets/reviews_section.dart';
 import '../widgets/status_chip_row.dart';
 import '../widgets/steamgriddb_panel.dart';
@@ -59,7 +58,6 @@ import '../../settings/providers/settings_provider.dart';
 import '../widgets/vgmaps_panel.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
 
-/// Конфигурация медиа-типа для отображения в детальном экране.
 class _MediaConfig {
   const _MediaConfig({
     required this.coverUrl,
@@ -102,13 +100,9 @@ class _MediaConfig {
   final Anime? anime;
 }
 
-/// Единый экран детального просмотра элемента коллекции.
-///
-/// Заменяет GameDetailScreen, MovieDetailScreen, TvShowDetailScreen и
-/// AnimeDetailScreen. Определяет тип медиа из [CollectionItem.mediaType]
-/// и строит UI соответственно.
+/// Unified detail screen for any collection item, dispatched off
+/// [CollectionItem.mediaType].
 class ItemDetailScreen extends ConsumerStatefulWidget {
-  /// Создаёт [ItemDetailScreen].
   const ItemDetailScreen({
     required this.collectionId,
     required this.itemId,
@@ -116,16 +110,11 @@ class ItemDetailScreen extends ConsumerStatefulWidget {
     super.key,
   });
 
-  /// ID коллекции (null для uncategorized).
+  /// Null for uncategorized items.
   final int? collectionId;
-
-  /// ID записи элемента в коллекции.
   final int itemId;
-
-  /// Можно ли редактировать комментарий автора.
   final bool isEditable;
 
-  /// Группа хоткеев этого экрана для легенды F1.
   static const ShortcutGroup shortcutGroup = ShortcutGroup(
     title: 'Деталь элемента',
     entries: <ShortcutEntry>[
@@ -329,7 +318,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     );
     if (data == null || !mounted) return;
 
-    // Определяем coverUrl: при локальном файле — кэшируем и ставим маркер
+    // Cache local files and mark coverUrl so the renderer reads from disk.
     String? newCoverUrl = data.coverUrl;
     if (data.localCoverPath != null) {
       final File sourceFile = File(data.localCoverPath!);
@@ -347,7 +336,6 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       }
     }
 
-    // Обновляем custom_items в БД
     final CustomMedia updated = item.customMedia!.copyWith(
       title: data.title,
       altTitle: data.altTitle,
@@ -362,7 +350,6 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     final DatabaseService db = ref.read(databaseServiceProvider);
     await db.customMediaDao.update(updated);
 
-    // Рефрешим коллекцию
     ref
         .read(
           collectionItemsNotifierProvider(widget.collectionId).notifier,
@@ -434,7 +421,6 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         appBar: ScreenAppBar(
           title: item.itemName,
           actions: <Widget>[
-            // Lock кнопка (только на Canvas)
             if (widget.isEditable && _hasCanvas && _showCanvas)
               IconButton(
                 icon: Icon(
@@ -466,7 +452,6 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                   }
                 },
               ),
-            // Board toggle кнопка
             if (_hasCanvas)
               IconButton(
                 icon: Icon(
@@ -486,7 +471,6 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                   });
                 },
               ),
-            // Edit button (только для кастомных элементов)
             if (widget.isEditable && item.mediaType == MediaType.custom)
               IconButton(
                 icon: const Icon(Icons.edit_outlined),
@@ -559,7 +543,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
 
   Widget _buildDetailView(CollectionItem item, _MediaConfig config) {
     final SettingsState settings = ref.watch(settingsNotifierProvider);
-    // Рекомендации и ревью доступны только для TMDB-источников
+    // Recommendations / reviews are TMDB-only.
     final bool showRecs = settings.showRecommendations &&
         (item.mediaType == MediaType.movie ||
             item.mediaType == MediaType.tvShow ||
@@ -607,6 +591,10 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       onTimeSpentTap: widget.collectionId != null && widget.isEditable
           ? () => _showTimeSpentDialog(item)
           : null,
+      mediaGallery: ScreenScraperGallerySection(
+        gameName: item.itemName,
+        igdbPlatformId: item.platformId,
+      ),
       extraSections: <Widget>[
         if (widget.collectionId == null)
           _buildUncategorizedBanner(item),
@@ -676,7 +664,6 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
   // ==================== Media Config ====================
 
   _MediaConfig _getMediaConfig(CollectionItem item) {
-    // Извлекаем externalUrl из вложенной модели медиа
     final String? externalUrl = switch (item.mediaType) {
       MediaType.game => item.game?.externalUrl,
       MediaType.movie || MediaType.animation => item.movie?.externalUrl
@@ -770,7 +757,6 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         iconColor: AppColors.ratingStar,
       ));
     }
-    // Custom-специфичные чипы: altTitle, platformName
     if (item.mediaType == MediaType.custom && item.customMedia != null) {
       final CustomMedia c = item.customMedia!;
       if (c.altTitle != null && c.altTitle!.isNotEmpty) {
@@ -786,7 +772,6 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         ));
       }
     }
-    // Manga-специфичные чипы: chapters, volumes, format, authors
     if (item.mediaType == MediaType.manga && item.manga != null) {
       final Manga m = item.manga!;
       chips.add(MediaDetailChip(
@@ -806,7 +791,6 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         ));
       }
     }
-    // Anime-специфичные чипы: format, episodes, duration, studios, season, source
     if (item.mediaType == MediaType.anime && item.anime != null) {
       final Anime a = item.anime!;
       if (a.formatLabel != null) {
@@ -979,7 +963,6 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         collectionItemId: widget.itemId,
       );
 
-  /// Возвращает RA секцию если для игры есть tracker data,
   Future<void> _showTimeSpentDialog(CollectionItem item) async {
     final int? collId = widget.collectionId;
     if (collId == null) return;
@@ -994,12 +977,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         .setTimeSpent(item.id, minutes);
   }
 
-  /// Возвращает RA секцию если для игры есть tracker data,
-  /// или кнопку привязки если RA credentials есть и платформа поддерживается.
-  ///
-  /// Используем `select` чтобы подписаться только на `hasRaData` —
-  /// экран не перестраивается при загрузке/обновлении ачивок.
-  /// RA badge в верхнем ряду: лого + % (или кнопка Link).
+  /// RA badge in the top row: logo + % when linked, Link button otherwise.
   Widget? _buildRaBadge(CollectionItem item) {
     if (item.mediaType != MediaType.game) return null;
 
@@ -1009,7 +987,6 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         ?.gameData;
 
     if (raData != null) {
-      // Привязана — показываем лого RA.
       return MouseRegion(
         cursor: SystemMouseCursors.click,
         child: GestureDetector(
@@ -1030,7 +1007,6 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       );
     }
 
-    // Не привязана — кнопка Link (если доступно).
     final bool hasRaCreds = ref.watch(raApiProvider).hasCredentials;
     if (!hasRaCreds) return null;
     if (item.platformId == null) return null;
@@ -1069,7 +1045,6 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
             collectionItemId: widget.itemId,
           ),
         ),
-        // Боковая панель SteamGridDB
         Consumer(
           builder:
               (BuildContext context, WidgetRef ref, Widget? child) {
@@ -1105,7 +1080,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
             );
           },
         ),
-        // Боковая панель VGMaps Browser (Windows only)
+        // VGMaps panel — Windows only.
         if (kVgMapsEnabled)
           Consumer(
             builder:
@@ -1396,7 +1371,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
   }
 }
 
-/// Мерцающее лого RA для непривязанных игр.
+/// Pulsing RA logo for unlinked games.
 class _PulsingRaLink extends StatefulWidget {
   const _PulsingRaLink({required this.onTap});
 

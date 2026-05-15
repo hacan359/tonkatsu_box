@@ -4039,4 +4039,84 @@ class SEn extends S {
 
   @override
   String get moodGridPickerEmpty => 'Nothing to pick';
+
+  @override
+  String get screenScraperSection => 'ScreenScraper API';
+
+  @override
+  String get screenScraperSourceDesc =>
+      'Game metadata + media (covers, screenshots, art)';
+
+  @override
+  String get screenScraperUserCredsHint =>
+      'User credentials (ssid / sspassword). Quota is per user.';
+
+  @override
+  String get screenScraperSsidLabel => 'ssid';
+
+  @override
+  String get screenScraperSsidPlaceholder => 'Your ScreenScraper login';
+
+  @override
+  String get screenScraperSspasswordLabel => 'sspassword';
+
+  @override
+  String get screenScraperSspasswordPlaceholder =>
+      'Your ScreenScraper password';
+
+  @override
+  String get screenScraperCheckQuota => 'Check quota';
+
+  @override
+  String get screenScraperRequestsToday => 'Requests today';
+
+  @override
+  String get screenScraperPerMinLimit => 'Per minute limit';
+
+  @override
+  String get screenScraperParallelThreads => 'Parallel threads';
+
+  @override
+  String get screenScraperAccountLevel => 'Account level';
+
+  @override
+  String get screenScraperGalleryTitle => 'ScreenScraper media';
+
+  @override
+  String get screenScraperScreenshotsTitle => 'Screenshots';
+
+  @override
+  String get screenScraperLoading => 'Loading ScreenScraper media…';
+
+  @override
+  String screenScraperError(String message) {
+    return 'ScreenScraper error: $message';
+  }
+
+  @override
+  String get screenScraperMediaBox => 'Box';
+
+  @override
+  String get screenScraperMediaBoxBack => 'Box (back)';
+
+  @override
+  String get screenScraperMediaBox3D => 'Box 3D';
+
+  @override
+  String get screenScraperMediaWheel => 'Wheel';
+
+  @override
+  String get screenScraperMediaMarquee => 'Marquee';
+
+  @override
+  String get screenScraperMediaTitle => 'Title';
+
+  @override
+  String get screenScraperMediaScreenshot => 'Screenshot';
+
+  @override
+  String get screenScraperMediaFanart => 'Fanart';
+
+  @override
+  String get screenScraperMediaMix => 'Mix';
 }
