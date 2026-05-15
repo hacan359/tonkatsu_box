@@ -2179,6 +2179,24 @@ abstract class S {
   /// **'Tag deleted'**
   String get tagDeleted;
 
+  /// No description provided for @tagUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update tag'**
+  String get tagUpdateFailed;
+
+  /// No description provided for @tierListExportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to export image'**
+  String get tierListExportFailed;
+
+  /// No description provided for @browseCollectionsDownloadFailedGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to download collection'**
+  String get browseCollectionsDownloadFailedGeneric;
+
   /// No description provided for @tagFilterAll.
   ///
   /// In en, this message translates to:
@@ -5760,12 +5778,6 @@ abstract class S {
   /// In en, this message translates to:
   /// **'Importing...'**
   String get browseCollectionsImporting;
-
-  /// No description provided for @browseCollectionsDownloadError.
-  ///
-  /// In en, this message translates to:
-  /// **'Download failed: {error}'**
-  String browseCollectionsDownloadError(String error);
 
   /// No description provided for @browseCollectionsImportSuccess.
   ///

@@ -1174,6 +1174,16 @@ class SEn extends S {
   String get tagDeleted => 'Tag deleted';
 
   @override
+  String get tagUpdateFailed => 'Failed to update tag';
+
+  @override
+  String get tierListExportFailed => 'Failed to export image';
+
+  @override
+  String get browseCollectionsDownloadFailedGeneric =>
+      'Failed to download collection';
+
+  @override
   String get tagFilterAll => 'All tags';
 
   @override
@@ -3158,11 +3168,6 @@ class SEn extends S {
 
   @override
   String get browseCollectionsImporting => 'Importing...';
-
-  @override
-  String browseCollectionsDownloadError(String error) {
-    return 'Download failed: $error';
-  }
 
   @override
   String browseCollectionsImportSuccess(String name) {

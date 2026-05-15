@@ -1191,6 +1191,16 @@ class SRu extends S {
   String get tagDeleted => 'Тег удалён';
 
   @override
+  String get tagUpdateFailed => 'Не удалось обновить тег';
+
+  @override
+  String get tierListExportFailed => 'Не удалось экспортировать изображение';
+
+  @override
+  String get browseCollectionsDownloadFailedGeneric =>
+      'Не удалось скачать коллекцию';
+
+  @override
   String get tagFilterAll => 'Все теги';
 
   @override
@@ -3183,11 +3193,6 @@ class SRu extends S {
 
   @override
   String get browseCollectionsImporting => 'Импорт...';
-
-  @override
-  String browseCollectionsDownloadError(String error) {
-    return 'Ошибка загрузки: $error';
-  }
 
   @override
   String browseCollectionsImportSuccess(String name) {
