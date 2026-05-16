@@ -7,7 +7,7 @@
   <!-- SEO Meta Tags -->
   <title>Tonkatsu Box — Organize Games, Movies, TV Shows, Anime & Visual Novels</title>
   <meta name="description" content="Free open-source app to build and manage collections of retro games, movies, TV shows, anime, and visual novels. Track progress, rate favorites, create tier lists, visual boards, and share with friends. Windows, Linux & Android.">
-  <meta name="keywords" content="game collection manager, retro game organizer, movie tracker, TV show tracker, anime tracker, visual novel tracker, tier list maker, tier list generator, IGDB, TMDB, VNDB, Trakt import, Steam import, RetroAchievements import, collection app, backlog tracker, game library, Flutter app, open source">
+  <meta name="keywords" content="game collection manager, retro game organizer, movie tracker, TV show tracker, anime tracker, manga tracker, visual novel tracker, tier list maker, tier list generator, mood grid, IGDB, TMDB, VNDB, AniList, Trakt import, Steam import, RetroAchievements import, MyAnimeList import, AniList import, ScreenScraper, collection app, backlog tracker, game library, Flutter app, open source">
   <meta name="author" content="hacan359">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://hacan359.github.io/tonkatsu_box/">
@@ -997,7 +997,7 @@
     <div class="container">
       <div class="hero__content">
         <div class="hero__badge">
-          <span>v0.28.0</span> <span data-i18n="hero_badge">Open Source &middot; MIT License</span>
+          <span>v0.29.0</span> <span data-i18n="hero_badge">Open Source &middot; MIT License</span>
         </div>
 
         <h1 class="hero__title" data-i18n="hero_title">
@@ -1101,7 +1101,7 @@
           <div class="feature-card__icon">🔍</div>
           <h3 class="feature-card__title" data-i18n="feat_search_title">Search & Discover</h3>
           <p class="feature-card__desc" data-i18n="feat_search_desc">
-            Find titles from IGDB, TMDB, and VNDB databases. Filter by year, genre, or platform. Add anything to your collections with one tap.
+            Find titles from IGDB, TMDB, AniList, and VNDB databases. Filter by year, genre, or platform. Add anything to your collections with one tap.
           </p>
         </div>
 
@@ -1125,7 +1125,7 @@
           <div class="feature-card__icon">📤</div>
           <h3 class="feature-card__title" data-i18n="feat_share_title">Import & Share</h3>
           <p class="feature-card__desc" data-i18n="feat_share_desc">
-            Import from Trakt.tv, Steam, or RetroAchievements. Share collections as <code>.xcoll</code> or <code>.xcollx</code> files. Friends can import and fork your lists.
+            Import from Steam, Trakt.tv, RetroAchievements, MyAnimeList, or AniList. Share collections as <code>.xcoll</code> or <code>.xcollx</code> files. Friends can import and fork your lists.
           </p>
         </div>
 
@@ -1141,7 +1141,7 @@
           <div class="feature-card__icon">📊</div>
           <h3 class="feature-card__title" data-i18n="feat_tier_title">Tier Lists</h3>
           <p class="feature-card__desc" data-i18n="feat_tier_desc">
-            Rank items from your collections into S/A/B/C tiers with drag-and-drop. Customize tiers — rename, recolor, add or remove. Export as a shareable PNG image.
+            Rank items from your collections into S/A/B/C tiers with drag-and-drop, or build a Mood Grid — an N×M board of items with labels. Customize tiers, export either layout as a shareable PNG.
           </p>
         </div>
 
@@ -1236,7 +1236,7 @@
         <div class="section-label" data-i18n="sharing_label">Import & Share</div>
         <h2 class="section-title" data-i18n="sharing_title">Import &amp; share your taste</h2>
         <p class="section-subtitle" data-i18n="sharing_subtitle">
-          Import from Trakt.tv, Steam, or RetroAchievements, export your collections, and share with friends.
+          Import from Steam, Trakt.tv, RetroAchievements, MyAnimeList, or AniList, export your collections, and share with friends.
         </p>
       </div>
 
@@ -1253,6 +1253,20 @@
           <div class="format-card__name" data-i18n="format_ra_name">RA Import</div>
           <p class="format-card__desc" data-i18n="format_ra_desc">
             Import retro games with achievement progress, awards, and platform mapping from RetroAchievements.
+          </p>
+        </div>
+        <div class="format-card">
+          <div class="format-card__ext">MyAnimeList</div>
+          <div class="format-card__name" data-i18n="format_mal_name">MyAnimeList Import</div>
+          <p class="format-card__desc" data-i18n="format_mal_desc">
+            Import your anime and manga lists from a MyAnimeList XML export, including scores, watch status and progress.
+          </p>
+        </div>
+        <div class="format-card">
+          <div class="format-card__ext">AniList</div>
+          <div class="format-card__name" data-i18n="format_anilist_name">AniList Import</div>
+          <p class="format-card__desc" data-i18n="format_anilist_desc">
+            Import anime and manga directly by a public AniList username — no API key, no file export needed.
           </p>
         </div>
         <div class="format-card">
@@ -1308,7 +1322,10 @@
         <span class="tech-pill">IGDB API</span>
         <span class="tech-pill">TMDB API</span>
         <span class="tech-pill">VNDB API</span>
+        <span class="tech-pill">AniList API</span>
         <span class="tech-pill">SteamGridDB</span>
+        <span class="tech-pill">ScreenScraper</span>
+        <span class="tech-pill">MyAnimeList</span>
         <span class="tech-pill">MIT License</span>
       </div>
     </div>
@@ -1460,9 +1477,9 @@
         nav_sharing: 'Sharing',
         nav_docs: 'Wiki',
         nav_download: 'Download',
-        hero_badge: 'Open Source \u00b7 MIT License',
-        hero_title: 'Your <span class="accent-game">games</span>, <span class="accent-movie">movies</span>, <span class="accent-tv">shows</span>, <span class="accent-anime">anime</span> &amp; <span class="accent-vn">novels</span><br>\u2014 all in one box',
-        hero_subtitle: 'Build collections, track what you\u2019re playing and watching, create tier lists, visual boards, rate your favorites, and share with friends.',
+        hero_badge: 'Open Source · MIT License',
+        hero_title: 'Your <span class="accent-game">games</span>, <span class="accent-movie">movies</span>, <span class="accent-tv">shows</span>, <span class="accent-anime">anime</span> &amp; <span class="accent-vn">novels</span><br>— all in one box',
+        hero_subtitle: 'Build collections, track what you’re playing and watching, create tier lists, visual boards, rate your favorites, and share with friends.',
         hero_download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download',
         hero_source: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg> View Source',
         hero_platforms: 'Available for Windows, Linux & Android',
@@ -1477,17 +1494,17 @@
         feat_collections_title: 'Build Collections',
         feat_collections_desc: 'Create unlimited collections by platform, genre, or custom lists. Mix games, movies, anime, and visual novels in a single collection. Switch between grid and list views.',
         feat_search_title: 'Search & Discover',
-        feat_search_desc: 'Find titles from IGDB, TMDB, and VNDB databases. Filter by year, genre, or platform. Add anything to your collections with one tap.',
+        feat_search_desc: 'Find titles from IGDB, TMDB, AniList, and VNDB databases. Filter by year, genre, or platform. Add anything to your collections with one tap.',
         feat_progress_title: 'Track Progress',
         feat_progress_desc: 'Mark items as In Progress, Completed, Planned, or Dropped. Track individual episodes for TV shows and anime. Rate everything from 1 to 10 stars.',
         feat_boards_title: 'Visual Boards',
         feat_boards_desc: 'Arrange posters on a free-form canvas. Add text notes, images, and links. Draw connections between items. Browse artwork from SteamGridDB.',
         feat_share_title: 'Import & Share',
-        feat_share_desc: 'Import from Trakt.tv, Steam, or RetroAchievements. Share collections as <code>.xcoll</code> or <code>.xcollx</code> files. Friends can import and fork your lists.',
+        feat_share_desc: 'Import from Steam, Trakt.tv, RetroAchievements, MyAnimeList, or AniList. Share collections as <code>.xcoll</code> or <code>.xcollx</code> files. Friends can import and fork your lists.',
         feat_rate_title: 'Rate & Review',
-        feat_rate_desc: 'Rate every title from 1\u201310 stars. Write personal notes and author reviews visible on export. Track when you started and finished each item.',
+        feat_rate_desc: 'Rate every title from 1–10 stars. Write personal notes and author reviews visible on export. Track when you started and finished each item.',
         feat_tier_title: 'Tier Lists',
-        feat_tier_desc: 'Rank items from your collections into S/A/B/C tiers with drag-and-drop. Customize tiers \u2014 rename, recolor, add or remove. Export as a shareable PNG image.',
+        feat_tier_desc: 'Rank items from your collections into S/A/B/C tiers with drag-and-drop, or build a Mood Grid — an N×M board of items with labels. Customize tiers, export either layout as a shareable PNG.',
         feat_lang_title: 'English & Russian',
         feat_lang_desc: 'Full interface localization with runtime language switching. All menus, statuses, labels, and messages available in English and Russian.',
         steps_label: 'Get Started',
@@ -1498,14 +1515,18 @@
         step2_title: 'Install & Run',
         step2_desc: 'Download the latest release or build from source with Flutter. Available for <strong>Windows</strong>, <strong>Linux</strong> (experimental) and <strong>Android</strong>.',
         step3_title: 'Start Collecting',
-        step3_desc: 'Enter your API keys in Settings, search for your favorite titles, and organize them into collections. That\u2019s it!',
+        step3_desc: 'Enter your API keys in Settings, search for your favorite titles, and organize them into collections. That’s it!',
         sharing_label: 'Import & Share',
         sharing_title: 'Import &amp; share your taste',
-        sharing_subtitle: 'Import from Trakt.tv, Steam, or RetroAchievements, export your collections, and share with friends.',
+        sharing_subtitle: 'Import from Steam, Trakt.tv, RetroAchievements, MyAnimeList, or AniList, export your collections, and share with friends.',
         format_trakt_name: 'Trakt Import',
         format_trakt_desc: 'Import watched movies, shows, ratings, and watchlist from your Trakt.tv ZIP data export.',
         format_ra_name: 'RA Import',
         format_ra_desc: 'Import retro games with achievement progress, awards, and platform mapping from RetroAchievements.',
+        format_mal_name: 'MyAnimeList Import',
+        format_mal_desc: 'Import your anime and manga lists from a MyAnimeList XML export, including scores, watch status and progress.',
+        format_anilist_name: 'AniList Import',
+        format_anilist_desc: 'Import anime and manga directly by a public AniList username — no API key, no file export needed.',
         format_light_name: 'Light Export',
         format_light_desc: 'Small file with the list of items. Recipient needs internet to load images and details.',
         format_full_name: 'Full Export',
@@ -1521,23 +1542,23 @@
         cta_subtitle: 'Free, open source, and yours to customize.',
         cta_download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download Latest Release',
         cta_star: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg> Star on GitHub',
-        slider_organize_1: 'All items from every collection \u2014 browse, filter by type, and sort by rating',
-        slider_organize_2: 'Filter by media type \u2014 games, movies, TV shows, anime, visual novels, manga',
+        slider_organize_1: 'All items from every collection — browse, filter by type, and sort by rating',
+        slider_organize_2: 'Filter by media type — games, movies, TV shows, anime, visual novels, manga',
         slider_organize_3: 'Collections list with cover mosaics and progress stats',
         slider_organize_4: 'Collection grid view with poster cards, ratings, and search',
         slider_search_label: 'Search',
         slider_search_title: 'Search &amp; Discover',
         slider_search_subtitle: 'Search IGDB, TMDB, VNDB, and AniList databases with hundreds of thousands of titles',
-        slider_search_1: 'Search movies, TV shows, and anime \u2014 filter by type, sort by rating or release date',
+        slider_search_1: 'Search movies, TV shows, and anime — filter by type, sort by rating or release date',
         slider_search_2: 'Search games across hundreds of platforms via IGDB',
-        slider_search_3: 'Search manga and light novels via AniList \u2014 no API key required',
-        slider_search_4: 'Multiple sources \u2014 IGDB, TMDB, AniList, and VNDB all in one place',
+        slider_search_3: 'Search manga and light novels via AniList — no API key required',
+        slider_search_4: 'Multiple sources — IGDB, TMDB, AniList, and VNDB all in one place',
         slider_track_label: 'Track',
         slider_track_title: 'Track &amp; Visualize',
         slider_track_subtitle: 'Rate, track progress, organize on visual boards, save ideas in wishlist',
-        slider_track_1: 'Track status, rate from 1 to 10, add notes \u2014 all details on one screen',
-        slider_track_3: 'Wishlist \u2014 save ideas for later, tag by media type, search when ready',
-        slider_track_4: 'Tier lists \u2014 rank items with drag-and-drop, customize tiers, export as PNG',
+        slider_track_1: 'Track status, rate from 1 to 10, add notes — all details on one screen',
+        slider_track_3: 'Wishlist — save ideas for later, tag by media type, search when ready',
+        slider_track_4: 'Tier lists — rank items with drag-and-drop, customize tiers, export as PNG',
         footer_releases: 'Releases',
         footer_api_guide: 'API Keys Guide',
         footer_issues: 'Issues',
@@ -1545,92 +1566,96 @@
         hero_discord: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.095 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.095 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg> Join Discord',
       },
       ru: {
-        nav_features: '\u0424\u0443\u043d\u043a\u0446\u0438\u0438',
-        nav_get_started: '\u041d\u0430\u0447\u0430\u0442\u044c',
-        nav_sharing: '\u0428\u0430\u0440\u0438\u043d\u0433',
+        nav_features: 'Функции',
+        nav_get_started: 'Начать',
+        nav_sharing: 'Шаринг',
         nav_docs: 'Wiki',
-        nav_download: '\u0421\u043a\u0430\u0447\u0430\u0442\u044c',
-        hero_badge: '\u041e\u0442\u043a\u0440\u044b\u0442\u044b\u0439 \u043a\u043e\u0434 \u00b7 MIT License',
-        hero_title: '\u0412\u0430\u0448\u0438 <span class="accent-game">\u0438\u0433\u0440\u044b</span>, <span class="accent-movie">\u0444\u0438\u043b\u044c\u043c\u044b</span>, <span class="accent-tv">\u0441\u0435\u0440\u0438\u0430\u043b\u044b</span>, <span class="accent-anime">\u0430\u043d\u0438\u043c\u0435</span> \u0438 <span class="accent-vn">\u043d\u043e\u0432\u0435\u043b\u043b\u044b</span><br>\u2014 \u0432\u0441\u0451 \u0432 \u043e\u0434\u043d\u043e\u043c \u043c\u0435\u0441\u0442\u0435',
-        hero_subtitle: '\u0421\u043e\u0437\u0434\u0430\u0432\u0430\u0439\u0442\u0435 \u043a\u043e\u043b\u043b\u0435\u043a\u0446\u0438\u0438, \u043e\u0442\u0441\u043b\u0435\u0436\u0438\u0432\u0430\u0439\u0442\u0435 \u043f\u0440\u043e\u0433\u0440\u0435\u0441\u0441, \u0441\u043e\u0437\u0434\u0430\u0432\u0430\u0439\u0442\u0435 \u0442\u0438\u0440-\u043b\u0438\u0441\u0442\u044b \u0438 \u0432\u0438\u0437\u0443\u0430\u043b\u044c\u043d\u044b\u0435 \u0434\u043e\u0441\u043a\u0438, \u043e\u0446\u0435\u043d\u0438\u0432\u0430\u0439\u0442\u0435 \u043b\u044e\u0431\u0438\u043c\u043e\u0435 \u0438 \u0434\u0435\u043b\u0438\u0442\u0435\u0441\u044c \u0441 \u0434\u0440\u0443\u0437\u044c\u044f\u043c\u0438.',
-        hero_download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> \u0421\u043a\u0430\u0447\u0430\u0442\u044c',
-        hero_source: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg> \u0418\u0441\u0445\u043e\u0434\u043d\u044b\u0439 \u043a\u043e\u0434',
-        hero_platforms: '\u0414\u043e\u0441\u0442\u0443\u043f\u043d\u043e \u0434\u043b\u044f Windows, Linux \u0438 Android',
-        tag_games: '\u0420\u0435\u0442\u0440\u043e-\u0438\u0433\u0440\u044b',
-        tag_movies: '\u0424\u0438\u043b\u044c\u043c\u044b',
-        tag_tv: '\u0421\u0435\u0440\u0438\u0430\u043b\u044b',
-        tag_anime: '\u0410\u043d\u0438\u043c\u0435',
-        tag_vn: '\u0412\u0438\u0437\u0443\u0430\u043b\u044c\u043d\u044b\u0435 \u043d\u043e\u0432\u0435\u043b\u043b\u044b',
-        features_label: '\u0424\u0443\u043d\u043a\u0446\u0438\u0438',
-        features_title: '\u0412\u0441\u0451 \u0447\u0442\u043e \u043d\u0443\u0436\u043d\u043e \u0434\u043b\u044f<br>\u043e\u0440\u0433\u0430\u043d\u0438\u0437\u0430\u0446\u0438\u0438 \u043c\u0435\u0434\u0438\u0430',
-        features_subtitle: '\u0418\u0449\u0438\u0442\u0435 \u0441\u0440\u0435\u0434\u0438 \u0441\u043e\u0442\u0435\u043d \u0442\u044b\u0441\u044f\u0447 \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u0439, \u043e\u0440\u0433\u0430\u043d\u0438\u0437\u0443\u0439\u0442\u0435 \u043f\u043e-\u0441\u0432\u043e\u0435\u043c\u0443 \u0438 \u043e\u0442\u0441\u043b\u0435\u0436\u0438\u0432\u0430\u0439\u0442\u0435 \u043f\u0440\u043e\u0433\u0440\u0435\u0441\u0441 \u043f\u043e \u0438\u0433\u0440\u0430\u043c, \u0444\u0438\u043b\u044c\u043c\u0430\u043c, \u0430\u043d\u0438\u043c\u0435 \u0438 \u043d\u043e\u0432\u0435\u043b\u043b\u0430\u043c.',
-        feat_collections_title: '\u041a\u043e\u043b\u043b\u0435\u043a\u0446\u0438\u0438',
-        feat_collections_desc: '\u0421\u043e\u0437\u0434\u0430\u0432\u0430\u0439\u0442\u0435 \u043d\u0435\u043e\u0433\u0440\u0430\u043d\u0438\u0447\u0435\u043d\u043d\u043e\u0435 \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u043a\u043e\u043b\u043b\u0435\u043a\u0446\u0438\u0439 \u043f\u043e \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0435, \u0436\u0430\u043d\u0440\u0443 \u0438\u043b\u0438 \u0441\u0432\u043e\u0438\u043c \u0441\u043f\u0438\u0441\u043a\u0430\u043c. \u0421\u043c\u0435\u0448\u0438\u0432\u0430\u0439\u0442\u0435 \u0438\u0433\u0440\u044b, \u0444\u0438\u043b\u044c\u043c\u044b, \u0430\u043d\u0438\u043c\u0435 \u0438 \u043d\u043e\u0432\u0435\u043b\u043b\u044b \u0432 \u043e\u0434\u043d\u043e\u0439 \u043a\u043e\u043b\u043b\u0435\u043a\u0446\u0438\u0438. \u041f\u0435\u0440\u0435\u043a\u043b\u044e\u0447\u0430\u0439\u0442\u0435\u0441\u044c \u043c\u0435\u0436\u0434\u0443 \u0441\u0435\u0442\u043a\u043e\u0439 \u0438 \u0441\u043f\u0438\u0441\u043a\u043e\u043c.',
-        feat_search_title: '\u041f\u043e\u0438\u0441\u043a',
-        feat_search_desc: '\u041d\u0430\u0445\u043e\u0434\u0438\u0442\u0435 \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u044f \u0432 \u0431\u0430\u0437\u0430\u0445 IGDB, TMDB \u0438 VNDB. \u0424\u0438\u043b\u044c\u0442\u0440\u0443\u0439\u0442\u0435 \u043f\u043e \u0433\u043e\u0434\u0443, \u0436\u0430\u043d\u0440\u0443 \u0438\u043b\u0438 \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0435. \u0414\u043e\u0431\u0430\u0432\u043b\u044f\u0439\u0442\u0435 \u0432 \u043a\u043e\u043b\u043b\u0435\u043a\u0446\u0438\u044e \u043e\u0434\u043d\u0438\u043c \u043d\u0430\u0436\u0430\u0442\u0438\u0435\u043c.',
-        feat_progress_title: '\u041f\u0440\u043e\u0433\u0440\u0435\u0441\u0441',
-        feat_progress_desc: '\u041e\u0442\u043c\u0435\u0447\u0430\u0439\u0442\u0435 \u0441\u0442\u0430\u0442\u0443\u0441\u044b: \u0412 \u043f\u0440\u043e\u0446\u0435\u0441\u0441\u0435, \u041f\u0440\u043e\u0439\u0434\u0435\u043d\u043e, \u041e\u0442\u043b\u043e\u0436\u0435\u043d\u043e, \u0411\u0440\u043e\u0448\u0435\u043d\u043e. \u041e\u0442\u0441\u043b\u0435\u0436\u0438\u0432\u0430\u0439\u0442\u0435 \u044d\u043f\u0438\u0437\u043e\u0434\u044b \u0441\u0435\u0440\u0438\u0430\u043b\u043e\u0432 \u0438 \u0430\u043d\u0438\u043c\u0435. \u041e\u0446\u0435\u043d\u0438\u0432\u0430\u0439\u0442\u0435 \u043e\u0442 1 \u0434\u043e 10 \u0437\u0432\u0451\u0437\u0434.',
-        feat_boards_title: '\u0412\u0438\u0437\u0443\u0430\u043b\u044c\u043d\u044b\u0435 \u0434\u043e\u0441\u043a\u0438',
-        feat_boards_desc: '\u0420\u0430\u0441\u0441\u0442\u0430\u0432\u043b\u044f\u0439\u0442\u0435 \u043f\u043e\u0441\u0442\u0435\u0440\u044b \u043d\u0430 \u0441\u0432\u043e\u0431\u043e\u0434\u043d\u043e\u043c \u0445\u043e\u043b\u0441\u0442\u0435. \u0414\u043e\u0431\u0430\u0432\u043b\u044f\u0439\u0442\u0435 \u0437\u0430\u043c\u0435\u0442\u043a\u0438, \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f \u0438 \u0441\u0441\u044b\u043b\u043a\u0438. \u0420\u0438\u0441\u0443\u0439\u0442\u0435 \u0441\u0432\u044f\u0437\u0438 \u043c\u0435\u0436\u0434\u0443 \u044d\u043b\u0435\u043c\u0435\u043d\u0442\u0430\u043c\u0438. \u0410\u0440\u0442\u044b \u0438\u0437 SteamGridDB.',
-        feat_share_title: '\u0418\u043c\u043f\u043e\u0440\u0442 \u0438 \u0448\u0430\u0440\u0438\u043d\u0433',
-        feat_share_desc: '\u0418\u043c\u043f\u043e\u0440\u0442 \u0438\u0437 Trakt.tv, Steam \u0438\u043b\u0438 RetroAchievements. \u0414\u0435\u043b\u0438\u0442\u0435\u0441\u044c \u043a\u043e\u043b\u043b\u0435\u043a\u0446\u0438\u044f\u043c\u0438 \u0447\u0435\u0440\u0435\u0437 <code>.xcoll</code> \u0438 <code>.xcollx</code>. \u0414\u0440\u0443\u0437\u044c\u044f \u043c\u043e\u0433\u0443\u0442 \u0438\u043c\u043f\u043e\u0440\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0438 \u0444\u043e\u0440\u043a\u043d\u0443\u0442\u044c.',
-        feat_rate_title: '\u041e\u0446\u0435\u043d\u043a\u0438 \u0438 \u043e\u0442\u0437\u044b\u0432\u044b',
-        feat_rate_desc: '\u041e\u0446\u0435\u043d\u0438\u0432\u0430\u0439\u0442\u0435 \u043e\u0442 1 \u0434\u043e 10 \u0437\u0432\u0451\u0437\u0434. \u041f\u0438\u0448\u0438\u0442\u0435 \u043b\u0438\u0447\u043d\u044b\u0435 \u0437\u0430\u043c\u0435\u0442\u043a\u0438 \u0438 \u0440\u0435\u0446\u0435\u043d\u0437\u0438\u0438, \u0432\u0438\u0434\u0438\u043c\u044b\u0435 \u043f\u0440\u0438 \u044d\u043a\u0441\u043f\u043e\u0440\u0442\u0435. \u041e\u0442\u0441\u043b\u0435\u0436\u0438\u0432\u0430\u0439\u0442\u0435 \u0434\u0430\u0442\u044b \u043d\u0430\u0447\u0430\u043b\u0430 \u0438 \u043e\u043a\u043e\u043d\u0447\u0430\u043d\u0438\u044f.',
-        feat_tier_title: '\u0422\u0438\u0440-\u043b\u0438\u0441\u0442\u044b',
-        feat_tier_desc: '\u0420\u0430\u043d\u0436\u0438\u0440\u0443\u0439\u0442\u0435 \u044d\u043b\u0435\u043c\u0435\u043d\u0442\u044b \u043a\u043e\u043b\u043b\u0435\u043a\u0446\u0438\u0439 \u043f\u043e \u0443\u0440\u043e\u0432\u043d\u044f\u043c S/A/B/C \u043f\u0435\u0440\u0435\u0442\u0430\u0441\u043a\u0438\u0432\u0430\u043d\u0438\u0435\u043c. \u041d\u0430\u0441\u0442\u0440\u0430\u0438\u0432\u0430\u0439\u0442\u0435 \u0443\u0440\u043e\u0432\u043d\u0438 \u2014 \u043f\u0435\u0440\u0435\u0438\u043c\u0435\u043d\u043e\u0432\u044b\u0432\u0430\u0439\u0442\u0435, \u043c\u0435\u043d\u044f\u0439\u0442\u0435 \u0446\u0432\u0435\u0442\u0430, \u0434\u043e\u0431\u0430\u0432\u043b\u044f\u0439\u0442\u0435 \u0438\u043b\u0438 \u0443\u0434\u0430\u043b\u044f\u0439\u0442\u0435. \u042d\u043a\u0441\u043f\u043e\u0440\u0442 \u0432 PNG.',
-        feat_lang_title: '\u0410\u043d\u0433\u043b\u0438\u0439\u0441\u043a\u0438\u0439 \u0438 \u0440\u0443\u0441\u0441\u043a\u0438\u0439',
-        feat_lang_desc: '\u041f\u043e\u043b\u043d\u0430\u044f \u043b\u043e\u043a\u0430\u043b\u0438\u0437\u0430\u0446\u0438\u044f \u0438\u043d\u0442\u0435\u0440\u0444\u0435\u0439\u0441\u0430 \u0441 \u043f\u0435\u0440\u0435\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u0435\u043c \u044f\u0437\u044b\u043a\u0430 \u043d\u0430 \u043b\u0435\u0442\u0443. \u0412\u0441\u0435 \u043c\u0435\u043d\u044e, \u0441\u0442\u0430\u0442\u0443\u0441\u044b, \u043d\u0430\u0434\u043f\u0438\u0441\u0438 \u0438 \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u044f \u043d\u0430 \u0430\u043d\u0433\u043b\u0438\u0439\u0441\u043a\u043e\u043c \u0438 \u0440\u0443\u0441\u0441\u043a\u043e\u043c.',
-        steps_label: '\u041d\u0430\u0447\u0430\u043b\u043e \u0440\u0430\u0431\u043e\u0442\u044b',
-        steps_title: '\u0417\u0430\u043f\u0443\u0441\u043a \u0437\u0430 \u043d\u0435\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u043c\u0438\u043d\u0443\u0442',
-        steps_subtitle: '\u041f\u043e\u043b\u0443\u0447\u0438\u0442\u0435 \u0431\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u044b\u0435 API-\u043a\u043b\u044e\u0447\u0438, \u0443\u0441\u0442\u0430\u043d\u043e\u0432\u0438\u0442\u0435 \u043f\u0440\u0438\u043b\u043e\u0436\u0435\u043d\u0438\u0435 \u0438 \u043d\u0430\u0447\u043d\u0438\u0442\u0435 \u0441\u043e\u0431\u0438\u0440\u0430\u0442\u044c \u043a\u043e\u043b\u043b\u0435\u043a\u0446\u0438\u044e.',
-        step1_title: '\u041f\u043e\u043b\u0443\u0447\u0438\u0442\u0435 API-\u043a\u043b\u044e\u0447\u0438',
-        step1_desc: '\u0417\u0430\u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0438\u0440\u0443\u0439\u0442\u0435\u0441\u044c \u0431\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u043e \u043d\u0430 <strong>IGDB</strong> (\u0447\u0435\u0440\u0435\u0437 Twitch) \u0434\u043b\u044f \u0438\u0433\u0440 \u0438 <strong>TMDB</strong> \u0434\u043b\u044f \u0444\u0438\u043b\u044c\u043c\u043e\u0432 \u0438 \u0441\u0435\u0440\u0438\u0430\u043b\u043e\u0432. <strong>VNDB</strong> \u0434\u043b\u044f \u043d\u043e\u0432\u0435\u043b\u043b \u0440\u0430\u0431\u043e\u0442\u0430\u0435\u0442 \u0431\u0435\u0437 \u043a\u043b\u044e\u0447\u0430. \u041e\u043f\u0446\u0438\u043e\u043d\u0430\u043b\u044c\u043d\u043e: <strong>SteamGridDB</strong> \u0434\u043b\u044f \u0430\u0440\u0442\u043e\u0432.',
-        step2_title: '\u0423\u0441\u0442\u0430\u043d\u043e\u0432\u0438\u0442\u0435',
-        step2_desc: '\u0421\u043a\u0430\u0447\u0430\u0439\u0442\u0435 \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439 \u0440\u0435\u043b\u0438\u0437 \u0438\u043b\u0438 \u0441\u043e\u0431\u0435\u0440\u0438\u0442\u0435 \u0438\u0437 \u0438\u0441\u0445\u043e\u0434\u043d\u0438\u043a\u043e\u0432 \u0447\u0435\u0440\u0435\u0437 Flutter. \u0414\u043e\u0441\u0442\u0443\u043f\u043d\u043e \u0434\u043b\u044f <strong>Windows</strong>, <strong>Linux</strong> (\u044d\u043a\u0441\u043f\u0435\u0440\u0438\u043c\u0435\u043d\u0442\u0430\u043b\u044c\u043d\u043e) \u0438 <strong>Android</strong>. \u0412\u0441\u0442\u0440\u043e\u0435\u043d\u043d\u044b\u0439 <strong>\u043c\u0430\u0441\u0442\u0435\u0440 \u043d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438</strong> \u043f\u043e\u043c\u043e\u0436\u0435\u0442 \u043f\u0440\u0438 \u043f\u0435\u0440\u0432\u043e\u043c \u0437\u0430\u043f\u0443\u0441\u043a\u0435.',
-        step3_title: '\u0421\u043e\u0431\u0438\u0440\u0430\u0439\u0442\u0435!',
-        step3_desc: '\u0412\u0432\u0435\u0434\u0438\u0442\u0435 API-\u043a\u043b\u044e\u0447\u0438 \u0432 \u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0430\u0445, \u043d\u0430\u0439\u0434\u0438\u0442\u0435 \u043b\u044e\u0431\u0438\u043c\u044b\u0435 \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u044f \u0438 \u043e\u0440\u0433\u0430\u043d\u0438\u0437\u0443\u0439\u0442\u0435 \u0438\u0445 \u0432 \u043a\u043e\u043b\u043b\u0435\u043a\u0446\u0438\u0438. \u0412\u0441\u0451!',
-        sharing_label: '\u0418\u043c\u043f\u043e\u0440\u0442 \u0438 \u0448\u0430\u0440\u0438\u043d\u0433',
-        sharing_title: '\u0418\u043c\u043f\u043e\u0440\u0442 \u0438 \u043e\u0431\u043c\u0435\u043d',
-        sharing_subtitle: '\u0418\u043c\u043f\u043e\u0440\u0442 \u0438\u0437 Trakt.tv, Steam \u0438\u043b\u0438 RetroAchievements, \u044d\u043a\u0441\u043f\u043e\u0440\u0442 \u043a\u043e\u043b\u043b\u0435\u043a\u0446\u0438\u0439 \u0438 \u043e\u0431\u043c\u0435\u043d \u0441 \u0434\u0440\u0443\u0437\u044c\u044f\u043c\u0438.',
-        format_trakt_name: '\u0418\u043c\u043f\u043e\u0440\u0442 Trakt',
-        format_trakt_desc: '\u0418\u043c\u043f\u043e\u0440\u0442\u0438\u0440\u0443\u0439\u0442\u0435 \u043f\u0440\u043e\u0441\u043c\u043e\u0442\u0440\u0435\u043d\u043d\u044b\u0435 \u0444\u0438\u043b\u044c\u043c\u044b, \u0441\u0435\u0440\u0438\u0430\u043b\u044b, \u043e\u0446\u0435\u043d\u043a\u0438 \u0438 \u0432\u0438\u0448\u043b\u0438\u0441\u0442 \u0438\u0437 ZIP-\u0432\u044b\u0433\u0440\u0443\u0437\u043a\u0438 Trakt.tv.',
-        format_ra_name: '\u0418\u043c\u043f\u043e\u0440\u0442 RA',
-        format_ra_desc: '\u0418\u043c\u043f\u043e\u0440\u0442 \u0440\u0435\u0442\u0440\u043e-\u0438\u0433\u0440 \u0441 \u043f\u0440\u043e\u0433\u0440\u0435\u0441\u0441\u043e\u043c \u0430\u0447\u0438\u0432\u043e\u043a, \u043d\u0430\u0433\u0440\u0430\u0434\u0430\u043c\u0438 \u0438 \u043c\u0430\u043f\u043f\u0438\u043d\u0433\u043e\u043c \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c \u0438\u0437 RetroAchievements.',
-        format_light_name: '\u041b\u0451\u0433\u043a\u0438\u0439 \u044d\u043a\u0441\u043f\u043e\u0440\u0442',
-        format_light_desc: '\u041d\u0435\u0431\u043e\u043b\u044c\u0448\u043e\u0439 \u0444\u0430\u0439\u043b \u0441\u043e \u0441\u043f\u0438\u0441\u043a\u043e\u043c \u044d\u043b\u0435\u043c\u0435\u043d\u0442\u043e\u0432. \u041f\u043e\u043b\u0443\u0447\u0430\u0442\u0435\u043b\u044e \u043d\u0443\u0436\u0435\u043d \u0438\u043d\u0442\u0435\u0440\u043d\u0435\u0442 \u0434\u043b\u044f \u0437\u0430\u0433\u0440\u0443\u0437\u043a\u0438 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0439.',
-        format_full_name: '\u041f\u043e\u043b\u043d\u044b\u0439 \u044d\u043a\u0441\u043f\u043e\u0440\u0442',
-        format_full_desc: '\u041f\u043e\u043b\u043d\u044b\u0439 \u043f\u0430\u043a\u0435\u0442 \u0441 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f\u043c\u0438, \u0434\u043e\u0441\u043a\u0430\u043c\u0438 \u0438 \u0432\u0441\u0435\u043c\u0438 \u0434\u0430\u043d\u043d\u044b\u043c\u0438. \u0420\u0430\u0431\u043e\u0442\u0430\u0435\u0442 \u043f\u043e\u043b\u043d\u043e\u0441\u0442\u044c\u044e \u043e\u0444\u0444\u043b\u0430\u0439\u043d.',
-        demo_label: '\u041f\u043e\u043f\u0440\u043e\u0431\u0443\u0439\u0442\u0435',
-        demo_title: '\u0413\u043e\u0442\u043e\u0432\u044b\u0435 \u043a\u043e\u043b\u043b\u0435\u043a\u0446\u0438\u0438',
-        demo_subtitle: '\u0421\u043a\u0430\u0447\u0430\u0439\u0442\u0435 \u0433\u043e\u0442\u043e\u0432\u044b\u0435 \u043a\u043e\u043b\u043b\u0435\u043a\u0446\u0438\u0438 \u043b\u0443\u0447\u0448\u0438\u0445 \u0438\u0433\u0440, \u0444\u0438\u043b\u044c\u043c\u043e\u0432 \u0438 \u0430\u043d\u0438\u043c\u0435. \u0418\u043c\u043f\u043e\u0440\u0442\u0438\u0440\u0443\u0439\u0442\u0435 \u0438 \u043f\u043e\u043b\u044c\u0437\u0443\u0439\u0442\u0435\u0441\u044c \u2014 \u0440\u0430\u0431\u043e\u0442\u0430\u0435\u0442 \u043e\u0444\u0444\u043b\u0430\u0439\u043d.',
-        demo_browse: '\u0421\u043c\u043e\u0442\u0440\u0435\u0442\u044c \u043a\u043e\u043b\u043b\u0435\u043a\u0446\u0438\u0438',
-        tech_label: '\u0422\u0435\u0445\u043d\u043e\u043b\u043e\u0433\u0438\u0438',
-        tech_title: '\u041e\u0442\u043a\u0440\u044b\u0442\u044b\u0439 \u043a\u043e\u0434, \u0441\u043e\u0437\u0434\u0430\u043d \u043d\u0430\u0434\u0451\u0436\u043d\u043e',
-        cta_label: '\u0413\u043e\u0442\u043e\u0432\u044b?',
-        cta_title: '\u041d\u0430\u0447\u043d\u0438\u0442\u0435 \u043e\u0440\u0433\u0430\u043d\u0438\u0437\u043e\u0432\u044b\u0432\u0430\u0442\u044c \u043a\u043e\u043b\u043b\u0435\u043a\u0446\u0438\u044e',
-        cta_subtitle: '\u0411\u0435\u0441\u043f\u043b\u0430\u0442\u043d\u043e, \u043e\u0442\u043a\u0440\u044b\u0442\u044b\u0439 \u043a\u043e\u0434, \u043f\u043e\u043b\u043d\u043e\u0441\u0442\u044c\u044e \u0432\u0430\u0448.',
-        cta_download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> \u0421\u043a\u0430\u0447\u0430\u0442\u044c \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439 \u0440\u0435\u043b\u0438\u0437',
-        cta_star: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg> \u0417\u0432\u0435\u0437\u0434\u0430 \u043d\u0430 GitHub',
-        slider_organize_1: 'Все элементы из всех коллекций \u2014 фильтрация по типу и сортировка по рейтингу',
-        slider_organize_2: 'Фильтр по типу медиа \u2014 игры, фильмы, сериалы, аниме, новеллы, манга',
+        nav_download: 'Скачать',
+        hero_badge: 'Открытый код · MIT License',
+        hero_title: 'Ваши <span class="accent-game">игры</span>, <span class="accent-movie">фильмы</span>, <span class="accent-tv">сериалы</span>, <span class="accent-anime">аниме</span> и <span class="accent-vn">новеллы</span><br>— всё в одном месте',
+        hero_subtitle: 'Создавайте коллекции, отслеживайте прогресс, создавайте тир-листы и визуальные доски, оценивайте любимое и делитесь с друзьями.',
+        hero_download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Скачать',
+        hero_source: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg> Исходный код',
+        hero_platforms: 'Доступно для Windows, Linux и Android',
+        tag_games: 'Ретро-игры',
+        tag_movies: 'Фильмы',
+        tag_tv: 'Сериалы',
+        tag_anime: 'Аниме',
+        tag_vn: 'Визуальные новеллы',
+        features_label: 'Функции',
+        features_title: 'Всё что нужно для<br>организации медиа',
+        features_subtitle: 'Ищите среди сотен тысяч названий, организуйте по-своему и отслеживайте прогресс по играм, фильмам, аниме и новеллам.',
+        feat_collections_title: 'Коллекции',
+        feat_collections_desc: 'Создавайте неограниченное количество коллекций по платформе, жанру или своим спискам. Смешивайте игры, фильмы, аниме и новеллы в одной коллекции. Переключайтесь между сеткой и списком.',
+        feat_search_title: 'Поиск',
+        feat_search_desc: 'Находите названия в базах IGDB, TMDB, AniList и VNDB. Фильтруйте по году, жанру или платформе. Добавляйте в коллекцию одним нажатием.',
+        feat_progress_title: 'Прогресс',
+        feat_progress_desc: 'Отмечайте статусы: В процессе, Пройдено, Отложено, Брошено. Отслеживайте эпизоды сериалов и аниме. Оценивайте от 1 до 10 звёзд.',
+        feat_boards_title: 'Визуальные доски',
+        feat_boards_desc: 'Расставляйте постеры на свободном холсте. Добавляйте заметки, изображения и ссылки. Рисуйте связи между элементами. Арты из SteamGridDB.',
+        feat_share_title: 'Импорт и шаринг',
+        feat_share_desc: 'Импорт из Steam, Trakt.tv, RetroAchievements, MyAnimeList или AniList. Делитесь коллекциями через <code>.xcoll</code> и <code>.xcollx</code>. Друзья могут импортировать и форкнуть.',
+        feat_rate_title: 'Оценки и отзывы',
+        feat_rate_desc: 'Оценивайте от 1 до 10 звёзд. Пишите личные заметки и рецензии, видимые при экспорте. Отслеживайте даты начала и окончания.',
+        feat_tier_title: 'Тир-листы',
+        feat_tier_desc: 'Ранжируйте элементы коллекций по уровням S/A/B/C перетаскиванием, либо собирайте Mood Grid — доску N×M из элементов с подписями. Экспорт обоих видов в PNG.',
+        feat_lang_title: 'Английский и русский',
+        feat_lang_desc: 'Полная локализация интерфейса с переключением языка на лету. Все меню, статусы, надписи и сообщения на английском и русском.',
+        steps_label: 'Начало работы',
+        steps_title: 'Запуск за несколько минут',
+        steps_subtitle: 'Получите бесплатные API-ключи, установите приложение и начните собирать коллекцию.',
+        step1_title: 'Получите API-ключи',
+        step1_desc: 'Зарегистрируйтесь бесплатно на <strong>IGDB</strong> (через Twitch) для игр и <strong>TMDB</strong> для фильмов и сериалов. <strong>VNDB</strong> для новелл работает без ключа. Опционально: <strong>SteamGridDB</strong> для артов.',
+        step2_title: 'Установите',
+        step2_desc: 'Скачайте последний релиз или соберите из исходников через Flutter. Доступно для <strong>Windows</strong>, <strong>Linux</strong> (экспериментально) и <strong>Android</strong>. Встроенный <strong>мастер настройки</strong> поможет при первом запуске.',
+        step3_title: 'Собирайте!',
+        step3_desc: 'Введите API-ключи в Настройках, найдите любимые названия и организуйте их в коллекции. Всё!',
+        sharing_label: 'Импорт и шаринг',
+        sharing_title: 'Импорт и обмен',
+        sharing_subtitle: 'Импорт из Steam, Trakt.tv, RetroAchievements, MyAnimeList или AniList, экспорт коллекций и обмен с друзьями.',
+        format_trakt_name: 'Импорт Trakt',
+        format_trakt_desc: 'Импортируйте просмотренные фильмы, сериалы, оценки и вишлист из ZIP-выгрузки Trakt.tv.',
+        format_ra_name: 'Импорт RA',
+        format_ra_desc: 'Импорт ретро-игр с прогрессом ачивок, наградами и маппингом платформ из RetroAchievements.',
+        format_mal_name: 'Импорт MyAnimeList',
+        format_mal_desc: 'Импортируйте списки аниме и манги из XML-выгрузки MyAnimeList — оценки, статусы и прогресс.',
+        format_anilist_name: 'Импорт AniList',
+        format_anilist_desc: 'Импорт аниме и манги напрямую по публичному имени пользователя AniList — без API-ключа и файлов.',
+        format_light_name: 'Лёгкий экспорт',
+        format_light_desc: 'Небольшой файл со списком элементов. Получателю нужен интернет для загрузки изображений.',
+        format_full_name: 'Полный экспорт',
+        format_full_desc: 'Полный пакет с изображениями, досками и всеми данными. Работает полностью оффлайн.',
+        demo_label: 'Попробуйте',
+        demo_title: 'Готовые коллекции',
+        demo_subtitle: 'Скачайте готовые коллекции лучших игр, фильмов и аниме. Импортируйте и пользуйтесь — работает оффлайн.',
+        demo_browse: 'Смотреть коллекции',
+        tech_label: 'Технологии',
+        tech_title: 'Открытый код, создан надёжно',
+        cta_label: 'Готовы?',
+        cta_title: 'Начните организовывать коллекцию',
+        cta_subtitle: 'Бесплатно, открытый код, полностью ваш.',
+        cta_download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Скачать последний релиз',
+        cta_star: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg> Звезда на GitHub',
+        slider_organize_1: 'Все элементы из всех коллекций — фильтрация по типу и сортировка по рейтингу',
+        slider_organize_2: 'Фильтр по типу медиа — игры, фильмы, сериалы, аниме, новеллы, манга',
         slider_organize_3: 'Список коллекций с обложками и статистикой прогресса',
         slider_organize_4: 'Сетка коллекции с постерами, рейтингами и поиском',
         slider_search_label: 'Поиск',
         slider_search_title: 'Поиск и открытия',
         slider_search_subtitle: 'Ищите в базах IGDB, TMDB, VNDB и AniList среди сотен тысяч названий',
-        slider_search_1: 'Поиск фильмов, сериалов и аниме \u2014 фильтр по типу, сортировка по рейтингу или дате',
+        slider_search_1: 'Поиск фильмов, сериалов и аниме — фильтр по типу, сортировка по рейтингу или дате',
         slider_search_2: 'Поиск игр по сотням платформ через IGDB',
-        slider_search_3: 'Поиск манги и ранобэ через AniList \u2014 без API-ключа',
-        slider_search_4: 'Множество источников \u2014 IGDB, TMDB, AniList и VNDB в одном окне',
+        slider_search_3: 'Поиск манги и ранобэ через AniList — без API-ключа',
+        slider_search_4: 'Множество источников — IGDB, TMDB, AniList и VNDB в одном окне',
         slider_track_label: 'Прогресс',
         slider_track_title: 'Отслеживание и визуализация',
         slider_track_subtitle: 'Оценки, прогресс, визуальные доски, вишлист',
-        slider_track_1: 'Статус, оценка от 1 до 10, заметки \u2014 все детали на одном экране',
-        slider_track_3: 'Вишлист \u2014 сохраняйте идеи на потом, отмечайте тип медиа',
-        slider_track_4: 'Тир-листы \u2014 ранжируйте перетаскиванием, настраивайте уровни, экспорт в PNG',
-        footer_releases: '\u0420\u0435\u043b\u0438\u0437\u044b',
-        footer_api_guide: '\u0413\u0430\u0439\u0434 \u043f\u043e API \u043a\u043b\u044e\u0447\u0430\u043c',
-        footer_issues: '\u0417\u0430\u0434\u0430\u0447\u0438',
+        slider_track_1: 'Статус, оценка от 1 до 10, заметки — все детали на одном экране',
+        slider_track_3: 'Вишлист — сохраняйте идеи на потом, отмечайте тип медиа',
+        slider_track_4: 'Тир-листы — ранжируйте перетаскиванием, настраивайте уровни, экспорт в PNG',
+        footer_releases: 'Релизы',
+        footer_api_guide: 'Гайд по API ключам',
+        footer_issues: 'Задачи',
         footer_data_by: 'Данные от',
         hero_discord: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.095 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.095 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg> Discord',
       }
@@ -1671,7 +1696,7 @@
     "description": "Free open-source app to organize collections of retro games, movies, TV shows, and anime. Track progress, create tier lists, visual boards, and share with friends.",
     "url": "https://hacan359.github.io/tonkatsu_box/",
     "downloadUrl": "https://github.com/hacan359/tonkatsu_box/releases",
-    "softwareVersion": "0.28.0",
+    "softwareVersion": "0.29.0",
     "author": {
       "@type": "Person",
       "name": "hacan359",

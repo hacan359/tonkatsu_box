@@ -7,6 +7,8 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+## [0.29.0] - 2026-05-16
+
 ### Added
 
 - **Rename any collection item without touching the API cache**

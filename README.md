@@ -30,7 +30,7 @@
 
 ---
 
-Tonkatsu Box is a free, open-source app to organize your media collections. Search millions of titles from IGDB, TMDB, VNDB, and AniList. Track your progress, rate everything, create visual boards, and import your library from Steam, Trakt.tv, or RetroAchievements.
+Tonkatsu Box is a free, open-source app to organize your media collections. Search millions of titles from IGDB, TMDB, VNDB, and AniList. Track your progress, rate everything, create visual boards and mood grids, and import your library from Steam, Trakt.tv, RetroAchievements, MyAnimeList, or AniList.
 
 <p align="center">
   <img src="docs/screenshots/01-main-all.jpg" width="800" alt="Main screen">
@@ -63,8 +63,8 @@ Tonkatsu Box is a free, open-source app to organize your media collections. Sear
 | **Progress Tracking** | Status, ratings 1-10, episode tracking for TV shows and anime |
 | **Discord Rich Presence** | Show what you're playing/watching/reading in Discord (desktop) |
 | **Visual Boards** | Drag-and-drop canvas with posters, notes, and connections |
-| **Tier Lists** | Rank items into S/A/B/C tiers and export as PNG |
-| **Import** | Steam library, Trakt.tv history, RetroAchievements progress |
+| **Tier Lists & Mood Grids** | Rank items into S/A/B/C tiers, or arrange them on a visual N×M board with labels — export either as PNG |
+| **Import** | Steam library, Trakt.tv history, RetroAchievements progress, MyAnimeList XML, AniList by username |
 | **Export & Share** | .xcoll / .xcollx files with full offline support |
 | **Gamepad** | Navigate with Xbox controller |
 | **Languages** | English & Russian |
@@ -97,26 +97,28 @@ The app works offline after setup. API keys are built-in.
 
 Already tracking elsewhere? Bring your data:
 
-| Source | What's imported |
-|--------|-----------------|
-| **Steam** | Owned games, playtime, last played date |
-| **Trakt.tv** | Watch history, ratings, watchlist, episode progress |
-| **RetroAchievements** | Retro game library, achievement progress, awards |
-| **.xcollx files** | Collections shared by others |
+| | Source | What's imported |
+|:-:|--------|-----------------|
+| <img src="assets/images/icon_steam_color.png" width="28" alt="Steam"> | **Steam** | Owned games, playtime, last played date |
+| <img src="assets/images/icon_trakt_color.png" width="28" alt="Trakt.tv"> | **Trakt.tv** | Watch history, ratings, watchlist, episode progress |
+| <img src="assets/images/ra_logo.png" width="28" alt="RetroAchievements"> | **RetroAchievements** | Retro game library, achievement progress, awards |
+| <img src="assets/images/icon_myanimelist_color.png" width="28" alt="MyAnimeList"> | **MyAnimeList** | Anime and manga lists with scores, status and progress from an XML export |
+| <img src="assets/images/icon_anilist_color.png" width="28" alt="AniList"> | **AniList** | Anime and manga directly by a public username — no API key required |
+| 📦 | **.xcollx files** | Collections shared by others |
 
 > [Import guides on Wiki](https://github.com/hacan359/tonkatsu_box/wiki)
 
 ## Data Sources
 
-| Type | Source | API Key |
-|------|--------|---------|
-| Games | [IGDB](https://www.igdb.com/) | Built-in |
-| Movies & TV | [TMDB](https://www.themoviedb.org/) | Built-in |
-| Visual Novels | [VNDB](https://vndb.org/) | Not required |
-| Anime | [AniList](https://anilist.co/) | Not required |
-| Manga | [AniList](https://anilist.co/) | Not required |
-| Artwork | [SteamGridDB](https://www.steamgriddb.com/) | Built-in |
-| Achievements | [RetroAchievements](https://retroachievements.org/) | Required |
+| | Type | Source | API Key |
+|:-:|------|--------|---------|
+| <img src="assets/images/icon_igdb_color.png" width="28" alt="IGDB"> | Games | [IGDB](https://www.igdb.com/) | Built-in |
+| <img src="assets/images/icon_tmdb_color.png" width="28" alt="TMDB"> | Movies & TV | [TMDB](https://www.themoviedb.org/) | Built-in |
+| <img src="assets/images/icon_vndb_color.png" width="28" alt="VNDB"> | Visual Novels | [VNDB](https://vndb.org/) | Not required |
+| <img src="assets/images/icon_anilist_color.png" width="28" alt="AniList"> | Anime & Manga | [AniList](https://anilist.co/) | Not required |
+| <img src="assets/images/icon_steamgriddb_color.png" width="28" alt="SteamGridDB"> | Artwork | [SteamGridDB](https://www.steamgriddb.com/) | Built-in |
+| <img src="assets/images/icon_scrapper_color.png" width="28" alt="ScreenScraper"> | Retro media gallery | [ScreenScraper](https://www.screenscraper.fr/) | Required (user account) |
+| <img src="assets/images/ra_logo.png" width="28" alt="RetroAchievements"> | Achievements | [RetroAchievements](https://retroachievements.org/) | Required |
 
 > [API Keys Setup](https://github.com/hacan359/tonkatsu_box/wiki/API-Keys-Setup)
 
@@ -160,7 +162,7 @@ Contributions welcome! See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for build ins
 
 ## Credits
 
-Data: [IGDB](https://www.igdb.com/) · [TMDB](https://www.themoviedb.org/) · [VNDB](https://vndb.org/) · [AniList](https://anilist.co/) · [RetroAchievements](https://retroachievements.org/) · [SteamGridDB](https://www.steamgriddb.com/)
+Data: [IGDB](https://www.igdb.com/) · [TMDB](https://www.themoviedb.org/) · [VNDB](https://vndb.org/) · [AniList](https://anilist.co/) · [MyAnimeList](https://myanimelist.net/) · [RetroAchievements](https://retroachievements.org/) · [SteamGridDB](https://www.steamgriddb.com/) · [ScreenScraper](https://www.screenscraper.fr/)
 
 *This product uses the TMDB API but is not endorsed or certified by TMDB.*
 
