@@ -205,12 +205,12 @@ class DatabaseService {
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
           await db.execute('PRAGMA foreign_keys = ON');
-          // WAL + NORMAL is the SQLite-recommended trade-off for
-          // single-process desktop apps: durable across power loss, but
-          // ~5-10× faster than the default DELETE+FULL because commits
-          // batch into a single fsync per checkpoint instead of one
-          // fsync per write. Restore of large backups was the trigger.
-          await db.execute('PRAGMA journal_mode = WAL');
+          // WAL + NORMAL: SQLite-recommended durable-but-fast combo;
+          // commits batch into one fsync per checkpoint instead of
+          // one per write. `journal_mode` returns the resulting mode,
+          // so Android's SQLiteDatabase rejects it via `execute()` —
+          // use `rawQuery` cross-platform.
+          await db.rawQuery('PRAGMA journal_mode = WAL');
           await db.execute('PRAGMA synchronous = NORMAL');
         },
       ),

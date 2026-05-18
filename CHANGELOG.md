@@ -76,9 +76,11 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
   per write.
 
   * lib/core/database/database_service.dart (DatabaseService._initDatabase):
-    Issue `PRAGMA journal_mode = WAL` and `PRAGMA synchronous = NORMAL`
-    in `onConfigure`. Single change, broad benefit — applies to every
-    write the app makes, not just restore.
+    Issue `PRAGMA journal_mode = WAL` (via `rawQuery` — Android's
+    SQLiteDatabase rejects PRAGMAs that return a result via `execute`)
+    and `PRAGMA synchronous = NORMAL` in `onConfigure`. Single change,
+    broad benefit — applies to every write the app makes, not just
+    restore.
   * lib/core/services/backup_service.dart (BackupService,
     BackupService.restoreFromBackup, restoreInProgressProvider):
     Inject `DatabaseService` so the restore can issue a final
