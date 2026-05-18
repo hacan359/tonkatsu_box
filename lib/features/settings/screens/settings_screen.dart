@@ -1,5 +1,7 @@
 // Экран-хаб настроек приложения с единым grouped-list лейаутом.
 
+import 'dart:async';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -853,17 +855,34 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     // 4. Выполнение восстановления
     if (!context.mounted) return;
-    context.showSnack(
-      l.settingsRestoreBackup,
-      loading: true,
-      duration: const Duration(seconds: 120),
-    );
 
-    final RestoreResult result = await service.restoreFromBackup(
-      zipPath: zipPath,
-      restoreWishlist: options.restoreWishlist,
-      restoreSettings: options.restoreSettings,
-    );
+    final ValueNotifier<BackupProgress?> progressNotifier =
+        ValueNotifier<BackupProgress?>(null);
+
+    // Modal blocking dialog runs concurrently with the await below.
+    final NavigatorState navigator = Navigator.of(context, rootNavigator: true);
+    unawaited(showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      useRootNavigator: true,
+      builder: (BuildContext _) =>
+          _RestoreProgressDialog(progress: progressNotifier),
+    ));
+
+    ref.read(restoreInProgressProvider.notifier).state = true;
+    RestoreResult result;
+    try {
+      result = await service.restoreFromBackup(
+        zipPath: zipPath,
+        restoreWishlist: options.restoreWishlist,
+        restoreSettings: options.restoreSettings,
+        onProgress: (BackupProgress p) => progressNotifier.value = p,
+      );
+    } finally {
+      ref.read(restoreInProgressProvider.notifier).state = false;
+      if (navigator.canPop()) navigator.pop();
+      progressNotifier.dispose();
+    }
 
     if (!context.mounted) return;
 
@@ -885,6 +904,74 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       );
     } else {
       context.hideSnack();
+    }
+  }
+}
+
+/// Modal, dismiss-locked progress dialog shown while a backup is being
+/// restored. Blocks back/system-back via PopScope so the user can't kill
+/// the app mid-write.
+class _RestoreProgressDialog extends StatelessWidget {
+  const _RestoreProgressDialog({required this.progress});
+
+  final ValueListenable<BackupProgress?> progress;
+
+  @override
+  Widget build(BuildContext context) {
+    final S l = S.of(context);
+    return PopScope(
+      canPop: false,
+      child: AlertDialog(
+        title: Text(l.restoreProgressTitle),
+        content: ValueListenableBuilder<BackupProgress?>(
+          valueListenable: progress,
+          builder: (BuildContext context, BackupProgress? p, _) {
+            final String stageText = _stageLabel(l, p);
+            final double? value = p == null || p.total == 0
+                ? null
+                : (p.current / p.total).clamp(0.0, 1.0);
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  l.restoreProgressWarning,
+                  style: const TextStyle(color: AppColors.textSecondary),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                LinearProgressIndicator(value: value),
+                const SizedBox(height: AppSpacing.sm),
+                Text(stageText),
+                if (p?.collectionName != null) ...<Widget>[
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    p!.collectionName!,
+                    style: const TextStyle(color: AppColors.textSecondary),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  String _stageLabel(S l, BackupProgress? p) {
+    if (p == null) return l.restoreStageReading;
+    switch (p.stage) {
+      case 'collections':
+        return l.restoreStageCollections(p.current, p.total);
+      case 'wishlist':
+        return l.restoreStageWishlist;
+      case 'settings':
+        return l.restoreStageSettings;
+      case 'finalizing':
+        return l.restoreStageFinalizing;
+      default:
+        return p.stage;
     }
   }
 }

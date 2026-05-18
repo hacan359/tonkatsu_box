@@ -7,6 +7,62 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Changed
+
+- **Make backup restore visibly atomic, faster, and impossible to interrupt by accident**
+
+  Restoring a large backup used to look "done" while SQLite was still
+  flushing the last collection's writes; closing the app at that point
+  truncated the data. The restore flow now shows a modal,
+  dismiss-locked progress dialog ("Restoring backup — do not close the
+  app. This may take several minutes for large backups.") with a real
+  per-collection counter and a final "Finishing up…" stage so the UI
+  only goes away once the operation has actually returned. The
+  `BackupProgress` callback is fired after each collection finishes
+  (not before it starts), so the bar never claims completion ahead of
+  the database write. On desktop, an `AppLifecycleListener` vetoes
+  OS-level close requests for the duration of the restore (taskbar
+  close, alt+F4), letting the user know to wait instead of corrupting
+  data — kill -9 and power cuts still bypass this, but those are out
+  of scope. At the very end of the restore the WAL is force-flushed
+  via `PRAGMA wal_checkpoint(TRUNCATE)` so a user deleting the
+  sidecar `-wal`/`-shm` files afterwards can't lose the tail-of-
+  restore writes (wishlist + mood grids, which land last). The
+  database now opens in WAL journal mode with
+  `synchronous = NORMAL`, the SQLite-recommended durable-but-fast
+  combination — restores (and every other write-heavy operation,
+  including imports and canvas edits) run noticeably faster because
+  commits batch into one fsync per checkpoint instead of one fsync
+  per write.
+
+  * lib/core/database/database_service.dart (DatabaseService._initDatabase):
+    Issue `PRAGMA journal_mode = WAL` and `PRAGMA synchronous = NORMAL`
+    in `onConfigure`. Single change, broad benefit — applies to every
+    write the app makes, not just restore.
+  * lib/core/services/backup_service.dart (BackupService,
+    BackupService.restoreFromBackup, restoreInProgressProvider):
+    Inject `DatabaseService` so the restore can issue a final
+    `PRAGMA wal_checkpoint(TRUNCATE)` before returning; report
+    `BackupProgress` after each collection import (so `current` only
+    advances once the write is durable); emit a terminal
+    `'finalizing'` stage before returning; expose a
+    `StateProvider<bool>` that the app shell watches for the
+    exit-veto.
+  * lib/features/settings/screens/settings_screen.dart
+    (_RestoreProgressDialog, _SettingsScreenState._handleRestore):
+    Replace the loading snackbar with a `PopScope(canPop: false)`
+    modal dialog driven by a `ValueNotifier<BackupProgress?>`; flip
+    `restoreInProgressProvider` while the future is in flight.
+  * lib/app.dart (TonkatsuBoxApp, _TonkatsuBoxAppState): Switch to
+    `ConsumerStatefulWidget`; register an `AppLifecycleListener` whose
+    `onExitRequested` returns `AppExitResponse.cancel` while
+    `restoreInProgressProvider` is true.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (restoreProgressTitle,
+    restoreProgressWarning, restoreStageReading,
+    restoreStageCollections, restoreStageWishlist,
+    restoreStageSettings, restoreStageFinalizing): New strings;
+    regenerated `app_localizations*.dart`.
+
 ### Added
 
 - **Group wishlist entries with tags, bulk-delete by tag, and search inside notes**

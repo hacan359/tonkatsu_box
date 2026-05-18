@@ -907,6 +907,48 @@ abstract class S {
   /// **'Invalid backup archive'**
   String get restoreInvalidArchive;
 
+  /// No description provided for @restoreProgressTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Restoring backup'**
+  String get restoreProgressTitle;
+
+  /// No description provided for @restoreProgressWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Do not close the app. This may take several minutes for large backups.'**
+  String get restoreProgressWarning;
+
+  /// No description provided for @restoreStageReading.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading archive…'**
+  String get restoreStageReading;
+
+  /// No description provided for @restoreStageCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'Restoring collections… ({current}/{total})'**
+  String restoreStageCollections(int current, int total);
+
+  /// No description provided for @restoreStageWishlist.
+  ///
+  /// In en, this message translates to:
+  /// **'Restoring wishlist…'**
+  String get restoreStageWishlist;
+
+  /// No description provided for @restoreStageSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Restoring settings…'**
+  String get restoreStageSettings;
+
+  /// No description provided for @restoreStageFinalizing.
+  ///
+  /// In en, this message translates to:
+  /// **'Finishing up…'**
+  String get restoreStageFinalizing;
+
   /// No description provided for @settingsImport.
   ///
   /// In en, this message translates to:

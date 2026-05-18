@@ -9,6 +9,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logging/logging.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../data/repositories/collection_repository.dart';
 import '../../data/repositories/wishlist_repository.dart';
@@ -35,6 +36,7 @@ const int backupFormatVersion = 2;
 final Provider<BackupService> backupServiceProvider =
     Provider<BackupService>((Ref ref) {
   return BackupService(
+    database: ref.watch(databaseServiceProvider),
     exportService: ref.watch(exportServiceProvider),
     importService: ref.watch(importServiceProvider),
     configService: ref.watch(configServiceProvider),
@@ -44,6 +46,12 @@ final Provider<BackupService> backupServiceProvider =
     moodGridDao: ref.watch(moodGridDaoProvider),
   );
 });
+
+/// `true` while a restore is mid-flight. Read by the app shell to block
+/// `AppLifecycleListener.onExitRequested` so a desktop user can't close the
+/// window while SQLite is still writing.
+final StateProvider<bool> restoreInProgressProvider =
+    StateProvider<bool>((Ref ref) => false);
 
 /// Callback для отслеживания прогресса бэкапа/восстановления.
 typedef BackupProgressCallback = void Function(BackupProgress progress);
@@ -253,6 +261,7 @@ class BackupManifest {
 class BackupService {
   /// Создаёт экземпляр [BackupService].
   BackupService({
+    required DatabaseService database,
     required ExportService exportService,
     required ImportService importService,
     required ConfigService configService,
@@ -260,7 +269,8 @@ class BackupService {
     required WishlistRepository wishlistRepo,
     TrackerDao? trackerDao,
     MoodGridDao? moodGridDao,
-  })  : _exportService = exportService,
+  })  : _database = database,
+        _exportService = exportService,
         _importService = importService,
         _configService = configService,
         _collectionRepo = collectionRepo,
@@ -270,6 +280,7 @@ class BackupService {
 
   static final Logger _log = Logger('BackupService');
 
+  final DatabaseService _database;
   final ExportService _exportService;
   final ImportService _importService;
   final ConfigService _configService;
@@ -550,14 +561,19 @@ class BackupService {
         final String fileName = sortedKeys[i];
         final String content = collectionFiles[fileName]!;
 
-        onProgress?.call(BackupProgress(
-          stage: 'collections',
-          current: i,
-          total: sortedKeys.length,
-        ));
-
+        // Reported BEFORE work: progress shows "starting item i+1 of N" so
+        // the UI never claims completion while a write is still in flight.
+        String? collectionName;
         try {
           final XcollFile xcoll = XcollFile.fromJsonString(content);
+          collectionName = xcoll.name;
+          onProgress?.call(BackupProgress(
+            stage: 'collections',
+            current: i,
+            total: sortedKeys.length,
+            collectionName: collectionName,
+          ));
+
           final ImportResult result =
               await _importService.importFromXcoll(xcoll);
           if (result.success) {
@@ -567,6 +583,14 @@ class BackupService {
         } catch (e) {
           _log.warning('Failed to import $fileName', e);
         }
+
+        // Post-work progress: now i+1 is fully durable.
+        onProgress?.call(BackupProgress(
+          stage: 'collections',
+          current: i + 1,
+          total: sortedKeys.length,
+          collectionName: collectionName,
+        ));
       }
 
       // Восстановление вишлиста
@@ -611,6 +635,26 @@ class BackupService {
         } catch (e) {
           _log.warning('Failed to restore mood grids', e);
         }
+      }
+
+      // Anchor: callers can show a "still finishing up" banner. Reported
+      // before returning so the UI never claims completion while the future
+      // is still resolving (DB closes its journal between this point and
+      // the actual return).
+      onProgress?.call(const BackupProgress(
+        stage: 'finalizing',
+        current: 1,
+        total: 1,
+      ));
+
+      // Force-flush WAL into the main DB file so a user deleting the
+      // `-wal` sidecar afterwards can't lose tail-of-restore writes
+      // (wishlist + mood grids land last and are the most exposed).
+      try {
+        final Database db = await _database.database;
+        await db.execute('PRAGMA wal_checkpoint(TRUNCATE)');
+      } catch (e) {
+        _log.warning('WAL checkpoint after restore failed', e);
       }
 
       return RestoreResult.success(

@@ -455,6 +455,30 @@ class SEn extends S {
   String get restoreInvalidArchive => 'Invalid backup archive';
 
   @override
+  String get restoreProgressTitle => 'Restoring backup';
+
+  @override
+  String get restoreProgressWarning =>
+      'Do not close the app. This may take several minutes for large backups.';
+
+  @override
+  String get restoreStageReading => 'Reading archive…';
+
+  @override
+  String restoreStageCollections(int current, int total) {
+    return 'Restoring collections… ($current/$total)';
+  }
+
+  @override
+  String get restoreStageWishlist => 'Restoring wishlist…';
+
+  @override
+  String get restoreStageSettings => 'Restoring settings…';
+
+  @override
+  String get restoreStageFinalizing => 'Finishing up…';
+
+  @override
   String get settingsImport => 'Import';
 
   @override

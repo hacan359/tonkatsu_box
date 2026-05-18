@@ -193,6 +193,19 @@
     }
   },
   "restoreInvalidArchive": "Invalid backup archive",
+  "restoreProgressTitle": "Restoring backup",
+  "restoreProgressWarning": "Do not close the app. This may take several minutes for large backups.",
+  "restoreStageReading": "Reading archive…",
+  "restoreStageCollections": "Restoring collections… ({current}/{total})",
+  "@restoreStageCollections": {
+    "placeholders": {
+      "current": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "restoreStageWishlist": "Restoring wishlist…",
+  "restoreStageSettings": "Restoring settings…",
+  "restoreStageFinalizing": "Finishing up…",
   "settingsImport": "Import",
   "settingsImportSubtitle": "Import collections from external services",
   "settingsContentLanguage": "Content Language",

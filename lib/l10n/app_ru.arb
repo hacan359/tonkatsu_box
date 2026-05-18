@@ -193,6 +193,19 @@
     }
   },
   "restoreInvalidArchive": "Некорректный архив бэкапа",
+  "restoreProgressTitle": "Восстановление из бэкапа",
+  "restoreProgressWarning": "Не закрывайте приложение. На больших бэкапах операция может занять несколько минут.",
+  "restoreStageReading": "Читаем архив…",
+  "restoreStageCollections": "Восстанавливаем коллекции… ({current}/{total})",
+  "@restoreStageCollections": {
+    "placeholders": {
+      "current": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "restoreStageWishlist": "Восстанавливаем вишлист…",
+  "restoreStageSettings": "Восстанавливаем настройки…",
+  "restoreStageFinalizing": "Завершаем…",
   "settingsImport": "Импорт",
   "settingsImportSubtitle": "Импорт коллекций из внешних сервисов",
   "settingsContentLanguage": "Язык контента",

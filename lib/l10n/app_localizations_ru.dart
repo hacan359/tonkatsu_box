@@ -460,6 +460,30 @@ class SRu extends S {
   String get restoreInvalidArchive => 'Некорректный архив бэкапа';
 
   @override
+  String get restoreProgressTitle => 'Восстановление из бэкапа';
+
+  @override
+  String get restoreProgressWarning =>
+      'Не закрывайте приложение. На больших бэкапах операция может занять несколько минут.';
+
+  @override
+  String get restoreStageReading => 'Читаем архив…';
+
+  @override
+  String restoreStageCollections(int current, int total) {
+    return 'Восстанавливаем коллекции… ($current/$total)';
+  }
+
+  @override
+  String get restoreStageWishlist => 'Восстанавливаем вишлист…';
+
+  @override
+  String get restoreStageSettings => 'Восстанавливаем настройки…';
+
+  @override
+  String get restoreStageFinalizing => 'Завершаем…';
+
+  @override
   String get settingsImport => 'Импорт';
 
   @override
