@@ -160,13 +160,12 @@ class _TierListsScreenState extends ConsumerState<TierListsScreen> {
           },
         ),
           DraggableFab(
-            icon: Icons.add,
+            mainAction: DraggableFabItem(
+              icon: Icons.leaderboard,
+              label: l.tierListCreate,
+              onTap: () => _showCreateDialog(context),
+            ),
             items: <DraggableFabItem>[
-              DraggableFabItem(
-                icon: Icons.leaderboard,
-                label: l.tierListCreate,
-                onTap: () => _showCreateDialog(context),
-              ),
               if (collectionId == null)
                 DraggableFabItem(
                   icon: Icons.grid_view,

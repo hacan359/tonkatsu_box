@@ -241,6 +241,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             ],
           ),
           DraggableFab(
+            mainAction: _buildMainFabAction(l),
             primaryItems: _buildPrimaryFabItems(l),
             items: _buildSecondaryFabItems(l),
           ),
@@ -282,18 +283,21 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   }
 
   /// Основные действия — горизонтальный ряд иконок.
+  DraggableFabItem? _buildMainFabAction(S l) {
+    if (!_canEdit || _isCanvasMode) return null;
+    return DraggableFabItem(
+      icon: Icons.add,
+      label: l.collectionAddItems,
+      onTap: () => CollectionActions.addItems(
+        context: context,
+        ref: ref,
+        collectionId: widget.collectionId,
+      ),
+    );
+  }
+
   List<DraggableFabItem> _buildPrimaryFabItems(S l) {
     return <DraggableFabItem>[
-      if (_canEdit && !_isCanvasMode)
-        DraggableFabItem(
-          icon: Icons.add,
-          label: l.collectionAddItems,
-          onTap: () => CollectionActions.addItems(
-            context: context,
-            ref: ref,
-            collectionId: widget.collectionId,
-          ),
-        ),
       if (!_isCanvasMode)
         DraggableFabItem(
           icon: _isTableMode ? Icons.grid_view : Icons.table_chart_outlined,

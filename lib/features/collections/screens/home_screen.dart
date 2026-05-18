@@ -86,12 +86,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 _buildErrorState(context, ref, error),
           ),
           DraggableFab(
+            mainAction: DraggableFabItem(
+              icon: Icons.add,
+              label: l.collectionsNewCollection,
+              onTap: () => _createCollection(context, ref),
+            ),
             primaryItems: <DraggableFabItem>[
-              DraggableFabItem(
-                icon: Icons.add,
-                label: l.collectionsNewCollection,
-                onTap: () => _createCollection(context, ref),
-              ),
               DraggableFabItem(
                 icon: Icons.file_download_outlined,
                 label: l.collectionsImportCollection,

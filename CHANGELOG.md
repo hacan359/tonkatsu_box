@@ -9,6 +9,46 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Changed
 
+- **Surface the primary action of every floating menu as an always-visible button**
+
+  The draggable FAB used to be a single ⋮ that hid every action — including
+  "Add" — behind a tap. Each screen now ships a separate, always-visible
+  primary button stacked under the ⋮ overflow so the most common action
+  is one tap away: Add wishlist entry, Add profile, Create tier list,
+  Add tier, Export mood grid image, New collection, Add items, Export
+  gamepad log. The ⋮ stays for less-frequent operations and is rendered
+  ~17% smaller above the primary button, with the fan menu now opening
+  upward/leftward from it so it never overlaps the main button. The
+  whole block drags together; tap targets are independent.
+
+  * lib/shared/widgets/draggable_fab.dart (DraggableFab.mainAction,
+    _DraggableFabState._buildButton, _DraggableFabState._blockWidth,
+    _DraggableFabState._blockHeight, _DraggableFabState._showMenu): New
+    `mainAction` parameter that renders an always-visible 48px button
+    paired with a 40px ⋮ overflow. Each button hosts its own
+    `GestureDetector` for tap routing while sharing pan state for the
+    whole-block drag; menu anchor is computed from the ⋮ position so
+    the fan radiates around it, not the main button.
+  * lib/features/wishlist/screens/wishlist_screen.dart
+    (_WishlistScreenState._buildAddItem, _buildFabItems): Add → main;
+    toggle resolved + clear resolved stay under ⋮.
+  * lib/features/settings/screens/profiles_screen.dart: Add profile →
+    main; ⋮ is hidden when no other actions exist.
+  * lib/features/tier_lists/screens/tier_lists_screen.dart: Create
+    tier list → main; Create mood grid stays under ⋮.
+  * lib/features/tier_lists/screens/tier_list_detail_screen.dart:
+    Add tier → main; Export image + Clear all stay under ⋮.
+  * lib/features/tier_lists/screens/mood_grid_detail_screen.dart:
+    Export image → main; Rename + Delete stay under ⋮.
+  * lib/features/collections/screens/home_screen.dart: New collection
+    → main; Import / view toggle / sort stay under ⋮.
+  * lib/features/collections/screens/collection_screen.dart
+    (_CollectionScreenState._buildMainFabAction): Add items → main
+    (only when editable and not in canvas mode); view toggles and
+    secondary actions stay under ⋮.
+  * lib/features/settings/screens/gamepad_debug_screen.dart: Export
+    log → main; Clear logs stays under ⋮.
+
 - **Make backup restore visibly atomic, faster, and impossible to interrupt by accident**
 
   Restoring a large backup used to look "done" while SQLite was still

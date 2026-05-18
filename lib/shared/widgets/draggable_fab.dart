@@ -44,25 +44,31 @@ class DraggableFabDivider extends DraggableFabItem {
 
 /// Плавающая кнопка действий, которую можно перетаскивать по экрану.
 ///
-/// Раскрывается веером в 2 стороны:
-/// - [primaryItems] — круглые иконки влево от FAB.
-/// - [items] — круглые иконки вверх от FAB.
+/// Может содержать всегда-видимое [mainAction] и/или скрытое меню,
+/// раскрывающееся веером:
+/// - [primaryItems] — круглые иконки влево от ⋮.
+/// - [items] — круглые иконки вверх от ⋮.
 class DraggableFab extends StatefulWidget {
   /// Создаёт [DraggableFab].
   const DraggableFab({
+    this.mainAction,
     this.primaryItems = const <DraggableFabItem>[],
     this.items = const <DraggableFabItem>[],
     this.icon = Icons.more_vert,
     super.key,
   });
 
-  /// Основные действия — веер влево.
+  /// Всегда-видимая основная кнопка (например, «+»). Рендерится слева
+  /// от ⋮ FAB; перетаскивается вместе с ним как единый блок.
+  final DraggableFabItem? mainAction;
+
+  /// Основные действия — веер влево от ⋮.
   final List<DraggableFabItem> primaryItems;
 
-  /// Остальные действия — веер вверх.
+  /// Остальные действия — веер вверх от ⋮.
   final List<DraggableFabItem> items;
 
-  /// Иконка кнопки.
+  /// Иконка кнопки меню.
   final IconData icon;
 
   @override
@@ -79,38 +85,104 @@ class _DraggableFabState extends State<DraggableFab> {
   double _dragStartBottom = 0;
 
   static const double _fabSize = 48;
+  static const double _menuFabSize = 40;
+  static const double _gap = 8;
+
+  bool get _hasMenu =>
+      widget.primaryItems.isNotEmpty || widget.items.isNotEmpty;
+
+  double get _blockWidth {
+    final bool hasMain = widget.mainAction != null;
+    if (hasMain) return _fabSize;
+    return _menuFabSize;
+  }
+
+  double get _blockHeight {
+    final bool hasMain = widget.mainAction != null;
+    if (hasMain && _hasMenu) return _menuFabSize + _gap + _fabSize;
+    if (hasMain) return _fabSize;
+    return _menuFabSize;
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (widget.primaryItems.isEmpty && widget.items.isEmpty) {
+    final bool hasMain = widget.mainAction != null;
+    if (!hasMain && !_hasMenu) {
       return const SizedBox.shrink();
     }
 
     return Positioned(
       right: _right,
       bottom: _bottom,
-      child: GestureDetector(
-        onPanStart: _onPanStart,
-        onPanUpdate: _onPanUpdate,
-        onPanEnd: _onPanEnd,
-        onTap: _isDragging ? null : () => _showMenu(context),
-        child: Material(
-          elevation: 6,
-          shadowColor: AppColors.brand.withAlpha(80),
-          shape: const CircleBorder(),
-          color: AppColors.brand,
-          child: SizedBox(
-            width: _fabSize,
-            height: _fabSize,
-            child: Icon(
-              widget.icon,
-              color: AppColors.textPrimary,
-              size: 24,
-            ),
-          ),
+      child: SizedBox(
+        width: _blockWidth,
+        height: _blockHeight,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            if (_hasMenu)
+              _buildButton(
+                icon: widget.icon,
+                onTap: () => _showMenu(context),
+                isMenuAnchor: true,
+              ),
+            if (hasMain && _hasMenu) const SizedBox(height: _gap),
+            if (hasMain)
+              _buildButton(
+                icon: widget.mainAction!.icon,
+                iconColor: widget.mainAction!.iconColor,
+                tooltip: widget.mainAction!.label,
+                onTap: widget.mainAction!.onTap,
+              ),
+          ],
         ),
       ),
     );
+  }
+
+  /// Single round button that both handles tap (when not dragging) and
+  /// drags the whole block. Each button has its own gesture detector so
+  /// the tap surface is local; pan state is shared via `_dragStart*` so
+  /// from either button the block moves as one.
+  Widget _buildButton({
+    required IconData icon,
+    Color? iconColor,
+    String? tooltip,
+    required VoidCallback onTap,
+    bool isMenuAnchor = false,
+  }) {
+    final double size = isMenuAnchor ? _menuFabSize : _fabSize;
+    final Widget circle = Material(
+      elevation: 6,
+      shadowColor: AppColors.brand.withAlpha(80),
+      shape: const CircleBorder(),
+      color: AppColors.brand,
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: Icon(
+          icon,
+          color: iconColor ?? AppColors.textPrimary,
+          size: isMenuAnchor ? 20 : 24,
+        ),
+      ),
+    );
+
+    final Widget hosted = GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onPanStart: _onPanStart,
+      onPanUpdate: _onPanUpdate,
+      onPanEnd: _onPanEnd,
+      onTap: () {
+        if (_isDragging) return;
+        onTap();
+      },
+      child: circle,
+    );
+
+    if (tooltip == null) return hosted;
+    return Tooltip(message: tooltip, child: hosted);
   }
 
   void _onPanStart(DragStartDetails details) {
@@ -132,29 +204,30 @@ class _DraggableFabState extends State<DraggableFab> {
     final Size parentSize = MediaQuery.sizeOf(context);
     setState(() {
       _right = (_dragStartRight - delta.dx)
-          .clamp(0.0, parentSize.width - _fabSize);
+          .clamp(0.0, parentSize.width - _blockWidth);
       _bottom = (_dragStartBottom - delta.dy)
-          .clamp(0.0, parentSize.height - _fabSize - 100);
+          .clamp(0.0, parentSize.height - _blockHeight - 100);
     });
   }
 
   void _onPanEnd(DragEndDetails details) {
-    if (!_isDragging) {
-      _showMenu(context);
-    }
     _isDragging = false;
   }
 
   void _showMenu(BuildContext context) {
+    // ⋮ sits at the top of the block, horizontally centered above the
+    // main action. Pass its actual screen position so the fan radiates
+    // around the small (40px) menu button, not the larger main one.
     final RenderBox box = context.findRenderObject()! as RenderBox;
-    final Offset fabPos = box.localToGlobal(Offset.zero);
+    final Offset blockPos = box.localToGlobal(Offset.zero);
+    final double menuLeft = blockPos.dx + (_blockWidth - _menuFabSize) / 2;
 
     Navigator.of(context, rootNavigator: true).push(
       _FanMenuRoute(
         primaryItems: widget.primaryItems,
         items: widget.items,
-        fabPosition: fabPos,
-        fabSize: _fabSize,
+        fabPosition: Offset(menuLeft, blockPos.dy),
+        fabSize: _menuFabSize,
       ),
     );
   }

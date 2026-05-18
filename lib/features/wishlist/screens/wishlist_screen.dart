@@ -118,7 +118,10 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
               );
             },
           ),
-          DraggableFab(items: _buildFabItems(context)),
+          DraggableFab(
+            mainAction: _buildAddItem(context),
+            items: _buildFabItems(context),
+          ),
         ],
       ),
     );
@@ -154,16 +157,18 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
     return filtered.toList();
   }
 
+  DraggableFabItem _buildAddItem(BuildContext context) {
+    final S l = S.of(context);
+    return DraggableFabItem(
+      icon: Icons.add,
+      label: l.wishlistAddTitle,
+      onTap: () => _addItem(context),
+    );
+  }
+
   List<DraggableFabItem> _buildFabItems(BuildContext context) {
     final S l = S.of(context);
     return <DraggableFabItem>[
-      DraggableFabItem(
-        icon: Icons.add,
-        label: l.wishlistAddTitle,
-        iconColor: AppColors.brand,
-        onTap: () => _addItem(context),
-      ),
-      const DraggableFabDivider(),
       DraggableFabItem(
         icon: _showResolved ? Icons.visibility_off : Icons.visibility,
         label: _showResolved

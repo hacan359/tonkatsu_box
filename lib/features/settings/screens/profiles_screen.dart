@@ -242,14 +242,11 @@ class _ProfilesScreenState extends ConsumerState<ProfilesScreen> {
           ],
         ),
         DraggableFab(
-          icon: Icons.add,
-          items: <DraggableFabItem>[
-            DraggableFabItem(
-              icon: Icons.add,
-              label: l.addProfile,
-              onTap: _createProfile,
-            ),
-          ],
+          mainAction: DraggableFabItem(
+            icon: Icons.add,
+            label: l.addProfile,
+            onTap: _createProfile,
+          ),
         ),
       ],
     );

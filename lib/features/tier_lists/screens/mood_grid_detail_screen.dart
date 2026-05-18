@@ -84,25 +84,27 @@ class _MoodGridDetailScreenState extends ConsumerState<MoodGridDetailScreen> {
                 ),
               ],
             ),
-            DraggableFab(items: <DraggableFabItem>[
-              DraggableFabItem(
-                icon: Icons.text_fields,
-                label: l.moodGridRename,
-                onTap: () => _renameGrid(state.grid.name, l),
-              ),
-              DraggableFabItem(
+            DraggableFab(
+              mainAction: DraggableFabItem(
                 icon: Icons.image_outlined,
                 label: l.moodGridExportImage,
                 onTap: () => _exportAsImage(state.grid.name, l),
               ),
-              const DraggableFabDivider(),
-              DraggableFabItem(
-                icon: Icons.delete_outline,
-                label: l.moodGridDelete,
-                iconColor: AppColors.error,
-                onTap: () => _confirmDelete(l),
-              ),
-            ]),
+              items: <DraggableFabItem>[
+                DraggableFabItem(
+                  icon: Icons.text_fields,
+                  label: l.moodGridRename,
+                  onTap: () => _renameGrid(state.grid.name, l),
+                ),
+                const DraggableFabDivider(),
+                DraggableFabItem(
+                  icon: Icons.delete_outline,
+                  label: l.moodGridDelete,
+                  iconColor: AppColors.error,
+                  onTap: () => _confirmDelete(l),
+                ),
+              ],
+            ),
           ],
         );
       },

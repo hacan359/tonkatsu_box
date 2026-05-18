@@ -218,24 +218,26 @@ class _GamepadDebugScreenState extends ConsumerState<GamepadDebugScreen> {
           ),
           ],
         ),
-        DraggableFab(items: <DraggableFabItem>[
-          DraggableFabItem(
+        DraggableFab(
+          mainAction: DraggableFabItem(
             icon: Icons.save_alt,
             label: l.debugExportLog,
             onTap: _exportLog,
           ),
-          DraggableFabItem(
-            icon: Icons.delete_outline,
-            label: l.debugClearLogs,
-            iconColor: AppColors.error,
-            onTap: () {
-              setState(() {
-                _rawEvents.clear();
-                _serviceEvents.clear();
-              });
-            },
-          ),
-        ]),
+          items: <DraggableFabItem>[
+            DraggableFabItem(
+              icon: Icons.delete_outline,
+              label: l.debugClearLogs,
+              iconColor: AppColors.error,
+              onTap: () {
+                setState(() {
+                  _rawEvents.clear();
+                  _serviceEvents.clear();
+                });
+              },
+            ),
+          ],
+        ),
       ],
     );
   }

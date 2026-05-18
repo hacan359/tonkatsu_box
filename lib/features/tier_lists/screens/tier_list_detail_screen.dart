@@ -101,25 +101,27 @@ class _TierListDetailScreenState
             ],
           ),
           if (!state.isLoading)
-            DraggableFab(items: <DraggableFabItem>[
-              DraggableFabItem(
+            DraggableFab(
+              mainAction: DraggableFabItem(
                 icon: Icons.add,
                 label: l.tierListAddTier,
                 onTap: () => _addTier(context),
               ),
-              DraggableFabItem(
-                icon: Icons.image_outlined,
-                label: l.tierListExportImage,
-                onTap: () => _exportAsImage(context, state),
-              ),
-              const DraggableFabDivider(),
-              DraggableFabItem(
-                icon: Icons.clear_all,
-                label: l.tierListClearAll,
-                iconColor: AppColors.error,
-                onTap: () => _handleMenuAction('clear', state),
-              ),
-            ]),
+              items: <DraggableFabItem>[
+                DraggableFabItem(
+                  icon: Icons.image_outlined,
+                  label: l.tierListExportImage,
+                  onTap: () => _exportAsImage(context, state),
+                ),
+                const DraggableFabDivider(),
+                DraggableFabItem(
+                  icon: Icons.clear_all,
+                  label: l.tierListClearAll,
+                  iconColor: AppColors.error,
+                  onTap: () => _handleMenuAction('clear', state),
+                ),
+              ],
+            ),
         ],
       ),
     );
