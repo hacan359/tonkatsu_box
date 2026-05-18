@@ -1204,6 +1204,23 @@ class SEn extends S {
   String get renameItem => 'Rename';
 
   @override
+  String get refreshItemFromApi => 'Refresh from source';
+
+  @override
+  String get refreshItemSuccess => 'Item updated from source';
+
+  @override
+  String get refreshItemNotFound => 'Source no longer has this item';
+
+  @override
+  String get refreshItemUnsupported => 'Custom items have no external source';
+
+  @override
+  String refreshItemFailed(String error) {
+    return 'Refresh failed: $error';
+  }
+
+  @override
   String get renameDialogHint => 'Display name';
 
   @override

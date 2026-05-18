@@ -465,6 +465,16 @@
   "tagDeleted": "Тег удалён",
   "tagUpdateFailed": "Не удалось обновить тег",
   "renameItem": "Переименовать",
+  "refreshItemFromApi": "Обновить из источника",
+  "refreshItemSuccess": "Запись обновлена из источника",
+  "refreshItemNotFound": "В источнике этой записи больше нет",
+  "refreshItemUnsupported": "У кастомных записей нет внешнего источника",
+  "refreshItemFailed": "Не удалось обновить: {error}",
+  "@refreshItemFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
   "renameDialogHint": "Отображаемое название",
   "renameOriginalLabel": "Оригинал: {name}",
   "renameResetToOriginal": "Сбросить до оригинала",

@@ -4,15 +4,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/api/anilist_api.dart';
+import '../../../core/api/igdb_api.dart';
+import '../../../core/api/tmdb_api.dart';
+import '../../../core/api/vndb_api.dart';
+import '../../../core/database/database_service.dart';
 import '../../../core/services/export_service.dart';
+import '../../../core/services/image_cache_service.dart';
 import '../../../core/services/text_export_service.dart';
 import '../../../core/services/xcoll_file.dart';
 import '../../../data/repositories/canvas_repository.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
+import '../../../shared/models/anime.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
+import '../../../shared/models/game.dart';
+import '../../../shared/models/manga.dart';
+import '../../../shared/models/media_type.dart';
+import '../../../shared/models/movie.dart';
 import '../../../shared/models/steamgriddb_image.dart';
+import '../../../shared/models/tv_show.dart';
+import '../../../shared/models/visual_novel.dart';
 import '../../../shared/widgets/collection_picker_dialog.dart';
 import '../providers/canvas_provider.dart';
 import '../providers/collections_provider.dart';
@@ -587,4 +600,113 @@ class CollectionActions {
       );
     }
   }
+
+  /// Re-fetches the item from its source API and upserts the fresh row
+  /// into the matching cache table. The cached cover image is deleted
+  /// first so it gets re-downloaded with the new URL (or the same URL
+  /// re-fetches the bytes if the local file was corrupted). `Custom`
+  /// items have no API origin and are rejected by the caller.
+  static Future<bool> refreshItemFromApi({
+    required BuildContext context,
+    required WidgetRef ref,
+    required CollectionItem item,
+  }) async {
+    final S l = S.of(context);
+
+    final _RefreshOutcome outcome = await _refreshItemWork(ref, item);
+    if (!context.mounted) return outcome.success;
+
+    switch (outcome.message) {
+      case _RefreshMessage.success:
+        ref.invalidate(collectionsProvider);
+        context.showSnack(l.refreshItemSuccess, type: SnackType.success);
+      case _RefreshMessage.notFound:
+        context.showSnack(l.refreshItemNotFound, type: SnackType.error);
+      case _RefreshMessage.unsupported:
+        context.showSnack(l.refreshItemUnsupported, type: SnackType.error);
+      case _RefreshMessage.failed:
+        context.showSnack(
+          l.refreshItemFailed(outcome.error ?? ''),
+          type: SnackType.error,
+        );
+    }
+    return outcome.success;
+  }
+
+  /// Async DB / network work for [refreshItemFromApi]. Kept context-free so
+  /// the lint can see that UI feedback happens behind a single mounted check
+  /// in the caller.
+  static Future<_RefreshOutcome> _refreshItemWork(
+    WidgetRef ref,
+    CollectionItem item,
+  ) async {
+    final DatabaseService db = ref.read(databaseServiceProvider);
+    final ImageCacheService cache = ref.read(imageCacheServiceProvider);
+
+    try {
+      await cache.deleteImage(item.imageType, item.externalId.toString());
+
+      switch (item.mediaType) {
+        case MediaType.game:
+          final Game? game =
+              await ref.read(igdbApiProvider).getGameById(item.externalId);
+          if (game == null) return _RefreshOutcome.notFound();
+          await db.upsertGame(game);
+        case MediaType.movie:
+          final Movie? movie =
+              await ref.read(tmdbApiProvider).getMovie(item.externalId);
+          if (movie == null) return _RefreshOutcome.notFound();
+          await db.upsertMovie(movie);
+        case MediaType.tvShow:
+        case MediaType.animation:
+          final TvShow? show =
+              await ref.read(tmdbApiProvider).getTvShow(item.externalId);
+          if (show == null) return _RefreshOutcome.notFound();
+          await db.upsertTvShow(show);
+        case MediaType.anime:
+          final Anime? anime = await ref
+              .read(aniListApiProvider)
+              .getAnimeById(item.externalId);
+          if (anime == null) return _RefreshOutcome.notFound();
+          await db.upsertAnime(anime);
+        case MediaType.manga:
+          final Manga? manga = await ref
+              .read(aniListApiProvider)
+              .getMangaById(item.externalId);
+          if (manga == null) return _RefreshOutcome.notFound();
+          await db.upsertManga(manga);
+        case MediaType.visualNovel:
+          final VisualNovel? vn = await ref
+              .read(vndbApiProvider)
+              .getVnById(item.externalId.toString());
+          if (vn == null) return _RefreshOutcome.notFound();
+          await db.upsertVisualNovel(vn);
+        case MediaType.custom:
+          return _RefreshOutcome.unsupported();
+      }
+
+      return _RefreshOutcome.success();
+    } catch (e) {
+      return _RefreshOutcome.failed(e.toString());
+    }
+  }
+}
+
+enum _RefreshMessage { success, notFound, unsupported, failed }
+
+class _RefreshOutcome {
+  const _RefreshOutcome._(this.message, this.success, [this.error]);
+
+  factory _RefreshOutcome.success() =>
+      const _RefreshOutcome._(_RefreshMessage.success, true);
+  factory _RefreshOutcome.notFound() =>
+      const _RefreshOutcome._(_RefreshMessage.notFound, false);
+  factory _RefreshOutcome.unsupported() =>
+      const _RefreshOutcome._(_RefreshMessage.unsupported, false);
+  factory _RefreshOutcome.failed(String error) =>
+      _RefreshOutcome._(_RefreshMessage.failed, false, error);
+
+  final _RefreshMessage message;
+  final bool success;
+  final String? error;
 }

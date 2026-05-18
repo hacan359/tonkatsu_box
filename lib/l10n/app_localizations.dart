@@ -2233,6 +2233,36 @@ abstract class S {
   /// **'Rename'**
   String get renameItem;
 
+  /// No description provided for @refreshItemFromApi.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh from source'**
+  String get refreshItemFromApi;
+
+  /// No description provided for @refreshItemSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Item updated from source'**
+  String get refreshItemSuccess;
+
+  /// No description provided for @refreshItemNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Source no longer has this item'**
+  String get refreshItemNotFound;
+
+  /// No description provided for @refreshItemUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom items have no external source'**
+  String get refreshItemUnsupported;
+
+  /// No description provided for @refreshItemFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh failed: {error}'**
+  String refreshItemFailed(String error);
+
   /// No description provided for @renameDialogHint.
   ///
   /// In en, this message translates to:

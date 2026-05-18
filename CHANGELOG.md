@@ -7,6 +7,37 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Added
+
+- **Refresh a collection item from its source API on demand**
+
+  Item detail's ⋮ menu gains a "Refresh from source" action that
+  re-fetches the metadata and cover from IGDB (games), TMDB (movies,
+  TV, animation), AniList (anime, manga) or VNDB (visual novels),
+  upserts the fresh row into the cache tables, and deletes the
+  cached image so it re-downloads with the new URL. Useful when a
+  cover gets corrupted during sync, the source updated metadata, or
+  a backup restore left stale rows. Custom items are skipped (no
+  external source). The action is single-tap, surfaces success /
+  not-found / unsupported / failed states via snackbar, and
+  invalidates the open detail and collection lists so the UI shows
+  the new data without a manual refresh.
+
+  * lib/features/collections/helpers/collection_actions.dart
+    (CollectionActions.refreshItemFromApi, _refreshItemWork,
+    _RefreshOutcome, _RefreshMessage): New shared action that
+    dispatches by `mediaType`, swaps in the matching API client,
+    and reports the outcome via a context-free helper so UI feedback
+    happens behind a single `context.mounted` check.
+  * lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._refreshFromApi): Menu entry plus
+    handler that invalidates `collectionItemsNotifierProvider` after
+    a successful refresh.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (refreshItemFromApi,
+    refreshItemSuccess, refreshItemNotFound, refreshItemUnsupported,
+    refreshItemFailed): New strings; regenerated
+    `app_localizations*.dart`.
+
 ### Changed
 
 - **Surface the primary action of every floating menu as an always-visible button**

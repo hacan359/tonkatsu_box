@@ -188,6 +188,18 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
 
   // ==================== Navigation / Actions ====================
 
+  Future<void> _refreshFromApi(CollectionItem item) async {
+    final bool ok = await CollectionActions.refreshItemFromApi(
+      context: context,
+      ref: ref,
+      item: item,
+    );
+    if (!ok || !mounted) return;
+    // The detail screen reads from the cache tables; nudging the items
+    // provider makes sure the refreshed row reaches the open view.
+    ref.invalidate(collectionItemsNotifierProvider(widget.collectionId));
+  }
+
   Future<void> _renameItem(CollectionItem item) async {
     final String original = item.cachedName ?? item.itemName;
     final String? result = await RenameItemDialog.show(
@@ -507,6 +519,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                 ),
                 onSelected: (String value) {
                   switch (value) {
+                    case 'refresh':
+                      _refreshFromApi(item);
                     case 'rename':
                       _renameItem(item);
                     case 'move':
@@ -519,6 +533,15 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                 },
                 itemBuilder: (BuildContext context) =>
                     <PopupMenuEntry<String>>[
+                  if (item.mediaType != MediaType.custom)
+                    PopupMenuItem<String>(
+                      value: 'refresh',
+                      child: ListTile(
+                        leading: const Icon(Icons.refresh),
+                        title: Text(S.of(context).refreshItemFromApi),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
                   if (item.mediaType != MediaType.custom)
                     PopupMenuItem<String>(
                       value: 'rename',

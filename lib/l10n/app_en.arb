@@ -527,6 +527,16 @@
   "tagDeleted": "Tag deleted",
   "tagUpdateFailed": "Failed to update tag",
   "renameItem": "Rename",
+  "refreshItemFromApi": "Refresh from source",
+  "refreshItemSuccess": "Item updated from source",
+  "refreshItemNotFound": "Source no longer has this item",
+  "refreshItemUnsupported": "Custom items have no external source",
+  "refreshItemFailed": "Refresh failed: {error}",
+  "@refreshItemFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
   "renameDialogHint": "Display name",
   "renameOriginalLabel": "Original: {name}",
   "@renameOriginalLabel": {

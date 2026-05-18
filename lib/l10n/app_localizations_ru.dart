@@ -1221,6 +1221,24 @@ class SRu extends S {
   String get renameItem => 'Переименовать';
 
   @override
+  String get refreshItemFromApi => 'Обновить из источника';
+
+  @override
+  String get refreshItemSuccess => 'Запись обновлена из источника';
+
+  @override
+  String get refreshItemNotFound => 'В источнике этой записи больше нет';
+
+  @override
+  String get refreshItemUnsupported =>
+      'У кастомных записей нет внешнего источника';
+
+  @override
+  String refreshItemFailed(String error) {
+    return 'Не удалось обновить: $error';
+  }
+
+  @override
   String get renameDialogHint => 'Отображаемое название';
 
   @override
