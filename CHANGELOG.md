@@ -7,6 +7,56 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ## [Unreleased]
 
+### Added
+
+- **Harden MyAnimeList XML import against AniList rate limits and protect existing entries**
+
+  Large MAL imports no longer dump everything into Wishlist when AniList
+  throttles or hiccups mid-batch. Each AniList lookup batch now retries
+  up to three times on HTTP 429, honoring `Retry-After` /
+  `X-RateLimit-Reset` (falling back to the documented 60s window), and
+  only the truly unresolvable ids are surfaced as a separate "skipped
+  (AniList unreachable)" counter — those entries are left out of the
+  collection so a future re-import can retry them, instead of being
+  silently misclassified as wishlist items. The import progress UI
+  shows the rate-limit countdown ("Лимит AniList достигнут — ждём
+  N сек, попытка X/3") without resetting the global batch counter, and
+  reports the skipped count alongside imported / wishlisted / updated.
+  A new "Overwrite existing entries" toggle, off by default, protects
+  user edits on re-import: matched items keep their local status,
+  rating, progress, dates and comment; with the toggle on, the previous
+  merge behaviour applies.
+
+  * lib/core/api/anilist_api.dart (AniListApi.maxRateLimitRetries,
+    AniListApi.getAnimeByMalIdsTolerant, AniListApi.getMangaByMalIdsTolerant,
+    AniListRateLimitException, AniListMalLookupResult): New rate-limit aware
+    lookup methods that return partial results plus a list of failed MAL
+    ids, with `onRateLimit` / `onBatchProgress` callbacks so callers can
+    surface wait countdowns. `_handleDioException` now parses retry
+    headers and emits the typed `AniListRateLimitException`.
+  * lib/core/services/mal_import_service.dart (MalImportService.importFiles,
+    MalImportStage.rateLimitWait, MalImportProgress.failedLookupCount,
+    MalImportProgress.rateLimitWaitSeconds, MalImportResult.animeFailedLookup,
+    MalImportResult.mangaFailedLookup, MalImportResult.failedLookup):
+    Switch to the tolerant lookups, track per-kind failed-lookup counts,
+    propagate rate-limit progress without resetting the cumulative
+    counter, and add the `overwriteExistingItems` parameter (default
+    false) that bypasses `_updateExistingItem` so user data survives
+    re-imports.
+  * lib/features/settings/content/mal_import_content.dart
+    (_MalImportContentState._overwriteExisting, _MalImportContentState._buildProgressSection):
+    Add the "Overwrite existing entries" switch, render the new
+    rateLimitWait stage with an indeterminate bar, and show the
+    "skipped (AniList unreachable)" stat row.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (malImportRateLimitWait,
+    malImportFailedLookup, malImportOverwriteExisting,
+    malImportOverwriteExistingHint): New strings; regenerated
+    `app_localizations*.dart`.
+  * test/core/services/mal_import_service_test.dart: Cover the tolerant
+    lookup result shape, the failed-lookup-is-skipped path, and the
+    `overwriteExistingItems=false` no-op-on-existing path; existing
+    dedup test now explicitly passes `overwriteExistingItems: true`.
+
 ## [0.29.0] - 2026-05-16
 
 ### Added

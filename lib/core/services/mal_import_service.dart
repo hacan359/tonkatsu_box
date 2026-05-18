@@ -29,6 +29,9 @@ enum MalImportStage {
   /// Resolving MAL → AniList IDs for manga.
   resolvingManga,
 
+  /// Waiting out an AniList rate-limit window before retrying.
+  rateLimitWait,
+
   /// Writing entries into the collection.
   matchingEntries,
 
@@ -47,6 +50,10 @@ class MalImportProgress {
     this.importedCount = 0,
     this.wishlistedCount = 0,
     this.updatedCount = 0,
+    this.failedLookupCount = 0,
+    this.rateLimitWaitSeconds,
+    this.rateLimitAttempt,
+    this.rateLimitMaxAttempts,
   });
 
   /// Current stage.
@@ -70,6 +77,19 @@ class MalImportProgress {
   /// Number of updated titles (re-import).
   final int updatedCount;
 
+  /// Number of MAL entries whose AniList lookup failed (after retries).
+  /// Such entries are skipped, not wishlisted — retry import to resolve them.
+  final int failedLookupCount;
+
+  /// Seconds to wait on the current [MalImportStage.rateLimitWait] step.
+  final int? rateLimitWaitSeconds;
+
+  /// Current retry attempt (1-based) when [stage] is [MalImportStage.rateLimitWait].
+  final int? rateLimitAttempt;
+
+  /// Total retry attempts available when [stage] is [MalImportStage.rateLimitWait].
+  final int? rateLimitMaxAttempts;
+
   /// Progress as fraction (0.0 – 1.0).
   double get progress => total > 0 ? current / total : 0;
 }
@@ -89,6 +109,8 @@ class MalImportResult {
     required this.mangaWishlisted,
     required this.animeUpdated,
     required this.mangaUpdated,
+    this.animeFailedLookup = 0,
+    this.mangaFailedLookup = 0,
   });
 
   /// Total imported.
@@ -123,6 +145,15 @@ class MalImportResult {
 
   /// Manga updated.
   final int mangaUpdated;
+
+  /// Anime whose AniList lookup failed (after retries). Skipped, not wishlisted.
+  final int animeFailedLookup;
+
+  /// Manga whose AniList lookup failed (after retries). Skipped, not wishlisted.
+  final int mangaFailedLookup;
+
+  /// Total failed lookups across both kinds.
+  int get failedLookup => animeFailedLookup + mangaFailedLookup;
 }
 
 /// Type of parsed XML file.
@@ -400,11 +431,19 @@ class MalImportService {
   ///
   /// At least one of [animeFile] / [mangaFile] must be provided.
   /// Either [collectionId] or [createCollection] must be provided.
+  ///
+  /// When [overwriteExistingItems] is `false` (default), entries already
+  /// present in the target collection are left untouched — user's status,
+  /// rating, progress, dates and notes survive re-imports. New entries from
+  /// the export are still added. When `true`, existing items are merged with
+  /// MAL data via the standard merge rules (status priority, max progress,
+  /// earliest/latest dates, MAL rating wins, MAL comment overwrites).
   Future<MalImportResult> importFiles({
     File? animeFile,
     File? mangaFile,
     int? collectionId,
     Future<int> Function()? createCollection,
+    bool overwriteExistingItems = false,
     required void Function(MalImportProgress) onProgress,
   }) async {
     if (animeFile == null && mangaFile == null) {
@@ -453,45 +492,77 @@ class MalImportService {
     final int targetCollectionId = collectionId ?? await createCollection!();
 
     final Map<int, Anime> animeByMal = <int, Anime>{};
+    final Set<int> animeFailedIds = <int>{};
     if (animeEntries.isNotEmpty) {
       onProgress(MalImportProgress(
         stage: MalImportStage.resolvingAnime,
         current: 0,
         total: animeEntries.length,
       ));
-      try {
-        animeByMal.addAll(await _aniList.getAnimeByMalIds(
-          animeEntries.map((MalEntry e) => e.malId).toList(),
-        ));
-      } on AniListApiException catch (e) {
-        _log.warning('AniList anime lookup failed: ${e.message}');
-      }
-      onProgress(MalImportProgress(
-        stage: MalImportStage.resolvingAnime,
-        current: animeEntries.length,
-        total: animeEntries.length,
-      ));
+      // Mirror the last reported batch progress into the rate-limit pause so
+      // the global counter doesn't snap back to 0 / total while we're waiting.
+      int lastDone = 0;
+      final int totalAnime = animeEntries.length;
+      final AniListMalLookupResult<Anime> result =
+          await _aniList.getAnimeByMalIdsTolerant(
+        animeEntries.map((MalEntry e) => e.malId).toList(),
+        onRateLimit: (Duration wait, int attempt) {
+          onProgress(MalImportProgress(
+            stage: MalImportStage.rateLimitWait,
+            current: lastDone,
+            total: totalAnime,
+            rateLimitWaitSeconds: wait.inSeconds,
+            rateLimitAttempt: attempt,
+            rateLimitMaxAttempts: AniListApi.maxRateLimitRetries,
+          ));
+        },
+        onBatchProgress: (int done, int total) {
+          lastDone = done;
+          onProgress(MalImportProgress(
+            stage: MalImportStage.resolvingAnime,
+            current: done,
+            total: total,
+          ));
+        },
+      );
+      animeByMal.addAll(result.resolved);
+      animeFailedIds.addAll(result.failedIds);
     }
 
     final Map<int, Manga> mangaByMal = <int, Manga>{};
+    final Set<int> mangaFailedIds = <int>{};
     if (mangaEntries.isNotEmpty) {
       onProgress(MalImportProgress(
         stage: MalImportStage.resolvingManga,
         current: 0,
         total: mangaEntries.length,
       ));
-      try {
-        mangaByMal.addAll(await _aniList.getMangaByMalIds(
-          mangaEntries.map((MalEntry e) => e.malId).toList(),
-        ));
-      } on AniListApiException catch (e) {
-        _log.warning('AniList manga lookup failed: ${e.message}');
-      }
-      onProgress(MalImportProgress(
-        stage: MalImportStage.resolvingManga,
-        current: mangaEntries.length,
-        total: mangaEntries.length,
-      ));
+      int lastDone = 0;
+      final int totalManga = mangaEntries.length;
+      final AniListMalLookupResult<Manga> result =
+          await _aniList.getMangaByMalIdsTolerant(
+        mangaEntries.map((MalEntry e) => e.malId).toList(),
+        onRateLimit: (Duration wait, int attempt) {
+          onProgress(MalImportProgress(
+            stage: MalImportStage.rateLimitWait,
+            current: lastDone,
+            total: totalManga,
+            rateLimitWaitSeconds: wait.inSeconds,
+            rateLimitAttempt: attempt,
+            rateLimitMaxAttempts: AniListApi.maxRateLimitRetries,
+          ));
+        },
+        onBatchProgress: (int done, int total) {
+          lastDone = done;
+          onProgress(MalImportProgress(
+            stage: MalImportStage.resolvingManga,
+            current: done,
+            total: total,
+          ));
+        },
+      );
+      mangaByMal.addAll(result.resolved);
+      mangaFailedIds.addAll(result.failedIds);
     }
 
     if (animeByMal.isNotEmpty) {
@@ -510,6 +581,8 @@ class MalImportService {
     int mangaWishlisted = 0;
     int animeUpdated = 0;
     int mangaUpdated = 0;
+    int animeFailedLookup = 0;
+    int mangaFailedLookup = 0;
 
     int processed = 0;
     final List<MalEntry> allEntries = <MalEntry>[
@@ -527,7 +600,22 @@ class MalImportService {
         importedCount: imported,
         wishlistedCount: wishlisted,
         updatedCount: updated,
+        failedLookupCount: animeFailedLookup + mangaFailedLookup,
       ));
+
+      // Lookup failed at AniList (rate-limit / network) — skip, don't wishlist.
+      // Re-running the import will retry these once AniList is reachable.
+      final bool lookupFailed = entry.kind == MalFileKind.anime
+          ? animeFailedIds.contains(entry.malId)
+          : mangaFailedIds.contains(entry.malId);
+      if (lookupFailed) {
+        if (entry.kind == MalFileKind.anime) {
+          animeFailedLookup++;
+        } else {
+          mangaFailedLookup++;
+        }
+        continue;
+      }
 
       final int? aniListId = entry.kind == MalFileKind.anime
           ? animeByMal[entry.malId]?.id
@@ -556,12 +644,17 @@ class MalImportService {
       );
 
       if (existing != null) {
-        await _updateExistingItem(
-          existing,
-          entry,
-          aniListAnime: animeByMal[entry.malId],
-          aniListManga: mangaByMal[entry.malId],
-        );
+        if (overwriteExistingItems) {
+          await _updateExistingItem(
+            existing,
+            entry,
+            aniListAnime: animeByMal[entry.malId],
+            aniListManga: mangaByMal[entry.malId],
+          );
+        }
+        // When overwrite is off we still count this as "updated" semantically
+        // — the entry was matched against the local collection, just left
+        // intact so the user's edits survive.
         updated++;
         if (entry.kind == MalFileKind.anime) {
           animeUpdated++;
@@ -602,11 +695,13 @@ class MalImportService {
       importedCount: imported,
       wishlistedCount: wishlisted,
       updatedCount: updated,
+      failedLookupCount: animeFailedLookup + mangaFailedLookup,
     ));
 
     _log.info(
       'MAL import complete: $imported imported, $wishlisted wishlisted, '
-      '$updated updated (total $totalEntries)',
+      '$updated updated, ${animeFailedLookup + mangaFailedLookup} '
+      'lookup failures (total $totalEntries)',
     );
 
     return MalImportResult(
@@ -621,6 +716,8 @@ class MalImportService {
       mangaWishlisted: mangaWishlisted,
       animeUpdated: animeUpdated,
       mangaUpdated: mangaUpdated,
+      animeFailedLookup: animeFailedLookup,
+      mangaFailedLookup: mangaFailedLookup,
     );
   }
 

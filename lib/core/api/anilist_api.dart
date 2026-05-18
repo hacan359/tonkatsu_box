@@ -24,6 +24,44 @@ class AniListApiException implements Exception {
       'AniListApiException: $message (status: $statusCode)';
 }
 
+/// AniList rejected the request with 429 Too Many Requests.
+///
+/// [retryAfter] is parsed from the `Retry-After` header (or derived from
+/// `X-RateLimit-Reset` when the former is absent). Falls back to 60s — the
+/// documented timeout window — when no headers are present.
+class AniListRateLimitException extends AniListApiException {
+  /// Creates an [AniListRateLimitException].
+  const AniListRateLimitException(this.retryAfter, {String? detail})
+      : super(
+          'Rate limit exceeded. Please try again later',
+          statusCode: 429,
+          detail: detail,
+        );
+
+  /// How long to wait before retrying.
+  final Duration retryAfter;
+}
+
+/// Result of a tolerant MAL→AniList lookup.
+///
+/// AniList errors are surfaced as [failedIds] (not silently dropped), so the
+/// caller can distinguish "not found on AniList" from "lookup failed".
+class AniListMalLookupResult<T> {
+  /// Creates an [AniListMalLookupResult].
+  const AniListMalLookupResult({
+    required this.resolved,
+    required this.failedIds,
+  });
+
+  /// MAL id → resolved media.
+  final Map<int, T> resolved;
+
+  /// MAL ids that could not be resolved due to AniList API errors (after
+  /// retries). Distinct from ids absent from [resolved] because AniList simply
+  /// has no record.
+  final List<int> failedIds;
+}
+
 /// AniList user does not exist or has no public lists.
 class AniListUserNotFoundException extends AniListApiException {
   /// Creates an [AniListUserNotFoundException].
@@ -726,6 +764,120 @@ query ($page: Int, $perPage: Int, $ids: [Int]) {
     return result;
   }
 
+  /// Maximum retries per batch on rate-limit responses.
+  static const int maxRateLimitRetries = 3;
+
+  /// Tolerant variant of [getAnimeByMalIds].
+  ///
+  /// - Retries each batch up to [maxRateLimitRetries] times on 429, waiting
+  ///   [AniListRateLimitException.retryAfter] between attempts.
+  /// - On non-rate-limit failures (or rate-limit exceeding retries), records
+  ///   the MAL ids as failed and continues with the next batch.
+  /// - Calls [onRateLimit] before each rate-limit sleep so the UI can show a
+  ///   countdown.
+  /// - Calls [onBatchProgress] after each batch completes (success or failure).
+  Future<AniListMalLookupResult<Anime>> getAnimeByMalIdsTolerant(
+    List<int> malIds, {
+    void Function(Duration wait, int attempt)? onRateLimit,
+    void Function(int done, int total)? onBatchProgress,
+  }) async {
+    return _lookupByMalIdsTolerant<Anime>(
+      malIds: malIds,
+      fetchBatch: _fetchAnimeByMalBatch,
+      onRateLimit: onRateLimit,
+      onBatchProgress: onBatchProgress,
+      label: 'anime',
+    );
+  }
+
+  /// Tolerant variant of [getMangaByMalIds]. See [getAnimeByMalIdsTolerant].
+  Future<AniListMalLookupResult<Manga>> getMangaByMalIdsTolerant(
+    List<int> malIds, {
+    void Function(Duration wait, int attempt)? onRateLimit,
+    void Function(int done, int total)? onBatchProgress,
+  }) async {
+    return _lookupByMalIdsTolerant<Manga>(
+      malIds: malIds,
+      fetchBatch: _fetchMangaByMalBatch,
+      onRateLimit: onRateLimit,
+      onBatchProgress: onBatchProgress,
+      label: 'manga',
+    );
+  }
+
+  Future<AniListMalLookupResult<T>> _lookupByMalIdsTolerant<T>({
+    required List<int> malIds,
+    required Future<Map<int, T>> Function(List<int>) fetchBatch,
+    required String label,
+    void Function(Duration wait, int attempt)? onRateLimit,
+    void Function(int done, int total)? onBatchProgress,
+  }) async {
+    final Map<int, T> resolved = <int, T>{};
+    final List<int> failed = <int>[];
+
+    if (malIds.isEmpty) {
+      return AniListMalLookupResult<T>(resolved: resolved, failedIds: failed);
+    }
+
+    final int total = malIds.length;
+    int processed = 0;
+
+    for (int i = 0; i < malIds.length; i += _maxPerPage) {
+      final List<int> batch = malIds.sublist(
+        i,
+        i + _maxPerPage > malIds.length ? malIds.length : i + _maxPerPage,
+      );
+
+      final Map<int, T>? batchResult = await _runBatchWithRetry<T>(
+        batch: batch,
+        fetchBatch: fetchBatch,
+        label: label,
+        onRateLimit: onRateLimit,
+      );
+
+      if (batchResult != null) {
+        resolved.addAll(batchResult);
+      } else {
+        failed.addAll(batch);
+      }
+
+      processed += batch.length;
+      onBatchProgress?.call(processed, total);
+    }
+
+    return AniListMalLookupResult<T>(resolved: resolved, failedIds: failed);
+  }
+
+  Future<Map<int, T>?> _runBatchWithRetry<T>({
+    required List<int> batch,
+    required Future<Map<int, T>> Function(List<int>) fetchBatch,
+    required String label,
+    void Function(Duration wait, int attempt)? onRateLimit,
+  }) async {
+    for (int attempt = 1; attempt <= maxRateLimitRetries; attempt++) {
+      try {
+        return await fetchBatch(batch);
+      } on AniListRateLimitException catch (e) {
+        if (attempt >= maxRateLimitRetries) {
+          _log.warning(
+            '$label batch hit rate limit, giving up after $attempt attempts',
+          );
+          return null;
+        }
+        onRateLimit?.call(e.retryAfter, attempt);
+        _log.info(
+          '$label batch rate-limited, waiting ${e.retryAfter.inSeconds}s '
+          '(attempt $attempt/$maxRateLimitRetries)',
+        );
+        await Future<void>.delayed(e.retryAfter);
+      } on AniListApiException catch (e) {
+        _log.warning('$label batch failed: ${e.message}');
+        return null;
+      }
+    }
+    return null;
+  }
+
   Future<Map<int, Anime>> _fetchAnimeByMalBatch(List<int> malIds) async {
     try {
       final Response<dynamic> response = await _dio.post<dynamic>(
@@ -1196,7 +1348,15 @@ query ($userName: String) {
     String message = defaultMessage;
 
     if (statusCode == 429) {
-      message = 'Rate limit exceeded. Please try again later';
+      final Duration retryAfter = _parseRetryAfter(e.response?.headers.map);
+      return AniListRateLimitException(
+        retryAfter,
+        detail: buildApiErrorDetail(
+          apiName: 'AniList',
+          exception: e,
+          userMessage: 'Rate limit exceeded (retry in ${retryAfter.inSeconds}s)',
+        ),
+      );
     } else if (e.type == DioExceptionType.connectionTimeout ||
         e.type == DioExceptionType.receiveTimeout) {
       message = 'Connection timeout';
@@ -1213,6 +1373,34 @@ query ($userName: String) {
         userMessage: message,
       ),
     );
+  }
+
+  /// Parses AniList rate-limit headers into a wait duration.
+  ///
+  /// Prefers `Retry-After` (seconds) when present, falls back to
+  /// `X-RateLimit-Reset` (unix timestamp), then to the documented 60s window.
+  static Duration _parseRetryAfter(Map<String, List<String>>? headers) {
+    if (headers == null) return const Duration(seconds: 60);
+
+    final List<String>? retryAfter = headers['retry-after'];
+    if (retryAfter != null && retryAfter.isNotEmpty) {
+      final int? seconds = int.tryParse(retryAfter.first.trim());
+      if (seconds != null && seconds > 0) {
+        return Duration(seconds: seconds);
+      }
+    }
+
+    final List<String>? reset = headers['x-ratelimit-reset'];
+    if (reset != null && reset.isNotEmpty) {
+      final int? ts = int.tryParse(reset.first.trim());
+      if (ts != null) {
+        final int nowSec = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+        final int diff = ts - nowSec;
+        if (diff > 0) return Duration(seconds: diff);
+      }
+    }
+
+    return const Duration(seconds: 60);
   }
 
   void dispose() {

@@ -3850,6 +3850,23 @@ class SRu extends S {
   }
 
   @override
+  String get malImportOverwriteExisting => 'Перезаписывать существующие';
+
+  @override
+  String get malImportOverwriteExistingHint =>
+      'Если выключено — записи, уже добавленные в коллекцию, не трогаются: ваш статус, оценка, прогресс, даты и заметки сохраняются. Новые записи всё равно импортируются.';
+
+  @override
+  String malImportFailedLookup(int count) {
+    return 'Пропущено: $count (AniList недоступен)';
+  }
+
+  @override
+  String malImportRateLimitWait(int seconds, int attempt, int max) {
+    return 'Лимит AniList достигнут — ждём $seconds сек (попытка $attempt/$max)';
+  }
+
+  @override
   String malImportFailed(String error) {
     return 'Импорт не удался: $error';
   }

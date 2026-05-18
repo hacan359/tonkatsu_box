@@ -44,6 +44,7 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
 
   bool _useNewCollection = true;
   int? _selectedCollectionId;
+  bool _overwriteExisting = false;
 
   _PickedFile? _animePicked;
   _PickedFile? _mangaPicked;
@@ -116,6 +117,23 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
         ),
         const SizedBox(height: AppSpacing.sm),
         _buildCollectionSelector(l),
+        const SizedBox(height: AppSpacing.sm),
+        SwitchListTile(
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+          ),
+          value: _overwriteExisting,
+          onChanged: _isImporting
+              ? null
+              : (bool v) => setState(() => _overwriteExisting = v),
+          title: Text(l.malImportOverwriteExisting),
+          subtitle: Text(
+            l.malImportOverwriteExistingHint,
+            style: AppTypography.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ),
         Padding(
           padding: const EdgeInsets.all(AppSpacing.md),
           child: FilledButton.icon(
@@ -305,11 +323,19 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
         stageText = l.malImportResolvingAnime;
       case MalImportStage.resolvingManga:
         stageText = l.malImportResolvingManga;
+      case MalImportStage.rateLimitWait:
+        stageText = l.malImportRateLimitWait(
+          progress.rateLimitWaitSeconds ?? 0,
+          progress.rateLimitAttempt ?? 1,
+          progress.rateLimitMaxAttempts ?? 3,
+        );
       case MalImportStage.matchingEntries:
         stageText = l.malImportMatching;
       case MalImportStage.completed:
         stageText = l.malImportComplete;
     }
+
+    final bool isRateLimitWait = progress.stage == MalImportStage.rateLimitWait;
 
     return SettingsGroup(
       title: stageText,
@@ -323,7 +349,9 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               LinearProgressIndicator(
-                value: progress.total > 0 ? progress.progress : null,
+                value: isRateLimitWait || progress.total == 0
+                    ? null
+                    : progress.progress,
               ),
               if (progress.total > 0) ...<Widget>[
                 const SizedBox(height: AppSpacing.sm),
@@ -359,6 +387,12 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
                 AppColors.statusInProgress,
                 l.malImportUpdated(progress.updatedCount),
               ),
+              if (progress.failedLookupCount > 0)
+                _buildStatRow(
+                  Icons.warning_amber,
+                  AppColors.statusDropped,
+                  l.malImportFailedLookup(progress.failedLookupCount),
+                ),
             ],
           ),
         ),
@@ -456,6 +490,7 @@ class _MalImportContentState extends ConsumerState<MalImportContent> {
         animeFile: _animePicked?.file,
         mangaFile: _mangaPicked?.file,
         collectionId: _useNewCollection ? null : _selectedCollectionId,
+        overwriteExistingItems: _overwriteExisting,
         createCollection: _useNewCollection
             ? () async {
                 final DatabaseService db = ref.read(databaseServiceProvider);

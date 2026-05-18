@@ -3801,6 +3801,23 @@ class SEn extends S {
   }
 
   @override
+  String get malImportOverwriteExisting => 'Overwrite existing entries';
+
+  @override
+  String get malImportOverwriteExistingHint =>
+      'When off, items already in the collection keep your local status, rating, progress, dates and notes. New items are still imported.';
+
+  @override
+  String malImportFailedLookup(int count) {
+    return '$count skipped (AniList unreachable)';
+  }
+
+  @override
+  String malImportRateLimitWait(int seconds, int attempt, int max) {
+    return 'AniList rate-limit reached — retrying in ${seconds}s (attempt $attempt/$max)';
+  }
+
+  @override
   String malImportFailed(String error) {
     return 'Import failed: $error';
   }
