@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:xerabora/core/api/anilist_api.dart';
 import 'package:xerabora/core/services/mal_import_service.dart';
 import 'package:xerabora/shared/models/anime.dart';
 import 'package:xerabora/shared/models/collection_item.dart';
@@ -301,10 +302,17 @@ void main() {
       }
 
       test('completed аниме досыпает episode до total из AniList', () async {
-        when(() => mockAniList.getAnimeByMalIds(any())).thenAnswer(
-          (_) async => <int, Anime>{
-            5114: const Anime(id: 999, title: 'FMA', episodes: 64),
-          },
+        when(() => mockAniList.getAnimeByMalIdsTolerant(
+              any(),
+              onRateLimit: any(named: 'onRateLimit'),
+              onBatchProgress: any(named: 'onBatchProgress'),
+            )).thenAnswer(
+          (_) async => const AniListMalLookupResult<Anime>(
+            resolved: <int, Anime>{
+              5114: Anime(id: 999, title: 'FMA', episodes: 64),
+            },
+            failedIds: <int>[],
+          ),
         );
         setupNoExisting();
 
@@ -320,8 +328,14 @@ void main() {
       test(
           'unmatched запись попадает в wishlist с MAL-ссылкой в note',
           () async {
-        when(() => mockAniList.getAnimeByMalIds(any()))
-            .thenAnswer((_) async => <int, Anime>{});
+        when(() => mockAniList.getAnimeByMalIdsTolerant(
+              any(),
+              onRateLimit: any(named: 'onRateLimit'),
+              onBatchProgress: any(named: 'onBatchProgress'),
+            )).thenAnswer((_) async => const AniListMalLookupResult<Anime>(
+              resolved: <int, Anime>{},
+              failedIds: <int>[],
+            ));
         when(() => mockDb.findUnresolvedWishlistItem(any()))
             .thenAnswer((_) async => null);
         when(() => mockDb.addWishlistItem(
@@ -359,10 +373,17 @@ void main() {
 
       test('повторный импорт обновляет существующий, не создаёт новый',
           () async {
-        when(() => mockAniList.getAnimeByMalIds(any())).thenAnswer(
-          (_) async => <int, Anime>{
-            5114: const Anime(id: 999, title: 'FMA', episodes: 64),
-          },
+        when(() => mockAniList.getAnimeByMalIdsTolerant(
+              any(),
+              onRateLimit: any(named: 'onRateLimit'),
+              onBatchProgress: any(named: 'onBatchProgress'),
+            )).thenAnswer(
+          (_) async => const AniListMalLookupResult<Anime>(
+            resolved: <int, Anime>{
+              5114: Anime(id: 999, title: 'FMA', episodes: 64),
+            },
+            failedIds: <int>[],
+          ),
         );
         when(() => mockDb.upsertAnimes(any())).thenAnswer((_) async {});
         when(() => mockDb.upsertMangas(any())).thenAnswer((_) async {});
@@ -404,6 +425,7 @@ void main() {
             final MalImportResult result = await sut.importFiles(
               animeFile: _fileFromPath(path),
               collectionId: 1,
+              overwriteExistingItems: true,
               onProgress: (_) {},
             );
             expect(result.imported, 0);
@@ -413,6 +435,116 @@ void main() {
           },
         );
 
+        verifyNever(() => mockDb.addItemToCollection(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+              platformId: any(named: 'platformId'),
+              status: any(named: 'status'),
+            ));
+      });
+
+      test(
+          'overwriteExistingItems=false: существующий не трогается, считается updated',
+          () async {
+        when(() => mockAniList.getAnimeByMalIdsTolerant(
+              any(),
+              onRateLimit: any(named: 'onRateLimit'),
+              onBatchProgress: any(named: 'onBatchProgress'),
+            )).thenAnswer(
+          (_) async => const AniListMalLookupResult<Anime>(
+            resolved: <int, Anime>{
+              5114: Anime(id: 999, title: 'FMA', episodes: 64),
+            },
+            failedIds: <int>[],
+          ),
+        );
+        when(() => mockDb.upsertAnimes(any())).thenAnswer((_) async {});
+
+        final CollectionItem existing = createTestCollectionItem(
+          id: 555,
+          mediaType: MediaType.anime,
+          externalId: 999,
+          status: ItemStatus.inProgress,
+          currentEpisode: 10,
+        );
+        when(() => mockDb.findCollectionItem(
+              collectionId: any(named: 'collectionId'),
+              mediaType: any(named: 'mediaType'),
+              externalId: any(named: 'externalId'),
+            )).thenAnswer((_) async => existing);
+
+        await _runWithTempFile(
+          singleAnimeXml,
+          (String path) async {
+            final MalImportResult result = await sut.importFiles(
+              animeFile: _fileFromPath(path),
+              collectionId: 1,
+              // overwriteExistingItems defaults to false
+              onProgress: (_) {},
+            );
+            expect(result.imported, 0);
+            expect(result.updated, 1);
+            expect(result.wishlisted, 0);
+            return null;
+          },
+        );
+
+        // No user data writes should have happened for the existing item.
+        verifyNever(() => mockDb.updateItemStatus(any(), any(),
+            mediaType: any(named: 'mediaType')));
+        verifyNever(() => mockDb.updateItemProgress(
+              any(),
+              currentEpisode: any(named: 'currentEpisode'),
+              currentSeason: any(named: 'currentSeason'),
+            ));
+        verifyNever(() => mockDb.updateItemUserRating(any(), any()));
+        verifyNever(() => mockDb.updateItemActivityDates(
+              any(),
+              startedAt: any(named: 'startedAt'),
+              completedAt: any(named: 'completedAt'),
+              lastActivityAt: any(named: 'lastActivityAt'),
+            ));
+        verifyNever(() => mockDb.updateItemUserComment(any(), any()));
+      });
+
+      test('failed lookup пропускается, не падает в wishlist',
+          () async {
+        // AniList lookup-error makes the MAL id show up in failedIds — these
+        // entries must be SKIPPED, not silently dumped into the wishlist
+        // (re-importing later will retry them).
+        when(() => mockAniList.getAnimeByMalIdsTolerant(
+              any(),
+              onRateLimit: any(named: 'onRateLimit'),
+              onBatchProgress: any(named: 'onBatchProgress'),
+            )).thenAnswer(
+          (_) async => const AniListMalLookupResult<Anime>(
+            resolved: <int, Anime>{},
+            failedIds: <int>[5114],
+          ),
+        );
+
+        await _runWithTempFile(
+          singleAnimeXml,
+          (String path) async {
+            final MalImportResult result = await sut.importFiles(
+              animeFile: _fileFromPath(path),
+              collectionId: 1,
+              onProgress: (_) {},
+            );
+            expect(result.imported, 0);
+            expect(result.wishlisted, 0);
+            expect(result.animeFailedLookup, 1);
+            expect(result.failedLookup, 1);
+            return null;
+          },
+        );
+
+        verifyNever(() => mockDb.addWishlistItem(
+              text: any(named: 'text'),
+              mediaTypeHint: any(named: 'mediaTypeHint'),
+              note: any(named: 'note'),
+            ));
         verifyNever(() => mockDb.addItemToCollection(
               collectionId: any(named: 'collectionId'),
               mediaType: any(named: 'mediaType'),

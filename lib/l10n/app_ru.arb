@@ -1493,6 +1493,22 @@
       "count": {"type": "int"}
     }
   },
+  "malImportOverwriteExisting": "Перезаписывать существующие",
+  "malImportOverwriteExistingHint": "Если выключено — записи, уже добавленные в коллекцию, не трогаются: ваш статус, оценка, прогресс, даты и заметки сохраняются. Новые записи всё равно импортируются.",
+  "malImportFailedLookup": "Пропущено: {count} (AniList недоступен)",
+  "@malImportFailedLookup": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "malImportRateLimitWait": "Лимит AniList достигнут — ждём {seconds} сек (попытка {attempt}/{max})",
+  "@malImportRateLimitWait": {
+    "placeholders": {
+      "seconds": {"type": "int"},
+      "attempt": {"type": "int"},
+      "max": {"type": "int"}
+    }
+  },
   "malImportFailed": "Импорт не удался: {error}",
   "@malImportFailed": {
     "placeholders": {

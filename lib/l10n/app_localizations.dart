@@ -6901,6 +6901,30 @@ abstract class S {
   /// **'{count} updated'**
   String malImportUpdated(int count);
 
+  /// No description provided for @malImportOverwriteExisting.
+  ///
+  /// In en, this message translates to:
+  /// **'Overwrite existing entries'**
+  String get malImportOverwriteExisting;
+
+  /// No description provided for @malImportOverwriteExistingHint.
+  ///
+  /// In en, this message translates to:
+  /// **'When off, items already in the collection keep your local status, rating, progress, dates and notes. New items are still imported.'**
+  String get malImportOverwriteExistingHint;
+
+  /// No description provided for @malImportFailedLookup.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} skipped (AniList unreachable)'**
+  String malImportFailedLookup(int count);
+
+  /// No description provided for @malImportRateLimitWait.
+  ///
+  /// In en, this message translates to:
+  /// **'AniList rate-limit reached — retrying in {seconds}s (attempt {attempt}/{max})'**
+  String malImportRateLimitWait(int seconds, int attempt, int max);
+
   /// No description provided for @malImportFailed.
   ///
   /// In en, this message translates to:

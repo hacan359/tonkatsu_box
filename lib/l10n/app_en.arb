@@ -1774,6 +1774,22 @@
       "count": {"type": "int"}
     }
   },
+  "malImportOverwriteExisting": "Overwrite existing entries",
+  "malImportOverwriteExistingHint": "When off, items already in the collection keep your local status, rating, progress, dates and notes. New items are still imported.",
+  "malImportFailedLookup": "{count} skipped (AniList unreachable)",
+  "@malImportFailedLookup": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "malImportRateLimitWait": "AniList rate-limit reached — retrying in {seconds}s (attempt {attempt}/{max})",
+  "@malImportRateLimitWait": {
+    "placeholders": {
+      "seconds": {"type": "int"},
+      "attempt": {"type": "int"},
+      "max": {"type": "int"}
+    }
+  },
   "malImportFailed": "Import failed: {error}",
   "@malImportFailed": {
     "placeholders": {
