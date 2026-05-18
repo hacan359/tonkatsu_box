@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/database/database_service.dart';
 import '../../shared/models/media_type.dart';
 import '../../shared/models/wishlist_item.dart';
+import '../../shared/models/wishlist_tag.dart';
 
 final Provider<WishlistRepository> wishlistRepositoryProvider =
     Provider<WishlistRepository>((Ref ref) {
@@ -20,18 +21,24 @@ class WishlistRepository {
     required String text,
     MediaType? mediaTypeHint,
     String? note,
+    String? tag,
   }) async {
     return _db.addWishlistItem(
       text: text,
       mediaTypeHint: mediaTypeHint,
       note: note,
+      tag: tag,
     );
   }
 
   Future<List<WishlistItem>> getAll({
     bool includeResolved = true,
+    WishlistTagFilter tagFilter = const WishlistTagFilter.all(),
   }) async {
-    return _db.getWishlistItems(includeResolved: includeResolved);
+    return _db.getWishlistItems(
+      includeResolved: includeResolved,
+      tagFilter: tagFilter,
+    );
   }
 
   Future<int> getCount({bool onlyActive = true}) async {
@@ -45,6 +52,8 @@ class WishlistRepository {
     bool clearMediaTypeHint = false,
     String? note,
     bool clearNote = false,
+    String? tag,
+    bool clearTag = false,
   }) async {
     return _db.updateWishlistItem(
       id,
@@ -53,6 +62,8 @@ class WishlistRepository {
       clearMediaTypeHint: clearMediaTypeHint,
       note: note,
       clearNote: clearNote,
+      tag: tag,
+      clearTag: clearTag,
     );
   }
 
@@ -74,5 +85,13 @@ class WishlistRepository {
 
   Future<int> clearResolved() async {
     return _db.clearResolvedWishlistItems();
+  }
+
+  Future<int> deleteByTag(String? tag) async {
+    return _db.deleteWishlistItemsByTag(tag);
+  }
+
+  Future<int> renameTag(String? from, String to) async {
+    return _db.renameWishlistTag(from, to);
   }
 }

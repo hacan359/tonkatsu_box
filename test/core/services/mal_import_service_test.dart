@@ -342,11 +342,12 @@ void main() {
               text: any(named: 'text'),
               mediaTypeHint: any(named: 'mediaTypeHint'),
               note: any(named: 'note'),
+              tag: any(named: 'tag'),
             )).thenAnswer(
           (_) async => createTestWishlistItem(),
         );
 
-        final String? capturedNote = await _runWithTempFile(
+        final ({String note, String tag})? captured = await _runWithTempFile(
           singleAnimeXml,
           (String path) async {
             await sut.importFiles(
@@ -359,16 +360,23 @@ void main() {
                   text: any(named: 'text'),
                   mediaTypeHint: captureAny(named: 'mediaTypeHint'),
                   note: captureAny(named: 'note'),
+                  tag: captureAny(named: 'tag'),
                 )).captured;
-            // captureAny preserves positional order: mediaTypeHint, note.
+            // captureAny preserves positional order: mediaTypeHint, note, tag.
             expect(calls[0], MediaType.anime);
-            return calls[1] as String;
+            return (note: calls[1] as String, tag: calls[2] as String);
           },
         );
 
-        expect(capturedNote, contains('https://myanimelist.net/anime/5114'));
-        expect(capturedNote, contains('Status: Completed'));
-        expect(capturedNote, contains('Score: 9/10'));
+        expect(captured!.note, contains('https://myanimelist.net/anime/5114'));
+        expect(captured.note, contains('Status: Completed'));
+        expect(captured.note, contains('Score: 9/10'));
+        // Auto-tag follows %source%-<unix-ms> contract.
+        expect(captured.tag, startsWith('MyAnimeList-'));
+        expect(
+          int.tryParse(captured.tag.substring('MyAnimeList-'.length)),
+          isNotNull,
+        );
       });
 
       test('повторный импорт обновляет существующий, не создаёт новый',
@@ -544,6 +552,7 @@ void main() {
               text: any(named: 'text'),
               mediaTypeHint: any(named: 'mediaTypeHint'),
               note: any(named: 'note'),
+              tag: any(named: 'tag'),
             ));
         verifyNever(() => mockDb.addItemToCollection(
               collectionId: any(named: 'collectionId'),

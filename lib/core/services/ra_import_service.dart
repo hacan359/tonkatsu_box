@@ -15,6 +15,7 @@ import '../../shared/models/tracker_game_data.dart';
 import '../../shared/models/tracker_profile.dart';
 import '../../shared/models/universal_import_result.dart';
 import '../../shared/models/wishlist_item.dart';
+import '../../shared/models/wishlist_tag.dart';
 import '../api/igdb_api.dart';
 import '../api/ra_api.dart';
 import '../database/dao/tracker_dao.dart';
@@ -265,6 +266,7 @@ class RaImportService {
     int unmatched = 0;
     int wishlisted = 0;
     final List<String> unmatchedTitles = <String>[];
+    final String importTag = buildImportTag('RetroAchievements');
 
     for (int i = 0; i < games.length; i++) {
       final RaGameProgress raGame = games[i];
@@ -289,7 +291,8 @@ class RaImportService {
         unmatched++;
         unmatchedTitles.add('${raGame.title} (${raGame.consoleName})');
         if (addToWishlist) {
-          final bool wasAdded = await _addToWishlistIfNotExists(raGame);
+          final bool wasAdded =
+              await _addToWishlistIfNotExists(raGame, importTag);
           if (wasAdded) wishlisted++;
         }
         continue;
@@ -485,10 +488,20 @@ class RaImportService {
   /// Возвращает `true` если запись действительно создана,
   /// `false` если игра уже была в вишлисте (не перезаписываем,
   /// чтобы не затереть пользовательские правки).
-  Future<bool> _addToWishlistIfNotExists(RaGameProgress raGame) async {
+  Future<bool> _addToWishlistIfNotExists(
+    RaGameProgress raGame,
+    String importTag,
+  ) async {
     final String title = '${raGame.title} (${raGame.consoleName})';
     final WishlistItem? existing = await _db.findUnresolvedWishlistItem(title);
-    if (existing != null) return false;
+    if (existing != null) {
+      // Retro-stamp the current import tag only on previously-untagged rows
+      // so legacy entries get grouped without overwriting manual tags.
+      if (existing.tag == null) {
+        await _db.updateWishlistItem(existing.id, tag: importTag);
+      }
+      return false;
+    }
 
     await _db.addWishlistItem(
       text: title,
@@ -496,6 +509,7 @@ class RaImportService {
       note: 'From RetroAchievements • '
           '${raGame.numAwarded}/${raGame.maxPossible} achievements'
           '${raGame.highestAwardKind != null ? ' • ${raGame.highestAwardKind}' : ''}',
+      tag: importTag,
     );
     return true;
   }

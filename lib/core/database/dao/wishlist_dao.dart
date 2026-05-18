@@ -4,6 +4,27 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/wishlist_item.dart';
+import '../../../shared/models/wishlist_tag.dart';
+
+/// Aggregate of a single wishlist-tag bucket. `null` [tag] is the
+/// "Untagged" pseudo-bucket for items with no tag.
+class WishlistTagCount {
+  /// Creates a [WishlistTagCount].
+  const WishlistTagCount({
+    required this.tag,
+    required this.activeCount,
+    required this.totalCount,
+  });
+
+  /// Raw tag value (`null` means "untagged" bucket).
+  final String? tag;
+
+  /// Count of items where `is_resolved = 0`.
+  final int activeCount;
+
+  /// Count of items including resolved ones.
+  final int totalCount;
+}
 
 /// DAO для таблицы `wishlist`.
 class WishlistDao {
@@ -19,6 +40,7 @@ class WishlistDao {
     required String text,
     MediaType? mediaTypeHint,
     String? note,
+    String? tag,
   }) async {
     final Database db = await _getDatabase();
     final int now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
@@ -31,6 +53,7 @@ class WishlistDao {
         'note': note,
         'is_resolved': 0,
         'created_at': now,
+        'tag': tag,
       },
     );
 
@@ -40,6 +63,7 @@ class WishlistDao {
       mediaTypeHint: mediaTypeHint,
       note: note,
       createdAt: DateTime.fromMillisecondsSinceEpoch(now * 1000),
+      tag: tag,
     );
   }
 
@@ -80,6 +104,8 @@ class WishlistDao {
     bool clearMediaTypeHint = false,
     String? note,
     bool clearNote = false,
+    String? tag,
+    bool clearTag = false,
   }) async {
     final Map<String, dynamic> updates = <String, dynamic>{};
     if (text != null) updates['text'] = text;
@@ -92,6 +118,11 @@ class WishlistDao {
       updates['note'] = null;
     } else if (note != null) {
       updates['note'] = note;
+    }
+    if (clearTag) {
+      updates['tag'] = null;
+    } else if (tag != null) {
+      updates['tag'] = tag;
     }
     if (updates.isEmpty) return;
 
@@ -166,6 +197,75 @@ class WishlistDao {
     return db.delete(
       'wishlist',
       where: 'is_resolved = 1',
+    );
+  }
+
+  /// Возвращает элементы вишлиста с применением [tagFilter].
+  Future<List<WishlistItem>> getWishlistItemsFiltered({
+    bool includeResolved = true,
+    WishlistTagFilter tagFilter = const WishlistTagFilter.all(),
+  }) async {
+    final Database db = await _getDatabase();
+    final List<String> conditions = <String>[];
+    final List<Object?> args = <Object?>[];
+
+    if (!includeResolved) {
+      conditions.add('is_resolved = 0');
+    }
+    switch (tagFilter) {
+      case WishlistTagFilterAll():
+        break;
+      case WishlistTagFilterUntagged():
+        conditions.add('tag IS NULL');
+      case WishlistTagFilterNamed(:final String tag):
+        conditions.add('tag = ?');
+        args.add(tag);
+    }
+
+    final String where = conditions.isEmpty
+        ? ''
+        : 'WHERE ${conditions.join(' AND ')}';
+
+    final List<Map<String, dynamic>> rows = await db.rawQuery(
+      'SELECT * FROM wishlist $where '
+      'ORDER BY is_resolved ASC, created_at DESC',
+      args,
+    );
+    return rows.map(WishlistItem.fromDb).toList();
+  }
+
+  /// Удаляет все записи с указанным тегом. NULL = «без тега».
+  ///
+  /// Возвращает количество удалённых записей.
+  Future<int> deleteWishlistItemsByTag(String? tag) async {
+    final Database db = await _getDatabase();
+    if (tag == null) {
+      return db.delete('wishlist', where: 'tag IS NULL');
+    }
+    return db.delete(
+      'wishlist',
+      where: 'tag = ?',
+      whereArgs: <Object?>[tag],
+    );
+  }
+
+  /// Переименовывает тег у всех носителей. Возвращает количество
+  /// обновлённых записей. NULL в [from] позволяет проставить тег
+  /// для ранее untagged записей.
+  Future<int> renameWishlistTag(String? from, String to) async {
+    final Database db = await _getDatabase();
+    if (from == null) {
+      return db.update(
+        'wishlist',
+        <String, dynamic>{'tag': to},
+        where: 'tag IS NULL',
+      );
+    }
+    return db.update(
+      'wishlist',
+      <String, dynamic>{'tag': to},
+      where: 'tag = ?',
+      whereArgs: <Object?>[from],
     );
   }
 }

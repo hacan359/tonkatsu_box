@@ -125,7 +125,19 @@ void main() {
           text: any(named: 'text'),
           mediaTypeHint: any(named: 'mediaTypeHint'),
           note: any(named: 'note'),
+          tag: any(named: 'tag'),
         )).thenAnswer((_) async => createTestWishlistItem());
+
+    when(() => mockDb.updateWishlistItem(
+          any(),
+          text: any(named: 'text'),
+          mediaTypeHint: any(named: 'mediaTypeHint'),
+          clearMediaTypeHint: any(named: 'clearMediaTypeHint'),
+          note: any(named: 'note'),
+          clearNote: any(named: 'clearNote'),
+          tag: any(named: 'tag'),
+          clearTag: any(named: 'clearTag'),
+        )).thenAnswer((_) async {});
   }
 
   group('RaImportProgress', () {
@@ -435,6 +447,7 @@ void main() {
               text: 'Unknown Game (NES)',
               mediaTypeHint: MediaType.game,
               note: any(named: 'note'),
+              tag: any(named: 'tag'),
             )).called(1);
       });
 
@@ -464,6 +477,7 @@ void main() {
               text: any(named: 'text'),
               mediaTypeHint: any(named: 'mediaTypeHint'),
               note: any(named: 'note'),
+              tag: any(named: 'tag'),
             ));
       });
 
@@ -497,6 +511,7 @@ void main() {
               text: any(named: 'text'),
               mediaTypeHint: any(named: 'mediaTypeHint'),
               note: any(named: 'note'),
+              tag: any(named: 'tag'),
             ));
         expect(result.unmatched, equals(1));
         expect(result.wishlisted, equals(0));
@@ -581,6 +596,7 @@ void main() {
               text: any(named: 'text'),
               mediaTypeHint: any(named: 'mediaTypeHint'),
               note: any(named: 'note'),
+              tag: any(named: 'tag'),
             ));
       });
 

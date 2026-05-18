@@ -642,6 +642,7 @@ class BackupService {
       'resolved_at': item.resolvedAt != null
           ? item.resolvedAt!.millisecondsSinceEpoch ~/ 1000
           : null,
+      'tag': item.tag,
     };
   }
 
@@ -666,6 +667,7 @@ class BackupService {
             ? MediaType.fromString(mediaTypeHint)
             : null,
         note: data['note'] as String?,
+        tag: data['tag'] as String?,
       );
       restored++;
     }

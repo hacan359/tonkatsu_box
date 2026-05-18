@@ -1831,6 +1831,98 @@ class SRu extends S {
   String get wishlistNoteHint => 'Платформа, год, кто рекомендовал...';
 
   @override
+  String get wishlistTagOptional => 'Тег (опционально)';
+
+  @override
+  String get wishlistTagHint =>
+      'Группировка записей — например, по импорту или источнику';
+
+  @override
+  String get wishlistTagAll => 'Все';
+
+  @override
+  String get wishlistTagUntagged => 'Без тега';
+
+  @override
+  String get wishlistTagFilterLabel => 'Список';
+
+  @override
+  String get wishlistTagPlaceholder => 'Тег';
+
+  @override
+  String get wishlistTagManage => 'Управление тегом';
+
+  @override
+  String get wishlistTagRename => 'Переименовать тег';
+
+  @override
+  String get wishlistTagDelete => 'Удалить тег и все записи';
+
+  @override
+  String wishlistTagDeleteConfirm(String tag, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count записи',
+      many: '$count записей',
+      few: '$count записи',
+      one: '$count запись',
+    );
+    return 'Удалить тег «$tag» и $_temp0?';
+  }
+
+  @override
+  String wishlistBulkActionsButton(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count найдено',
+      many: '$count найдено',
+      few: '$count найдено',
+      one: '$count найдена',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get wishlistBulkApplyTag => 'Назначить тег видимым';
+
+  @override
+  String wishlistBulkApplyTagHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Назначить тег $count видимым записям:',
+      many: 'Назначить тег $count видимым записям:',
+      few: 'Назначить тег $count видимым записям:',
+      one: 'Назначить тег $count видимой записи:',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get wishlistBulkRemoveTag => 'Снять тег с видимых';
+
+  @override
+  String get wishlistBulkDelete => 'Удалить видимые';
+
+  @override
+  String wishlistBulkDeleteConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Удалить $count видимых записей?',
+      many: 'Удалить $count видимых записей?',
+      few: 'Удалить $count видимые записи?',
+      one: 'Удалить $count видимую запись?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get apply => 'Применить';
+
+  @override
   String get welcomeStepWelcome => 'Добро пожаловать';
 
   @override

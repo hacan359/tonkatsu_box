@@ -336,7 +336,8 @@ abstract final class DatabaseSchema {
         note TEXT,
         is_resolved INTEGER NOT NULL DEFAULT 0,
         created_at INTEGER NOT NULL,
-        resolved_at INTEGER
+        resolved_at INTEGER,
+        tag TEXT
       )
     ''');
   }

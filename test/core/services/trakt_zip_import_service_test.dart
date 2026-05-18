@@ -576,11 +576,24 @@ void main() {
         when(() => mockWishlist.add(
               text: any(named: 'text'),
               mediaTypeHint: any(named: 'mediaTypeHint'),
+              note: any(named: 'note'),
+              tag: any(named: 'tag'),
             )).thenAnswer((_) async => WishlistItem(
               id: 1,
               text: 'test',
               createdAt: testDate,
             ));
+
+        when(() => mockWishlist.update(
+              any(),
+              text: any(named: 'text'),
+              mediaTypeHint: any(named: 'mediaTypeHint'),
+              clearMediaTypeHint: any(named: 'clearMediaTypeHint'),
+              note: any(named: 'note'),
+              clearNote: any(named: 'clearNote'),
+              tag: any(named: 'tag'),
+              clearTag: any(named: 'clearTag'),
+            )).thenAnswer((_) async {});
 
         when(() => mockWishlist.findUnresolved(any()))
             .thenAnswer((_) async => null);
@@ -1211,6 +1224,7 @@ void main() {
         verify(() => mockWishlist.add(
               text: 'Unknown Movie',
               mediaTypeHint: MediaType.movie,
+              tag: any(named: 'tag'),
             )).called(1);
       });
 
@@ -1238,6 +1252,7 @@ void main() {
         verify(() => mockWishlist.add(
               text: 'No ID Show',
               mediaTypeHint: MediaType.tvShow,
+              tag: any(named: 'tag'),
             )).called(1);
       });
 
@@ -1385,6 +1400,7 @@ void main() {
         verifyNever(() => mockWishlist.add(
               text: any(named: 'text'),
               mediaTypeHint: any(named: 'mediaTypeHint'),
+              tag: any(named: 'tag'),
             ));
       });
 
@@ -2025,6 +2041,7 @@ void main() {
         verify(() => mockWishlist.add(
               text: 'Fallback WL',
               mediaTypeHint: MediaType.movie,
+              tag: any(named: 'tag'),
             )).called(1);
       });
 

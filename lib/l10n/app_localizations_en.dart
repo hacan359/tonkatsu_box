@@ -1811,6 +1811,84 @@ class SEn extends S {
   String get wishlistNoteHint => 'Platform, year, who recommended...';
 
   @override
+  String get wishlistTagOptional => 'Tag (optional)';
+
+  @override
+  String get wishlistTagHint =>
+      'Group entries — e.g. an import batch or a source';
+
+  @override
+  String get wishlistTagAll => 'All';
+
+  @override
+  String get wishlistTagUntagged => 'Untagged';
+
+  @override
+  String get wishlistTagFilterLabel => 'List';
+
+  @override
+  String get wishlistTagPlaceholder => 'Tag';
+
+  @override
+  String get wishlistTagManage => 'Manage tag';
+
+  @override
+  String get wishlistTagRename => 'Rename tag';
+
+  @override
+  String get wishlistTagDelete => 'Delete tag and all entries';
+
+  @override
+  String wishlistTagDeleteConfirm(String tag, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries',
+      one: '1 entry',
+    );
+    return 'Delete tag \"$tag\" and $_temp0?';
+  }
+
+  @override
+  String wishlistBulkActionsButton(int count) {
+    return '$count matches';
+  }
+
+  @override
+  String get wishlistBulkApplyTag => 'Apply tag to visible';
+
+  @override
+  String wishlistBulkApplyTagHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Tag the $count visible entries as',
+      one: 'Tag the 1 visible entry as',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get wishlistBulkRemoveTag => 'Remove tag from visible';
+
+  @override
+  String get wishlistBulkDelete => 'Delete visible';
+
+  @override
+  String wishlistBulkDeleteConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Delete $count visible entries?',
+      one: 'Delete 1 visible entry?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get apply => 'Apply';
+
+  @override
   String get welcomeStepWelcome => 'Welcome';
 
   @override

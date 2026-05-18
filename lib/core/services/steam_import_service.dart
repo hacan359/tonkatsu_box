@@ -11,6 +11,7 @@ import '../../shared/models/item_status_logic.dart';
 import '../../shared/models/media_type.dart';
 import '../../shared/models/universal_import_result.dart';
 import '../../shared/models/wishlist_item.dart';
+import '../../shared/models/wishlist_tag.dart';
 import '../api/igdb_api.dart';
 import '../api/steam_api.dart';
 import '../database/database_service.dart';
@@ -180,6 +181,8 @@ class SteamImportService {
           '${library.length} total');
     }
 
+    final String importTag = buildImportTag('Steam');
+
     if (games.isEmpty) {
       throw const SteamApiException('No games found in this Steam library');
     }
@@ -222,7 +225,7 @@ class SteamImportService {
       final Game? match = igdbMatches[steamGame.appId.toString()];
 
       if (match == null) {
-        await _addToWishlist(steamGame);
+        await _addToWishlist(steamGame, importTag);
         wishlisted++;
         _log.fine('Not found in IGDB, added to wishlist: ${steamGame.name}');
         continue;
@@ -338,19 +341,25 @@ class SteamImportService {
   ///
   /// Если в вишлисте уже есть активный элемент с таким же именем,
   /// обновляет его заметку вместо создания дубликата.
-  Future<void> _addToWishlist(SteamOwnedGame steamGame) async {
+  Future<void> _addToWishlist(SteamOwnedGame steamGame, String importTag) async {
     final String? note = steamGame.playtimeMinutes > 0
         ? 'Steam: ${_formatPlaytime(steamGame)}'
         : null;
 
-    // Проверяем наличие дубликата в вишлисте
     final WishlistItem? existing =
         await _db.findUnresolvedWishlistItem(steamGame.name);
 
     if (existing != null) {
-      // Обновляем заметку если есть новые данные о playtime
-      if (note != null && note != existing.note) {
-        await _db.updateWishlistItem(existing.id, note: note);
+      // Stamp the current import tag only when the row was previously
+      // untagged — preserve any tag the user (or an earlier import) set.
+      final bool needsTag = existing.tag == null;
+      final bool noteChanged = note != null && note != existing.note;
+      if (needsTag || noteChanged) {
+        await _db.updateWishlistItem(
+          existing.id,
+          note: noteChanged ? note : null,
+          tag: needsTag ? importTag : null,
+        );
       }
       return;
     }
@@ -359,6 +368,7 @@ class SteamImportService {
       text: steamGame.name,
       mediaTypeHint: MediaType.game,
       note: note,
+      tag: importTag,
     );
   }
 

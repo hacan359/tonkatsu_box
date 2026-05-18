@@ -290,6 +290,7 @@ WishlistItem createTestWishlistItem({
   bool isResolved = false,
   DateTime? createdAt,
   DateTime? resolvedAt,
+  String? tag,
 }) {
   return WishlistItem(
     id: id,
@@ -299,6 +300,7 @@ WishlistItem createTestWishlistItem({
     isResolved: isResolved,
     createdAt: createdAt ?? testDate,
     resolvedAt: resolvedAt,
+    tag: tag,
   );
 }
 

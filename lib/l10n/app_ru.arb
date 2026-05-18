@@ -666,6 +666,45 @@
   "wishlistNoteOptional": "Заметка (необязательно)",
   "wishlistNoteHint": "Платформа, год, кто рекомендовал...",
 
+  "wishlistTagOptional": "Тег (опционально)",
+  "wishlistTagHint": "Группировка записей — например, по импорту или источнику",
+  "wishlistTagAll": "Все",
+  "wishlistTagUntagged": "Без тега",
+  "wishlistTagFilterLabel": "Список",
+  "wishlistTagPlaceholder": "Тег",
+  "wishlistTagManage": "Управление тегом",
+  "wishlistTagRename": "Переименовать тег",
+  "wishlistTagDelete": "Удалить тег и все записи",
+  "wishlistTagDeleteConfirm": "Удалить тег «{tag}» и {count, plural, one{{count} запись} few{{count} записи} many{{count} записей} other{{count} записи}}?",
+  "@wishlistTagDeleteConfirm": {
+    "placeholders": {
+      "tag": {"type": "String"},
+      "count": {"type": "int"}
+    }
+  },
+  "wishlistBulkActionsButton": "{count, plural, one{{count} найдена} few{{count} найдено} many{{count} найдено} other{{count} найдено}}",
+  "@wishlistBulkActionsButton": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "wishlistBulkApplyTag": "Назначить тег видимым",
+  "wishlistBulkApplyTagHint": "{count, plural, one{Назначить тег {count} видимой записи:} few{Назначить тег {count} видимым записям:} many{Назначить тег {count} видимым записям:} other{Назначить тег {count} видимым записям:}}",
+  "@wishlistBulkApplyTagHint": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "wishlistBulkRemoveTag": "Снять тег с видимых",
+  "wishlistBulkDelete": "Удалить видимые",
+  "wishlistBulkDeleteConfirm": "{count, plural, one{Удалить {count} видимую запись?} few{Удалить {count} видимые записи?} many{Удалить {count} видимых записей?} other{Удалить {count} видимых записей?}}",
+  "@wishlistBulkDeleteConfirm": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "apply": "Применить",
+
   "welcomeStepWelcome": "Добро пожаловать",
   "welcomeStepName": "Имя",
   "welcomeStepLanguage": "Язык",

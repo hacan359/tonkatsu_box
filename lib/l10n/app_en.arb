@@ -855,6 +855,45 @@
   "wishlistNoteOptional": "Note (optional)",
   "wishlistNoteHint": "Platform, year, who recommended...",
 
+  "wishlistTagOptional": "Tag (optional)",
+  "wishlistTagHint": "Group entries — e.g. an import batch or a source",
+  "wishlistTagAll": "All",
+  "wishlistTagUntagged": "Untagged",
+  "wishlistTagFilterLabel": "List",
+  "wishlistTagPlaceholder": "Tag",
+  "wishlistTagManage": "Manage tag",
+  "wishlistTagRename": "Rename tag",
+  "wishlistTagDelete": "Delete tag and all entries",
+  "wishlistTagDeleteConfirm": "Delete tag \"{tag}\" and {count, plural, =1{1 entry} other{{count} entries}}?",
+  "@wishlistTagDeleteConfirm": {
+    "placeholders": {
+      "tag": {"type": "String"},
+      "count": {"type": "int"}
+    }
+  },
+  "wishlistBulkActionsButton": "{count} matches",
+  "@wishlistBulkActionsButton": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "wishlistBulkApplyTag": "Apply tag to visible",
+  "wishlistBulkApplyTagHint": "{count, plural, =1{Tag the 1 visible entry as} other{Tag the {count} visible entries as}}",
+  "@wishlistBulkApplyTagHint": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "wishlistBulkRemoveTag": "Remove tag from visible",
+  "wishlistBulkDelete": "Delete visible",
+  "wishlistBulkDeleteConfirm": "{count, plural, =1{Delete 1 visible entry?} other{Delete {count} visible entries?}}",
+  "@wishlistBulkDeleteConfirm": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "apply": "Apply",
+
   "welcomeStepWelcome": "Welcome",
   "welcomeStepName": "Name",
   "welcomeStepLanguage": "Language",

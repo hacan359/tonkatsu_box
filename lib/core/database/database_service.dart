@@ -25,6 +25,7 @@ import '../../shared/models/anime.dart';
 import '../../shared/models/manga.dart';
 import '../../shared/models/visual_novel.dart';
 import '../../shared/models/wishlist_item.dart';
+import '../../shared/models/wishlist_tag.dart';
 import 'dao/canvas_dao.dart';
 import 'dao/collection_dao.dart';
 import 'dao/custom_media_dao.dart';
@@ -199,7 +200,7 @@ class DatabaseService {
     return databaseFactory.openDatabase(
       dbPath,
       options: OpenDatabaseOptions(
-        version: 39,
+        version: 40,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: (Database db) async {
@@ -747,17 +748,23 @@ class DatabaseService {
     required String text,
     MediaType? mediaTypeHint,
     String? note,
+    String? tag,
   }) =>
       wishlistDao.addWishlistItem(
         text: text,
         mediaTypeHint: mediaTypeHint,
         note: note,
+        tag: tag,
       );
 
   Future<List<WishlistItem>> getWishlistItems({
     bool includeResolved = true,
+    WishlistTagFilter tagFilter = const WishlistTagFilter.all(),
   }) =>
-      wishlistDao.getWishlistItems(includeResolved: includeResolved);
+      wishlistDao.getWishlistItemsFiltered(
+        includeResolved: includeResolved,
+        tagFilter: tagFilter,
+      );
 
   Future<int> getWishlistItemCount({bool onlyActive = true}) =>
       wishlistDao.getWishlistItemCount(onlyActive: onlyActive);
@@ -769,6 +776,8 @@ class DatabaseService {
     bool clearMediaTypeHint = false,
     String? note,
     bool clearNote = false,
+    String? tag,
+    bool clearTag = false,
   }) =>
       wishlistDao.updateWishlistItem(
         id,
@@ -777,6 +786,8 @@ class DatabaseService {
         clearMediaTypeHint: clearMediaTypeHint,
         note: note,
         clearNote: clearNote,
+        tag: tag,
+        clearTag: clearTag,
       );
 
   Future<void> resolveWishlistItem(int id) =>
@@ -793,6 +804,12 @@ class DatabaseService {
 
   Future<int> clearResolvedWishlistItems() =>
       wishlistDao.clearResolvedWishlistItems();
+
+  Future<int> deleteWishlistItemsByTag(String? tag) =>
+      wishlistDao.deleteWishlistItemsByTag(tag);
+
+  Future<int> renameWishlistTag(String? from, String to) =>
+      wishlistDao.renameWishlistTag(from, to);
 
   /// Truncates every user table in a single transaction. FK-dependent tables
   /// are deleted before their parents. Static reference tables (platforms,

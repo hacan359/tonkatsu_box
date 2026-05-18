@@ -15,6 +15,7 @@ import '../../shared/models/manga.dart';
 import '../../shared/models/media_type.dart';
 import '../../shared/models/universal_import_result.dart';
 import '../../shared/models/wishlist_item.dart';
+import '../../shared/models/wishlist_tag.dart';
 import '../api/anilist_api.dart';
 import '../database/database_service.dart';
 
@@ -488,6 +489,10 @@ class MalImportService {
       throw const FormatException('No entries found in MAL export');
     }
 
+    // One auto-tag per import run, stamped on every unmatched entry so the
+    // user can later filter or wipe this whole batch from the wishlist.
+    final String importTag = buildImportTag('MyAnimeList');
+
     // Create the collection only after parsing succeeds to avoid empty leftovers.
     final int targetCollectionId = collectionId ?? await createCollection!();
 
@@ -622,7 +627,7 @@ class MalImportService {
           : mangaByMal[entry.malId]?.id;
 
       if (aniListId == null) {
-        await _addToWishlist(entry);
+        await _addToWishlist(entry, importTag);
         wishlisted++;
         if (entry.kind == MalFileKind.anime) {
           animeWishlisted++;
@@ -843,7 +848,7 @@ class MalImportService {
     }
   }
 
-  Future<void> _addToWishlist(MalEntry entry) async {
+  Future<void> _addToWishlist(MalEntry entry, String importTag) async {
     final String note = _buildWishlistNote(entry);
     final MediaType mediaType = entry.kind == MalFileKind.anime
         ? MediaType.anime
@@ -853,8 +858,17 @@ class MalImportService {
         await _db.findUnresolvedWishlistItem(entry.title);
 
     if (existing != null) {
-      if (note != existing.note) {
-        await _db.updateWishlistItem(existing.id, note: note);
+      // Stamp the current import tag onto previously-untagged items so the
+      // existing dump gets retro-grouped; never overwrite a tag the user (or
+      // an earlier import) already set.
+      final bool needsTag = existing.tag == null;
+      final bool noteChanged = note != existing.note;
+      if (needsTag || noteChanged) {
+        await _db.updateWishlistItem(
+          existing.id,
+          note: noteChanged ? note : null,
+          tag: needsTag ? importTag : null,
+        );
       }
       return;
     }
@@ -863,6 +877,7 @@ class MalImportService {
       text: entry.title,
       mediaTypeHint: mediaType,
       note: note,
+      tag: importTag,
     );
   }
 

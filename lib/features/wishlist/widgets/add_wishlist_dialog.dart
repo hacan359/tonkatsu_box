@@ -18,6 +18,7 @@ class WishlistDialogResult {
     required this.text,
     this.mediaTypeHint,
     this.note,
+    this.tag,
   });
 
   /// Текст заметки (название контента).
@@ -28,6 +29,9 @@ class WishlistDialogResult {
 
   /// Дополнительная заметка.
   final String? note;
+
+  /// Опциональный тег для группировки.
+  final String? tag;
 }
 
 /// Экран-форма для добавления или редактирования элемента вишлиста.
@@ -63,6 +67,7 @@ class AddWishlistForm extends StatefulWidget {
 class _AddWishlistFormState extends State<AddWishlistForm> {
   late final TextEditingController _textController;
   late final TextEditingController _noteController;
+  late final TextEditingController _tagController;
   MediaType? _selectedMediaType;
   String? _titleError;
   bool get _isEditing => widget.existing != null;
@@ -76,6 +81,9 @@ class _AddWishlistFormState extends State<AddWishlistForm> {
     _noteController = TextEditingController(
       text: widget.existing?.note ?? '',
     );
+    _tagController = TextEditingController(
+      text: widget.existing?.tag ?? '',
+    );
     _selectedMediaType = widget.existing?.mediaTypeHint;
   }
 
@@ -83,6 +91,7 @@ class _AddWishlistFormState extends State<AddWishlistForm> {
   void dispose() {
     _textController.dispose();
     _noteController.dispose();
+    _tagController.dispose();
     super.dispose();
   }
 
@@ -96,11 +105,13 @@ class _AddWishlistFormState extends State<AddWishlistForm> {
     }
 
     final String noteText = _noteController.text.trim();
+    final String tagText = _tagController.text.trim();
     Navigator.of(context).pop(
       WishlistDialogResult(
         text: text,
         mediaTypeHint: _selectedMediaType,
         note: noteText.isEmpty ? null : noteText,
+        tag: tagText.isEmpty ? null : tagText,
       ),
     );
   }
@@ -179,6 +190,17 @@ class _AddWishlistFormState extends State<AddWishlistForm> {
               decoration: InputDecoration(
                 labelText: l.wishlistNoteOptional,
                 hintText: l.wishlistNoteHint,
+                border: const OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+
+            // Tag field.
+            TextField(
+              controller: _tagController,
+              decoration: InputDecoration(
+                labelText: l.wishlistTagOptional,
+                hintText: l.wishlistTagHint,
                 border: const OutlineInputBorder(),
               ),
             ),

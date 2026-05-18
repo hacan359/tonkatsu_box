@@ -3307,6 +3307,108 @@ abstract class S {
   /// **'Platform, year, who recommended...'**
   String get wishlistNoteHint;
 
+  /// No description provided for @wishlistTagOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Tag (optional)'**
+  String get wishlistTagOptional;
+
+  /// No description provided for @wishlistTagHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Group entries — e.g. an import batch or a source'**
+  String get wishlistTagHint;
+
+  /// No description provided for @wishlistTagAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get wishlistTagAll;
+
+  /// No description provided for @wishlistTagUntagged.
+  ///
+  /// In en, this message translates to:
+  /// **'Untagged'**
+  String get wishlistTagUntagged;
+
+  /// No description provided for @wishlistTagFilterLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'List'**
+  String get wishlistTagFilterLabel;
+
+  /// No description provided for @wishlistTagPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Tag'**
+  String get wishlistTagPlaceholder;
+
+  /// No description provided for @wishlistTagManage.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage tag'**
+  String get wishlistTagManage;
+
+  /// No description provided for @wishlistTagRename.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename tag'**
+  String get wishlistTagRename;
+
+  /// No description provided for @wishlistTagDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete tag and all entries'**
+  String get wishlistTagDelete;
+
+  /// No description provided for @wishlistTagDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete tag \"{tag}\" and {count, plural, =1{1 entry} other{{count} entries}}?'**
+  String wishlistTagDeleteConfirm(String tag, int count);
+
+  /// No description provided for @wishlistBulkActionsButton.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} matches'**
+  String wishlistBulkActionsButton(int count);
+
+  /// No description provided for @wishlistBulkApplyTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply tag to visible'**
+  String get wishlistBulkApplyTag;
+
+  /// No description provided for @wishlistBulkApplyTagHint.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Tag the 1 visible entry as} other{Tag the {count} visible entries as}}'**
+  String wishlistBulkApplyTagHint(int count);
+
+  /// No description provided for @wishlistBulkRemoveTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove tag from visible'**
+  String get wishlistBulkRemoveTag;
+
+  /// No description provided for @wishlistBulkDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete visible'**
+  String get wishlistBulkDelete;
+
+  /// No description provided for @wishlistBulkDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Delete 1 visible entry?} other{Delete {count} visible entries?}}'**
+  String wishlistBulkDeleteConfirm(int count);
+
+  /// No description provided for @apply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get apply;
+
   /// No description provided for @welcomeStepWelcome.
   ///
   /// In en, this message translates to:

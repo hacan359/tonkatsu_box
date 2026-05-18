@@ -15,6 +15,7 @@ class WishlistItem {
     this.note,
     this.isResolved = false,
     this.resolvedAt,
+    this.tag,
   });
 
   /// Создаёт [WishlistItem] из записи базы данных.
@@ -36,6 +37,7 @@ class WishlistItem {
               (row['resolved_at'] as int) * 1000,
             )
           : null,
+      tag: row['tag'] as String?,
     );
   }
 
@@ -60,6 +62,9 @@ class WishlistItem {
   /// Дата разрешения (когда элемент найден и добавлен).
   final DateTime? resolvedAt;
 
+  /// Опциональный тег для группировки (например, авто-тег импорта).
+  final String? tag;
+
   /// Есть ли дополнительная заметка.
   bool get hasNote => note != null && note!.isNotEmpty;
 
@@ -75,6 +80,7 @@ class WishlistItem {
       'resolved_at': resolvedAt != null
           ? resolvedAt!.millisecondsSinceEpoch ~/ 1000
           : null,
+      'tag': tag,
     };
   }
 
@@ -90,6 +96,8 @@ class WishlistItem {
     DateTime? createdAt,
     DateTime? resolvedAt,
     bool clearResolvedAt = false,
+    String? tag,
+    bool clearTag = false,
   }) {
     return WishlistItem(
       id: id ?? this.id,
@@ -101,6 +109,7 @@ class WishlistItem {
       createdAt: createdAt ?? this.createdAt,
       resolvedAt:
           clearResolvedAt ? null : (resolvedAt ?? this.resolvedAt),
+      tag: clearTag ? null : (tag ?? this.tag),
     );
   }
 

@@ -9,6 +9,104 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Added
 
+- **Group wishlist entries with tags, bulk-delete by tag, and search inside notes**
+
+  The wishlist now carries an optional `tag` per entry so bulk-imported
+  batches can be grouped, filtered, and removed in one action instead
+  of cleaned up one by one. Every importer that may dump unmatched
+  rows into the wishlist — MyAnimeList, Steam, RetroAchievements,
+  Trakt — stamps every wishlist row it adds with an auto-generated tag
+  of shape `<source>-<unix-ms>` (`MyAnimeList-...`, `Steam-...`,
+  `RetroAchievements-...`, `Trakt-...`), guaranteed unique per run —
+  two imports back-to-back never merge into the same bucket. The wishlist
+  screen gets a full-width chevron filter bar in the same visual language
+  as the collection / search screens: left segment picks the active tag
+  (popup lists every tag with per-bucket counts and, when a specific tag
+  is selected, "Rename tag" / "Delete tag and all entries" actions);
+  right segment is bulk-actions — apply a tag to every visible entry,
+  strip the tag, or delete the visible subset (each with a confirmation
+  dialog). The free-text search now matches the `note` field in addition
+  to the title, so "find by comment, then mass-tag/delete" works as one
+  flow. The add/edit form has a new optional "Tag" input so users can
+  drop a new entry directly into an existing group. Backup archives
+  include the new column so `.xcoll(x)` restore round-trips it.
+
+  * lib/core/database/schema.dart (DatabaseSchema.createWishlistTable):
+    Add `tag TEXT` column to fresh-install wishlist DDL.
+  * lib/core/database/migrations/migration_v40.dart (MigrationV40),
+    lib/core/database/migrations/migration_registry.dart: New v40
+    migration that adds `tag` on upgrade.
+  * lib/core/database/database_service.dart: Bump schema version to 40;
+    extend wishlist facade with `tag` / `clearTag` plumbing,
+    `deleteWishlistItemsByTag`, `renameWishlistTag`.
+  * lib/core/database/dao/wishlist_dao.dart (WishlistDao.addWishlistItem,
+    WishlistDao.updateWishlistItem, WishlistDao.getWishlistItemsFiltered,
+    WishlistDao.deleteWishlistItemsByTag, WishlistDao.renameWishlistTag,
+    WishlistTagCount): Tag-aware CRUD; new filtered query consumes the
+    `WishlistTagFilter` sealed type.
+  * lib/shared/models/wishlist_item.dart (WishlistItem.tag,
+    WishlistItem.copyWith, WishlistItem.fromDb, WishlistItem.toDb):
+    Carry the new field end-to-end.
+  * lib/shared/models/wishlist_tag.dart (WishlistTagFilter,
+    WishlistTagFilterAll, WishlistTagFilterUntagged,
+    WishlistTagFilterNamed, WishlistTagInfo, buildImportTag,
+    parseWishlistTag): New — sealed filter type plus
+    `%source%-<unix-ms>` auto-tag builder and parser used by the UI to
+    render auto-tags as "Source — date time".
+  * lib/data/repositories/wishlist_repository.dart
+    (WishlistRepository.add, WishlistRepository.getAll,
+    WishlistRepository.update, WishlistRepository.deleteByTag,
+    WishlistRepository.renameTag): Tag-aware passthroughs.
+  * lib/features/wishlist/providers/wishlist_provider.dart
+    (WishlistNotifier.add, WishlistNotifier.updateItem,
+    WishlistNotifier.deleteByTag, WishlistNotifier.renameTag,
+    WishlistNotifier.applyTagToIds, WishlistNotifier.deleteIds,
+    wishlistTagsProvider): Tag-aware mutations + bulk operations on a
+    set of ids + derived provider that aggregates per-tag counts in
+    memory (Untagged first, then most recent named tag).
+  * lib/features/wishlist/screens/wishlist_screen.dart
+    (_WishlistScreenState._tagFilter, _WishlistScreenState._applyFilters,
+    _WishlistScreenState._promptRenameTag,
+    _WishlistScreenState._confirmDeleteTag,
+    _WishlistScreenState._runBulkAction,
+    _WishlistScreenState._promptTagForBulk, _WishlistTagHeader,
+    _TagPickerSegment, _BulkActionsSegment, _TagMenuChoice, _BulkAction):
+    Full-width chevron filter bar built on `DropdownChevronSegment`
+    (consistent with collection / search screens); extend the in-memory
+    filter to honor `_tagFilter` and match the search query against
+    `note` as well as `text`; bulk-actions popup wires apply / remove /
+    delete over the currently visible subset.
+  * lib/features/wishlist/widgets/add_wishlist_dialog.dart
+    (WishlistDialogResult.tag, _AddWishlistFormState._tagController):
+    Optional Tag input field on add/edit.
+  * lib/core/services/mal_import_service.dart (MalImportService.importFiles,
+    MalImportService._addToWishlist), lib/core/services/steam_import_service.dart
+    (SteamImportService.importLibrary, SteamImportService._addToWishlist),
+    lib/core/services/ra_import_service.dart (RaImportService._addToWishlistIfNotExists),
+    lib/core/services/trakt_zip_import_service.dart
+    (TraktZipImportService.importFromZip): Generate one
+    `buildImportTag(<source>)` per import run and pass it through to
+    every unmatched entry; on re-import only stamp a tag onto
+    previously-untagged duplicates so user-assigned tags are preserved.
+  * lib/core/services/backup_service.dart (BackupService._wishlistItemToExport,
+    BackupService._restoreWishlist): Persist and restore the new column
+    in `.xcoll(x)` archives.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (wishlistTagOptional,
+    wishlistTagHint, wishlistTagAll, wishlistTagUntagged,
+    wishlistTagFilterLabel, wishlistTagPlaceholder, wishlistTagManage,
+    wishlistTagRename, wishlistTagDelete, wishlistTagDeleteConfirm,
+    wishlistBulkActionsButton, wishlistBulkApplyTag,
+    wishlistBulkApplyTagHint, wishlistBulkRemoveTag, wishlistBulkDelete,
+    wishlistBulkDeleteConfirm, apply): New strings; regenerated
+    `app_localizations*.dart`.
+  * test/shared/models/wishlist_tag_test.dart: New — covers
+    `buildImportTag` uniqueness, `parseWishlistTag` of auto-generated
+    tags, multi-dash source names, manual tags, and trailing-dash /
+    non-numeric edge cases.
+  * test/core/services/mal_import_service_test.dart: Assert the
+    auto-tag follows `MyAnimeList-<unix-ms>` and reaches
+    `addWishlistItem`.
+
 - **Harden MyAnimeList XML import against AniList rate limits and protect existing entries**
 
   Large MAL imports no longer dump everything into Wishlist when AniList

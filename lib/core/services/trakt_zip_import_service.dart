@@ -14,6 +14,7 @@ import '../../shared/models/item_status_logic.dart';
 import '../../shared/models/media_type.dart';
 import '../../shared/models/movie.dart';
 import '../../shared/models/wishlist_item.dart';
+import '../../shared/models/wishlist_tag.dart';
 import '../../shared/models/tv_show.dart';
 import '../../shared/models/universal_import_result.dart';
 import '../api/tmdb_api.dart';
@@ -347,6 +348,7 @@ class TraktZipImportService {
 
       final Map<String, String> files = archive.files;
       final String username = archive.username;
+      final String importTag = buildImportTag('Trakt');
 
       final List<_TraktMovie> watchedMovies = options.importWatched
           ? _parseWatchedMovies(_getFile(
@@ -516,9 +518,12 @@ class TraktZipImportService {
             await _wishlistRepository.add(
               text: traktMovie.title,
               mediaTypeHint: hintType,
+              tag: importTag,
             );
             wishlistedByType[hintType] =
                 (wishlistedByType[hintType] ?? 0) + 1;
+          } else if (existingWl.tag == null) {
+            await _wishlistRepository.update(existingWl.id, tag: importTag);
           }
           errors.add(
             'Wishlisted "${traktMovie.title}" (TMDB data not available)',
@@ -582,9 +587,12 @@ class TraktZipImportService {
             await _wishlistRepository.add(
               text: traktShow.title,
               mediaTypeHint: hintType,
+              tag: importTag,
             );
             wishlistedByType[hintType] =
                 (wishlistedByType[hintType] ?? 0) + 1;
+          } else if (existingWl.tag == null) {
+            await _wishlistRepository.update(existingWl.id, tag: importTag);
           }
           errors.add(
             'Wishlisted "${traktShow.title}" (TMDB data not available)',
@@ -795,8 +803,14 @@ class TraktZipImportService {
             await _wishlistRepository.add(
               text: entry.title,
               mediaTypeHint: hint,
+              tag: importTag,
             );
             wishlistItemsAdded++;
+          } else if (existingWishlist.tag == null) {
+            await _wishlistRepository.update(
+              existingWishlist.id,
+              tag: importTag,
+            );
           }
         }
       }

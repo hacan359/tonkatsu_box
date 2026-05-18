@@ -93,6 +93,7 @@ void main() {
           text: any(named: 'text'),
           mediaTypeHint: any(named: 'mediaTypeHint'),
           note: any(named: 'note'),
+          tag: any(named: 'tag'),
         )).thenAnswer((_) async => createTestWishlistItem());
 
     when(() => mockDb.findUnresolvedWishlistItem(any()))
@@ -100,7 +101,13 @@ void main() {
 
     when(() => mockDb.updateWishlistItem(
           any(),
+          text: any(named: 'text'),
+          mediaTypeHint: any(named: 'mediaTypeHint'),
+          clearMediaTypeHint: any(named: 'clearMediaTypeHint'),
           note: any(named: 'note'),
+          clearNote: any(named: 'clearNote'),
+          tag: any(named: 'tag'),
+          clearTag: any(named: 'clearTag'),
         )).thenAnswer((_) async {});
 
     when(() => mockDb.updateItemStatus(
@@ -405,6 +412,7 @@ void main() {
               text: 'Unknown Game',
               mediaTypeHint: MediaType.game,
               note: any(named: 'note'),
+              tag: any(named: 'tag'),
             )).called(1);
       });
 
@@ -509,6 +517,7 @@ void main() {
               text: any(named: 'text'),
               mediaTypeHint: any(named: 'mediaTypeHint'),
               note: any(named: 'note'),
+              tag: any(named: 'tag'),
             ));
       });
 
@@ -540,12 +549,16 @@ void main() {
           onProgress: (_) {},
         );
 
-        verify(() => mockDb.updateWishlistItem(42, note: 'Steam: 1.5h'))
-            .called(1);
+        verify(() => mockDb.updateWishlistItem(
+              42,
+              note: 'Steam: 1.5h',
+              tag: any(named: 'tag'),
+            )).called(1);
         verifyNever(() => mockDb.addWishlistItem(
               text: any(named: 'text'),
               mediaTypeHint: any(named: 'mediaTypeHint'),
               note: any(named: 'note'),
+              tag: any(named: 'tag'),
             ));
       });
 
@@ -573,6 +586,7 @@ void main() {
               text: 'New Game',
               mediaTypeHint: MediaType.game,
               note: any(named: 'note'),
+              tag: any(named: 'tag'),
             )).called(1);
       });
     });
