@@ -40,6 +40,52 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Changed
 
+- **Upgrade to Flutter 3.44.0 and fix table-view hero detachment**
+
+  Bumps the project past the Flutter `onReorder → onReorderItem` rename so
+  CI's `--fatal-infos` stops blocking release builds. The new callback
+  adjusts `newIndex` internally for the removed-element offset, so the
+  per-callsite `if (newIndex > oldIndex) newIndex -= 1` workaround is
+  dropped. Three call sites of the new debug-only assertion
+  «`ListTile` background color or ink splashes may be invisible» introduced
+  by Flutter 3.44 are also rewired so descendants paint their ink on a
+  proper Material ancestor. Finally the table-view hero banner stops
+  «detaching» from the top of the screen on wide windows when the row
+  count is small — the old `SingleChildScrollView` + `Column` mistakenly
+  anchored its content to the bottom of the viewport on Flutter 3.44, so
+  the wrap switches to a `CustomScrollView` mirroring the grid path.
+
+  * lib/features/collections/widgets/collection_items_view.dart
+    (CollectionItemsView._withHeader): Replace the inner
+    `SingleChildScrollView(child: Column[header, body])` for table/reorder
+    modes with a `CustomScrollView` of two `SliverToBoxAdapter`s. Hero
+    stays glued to the top when content fits the viewport and still
+    scrolls with the rows when it doesn't.
+  * lib/features/collections/widgets/collection_items_view.dart,
+    lib/features/collections/widgets/collection_table/collection_table_view.dart:
+    Switch the inner `ReorderableListView.onReorder` to `onReorderItem`
+    and drop the manual index normalisation.
+  * lib/features/collections/widgets/rich/rich_collection_body.dart
+    (_HeroImage.build): `BoxFit.cover` + `Alignment.topCenter` so the
+    hero `SizedBox` always paints fully — the previous `BoxFit.fitWidth`
+    left transparent strips above and below very wide banner images.
+  * lib/shared/theme/app_theme.dart (_OpaquePageTransitionsBuilder.buildTransitions):
+    Wrap every route's child in a transparent `Material` so any descendant
+    `ListTile`/`ExpansionTile` has an ink ancestor — the tiled background
+    `DecoratedBox` no longer sits directly between Material and ListTile.
+  * lib/shared/widgets/media_detail_view.dart (MediaDetailView.build):
+    Hoist the outer card fill from `Container.decoration.color` to a
+    wrapping `Material`; the inner `Container` keeps only the border and
+    radius so it no longer shadows ink splashes from the embedded
+    «Activity & Progress» `ExpansionTile`.
+  * lib/features/collections/widgets/steamgriddb_panel.dart
+    (SteamGridDbPanel.build): Replace the outer `Container(color: ...)`
+    with `SizedBox` + `Material`, fixing ink rendering for the search
+    results `ListTile`s.
+  * android/gradle.properties: Auto-added `android.builtInKotlin=false`
+    and `android.newDsl=false` by Flutter migrator on upgrade to 3.44.
+  * pubspec.lock: Bumped by `flutter upgrade` (Flutter 3.44.0 / Dart 3.12.0).
+
 - **Surface the primary action of every floating menu as an always-visible button**
 
   The draggable FAB used to be a single ⋮ that hid every action — including

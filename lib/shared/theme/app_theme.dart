@@ -187,7 +187,13 @@ class _OpaquePageTransitionsBuilder extends PageTransitionsBuilder {
       secondaryAnimation,
       DecoratedBox(
         decoration: _tiledDecoration,
-        child: child,
+        // Transparent Material provides an ink ancestor for descendant
+        // ListTiles — Flutter 3.44 asserts when a coloured DecoratedBox
+        // sits between them and the nearest Material.
+        child: Material(
+          type: MaterialType.transparency,
+          child: child,
+        ),
       ),
     );
   }

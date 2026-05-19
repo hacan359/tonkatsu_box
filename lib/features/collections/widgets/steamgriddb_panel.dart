@@ -78,43 +78,38 @@ class _SteamGridDbPanelState extends ConsumerState<SteamGridDbPanel> {
 
   @override
   Widget build(BuildContext context) {
-    final SteamGridDbPanelState panelState =
-        ref.watch(steamGridDbPanelProvider(widget.collectionId));
+    final SteamGridDbPanelState panelState = ref.watch(
+      steamGridDbPanelProvider(widget.collectionId),
+    );
     final SettingsState settings = ref.watch(settingsNotifierProvider);
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
 
     _preFillSearchIfNeeded(panelState);
 
-    return Container(
+    // Material wraps the fill so descendant ListTile widgets paint ink on
+    // a Material ancestor — Flutter 3.44 asserts when a coloured ColoredBox
+    // sits between them.
+    return SizedBox(
       width: 320,
-      color: colorScheme.surface,
-      child: Column(
-        children: <Widget>[
-          // Заголовок
-          _buildHeader(colorScheme, theme),
-          const Divider(height: 1),
-
-          // Поиск
-          _buildSearchBar(colorScheme),
-
-          // Предупреждение об отсутствии ключа
-          if (!settings.hasSteamGridDbKey)
-            _buildNoApiKeyWarning(colorScheme, theme),
-
-          // Заголовок выбранной игры
-          if (panelState.selectedGame != null)
-            _buildGameHeader(panelState.selectedGame!, colorScheme, theme),
-
-          // Селектор типа изображений
-          if (panelState.selectedGame != null)
-            _buildImageTypeSelector(panelState, colorScheme),
-
-          // Основной контент
-          Expanded(
-            child: _buildContent(panelState, settings, colorScheme, theme),
-          ),
-        ],
+      child: Material(
+        color: colorScheme.surface,
+        child: Column(
+          children: <Widget>[
+            _buildHeader(colorScheme, theme),
+            const Divider(height: 1),
+            _buildSearchBar(colorScheme),
+            if (!settings.hasSteamGridDbKey)
+              _buildNoApiKeyWarning(colorScheme, theme),
+            if (panelState.selectedGame != null)
+              _buildGameHeader(panelState.selectedGame!, colorScheme, theme),
+            if (panelState.selectedGame != null)
+              _buildImageTypeSelector(panelState, colorScheme),
+            Expanded(
+              child: _buildContent(panelState, settings, colorScheme, theme),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -156,8 +151,10 @@ class _SteamGridDbPanelState extends ConsumerState<SteamGridDbPanel> {
           hintText: S.of(context).steamGridDbSearchHint,
           isDense: true,
           border: const OutlineInputBorder(),
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 10,
+          ),
           suffixIcon: IconButton(
             icon: const Icon(Icons.search, size: 20),
             tooltip: S.of(context).search,
@@ -210,8 +207,7 @@ class _SteamGridDbPanelState extends ConsumerState<SteamGridDbPanel> {
             tooltip: S.of(context).steamGridDbBackToSearch,
             onPressed: () {
               ref
-                  .read(
-                      steamGridDbPanelProvider(widget.collectionId).notifier)
+                  .read(steamGridDbPanelProvider(widget.collectionId).notifier)
                   .clearGameSelection();
             },
             visualDensity: VisualDensity.compact,
@@ -243,13 +239,14 @@ class _SteamGridDbPanelState extends ConsumerState<SteamGridDbPanel> {
       child: SegmentedButton<SteamGridDbImageType>(
         segments: SteamGridDbImageType.values
             .map(
-              (SteamGridDbImageType type) => ButtonSegment<SteamGridDbImageType>(
-                value: type,
-                label: Text(
-                  _localizedImageTypeLabel(context, type),
-                  style: const TextStyle(fontSize: 12),
-                ),
-              ),
+              (SteamGridDbImageType type) =>
+                  ButtonSegment<SteamGridDbImageType>(
+                    value: type,
+                    label: Text(
+                      _localizedImageTypeLabel(context, type),
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ),
             )
             .toList(),
         selected: <SteamGridDbImageType>{panelState.selectedImageType},
@@ -309,11 +306,7 @@ class _SteamGridDbPanelState extends ConsumerState<SteamGridDbPanel> {
     return _buildEmptyState(colorScheme, theme);
   }
 
-  Widget _buildError(
-    String message,
-    ColorScheme colorScheme,
-    ThemeData theme,
-  ) {
+  Widget _buildError(String message, ColorScheme colorScheme, ThemeData theme) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -347,11 +340,7 @@ class _SteamGridDbPanelState extends ConsumerState<SteamGridDbPanel> {
         final SteamGridDbGame game = panelState.searchResults[index];
         return ListTile(
           dense: true,
-          title: Text(
-            game.name,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
+          title: Text(game.name, maxLines: 1, overflow: TextOverflow.ellipsis),
           trailing: game.verified
               ? Icon(Icons.verified, size: 16, color: colorScheme.primary)
               : null,
@@ -449,7 +438,8 @@ class _ImageThumbnailCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Tooltip(
-      message: '${image.dimensions} • ${image.style}'
+      message:
+          '${image.dimensions} • ${image.style}'
           '${image.author != null ? ' • by ${image.author}' : ''}',
       child: Card(
         clipBehavior: Clip.antiAlias,
@@ -471,12 +461,12 @@ class _ImageThumbnailCard extends StatelessWidget {
                   errorWidget:
                       (BuildContext context, String url, Object error) =>
                           Container(
-                    color: colorScheme.surfaceContainerHighest,
-                    child: Icon(
-                      Icons.broken_image_outlined,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
+                            color: colorScheme.surfaceContainerHighest,
+                            child: Icon(
+                              Icons.broken_image_outlined,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
                 ),
               ),
               Container(

@@ -101,8 +101,11 @@ class _HeroImage extends StatelessWidget {
 
     return Image(
       image: ResizeImage(provider, width: cacheW),
-      fit: BoxFit.fitWidth,
-      alignment: Alignment.center,
+      // `cover` so the SizedBox is always fully painted, `topCenter` so the
+      // visible part of an overflowing image is the top half — banners
+      // typically have the focal subject above the horizon line.
+      fit: BoxFit.cover,
+      alignment: Alignment.topCenter,
       filterQuality: FilterQuality.medium,
       errorBuilder: (_, _, _) => const ColoredBox(color: AppColors.surface),
     );

@@ -169,10 +169,7 @@ class _CollectionTableViewState extends State<CollectionTableView> {
           child: child,
         );
       },
-      onReorder: (int oldIndex, int newIndex) {
-        // ReorderableListView reports newIndex *after* removal; normalise so
-        // callers receive the semantic destination.
-        if (newIndex > oldIndex) newIndex -= 1;
+      onReorderItem: (int oldIndex, int newIndex) {
         widget.onReorder!(oldIndex, newIndex);
       },
       itemBuilder: (BuildContext context, int index) {

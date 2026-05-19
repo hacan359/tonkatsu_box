@@ -212,10 +212,10 @@ class CollectionItemsView extends ConsumerWidget {
   bool get _hasTagGroups =>
       tags.isNotEmpty && (groupByTags || filterTagIds.isNotEmpty);
 
-  /// Pins [header] above [body] — used by table/reorder/empty modes where
-  /// the body widget doesn't support slivers. When [wrapInScroll] is true
-  /// (table mode) the whole stack lives inside a vertical scroll view so the
-  /// header scrolls with the table rows instead of being pinned.
+  /// Pins [header] above [body]. When [wrapInScroll] is true the header and
+  /// body share one [CustomScrollView] so they scroll together — same
+  /// behaviour as the grid path, mirrored for table/reorder bodies that
+  /// don't expose their own slivers.
   Widget _withHeader(Widget body, {bool wrapInScroll = false}) {
     if (header == null) {
       return wrapInScroll
@@ -223,11 +223,11 @@ class CollectionItemsView extends ConsumerWidget {
           : body;
     }
     if (wrapInScroll) {
-      return SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[header!, body],
-        ),
+      return CustomScrollView(
+        slivers: <Widget>[
+          SliverToBoxAdapter(child: header),
+          SliverToBoxAdapter(child: body),
+        ],
       );
     }
     return Column(
@@ -568,12 +568,7 @@ class CollectionItemsView extends ConsumerWidget {
           child: child,
         );
       },
-      onReorder: (int oldIndex, int newIndex) {
-        // ReorderableListView reports newIndex *after* the element has been
-        // removed; normalise so callers get the semantic destination index.
-        if (newIndex > oldIndex) {
-          newIndex -= 1;
-        }
+      onReorderItem: (int oldIndex, int newIndex) {
         ref
             .read(collectionItemsNotifierProvider(collectionId).notifier)
             .reorderItem(oldIndex, newIndex);
