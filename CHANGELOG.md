@@ -40,6 +40,104 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Changed
 
+- **Split search screen god class into per-source handlers and fix animation routing**
+
+  `_SearchScreenState` shrank from ~1500 to ~400 lines. The seven near-duplicate
+  blocks (`_onXTap` / `_addXToCollection` / `_addXToAnyCollection` /
+  `_showXDetails`) per media type were extracted into focused handler classes
+  sharing a `SearchCollectionAdder` that owns the picker → upsert → addItem →
+  image cache → snackbar pipeline. The registry resolves handlers by item
+  runtime type and supports a `registerForSource` override so the same model
+  (e.g. `Game` from a future RAWG source) can plug in source-specific logic
+  without touching the screen.
+
+  Along the way three pre-existing animation-routing bugs were fixed. Every
+  `SearchSource` now declares a fixed `outputMediaType`, which the grid and
+  the Discover feed both consume — replacing hardcoded `MediaType.movie /
+  tvShow` plus a per-item `_isAnimation(genres)` heuristic that silently
+  misclassified TMDB items. As a result on the Animation tab both movies
+  and TV shows now save as `MediaType.animation` (Discover-feed adds went
+  in as `movie/tvShow` before). Lastly `isAnimationGenre` became locale-
+  and case-aware: TMDB returns `"мультфильм"` (lowercase) for `ru-RU`, but
+  our DAO capitalises the first letter on read, so the filter dropped
+  every animation row — `«Аватар: Легенда об Аанге»` was missing from the
+  Animation tab and simultaneously leaked into TV shows.
+
+  * lib/features/search/services/search_collection_adder.dart
+    (SearchCollectionAdder.addToCollection, SearchCollectionAdder.pickCollection,
+    SearchCollectionAdder.collectedCollectionIdsAcross, PickedCollection):
+    New shared service de-duplicating the add-to-collection pipeline; honours
+    `context.mounted` between async hops. `collectedCollectionIdsAcross`
+    unions two collected-id providers — replaces duplicated `Future.wait`
+    blocks in Movie/TvShow handlers.
+  * lib/features/search/handlers/media_action_handler.dart (MediaActionHandler):
+    New flat (non-generic) contract — generics dropped to keep the registry
+    type-erased; concrete handlers downcast internally.
+  * lib/features/search/handlers/game_handler.dart (GameHandler),
+    movie_handler.dart (MovieHandler), tv_show_handler.dart (TvShowHandler):
+    New per-source handlers for the three media types with non-trivial logic.
+    `MovieHandler` and `TvShowHandler` route both regular and
+    `MediaType.animation` (with `AnimationSource.movie/tvShow` platform id);
+    `TvShowHandler` keeps the post-add season/episode preload; `GameHandler`
+    keeps the platform selection dialog.
+  * lib/features/search/handlers/simple_media_handler.dart
+    (SimpleMediaHandler): New generic single-source handler covering Anime,
+    Manga, and VisualNovel — three near-identical handler files (~300 lines
+    of duplication) collapsed into one parameterized class. Each model is
+    wired in `MediaHandlers` via field extractors (`externalIdOf`,
+    `titleOf`, `imageUrlOf`, `upsert`, `sheetBuilder`) and the matching
+    `collected*IdsProvider`.
+  * lib/features/search/handlers/media_handlers.dart (MediaHandlers,
+    MediaHandlers.forItem, MediaHandlers.registerForSource, MediaHandlers.onTap,
+    MediaHandlers.addToAnyCollection): New registry with two-level dispatch
+    (`(sourceId, type)` then `type`).
+  * lib/features/search/models/search_source.dart (SearchSource.outputMediaType):
+    New abstract getter — each source declares the `MediaType` it produces
+    so consumers no longer have to guess from runtime type or genres.
+  * lib/features/search/sources/tmdb_movies_source.dart (TmdbMoviesSource.outputMediaType),
+    tmdb_tv_source.dart (TmdbTvSource.outputMediaType),
+    tmdb_anime_source.dart (TmdbAnimeSource.outputMediaType),
+    igdb_games_source.dart (IgdbGamesSource.outputMediaType),
+    anilist_anime_source.dart (AniListAnimeSource.outputMediaType),
+    anilist_manga_source.dart (AniListMangaSource.outputMediaType),
+    vndb_source.dart (VndbSource.outputMediaType): Override the getter
+    with the source-declared `MediaType`.
+  * lib/features/search/widgets/browse_grid.dart (BrowseGrid._buildCard):
+    Use `state.source.outputMediaType` for every item branch; remove the
+    `_isAnimation(TvShow)` helper, the per-item genre heuristic, and the
+    `isAnimationGenre` import. Per-item `MediaType.movie/tvShow/game/...`
+    hardcodes replaced with the parameterized `mediaType`.
+  * lib/features/search/screens/search_screen.dart (_SearchScreenState,
+    _SearchScreenState._buildContent): Removed all `_addX*` / `_onXTap` /
+    `_showXDetails` methods (~1100 lines); `_onItemTap` now delegates to
+    `MediaHandlers`. DiscoverFeed `onAddMovie`/`onAddTvShow` callbacks
+    now use `browseState.source.outputMediaType` — previously hardcoded
+    to `MediaType.movie`/`MediaType.tvShow`, which silently misclassified
+    every recommendation added from the Animation tab.
+  * lib/features/search/utils/genre_utils.dart (isAnimationGenre):
+    Signature now `(String genre, Map<String, String> genreMap)` and the
+    comparison is case-insensitive — matches the localised genre name
+    returned by TMDB regardless of the DAO's `_capitalize` on read.
+  * lib/features/search/sources/tmdb_anime_source.dart (TmdbAnimeSource._searchWithFilters),
+    tmdb_tv_source.dart (TmdbTvSource.fetch): Pass the loaded `genreMap`
+    to `isAnimationGenre`.
+  * test/features/search/handlers/media_handlers_test.dart: New — locks down
+    type-based dispatch, source-id override precedence, and the no-handler
+    fallback.
+  * test/features/search/handlers/tmdb_handlers_test.dart: New — covers the
+    `MediaType.animation` branch of `MovieHandler`/`TvShowHandler`
+    (verifies `platformId` becomes `AnimationSource.movie`/`tvShow`) and
+    the TvShow post-add preload hook.
+  * test/features/search/sources/source_output_media_type_test.dart: New —
+    one-liner per source verifying the `outputMediaType` contract.
+  * test/features/search/utils/genre_utils_test.dart: Extended for the new
+    signature: localised genre map, case-insensitive matching, RU and EN
+    samples.
+  * test/features/search/models/search_source_test.dart (_TestSource.outputMediaType):
+    Implement the new abstract getter on the in-test source.
+  * test/helpers/fallbacks.dart (_FakeBuildContext): New mocktail fallback
+    for `BuildContext`, needed by the handler tests.
+
 - **Upgrade to Flutter 3.44.0 and fix table-view hero detachment**
 
   Bumps the project past the Flutter `onReorder → onReorderItem` rename so

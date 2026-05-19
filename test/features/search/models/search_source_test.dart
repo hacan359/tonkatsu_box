@@ -250,6 +250,9 @@ class _TestSource extends SearchSource {
   String get id => 'test_source';
 
   @override
+  MediaType get outputMediaType => MediaType.game;
+
+  @override
   String get groupId => 'test';
 
   @override

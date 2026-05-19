@@ -20,6 +20,9 @@ class VndbSource extends SearchSource {
   String get id => 'visual_novels';
 
   @override
+  MediaType get outputMediaType => MediaType.visualNovel;
+
+  @override
   String get groupId => 'vndb';
 
   @override

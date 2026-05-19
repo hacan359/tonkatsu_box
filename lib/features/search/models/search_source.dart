@@ -210,4 +210,10 @@ abstract class SearchSource {
 
   /// Подсказка для поля поиска (локализованная).
   String searchHint(S l);
+
+  /// MediaType присваиваемый карточкам этого источника при добавлении
+  /// в коллекцию. Совпадает с [BrowseResult.mediaType] и не зависит от
+  /// runtime-типа возвращаемых моделей: TMDB anime tab выдаёт `Movie` и
+  /// `TvShow`, но они классифицируются как [MediaType.animation].
+  MediaType get outputMediaType;
 }

@@ -23,6 +23,9 @@ class AniListMangaSource extends SearchSource {
   String get id => 'manga';
 
   @override
+  MediaType get outputMediaType => MediaType.manga;
+
+  @override
   String get groupId => 'anilist';
 
   @override

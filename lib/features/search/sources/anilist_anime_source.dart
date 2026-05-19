@@ -23,6 +23,9 @@ class AniListAnimeSource extends SearchSource {
   String get id => 'anilist_anime';
 
   @override
+  MediaType get outputMediaType => MediaType.anime;
+
+  @override
   String get groupId => 'anilist';
 
   @override

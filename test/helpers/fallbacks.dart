@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/widgets.dart';
 import 'package:xerabora/shared/models/anime.dart';
 import 'package:xerabora/shared/models/canvas_viewport.dart';
 import 'package:xerabora/shared/models/collection.dart';
@@ -71,4 +72,7 @@ void registerAllFallbacks() {
   registerFallbackValue(Uint8List(0));
   registerFallbackValue(DateTime(2024));
   registerFallbackValue(Options());
+  registerFallbackValue(_FakeBuildContext());
 }
+
+class _FakeBuildContext extends Fake implements BuildContext {}

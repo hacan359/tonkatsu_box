@@ -19,7 +19,6 @@ import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/api_error_display.dart';
 import '../../../shared/widgets/media_poster_card.dart';
-import '../utils/genre_utils.dart' show isAnimationGenre;
 import '../../../shared/widgets/shimmer_loading.dart' show ShimmerPosterCard;
 import '../../../shared/models/collected_item_info.dart';
 import '../../collections/providers/collections_provider.dart';
@@ -268,15 +267,15 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
 
         final Object item = displayItems[index];
         return _buildCard(
-            item, state.source.id, tmdbIds, gameIds, vnIds, mangaIds,
-            animeIds, variant);
+            item, state.source.outputMediaType, tmdbIds, gameIds, vnIds,
+            mangaIds, animeIds, variant);
       },
     );
   }
 
   Widget _buildCard(
     Object item,
-    String sourceId,
+    MediaType mediaType,
     Set<int> tmdbIds,
     Set<int> gameIds,
     Set<int> vnIds,
@@ -284,7 +283,7 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     Set<int> animeIds,
     CardVariant variant,
   ) {
-    VoidCallback? openCallback(int externalId, MediaType mediaType, bool inCollection) {
+    VoidCallback? openCallback(int externalId, bool inCollection) {
       if (!inCollection || widget.onOpenInCollection == null) return null;
       return () => widget.onOpenInCollection!(externalId, mediaType);
     }
@@ -299,18 +298,14 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         cacheImageId: item.tmdbId.toString(),
         apiRating: item.rating,
         year: item.releaseYear,
-
-        mediaType: MediaType.movie,
+        mediaType: mediaType,
         isInCollection: inColl,
-        onTap: () => widget.onItemTap(item, MediaType.movie),
-        onOpenInCollection: openCallback(item.tmdbId, MediaType.movie, inColl),
+        onTap: () => widget.onItemTap(item, mediaType),
+        onOpenInCollection: openCallback(item.tmdbId, inColl),
       );
     }
 
     if (item is TvShow) {
-      final MediaType type = _isAnimation(item)
-          ? MediaType.animation
-          : MediaType.tvShow;
       final bool inColl = tmdbIds.contains(item.tmdbId);
       return MediaPosterCard(
         variant: variant,
@@ -320,11 +315,10 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         cacheImageId: item.tmdbId.toString(),
         apiRating: item.rating,
         year: item.firstAirYear,
-
-        mediaType: type,
+        mediaType: mediaType,
         isInCollection: inColl,
-        onTap: () => widget.onItemTap(item, type),
-        onOpenInCollection: openCallback(item.tmdbId, type, inColl),
+        onTap: () => widget.onItemTap(item, mediaType),
+        onOpenInCollection: openCallback(item.tmdbId, inColl),
       );
     }
 
@@ -338,12 +332,11 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         cacheImageId: item.id.toString(),
         apiRating: item.rating != null ? item.rating! / 10.0 : null,
         year: item.releaseYear,
-
         platformLabel: _buildPlatformLabel(item.platformIds),
-        mediaType: MediaType.game,
+        mediaType: mediaType,
         isInCollection: inColl,
-        onTap: () => widget.onItemTap(item, MediaType.game),
-        onOpenInCollection: openCallback(item.id, MediaType.game, inColl),
+        onTap: () => widget.onItemTap(item, mediaType),
+        onOpenInCollection: openCallback(item.id, inColl),
       );
     }
 
@@ -357,11 +350,10 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         cacheImageId: item.numericId.toString(),
         apiRating: item.rating10,
         year: item.releaseYear,
-
-        mediaType: MediaType.visualNovel,
+        mediaType: mediaType,
         isInCollection: inColl,
-        onTap: () => widget.onItemTap(item, MediaType.visualNovel),
-        onOpenInCollection: openCallback(item.numericId, MediaType.visualNovel, inColl),
+        onTap: () => widget.onItemTap(item, mediaType),
+        onOpenInCollection: openCallback(item.numericId, inColl),
       );
     }
 
@@ -375,11 +367,10 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         cacheImageId: item.id.toString(),
         apiRating: item.rating10,
         year: item.releaseYear,
-
-        mediaType: MediaType.manga,
+        mediaType: mediaType,
         isInCollection: inColl,
-        onTap: () => widget.onItemTap(item, MediaType.manga),
-        onOpenInCollection: openCallback(item.id, MediaType.manga, inColl),
+        onTap: () => widget.onItemTap(item, mediaType),
+        onOpenInCollection: openCallback(item.id, inColl),
       );
     }
 
@@ -393,11 +384,10 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
         cacheImageId: item.id.toString(),
         apiRating: item.rating10,
         year: item.releaseYear,
-
-        mediaType: MediaType.anime,
+        mediaType: mediaType,
         isInCollection: inColl,
-        onTap: () => widget.onItemTap(item, MediaType.anime),
-        onOpenInCollection: openCallback(item.id, MediaType.anime, inColl),
+        onTap: () => widget.onItemTap(item, mediaType),
+        onOpenInCollection: openCallback(item.id, inColl),
       );
     }
 
@@ -427,11 +417,6 @@ class _BrowseGridState extends ConsumerState<BrowseGrid> {
     if (item is Manga) return item.title;
     if (item is Anime) return item.title;
     return '';
-  }
-
-  bool _isAnimation(TvShow show) {
-    if (show.genres == null) return false;
-    return show.genres!.any(isAnimationGenre);
   }
 
   /// Максимальная ширина карточки на десктопе (как в collection_screen).

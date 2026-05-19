@@ -21,6 +21,9 @@ class IgdbGamesSource extends SearchSource {
   String get id => 'games';
 
   @override
+  MediaType get outputMediaType => MediaType.game;
+
+  @override
   String get groupId => 'igdb';
 
   @override

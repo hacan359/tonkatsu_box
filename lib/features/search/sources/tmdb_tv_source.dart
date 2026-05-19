@@ -23,6 +23,9 @@ class TmdbTvSource extends SearchSource {
   String get id => 'tv';
 
   @override
+  MediaType get outputMediaType => MediaType.tvShow;
+
+  @override
   String get groupId => 'tmdb';
 
   @override
@@ -105,7 +108,8 @@ class TmdbTvSource extends SearchSource {
       List<TvShow> filtered = result.results
           .where(
             (TvShow s) =>
-                s.genres == null || !s.genres!.any(isAnimationGenre),
+                s.genres == null ||
+                !s.genres!.any((String g) => isAnimationGenre(g, genreMap)),
           )
           .toList();
 

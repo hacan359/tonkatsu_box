@@ -25,6 +25,9 @@ class TmdbAnimeSource extends SearchSource {
   String get id => 'anime';
 
   @override
+  MediaType get outputMediaType => MediaType.animation;
+
+  @override
   String get groupId => 'tmdb';
 
   @override
@@ -296,7 +299,8 @@ class TmdbAnimeSource extends SearchSource {
       animeTv = tvResult.results
           .where(
             (TvShow s) =>
-                s.genres != null && s.genres!.any(isAnimationGenre),
+                s.genres != null &&
+                s.genres!.any((String g) => isAnimationGenre(g, tvGenreMap)),
           )
           .toList();
     }
@@ -306,7 +310,9 @@ class TmdbAnimeSource extends SearchSource {
       animeMovies = movieResult.results
           .where(
             (Movie m) =>
-                m.genres != null && m.genres!.any(isAnimationGenre),
+                m.genres != null &&
+                m.genres!
+                    .any((String g) => isAnimationGenre(g, movieGenreMap)),
           )
           .toList();
     }

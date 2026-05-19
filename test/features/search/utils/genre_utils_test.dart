@@ -5,28 +5,56 @@ import 'package:xerabora/shared/models/tv_show.dart';
 
 void main() {
   group('isAnimationGenre', () {
+    const Map<String, String> empty = <String, String>{};
+    const Map<String, String> ru = <String, String>{'16': 'Мультфильм'};
+
     test('returns true for genre ID "16"', () {
-      expect(isAnimationGenre('16'), isTrue);
+      expect(isAnimationGenre('16', empty), isTrue);
     });
 
     test('returns true for genre name "Animation"', () {
-      expect(isAnimationGenre('Animation'), isTrue);
+      expect(isAnimationGenre('Animation', empty), isTrue);
+    });
+
+    test('returns true for the localized name from the genre map', () {
+      expect(isAnimationGenre('Мультфильм', ru), isTrue);
+    });
+
+    // The local DAO capitalises stored names on read, while TMDB API
+    // returns them as-stored (lowercase for `ru-RU`). The filter must
+    // match across that case mismatch or every animation row gets dropped.
+    test('matches case-insensitively against the localized name', () {
+      expect(isAnimationGenre('мультфильм', ru), isTrue);
+      expect(isAnimationGenre('МУЛЬТФИЛЬМ', ru), isTrue);
+    });
+
+    test('matches English name case-insensitively', () {
+      expect(isAnimationGenre('animation', empty), isTrue);
+      expect(isAnimationGenre('ANIMATION', empty), isTrue);
+    });
+
+    test('still accepts English name even when localized map provided', () {
+      expect(isAnimationGenre('Animation', ru), isTrue);
     });
 
     test('returns false for other genre ID', () {
-      expect(isAnimationGenre('28'), isFalse);
+      expect(isAnimationGenre('28', empty), isFalse);
     });
 
     test('returns false for other genre name', () {
-      expect(isAnimationGenre('Action'), isFalse);
+      expect(isAnimationGenre('Action', empty), isFalse);
+    });
+
+    test('returns false for the localized name without the genre map', () {
+      expect(isAnimationGenre('Мультфильм', empty), isFalse);
     });
 
     test('returns false for empty string', () {
-      expect(isAnimationGenre(''), isFalse);
+      expect(isAnimationGenre('', empty), isFalse);
     });
 
     test('returns false for partial match "16-something"', () {
-      expect(isAnimationGenre('16-something'), isFalse);
+      expect(isAnimationGenre('16-something', empty), isFalse);
     });
   });
 
