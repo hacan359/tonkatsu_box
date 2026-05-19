@@ -40,6 +40,42 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Changed
 
+- **Split the collection screen god class and unify the error state**
+
+  The 984-line `_CollectionScreenState` shed its FAB tower, the bulk-action
+  bar, the error state, the create-tier-list dialog, and the filter logic
+  into reusable units under `widgets/collection_screen/`,
+  `widgets/dialogs/`, and `helpers/`. The string-typed menu dispatch
+  (`'custom_item'`, `'rename'`, …) became a `CollectionMenuAction` enum
+  with an exhaustive switch. The new `CollectionErrorState` widget also
+  replaces the byte-identical `_buildErrorState` that the collections home
+  screen carried, so both screens now share a single retry view.
+
+  * lib/features/collections/screens/collection_screen.dart
+    (_CollectionScreenState._toggleLock, _handleMenuAction): 984 lines → 757.
+    Lock toggle and menu dispatch became named handlers; the FAB builders,
+    bulk-action Consumer, error state, and tier-list dialog moved out.
+  * lib/features/collections/screens/home_screen.dart
+    (_CollectionsHomeScreenState._buildErrorState): Removed — replaced
+    inline with `CollectionErrorState`.
+  * lib/features/collections/widgets/collection_screen/collection_screen_fab.dart
+    (CollectionScreenFab, CollectionMenuAction): New widget owning the
+    main FAB, primary action row, and secondary action list; the menu
+    callback now takes a typed enum instead of a string.
+  * lib/features/collections/widgets/collection_screen/collection_bulk_action_bar.dart
+    (CollectionBulkActionBar): New ConsumerWidget that watches selection
+    and items, short-circuits when empty, and renders `BulkActionBar`.
+  * lib/features/collections/widgets/collection_screen/collection_error_state.dart
+    (CollectionErrorState): New shared error view used by both the
+    collection screen and the collections home screen.
+  * lib/features/collections/widgets/dialogs/create_tier_list_dialog.dart
+    (CreateTierListDialog.show): New helper — returns the trimmed name and
+    disposes its `TextEditingController` via `whenComplete`.
+  * lib/features/collections/helpers/collection_filters.dart
+    (CollectionFilters, CollectionFilters.apply): New value type that
+    holds the four filter sets plus the search query; pure function
+    extracted from `_applyFilters`.
+
 - **Split the item detail screen god class and drop the Activity & Progress wrapper**
 
   The 1488-line `_ItemDetailScreenState` shed seven independent widgets into
