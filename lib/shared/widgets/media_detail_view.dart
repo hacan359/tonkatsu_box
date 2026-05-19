@@ -290,10 +290,11 @@ class _MediaDetailViewState extends State<MediaDetailView> {
                   widget.mediaGallery!,
                 ],
                 if (widget.extraSections != null &&
-                    widget.extraSections!.isNotEmpty) ...<Widget>[
-                  const SizedBox(height: AppSpacing.md),
-                  _buildExtraSectionsExpansion(context),
-                ],
+                    widget.extraSections!.isNotEmpty)
+                  for (final Widget section in widget.extraSections!) ...<Widget>[
+                    const SizedBox(height: AppSpacing.md),
+                    section,
+                  ],
                 if (widget.recommendationSections != null &&
                     widget.recommendationSections!.isNotEmpty)
                   for (final Widget section
@@ -747,28 +748,6 @@ class _MediaDetailViewState extends State<MediaDetailView> {
     if (picked != null && context.mounted) {
       await widget.onActivityDateChanged!(type, picked);
     }
-  }
-
-  Widget _buildExtraSectionsExpansion(BuildContext context) {
-    return Theme(
-      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-      child: ExpansionTile(
-        tilePadding: EdgeInsets.zero,
-        childrenPadding: EdgeInsets.zero,
-        title: Text(
-          S.of(context).detailActivityProgress,
-          style: AppTypography.h3.copyWith(fontWeight: FontWeight.w600),
-        ),
-        iconColor: AppColors.textSecondary,
-        collapsedIconColor: AppColors.textSecondary,
-        children: <Widget>[
-          for (final Widget section in widget.extraSections!) ...<Widget>[
-            const SizedBox(height: AppSpacing.sm),
-            section,
-          ],
-        ],
-      ),
-    );
   }
 
   Widget _buildAuthorCommentSection(BuildContext context) {

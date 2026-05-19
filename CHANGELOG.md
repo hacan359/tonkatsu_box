@@ -40,6 +40,53 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Changed
 
+- **Split the item detail screen god class and drop the Activity & Progress wrapper**
+
+  The 1488-line `_ItemDetailScreenState` shed seven independent widgets into
+  `widgets/item_detail/`: the AppBar with its popup menu, the canvas pane
+  with its SteamGridDB and VGMaps side panels, the media-config + chips
+  builder, the RA badge, the pulsing RA link, the uncategorized banner,
+  and the seasons-info row. The two near-duplicate
+  "add from recommendations" handlers (movie / TV show) collapsed into one
+  parameterised method. The ExpansionTile wrapper titled "Activity &
+  Progress" disappeared too — each inner section (episode tracker, manga /
+  anime progress, seasons info) already carries its own header, and the
+  outer chrome only duplicated the activity-dates row just above it.
+
+  * lib/features/collections/screens/item_detail_screen.dart
+    (_ItemDetailScreenState._toggleLock, _handleMenuAction, _addRecommendation):
+    1488 lines → 759. Lock toggle and popup-menu dispatch became named
+    handlers; `_addMovieFromRecommendations` / `_addTvShowFromRecommendations`
+    now delegate to a single generic helper parameterised by media type,
+    `ownMapProvider`, and an `upsert` callback.
+  * lib/features/collections/widgets/item_detail/item_detail_app_bar.dart
+    (ItemDetailAppBar, ItemDetailMenuAction): New PreferredSize widget
+    owning the lock / canvas / edit-custom buttons and the refresh /
+    rename / move / clone / remove popup menu.
+  * lib/features/collections/widgets/item_detail/item_detail_canvas_view.dart
+    (ItemDetailCanvasView, _AnimatedSidePanel): New ConsumerWidget that
+    holds the canvas plus the two animated side panels and unifies the
+    SteamGridDB / VGMaps "add image" handlers behind a shared `_addImage`.
+  * lib/features/collections/widgets/item_detail/item_detail_media_config.dart
+    (ItemDetailMediaConfig, ItemDetailMediaConfig.from): New value type
+    plus factory that builds cover URL, type label, info chips, backdrop,
+    and progress flags off a `CollectionItem` + `BuildContext`.
+  * lib/features/collections/widgets/item_detail/item_detail_ra_badge.dart
+    (ItemDetailRaBadge): New ConsumerWidget that watches
+    `trackerDetailProvider` and `raApiProvider` and renders the linked-RA
+    logo, the pulsing link CTA, or `SizedBox.shrink()`.
+  * lib/features/collections/widgets/item_detail/pulsing_ra_link.dart
+    (PulsingRaLink), seasons_info.dart (SeasonsInfo),
+    uncategorized_banner.dart (UncategorizedBanner): Extracted leaf
+    widgets — previously private nested classes / build methods.
+  * lib/shared/widgets/media_detail_view.dart
+    (_MediaDetailViewState._buildExtraSectionsExpansion): Removed.
+    `extraSections` now render inline with the same spacing as siblings.
+  * test/features/collections/screens/item_detail_screen_test.dart,
+    test/shared/widgets/media_detail_view_test.dart: Dropped the
+    `expandExtraSections` tap helper and the "Activity & Progress" text
+    assertions to match the new inline layout.
+
 - **Refactor canvas dialogs and load the board in two phases**
 
   The 800-line `_CanvasViewState` shed all its dialog plumbing into a

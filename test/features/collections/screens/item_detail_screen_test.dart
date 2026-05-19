@@ -1541,16 +1541,6 @@ void main() {
     }
 
     Future<void> expandExtraSections(WidgetTester tester) async {
-      final Finder tile = find.text('Activity & Progress');
-      // ListView lazy-renders items — scroll until the ExpansionTile
-      // becomes visible before tapping.
-      await tester.scrollUntilVisible(
-        tile,
-        200,
-        scrollable: find.byType(Scrollable).first,
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(tile);
       await tester.pumpAndSettle();
     }
 

@@ -234,7 +234,7 @@ void main() {
     });
 
     group('Extra Sections', () {
-      testWidgets('должен отображать дополнительные секции в ExpansionTile',
+      testWidgets('должен отображать дополнительные секции напрямую',
           (WidgetTester tester) async {
         await tester.pumpWidget(buildTestWidget(
           extraSections: <Widget>[
@@ -242,10 +242,6 @@ void main() {
             const Text('Another Section'),
           ],
         ));
-        await tester.pumpAndSettle();
-
-        expect(find.text('Activity & Progress'), findsOneWidget);
-        await tester.tap(find.text('Activity & Progress'));
         await tester.pumpAndSettle();
 
         expect(find.text('Progress Section'), findsOneWidget);
@@ -257,7 +253,6 @@ void main() {
         await tester.pumpWidget(buildTestWidget());
         await tester.pumpAndSettle();
 
-        expect(find.text('Activity & Progress'), findsNothing);
         expect(find.text('Progress Section'), findsNothing);
       });
     });
@@ -748,9 +743,6 @@ void main() {
         expect(find.text('Jun 1, 2025'), findsOneWidget);
         expect(find.text('Started: '), findsOneWidget);
         expect(find.text('Jun 5, 2025'), findsOneWidget);
-        expect(find.text('Activity & Progress'), findsOneWidget);
-        await tester.tap(find.text('Activity & Progress'));
-        await tester.pumpAndSettle();
         expect(find.text('Extra'), findsOneWidget);
       });
     });

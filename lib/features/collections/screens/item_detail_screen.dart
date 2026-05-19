@@ -7,99 +7,47 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/discord_rpc_service.dart';
 import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/constants/media_type_theme.dart';
-import '../../../shared/theme/app_colors.dart';
-import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/collection_picker_dialog.dart';
 import '../../../shared/extensions/snackbar_extension.dart';
 import '../../../shared/widgets/screen_app_bar.dart';
 import '../../../core/database/database_service.dart';
-import '../../../shared/models/anime.dart';
 import '../../../shared/models/collected_item_info.dart';
-import '../../../data/repositories/canvas_repository.dart';
 import '../../../shared/models/collection.dart';
 import '../../../shared/models/collection_item.dart';
 import '../../../shared/models/item_status.dart';
 import '../../../shared/models/custom_media.dart';
-import '../../../shared/models/manga.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/movie.dart';
-import '../../../shared/models/steamgriddb_image.dart';
 import '../../../shared/models/tv_show.dart';
 import '../../../shared/widgets/media_detail_view.dart';
-import '../../../shared/widgets/source_badge.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../helpers/collection_actions.dart';
 import '../widgets/create_custom_item_dialog.dart';
-import '../providers/canvas_provider.dart';
 import '../providers/collections_provider.dart';
 import '../providers/steamgriddb_panel_provider.dart';
 import '../providers/vgmaps_panel_provider.dart';
-import '../widgets/canvas_view.dart';
 import '../widgets/episode_tracker_section.dart';
 import '../widgets/item_tags_section.dart';
 import '../widgets/anime_progress_section.dart';
 import '../widgets/manga_progress_section.dart';
 import '../widgets/dialogs/add_time_dialog.dart';
 import '../providers/tracker_provider.dart';
-import 'package:url_launcher/url_launcher.dart';
-
-import '../../../core/api/ra_api.dart';
-import '../../../core/services/ra_to_igdb_mapper.dart';
 import '../../../shared/models/tracker_game_data.dart';
 import '../widgets/ra_achievements_section.dart';
+import '../widgets/item_detail/item_detail_app_bar.dart';
+import '../widgets/item_detail/item_detail_canvas_view.dart';
+import '../widgets/item_detail/item_detail_media_config.dart';
+import '../widgets/item_detail/item_detail_ra_badge.dart';
+import '../widgets/item_detail/seasons_info.dart';
+import '../widgets/item_detail/uncategorized_banner.dart';
 import '../widgets/ra_link_dialog.dart';
 import '../widgets/recommendations_section.dart';
 import '../widgets/rename_item_dialog.dart';
 import '../widgets/screenscraper_gallery_section.dart';
 import '../widgets/reviews_section.dart';
 import '../widgets/status_chip_row.dart';
-import '../widgets/steamgriddb_panel.dart';
 import '../../settings/providers/settings_provider.dart';
-import '../widgets/vgmaps_panel.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
-
-class _MediaConfig {
-  const _MediaConfig({
-    required this.coverUrl,
-    required this.placeholderIcon,
-    required this.source,
-    required this.typeIcon,
-    required this.typeLabel,
-    required this.cacheImageType,
-    required this.cacheImageId,
-    required this.accentColor,
-    required this.infoChips,
-    required this.description,
-    required this.hasEpisodeTracker,
-    required this.hasMangaProgress,
-    required this.hasAnimeProgress,
-    this.externalUrl,
-    this.backdropUrl,
-    this.tvShow,
-    this.manga,
-    this.anime,
-  });
-
-  final String? coverUrl;
-  final IconData placeholderIcon;
-  final DataSource source;
-  final IconData typeIcon;
-  final String typeLabel;
-  final ImageType cacheImageType;
-  final String cacheImageId;
-  final Color accentColor;
-  final List<MediaDetailChip> infoChips;
-  final String? description;
-  final bool hasEpisodeTracker;
-  final bool hasMangaProgress;
-  final bool hasAnimeProgress;
-  final String? externalUrl;
-  final String? backdropUrl;
-  final TvShow? tvShow;
-  final Manga? manga;
-  final Anime? anime;
-}
 
 /// Unified detail screen for any collection item, dispatched off
 /// [CollectionItem.mediaType].
@@ -186,7 +134,32 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     );
   }
 
-  // ==================== Navigation / Actions ====================
+  void _toggleLock() {
+    setState(() => _isViewModeLocked = !_isViewModeLocked);
+    if (_isViewModeLocked) {
+      ref
+          .read(steamGridDbPanelProvider(widget.collectionId).notifier)
+          .closePanel();
+      ref
+          .read(vgMapsPanelProvider(widget.collectionId).notifier)
+          .closePanel();
+    }
+  }
+
+  void _handleMenuAction(ItemDetailMenuAction action, CollectionItem item) {
+    switch (action) {
+      case ItemDetailMenuAction.refresh:
+        _refreshFromApi(item);
+      case ItemDetailMenuAction.rename:
+        _renameItem(item);
+      case ItemDetailMenuAction.move:
+        _moveToCollection(item);
+      case ItemDetailMenuAction.clone:
+        _cloneToCollection(item);
+      case ItemDetailMenuAction.remove:
+        _removeFromCollection(item);
+    }
+  }
 
   Future<void> _refreshFromApi(CollectionItem item) async {
     final bool ok = await CollectionActions.refreshItemFromApi(
@@ -405,8 +378,6 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     return null;
   }
 
-  // ==================== Content ====================
-
   Map<ShortcutActivator, VoidCallback> _buildScreenShortcuts(
     CollectionItem item,
   ) {
@@ -417,13 +388,8 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         const SingleActivator(LogicalKeyboardKey.keyB, control: true):
             () => setState(() => _showCanvas = !_showCanvas),
       if (widget.isEditable && _hasCanvas && _showCanvas)
-        const SingleActivator(LogicalKeyboardKey.keyL, control: true): () {
-          setState(() { _isViewModeLocked = !_isViewModeLocked; });
-          if (_isViewModeLocked) {
-            ref.read(steamGridDbPanelProvider(widget.collectionId).notifier).closePanel();
-            ref.read(vgMapsPanelProvider(widget.collectionId).notifier).closePanel();
-          }
-        },
+        const SingleActivator(LogicalKeyboardKey.keyL, control: true):
+            _toggleLock,
       if (widget.isEditable)
         const SingleActivator(LogicalKeyboardKey.keyM, control: true):
             () => _moveToCollection(item),
@@ -445,158 +411,37 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
   Widget _buildContent(CollectionItem item) {
     _currentItemName = item.itemName;
     _updateDiscordPresence(item);
-    final _MediaConfig config = _getMediaConfig(item);
+    final ItemDetailMediaConfig config =
+        ItemDetailMediaConfig.from(item, context);
 
     return CallbackShortcuts(
       bindings: _buildScreenShortcuts(item),
       child: Scaffold(
-        appBar: ScreenAppBar(
-          title: item.itemName,
-          actions: <Widget>[
-            if (widget.isEditable && _hasCanvas && _showCanvas)
-              IconButton(
-                icon: Icon(
-                  _isViewModeLocked ? Icons.lock : Icons.lock_open,
-                ),
-                color: _isViewModeLocked
-                    ? AppColors.warning
-                    : AppColors.textSecondary,
-                tooltip: _isViewModeLocked
-                    ? (!kIsMobile
-                        ? '${S.of(context).collectionUnlockBoard} (Ctrl+L)'
-                        : S.of(context).collectionUnlockBoard)
-                    : (!kIsMobile
-                        ? '${S.of(context).collectionLockBoard} (Ctrl+L)'
-                        : S.of(context).collectionLockBoard),
-                onPressed: () {
-                  setState(() {
-                    _isViewModeLocked = !_isViewModeLocked;
-                  });
-                  if (_isViewModeLocked) {
-                    ref
-                        .read(steamGridDbPanelProvider(widget.collectionId)
-                            .notifier)
-                        .closePanel();
-                    ref
-                        .read(vgMapsPanelProvider(widget.collectionId)
-                            .notifier)
-                        .closePanel();
-                  }
-                },
-              ),
-            if (_hasCanvas)
-              IconButton(
-                icon: Icon(
-                  _showCanvas
-                      ? Icons.dashboard
-                      : Icons.dashboard_outlined,
-                ),
-                color: _showCanvas
-                    ? AppColors.brand
-                    : AppColors.textSecondary,
-                tooltip: !kIsMobile
-                    ? '${S.of(context).boardTab} (Ctrl+B)'
-                    : S.of(context).boardTab,
-                onPressed: () {
-                  setState(() {
-                    _showCanvas = !_showCanvas;
-                  });
-                },
-              ),
-            if (widget.isEditable && item.mediaType == MediaType.custom)
-              IconButton(
-                icon: const Icon(Icons.edit_outlined),
-                color: AppColors.textSecondary,
-                tooltip: S.of(context).customItemEdit,
-                onPressed: () => _editCustomItem(item),
-              ),
-            // Popup menu
-            if (widget.isEditable)
-              PopupMenuButton<String>(
-                icon: const Icon(
-                  Icons.more_vert,
-                  color: AppColors.textSecondary,
-                ),
-                onSelected: (String value) {
-                  switch (value) {
-                    case 'refresh':
-                      _refreshFromApi(item);
-                    case 'rename':
-                      _renameItem(item);
-                    case 'move':
-                      _moveToCollection(item);
-                    case 'clone':
-                      _cloneToCollection(item);
-                    case 'remove':
-                      _removeFromCollection(item);
-                  }
-                },
-                itemBuilder: (BuildContext context) =>
-                    <PopupMenuEntry<String>>[
-                  if (item.mediaType != MediaType.custom)
-                    PopupMenuItem<String>(
-                      value: 'refresh',
-                      child: ListTile(
-                        leading: const Icon(Icons.refresh),
-                        title: Text(S.of(context).refreshItemFromApi),
-                        contentPadding: EdgeInsets.zero,
-                      ),
-                    ),
-                  if (item.mediaType != MediaType.custom)
-                    PopupMenuItem<String>(
-                      value: 'rename',
-                      child: ListTile(
-                        leading:
-                            const Icon(Icons.drive_file_rename_outline),
-                        title: Text(S.of(context).renameItem),
-                        contentPadding: EdgeInsets.zero,
-                      ),
-                    ),
-                  PopupMenuItem<String>(
-                    value: 'move',
-                    child: ListTile(
-                      leading: const Icon(Icons.drive_file_move_outlined),
-                      title: Text(S.of(context).collectionMoveToCollection),
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                  ),
-                  PopupMenuItem<String>(
-                    value: 'clone',
-                    child: ListTile(
-                      leading: const Icon(Icons.copy_outlined),
-                      title: Text(S.of(context).collectionCopyToCollection),
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                  ),
-                  const PopupMenuDivider(),
-                  PopupMenuItem<String>(
-                    value: 'remove',
-                    child: ListTile(
-                      leading: Icon(
-                        Icons.delete_outline,
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                      title: Text(
-                        S.of(context).remove,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.error,
-                        ),
-                      ),
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                  ),
-                ],
-              ),
-          ],
+        appBar: ItemDetailAppBar(
+          item: item,
+          isEditable: widget.isEditable,
+          hasCanvas: _hasCanvas,
+          showCanvas: _showCanvas,
+          isViewModeLocked: _isViewModeLocked,
+          onToggleLock: _toggleLock,
+          onToggleCanvas: () => setState(() => _showCanvas = !_showCanvas),
+          onEditCustom: () => _editCustomItem(item),
+          onMenuSelected: (ItemDetailMenuAction action) =>
+              _handleMenuAction(action, item),
         ),
         body: _showCanvas && _hasCanvas
-            ? _buildCanvasView()
+            ? ItemDetailCanvasView(
+                collectionId: widget.collectionId,
+                itemId: widget.itemId,
+                isEditable: widget.isEditable && !_isViewModeLocked,
+                currentItemName: _currentItemName ?? '',
+              )
             : _buildDetailView(item, config),
       ),
     );
   }
 
-  Widget _buildDetailView(CollectionItem item, _MediaConfig config) {
+  Widget _buildDetailView(CollectionItem item, ItemDetailMediaConfig config) {
     final SettingsState settings = ref.watch(settingsNotifierProvider);
     // Recommendations / reviews are TMDB-only.
     final bool showRecs = settings.showRecommendations &&
@@ -640,7 +485,9 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
               isEditable: widget.isEditable,
             )
           : null,
-      raBadge: _buildRaBadge(item),
+      raBadge: item.mediaType == MediaType.game
+          ? ItemDetailRaBadge(item: item, onLink: () => _linkRa(item))
+          : null,
       trackerSection: _buildTrackerSection(item),
       timeSpentMinutes: item.timeSpentMinutes,
       onTimeSpentTap: widget.collectionId != null && widget.isEditable
@@ -652,7 +499,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
       ),
       extraSections: <Widget>[
         if (widget.collectionId == null)
-          _buildUncategorizedBanner(item),
+          UncategorizedBanner(onMove: () => _moveToCollection(item)),
         if (config.hasEpisodeTracker && widget.collectionId != null)
           EpisodeTrackerSection(
             collectionId: widget.collectionId,
@@ -661,7 +508,11 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
             accentColor: config.accentColor,
           ),
         if (config.hasEpisodeTracker && widget.collectionId == null)
-          _buildSeasonsInfo(item, config.accentColor),
+          SeasonsInfo(
+            totalSeasons: item.totalSeasons,
+            totalEpisodes: item.totalEpisodes,
+            accentColor: config.accentColor,
+          ),
         if (config.hasMangaProgress && widget.collectionId != null)
           MangaProgressSection(
             itemId: item.id,
@@ -716,286 +567,6 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     );
   }
 
-  // ==================== Media Config ====================
-
-  _MediaConfig _getMediaConfig(CollectionItem item) {
-    final String? externalUrl = switch (item.mediaType) {
-      MediaType.game => item.game?.externalUrl,
-      MediaType.movie || MediaType.animation => item.movie?.externalUrl
-          ?? item.tvShow?.externalUrl,
-      MediaType.tvShow => item.tvShow?.externalUrl,
-      MediaType.visualNovel => item.visualNovel?.externalUrl,
-      MediaType.manga => item.manga?.externalUrl,
-      MediaType.anime => item.anime?.externalUrl,
-      MediaType.custom => item.customMedia?.externalUrl,
-    };
-
-    return _MediaConfig(
-      coverUrl: item.thumbnailUrl,
-      placeholderIcon: item.placeholderIcon,
-      source: item.dataSource,
-      typeIcon: item.mediaType == MediaType.game
-          ? Icons.sports_esports
-          : item.placeholderIcon,
-      typeLabel: _typeLabel(item),
-      cacheImageType: item.imageType,
-      cacheImageId: item.externalId.toString(),
-      accentColor: MediaTypeTheme.colorFor(item.displayMediaType),
-      infoChips: _buildChips(item),
-      description: item.itemDescription,
-      hasEpisodeTracker: item.mediaType == MediaType.tvShow ||
-          (item.mediaType == MediaType.animation &&
-              item.platformId == AnimationSource.tvShow),
-      hasMangaProgress: item.mediaType == MediaType.manga,
-      hasAnimeProgress: item.mediaType == MediaType.anime,
-      externalUrl: externalUrl,
-      backdropUrl: item.game?.artworkUrl
-          ?? item.movie?.backdropUrl
-          ?? item.tvShow?.backdropUrl
-          ?? item.manga?.bannerUrl
-          ?? item.anime?.bannerUrl,
-      tvShow: item.tvShow,
-      manga: item.manga,
-      anime: item.anime,
-    );
-  }
-
-  String _typeLabel(CollectionItem item) {
-    final S l = S.of(context);
-    return switch (item.mediaType) {
-      MediaType.game => item.platformName,
-      MediaType.movie => l.mediaTypeMovie,
-      MediaType.tvShow => l.mediaTypeTvShow,
-      MediaType.animation => item.platformId == AnimationSource.tvShow
-          ? l.animatedSeries
-          : l.animatedMovie,
-      MediaType.visualNovel => l.mediaTypeVisualNovel,
-      MediaType.manga => l.mediaTypeManga,
-      MediaType.anime => l.mediaTypeAnime,
-      MediaType.custom => item.customMedia?.platformName ?? l.mediaTypeCustom,
-    };
-  }
-
-  // ==================== Info Chips ====================
-
-  List<MediaDetailChip> _buildChips(CollectionItem item) {
-    final S l = S.of(context);
-    final List<MediaDetailChip> chips = <MediaDetailChip>[];
-    if (item.releaseYear != null) {
-      chips.add(MediaDetailChip(
-        icon: Icons.calendar_today_outlined,
-        text: item.releaseYear.toString(),
-      ));
-    }
-    if (item.runtime != null) {
-      chips.add(MediaDetailChip(
-        icon: Icons.schedule_outlined,
-        text: _formatRuntime(item.runtime!),
-      ));
-    }
-    if (item.totalSeasons != null) {
-      chips.add(MediaDetailChip(
-        icon: Icons.video_library_outlined,
-        text: l.totalSeasons(item.totalSeasons!),
-      ));
-    }
-    if (item.totalEpisodes != null) {
-      chips.add(MediaDetailChip(
-        icon: Icons.playlist_play,
-        text: l.totalEpisodes(item.totalEpisodes!),
-      ));
-    }
-    if (item.formattedRating != null) {
-      chips.add(MediaDetailChip(
-        icon: Icons.star,
-        text: '${item.formattedRating}/10',
-        iconColor: AppColors.ratingStar,
-      ));
-    }
-    if (item.mediaType == MediaType.custom && item.customMedia != null) {
-      final CustomMedia c = item.customMedia!;
-      if (c.altTitle != null && c.altTitle!.isNotEmpty) {
-        chips.add(MediaDetailChip(
-          icon: Icons.translate,
-          text: c.altTitle!,
-        ));
-      }
-      if (c.platformName != null && c.platformName!.isNotEmpty) {
-        chips.add(MediaDetailChip(
-          icon: Icons.sports_esports,
-          text: c.platformName!,
-        ));
-      }
-    }
-    if (item.mediaType == MediaType.manga && item.manga != null) {
-      final Manga m = item.manga!;
-      chips.add(MediaDetailChip(
-        icon: Icons.menu_book,
-        text: m.progressString,
-      ));
-      if (m.formatLabel != null) {
-        chips.add(MediaDetailChip(
-          icon: Icons.category_outlined,
-          text: m.formatLabel!,
-        ));
-      }
-      if (m.authorsString != null) {
-        chips.add(MediaDetailChip(
-          icon: Icons.person_outline,
-          text: m.authorsString!,
-        ));
-      }
-    }
-    if (item.mediaType == MediaType.anime && item.anime != null) {
-      final Anime a = item.anime!;
-      if (a.formatLabel != null) {
-        chips.add(MediaDetailChip(
-          icon: Icons.category_outlined,
-          text: a.formatLabel!,
-        ));
-      }
-      chips.add(MediaDetailChip(
-        icon: Icons.playlist_play,
-        text: a.episodesString,
-      ));
-      if (a.durationString != null) {
-        chips.add(MediaDetailChip(
-          icon: Icons.schedule_outlined,
-          text: a.durationString!,
-        ));
-      }
-      if (a.studiosString != null) {
-        chips.add(MediaDetailChip(
-          icon: Icons.business,
-          text: a.studiosString!,
-        ));
-      }
-      if (a.seasonLabel != null) {
-        chips.add(MediaDetailChip(
-          icon: Icons.date_range,
-          text: a.seasonLabel!,
-        ));
-      }
-      if (a.sourceLabel != null) {
-        chips.add(MediaDetailChip(
-          icon: Icons.source,
-          text: a.sourceLabel!,
-        ));
-      }
-    }
-    if (item.mediaStatus != null) {
-      chips.add(MediaDetailChip(
-        icon: Icons.info_outline,
-        text: item.mediaStatus!,
-      ));
-    }
-    if (item.genresString != null &&
-        item.mediaType != MediaType.manga) {
-      chips.add(MediaDetailChip(
-        icon: Icons.category_outlined,
-        text: item.genresString!,
-      ));
-    }
-    return chips;
-  }
-
-  String _formatRuntime(int minutes) {
-    final S l = S.of(context);
-    final int hours = minutes ~/ 60;
-    final int mins = minutes % 60;
-    if (hours > 0 && mins > 0) {
-      return l.runtimeHoursMinutes(hours, mins);
-    } else if (hours > 0) {
-      return l.runtimeHours(hours);
-    }
-    return l.runtimeMinutes(mins);
-  }
-
-  // ==================== Uncategorized Helpers ====================
-
-  Widget _buildUncategorizedBanner(CollectionItem item) {
-    final S l = S.of(context);
-    return Card(
-      color: AppColors.surfaceLight,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        side: const BorderSide(color: AppColors.surfaceBorder),
-      ),
-      margin: const EdgeInsets.only(bottom: AppSpacing.md),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.sm,
-        ),
-        child: Row(
-          children: <Widget>[
-            const Icon(
-              Icons.info_outline,
-              color: AppColors.textSecondary,
-              size: 20,
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: Text(
-                l.uncategorizedBanner,
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 13,
-                ),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            TextButton(
-              onPressed: () => _moveToCollection(item),
-              child: Text(l.uncategorizedBannerAction),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSeasonsInfo(CollectionItem item, Color accentColor) {
-    final S l = S.of(context);
-    final int? seasons = item.totalSeasons;
-    final int? episodes = item.totalEpisodes;
-    if (seasons == null && episodes == null) {
-      return const SizedBox.shrink();
-    }
-    final StringBuffer buf = StringBuffer();
-    if (seasons != null) {
-      buf.write(l.totalSeasons(seasons));
-    }
-    if (seasons != null && episodes != null) {
-      buf.write(' \u2022 ');
-    }
-    if (episodes != null) {
-      buf.write(l.totalEpisodes(episodes));
-    }
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.md),
-      child: Row(
-        children: <Widget>[
-          Icon(
-            Icons.video_library_outlined,
-            color: accentColor,
-            size: 20,
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          Text(
-            buf.toString(),
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 14,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ==================== Not Found ====================
-
   String _notFoundMessage(BuildContext context, MediaType? mediaType) {
     final S l = S.of(context);
     return switch (mediaType) {
@@ -1011,13 +582,6 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     };
   }
 
-  // ==================== Canvas ====================
-
-  ({int? collectionId, int collectionItemId}) get _canvasArg => (
-        collectionId: widget.collectionId,
-        collectionItemId: widget.itemId,
-      );
-
   Future<void> _showTimeSpentDialog(CollectionItem item) async {
     final int? collId = widget.collectionId;
     if (collId == null) return;
@@ -1030,46 +594,6 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     await ref
         .read(collectionItemsNotifierProvider(collId).notifier)
         .setTimeSpent(item.id, minutes);
-  }
-
-  /// RA badge in the top row: logo + % when linked, Link button otherwise.
-  Widget? _buildRaBadge(CollectionItem item) {
-    if (item.mediaType != MediaType.game) return null;
-
-    final TrackerGameData? raData = ref
-        .watch(trackerDetailProvider((gameId: item.externalId, platformId: item.platformId)))
-        .valueOrNull
-        ?.gameData;
-
-    if (raData != null) {
-      return MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: GestureDetector(
-          onTap: () {
-            final Uri uri = Uri.parse(raData.raGameUrl);
-            launchUrl(uri, mode: LaunchMode.externalApplication);
-          },
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: Image.asset(
-              'assets/images/ra_logo.png',
-              width: 18,
-              height: 18,
-              filterQuality: FilterQuality.medium,
-            ),
-          ),
-        ),
-      );
-    }
-
-    final bool hasRaCreds = ref.watch(raApiProvider).hasCredentials;
-    if (!hasRaCreds) return null;
-    if (item.platformId == null) return null;
-    if (RaToIgdbMapper.igdbToRaConsoleIds(item.platformId!).isEmpty) {
-      return null;
-    }
-
-    return _PulsingRaLink(onTap: () => _linkRa(item));
   }
 
   Widget? _buildTrackerSection(CollectionItem item) {
@@ -1090,169 +614,38 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
   }
 
 
-  Widget _buildCanvasView() {
-    return Row(
-      children: <Widget>[
-        Expanded(
-          child: CanvasView(
-            collectionId: widget.collectionId,
-            isEditable: widget.isEditable && !_isViewModeLocked,
-            collectionItemId: widget.itemId,
-          ),
-        ),
-        Consumer(
-          builder:
-              (BuildContext context, WidgetRef ref, Widget? child) {
-            final bool isPanelOpen = ref.watch(
-              steamGridDbPanelProvider(widget.collectionId)
-                  .select((SteamGridDbPanelState s) => s.isOpen),
-            );
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: isPanelOpen ? 320 : 0,
-              curve: Curves.easeInOut,
-              clipBehavior: Clip.hardEdge,
-              decoration: BoxDecoration(
-                border: isPanelOpen
-                    ? const Border(
-                        left: BorderSide(
-                          color: AppColors.surfaceBorder,
-                        ),
-                      )
-                    : null,
-              ),
-              child: isPanelOpen
-                  ? OverflowBox(
-                      maxWidth: 320,
-                      alignment: Alignment.centerLeft,
-                      child: SteamGridDbPanel(
-                        collectionId: widget.collectionId,
-                        collectionName: _currentItemName ?? '',
-                        onAddImage: _addSteamGridDbImage,
-                      ),
-                    )
-                  : const SizedBox.shrink(),
-            );
-          },
-        ),
-        // VGMaps panel — Windows only.
-        if (kVgMapsEnabled)
-          Consumer(
-            builder:
-                (BuildContext context, WidgetRef ref, Widget? child) {
-              final bool isPanelOpen = ref.watch(
-                vgMapsPanelProvider(widget.collectionId)
-                    .select((VgMapsPanelState s) => s.isOpen),
-              );
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                width: isPanelOpen ? 500 : 0,
-                curve: Curves.easeInOut,
-                clipBehavior: Clip.hardEdge,
-                decoration: BoxDecoration(
-                  border: isPanelOpen
-                      ? const Border(
-                          left: BorderSide(
-                            color: AppColors.surfaceBorder,
-                          ),
-                        )
-                      : null,
-                ),
-                child: isPanelOpen
-                    ? OverflowBox(
-                        maxWidth: 500,
-                        alignment: Alignment.centerLeft,
-                        child: VgMapsPanel(
-                          collectionId: widget.collectionId,
-                          onAddImage: _addVgMapsImage,
-                        ),
-                      )
-                    : const SizedBox.shrink(),
-              );
-            },
-          ),
-      ],
-    );
-  }
+  Future<void> _addMovieFromRecommendations(Movie movie) => _addRecommendation(
+        tmdbId: movie.tmdbId,
+        title: movie.title,
+        mediaType: MediaType.movie,
+        ownMapProvider: collectedMovieIdsProvider,
+        upsert: (DatabaseService db) => db.upsertMovie(movie),
+      );
 
-  void _addSteamGridDbImage(SteamGridDbImage image) {
-    const double maxWidth = 300;
-    const double defaultSize = 200;
-    double targetWidth = defaultSize;
-    double targetHeight = defaultSize;
+  Future<void> _addTvShowFromRecommendations(TvShow tvShow) =>
+      _addRecommendation(
+        tmdbId: tvShow.tmdbId,
+        title: tvShow.title,
+        mediaType: MediaType.tvShow,
+        ownMapProvider: collectedTvShowIdsProvider,
+        upsert: (DatabaseService db) => db.upsertTvShow(tvShow),
+      );
 
-    if (image.width > 0 && image.height > 0) {
-      final double aspectRatio = image.width / image.height;
-      targetWidth =
-          image.width.toDouble() > maxWidth ? maxWidth : image.width.toDouble();
-      targetHeight = targetWidth / aspectRatio;
-    }
-
-    final double centerX =
-        CanvasRepository.initialCenterX - targetWidth / 2;
-    final double centerY =
-        CanvasRepository.initialCenterY - targetHeight / 2;
-
-    ref
-        .read(gameCanvasNotifierProvider(_canvasArg).notifier)
-        .addImageItem(
-          centerX,
-          centerY,
-          <String, dynamic>{'url': image.url},
-          width: targetWidth,
-          height: targetHeight,
-        );
-
-    if (mounted) {
-      context.showSnack(S.of(context).imageAddedToBoard, type: SnackType.success);
-    }
-  }
-
-  void _addVgMapsImage(String url, int? width, int? height) {
-    const double maxWidth = 400;
-    double targetWidth = maxWidth;
-    double targetHeight = maxWidth;
-
-    if (width != null && height != null && width > 0 && height > 0) {
-      final double aspectRatio = width / height;
-      targetWidth =
-          width.toDouble() > maxWidth ? maxWidth : width.toDouble();
-      targetHeight = targetWidth / aspectRatio;
-    }
-
-    final double centerX =
-        CanvasRepository.initialCenterX - targetWidth / 2;
-    final double centerY =
-        CanvasRepository.initialCenterY - targetHeight / 2;
-
-    ref
-        .read(gameCanvasNotifierProvider(_canvasArg).notifier)
-        .addImageItem(
-          centerX,
-          centerY,
-          <String, dynamic>{'url': url},
-          width: targetWidth,
-          height: targetHeight,
-        );
-
-    if (mounted) {
-      context.showSnack(S.of(context).mapAddedToBoard, type: SnackType.success);
-    }
-  }
-
-  // ==================== Add from Recommendations ====================
-
-  Future<void> _addMovieFromRecommendations(Movie movie) async {
-    final Map<int, List<CollectedItemInfo>> collectedMovies =
-        await ref.read(collectedMovieIdsProvider.future);
+  Future<void> _addRecommendation({
+    required int tmdbId,
+    required String title,
+    required MediaType mediaType,
+    required FutureProvider<Map<int, List<CollectedItemInfo>>> ownMapProvider,
+    required Future<void> Function(DatabaseService db) upsert,
+  }) async {
+    final Map<int, List<CollectedItemInfo>> ownMap =
+        await ref.read(ownMapProvider.future);
     final Map<int, List<CollectedItemInfo>> collectedAnimations =
         await ref.read(collectedAnimationIdsProvider.future);
-    final List<CollectedItemInfo> infos = <CollectedItemInfo>[
-      ...collectedMovies[movie.tmdbId] ?? <CollectedItemInfo>[],
-      ...collectedAnimations[movie.tmdbId] ?? <CollectedItemInfo>[],
-    ];
-    final Set<int?> alreadyIn =
-        infos.map((CollectedItemInfo i) => i.collectionId).toSet();
+    final Set<int?> alreadyIn = <CollectedItemInfo>[
+      ...ownMap[tmdbId] ?? <CollectedItemInfo>[],
+      ...collectedAnimations[tmdbId] ?? <CollectedItemInfo>[],
+    ].map((CollectedItemInfo i) => i.collectionId).toSet();
 
     if (!mounted) return;
     final S l = S.of(context);
@@ -1275,88 +668,21 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
         collectionName = l.collectionsUncategorized;
     }
 
-    await ref.read(databaseServiceProvider).upsertMovie(movie);
+    await upsert(ref.read(databaseServiceProvider));
 
     final bool success = await ref
         .read(collectionItemsNotifierProvider(collectionId).notifier)
-        .addItem(
-          mediaType: MediaType.movie,
-          externalId: movie.tmdbId,
-        );
+        .addItem(mediaType: mediaType, externalId: tmdbId);
 
     if (!mounted) return;
 
-    if (success) {
-      context.showSnack(
-        l.searchAddedToNamed(movie.title, collectionName),
-        type: SnackType.success,
-      );
-    } else {
-      context.showSnack(
-        l.searchAlreadyInNamed(movie.title, collectionName),
-        type: SnackType.info,
-      );
-    }
-  }
-
-  Future<void> _addTvShowFromRecommendations(TvShow tvShow) async {
-    final Map<int, List<CollectedItemInfo>> collectedTvShows =
-        await ref.read(collectedTvShowIdsProvider.future);
-    final Map<int, List<CollectedItemInfo>> collectedAnimations =
-        await ref.read(collectedAnimationIdsProvider.future);
-    final List<CollectedItemInfo> infos = <CollectedItemInfo>[
-      ...collectedTvShows[tvShow.tmdbId] ?? <CollectedItemInfo>[],
-      ...collectedAnimations[tvShow.tmdbId] ?? <CollectedItemInfo>[],
-    ];
-    final Set<int?> alreadyIn =
-        infos.map((CollectedItemInfo i) => i.collectionId).toSet();
-
-    if (!mounted) return;
-    final S l = S.of(context);
-    final CollectionChoice? choice = await showCollectionPickerDialog(
-      context: context,
-      ref: ref,
-      title: l.searchAddToCollection,
-      alreadyInCollectionIds: alreadyIn,
+    context.showSnack(
+      success
+          ? l.searchAddedToNamed(title, collectionName)
+          : l.searchAlreadyInNamed(title, collectionName),
+      type: success ? SnackType.success : SnackType.info,
     );
-    if (choice == null || !mounted) return;
-
-    final int? collectionId;
-    final String collectionName;
-    switch (choice) {
-      case ChosenCollection(:final Collection collection):
-        collectionId = collection.id;
-        collectionName = collection.name;
-      case WithoutCollection():
-        collectionId = null;
-        collectionName = l.collectionsUncategorized;
-    }
-
-    await ref.read(databaseServiceProvider).upsertTvShow(tvShow);
-
-    final bool success = await ref
-        .read(collectionItemsNotifierProvider(collectionId).notifier)
-        .addItem(
-          mediaType: MediaType.tvShow,
-          externalId: tvShow.tmdbId,
-        );
-
-    if (!mounted) return;
-
-    if (success) {
-      context.showSnack(
-        l.searchAddedToNamed(tvShow.title, collectionName),
-        type: SnackType.success,
-      );
-    } else {
-      context.showSnack(
-        l.searchAlreadyInNamed(tvShow.title, collectionName),
-        type: SnackType.info,
-      );
-    }
   }
-
-  // ==================== Data Operations ====================
 
   Future<void> _updateStatus(
     int id,
@@ -1423,65 +749,6 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     if (mounted) {
       context.showSnack(S.of(context).raLinkSuccess);
     }
-  }
-}
-
-/// Pulsing RA logo for unlinked games.
-class _PulsingRaLink extends StatefulWidget {
-  const _PulsingRaLink({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  State<_PulsingRaLink> createState() => _PulsingRaLinkState();
-}
-
-class _PulsingRaLinkState extends State<_PulsingRaLink>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<double> _opacity;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2000),
-    )..repeat(reverse: true);
-    _opacity = Tween<double>(begin: 0.25, end: 0.6).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedBuilder(
-          animation: _opacity,
-          builder: (BuildContext context, Widget? child) {
-            return Opacity(opacity: _opacity.value, child: child);
-          },
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: Image.asset(
-              'assets/images/ra_logo.png',
-              width: 18,
-              height: 18,
-              filterQuality: FilterQuality.medium,
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }
 
