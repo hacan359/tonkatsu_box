@@ -91,7 +91,11 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   Set<int> _filterTagIds = <int>{};
   bool _groupByTags = false;
   ItemStatus? _filterStatus;
+  ItemStatus? _tableFilterStatus;
   CollectionItem? _focusedItem;
+
+  ItemStatus? get _effectiveStatusForChevrons =>
+      _filterStatus ?? (_isTableMode ? _tableFilterStatus : null);
 
   /// Реальная возможность редактирования с учётом режима просмотра.
   bool get _effectiveIsEditable =>
@@ -306,6 +310,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       filterPlatformIds: _filterPlatformIds,
       filterTagIds: _filterTagIds,
       filterStatus: _filterStatus,
+      effectiveStatusForCounts: _effectiveStatusForChevrons,
       tags: tags,
       searchQuery: searchQuery,
       groupByTags: _groupByTags,
@@ -427,6 +432,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             : null,
         onItemFocusChanged: (CollectionItem item, bool hasFocus) {
           setState(() => _focusedItem = hasFocus ? item : null);
+        },
+        onTableFilterStatusChanged: (ItemStatus? status) {
+          setState(() => _tableFilterStatus = status);
         },
       ),
       loading: () => const Center(child: CircularProgressIndicator()),

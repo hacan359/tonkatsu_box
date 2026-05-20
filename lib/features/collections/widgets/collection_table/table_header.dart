@@ -108,7 +108,7 @@ class TableHeader extends StatelessWidget {
                 ? filterStatus!.genericLabel(l)
                 : l.collectionTableStatus,
             TableColumn.status,
-            width: 96,
+            width: 140,
             alignCenter: true,
             isFiltered: filterStatus != null,
           ),

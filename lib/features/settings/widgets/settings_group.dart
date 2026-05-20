@@ -98,20 +98,23 @@ class SettingsGroup extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
           ),
           clipBehavior: Clip.antiAlias,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              for (int i = 0; i < children.length; i++) ...<Widget>[
-                if (i > 0)
-                  const Divider(
-                    height: 1,
-                    thickness: 1,
-                    color: AppColors.surfaceBorder,
-                    indent: AppSpacing.md,
-                  ),
-                children[i],
+          child: Material(
+            type: MaterialType.transparency,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                for (int i = 0; i < children.length; i++) ...<Widget>[
+                  if (i > 0)
+                    const Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: AppColors.surfaceBorder,
+                      indent: AppSpacing.md,
+                    ),
+                  children[i],
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ],

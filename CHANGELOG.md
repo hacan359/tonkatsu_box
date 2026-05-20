@@ -40,6 +40,66 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Changed
 
+- **Lazy-render the collection table and react chevron counts to the active status**
+
+  Opening a 500+ item collection in table mode no longer freezes ~500ms:
+  the table body is now a `SliverList.builder` (and `SliverReorderableList`
+  in manual sort) embedded in a shared `CustomScrollView`, so only the
+  rows in the viewport are built. The type chevron bar above the table
+  also reacts to the active status filter — picking "Completed" in the
+  dropdown or cycling the in-table Status column reflects in the per-type
+  counts. Chevrons that were visible before the filter stay visible even
+  if their filtered count is zero, so the bar no longer jumps.
+
+  * lib/features/collections/widgets/collection_table/collection_table_view.dart
+    (CollectionTableView, _CollectionTableViewState._buildSortableSliver,
+    _buildReorderableSliver, initState, didUpdateWidget): Replace
+    `ListView.builder(shrinkWrap, NeverScrollable)` /
+    `ReorderableListView.builder` with `SliverList.builder` /
+    `SliverReorderableList`. Accept `heroHeader` so the collection hero
+    becomes the first sliver, drop the outer `_withHeader(wrapInScroll)`
+    wrapper. Outer horizontal scroll only kicks in when `maxWidth < 864`.
+    Add `onFilterStatusChanged` callback, sync to null on mount and on
+    items-identity change so the parent screen never holds a stale
+    column-header filter.
+  * lib/features/collections/widgets/collection_items_view.dart
+    (CollectionItemsView, onTableFilterStatusChanged): Forward the
+    table's status filter outward; drop `_withHeader` for table mode.
+  * lib/features/collections/screens/collection_screen.dart
+    (_CollectionScreenState._tableFilterStatus,
+    _effectiveStatusForChevrons): Track the table column's status filter
+    separately so the chevron bar reflects it; the dropdown still shows
+    only the dropdown-selected status.
+  * lib/features/collections/widgets/collection_filter_bar.dart
+    (CollectionFilterBar.effectiveStatusForCounts,
+    _CollectionFilterBarState._typeCounts, _totalCountFor): Split
+    "visibility" (uses `CollectionStats` totals) from "displayed count"
+    (filtered by status) so chevrons don't disappear when the filter
+    zeroes a type.
+  * lib/features/collections/widgets/collection_filter_sheet.dart,
+    lib/features/settings/widgets/settings_group.dart: Wrap the
+    decorated body in `Material(type: MaterialType.transparency)` so
+    descendant `ListTile` / `RadioListTile` widgets find a Material
+    ancestor before the styled `DecoratedBox` / `Container`, silencing
+    "ListTile background color or ink splashes may be invisible".
+  * test/features/collections/widgets/collection_table_view_test.dart:
+    Drop the `find.byType(ListView)` assertion (sliver-based view no
+    longer exposes one); rely on `takeException()` for the render-empty
+    check.
+
+- **Widen the collection table Status column**
+
+  Status labels like "Backlog", "Want to watch", "Completed" no longer
+  truncate to the leading icon. The column grows 96 → 140 px in both
+  header and rows; the table's minimum width before horizontal scroll
+  bumps 820 → 864 to keep everything aligned.
+
+  * lib/features/collections/widgets/collection_table/table_header.dart,
+    lib/features/collections/widgets/collection_table/table_row.dart:
+    Status column width 96 → 140.
+  * lib/features/collections/widgets/collection_table/collection_table_view.dart
+    (_CollectionTableViewState._minTableWidth): 820 → 864.
+
 - **Split the collection screen god class and unify the error state**
 
   The 984-line `_CollectionScreenState` shed its FAB tower, the bulk-action

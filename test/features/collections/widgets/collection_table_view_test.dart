@@ -134,7 +134,7 @@ void main() {
         await pumpTableView(tester, items: <CollectionItem>[]);
 
         expect(find.byType(CollectionTableView), findsOneWidget);
-        expect(find.byType(ListView), findsOneWidget);
+        expect(tester.takeException(), isNull);
       });
 
       testWidgets('should display genres when present',

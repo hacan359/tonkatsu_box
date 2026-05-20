@@ -15,12 +15,13 @@ import 'table_row.dart' as table_row;
 export 'table_column.dart' show TableColumn;
 
 /// Manifest-style table view of a collection. When [onReorder] is supplied
-/// the view flips into a [ReorderableListView]: column sort/filter is
-/// disabled and a drag handle appears on every row.
+/// the view flips into a reorderable sliver: column sort/filter is disabled
+/// and a drag handle appears on every row.
 class CollectionTableView extends StatefulWidget {
   const CollectionTableView({
     required this.items,
     required this.onItemTap,
+    this.heroHeader,
     this.onItemSecondaryTap,
     this.tags = const <CollectionTag>[],
     this.onRatingChanged,
@@ -30,11 +31,13 @@ class CollectionTableView extends StatefulWidget {
     this.selectedIds,
     this.onToggleSelect,
     this.onToggleSelectAll,
+    this.onFilterStatusChanged,
     super.key,
   });
 
   final List<CollectionItem> items;
   final ValueChanged<CollectionItem> onItemTap;
+  final Widget? heroHeader;
   final void Function(CollectionItem item, Offset globalPosition)?
       onItemSecondaryTap;
   final List<CollectionTag> tags;
@@ -42,23 +45,22 @@ class CollectionTableView extends StatefulWidget {
   final void Function(int itemId, ItemStatus status, MediaType mediaType)?
       onStatusChanged;
   final void Function(int itemId, int? tagId)? onTagChanged;
-
-  /// When non-null the view becomes a [ReorderableListView] and column-based
-  /// sort/filter is disabled. Indices are reported with the trailing-shift
-  /// already removed (i.e. semantic source→destination).
   final void Function(int oldIndex, int newIndex)? onReorder;
-
-  /// Set of currently selected ids. Together with [onToggleSelect] this drives
-  /// per-row checkboxes and the master tri-state checkbox in the header.
   final Set<int>? selectedIds;
   final void Function(int itemId)? onToggleSelect;
   final void Function(bool selectAll)? onToggleSelectAll;
+
+  /// Notifies the parent when the in-table status column filter cycles, so
+  /// outside chrome (e.g. chevron counts) can mirror the active filter.
+  final ValueChanged<ItemStatus?>? onFilterStatusChanged;
 
   @override
   State<CollectionTableView> createState() => _CollectionTableViewState();
 }
 
 class _CollectionTableViewState extends State<CollectionTableView> {
+  static const double _minTableWidth = 864;
+
   TableColumn _sortColumn = TableColumn.name;
   bool _sortAscending = true;
 
@@ -71,16 +73,30 @@ class _CollectionTableViewState extends State<CollectionTableView> {
   late Map<int, CollectionTag> _cachedTagMap;
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.onFilterStatusChanged != null) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => widget.onFilterStatusChanged?.call(null),
+      );
+    }
+  }
+
+  @override
   void didUpdateWidget(CollectionTableView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Reset filters when the parent ships a fresh items list — otherwise a
-    // value pointing at a now-missing tag/status would silently hide rows.
     if (!identical(oldWidget.items, widget.items)) {
+      final bool hadStatusFilter = _filterStatus != null;
       _filterStatus = null;
       _filterType = null;
       _filterRating = null;
       _filterTagId = null;
       _filterPlatform = null;
+      if (hadStatusFilter) {
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => widget.onFilterStatusChanged?.call(null),
+        );
+      }
     }
   }
 
@@ -96,62 +112,60 @@ class _CollectionTableViewState extends State<CollectionTableView> {
 
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
+        final bool needsHorizontalScroll = constraints.maxWidth < _minTableWidth;
         final double tableWidth =
-            constraints.maxWidth < 820 ? 820 : constraints.maxWidth;
-        // Horizontal scroll for narrow windows; the body itself sizes to its
-        // content (shrinkWrap) so a parent vertical scrollable can carry it
-        // alongside an external header (e.g. collection hero).
+            needsHorizontalScroll ? _minTableWidth : constraints.maxWidth;
+
+        final Widget tableHeader = TableHeader(
+          sortColumn: _sortColumn,
+          sortAscending: _sortAscending,
+          onSort: _toggleSort,
+          filterStatus: _filterStatus,
+          filterType: _filterType,
+          filterRating: _filterRating,
+          filterTagId: _filterTagId,
+          filterPlatform: _filterPlatform,
+          tagMap: _cachedTagMap,
+          l: l,
+          isReorderable: isReorderable,
+          selectionState: _selectionStateForVisible(sorted),
+          onToggleSelectAll: widget.onToggleSelectAll,
+        );
+
+        final CustomScrollView scrollView = CustomScrollView(
+          slivers: <Widget>[
+            if (widget.heroHeader != null)
+              SliverToBoxAdapter(child: widget.heroHeader),
+            SliverToBoxAdapter(child: tableHeader),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+              sliver: isReorderable
+                  ? _buildReorderableSliver(sorted)
+                  : _buildSortableSliver(sorted),
+            ),
+          ],
+        );
+
+        if (!needsHorizontalScroll) return scrollView;
+
         return SingleChildScrollView(
           scrollDirection: Axis.horizontal,
-          child: SizedBox(
-            width: tableWidth,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                TableHeader(
-                  sortColumn: _sortColumn,
-                  sortAscending: _sortAscending,
-                  onSort: _toggleSort,
-                  filterStatus: _filterStatus,
-                  filterType: _filterType,
-                  filterRating: _filterRating,
-                  filterTagId: _filterTagId,
-                  filterPlatform: _filterPlatform,
-                  tagMap: _cachedTagMap,
-                  l: l,
-                  isReorderable: isReorderable,
-                  selectionState: _selectionStateForVisible(sorted),
-                  onToggleSelectAll: widget.onToggleSelectAll,
-                ),
-                isReorderable
-                    ? _buildReorderableBody(sorted)
-                    : _buildSortableBody(sorted),
-              ],
-            ),
-          ),
+          child: SizedBox(width: tableWidth, child: scrollView),
         );
       },
     );
   }
 
-  Widget _buildSortableBody(List<CollectionItem> sorted) {
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+  Widget _buildSortableSliver(List<CollectionItem> sorted) {
+    return SliverList.builder(
       itemCount: sorted.length,
-      itemBuilder: (BuildContext context, int index) {
-        return _row(sorted[index], dragIndex: null);
-      },
+      itemBuilder: (BuildContext context, int index) =>
+          _row(sorted[index], dragIndex: null),
     );
   }
 
-  Widget _buildReorderableBody(List<CollectionItem> sorted) {
-    return ReorderableListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-      buildDefaultDragHandles: false,
+  Widget _buildReorderableSliver(List<CollectionItem> sorted) {
+    return SliverReorderableList(
       itemCount: sorted.length,
       proxyDecorator:
           (Widget child, int index, Animation<double> animation) {
@@ -172,9 +186,8 @@ class _CollectionTableViewState extends State<CollectionTableView> {
       onReorderItem: (int oldIndex, int newIndex) {
         widget.onReorder!(oldIndex, newIndex);
       },
-      itemBuilder: (BuildContext context, int index) {
-        return _row(sorted[index], dragIndex: index);
-      },
+      itemBuilder: (BuildContext context, int index) =>
+          _row(sorted[index], dragIndex: index),
     );
   }
 
@@ -184,20 +197,20 @@ class _CollectionTableViewState extends State<CollectionTableView> {
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs / 2),
       child: table_row.TableRow(
         item: item,
-      tag: item.tagId != null ? _cachedTagMap[item.tagId] : null,
-      tags: widget.tags,
-      onTap: () => widget.onItemTap(item),
-      onSecondaryTap: widget.onItemSecondaryTap != null
-          ? (Offset pos) => widget.onItemSecondaryTap!(item, pos)
-          : null,
-      onRatingChanged: widget.onRatingChanged,
-      onStatusChanged: widget.onStatusChanged,
-      onTagChanged: widget.onTagChanged,
-      dragIndex: dragIndex,
-      isSelected: widget.selectedIds?.contains(item.id) ?? false,
-      onToggleSelect: widget.onToggleSelect != null
-          ? () => widget.onToggleSelect!(item.id)
-          : null,
+        tag: item.tagId != null ? _cachedTagMap[item.tagId] : null,
+        tags: widget.tags,
+        onTap: () => widget.onItemTap(item),
+        onSecondaryTap: widget.onItemSecondaryTap != null
+            ? (Offset pos) => widget.onItemSecondaryTap!(item, pos)
+            : null,
+        onRatingChanged: widget.onRatingChanged,
+        onStatusChanged: widget.onStatusChanged,
+        onTagChanged: widget.onTagChanged,
+        dragIndex: dragIndex,
+        isSelected: widget.selectedIds?.contains(item.id) ?? false,
+        onToggleSelect: widget.onToggleSelect != null
+            ? () => widget.onToggleSelect!(item.id)
+            : null,
       ),
     );
   }
@@ -211,6 +224,7 @@ class _CollectionTableViewState extends State<CollectionTableView> {
             widget.items.map((CollectionItem i) => i.status),
             (ItemStatus a, ItemStatus b) => a.index.compareTo(b.index),
           );
+          widget.onFilterStatusChanged?.call(_filterStatus);
         case TableColumn.type:
           _filterType = _cycleFilter<MediaType>(
             _filterType,
@@ -246,8 +260,6 @@ class _CollectionTableViewState extends State<CollectionTableView> {
     });
   }
 
-  /// Cycles a filter through the available unique values in the column:
-  /// null → first → next → ... → null (reset).
   T? _cycleFilter<T>(
     T? current,
     Iterable<T> values,
@@ -315,7 +327,6 @@ class _CollectionTableViewState extends State<CollectionTableView> {
     return _cachedTagMap[item.tagId]?.name ?? '';
   }
 
-  /// Tri-state value for the header master checkbox; null hides it.
   bool? _selectionStateForVisible(List<CollectionItem> visible) {
     final Set<int>? selected = widget.selectedIds;
     if (selected == null || widget.onToggleSelect == null) return null;
@@ -326,7 +337,7 @@ class _CollectionTableViewState extends State<CollectionTableView> {
     }
     if (hit == 0) return false;
     if (hit == visible.length) return true;
-    return null; // partial → tri-state indeterminate
+    return null;
   }
 }
 
