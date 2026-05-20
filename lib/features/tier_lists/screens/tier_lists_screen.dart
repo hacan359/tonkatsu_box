@@ -161,7 +161,7 @@ class _TierListsScreenState extends ConsumerState<TierListsScreen> {
         ),
           DraggableFab(
             mainAction: DraggableFabItem(
-              icon: Icons.leaderboard,
+              icon: Icons.add,
               label: l.tierListCreate,
               onTap: () => _showCreateDialog(context),
             ),
