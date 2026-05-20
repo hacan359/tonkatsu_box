@@ -230,7 +230,7 @@ class _RowContent extends StatelessWidget {
           ),
         ),
         SizedBox(
-          width: 96,
+          width: 140,
           child: StatusCell(
             status: item.status,
             mediaType: item.mediaType,

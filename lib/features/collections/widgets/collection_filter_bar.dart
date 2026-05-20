@@ -38,6 +38,7 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
     required this.filterPlatformIds,
     required this.filterTagIds,
     required this.filterStatus,
+    this.effectiveStatusForCounts,
     required this.tags,
     this.searchQuery = '',
     required this.onTypeToggled,
@@ -69,6 +70,11 @@ class CollectionFilterBar extends ConsumerStatefulWidget {
 
   /// Фильтр по статусу.
   final ItemStatus? filterStatus;
+
+  /// Status that drives chevron counts when it diverges from [filterStatus]
+  /// (e.g. the table column header cycled a local filter). Falls back to
+  /// [filterStatus] when null.
+  final ItemStatus? effectiveStatusForCounts;
 
   /// Теги коллекции.
   final List<CollectionTag> tags;
@@ -135,7 +141,7 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
         (hideEmpty && stats != null)
             ? entries
                 .where((_TypeEntry e) =>
-                    (e.count ?? 0) > 0 ||
+                    (_totalCountFor(e.type, stats) ?? 0) > 0 ||
                     widget.filterTypes.contains(e.type))
                 .toList()
             : entries;
@@ -395,16 +401,47 @@ class _CollectionFilterBarState extends ConsumerState<CollectionFilterBar> {
   }
 
   List<_TypeEntry> _typeEntries(S l, CollectionStats? stats) {
+    final Map<MediaType, int?> counts = _typeCounts(stats);
     return <_TypeEntry>[
-      _TypeEntry(MediaType.game, l.collectionFilterGames, stats?.gameCount),
-      _TypeEntry(MediaType.movie, l.collectionFilterMovies, stats?.movieCount),
-      _TypeEntry(MediaType.tvShow, l.collectionFilterTvShows, stats?.tvShowCount),
-      _TypeEntry(MediaType.animation, l.collectionFilterAnimation, stats?.animationCount),
-      _TypeEntry(MediaType.visualNovel, l.collectionFilterVisualNovels, stats?.visualNovelCount),
-      _TypeEntry(MediaType.manga, l.collectionFilterManga, stats?.mangaCount),
-      _TypeEntry(MediaType.anime, l.mediaTypeAnime, stats?.animeCount),
-      _TypeEntry(MediaType.custom, l.collectionFilterCustom, stats?.customCount),
+      _TypeEntry(MediaType.game, l.collectionFilterGames, counts[MediaType.game]),
+      _TypeEntry(MediaType.movie, l.collectionFilterMovies, counts[MediaType.movie]),
+      _TypeEntry(MediaType.tvShow, l.collectionFilterTvShows, counts[MediaType.tvShow]),
+      _TypeEntry(MediaType.animation, l.collectionFilterAnimation, counts[MediaType.animation]),
+      _TypeEntry(MediaType.visualNovel, l.collectionFilterVisualNovels, counts[MediaType.visualNovel]),
+      _TypeEntry(MediaType.manga, l.collectionFilterManga, counts[MediaType.manga]),
+      _TypeEntry(MediaType.anime, l.mediaTypeAnime, counts[MediaType.anime]),
+      _TypeEntry(MediaType.custom, l.collectionFilterCustom, counts[MediaType.custom]),
     ];
+  }
+
+  Map<MediaType, int?> _typeCounts(CollectionStats? stats) {
+    final ItemStatus? statusFilter =
+        widget.effectiveStatusForCounts ?? widget.filterStatus;
+    if (statusFilter == null) {
+      return <MediaType, int?>{
+        MediaType.game: stats?.gameCount,
+        MediaType.movie: stats?.movieCount,
+        MediaType.tvShow: stats?.tvShowCount,
+        MediaType.animation: stats?.animationCount,
+        MediaType.visualNovel: stats?.visualNovelCount,
+        MediaType.manga: stats?.mangaCount,
+        MediaType.anime: stats?.animeCount,
+        MediaType.custom: stats?.customCount,
+      };
+    }
+    final List<CollectionItem>? items = widget.itemsAsync.valueOrNull;
+    if (items == null) {
+      return const <MediaType, int?>{};
+    }
+    final Map<MediaType, int> tally = <MediaType, int>{
+      for (final MediaType t in MediaType.values) t: 0,
+    };
+    for (final CollectionItem item in items) {
+      if (item.status == statusFilter) {
+        tally[item.mediaType] = tally[item.mediaType]! + 1;
+      }
+    }
+    return tally;
   }
 }
 
@@ -413,4 +450,18 @@ class _TypeEntry {
   final MediaType type;
   final String label;
   final int? count;
+}
+
+int? _totalCountFor(MediaType type, CollectionStats? stats) {
+  if (stats == null) return null;
+  return switch (type) {
+    MediaType.game => stats.gameCount,
+    MediaType.movie => stats.movieCount,
+    MediaType.tvShow => stats.tvShowCount,
+    MediaType.animation => stats.animationCount,
+    MediaType.visualNovel => stats.visualNovelCount,
+    MediaType.manga => stats.mangaCount,
+    MediaType.anime => stats.animeCount,
+    MediaType.custom => stats.customCount,
+  };
 }

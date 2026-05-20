@@ -202,9 +202,11 @@ class _CollectionFilterSheetState
                     color: AppColors.surfaceBorder.withAlpha(40),
                   ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
+                child: Material(
+                  type: MaterialType.transparency,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
                     // Header: drag handle + Сбросить теги (если выбраны).
                     Padding(
                       padding: const EdgeInsets.fromLTRB(
@@ -375,6 +377,7 @@ class _CollectionFilterSheetState
 
                     const SizedBox(height: AppSpacing.md),
                   ],
+                  ),
                 ),
               ),
             ),

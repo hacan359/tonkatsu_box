@@ -19,6 +19,7 @@ import '../../../shared/widgets/shimmer_loading.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../providers/canvas_provider.dart';
 import '../providers/collection_covers_provider.dart';
+import '../widgets/collection_screen/collection_error_state.dart';
 import '../providers/collections_provider.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../widgets/collection_card.dart';
@@ -82,8 +83,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   searchQuery: searchQuery,
                 ),
             loading: () => _buildLoadingState(),
-            error: (Object error, StackTrace stack) =>
-                _buildErrorState(context, ref, error),
+            error: (Object error, StackTrace stack) => CollectionErrorState(
+              error: error,
+              onRetry: () => ref.invalidate(collectionsProvider),
+            ),
           ),
           DraggableFab(
             mainAction: DraggableFabItem(
@@ -330,42 +333,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               style: AppTypography.body.copyWith(
                 color: AppColors.textSecondary,
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildErrorState(BuildContext context, WidgetRef ref, Object error) {
-    final S l = S.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Icon(
-              Icons.error_outline,
-              size: 64,
-              color: AppColors.error,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              l.collectionsFailedToLoad,
-              style: AppTypography.h3.copyWith(color: AppColors.error),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              error.toString(),
-              textAlign: TextAlign.center,
-              style: AppTypography.bodySmall,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            FilledButton.icon(
-              onPressed: () => ref.invalidate(collectionsProvider),
-              icon: const Icon(Icons.refresh),
-              label: Text(l.retry),
             ),
           ],
         ),

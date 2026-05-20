@@ -13,9 +13,7 @@ import '../widgets/create_custom_item_dialog.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../data/repositories/collection_repository.dart';
 import '../../../shared/theme/app_colors.dart';
-import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/navigation/search_providers.dart';
-import '../../../shared/widgets/draggable_fab.dart';
 import '../../../shared/widgets/sub_screen_title_bar.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/models/collection.dart';
@@ -29,11 +27,14 @@ import '../../../shared/constants/platform_features.dart';
 import '../../home/providers/all_items_provider.dart';
 import '../widgets/import_progress_dialog.dart';
 import '../helpers/collection_actions.dart';
+import '../helpers/collection_filters.dart';
 import '../providers/collection_covers_provider.dart';
 import '../providers/collection_tags_provider.dart';
-import '../providers/collection_selection_provider.dart';
 import '../providers/collections_provider.dart';
-import '../widgets/bulk_action_bar.dart';
+import '../widgets/collection_screen/collection_bulk_action_bar.dart';
+import '../widgets/collection_screen/collection_error_state.dart';
+import '../widgets/collection_screen/collection_screen_fab.dart';
+import '../widgets/dialogs/create_tier_list_dialog.dart';
 import '../providers/steamgriddb_panel_provider.dart';
 import '../providers/vgmaps_panel_provider.dart';
 import '../widgets/collection_canvas_layout.dart';
@@ -90,7 +91,11 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   Set<int> _filterTagIds = <int>{};
   bool _groupByTags = false;
   ItemStatus? _filterStatus;
+  ItemStatus? _tableFilterStatus;
   CollectionItem? _focusedItem;
+
+  ItemStatus? get _effectiveStatusForChevrons =>
+      _filterStatus ?? (_isTableMode ? _tableFilterStatus : null);
 
   /// Реальная возможность редактирования с учётом режима просмотра.
   bool get _effectiveIsEditable =>
@@ -185,30 +190,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                     : _collection!.name,
               ),
               if (_canEdit && !_isCanvasMode)
-                Consumer(builder: (BuildContext context, WidgetRef ref, _) {
-                  final Set<int> selection = ref.watch(
-                      collectionSelectionProvider(widget.collectionId));
-                  if (selection.isEmpty) return const SizedBox.shrink();
-                  final List<CollectionItem> all = ref
-                          .watch(collectionItemsNotifierProvider(
-                              widget.collectionId))
-                          .valueOrNull ??
-                      const <CollectionItem>[];
-                  final List<CollectionItem> selectedItems = <CollectionItem>[
-                    for (final CollectionItem i in all)
-                      if (selection.contains(i.id)) i,
-                  ];
-                  if (selectedItems.isEmpty) return const SizedBox.shrink();
-                  return BulkActionBar(
-                    items: selectedItems,
-                    collectionId: widget.collectionId,
-                    onClearSelection: () => ref
-                        .read(collectionSelectionProvider(
-                                widget.collectionId)
-                            .notifier)
-                        .clear(),
-                  );
-                }),
+                CollectionBulkActionBar(collectionId: widget.collectionId),
               Expanded(
                 child: _isCanvasMode
                     ? CollectionCanvasLayout(
@@ -240,12 +222,23 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
               ),
             ],
           ),
-          DraggableFab(
-            key: ValueKey<bool>(_isCanvasMode),
-            mainAction: _buildMainFabAction(l),
-            primaryItems: _buildPrimaryFabItems(l),
-            items: _buildSecondaryFabItems(l),
-            initialRight: _isCanvasMode ? 72 : null,
+          CollectionScreenFab(
+            canEdit: _canEdit,
+            isUncategorized: _isUncategorized,
+            isCollectionEditable: _collection?.isEditable ?? false,
+            isCanvasMode: _isCanvasMode,
+            isTableMode: _isTableMode,
+            isViewModeLocked: _isViewModeLocked,
+            onAddItems: () => CollectionActions.addItems(
+              context: context,
+              ref: ref,
+              collectionId: widget.collectionId,
+            ),
+            onCycleViewMode: _handleCycleViewMode,
+            onToggleLock: _toggleLock,
+            onToggleCanvas: () =>
+                setState(() => _isCanvasMode = !_isCanvasMode),
+            onMenuAction: _handleMenuAction,
           ),
         ],
       ),
@@ -284,119 +277,14 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     };
   }
 
-  /// Основные действия — горизонтальный ряд иконок.
-  DraggableFabItem? _buildMainFabAction(S l) {
-    if (!_canEdit || _isCanvasMode) return null;
-    return DraggableFabItem(
-      icon: Icons.add,
-      label: l.collectionAddItems,
-      onTap: () => CollectionActions.addItems(
-        context: context,
-        ref: ref,
-        collectionId: widget.collectionId,
-      ),
-    );
-  }
-
-  List<DraggableFabItem> _buildPrimaryFabItems(S l) {
-    return <DraggableFabItem>[
-      if (!_isCanvasMode)
-        DraggableFabItem(
-          icon: _isTableMode ? Icons.grid_view : Icons.table_chart_outlined,
-          label: _isTableMode
-              ? l.collectionListViewGrid
-              : l.collectionListViewTable,
-          onTap: _handleCycleViewMode,
-        ),
-      if (_canEdit && _isCanvasMode && kCanvasEnabled && !_isUncategorized)
-        DraggableFabItem(
-          icon: _isViewModeLocked ? Icons.lock : Icons.lock_open,
-          label: _isViewModeLocked
-              ? l.collectionUnlockBoard
-              : l.collectionLockBoard,
-          iconColor: _isViewModeLocked ? AppColors.warning : null,
-          onTap: () {
-            setState(() {
-              _isViewModeLocked = !_isViewModeLocked;
-            });
-            if (_isViewModeLocked) {
-              ref
-                  .read(steamGridDbPanelProvider(widget.collectionId)
-                      .notifier)
-                  .closePanel();
-              ref
-                  .read(vgMapsPanelProvider(widget.collectionId).notifier)
-                  .closePanel();
-            }
-          },
-        ),
-      if (kCanvasEnabled && !_isUncategorized)
-        DraggableFabItem(
-          icon: _isCanvasMode ? Icons.list : Icons.dashboard,
-          label: _isCanvasMode
-              ? l.collectionSwitchToList
-              : l.collectionSwitchToBoard,
-          onTap: () => setState(() => _isCanvasMode = !_isCanvasMode),
-        ),
-    ];
-  }
-
-  /// Остальные действия — вертикальный список.
-  List<DraggableFabItem> _buildSecondaryFabItems(S l) {
-    if (_isUncategorized) return const <DraggableFabItem>[];
-    return <DraggableFabItem>[
-      if (_collection!.isEditable)
-        DraggableFabItem(
-          icon: Icons.add_box_outlined,
-          label: l.customItemCreate,
-          iconColor: AppColors.brand,
-          onTap: () => _handleMenuAction('custom_item'),
-        ),
-      if (_collection!.isEditable)
-        DraggableFabItem(
-          icon: Icons.tune,
-          label: l.collectionEditMenu,
-          onTap: () => _handleMenuAction('rename'),
-        ),
-      DraggableFabItem(
-        icon: Icons.leaderboard,
-        label: l.tierListCreateFromCollection,
-        onTap: () => _handleMenuAction('tier_list'),
-      ),
-      DraggableFabItem(
-        icon: Icons.label_outlined,
-        label: l.tagManage,
-        onTap: () => _handleMenuAction('manage_tags'),
-      ),
-      DraggableFabItem(
-        icon: Icons.content_copy,
-        label: l.copyAsList,
-        onTap: () => _handleMenuAction('copy_as_list'),
-      ),
-      DraggableFabItem(
-        icon: Icons.text_snippet_outlined,
-        label: l.copyAsText,
-        onTap: () => _handleMenuAction('copy_as_text'),
-      ),
-      DraggableFabItem(
-        icon: Icons.file_upload_outlined,
-        label: l.collectionExport,
-        onTap: () => _handleMenuAction('export'),
-      ),
-      if (_collection!.isEditable)
-        DraggableFabItem(
-          icon: Icons.file_download_outlined,
-          label: l.collectionsImportCollection,
-          onTap: () => _handleMenuAction('import'),
-        ),
-      const DraggableFabDivider(),
-      DraggableFabItem(
-        icon: Icons.delete,
-        label: l.delete,
-        iconColor: AppColors.error,
-        onTap: () => _handleMenuAction('delete'),
-      ),
-    ];
+  void _toggleLock() {
+    setState(() => _isViewModeLocked = !_isViewModeLocked);
+    if (_isViewModeLocked) {
+      ref
+          .read(steamGridDbPanelProvider(widget.collectionId).notifier)
+          .closePanel();
+      ref.read(vgMapsPanelProvider(widget.collectionId).notifier).closePanel();
+    }
   }
 
   Widget _buildFilterBar(
@@ -422,6 +310,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       filterPlatformIds: _filterPlatformIds,
       filterTagIds: _filterTagIds,
       filterStatus: _filterStatus,
+      effectiveStatusForCounts: _effectiveStatusForChevrons,
       tags: tags,
       searchQuery: searchQuery,
       groupByTags: _groupByTags,
@@ -512,10 +401,18 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           )
         : null;
 
+    final CollectionFilters filters = CollectionFilters(
+      mediaTypes: _filterTypes,
+      platformIds: _filterPlatformIds,
+      tagIds: _filterTagIds,
+      status: _filterStatus,
+      searchQuery: searchQuery,
+    );
+
     final Widget itemsView = itemsAsync.when(
       data: (List<CollectionItem> items) => CollectionItemsView(
         collectionId: widget.collectionId,
-        items: _applyFilters(items, tags),
+        items: filters.apply(items, tags),
         tags: tags,
         filterTagIds: _filterTagIds,
         groupByTags: _groupByTags,
@@ -536,10 +433,17 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
         onItemFocusChanged: (CollectionItem item, bool hasFocus) {
           setState(() => _focusedItem = hasFocus ? item : null);
         },
+        onTableFilterStatusChanged: (ItemStatus? status) {
+          setState(() => _tableFilterStatus = status);
+        },
       ),
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (Object error, StackTrace stack) =>
-          _buildErrorState(context, error),
+      error: (Object error, StackTrace stack) => CollectionErrorState(
+        error: error,
+        onRetry: () => ref
+            .read(collectionItemsNotifierProvider(widget.collectionId).notifier)
+            .refresh(),
+      ),
     );
 
     final Widget? tagSidebar =
@@ -580,67 +484,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     );
   }
 
-  /// Применяет фильтры по типу, платформе, тегу и поисковой строке.
-  List<CollectionItem> _applyFilters(
-    List<CollectionItem> items,
-    List<CollectionTag> tags,
-  ) {
-    List<CollectionItem> result = items;
-
-    if (_filterTypes.isNotEmpty) {
-      result = result
-          .where((CollectionItem item) =>
-              _filterTypes.contains(item.mediaType))
-          .toList();
-    }
-
-    if (_filterPlatformIds.isNotEmpty) {
-      result = result
-          .where((CollectionItem item) =>
-              item.platformId != null &&
-              _filterPlatformIds.contains(item.platformId))
-          .toList();
-    }
-
-    if (_filterTagIds.isNotEmpty) {
-      result = result
-          .where((CollectionItem item) =>
-              item.tagId != null && _filterTagIds.contains(item.tagId))
-          .toList();
-    }
-
-    if (_filterStatus != null) {
-      result = result
-          .where((CollectionItem item) => item.status == _filterStatus)
-          .toList();
-    }
-
-    final String textQuery = ref.read(collectionsSearchQueryProvider);
-
-    if (textQuery.isNotEmpty) {
-      final String query = textQuery.toLowerCase();
-      final Map<int, String> tagNames = <int, String>{
-        for (final CollectionTag tag in tags) tag.id: tag.name.toLowerCase(),
-      };
-      result = result
-          .where(
-            (CollectionItem item) =>
-                item.itemName.toLowerCase().contains(query) ||
-                (item.tagId != null &&
-                    (tagNames[item.tagId]?.contains(query) ?? false)) ||
-                (item.userComment?.toLowerCase().contains(query) ?? false) ||
-                (item.authorComment?.toLowerCase().contains(query) ?? false),
-          )
-          .toList();
-    }
-
-    return result;
-  }
-
-  // =========================================================================
-  // Навигация и обработчики действий
-  // =========================================================================
-
   void _showItemDetails(CollectionItem item) {
     final bool isEditable = _canEdit;
     Navigator.of(context).push(
@@ -678,25 +521,25 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     );
   }
 
-  void _handleMenuAction(String action) {
+  void _handleMenuAction(CollectionMenuAction action) {
     switch (action) {
-      case 'custom_item':
+      case CollectionMenuAction.customItem:
         _handleCreateCustomItem();
-      case 'rename':
+      case CollectionMenuAction.rename:
         _handleRename();
-      case 'tier_list':
+      case CollectionMenuAction.tierList:
         _handleCreateTierList();
-      case 'manage_tags':
+      case CollectionMenuAction.manageTags:
         TagManagementDialog.show(context, widget.collectionId!);
-      case 'copy_as_list':
+      case CollectionMenuAction.copyAsList:
         _handleCopyAsList();
-      case 'copy_as_text':
+      case CollectionMenuAction.copyAsText:
         _handleCopyAsText();
-      case 'export':
+      case CollectionMenuAction.export:
         _handleExport();
-      case 'import':
+      case CollectionMenuAction.import:
         _handleImportIntoCollection();
-      case 'delete':
+      case CollectionMenuAction.delete:
         _handleDelete();
     }
   }
@@ -756,37 +599,13 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
 
   Future<void> _handleCreateTierList() async {
     if (_collection == null) return;
-    final S l = S.of(context);
-    final TextEditingController controller =
-        TextEditingController(text: '${_collection!.name} Tier List');
-    final String? name = await showDialog<String>(
-      context: context,
-      builder: (BuildContext ctx) => AlertDialog(
-        title: Text(l.tierListCreateFromCollection),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: InputDecoration(hintText: l.tierListNameHint),
-          onSubmitted: (String value) =>
-              Navigator.of(ctx).pop(value.trim()),
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(l.cancel),
-          ),
-          TextButton(
-            onPressed: () =>
-                Navigator.of(ctx).pop(controller.text.trim()),
-            child: Text(l.create),
-          ),
-        ],
-      ),
+    final String? name = await CreateTierListDialog.show(
+      context,
+      initialName: '${_collection!.name} Tier List',
     );
-    controller.dispose();
     if (name == null || name.isEmpty || !mounted) return;
-
     if (widget.collectionId == null) return;
+
     final TierList tierList = await ref
         .read(collectionTierListsProvider(widget.collectionId!).notifier)
         .create(name);
@@ -943,42 +762,4 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
     );
   }
 
-  Widget _buildErrorState(BuildContext context, Object error) {
-    final S l = S.of(context);
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            const Icon(
-              Icons.error_outline,
-              size: 64,
-              color: AppColors.error,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              l.collectionsFailedToLoad,
-              style: AppTypography.h3.copyWith(color: AppColors.error),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              error.toString(),
-              textAlign: TextAlign.center,
-              style: AppTypography.bodySmall,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            FilledButton.icon(
-              onPressed: () => ref
-                  .read(collectionItemsNotifierProvider(widget.collectionId)
-                      .notifier)
-                  .refresh(),
-              icon: const Icon(Icons.refresh),
-              label: Text(l.retry),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }

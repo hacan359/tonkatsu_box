@@ -44,6 +44,7 @@ class CollectionItemsView extends ConsumerWidget {
     this.filterTagIds = const <int>{},
     this.groupByTags = false,
     this.header,
+    this.onTableFilterStatusChanged,
     super.key,
   });
 
@@ -67,6 +68,10 @@ class CollectionItemsView extends ConsumerWidget {
   /// reorder modes pin it above instead — those widgets don't accept slivers.
   final Widget? header;
 
+  /// Mirrors the table's status column filter outward so chevron counts in
+  /// the outer filter bar can react to in-table cycling.
+  final ValueChanged<ItemStatus?>? onTableFilterStatusChanged;
+
   static const double _desktopMaxCardWidth = 170;
 
   @override
@@ -84,10 +89,10 @@ class CollectionItemsView extends ConsumerWidget {
       final Set<int>? selectedIds = canEdit
           ? ref.watch(collectionSelectionProvider(collectionId))
           : null;
-      return _withHeader(
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-          child: CollectionTableView(
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+        child: CollectionTableView(
+          heroHeader: header,
           items: items,
           tags: tags,
           onItemTap: onItemTap,
@@ -148,9 +153,8 @@ class CollectionItemsView extends ConsumerWidget {
                       .reorderItem(oldIndex, newIndex);
                 }
               : null,
-          ),
+          onFilterStatusChanged: onTableFilterStatusChanged,
         ),
-        wrapInScroll: true,
       );
     }
 
