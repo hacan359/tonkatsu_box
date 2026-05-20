@@ -40,6 +40,61 @@ Entries follow the [GNU Change Log style](https://www.gnu.org/prep/standards/htm
 
 ### Changed
 
+- **Split the wishlist screen god class**
+
+  `_WishlistScreenState` shed its tag-header chrome, item tile, and
+  AlertDialog boilerplate into reusable units under `widgets/`. Four
+  repeated confirm/prompt dialogs collapse to one shared `_confirm`
+  helper in `WishlistDialogs`. The tile's right-click / long-press
+  context menu loses its string-keyed `case 'search' / 'edit' / ...`
+  switch and now dispatches on a typed enum, matching the
+  `_TagMenuChoice` sealed-class pattern that already lived in this
+  file.
+
+  * lib/features/wishlist/screens/wishlist_screen.dart
+    (_WishlistScreenState): 994 LOC → 345. Extract `_promptTagForBulk`,
+    `_promptRenameTag`, `_confirmDeleteTag`, `_confirmClearResolved`,
+    inline delete-item confirm, and bulk-delete confirm to
+    `WishlistDialogs`. Inline `_BulkAction` becomes public
+    `WishlistBulkAction` exported by the header widget. Notifier calls
+    + filter state updates stay on the screen so dialog helpers remain
+    pure.
+  * lib/features/wishlist/widgets/wishlist_dialogs.dart (WishlistDialogs.promptBulkTag,
+    promptRenameTag, confirmDeleteTag, confirmClearResolved,
+    confirmDeleteItem, confirmBulkDelete, _confirm): New. Each returns
+    the user's pick and never touches the wishlist provider.
+  * lib/features/wishlist/widgets/wishlist_tag_header.dart
+    (WishlistTagHeader, WishlistBulkAction, _TagPickerSegment,
+    _BulkActionsSegment, _TagMenuChoice, _TagMenuFilter, _TagMenuRename,
+    _TagMenuDelete): New. Hosts the chevron filter bar + bulk-action
+    dropdown previously inlined.
+  * lib/features/wishlist/widgets/wishlist_tile.dart (WishlistTile,
+    _TileAction): New. Context menu uses a typed `_TileAction` enum.
+
+- **Split the create-custom-item dialog god class**
+
+  `_CreateCustomItemDialogState` (~700 LOC) sheds the cover image
+  preview / picker, the two private dialogs (searchable list and
+  multi-select genre), and the form-result data class into focused
+  files under `widgets/custom_item/`. The dialog's dead "My rating"
+  star section is removed — `_userRating` was collected but never
+  reached `CustomItemData`, so nothing was ever saved.
+
+  * lib/features/collections/widgets/create_custom_item_dialog.dart
+    (_CreateCustomItemDialogState): 1089 LOC → 538. Replace
+    `_buildCoverPreview`, `_buildCoverPlaceholder`, `_pickCoverImage`
+    with `CustomCoverPreview` and `pickCustomCoverImage`. Drop
+    `_userRating` and `_buildRatingSection` (dead code). Re-export
+    `CustomItemData` from its new home so call sites keep working.
+  * lib/features/collections/widgets/custom_item/custom_item_data.dart
+    (CustomItemData), cover_image_picker.dart (pickCustomCoverImage,
+    CustomCoverPreview, CoverPickResult), searchable_list_dialog.dart
+    (SearchableListDialog), multi_select_genre_dialog.dart
+    (MultiSelectGenreDialog): New.
+  * lib/l10n/app_en.arb, lib/l10n/app_ru.arb (customItemMyRating):
+    Removed — the rating UI it labelled was deleted as dead code.
+    Regenerated `app_localizations*.dart`.
+
 - **Replace draggable FAB fan menu with a labeled pill stack**
 
   The popup menu attached to every draggable FAB no longer fans small

@@ -1,13 +1,10 @@
-// Полноэкранная форма создания/редактирования кастомного элемента.
-
 import 'dart:io';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/services/image_cache_service.dart';
 import '../../../core/database/database_service.dart';
+import '../../../core/services/image_cache_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/constants/media_type_theme.dart';
 import '../../../shared/models/custom_media.dart';
@@ -16,63 +13,19 @@ import '../../../shared/models/platform.dart' as model;
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
+import 'custom_item/cover_image_picker.dart';
+import 'custom_item/custom_item_data.dart';
+import 'custom_item/multi_select_genre_dialog.dart';
+import 'custom_item/searchable_list_dialog.dart';
 
-/// Результат формы создания/редактирования кастомного элемента.
-class CustomItemData {
-  /// Создаёт экземпляр [CustomItemData].
-  const CustomItemData({
-    required this.title,
-    required this.mediaType,
-    this.altTitle,
-    this.description,
-    this.year,
-    this.coverUrl,
-    this.localCoverPath,
-    this.genres,
-    this.platform,
-    this.externalUrl,
-  });
+export 'custom_item/custom_item_data.dart' show CustomItemData;
 
-  /// Основное название.
-  final String title;
-
-  /// Альтернативное название (оригинальный язык).
-  final String? altTitle;
-
-  /// Тип медиа.
-  final MediaType mediaType;
-
-  /// Описание.
-  final String? description;
-
-  /// Год выпуска.
-  final int? year;
-
-  /// URL обложки.
-  final String? coverUrl;
-
-  /// Локальный путь к обложке (с ПК).
-  final String? localCoverPath;
-
-  /// Жанры (через запятую).
-  final String? genres;
-
-  /// Платформа (для игр).
-  final String? platform;
-
-  /// Внешний URL.
-  final String? externalUrl;
-}
-
-/// Полноэкранная форма создания/редактирования кастомного элемента.
+/// Full-screen create / edit form for a custom collection item.
 class CreateCustomItemDialog extends ConsumerStatefulWidget {
-  /// Создаёт [CreateCustomItemDialog].
   const CreateCustomItemDialog({this.existing, super.key});
 
-  /// Существующий элемент для редактирования (null = создание нового).
   final CustomMedia? existing;
 
-  /// Открывает полноэкранную форму создания.
   static Future<CustomItemData?> show(BuildContext context) {
     return Navigator.of(context).push<CustomItemData>(
       MaterialPageRoute<CustomItemData>(
@@ -81,7 +34,6 @@ class CreateCustomItemDialog extends ConsumerStatefulWidget {
     );
   }
 
-  /// Открывает полноэкранную форму редактирования.
   static Future<CustomItemData?> edit(
     BuildContext context,
     CustomMedia existing,
@@ -114,9 +66,7 @@ class _CreateCustomItemDialogState
   int? _selectedYear;
   String? _localCoverPath;
   String? _cachedCoverPath;
-  int? _userRating;
 
-  // Справочники для автокомплита
   List<model.Platform> _platforms = <model.Platform>[];
   List<String> _allGenres = <String>[];
   bool _refsLoaded = false;
@@ -224,7 +174,6 @@ class _CreateCustomItemDialogState
 
   Color get _accentColor => MediaTypeTheme.colorFor(_selectedType);
 
-
   @override
   Widget build(BuildContext context) {
     final S l = S.of(context);
@@ -262,8 +211,6 @@ class _CreateCustomItemDialogState
           const SizedBox(height: AppSpacing.md),
           if (!_isEditing) _buildMediaTypeChips(l),
           if (!_isEditing) const SizedBox(height: AppSpacing.md),
-          _buildRatingSection(l),
-          _buildDivider(),
           _buildGenresSection(l),
           const SizedBox(height: AppSpacing.md),
           _buildDescriptionSection(l),
@@ -275,39 +222,21 @@ class _CreateCustomItemDialogState
     );
   }
 
-  Widget _buildDivider() => Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-        child: Divider(
-          color: AppColors.surfaceBorder.withAlpha(80),
-          height: 1,
-        ),
-      );
-
-  // ==================== Header ====================
-
   Widget _buildHeader(S l) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        // Обложка (тап для загрузки)
-        GestureDetector(
-          onTap: _pickCoverImage,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-            child: Container(
-              width: 100,
-              height: 150,
-              color: AppColors.surfaceLight,
-              child: _buildCoverPreview(),
-            ),
-          ),
+        CustomCoverPreview(
+          localPath: _localCoverPath,
+          cachedPath: _cachedCoverPath,
+          url: _coverUrlController.text.trim(),
+          onTap: _pickCover,
         ),
         const SizedBox(width: AppSpacing.md),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              // Бейдж типа
               Row(
                 children: <Widget>[
                   Icon(
@@ -326,8 +255,6 @@ class _CreateCustomItemDialogState
                 ],
               ),
               const SizedBox(height: AppSpacing.sm),
-
-              // Название
               TextField(
                 controller: _titleController,
                 decoration: InputDecoration(
@@ -347,8 +274,6 @@ class _CreateCustomItemDialogState
                   }
                 },
               ),
-
-              // Альтернативное название
               TextField(
                 controller: _altTitleController,
                 decoration: InputDecoration(
@@ -370,8 +295,6 @@ class _CreateCustomItemDialogState
                 ),
               ),
               const SizedBox(height: AppSpacing.sm),
-
-              // Год + Платформа
               Wrap(
                 spacing: 6,
                 runSpacing: 6,
@@ -389,151 +312,22 @@ class _CreateCustomItemDialogState
     );
   }
 
-  // ==================== Cover ====================
-
-  Widget _buildCoverPreview() {
-    // Локальный файл, только что выбранный пользователем
-    if (_localCoverPath != null) {
-      return Image.file(
-        File(_localCoverPath!),
-        fit: BoxFit.cover,
-        errorBuilder: (_, Object e, StackTrace? s) =>
-            _buildCoverPlaceholder(),
-      );
-    }
-    // Кэшированная обложка (при редактировании)
-    if (_cachedCoverPath != null) {
-      return Image.file(
-        File(_cachedCoverPath!),
-        fit: BoxFit.cover,
-        errorBuilder: (_, Object e, StackTrace? s) =>
-            _buildCoverPlaceholder(),
-      );
-    }
-    // URL обложки (не маркер локальной обложки)
-    final String url = _coverUrlController.text.trim();
-    if (url.isNotEmpty && !CustomMedia.isLocalCover(url)) {
-      return Image.network(
-        url,
-        fit: BoxFit.cover,
-        errorBuilder: (_, Object e, StackTrace? s) =>
-            _buildCoverPlaceholder(),
-      );
-    }
-    return _buildCoverPlaceholder();
-  }
-
-  Widget _buildCoverPlaceholder() {
-    final S l = S.of(context);
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        const Icon(
-          Icons.add_photo_alternate_outlined,
-          size: 32,
-          color: AppColors.textTertiary,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          l.customItemAddCover,
-          style: AppTypography.caption.copyWith(
-            color: AppColors.textTertiary,
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ],
+  Future<void> _pickCover() async {
+    final CoverPickResult? result = await pickCustomCoverImage(
+      context,
+      currentUrl: _coverUrlController.text,
     );
-  }
-
-  Future<void> _pickCoverImage() async {
-    final S l = S.of(context);
-    // Показываем выбор: файл или URL
-    final String? choice = await showDialog<String>(
-      context: context,
-      builder: (BuildContext ctx) => SimpleDialog(
-        title: Text(l.customItemCoverSource),
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Text(
-              l.customItemCoverRatio,
-              style: AppTypography.caption.copyWith(
-                color: AppColors.textTertiary,
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          SimpleDialogOption(
-            onPressed: () => Navigator.of(ctx).pop('file'),
-            child: ListTile(
-              leading: const Icon(Icons.folder_outlined),
-              title: Text(l.customItemCoverFromFile),
-              contentPadding: EdgeInsets.zero,
-            ),
-          ),
-          SimpleDialogOption(
-            onPressed: () => Navigator.of(ctx).pop('url'),
-            child: ListTile(
-              leading: const Icon(Icons.link),
-              title: Text(l.customItemCoverFromUrl),
-              contentPadding: EdgeInsets.zero,
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (choice == 'file') {
-      final FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.image,
-        allowMultiple: false,
-      );
-      if (result != null && result.files.isNotEmpty) {
-        final String? path = result.files.first.path;
-        if (path != null && mounted) {
-          setState(() {
-            _localCoverPath = path;
-            _coverUrlController.clear();
-          });
-        }
+    if (result == null || !mounted) return;
+    setState(() {
+      if (result.localPath != null) {
+        _localCoverPath = result.localPath;
+        _coverUrlController.clear();
+      } else if (result.url != null) {
+        _coverUrlController.text = result.url!;
+        _localCoverPath = null;
       }
-    } else if (choice == 'url') {
-      if (!mounted) return;
-      final TextEditingController urlCtrl =
-          TextEditingController(text: _coverUrlController.text);
-      final String? url = await showDialog<String>(
-        context: context,
-        builder: (BuildContext ctx) => AlertDialog(
-          title: Text(l.customItemCoverUrl),
-          content: TextField(
-            controller: urlCtrl,
-            decoration: const InputDecoration(hintText: 'https://...'),
-            keyboardType: TextInputType.url,
-            autofocus: true,
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: Text(l.cancel),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(ctx).pop(urlCtrl.text.trim()),
-              child: Text(l.confirm),
-            ),
-          ],
-        ),
-      );
-      urlCtrl.dispose();
-      if (url != null && url.isNotEmpty && mounted) {
-        setState(() {
-          _coverUrlController.text = url;
-          _localCoverPath = null;
-        });
-      }
-    }
+    });
   }
-
-  // ==================== Year Picker ====================
 
   Widget _buildYearChip(S l) {
     return ActionChip(
@@ -562,40 +356,23 @@ class _CreateCustomItemDialogState
     }
   }
 
-  // ==================== Platform Autocomplete ====================
-
   Widget _buildPlatformChip(S l) {
-    if (!_refsLoaded || _platforms.isEmpty) {
-      return ActionChip(
-        avatar: const Icon(Icons.sports_esports, size: 14),
-        label: Text(_platformController.text.isNotEmpty
-            ? _platformController.text
-            : l.customItemPlatform),
-        labelStyle: AppTypography.caption.copyWith(
-          color: _platformController.text.isNotEmpty
-              ? AppColors.textPrimary
-              : AppColors.textTertiary,
-        ),
-        onPressed: null,
-      );
-    }
-
+    final bool hasValue = _platformController.text.isNotEmpty;
+    final VoidCallback? onTap =
+        _refsLoaded && _platforms.isNotEmpty ? _pickPlatform : null;
     return ActionChip(
       avatar: const Icon(Icons.sports_esports, size: 14),
-      label: Text(_platformController.text.isNotEmpty
-          ? _platformController.text
-          : l.customItemPlatform),
+      label: Text(hasValue ? _platformController.text : l.customItemPlatform),
       labelStyle: AppTypography.caption.copyWith(
-        color: _platformController.text.isNotEmpty
-            ? AppColors.textPrimary
-            : AppColors.textTertiary,
+        color: hasValue ? AppColors.textPrimary : AppColors.textTertiary,
       ),
-      onPressed: _pickPlatform,
+      onPressed: onTap,
     );
   }
 
   Future<void> _pickPlatform() async {
-    final String? result = await _showSearchableListDialog(
+    final String? result = await SearchableListDialog.show(
+      context,
       title: S.of(context).customItemPlatform,
       items: _platforms
           .map((model.Platform p) => p.displayName)
@@ -607,8 +384,6 @@ class _CreateCustomItemDialogState
       setState(() => _platformController.text = result);
     }
   }
-
-  // ==================== Genres ====================
 
   Widget _buildGenresSection(S l) {
     return Column(
@@ -655,28 +430,23 @@ class _CreateCustomItemDialogState
   }
 
   Future<void> _pickGenres() async {
-    // Текущие жанры из текстового поля
     final Set<String> current = _genresController.text
         .split(',')
         .map((String s) => s.trim())
         .where((String s) => s.isNotEmpty)
         .toSet();
 
-    final Set<String>? result = await showDialog<Set<String>>(
-      context: context,
-      builder: (BuildContext ctx) => _MultiSelectGenreDialog(
-        title: S.of(context).customItemGenres,
-        items: _allGenres,
-        selected: current,
-      ),
+    final Set<String>? result = await MultiSelectGenreDialog.show(
+      context,
+      title: S.of(context).customItemGenres,
+      items: _allGenres,
+      selected: current,
     );
     if (result != null && mounted) {
       _genresController.text = result.join(', ');
       setState(() {});
     }
   }
-
-  // ==================== Media Type Chips ====================
 
   Widget _buildMediaTypeChips(S l) {
     const List<MediaType> types = <MediaType>[
@@ -719,51 +489,6 @@ class _CreateCustomItemDialogState
     );
   }
 
-  // ==================== Rating ====================
-
-  Widget _buildRatingSection(S l) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text(
-          l.customItemMyRating,
-          style: AppTypography.bodySmall.copyWith(
-            color: AppColors.textSecondary,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        Row(
-          children: List<Widget>.generate(10, (int index) {
-            final int starValue = index + 1;
-            final bool isFilled =
-                _userRating != null && starValue <= _userRating!;
-            return GestureDetector(
-              onTap: () {
-                setState(() {
-                  _userRating =
-                      _userRating == starValue ? null : starValue;
-                });
-              },
-              child: Padding(
-                padding: const EdgeInsets.only(right: 2),
-                child: Icon(
-                  isFilled
-                      ? Icons.star_rounded
-                      : Icons.star_outline_rounded,
-                  size: 28,
-                  color: isFilled ? _accentColor : AppColors.textTertiary,
-                ),
-              ),
-            );
-          }),
-        ),
-      ],
-    );
-  }
-
-  // ==================== Description ====================
-
   Widget _buildDescriptionSection(S l) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -793,8 +518,6 @@ class _CreateCustomItemDialogState
     );
   }
 
-  // ==================== External URL ====================
-
   Widget _buildExternalUrlSection(S l) {
     return TextField(
       controller: _externalUrlController,
@@ -810,280 +533,6 @@ class _CreateCustomItemDialogState
         fillColor: AppColors.surfaceLight,
       ),
       keyboardType: TextInputType.url,
-    );
-  }
-
-  // ==================== Searchable List Dialog ====================
-
-  Future<String?> _showSearchableListDialog({
-    required String title,
-    required List<String> items,
-    required bool allowCustom,
-    String? currentValue,
-  }) {
-    return showDialog<String>(
-      context: context,
-      builder: (BuildContext ctx) => _SearchableListDialog(
-        title: title,
-        items: items,
-        allowCustom: allowCustom,
-        currentValue: currentValue,
-      ),
-    );
-  }
-}
-
-// ==================== Multi-Select Genre Dialog ====================
-
-class _MultiSelectGenreDialog extends StatefulWidget {
-  const _MultiSelectGenreDialog({
-    required this.title,
-    required this.items,
-    required this.selected,
-  });
-
-  final String title;
-  final List<String> items;
-  final Set<String> selected;
-
-  @override
-  State<_MultiSelectGenreDialog> createState() =>
-      _MultiSelectGenreDialogState();
-}
-
-class _MultiSelectGenreDialogState extends State<_MultiSelectGenreDialog> {
-  final TextEditingController _searchController = TextEditingController();
-  late final Set<String> _selected;
-  List<String> _filtered = <String>[];
-
-  @override
-  void initState() {
-    super.initState();
-    _selected = Set<String>.of(widget.selected);
-    _filtered = widget.items;
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  void _filter(String query) {
-    if (query.isEmpty) {
-      _filtered = widget.items;
-    } else {
-      final String lower = query.toLowerCase();
-      _filtered = widget.items
-          .where((String item) => item.toLowerCase().contains(lower))
-          .toList();
-    }
-    setState(() {});
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final S l = S.of(context);
-    return Dialog(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 400, maxHeight: 500),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Text(widget.title,
-                  style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: AppSpacing.sm),
-              TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: l.customItemSearchHint,
-                  prefixIcon: const Icon(Icons.search, size: 20),
-                  isDense: true,
-                ),
-                onChanged: _filter,
-                autofocus: true,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Flexible(
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: _filtered.length,
-                  itemBuilder: (BuildContext ctx, int index) {
-                    final String item = _filtered[index];
-                    final bool isSelected = _selected.contains(item);
-                    return CheckboxListTile(
-                      title: Text(item, style: AppTypography.bodySmall),
-                      value: isSelected,
-                      dense: true,
-                      visualDensity: VisualDensity.compact,
-                      controlAffinity: ListTileControlAffinity.leading,
-                      onChanged: (bool? value) {
-                        setState(() {
-                          if (value == true) {
-                            _selected.add(item);
-                          } else {
-                            _selected.remove(item);
-                          }
-                        });
-                      },
-                    );
-                  },
-                ),
-              ),
-              const Divider(),
-              OverflowBar(
-                alignment: MainAxisAlignment.end,
-                spacing: AppSpacing.sm,
-                children: <Widget>[
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text(l.cancel),
-                  ),
-                  // Кнопка добавить кастомный жанр
-                  TextButton(
-                    onPressed: () {
-                      final String text = _searchController.text.trim();
-                      if (text.isNotEmpty) {
-                        setState(() => _selected.add(text));
-                        _searchController.clear();
-                        _filter('');
-                      }
-                    },
-                    child: Text(l.customItemUseCustom),
-                  ),
-                  FilledButton(
-                    onPressed: () => Navigator.of(context).pop(_selected),
-                    child: Text(l.confirm),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ==================== Searchable List Dialog Widget ====================
-
-class _SearchableListDialog extends StatefulWidget {
-  const _SearchableListDialog({
-    required this.title,
-    required this.items,
-    required this.allowCustom,
-    this.currentValue,
-  });
-
-  final String title;
-  final List<String> items;
-  final bool allowCustom;
-  final String? currentValue;
-
-  @override
-  State<_SearchableListDialog> createState() => _SearchableListDialogState();
-}
-
-class _SearchableListDialogState extends State<_SearchableListDialog> {
-  final TextEditingController _searchController = TextEditingController();
-  List<String> _filtered = <String>[];
-
-  @override
-  void initState() {
-    super.initState();
-    _filtered = widget.items;
-    if (widget.currentValue != null) {
-      _searchController.text = widget.currentValue!;
-      _filter(widget.currentValue!);
-    }
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  void _filter(String query) {
-    if (query.isEmpty) {
-      _filtered = widget.items;
-    } else {
-      final String lower = query.toLowerCase();
-      _filtered = widget.items
-          .where((String item) => item.toLowerCase().contains(lower))
-          .toList();
-    }
-    setState(() {});
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final S l = S.of(context);
-    return Dialog(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 400, maxHeight: 500),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Text(widget.title,
-                  style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: AppSpacing.sm),
-              TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: l.customItemSearchHint,
-                  prefixIcon: const Icon(Icons.search, size: 20),
-                  isDense: true,
-                ),
-                onChanged: _filter,
-                autofocus: true,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Flexible(
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: _filtered.length,
-                  itemBuilder: (BuildContext ctx, int index) {
-                    final String item = _filtered[index];
-                    return ListTile(
-                      title: Text(item, style: AppTypography.bodySmall),
-                      dense: true,
-                      visualDensity: VisualDensity.compact,
-                      onTap: () => Navigator.of(ctx).pop(item),
-                    );
-                  },
-                ),
-              ),
-              if (widget.allowCustom) ...<Widget>[
-                const Divider(),
-                OverflowBar(
-                  alignment: MainAxisAlignment.end,
-                  spacing: AppSpacing.sm,
-                  children: <Widget>[
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: Text(l.cancel),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        final String text = _searchController.text.trim();
-                        if (text.isNotEmpty) {
-                          Navigator.of(context).pop(text);
-                        }
-                      },
-                      child: Text(l.customItemUseCustom),
-                    ),
-                  ],
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

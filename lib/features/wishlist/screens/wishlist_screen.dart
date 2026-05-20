@@ -1,37 +1,30 @@
-// Экран вишлиста — заметки для отложенного поиска контента.
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/dao/wishlist_dao.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/constants/media_type_theme.dart';
 import '../../../shared/constants/platform_features.dart';
 import '../../../shared/keyboard/keyboard_shortcuts.dart';
 import '../../../shared/models/media_type.dart';
 import '../../../shared/models/wishlist_item.dart';
 import '../../../shared/models/wishlist_tag.dart';
-import '../../../shared/widgets/chevron_filter_bar.dart';
 import '../../../shared/navigation/search_providers.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/theme/app_typography.dart';
 import '../../../shared/widgets/draggable_fab.dart';
-import '../../../shared/widgets/mini_markdown_text.dart';
 import '../../search/screens/search_screen.dart';
 import '../providers/wishlist_provider.dart';
 import '../widgets/add_wishlist_dialog.dart';
+import '../widgets/wishlist_dialogs.dart';
+import '../widgets/wishlist_tag_header.dart';
+import '../widgets/wishlist_tile.dart';
 
-/// Экран вишлиста.
-///
-/// Показывает список заметок для отложенного поиска контента.
-/// FAB для быстрого добавления, popup menu для действий.
+/// Wishlist screen — notes for deferred content search.
 class WishlistScreen extends ConsumerStatefulWidget {
-  /// Создаёт [WishlistScreen].
   const WishlistScreen({super.key});
 
-  /// Группа хоткеев этого экрана для легенды F1.
   static const ShortcutGroup shortcutGroup = ShortcutGroup(
     title: 'Вишлист',
     entries: <ShortcutEntry>[
@@ -71,25 +64,24 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
                 items,
                 searchQuery: searchQuery,
               );
-
-              // Always show the header when the wishlist isn't empty — the
-              // text-style picker is unobtrusive and stays consistent as
-              // tags appear/disappear during edits.
+              // Keep the header visible whenever the wishlist isn't empty —
+              // the text-style picker stays consistent as tags appear and
+              // disappear during edits.
               final bool showHeader = items.isNotEmpty;
 
               return Column(
                 children: <Widget>[
                   if (showHeader)
-                    _WishlistTagHeader(
+                    WishlistTagHeader(
                       tags: tags,
                       selected: _tagFilter,
                       filteredCount: filtered.length,
                       totalCount: items.length,
                       onChanged: (WishlistTagFilter v) =>
                           setState(() => _tagFilter = v),
-                      onRename: _promptRenameTag,
-                      onDelete: _confirmDeleteTag,
-                      onBulkAction: (_BulkAction a) =>
+                      onRename: _handleRenameTag,
+                      onDelete: _handleDeleteTag,
+                      onBulkAction: (WishlistBulkAction a) =>
                           _runBulkAction(a, filtered),
                     ),
                   Expanded(
@@ -100,16 +92,13 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
                             itemCount: filtered.length,
                             itemBuilder:
                                 (BuildContext context, int index) {
-                              return _WishlistTile(
-                                item: filtered[index],
-                                onTap: () =>
-                                    _searchForItem(context, filtered[index]),
-                                onResolve: () =>
-                                    _toggleResolved(filtered[index]),
-                                onEdit: () =>
-                                    _editItem(context, filtered[index]),
-                                onDelete: () =>
-                                    _deleteItem(context, filtered[index]),
+                              final WishlistItem item = filtered[index];
+                              return WishlistTile(
+                                item: item,
+                                onTap: () => _searchForItem(context, item),
+                                onResolve: () => _toggleResolved(item),
+                                onEdit: () => _editItem(context, item),
+                                onDelete: () => _deleteItem(context, item),
                               );
                             },
                           ),
@@ -199,7 +188,6 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
 
   Widget _buildEmptyState(BuildContext context) {
     final S l = S.of(context);
-
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -232,7 +220,6 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
   Future<void> _addItem(BuildContext context) async {
     final WishlistDialogResult? result = await AddWishlistForm.show(context);
     if (result == null || !mounted) return;
-
     await ref.read(wishlistProvider.notifier).add(
           text: result.text,
           mediaTypeHint: result.mediaTypeHint,
@@ -247,7 +234,6 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
       existing: item,
     );
     if (result == null || !mounted) return;
-
     await ref.read(wishlistProvider.notifier).updateItem(
           item.id,
           text: result.text,
@@ -269,28 +255,10 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
   }
 
   Future<void> _deleteItem(BuildContext context, WishlistItem item) async {
-    final S l = S.of(context);
-    final bool? confirmed = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) => AlertDialog(
-        title: Text(l.wishlistDeleteItem),
-        content: Text(l.wishlistDeletePrompt(item.text)),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l.delete),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && mounted) {
-      await ref.read(wishlistProvider.notifier).delete(item.id);
-    }
+    final bool confirmed =
+        await WishlistDialogs.confirmDeleteItem(context, item.text);
+    if (!confirmed || !mounted) return;
+    await ref.read(wishlistProvider.notifier).delete(item.id);
   }
 
   void _searchForItem(BuildContext context, WishlistItem item) {
@@ -318,677 +286,60 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> {
   }
 
   Future<void> _runBulkAction(
-    _BulkAction action,
+    WishlistBulkAction action,
     List<WishlistItem> visible,
   ) async {
     if (visible.isEmpty) return;
     final Set<int> ids = visible.map((WishlistItem i) => i.id).toSet();
 
     switch (action) {
-      case _BulkAction.applyTag:
-        final String? tag = await _promptTagForBulk(ids.length);
+      case WishlistBulkAction.applyTag:
+        final String? tag =
+            await WishlistDialogs.promptBulkTag(context, ids.length);
         if (tag == null || !mounted) return;
         await ref.read(wishlistProvider.notifier).applyTagToIds(ids, tag);
-      case _BulkAction.removeTag:
+      case WishlistBulkAction.removeTag:
         await ref.read(wishlistProvider.notifier).applyTagToIds(ids, null);
-      case _BulkAction.delete:
-        final S l = S.of(context);
-        final bool? confirmed = await showDialog<bool>(
-          context: context,
-          builder: (BuildContext context) => AlertDialog(
-            title: Text(l.wishlistBulkDelete),
-            content: Text(l.wishlistBulkDeleteConfirm(ids.length)),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: Text(l.cancel),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: Text(l.delete),
-              ),
-            ],
-          ),
-        );
-        if (confirmed != true || !mounted) return;
+      case WishlistBulkAction.delete:
+        final bool confirmed =
+            await WishlistDialogs.confirmBulkDelete(context, ids.length);
+        if (!confirmed || !mounted) return;
         await ref.read(wishlistProvider.notifier).deleteIds(ids);
     }
   }
 
-  Future<String?> _promptTagForBulk(int count) async {
-    final S l = S.of(context);
-    final TextEditingController controller = TextEditingController();
-    final String? input = await showDialog<String>(
-      context: context,
-      builder: (BuildContext context) => AlertDialog(
-        title: Text(l.wishlistBulkApplyTag),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(l.wishlistBulkApplyTagHint(count)),
-            const SizedBox(height: AppSpacing.sm),
-            TextField(
-              controller: controller,
-              autofocus: true,
-              decoration: InputDecoration(hintText: l.wishlistTagPlaceholder),
-              onSubmitted: (String v) =>
-                  Navigator.of(context).pop(v.trim()),
-            ),
-          ],
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l.cancel),
-          ),
-          FilledButton(
-            onPressed: () =>
-                Navigator.of(context).pop(controller.text.trim()),
-            child: Text(l.apply),
-          ),
-        ],
-      ),
-    );
-    if (input == null || input.isEmpty) return null;
-    return input;
-  }
-
-  Future<void> _promptRenameTag(String? currentTag) async {
-    final S l = S.of(context);
-    final TextEditingController controller =
-        TextEditingController(text: currentTag ?? '');
-
-    final String? newTag = await showDialog<String>(
-      context: context,
-      builder: (BuildContext context) => AlertDialog(
-        title: Text(l.wishlistTagRename),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: InputDecoration(hintText: l.wishlistTagPlaceholder),
-          onSubmitted: (String value) =>
-              Navigator.of(context).pop(value.trim()),
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l.cancel),
-          ),
-          FilledButton(
-            onPressed: () =>
-                Navigator.of(context).pop(controller.text.trim()),
-            child: Text(l.save),
-          ),
-        ],
-      ),
-    );
-
-    if (newTag == null || newTag.isEmpty || newTag == currentTag) return;
-    if (!mounted) return;
-
+  Future<void> _handleRenameTag(String? currentTag) async {
+    final String? newTag =
+        await WishlistDialogs.promptRenameTag(context, currentTag);
+    if (newTag == null || !mounted) return;
     await ref.read(wishlistProvider.notifier).renameTag(currentTag, newTag);
-
     if (mounted) {
       setState(() => _tagFilter = WishlistTagFilter.named(newTag));
     }
   }
 
-  Future<void> _confirmDeleteTag(
-    String? tag,
-    int itemCount,
-  ) async {
-    final S l = S.of(context);
-    final String label = tag ?? l.wishlistTagUntagged;
-
-    final bool? confirmed = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) => AlertDialog(
-        title: Text(l.wishlistTagDelete),
-        content: Text(l.wishlistTagDeleteConfirm(label, itemCount)),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l.delete),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed != true || !mounted) return;
-
+  Future<void> _handleDeleteTag(String? tag, int itemCount) async {
+    final bool confirmed =
+        await WishlistDialogs.confirmDeleteTag(context, tag, itemCount);
+    if (!confirmed || !mounted) return;
     await ref.read(wishlistProvider.notifier).deleteByTag(tag);
-
     if (mounted) {
       setState(() => _tagFilter = const WishlistTagFilter.all());
     }
   }
 
   Future<void> _confirmClearResolved(BuildContext context) async {
-    final S l = S.of(context);
     final int resolvedCount = ref
             .read(wishlistProvider)
             .valueOrNull
             ?.where((WishlistItem item) => item.isResolved)
             .length ??
         0;
-
     if (resolvedCount == 0) return;
 
-    final bool? confirmed = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) => AlertDialog(
-        title: Text(l.wishlistClearResolvedTitle),
-        content: Text(l.wishlistClearResolvedMessage(resolvedCount)),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l.clear),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && mounted) {
-      await ref.read(wishlistProvider.notifier).clearResolved();
-    }
-  }
-}
-
-/// Full-width chevron filter bar: two segments (tag picker + bulk actions),
-/// always shown. Same visual language as the collection / search filter bars.
-class _WishlistTagHeader extends StatelessWidget {
-  const _WishlistTagHeader({
-    required this.tags,
-    required this.selected,
-    required this.filteredCount,
-    required this.totalCount,
-    required this.onChanged,
-    required this.onRename,
-    required this.onDelete,
-    required this.onBulkAction,
-  });
-
-  final List<WishlistTagCount> tags;
-  final WishlistTagFilter selected;
-  final int filteredCount;
-  final int totalCount;
-  final ValueChanged<WishlistTagFilter> onChanged;
-  final Future<void> Function(String? tag) onRename;
-  final Future<void> Function(String? tag, int itemCount) onDelete;
-  final Future<void> Function(_BulkAction action) onBulkAction;
-
-  @override
-  Widget build(BuildContext context) {
-    return ColoredBox(
-      color: AppColors.surface,
-      child: SizedBox(
-        height: 40,
-        child: Row(
-          children: <Widget>[
-            Expanded(
-              child: _TagPickerSegment(
-                tags: tags,
-                selected: selected,
-                onChanged: onChanged,
-                onRename: onRename,
-                onDelete: onDelete,
-              ),
-            ),
-            Expanded(
-              child: _BulkActionsSegment(
-                count: filteredCount,
-                onAction: onBulkAction,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _TagPickerSegment extends StatelessWidget {
-  const _TagPickerSegment({
-    required this.tags,
-    required this.selected,
-    required this.onChanged,
-    required this.onRename,
-    required this.onDelete,
-  });
-
-  final List<WishlistTagCount> tags;
-  final WishlistTagFilter selected;
-  final ValueChanged<WishlistTagFilter> onChanged;
-  final Future<void> Function(String? tag) onRename;
-  final Future<void> Function(String? tag, int itemCount) onDelete;
-
-  @override
-  Widget build(BuildContext context) {
-    final S l = S.of(context);
-    final int totalActive =
-        tags.fold(0, (int sum, WishlistTagCount t) => sum + t.activeCount);
-    final int totalAll =
-        tags.fold(0, (int sum, WishlistTagCount t) => sum + t.totalCount);
-
-    final String label = _currentLabel(l);
-    final int count = _currentCount(totalActive);
-    final bool active = selected is! WishlistTagFilterAll;
-
-    return DropdownChevronSegment<_TagMenuChoice>(
-      label: '$label ($count)',
-      icon: Icons.folder_outlined,
-      selected: active,
-      accentColor: AppColors.brand,
-      isFirst: true,
-      isLast: false,
-      menuBuilder: (BuildContext ctx) =>
-          _buildMenu(ctx, totalActive, totalAll),
-      onSelected: (_TagMenuChoice? picked) async {
-        if (picked == null) return;
-        switch (picked) {
-          case _TagMenuFilter(:final WishlistTagFilter filter):
-            onChanged(filter);
-          case _TagMenuRename():
-            if (selected is WishlistTagFilterNamed) {
-              await onRename((selected as WishlistTagFilterNamed).tag);
-            }
-          case _TagMenuDelete():
-            final String? rawTag = switch (selected) {
-              WishlistTagFilterNamed(:final String tag) => tag,
-              _ => null,
-            };
-            final WishlistTagCount bucket = tags.firstWhere(
-              (WishlistTagCount t) => t.tag == rawTag,
-              orElse: () => const WishlistTagCount(
-                tag: null,
-                activeCount: 0,
-                totalCount: 0,
-              ),
-            );
-            await onDelete(rawTag, bucket.totalCount);
-        }
-      },
-    );
-  }
-
-  String _currentLabel(S l) {
-    return switch (selected) {
-      WishlistTagFilterAll() => l.wishlistTagAll,
-      WishlistTagFilterUntagged() => l.wishlistTagUntagged,
-      WishlistTagFilterNamed(:final String tag) => _humanLabel(tag),
-    };
-  }
-
-  int _currentCount(int totalActive) {
-    return switch (selected) {
-      WishlistTagFilterAll() => totalActive,
-      WishlistTagFilterUntagged() => _countFor(null),
-      WishlistTagFilterNamed(:final String tag) => _countFor(tag),
-    };
-  }
-
-  int _countFor(String? tag) {
-    for (final WishlistTagCount t in tags) {
-      if (t.tag == tag) return t.activeCount;
-    }
-    return 0;
-  }
-
-  List<PopupMenuEntry<_TagMenuChoice>> _buildMenu(
-    BuildContext context,
-    int totalActive,
-    int totalAll,
-  ) {
-    final S l = S.of(context);
-    final bool canManage = selected is WishlistTagFilterNamed ||
-        selected is WishlistTagFilterUntagged;
-
-    return <PopupMenuEntry<_TagMenuChoice>>[
-      _tagMenuItem(
-        value: const _TagMenuChoice.filter(WishlistTagFilter.all()),
-        label: l.wishlistTagAll,
-        count: totalActive,
-        total: totalAll,
-        isSelected: selected is WishlistTagFilterAll,
-      ),
-      for (final WishlistTagCount t in tags)
-        _tagMenuItem(
-          value: _TagMenuChoice.filter(t.tag == null
-              ? const WishlistTagFilter.untagged()
-              : WishlistTagFilter.named(t.tag!)),
-          label: t.tag == null ? l.wishlistTagUntagged : _humanLabel(t.tag!),
-          count: t.activeCount,
-          total: t.totalCount,
-          isSelected: _isSelected(t.tag),
-        ),
-      if (canManage) ...<PopupMenuEntry<_TagMenuChoice>>[
-        const PopupMenuDivider(),
-        if (selected is WishlistTagFilterNamed)
-          PopupMenuItem<_TagMenuChoice>(
-            value: const _TagMenuChoice.rename(),
-            child: ListTile(
-              leading: const Icon(Icons.edit),
-              title: Text(l.wishlistTagRename),
-              contentPadding: EdgeInsets.zero,
-              dense: true,
-            ),
-          ),
-        PopupMenuItem<_TagMenuChoice>(
-          value: const _TagMenuChoice.deleteTag(),
-          child: ListTile(
-            leading: const Icon(Icons.delete, color: Colors.red),
-            title: Text(
-              l.wishlistTagDelete,
-              style: const TextStyle(color: Colors.red),
-            ),
-            contentPadding: EdgeInsets.zero,
-            dense: true,
-          ),
-        ),
-      ],
-    ];
-  }
-
-  PopupMenuItem<_TagMenuChoice> _tagMenuItem({
-    required _TagMenuChoice value,
-    required String label,
-    required int count,
-    required int total,
-    required bool isSelected,
-  }) {
-    return PopupMenuItem<_TagMenuChoice>(
-      value: value,
-      child: Row(
-        children: <Widget>[
-          SizedBox(
-            width: 24,
-            child: isSelected
-                ? const Icon(Icons.check, size: 18)
-                : const SizedBox.shrink(),
-          ),
-          Expanded(child: Text(label)),
-          const SizedBox(width: AppSpacing.sm),
-          Text(
-            '$count/$total',
-            style: AppTypography.bodySmall.copyWith(
-              color: AppColors.textTertiary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  bool _isSelected(String? rowTag) {
-    return switch (selected) {
-      WishlistTagFilterAll() => false,
-      WishlistTagFilterUntagged() => rowTag == null,
-      WishlistTagFilterNamed(:final String tag) => tag == rowTag,
-    };
-  }
-
-  static String _humanLabel(String tag) {
-    final WishlistTagInfo info = parseWishlistTag(tag);
-    if (info.isAutoGenerated) {
-      final DateTime ts = info.timestamp!.toLocal();
-      return '${info.source} — '
-          '${ts.year}-${_two(ts.month)}-${_two(ts.day)} '
-          '${_two(ts.hour)}:${_two(ts.minute)}';
-    }
-    return tag;
-  }
-
-  static String _two(int n) => n < 10 ? '0$n' : '$n';
-}
-
-sealed class _TagMenuChoice {
-  const _TagMenuChoice();
-  const factory _TagMenuChoice.filter(WishlistTagFilter filter) =
-      _TagMenuFilter;
-  const factory _TagMenuChoice.rename() = _TagMenuRename;
-  const factory _TagMenuChoice.deleteTag() = _TagMenuDelete;
-}
-
-final class _TagMenuFilter extends _TagMenuChoice {
-  const _TagMenuFilter(this.filter);
-  final WishlistTagFilter filter;
-}
-
-final class _TagMenuRename extends _TagMenuChoice {
-  const _TagMenuRename();
-}
-
-final class _TagMenuDelete extends _TagMenuChoice {
-  const _TagMenuDelete();
-}
-
-/// Bulk operation surfaced when the visible list is narrower than the full
-/// wishlist (tag filter and/or search query active).
-enum _BulkAction { applyTag, removeTag, delete }
-
-class _BulkActionsSegment extends StatelessWidget {
-  const _BulkActionsSegment({
-    required this.count,
-    required this.onAction,
-  });
-
-  final int count;
-  final Future<void> Function(_BulkAction action) onAction;
-
-  @override
-  Widget build(BuildContext context) {
-    final S l = S.of(context);
-    return DropdownChevronSegment<_BulkAction>(
-      label: l.wishlistBulkActionsButton(count),
-      icon: Icons.checklist,
-      selected: false,
-      accentColor: AppColors.brand,
-      isFirst: false,
-      isLast: true,
-      menuBuilder: (BuildContext ctx) {
-        final S sl = S.of(ctx);
-        return <PopupMenuEntry<_BulkAction>>[
-          PopupMenuItem<_BulkAction>(
-            value: _BulkAction.applyTag,
-            child: ListTile(
-              leading: const Icon(Icons.label),
-              title: Text(sl.wishlistBulkApplyTag),
-              contentPadding: EdgeInsets.zero,
-              dense: true,
-            ),
-          ),
-          PopupMenuItem<_BulkAction>(
-            value: _BulkAction.removeTag,
-            child: ListTile(
-              leading: const Icon(Icons.label_off),
-              title: Text(sl.wishlistBulkRemoveTag),
-              contentPadding: EdgeInsets.zero,
-              dense: true,
-            ),
-          ),
-          const PopupMenuDivider(),
-          PopupMenuItem<_BulkAction>(
-            value: _BulkAction.delete,
-            child: ListTile(
-              leading: const Icon(Icons.delete, color: Colors.red),
-              title: Text(
-                sl.wishlistBulkDelete,
-                style: const TextStyle(color: Colors.red),
-              ),
-              contentPadding: EdgeInsets.zero,
-              dense: true,
-            ),
-          ),
-        ];
-      },
-      onSelected: (_BulkAction? picked) async {
-        if (picked != null) await onAction(picked);
-      },
-    );
-  }
-}
-
-/// FAB с popup-меню: добавить, показать/скрыть resolved, очистить resolved.
-class _WishlistTile extends StatelessWidget {
-  const _WishlistTile({
-    required this.item,
-    required this.onTap,
-    required this.onResolve,
-    required this.onEdit,
-    required this.onDelete,
-  });
-
-  final WishlistItem item;
-  final VoidCallback onTap;
-  final VoidCallback onResolve;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
-
-  @override
-  Widget build(BuildContext context) {
-    return Opacity(
-      opacity: item.isResolved ? 0.5 : 1.0,
-      child: GestureDetector(
-        onSecondaryTapUp: (TapUpDetails details) =>
-            _showContextMenu(context, details.globalPosition),
-        child: ListTile(
-          leading: _buildLeadingIcon(),
-          title: Text(
-            item.text,
-            style: item.isResolved
-                ? const TextStyle(decoration: TextDecoration.lineThrough)
-                : null,
-          ),
-          subtitle: _buildSubtitle(context),
-          onLongPress: () => _showContextMenu(
-            context,
-            _centerOfContext(context),
-          ),
-          onTap: onTap,
-        ),
-      ),
-    );
-  }
-
-  Offset _centerOfContext(BuildContext context) {
-    final RenderBox? box = context.findRenderObject() as RenderBox?;
-    if (box == null) return Offset.zero;
-    return box.localToGlobal(box.size.center(Offset.zero));
-  }
-
-  void _showContextMenu(BuildContext context, Offset position) {
-    final S l = S.of(context);
-    final RenderBox overlay =
-        Overlay.of(context).context.findRenderObject()! as RenderBox;
-
-    showMenu<String>(
-      context: context,
-      position: RelativeRect.fromRect(
-        position & const Size(1, 1),
-        Offset.zero & overlay.size,
-      ),
-      items: <PopupMenuEntry<String>>[
-        PopupMenuItem<String>(
-          value: 'search',
-          child: ListTile(
-            leading: const Icon(Icons.search),
-            title: Text(l.search),
-            contentPadding: EdgeInsets.zero,
-            dense: true,
-          ),
-        ),
-        PopupMenuItem<String>(
-          value: 'edit',
-          child: ListTile(
-            leading: const Icon(Icons.edit),
-            title: Text(l.edit),
-            contentPadding: EdgeInsets.zero,
-            dense: true,
-          ),
-        ),
-        PopupMenuItem<String>(
-          value: 'resolve',
-          child: ListTile(
-            leading: Icon(
-              item.isResolved ? Icons.undo : Icons.check_circle_outline,
-            ),
-            title: Text(item.isResolved ? l.wishlistUnresolve : l.wishlistMarkResolved),
-            contentPadding: EdgeInsets.zero,
-            dense: true,
-          ),
-        ),
-        const PopupMenuDivider(),
-        PopupMenuItem<String>(
-          value: 'delete',
-          child: ListTile(
-            leading: const Icon(Icons.delete, color: Colors.red),
-            title: Text(l.delete, style: const TextStyle(color: Colors.red)),
-            contentPadding: EdgeInsets.zero,
-            dense: true,
-          ),
-        ),
-      ],
-    ).then((String? value) {
-      if (value == null) return;
-      switch (value) {
-        case 'search':
-          onTap();
-        case 'edit':
-          onEdit();
-        case 'resolve':
-          onResolve();
-        case 'delete':
-          onDelete();
-      }
-    });
-  }
-
-  Widget _buildLeadingIcon() {
-    if (item.mediaTypeHint != null) {
-      return Icon(
-        MediaTypeTheme.iconFor(item.mediaTypeHint!),
-        color: MediaTypeTheme.colorFor(item.mediaTypeHint!),
-      );
-    }
-    return const Icon(Icons.bookmark_border, color: AppColors.textTertiary);
-  }
-
-  Widget? _buildSubtitle(BuildContext context) {
-    final List<String> parts = <String>[];
-    if (item.hasNote) {
-      parts.add(item.note!);
-    }
-    if (item.mediaTypeHint != null && !item.hasNote) {
-      parts.add(item.mediaTypeHint!.localizedLabel(S.of(context)));
-    }
-
-    if (parts.isEmpty) return null;
-
-    final String subtitle = parts.join(' \u00b7 ');
-
-    // Если есть заметка — рендерим через MiniMarkdownText для поддержки разметки.
-    if (item.hasNote) {
-      return MiniMarkdownText(
-        text: subtitle,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
-            ),
-      );
-    }
-
-    return Text(
-      subtitle,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-    );
+    final bool confirmed =
+        await WishlistDialogs.confirmClearResolved(context, resolvedCount);
+    if (!confirmed || !mounted) return;
+    await ref.read(wishlistProvider.notifier).clearResolved();
   }
 }
